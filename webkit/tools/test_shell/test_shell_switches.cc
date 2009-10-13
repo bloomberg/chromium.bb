@@ -7,79 +7,79 @@
 namespace test_shell {
 
 // Suppresses all error dialogs when present.
-const wchar_t kNoErrorDialogs[]                = L"noerrdialogs";
+const char kNoErrorDialogs[]                = "noerrdialogs";
 
 // Causes the test_shell to run using stdin and stdout for URLs and output,
 // respectively, and interferes with interactive use of the UI.
-const wchar_t kLayoutTests[] = L"layout-tests";
-const wchar_t kCrashDumps[] = L"crash-dumps";  // Enable crash dumps
+const char kLayoutTests[] = "layout-tests";
+const char kCrashDumps[] = "crash-dumps";  // Enable crash dumps
 
 // Causes the test_shell to run with a generic theme (part of layout_tests).
-const wchar_t kGenericTheme[] = L"generic-theme";
+const char kGenericTheme[] = "generic-theme";
 
 // This causes the test_shell to run with the classic theme.
 // Passing --layout-tests enables this by default.
-const wchar_t kClassicTheme[] = L"classic-theme";
+const char kClassicTheme[] = "classic-theme";
 
 // This causes the test_shell to run with the new windows theming engine
 // enabled. This is the default unless --layout-tests is specified.
-const wchar_t kUxTheme[] = L"ux-theme";
+const char kUxTheme[] = "ux-theme";
 
 // Command line flags that control the tests when layout-tests is specified.
-const wchar_t kNoTree[] = L"notree";  // Don't dump the render tree.
-const wchar_t kDumpPixels[] = L"pixel-tests";  // Enable pixel tests.
+const char kNoTree[] = "notree";  // Don't dump the render tree.
+const char kDumpPixels[] = "pixel-tests";  // Enable pixel tests.
 // Optional command line switch that specifies timeout time for page load when
 // running file tests in layout test mode, in ms.
-const wchar_t kTestShellTimeOut[] = L"time-out-ms";
+const char kTestShellTimeOut[] = "time-out-ms";
 
-const wchar_t kStartupDialog[] = L"testshell-startup-dialog";
+const char kStartupDialog[] = "testshell-startup-dialog";
 
 // Enable the Windows dialogs for GP faults in the test shell. This allows makes
 // it possible to attach a crashed test shell to a debugger.
-const wchar_t kGPFaultErrorBox[] = L"gp-fault-error-box";
+const char kGPFaultErrorBox[] = "gp-fault-error-box";
 
 // JavaScript flags passed to engine.
-const wchar_t kJavaScriptFlags[] = L"js-flags";
+const char kJavaScriptFlags[] = "js-flags";
 
 // Run the http cache in record mode.
-const wchar_t kRecordMode[] = L"record-mode";
+const char kRecordMode[] = "record-mode";
 
 // Run the http cache in playback mode.
-const wchar_t kPlaybackMode[] = L"playback-mode";
+const char kPlaybackMode[] = "playback-mode";
 
 // Don't record/playback events when using record & playback.
-const wchar_t kNoEvents[] = L"no-events";
+const char kNoEvents[] = "no-events";
 
 // Dump stats table on exit.
-const wchar_t kDumpStatsTable[] = L"stats";
+const char kDumpStatsTable[] = "stats";
 
 // Use a specified cache directory.
-const wchar_t kCacheDir[] = L"cache-dir";
+const char kCacheDir[] = "cache-dir";
 
 // When being run through a memory profiler, trigger memory in use dumps at
 // startup and just prior to shutdown.
-const wchar_t kDebugMemoryInUse[] = L"debug-memory-in-use";
+const char kDebugMemoryInUse[] = "debug-memory-in-use";
 
 // Enable cookies on the file:// scheme.  --layout-tests also enables this.
-const wchar_t kEnableFileCookies[] = L"enable-file-cookies";
+const char kEnableFileCookies[] = "enable-file-cookies";
 
 // Enable tracing events (see base/trace_event.h)
-const wchar_t kEnableTracing[] = L"enable-tracing";
+const char kEnableTracing[] = "enable-tracing";
 
 // Allow scripts to close windows in all cases.
-const wchar_t kAllowScriptsToCloseWindows[] = L"allow-scripts-to-close-windows";
+const char kAllowScriptsToCloseWindows[] = "allow-scripts-to-close-windows";
 
 // Test the system dependencies (themes, fonts, ...). When this flag is
 // specified, the test shell will exit immediately with either 0 (success) or
 // 1 (failure). Combining with other flags has no effect.
-extern const wchar_t kCheckLayoutTestSystemDeps[] =
-    L"check-layout-test-sys-deps";
+extern const char kCheckLayoutTestSystemDeps[] =
+    "check-layout-test-sys-deps";
 
 // If set, we are running under GDB so allow a certain class of errors
 // to happen even if in layout test mode.
-extern const wchar_t kGDB[] = L"gdb";
+extern const char kGDB[] = "gdb";
 
 // Make functions of the Profiler class available in javascript
-extern const wchar_t kProfiler[] = L"profiler";
+extern const char kProfiler[] = "profiler";
 
 }  // namespace test_shell

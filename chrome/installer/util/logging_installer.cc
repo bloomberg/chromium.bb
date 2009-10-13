@@ -22,7 +22,8 @@ void InitInstallerLogging(const CommandLine& command_line) {
   if (installer_logging_)
     return;
 
-  if (command_line.HasSwitch(installer_util::switches::kDisableLogging)) {
+  if (command_line.HasSwitch(
+          WideToASCII(installer_util::switches::kDisableLogging))) {
     installer_logging_ = true;
     return;
   }
@@ -32,7 +33,8 @@ void InitInstallerLogging(const CommandLine& command_line) {
                        logging::LOCK_LOG_FILE,
                        logging::DELETE_OLD_LOG_FILE);
 
-  if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {
+  if (command_line.HasSwitch(
+          WideToASCII(installer_util::switches::kVerboseLogging))) {
     logging::SetMinLogLevel(logging::LOG_INFO);
   } else {
     logging::SetMinLogLevel(logging::LOG_ERROR);
@@ -48,8 +50,10 @@ void EndInstallerLogging() {
 }
 
 std::wstring GetLogFilePath(const CommandLine& command_line) {
-  if (command_line.HasSwitch(installer_util::switches::kLogFile)) {
-    return command_line.GetSwitchValue(installer_util::switches::kLogFile);
+  if (command_line.HasSwitch(
+          WideToASCII(installer_util::switches::kLogFile))) {
+    return command_line.GetSwitchValue(
+        WideToASCII(installer_util::switches::kLogFile));
   }
 
   const std::wstring log_filename(L"chrome_installer.log");

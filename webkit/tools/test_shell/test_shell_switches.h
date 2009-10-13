@@ -9,30 +9,30 @@
 
 namespace test_shell {
 
-extern const wchar_t kCrashDumps[];
-extern const wchar_t kDumpPixels[];
-extern const wchar_t kLayoutTests[];
-extern const wchar_t kGenericTheme[];
-extern const wchar_t kClassicTheme[];
-extern const wchar_t kUxTheme[];
-extern const wchar_t kNoErrorDialogs[];
-extern const wchar_t kNoTree[];
-extern const wchar_t kTestShellTimeOut[];
-extern const wchar_t kStartupDialog[];
-extern const wchar_t kGPFaultErrorBox[];
-extern const wchar_t kJavaScriptFlags[];
-extern const wchar_t kRecordMode[];
-extern const wchar_t kPlaybackMode[];
-extern const wchar_t kNoEvents[];
-extern const wchar_t kDumpStatsTable[];
-extern const wchar_t kCacheDir[];
-extern const wchar_t kDebugMemoryInUse[];
-extern const wchar_t kEnableFileCookies[];
-extern const wchar_t kEnableTracing[];
-extern const wchar_t kAllowScriptsToCloseWindows[];
-extern const wchar_t kCheckLayoutTestSystemDeps[];
-extern const wchar_t kGDB[];
-extern const wchar_t kProfiler[];
+extern const char kCrashDumps[];
+extern const char kDumpPixels[];
+extern const char kLayoutTests[];
+extern const char kGenericTheme[];
+extern const char kClassicTheme[];
+extern const char kUxTheme[];
+extern const char kNoErrorDialogs[];
+extern const char kNoTree[];
+extern const char kTestShellTimeOut[];
+extern const char kStartupDialog[];
+extern const char kGPFaultErrorBox[];
+extern const char kJavaScriptFlags[];
+extern const char kRecordMode[];
+extern const char kPlaybackMode[];
+extern const char kNoEvents[];
+extern const char kDumpStatsTable[];
+extern const char kCacheDir[];
+extern const char kDebugMemoryInUse[];
+extern const char kEnableFileCookies[];
+extern const char kEnableTracing[];
+extern const char kAllowScriptsToCloseWindows[];
+extern const char kCheckLayoutTestSystemDeps[];
+extern const char kGDB[];
+extern const char kProfiler[];
 
 }  // namespace test_shell
 

@@ -19,7 +19,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 
-const wchar_t kRunOmniboxTest[] = L"run_omnibox_test";
+const char kRunOmniboxTest[] = "run_omnibox_test";
 
 class OmniboxTest : public UITest {
  public:

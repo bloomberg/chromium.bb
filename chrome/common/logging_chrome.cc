@@ -100,12 +100,12 @@ void InitChromeLogging(const CommandLine& command_line,
   // only use OutputDebugString in debug mode
 #ifdef NDEBUG
   bool enable_logging = false;
-  const wchar_t *kInvertLoggingSwitch = switches::kEnableLogging;
+  const char *kInvertLoggingSwitch = switches::kEnableLogging;
   const logging::LoggingDestination kDefaultLoggingMode =
       logging::LOG_ONLY_TO_FILE;
 #else
   bool enable_logging = true;
-  const wchar_t *kInvertLoggingSwitch = switches::kDisableLogging;
+  const char *kInvertLoggingSwitch = switches::kDisableLogging;
   const logging::LoggingDestination kDefaultLoggingMode =
       logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG;
 #endif

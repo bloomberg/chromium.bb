@@ -132,7 +132,8 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
         file_util::PathExists(user_data_dir)) {
-      arguments_w += std::wstring(L"--") + switches::kUserDataDir +
+      // TODO(evanm): use CommandLine APIs instead of this.
+      arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
                      L"=\"" + user_data_dir + L"\" ";
     }
   }
@@ -146,7 +147,9 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
   ReplaceSubstringsAfterOffset(&url_string, 0, ";", "");
   ReplaceSubstringsAfterOffset(&url_string, 0, "$", "");
   std::wstring url_w = UTF8ToWide(url_string);
-  arguments_w += std::wstring(L"--") + switches::kApp + L"=\"" + url_w + L"\"";
+  // TODO(evanm): use CommandLine APIs instead of this.
+  arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kApp) +
+      L"=\"" + url_w + L"\"";
 
   *arguments = WideToUTF8(arguments_w);
 

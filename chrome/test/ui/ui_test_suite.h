@@ -27,10 +27,10 @@ class UITestSuite : public ChromeTestSuite {
   base::ProcessHandle crash_service_;
 #endif
 
-  static const wchar_t kUseExistingBrowser[];
-  static const wchar_t kTestTimeout[];
-  static const wchar_t kBatchCount[];
-  static const wchar_t kBatchIndex[];
+  static const char kUseExistingBrowser[];
+  static const char kTestTimeout[];
+  static const char kBatchCount[];
+  static const char kBatchIndex[];
   static const char kGTestTotalShards[];
   static const char kGTestShardIndex[];
 };

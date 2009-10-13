@@ -67,7 +67,7 @@ WebCore::WorkerContextProxy* WebWorkerClientImpl::createWorkerContextProxy(
     WebCore::Worker* worker) {
   if (!worker->scriptExecutionContext()->isDocument() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
-            L"web-worker-share-processes")) {
+            "web-worker-share-processes")) {
     return new WebCore::WorkerMessagingProxy(worker);
   }
 

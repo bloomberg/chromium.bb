@@ -39,7 +39,7 @@ int main(int argc, char**argv) {
   HttpServer server("", 80);   // TODO(mbelshe): make port configurable
   MessageLoop::current()->Run();
 
-  if (parsed_command_line.HasSwitch(L"stats")) {
+  if (parsed_command_line.HasSwitch("stats")) {
     // Dump the stats table.
     printf("<stats>\n");
     int counter_max = table.GetMaxCounters();

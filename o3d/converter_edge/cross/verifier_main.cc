@@ -82,7 +82,7 @@ int CrossMain(int argc, char**argv) {
   }
 
   o3d::converter::Options options;
-  options.condition = !command_line->HasSwitch(L"no-condition");
+  options.condition = !command_line->HasSwitch("no-condition");
 
   if (!options.condition && !out_filename.empty()) {
     std::cerr << "Warning: Ignoring output filename because conditioning "

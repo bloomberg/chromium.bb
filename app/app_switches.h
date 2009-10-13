@@ -9,7 +9,7 @@
 
 namespace switches {
 
-extern const wchar_t kLang[];
+extern const char kLang[];
 
 }  // namespace switches
 

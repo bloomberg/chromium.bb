@@ -337,7 +337,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   base::ProcessHandle process = 0;
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   ChildProcessInfo::ProcessType type;
-  std::wstring type_str = cmd_line->GetSwitchValue(switches::kProcessType);
+  std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
   if (type_str == switches::kRendererProcess) {
     type = ChildProcessInfo::RENDER_PROCESS;
   } else if (type_str == switches::kPluginProcess) {

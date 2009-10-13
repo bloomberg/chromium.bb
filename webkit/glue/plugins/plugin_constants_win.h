@@ -7,7 +7,7 @@
 
 // Used by the plugins_test when testing the older WMP plugin to force the new
 // plugin to not get loaded.
-#define kUseOldWMPPluginSwitch L"use-old-wmp"
+#define kUseOldWMPPluginSwitch "use-old-wmp"
 
 // The window class name for a plugin window.
 #define kNativeWindowClassName L"NativeWindowClass"

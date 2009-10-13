@@ -110,7 +110,7 @@ bool InvokeGoogleUpdateForRename() {
   return false;
 }
 
-bool LaunchSetupWithParam(const std::wstring& param, const std::wstring& value,
+bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
                           int* ret_code) {
   FilePath exe_path;
   if (!PathService::Get(base::DIR_MODULE, &exe_path))
@@ -208,7 +208,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     FilePath inner_html;
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
-      const std::wstring& eula = installer_util::switches::kShowEula;
+      const std::string eula = WideToASCII(installer_util::switches::kShowEula);
       if (!LaunchSetupWithParam(eula, inner_html.ToWStringHack(), &retcode) ||
           (retcode == installer_util::EULA_REJECTED)) {
         LOG(WARNING) << "EULA rejected. Fast exit.";

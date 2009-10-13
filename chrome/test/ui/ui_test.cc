@@ -77,17 +77,17 @@ std::wstring UITest::log_level_ = L"";
 // Specify the time (in milliseconds) that the ui_tests should wait before
 // timing out. This is used to specify longer timeouts when running under Purify
 // which requires much more time.
-const wchar_t kUiTestTimeout[] = L"ui-test-timeout";
-const wchar_t kUiTestActionTimeout[] = L"ui-test-action-timeout";
-const wchar_t kUiTestActionMaxTimeout[] = L"ui-test-action-max-timeout";
-const wchar_t kUiTestSleepTimeout[] = L"ui-test-sleep-timeout";
-const wchar_t kUiTestTerminateTimeout[] = L"ui-test-terminate-timeout";
+const char kUiTestTimeout[] = "ui-test-timeout";
+const char kUiTestActionTimeout[] = "ui-test-action-timeout";
+const char kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
+const char kUiTestSleepTimeout[] = "ui-test-sleep-timeout";
+const char kUiTestTerminateTimeout[] = "ui-test-terminate-timeout";
 
-const wchar_t kExtraChromeFlagsSwitch[] = L"extra-chrome-flags";
+const char kExtraChromeFlagsSwitch[] = "extra-chrome-flags";
 
 // By default error dialogs are hidden, which makes debugging failures in the
 // slave process frustrating. By passing this in error dialogs are enabled.
-const wchar_t kEnableErrorDialogs[] = L"enable-errdialogs";
+const char kEnableErrorDialogs[] = "enable-errdialogs";
 
 // Uncomment this line to have the spawned process wait for the debugger to
 // attach.  This only works on Windows.  On posix systems, you can set the
@@ -308,16 +308,16 @@ static void RunCommand(const CommandLine& cmd_line) {
 void UITest::StartHttpServer(const FilePath& root_directory) {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchWithValue(L"server", L"start");
-  cmd_line->AppendSwitch(L"register_cygwin");
-  cmd_line->AppendSwitchWithValue(L"root", root_directory.ToWStringHack());
+  cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitch("register_cygwin");
+  cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
 
   // For Windows 7, if we start the lighttpd server on the foreground mode,
   // it will mess up with the command window and cause conhost.exe to crash. To
   // work around this, we start the http server on the background mode.
 #if defined(OS_WIN)
   if (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7)
-    cmd_line->AppendSwitch(L"run_background");
+    cmd_line->AppendSwitch("run_background");
 #endif
 
   RunCommand(*cmd_line.get());
@@ -326,7 +326,7 @@ void UITest::StartHttpServer(const FilePath& root_directory) {
 void UITest::StopHttpServer() {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchWithValue(L"server", L"stop");
+  cmd_line->AppendSwitchWithValue("server", "stop");
   RunCommand(*cmd_line.get());
 }
 

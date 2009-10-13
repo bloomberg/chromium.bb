@@ -25,7 +25,6 @@
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 namespace {
 
 typedef UITest ProcessSingletonLinuxTest;

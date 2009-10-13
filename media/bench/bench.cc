@@ -34,16 +34,16 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 
 namespace switches {
-const wchar_t kStream[]                 = L"stream";
-const wchar_t kVideoThreads[]           = L"video-threads";
-const wchar_t kVerbose[]                = L"verbose";
-const wchar_t kFast2[]                  = L"fast2";
-const wchar_t kSkip[]                   = L"skip";
-const wchar_t kFlush[]                  = L"flush";
-const wchar_t kDjb2[]                   = L"djb2";
-const wchar_t kMd5[]                    = L"md5";
-const wchar_t kFrames[]                 = L"frames";
-const wchar_t kLoop[]                   = L"loop";
+const char kStream[]       = "stream";
+const char kVideoThreads[] = "video-threads";
+const char kVerbose[]      = "verbose";
+const char kFast2[]        = "fast2";
+const char kSkip[]         = "skip";
+const char kFlush[]        = "flush";
+const char kDjb2[]         = "djb2";
+const char kMd5[]          = "md5";
+const char kFrames[]       = "frames";
+const char kLoop[]         = "loop";
 
 }  // namespace switches
 
@@ -125,11 +125,11 @@ int main(int argc, const char** argv) {
   CodecType target_codec = CODEC_TYPE_UNKNOWN;
 
   // Determine whether to benchmark audio or video decoding.
-  std::wstring stream(cmd_line->GetSwitchValue(switches::kStream));
+  std::string stream(cmd_line->GetSwitchValueASCII(switches::kStream));
   if (!stream.empty()) {
-    if (stream.compare(L"audio") == 0) {
+    if (stream.compare("audio") == 0) {
       target_codec = CODEC_TYPE_AUDIO;
-    } else if (stream.compare(L"video") == 0) {
+    } else if (stream.compare("video") == 0) {
       target_codec = CODEC_TYPE_VIDEO;
     } else {
       std::cerr << "Unknown --stream option " << stream << std::endl;

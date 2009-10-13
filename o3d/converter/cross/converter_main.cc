@@ -109,23 +109,23 @@ int CrossMain(int argc, char**argv) {
   }
 
   o3d::converter::Options options;
-  options.condition = !command_line->HasSwitch(L"no-condition");
-  options.pretty_print = command_line->HasSwitch(L"pretty-print");
-  options.binary = !command_line->HasSwitch(L"no-binary");
-  options.json_only = !command_line->HasSwitch(L"json-only");
-  if (command_line->HasSwitch(L"base-path")) {
+  options.condition = !command_line->HasSwitch("no-condition");
+  options.pretty_print = command_line->HasSwitch("pretty-print");
+  options.binary = !command_line->HasSwitch("no-binary");
+  options.json_only = !command_line->HasSwitch("json-only");
+  if (command_line->HasSwitch("base-path")) {
     options.base_path = o3d::WideToFilePath(
-        command_line->GetSwitchValue(L"base-path"));
+        command_line->GetSwitchValue("base-path"));
   }
-  if (command_line->HasSwitch(L"asset-paths")) {
+  if (command_line->HasSwitch("asset-paths")) {
     std::vector<std::wstring> paths;
-    SplitString(command_line->GetSwitchValue(L"asset-paths"), ',', &paths);
+    SplitString(command_line->GetSwitchValue("asset-paths"), ',', &paths);
     for (size_t ii = 0; ii < paths.size(); ++ii) {
       options.file_paths.push_back(o3d::WideToFilePath(paths[ii]));
     }
   }
-  if (command_line->HasSwitch(L"up-axis")) {
-    wstring up_axis_string = command_line->GetSwitchValue(L"up-axis");
+  if (command_line->HasSwitch("up-axis")) {
+    wstring up_axis_string = command_line->GetSwitchValue("up-axis");
     int x, y, z;
     if (swscanf(up_axis_string.c_str(), L"%d,%d,%d", &x, &y, &z) != 3) {
       std::cerr << "Invalid --up-axis value. Should be --up-axis=x,y,z\n";

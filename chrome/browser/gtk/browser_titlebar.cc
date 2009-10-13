@@ -305,7 +305,7 @@ void BrowserTitlebar::Init() {
   gtk_box_pack_start(GTK_BOX(titlebar_buttons_box_), buttons_hbox, FALSE,
                      FALSE, 0);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(L"glen")) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch("glen")) {
     close_button_.reset(BuildTitlebarButton(IDR_GLEN, IDR_GLEN, IDR_GLEN,
                                             buttons_hbox, IDS_GLEN));
   } else {

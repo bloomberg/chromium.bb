@@ -13,7 +13,7 @@ namespace {
 
 // Return true if we're in debug-plugin-loading mode.
 bool DebugPluginLoading() {
-  static const wchar_t kDebugPluginLoading[] = L"debug-plugin-loading";
+  static const char kDebugPluginLoading[] = "debug-plugin-loading";
   return CommandLine::ForCurrentProcess()->HasSwitch(kDebugPluginLoading);
 }
 

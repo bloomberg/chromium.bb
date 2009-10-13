@@ -13,16 +13,16 @@ namespace switches {
 
 // On POSIX only: use FIFO for IPC channels so that "unrelated" process
 // can connect to a channel, provided it knows its name. For debugging purposes.
-const wchar_t kIPCUseFIFO[]                    = L"ipc-use-fifo";
+const char kIPCUseFIFO[]                    = "ipc-use-fifo";
 
 // The value of this switch tells the child process which
 // IPC channel the browser expects to use to communicate with it.
-const wchar_t kProcessChannelID[]              = L"channel";
+const char kProcessChannelID[]              = "channel";
 
 // Will add kDebugOnStart to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the
 // kDebugOnStart flag passed on or not.
-const wchar_t kDebugChildren[]                 = L"debug-children";
+const char kDebugChildren[]                 = "debug-children";
 
 }  // namespace switches
 

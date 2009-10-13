@@ -93,10 +93,10 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
     *cache_path = FilePath::FromWStringHack(user_path);
   }
 
-  const wchar_t* arg = kNormalContext == type ? switches::kDiskCacheSize :
-                                                switches::kMediaCacheSize;
+  const char* arg = kNormalContext == type ? switches::kDiskCacheSize :
+                                             switches::kMediaCacheSize;
   std::string value =
-      WideToASCII(CommandLine::ForCurrentProcess()->GetSwitchValue(arg));
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(arg);
 
   // By default we let the cache determine the right size.
   *max_size = 0;

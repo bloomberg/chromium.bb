@@ -8,6 +8,6 @@ namespace switches {
 
 // The language file that we want to try to open.  Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
-const wchar_t kLang[]                          = L"lang";
+const char kLang[]                          = "lang";
 
 }  // namespace switches

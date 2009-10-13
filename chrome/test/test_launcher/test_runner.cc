@@ -14,9 +14,8 @@
 
 namespace {
 
-const wchar_t* const kGTestListTestsFlag = L"gtest_list_tests";
-const wchar_t* const kGTestRunDisabledTestsFlag =
-    L"gtest_also_run_disabled_tests";
+const char kGTestListTestsFlag[] = "gtest_list_tests";
+const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 
 // Retrieves the list of tests to run by running gtest with the
 // --gtest_list_tests flag in a forked process and parsing its output.

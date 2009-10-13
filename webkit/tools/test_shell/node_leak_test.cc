@@ -18,7 +18,7 @@
 
 namespace {
 
-const wchar_t kTestUrlSwitch[] = L"test-url";
+const char kTestUrlSwitch[] = "test-url";
 
 // A test to help determine if any nodes have been leaked as a result of
 // visiting a given URL.  If enabled in WebCore, the number of leaked nodes

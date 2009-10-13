@@ -27,7 +27,7 @@ static const FilePath::CharType kTestDirectory[] =
 static const FilePath::CharType kStartFile[] =
     FILE_PATH_LITERAL("dom_checker.html");
 
-const wchar_t kRunDomCheckerTest[] = L"run-dom-checker-test";
+const char kRunDomCheckerTest[] = "run-dom-checker-test";
 
 class DomCheckerTest : public UITest {
  public:

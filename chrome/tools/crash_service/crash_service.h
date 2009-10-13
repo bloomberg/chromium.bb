@@ -42,17 +42,17 @@ class CrashService {
   // Allows to override the maximum number for reports per day. Normally
   // the crash dumps are never sent so if you want to send any you must
   // specify a positive number here.
-  static const wchar_t kMaxReports[];
+  static const char kMaxReports[];
   // --no-window
   // Does not create a visible window on the desktop. The window does not have
   // any other functionality other than allowing the crash service to be
   // gracefully closed.
-  static const wchar_t kNoWindow[];
+  static const char kNoWindow[];
   // --reporter=<string>
   // Allows to specify a custom string that appears on the detail crash report
   // page in the crash server. This should be a 25 chars or less string.
   // The default tag if not specified is 'crash svc'.
-  static const wchar_t kReporterTag[];
+  static const char kReporterTag[];
 
   // Returns the actual report path.
   std::wstring report_path() const {

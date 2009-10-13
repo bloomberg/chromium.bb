@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_switches.h"
 
@@ -16,8 +17,8 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
   const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
   if (current_cmd_line.HasSwitch(switches::kDebugChildren)) {
     // Look to pass-on the kDebugOnStart flag.
-    std::wstring value;
-    value = current_cmd_line.GetSwitchValue(switches::kDebugChildren);
+    std::string value = current_cmd_line.GetSwitchValueASCII(
+        switches::kDebugChildren);
     if (value.empty() ||
         (type == ChildProcessInfo::RENDER_PROCESS &&
          value == switches::kRendererProcess) ||
@@ -29,8 +30,8 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     command_line->AppendSwitchWithValue(switches::kDebugChildren, value);
   } else if (current_cmd_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
     // Look to pass-on the kWaitForDebugger flag.
-    std::wstring value;
-    value = current_cmd_line.GetSwitchValue(switches::kWaitForDebuggerChildren);
+    std::string value = current_cmd_line.GetSwitchValueASCII(
+        switches::kWaitForDebuggerChildren);
     if (value.empty() ||
         (type == ChildProcessInfo::RENDER_PROCESS &&
          value == switches::kRendererProcess) ||

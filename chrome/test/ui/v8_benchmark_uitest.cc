@@ -22,7 +22,7 @@ namespace {
 static const FilePath::CharType kStartFile[] =
     FILE_PATH_LITERAL("run.html");
 
-const wchar_t kRunV8Benchmark[] = L"run-v8-benchmark";
+const char kRunV8Benchmark[] = "run-v8-benchmark";
 
 class V8BenchmarkTest : public UITest {
  public:

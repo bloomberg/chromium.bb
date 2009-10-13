@@ -66,20 +66,20 @@
 namespace {
 
 // See comments at the beginning of the file for the definition of switches.
-const wchar_t kSiteSwitch[] = L"site";
-const wchar_t kStartPageSwitch[] = L"startpage";
-const wchar_t kEndPageSwitch[] = L"endpage";
-const wchar_t kListSwitch[] = L"list";
-const wchar_t kStartIndexSwitch[] = L"startline";
-const wchar_t kEndIndexSwitch[] = L"endline";
-const wchar_t kIterationSwitch[] = L"iterations";
-const wchar_t kContinuousLoadSwitch[] = L"continuousload";
-const wchar_t kMemoryUsageSwitch[] = L"memoryusage";
-const wchar_t kEndURLSwitch[] = L"endurl";
-const wchar_t kLogFileSwitch[] = L"logfile";
-const wchar_t kTimeoutSwitch[] = L"timeout";
-const wchar_t kNoPageDownSwitch[] = L"nopagedown";
-const wchar_t kSaveDebugLogSwitch[] = L"savedebuglog";
+const char kSiteSwitch[] = "site";
+const char kStartPageSwitch[] = "startpage";
+const char kEndPageSwitch[] = "endpage";
+const char kListSwitch[] = "list";
+const char kStartIndexSwitch[] = "startline";
+const char kEndIndexSwitch[] = "endline";
+const char kIterationSwitch[] = "iterations";
+const char kContinuousLoadSwitch[] = "continuousload";
+const char kMemoryUsageSwitch[] = "memoryusage";
+const char kEndURLSwitch[] = "endurl";
+const char kLogFileSwitch[] = "logfile";
+const char kTimeoutSwitch[] = "timeout";
+const char kNoPageDownSwitch[] = "nopagedown";
+const char kSaveDebugLogSwitch[] = "savedebuglog";
 
 const char kDefaultServerUrl[] = "http://urllist.com";
 std::string g_server_url;
@@ -88,7 +88,7 @@ const char kTestPage2[] = "page2.html";
 const char crash_url[] = "about:crash";
 
 // These are copied from v8 definitions as we cannot include them.
-const wchar_t kV8LogFileSwitch[] = L"logfile";
+const char kV8LogFileSwitch[] = "logfile";
 const char kV8LogFileDefaultName[] = "v8.log";
 
 // String name of local chrome dll for looking up file information.

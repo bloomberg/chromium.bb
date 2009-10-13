@@ -346,8 +346,8 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  std::wstring process_type =
-      parsed_command_line.GetSwitchValue(switches::kProcessType);
+  std::string process_type =
+      parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_MACOSX)
   mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
@@ -361,8 +361,8 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_LINUX)
   // Show the man page on --help or -h.
-  if (parsed_command_line.HasSwitch(L"help") ||
-      parsed_command_line.HasSwitch(L"h")) {
+  if (parsed_command_line.HasSwitch("help") ||
+      parsed_command_line.HasSwitch("h")) {
     FilePath binary(parsed_command_line.argv()[0]);
     int ret = execlp("man", "man", binary.BaseName().value().c_str(), NULL);
     LOG(FATAL) << "execlp failed: " << strerror(ret);

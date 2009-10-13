@@ -15,8 +15,8 @@
 
 namespace {
 
-const wchar_t* const kGTestListTestsFlag = L"gtest_list_tests";
-const wchar_t* const kChildProcessFlag = L"child";
+const char kGTestListTestsFlag[] = "gtest_list_tests";
+const char kChildProcessFlag[]   = "child";
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
@@ -36,8 +36,8 @@ class OutOfProcTestRunner : public tests::TestRunner {
     CommandLine new_cmd_line(cmd_line->argv());
     // Always enable disabled tests.  This method is not called with disabled
     // tests unless this flag was specified to the browser test executable.
-    new_cmd_line.AppendSwitch(L"gtest_also_run_disabled_tests");
-    new_cmd_line.AppendSwitchWithValue(L"gtest_filter", ASCIIToWide(test_name));
+    new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
+    new_cmd_line.AppendSwitchWithValue("gtest_filter", test_name);
     new_cmd_line.AppendSwitch(kChildProcessFlag);
 
     base::ProcessHandle process_handle;

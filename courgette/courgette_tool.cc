@@ -349,22 +349,22 @@ int main(int argc, const char* argv[]) {
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  bool cmd_dis = command_line.HasSwitch(L"dis");
-  bool cmd_asm = command_line.HasSwitch(L"asm");
-  bool cmd_disadj = command_line.HasSwitch(L"disadj");
-  bool cmd_make_patch = command_line.HasSwitch(L"gen");
-  bool cmd_apply_patch = command_line.HasSwitch(L"apply");
-  bool cmd_make_bsdiff_patch = command_line.HasSwitch(L"genbsdiff");
-  bool cmd_apply_bsdiff_patch = command_line.HasSwitch(L"applybsdiff");
-  bool cmd_spread_1_adjusted = command_line.HasSwitch(L"gen1a");
-  bool cmd_spread_1_unadjusted = command_line.HasSwitch(L"gen1u");
+  bool cmd_dis = command_line.HasSwitch("dis");
+  bool cmd_asm = command_line.HasSwitch("asm");
+  bool cmd_disadj = command_line.HasSwitch("disadj");
+  bool cmd_make_patch = command_line.HasSwitch("gen");
+  bool cmd_apply_patch = command_line.HasSwitch("apply");
+  bool cmd_make_bsdiff_patch = command_line.HasSwitch("genbsdiff");
+  bool cmd_apply_bsdiff_patch = command_line.HasSwitch("applybsdiff");
+  bool cmd_spread_1_adjusted = command_line.HasSwitch("gen1a");
+  bool cmd_spread_1_unadjusted = command_line.HasSwitch("gen1u");
 
   std::vector<std::wstring> values = command_line.GetLooseValues();
 
   // '-repeat=N' is for debugging.  Running many iterations can reveal leaks and
   // bugs in cleanup.
   int repeat_count = 1;
-  std::wstring repeat_switch = command_line.GetSwitchValue(L"repeat");
+  std::wstring repeat_switch = command_line.GetSwitchValue("repeat");
   if (!repeat_switch.empty())
     if (!WideStringToInt(repeat_switch, &repeat_count))
       repeat_count = 1;

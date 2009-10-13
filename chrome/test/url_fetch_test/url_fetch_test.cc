@@ -27,7 +27,7 @@ class UrlFetchTest : public UITest {
 
   void SetUp() {
     const CommandLine *cmdLine = CommandLine::ForCurrentProcess();
-    if (cmdLine->HasSwitch(L"reference_build")) {
+    if (cmdLine->HasSwitch("reference_build")) {
       FilePath dir;
       PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
       dir = dir.AppendASCII("reference_build");
@@ -109,19 +109,19 @@ bool writeValueToFile(std::string value, std::wstring filePath) {
 TEST_F(UrlFetchTest, UrlFetch) {
   const CommandLine *cmdLine = CommandLine::ForCurrentProcess();
 
-  if (!cmdLine->HasSwitch(L"url")) {
+  if (!cmdLine->HasSwitch("url")) {
     return;
   }
 
   std::string cookieName =
-    WideToASCII(cmdLine->GetSwitchValue(L"wait_cookie_name"));
+      cmdLine->GetSwitchValueASCII("wait_cookie_name");
   std::string cookieValue =
-    WideToASCII(cmdLine->GetSwitchValue(L"wait_cookie_value"));
+      cmdLine->GetSwitchValueASCII("wait_cookie_value");
 
-  std::wstring jsvar = cmdLine->GetSwitchValue(L"jsvar");
+  std::wstring jsvar = cmdLine->GetSwitchValue("jsvar");
 
   UrlFetchTestResult result;
-  RunTest(GURL(WideToASCII(cmdLine->GetSwitchValue(L"url"))),
+  RunTest(GURL(WideToASCII(cmdLine->GetSwitchValue("url"))),
           cookieName.length() > 0 ? cookieName.c_str() : NULL,
           cookieValue.length() > 0 ? cookieValue.c_str() : NULL,
           jsvar.length() > 0 ? jsvar.c_str() : NULL,
@@ -129,13 +129,13 @@ TEST_F(UrlFetchTest, UrlFetch) {
 
   // Write out the cookie if requested
   std::wstring cookieOutputPath =
-    cmdLine->GetSwitchValue(L"wait_cookie_output");
+      cmdLine->GetSwitchValue("wait_cookie_output");
   if (cookieOutputPath.length() > 0) {
     ASSERT_TRUE(writeValueToFile(result.cookie_value, cookieOutputPath));
   }
 
   // Write out the JS Variable if requested
-  std::wstring jsvarOutputPath = cmdLine->GetSwitchValue(L"jsvar_output");
+  std::wstring jsvarOutputPath = cmdLine->GetSwitchValue("jsvar_output");
   if (jsvarOutputPath.length() > 0) {
     ASSERT_TRUE(writeValueToFile(result.javascript_variable, jsvarOutputPath));
   }

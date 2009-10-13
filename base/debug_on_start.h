@@ -31,7 +31,7 @@ class DebugOnStart {
 
   // Returns true if the 'argument' is present in the 'command_line'. It does
   // not use the CRT, only Kernel32 functions.
-  static bool FindArgument(wchar_t* command_line, const wchar_t* argument);
+  static bool FindArgument(wchar_t* command_line, const char* argument);
 };
 
 // Set the function pointer to our function to look for a crash on start. The

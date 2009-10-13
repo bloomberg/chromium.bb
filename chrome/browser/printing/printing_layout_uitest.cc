@@ -21,7 +21,7 @@ namespace {
 
 using printing::Image;
 
-const wchar_t* const kGenerateSwitch = L"print-layout-generate";
+const char kGenerateSwitch[] = "print-layout-generate";
 const wchar_t kDocRoot[] = L"chrome/test/data";
 
 class PrintingLayoutTest : public PrintingTest<UITest> {
@@ -29,7 +29,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
   PrintingLayoutTest() {
     emf_path_ = browser_directory_;
     emf_path_ = emf_path_.AppendASCII("metafile_dumps");
-    launch_arguments_.AppendSwitchWithValue(L"debug-print",
+    launch_arguments_.AppendSwitchWithValue("debug-print",
                                             L'"' + emf_path_.value() + L'"');
     show_window_ = true;
   }

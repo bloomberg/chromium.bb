@@ -107,7 +107,7 @@ bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
   // propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
   // TODO(gregoryd): check which flags of those below can be supported.
-  static const wchar_t* const switch_names[] = {
+  static const char* const switch_names[] = {
     switches::kNoSandbox,
     switches::kTestSandbox,
     switches::kDisableBreakpad,

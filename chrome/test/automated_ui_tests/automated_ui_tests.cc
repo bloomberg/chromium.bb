@@ -36,17 +36,17 @@
 
 namespace {
 
-const wchar_t* const kReproSwitch = L"key";
+const char kReproSwitch[] = "key";
 
-const wchar_t* const kReproRepeatSwitch = L"num-reproductions";
+const char kReproRepeatSwitch[] = "num-reproductions";
 
-const wchar_t* const kInputFilePathSwitch = L"input";
+const char kInputFilePathSwitch[] = "input";
 
-const wchar_t* const kOutputFilePathSwitch = L"output";
+const char kOutputFilePathSwitch[] = "output";
 
-const wchar_t* const kDebugModeSwitch = L"debug";
+const char kDebugModeSwitch[] = "debug";
 
-const wchar_t* const kWaitSwitch = L"wait-after-action";
+const char kWaitSwitch[] = "wait-after-action";
 
 const FilePath::CharType* const kDefaultInputFilePath =
 #if defined(OS_WIN)

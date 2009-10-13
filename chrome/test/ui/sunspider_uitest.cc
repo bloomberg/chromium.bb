@@ -21,7 +21,7 @@ namespace {
 static const FilePath::CharType kStartFile[] =
     FILE_PATH_LITERAL("sunspider-driver.html");
 
-const wchar_t kRunSunSpider[] = L"run-sunspider";
+const char kRunSunSpider[] = "run-sunspider";
 
 class SunSpiderTest : public UITest {
  public:

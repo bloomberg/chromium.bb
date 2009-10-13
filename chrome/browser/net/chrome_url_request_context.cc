@@ -30,7 +30,7 @@
 
 net::ProxyConfig* CreateProxyConfig(const CommandLine& command_line) {
   // Scan for all "enable" type proxy switches.
-  static const wchar_t* proxy_switches[] = {
+  static const char* proxy_switches[] = {
     switches::kProxyServer,
     switches::kProxyPacUrl,
     switches::kProxyAutoDetect,

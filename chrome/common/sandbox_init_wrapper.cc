@@ -19,7 +19,7 @@ void SandboxInitWrapper::SetServices(sandbox::SandboxInterfaceInfo* info) {
 #endif
 
 void SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
-                                           const std::wstring& process_type) {
+                                           const std::string& process_type) {
 #if defined(OS_WIN)
   if (!target_services_)
     return;

@@ -10,14 +10,14 @@
 #include "chrome/common/env_vars.h"
 
 // Force a test to use an already running browser instance. UI tests only.
-const wchar_t UITestSuite::kUseExistingBrowser[] = L"use-existing-browser";
+const char UITestSuite::kUseExistingBrowser[] = "use-existing-browser";
 
 // Timeout for the test in milliseconds.  UI tests only.
-const wchar_t UITestSuite::kTestTimeout[] = L"test-timeout";
+const char UITestSuite::kTestTimeout[] = "test-timeout";
 
 // Parameters to run test in parallel.  UI tests only.
-const wchar_t UITestSuite::kBatchCount[] = L"batch-count";
-const wchar_t UITestSuite::kBatchIndex[] = L"batch-index";
+const char UITestSuite::kBatchCount[] = "batch-count";
+const char UITestSuite::kBatchIndex[] = "batch-index";
 const char UITestSuite::kGTestTotalShards[] = "GTEST_TOTAL_SHARDS=";
 const char UITestSuite::kGTestShardIndex[] = "GTEST_SHARD_INDEX=";
 

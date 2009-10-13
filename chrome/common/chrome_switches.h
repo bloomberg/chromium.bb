@@ -12,248 +12,248 @@
 
 namespace switches {
 
-extern const wchar_t kDisableHangMonitor[];
-extern const wchar_t kDisableMetrics[];
-extern const wchar_t kMetricsRecordingOnly[];
-extern const wchar_t kBrowserAssertTest[];
-extern const wchar_t kRendererAssertTest[];
-extern const wchar_t kBrowserCrashTest[];
-extern const wchar_t kRendererCrashTest[];
-extern const wchar_t kRendererStartupDialog[];
-extern const wchar_t kPluginStartupDialog[];
-extern const wchar_t kPluginLauncher[];
+extern const char kDisableHangMonitor[];
+extern const char kDisableMetrics[];
+extern const char kMetricsRecordingOnly[];
+extern const char kBrowserAssertTest[];
+extern const char kRendererAssertTest[];
+extern const char kBrowserCrashTest[];
+extern const char kRendererCrashTest[];
+extern const char kRendererStartupDialog[];
+extern const char kPluginStartupDialog[];
+extern const char kPluginLauncher[];
 
-extern const wchar_t kTestingChannelID[];
-extern const wchar_t kHomePage[];
-extern const wchar_t kRendererProcess[];
-extern const wchar_t kZygoteProcess[];
-extern const wchar_t kBrowserSubprocessPath[];
-extern const wchar_t kPluginProcess[];
-extern const wchar_t kWorkerProcess[];
-extern const wchar_t kNaClProcess[];
-extern const wchar_t kUtilityProcess[];
-extern const wchar_t kProfileImportProcess[];
-extern const wchar_t kSingleProcess[];
-extern const wchar_t kProcessPerTab[];
-extern const wchar_t kProcessPerSite[];
-extern const wchar_t kInProcessPlugins[];
-extern const wchar_t kNoSandbox[];
-extern const wchar_t kDisableAltWinstation[];
-extern const wchar_t kSafePlugins[];
-extern const wchar_t kTrustedPlugins[];
-extern const wchar_t kTestSandbox[];
-extern const wchar_t kUserDataDir[];
-extern const wchar_t kPluginDataDir[];
-extern const wchar_t kDiskCacheDir[];
-extern const wchar_t kDiskCacheSize[];
-extern const wchar_t kMediaCacheSize[];
-extern const wchar_t kEnableUserDataDirProfiles[];
-extern const wchar_t kParentProfile[];
-extern const wchar_t kApp[];
-extern const wchar_t kDomAutomationController[];
-extern const wchar_t kPluginPath[];
-extern const wchar_t kUserAgent[];
-extern const wchar_t kJavaScriptFlags[];
-extern const wchar_t kCountry[];
-extern const wchar_t kWaitForDebuggerChildren[];
+extern const char kTestingChannelID[];
+extern const char kHomePage[];
+extern const char kRendererProcess[];
+extern const char kZygoteProcess[];
+extern const char kBrowserSubprocessPath[];
+extern const char kPluginProcess[];
+extern const char kWorkerProcess[];
+extern const char kNaClProcess[];
+extern const char kUtilityProcess[];
+extern const char kProfileImportProcess[];
+extern const char kSingleProcess[];
+extern const char kProcessPerTab[];
+extern const char kProcessPerSite[];
+extern const char kInProcessPlugins[];
+extern const char kNoSandbox[];
+extern const char kDisableAltWinstation[];
+extern const char kSafePlugins[];
+extern const char kTrustedPlugins[];
+extern const char kTestSandbox[];
+extern const char kUserDataDir[];
+extern const char kPluginDataDir[];
+extern const char kDiskCacheDir[];
+extern const char kDiskCacheSize[];
+extern const char kMediaCacheSize[];
+extern const char kEnableUserDataDirProfiles[];
+extern const char kParentProfile[];
+extern const char kApp[];
+extern const char kDomAutomationController[];
+extern const char kPluginPath[];
+extern const char kUserAgent[];
+extern const char kJavaScriptFlags[];
+extern const char kCountry[];
+extern const char kWaitForDebuggerChildren[];
 
-extern const wchar_t kLogFilterPrefix[];
-extern const wchar_t kEnableLogging[];
-extern const wchar_t kLoggingLevel[];
-extern const wchar_t kLogPluginMessages[];
+extern const char kLogFilterPrefix[];
+extern const char kEnableLogging[];
+extern const char kLoggingLevel[];
+extern const char kLogPluginMessages[];
 
-extern const wchar_t kDumpHistogramsOnExit[];
-extern const wchar_t kDisableLogging[];
-extern const wchar_t kRemoteShellPort[];
-extern const wchar_t kUninstall[];
-extern const wchar_t kOmniBoxPopupCount[];
+extern const char kDumpHistogramsOnExit[];
+extern const char kDisableLogging[];
+extern const char kRemoteShellPort[];
+extern const char kUninstall[];
+extern const char kOmniBoxPopupCount[];
 
-extern const wchar_t kAutomationClientChannelID[];
+extern const char kAutomationClientChannelID[];
 
-extern const wchar_t kRestoreLastSession[];
+extern const char kRestoreLastSession[];
 
-extern const wchar_t kRecordMode[];
-extern const wchar_t kPlaybackMode[];
-extern const wchar_t kNoEvents[];
-extern const wchar_t kNoJsRandomness[];
+extern const char kRecordMode[];
+extern const char kPlaybackMode[];
+extern const char kNoEvents[];
+extern const char kNoJsRandomness[];
 
-extern const wchar_t kHideIcons[];
-extern const wchar_t kShowIcons[];
-extern const wchar_t kMakeDefaultBrowser[];
+extern const char kHideIcons[];
+extern const char kShowIcons[];
+extern const char kMakeDefaultBrowser[];
 
-extern const wchar_t kProxyServer[];
-extern const wchar_t kNoProxyServer[];
-extern const wchar_t kProxyBypassList[];
-extern const wchar_t kProxyAutoDetect[];
-extern const wchar_t kProxyPacUrl[];
-extern const wchar_t kWinHttpProxyResolver[];
-extern const wchar_t kDebugPrint[];
-extern const wchar_t kPrint[];
+extern const char kProxyServer[];
+extern const char kNoProxyServer[];
+extern const char kProxyBypassList[];
+extern const char kProxyAutoDetect[];
+extern const char kProxyPacUrl[];
+extern const char kWinHttpProxyResolver[];
+extern const char kDebugPrint[];
+extern const char kPrint[];
 
-extern const wchar_t kDnsLogDetails[];
-extern const wchar_t kDnsPrefetchDisable[];
+extern const char kDnsLogDetails[];
+extern const char kDnsPrefetchDisable[];
 
-extern const wchar_t kDisableDevTools[];
-extern const wchar_t kAlwaysEnableDevTools[];
-extern const wchar_t kEnableExtensionTimelineApi[];
+extern const char kDisableDevTools[];
+extern const char kAlwaysEnableDevTools[];
+extern const char kEnableExtensionTimelineApi[];
 
-extern const wchar_t kTabCountToLoadOnSessionRestore[];
+extern const char kTabCountToLoadOnSessionRestore[];
 
-extern const wchar_t kMemoryProfiling[];
-extern const wchar_t kPurgeMemoryButton[];
+extern const char kMemoryProfiling[];
+extern const char kPurgeMemoryButton[];
 
-extern const wchar_t kEnableFileCookies[];
+extern const char kEnableFileCookies[];
 
-extern const wchar_t kStartMaximized[];
+extern const char kStartMaximized[];
 
-extern const wchar_t kEnableWatchdog[];
+extern const char kEnableWatchdog[];
 
-extern const wchar_t kFirstRun[];
+extern const char kFirstRun[];
 
-extern const wchar_t kNoFirstRun[];
+extern const char kNoFirstRun[];
 
 #if defined(OS_POSIX)
-extern const wchar_t kNoProcessSingletonDialog[];
+extern const char kNoProcessSingletonDialog[];
 #endif
 
-extern const wchar_t kMessageLoopHistogrammer[];
+extern const char kMessageLoopHistogrammer[];
 
-extern const wchar_t kImport[];
+extern const char kImport[];
 
-extern const wchar_t kSilentDumpOnDCHECK[];
+extern const char kSilentDumpOnDCHECK[];
 
-extern const wchar_t kDisablePromptOnRepost[];
+extern const char kDisablePromptOnRepost[];
 
-extern const wchar_t kDisablePopupBlocking[];
-extern const wchar_t kDisableJavaScript[];
-extern const wchar_t kDisableJava[];
-extern const wchar_t kDisablePlugins[];
-extern const wchar_t kDisableImages[];
-extern const wchar_t kDisableWebSecurity[];
-extern const wchar_t kEnableRemoteFonts[];
+extern const char kDisablePopupBlocking[];
+extern const char kDisableJavaScript[];
+extern const char kDisableJava[];
+extern const char kDisablePlugins[];
+extern const char kDisableImages[];
+extern const char kDisableWebSecurity[];
+extern const char kEnableRemoteFonts[];
 
-extern const wchar_t kUseLowFragHeapCrt[];
+extern const char kUseLowFragHeapCrt[];
 
-extern const wchar_t kInternalNaCl[];
+extern const char kInternalNaCl[];
 
 #ifndef NDEBUG
-extern const wchar_t kGearsPluginPathOverride[];
+extern const char kGearsPluginPathOverride[];
 #endif
 
-extern const wchar_t kEnableFastback[];
+extern const char kEnableFastback[];
 
-extern const wchar_t kDisableSync[];
-extern const wchar_t kSyncerThreadTimedStop[];
+extern const char kDisableSync[];
+extern const char kSyncerThreadTimedStop[];
 
-extern const wchar_t kSdchFilter[];
+extern const char kSdchFilter[];
 
-extern const wchar_t kEnableUserScripts[];
-extern const wchar_t kDisableExtensions[];
-extern const wchar_t kExtensionsUpdateFrequency[];
-extern const wchar_t kLoadExtension[];
-extern const wchar_t kPackExtension[];
-extern const wchar_t kPackExtensionKey[];
-extern const wchar_t kShowExtensionsOnTop[];
-extern const wchar_t kLoadPlugin[];
-extern const wchar_t kUserScriptsDir[];
+extern const char kEnableUserScripts[];
+extern const char kDisableExtensions[];
+extern const char kExtensionsUpdateFrequency[];
+extern const char kLoadExtension[];
+extern const char kPackExtension[];
+extern const char kPackExtensionKey[];
+extern const char kShowExtensionsOnTop[];
+extern const char kLoadPlugin[];
+extern const char kUserScriptsDir[];
 
-extern const wchar_t kIncognito[];
+extern const char kIncognito[];
 
-extern const wchar_t kEnableRendererAccessibility[];
+extern const char kEnableRendererAccessibility[];
 
-extern const wchar_t kTestName[];
+extern const char kTestName[];
 
-extern const wchar_t kRendererCmdPrefix[];
+extern const char kRendererCmdPrefix[];
 
-extern const wchar_t kUtilityCmdPrefix[];
+extern const char kUtilityCmdPrefix[];
 
-extern const wchar_t kWininetFtp[];
+extern const char kWininetFtp[];
 
-extern const wchar_t kEnableNativeWebWorkers[];
-extern const wchar_t kWebWorkerProcessPerCore[];
-extern const wchar_t kWebWorkerShareProcesses[];
+extern const char kEnableNativeWebWorkers[];
+extern const char kWebWorkerProcessPerCore[];
+extern const char kWebWorkerShareProcesses[];
 
-extern const wchar_t kBookmarkMenu[];
+extern const char kBookmarkMenu[];
 
-extern const wchar_t kEnableStatsTable[];
+extern const char kEnableStatsTable[];
 
-extern const wchar_t kExperimentalSpellcheckerFeatures[];
+extern const char kExperimentalSpellcheckerFeatures[];
 
-extern const wchar_t kDisableAudio[];
-extern const wchar_t kSimpleDataSource[];
+extern const char kDisableAudio[];
+extern const char kSimpleDataSource[];
 
-extern const wchar_t kForceFieldTestNameAndValue[];
+extern const char kForceFieldTestNameAndValue[];
 
-extern const wchar_t kNewTabPage[];
-extern const wchar_t kDisableNewTabFirstRun[];
+extern const char kNewTabPage[];
+extern const char kDisableNewTabFirstRun[];
 
-extern const wchar_t kDisableWebResources[];
+extern const char kDisableWebResources[];
 
-extern const wchar_t kEnableBenchmarking[];
+extern const char kEnableBenchmarking[];
 
-extern const wchar_t kNoDefaultBrowserCheck[];
+extern const char kNoDefaultBrowserCheck[];
 
-extern const wchar_t kPrivacyBlacklist[];
+extern const char kPrivacyBlacklist[];
 
-extern const wchar_t kZygoteCmdPrefix[];
+extern const char kZygoteCmdPrefix[];
 
-extern const wchar_t kThumbnailStore[];
+extern const char kThumbnailStore[];
 
-extern const wchar_t kTryChromeAgain[];
+extern const char kTryChromeAgain[];
 
-extern const wchar_t kFileDescriptorLimit[];
+extern const char kFileDescriptorLimit[];
 
-extern const wchar_t kEnableMonitorProfile[];
+extern const char kEnableMonitorProfile[];
 
-extern const wchar_t kDisableXSSAuditor[];
+extern const char kDisableXSSAuditor[];
 
 #if defined(OS_POSIX)
-extern const wchar_t kEnableCrashReporter[];
+extern const char kEnableCrashReporter[];
 #endif
 
-extern const wchar_t kEnableTabtastic2[];
+extern const char kEnableTabtastic2[];
 
-extern const wchar_t kPinnedTabCount[];
+extern const char kPinnedTabCount[];
 
-extern const wchar_t kSearchInOmniboxHint[];
+extern const char kSearchInOmniboxHint[];
 
-extern const wchar_t kEnableLocalStorage[];
+extern const char kEnableLocalStorage[];
 
-extern const wchar_t kEnableSessionStorage[];
+extern const char kEnableSessionStorage[];
 
-extern const wchar_t kAllowSandboxDebugging[];
+extern const char kAllowSandboxDebugging[];
 
 #if defined(OS_MACOSX)
-extern const wchar_t kEnableSandboxLogging[];
+extern const char kEnableSandboxLogging[];
 #endif
 
-extern const wchar_t kEnableSeccompSandbox[];
+extern const char kEnableSeccompSandbox[];
 
-extern const wchar_t kDiagnostics[];
+extern const char kDiagnostics[];
 
-extern const wchar_t kDisableCustomJumpList[];
+extern const char kDisableCustomJumpList[];
 
-extern const wchar_t kEnableDatabases[];
+extern const char kEnableDatabases[];
 
-extern const wchar_t kEnableApplicationCache[];
+extern const char kEnableApplicationCache[];
 
-extern const wchar_t kSyncServiceURL[];
+extern const char kSyncServiceURL[];
 
 #if defined(OS_CHROMEOS)
-extern const wchar_t kCookiePipe[];
-extern const wchar_t kEnableGView[];
+extern const char kCookiePipe[];
+extern const char kEnableGView[];
 #endif
 
-extern const wchar_t kEnableByteRangeSupport[];
+extern const char kEnableByteRangeSupport[];
 
-extern const wchar_t kExplicitlyAllowedPorts[];
+extern const char kExplicitlyAllowedPorts[];
 
-extern const wchar_t kActivateOnLaunch[];
-extern const wchar_t kEnableWebSockets[];
+extern const char kActivateOnLaunch[];
+extern const char kEnableWebSockets[];
 
-extern const wchar_t kEnableExperimentalWebGL[];
+extern const char kEnableExperimentalWebGL[];
 
-extern const wchar_t kEnableDesktopNotifications[];
+extern const char kEnableDesktopNotifications[];
 
 }  // namespace switches
 

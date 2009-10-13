@@ -33,7 +33,7 @@ TEST(ChromeLauncher, SanitizeCommandLine) {
   CommandLine bad(L"dummy.exe");
   bad.AppendSwitch(switches::kDisableMetrics);  // in whitelist
   bad.AppendSwitchWithValue(switches::kLoadExtension, L"foo");  // in whitelist
-  bad.AppendSwitch(L"no-such-switch");  // does not exist
+  bad.AppendSwitch("no-such-switch");  // does not exist
   bad.AppendSwitch(switches::kHomePage);  // exists but not in whitelist
 
   LogDisabler no_dchecks;
@@ -42,7 +42,7 @@ TEST(ChromeLauncher, SanitizeCommandLine) {
   chrome_launcher::SanitizeCommandLine(bad, &sanitized);
   EXPECT_TRUE(sanitized.HasSwitch(switches::kDisableMetrics));
   EXPECT_TRUE(sanitized.HasSwitch(switches::kLoadExtension));
-  EXPECT_FALSE(sanitized.HasSwitch(L"no-such-switch"));
+  EXPECT_FALSE(sanitized.HasSwitch("no-such-switch"));
   EXPECT_FALSE(sanitized.HasSwitch(switches::kHomePage));
 
   EXPECT_EQ(sanitized.GetSwitchValue(switches::kLoadExtension), L"foo");

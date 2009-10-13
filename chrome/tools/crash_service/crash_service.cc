@@ -147,9 +147,9 @@ struct DumpJobInfo {
 }  // namespace
 
 // Command line switches:
-const wchar_t CrashService::kMaxReports[] = L"max-reports";
-const wchar_t CrashService::kNoWindow[] = L"no-window";
-const wchar_t CrashService::kReporterTag[]= L"reporter";
+const char CrashService::kMaxReports[]  = "max-reports";
+const char CrashService::kNoWindow[]    = "no-window";
+const char CrashService::kReporterTag[] = "reporter";
 
 CrashService::CrashService(const std::wstring& report_dir)
     : report_path_(report_dir),

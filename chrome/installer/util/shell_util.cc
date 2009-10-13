@@ -81,12 +81,13 @@ class RegistryEntry {
         start_menu_entry + ShellUtil::kRegDefaultIcon, icon_path));
 
     std::wstring install_info(start_menu_entry + L"\\InstallInfo");
+    // TODO: use CommandLine API instead of constructing command lines.
     entries->push_front(new RegistryEntry(install_info, L"ReinstallCommand",
-        quoted_exe_path + L" --" + switches::kMakeDefaultBrowser));
+        quoted_exe_path + L" --" + ASCIIToWide(switches::kMakeDefaultBrowser)));
     entries->push_front(new RegistryEntry(install_info, L"HideIconsCommand",
-        quoted_exe_path + L" --" + switches::kHideIcons));
+        quoted_exe_path + L" --" + ASCIIToWide(switches::kHideIcons)));
     entries->push_front(new RegistryEntry(install_info, L"ShowIconsCommand",
-        quoted_exe_path + L" --" + switches::kShowIcons));
+        quoted_exe_path + L" --" + ASCIIToWide(switches::kShowIcons)));
     entries->push_front(new RegistryEntry(install_info, L"IconsVisible", 1));
 
     std::wstring capabilities(start_menu_entry + L"\\Capabilities");
@@ -286,7 +287,7 @@ bool IsChromeRegistered(const std::wstring& chrome_exe,
   return registered;
 }
 
-// This method registers Chrome on Vista by launching eleavated setup.exe. 
+// This method registers Chrome on Vista by launching eleavated setup.exe.
 // That will show user standard Vista elevation prompt. If user accepts it
 // the new process will make the necessary changes and return SUCCESS that
 // we capture and return.

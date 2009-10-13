@@ -20,7 +20,7 @@
 
 // Command line switch to invoke a child process rather than
 // to run the normal test suite.
-static const wchar_t kRunClientProcess[] = L"client";
+static const char kRunClientProcess[] = "client";
 
 // A MultiProcessTest is a test class which makes it easier to
 // write a test which requires code running out of process.

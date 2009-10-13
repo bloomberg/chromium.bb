@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
   // with cleaning the system or make a backup before continuing.
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(L"clean")) {
+  if (command_line.HasSwitch("clean")) {
     printf("Current version of Chrome will be uninstalled "
            "from all levels before proceeding with tests.\n");
-  } else if (command_line.HasSwitch(L"backup")) {
+  } else if (command_line.HasSwitch("backup")) {
     BackUpProfile();
   } else {
     printf("This test needs command line Arguments.\n");

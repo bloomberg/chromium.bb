@@ -375,7 +375,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 
   // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
-  static const wchar_t* const switch_names[] = {
+  static const char* const switch_names[] = {
     switches::kPluginStartupDialog,
     switches::kNoSandbox,
     switches::kSafePlugins,
