@@ -237,8 +237,6 @@ TEST_F(VisibleBrowserTest, WindowOpenClose) {
 }
 #endif
 
-#if !defined(OS_MACOSX)  // see http://crbug.com/24337
-
 class ShowModalDialogTest : public UITest {
  public:
   ShowModalDialogTest() {
@@ -268,8 +266,6 @@ TEST_F(ShowModalDialogTest, BasicTest) {
   ASSERT_TRUE(tab->GetTabTitle(&title));
   ASSERT_EQ(L"SUCCESS", title);
 }
-
-#endif
 
 class SecurityTest : public UITest {
  protected:
