@@ -66,11 +66,7 @@ TEST_F(WorkerTest, MultipleWorkers) {
 TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
-#if defined(OS_WIN)
-    // Workers don't properly initialize the V8 stack guard.
-    // (http://code.google.com/p/chromium/issues/detail?id=21653).
     "use-machine-stack.html",
-#endif
     "worker-call.html",
     // Disabled because cloning ports are too slow in Chromium to meet the
     // thresholds in this test.
