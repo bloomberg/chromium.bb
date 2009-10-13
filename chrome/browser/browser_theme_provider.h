@@ -196,14 +196,14 @@ class BrowserThemeProvider : public NonThreadSafe,
 
   // Parse alignments from something like "top left" into a bitfield of
   // AlignmentMasks
-  static int StringToAlignment(const std::string &alignment);
+  static int StringToAlignment(const std::string& alignment);
 
   // Convert a tiling value into a string like "no-repeat". Public
   // so that it can be used to generate CSS values. Takes a Tiling.
   static std::string TilingToString(int tiling);
 
   // Parse tiling values from something like "no-repeat" into a Tiling value.
-  static int StringToTiling(const std::string &tiling);
+  static int StringToTiling(const std::string& tiling);
 
   // Lock on write to themed_image_cache_ in UI thread; lock on all cache
   // access in File thread. This allows the File thread and UI thread to

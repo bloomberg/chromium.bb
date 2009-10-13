@@ -354,9 +354,8 @@ SkColor BrowserThemeProvider::GetColor(int id) {
   if (id == COLOR_NTP_HEADER) {
     if (colors_.find(kColorNTPHeader) != colors_.end())
       return colors_[kColorNTPHeader];
-    else if (colors_.find(kColorNTPSection) != colors_.end())
-      return colors_[kColorNTPSection];
-    return GetDefaultColor(id);
+    return (colors_.find(kColorNTPSection) == colors_.end()) ?
+        GetDefaultColor(id) : colors_[kColorNTPSection];
   }
 
   // Special case the underline colors to use semi transparent in case not
@@ -589,7 +588,7 @@ std::string BrowserThemeProvider::TilingToString(int tiling) {
 }
 
 // static
-int BrowserThemeProvider::StringToTiling(const std::string &tiling) {
+int BrowserThemeProvider::StringToTiling(const std::string& tiling) {
   const char* component = tiling.c_str();
 
   if (base::strcasecmp(component, kTilingRepeatX) == 0)
@@ -622,17 +621,17 @@ void BrowserThemeProvider::GenerateFrameColors() {
   // Generate any secondary frame colors that weren't provided.
   SkColor frame = GetColor(COLOR_FRAME);
 
-  if (colors_.find(kColorFrame) == colors_.end())
+  if (!colors_.count(kColorFrame))
     colors_[kColorFrame] = HSLShift(frame, GetTint(TINT_FRAME));
-  if (colors_.find(kColorFrameInactive) == colors_.end()) {
+  if (!colors_.count(kColorFrameInactive)) {
     colors_[kColorFrameInactive] =
         HSLShift(frame, GetTint(TINT_FRAME_INACTIVE));
   }
-  if (colors_.find(kColorFrameIncognito) == colors_.end()) {
+  if (!colors_.count(kColorFrameIncognito)) {
     colors_[kColorFrameIncognito] =
         HSLShift(frame, GetTint(TINT_FRAME_INCOGNITO));
   }
-  if (colors_.find(kColorFrameIncognitoInactive) == colors_.end()) {
+  if (!colors_.count(kColorFrameIncognitoInactive)) {
     colors_[kColorFrameIncognitoInactive] =
         HSLShift(frame, GetTint(TINT_FRAME_INCOGNITO_INACTIVE));
   }
@@ -819,7 +818,7 @@ void BrowserThemeProvider::SaveThemeBitmap(
   // when we call HasCustomImage, we can check for the "_original" tag to see
   // whether an image was originally provided by the extension, or saved
   // in the caching process.
-  if (images_.find(id) != images_.end())
+  if (images_.count(id))
     resource_name.append("_original");
 
 #if defined(OS_WIN)
@@ -843,11 +842,11 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmapImpl(int id) {
   // According to Miranda, it is safe to read from the themed_image_cache_ here
   // because we only lock to write on the UI thread, and we only lock to read
   // on the cache writing thread.
-  ImageCache::iterator it = themed_image_cache_.find(base_id);
-  if (it != themed_image_cache_.end())
+  ImageCache::iterator themed_iter = themed_image_cache_.find(base_id);
+  if (themed_iter != themed_image_cache_.end())
     return NULL;
 
-  SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
+  SkBitmap bg_tint = TintBitmap(*(themed_iter->second), TINT_BACKGROUND_TAB);
   int vertical_offset = HasCustomImage(id) ? kRestoredTabVerticalOffset : 0;
   SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
       bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
@@ -1011,8 +1010,8 @@ void BrowserThemeProvider::SetImageData(DictionaryValue* images_value,
       int id = ThemeResourcesUtil::GetId(WideToUTF8(*iter));
       if (id != -1) {
         if (!images_path.empty()) {
-          images_[id] = WideToUTF8(images_path.AppendASCII(val)
-              .ToWStringHack());
+          images_[id] =
+              WideToUTF8(images_path.AppendASCII(val).ToWStringHack());
           resource_names_[id] = WideToASCII(*iter);
         } else {
           images_[id] = val;
@@ -1132,7 +1131,6 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
       if (bg_tab) {
         std::string resource_name((id == IDR_THEME_TAB_BACKGROUND) ?
             "theme_tab_background" : "theme_tab_background_incognito");
-
         themed_image_cache_[id] = bg_tab;
         SaveThemeBitmap(resource_name, id);
         return bg_tab;
@@ -1237,7 +1235,7 @@ void BrowserThemeProvider::SaveCachedImageData() {
       profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
 
   for (ImagesDiskCache::iterator it(images_disk_cache_.begin());
-      it != images_disk_cache_.end(); ++it) {
+       it != images_disk_cache_.end(); ++it) {
     std::wstring disk_path = it->first.ToWStringHack();
     std::string pref_name = resource_names_[it->second];
     pref_images->SetString(UTF8ToWide(pref_name), WideToUTF8(disk_path));
@@ -1270,9 +1268,9 @@ void BrowserThemeProvider::WriteImagesToDisk() {
 
 bool BrowserThemeProvider::ShouldTintFrames() {
   return (HasCustomImage(IDR_THEME_FRAME) ||
-      tints_.find(GetTintKey(TINT_BACKGROUND_TAB)) != tints_.end() ||
-      tints_.find(GetTintKey(TINT_FRAME)) != tints_.end() ||
-      tints_.find(GetTintKey(TINT_FRAME_INACTIVE)) != tints_.end() ||
-      tints_.find(GetTintKey(TINT_FRAME_INCOGNITO)) != tints_.end() ||
-      tints_.find(GetTintKey(TINT_FRAME_INCOGNITO_INACTIVE)) != tints_.end());
+      tints_.count(GetTintKey(TINT_BACKGROUND_TAB)) ||
+      tints_.count(GetTintKey(TINT_FRAME)) ||
+      tints_.count(GetTintKey(TINT_FRAME_INACTIVE)) ||
+      tints_.count(GetTintKey(TINT_FRAME_INCOGNITO)) ||
+      tints_.count(GetTintKey(TINT_FRAME_INCOGNITO_INACTIVE)));
 }
