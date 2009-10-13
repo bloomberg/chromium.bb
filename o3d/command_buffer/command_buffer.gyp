@@ -200,6 +200,20 @@
             ],  # 'sources'
           },
         ],
+        ['cb_service != "none"',
+          {
+            'target_name': 'command_buffer_service_test',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'sources': [
+                'service/cross/buffer_rpc_test.cc',
+                'service/cross/cmd_buffer_engine_test.cc',
+                'service/cross/cmd_parser_test.cc',
+                'service/cross/resource_test.cc',
+              ],
+            },
+          },
+        ],
         ['OS == "linux"',
           {
             'sources': [
@@ -209,18 +223,6 @@
           },
         ],
       ],  # 'conditions'
-    },
-    {
-      'target_name': 'command_buffer_service_test',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'sources': [
-          'service/cross/buffer_rpc_test.cc',
-          'service/cross/cmd_buffer_engine_test.cc',
-          'service/cross/cmd_parser_test.cc',
-          'service/cross/resource_test.cc',
-        ],
-      },
     },
   ],  # 'targets'
 }
