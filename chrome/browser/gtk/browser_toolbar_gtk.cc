@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
+#include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -183,6 +184,12 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
                      ShouldOnlyShowLocation() ? 1 : 0);
 
+  if (!ShouldOnlyShowLocation()) {
+    actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
+    gtk_box_pack_start(GTK_BOX(toolbar_), actions_toolbar_->widget(),
+                       FALSE, FALSE, 0);
+  }
+
   // Group the menu buttons together in an hbox.
   GtkWidget* menus_hbox_ = gtk_hbox_new(FALSE, 0);
   GtkWidget* page_menu = BuildToolbarMenuButton(
@@ -239,6 +246,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
     } else {
       gtk_widget_hide(home_->widget());
     }
+
+    if (actions_toolbar_->button_count() == 0)
+      gtk_widget_hide(actions_toolbar_->widget());
   }
 
   SetViewIDs();

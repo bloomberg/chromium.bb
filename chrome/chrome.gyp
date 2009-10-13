@@ -1381,6 +1381,8 @@
         'browser/gtk/bookmark_tree_model.h',
         'browser/gtk/bookmark_utils_gtk.cc',
         'browser/gtk/bookmark_utils_gtk.h',
+        'browser/gtk/browser_actions_toolbar_gtk.cc',
+        'browser/gtk/browser_actions_toolbar_gtk.h',
         'browser/gtk/browser_titlebar.cc',
         'browser/gtk/browser_titlebar.h',
         'browser/gtk/browser_toolbar_gtk.cc',

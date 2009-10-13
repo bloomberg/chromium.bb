@@ -19,6 +19,7 @@
 
 class BackForwardButtonGtk;
 class Browser;
+class BrowserActionsToolbarGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class GtkThemeProvider;
@@ -182,6 +183,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<CustomDrawButton> home_;
   scoped_ptr<ToolbarStarToggleGtk> star_;
   scoped_ptr<GoButtonGtk> go_;
+  scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;
 
   // Keep a pointer to the menu button images because we change them when
