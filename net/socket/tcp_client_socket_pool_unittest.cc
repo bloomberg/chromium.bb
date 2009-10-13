@@ -364,13 +364,12 @@ TEST_F(TCPClientSocketPoolTest, CancelRequestClearGroup) {
                 "a", info, kDefaultPriority, &req, pool_.get(), NULL));
   req.handle()->Reset();
 
-  PlatformThread::Sleep(100);
-
   // There is a race condition here.  If the worker pool doesn't post the task
   // before we get here, then this might not run ConnectingSocket::OnIOComplete
   // and therefore leak the canceled ConnectingSocket.  However, other tests
   // after this will call MessageLoop::RunAllPending() which should prevent a
   // leak, unless the worker thread takes longer than all of them.
+  PlatformThread::Sleep(10);
   MessageLoop::current()->RunAllPending();
 }
 

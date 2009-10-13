@@ -901,7 +901,9 @@ TEST_F(ExternalTabTestType, CreateExternalTab2) {
   }
 }
 
-TEST_F(ExternalTabTestType, IncognitoMode) {
+// Freezes randomly causing the entire ui test to hang
+// http://code.google.com/p/chromium/issues/detail?id=24664
+TEST_F(ExternalTabTestType, DISABLED_IncognitoMode) {
   AutomationProxyForExternalTab* proxy =
       static_cast<AutomationProxyForExternalTab*>(automation());
   HWND external_tab_container = NULL;
