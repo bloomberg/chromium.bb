@@ -59,6 +59,7 @@
 #include "net/base/net_errors.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
@@ -112,6 +113,7 @@ using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::SearchableFormData;
+using WebKit::WebAccessibilityObject;
 using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
@@ -3532,8 +3534,8 @@ void RenderView::DumpLoadHistograms() const {
   navigation_state->set_load_histograms_recorded(true);
 }
 
-void RenderView::FocusAccessibilityObject(
-    WebCore::AccessibilityObject* acc_obj) {
+void RenderView::focusAccessibilityObject(
+    const WebAccessibilityObject& acc_obj) {
 #if defined(OS_WIN)
   if (!web_accessibility_manager_.get()) {
     web_accessibility_manager_.reset(

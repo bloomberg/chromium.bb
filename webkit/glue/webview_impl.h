@@ -43,6 +43,7 @@ class Widget;
 }
 
 namespace WebKit {
+class WebAccessibilityObject;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -136,6 +137,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void inspectElementAt(const WebKit::WebPoint& point);
   virtual WebKit::WebString inspectorSettings() const;
   virtual void setInspectorSettings(const WebKit::WebString& settings);
+  virtual WebKit::WebAccessibilityObject accessibilityObject();
 
   // WebView methods:
   virtual void AutofillSuggestionsForNode(

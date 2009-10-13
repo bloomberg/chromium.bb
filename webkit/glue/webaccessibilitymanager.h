@@ -7,8 +7,8 @@
 
 #include "webkit/glue/webaccessibility.h"
 
-namespace WebCore {
-class AccessibilityObject;
+namespace WebKit {
+class WebAccessibilityObject;
 }
 
 class WebView;
@@ -46,7 +46,7 @@ class WebAccessibilityManager {
 
   // Retrieves the id of the input AccessibilityObject, due to a focus event.
   // Returns an id greater than or equal to 0 if successful, -1 otherwise.
-  virtual int FocusAccObj(WebCore::AccessibilityObject* acc_obj) = 0;
+  virtual int FocusAccObj(const WebKit::WebAccessibilityObject& object) = 0;
 
  private:
   // Retrieves the RenderObject associated with this WebView, and uses it to

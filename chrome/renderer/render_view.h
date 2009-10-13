@@ -180,7 +180,6 @@ class RenderView : public RenderWidget,
       int status);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
   virtual bool WasOpenedByUserGesture() const;
-  virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
@@ -260,6 +259,8 @@ class RenderView : public RenderWidget,
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem();
   virtual void didUpdateInspectorSettings();
+  virtual void focusAccessibilityObject(
+      const WebKit::WebAccessibilityObject& acc_obj);
 
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();

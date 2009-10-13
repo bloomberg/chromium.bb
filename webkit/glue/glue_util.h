@@ -11,6 +11,7 @@
 class GURL;
 
 namespace WebCore {
+class AccessibilityObject;
 class ChromiumDataObject;
 class CString;
 class Cursor;
@@ -31,6 +32,7 @@ struct ResourceRequest;
 }
 
 namespace WebKit {
+class WebAccessibilityObject;
 class WebCString;
 class WebData;
 class WebDragData;
@@ -175,6 +177,12 @@ WebCore::ResourceResponse* WebURLResponseToMutableResourceResponse(
     WebKit::WebURLResponse* resp);
 const WebCore::ResourceResponse* WebURLResponseToResourceResponse(
     const WebKit::WebURLResponse* resp);
+
+// WebAccessibilityObject <-> AccessibilityObject
+WebKit::WebAccessibilityObject AccessibilityObjectToWebAccessibilityObject(
+    const WTF::PassRefPtr<WebCore::AccessibilityObject>& o);
+WTF::PassRefPtr<WebCore::AccessibilityObject> WebAccessibilityObjectToAccessibilityObject(
+    const WebKit::WebAccessibilityObject&);
 
 }  // namespace webkit_glue
 

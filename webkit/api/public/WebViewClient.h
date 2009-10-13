@@ -40,6 +40,7 @@
 class WebView;  // FIXME: Move into the WebKit namespace.
 
 namespace WebKit {
+    class WebAccessibilityObject;
     class WebDragData;
     class WebFileChooserCompletion;
     class WebFrame;
@@ -237,6 +238,12 @@ namespace WebKit {
         // Called to notify the embedder when a new history item is added.
         virtual void didAddHistoryItem() = 0;
 
+
+        // Accessibility -------------------------------------------------------
+
+        // Notifies embedder that the focus has changed to the given
+        // accessibility object.
+        virtual void focusAccessibilityObject(const WebAccessibilityObject&) = 0;
 
         // Developer tools -----------------------------------------------------
 

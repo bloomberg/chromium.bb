@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 MSVC_PUSH_WARNING_LEVEL(0);
+#include "AXObjectCache.h"
 #include "CSSStyleSelector.h"
 #include "CSSValueKeywords.h"
 #include "Cursor.h"
@@ -61,6 +62,7 @@ MSVC_POP_WARNING();
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebMediaPlayerAction.h"
@@ -91,6 +93,7 @@ using namespace WebCore;
 using WebKit::PlatformKeyboardEventBuilder;
 using WebKit::PlatformMouseEventBuilder;
 using WebKit::PlatformWheelEventBuilder;
+using WebKit::WebAccessibilityObject;
 using WebKit::WebCanvas;
 using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
@@ -121,6 +124,7 @@ using WebKit::WebTextDirectionRightToLeft;
 using WebKit::WebURL;
 
 using webkit_glue::ImageResourceFetcher;
+using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
 // Change the text zoom level by kTextSizeMultiplierRatio each time the user
 // zooms text in or out (ie., change by 20%).  The min and max values limit
@@ -1657,6 +1661,16 @@ WebString WebViewImpl::inspectorSettings() const {
 
 void WebViewImpl::setInspectorSettings(const WebString& settings) {
   inspector_settings_ = settings;
+}
+
+WebAccessibilityObject WebViewImpl::accessibilityObject() {
+  if (!main_frame())
+    return WebAccessibilityObject();
+
+  WebCore::Document* document = main_frame()->frame()->document();
+
+  return AccessibilityObjectToWebAccessibilityObject(
+      document->axObjectCache()->getOrCreate(document->renderer()));
 }
 
 // WebView --------------------------------------------------------------------

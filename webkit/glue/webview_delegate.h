@@ -62,13 +62,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
     return true;
   }
 
-  // Called by ChromeClientImpl::focus() if accessibility on the renderer side
-  // is enabled, and a focus change has occurred. Will retrieve the id of the
-  // input AccessibilityObject and send it through IPC for handling on the
-  // browser side.
-  virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj) {
-  }
-
   // ChromeClient ------------------------------------------------------------
 
   // Queries the browser for suggestions to be shown for the form text field

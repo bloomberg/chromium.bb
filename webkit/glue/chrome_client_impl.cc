@@ -28,6 +28,7 @@
 #endif
 #undef LOG
 
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebFileChooserCompletion.h"
@@ -53,6 +54,7 @@
 using WebCore::PopupContainer;
 using WebCore::PopupItem;
 
+using WebKit::WebAccessibilityObject;
 using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebFileChooserCompletionImpl;
@@ -69,6 +71,8 @@ using WebKit::WebVector;
 using WebKit::WebViewClient;
 using WebKit::WebWidget;
 using WebKit::WrappedResourceRequest;
+
+using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webview)
     : webview_(webview),
@@ -153,8 +157,10 @@ void ChromeClientImpl::focus() {
         doc->axObjectCache()->getOrCreate(focused_node->renderer());
 
     // Alert assistive technology that focus changed.
-    if (focused_acc_obj)
-      webview_->delegate()->FocusAccessibilityObject(focused_acc_obj);
+    if (focused_acc_obj) {
+      webview_->client()->focusAccessibilityObject(
+          AccessibilityObjectToWebAccessibilityObject(focused_acc_obj));
+    }
   }
 }
 

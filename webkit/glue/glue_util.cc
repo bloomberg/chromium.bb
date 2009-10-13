@@ -15,6 +15,7 @@
 
 #include <string>
 
+#include "AccessibilityObject.h"
 #include "ChromiumDataObject.h"
 #include "CString.h"
 #include "HistoryItem.h"
@@ -35,6 +36,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
@@ -340,6 +342,18 @@ WebCore::ResourceResponse* WebURLResponseToMutableResourceResponse(
 const WebCore::ResourceResponse* WebURLResponseToResourceResponse(
     const WebKit::WebURLResponse* response) {
   return &response->toResourceResponse();
+}
+
+// WebAccessibilityObject conversions ------------------------------------------
+
+WebKit::WebAccessibilityObject AccessibilityObjectToWebAccessibilityObject(
+    const WTF::PassRefPtr<WebCore::AccessibilityObject>& object) {
+  return object;
+}
+
+WTF::PassRefPtr<WebCore::AccessibilityObject> WebAccessibilityObjectToAccessibilityObject(
+    const WebKit::WebAccessibilityObject& object) {
+  return object;
 }
 
 }  // namespace webkit_glue

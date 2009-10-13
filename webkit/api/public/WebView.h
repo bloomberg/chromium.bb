@@ -35,6 +35,7 @@
 #include "WebWidget.h"
 
 namespace WebKit {
+    class WebAccessibilityObject;
     class WebDragData;
     class WebFrame;
     class WebFrameClient;
@@ -200,6 +201,11 @@ namespace WebKit {
         virtual WebString inspectorSettings() const = 0;
         virtual void setInspectorSettings(const WebString&) = 0;
 
+
+        // Accessibility -------------------------------------------------------
+
+        // Returns the accessibility object for this view.
+        virtual WebAccessibilityObject accessibilityObject() = 0;
 
         // FIXME what about:
         // GetDelegate

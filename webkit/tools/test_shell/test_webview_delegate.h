@@ -140,6 +140,8 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem() {}
   virtual void didUpdateInspectorSettings() {}
+  virtual void focusAccessibilityObject(
+      const WebKit::WebAccessibilityObject& object) {}
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);

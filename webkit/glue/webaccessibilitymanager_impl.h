@@ -29,7 +29,7 @@ class WebAccessibilityManagerImpl : public WebAccessibilityManager {
   bool GetAccObjInfo(WebView* view, const WebAccessibility::InParams& in_params,
                      WebAccessibility::OutParams* out_params);
   bool ClearAccObjMap(int acc_obj_id, bool clear_all);
-  int FocusAccObj(WebCore::AccessibilityObject* acc_obj);
+  int FocusAccObj(const WebKit::WebAccessibilityObject& object);
 
  protected:
   // Needed so WebAccessibilityManager::Create can call our constructor.
