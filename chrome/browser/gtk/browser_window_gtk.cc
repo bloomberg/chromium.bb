@@ -286,6 +286,8 @@ const struct AcceleratorMapping {
   { XF86XK_Refresh, IDC_RELOAD, GdkModifierType(0) },
 
   // Miscellany.
+  { GDK_d, IDC_BOOKMARK_ALL_TABS,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_d, IDC_BOOKMARK_PAGE, GDK_CONTROL_MASK },
   { XF86XK_AddFavorite, IDC_BOOKMARK_PAGE, GdkModifierType(0) },
   { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },

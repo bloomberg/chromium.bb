@@ -90,6 +90,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // new group.
   void AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child);
 
+  // Returns true if editing a folder.
+  bool IsEditingFolder() const;
+
   static void OnSelectionChanged(GtkTreeSelection* treeselection,
                                  BookmarkEditorGtk* dialog);
 
@@ -111,7 +114,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // The dialog to display on screen.
   GtkWidget* dialog_;
   GtkWidget* name_entry_;
-  GtkWidget* url_entry_;
+  GtkWidget* url_entry_;  // This is NULL if IsEditingFolder.
   GtkWidget* tree_view_;
   GtkWidget* new_folder_button_;
 

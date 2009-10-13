@@ -98,10 +98,11 @@ GtkTreeStore* MakeFolderTreeStore() {
 }
 
 void AddToTreeStore(BookmarkModel* model, int64 selected_id,
-                    GtkTreeStore* store, GtkTreeIter* selected_iter) {
+                    const BookmarkNode* node_to_ignore, GtkTreeStore* store,
+                    GtkTreeIter* selected_iter) {
   const BookmarkNode* root_node = model->root_node();
   for (int i = 0; i < root_node->GetChildCount(); ++i) {
-    AddToTreeStoreAt(root_node->GetChild(i), selected_id, store,
+    AddToTreeStoreAt(root_node->GetChild(i), selected_id, node_to_ignore, store,
                      selected_iter, NULL);
   }
 }
@@ -137,9 +138,9 @@ GtkCellRenderer* GetCellRendererText(GtkTreeView* tree_view) {
 }
 
 void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
-                      GtkTreeStore* store, GtkTreeIter* selected_iter,
-                      GtkTreeIter* parent) {
-  if (!node->is_folder())
+                      const BookmarkNode* node_to_ignore, GtkTreeStore* store,
+                      GtkTreeIter* selected_iter, GtkTreeIter* parent) {
+  if (!node->is_folder() || node == node_to_ignore)
     return;
 
   GtkTreeIter iter;
@@ -152,7 +153,7 @@ void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
   }
 
   for (int i = 0; i < node->GetChildCount(); ++i) {
-    AddToTreeStoreAt(node->GetChild(i), selected_id, store,
+    AddToTreeStoreAt(node->GetChild(i), selected_id, node_to_ignore, store,
                      selected_iter, &iter);
   }
 }
