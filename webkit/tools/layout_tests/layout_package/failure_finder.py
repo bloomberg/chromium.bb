@@ -382,15 +382,15 @@ class FailureFinder(object):
     Finds and downloads/extracts all of the test results (pixel/text output)
     for all of the given failures.
     """
-    revision, build_name = self._GetRevisionAndBuildFromArchiveStep()
 
     target_zip = "%s/layout-test-results-%s.zip" % (self.output_dir,
                                                     self.build)
-    zip_url = GetZipFileURL(revision, build_name)
     if self.zip_file:
       filename = self.zip_file
       self.delete_zip_file = False
     else:
+      revision, build_name = self._GetRevisionAndBuildFromArchiveStep()
+      zip_url = GetZipFileURL(revision, build_name)
       if self.verbose:
         print "Downloading zip file from %s to %s" % (zip_url, target_zip)
       filename = self._DownloadFile(zip_url, target_zip, "b")
