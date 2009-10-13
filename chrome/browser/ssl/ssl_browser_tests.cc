@@ -76,6 +76,7 @@ class SSLUITest : public InProcessBrowserTest {
 // Visits a regular page over http.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   scoped_refptr<HTTPTestServer> server = PlainServer();
+  ASSERT_TRUE(server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
       server->TestServerPageW(L"files/ssl/google.html"));
@@ -89,7 +90,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
 //                the secure cookies away!).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
       L"files/ssl/page_with_unsafe_contents.html"));
@@ -100,6 +103,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
 // Visits a page over OK https:
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
       https_server->TestServerPageW(L"files/ssl/google.html"));
@@ -111,6 +115,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
 // Visits a page with https error and proceed:
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPageW(L"files/ssl/google.html"));
@@ -134,8 +139,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 // navigate at that point):
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // First navigate to an OK page.
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPageW(
@@ -182,7 +190,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
 // http://crbug.com/19941).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // Load a page with a link that opens a new window (therefore with no history
   // and no navigation entries).
@@ -220,7 +230,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
 // Visits a page with mixed content.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContents) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
 
   // Load a page with mixed-content, the default behavior is to show the mixed
   // content.
@@ -236,7 +248,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContents) {
 // Based on http://crbug.com/8706
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsRandomizeHash) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
       L"files/ssl/page_with_http_script.html"));
@@ -250,7 +264,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsRandomizeHash) {
 // - images and scripts are filtered out entirely
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPageW(
       L"files/ssl/page_with_unsafe_contents.html"));
@@ -286,7 +302,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
 // Visits a page with mixed content loaded by JS (after the initial page load).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
       L"files/ssl/page_with_dynamic_mixed_contents.html"));
@@ -310,7 +328,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
 // TODO(jcampan): http://crbug.com/15072 this test fails.
 IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
       https_server->TestServerPageW(L"files/ssl/blank_page.html"));
@@ -342,7 +362,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
 // memory cache).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestCachedMixedContents) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
       L"files/ssl/page_with_mixed_contents.html"));
@@ -362,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   const std::string kLocalHost = "localhost";
   scoped_refptr<HTTPSTestServer> https_server =
       HTTPSTestServer::CreateMismatchedServer(kDocRoot);
-  ASSERT_TRUE(NULL != https_server.get());
+  ASSERT_TRUE(https_server.get() != NULL);
 
   // First we hit the server with hostname, this generates an invalid policy
   // error.
@@ -412,6 +434,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
 // Test that navigating to a #ref does not change a bad security state.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPageW(L"files/ssl/page_with_refs.html"));
@@ -444,7 +467,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
 //                opened as it is not initiated by a user gesture.
 IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
       L"files/ssl/page_with_unsafe_popup.html"));
@@ -477,7 +502,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
 // Visit a page over bad https that is a redirect to a page with good https.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   GURL url1 = bad_https_server->TestServerPageW(L"server-redirect?");
   GURL url2 = good_https_server->TestServerPageW(L"files/ssl/google.html");
@@ -503,7 +530,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
 // Visit a page over good https that is a redirect to a page with bad https.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   GURL url1 = good_https_server->TestServerPageW(L"server-redirect?");
   GURL url2 = bad_https_server->TestServerPageW(L"files/ssl/google.html");
@@ -527,7 +556,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
 // Visit a page over http that is a redirect to a page with good HTTPS.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
 
   TabContents* tab = browser()->GetSelectedTabContents();
 
@@ -544,7 +575,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
 // Visit a page over http that is a redirect to a page with bad HTTPS.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   TabContents* tab = browser()->GetSelectedTabContents();
 
@@ -571,7 +604,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
 // we don't keep the secure state).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
 
   GURL https_url = https_server->TestServerPageW(L"server-redirect?");
   GURL http_url = http_server->TestServerPageW(L"files/ssl/google.html");
@@ -603,8 +638,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
 // - navigate to HTTP (expect mixed content), then back
 IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
@@ -676,7 +714,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
 // - navigate to an OK HTTPS frame (expected to be still authentication broken).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
@@ -709,8 +749,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
 // stay unauthenticated).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnauthenticatedFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
 
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
