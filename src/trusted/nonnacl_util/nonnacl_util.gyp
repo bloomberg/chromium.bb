@@ -82,8 +82,24 @@
       'dependencies': [
         'sel_ldr_launcher',
       ],
-    }
-  ]
+    },
+  ],
+  'conditions': [
+    ['nacl_standalone==0', {
+      'targets': [
+        {
+          'target_name': 'nonnacl_util_chrome',
+          'type': 'static_library',
+          'sources': [
+            'sel_ldr_launcher_chrome.cc',
+          ],
+          'dependencies': [
+            'sel_ldr_launcher',
+          ],
+        },
+      ],
+    }],
+  ],
 }
 
 # TODO:

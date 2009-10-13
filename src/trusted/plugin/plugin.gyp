@@ -81,5 +81,26 @@
         }],
       ],
     },
-  ]
+  ],
+  'conditions': [
+    ['nacl_standalone==0', {
+      'targets': [
+        {
+          # Static library for linking with Chrome.
+          'target_name': 'npGoogleNaClPluginChrome',
+          'type': 'static_library',
+          'dependencies': [
+            '../nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
+            '../../shared/platform/platform.gyp:platform',
+            '../../../../third_party/npapi/npapi.gyp:npapi',
+          ],
+          'sources': [
+            '<@(common_sources)',
+            'nacl_entry_points.cc',
+            'srpc/video_chrome.cc',
+          ],
+        },
+      ],
+    }],
+  ],
 }
