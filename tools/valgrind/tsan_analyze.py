@@ -86,12 +86,13 @@ class TsanAnalyze:
 
   def ReadSection(self):
     result = [self.line_]
-    while not re.search('}}}', self.line_):
-      self.ReadLine()
-      if self.stack_trace_line_ is None:
-        result.append(self.line_)
-      else:
-        result.append(self.stack_trace_line_)
+    if re.search("{{{", self.line_):
+      while not re.search('}}}', self.line_):
+        self.ReadLine()
+        if self.stack_trace_line_ is None:
+          result.append(self.line_)
+        else:
+          result.append(self.stack_trace_line_)
     return result
 
   def ParseReportFile(self, filename):
