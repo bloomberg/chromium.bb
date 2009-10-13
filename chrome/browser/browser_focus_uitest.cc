@@ -36,11 +36,8 @@
 // For some reason we hit an external DNS lookup in this test in Linux but not
 // on Windows. TODO(estade): investigate.
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
-#define MAYBE(x) x
 #else
-#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
-// http://crbug.com/24400
-#define MAYBE(x) DISABLED_##x
+#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 #endif
 
 namespace {
@@ -222,14 +219,7 @@ class TestInterstitialPage : public InterstitialPage {
 
 }  // namespace
 
-
-#if defined(OS_WIN)
-#define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
-#else
-#define MAYBE_ClickingMovesFocus ClickingMovesFocus
-#endif  // defined(OS_WIN)
-
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
 #if defined(OS_LINUX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
@@ -248,13 +238,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
   CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
 
-#if defined(OS_WIN)
-#define MAYBE_BrowsersRememberFocus DISABLED_BrowsersRememberFocus
-#else
-#define MAYBE_BrowsersRememberFocus BrowsersRememberFocus
-#endif  // defined(OS_WIN)
-
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_BrowsersRememberFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -317,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_BrowsersRememberFocus) {
 }
 
 // Tabs remember focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(TabsRememberFocus)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -402,8 +386,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
 }
 
 // Background window does not steal focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
-                       MAYBE(BackgroundBrowserDontStealFocus)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -452,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
 }
 
 // Page cannot steal focus when focus is on location bar.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(LocationBarLockFocus)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // Open the page that steals focus.
@@ -473,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(LocationBarLockFocus)) {
 // focus has changed in the page.  The notification in the renderer may change
 // at which point this test would fail (see comment in
 // RenderWidget::didFocus()).
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FocusTraversal)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -651,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 }
 
 // Focus stays on page with interstitials.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(InterstitialFocus)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -686,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(InterstitialFocus)) {
 }
 
 // Make sure Find box can request focus, even when it is already open.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FindFocusTest)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   HTTPTestServer* server = StartHTTPServer();
 
   // Open some page (any page that doesn't steal focus).
@@ -740,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FindFocusTest)) {
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(TabInitialFocus)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
   CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
@@ -760,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(TabInitialFocus)) {
 }
 
 // Tests that focus goes where expected when using reload.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FocusOnReload)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   HTTPTestServer* server = StartHTTPServer();
 
   // Open the new tab, reload.
@@ -782,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FocusOnReload)) {
 }
 
 // Tests that focus goes where expected when using reload on a crashed tab.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE(FocusOnReloadCrashedTab)) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   HTTPTestServer* server = StartHTTPServer();
 
   // Open a regular page, crash, reload.
