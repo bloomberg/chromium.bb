@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 
+#include <limits>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
@@ -360,6 +362,11 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 // tabs would cause an overflow.
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate {
+  // The minimum representable time interval.  This can be used as the value
+  // passed to +[NSAnimationContext setDuration:] to stop an in-progress
+  // animation as quickly as possible.
+  const NSTimeInterval kMinimumTimeInterval =
+      std::numeric_limits<NSTimeInterval>::min();
   const float kTabOverlap = 20.0;
   const float kNewTabButtonOffset = 8.0;
   const float kMaxTabWidth = [TabController maxTabWidth];
@@ -417,7 +424,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
       // Move the current tab to the correct location instantly.
       // We need a duration or else it doesn't cancel an inflight animation.
       [NSAnimationContext beginGrouping];
-      [[NSAnimationContext currentContext] setDuration:0.000001];
+      [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
       tabFrame.origin.x = placeholderFrame_.origin.x;
       // TODO(alcor): reenable this
       //tabFrame.size.height += 10.0 * placeholderStretchiness_;
@@ -440,18 +447,18 @@ static const float kIndentLeavingSpaceForControls = 64.0;
         tabFrame.origin.x = offset;
       }
 
-      // Animate the tab in by putting it below the horizon, but don't bother
-      // if we only have 1 tab.
-      BOOL shouldAnimate = animate && [tabContentsArray_ count] > 1;
-      if (newTab && visible && shouldAnimate) {
-        [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
-      }
-
       // Set the width. Selected tabs are slightly wider when things get
       // really small and thus we enforce a different minimum width.
       tabFrame.size.width =
           [tab selected] ? MAX(baseTabWidth, kMinSelectedTabWidth) :
                            baseTabWidth;
+
+      // Animate a new tab in by putting it below the horizon, but don't bother
+      // if we only have 1 tab.
+      BOOL shouldAnimate = animate && [tabContentsArray_ count] > 1;
+      if (newTab && visible && shouldAnimate) {
+        [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
+      }
 
       // Check the frame by identifier to avoid redundant calls to animator.
       id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
@@ -463,6 +470,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
         [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
                           forKey:identifier];
       }
+
       enclosingRect = NSUnionRect(tabFrame, enclosingRect);
     }
 
@@ -489,9 +497,19 @@ static const float kIndentLeavingSpaceForControls = 64.0;
       [newTabButton_ setHidden:NO];
 
     if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
-      [newTabButton_ setFrame:newTabNewFrame];
+      // Move the new tab button into place. We want to animate the new tab
+      // button if it's moving to the left (closing a tab), but not when it's
+      // moving to the right (inserting a new tab). If moving right, we need
+      // to use a very small duration to make sure we cancel any in-flight
+      // animation to the left.
+      BOOL movingLeft = NSMinX(newTabNewFrame) < NSMinX(newTabTargetFrame_);
+      id target = animate ? [newTabButton_ animator] : newTabButton_;
+      [NSAnimationContext beginGrouping];
+      if (!movingLeft)
+        [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+      [target setFrame:newTabNewFrame];
+      [NSAnimationContext endGrouping];
       newTabTargetFrame_ = newTabNewFrame;
-      // Move the new tab button into place.
     }
   }
 
