@@ -229,6 +229,10 @@ static void TestRandomRpcs(NaClSrpcChannel* channel) {
   } while (0);
 }
 
+#if defined(HAVE_SDL)
+#include <SDL.h>
+#endif
+
 static NaClSrpcError Interpreter(NaClSrpcService* service,
                                  NaClSrpcChannel* channel,
                                  uint32_t rpc_number,
@@ -357,7 +361,7 @@ int main(int  argc, char *argv[]) {
                                   &command_channel,
                                   &untrusted_command_channel,
                                   &channel)) {
-    printf("Channel open(s) failed\n");
+    printf("Open failed\n");
     return 1;
   }
 

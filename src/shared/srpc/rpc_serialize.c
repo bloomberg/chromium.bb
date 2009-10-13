@@ -167,34 +167,20 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     /* Drop the current request and continue */
     return DISPATCH_CONTINUE;
   }
-  if (rpc.is_request) {
-    /* This is a new request. */
-    if (NULL == channel->server) {
-      if (NULL == rpc_stack_top) {
-        /* There is no service to dispatch requests. Abort. */
-        return DISPATCH_EOF;
-      } else {
-        /* Inform the pending invoke that a failure happened. */
-        rpc_stack_top->app_error = NACL_SRPC_RESULT_INTERNAL;
-        return DISPATCH_BREAK;
-      }
-    }
-    /* Fall through to request handling below. */
-  } else {
-    /* This is a response to a pending request. */
-    if (NULL == rpc_stack_top) {
-      /* There is no pending request. Abort. */
-      return DISPATCH_BREAK;
-    } else {
+  /* If it is not a request, return failure. */
+  if (!rpc.is_request) {
+    if (NULL != rpc_stack_top) {
       if (rpc.request_id == rpc_stack_top->request_id) {
         /* Back up to the start of the message and process it as a response. */
         rpc_stack_top->buffer = buffer;
-        return DISPATCH_RESPONSE;
       } else {
-        /* Received an out-of-order response.  Abort. */
+        /* Received an out-of-order response.  Drop it and abort. */
         return DISPATCH_BREAK;
       }
+      return DISPATCH_RESPONSE;
     }
+    /* Drop the out-of-order response and continue */
+    return DISPATCH_CONTINUE;
   }
   /* Get types for receiving args and rets */
   retval = NaClSrpcServiceMethodNameAndTypes(channel->server,
