@@ -39,6 +39,8 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { }
 
+  virtual void Refresh();
+
   virtual void NotifyResourceTypeStats(
       const WebKit::WebCache::ResourceTypeStats& stats);
 
@@ -52,7 +54,7 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   // for an update unless a query is already outstanding.
   WebKit::WebCache::ResourceTypeStats stats_;
   // This flag is true if we are waiting for the renderer to report its stats.
-  mutable bool pending_stats_update_;
+  bool pending_stats_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };

@@ -85,12 +85,15 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
 }
 
-WebKit::WebCache::ResourceTypeStats
-    TaskManagerTabContentsResource::GetWebCoreCacheStats() const {
+void TaskManagerTabContentsResource::Refresh() {
   if (!pending_stats_update_) {
     tab_contents_->render_view_host()->Send(new ViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
   }
+}
+
+WebKit::WebCache::ResourceTypeStats
+    TaskManagerTabContentsResource::GetWebCoreCacheStats() const {
   return stats_;
 }
 

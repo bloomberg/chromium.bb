@@ -67,6 +67,10 @@ class TaskManager {
     // false (meaning we do have network usage support).
     virtual void SetSupportNetworkUsage() = 0;
 
+    // The TaskManagerModel periodically refreshes its data and call this
+    // on all live resources.
+    virtual void Refresh() {}
+
     virtual void NotifyResourceTypeStats(
         const WebKit::WebCache::ResourceTypeStats& stats) {}
   };
@@ -130,6 +134,7 @@ class TaskManager {
  private:
   FRIEND_TEST(TaskManagerTest, Basic);
   FRIEND_TEST(TaskManagerTest, Resources);
+  FRIEND_TEST(TaskManagerTest, RefreshCalled);
 
   // Obtain an instance via GetInstance().
   TaskManager();
@@ -232,6 +237,8 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
         const WebKit::WebCache::ResourceTypeStats& stats);
 
  private:
+  FRIEND_TEST(TaskManagerTest, RefreshCalled);
+
   enum UpdateState {
     IDLE = 0,      // Currently not updating.
     TASK_PENDING,  // An update task is pending.

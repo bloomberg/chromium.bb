@@ -635,6 +635,13 @@ void TaskManagerModel::Refresh() {
     // Then we reset the current byte count.
     iter->second = 0;
   }
+
+  // Let resources update themselves if they need to.
+  for (ResourceList::iterator iter = resources_.begin();
+       iter != resources_.end(); ++iter) {
+     (*iter)->Refresh();
+  }
+
   if (!resources_.empty()) {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsChanged(0, ResourceCount()));

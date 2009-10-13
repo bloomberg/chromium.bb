@@ -16,6 +16,8 @@ namespace {
 
 class TestResource : public TaskManager::Resource {
  public:
+  TestResource() : refresh_called_(false) {}
+
   virtual std::wstring GetTitle() const { return L"test title"; }
   virtual SkBitmap GetIcon() const { return SkBitmap(); }
   virtual base::ProcessHandle GetProcess() const {
@@ -23,6 +25,14 @@ class TestResource : public TaskManager::Resource {
   }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { NOTREACHED(); }
+  virtual void Refresh() { refresh_called_ = true; }
+  bool refresh_called() const { return refresh_called_; }
+  void set_refresh_called(bool refresh_called) {
+    refresh_called_ = refresh_called;
+  }
+
+ private:
+  bool refresh_called_;
 };
 
 }  // namespace
@@ -70,4 +80,18 @@ TEST_F(TaskManagerTest, Resources) {
 
   task_manager.RemoveResource(&resource2);
   EXPECT_EQ(0, model->ResourceCount());
+}
+
+// Tests that the model is calling Refresh() on its resources.
+TEST_F(TaskManagerTest, RefreshCalled) {
+  MessageLoop loop;
+  TaskManager task_manager;
+  TaskManagerModel* model = task_manager.model_;
+  TestResource resource;
+
+  task_manager.AddResource(&resource);
+  ASSERT_FALSE(resource.refresh_called());
+  model->update_state_ = TaskManagerModel::TASK_PENDING;
+  model->Refresh();
+  ASSERT_TRUE(resource.refresh_called());
 }
