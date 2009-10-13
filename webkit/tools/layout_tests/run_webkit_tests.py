@@ -116,7 +116,7 @@ class TestRunner:
   # The per-test timeout in milliseconds, if no --time-out-ms option was given
   # to run_webkit_tests. This should correspond to the default timeout in
   # test_shell.exe.
-  DEFAULT_TEST_TIMEOUT_MS = 10 * 1000
+  DEFAULT_TEST_TIMEOUT_MS = 6 * 1000
 
   def __init__(self, options):
     """Initialize test runner data structures.
@@ -338,14 +338,10 @@ class TestRunner:
     return return_value
 
   def _GetTestInfoForFile(self, test_file):
-    """Returns the appropriate TestInfo object for the file. Mostly this
-    means that we look up the timeout value (in ms) to use for the given
-    test file. By default we use TestRunner.DEFAULT_TEST_TIMEOUT_MS
-    (currently 10 secs), but that can be overridden with the
-    --timeout-ms command line argument. Tests marked SLOW are allowed to
-    be up to ten times slower than the normal timeout value."""
+    """Returns the appropriate TestInfo object for the file. Mostly this is used
+    for looking up the timeout value (in ms) to use for the given test."""
     if self._expectations.HasModifier(test_file, test_expectations.SLOW):
-      return TestInfo(test_file, str(10 * int(options.time_out_ms)))
+      return TestInfo(test_file, self._options.slow_time_out_ms)
     return TestInfo(test_file, self._options.time_out_ms)
 
   def _GetTestFileQueue(self, test_files):
@@ -1034,10 +1030,14 @@ def main(options, args):
   logging.info("Running %s test_shells in parallel" % options.num_test_shells)
 
   if not options.time_out_ms:
-    if options.num_test_shells > 1:
+    if options.target == "Debug":
       options.time_out_ms = str(2 * TestRunner.DEFAULT_TEST_TIMEOUT_MS)
     else:
       options.time_out_ms = str(TestRunner.DEFAULT_TEST_TIMEOUT_MS)
+
+  options.slow_time_out_ms = str(5 * int(options.time_out_ms))
+  logging.info("Regular timeout: %s, slow test timeout: %s" %
+      (options.time_out_ms, options.slow_time_out_ms))
 
   # Include all tests if none are specified.
   new_args = []
