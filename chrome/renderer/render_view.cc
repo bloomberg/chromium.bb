@@ -88,6 +88,7 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_delegate_pepper_impl.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 #include "webkit/glue/webdevtoolsagent_delegate.h"
@@ -2433,6 +2434,14 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     mime_type_to_use = actual_mime_type;
   else
     mime_type_to_use = &mime_type;
+
+#if defined(PEPPER_APIS_ENABLED)
+  const char kPepperPrefix[] = "pepper-";
+  if (StartsWithASCII(*mime_type_to_use, kPepperPrefix, true)) {
+    return WebPluginDelegatePepperImpl::Create(
+        path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
+  }
+#endif
 
   bool in_process_plugin = RenderProcess::current()->in_process_plugins();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
