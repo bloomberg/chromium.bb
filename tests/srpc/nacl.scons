@@ -72,6 +72,10 @@ env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('srpc_bidir.nexe', 'run', ['srpc_bidir.html'])
 
+env.ComponentProgram('srpc_bad_service.nexe', 'srpc_bad_service.c',
+                     EXTRA_LIBS=['m', 'pthread'])
+env.Publish('srpc_bad_service.nexe', 'run', [])
+
 # NOTE: sel_universal launches sel_ldr internally and we do not have a
 # good hook to sneak in an emulator yet
 if env['TARGET_ARCHITECTURE'] == 'x86':
@@ -83,3 +87,11 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
       stdout_golden=env.File('srpc_basic_test.stdout'),
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
+  node = env.CommandSelLdrTestNacl(
+      'srpc_bad_service.out',
+      loader='sel_universal',
+      command=[env.File('srpc_bad_service.nexe')],
+      stdout_golden=env.File('srpc_bad_service.stdout'),
+      exit_status='1'
+      )
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_bad_service_test')
