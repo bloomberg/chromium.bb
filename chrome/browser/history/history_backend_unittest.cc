@@ -485,18 +485,18 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
 
   // Initial transition to page A.
   GURL url_a("http://google.com/a");
-   AddClientRedirect(GURL(), url_a, false, &transition1, &transition2);
+  AddClientRedirect(GURL(), url_a, false, &transition1, &transition2);
   EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
 
   // User initiated redirect to page B.
   GURL url_b("http://google.com/b");
-   AddClientRedirect(url_a, url_b, false, &transition1, &transition2);
+  AddClientRedirect(url_a, url_b, false, &transition1, &transition2);
   EXPECT_TRUE(transition1 & PageTransition::CHAIN_END);
   EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
 
   // Non-user initiated redirect to page C.
   GURL url_c("http://google.com/c");
-   AddClientRedirect(url_b, url_c, true, &transition1, &transition2);
+  AddClientRedirect(url_b, url_c, true, &transition1, &transition2);
   EXPECT_FALSE(transition1 & PageTransition::CHAIN_END);
   EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
 }

@@ -198,7 +198,6 @@ void QueryResults::DeleteRange(size_t begin, size_t end) {
         // Remove this referece from the list.
         found->second->erase(found->second->begin() + match);
         match--;
-
       }
     }
 

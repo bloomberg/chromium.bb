@@ -21,7 +21,7 @@ namespace {
 // Used to block until a dev tools client window's browser is closed.
 class BrowserClosedObserver : public NotificationObserver {
  public:
-  BrowserClosedObserver(Browser* browser) {
+  explicit BrowserClosedObserver(Browser* browser) {
     registrar_.Add(this, NotificationType::BROWSER_CLOSED,
                    Source<Browser>(browser));
     ui_test_utils::RunMessageLoop();

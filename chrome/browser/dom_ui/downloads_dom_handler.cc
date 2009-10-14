@@ -223,7 +223,7 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     int index = static_cast<int>(it - download_items_.begin());
     if (index > kMaxDownloads)
       break;
-    results_value.Append(CreateDownloadItemValue(*it,index));
+    results_value.Append(CreateDownloadItemValue(*it, index));
   }
 
   dom_ui_->CallJavascriptFunction(L"downloadsList", results_value);

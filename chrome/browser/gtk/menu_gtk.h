@@ -36,7 +36,7 @@ class MenuGtk {
     // Called when the menu stops showing. This will be called along with
     // ExecuteCommand if the user clicks an item, but will also be called when
     // the user clicks away from the menu.
-    virtual void StoppedShowing() { };
+    virtual void StoppedShowing() {}
 
     // Functions needed for creation of non-static menus.
     virtual int GetItemCount() const { return 0; }

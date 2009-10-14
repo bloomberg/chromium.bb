@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
-#define BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#ifndef CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#define CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -106,7 +106,7 @@ class ChromeURLDataManager {
 
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
 
-private:
+ private:
   friend class URLRequestChromeJob;
 
   // Parse a URL into the components used to resolve its request.
@@ -154,8 +154,8 @@ private:
 // Since we have a single global ChromeURLDataManager, we don't need to
 // grab a reference to it when creating Tasks involving it.
 template <> struct RunnableMethodTraits<ChromeURLDataManager> {
-  void RetainCallee(ChromeURLDataManager*) {}
-  void ReleaseCallee(ChromeURLDataManager*) {}
+  void RetainCallee(ChromeURLDataManager* manager) {}
+  void ReleaseCallee(ChromeURLDataManager* manager) {}
 };
 
 // The single global instance of ChromeURLDataManager.
@@ -168,4 +168,4 @@ void RegisterURLRequestChromeJob();
 // Undoes the registration done by RegisterURLRequestChromeJob.
 void UnregisterURLRequestChromeJob();
 
-#endif  // BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#endif  // CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_

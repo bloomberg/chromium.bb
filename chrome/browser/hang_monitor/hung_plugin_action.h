@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
-#define CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
+#ifndef CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__
+#define CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__
 
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
 // This class provides an implementation the
@@ -42,4 +42,4 @@ class HungPluginAction : public HungWindowDetector::HungWindowNotification {
   HWND current_hung_plugin_window_;
 };
 
-#endif  // CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
+#endif  // CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__

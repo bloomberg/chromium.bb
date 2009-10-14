@@ -249,8 +249,7 @@ void InfoBubbleGtk::MoveWindow() {
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
     screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) -
                window_->allocation.width + kArrowX;
-  }
-  else {
+  } else {
     screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
   }
 

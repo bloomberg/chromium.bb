@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOM_UI_NEW_TAB_UI_H_
 #define CHROME_BROWSER_DOM_UI_NEW_TAB_UI_H_
 
+#include <string>
+
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/notification_registrar.h"

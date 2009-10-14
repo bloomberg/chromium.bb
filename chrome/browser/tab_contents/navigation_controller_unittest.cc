@@ -557,7 +557,7 @@ TEST_F(NavigationControllerTest, Back_NewPending) {
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
 
-  //controller().LoadURL(kUrl2, PageTransition::TYPED);
+  // controller().LoadURL(kUrl2, PageTransition::TYPED);
   rvh()->SendNavigate(1, kUrl2);
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
@@ -1082,7 +1082,7 @@ class PrunedListener : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(PrunedListener);
 };
 
-}
+}  // namespace
 
 // Tests that we limit the number of navigation entries created correctly.
 TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {

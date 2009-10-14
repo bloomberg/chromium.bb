@@ -7,6 +7,9 @@
 
 #include "build/build_config.h"
 
+#include <string>
+#include <vector>
+
 #include "base/linked_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"

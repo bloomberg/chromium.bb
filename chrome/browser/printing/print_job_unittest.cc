@@ -63,7 +63,7 @@ class TestOwner : public printing::PrintJobWorkerOwner {
 
 class TestPrintJob : public printing::PrintJob {
  public:
-  TestPrintJob(volatile bool* check) : check_(check) {
+  explicit TestPrintJob(volatile bool* check) : check_(check) {
   }
   ~TestPrintJob() {
     *check_ = true;

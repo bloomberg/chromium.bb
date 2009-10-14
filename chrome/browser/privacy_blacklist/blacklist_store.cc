@@ -18,7 +18,7 @@ const char cookie[] = "GCPBL100";
 const size_t kMaxBlockedTypes = 256;
 const size_t kMaxStringSize = 8192;
 
-}
+}  // namespace
 
 bool BlacklistStoreOutput::WriteUInt(uint32 i) {
   return fwrite(reinterpret_cast<char*>(&i), 1, sizeof(uint32), file_) ==

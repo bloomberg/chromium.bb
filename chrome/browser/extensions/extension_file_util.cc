@@ -402,4 +402,4 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
   return true;
 }
 
-}  // extension_file_util
+}  // namespace extension_file_util

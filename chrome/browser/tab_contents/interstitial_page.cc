@@ -315,7 +315,7 @@ void InterstitialPage::DidNavigate(
   // A fast user could have navigated away from the page that triggered the
   // interstitial while the interstitial was loading, that would have disabled
   // us. In that case we can dismiss ourselves.
-  if (!enabled_){
+  if (!enabled_) {
     DontProceed();
     return;
   }

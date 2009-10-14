@@ -18,7 +18,7 @@ TEST(VisitLog, SimpleRecording) {
   ASSERT_EQ(history::VisitLog::NO_OP, vlog_buffer[2]);
   ASSERT_EQ(history::VisitLog::NO_OP, vlog_buffer[vlog_buffer_size-1]);
 
-  for (int i=0; i<vlog_buffer_size; i++)
+  for (int i = 0; i < vlog_buffer_size; i++)
     vlog.AddEvent(history::VisitLog::ADD_VISIT);
 
   ASSERT_EQ(history::VisitLog::ADD_VISIT, vlog_buffer[0]);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_H_
-#define CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_H_
+#ifndef CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_
+#define CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_
 
 #include <vector>
 
@@ -138,4 +138,4 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuGtk);
 };
 
-#endif  // CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_H_
+#endif  // CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_

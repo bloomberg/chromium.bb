@@ -29,9 +29,9 @@ class SimpleTestJob : public URLRequestTestJob {
 };
 
 class MockUserScriptMaster : public UserScriptMaster {
-public:
-  MockUserScriptMaster(MessageLoop* worker, const FilePath& script_dir) :
-      UserScriptMaster(worker, script_dir) { }
+ public:
+  explicit MockUserScriptMaster(MessageLoop* worker, const FilePath& script_dir)
+      : UserScriptMaster(worker, script_dir) {}
 
   virtual void StartScan() {
     // Do nothing. We want to manually control when scans occur.
@@ -59,12 +59,12 @@ class MockIOThread : public base::Thread {
 };
 
 // A class to help with making and handling resource requests.
-class ResourceDispatcherHostTester :
-    public ResourceDispatcherHost::Receiver,
-    public URLRequest::Interceptor,
-    public base::RefCountedThreadSafe<ResourceDispatcherHostTester> {
+class ResourceDispatcherHostTester
+    : public ResourceDispatcherHost::Receiver,
+      public URLRequest::Interceptor,
+      public base::RefCountedThreadSafe<ResourceDispatcherHostTester> {
  public:
-  ResourceDispatcherHostTester(MessageLoop* io_loop)
+  explicit ResourceDispatcherHostTester(MessageLoop* io_loop)
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
         host_(io_loop),
         ui_loop_(MessageLoop::current()),

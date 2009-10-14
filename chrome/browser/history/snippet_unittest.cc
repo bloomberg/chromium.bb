@@ -25,7 +25,6 @@ const char* kSampleDocument = "Google\xe2\x84\xa2 Terms of Service "
 "Amphitheatre Parkway, Mountain View, CA 94043, United States. This document "
 "explains how the agreement is made up, and sets out some of the terms of "
 "that agreement.";
-
 };
 
 // Thai sample taken from http://www.google.co.th/intl/th/privacy.html
@@ -228,16 +227,16 @@ TEST(Snippets, ExtractMatchPositions) {
     const size_t expected_match_count;
     const size_t expected_matches[10];
   } data[] = {
-    { "0 0 1 2 0 0 4 1 0 0 1 5",            1,     { 1,6 } },
-    { "0 0 1 4 0 0 2 1",                    1,     { 1,5 } },
-    { "0 0 4 1 0 0 2 1",                    2,     { 2,3,  4,5 } },
-    { "0 0 0 1",                            1,     { 0,1 } },
-    { "0 0 0 1 0 0 0 2",                    1,     { 0,2 } },
-    { "0 0 1 1 0 0 1 2",                    1,     { 1,3 } },
-    { "0 0 1 2 0 0 4 3 0 0 3 1",            1,     { 1,7 } },
-    { "0 0 1 4 0 0 2 5",                    1,     { 1,7 } },
-    { "0 0 1 2 0 0 1 1",                    1,     { 1,3 } },
-    { "0 0 1 1 0 0 5 2 0 0 10 1 0 0 3 10",  2,     { 1,2,  3,13 } },
+    { "0 0 1 2 0 0 4 1 0 0 1 5",            1,     { 1, 6 } },
+    { "0 0 1 4 0 0 2 1",                    1,     { 1, 5 } },
+    { "0 0 4 1 0 0 2 1",                    2,     { 2, 3, 4, 5 } },
+    { "0 0 0 1",                            1,     { 0, 1 } },
+    { "0 0 0 1 0 0 0 2",                    1,     { 0, 2 } },
+    { "0 0 1 1 0 0 1 2",                    1,     { 1, 3 } },
+    { "0 0 1 2 0 0 4 3 0 0 3 1",            1,     { 1, 7 } },
+    { "0 0 1 4 0 0 2 5",                    1,     { 1, 7 } },
+    { "0 0 1 2 0 0 1 1",                    1,     { 1, 3 } },
+    { "0 0 1 1 0 0 5 2 0 0 10 1 0 0 3 10",  2,     { 1, 2, 3, 13 } },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     Snippet::MatchPositions matches;

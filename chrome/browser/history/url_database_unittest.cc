@@ -112,13 +112,13 @@ TEST_F(URLDatabaseTest, AddURL) {
   EXPECT_EQ(0, GetRowForURL(GURL("http://news.google.com/"), &info));
 
   // Delete all urls in the domain
-  // FIXME(ACW) test the new url based delete domain
-  //EXPECT_TRUE(db.DeleteDomain(kDomainID));
+  // TODO(acw): test the new url based delete domain
+  // EXPECT_TRUE(db.DeleteDomain(kDomainID));
 
   // Make sure the urls have been properly removed
-  // FIXME(ACW) commented out because remove no longer works.
-  //EXPECT_TRUE(db.GetURLInfo(url1, NULL) == NULL);
-  //EXPECT_TRUE(db.GetURLInfo(url2, NULL) == NULL);
+  // TODO(acw): commented out because remove no longer works.
+  // EXPECT_TRUE(db.GetURLInfo(url1, NULL) == NULL);
+  // EXPECT_TRUE(db.GetURLInfo(url2, NULL) == NULL);
 }
 
 // Tests adding, querying and deleting keyword visits.

@@ -11,7 +11,7 @@ namespace {
 // Style for option group titles
 const char kOptionGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
 
-}
+}  // namespace
 
 OptionsLayoutBuilderGtk::OptionsLayoutBuilderGtk() {
   page_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);

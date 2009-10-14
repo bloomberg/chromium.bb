@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
 #define CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"

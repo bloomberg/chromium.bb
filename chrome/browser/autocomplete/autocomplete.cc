@@ -83,7 +83,7 @@ std::string AutocompleteInput::TypeToString(Type type) {
   }
 }
 
-//static
+// static
 AutocompleteInput::Type AutocompleteInput::Parse(
     const std::wstring& text,
     const std::wstring& desired_tld,

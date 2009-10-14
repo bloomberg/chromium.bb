@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
 #define CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
 
+#include <string>
 #include <vector>
 
 #include "chrome/browser/browsing_data_remover.h"

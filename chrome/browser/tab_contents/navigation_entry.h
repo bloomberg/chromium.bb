@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

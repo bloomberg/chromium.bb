@@ -75,5 +75,4 @@ class FontsPageGtk : public OptionsPageBase {
   DISALLOW_COPY_AND_ASSIGN(FontsPageGtk);
 };
 
-
-#endif  // #ifndef CHROME_BROWSER_GTK_OPTIONS_FONTS_PAGE_GTK_H_
+#endif  // CHROME_BROWSER_GTK_OPTIONS_FONTS_PAGE_GTK_H_

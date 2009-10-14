@@ -76,17 +76,17 @@ TEST(VisitTracker, SimpleTransitions) {
 TEST(VisitTracker, Frames) {
   VisitToTest test_frames[] = {
     // Started here:
-    {1, 1, "http://foo.com/",           1, "",                       0},
+    {1, 1, "http://foo.com/",           1, "",                        0},
     // Which had an auto-loaded subframe:
-    {1, 1, "http://foo.com/ad.html",    2, "http://foo.com/",        1},
+    {1, 1, "http://foo.com/ad.html",    2, "http://foo.com/",         1},
     // ...and another auto-loaded subframe:
-    {1, 1, "http://foo.com/ad2.html",   3, "http://foo.com/",        1},
+    {1, 1, "http://foo.com/ad2.html",   3, "http://foo.com/",         1},
     // ...and the user navigated the first subframe to somwhere else
-    {1, 2, "http://bar.com/",           4, "http://foo.com/ad.html", 2},
+    {1, 2, "http://bar.com/",           4, "http://foo.com/ad.html",  2},
     // ...and then the second subframe somewhere else
-    {1, 3, "http://fud.com/",           5, "http://foo.com/ad2.html",3},
+    {1, 3, "http://fud.com/",           5, "http://foo.com/ad2.html", 3},
     // ...and then the main frame somewhere else.
-    {1, 4, "http://www.google.com/",    6, "http://foo.com/",        1},
+    {1, 4, "http://www.google.com/",    6, "http://foo.com/",         1},
   };
 
   VisitTracker tracker;

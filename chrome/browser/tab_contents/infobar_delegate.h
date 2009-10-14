@@ -251,4 +251,4 @@ class SimpleAlertInfoBarDelegate : public AlertInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleAlertInfoBarDelegate);
 };
 
-#endif  // #ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_

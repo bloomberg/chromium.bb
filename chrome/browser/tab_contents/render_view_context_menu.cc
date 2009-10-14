@@ -206,8 +206,8 @@ void RenderViewContextMenu::AppendFrameItems() {
   AppendSeparator();
   // These two menu items have yet to be implemented.
   // http://code.google.com/p/chromium/issues/detail?id=11827
-  //AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEFRAMEAS);
-  //AppendMenuItem(IDS_CONTENT_CONTEXT_PRINTFRAME);
+  // AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEFRAMEAS);
+  // AppendMenuItem(IDS_CONTENT_CONTEXT_PRINTFRAME);
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
 }

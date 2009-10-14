@@ -15,7 +15,7 @@ BookmarkFolderTreeModel::BookmarkFolderTreeModel(BookmarkModel* model)
     : TreeNodeModel<FolderNode>(new FolderNode(NULL)),
       model_(model),
       recently_bookmarked_node_(new FolderNode(NULL)),
-      search_node_(new FolderNode(NULL)){
+      search_node_(new FolderNode(NULL)) {
   recently_bookmarked_node_->SetTitle(
       l10n_util::GetString(IDS_BOOKMARK_TREE_RECENTLY_BOOKMARKED_NODE_TITLE));
   search_node_->SetTitle(

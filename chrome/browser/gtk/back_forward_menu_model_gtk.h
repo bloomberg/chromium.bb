@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GTK_BACK_FORWARD_MENU_MODEL_GTK_H_
 #define CHROME_BROWSER_GTK_BACK_FORWARD_MENU_MODEL_GTK_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 
 #include "chrome/browser/back_forward_menu_model.h"

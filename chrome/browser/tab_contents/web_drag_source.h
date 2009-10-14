@@ -65,4 +65,4 @@ class WebDragSource : public BaseDragSource,
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };
 
-#endif  // #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_

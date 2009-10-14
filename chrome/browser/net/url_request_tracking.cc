@@ -15,7 +15,7 @@ const void* kOriginProcessUniqueIDKey = 0;
 
 class UniqueIDData : public URLRequest::UserData {
  public:
-  UniqueIDData(int id) : id_(id) {}
+  explicit UniqueIDData(int id) : id_(id) {}
   virtual ~UniqueIDData() {}
 
   int id() const { return id_; }

@@ -47,7 +47,7 @@ class DOMUIFactory {
 
  private:
   // Class is for scoping only.
-  DOMUIFactory() {};
+  DOMUIFactory() {}
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_

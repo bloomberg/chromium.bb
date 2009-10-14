@@ -22,7 +22,7 @@ namespace {
 // to print to printers that don't support PDF.
 class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  PdfUnsupportedInfoBarDelegate(Browser* browser)
+  explicit PdfUnsupportedInfoBarDelegate(Browser* browser)
      : LinkInfoBarDelegate(NULL),
        browser_(browser) {
   }

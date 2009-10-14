@@ -14,7 +14,7 @@ typedef struct _GtkWidget GtkWidget;
 
 class ExternalProtocolDialogGtk {
  public:
-  ExternalProtocolDialogGtk(const GURL& url);
+  explicit ExternalProtocolDialogGtk(const GURL& url);
 
  private:
   static void OnDialogResponse(GtkWidget* widget,

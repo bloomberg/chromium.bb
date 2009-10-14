@@ -191,7 +191,7 @@ void SyncBackendHost::Core::DoInitialize(
   string16 path_str;
 #if defined (OS_WIN)
   path_str = host_->sync_data_folder_path().value();
-#elif (defined(OS_LINUX) || defined(OS_MACOSX))
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
   path_str = UTF8ToUTF16(host_->sync_data_folder_path().value());
 #endif
   success = syncapi_->Init(path_str.c_str(),

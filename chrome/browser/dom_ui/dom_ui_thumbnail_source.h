@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_DOM_UI_THUMBNAIL_SOURCE_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"

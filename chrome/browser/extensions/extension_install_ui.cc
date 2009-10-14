@@ -82,7 +82,7 @@ static std::wstring GetInstallWarning(Extension* extension) {
 
 #endif
 
-}
+}  // namespace
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile), ui_loop_(MessageLoop::current())

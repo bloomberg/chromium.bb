@@ -29,7 +29,7 @@ class ViewSourceTest : public UITest {
   }
 
  protected:
-   std::wstring test_html_;
+  std::wstring test_html_;
 };
 
 // This test renders a page in view-source and then checks to see if a cookie

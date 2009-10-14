@@ -206,7 +206,7 @@ class InterstitialPage : public NotificationObserver,
 
   // We keep a map of the various blocking pages shown as the UI tests need to
   // be able to retrieve them.
-  typedef std::map<TabContents*,InterstitialPage*> InterstitialPageMap;
+  typedef std::map<TabContents*, InterstitialPage*> InterstitialPageMap;
   static InterstitialPageMap* tab_to_interstitial_page_;
 
   // Settings passed to the renderer.

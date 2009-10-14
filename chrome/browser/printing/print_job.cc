@@ -317,8 +317,7 @@ void PrintJob::ControlledWorkerShutdown() {
         DispatchMessage(&msg);
       }
       // Continue looping.
-    }
-    else if (result == WAIT_OBJECT_0) {
+    } else if (result == WAIT_OBJECT_0) {
       // The thread quit.
       break;
     } else {

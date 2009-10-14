@@ -380,7 +380,7 @@ bool StarredURLDatabase::BuildStarNodes(
         StarredNode* node = group_id_to_node_map[star_entries[i].group_id];
         if (!node->HasAncestor(parent) && !parent->HasAncestor(node)) {
           parent->Add(parent->GetChildCount(), node);
-        } else{
+        } else {
           // The node has a cycle. Add it to the list of roots so the cycle is
           // broken.
           roots->insert(node);

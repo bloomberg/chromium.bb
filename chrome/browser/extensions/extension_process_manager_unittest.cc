@@ -23,7 +23,7 @@ class ExtensionProcessManagerTest : public testing::Test {
   }
 };
 
-}
+}  // namespace
 
 // Test that extensions get grouped in the right SiteInstance (and therefore
 // process) based on their URLs.

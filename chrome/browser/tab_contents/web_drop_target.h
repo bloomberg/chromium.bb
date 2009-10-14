@@ -70,4 +70,4 @@ class WebDropTarget : public BaseDropTarget {
   DISALLOW_EVIL_CONSTRUCTORS(WebDropTarget);
 };
 
-#endif  // #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_H_

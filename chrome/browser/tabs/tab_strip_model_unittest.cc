@@ -111,7 +111,7 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   }
 
   void SwitchTabTo(TabContents* contents) {
-    //contents()->DidBecomeSelected();
+    // contents()->DidBecomeSelected();
   }
 
   // Sets the id of the specified contents.
@@ -150,7 +150,7 @@ class TabStripModelTest : public RenderViewHostTestHarness {
 
   std::wstring test_dir_;
   std::wstring profile_path_;
-  std::map<TabContents*,int> foo_;
+  std::map<TabContents*, int> foo_;
   ProfileManager pm_;
 };
 

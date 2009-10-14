@@ -246,7 +246,7 @@ static void FixupPort(const string& text,
 
   // Look for non-digit in port and strip if found.
   string port(text, part.begin, part.len);
-  for (string::iterator i = port.begin(); i != port.end(); ) {
+  for (string::iterator i = port.begin(); i != port.end();) {
     if (IsAsciiDigit(*i))
       ++i;
     else

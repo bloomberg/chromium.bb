@@ -100,4 +100,4 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelfGtk);
 };
 
-#endif  // CHROME_BROWSER_EXTENSION_SHELF_GTK_H_
+#endif  // CHROME_BROWSER_GTK_EXTENSION_SHELF_GTK_H_

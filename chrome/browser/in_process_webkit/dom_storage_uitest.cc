@@ -8,9 +8,9 @@
 
 // TODO(jorlow): Enable these tests when we remove them from the
 //               test_exceptions.txt file.
-//static const char* kTopLevelFiles[] = {
-  //"window-attributes-exist.html"
-//};
+// static const char* kTopLevelFiles[] = {
+//   "window-attributes-exist.html"
+// };
 
 // TODO(jorlow): Enable these tests when we remove them from the
 //               test_exceptions.txt file.
@@ -19,15 +19,15 @@ static const char* kSubDirFiles[] = {
   "delete-removal.html",
   "enumerate-storage.html",
   "enumerate-with-length-and-key.html",
-  //"iframe-events.html",
-  //"index-get-and-set.html",
-  //"onstorage-attribute-markup.html",
-  //"onstorage-attribute-setattribute.html",
-  //"localstorage/onstorage-attribute-setwindow.html",
-  //"simple-events.html",
+  // "iframe-events.html",
+  // "index-get-and-set.html",
+  // "onstorage-attribute-markup.html",
+  // "onstorage-attribute-setattribute.html",
+  // "localstorage/onstorage-attribute-setwindow.html",
+  // "simple-events.html",
   "simple-usage.html",
-  //"string-conversion.html",
-  //"window-open.html"
+  // "string-conversion.html",
+  // "window-open.html"
 };
 
 class DOMStorageTest : public UILayoutTest {
@@ -35,8 +35,7 @@ class DOMStorageTest : public UILayoutTest {
   DOMStorageTest()
       : UILayoutTest(),
         test_dir_(FilePath().AppendASCII("LayoutTests").
-                  AppendASCII("storage").AppendASCII("domstorage"))
-  {
+                  AppendASCII("storage").AppendASCII("domstorage")) {
   }
 
   virtual ~DOMStorageTest() { }
@@ -70,13 +69,13 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
 TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
-  for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
+  for (size_t i = 0; i < arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
 
 TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
-  for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
+  for (size_t i = 0; i < arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }

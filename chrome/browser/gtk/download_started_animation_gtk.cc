@@ -31,7 +31,7 @@ const double kMoveFraction = 1.0 / 3.0;
 class DownloadStartedAnimationGtk : public Animation,
                                     public NotificationObserver {
  public:
-  DownloadStartedAnimationGtk(TabContents* tab_contents);
+  explicit DownloadStartedAnimationGtk(TabContents* tab_contents);
 
   // DownloadStartedAnimation will delete itself, but this is public so
   // that we can use DeleteSoon().

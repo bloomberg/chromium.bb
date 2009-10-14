@@ -262,7 +262,7 @@ bool CloseDialogWindow(HWND dialog_window) {
 // default button.
 class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
  public:
-  DismissTheWindow(DWORD owner_process)
+  explicit DismissTheWindow(DWORD owner_process)
       : owner_process_(owner_process) {
   }
 

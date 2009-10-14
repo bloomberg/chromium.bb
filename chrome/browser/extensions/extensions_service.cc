@@ -36,7 +36,7 @@ namespace {
 // Helper class to collect the IDs of every extension listed in the prefs.
 class InstalledExtensionSet {
  public:
-  InstalledExtensionSet(InstalledExtensions* installed) {
+  explicit InstalledExtensionSet(InstalledExtensions* installed) {
     scoped_ptr<InstalledExtensions> cleanup(installed);
     installed->VisitInstalledExtensions(
         NewCallback(this, &InstalledExtensionSet::ExtensionVisited));

@@ -28,7 +28,7 @@ void PageUsageData::SetFavIcon(SkBitmap* img) {
   favicon_set_ = true;
 }
 
-//static
+// static
 bool PageUsageData::Predicate(const PageUsageData* lhs,
                               const PageUsageData* rhs) {
   return lhs->GetScore() > rhs->GetScore();

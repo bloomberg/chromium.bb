@@ -59,8 +59,8 @@ namespace {
 // first and then the caller. This is done so that the SessionWindows can be
 // recreated from the SessionCommands and the SessionWindows passed to the
 // caller. The following class is used for this.
-class InternalLastSessionRequest :
-    public BaseSessionService::InternalGetCommandsRequest {
+class InternalLastSessionRequest
+    : public BaseSessionService::InternalGetCommandsRequest {
  public:
   InternalLastSessionRequest(
       CallbackType* callback,

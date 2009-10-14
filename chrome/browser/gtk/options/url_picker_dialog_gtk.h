@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GTK_OPTIONS_URL_PICKER_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_URL_PICKER_DIALOG_GTK_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/history/history.h"

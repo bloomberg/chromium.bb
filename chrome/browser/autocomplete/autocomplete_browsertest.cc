@@ -64,7 +64,6 @@ class AutocompleteBrowserTest : public InProcessBrowserTest,
     DCHECK(type == NotificationType::HISTORY_LOADED);
     MessageLoop::current()->Quit();
   }
-
 };
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {

@@ -25,7 +25,7 @@ std::string Dehash(unsigned long l) {
   return *(std::string*)l;
 }
 
-}
+}  // namespace
 
 namespace chrome {
 
@@ -101,4 +101,4 @@ std::string BlockedResponse::GetOriginalURL(const std::string& url) {
   return chrome::kAboutBlankURL;
 }
 
-}  // end namespace chrome
+}  // namespace chrome

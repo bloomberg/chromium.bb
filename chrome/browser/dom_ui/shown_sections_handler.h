@@ -22,7 +22,7 @@ enum Section {
 class ShownSectionsHandler : public DOMMessageHandler {
  public:
   ShownSectionsHandler() {}
-  virtual ~ShownSectionsHandler() {}  
+  virtual ~ShownSectionsHandler() {}
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();

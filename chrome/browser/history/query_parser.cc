@@ -66,7 +66,8 @@ void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
 // A QueryNodeWord is a single word in the query.
 class QueryNodeWord : public QueryNode {
  public:
-  QueryNodeWord(const std::wstring& word) : word_(word), literal_(false) {}
+  explicit QueryNodeWord(const std::wstring& word)
+      : word_(word), literal_(false) {}
   virtual ~QueryNodeWord() {}
   virtual int AppendToSQLiteQuery(std::wstring* query) const;
   virtual bool IsWord() const { return true; }

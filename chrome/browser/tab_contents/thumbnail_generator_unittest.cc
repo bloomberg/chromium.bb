@@ -20,7 +20,7 @@ static const int kBitmapHeight = 100;
 
 // TODO(brettw) enable this when GetThumbnailForBackingStore is implemented
 // for other platforms in thumbnail_generator.cc
-//#if defined(OS_WIN)
+// #if defined(OS_WIN)
 // TODO(brettw) enable this on Windows after we clobber a build to see if the
 // failures of this on the buildbot can be resolved.
 #if 0

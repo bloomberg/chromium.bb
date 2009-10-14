@@ -165,9 +165,9 @@ class AsyncCloseHandle : public Task {
 // Sometimes, the master will be deleted before the rebuild is complete, in
 // which case it notifies the builder via DisownMaster(). The builder will
 // delete itself once rebuilding is complete, and not execute any callback.
-class VisitedLinkMaster::TableBuilder :
-    public HistoryService::URLEnumerator,
-    public base::RefCountedThreadSafe<TableBuilder> {
+class VisitedLinkMaster::TableBuilder
+    : public HistoryService::URLEnumerator,
+      public base::RefCountedThreadSafe<TableBuilder> {
  public:
   TableBuilder(VisitedLinkMaster* master,
                const uint8 salt[LINK_SALT_LENGTH]);

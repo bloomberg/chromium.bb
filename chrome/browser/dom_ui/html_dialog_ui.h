@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_
 #define CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_
 
+#include <string>
 #include <vector>
 
 #include "chrome/browser/dom_ui/dom_ui.h"
@@ -18,33 +19,33 @@ class Size;
 // Implement this class to receive notifications.
 class HtmlDialogUIDelegate {
  public:
-   // Returns true if the contents needs to be run in a modal dialog.
-   virtual bool IsDialogModal() const = 0;
+  // Returns true if the contents needs to be run in a modal dialog.
+  virtual bool IsDialogModal() const = 0;
 
-   // Returns the title of the dialog.
-   virtual std::wstring GetDialogTitle() const = 0;
+  // Returns the title of the dialog.
+  virtual std::wstring GetDialogTitle() const = 0;
 
-   // Get the HTML file path for the content to load in the dialog.
-   virtual GURL GetDialogContentURL() const = 0;
+  // Get the HTML file path for the content to load in the dialog.
+  virtual GURL GetDialogContentURL() const = 0;
 
-   // Get DOMMessageHandler objects to handle messages from the HTML/JS page.
-   // The handlers are used to send and receive messages from the page while it
-   // is still open.  Ownership of each handler is taken over by the DOMUI
-   // hosting the page.
-   virtual void GetDOMMessageHandlers(
-       std::vector<DOMMessageHandler*>* handlers) const = 0;
+  // Get DOMMessageHandler objects to handle messages from the HTML/JS page.
+  // The handlers are used to send and receive messages from the page while it
+  // is still open.  Ownership of each handler is taken over by the DOMUI
+  // hosting the page.
+  virtual void GetDOMMessageHandlers(
+      std::vector<DOMMessageHandler*>* handlers) const = 0;
 
-   // Get the size of the dialog.
-   virtual void GetDialogSize(gfx::Size* size) const = 0;
+  // Get the size of the dialog.
+  virtual void GetDialogSize(gfx::Size* size) const = 0;
 
-   // Gets the JSON string input to use when showing the dialog.
-   virtual std::string GetDialogArgs() const = 0;
+  // Gets the JSON string input to use when showing the dialog.
+  virtual std::string GetDialogArgs() const = 0;
 
-   // A callback to notify the delegate that the dialog closed.
-   virtual void OnDialogClosed(const std::string& json_retval) = 0;
+  // A callback to notify the delegate that the dialog closed.
+  virtual void OnDialogClosed(const std::string& json_retval) = 0;
 
-  protected:
-   ~HtmlDialogUIDelegate() {}
+ protected:
+  ~HtmlDialogUIDelegate() {}
 };
 
 // Displays file URL contents inside a modal HTML dialog.
@@ -71,7 +72,7 @@ class HtmlDialogUI : public DOMUI {
   };
 
   // When created, the property should already be set on the TabContents.
-  HtmlDialogUI(TabContents* tab_contents);
+  explicit HtmlDialogUI(TabContents* tab_contents);
   virtual ~HtmlDialogUI();
 
   // Returns the PropertyBag accessor object used to write the delegate pointer

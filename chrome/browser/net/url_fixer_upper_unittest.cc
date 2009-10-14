@@ -231,7 +231,7 @@ struct fixup_case {
   // It would be better if this next case got treated as http, but I don't see
   // a clean way to guess this isn't the new-and-exciting "user" scheme.
   {"user:passwd@www.google.com:8080/", "", "user:passwd@www.google.com:8080/"},
-  //{"file:///c:/foo/bar%20baz.txt", "", "file:///C:/foo/bar%20baz.txt"},
+  // {"file:///c:/foo/bar%20baz.txt", "", "file:///C:/foo/bar%20baz.txt"},
   {"ftp.google.com", "", "ftp://ftp.google.com/"},
   {"    ftp.google.com", "", "ftp://ftp.google.com/"},
   {"FTP.GooGle.com", "", "ftp://FTP.GooGle.com/"},

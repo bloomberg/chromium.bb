@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HUNG_WINDOW_DETECTOR_H__
-#define CHROME_BROWSER_HUNG_WINDOW_DETECTOR_H__
+#ifndef CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
+#define CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
 
 #include "base/lock.h"
 #include "chrome/common/worker_thread_ticker.h"
@@ -48,7 +48,7 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
   // Ownership of this pointer is not transferred to this class.
   // Note that the Initialize method needs to be called to initiate monitoring
   // of hung windows.
-  HungWindowDetector(HungWindowNotification* notification);
+  explicit HungWindowDetector(HungWindowNotification* notification);
   ~HungWindowDetector();
 
   // This method initialized the monitoring of hung windows. All descendant
@@ -88,4 +88,4 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
 };
 
 
-#endif  // CHROME_BROWSER_HUNG_WINDOW_DETECTOR_H__
+#endif  // CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__

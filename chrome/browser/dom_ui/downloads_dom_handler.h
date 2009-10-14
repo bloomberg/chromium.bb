@@ -103,4 +103,4 @@ class DownloadsDOMHandler : public DOMMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandler);
 };
 
-#endif // CHROME_BROWSER_DOM_UI_DOWNLOADS_DOM_HANDLER_H_
+#endif  // CHROME_BROWSER_DOM_UI_DOWNLOADS_DOM_HANDLER_H_
