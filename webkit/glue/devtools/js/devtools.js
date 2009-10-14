@@ -426,3 +426,13 @@ WebInspector.ResourcesPanel.prototype._createResourceView = function(
   return orig.apply(this, arguments);
 };
 })();
+
+// Temporary workaround for a patch from WebKit bug 30328.
+// TODO(mnaganov): Remove when after WebKit roll.
+if (!('addProfile' in WebInspector)) {
+  WebInspector.addProfile = function(profile) {
+    WebInspector.__fullProfiles = WebInspector.__fullProfiles || {};
+    WebInspector.__fullProfiles[profile.uid] = profile;
+    WebInspector.addProfileHeader(profile);
+  };
+}

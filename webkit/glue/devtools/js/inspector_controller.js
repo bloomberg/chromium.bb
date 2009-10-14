@@ -466,6 +466,9 @@ devtools.InspectorController.prototype.getProfileHeaders = function(callId) {
  * Async function for lazy loading an existing profile.
  */
 devtools.InspectorController.prototype.getProfile = function(callId, uid) {
+  if (WebInspector.__fullProfiles && (uid in WebInspector.__fullProfiles)) {
+    WebInspector.didGetProfile(callId, WebInspector.__fullProfiles[uid]);
+  }
 };
 
 
