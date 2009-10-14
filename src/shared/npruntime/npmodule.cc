@@ -127,6 +127,7 @@ NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
 NaClSrpcError NPModule::GetValue(NaClSrpcChannel* channel,
                                  NaClSrpcArg** inputs,
                                  NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   DebugPrintf("GetValue\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPNVariable variable = static_cast<NPNVariable>(inputs[1]->u.ival);
@@ -145,6 +146,8 @@ NaClSrpcError NPModule::GetValue(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::SetStatus(NaClSrpcChannel* channel,
                                   NaClSrpcArg** inputs,
                                   NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("SetStatus\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   const char* status = inputs[1]->u.sval;
@@ -162,6 +165,8 @@ NaClSrpcError NPModule::SetStatus(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::InvalidateRect(NaClSrpcChannel* channel,
                                        NaClSrpcArg** inputs,
                                        NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("InvalidateRect\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
@@ -181,6 +186,8 @@ NaClSrpcError NPModule::InvalidateRect(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::ForceRedraw(NaClSrpcChannel* channel,
                                     NaClSrpcArg** inputs,
                                     NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("ForceRedraw\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPModule* module = reinterpret_cast<NPModule*>(NPBridge::LookupBridge(npp));
@@ -199,6 +206,7 @@ NaClSrpcError NPModule::ForceRedraw(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
                                     NaClSrpcArg** inputs,
                                     NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   DebugPrintf("CreateArray\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPObject* window;
@@ -226,6 +234,7 @@ NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::OpenURL(NaClSrpcChannel* channel,
                                 NaClSrpcArg** inputs,
                                 NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   DebugPrintf("OpenURL\n");
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   const char* url = inputs[1]->u.sval;
@@ -250,6 +259,7 @@ NaClSrpcError NPModule::OpenURL(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::GetIntIdentifier(NaClSrpcChannel* channel,
                                          NaClSrpcArg** inputs,
                                          NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   DebugPrintf("GetIntIdentifier\n");
   int32_t value = static_cast<int32_t>(inputs[0]->u.ival);
   NPIdentifier identifier;
@@ -272,6 +282,7 @@ NaClSrpcError NPModule::GetIntIdentifier(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::IntFromIdentifier(NaClSrpcChannel* channel,
                                           NaClSrpcArg** inputs,
                                           NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
   outputs[0]->u.ival = NPN_IntFromIdentifier(identifier);
   return NACL_SRPC_RESULT_OK;
@@ -284,6 +295,7 @@ NaClSrpcError NPModule::IntFromIdentifier(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::GetStringIdentifier(NaClSrpcChannel* channel,
                                             NaClSrpcArg** inputs,
                                             NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   char* name = inputs[0]->u.sval;
   NPIdentifier identifier = NPN_GetStringIdentifier(name);
   outputs[0]->u.ival = NPBridge::NpidentifierToInt(identifier);
@@ -297,6 +309,7 @@ NaClSrpcError NPModule::GetStringIdentifier(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::IdentifierIsString(NaClSrpcChannel* channel,
                                            NaClSrpcArg** inputs,
                                            NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
   outputs[0]->u.ival = NPN_IdentifierIsString(identifier);
   return NACL_SRPC_RESULT_OK;
@@ -310,6 +323,7 @@ NaClSrpcError NPModule::IdentifierIsString(NaClSrpcChannel* channel,
 NaClSrpcError NPModule::Utf8FromIdentifier(NaClSrpcChannel* channel,
                                            NaClSrpcArg** inputs,
                                            NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(channel);
   NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
   char* name = NPN_UTF8FromIdentifier(identifier);
   if (NULL == name) {
@@ -399,6 +413,7 @@ NPError NPModule::New(char* mimetype,
 //
 
 NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
+  UNREFERENCED_PARAMETER(save);
   NPError nperr;
   NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
                                               "NPP_Destroy",
@@ -411,33 +426,37 @@ NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
 }
 
 NPError NPModule::SetWindow(NPP npp, NPWindow* window) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(window);
   // TODO(sehr): RPC to module.
   return NPERR_NO_ERROR;
 }
 
 NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {
+  // NOTE: we do not use a switch statement because of compiler warnings */
   // TODO(sehr): RPC to module for most.
-  switch (variable) {
-  case NPPVpluginNameString:
+  if (NPPVpluginNameString == variable) {
     *static_cast<const char**>(value) = "NativeClient NPAPI bridge plug-in";
-    break;
-  case NPPVpluginDescriptionString:
+    return NPERR_NO_ERROR;
+  } else if (NPPVpluginDescriptionString == variable) {
     *static_cast<const char**>(value) =
-        "A plug-in for NPAPI based NativeClient modules.";
-    break;
-  case NPPVpluginScriptableNPObject:
+      "A plug-in for NPAPI based NativeClient modules.";
+    return NPERR_NO_ERROR;
+  } else if (NPPVpluginScriptableNPObject == variable) {
     *reinterpret_cast<NPObject**>(value) = GetScriptableInstance(npp);
-    if (!*reinterpret_cast<NPObject**>(value)) {
+    if (*reinterpret_cast<NPObject**>(value)) {
+      return NPERR_NO_ERROR;
+    } else {
       return NPERR_GENERIC_ERROR;
     }
-    break;
-  default:
+  } else {
     return NPERR_INVALID_PARAM;
   }
-  return NPERR_NO_ERROR;
 }
 
 int16_t NPModule::HandleEvent(NPP npp, void* event) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(event);
   // TODO(sehr): Need to make an RPC to pass the event.
   return 0;
 }
@@ -470,15 +489,25 @@ NPError NPModule::NewStream(NPP npp,
                             NPStream* stream,
                             NPBool seekable,
                             uint16_t* stype) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(type);
+  UNREFERENCED_PARAMETER(stream);
+  UNREFERENCED_PARAMETER(seekable);
   *stype = NP_ASFILEONLY;
   return NPERR_NO_ERROR;
 }
 
 void NPModule::StreamAsFile(NPP npp, NPStream* stream, const char* filename) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(stream);
+  UNREFERENCED_PARAMETER(filename);
   // TODO(sehr): Implement using UrlAsNaClDesc.
 }
 
 NPError NPModule::DestroyStream(NPP npp, NPStream *stream, NPError reason) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(stream);
+  UNREFERENCED_PARAMETER(reason);
   return NPERR_NO_ERROR;
 }
 
@@ -486,6 +515,8 @@ void NPModule::URLNotify(NPP npp,
                          const char* url,
                          NPReason reason,
                          void* notify_data) {
+  UNREFERENCED_PARAMETER(url);
+  UNREFERENCED_PARAMETER(notify_data);
   DebugPrintf("URLNotify: npp %p, rsn %d\n", static_cast<void*>(npp), reason);
   // TODO(sehr): need a call when reason is failure.
   if (NPRES_DONE != reason) {

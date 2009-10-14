@@ -32,7 +32,7 @@
 Import('env')
 
 # TODO(gregoryd): eliminate the need for the next line
-env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
+#env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
 
 if env['TARGET_PLATFORM'] == 'LINUX':
     env.Append(CPPDEFINES=['XP_UNIX'])

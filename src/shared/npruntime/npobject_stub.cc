@@ -81,6 +81,7 @@ NPObjectStub* NPObjectStub::Lookup(NaClSrpcChannel* channel, RpcArg* arg) {
 NaClSrpcError NPObjectStub::Deallocate(NaClSrpcChannel* channel,
                                        NaClSrpcArg** inputs,
                                        NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("Deallocate\n");
   RpcArg arg0(NULL, inputs[0]);
   NPObjectStub* stub = Lookup(channel, &arg0);
@@ -95,6 +96,7 @@ NaClSrpcError NPObjectStub::Deallocate(NaClSrpcChannel* channel,
 NaClSrpcError NPObjectStub::Invalidate(NaClSrpcChannel* channel,
                                        NaClSrpcArg** inputs,
                                        NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("Invalidate\n");
   RpcArg arg0(NULL, inputs[0]);
   NPObjectStub* stub = Lookup(channel, &arg0);
@@ -319,6 +321,7 @@ NaClSrpcError NPObjectStub::Construct(NaClSrpcChannel* channel,
 NaClSrpcError NPObjectStub::SetException(NaClSrpcChannel* channel,
                                          NaClSrpcArg** inputs,
                                          NaClSrpcArg** outputs) {
+  UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("SetException\n");
   RpcArg arg0(NULL, inputs[0]);
   NPObjectStub* stub = Lookup(channel, &arg0);

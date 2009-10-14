@@ -60,6 +60,8 @@ namespace {
 // They simply extract the proxy address and invoke the corresponding
 // function on that object.
 NPObject* Alloc(NPP npp, NPClass* aClass) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(aClass);
   return nacl::NPObjectProxy::GetLastAllocated();
 }
 
@@ -499,6 +501,7 @@ bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
 
 bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
                               uint32_t* identifier_count) {
+  UNREFERENCED_PARAMETER(identifiers);
   DebugPrintf("Enumerate(%p)\n", reinterpret_cast<void*>(this));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
