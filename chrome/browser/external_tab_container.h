@@ -210,6 +210,10 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Contains ExternalTabContainers that have not been connected to as yet.
   static PendingTabs pending_tabs_;
 
+  // Allows us to run tasks on the ExternalTabContainer instance which are
+  // bound by its lifetime.
+  ScopedRunnableMethodFactory<ExternalTabContainer> external_method_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
 

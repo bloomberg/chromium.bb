@@ -41,7 +41,8 @@ ExternalTabContainer::ExternalTabContainer(
       ignore_next_load_notification_(false),
       automation_resource_message_filter_(filter),
       load_requests_via_automation_(false),
-      handle_top_level_requests_(false) {
+      handle_top_level_requests_(false),
+      external_method_factory_(this) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -133,8 +134,10 @@ bool ExternalTabContainer::Init(Profile* profile,
   // Start loading initial URL
   if (!initial_url.is_empty()) {
     // Navigate out of context since we don't have a 'tab_handle_' yet.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ExternalTabContainer::Navigate, initial_url, GURL()));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        external_method_factory_.NewRunnableMethod(
+            &ExternalTabContainer::Navigate, initial_url, GURL()));
   }
 
   // We need WS_POPUP to be on the window during initialization, but
@@ -199,6 +202,12 @@ bool ExternalTabContainer::Reinitialize(
     automation_profile_->Initialize(profile, filter);
   }
 
+  // We cannot send the navigation state right away as the automation channel
+  // may not have been fully setup yet.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      external_method_factory_.NewRunnableMethod(
+          &ExternalTabContainer::NavigationStateChanged, tab_contents_, 0));
   return true;
 }
 
@@ -609,8 +618,11 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
   nav_info->relative_offset = relative_offset;
   nav_info->navigation_index =
       tab_contents_->controller().GetCurrentEntryIndex();
-  nav_info->title =  UTF16ToWideHack(entry->title());
   nav_info->url = entry->url();
+  nav_info->title =  UTF16ToWideHack(entry->title());
+  if (nav_info->title.empty())
+    nav_info->title = UTF8ToWide(nav_info->url.spec());
+
   nav_info->security_style = entry->ssl().security_style();
   nav_info->has_mixed_content = entry->ssl().has_mixed_content();
   return true;
