@@ -2721,9 +2721,6 @@ BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test2.html = F
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test3.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test4.html = FAIL
 
-// New test, added in http://trac.webkit.org/changeset/43822, fails for us
-BUG12197 : LayoutTests/editing/pasteboard/get-data-text-plain-drop.html = FAIL
-
 // xhtml mp tests were added in http://trac.webkit.org/changeset/43865 and are
 // skipped on all platforms upstream.
 BUG12254 SKIP : LayoutTests/fast/xhtmlmp/check-doctype-declaration.xhtml = FAIL
@@ -2743,10 +2740,6 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 BUG12341 WIN LINUX MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
-
-// webkit 44010+44027 introducted new tests
-BUG12477 : LayoutTests/http/tests/local/drag-over-remote-content.html = FAIL
-BUG12477 : LayoutTests/http/tests/security/drag-over-remote-content-iframe.html = FAIL
 
 // WebKit 44202:44252 introduced new tests
 BUG12881 WIN LINUX : LayoutTests/fast/forms/isindex-placeholder.html = FAIL

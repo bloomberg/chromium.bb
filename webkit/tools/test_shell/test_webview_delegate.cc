@@ -533,7 +533,6 @@ void TestWebViewDelegate::startDragging(
     //                         ok_effect, &effect);
     //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
   }
-  shell_->webView()->dragSourceSystemDragEnded();
 }
 
 void TestWebViewDelegate::navigateBackForwardSoon(int offset) {

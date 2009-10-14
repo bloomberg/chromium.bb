@@ -64,15 +64,36 @@ gfx::Point EventSendingController::last_mouse_pos_;
 WebMouseEvent::Button EventSendingController::pressed_button_ =
     WebMouseEvent::ButtonNone;
 
-int EventSendingController::last_button_number_ = -1;
+WebMouseEvent::Button EventSendingController::last_button_type_ =
+    WebMouseEvent::ButtonNone;
 
 namespace {
+
+struct SavedEvent {
+  enum SavedEventType {
+    Unspecified,
+    MouseUp,
+    MouseMove,
+    LeapForward
+  };
+
+  SavedEventType type;
+  WebMouseEvent::Button button_type;  // For MouseUp
+  gfx::Point pos;                     // For MouseMove.
+  int milliseconds;                   // For LeapForward.
+
+  SavedEvent()
+    : type(Unspecified),
+      button_type(WebMouseEvent::ButtonNone),
+      milliseconds(0) {
+  }
+};
 
 static WebDragData current_drag_data;
 static WebDragOperation current_drag_effect;
 static WebDragOperationsMask current_drag_effects_allowed;
 static bool replaying_saved_events = false;
-static std::queue<WebMouseEvent> mouse_event_queue;
+static std::queue<SavedEvent> mouse_event_queue;
 
 // Time and place of the last mouse up event.
 static double last_click_time_sec = 0;
@@ -213,9 +234,12 @@ void EventSendingController::Reset() {
   wmSysChar.Set(WM_SYSCHAR);
   wmSysDeadChar.Set(WM_SYSDEADCHAR);
 #endif
+  last_mouse_pos_.SetPoint(0, 0);
   last_click_time_sec = 0;
+  last_click_pos.SetPoint(0, 0);
   click_count = 0;
-  last_button_number_ = -1;
+  last_button_type_ = WebMouseEvent::ButtonNone;
+  time_offset_ms = 0;
 }
 
 // static
@@ -228,7 +252,7 @@ void EventSendingController::DoDragDrop(const WebKit::WebPoint &event_pos,
                                         const WebDragData& drag_data,
                                         WebDragOperationsMask mask) {
   WebMouseEvent event;
-  InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, event_pos, &event);
+  InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, last_mouse_pos_, &event);
   WebPoint client_point(event.x, event.y);
   WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data = drag_data;
@@ -262,6 +286,18 @@ int EventSendingController::GetButtonNumberFromSingleArg(
   return button_code;
 }
 
+void EventSendingController::UpdateClickCountForButton(
+    WebMouseEvent::Button button_type) {
+  if ((GetCurrentEventTimeSec() - last_click_time_sec < kMultiClickTimeSec) &&
+      (!outside_multiclick_radius(last_mouse_pos_, last_click_pos)) &&
+      (button_type == last_button_type_)) {
+    ++click_count;
+  } else {
+    click_count = 1;
+    last_button_type_ = button_type;
+  }
+}
+
 //
 // Implemented javascript methods.
 //
@@ -279,15 +315,7 @@ void EventSendingController::mouseDown(
   WebMouseEvent::Button button_type = GetButtonTypeFromButtonNumber(
       button_number);
 
-  if ((GetCurrentEventTimeSec() - last_click_time_sec < kMultiClickTimeSec) &&
-      (!outside_multiclick_radius(last_mouse_pos_, last_click_pos)) &&
-      (button_number == last_button_number_)) {
-    ++click_count;
-  } else {
-    click_count = 1;
-  }
-
-  last_button_number_ = button_number;
+  UpdateClickCountForButton(button_type);
 
   WebMouseEvent event;
   pressed_button_ = button_type;
@@ -309,25 +337,27 @@ void EventSendingController::mouseUp(
   WebMouseEvent::Button button_type = GetButtonTypeFromButtonNumber(
       button_number);
 
-  last_button_number_ = button_number;
-
-  WebMouseEvent event;
-  InitMouseEvent(WebInputEvent::MouseUp, button_type,
-                 last_mouse_pos_, &event);
   if (drag_mode() && !replaying_saved_events) {
-    mouse_event_queue.push(event);
+    SavedEvent saved_event;
+    saved_event.type = SavedEvent::MouseUp;
+    saved_event.button_type = button_type;
+    mouse_event_queue.push(saved_event);
     ReplaySavedEvents();
   } else {
+    WebMouseEvent event;
+    InitMouseEvent(WebInputEvent::MouseUp, button_type,
+                   last_mouse_pos_, &event);
     DoMouseUp(event);
   }
-
-  last_click_time_sec = event.timeStampSeconds;
-  last_click_pos = gfx::Point(event.x, event.y);
 }
 
-/* static */ void EventSendingController::DoMouseUp(const WebMouseEvent& e) {
+// static
+void EventSendingController::DoMouseUp(const WebMouseEvent& e) {
   webview()->handleInputEvent(e);
+
   pressed_button_ = WebMouseEvent::ButtonNone;
+  last_click_time_sec = e.timeStampSeconds;
+  last_click_pos = last_mouse_pos_;
 
   // If we're in a drag operation, complete it.
   if (!current_drag_data.isNull()) {
@@ -344,6 +374,7 @@ void EventSendingController::mouseUp(
     }
     webview()->dragSourceEndedAt(
         client_point, screen_point, current_drag_effect);
+    webview()->dragSourceSystemDragEnded();
 
     current_drag_data.reset();
   }
@@ -356,15 +387,19 @@ void EventSendingController::mouseMoveTo(
   if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
     webview()->layout();
 
-    WebMouseEvent event;
-    last_mouse_pos_.SetPoint(args[0].ToInt32(), args[1].ToInt32());
-    InitMouseEvent(WebInputEvent::MouseMove, pressed_button_,
-                   last_mouse_pos_, &event);
+    gfx::Point mouse_pos;
+    mouse_pos.SetPoint(args[0].ToInt32(), args[1].ToInt32());
 
-    if (drag_mode() && pressed_button_ != WebMouseEvent::ButtonNone &&
+    if (drag_mode() && pressed_button_ == WebMouseEvent::ButtonLeft &&
         !replaying_saved_events) {
-      mouse_event_queue.push(event);
+      SavedEvent saved_event;
+      saved_event.type = SavedEvent::MouseMove;
+      saved_event.pos = mouse_pos;
+      mouse_event_queue.push(saved_event);
     } else {
+      WebMouseEvent event;
+      InitMouseEvent(WebInputEvent::MouseMove, pressed_button_,
+                     mouse_pos, &event);
       DoMouseMove(event);
     }
   }
@@ -372,6 +407,8 @@ void EventSendingController::mouseMoveTo(
 
 // static
 void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
+  last_mouse_pos_.SetPoint(e.x, e.y);
+
   webview()->handleInputEvent(e);
 
   if (pressed_button_ != WebMouseEvent::ButtonNone &&
@@ -528,11 +565,24 @@ void EventSendingController::leapForward(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  // TODO(mpcomplete): DumpRenderTree defers this under certain conditions.
+  if (args.size() <1 || !args[0].isNumber())
+    return;
 
-  if (args.size() >=1 && args[0].isNumber()) {
-    AdvanceEventTime(args[0].ToInt32());
+  int milliseconds = args[0].ToInt32();
+  if (drag_mode() && pressed_button_ == WebMouseEvent::ButtonLeft &&
+      !replaying_saved_events) {
+    SavedEvent saved_event;
+    saved_event.type = SavedEvent::LeapForward;
+    saved_event.milliseconds = milliseconds;
+    mouse_event_queue.push(saved_event);
+  } else {
+    DoLeapForward(milliseconds);
   }
+}
+
+// static
+void EventSendingController::DoLeapForward(int milliseconds) {
+  AdvanceEventTime(milliseconds);
 }
 
 // Apple's port of WebKit zooms by a factor of 1.2 (see
@@ -564,16 +614,27 @@ void EventSendingController::zoomPageOut(
 void EventSendingController::ReplaySavedEvents() {
   replaying_saved_events = true;
   while (!mouse_event_queue.empty()) {
-    WebMouseEvent event = mouse_event_queue.front();
+    SavedEvent e = mouse_event_queue.front();
     mouse_event_queue.pop();
 
-    switch (event.type) {
-      case WebInputEvent::MouseUp:
-        DoMouseUp(event);
-        break;
-      case WebInputEvent::MouseMove:
+    switch (e.type) {
+      case SavedEvent::MouseMove: {
+        WebMouseEvent event;
+        InitMouseEvent(WebInputEvent::MouseMove, pressed_button_,
+                       e.pos, &event);
         DoMouseMove(event);
         break;
+      }
+      case SavedEvent::LeapForward:
+        DoLeapForward(e.milliseconds);
+        break;
+      case SavedEvent::MouseUp: {
+        WebMouseEvent event;
+        InitMouseEvent(WebInputEvent::MouseUp, e.button_type,
+                       last_mouse_pos_, &event);
+        DoMouseUp(event);
+        break;
+      }
       default:
         NOTREACHED();
     }
@@ -588,11 +649,7 @@ void EventSendingController::contextClick(
 
   webview()->layout();
 
-  if (GetCurrentEventTimeSec() - last_click_time_sec >= 1) {
-    click_count = 1;
-  } else {
-    ++click_count;
-  }
+  UpdateClickCountForButton(WebMouseEvent::ButtonRight);
 
   // Generate right mouse down and up.
 
