@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
   RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCompletionOnPause) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestCompletionOnPause) {
   RunTest("testCompletionOnPause", kCompletionOnPause);
 }
 
