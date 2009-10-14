@@ -71,7 +71,8 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 #endif
 
-#if USE_MMX
+// x64 uses MMX2 (SSE) so emms is not required.
+#if USE_MMX && !defined(ARCH_CPU_X86_64)
 #if defined(_MSC_VER)
 #define EMMS() __asm emms
 #else
