@@ -696,7 +696,7 @@ void GeneralPageView::InitStartupGroup() {
   columns.push_back(TableColumn());
   startup_custom_pages_table_ = new views::TableView(
       startup_custom_pages_table_model_.get(), columns,
-      views::ICON_AND_TEXT, true, false, true);
+      views::ICON_AND_TEXT, false, false, true);
   // URLs are inherently left-to-right, so do not mirror the table.
   startup_custom_pages_table_->EnableUIMirroringForRTLLanguages(false);
   startup_custom_pages_table_->SetObserver(this);
@@ -902,10 +902,20 @@ void GeneralPageView::AddURLToStartupURLs() {
 }
 
 void GeneralPageView::RemoveURLsFromStartupURLs() {
+  int selected_row = 0;
   for (views::TableView::iterator i =
        startup_custom_pages_table_->SelectionBegin();
        i != startup_custom_pages_table_->SelectionEnd(); ++i) {
     startup_custom_pages_table_model_->Remove(*i);
+    selected_row = *i;
+  }
+  int row_count = startup_custom_pages_table_->RowCount();
+  if (selected_row >= row_count)
+    selected_row = row_count - 1;
+  if (selected_row >= 0) {
+    // Select the next row after the last row deleted, or the above item if the
+    // latest item was deleted or nothing when the table doesn't have any items.
+    startup_custom_pages_table_->Select(selected_row);
   }
   SaveStartupPref();
 }
@@ -953,6 +963,7 @@ void GeneralPageView::AddBookmark(UrlPicker* dialog,
   else
     index++;
   startup_custom_pages_table_model_->Add(index, url);
+  startup_custom_pages_table_->Select(index);
 
   SaveStartupPref();
 }
