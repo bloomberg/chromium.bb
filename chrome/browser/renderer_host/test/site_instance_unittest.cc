@@ -480,32 +480,44 @@ TEST_F(SiteInstanceTest, GetSiteInstanceMap) {
   instance3->use_process_per_site = true;
 
   // The same profile with the same site.
-  EXPECT_EQ(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s1a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s1b(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  EXPECT_EQ(s1a, s1b);
 
   // The same profile with different sites.
-  EXPECT_NE(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+  scoped_refptr<SiteInstance> s2a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s2b(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://foo/boo")));
+  EXPECT_NE(s2a, s2b);
 
   // The different profiles with the same site.
-  EXPECT_NE(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance2->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s3a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s3b(instance2->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  EXPECT_NE(s3a, s3b);
 
   // The different profiles with different sites.
-  EXPECT_NE(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance2->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+  scoped_refptr<SiteInstance> s4a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s4b(instance2->GetSiteInstanceForURL(
+      GURL("chrome-extension://foo/boo")));
+  EXPECT_NE(s4a, s4b);
 
-  // The dervived profiles with the same site.
-  EXPECT_EQ(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance3->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+  // The derived profiles with the same site.
+  scoped_refptr<SiteInstance> s5a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s5b(instance3->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  EXPECT_EQ(s5a, s5b);
 
-  // The dervived profiles with the different sites.
-  EXPECT_NE(
-      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
-      instance3->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+  // The derived profiles with the different sites.
+  scoped_refptr<SiteInstance> s6a(instance1->GetSiteInstanceForURL(
+      GURL("chrome-extension://baz/bar")));
+  scoped_refptr<SiteInstance> s6b(instance3->GetSiteInstanceForURL(
+      GURL("chrome-extension://foo/boo")));
+  EXPECT_NE(s6a, s6b);
 }
