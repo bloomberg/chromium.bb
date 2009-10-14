@@ -58,7 +58,8 @@ static void TestAction(Browser* browser) {
   ASSERT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BrowserAction) {
+// Crashes frequently on Linux. See http://crbug.com/24802.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_BrowserAction) {
   StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
