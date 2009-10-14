@@ -18,13 +18,16 @@ APP_PATH="${1}"
 CODESIGN_KEYCHAIN="${2}"
 CODESIGN_ID="${3}"
 
+# Use custom resource rules for the browser application.
+BROWSER_APP_RULES="$(dirname "${0}")/app_resource_rules.plist"
+
 # An .app bundle to be signed can be signed directly.  Signging a framework
 # bundle requires that each version within be signed individually.
 # http://developer.apple.com/mac/library/technotes/tn2007/tn2206.html#TNTAG13
 
 BROWSER_APP="${APP_PATH}"
-FRAMEWORK="${BROWSER_APP}/Contents/Frameworks/@MAC_PRODUCT_NAME@ Framework.framework/Versions/A"
-HELPER_APP="${BROWSER_APP}/Contents/Resources/@MAC_PRODUCT_NAME@ Helper.app"
+FRAMEWORK="${BROWSER_APP}/Contents/Versions/@VERSION@/@MAC_PRODUCT_NAME@ Framework.framework/Versions/A"
+HELPER_APP="${BROWSER_APP}/Contents/Versions/@VERSION@/@MAC_PRODUCT_NAME@ Helper.app"
 
 echo "${0}: signing..."
 
@@ -33,7 +36,8 @@ echo "${0}: signing..."
 
 codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${FRAMEWORK}"
 codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${HELPER_APP}"
-codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${BROWSER_APP}"
+codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" \
+    "${BROWSER_APP}" --resource-rules "${BROWSER_APP_RULES}"
 
 # Verify everything to ensure that signing the outer bundle didn't break an
 # inner bundle.

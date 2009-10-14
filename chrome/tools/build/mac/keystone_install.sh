@@ -27,28 +27,46 @@ if [ $# -lt 1 ] || [ ! -d "${1}" ]; then
 fi
 
 # Who we are.
-APP_NAME="Google Chrome.app"
+PRODUCT_NAME="Google Chrome"
+APP_NAME="${PRODUCT_NAME}.app"
+FRAMEWORK_NAME="${PRODUCT_NAME} Framework.framework"
 SRC="${1}/${APP_NAME}"
 
 # Sanity, make sure that there's something to copy from.
-if [ ! -d "${SRC}" ]; then
+if [ -z "${SRC}" ] || [ ! -d "${SRC}" ]; then
   exit 10
 fi
 
-# Figure out where we're going.
-PRODUCT_ID=$(defaults read "${SRC}/Contents/Info" KSProductID || exit 3)
+# Figure out where we're going.  Determine the application version to be
+# installed, use that to locate the framework, and then look inside the
+# framework for the Keystone product ID.
+APP_VERSION_KEY="CFBundleShortVersionString"
+UPD_VERSION_APP=$(defaults read "${SRC}/Contents/Info" "${APP_VERSION_KEY}" ||
+                  exit 10)
+UPD_KS_PLIST="${SRC}/Contents/Versions/${UPD_VERSION_APP}/${FRAMEWORK_NAME}/Resources/Info"
+PRODUCT_ID=$(defaults read "${UPD_KS_PLIST}" KSProductID || exit 10)
 DEST=$(ksadmin -pP "${PRODUCT_ID}" | grep xc= | sed -E 's/.+path=(.+)>$/\1/g')
 
 # More sanity checking.
-if [ -z "${SRC}" ] || [ -z "${DEST}" ] || [ ! -d $(dirname "${DEST}") ]; then
+if [ -z "${DEST}" ] || [ ! -d "$(dirname "${DEST}")" ]; then
   exit 2
 fi
 
-# Read old version to help confirm install happiness
-OLD_VERSION=$(defaults read "${DEST}/Contents/Info" KSVersion || exit 3)
+# Read old version to help confirm install happiness.  Older versions kept
+# the KSVersion key in the application's Info.plist.  Newer versions keep it
+# in the versioned framework's Info.plist.
+KS_VERSION_KEY="KSVersion"
+OLD_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
+                  defaults read "${DEST}/Contents/Info" "${KS_VERSION_KEY}" ||
+                  exit 3)
+OLD_KS_PLIST="${DEST}/Contents/Versions/${OLD_VERSION_APP}/${FRAMEWORK_NAME}/Resources/Info"
+if [ ! -e "${OLD_KS_PLIST}.plist" ] ; then
+  OLD_KS_PLIST="${DEST}/Contents/Info"
+fi
+OLD_VERSION_KS=$(defaults read "${OLD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 3)
 
 # Make sure we have permission to write the destination
-DEST_DIRECTORY=$(dirname "${DEST}")
+DEST_DIRECTORY="$(dirname "${DEST}")"
 if [ ! -w "${DEST_DIRECTORY}" ]; then
   exit 4
 fi
@@ -56,18 +74,21 @@ fi
 # This usage will preserve any changes the user made to the application name.
 # TODO(jrg): this may choke a running Chrome.app; be smarter.
 # Note:  If the rsync fails we do not update the ticket version.
-rsync -a --delete "${SRC}/" "${DEST}/" || exit 5
+rsync -ac --delete "${SRC}/" "${DEST}/" || exit 5
 
-# Read the new values (e.g. version)
-VERSION=$(defaults read "${DEST}/Contents/Info" KSVersion || exit 6)
-URL=$(defaults read "${DEST}/Contents/Info" KSUpdateURL || exit 6)
+# Read the new values (e.g. version).  Get the installed application version
+# to get the path to the framework, where the Keystone keys are stored.
+NEW_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
+                  exit 6)
+NEW_KS_PLIST="${DEST}/Contents/Versions/${NEW_VERSION_APP}/${FRAMEWORK_NAME}/Resources/Info"
+NEW_VERSION_KS=$(defaults read "${NEW_KS_PLIST}" "${KS_VERSION_KEY}" || exit 6)
+URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 6)
 # The channel ID is optional.  Suppress stderr to prevent Keystone from seeing
 # possible error output.
-CHANNEL_ID=$(defaults read "${DEST}/Contents/Info" KSChannelID 2>/dev/null || \
-             true)
+CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" KSChannelID 2>/dev/null || true)
 
 # Compare old and new versions.  If they are equal we failed somewhere.
-if [ "${OLD_VERSION}" = "${VERSION}" ]; then
+if [ "${OLD_VERSION_KS}" = "${NEW_VERSION_KS}" ]; then
   exit 7
 fi
 
@@ -83,13 +104,13 @@ fi
 # patterns for any support checks we need.
 ksadmin --register \
         -P "${PRODUCT_ID}" \
-        --version "${VERSION}" \
+        --version "${NEW_VERSION_KS}" \
         --xcpath "${DEST}" \
         --url "${URL}" \
         --tag "${CHANNEL_ID}" || \
   ksadmin --register \
           -P "${PRODUCT_ID}" \
-          --version "${VERSION}" \
+          --version "${NEW_VERSION_KS}" \
           --xcpath "${DEST}" \
           --url "${URL}" || exit 8
 

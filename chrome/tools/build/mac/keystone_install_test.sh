@@ -18,7 +18,9 @@ if [ ! -f "${INSTALLER}" ]; then
 fi
 
 # What I test
-APPNAME="Google Chrome.app"
+PRODNAME="Google Chrome"
+APPNAME="${PRODNAME}.app"
+FWKNAME="${PRODNAME} Framework.framework"
 
 # Temp directory to be used as the disk image (source)
 TEMPDIR=$(mktemp -d ${TMPDIR}/$(basename ${0}).XXXXXX)
@@ -61,15 +63,11 @@ function pass_installer() {
   fi
 }
 
-# Most of the setup for an install source and dest
-function make_basic_src_and_dest() {
-  chmod ugo+w "${TEMPDIR}"
-  rm -rf "${TEMPDIR}"
-  mkdir -p "${TEMPDIR}/${APPNAME}/Contents"
-  defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
-    KSProductID "com.google.Chrome"
-  defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" KSVersion 1
+# Make an old-style destination directory, to test updating from old-style
+# versions to new-style versions.
+function make_old_dest() {
   DEST="${TEMPDIR}"/Dest.app
+  rm -rf "${DEST}"
   mkdir -p "${DEST}"/Contents
   defaults write "${DEST}/Contents/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
@@ -78,6 +76,42 @@ echo "echo xc=<blah path=$DEST>"
 exit 0
 EOF
   chmod u+x "${TEMPDIR}"/ksadmin
+}
+
+# Make a new-style destination directory, to test updating between new-style
+# versions.
+function make_new_dest() {
+  DEST="${TEMPDIR}"/Dest.app
+  rm -rf "${DEST}"
+  RSRCDIR="${DEST}/Contents/Versions/0/${FWKNAME}/Resources"
+  mkdir -p "${RSRCDIR}"
+  defaults write "${DEST}/Contents/Info" CFBundleShortVersionString 0
+  defaults write "${RSRCDIR}/Info" KSVersion 0
+  cat >"${TEMPDIR}"/ksadmin <<EOF
+#!/bin/sh
+echo "echo xc=<blah path=$DEST>"
+exit 0
+EOF
+  chmod u+x "${TEMPDIR}"/ksadmin
+}
+
+# Make a simple source directory - the update that is to be applied
+function make_src() {
+  chmod ugo+w "${TEMPDIR}"
+  rm -rf "${TEMPDIR}/${APPNAME}"
+  RSRCDIR="${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources"
+  mkdir -p "${RSRCDIR}"
+  defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
+      CFBundleShortVersionString "1"
+  defaults write "${RSRCDIR}/Info" \
+      KSProductID "com.google.Chrome"
+  defaults write "${RSRCDIR}/Info" \
+      KSVersion "2"
+}
+
+function make_basic_src_and_dest() {
+  make_src
+  make_new_dest
 }
 
 fail_installer "No source anything"
@@ -92,9 +126,17 @@ fail_installer "Writable dest directory"
 make_basic_src_and_dest
 fail_installer "Was no KSUpdateURL in dest after copy"
 
+make_src
+make_old_dest
+defaults write \
+    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
+    KSUpdateURL "http://foo.bar"
+pass_installer "Old-style update"
+
 make_basic_src_and_dest
-defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
-  KSUpdateURL "http://foo.bar"
+defaults write \
+    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
+    KSUpdateURL "http://foo.bar"
 pass_installer "ALL"
 
 cleanup_tempdir

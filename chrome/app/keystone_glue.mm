@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "keystone_glue.h"
+#include "base/mac_util.h"
+#import "chrome/app/keystone_glue.h"
 
 @interface KeystoneGlue(Private)
 
@@ -52,8 +53,7 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 @implementation KeystoneGlue
 
 + (id)defaultKeystoneGlue {
-  // TODO(jrg): rename this file to .mm so I can use C++ and
-  // make this type a base::SingletonObjC<KeystoneGlue>.
+  // TODO(jrg): use base::SingletonObjC<KeystoneGlue>
   static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
   if (sDefaultKeystoneGlue == nil) {
@@ -78,7 +78,8 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 }
 
 - (NSDictionary*)infoDictionary {
-  return [[NSBundle mainBundle] infoDictionary];
+  // Use mac_util::MainAppBundle() to get the app framework's dictionary.
+  return [mac_util::MainAppBundle() infoDictionary];
 }
 
 - (void)loadParameters {
@@ -86,6 +87,8 @@ NSString *KSRegistrationRemoveExistingTag = @"";
   NSString* url = [infoDictionary objectForKey:@"KSUpdateURL"];
   NSString* product = [infoDictionary objectForKey:@"KSProductID"];
   if (product == nil) {
+    // Use [NSBundle mainBundle] to fall back to the app's own bundle
+    // identifier, not the app framework's.
     product = [[NSBundle mainBundle] bundleIdentifier];
   }
   NSString* version = [infoDictionary objectForKey:@"KSVersion"];
@@ -110,10 +113,10 @@ NSString *KSRegistrationRemoveExistingTag = @"";
   if (!productID_ || !url_ || !version_)
     return NO;
 
-  // Load the KeystoneRegistration framework bundle.
-  NSBundle* mainBundle = [NSBundle mainBundle];
+  // Load the KeystoneRegistration framework bundle if present.  It lives
+  // inside the framework, so use mac_util::MainAppBundle();
   NSString* ksrPath =
-      [[mainBundle privateFrameworksPath]
+      [[mac_util::MainAppBundle() privateFrameworksPath]
           stringByAppendingPathComponent:@"KeystoneRegistration.framework"];
   NSBundle* ksrBundle = [NSBundle bundleWithPath:ksrPath];
   [ksrBundle load];
@@ -129,6 +132,10 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 }
 
 - (void)registerWithKeystone {
+  // The existence checks should use the path to the app bundle, not the
+  // app framework bundle, so use [NSBundle mainBundle] instead of
+  // mac_util::MainBundle().
+  //
   // Only use new API if we can.  This lets us land the new call
   // before the new Keystone has been released.
   //

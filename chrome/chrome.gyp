@@ -12,8 +12,8 @@
     },
     'version_py_path': '<(version_py_path)',
     'version_path': '<(version_path)',
-    'version_major_minor':
-        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@")',
+    'version_full':
+        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
     'version_build_patch':
         '<!(python <(version_py_path) -f <(version_path) -t "@BUILD@.@PATCH@")',
 
@@ -3469,18 +3469,24 @@
                   'variables': {
                     'make_sign_sh_path': 'tools/build/mac/make_sign_sh',
                     'sign_sh_in_path': 'tools/build/mac/make_sign_sh',
+                    'app_resource_rules_in_path':
+                        'tools/build/mac/app_resource_rules.plist.in',
                   },
                   'inputs': [
                     '<(make_sign_sh_path)',
                     '<(sign_sh_in_path)',
+                    '<(app_resource_rules_in_path)',
+                    '<(version_path)',
                   ],
                   'outputs': [
                     '<(mac_packaging_dir)/sign.sh',
+                    '<(mac_packaging_dir)/app_resource_rules.plist',
                   ],
                   'action': [
                     '<(make_sign_sh_path)',
                     '<(mac_packaging_sh_dir)',
                     '<(mac_product_name)',
+                    '<(version_full)',
                   ],
                 },
               ],
@@ -3498,9 +3504,6 @@
             'CHROMIUM_CREATOR': '<(mac_creator)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
-          'mac_bundle_resources': [
-            '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
-          ],
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
@@ -3553,21 +3556,25 @@
           ],
           'copies': [
             {
-              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Frameworks',
-              'files': ['<(PRODUCT_DIR)/<(mac_product_name) Framework.framework'],
+              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)',
+              'files': [
+                '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework',
+                '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
+              ],
             },
           ],
           'postbuilds': [
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the helper_app and chrome_dll
-              # targets.  Use -b0 to not include any Breakpad information;
-              # that all goes into the framework's Info.plist.
+              # targets.  Use -b0 and -k0 to not include any Breakpad or
+              # Keystone information; that all goes into the framework's
+              # Info.plist.  Use -s1 to include Subversion information.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
                          '-b0',
-                         '-k<(mac_keystone)',
-                         '-s1',  # Include Subversion information
+                         '-k0',
+                         '-s1',
                          '<(branding)'],
             },
             {
@@ -3578,6 +3585,13 @@
               # TODO(mark): Remove after October 20, 2009.
               'postbuild_name': 'Clean up old resources',
               'action': ['app/clean_mac_resources'],
+            },
+            {
+              'postbuild_name': 'Clean up old versions',
+              'action': [
+                'tools/build/mac/clean_up_old_versions',
+                '<(version_full)'
+              ],
             },
           ],  # postbuilds
         }, { # else: OS != "mac"
@@ -4083,7 +4097,7 @@
         ['OS=="mac"', {
           'sources': [
             'app/keystone_glue.h',
-            'app/keystone_glue.m',
+            'app/keystone_glue.mm',
             'app/breakpad_mac_stubs.mm',
           ],
           'sources!': [
@@ -4250,8 +4264,8 @@
         'app/breakpad_mac_stubs.mm',
         # *NO* files in chrome/app have unit tests (except keystone_glue)!!!
         # It seems a waste to have an app_unittests target, so for now
-        # I add keystone_glue.m explicitly to this target.
-        'app/keystone_glue.m',
+        # I add keystone_glue.mm explicitly to this target.
+        'app/keystone_glue.mm',
         'app/keystone_glue_unittest.mm',
         # All unittests in browser, common, and renderer.
         'browser/app_controller_mac_unittest.mm',
@@ -5041,7 +5055,8 @@
                 # version numbers.
                 'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
                 'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
-                'DYLIB_INSTALL_NAME_BASE': '@executable_path/../Frameworks',
+                'DYLIB_INSTALL_NAME_BASE':
+                    '@executable_path/../Versions/<(version_full)',
                 # FRAMEWORK_VERSION is used as the name of the directory in
                 # the framework's Versions directory that the Current symbolic
                 # link points to.  Unfortunately, Xcode does not create this
@@ -5052,8 +5067,7 @@
                 # its default, 'A'.  This is more than sufficient for our
                 # purposes, because the framework does not need to maintain
                 # any sort of stable public interface.
-                # 'FRAMEWORK_VERSION':
-                #     '<(version_major_minor).<(version_build_patch)',
+                # 'FRAMEWORK_VERSION': '<(version_full)',
                 'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
                 'INFOPLIST_FILE': 'app/framework-Info.plist',
               },
@@ -5062,7 +5076,7 @@
                 'app/chrome_dll_resource.h',
                 'app/chrome_exe_main.mm',
                 'app/keystone_glue.h',
-                'app/keystone_glue.m',
+                'app/keystone_glue.mm',
               ],
               # TODO(mark): Come up with a fancier way to do this.  It should
               # only be necessary to list framework-Info.plist once, not the
@@ -5227,13 +5241,15 @@
                 {
                   # Modify the Info.plist as needed.  The script explains why
                   # this is needed.  This is also done in the chrome target.
-                  # The framework does not need the Keystone or Subversion
-                  # keys, but it does need the Breakpad keys.
+                  # The framework needs the Breakpad and Keystone keys if
+                  # those features are enabled.  It doesn't currently use the
+                  # Subversion keys for anything, but this seems like a really
+                  # good place to store them.
                   'postbuild_name': 'Tweak Info.plist',
                   'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
                              '-b<(mac_breakpad)',
-                             '-k0',
-                             '-s0',
+                             '-k<(mac_keystone)',
+                             '-s1',
                              '<(branding)'],
                 },
                 {
@@ -5242,10 +5258,12 @@
                 },
                 {
                   'postbuild_name': 'Symlink Libraries',
-                  'action': ['ln',
-                             '-fhs',
-                             'Versions/Current/Libraries',
-                             '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'],
+                  'action': [
+                    'ln',
+                    '-fhs',
+                    'Versions/Current/Libraries',
+                    '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'
+                  ],
                 },
               ],
               'copies': [
@@ -5284,6 +5302,35 @@
                     'app/breakpad_mac.h',
                   ],
                 }],  # mac_breakpad
+                ['mac_keystone==1', {
+                  'copies': [
+                    {
+                      'destination':
+                          '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Frameworks',
+                      'files': [
+                        '../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework'
+                      ],
+                    },
+                  ],
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Remove Keystone Headers',
+                      'action': [
+                        'tools/build/mac/remove_headers_from_framework',
+                        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Frameworks/KeystoneRegistration.framework',
+                      ],
+                    },
+                    {
+                      'postbuild_name': 'Symlink Frameworks',
+                      'action': [
+                        'ln',
+                        '-fhs',
+                        'Versions/Current/Frameworks',
+                        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Frameworks'
+                      ],
+                    },
+                  ],
+                }],  # mac_keystone
                 ['branding=="Chrome"', {
                   'copies': [
                     {
@@ -5410,17 +5457,26 @@
           ],
           'postbuilds': [
             {
-              'postbuild_name': 'Make Symbolic Links',
-              'action': ['app/make_mac_app_symlinks'],
+              # The framework (chrome_dll) defines its load-time path
+              # (DYLIB_INSTALL_NAME_BASE) relative to the main executable
+              # (chrome).  A different relative path needs to be used in
+              # helper_app.
+              'postbuild_name': 'Fix Framework Link',
+              'action': [
+                'install_name_tool',
+                '-change',
+                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '@executable_path/../../../<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
+              ],
             },
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the chrome and chrome_dll
-              # targets.  In this case, -b0 is used because Breakpad data is
-              # not placed into the helper, it is only placed in the framework.
-              # -k0 is used because Keystone never runs within the helper, only
-              # within the main app.  -s0 is used to avoid placing Subversion
-              # data in the helper's Info.plist.
+              # targets.  In this case, -b0 and -k0 are used because Breakpad
+              # and Keystone keys are never placed into the helper, only into
+              # the framework.  -s0 is used because Subversion keys are only
+              # placed into the main app.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
                          '-b0',
@@ -5441,7 +5497,7 @@
               },
             }],
           ],
-        },
+        },  # target helper_app
         {
           # Convenience target to build a disk image.
           'target_name': 'build_app_dmg',
@@ -5512,8 +5568,26 @@
             ],
           },
           'xcode_settings': {
+            'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
+            'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
             'DYLIB_INSTALL_NAME_BASE': '@executable_path',
           },
+          'postbuilds': [
+            {
+              # The framework (chrome_dll) defines its load-time path
+              # (DYLIB_INSTALL_NAME_BASE) relative to the main executable
+              # (chrome).  A different relative path needs to be used in
+              # plugin_carbon_interpose, which runs in the helper_app.
+              'postbuild_name': 'Fix Framework Link',
+              'action': [
+                'install_name_tool',
+                '-change',
+                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '@executable_path/../../../<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
+              ],
+            },
+          ],
         },
         {
           'target_name': 'infoplist_strings_tool',
@@ -5814,20 +5888,25 @@
               'sources': [
                 'app/breakpad_mac_stubs.mm',
                 'app/keystone_glue.h',
-                'app/keystone_glue.m',
+                'app/keystone_glue.mm',
               ],
               'sources!': [
                 '<@(browser_tests_sources_exclude_on_mac)',
-                     ],
-              # TODO(mark): We really want this for all non-static library targets,
-              # but when we tried to pull it up to the common.gypi level, it broke
-              # other things like the ui, startup, and page_cycler tests. *shrug*
-              'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+              ],
+              # TODO(mark): We really want this for all non-static library
+              # targets, but when we tried to pull it up to the common.gypi
+              # level, it broke other things like the ui, startup, and
+              # page_cycler tests. *shrug*
+              'xcode_settings': {
+                'OTHER_LDFLAGS': [
+                  '-Wl,-ObjC',
+                ],
+              },
             }],
-          ],
-        },
-      ],
-    }],
+          ],  # conditions
+        },  # target browser_tests
+      ],  # targets
+    }],  # OS!="win"
     ['OS=="win"',
       { 'targets': [
         {

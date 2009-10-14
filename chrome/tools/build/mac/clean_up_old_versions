@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Remove old versioned directories from an .app bundle.  The built-up bundle
+# only needs to contain the current versioned directory.
+
+set -e
+
+if [ $# -ne 1 ] ; then
+  echo "usage: ${0} VERSION" >& 2
+  exit 1
+fi
+
+VERSION="${1}"
+CONTENTS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}"
+VERSIONED_DIR="${CONTENTS_DIR}/Versions"
+CURRENT_VERSIONED_DIR="${VERSIONED_DIR}/${VERSION}"
+
+for dir in "${VERSIONED_DIR}/"* ; do
+  if [ "${dir}" != "${CURRENT_VERSIONED_DIR}" ] ; then
+    rm -rf "${dir}"
+  fi
+done
+
+# Older builds did not use a versioned directory, and instead placed the
+# framework, helper app, and other components directly within the main app
+# bundle.  To keep incremental developer builds relatively pristine and
+# equivalent to clean builds, these old components need to be cleaned up if
+# present.
+# Frameworks includes the app framework (Chromium Framework.framework or
+# Google Chrome Framework.framework) and, if Keystone-enabled,
+# KeystoneRegistration.framework.  To simplify this script, it removes the
+# helper app at its old location under either of the supported branding names.
+# TODO(mark): Remove the following section some time after October 27, 2009,
+# allowing two weeks for the transition.
+
+rm -rf "${CONTENTS_DIR}/Frameworks" \
+       "${CONTENTS_DIR}/Resources/Chromium Helper.app" \
+       "${CONTENTS_DIR}/Resources/Google Chrome Helper.app" \
+       "${CONTENTS_DIR}/MacOS/libavcodec.52.dylib" \
+       "${CONTENTS_DIR}/MacOS/libavformat.52.dylib" \
+       "${CONTENTS_DIR}/MacOS/libavutil.50.dylib"

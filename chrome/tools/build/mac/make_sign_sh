@@ -5,24 +5,44 @@
 # found in the LICENSE file.
 
 # This script creates sign.sh, the script that will be used to sign the
-# application bundle and inner bundles.  sign.sh is placed in the Packaging
+# application bundle and inner bundles.  It also creates auxiliary files that
+# sign.sh needs to do its job, such as the custom resource rules used to sign
+# the outermost application bundle.  These files are placed in the Packaging
 # directory next to the .app bundle.  The packaging system is expected to run
 # sign.sh to sign everything.
 
 set -e
 
-if [ $# -ne 2 ] ; then
-  echo "usage: ${0} PACKAGING_DIR MAC_PRODUCT_NAME" >& 2
+if [ $# -ne 3 ] ; then
+  echo "usage: ${0} PACKAGING_DIR MAC_PRODUCT_NAME VERSION" >& 2
   exit 1
 fi
 
 PACKAGING_DIR="${1}"
 MAC_PRODUCT_NAME="${2}"
-SIGN_SH_IN_FILE="$(dirname "${0}")/sign.sh.in"
+VERSION="${3}"
+
+INPUT_DIR="$(dirname "${0}")"
+SIGN_SH_IN_FILE="${INPUT_DIR}/sign.sh.in"
 SIGN_SH_FILE="${PACKAGING_DIR}/sign.sh"
+BROWSER_APP_RULES_IN_FILE="${INPUT_DIR}/app_resource_rules.plist.in"
+BROWSER_APP_RULES_FILE="${PACKAGING_DIR}/app_resource_rules.plist"
+
+# Double-backslash each dot: one backslash belongs in the regular expression,
+# and the other backslash tells sed not to treat the first backslash
+# specially.
+VERSION_REGEX="$(echo "${VERSION}" | sed -e 's/\./\\\\./g')"
 
 mkdir -p "${PACKAGING_DIR}"
 sed -e "s/@MAC_PRODUCT_NAME@/${MAC_PRODUCT_NAME}/g" \
+    -e "s/@VERSION@/${VERSION}/g" \
+    -e "s/@VERSION_REGEX@/${VERSION_REGEX}/g" \
     < "${SIGN_SH_IN_FILE}" \
     > "${SIGN_SH_FILE}"
-chmod a+rx "${SIGN_SH_FILE}"
+chmod +x "${SIGN_SH_FILE}"
+
+sed -e "s/@MAC_PRODUCT_NAME@/${MAC_PRODUCT_NAME}/g" \
+    -e "s/@VERSION@/${VERSION}/g" \
+    -e "s/@VERSION_REGEX@/${VERSION_REGEX}/g" \
+    < "${BROWSER_APP_RULES_IN_FILE}" \
+    > "${BROWSER_APP_RULES_FILE}"

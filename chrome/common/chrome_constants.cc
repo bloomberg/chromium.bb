@@ -44,7 +44,6 @@ const wchar_t kHelperProcessExecutablePath[] = L"chrome";
 const wchar_t kBrowserProcessExecutablePath[] =
     PRODUCT_STRING_W L".app/Contents/MacOS/" PRODUCT_STRING_W;
 const wchar_t kHelperProcessExecutablePath[] =
-    PRODUCT_STRING_W L".app/Contents/Resources/"
     PRODUCT_STRING_W L" Helper.app/Contents/MacOS/" PRODUCT_STRING_W L" Helper";
 #endif  // OS_*
 #if defined(OS_MACOSX)
