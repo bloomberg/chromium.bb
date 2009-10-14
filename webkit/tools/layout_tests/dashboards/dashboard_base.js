@@ -155,6 +155,11 @@ function parseParameters(parameterStr) {
   fillMissingValues(currentState, defaultStateValues);
 }
 
+function getDefaultValue(key) {
+  if (key in defaultStateValues)
+    return defaultStateValues[key];
+  return defaultCrossDashboardStateValues[key];
+}
 
 function fillMissingValues(to, from) {
   for (var state in from) {
@@ -287,7 +292,9 @@ function getPermaLinkURL() {
 function joinParameters(stateObject) {
   var state = [];
   for (var key in stateObject) {
-    state.push(key + '=' + encodeURIComponent(stateObject[key]));
+    var value = stateObject[key];
+    if (value != getDefaultValue(key))
+      state.push(key + '=' + encodeURIComponent(value));
   }
   return state.join('&');
 }

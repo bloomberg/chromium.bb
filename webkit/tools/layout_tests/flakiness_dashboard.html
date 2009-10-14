@@ -365,6 +365,7 @@
       case 'showLargeExpectations':
       case 'legacyExpectationsSemantics':
       case 'showSkipped':
+      case 'showSlow':
       case 'showWontFixSkip':
         currentState[key] = value == 'true';
 
@@ -384,6 +385,7 @@
     showLargeExpectations: false,
     legacyExpectationsSemantics: true,
     showWontFixSkip: false,
+    showSlow: true,
     showSkipped: false,
     maxResults: 200
   };
@@ -1192,22 +1194,24 @@
    * Returns whether we should exclude test results from the test table.
    */
   function shouldHideTest(testResult) {
-    if (testResult.isWontFixSkip && !currentState.showWontFixSkip)
-      return true;
-
-     if (hasPassedInMaxRuns(testResult)) {
+    if (hasPassedInMaxRuns(testResult)) {
       // Hide tests that are passing.
       return true;
     }
 
-    if ((testResult.meetsExpectations || isFixedTest(testResult)) &&
-        !currentState.showCorrectExpectations) {
-      // Only hide flaky tests that match their expectations if showFlaky
-      // is false.
-      return !currentState.showFlaky || !isTestFlaky(testResult);
-    }
+    if (testResult.isWontFixSkip)
+      return !currentState.showWontFixSkip;
 
-    return !currentState.showFlaky && isTestFlaky(testResult);
+    if (isTestFlaky(testResult))
+      return !currentState.showFlaky;
+
+    if (isSlowTest(testResult))
+      return !currentState.showSlow;
+
+    if (testResult.meetsExpectations)
+      return !currentState.showCorrectExpectations;
+
+    return false;
   }
 
   /**
@@ -1765,11 +1769,12 @@
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
         '<h2>Failing tests</h2><div>' +
-        getLinkHTMLToToggleState('showWontFixSkip', 'WONTFIX/SKIP tests') +
+        getLinkHTMLToToggleState('showWontFixSkip', 'WONTFIX/SKIP') +
         ' | ' +
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') + ' | ' +
-        getLinkHTMLToToggleState('showFlaky', 'flaky tests') + ' | ' +
+        getLinkHTMLToToggleState('showFlaky', 'flaky') + ' | ' +
+        getLinkHTMLToToggleState('showSlow', 'slow') + ' | ' +
         'All columns are sortable. | ' +
         'Flakiness reader order is newer --> older runs.</div>' +
         testsHTML;
@@ -1809,13 +1814,18 @@
     }
   }
 
-  var VALID_KEYS_FOR_INDIVIDUAL_TESTS = {
+  var VALID_KEYS_FOR_CROSS_BUILDER_VIEW = {
     tests: 1,
     maxResults: 1,
     showExpectations: 1,
     showLargeExpectations: 1,
     legacyExpectationsSemantics: 1
   };
+
+  function isInvalidKeyForCrossBuilderView(key) {
+    return !(key in VALID_KEYS_FOR_CROSS_BUILDER_VIEW) &&
+        !(key in defaultCrossDashboardStateValues);
+  }
 
   /**
    * Sets the page state and regenerates the page. Takes varargs of key, value
@@ -1824,8 +1834,14 @@
   function setState(var_args) {
     for (var i = 0; i < arguments.length; i += 2) {
       var key = arguments[i];
-
-      if (!(key in VALID_KEYS_FOR_INDIVIDUAL_TESTS)) {
+      if (key == 'tests') {
+        // Entering cross-builder view, only keep valid keys for that view.
+        for (var currentKey in currentState) {
+          if (isInvalidKeyForCrossBuilderView(currentKey)) {
+            delete currentState[currentKey];
+          }
+        }
+      } else if (isInvalidKeyForCrossBuilderView(key)) {
         delete currentState.tests;
       }
 
