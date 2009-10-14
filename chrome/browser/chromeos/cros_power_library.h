@@ -51,9 +51,17 @@ class CrosPowerLibrary {
   ~CrosPowerLibrary();
 
   // This method is called when there's a change in power status.
-  // This will notify all the Observers.
+  // This method is called on a background thread.
   static void PowerStatusChangedHandler(void* object,
                                         const chromeos::PowerStatus& status);
+
+  // This methods starts the monitoring of power changes.
+  // It should be called on a background thread.
+  void InitOnBackgroundThread();
+
+  // Called by the handler to update the power status.
+  // This will notify all the Observers.
+  void UpdatePowerStatus(const chromeos::PowerStatus& status);
 
   ObserverList<Observer> observers_;
 

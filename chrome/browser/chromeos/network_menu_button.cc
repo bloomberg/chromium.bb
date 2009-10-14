@@ -128,7 +128,7 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 // NetworkMenuButton, views::ViewMenuDelegate implementation:
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  wifi_networks_ = CrosNetworkLibrary::Get()->GetWifiNetworks();
+  wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
   refreshing_menu_ = true;
   network_menu_.Rebuild();
   network_menu_.UpdateStates();
@@ -168,6 +168,11 @@ void NetworkMenuButton::UpdateIcon() {
       // strength is from 0 to 100, so we need to convert that to 0 to 7.
       int index = static_cast<int>(cros->wifi_strength() / 100.0 *
                   nextafter(static_cast<float>(kNumWifiImages), 0));
+      // Make sure that index is between 0 and kNumWifiImages - 1
+      if (index < 0)
+        index = 0;
+      if (index >= kNumWifiImages)
+        index = kNumWifiImages - 1;
       id = IDR_STATUSBAR_WIFI_1 + index;
     }
   }

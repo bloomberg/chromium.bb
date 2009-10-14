@@ -53,7 +53,7 @@ class WifiNetworkComboModel : public ComboboxModel {
 };
 
 WifiNetworkComboModel::WifiNetworkComboModel() {
-  wifi_networks_ = CrosNetworkLibrary::Get()->GetWifiNetworks();
+  wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
 }
 
 int WifiNetworkComboModel::GetItemCount() {

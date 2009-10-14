@@ -4,19 +4,34 @@
 
 #include "chrome/browser/chromeos/cros_power_library.h"
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros_library.h"
 
-CrosPowerLibrary::CrosPowerLibrary() {
+// Allows InvokeLater without adding refcounting. This class is a Singleton and
+// won't be deleted until it's last InvokeLater is run.
+template <>
+struct RunnableMethodTraits<CrosPowerLibrary> {
+  void RetainCallee(CrosPowerLibrary* obj) {}
+  void ReleaseCallee(CrosPowerLibrary* obj) {}
+};
+
+CrosPowerLibrary::CrosPowerLibrary() : status_(chromeos::PowerStatus()) {
   if (CrosLibrary::loaded()) {
-    power_status_connection_ = chromeos::MonitorPowerStatus(
-        &PowerStatusChangedHandler, this);
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
+    if (loop)
+      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &CrosPowerLibrary::InitOnBackgroundThread));
   }
 }
 
 CrosPowerLibrary::~CrosPowerLibrary() {
-  if (CrosLibrary::loaded())
+  if (CrosLibrary::loaded()) {
+    // FILE thread is already gone by the time we get to this destructor.
+    // So it's ok to just make the disconnect call on the main thread.
     chromeos::DisconnectPowerStatus(power_status_connection_);
+  }
 }
 
 // static
@@ -62,12 +77,30 @@ base::TimeDelta CrosPowerLibrary::battery_time_to_full() const {
 void CrosPowerLibrary::PowerStatusChangedHandler(void* object,
     const chromeos::PowerStatus& status) {
   CrosPowerLibrary* power = static_cast<CrosPowerLibrary*>(object);
+  power->UpdatePowerStatus(status);
+}
+
+void CrosPowerLibrary::InitOnBackgroundThread() {
+  power_status_connection_ = chromeos::MonitorPowerStatus(
+      &PowerStatusChangedHandler, this);
+}
+
+void CrosPowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
+  // Make sure we run on UI thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
+    if (loop)
+      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &CrosPowerLibrary::UpdatePowerStatus, status));
+    return;
+  }
+
   DLOG(INFO) << "Power" <<
                 " lpo=" << status.line_power_on <<
                 " sta=" << status.battery_state <<
                 " per=" << status.battery_percentage <<
                 " tte=" << status.battery_time_to_empty <<
                 " ttf=" << status.battery_time_to_full;
-  power->status_ = status;
-  FOR_EACH_OBSERVER(Observer, power->observers_, PowerChanged(power));
+  status_ = status;
+  FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
 }

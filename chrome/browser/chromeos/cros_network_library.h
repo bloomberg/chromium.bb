@@ -14,13 +14,21 @@
 #include "third_party/cros/chromeos_network.h"
 
 struct WifiNetwork {
-  WifiNetwork() : encrypted(false), encryption(chromeos::NONE), strength(0) {}
+  WifiNetwork()
+      : encrypted(false),
+        encryption(chromeos::NONE),
+        strength(0),
+        connecting(false),
+        connected(false) {}
   WifiNetwork(const std::string& ssid, bool encrypted,
-              chromeos::EncryptionType encryption, int strength)
+              chromeos::EncryptionType encryption, int strength,
+              bool connecting, bool connected)
       : ssid(ssid),
         encrypted(encrypted),
         encryption(encryption),
-        strength(strength) { }
+        strength(strength),
+        connecting(connecting),
+        connected(connected) {}
 
   // WifiNetworks are sorted by ssids.
   bool operator< (const WifiNetwork& other) const {
@@ -31,6 +39,8 @@ struct WifiNetwork {
   bool encrypted;
   chromeos::EncryptionType encryption;
   int strength;
+  bool connecting;
+  bool connected;
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 
@@ -54,12 +64,12 @@ class CrosNetworkLibrary {
   void RemoveObserver(Observer* observer);
 
   bool ethernet_connected() const { return ethernet_connected_; }
-  const std::string& wifi_ssid() const { return wifi_ssid_; }
-  bool wifi_connecting() const { return wifi_connecting_; }
-  int wifi_strength() const { return wifi_strength_; }
+  const std::string& wifi_ssid() const { return wifi_.ssid; }
+  bool wifi_connecting() const { return wifi_.connecting; }
+  int wifi_strength() const { return wifi_.strength; }
 
   // Returns the current list of wifi networks.
-  WifiNetworkVector GetWifiNetworks();
+  const WifiNetworkVector& wifi_networks() const { return wifi_networks_; }
 
   // Connect to the specified wireless network with password.
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
@@ -68,30 +78,42 @@ class CrosNetworkLibrary {
   friend struct DefaultSingletonTraits<CrosNetworkLibrary>;
 
   CrosNetworkLibrary();
-  ~CrosNetworkLibrary() {}
+  ~CrosNetworkLibrary();
 
   // This method is called when there's a change in network status.
-  // This will notify all the Observers.
+  // This method is called on a background thread.
   static void NetworkStatusChangedHandler(void* object,
       const chromeos::ServiceStatus& service_status);
 
-  // Update the network with the ServiceStatus.
-  void UpdateNetworkServiceStatus(
-      const chromeos::ServiceStatus& service_status);
+  // This parses ServiceStatus and creates a WifiNetworkVector of wifi networks.
+  // It also sets ethernet_connected depending on if we have ethernet or not.
+  static void ParseNetworks(const chromeos::ServiceStatus& service_status,
+                            WifiNetworkVector* networks,
+                            bool* ethernet_connected);
+
+  // This methods loads the initial list of networks on startup and starts the
+  // monitoring of network changes.
+  // It should be called on a background thread.
+  void InitOnBackgroundThread();
+
+  // Update the network with the a list of wifi networks and ethernet status.
+  // This will notify all the Observers.
+  void UpdateNetworkStatus(const WifiNetworkVector& networks,
+                           bool ethernet_connected);
 
   ObserverList<Observer> observers_;
+
+  // The network status connection for monitoring network status changes.
+  chromeos::NetworkStatusConnection network_status_connection_;
 
   // Whether or not we are connected to the ethernet line.
   bool ethernet_connected_;
 
-  // The current connected (or connecting) wireless ssid. Empty if none.
-  std::string wifi_ssid_;
+  // The list of available wifi networks.
+  WifiNetworkVector wifi_networks_;
 
-  // Whether or not we are connecting right now.
-  bool wifi_connecting_;
-
-  // The strength of the currently connected ssid.
-  int wifi_strength_;
+  // The current connected (or connecting) wifi network.
+  WifiNetwork wifi_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkLibrary);
 };

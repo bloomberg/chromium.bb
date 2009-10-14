@@ -112,6 +112,11 @@ void PowerMenuButton::UpdateIcon() {
       // from 0 to 100, so we need to convert that to 0 to kNumPowerImages - 1.
       int index = static_cast<int>(percent / 100.0 *
                   nextafter(static_cast<float>(kNumPowerImages), 0));
+      // Make sure that index is between 0 and kNumWifiImages - 1
+      if (index < 0)
+        index = 0;
+      if (index >= kNumPowerImages)
+        index = kNumPowerImages - 1;
       if (cros->line_power_on())
         id = IDR_STATUSBAR_BATTERY_CHARGING_1 + index;
       else

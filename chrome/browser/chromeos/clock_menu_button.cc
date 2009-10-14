@@ -24,6 +24,11 @@ ClockMenuButton::ClockMenuButton()
       ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
   SetEnabledColor(SK_ColorWHITE);
   SetShowHighlighted(false);
+  // Set initial text to make sure that the text button wide enough.
+  std::wstring zero = ASCIIToWide("00");
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM, zero, zero));
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM, zero, zero));
+  set_alignment(TextButton::ALIGN_RIGHT);
   UpdateText();
 }
 

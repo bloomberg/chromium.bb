@@ -6,18 +6,34 @@
 
 #include <algorithm>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros_library.h"
 
-CrosNetworkLibrary::CrosNetworkLibrary()
-  : ethernet_connected_(false),
-    wifi_connecting_(false),
-    wifi_strength_(0) {
+// Allows InvokeLater without adding refcounting. This class is a Singleton and
+// won't be deleted until it's last InvokeLater is run.
+template <>
+struct RunnableMethodTraits<CrosNetworkLibrary> {
+  void RetainCallee(CrosNetworkLibrary* obj) {}
+  void ReleaseCallee(CrosNetworkLibrary* obj) {}
+};
+
+CrosNetworkLibrary::CrosNetworkLibrary() {
   if (CrosLibrary::loaded()) {
-    chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
-    UpdateNetworkServiceStatus(*service_status);
-    chromeos::FreeServiceStatus(service_status);
-    chromeos::MonitorNetworkStatus(&NetworkStatusChangedHandler, this);
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
+    if (loop) {
+      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &CrosNetworkLibrary::InitOnBackgroundThread));
+    }
+  }
+}
+
+CrosNetworkLibrary::~CrosNetworkLibrary() {
+  if (CrosLibrary::loaded()) {
+    // FILE thread is already gone by the time we get to this destructor.
+    // So it's ok to just make the disconnect call on the main thread.
+    chromeos::DisconnectNetworkStatus(network_status_connection_);
   }
 }
 
@@ -39,28 +55,6 @@ void CrosNetworkLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-WifiNetworkVector CrosNetworkLibrary::GetWifiNetworks() {
-  WifiNetworkVector networks;
-  if (CrosLibrary::loaded()) {
-    chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
-    for (int i = 0; i < service_status->size; i++) {
-      const chromeos::ServiceInfo& service = service_status->services[i];
-      if (service.type == chromeos::TYPE_WIFI) {
-        // Found a wifi network, add it to the list.
-        networks.push_back(WifiNetwork(service.ssid, service.needs_passphrase,
-                                       service.encryption,
-                                       service.signal_strength));
-      }
-    }
-    chromeos::FreeServiceStatus(service_status);
-  }
-
-  // Sort the list of wifi networks by ssid.
-  std::sort(networks.begin(), networks.end());
-
-  return networks;
-}
-
 static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
   switch (encryption) {
     case chromeos::NONE:
@@ -77,25 +71,32 @@ static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
 
 void CrosNetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
                                               const string16& password) {
-  if (CrosLibrary::loaded())
-    chromeos::ConnectToWifiNetwork(network.ssid.c_str(),
-        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-        GetEncryptionString(network.encryption));
+  if (CrosLibrary::loaded()) {
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
+    if (loop)
+      loop->PostTask(FROM_HERE, NewRunnableFunction(
+          &chromeos::ConnectToWifiNetwork,
+          network.ssid.c_str(),
+          password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
+          GetEncryptionString(network.encryption)));
+  }
 }
 
 // static
 void CrosNetworkLibrary::NetworkStatusChangedHandler(void* object,
     const chromeos::ServiceStatus& service_status) {
   CrosNetworkLibrary* network = static_cast<CrosNetworkLibrary*>(object);
-  network->UpdateNetworkServiceStatus(service_status);
-  FOR_EACH_OBSERVER(Observer, network->observers_, NetworkChanged(network));
+  WifiNetworkVector networks;
+  bool ethernet_connected;
+  ParseNetworks(service_status, &networks, &ethernet_connected);
+  network->UpdateNetworkStatus(networks, ethernet_connected);
 }
 
-void CrosNetworkLibrary::UpdateNetworkServiceStatus(
-    const chromeos::ServiceStatus& service_status) {
-  // Loop through the services and figure out what the current state is.
-  bool found_ethernet = false;
-  bool found_wifi = false;
+// static
+void CrosNetworkLibrary::ParseNetworks(
+    const chromeos::ServiceStatus& service_status, WifiNetworkVector* networks,
+    bool* ethernet_connected) {
+  *ethernet_connected = false;
   for (int i = 0; i < service_status.size; i++) {
     const chromeos::ServiceInfo& service = service_status.services[i];
     DLOG(INFO) << "Parse " << service.ssid <<
@@ -105,26 +106,57 @@ void CrosNetworkLibrary::UpdateNetworkServiceStatus(
                   " enc=" << service.encryption <<
                   " sig=" << service.signal_strength;
     if (service.type == chromeos::TYPE_ETHERNET) {
-      found_ethernet = true;
       // Get the ethernet status.
-      ethernet_connected_ = service.state == chromeos::STATE_READY;
+      *ethernet_connected = service.state == chromeos::STATE_READY;
     } else if (service.type == chromeos::TYPE_WIFI) {
-      if (service.state == chromeos::STATE_READY ||
-          service.state == chromeos::STATE_ASSOCIATION ||
-          service.state == chromeos::STATE_CONFIGURATION) {
-        found_wifi = true;
-        // Record the wifi network that is connected.
-        wifi_ssid_ = service.ssid;
-        wifi_connecting_ = service.state != chromeos::STATE_READY;
-        wifi_strength_ = service.signal_strength;
-      }
+      bool connecting = service.state == chromeos::STATE_ASSOCIATION ||
+                        service.state == chromeos::STATE_CONFIGURATION;
+      bool connected = service.state == chromeos::STATE_READY;
+      networks->push_back(WifiNetwork(service.ssid,
+                                      service.needs_passphrase,
+                                      service.encryption,
+                                      service.signal_strength,
+                                      connecting,
+                                      connected));
     }
   }
-  if (!found_ethernet)
-    ethernet_connected_ = false;
-  if (!found_wifi) {
-    wifi_ssid_.clear();
-    wifi_connecting_ = false;
-    wifi_strength_ = 0;
+}
+
+void CrosNetworkLibrary::InitOnBackgroundThread() {
+  chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
+  if (service_status) {
+    WifiNetworkVector networks;
+    bool ethernet_connected;
+    ParseNetworks(*service_status, &networks, &ethernet_connected);
+    UpdateNetworkStatus(networks, ethernet_connected);
+    chromeos::FreeServiceStatus(service_status);
   }
+  network_status_connection_ = chromeos::MonitorNetworkStatus(
+      &NetworkStatusChangedHandler, this);
+}
+
+void CrosNetworkLibrary::UpdateNetworkStatus(
+    const WifiNetworkVector& networks, bool ethernet_connected) {
+  // Make sure we run on UI thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
+    if (loop)
+      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &CrosNetworkLibrary::UpdateNetworkStatus, networks,
+          ethernet_connected));
+    return;
+  }
+
+  ethernet_connected_ = ethernet_connected;
+  wifi_networks_ = networks;
+  // Sort the list of wifi networks by ssid.
+  std::sort(wifi_networks_.begin(), wifi_networks_.end());
+  wifi_ = WifiNetwork();
+  for (size_t i = 0; i < wifi_networks_.size(); i++) {
+    if (wifi_networks_[i].connecting || wifi_networks_[i].connected) {
+      wifi_ = wifi_networks_[i];
+      break;  // There is only one connected or connecting wifi network.
+    }
+  }
+  FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
 }
