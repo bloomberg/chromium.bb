@@ -646,6 +646,12 @@ void ToolbarView::WillLoseFocus() {
   // Any tooltips that are active should be hidden when toolbar loses focus.
   if (GetWidget() && GetWidget()->GetTooltipManager())
     GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
+
+  // Removes the Child MSAA view's focus when toolbar loses focus.
+  if (acc_focused_view_) {
+    acc_focused_view_->SetHotTracked(false);
+    acc_focused_view_ = NULL;
+  }
 }
 
 void ToolbarView::RequestFocus() {
