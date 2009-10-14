@@ -11,7 +11,7 @@
 class FirstRunDialog : public ImportObserver {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
-  static bool Show(Profile* profile);
+  static bool Show(Profile* profile, ProcessSingleton* process_singleton);
 
   // Overridden methods from ImportObserver.
   virtual void ImportCanceled() {

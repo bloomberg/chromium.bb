@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/process_singleton.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/platform_util.h"
@@ -21,9 +22,26 @@
 #endif
 
 // static
-bool FirstRunDialog::Show(Profile* profile) {
+bool FirstRunDialog::Show(Profile* profile,
+                          ProcessSingleton* process_singleton) {
   int response = -1;
-  new FirstRunDialog(profile, response);
+  // Object deletes itself.
+  FirstRunDialog* first_run = new FirstRunDialog(profile, response);
+
+  // Prevent further launches of Chrome until First Run UI is done.
+  process_singleton->Lock(GTK_WINDOW(first_run->dialog_));
+
+  // TODO(port): it should be sufficient to just run the dialog:
+  // int response = gtk_dialog_run(GTK_DIALOG(dialog));
+  // but that spins a nested message loop and hoses us.  :(
+  // http://code.google.com/p/chromium/issues/detail?id=12552
+  // Instead, run a loop and extract the response manually.
+  g_signal_connect(G_OBJECT(first_run->dialog_), "response",
+                   G_CALLBACK(HandleOnResponseDialog), first_run);
+  gtk_widget_show_all(first_run->dialog_);
+  MessageLoop::current()->Run();
+
+  process_singleton->Unlock();
   return (response == GTK_RESPONSE_ACCEPT);
 }
 
@@ -115,16 +133,6 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
   }
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
-
-  // TODO(port): it should be sufficient to just run the dialog:
-  // int response = gtk_dialog_run(GTK_DIALOG(dialog));
-  // but that spins a nested message loop and hoses us.  :(
-  // http://code.google.com/p/chromium/issues/detail?id=12552
-  // Instead, run a loop and extract the response manually.
-  g_signal_connect(G_OBJECT(dialog_), "response",
-                   G_CALLBACK(HandleOnResponseDialog), this);
-  gtk_widget_show_all(dialog_);
-  MessageLoop::current()->Run();
 }
 
 void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {

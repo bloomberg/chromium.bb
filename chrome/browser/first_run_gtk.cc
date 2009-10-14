@@ -10,7 +10,7 @@ bool OpenFirstRunDialog(Profile* profile, bool homepage_defined,
                         ProcessSingleton* process_singleton) {
   // TODO(port): Use process_singleton to make sure Chrome can not be started
   // while this process is active.
-  return FirstRunDialog::Show(profile);
+  return FirstRunDialog::Show(profile, process_singleton);
 }
 
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,

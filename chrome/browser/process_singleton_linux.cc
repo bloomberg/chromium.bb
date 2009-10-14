@@ -480,6 +480,15 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     SocketReader* reader) {
   DCHECK(ui_message_loop_ == MessageLoop::current());
   DCHECK(reader);
+  // If locked, it means we are not ready to process this message because
+  // we are probably in a first run critical phase.
+  if (parent_->locked()) {
+    DLOG(WARNING) << "Browser is locked";
+    // Send back "ACK" message to prevent the client process from starting up.
+    reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
+    return;
+  }
+
   // Ignore the request if the browser process is already in shutdown path.
   if (!g_browser_process || g_browser_process->IsShuttingDown()) {
     LOG(WARNING) << "Not handling interprocess notification as browser"
@@ -487,15 +496,6 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     // Send back "SHUTDOWN" message, so that the client process can start up
     // without killing this process.
     reader->FinishWithACK(kShutdownToken, arraysize(kShutdownToken) - 1);
-    return;
-  }
-
-  // If locked, it means we are not ready to process this message because
-  // we are probably in a first run critical phase.
-  if (parent_->locked()) {
-    DLOG(WARNING) << "Browser is locked";
-    // Send back "ACK" message to prevent the client process from starting up.
-    reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
     return;
   }
 
