@@ -49,7 +49,14 @@ TEST(StackTrace, OutputToStream) {
       << "Expected to find start in backtrace:\n"
       << backtrace_message;
 
-#else  // defined(OS_MACOSX)
+#elif defined(__GLIBCXX__)
+
+  // Expect a demangled symbol.
+  EXPECT_TRUE(backtrace_message.find("testing::Test::Run()") !=
+              std::string::npos)
+      << "Expected a demangled symbol in backtrace:\n"
+      << backtrace_message;
+#else  // defined(__GLIBCXX__)
 
   // Expect to at least find main.
   EXPECT_TRUE(backtrace_message.find("main") != std::string::npos)
