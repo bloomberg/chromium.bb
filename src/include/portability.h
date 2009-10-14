@@ -81,6 +81,8 @@
 # define DLLEXPORT
 #elif  NACL_LINUX
 # define DLLEXPORT __attribute__ ((visibility("default")))
+#elif defined(__native_client__)
+/* do nothing */
 #else
 # error "what platform?"
 #endif
