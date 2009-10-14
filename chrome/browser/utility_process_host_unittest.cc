@@ -79,8 +79,7 @@ class TestUtilityProcessHost : public UtilityProcessHost {
   virtual FilePath GetUtilityProcessCmd() {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
-    exe_path = exe_path.AppendASCII(WideToASCII(
-        chrome::kHelperProcessExecutablePath));
+    exe_path = exe_path.Append(chrome::kHelperProcessExecutablePath);
     return exe_path;
   }
 

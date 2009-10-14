@@ -36,19 +36,19 @@ const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING_W L" Helper";
 #endif  // OS_*
 #if defined(OS_WIN)
 const wchar_t kBrowserProcessExecutablePath[] = L"chrome.exe";
-const wchar_t kHelperProcessExecutablePath[] = L"chrome.exe";
+const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome.exe");
 #elif defined(OS_LINUX)
 const wchar_t kBrowserProcessExecutablePath[] = L"chrome";
-const wchar_t kHelperProcessExecutablePath[] = L"chrome";
+const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #elif defined(OS_MACOSX)
 const wchar_t kBrowserProcessExecutablePath[] =
     PRODUCT_STRING_W L".app/Contents/MacOS/" PRODUCT_STRING_W;
-const wchar_t kHelperProcessExecutablePath[] =
-    PRODUCT_STRING_W L" Helper.app/Contents/MacOS/" PRODUCT_STRING_W L" Helper";
+const FilePath::CharType kHelperProcessExecutablePath[] =
+    FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #endif  // OS_*
 #if defined(OS_MACOSX)
 const FilePath::CharType kFrameworkName[] =
-    PRODUCT_STRING " Framework.framework";
+    FPL(PRODUCT_STRING " Framework.framework");
 #endif  // OS_MACOSX
 #if defined(CHROME_FRAME_BUILD)
 const wchar_t kBrowserAppName[] = L"ChromeFrame";

@@ -67,34 +67,18 @@ bool GetUserDesktop(FilePath* result) {
 }
 
 FilePath GetVersionedDirectory() {
-  static FilePath path;
+  // Start out with the path to the running .app.
+  NSBundle* app_bundle = [NSBundle mainBundle];
+  FilePath path = FilePath([[app_bundle bundlePath] fileSystemRepresentation]);
 
-  if (path.empty()) {
-    // Start out with the path to the running .app.
-    NSBundle* app_bundle = [NSBundle mainBundle];
-    path = FilePath([[app_bundle bundlePath] fileSystemRepresentation]);
-
-    if (mac_util::IsBackgroundOnlyProcess()) {
-      // path identifies the helper .app in the browser .app's versioned
-      // directory.  Go up one level to get to the browser .app's versioned
-      // directory.
-      path = path.DirName();
-    } else {
-      // path identifies the browser .app.  Go into its versioned directory.
-      // TODO(mark): Here, |version| comes from the outer .app bundle's
-      // Info.plist.  In the event of an incomplete update, it may be possible
-      // for this value to be incorrect.  Consider the case where the updater
-      // is able to update one, but not both, of the executable and the
-      // Info.plist.  The executable may load one version of the framework,
-      // and the Info.plist may refer to another version.  Ideally, the
-      // version would be available in a compile-time constant, or there would
-      // be a better way to detect the loaded framework version at runtime.
-      NSString* version =
-          [app_bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-      path = path.Append("Contents").
-                  Append("Versions").
-                  Append([version fileSystemRepresentation]);
-    }
+  if (mac_util::IsBackgroundOnlyProcess()) {
+    // path identifies the helper .app in the browser .app's versioned
+    // directory.  Go up one level to get to the browser .app's versioned
+    // directory.
+    path = path.DirName();
+  } else {
+    // path identifies the browser .app.  Go into its versioned directory.
+    path = path.Append("Contents").Append("Versions").Append(kChromeVersion);
   }
 
   return path;

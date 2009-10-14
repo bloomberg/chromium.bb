@@ -85,10 +85,7 @@ ChildProcessHost::~ChildProcessHost() {
 
 // static
 FilePath ChildProcessHost::GetChildPath() {
-  static FilePath child_path;
-
-  if (!child_path.empty())
-    return child_path;
+  FilePath child_path;
 
   child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
@@ -102,8 +99,8 @@ FilePath ChildProcessHost::GetChildPath() {
 #else
   // On the Mac, the child executable lives at a predefined location within
   // the app bundle's versioned directory.
-  child_path = chrome::GetVersionedDirectory().Append(
-      FilePath::FromWStringHack(chrome::kHelperProcessExecutablePath));
+  child_path = chrome::GetVersionedDirectory().
+      Append(chrome::kHelperProcessExecutablePath);
 #endif  // OS_MACOSX
 
   return child_path;

@@ -470,6 +470,28 @@
         'common/pref_names.cc',
         'common/pref_names.h',
       ],
+      'actions': [
+        {
+          'action_name': 'Make chrome_version.cc',
+          'variables': {
+            'make_version_cc_path': 'tools/build/make_version_cc.py',
+          },
+          'inputs': [
+            '<(make_version_cc_path)',
+            'VERSION',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chrome_version.cc',
+          ],
+          'action': [
+            'python',
+            '<(make_version_cc_path)',
+            '<@(_outputs)',
+            '<(version_full)',
+          ],
+          'process_outputs_as_sources': 1,
+        },
+      ],
     },
     {
       'target_name': 'common',
