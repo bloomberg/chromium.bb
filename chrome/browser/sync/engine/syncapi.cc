@@ -336,6 +336,14 @@ void WriteNode::SetIsFolder(bool folder) {
 void WriteNode::SetTitle(const sync_char16* title) {
   PathString server_legal_name;
   SyncAPINameToServerName(title, &server_legal_name);
+
+  syncable::Name old_name = entry_->GetName();
+
+  if (server_legal_name == old_name.non_unique_value())
+    return;  // Skip redundant changes.
+
+  // Otherwise, derive a new unique name so we have a valid value
+  // to use as the DBName.
   syncable::SyncName sync_name(server_legal_name);
   syncable::DBName db_name(sync_name.value());
   db_name.MakeOSLegal();
@@ -343,10 +351,7 @@ void WriteNode::SetTitle(const sync_char16* title) {
                                    entry_->Get(syncable::PARENT_ID), entry_);
 
   syncable::Name new_name = syncable::Name::FromDBNameAndSyncName(db_name,
-                                                              sync_name);
-  if (new_name == entry_->GetName())
-    return;  // Skip redundant changes.
-
+                                                                  sync_name);
   entry_->PutName(new_name);
   MarkForSyncing();
 }
