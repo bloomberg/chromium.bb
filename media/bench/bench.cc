@@ -99,7 +99,7 @@ int main(int argc, const char** argv) {
               << "Enable fast2 flag\n"
               << "  --flush                         "
               << "Flush last frame\n"
-              << "  --djb2                          "
+              << "  --djb2 (aka --hash)             "
               << "Hash decoded buffers (DJB2)\n"
               << "  --md5                           "
               << "Hash decoded buffers (MD5)\n"
@@ -516,13 +516,13 @@ int main(int argc, const char** argv) {
              << " ms" << std::endl;
   }
   if (hash_djb2) {
-    *log_out << "       DJB2:" << std::setw(11) << hash_value
+    *log_out << "  DJB2 Hash:" << std::setw(11) << hash_value
              << "  " << in_path << std::endl;
   }
   if (hash_md5) {
     MD5Digest digest;  // The result of the computation.
     MD5Final(&digest, &ctx);
-    *log_out << "        MD5: " << MD5DigestToBase16(digest)
+    *log_out << "   MD5 Hash: " << MD5DigestToBase16(digest)
              << " " << in_path << std::endl;
   }
 #if defined(OS_WIN)
