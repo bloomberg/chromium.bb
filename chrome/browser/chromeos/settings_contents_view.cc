@@ -113,6 +113,10 @@ class NetworkSection : public OptionsPageView,
   virtual void InitContents();
 
  private:
+
+  // This method will change the combobox selection to the passed in wifi ssid.
+  void SelectWifi(const std::string& wifi_ssid);
+
   // The View that contains the contents of the section.
   views::View* contents_;
 
@@ -191,16 +195,7 @@ bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
 }
 
 void NetworkSection::NetworkChanged(CrosNetworkLibrary* obj) {
-  if (wifi_ssid_model_.HasWifiNetworks()) {
-    for (int i = 1; i < wifi_ssid_model_.GetItemCount(); i++) {
-      if (wifi_ssid_model_.GetWifiNetworkAt(i).ssid == obj->wifi_ssid()) {
-        last_selected_wifi_ssid_index_ = i;
-        if (wifi_ssid_combobox_)
-          wifi_ssid_combobox_->SetSelectedItem(i);
-        return;
-      }
-    }
-  }
+  SelectWifi(obj->wifi_ssid());
 }
 
 void NetworkSection::InitControlLayout() {
@@ -248,6 +243,28 @@ void NetworkSection::InitContents() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(wifi_ssid_combobox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  // Select the initial connected wifi network.
+  SelectWifi(CrosNetworkLibrary::Get()->wifi_ssid());
+}
+
+void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
+  if (wifi_ssid_model_.HasWifiNetworks() && wifi_ssid_combobox_) {
+    // If we are not connected to any wifi network, wifi_ssid will be empty.
+    // So we select the first item.
+    if (wifi_ssid.empty()) {
+      wifi_ssid_combobox_->SetSelectedItem(0);
+    } else {
+      // Loop through the list and select the ssid that matches.
+      for (int i = 1; i < wifi_ssid_model_.GetItemCount(); i++) {
+        if (wifi_ssid_model_.GetWifiNetworkAt(i).ssid == wifi_ssid) {
+          last_selected_wifi_ssid_index_ = i;
+          wifi_ssid_combobox_->SetSelectedItem(i);
+          return;
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
