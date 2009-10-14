@@ -426,6 +426,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // handled by IME or not.
   bool enter_was_inserted_;
 
+  // Indicates whether the IME changed the text.  It's possible for the IME to
+  // handle a key event but not change the text contents (e.g., when pressing
+  // shift+del with no selection).
+  bool text_changed_;
+
   // Contains the character range that should have a strikethrough (used for
   // insecure schemes). If the range is size one or less, no strikethrough
   // is needed.

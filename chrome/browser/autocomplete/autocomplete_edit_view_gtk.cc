@@ -485,7 +485,7 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   std::wstring new_text(GetText());
-  bool text_differs = (new_text != text_before_change_);
+  text_changed_ = (new_text != text_before_change_);
 
   // When the user has deleted text, we don't allow inline autocomplete.  Make
   // sure to not flag cases like selecting part of the text and then pasting
@@ -498,9 +498,9 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
                                  sel_before_change_.cp_max));
 
   bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_differs, just_deleted_text, at_end_of_edit);
+      selection_differs, text_changed_, just_deleted_text, at_end_of_edit);
 
-  if (something_changed && text_differs)
+  if (something_changed && text_changed_)
     TextChanged();
 
   return something_changed;
@@ -643,6 +643,9 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   // key input action as a paste action.
   paste_clipboard_requested_ = false;
 
+  // Reset |text_changed_| before passing the key event on to the text view.
+  text_changed_ = false;
+
   // Call the default handler, so that IME can work as normal.
   // New line characters will be filtered out by our "insert-text"
   // signal handler attached to |text_buffer_| object.
@@ -667,6 +670,14 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
     // the contents of omnibox2, we notify the AutocompleteEditModel class when
     // the control-key state is changed.
     model_->OnControlKeyChanged(true);
+  } else if (!text_changed_ && event->keyval == GDK_Delete &&
+             event->state & GDK_SHIFT_MASK) {
+    // If shift+del didn't change the text, we let this delete an entry from
+    // the popup.  We can't check to see if the IME handled it because even if
+    // nothing is selected, the IME or the TextView still report handling it.
+    AutocompletePopupModel* popup_model = popup_view_->GetModel();
+    if (popup_model->IsOpen())
+      popup_model->TryDeletingCurrentItem();
   }
 
   // Set |enter_was_pressed_| to false, to make sure OnAfterPossibleChange() can
