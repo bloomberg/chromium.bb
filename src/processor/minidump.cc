@@ -1302,7 +1302,7 @@ void MinidumpThread::Print() {
 //
 
 
-u_int32_t MinidumpThreadList::max_threads_ = 256;
+u_int32_t MinidumpThreadList::max_threads_ = 4096;
 
 
 MinidumpThreadList::MinidumpThreadList(Minidump* minidump)
@@ -1464,8 +1464,8 @@ void MinidumpThreadList::Print() {
 //
 
 
-u_int32_t MinidumpModule::max_cv_bytes_ = 1024;
-u_int32_t MinidumpModule::max_misc_bytes_ = 1024;
+u_int32_t MinidumpModule::max_cv_bytes_ = 32768;
+u_int32_t MinidumpModule::max_misc_bytes_ = 32768;
 
 
 MinidumpModule::MinidumpModule(Minidump* minidump)
@@ -2424,7 +2424,7 @@ void MinidumpModuleList::Print() {
 //
 
 
-u_int32_t MinidumpMemoryList::max_regions_ = 256;
+u_int32_t MinidumpMemoryList::max_regions_ = 4096;
 
 
 MinidumpMemoryList::MinidumpMemoryList(Minidump* minidump)
