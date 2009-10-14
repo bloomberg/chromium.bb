@@ -1,5 +1,5 @@
 /* Program name management.
-   Copyright (C) 2001-2003, 2005-2008 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2009 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #undef ENABLE_RELOCATABLE /* avoid defining set_program_name as a macro */
 #include "progname.h"
 
+#include <errno.h> /* get program_invocation_name declaration */
 #include <string.h>
 
 
@@ -35,6 +36,8 @@ set_program_name (const char *argv0)
 {
   /* libtool creates a temporary executable whose name is sometimes prefixed
      with "lt-" (depends on the platform).  It also makes argv[0] absolute.
+     But the name of the temporary executable is a detail that should not be
+     visible to the end user and to the test suite.
      Remove this "<dirname>/.libs/" or "<dirname>/.libs/lt-" prefix here.  */
   const char *slash;
   const char *base;
@@ -45,7 +48,31 @@ set_program_name (const char *argv0)
     {
       argv0 = base;
       if (strncmp (base, "lt-", 3) == 0)
-	argv0 = base + 3;
+	{
+	  argv0 = base + 3;
+	  /* On glibc systems, remove the "lt-" prefix from the variable
+	     program_invocation_short_name.  */
+#if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+	  program_invocation_short_name = (char *) argv0;
+#endif
+	}
     }
+
+  /* But don't strip off a leading <dirname>/ in general, because when the user
+     runs
+         /some/hidden/place/bin/cp foo foo
+     he should get the error message
+         /some/hidden/place/bin/cp: `foo' and `foo' are the same file
+     not
+         cp: `foo' and `foo' are the same file
+   */
+
   program_name = argv0;
+
+  /* On glibc systems, the error() function comes from libc and uses the
+     variable program_invocation_name, not program_name.  So set this variable
+     as well.  */
+#if HAVE_DECL_PROGRAM_INVOCATION_NAME
+  program_invocation_name = (char *) argv0;
+#endif
 }
