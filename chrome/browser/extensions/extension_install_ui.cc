@@ -154,7 +154,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
       l10n_util::GetString(IDS_EXTENSION_PROMPT_CANCEL_BUTTON)));
 
   CFOptionFlags response;
-  if (kCFUserNotificationAlternateResponse == CFUserNotificationDisplayAlert(
+  CFUserNotificationDisplayAlert(
       0, kCFUserNotificationCautionAlertLevel,
       NULL, // TODO(port): show the install_icon instead of a default.
       NULL, NULL, // Sound URL, localization URL.
@@ -163,7 +163,8 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
       NULL, // Default button.
       confirm_cancel,
       NULL, // Other button.
-      &response)) {
+      &response);
+  if (response == kCFUserNotificationAlternateResponse) {
     delegate->AbortInstall();
   } else {
     delegate->ContinueInstall();
