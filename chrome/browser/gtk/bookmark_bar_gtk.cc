@@ -67,9 +67,6 @@ const int kBookmarkBarMinimumHeight = 4;
 // Left-padding for the instructional text.
 const int kInstructionsPadding = 6;
 
-// Color of the instructional text.
-const GdkColor kInstructionsColor = GDK_COLOR_RGB(128, 128, 142);
-
 // Middle color of the separator gradient.
 const double kSeparatorColor[] =
     { 194.0 / 255.0, 205.0 / 255.0, 212.0 / 212.0 };
@@ -119,6 +116,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       window_(window),
       tabstrip_origin_provider_(tabstrip_origin_provider),
       model_(NULL),
+      instructions_label_(NULL),
       instructions_(NULL),
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
@@ -197,11 +195,10 @@ void BookmarkBarGtk::Init(Profile* profile) {
                             kInstructionsPadding, 0);
   g_signal_connect(instructions_, "destroy", G_CALLBACK(gtk_widget_destroyed),
                    &instructions_);
-  GtkWidget* instructions_label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
-  gtk_widget_modify_fg(instructions_label, GTK_STATE_NORMAL,
-                       &kInstructionsColor);
-  gtk_container_add(GTK_CONTAINER(instructions_), instructions_label);
+  instructions_label_ =
+      gtk_label_new(l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
+  UpdateInstructionsLabelColor();
+  gtk_container_add(GTK_CONTAINER(instructions_), instructions_label_);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), instructions_,
                      FALSE, FALSE, 0);
 
@@ -494,6 +491,16 @@ int BookmarkBarGtk::GetBookmarkButtonCount() {
   return count;
 }
 
+void BookmarkBarGtk::UpdateInstructionsLabelColor() {
+  if (theme_provider_->UseGtkTheme()) {
+    gtk_util::SetLabelColor(instructions_label_, NULL);
+  } else {
+    GdkColor color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    gtk_util::SetLabelColor(instructions_label_, &color);
+  }
+}
+
 void BookmarkBarGtk::SetOverflowButtonAppearance() {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(overflow_button_));
   if (former_child)
@@ -626,6 +633,8 @@ void BookmarkBarGtk::Observe(NotificationType type,
       DLOG(ERROR) << "Received a theme change notification while we "
                   << "don't have a BookmarkModel. Taking no action.";
     }
+
+    UpdateInstructionsLabelColor();
 
     UpdateEventBoxPaintability();
 

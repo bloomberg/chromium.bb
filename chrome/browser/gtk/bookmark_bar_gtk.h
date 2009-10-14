@@ -119,6 +119,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // bookmark bar model has.
   int GetBookmarkButtonCount();
 
+  // Sets the correct color for |instructions_label_|.
+  void UpdateInstructionsLabelColor();
+
   // Set the appearance of the overflow button appropriately (either chromium
   // style or GTK style).
   void SetOverflowButtonAppearance();
@@ -273,6 +276,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   GtkWidget* bookmark_hbox_;
 
   // A GtkLabel to display when there are no bookmark buttons to display.
+  GtkWidget* instructions_label_;
+
+  // The alignment for |instructions_label_|.
   GtkWidget* instructions_;
 
   // GtkToolbar which contains all the bookmark buttons.
