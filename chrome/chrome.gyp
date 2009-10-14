@@ -6750,11 +6750,6 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             'sync_proto',
           ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
-	    ],
-          },
           'conditions': [
             ['OS=="win"', {
               'sources' : [
@@ -6767,6 +6762,13 @@
               'defines': [
                 'POSIX',
               ],
+            }],
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
+                ],
+              },
             }],
           ],
         },
