@@ -23,7 +23,6 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
 AutofillManager::AutofillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       pending_query_handle_(0),
-      node_id_(0),
       request_id_(0) {
   form_autofill_enabled_.Init(prefs::kFormAutofillEnabled,
       profile()->GetPrefs(), NULL);
@@ -35,6 +34,7 @@ AutofillManager::~AutofillManager() {
 
 void AutofillManager::CancelPendingQuery() {
   if (pending_query_handle_) {
+    SendSuggestions(NULL);
     WebDataService* web_data_service =
         profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
     if (!web_data_service) {
@@ -55,27 +55,26 @@ void AutofillManager::AutofillFormSubmitted(
   StoreFormEntriesInWebDatabase(form);
 }
 
-void AutofillManager::GetAutofillSuggestions(const std::wstring& name,
-                                             const std::wstring& prefix,
-                                             int64 node_id,
-                                             int request_id) {
+bool AutofillManager::GetAutofillSuggestions(int request_id,
+                                             const std::wstring& name,
+                                             const std::wstring& prefix) {
   if (!*form_autofill_enabled_)
-    return;
+    return false;
 
   WebDataService* web_data_service =
       profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!web_data_service) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   CancelPendingQuery();
 
-  node_id_ = node_id;
   request_id_ = request_id;
 
   pending_query_handle_ = web_data_service->GetFormValuesForElementName(
       name, prefix, kMaxAutofillMenuItems, this);
+  return true;
 }
 
 void AutofillManager::RemoveAutofillEntry(const std::wstring& name,
@@ -95,28 +94,11 @@ void AutofillManager::OnWebDataServiceRequestDone(WebDataService::Handle h,
   DCHECK(pending_query_handle_);
   pending_query_handle_ = 0;
 
-  if (!*form_autofill_enabled_)
-    return;
-
-  DCHECK(result);
-  if (!result)
-    return;
-
-  switch (result->GetType()) {
-    case AUTOFILL_VALUE_RESULT: {
-      RenderViewHost* host = tab_contents_->render_view_host();
-      if (!host)
-        return;
-      const WDResult<std::vector<std::wstring> >* r =
-          static_cast<const WDResult<std::vector<std::wstring> >*>(result);
-      std::vector<std::wstring> suggestions = r->GetValue();
-      host->AutofillSuggestionsReturned(suggestions, node_id_, request_id_, -1);
-      break;
-    }
-
-    default:
-      NOTREACHED();
-      break;
+  if (*form_autofill_enabled_) {
+    DCHECK(result);
+    SendSuggestions(result);
+  } else {
+    SendSuggestions(NULL);
   }
 }
 
@@ -130,4 +112,20 @@ void AutofillManager::StoreFormEntriesInWebDatabase(
 
   profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->
       AddAutofillFormElements(form.elements);
+}
+
+void AutofillManager::SendSuggestions(const WDTypedResult* result) {
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (!host)
+    return;
+  if (result) {
+    DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
+    const WDResult<std::vector<std::wstring> >* autofill_result =
+        static_cast<const WDResult<std::vector<std::wstring> >*>(result);
+    host->AutofillSuggestionsReturned(
+        request_id_, autofill_result->GetValue(), -1);
+  } else {
+    host->AutofillSuggestionsReturned(
+        request_id_, std::vector<std::wstring>(), -1);
+  }
 }

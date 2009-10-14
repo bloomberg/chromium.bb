@@ -635,8 +635,7 @@ class RenderView : public RenderWidget,
   void OnThemeChanged();
 
   // Notification that we have received autofill suggestion.
-  void OnReceivedAutofillSuggestions(
-      int64 node_id,
+  void OnQueryFormFieldAutofillAck(
       int request_id,
       const std::vector<std::wstring>& suggestions,
       int default_suggestions_index);
@@ -873,6 +872,10 @@ class RenderView : public RenderWidget,
   // The id of the last request sent for form field autofill.  Used to ignore
   // out of date responses.
   int form_field_autofill_request_id_;
+
+  // The id of the node corresponding to the last request sent for form field
+  // autofill.
+  int64 form_field_autofill_node_id_;
 
   // We need to prevent windows from closing themselves with a window.close()
   // call while a blocked popup notification is being displayed. We cannot

@@ -352,10 +352,10 @@ class RenderViewHostDelegate {
     // query. When the database thread is finished, the autofill manager
     // retrieves the calling RenderViewHost and then passes the vector of
     // suggestions to RenderViewHost::AutofillSuggestionsReturned.
-    virtual void GetAutofillSuggestions(const std::wstring& field_name,
-                                        const std::wstring& user_text,
-                                        int64 node_id,
-                                        int request_id) = 0;
+    // Return true to indicate that AutofillSuggestionsReturned will be called.
+    virtual bool GetAutofillSuggestions(int request_id,
+                                        const std::wstring& field_name,
+                                        const std::wstring& user_text) = 0;
 
     // Called when the user has indicated that she wants to remove the specified
     // autofill suggestion from the database.

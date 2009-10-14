@@ -26,16 +26,13 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
   explicit AutofillManager(TabContents* tab_contents);
   virtual ~AutofillManager();
 
-  void CancelPendingQuery();
-
   Profile* profile();
 
   // RenderViewHostDelegate::Autofill implementation.
   virtual void AutofillFormSubmitted(const webkit_glue::AutofillForm& form);
-  virtual void GetAutofillSuggestions(const std::wstring& name,
-                                      const std::wstring& prefix,
-                                      int64 node_id,
-                                      int request_id);
+  virtual bool GetAutofillSuggestions(int request_id,
+                                      const std::wstring& name,
+                                      const std::wstring& prefix);
   virtual void RemoveAutofillEntry(const std::wstring& name,
                                    const std::wstring& value);
 
@@ -46,7 +43,9 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
+  void CancelPendingQuery();
   void StoreFormEntriesInWebDatabase(const webkit_glue::AutofillForm& form);
+  void SendSuggestions(const WDTypedResult* suggestions);
 
   TabContents* tab_contents_;
 
@@ -56,7 +55,6 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
   // is queried on another thread, we record the query handle until we
   // get called back.
   WebDataService::Handle pending_query_handle_;
-  int64 node_id_;
   int request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);

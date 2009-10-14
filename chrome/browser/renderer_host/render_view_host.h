@@ -394,9 +394,8 @@ class RenderViewHost : public RenderWidgetHost,
   void PopupNotificationVisibilityChanged(bool visible);
 
   // Called by the AutofillManager when the list of suggestions is ready.
-  void AutofillSuggestionsReturned(const std::vector<std::wstring>& suggestions,
-                                   int64 node_id,
-                                   int request_id,
+  void AutofillSuggestionsReturned(int request_id,
+                                   const std::vector<std::wstring>& suggestions,
                                    int default_suggestion_index);
 
   // Notifies the Renderer that a move or resize of its containing window has
@@ -571,10 +570,9 @@ class RenderViewHost : public RenderWidgetHost,
   void OnDidGetApplicationInfo(int32 page_id,
                                const webkit_glue::WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
-  void OnQueryFormFieldAutofill(const std::wstring& field_name,
-                                const std::wstring& user_text,
-                                int64 node_id,
-                                int request_id);
+  void OnQueryFormFieldAutofill(int request_id,
+                                const std::wstring& field_name,
+                                const std::wstring& user_text);
   void OnRemoveAutofillEntry(const std::wstring& field_name,
                              const std::wstring& value);
 

@@ -224,6 +224,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       has_unload_listener_(false),
       decrement_shared_popup_at_destruction_(false),
       form_field_autofill_request_id_(0),
+      form_field_autofill_node_id_(0),
       popup_notification_visible_(false),
       spelling_panel_visible_(false),
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
@@ -465,8 +466,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_DisassociateFromPopupCount,
                         OnDisassociateFromPopupCount)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutofillSuggestions,
-                        OnReceivedAutofillSuggestions)
+    IPC_MESSAGE_HANDLER(ViewMsg_QueryFormFieldAutofill_ACK,
+                        OnQueryFormFieldAutofillAck)
     IPC_MESSAGE_HANDLER(ViewMsg_PopupNotificationVisibilityChanged,
                         OnPopupNotificationVisibilityChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -1237,10 +1238,9 @@ void RenderView::QueryFormFieldAutofill(const std::wstring& field_name,
                                         int64 node_id) {
   static int message_id_counter = 0;
   form_field_autofill_request_id_ = message_id_counter++;
-  Send(new ViewHostMsg_QueryFormFieldAutofill(routing_id_,
-                                              field_name, text,
-                                              node_id,
-                                              form_field_autofill_request_id_));
+  form_field_autofill_node_id_ = node_id;
+  Send(new ViewHostMsg_QueryFormFieldAutofill(
+      routing_id_, form_field_autofill_request_id_, field_name, text));
 }
 
 void RenderView::RemoveStoredAutofillEntry(const std::wstring& name,
@@ -1248,16 +1248,15 @@ void RenderView::RemoveStoredAutofillEntry(const std::wstring& name,
   Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
 }
 
-void RenderView::OnReceivedAutofillSuggestions(
-    int64 node_id,
+void RenderView::OnQueryFormFieldAutofillAck(
     int request_id,
     const std::vector<std::wstring>& suggestions,
     int default_suggestion_index) {
   if (!webview() || request_id != form_field_autofill_request_id_)
     return;
 
-  webview()->AutofillSuggestionsForNode(node_id, suggestions,
-                                        default_suggestion_index);
+  webview()->AutofillSuggestionsForNode(
+      form_field_autofill_node_id_, suggestions, default_suggestion_index);
 }
 
 void RenderView::OnPopupNotificationVisibilityChanged(bool visible) {

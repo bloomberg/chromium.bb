@@ -591,8 +591,7 @@ IPC_BEGIN_MESSAGES(View)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the autofill
   // suggestions.
-  IPC_MESSAGE_ROUTED4(ViewMsg_AutofillSuggestions,
-                      int64 /* id of the text input field */,
+  IPC_MESSAGE_ROUTED3(ViewMsg_QueryFormFieldAutofill_ACK,
                       int /* id of the request message */,
                       std::vector<std::wstring> /* suggestions */,
                       int /* index of default suggestion */)
@@ -1601,11 +1600,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              gfx::Rect /* Out: Window location */)
 
   // Queries the browser for suggestion for autofill in a form input field.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_QueryFormFieldAutofill,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutofill,
+                      int /* id of this message */,
                       std::wstring /* field name */,
-                      std::wstring /* user entered text */,
-                      int64 /* id of the text input field */,
-                      int /* id of this message */)
+                      std::wstring /* user entered text */)
 
   // Instructs the browser to remove the specified autofill-entry from the
   // database.

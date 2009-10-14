@@ -1550,16 +1550,18 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   }
 }
 
-void RenderViewHost::OnQueryFormFieldAutofill(const std::wstring& field_name,
-                                              const std::wstring& user_text,
-                                              int64 node_id,
-                                              int request_id) {
+void RenderViewHost::OnQueryFormFieldAutofill(int request_id,
+                                              const std::wstring& field_name,
+                                              const std::wstring& user_text) {
   RenderViewHostDelegate::Autofill* autofill_delegate =
       delegate_->GetAutofillDelegate();
+  bool ok = false;
   if (autofill_delegate) {
-    autofill_delegate->GetAutofillSuggestions(field_name, user_text,
-                                              node_id, request_id);
+    ok = autofill_delegate->GetAutofillSuggestions(
+        request_id, field_name, user_text);
   }
+  if (!ok)
+    AutofillSuggestionsReturned(request_id, std::vector<std::wstring>(), 0);
 }
 
 void RenderViewHost::OnRemoveAutofillEntry(const std::wstring& field_name,
@@ -1571,10 +1573,10 @@ void RenderViewHost::OnRemoveAutofillEntry(const std::wstring& field_name,
 }
 
 void RenderViewHost::AutofillSuggestionsReturned(
-    const std::vector<std::wstring>& suggestions,
-    int64 node_id, int request_id, int default_suggestion_index) {
-  Send(new ViewMsg_AutofillSuggestions(routing_id(), node_id,
-      request_id, suggestions, -1));
+    int request_id, const std::vector<std::wstring>& suggestions,
+    int default_suggestion_index) {
+  Send(new ViewMsg_QueryFormFieldAutofill_ACK(
+      routing_id(), request_id, suggestions, -1));
   // Default index -1 means no default suggestion.
 }
 
