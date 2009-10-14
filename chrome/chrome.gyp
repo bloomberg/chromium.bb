@@ -3032,7 +3032,7 @@
         'chrome_strings',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/webkit.gyp:glue',
-        '../native_client/src/trusted/plugin/plugin_chrome.gyp:npGoogleNaClPluginChrome',
+        '../native_client/src/trusted/plugin/plugin.gyp:npGoogleNaClPluginChrome',
         '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
         '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
         '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
