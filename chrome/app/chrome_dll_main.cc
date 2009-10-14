@@ -35,9 +35,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
-#if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
-#endif
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -46,17 +43,6 @@
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#include "chrome/common/chrome_paths_internal.h"
-#include "chrome/app/breakpad_mac.h"
-#endif
-#if defined(OS_LINUX)
-#include "base/nss_init.h"
-#endif
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -68,12 +54,27 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "ipc/ipc_switches.h"
+
+#if defined(OS_LINUX)
+#include "base/nss_init.h"
+#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#include "chrome/common/chrome_paths_internal.h"
+#include "chrome/app/breakpad_mac.h"
+#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "base/global_descriptors_posix.h"
+#endif
+
 #if defined(OS_WIN)
+#include "base/win_util.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
-#endif
-#if defined(OS_MACOSX)
-#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #endif
 
 extern int BrowserMain(const MainFunctionParams&);
@@ -577,6 +578,9 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
+    // Tickle the sandbox host so it forks now.
+    Singleton<RenderSandboxHostLinux>().get();
+
     // We want to be sure to init NSPR on the main thread.
     base::EnsureNSPRInit();
 
