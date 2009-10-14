@@ -649,6 +649,10 @@ class NotificationType {
     // Sent when new extensions are installed. The details are an Extension.
     EXTENSION_INSTALLED,
 
+    // An error occured during extension install. The details are a string with
+    // details about why the install failed.
+    EXTENSION_INSTALL_ERROR,
+
     // Sent when an extension is unloaded. This happens when an extension is
     // uninstalled. When we add a disable feature, it will also happen then.
     // The details are an Extension.  Note that when this notification is sent,

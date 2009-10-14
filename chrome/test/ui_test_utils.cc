@@ -493,4 +493,14 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
+void RegisterAndWait(NotificationType::Type type,
+                     NotificationObserver* observer,
+                     int64 timeout_ms) {
+  NotificationRegistrar registrar;
+  registrar.Add(observer, type, NotificationService::AllSources());
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new MessageLoop::QuitTask, timeout_ms);
+  RunMessageLoop();
+}
+
 }  // namespace ui_test_utils

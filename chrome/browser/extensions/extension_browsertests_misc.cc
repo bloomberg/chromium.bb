@@ -6,10 +6,12 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -714,3 +716,52 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
   EXPECT_FALSE(result);
 }
 #endif
+
+// Tests extension autoupdate.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, AutoUpdate) {
+  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  // Note: This interceptor gets requests on the IO thread.
+  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
+  URLFetcher::enable_interception_for_tests(true);
+
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v2.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+                                     basedir.AppendASCII("v2.crx"));
+
+  // Install version 1 of the extension.
+  ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v1.crx"), 1));
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extensions->at(0)->id());
+  ASSERT_EQ("1.0", extensions->at(0)->VersionString());
+
+  // We don't want autoupdate blacklist checks.
+  service->updater()->set_blacklist_checks_enabled(false);
+
+  // Run autoupdate and make sure version 2 of the extension was installed.
+  service->updater()->CheckNow();
+  ASSERT_TRUE(WaitForExtensionInstall());
+  extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extensions->at(0)->id());
+  ASSERT_EQ("2.0", extensions->at(0)->VersionString());
+
+  // Now try doing an update to version 3, which has been incorrectly
+  // signed. This should fail.
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v3.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v3.crx",
+                                     basedir.AppendASCII("v3.crx"));
+
+  service->updater()->CheckNow();
+  ASSERT_TRUE(WaitForExtensionInstallError());
+
+  // Make sure the extension state is the same as before.
+  extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extensions->at(0)->id());
+  ASSERT_EQ("2.0", extensions->at(0)->VersionString());
+}
+

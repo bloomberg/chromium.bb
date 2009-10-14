@@ -62,6 +62,8 @@
       'browser/gtk/view_id_util_browsertest.cc',
       'browser/net/ftp_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
+      'browser/extensions/autoupdate_interceptor.cc',
+      'browser/extensions/autoupdate_interceptor.h',
       'browser/extensions/cross_origin_xhr_apitest.cc',
       'browser/extensions/execute_script_apitest.cc',
       'browser/extensions/extension_apitest.cc',

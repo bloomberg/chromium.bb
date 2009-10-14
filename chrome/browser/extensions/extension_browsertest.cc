@@ -194,6 +194,20 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   return true;
 }
 
+bool ExtensionBrowserTest::WaitForExtensionInstall() {
+  int before = extension_installs_observed_;
+  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALLED, this,
+                                 kTimeoutMs);
+  return extension_installs_observed_ == (before + 1);
+}
+
+bool ExtensionBrowserTest::WaitForExtensionInstallError() {
+  int before = extension_installs_observed_;
+  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALL_ERROR,
+                                 this, kTimeoutMs);
+  return extension_installs_observed_ == before;
+}
+
 void ExtensionBrowserTest::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
@@ -211,6 +225,17 @@ void ExtensionBrowserTest::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
       std::cout << "Got EXTENSION_HOST_DID_STOP_LOADING notification.\n";
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case NotificationType::EXTENSION_INSTALLED:
+      std::cout << "Got EXTENSION_INSTALLED notification.\n";
+      ++extension_installs_observed_;
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case NotificationType::EXTENSION_INSTALL_ERROR:
+      std::cout << "Got EXTENSION_INSTALL_ERROR notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

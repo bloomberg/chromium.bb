@@ -53,7 +53,8 @@ class HttpResponseHeaders;
 //       the IO thread goes away, since the URLFetcher destructor requests an
 //       InvokeLater operation on that thread.
 //
-// NOTE: URLFetcher requests will NOT be intercepted.
+// NOTE: By default URLFetcher requests are NOT intercepted, except when
+// interception is explicitly enabled in tests.
 
 class URLFetcher {
  public:
@@ -100,6 +101,13 @@ class URLFetcher {
 #if defined(UNIT_TEST)
   static void set_factory(Factory* factory) { factory_ = factory; }
 #endif
+
+  // Normally interception is disabled for URLFetcher, but you can use this
+  // to enable it for tests. Also see the set_factory method for another way
+  // of testing code that uses an URLFetcher.
+  static void enable_interception_for_tests(bool enabled) {
+    g_interception_enabled = enabled;
+  }
 
   // Creates a URLFetcher, ownership returns to the caller. If there is no
   // Factory (the default) this creates and returns a new URLFetcher. See the
@@ -168,6 +176,8 @@ class URLFetcher {
   static Factory* factory_;
 
   base::LeakTracker<URLFetcher> leak_tracker_;
+
+  static bool g_interception_enabled;
 
   DISALLOW_EVIL_CONSTRUCTORS(URLFetcher);
 };

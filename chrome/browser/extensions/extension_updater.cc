@@ -115,7 +115,8 @@ ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
     : service_(service), frequency_seconds_(frequency_seconds),
       file_io_loop_(file_io_loop), io_loop_(io_loop), prefs_(prefs),
       file_handler_(new ExtensionUpdaterFileHandler(MessageLoop::current(),
-                                                    file_io_loop_)) {
+                                                    file_io_loop_)),
+      blacklist_checks_enabled_(true) {
   Init();
 }
 
@@ -483,9 +484,10 @@ void ExtensionUpdater::CheckNow() {
   // Generate a set of update urls for loaded extensions.
   std::set<GURL> urls;
 
-  // We always check blacklist update url
-  urls.insert(GetBlacklistUpdateUrl(
-    prefs_->GetString(kExtensionBlacklistUpdateVersion)));
+  if (blacklist_checks_enabled_) {
+    urls.insert(GetBlacklistUpdateUrl(
+        prefs_->GetString(kExtensionBlacklistUpdateVersion)));
+  }
 
   const ExtensionList* extensions = service_->extensions();
   for (ExtensionList::const_iterator iter = extensions->begin();

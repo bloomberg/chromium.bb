@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_type.h"
 
 class AppModalDialog;
 class Browser;
@@ -120,6 +121,13 @@ int FindInPage(TabContents* tab,
                bool forward,
                bool case_sensitive,
                int* ordinal);
-}
+
+// Register |observer| for the given |type| and run the message loop until
+// either the observer posts a quit task or we timeout.
+void RegisterAndWait(NotificationType::Type type,
+                     NotificationObserver* observer,
+                     int64 timeout_ms);
+
+}  // namespace ui_test_utils
 
 #endif  // CHROME_TEST_UI_TEST_UTILS_H_

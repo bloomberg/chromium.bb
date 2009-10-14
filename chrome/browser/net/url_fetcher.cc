@@ -18,6 +18,8 @@
 
 static const int kBufferSize = 4096;
 
+bool URLFetcher::g_interception_enabled = false;
+
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
       public URLRequest::Delegate {
@@ -196,8 +198,11 @@ void URLFetcher::Core::StartURLRequest() {
   DCHECK(!request_);
 
   request_ = new URLRequest(original_url_, this);
-  request_->set_load_flags(
-      request_->load_flags() | net::LOAD_DISABLE_INTERCEPT | load_flags_);
+  int flags = request_->load_flags() | load_flags_;
+  if (!g_interception_enabled) {
+    flags = flags | net::LOAD_DISABLE_INTERCEPT;
+  }
+  request_->set_load_flags(flags);
   request_->set_context(request_context_.get());
 
   switch (request_type_) {

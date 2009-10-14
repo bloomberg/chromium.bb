@@ -48,7 +48,10 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
       this,
       NotificationType::EXTENSION_INSTALLED,
       NotificationService::AllSources());
-
+  registrar_.Add(
+      this,
+      NotificationType::EXTENSION_INSTALL_ERROR,
+      NotificationService::AllSources());
   gfx::Rect rc(0, 0, 0, 0);
   popup_ = new views::WidgetWin;
   popup_->set_window_style(WS_POPUP);

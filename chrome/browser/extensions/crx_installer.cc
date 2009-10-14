@@ -261,9 +261,9 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   DCHECK(MessageLoop::current() == ui_loop_);
 
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::NO_THEME_DETECTED,
+  service->Notify(NotificationType::EXTENSION_INSTALL_ERROR,
                   Source<CrxInstaller>(this),
-                  NotificationService::NoDetails());
+                  Details<const std::string>(&error));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.

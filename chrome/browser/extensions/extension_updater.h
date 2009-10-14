@@ -62,6 +62,11 @@ class ExtensionUpdater
   // scheduled check.
   void CheckNow();
 
+  // Set blacklist checks on or off.
+  void set_blacklist_checks_enabled(bool enabled) {
+    blacklist_checks_enabled_ = enabled;
+  }
+
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
@@ -182,6 +187,7 @@ class ExtensionUpdater
   PrefService* prefs_;
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
+  bool blacklist_checks_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };
