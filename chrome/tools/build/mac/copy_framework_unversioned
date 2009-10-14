@@ -76,7 +76,7 @@ DESTINATION="${DESTINATION_DIR}/${FRAMEWORK_NAME}"
 # Copy the versioned directory within the versioned framework to its
 # destination location.
 mkdir -p "${DESTINATION_DIR}"
-rsync -ac --delete --exclude Headers --exclude PrivateHeaders \
+rsync -acC --delete --exclude Headers --exclude PrivateHeaders \
     "${CURRENT_VERSION}/" "${DESTINATION}"
 
 # The --exclude will prevent Headers and PrivateHeaders from showing up in
