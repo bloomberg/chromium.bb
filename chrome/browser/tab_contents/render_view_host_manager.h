@@ -134,11 +134,6 @@ class RenderViewHostManager
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
 
-  // Forwards the message to the RenderViewHost, which is the original one.
-  void OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
-                                    bool success,
-                                    const std::wstring& prompt);
-
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set

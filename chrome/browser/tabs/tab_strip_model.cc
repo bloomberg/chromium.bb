@@ -644,6 +644,7 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
   // We now return to our regularly scheduled shutdown procedure.
   for (size_t i = 0; i < indices.size(); ++i) {
     TabContents* detached_contents = GetContentsAt(indices[i]);
+    detached_contents->OnCloseStarted();
 
     if (!delegate_->CanCloseContentsAt(indices[i]) ||
         delegate_->RunUnloadListenerBeforeClosing(detached_contents)) {
@@ -654,16 +655,14 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
         TabClosingAt(detached_contents, indices[i]));
 
-    if (detached_contents) {
-      // Ask the delegate to save an entry for this tab in the historical tab
-      // database if applicable.
-      if (create_historical_tabs)
-        delegate_->CreateHistoricalTab(detached_contents);
+    // Ask the delegate to save an entry for this tab in the historical tab
+    // database if applicable.
+    if (create_historical_tabs)
+      delegate_->CreateHistoricalTab(detached_contents);
 
-      // Deleting the TabContents will call back to us via NotificationObserver
-      // and detach it.
-      delete detached_contents;
-    }
+    // Deleting the TabContents will call back to us via NotificationObserver
+    // and detach it.
+    delete detached_contents;
   }
 
   return retval;

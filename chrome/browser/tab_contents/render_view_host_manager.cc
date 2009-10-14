@@ -205,13 +205,6 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
   // the response is not a download.
 }
 
-void RenderViewHostManager::OnJavaScriptMessageBoxClosed(
-    IPC::Message* reply_msg,
-    bool success,
-    const std::wstring& prompt) {
-  render_view_host_->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
-}
-
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
                                             bool proceed) {
   if (for_cross_site_transition) {

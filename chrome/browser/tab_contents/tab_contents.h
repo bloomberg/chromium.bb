@@ -623,6 +623,10 @@ class TabContents : public PageNavigator,
     new_tab_start_time_ = time;
   }
 
+  // Notification that tab closing has started.  This can be called multiple
+  // times, subsequent calls are ignored.
+  void OnCloseStarted();
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -866,8 +870,8 @@ class TabContents : public PageNavigator,
   virtual void UpdateInspectorSettings(const std::string& raw_settings);
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RequestMove(const gfx::Rect& new_bounds);
-  virtual void DidStartLoading(RenderViewHost* render_view_host);
-  virtual void DidStopLoading(RenderViewHost* render_view_host);
+  virtual void DidStartLoading();
+  virtual void DidStopLoading();
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition);
   virtual void DomOperationResponse(const std::string& json_string,
@@ -928,7 +932,7 @@ class TabContents : public PageNavigator,
       bool* proceed_to_fire_unload);
   virtual void DidStartLoadingFromRenderManager(
       RenderViewHost* render_view_host) {
-    DidStartLoading(render_view_host);
+    DidStartLoading();
   }
   virtual void RenderViewGoneFromRenderManager(
       RenderViewHost* render_view_host) {
@@ -1146,6 +1150,11 @@ class TabContents : public PageNavigator,
   // reset on navigations to false on navigations.
   bool suppress_javascript_messages_;
 
+  // Set to true when there is an active "before unload" dialog.  When true,
+  // we've forced the throbber to start in Navigate, and we need to remember to
+  // turn it off in OnJavaScriptMessageBoxClosed if the navigation is canceled.
+  bool is_showing_before_unload_dialog_;
+
   // Shows an info-bar to users when they search from a known search engine and
   // have never used the monibox for search before.
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
@@ -1159,6 +1168,9 @@ class TabContents : public PageNavigator,
 
   // The time that we started to create the new tab page.
   base::TimeTicks new_tab_start_time_;
+
+  // The time that we started to close the tab.
+  base::TimeTicks tab_close_start_time_;
 
   // ---------------------------------------------------------------------------
 

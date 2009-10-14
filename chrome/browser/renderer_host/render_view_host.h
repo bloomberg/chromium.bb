@@ -639,11 +639,6 @@ class RenderViewHost : public RenderWidgetHost,
   // must return to the renderer to unblock it.
   IPC::Message* run_modal_reply_msg_;
 
-  // Set to true when there is an active "before unload" dialog.  When true,
-  // we've forced the throbber to start in Navigate, and we need to remember to
-  // turn it off in JavaScriptMessageBoxClosed if the navigation is canceled.
-  bool is_showing_before_unload_dialog_;
-
   // Set to true when there is a pending ViewMsg_ShouldClose message pending.
   // This ensures we don't spam the renderer many times to close. When true,
   // the value of unload_ack_is_for_cross_site_transition_ indicates which type

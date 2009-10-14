@@ -265,6 +265,7 @@ TabContents::TabContents(Profile* profile,
 #endif
       last_javascript_message_dismissal_(),
       suppress_javascript_messages_(false),
+      is_showing_before_unload_dialog_(false),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
   pending_install_.page_id = 0;
   pending_install_.callback_functor = NULL;
@@ -374,6 +375,12 @@ TabContents::~TabContents() {
   if (GetNativeView())
     ::DestroyWindow(GetNativeView());
 #endif
+
+  // OnCloseStarted isn't called in unit tests.
+  if (!tab_close_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Tab.Close",
+        base::TimeTicks::Now() - tab_close_start_time_);
+  }
 }
 
 // static
@@ -1112,7 +1119,15 @@ void TabContents::OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                                bool success,
                                                const std::wstring& prompt) {
   last_javascript_message_dismissal_ = base::TimeTicks::Now();
-  render_manager_.OnJavaScriptMessageBoxClosed(reply_msg, success, prompt);
+  if (is_showing_before_unload_dialog_ && !success) {
+    // If a beforeunload dialog is canceled, we need to stop the throbber from
+    // spinning, since we forced it to start spinning in Navigate.
+    DidStopLoading();
+
+    tab_close_start_time_ = base::TimeTicks();
+  }
+  is_showing_before_unload_dialog_ = false;
+  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
 }
 
 void TabContents::OnSavePage() {
@@ -1180,12 +1195,12 @@ void TabContents::LogNewTabTime(const std::string& event_name) {
   MetricEventDurationDetails details(event_name,
       static_cast<int>(duration.InMilliseconds()));
 
-  if (event_name == "NewTab.ScriptStart") {
-    UMA_HISTOGRAM_TIMES("NewTab.ScriptStart", duration);
-  } else if (event_name == "NewTab.DOMContentLoaded") {
-    UMA_HISTOGRAM_TIMES("NewTab.DOMContentLoaded", duration);
-  } else if (event_name == "NewTab.Onload") {
-    UMA_HISTOGRAM_TIMES("NewTab.Onload", duration);
+  if (event_name == "Tab.NewTabScriptStart") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabScriptStart", duration);
+  } else if (event_name == "Tab.NewTabDOMContentLoaded") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabDOMContentLoaded", duration);
+  } else if (event_name == "Tab.NewTabOnload") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
     // The new tab page has finished loading; reset it.
     new_tab_start_time_ = base::TimeTicks();
   } else {
@@ -1195,6 +1210,11 @@ void TabContents::LogNewTabTime(const std::string& event_name) {
       NotificationType::METRIC_EVENT_DURATION,
       Source<TabContents>(this),
       Details<MetricEventDurationDetails>(&details));
+}
+
+void TabContents::OnCloseStarted() {
+  if (tab_close_start_time_.is_null())
+    tab_close_start_time_ = base::TimeTicks::Now();
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -2150,11 +2170,11 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
     delegate()->MoveContents(this, new_bounds);
 }
 
-void TabContents::DidStartLoading(RenderViewHost* rvh) {
+void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
 }
 
-void TabContents::DidStopLoading(RenderViewHost* rvh) {
+void TabContents::DidStopLoading() {
   scoped_ptr<LoadNotificationDetails> details;
 
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -2293,6 +2313,7 @@ void TabContents::RunJavaScriptMessage(
 
 void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
                                          IPC::Message* reply_msg) {
+  is_showing_before_unload_dialog_ = true;
   RunBeforeUnloadDialog(this, message, reply_msg);
 }
 

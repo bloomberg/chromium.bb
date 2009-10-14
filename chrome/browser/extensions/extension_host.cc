@@ -294,7 +294,7 @@ void ExtensionHost::InsertThemeCSS() {
   render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripThemeCSS");
 }
 
-void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
+void ExtensionHost::DidStopLoading() {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||

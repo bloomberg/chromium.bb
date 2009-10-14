@@ -134,15 +134,15 @@ class NewTabUIStartupTest : public UITest {
       ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&duration));
 
       // Collect the timing information.
-      ASSERT_TRUE(automation()->GetMetricEventDuration("NewTab.ScriptStart",
+      ASSERT_TRUE(automation()->GetMetricEventDuration("Tab.NewTabScriptStart",
           &duration));
       scriptstart_times[i] = TimeDelta::FromMilliseconds(duration);
 
       ASSERT_TRUE(automation()->GetMetricEventDuration(
-          "NewTab.DOMContentLoaded", &duration));
+          "Tab.NewTabDOMContentLoaded", &duration));
       domcontentloaded_times[i] = TimeDelta::FromMilliseconds(duration);
 
-      ASSERT_TRUE(automation()->GetMetricEventDuration("NewTab.Onload",
+      ASSERT_TRUE(automation()->GetMetricEventDuration("Tab.NewTabOnload",
           &duration));
       onload_times[i] = TimeDelta::FromMilliseconds(duration);
 

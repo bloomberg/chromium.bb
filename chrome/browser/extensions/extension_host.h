@@ -98,7 +98,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void DidStopLoading(RenderViewHost* render_view_host);
+  virtual void DidStopLoading();
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host);
 
   virtual WebPreferences GetWebkitPrefs();

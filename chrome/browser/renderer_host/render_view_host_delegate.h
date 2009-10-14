@@ -445,11 +445,11 @@ class RenderViewHostDelegate {
 
   // The RenderView began loading a new page. This corresponds to WebKit's
   // notion of the throbber starting.
-  virtual void DidStartLoading(RenderViewHost* render_view_host) {}
+  virtual void DidStartLoading() {}
 
   // The RenderView stopped loading a page. This corresponds to WebKit's
   // notion of the throbber stopping.
-  virtual void DidStopLoading(RenderViewHost* render_view_host) {}
+  virtual void DidStopLoading() {}
 
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
