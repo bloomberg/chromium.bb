@@ -73,6 +73,22 @@
   fun:*BrowserProcessImpl*nspector*iles*
 }
 
+{
+  bug_24715
+  ThreadSanitizer:Race
+  fun:*base*internal*WeakReference*
+  ...
+  fun:*AppCacheUpdateJobTest*
+}
+
+{
+  bug_24724
+  ThreadSanitizer:Race
+  fun:*WTF*RefCountedBase*ref*
+  ...
+  fun:*WebCore*WorkerRunLoop*Task*
+}
+
 ############################
 # Data races in tests
 
@@ -182,15 +198,23 @@
 
 # Benign race below thread-safe time-conversion functions
 {
-   fun:__tz*
-   ThreadSanitizer:Race
-   fun:__tz*
+  fun:__tz*
+  ThreadSanitizer:Race
+  fun:__tz*
 }
 
 # Benign race below thread-safe time-conversion functions
 {
-   fun:tzset*
-   ThreadSanitizer:Race
-   ...
-   fun:tzset*
+  fun:tzset*
+  ThreadSanitizer:Race
+  ...
+  fun:tzset*
+}
+
+# Benign race in thread-safe function
+{
+  fun:mkstemp*
+  ThreadSanitizer:Race
+  ...
+  fun:mkstemp*
 }
