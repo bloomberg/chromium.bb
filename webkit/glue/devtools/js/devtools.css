@@ -79,3 +79,75 @@ body.attached #toolbar {
     -webkit-background-origin: padding;
     -webkit-background-clip: padding;
 }
+
+.section .header {
+    border: 1px solid rgb(92, 116, 157);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(105, 133, 180)), to(rgb(92, 116, 157)));
+}
+
+#resources-filter {
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(233, 233, 233)), to(rgb(233, 233, 233)));
+}
+
+.crumbs .crumb {
+    -webkit-border-image: url(Images/segmentChromium.png) 0 12 0 2;
+}
+
+.crumbs .crumb.end {
+    -webkit-border-image: url(Images/segmentEndChromium.png) 0 2 0 2;
+}
+
+.crumbs .crumb.selected {
+    -webkit-border-image: url(Images/segmentSelectedChromium.png) 0 12 0 2;
+    color: white;
+    text-shadow: rgba(255, 255, 255, 0.5) 0 0px 0;
+}
+
+.crumbs .crumb.selected:hover {
+    -webkit-border-image: url(Images/segmentSelectedChromium.png) 0 12 0 2;
+}
+
+.crumbs .crumb.selected.end, .crumbs .crumb.selected.end:hover {
+    -webkit-border-image: url(Images/segmentSelectedEndChromium.png) 0 2 0 2;
+}
+
+.crumbs .crumb:hover {
+    -webkit-border-image: url(Images/segmentHoverChromium.png) 0 12 0 2;
+}
+
+.crumbs .crumb.dimmed:hover {
+    -webkit-border-image: url(Images/segmentHoverChromium.png) 0 12 0 2;
+}
+
+.crumbs .crumb.end:hover {
+    -webkit-border-image: url(Images/segmentHoverEndChromium.png) 0 2 0 2;
+}
+
+body.drawer-visible #main-status-bar {
+    background-image: url(Images/statusbarResizerVertical.png), url(Images/statusbarBackgroundChromium.png);
+}
+
+.status-bar {
+    background-image: url(Images/statusbarBackgroundChromium.png);
+}
+
+button.status-bar-item {
+    background-image: url(Images/statusbarButtonsChromium.png);
+}
+
+select.status-bar-item:active {
+    -webkit-border-image: url(Images/statusbarMenuButtonSelectedChromium.png) 0 17 0 2;
+}
+
+
+#drawer {
+    background-image: url(Images/statusbarBottomBackgroundChromium.png);
+}
+
+select.status-bar-item {
+    -webkit-border-image: url(Images/statusbarMenuButtonChromium.png) 0 17 0 2;
+}
+
+select.status-bar-item:active {
+    -webkit-border-image: url(Images/statusbarMenuButtonSelectedChromium.png) 0 17 0 2;
+}

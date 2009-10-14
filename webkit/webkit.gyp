@@ -754,6 +754,16 @@
 
             '<@(webinspector_image_files)',
 
+            'glue/devtools/js/Images/segmentChromium.png',
+            'glue/devtools/js/Images/segmentHoverChromium.png',
+            'glue/devtools/js/Images/segmentHoverEndChromium.png',
+            'glue/devtools/js/Images/segmentSelectedChromium.png',
+            'glue/devtools/js/Images/segmentSelectedEndChromium.png',
+            'glue/devtools/js/Images/statusbarBackgroundChromium.png',
+            'glue/devtools/js/Images/statusbarBottomBackgroundChromium.png',
+            'glue/devtools/js/Images/statusbarButtonsChromium.png',
+            'glue/devtools/js/Images/statusbarMenuButtonChromium.png',
+            'glue/devtools/js/Images/statusbarMenuButtonSelectedChromium.png',
           ],
         },
       ],
