@@ -85,26 +85,6 @@ for ncv_enum in ncv_enum_pairs:
 env.ComponentLibrary('ncopcode_utils',
                      ['ncopcode_desc.c'])
 
-# TODO(bradnelson): clean this up more
-sdl_env = env.Clone()
-sdl_env.Tool('sdl')
-sdl_dll = []
-if env.Bit('windows'):
-  sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/SDL.dll')
-  sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/SDL.dll')
-elif env.Bit('mac'):
-  sdl_dll += sdl_env.Replicate('$TARGET_ROOT/Frameworks',
-                               '$SDL_DIR/SDL.framework')
-  sdl_dll += sdl_env.Replicate('$OBJ_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
-elif env.Bit('linux'):
-  if env['BUILD_SUBARCH'] == '32':
-    sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
-    sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
-  elif env['BUILD_SUBARCH'] == '64':
-    sdl_dll += sdl_env.Replicate('$STAGING_DIR',
-                                 '$SDL_DIR/lib64/libSDL-1.2.so.0')
-    sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
-
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 # NOTE: debug builds on windows break without this
@@ -125,7 +105,6 @@ env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
 ncdecode_table = env_decode_table.ComponentProgram('ncdecode_table',
                                                    ['ncdecode_table.c'],)
 env.Requires(ncdecode_table, crt)
-env.Requires(ncdecode_table, sdl_dll)
 
 # Add new x86 table generator.
 ncdecode_tablegen = env_decode_table.ComponentProgram(
@@ -139,7 +118,6 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
     EXTRA_LIBS=['ncopcode_utils'])
 
 env.Requires(ncdecode_tablegen, crt)
-env.Requires(ncdecode_tablegen, sdl_dll)
 
 # Segment register validator library
 env.ComponentLibrary('ncvalidate', ['nacl_cpuid.c',
@@ -214,7 +192,6 @@ ncdis = env.ComponentProgram('ncdis',
                                          'ncdis_util'])
 
 env.Requires(ncdis, crt)
-env.Requires(ncdis, sdl_dll)
 
 # ======================================================================
 # Valiator unittests
@@ -223,7 +200,6 @@ if env['TARGET_SUBARCH'] == '32':
                                      ['ncval_tests.c'],
                                      EXTRA_LIBS=['ncvalidate', 'nchelper'])
   env.Requires(ncval_tests, crt)
-  env.Requires(ncval_tests, sdl_dll)
 
   node = env.CommandTestAgainstGoldenOutput(
       'ncval_tests.out',
@@ -238,7 +214,6 @@ if env['TARGET_SUBARCH'] == '32':
                                     ['nacl_cpuid_test.c'],
                                     EXTRA_LIBS=['ncvalidate'])
   env.Requires(nacl_cpuid, crt)
-  env.Requires(nacl_cpuid, sdl_dll)
 
 
   node = env.CommandTestAgainstGoldenOutput(
@@ -335,8 +310,6 @@ ncval = env.ComponentProgram('ncval',
                              EXTRA_LIBS=['ncvalidate', 'nchelper'])
 
 env.Requires(ncval, crt)
-env.Requires(ncval, sdl_dll)
-
 
 # ======================================================================
 # Validator tests against real nacl images
@@ -366,7 +339,6 @@ ncval_sfi = env.ComponentProgram(
                 'utils'])
 
 env.Requires(ncval, crt)
-env.Requires(ncval, sdl_dll)
 
 # ======================================================================
 # Tester for SFI validator.
