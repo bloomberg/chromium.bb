@@ -319,7 +319,8 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
     return;
 
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
-      L"npapi/plugin_url_request_fail_write.html"));
+               FilePath(FILE_PATH_LITERAL(
+                            "npapi/plugin_url_request_fail_write.html"))));
 
   NavigateToURL(url);
 

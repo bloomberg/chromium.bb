@@ -68,8 +68,8 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
       download_dir_.AppendASCII(std::string("test.exe") + kAppendedExtension);
   FilePath dir = download_dir_.AppendASCII("test.exe_files");
 
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-    UTF8ToWide(std::string(kTestDir) + "/" + file_name));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(FilePath(ASCIIToWide(
+                 std::string(kTestDir) + "/" + file_name)));
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));

@@ -181,7 +181,7 @@ TEST_F(DownloadTest, DownloadMimeType) {
 
   EXPECT_EQ(1, GetTabCount());
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file.ToWStringHack()));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   // No new tabs created, downloads appear in the current tab's download shelf.
   WaitUntilTabCount(1);
 
@@ -206,7 +206,7 @@ TEST_F(DownloadTest, NoDownload) {
 
   EXPECT_EQ(1, GetTabCount());
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file.ToWStringHack()));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
   // Wait to see if the file will be downloaded.
@@ -230,7 +230,7 @@ TEST_F(DownloadTest, ContentDisposition) {
 
   EXPECT_EQ(1, GetTabCount());
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file.ToWStringHack()));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
   // Wait until the file is downloaded.
@@ -253,7 +253,7 @@ TEST_F(DownloadTest, PerWindowShelf) {
 
   EXPECT_EQ(1, GetTabCount());
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file.ToWStringHack()));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
   // Wait until the file is downloaded.
@@ -336,8 +336,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   // Download something.
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   //PlatformThread::Sleep(1000);
-  ASSERT_TRUE(tab->NavigateToURL(
-      URLRequestMockHTTPJob::GetMockUrl(file.ToWStringHack())));
+  ASSERT_TRUE(tab->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file)));
   PlatformThread::Sleep(action_timeout_ms());
 
   // Verify that the download shelf is showing for the Incognito window.

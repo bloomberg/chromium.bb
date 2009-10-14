@@ -24,7 +24,8 @@ class ResourceDispatcherTest : public UITest {
  public:
   void CheckTitleTest(const std::wstring& file,
                       const std::wstring& expected_title) {
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
+    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                      FilePath::FromWStringHack(file)));
     const int kCheckDelayMs = 100;
     int max_wait_time = 5000;
     while (max_wait_time > 0) {

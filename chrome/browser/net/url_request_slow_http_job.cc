@@ -11,7 +11,7 @@
 
 static const char kMockHostname[] = "mock.slow.http";
 
-std::wstring URLRequestSlowHTTPJob::base_path_ = L"";
+FilePath URLRequestSlowHTTPJob::base_path_;
 
 // static
 const int URLRequestSlowHTTPJob::kDelayMs = 1000;
@@ -26,7 +26,7 @@ URLRequestJob* URLRequestSlowHTTPJob::Factory(URLRequest* request,
 }
 
 /* static */
-void URLRequestSlowHTTPJob::AddUrlHandler(const std::wstring& base_path) {
+void URLRequestSlowHTTPJob::AddUrlHandler(const FilePath& base_path) {
   base_path_ = base_path;
 
   // Add kMockHostname to URLRequestFilter.
@@ -36,11 +36,11 @@ void URLRequestSlowHTTPJob::AddUrlHandler(const std::wstring& base_path) {
 }
 
 /* static */
-GURL URLRequestSlowHTTPJob::GetMockUrl(const std::wstring& path) {
+GURL URLRequestSlowHTTPJob::GetMockUrl(const FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
   url.append("/");
-  url.append(WideToUTF8(path));
+  url.append(WideToUTF8(path.ToWStringHack()));
   return GURL(url);
 }
 

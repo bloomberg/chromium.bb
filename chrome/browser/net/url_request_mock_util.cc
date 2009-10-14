@@ -30,7 +30,7 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     URLRequestMockLinkDoctorJob::AddUrlHandler();
     URLRequestSlowDownloadJob::AddUrlHandler();
 
-    std::wstring root_http;
+    FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     URLRequestMockHTTPJob::AddUrlHandler(root_http);
     URLRequestSlowHTTPJob::AddUrlHandler(root_http);

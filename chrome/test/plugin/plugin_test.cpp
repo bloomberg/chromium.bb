@@ -105,8 +105,10 @@ class PluginTest : public UITest {
   // HTML for the tests is all located in test_directory\plugin\<testcase>
   // Set |mock_http| to true to use mock HTTP server.
   GURL GetTestUrl(const std::wstring &test_case, bool mock_http) {
-    if (mock_http)
-      return URLRequestMockHTTPJob::GetMockUrl(L"plugin/" + test_case);
+    if (mock_http) {
+      return URLRequestMockHTTPJob::GetMockUrl(
+                 FilePath(L"plugin/" + test_case));
+    }
 
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);

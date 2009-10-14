@@ -50,7 +50,8 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
@@ -71,12 +72,14 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title3.html"))));
 
   // The first navigation should fail, and the second one should be the error
   // page.
@@ -98,12 +101,14 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
 
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title3.html"))));
 
   // The first navigation should fail, and the second one should be the error
   // page.
@@ -128,12 +133,14 @@ TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
 
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title3.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
 
   // The first navigation should fail, and the second one should be the error
   // page.
@@ -155,7 +162,8 @@ TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
     return;
 #endif  // defined(OS_WIN)
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"iframe_dns_error.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))));
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
 
@@ -168,8 +176,10 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBack) {
   // Test that a DNS error occuring in an iframe does not result in an
   // additional session history entry.
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"iframe_dns_error.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))));
 
   EXPECT_TRUE(GetActiveTab()->GoBack());
 
@@ -185,8 +195,10 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
   // Test that a DNS error occuring in an iframe does not result in an
   // additional session history entry.
 
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"iframe_dns_error.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))));
 
   EXPECT_TRUE(GetActiveTab()->GoBack());
   EXPECT_TRUE(GetActiveTab()->GoForward());
@@ -219,11 +231,13 @@ TEST_F(ErrorPageTest, Page404) {
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
     return;
 #endif  // defined(OS_WIN)
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(
-      URLRequestMockHTTPJob::GetMockUrl(L"page404.html"), 2);
+      URLRequestMockHTTPJob::GetMockUrl(
+          FilePath(FILE_PATH_LITERAL("page404.html"))), 2);
 
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
@@ -234,11 +248,13 @@ TEST_F(ErrorPageTest, Page404_GoBack) {
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
     return;
 #endif  // defined(OS_WIN)
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
   // page.
   NavigateToURLBlockUntilNavigationsComplete(
-      URLRequestMockHTTPJob::GetMockUrl(L"page404.html"), 2);
+      URLRequestMockHTTPJob::GetMockUrl(
+          FilePath(FILE_PATH_LITERAL("page404.html"))), 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 
   EXPECT_TRUE(GetActiveTab()->GoBack());

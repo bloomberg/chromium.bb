@@ -123,9 +123,11 @@ class UnloadTest : public UITest {
   }
 
   void NavigateToNolistenersFileTwice() {
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                      FilePath(FILE_PATH_LITERAL("title2.html"))));
     CheckTitle(L"Title Of Awesomeness");
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                      FilePath(FILE_PATH_LITERAL("title2.html"))));
     CheckTitle(L"Title Of Awesomeness");
   }
 
@@ -137,10 +139,12 @@ class UnloadTest : public UITest {
     // if we don't sleep here.
     PlatformThread::Sleep(400);
     NavigateToURLAsync(
-        URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+        URLRequestMockHTTPJob::GetMockUrl(
+            FilePath(FILE_PATH_LITERAL("title2.html"))));
     PlatformThread::Sleep(400);
     NavigateToURL(
-        URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+        URLRequestMockHTTPJob::GetMockUrl(
+            FilePath(FILE_PATH_LITERAL("title2.html"))));
 
     CheckTitle(L"Title Of Awesomeness");
   }

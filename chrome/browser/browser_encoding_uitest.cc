@@ -98,7 +98,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
     test_file_path = test_file_path.AppendASCII(
         kEncodingTestDatas[i].file_name);
     GURL url =
-        URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
+        URLRequestMockHTTPJob::GetMockUrl(test_file_path);
 
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
@@ -123,7 +123,7 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kOverrideTestDir);
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path.ToWStringHack());
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
   ASSERT_TRUE(tab_proxy->NavigateToURL(url));
@@ -250,7 +250,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
     GURL url =
-        URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
+        URLRequestMockHTTPJob::GetMockUrl(test_file_path);
     ASSERT_TRUE(tab->NavigateToURL(url));
     WaitUntilTabCount(1);
 

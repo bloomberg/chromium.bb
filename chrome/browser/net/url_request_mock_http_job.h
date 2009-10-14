@@ -11,6 +11,8 @@
 
 #include "net/url_request/url_request_file_job.h"
 
+class FilePath;
+
 class URLRequestMockHTTPJob : public URLRequestFileJob {
  public:
   URLRequestMockHTTPJob(URLRequest* request, const FilePath& file_path);
@@ -24,13 +26,13 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   static URLRequest::ProtocolFactory Factory;
 
   // Adds the testing URLs to the URLRequestFilter.
-  static void AddUrlHandler(const std::wstring& base_path);
+  static void AddUrlHandler(const FilePath& base_path);
 
   // Given the path to a file relative to base_path_, construct a mock URL.
-  static GURL GetMockUrl(const std::wstring& path);
+  static GURL GetMockUrl(const FilePath& path);
 
  protected:
-  static FilePath GetOnDiskPath(const std::wstring& base_path,
+  static FilePath GetOnDiskPath(const FilePath& base_path,
                                 URLRequest* request,
                                 const std::string& scheme);
 
@@ -39,7 +41,7 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
 
   // This is the file path leading to the root of the directory to use as the
   // root of the http server.
-  static std::wstring base_path_;
+  static FilePath base_path_;
 };
 
 # endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_

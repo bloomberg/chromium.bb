@@ -80,7 +80,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   FilePath file_name(FILE_PATH_LITERAL("a.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).Append(file_name).ToWStringHack());
+      FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).Append(file_name).ToWStringHack());
+      FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
 
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).Append(file_name).ToWStringHack());
+      FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
   FilePath full_file_name = save_dir_.path().AppendASCII(

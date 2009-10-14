@@ -299,7 +299,7 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout1) {
   const int kLowTimeoutMs = 250;
   ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
   tab->NavigateToURLWithTimeout(
-      URLRequestSlowHTTPJob::GetMockUrl(filename.ToWStringHack()),
+      URLRequestSlowHTTPJob::GetMockUrl(filename),
       1, kLowTimeoutMs, &is_timeout);
   ASSERT_TRUE(is_timeout);
 }
@@ -319,7 +319,7 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout2) {
   const int kLowTimeoutMs = 250;
   ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
   tab->NavigateToURLWithTimeout(
-      URLRequestSlowHTTPJob::GetMockUrl(filename1.ToWStringHack()),
+      URLRequestSlowHTTPJob::GetMockUrl(filename1),
       1, kLowTimeoutMs, &is_timeout);
   ASSERT_TRUE(is_timeout);
 

@@ -12,9 +12,10 @@
 #include "net/url_request/url_request_filter.h"
 
 static const char kMockHostname[] = "mock.http";
-static const wchar_t kMockHeaderFileSuffix[] = L".mock-http-headers";
+static const FilePath::CharType kMockHeaderFileSuffix[] =
+    FILE_PATH_LITERAL(".mock-http-headers");
 
-std::wstring URLRequestMockHTTPJob::base_path_ = L"";
+FilePath URLRequestMockHTTPJob::base_path_;
 
 /* static */
 URLRequestJob* URLRequestMockHTTPJob::Factory(URLRequest* request,
@@ -24,7 +25,7 @@ URLRequestJob* URLRequestMockHTTPJob::Factory(URLRequest* request,
 }
 
 /* static */
-void URLRequestMockHTTPJob::AddUrlHandler(const std::wstring& base_path) {
+void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
   base_path_ = base_path;
 
   // Add kMockHostname to URLRequestFilter.
@@ -34,20 +35,20 @@ void URLRequestMockHTTPJob::AddUrlHandler(const std::wstring& base_path) {
 }
 
 /* static */
-GURL URLRequestMockHTTPJob::GetMockUrl(const std::wstring& path) {
+GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
   url.append("/");
-  url.append(WideToUTF8(path));
+  url.append(WideToUTF8(path.ToWStringHack()));
   return GURL(url);
 }
 
 /* static */
-FilePath URLRequestMockHTTPJob::GetOnDiskPath(const std::wstring& base_path,
+FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
                                               URLRequest* request,
                                               const std::string& scheme) {
   std::string file_url("file:///");
-  file_url += WideToUTF8(base_path);
+  file_url += WideToUTF8(base_path.ToWStringHack());
   file_url += request->url().path();
 
   // Convert the file:/// URL to a path on disk.
@@ -76,7 +77,7 @@ bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
 // Private const version.
 void URLRequestMockHTTPJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {
-  std::wstring header_file = file_path_.ToWStringHack() + kMockHeaderFileSuffix;
+  FilePath header_file = FilePath(file_path_.value() + kMockHeaderFileSuffix);
   std::string raw_headers;
   if (!file_util::ReadFileToString(header_file, &raw_headers))
     return;

@@ -85,7 +85,8 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
     return;
 
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
-      L"npapi/plugin_url_request_404.html"));
+               FilePath(FILE_PATH_LITERAL(
+                            "npapi/plugin_url_request_404.html"))));
 
   NavigateToURL(url);
 
