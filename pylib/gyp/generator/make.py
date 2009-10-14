@@ -85,7 +85,7 @@ abs_obj := $(abspath $(obj))
 all_targets :=
 
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
-LD := $(CXX)
+LINK := $(CXX)
 RANLIB ?= ranlib
 
 # Flags to make gcc output dependency info.  Note that you need to be
@@ -145,14 +145,14 @@ cmd_copy = ln -f $< $@ || cp -af $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_link = $(LINK) $(LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # Set SONAME to the library filename so our binaries don't reference the local,
 # absolute paths used on the link command-line.
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LINK) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
