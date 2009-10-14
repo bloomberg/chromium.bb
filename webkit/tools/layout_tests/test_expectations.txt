@@ -244,6 +244,9 @@ BUG24187 WONTFIX SLOW : LayoutTests/fast/dom/Window/window-properties.html = FAI
 // private browsing mode.
 WONTFIX : LayoutTests/http/tests/security/cross-frame-access-private-browsing.html = FAIL
 
+// Chromium doesn't implement private browsing in the renderer.
+WONTFIX : LayoutTests/plugins/private-browsing-mode.html = FAIL
+
 // We don't care about dashboard compatibility mode.
 WONTFIX SKIP : LayoutTests/http/tests/xmlhttprequest/default-content-type-dashboard.html = FAIL
 WONTFIX SKIP : LayoutTests/http/tests/xmlhttprequest/svg-created-by-xhr-disallowed-in-dashboard.html = FAIL
@@ -3184,4 +3187,5 @@ BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = CRASH
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
 BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
+BUG24775 : LayoutTests/svg/custom/missing-xlink.svg = FAIL PASS
 
