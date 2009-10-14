@@ -24,7 +24,6 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/download/download_request_dialog_delegate.h"
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #endif
@@ -179,27 +178,6 @@ void MemoryDetails::StartFetch() {
   // constructor, so there is no reference to Release(), yet.
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &MemoryDetails::OnDetailsAvailable));
-}
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-// This should prompt the user if she wants to allow more than one concurrent
-// download per tab. Until this is in place, always allow multiple downloads.
-class DownloadRequestDialogDelegateStub
-    : public DownloadRequestDialogDelegate {
- public:
-  explicit DownloadRequestDialogDelegateStub(
-    DownloadRequestManager::TabDownloadState* host)
-      : DownloadRequestDialogDelegate(host) { DoCancel(); }
-
-  virtual void CloseWindow() {}
-};
-
-DownloadRequestDialogDelegate* DownloadRequestDialogDelegate::Create(
-    TabContents* tab,
-    DownloadRequestManager::TabDownloadState* host) {
-  NOTIMPLEMENTED();
-  return new DownloadRequestDialogDelegateStub(host);
 }
 #endif
 
