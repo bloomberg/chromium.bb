@@ -112,7 +112,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // status, such as "resolving host", "connecting", etc.
   LoadState GetLoadState() const;
  protected:
-  friend class FlipNetworkTransactionTest;
+  FRIEND_TEST(FlipNetworkTransactionTest, Connect);
   friend class FlipSessionPool;
 
   // Provide access to the framer for testing.
@@ -124,6 +124,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Closes all open streams.  Used as part of shutdown.
   void CloseAllStreams(net::Error code);
+
+  // Enable or disable SSL.  This is only to be used for testing.
+  static void SetSSLMode(bool enable) { use_ssl_ = enable; }
 
  private:
   // FlipFramerVisitorInterface
@@ -215,7 +218,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // This is our weak session pool - one session per domain.
   static scoped_ptr<FlipSessionPool> session_pool_;
-  static bool disable_compression_;
+  static bool use_ssl_;
 };
 
 }  // namespace net

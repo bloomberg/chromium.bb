@@ -174,7 +174,7 @@ class FlipFramer {
  protected:
   FRIEND_TEST(FlipFramerTest, Basic);
   FRIEND_TEST(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders);
-  friend class FlipNetworkTransactionTest;
+  friend class net::FlipNetworkTransactionTest;
 
   // For ease of testing we can tweak compression on/off.
   void set_enable_compression(bool value);

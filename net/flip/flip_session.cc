@@ -21,20 +21,11 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 
-namespace {
-
-// True if FLIP should run over SSL.
-static bool use_ssl_flip = false;
-
-}  // namespace
-
 namespace net {
 
 // static
 scoped_ptr<FlipSessionPool> FlipSession::session_pool_;
-// static
-bool FlipSession::disable_compression_ = false;
-// static
+bool FlipSession::use_ssl_ = true;
 int PrioritizedIOBuffer::order_ = 0;
 
 // The FlipStreamImpl is an internal class representing an active FlipStream.
@@ -339,7 +330,7 @@ void FlipSession::OnTCPConnect(int result) {
   connection_.socket()->SetReceiveBufferSize(kSocketBufferSize);
   connection_.socket()->SetSendBufferSize(kSocketBufferSize);
 
-  if (use_ssl_flip) {
+  if (use_ssl_) {
     // Add a SSL socket on top of our existing transport socket.
     ClientSocket* socket = connection_.release_socket();
     // TODO(mbelshe): Fix the hostname.  This is BROKEN without having
@@ -502,6 +493,11 @@ void FlipSession::WriteSocket() {
       write_pending_ = true;
       break;
     }
+    if (rv < 0) {
+      // Uhoh - an error!
+      // TODO(mbelshe): fix me!
+      NOTIMPLEMENTED();
+    }
     LOG(INFO) << "FLIPSession wrote " << rv << " bytes.";
     in_flight_write_.release();
   }
@@ -607,11 +603,11 @@ void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,
   LOG(INFO) << "Flip data for stream " << stream_id << ", " << len << " bytes";
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
-    LOG(WARNING) << "Received data frame for invalid stream" << stream_id;
+    LOG(WARNING) << "Received data frame for invalid stream " << stream_id;
     return;
   }
-  if (!len)
-    return;  // This was just an empty data packet.
+  //if (!len)
+  //  return;  // This was just an empty data packet.
   FlipStreamImpl* stream = active_streams_[stream_id];
   if (stream->OnData(data, len)) {
     DeactivateStream(stream->stream_id());
@@ -675,7 +671,7 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
   flip::FlipStreamId stream_id = frame->stream_id();
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
-    LOG(WARNING) << "Received SYN_REPLY for invalid stream" << stream_id;
+    LOG(WARNING) << "Received SYN_REPLY for invalid stream " << stream_id;
     return;
   }
 

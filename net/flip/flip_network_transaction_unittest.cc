@@ -21,18 +21,15 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 //-----------------------------------------------------------------------------
 
-namespace flip {
-
-using namespace net;
+namespace {
 
 // Create a proxy service which fails on all requests (falls back to direct).
-ProxyService* CreateNullProxyService() {
-  return ProxyService::CreateNull();
+net::ProxyService* CreateNullProxyService() {
+  return net::ProxyService::CreateNull();
 }
 
 // Helper to manage the lifetimes of the dependencies for a
@@ -41,41 +38,45 @@ class SessionDependencies {
  public:
   // Default set of dependencies -- "null" proxy service.
   SessionDependencies()
-      : host_resolver(new MockHostResolver),
+      : host_resolver(new net::MockHostResolver),
         proxy_service(CreateNullProxyService()),
-        ssl_config_service(new SSLConfigServiceDefaults) {}
+        ssl_config_service(new net::SSLConfigServiceDefaults) {}
 
   // Custom proxy service dependency.
-  explicit SessionDependencies(ProxyService* proxy_service)
-      : host_resolver(new MockHostResolver),
+  explicit SessionDependencies(net::ProxyService* proxy_service)
+      : host_resolver(new net::MockHostResolver),
         proxy_service(proxy_service),
-        ssl_config_service(new SSLConfigServiceDefaults) {}
+        ssl_config_service(new net::SSLConfigServiceDefaults) {}
 
-  scoped_refptr<MockHostResolverBase> host_resolver;
-  scoped_refptr<ProxyService> proxy_service;
-  scoped_refptr<SSLConfigService> ssl_config_service;
-  MockClientSocketFactory socket_factory;
+  scoped_refptr<net::MockHostResolverBase> host_resolver;
+  scoped_refptr<net::ProxyService> proxy_service;
+  scoped_refptr<net::SSLConfigService> ssl_config_service;
+  net::MockClientSocketFactory socket_factory;
 };
 
-ProxyService* CreateFixedProxyService(const std::string& proxy) {
+net::ProxyService* CreateFixedProxyService(const std::string& proxy) {
   net::ProxyConfig proxy_config;
   proxy_config.proxy_rules.ParseFromString(proxy);
-  return ProxyService::CreateFixed(proxy_config);
+  return net::ProxyService::CreateFixed(proxy_config);
 }
 
 
-HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
-  return new HttpNetworkSession(session_deps->host_resolver,
-                                session_deps->proxy_service,
-                                &session_deps->socket_factory,
-                                session_deps->ssl_config_service);
+net::HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
+  return new net::HttpNetworkSession(session_deps->host_resolver,
+                                     session_deps->proxy_service,
+                                     &session_deps->socket_factory,
+                                     session_deps->ssl_config_service);
 }
+
+}  // namespace
+
+namespace net {
 
 class FlipNetworkTransactionTest : public PlatformTest {
  public:
   virtual void SetUp() {
     // Disable compression on this test.
-    FlipFramer::set_enable_compression_default(false);
+    flip::FlipFramer::set_enable_compression_default(false);
   }
 
   virtual void TearDown() {
@@ -179,6 +180,8 @@ TEST_F(FlipNetworkTransactionTest, Connect) {
     MockRead(true, 0, 0),  // EOF
   };
 
+  // We disable SSL for this test.
+  FlipSession::SetSSLMode(false);
   SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
