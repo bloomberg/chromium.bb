@@ -31,6 +31,7 @@
 #include "skia/ext/bitmap_platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebRect.h"
@@ -43,6 +44,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
@@ -113,6 +115,7 @@ TestShell::TestShell()
       test_params_(NULL),
       is_modal_(false),
       dump_stats_table_on_exit_(false) {
+    accessibility_controller_.reset(new AccessibilityController(this));
     delegate_.reset(new TestWebViewDelegate(this));
     popup_delegate_.reset(new TestWebViewDelegate(this));
     layout_test_controller_.reset(new LayoutTestController(this));
@@ -455,6 +458,8 @@ void TestShell::Show(WebNavigationPolicy policy) {
 void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
   // Only bind the test classes if we're running tests.
   if (layout_test_mode_) {
+    accessibility_controller_->BindToJavascript(
+        frame, L"accessibilityController");
     layout_test_controller_->BindToJavascript(frame, L"layoutTestController");
     event_sending_controller_->BindToJavascript(frame, L"eventSender");
     text_input_controller_->BindToJavascript(frame, L"textInputController");
@@ -514,6 +519,7 @@ void TestShell::SizeToDefault() {
 }
 
 void TestShell::ResetTestController() {
+  accessibility_controller_->Reset();
   layout_test_controller_->Reset();
   event_sending_controller_->Reset();
   delegate_->Reset();

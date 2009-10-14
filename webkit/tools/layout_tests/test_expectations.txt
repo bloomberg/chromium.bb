@@ -1204,26 +1204,16 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // and then baselined if necessary.
 // ----------------------------------------------------------------------------
 
-// Accessibility is off in the browser, and accessibility is not a priority
-// for the current release.
-// Need to implement window.accessibilityController for these to work.
+// Need to finish implementing window.accessibilityController for these to work.
 BUG10322 : LayoutTests/accessibility = FAIL PASS
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
-BUG10322 : LayoutTests/accessibility/aria-describedby-on-input.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-disabled.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-hidden.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-label.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-labelledby-on-input.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-labelledby-stay-within.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-readonly.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-roles.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-tables.html = FAIL
 BUG10322 : LayoutTests/accessibility/button-press-action.html = FAIL
 BUG10322 : LayoutTests/accessibility/canvas.html = FAIL
 BUG10322 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
 BUG10322 : LayoutTests/accessibility/iframe-bastardization.html = FAIL
-BUG10322 : LayoutTests/accessibility/ignore-spacer-elements.html = FAIL
 BUG10322 : LayoutTests/accessibility/image-map1.html = FAIL
 BUG10322 : LayoutTests/accessibility/image-map2.html = FAIL
 BUG10322 : LayoutTests/accessibility/img-aria-button-alt-tag.html = FAIL
@@ -1233,11 +1223,9 @@ BUG10322 : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
 BUG10322 : LayoutTests/accessibility/language-attribute.html = FAIL
 BUG10322 : LayoutTests/accessibility/legend.html = FAIL
 BUG10322 : LayoutTests/accessibility/lists.html = FAIL
-BUG10322 : LayoutTests/accessibility/nested-layout-crash.html = FAIL
 BUG10322 : LayoutTests/accessibility/nochildren-elements.html = FAIL
 BUG10322 : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
 BUG10322 : LayoutTests/accessibility/onclick-handlers.html = FAIL
-BUG10322 : LayoutTests/accessibility/placeholder.html = FAIL
 BUG10322 BUG10351 : LayoutTests/accessibility/plugin.html = FAIL
 BUG10322 : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
 BUG10322 : LayoutTests/accessibility/radio-button-group-members.html = FAIL
@@ -1247,9 +1235,6 @@ BUG10322 : LayoutTests/accessibility/table-attributes.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-cell-spans.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-cells.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-detection.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-modification-crash.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-nofirstbody.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-notbody.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-one-cell.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-sections.html = FAIL
 BUG10322 : LayoutTests/accessibility/table-with-aria-role.html = FAIL
@@ -1260,9 +1245,8 @@ BUG10322 : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
 BUG10322 : LayoutTests/accessibility/th-as-title-ui.html = FAIL
 BUG10322 : LayoutTests/accessibility/transformed-element.html = FAIL
 BUG10322 : LayoutTests/accessibility/visible-elements.html = FAIL
-BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
+BUG10322 : LayoutTests/accessibility/input-slider.html = FAIL
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
-BUG10322 : LayoutTests/platform/mac-snowleopard/accessibility = FAIL
 BUG10322 : LayoutTests/platform/win/accessibility = FAIL
 // Introduced in http://trac.webkit.org/changeset/48368
 BUG10322 SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL

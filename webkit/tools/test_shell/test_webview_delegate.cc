@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "net/base/net_errors.h"
+#include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebCString.h"
@@ -41,6 +42,7 @@
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/glue_serialize.h"
+#include "webkit/glue/glue_util.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
@@ -53,6 +55,7 @@
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
@@ -63,6 +66,7 @@
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
+using WebKit::WebAccessibilityObject;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
 using WebKit::WebData;
@@ -97,6 +101,8 @@ using WebKit::WebURLResponse;
 using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
+
+using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
 namespace {
 
@@ -907,6 +913,11 @@ void TestWebViewDelegate::didRunInsecureContent(
     WebFrame* frame, const WebSecurityOrigin& origin) {
   if (shell_->ShouldDumpFrameLoadCallbacks())
     printf("didRunInsecureContent\n");
+}
+
+void TestWebViewDelegate::focusAccessibilityObject(
+    const WebAccessibilityObject& object) {
+  shell_->accessibility_controller()->SetFocusedElement(object);
 }
 
 // Public methods ------------------------------------------------------------

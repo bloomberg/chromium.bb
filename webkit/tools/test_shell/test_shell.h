@@ -47,6 +47,7 @@
 typedef std::list<gfx::NativeWindow> WindowList;
 
 struct WebPreferences;
+class AccessibilityController;
 class TestNavigationEntry;
 class TestNavigationController;
 
@@ -112,6 +113,9 @@ public:
     // We use this to avoid relying on Windows focus during layout test mode.
     void SetFocus(WebWidgetHost* host, bool enable);
 
+    AccessibilityController* accessibility_controller() const {
+      return accessibility_controller_.get();
+    }
     LayoutTestController* layout_test_controller() {
       return layout_test_controller_.get();
     }
@@ -321,6 +325,7 @@ private:
     // Default timeout in ms for file page loads when in layout test mode.
     static int file_test_timeout_ms_;
 
+    scoped_ptr<AccessibilityController> accessibility_controller_;
     scoped_ptr<LayoutTestController> layout_test_controller_;
 
     scoped_ptr<EventSendingController> event_sending_controller_;
