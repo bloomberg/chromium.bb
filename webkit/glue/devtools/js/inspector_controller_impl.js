@@ -14,11 +14,14 @@ devtools.InspectorControllerImpl = function() {
   this.frame_element_id_ = 1;
 
   this.installInspectorControllerDelegate_('clearMessages');
+  this.installInspectorControllerDelegate_('copyNode');
+  this.installInspectorControllerDelegate_('deleteCookie');
   this.installInspectorControllerDelegate_('disableResourceTracking');
   this.installInspectorControllerDelegate_('disableTimeline');
   this.installInspectorControllerDelegate_('enableResourceTracking');
   this.installInspectorControllerDelegate_('enableTimeline');
   this.installInspectorControllerDelegate_('getChildNodes');
+  this.installInspectorControllerDelegate_('getCookies');
   this.installInspectorControllerDelegate_('getDatabaseTableNames');
   this.installInspectorControllerDelegate_('getDOMStorageEntries');
   this.installInspectorControllerDelegate_('getEventListenersForNode');
