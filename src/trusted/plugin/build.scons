@@ -78,7 +78,7 @@ if env.Bit('linux'):
     if env['TARGET_ARCHITECTURE'] == 'x86':
       env.Append(
           CPPDEFINES = ['MOZ_X11'],
-          LIBS = ['Xt', 'X11'],
+          LIBS = ['dl', 'Xt', 'X11'],
           )
 
 if env.Bit('mac'):
