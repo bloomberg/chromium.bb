@@ -2,5 +2,12 @@ This directory contains Dromaeo, a JavaScript and DOM performance benchmark.
 
 Dromaeo was developed and released by John Resig (jresig at mozilla.com)/
 
-This copy was fecthed from http://github.com/jeresig/dromaeo (at commit
-0b96e6b0f98996853e1a302b9783f83fc57c5ffa) and built with make web.
+This benchmark was slightly modified to enable Chromium automation.
+
+How to update:
+
+0) remove all the files from this dir, but keep README.chromium
+1) pull new version from git://github.com/antonm/dromaeo.git into a separate
+directory;
+2) run 'make web' to build standalone version;
+4) copy all the files from web dir into this directory.

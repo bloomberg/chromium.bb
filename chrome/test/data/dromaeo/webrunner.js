@@ -230,6 +230,7 @@
 	var time = 0;
 	var title, testName, testID, testSummary = {} , testSummaryNum = {}, maxTotal = 0, maxTotalNum = 0;
 	var nameDone = {};
+	var automated = false;
 	
 	// Query String Parsing
 	var search = (window.location.search || "?").substr(1);
@@ -269,6 +270,8 @@
 		m = /^numTests=(\d+)$/.exec(parts[i]);
 		if (m)
 			numTests = Number(m[1]);
+
+		automated = /^automated$/.exec(parts[i]);
 	}
 
 	jQuery(function(){
@@ -360,17 +363,21 @@
 			updateTimebar();
 	
 			if ( dataStore && dataStore.length ) {
-				$("body").addClass("alldone");
-				var div = jQuery("<div class='results'>Saving...</div>").insertBefore("#overview");
-				jQuery.ajax({
-					type: "POST",
-					url: "store.php",
-					data: "data=" + encodeURIComponent(JSON.stringify(dataStore)) + "&style=" + runStyle,
-					success: function(id){
-						var url = window.location.href.replace(/\?.*$/, "") + "?id=" + id;
-						div.html("Results saved. You can access them at a later time at the following URL:<br/><strong><a href='" + url + "'>" + url + "</a></strong></div>");
-					}
-				});
+				if (!automated) {
+					$("body").addClass("alldone");
+					var div = jQuery("<div class='results'>Saving...</div>").insertBefore("#overview");
+					jQuery.ajax({
+						type: "POST",
+						url: "store.php",
+						data: "data=" + encodeURIComponent(JSON.stringify(dataStore)) + "&style=" + runStyle,
+						success: function(id){
+							var url = window.location.href.replace(/\?.*$/, "") + "?id=" + id;
+							div.html("Results saved. You can access them at a later time at the following URL:<br/><strong><a href='" + url + "'>" + url + "</a></strong></div>");
+						}
+					});
+				} else {
+					window.automation.SetDone();
+				}
 			}
 		}
 	}
@@ -389,20 +396,28 @@
 		time += timePerTest;
 		updateTime();
 		
-		$("#pause")
-			.val("Run")
-			.click(function(){
-				if ( interval ) {
-					interval = null;
-					this.value = "Run";
-				} else {
-					if ( !interval ) {
-						interval = true;
-						dequeue();
+		if (!automated) {
+			$("#pause")
+				.val("Run")
+				.click(function(){
+					if ( interval ) {
+						interval = null;
+						this.value = "Run";
+					} else {
+						if ( !interval ) {
+							interval = true;
+							dequeue();
+						}
+						this.value = "Pause";
 					}
-					this.value = "Pause";
-				}
-			});
+				});
+		} else {
+			$("#pause")
+				.val("Automated")
+				.click(function(){});
+			interval = true;
+			dequeue();
+		}
 	}
 
 	function initTest(curID){
@@ -756,5 +771,26 @@
 			});
 
 		updateTestPos({curID: testID, collection: tests[testID] ? tests[testID].name : testID, version: testVersions[testID]}, true);
+	}
+
+	if (automated) {
+		// Add some more stuff if running in automated mode.
+		window.automation = {}
+		window.automation.SetDone = function() {
+			window.document.cookie = "__done=1; path=/";
+		}
+		window.automation.GetScore = function() {
+			return (runStyle === "runs/s" ? Math.pow(Math.E, maxTotal / maxTotalNum) : maxTotal).toString();
+		}
+		window.automation.GetResults = function() {
+			results = {}
+			for (var i = 0; i < dataStore.length; i++) {
+				var data = dataStore[i];
+				// dots are not allowed.
+				var key = (data.collection + "/" + data.name).replace(".", "_");
+				results[key] = data.mean.toString();
+			}
+			return results;
+		}
 	}
 })();

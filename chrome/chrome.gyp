@@ -4046,6 +4046,7 @@
         'test/reliability/page_load_test.cc',
         'test/reliability/page_load_test.h',
         'test/ui/dom_checker_uitest.cc',
+        'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/fast_shutdown_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
