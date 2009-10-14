@@ -538,6 +538,98 @@ devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
 
 
 /**
+ * Sends 'scopes' request for the frame object to resolve all variables
+ * available in the frame.
+ * @param {number} callFrameId Id of call frame whose variables need to
+ *     be resolved.
+ * @param {function(Object)} callback Callback to be called when all frame
+ *     variables are resolved.
+ */
+devtools.DebuggerAgent.prototype.resolveFrameVariables_ = function(
+    callFrameId, callback) {
+  var result = {};
+
+  var frame = this.callFrames_[callFrameId];
+  if (!frame) {
+    callback(result);
+    return;
+  }
+
+  var waitingResponses = 0;
+  function scopeResponseHandler(msg) {
+    waitingResponses--;
+
+    if (msg.isSuccess()) {
+      var properties = msg.getBody().object.properties;
+      for (var j = 0; j < properties.length; j++) {
+        result[properties[j].name] = true;
+      }
+    }
+
+    // When all scopes are resolved invoke the callback.
+    if (waitingResponses == 0) {
+      callback(result);
+    }
+  };
+
+  for (var i = 0; i < frame.scopeChain.length; i++) {
+    var scope = frame.scopeChain[i].objectId;
+    if (scope.type == devtools.DebuggerAgent.ScopeType.Global) {
+      // Do not resolve global scope since it takes for too long.
+      // TODO(yurys): allow to send only property names in the response.
+      continue;
+    }
+    var cmd = new devtools.DebugCommand('scope', {
+      'frameNumber': scope.frameNumber,
+      'number': scope.index,
+      'compactFormat': true
+    });
+    devtools.DebuggerAgent.sendCommand_(cmd);
+    this.requestSeqToCallback_[cmd.getSequenceNumber()] =
+        scopeResponseHandler;
+    waitingResponses++;
+  }
+};
+
+/**
+ * Evaluates the expressionString to an object in the call frame and reports
+ * all its properties.
+ * @param{string} expressionString Expression whose properties should be
+ *     collected.
+ * @param{number} callFrameId The frame id.
+ * @param{function(Object result,bool isException)} reportCompletions Callback
+ *     function.
+ */
+devtools.DebuggerAgent.prototype.resolveCompletionsOnFrame = function(
+      expressionString, callFrameId, reportCompletions) {
+    if (expressionString) {
+      expressionString = 'var obj = ' + expressionString +
+          '; var names = {}; for (var n in obj) { names[n] = true; };' +
+          'names;';
+      this.evaluateInCallFrame(
+          callFrameId,
+          expressionString,
+          function(result) {
+            var names = {};
+            if (!result.isException) {
+              var props = result.value.objectId.properties;
+              // Put all object properties into the map.
+              for (var i = 0; i < props.length; i++) {
+                names[props[i].name] = true;
+              }
+            }
+            reportCompletions(names, result.isException);
+          });
+    } else {
+      this.resolveFrameVariables_(callFrameId,
+          function(result) {
+            reportCompletions(result, false /* isException */);
+          });
+    }
+};
+
+
+/**
  * Sets up callbacks that deal with profiles processing.
  */
 devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {

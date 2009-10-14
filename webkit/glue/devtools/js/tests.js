@@ -667,6 +667,75 @@ TestSuite.prototype.testEvalOnCallFrame = function() {
 
 
 /**
+ * Tests that console auto completion works when script execution is paused.
+ */
+TestSuite.prototype.testCompletionOnPause = function() {
+  this.showPanel('scripts');
+  var test = this;
+  this._executeCodeWhenScriptsAreParsed(
+      'handleClick()',
+      ['completion_on_pause.html$']);
+
+  this._waitForScriptPause(
+      {
+        functionsOnStack: ['innerFunction', 'handleClick',
+                           '(anonymous function)'],
+        lineNumber: 9,
+        lineText: '    debugger;'
+      },
+      showConsole);
+
+  function showConsole() {
+    test.addSniffer(WebInspector.console, 'afterShow', testLocalsCompletion);
+    WebInspector.showConsole();
+  }
+
+  function testLocalsCompletion() {
+    checkCompletions(
+        'th',
+        ['parameter1', 'closureLocal', 'p', 'createClosureLocal'],
+        testThisCompletion);
+  }
+
+  function testThisCompletion() {
+    checkCompletions(
+        'this.',
+        ['field1', 'field2', 'm'],
+        testFieldCompletion);
+  }
+
+  function testFieldCompletion() {
+    checkCompletions(
+        'this.field1.',
+        ['id', 'name'],
+        function() {
+          test.releaseControl();
+        });
+  }
+
+  function checkCompletions(expression, expectedProperties, callback) {
+      test.addSniffer(WebInspector.console, '_reportCompletions',
+        function(bestMatchOnly, completionsReadyCallback, dotNotation,
+            bracketNotation, prefix, result, isException) {
+          test.assertTrue(!isException,
+                          'Exception while collecting completions');
+          for (var i = 0; i < expectedProperties.length; i++) {
+            var name = expectedProperties[i];
+            test.assertTrue(result[name], 'Name ' + name +
+                ' not found among the completions: ' +
+                JSON.stringify(result));
+          }
+          test.releaseControl();
+        });
+    WebInspector.console.prompt.text = expression;
+    WebInspector.console.prompt.autoCompleteSoon();
+  }
+
+  this.takeControl();
+};
+
+
+/**
  * Tests that inspected page doesn't hang on reload if it contains a syntax
  * error and DevTools window is open.
  */

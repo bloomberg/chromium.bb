@@ -56,6 +56,8 @@ const wchar_t kDebuggerClosurePage[] =
     L"files/devtools/debugger_closure.html";
 const wchar_t kDebuggerIntrinsicPropertiesPage[] =
     L"files/devtools/debugger_intrinsic_properties.html";
+const wchar_t kCompletionOnPause[] =
+    L"files/devtools/completion_on_pause.html";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -209,6 +211,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
 // script and DevTools are open.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
   RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCompletionOnPause) {
+  RunTest("testCompletionOnPause", kCompletionOnPause);
 }
 
 // Tests that 'Pause' button works for eval.
