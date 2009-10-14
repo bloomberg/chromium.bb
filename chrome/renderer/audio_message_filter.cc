@@ -2,27 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "ipc/ipc_logging.h"
-
-namespace {
-
-void RecordReceiveLatency(base::TimeDelta latency) {
-  static ThreadSafeHistogram histogram("Audio.IPC_Renderer_ReceiveLatency",
-                                       1, 500, 100);
-  histogram.AddTime(latency);
-}
-
-void RecordProcessTime(base::TimeDelta latency) {
-  static ThreadSafeHistogram histogram("Audio.IPC_Renderer_ProcessTime",
-                                       1, 100, 100);
-  histogram.AddTime(latency);
-}
-
-}  // namespace
 
 AudioMessageFilter::AudioMessageFilter(int32 route_id)
     : channel_(NULL),
@@ -84,23 +67,8 @@ void AudioMessageFilter::OnRequestPacket(const IPC::Message& msg,
     return;
   }
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging* logger = IPC::Logging::current();
-  if (logger->Enabled()) {
-    RecordReceiveLatency(base::Time::FromInternalValue(msg.received_time()) -
-                         base::Time::FromInternalValue(msg.sent_time()));
-  }
-#endif
-
   delegate->OnRequestPacket(bytes_in_buffer,
                             base::Time::FromInternalValue(message_timestamp));
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  if (logger->Enabled()) {
-    RecordProcessTime(base::Time::Now() -
-                      base::Time::FromInternalValue(msg.received_time()));
-  }
-#endif
 }
 
 void AudioMessageFilter::OnStreamCreated(int stream_id,
