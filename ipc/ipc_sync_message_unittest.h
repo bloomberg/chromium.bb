@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "ipc/ipc_message_macros.h"
 
 IPC_BEGIN_MESSAGES(Test)
@@ -13,6 +15,9 @@ IPC_BEGIN_MESSAGES(Test)
   IPC_SYNC_MESSAGE_CONTROL1_1(SyncChannelTestMsg_Double,
                               int /* in */,
                               int /* out */)
+
+  IPC_SYNC_MESSAGE_CONTROL0_1(SyncChannelNestedTestMsg_String,
+                              std::string)
 
   // out1 is false
   IPC_SYNC_MESSAGE_CONTROL0_1(Msg_C_0_1, bool)

@@ -122,7 +122,8 @@ WaitableEventWatcher::WaitableEventWatcher()
     : event_(NULL),
       message_loop_(NULL),
       cancel_flag_(NULL),
-      callback_task_(NULL) {
+      callback_task_(NULL),
+      delegate_(NULL) {
 }
 
 WaitableEventWatcher::~WaitableEventWatcher() {
@@ -159,6 +160,9 @@ bool WaitableEventWatcher::StartWatching
 
   AutoLock locked(kernel->lock_);
 
+  delegate_ = delegate;
+  event_ = event;
+
   if (kernel->signaled_) {
     if (!kernel->manual_reset_)
       kernel->signaled_ = false;
@@ -172,7 +176,6 @@ bool WaitableEventWatcher::StartWatching
   message_loop_ = current_ml;
   current_ml->AddDestructionObserver(this);
 
-  event_ = event;
   kernel_ = kernel;
   waiter_ = new AsyncWaiter(current_ml, callback_task_, cancel_flag_);
   event->Enqueue(waiter_);
@@ -181,6 +184,8 @@ bool WaitableEventWatcher::StartWatching
 }
 
 void WaitableEventWatcher::StopWatching() {
+  delegate_ = NULL;
+
   if (message_loop_) {
     message_loop_->RemoveDestructionObserver(this);
     message_loop_ = NULL;

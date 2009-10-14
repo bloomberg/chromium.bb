@@ -148,6 +148,14 @@ class SyncChannel::ReceivedSyncMsgQueue :
     }
   }
 
+  base::WaitableEventWatcher* top_send_done_watcher() {
+    return top_send_done_watcher_;
+  }
+
+  void set_top_send_done_watcher(base::WaitableEventWatcher* watcher) {
+    top_send_done_watcher_ = watcher;
+  }
+
  private:
   // See the comment in SyncChannel::SyncChannel for why this event is created
   // as manual reset.
@@ -155,7 +163,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
       dispatch_event_(true, false),
       listener_message_loop_(MessageLoop::current()),
       task_pending_(false),
-      listener_count_(0) {
+      listener_count_(0),
+      top_send_done_watcher_(NULL) {
   }
 
   // Holds information about a queued synchronous message or reply.
@@ -178,6 +187,11 @@ class SyncChannel::ReceivedSyncMsgQueue :
   Lock message_lock_;
   bool task_pending_;
   int listener_count_;
+
+  // The current send done event watcher for this thread. Used to maintain
+  // a local global stack of send done watchers to ensure that nested sync
+  // message loops complete correctly.
+  base::WaitableEventWatcher* top_send_done_watcher_;
 };
 
 base::LazyInstance<base::ThreadLocalPointer<SyncChannel::ReceivedSyncMsgQueue> >
@@ -424,15 +438,39 @@ void SyncChannel::WaitForReply(WaitableEvent* pump_messages_event) {
 }
 
 void SyncChannel::WaitForReplyWithNestedMessageLoop() {
-  WaitableEvent* old_done_event = send_done_watcher_.GetWatchedEvent();
-  send_done_watcher_.StopWatching();
-  send_done_watcher_.StartWatching(sync_context()->GetSendDoneEvent(), this);
+  base::WaitableEventWatcher send_done_watcher;
+
+  ReceivedSyncMsgQueue* sync_msg_queue = sync_context()->received_sync_msgs();
+  DCHECK(sync_msg_queue != NULL);
+
+  base::WaitableEventWatcher* old_send_done_event_watcher =
+      sync_msg_queue->top_send_done_watcher();
+
+  base::WaitableEventWatcher::Delegate* old_delegate = NULL;
+  base::WaitableEvent* old_event = NULL;
+
+  // Maintain a local global stack of send done delegates to ensure that
+  // nested sync calls complete in the correct sequence, i.e. the
+  // outermost call completes first, etc.
+  if (old_send_done_event_watcher) {
+    old_delegate = old_send_done_event_watcher->delegate();
+    old_event = old_send_done_event_watcher->GetWatchedEvent();
+    old_send_done_event_watcher->StopWatching();
+  }
+
+  sync_msg_queue->set_top_send_done_watcher(&send_done_watcher);
+
+  send_done_watcher.StartWatching(sync_context()->GetSendDoneEvent(), this);
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
+
   MessageLoop::current()->SetNestableTasksAllowed(true);
   MessageLoop::current()->Run();
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
-  if (old_done_event)
-    send_done_watcher_.StartWatching(old_done_event, this);
+
+  sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);
+  if (old_send_done_event_watcher) {
+    old_send_done_event_watcher->StartWatching(old_event, old_delegate);
+  }
 }
 
 void SyncChannel::OnWaitableEventSignaled(WaitableEvent* event) {

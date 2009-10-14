@@ -106,6 +106,13 @@ class WaitableEventWatcher
   // ---------------------------------------------------------------------------
   WaitableEvent* GetWatchedEvent();
 
+  // ---------------------------------------------------------------------------
+  // Return the delegate, or NULL if there is no delegate.
+  // ---------------------------------------------------------------------------
+  Delegate* delegate() {
+    return delegate_;
+  }
+
  private:
   WaitableEvent* event_;
 
@@ -131,7 +138,6 @@ class WaitableEventWatcher
 
   void OnObjectSignaled();
 
-  Delegate* delegate_;
   ObjectWatcherHelper helper_;
   ObjectWatcher watcher_;
 #else
@@ -146,6 +152,8 @@ class WaitableEventWatcher
   AsyncCallbackTask* callback_task_;
   scoped_refptr<WaitableEvent::WaitableEventKernel> kernel_;
 #endif
+
+  Delegate* delegate_;
 };
 
 }  // namespace base

@@ -134,6 +134,10 @@ class Worker : public Channel::Listener, public Message::Sender {
     Send(reply_msg);
   }
 
+  virtual void OnNestedTestMsg(Message* reply_msg) {
+    NOTREACHED();
+  }
+
  private:
   base::Thread* ListenerThread() {
     return overrided_thread_ ? overrided_thread_ : &listener_thread_;
@@ -179,6 +183,8 @@ class Worker : public Channel::Listener, public Message::Sender {
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_Double, OnDoubleDelay)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_AnswerToLife,
                                      OnAnswerDelay)
+     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelNestedTestMsg_String,
+                                     OnNestedTestMsg)
     IPC_END_MESSAGE_MAP()
   }
 
@@ -640,100 +646,101 @@ TEST_F(IPCSyncChannelTest, Multiple) {
 
 namespace {
 
-class QueuedReplyServer1 : public Worker {
+// This class provides server side functionality to test the case where
+// multiple sync channels are in use on the same thread on the client and
+// nested calls are issued.
+class QueuedReplyServer : public Worker {
  public:
-  QueuedReplyServer1(bool pump_during_send)
-    : Worker("test_channel1", Channel::MODE_SERVER),
-      pump_during_send_(pump_during_send) { }
-  void Run() {
-    SendDouble(pump_during_send_, true);
-    Done();
+   QueuedReplyServer(base::Thread* listener_thread,
+                     const std::string& channel_name,
+                     const std::string& reply_text)
+      : Worker(channel_name, Channel::MODE_SERVER),
+        reply_text_(reply_text) {
+    Worker::OverrideThread(listener_thread);
   }
 
-  bool pump_during_send_;
-};
-
-class QueuedReplyClient1 : public Worker {
- public:
-  QueuedReplyClient1(WaitableEvent* client1_msg_received,
-                     WaitableEvent* server2_can_reply) :
-      Worker("test_channel1", Channel::MODE_CLIENT),
-      client1_msg_received_(client1_msg_received),
-      server2_can_reply_(server2_can_reply) { }
-
-  void OnDouble(int in, int* out) {
-    client1_msg_received_->Signal();
-    *out = in * 2;
-    server2_can_reply_->Wait();
+  virtual void OnNestedTestMsg(Message* reply_msg) {
+    LOG(INFO) << __FUNCTION__ << " Sending reply: "
+              << reply_text_.c_str();
+    SyncChannelNestedTestMsg_String::WriteReplyParams(
+        reply_msg, reply_text_);
+    Send(reply_msg);
     Done();
   }
 
  private:
-  WaitableEvent *client1_msg_received_, *server2_can_reply_;
+  std::string reply_text_;
 };
 
-class QueuedReplyServer2 : public Worker {
+// The QueuedReplyClient class provides functionality to test the case where
+// multiple sync channels are in use on the same thread and they make nested
+// sync calls, i.e. while the first channel waits for a response it makes a
+// sync call on another channel.
+// The callstack should unwind correctly, i.e. the outermost call should
+// complete first, and so on.
+class QueuedReplyClient : public Worker {
  public:
-  explicit QueuedReplyServer2(WaitableEvent* server2_can_reply) :
-      Worker("test_channel2", Channel::MODE_SERVER),
-      server2_can_reply_(server2_can_reply) { }
+  QueuedReplyClient(base::Thread* listener_thread,
+                    const std::string& channel_name,
+                    const std::string& expected_text,
+                    bool pump_during_send)
+      : Worker(channel_name, Channel::MODE_CLIENT),
+        expected_text_(expected_text),
+        pump_during_send_(pump_during_send) {
+    Worker::OverrideThread(listener_thread);
+  }
 
-  void OnAnswer(int* result) {
-    server2_can_reply_->Signal();
+  virtual void Run() {
+    std::string response;
+    SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
+    if (pump_during_send_)
+      msg->EnableMessagePumping();
+    bool result = Send(msg);
+    DCHECK(result);
+    DCHECK(response == expected_text_);
 
-    // give client1's reply time to reach the server listener thread
-    PlatformThread::Sleep(200);
-
-    *result = 42;
+    LOG(INFO) << __FUNCTION__ << " Received reply: "
+              << response.c_str();
     Done();
   }
 
-  WaitableEvent *server2_can_reply_;
-};
-
-class QueuedReplyClient2 : public Worker {
- public:
-  explicit QueuedReplyClient2(
-    WaitableEvent* client1_msg_received, bool pump_during_send)
-    : Worker("test_channel2", Channel::MODE_CLIENT),
-      client1_msg_received_(client1_msg_received),
-      pump_during_send_(pump_during_send){ }
-
-  void Run() {
-    client1_msg_received_->Wait();
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
-    Done();
-  }
-
-  WaitableEvent *client1_msg_received_;
+ private:
   bool pump_during_send_;
+  std::string expected_text_;
 };
 
-void QueuedReply(bool server_pump, bool client_pump) {
+void QueuedReply(bool client_pump) {
   std::vector<Worker*> workers;
 
-  // A shared worker thread so that server1 and server2 run on one thread.
-  base::Thread worker_thread("QueuedReply");
-  ASSERT_TRUE(worker_thread.Start());
+  // A shared worker thread for servers
+  base::Thread server_worker_thread("QueuedReply_ServerListener");
+  ASSERT_TRUE(server_worker_thread.Start());
 
-  WaitableEvent client1_msg_received(false, false);
-  WaitableEvent server2_can_reply(false, false);
+  base::Thread client_worker_thread("QueuedReply_ClientListener");
+  ASSERT_TRUE(client_worker_thread.Start());
 
   Worker* worker;
 
-  worker = new QueuedReplyServer2(&server2_can_reply);
-  worker->OverrideThread(&worker_thread);
+  worker = new QueuedReplyServer(&server_worker_thread,
+                                 "QueuedReply_Server1",
+                                 "Got first message");
   workers.push_back(worker);
 
-  worker = new QueuedReplyClient2(&client1_msg_received, client_pump);
+  worker = new QueuedReplyServer(&server_worker_thread,
+                                 "QueuedReply_Server2",
+                                 "Got second message");
   workers.push_back(worker);
 
-  worker = new QueuedReplyServer1(server_pump);
-  worker->OverrideThread(&worker_thread);
+  worker = new QueuedReplyClient(&client_worker_thread,
+                                 "QueuedReply_Server1",
+                                 "Got first message",
+                                 client_pump);
   workers.push_back(worker);
 
-  worker = new QueuedReplyClient1(
-      &client1_msg_received, &server2_can_reply);
+  worker = new QueuedReplyClient(&client_worker_thread,
+                                 "QueuedReply_Server2",
+                                 "Got second message",
+                                 client_pump);
   workers.push_back(worker);
 
   RunTest(workers);
@@ -745,11 +752,11 @@ void QueuedReply(bool server_pump, bool client_pump) {
 // synchronous messages.  This tests that if during the response to another
 // message the reply to the original messages comes, it is queued up correctly
 // and the original Send is unblocked later.
+// We also test that the send call stacks unwind correctly when the channel
+// pumps messages while waiting for a response.
 TEST_F(IPCSyncChannelTest, QueuedReply) {
-  QueuedReply(false, false);
-  QueuedReply(false, true);
-  QueuedReply(true, false);
-  QueuedReply(true, true);
+  QueuedReply(false);
+  QueuedReply(true);
 }
 
 //-----------------------------------------------------------------------------

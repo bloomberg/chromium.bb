@@ -889,7 +889,11 @@ void BrowserRenderProcessHost::BadMessageTerminateProcess(
 void BrowserRenderProcessHost::OnChannelError() {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
-  DCHECK(channel_.get());
+  // The OnChannelError notification can fire multiple times due to nested sync
+  // calls to a renderer. If we don't have a valid channel here it means we
+  // already handled the error.
+  if (!channel_.get())
+    return;
 
   bool child_exited;
   bool did_crash;

@@ -92,6 +92,10 @@ class SyncChannel : public ChannelProxy,
 
     base::WaitableEvent* shutdown_event() { return shutdown_event_; }
 
+    ReceivedSyncMsgQueue* received_sync_msgs() {
+      return received_sync_msgs_;
+    }
+
    private:
     // IPC::ChannelProxy methods that we override.
 
@@ -151,7 +155,6 @@ class SyncChannel : public ChannelProxy,
   bool sync_messages_with_no_timeout_allowed_;
 
   // Used to signal events between the IPC and listener threads.
-  base::WaitableEventWatcher send_done_watcher_;
   base::WaitableEventWatcher dispatch_watcher_;
 
   DISALLOW_EVIL_CONSTRUCTORS(SyncChannel);
