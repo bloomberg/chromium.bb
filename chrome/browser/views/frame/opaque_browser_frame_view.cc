@@ -236,10 +236,14 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
     (d->ShouldShowWindowIcon() ?
         (IconSize(NULL, NULL, NULL) + kTitleLogoSpacing) : 0) +
     ((distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) ?
-        (distributor_logo_->width() + kLogoCaptionSpacing) : 0) +
-    minimize_button_->GetMinimumSize().width() +
-    restore_button_->GetMinimumSize().width() +
-    close_button_->GetMinimumSize().width();
+         (distributor_logo_->width() + kLogoCaptionSpacing) : 0);
+
+#if !defined(OS_CHROMEOS)
+  min_titlebar_width +=
+      minimize_button_->GetMinimumSize().width() +
+      restore_button_->GetMinimumSize().width() +
+      close_button_->GetMinimumSize().width();
+#endif
   min_size.set_width(std::max(min_size.width(), min_titlebar_width));
 
   return min_size;
@@ -285,15 +289,19 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+  if (close_button_->IsVisible() &&
+      close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
     return HTCLOSE;
-  if (restore_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
+  if (restore_button_->IsVisible() &&
+      restore_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
       point))
     return HTMAXBUTTON;
-  if (maximize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
+  if (maximize_button_->IsVisible() &&
+      maximize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
       point))
     return HTMAXBUTTON;
-  if (minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
+  if (minimize_button_->IsVisible() &&
+      minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
       point))
     return HTMINBUTTON;
   if (window_icon_ &&
@@ -528,6 +536,10 @@ int OpaqueBrowserFrameView::TitleCoordinates(int* title_top_spacing_ptr,
     *title_thickness_ptr = title_thickness;
   return title_top_spacing + title_thickness + title_bottom_spacing +
       UnavailablePixelsAtBottomOfNonClientHeight();
+}
+
+int OpaqueBrowserFrameView::RightEdge() const {
+  return width() - FrameBorderThickness();
 }
 
 int OpaqueBrowserFrameView::IconSize(int* title_top_spacing_ptr,
@@ -911,11 +923,23 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 void OpaqueBrowserFrameView::LayoutWindowControls() {
+  bool is_maximized = frame_->GetWindow()->IsMaximized();
+#if defined(OS_CHROMEOS)
+  minimize_button_->SetVisible(!is_maximized);
+  restore_button_->SetVisible(!is_maximized);
+  maximize_button_->SetVisible(!is_maximized);
+  close_button_->SetVisible(!is_maximized);
+  if (is_maximized) {
+    // Set the bounds of the minimize button so that we don't have to change
+    // other places that rely on the bounds.
+    minimize_button_->SetBounds(RightEdge(), 0, 0, 0);
+    return;
+  }
+#endif
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                    views::ImageButton::ALIGN_BOTTOM);
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-  bool is_maximized = frame_->GetWindow()->IsMaximized();
   int frame_thickness = FrameBorderThickness();
   int caption_y = is_maximized ? frame_thickness : kFrameShadowThickness;
   // There should always be the same number of non-shadow pixels visible to the
@@ -924,8 +948,8 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
   int right_extra_width = is_maximized ?
       (kFrameBorderThickness - kFrameShadowThickness) : 0;
   gfx::Size close_button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(width() - close_button_size.width() -
-      right_extra_width - frame_thickness, caption_y,
+  close_button_->SetBounds(RightEdge() - close_button_size.width() -
+      right_extra_width, caption_y,
       close_button_size.width() + right_extra_width,
       close_button_size.height());
 
