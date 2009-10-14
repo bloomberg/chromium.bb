@@ -362,6 +362,9 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 // tabs would cause an overflow.
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate {
+  if (![tabArray_ count])
+    return;
+
   // The minimum representable time interval.  This can be used as the value
   // passed to +[NSAnimationContext setDuration:] to stop an in-progress
   // animation as quickly as possible.
@@ -453,10 +456,8 @@ static const float kIndentLeavingSpaceForControls = 64.0;
           [tab selected] ? MAX(baseTabWidth, kMinSelectedTabWidth) :
                            baseTabWidth;
 
-      // Animate a new tab in by putting it below the horizon, but don't bother
-      // if we only have 1 tab.
-      BOOL shouldAnimate = animate && [tabContentsArray_ count] > 1;
-      if (newTab && visible && shouldAnimate) {
+      // Animate a new tab in by putting it below the horizon.
+      if (newTab && visible && animate) {
         [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
       }
 
@@ -502,24 +503,34 @@ static const float kIndentLeavingSpaceForControls = 64.0;
       // moving to the right (inserting a new tab). If moving right, we need
       // to use a very small duration to make sure we cancel any in-flight
       // animation to the left.
-      BOOL movingLeft = NSMinX(newTabNewFrame) < NSMinX(newTabTargetFrame_);
-      id target = animate ? [newTabButton_ animator] : newTabButton_;
-      [NSAnimationContext beginGrouping];
-      if (!movingLeft)
-        [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
-      [target setFrame:newTabNewFrame];
-      [NSAnimationContext endGrouping];
-      newTabTargetFrame_ = newTabNewFrame;
+      if (visible && animate) {
+        [NSAnimationContext beginGrouping];
+        BOOL movingLeft = NSMinX(newTabNewFrame) < NSMinX(newTabTargetFrame_);
+        if (!movingLeft) {
+          [[NSAnimationContext currentContext]
+              setDuration:kMinimumTimeInterval];
+        }
+        [[newTabButton_ animator] setFrame:newTabNewFrame];
+        newTabTargetFrame_ = newTabNewFrame;
+        [NSAnimationContext endGrouping];
+      } else {
+        [newTabButton_ setFrame:newTabNewFrame];
+        newTabTargetFrame_ = newTabNewFrame;
+      }
     }
   }
 
   [NSAnimationContext endGrouping];
   [dragBlockingView_ setFrame:enclosingRect];
+
+  // Mark that we've successfully completed layout of at least one tab.
+  initialLayoutComplete_ = YES;
 }
 
-// When we're told to layout from the public API we always want to animate.
+// When we're told to layout from the public API we usually want to animate,
+// except when it's the first time.
 - (void)layoutTabs {
-  [self layoutTabsWithAnimation:YES regenerateSubviews:YES];
+  [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:YES];
 }
 
 // Handles setting the title of the tab based on the given |contents|. Uses

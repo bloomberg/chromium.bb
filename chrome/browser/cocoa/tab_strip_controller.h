@@ -65,6 +65,10 @@ class ToolbarModel;
   NSRect newTabTargetFrame_;
   // If YES, do not show the new tab button during layout.
   BOOL forceNewTabButtonHidden_;
+  // YES if we've successfully completed the initial layout. When this is
+  // NO, we probably don't want to do any animation because we're just coming
+  // into being.
+  BOOL initialLayoutComplete_;
 
   // Width available for resizing the tabs (doesn't include the new tab
   // button). Used to restrict the available width when closing many tabs at
