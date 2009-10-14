@@ -1247,6 +1247,13 @@ BUG10322 : LayoutTests/accessibility/transformed-element.html = FAIL
 BUG10322 : LayoutTests/accessibility/visible-elements.html = FAIL
 BUG10322 : LayoutTests/accessibility/input-slider.html = FAIL
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-radiobutton-text.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-radiogroup.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-range.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-slider.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-spinbutton.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/aria-toolbar.html = PASS
+BUG10322 : LayoutTests/platform/mac/accessibility/table-updating.html = PASS
 BUG10322 : LayoutTests/platform/win/accessibility = FAIL
 // Introduced in http://trac.webkit.org/changeset/48368
 BUG10322 SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
