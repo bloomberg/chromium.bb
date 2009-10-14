@@ -13,7 +13,7 @@
       'dependencies': [
         '../app/app.gyp:app_base',  # Only required for Font support
         '../base/base.gyp:base',
-        '../base/base.gyp:base_gfx',
+        '../base/base.gyp:base_i18n',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',

@@ -363,7 +363,7 @@
       'target_name': 'chrome_frame_perftests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:base_gfx',
+        '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:common',

@@ -44,7 +44,7 @@
         'app_resources',
         'app_strings',
         '../base/base.gyp:base',
-        '../base/base.gyp:base_gfx',
+        '../base/base.gyp:base_i18n',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',

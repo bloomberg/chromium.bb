@@ -140,6 +140,7 @@
             'installer_util',
             'installer_util_strings',
             '../../base/base.gyp:base',
+            '../../base/base.gyp:base_i18n',
             '../../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -213,6 +214,7 @@
           'dependencies': [
             'installer_util',
             '../../base/base.gyp:base',
+            '../../base/base.gyp:base_i18n',
             '../../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -357,6 +359,7 @@
           'dependencies': [
             'installer_util',
             '../../base/base.gyp:base',
+            '../../base/base.gyp:base_i18n',
             '../../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [

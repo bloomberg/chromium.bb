@@ -28,7 +28,7 @@
       'dependencies': [
         '../../../app/app.gyp:app_base',
         '../../../base/base.gyp:base',
-        '../../../base/base.gyp:base_gfx',
+        '../../../base/base.gyp:base_i18n',
         '../../../media/media.gyp:media',
         '../../../net/net.gyp:net',
         '../../../skia/skia.gyp:skia',

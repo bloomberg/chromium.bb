@@ -11,7 +11,6 @@
       'dependencies': [
         '../../app/app.gyp:*',
         '../../base/base.gyp:base',
-        '../../base/base.gyp:base_gfx',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',

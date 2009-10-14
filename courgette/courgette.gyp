@@ -89,6 +89,7 @@
       'dependencies': [
         'courgette_lib',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
@@ -113,6 +114,7 @@
       'dependencies': [
         'courgette_lib',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
