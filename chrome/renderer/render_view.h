@@ -912,7 +912,7 @@ class RenderView : public RenderWidget,
   std::string last_selection_;
 
   // Hopds a reference to the service which provides desktop notifications.
-  scoped_refptr<NotificationProvider> notification_provider_;
+  scoped_ptr<NotificationProvider> notification_provider_;
 
   // Set to true if request for capturing page text has been made.
   bool determine_page_text_after_loading_stops_;

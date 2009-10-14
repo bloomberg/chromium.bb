@@ -9,7 +9,6 @@
 
 #include "chrome/common/desktop_notifications/active_notification_tracker.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "webkit/api/public/WebNotification.h"
 #include "webkit/api/public/WebNotificationPresenter.h"
 
@@ -18,14 +17,14 @@ namespace WebKit {
 class WebNotificationPermissionCallback;
 }
 
-class NotificationProvider : public WebKit::WebNotificationPresenter,
-                             public IPC::ChannelProxy::MessageFilter {
+// NotificationProvider class is owned by the RenderView.  Only
+// to be used on the UI thread.
+class NotificationProvider : public WebKit::WebNotificationPresenter {
  public:
   explicit NotificationProvider(RenderView* view);
   ~NotificationProvider() {}
 
-  // WebKit::WebNotificationPresenter interface.  Called from WebKit
-  // on the UI thread.
+  // WebKit::WebNotificationPresenter interface.
   virtual bool show(const WebKit::WebNotification& proxy);
   virtual void cancel(const WebKit::WebNotification& proxy);
   virtual void objectDestroyed(const WebKit::WebNotification& proxy);
@@ -34,25 +33,19 @@ class NotificationProvider : public WebKit::WebNotificationPresenter,
   virtual void requestPermission(const WebKit::WebString& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 
-private:
-  // Internal methods used on the UI thread.
+  // IPC message handler called from RenderView.
+  bool OnMessageReceived(const IPC::Message& message);
+
+ private:
+  // Internal methods used to show notifications.
   bool ShowHTML(const WebKit::WebNotification& notification, int id);
   bool ShowText(const WebKit::WebNotification& notification, int id);
 
-  // Callback methods invoked when events happen on active notifications.
+  // IPC handlers.
   void OnDisplay(int id);
   void OnError(int id, const WebKit::WebString& message);
   void OnClose(int id, bool by_user);
   void OnPermissionRequestComplete(int id);
-
-  // Internal versions of the IPC handlers which run on the UI thread.
-  void HandleOnDisplay(int id);
-  void HandleOnError(int id, const WebKit::WebString& message);
-  void HandleOnClose(int id, bool by_user);
-  void HandleOnPermissionRequestComplete(int id);
-
-  // IPC::ChannelProxy::MessageFilter override
-  virtual bool OnMessageReceived(const IPC::Message& message);
 
   bool Send(IPC::Message* message);
 

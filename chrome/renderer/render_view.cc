@@ -230,6 +230,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
       preferred_width_(0),
       send_preferred_width_changes_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          notification_provider_(new NotificationProvider(this))),
       determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
@@ -262,7 +264,6 @@ RenderView::~RenderView() {
 #endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
-  render_thread_->RemoveFilter(notification_provider_.get());
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap.
@@ -346,8 +347,6 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  notification_provider_ = new NotificationProvider(this);
-
   webwidget_ = WebView::Create(this);
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
@@ -376,7 +375,6 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
-  render_thread_->AddFilter(notification_provider_.get());
 }
 
 void RenderView::OnMessageReceived(const IPC::Message& message) {
@@ -388,6 +386,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
   if (devtools_client_.get() && devtools_client_->OnMessageReceived(message))
     return;
   if (devtools_agent_.get() && devtools_agent_->OnMessageReceived(message))
+    return;
+  if (notification_provider_->OnMessageReceived(message))
     return;
 
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)

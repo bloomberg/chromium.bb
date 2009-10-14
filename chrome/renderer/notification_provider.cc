@@ -60,6 +60,19 @@ void NotificationProvider::requestPermission(
                                                      GURL(origin), id));
 }
 
+bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NotificationProvider, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_PostDisplayToNotificationObject, OnDisplay);
+    IPC_MESSAGE_HANDLER(ViewMsg_PostErrorToNotificationObject, OnError);
+    IPC_MESSAGE_HANDLER(ViewMsg_PostCloseToNotificationObject, OnClose);
+    IPC_MESSAGE_HANDLER(ViewMsg_PermissionRequestDone,
+                        OnPermissionRequestComplete);
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   DCHECK(notification.isHTML());
@@ -78,30 +91,6 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
 }
 
 void NotificationProvider::OnDisplay(int id) {
-  RenderProcess::current()->main_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &NotificationProvider::HandleOnDisplay, id));
-}
-
-void NotificationProvider::OnError(int id, const WebString& message) {
-  RenderProcess::current()->main_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &NotificationProvider::HandleOnError,
-                        id, message));
-}
-
-void NotificationProvider::OnClose(int id, bool by_user) {
-  RenderProcess::current()->main_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &NotificationProvider::HandleOnClose,
-                        id, by_user));
-}
-
-void NotificationProvider::OnPermissionRequestComplete(int id) {
-  RenderProcess::current()->main_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-          &NotificationProvider::HandleOnPermissionRequestComplete, id));
-}
-
-void NotificationProvider::HandleOnDisplay(int id) {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   WebNotification notification;
   bool found = manager_.GetNotification(id, &notification);
   // |found| may be false if the WebNotification went out of scope in
@@ -110,8 +99,7 @@ void NotificationProvider::HandleOnDisplay(int id) {
     notification.dispatchDisplayEvent();
 }
 
-void NotificationProvider::HandleOnError(int id, const WebString& message) {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+void NotificationProvider::OnError(int id, const WebString& message) {
   WebNotification notification;
   bool found = manager_.GetNotification(id, &notification);
   // |found| may be false if the WebNotification went out of scope in
@@ -120,8 +108,7 @@ void NotificationProvider::HandleOnError(int id, const WebString& message) {
     notification.dispatchErrorEvent(message);
 }
 
-void NotificationProvider::HandleOnClose(int id, bool by_user) {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+void NotificationProvider::OnClose(int id, bool by_user) {
   WebNotification notification;
   bool found = manager_.GetNotification(id, &notification);
   // |found| may be false if the WebNotification went out of scope in
@@ -131,28 +118,11 @@ void NotificationProvider::HandleOnClose(int id, bool by_user) {
   manager_.UnregisterNotification(id);
 }
 
-void NotificationProvider::HandleOnPermissionRequestComplete(int id) {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+void NotificationProvider::OnPermissionRequestComplete(int id) {
   WebNotificationPermissionCallback* callback = manager_.GetCallback(id);
   DCHECK(callback);
   callback->permissionRequestComplete();
   manager_.OnPermissionRequestComplete(id);
-}
-
-bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
-  if (message.routing_id() != view_->routing_id())
-    return false;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NotificationProvider, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_PostDisplayToNotificationObject, OnDisplay);
-    IPC_MESSAGE_HANDLER(ViewMsg_PostErrorToNotificationObject, OnError);
-    IPC_MESSAGE_HANDLER(ViewMsg_PostCloseToNotificationObject, OnClose);
-    IPC_MESSAGE_HANDLER(ViewMsg_PermissionRequestDone,
-                        OnPermissionRequestComplete);
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 bool NotificationProvider::Send(IPC::Message* message) {
