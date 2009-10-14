@@ -665,9 +665,6 @@ BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = 
 BUG20844 LINUX WIN RELEASE : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 BUG20844 LINUX WIN DEBUG SLOW : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 
-// The end result looks right, but the event messages differ.
-BUG21807 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
-
 // Directionality of mixed-direction text in selected choice should
 // match that in the <select> option lists.
 // Low priority, unclear if test expectations are correct (see bug)
