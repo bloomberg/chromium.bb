@@ -5344,6 +5344,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATION_BALLOON_SOURCE_LABEL" desc="Text which labels the balloon with the source origin.">
         from <ph name="SOURCE_ORIGIN">$1</ph>
       </message>
+      <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for desktop notifications.">
+        Allow <ph name="site">$1<ex>mail.google.com</ex></ph> to show desktop notifications?
+      </message>
       <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
         Allow
       </message>
