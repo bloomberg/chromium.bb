@@ -51,11 +51,8 @@ void Channel::ChannelImpl::Close() {
     DCHECK(thread_check_->CalledOnValidThread());
   }
 
-  bool waited = false;
-  if (input_state_.is_pending || output_state_.is_pending) {
+  if (input_state_.is_pending || output_state_.is_pending)
     CancelIo(pipe_);
-    waited = true;
-  }
 
   // Closing the handle at this point prevents us from issuing more requests
   // form OnIOCompleted().
@@ -68,16 +65,6 @@ void Channel::ChannelImpl::Close() {
   base::Time start = base::Time::Now();
   while (input_state_.is_pending || output_state_.is_pending) {
     MessageLoopForIO::current()->WaitForIOCompletion(INFINITE, this);
-  }
-  if (waited) {
-    // We want to see if we block the message loop for too long.
-    // There is a potential race condition here as this function can run from
-    // multiple threads, which causes a DCHECK to fire at times from the
-    // StatisticsRecorder object indicating that the histogram is being
-    // registered multiple times.
-    // Commenting out this UMA call for now.
-    // Bug http://code.google.com/p/chromium/issues/detail?id=21827
-    // UMA_HISTOGRAM_TIMES("AsyncIO.IPCChannelClose", base::Time::Now() - start);
   }
 
   while (!output_queue_.empty()) {
