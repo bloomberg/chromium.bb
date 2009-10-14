@@ -4,7 +4,7 @@ vars = {
   "chromium_rev": "28829",
   "o3d_code_rev": "149",
   "skia_rev": "376",
-  "gyp_rev": "685",
+  "gyp_rev": "697",
   "gtest_rev": "329",
   "gflags_rev": "30",
   "breakpad_rev": "391",
