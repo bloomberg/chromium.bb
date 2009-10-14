@@ -3176,11 +3176,10 @@ BUG_HCLAM MAC SLOW : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
 
 // WebKit roll 49414:49427
-BUG_HCLAM : LayoutTests/editing/style/5228141.html = FAIL
-BUG_HCLAM : LayoutTests/editing/style/style-boundary-001.html = FAIL
-BUG_HCLAM : LayoutTests/fast/js/string-trim.html = FAIL
-BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = CRASH
-BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = CRASH
+BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = PASS CRASH
+
+// Fixed in tip of tree V8, hasn't reached us yet.
+BUG_JAPHET : LayoutTests/fast/js/string-trim.html = FAIL
 
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
