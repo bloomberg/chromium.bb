@@ -27,7 +27,7 @@ class DirectoryManager;
 
 namespace sync_pb {
 class ClientToServerMessage;
-};
+}
 
 struct RequestTimingInfo;
 
@@ -94,18 +94,23 @@ inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {
 }
 
 struct ServerConnectionEvent {
-  enum { SHUTDOWN, STATUS_CHANGED } what_happened;
-  HttpResponse::ServerConnectionCode connection_code;
-  bool server_reachable;
-
   // Traits.
   typedef ServerConnectionEvent EventType;
+  enum WhatHappened {
+    SHUTDOWN,
+    STATUS_CHANGED
+  };
+
   static inline bool IsChannelShutdownEvent(const EventType& event) {
     return SHUTDOWN == event.what_happened;
   }
+
+  WhatHappened what_happened;
+  HttpResponse::ServerConnectionCode connection_code;
+  bool server_reachable;
 };
 
-struct WatchServerStatus;
+class WatchServerStatus;
 
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
@@ -113,18 +118,8 @@ struct WatchServerStatus;
 //  *** This class is thread safe. In fact, you should consider creating only
 //  one instance for every server that you need to talk to.
 class ServerConnectionManager {
-  friend class Post;
-  friend struct WatchServerStatus;
  public:
   typedef EventChannel<ServerConnectionEvent, Lock> Channel;
-
-  // The lifetime of the GaiaAuthenticator must be longer than the instance
-  // of the ServerConnectionManager that you're creating.
-  ServerConnectionManager(const std::string& server, int port, bool use_ssl,
-                          const std::string& user_agent,
-                          const std::string& client_id);
-
-  virtual ~ServerConnectionManager();
 
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
@@ -145,7 +140,8 @@ class ServerConnectionManager {
     virtual ~Post() { }
 
     // Called to initialize and perform an HTTP POST.
-    virtual bool Init(const char* path, const std::string& auth_token,
+    virtual bool Init(const char* path,
+                      const std::string& auth_token,
                       const std::string& payload,
                       HttpResponse* response) = 0;
 
@@ -160,12 +156,13 @@ class ServerConnectionManager {
 
    protected:
     std::string MakeConnectionURL(const std::string& sync_server,
-                                  const std::string& path, bool use_ssl) const;
+                                  const std::string& path,
+                                  bool use_ssl) const;
 
-    void GetServerParams(std::string* server, int* server_port,
+    void GetServerParams(std::string* server,
+                         int* server_port,
                          bool* use_ssl) const {
-      ServerConnectionManager::ParametersLock lock(
-          scm_->server_parameters_mutex_);
+      AutoLock lock(scm_->server_parameters_mutex_);
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
@@ -179,6 +176,16 @@ class ServerConnectionManager {
     int ReadResponse(std::string* buffer, int length);
     RequestTimingInfo* timing_info_;
   };
+
+  // The lifetime of the GaiaAuthenticator must be longer than the instance
+  // of the ServerConnectionManager that you're creating.
+  ServerConnectionManager(const std::string& server,
+                          int port,
+                          bool use_ssl,
+                          const std::string& user_agent,
+                          const std::string& client_id);
+
+  virtual ~ServerConnectionManager();
 
   // POSTS buffer_in and reads a response into buffer_out. Uses our currently
   // set auth token in our headers.
@@ -235,12 +242,14 @@ class ServerConnectionManager {
   // typically called during / after authentication so that the server url
   // can be a function of the user's login id. A side effect of this call is
   // that ResetConnection is called.
-  void SetServerParameters(const std::string& server_url, int port,
+  void SetServerParameters(const std::string& server_url,
+                           int port,
                            bool use_ssl);
 
   // Returns the current server parameters in server_url, port and use_ssl.
   void GetServerParameters(std::string* server_url,
-                           int* port, bool* use_ssl) const;
+                           int* port,
+                           bool* use_ssl) const;
 
   bool terminate_all_io() const {
     AutoLock lock(terminate_all_io_mutex_);
@@ -262,9 +271,29 @@ class ServerConnectionManager {
   }
 
  protected:
+  inline std::string proto_sync_path() const {
+    AutoLock lock(path_mutex_);
+    return proto_sync_path_;
+  }
+
+  std::string get_time_path() const {
+    AutoLock lock(path_mutex_);
+    return get_time_path_;
+  }
+
+  // Called wherever a failure should be taken as an indication that we may
+  // be experiencing connection difficulties.
+  virtual bool IncrementErrorCount();
+
+  // NOTE: Tests rely on this protected function being virtual.
+  //
+  // Internal PostBuffer base function.
+  virtual bool PostBufferToPath(const PostBufferParams*,
+                                const std::string& path,
+                                const std::string& auth_token);
+
   // Protects access to sync_server_, sync_server_port_ and use_ssl_:
   mutable Lock server_parameters_mutex_;
-  typedef AutoLock ParametersLock;
 
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
@@ -283,31 +312,17 @@ class ServerConnectionManager {
 
   // The paths we post to.
   mutable Lock path_mutex_;
-  typedef AutoLock ScopedPathLock;
-
   std::string proto_sync_path_;
   std::string get_time_path_;
 
   // The auth token to use in authenticated requests. Set by the AuthWatcher.
   std::string auth_token_;
 
-  inline std::string proto_sync_path() const {
-    ScopedPathLock lock(path_mutex_);
-    return proto_sync_path_;
-  }
-  std::string get_time_path() const {
-    ScopedPathLock lock(path_mutex_);
-    return get_time_path_;
-  }
-
-  // Called wherever a failure should be taken as an indication that we may
-  // be experiencing connection difficulties.
-  virtual bool IncrementErrorCount();
   Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
 
- protected:
   Channel* const channel_;
+
   // Volatile so various threads can call server_status() without
   // synchronization.
   volatile HttpResponse::ServerConnectionCode server_status_;
@@ -316,14 +331,10 @@ class ServerConnectionManager {
   // A counter that is incremented everytime ResetAuthStatus() is called.
   volatile base::subtle::AtomicWord reset_count_;
 
-  // NOTE: Tests rely on this protected function being virtual.
-  //
-  // Internal PostBuffer base function.
-  virtual bool PostBufferToPath(const PostBufferParams*,
-                                const std::string& path,
-                                const std::string& auth_token);
-
  private:
+  friend class Post;
+  friend class WatchServerStatus;
+
   mutable Lock terminate_all_io_mutex_;
   bool terminate_all_io_;  // When set to true, terminate all connections asap.
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);

@@ -39,7 +39,9 @@ static const ServerConnectionEvent shutdown_event =
     false };
 
 bool ServerConnectionManager::Post::ReadBufferResponse(
-    string* buffer_out, HttpResponse* response, bool require_response) {
+    string* buffer_out,
+    HttpResponse* response,
+    bool require_response) {
   if (RC_REQUEST_OK != response->response_code) {
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;
     return false;
@@ -58,7 +60,8 @@ bool ServerConnectionManager::Post::ReadBufferResponse(
 }
 
 bool ServerConnectionManager::Post::ReadDownloadResponse(
-    HttpResponse* response, string* buffer_out) {
+    HttpResponse* response,
+    string* buffer_out) {
   const int64 bytes_read = ReadResponse(buffer_out,
       static_cast<int>(response->content_length));
 
@@ -72,19 +75,22 @@ bool ServerConnectionManager::Post::ReadDownloadResponse(
 }
 
 namespace {
-  string StripTrailingSlash(const string& s) {
-    int stripped_end_pos = s.size();
-    if (s.at(stripped_end_pos - 1) == '/') {
-      stripped_end_pos = stripped_end_pos - 1;
-    }
 
-    return s.substr(0, stripped_end_pos);
+string StripTrailingSlash(const string& s) {
+  int stripped_end_pos = s.size();
+  if (s.at(stripped_end_pos - 1) == '/') {
+    stripped_end_pos = stripped_end_pos - 1;
   }
+
+  return s.substr(0, stripped_end_pos);
+}
+
 }  // namespace
 
 // TODO(chron): Use a GURL instead of string concatenation.
-  string ServerConnectionManager::Post::MakeConnectionURL(
-    const string& sync_server, const string& path,
+string ServerConnectionManager::Post::MakeConnectionURL(
+    const string& sync_server,
+    const string& path,
     bool use_ssl) const {
   string connection_url = (use_ssl ? "https://" : "http://");
   connection_url += sync_server;
@@ -103,11 +109,13 @@ int ServerConnectionManager::Post::ReadResponse(string* out_buffer,
 }
 
 // A helper class that automatically notifies when the status changes.
-struct WatchServerStatus {
+class WatchServerStatus {
+ public:
   WatchServerStatus(ServerConnectionManager* conn_mgr, HttpResponse* response)
-    : conn_mgr_(conn_mgr), response_(response),
-      reset_count_(conn_mgr->reset_count_),
-      server_reachable_(conn_mgr->server_reachable_) {
+      : conn_mgr_(conn_mgr),
+        response_(response),
+        reset_count_(conn_mgr->reset_count_),
+        server_reachable_(conn_mgr->server_reachable_) {
     response->server_status = conn_mgr->server_status_;
   }
   ~WatchServerStatus() {
@@ -124,6 +132,8 @@ struct WatchServerStatus {
     if (server_reachable_ != conn_mgr_->server_reachable_)
       conn_mgr_->NotifyStatusChanged();
   }
+
+ private:
   ServerConnectionManager* const conn_mgr_;
   HttpResponse* const response_;
   // TODO(timsteele): Should this be Barrier:AtomicIncrement?
@@ -132,7 +142,10 @@ struct WatchServerStatus {
 };
 
 ServerConnectionManager::ServerConnectionManager(
-    const string& server, int port, bool use_ssl, const string& user_agent,
+    const string& server,
+    int port,
+    bool use_ssl,
+    const string& user_agent,
     const string& client_id)
     : sync_server_(server),
       sync_server_port_(port),
@@ -279,7 +292,7 @@ void ServerConnectionManager::ResetConnection() {
 }
 
 bool ServerConnectionManager::IncrementErrorCount() {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   error_count_mutex_.Acquire();
   error_count_++;
 
@@ -303,14 +316,15 @@ bool ServerConnectionManager::IncrementErrorCount() {
 
   error_count_mutex_.Release();
   return true;
-#endif
+#endif  // defined(OS_WIN)
   return true;
 }
 
 void ServerConnectionManager::SetServerParameters(const string& server_url,
-                                                  int port, bool use_ssl) {
+                                                  int port,
+                                                  bool use_ssl) {
   {
-    ParametersLock lock(server_parameters_mutex_);
+    AutoLock lock(server_parameters_mutex_);
     sync_server_ = server_url;
     sync_server_port_ = port;
     use_ssl_ = use_ssl;
@@ -319,8 +333,9 @@ void ServerConnectionManager::SetServerParameters(const string& server_url,
 
 // Returns the current server parameters in server_url and port.
 void ServerConnectionManager::GetServerParameters(string* server_url,
-    int* port, bool* use_ssl) const {
-  ParametersLock lock(server_parameters_mutex_);
+                                                  int* port,
+                                                  bool* use_ssl) const {
+  AutoLock lock(server_parameters_mutex_);
   if (server_url != NULL)
     *server_url = sync_server_;
   if (port != NULL)
