@@ -177,19 +177,29 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)awakeFromNib {
-  // Put the advanced view into the scroller and scroll it to the top.
-  [advancedScroller_ setDocumentView:advancedView_];
-  NSInteger height = [advancedView_ bounds].size.height;
-  [advancedView_ scrollPoint:NSMakePoint(0, height)];
+  NSRect underTheHoodFrame = [underTheHoodView_ frame];
 
   // Make sure the window is wide enough to fit the the widest view
-  CGFloat widest = std::max([basicsView_ frame].size.width,
-                            [personalStuffView_ frame].size.width);
-  widest = std::max(widest, [underTheHoodView_ frame].size.width);
+  CGFloat widest = std::max(NSWidth([basicsView_ frame]),
+                            NSWidth([personalStuffView_ frame]));
+  widest = std::max(widest, NSWidth(underTheHoodFrame));
   NSWindow* prefsWindow = [self window];
   NSRect frame = [prefsWindow frame];
   frame.size.width = widest;
   [prefsWindow setFrame:frame display:NO];
+
+  // The Under the Hood prefs is a scroller, it shouldn't get any border, so it
+  // gets resized to the as wide as the window ends up.
+  underTheHoodFrame.size.width = widest;
+  [underTheHoodView_ setFrame:underTheHoodFrame];
+  // Widen the Under the Hood content so things can rewrap
+  NSSize advancedContentSize = [advancedView_ frame].size;
+  advancedContentSize.width = [advancedScroller_ contentSize].width;
+  [advancedView_ setFrameSize:advancedContentSize];
+
+  // Put the advanced view into the scroller and scroll it to the top.
+  [advancedScroller_ setDocumentView:advancedView_];
+  [advancedView_ scrollPoint:NSMakePoint(0, advancedContentSize.height)];
 
   // Adjust the view origins so they show up centered.
   CenterViewForWidth(basicsView_, widest);
