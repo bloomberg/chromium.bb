@@ -310,13 +310,17 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
 }
 
 // Tests that we can parse feeds.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
+// This test works fine on XP and all Vista machines I've tested it on, but for
+// some reason fails reliably on the Vista bots.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeed) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
   std::string item_title;
   std::string item_desc;
   std::string error;
+
+  std::cout << "Starting test ParseFeed with kValidFeed1.\n";
 
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed1));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
@@ -325,6 +329,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("Desc", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
+  std::cout << "Moving on to kValidFeed2.\n";
+
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed2));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeed2'", feed_title.c_str());
@@ -332,12 +338,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("This is a summary.", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
+  std::cout << "Moving on to kValidFeed3.\n";
+
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed3));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Google Code buglist rss feed'", feed_title.c_str());
   EXPECT_STREQ("My dear title", item_title.c_str());
   EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
+
+  std::cout << "Moving on to kValidFeed4.\n";
 
   // Feed with weird characters in title.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed4));
@@ -347,6 +357,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
+  std::cout << "Moving on to foo.xml (doesn't exist).\n";
+
   // Try a feed that doesn't exist.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, L"foo.xml"));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
@@ -354,6 +366,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed.", error.c_str());
+
+  std::cout << "Moving on to kInvalidFeed1.\n";
 
   // Try an empty feed.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed1));
@@ -363,6 +377,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed.", error.c_str());
 
+  std::cout << "Moving on to kInvalidFeed2.\n";
+
   // Try a garbage feed.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed2));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
@@ -370,6 +386,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed.", error.c_str());
+
+  std::cout << "Moving on to kValidFeed0.\n";
 
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
@@ -379,6 +397,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   EXPECT_STREQ("Title 1", item_title.c_str());
   EXPECT_STREQ("Desc VIDEO", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
+
+  std::cout << "Moving on to kValidFeed5.\n";
 
   // Feed with valid but mostly empty xml.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed5));
