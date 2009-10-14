@@ -22,10 +22,6 @@ extern const char kNoTabError[];
 extern const char kNoPageActionError[];
 extern const char kUrlNotActiveError[];
 
-// Function names.
-extern const char kEnablePageActionFunction[];
-extern const char kDisablePageActionFunction[];
-
 };  // namespace extension_page_actions_module_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_ACTIONS_MODULE_CONSTANTS_H_

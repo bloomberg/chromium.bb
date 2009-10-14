@@ -52,47 +52,61 @@ class ExtensionTabUtil {
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.get")
 };
 class GetCurrentWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.getCurrent")
 };
 class GetLastFocusedWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.getLastFocused")
 };
 class GetAllWindowsFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.getAll")
 };
 class CreateWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.create")
 };
 class UpdateWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.update")
 };
 class RemoveWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("windows.remove")
 };
 
 // Tabs
 class GetTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.get")
 };
 class GetSelectedTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.getSelected")
 };
 class GetAllTabsInWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.getAllInWindow")
 };
 class CreateTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
 };
 class UpdateTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
 class RemoveTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
@@ -103,9 +117,11 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   NotificationRegistrar registrar_;
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
 };
 class CaptureVisibleTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.captureVisibleTab")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_H__

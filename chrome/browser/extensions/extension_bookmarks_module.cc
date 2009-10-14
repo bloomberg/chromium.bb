@@ -360,8 +360,7 @@ bool SearchBookmarksFunction::RunImpl() {
 
 bool RemoveBookmarkFunction::RunImpl() {
   bool recursive = false;
-  if (name() ==
-      extension_bookmarks_module_constants::kRemoveBookmarkTreeFunction)
+  if (name() == RemoveTreeBookmarkFunction::function_name())
     recursive = true;
 
   BookmarkModel* model = profile()->GetBookmarkModel();

@@ -14,10 +14,12 @@ class PageActionFunction : public SyncExtensionFunction {
 
 class EnablePageActionFunction : public PageActionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageActions.enableForTab")
 };
 
 class DisablePageActionFunction : public PageActionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageActions.disableForTab")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_ACTIONS_MODULE_H_

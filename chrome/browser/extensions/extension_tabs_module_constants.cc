@@ -46,26 +46,6 @@ const char kCannotAccessPageError[] = "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 
-const char kGetWindowFunction[] = "windows.get";
-const char kGetCurrentWindowFunction[] = "windows.getCurrent";
-const char kGetLastFocusedWindowFunction[] = "windows.getLastFocused";
-const char kGetAllWindowsFunction[] = "windows.getAll";
-const char kCreateWindowFunction[] = "windows.create";
-const char kUpdateWindowFunction[] = "windows.update";
-const char kRemoveWindowFunction[] = "windows.remove";
-
-const char kGetTabFunction[] = "tabs.get";
-const char kGetSelectedTabFunction[] = "tabs.getSelected";
-const char kGetAllTabsInWindowFunction[] = "tabs.getAllInWindow";
-const char kCreateTabFunction[] = "tabs.create";
-const char kUpdateTabFunction[] = "tabs.update";
-const char kMoveTabFunction[] = "tabs.move";
-const char kRemoveTabFunction[] = "tabs.remove";
-const char kDetectTabLanguageFunction[] = "tabs.detectLanguage";
-const char kCaptureVisibleTabFunction[] = "tabs.captureVisibleTab";
-
-const char kExecuteScriptFunction[] = "tabs.executeScript";
-const char kInsertCSSFunction[] = "tabs.insertCSS";
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
 const char kMoreThanOneValuesError[] = "There should be only one value (either"
                                        "code or file) in the second argument.";

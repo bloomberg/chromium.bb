@@ -50,27 +50,6 @@ extern const char kNotImplementedError[];
 extern const char kCannotAccessPageError[];
 extern const char kSupportedInWindowsOnlyError[];
 
-// Function names, Windows API.
-extern const char kGetWindowFunction[];
-extern const char kGetCurrentWindowFunction[];
-extern const char kGetLastFocusedWindowFunction[];
-extern const char kGetAllWindowsFunction[];
-extern const char kCreateWindowFunction[];
-extern const char kUpdateWindowFunction[];
-extern const char kRemoveWindowFunction[];
-
-// Function names, Tabs API.
-extern const char kGetTabFunction[];
-extern const char kGetSelectedTabFunction[];
-extern const char kGetAllTabsInWindowFunction[];
-extern const char kCreateTabFunction[];
-extern const char kUpdateTabFunction[];
-extern const char kMoveTabFunction[];
-extern const char kRemoveTabFunction[];
-extern const char kDetectTabLanguageFunction[];
-extern const char kCaptureVisibleTabFunction[];
-extern const char kExecuteScriptFunction[];
-extern const char kInsertCSSFunction[];
 extern const char kNoCodeOrFileToExecuteError[];
 extern const char kMoreThanOneValuesError[];
 extern const char kLoadFileError[];

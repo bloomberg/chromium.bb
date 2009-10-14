@@ -13,11 +13,6 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profile.h"
 
-namespace extension_toolstrip_api_functions {
-const char kExpandFunction[] = "toolstrip.expand";
-const char kCollapseFunction[] = "toolstrip.collapse";
-};  // namespace extension_toolstrip_api_functions
-
 namespace extension_toolstrip_api_events {
 const char kOnToolstripExpanded[] = "toolstrip.onExpanded.%d";
 const char kOnToolstripCollapsed[] = "toolstrip.onCollapsed.%d";

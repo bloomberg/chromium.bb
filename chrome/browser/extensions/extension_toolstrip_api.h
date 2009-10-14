@@ -10,12 +10,6 @@
 
 class Profile;
 
-// Function names.
-namespace extension_toolstrip_api_functions {
-  extern const char kExpandFunction[];
-  extern const char kCollapseFunction[];
-};  // namespace extension_toolstrip_api_functions
-
 namespace extension_toolstrip_api_events {
   extern const char kOnToolstripExpanded[];
   extern const char kOnToolstripCollapsed[];
@@ -31,10 +25,12 @@ class ToolstripFunction : public SyncExtensionFunction {
 
 class ToolstripExpandFunction : public ToolstripFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("toolstrip.expand")
 };
 
 class ToolstripCollapseFunction : public ToolstripFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("toolstrip.collapse")
 };
 
 class ToolstripEventRouter {

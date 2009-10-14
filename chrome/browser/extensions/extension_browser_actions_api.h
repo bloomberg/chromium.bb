@@ -9,29 +9,23 @@
 
 class BrowserActionSetNameFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setName")
 };
 
 class BrowserActionSetIconFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
 class BrowserActionSetBadgeTextFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
 };
 
 class BrowserActionSetBadgeBackgroundColorFunction
     : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
 };
-
-namespace extension_browser_actions_api_constants {
-
-// Function names.
-extern const char kSetNameFunction[];
-extern const char kSetIconFunction[];
-extern const char kSetBadgeTextFunction[];
-extern const char kSetBadgeBackgroundColorFunction[];
-
-};  // namespace extension_browser_actions_api_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSER_ACTIONS_API_H_

@@ -22,6 +22,9 @@ class Profile;
     } \
   } while (0)
 
+#define DECLARE_EXTENSION_FUNCTION_NAME(name) \
+  public: static const char* function_name() { return name; }
+
 // Abstract base class for extension functions the ExtensionFunctionDispatcher
 // knows how to dispatch to.
 //

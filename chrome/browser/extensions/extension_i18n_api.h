@@ -7,12 +7,9 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-namespace extension_i18n_api_functions {
-  extern const char kGetAcceptLanguagesFunction[];
-};  // namespace extension_i18n_api_functions
-
 class GetAcceptLanguagesFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("i18n.getAcceptLanguages")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_I18N_API_H__

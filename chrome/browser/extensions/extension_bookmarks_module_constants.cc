@@ -34,14 +34,4 @@ const char kOnBookmarkChanged[] = "bookmarks.onChanged";
 const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
 
-const char kGetBookmarksFunction[] = "bookmarks.get";
-const char kGetBookmarkChildrenFunction[] = "bookmarks.getChildren";
-const char kGetBookmarkTreeFunction[] = "bookmarks.getTree";
-const char kSearchBookmarksFunction[] = "bookmarks.search";
-const char kRemoveBookmarkFunction[] = "bookmarks.remove";
-const char kRemoveBookmarkTreeFunction[] = "bookmarks.removeTree";
-const char kCreateBookmarkFunction[] = "bookmarks.create";
-const char kMoveBookmarkFunction[] = "bookmarks.move";
-const char kUpdateBookmarkFunction[] = "bookmarks.update";
-
 }  // namespace extension_bookmarks_module_constants

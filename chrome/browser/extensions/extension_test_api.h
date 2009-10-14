@@ -7,23 +7,19 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-// Function names.
-namespace extension_test_api_functions {
-  extern const char kPassFunction[];
-  extern const char kFailFunction[];
-  extern const char kLogFunction[];
-};  // namespace extension_test_api_functions
-
 class ExtensionTestPassFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 };
 
 class ExtensionTestFailFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 };
 
 class ExtensionTestLogFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_

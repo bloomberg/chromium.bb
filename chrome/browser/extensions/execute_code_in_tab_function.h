@@ -46,4 +46,12 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   ExtensionResource resource_;
 };
 
+class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.executeScript")
+};
+
+class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.insertCSS")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXECUTE_CODE_IN_TAB_FUNCTION_H__

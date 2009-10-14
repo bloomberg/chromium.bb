@@ -39,17 +39,6 @@ extern const char kOnBookmarkChanged[];
 extern const char kOnBookmarkMoved[];
 extern const char kOnBookmarkChildrenReordered[];
 
-// Function names.
-extern const char kGetBookmarksFunction[];
-extern const char kGetBookmarkChildrenFunction[];
-extern const char kGetBookmarkTreeFunction[];
-extern const char kSearchBookmarksFunction[];
-extern const char kRemoveBookmarkFunction[];
-extern const char kRemoveBookmarkTreeFunction[];
-extern const char kCreateBookmarkFunction[];
-extern const char kMoveBookmarkFunction[];
-extern const char kUpdateBookmarkFunction[];
-
 };  // namespace extension_bookmarks_module_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_CONSTANTS_H_

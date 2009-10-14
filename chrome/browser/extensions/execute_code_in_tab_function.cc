@@ -124,9 +124,9 @@ void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
 
   bool is_js_code = true;
   std::string function_name = name();
-  if (function_name == keys::kInsertCSSFunction) {
+  if (function_name == TabsInsertCSSFunction::function_name()) {
     is_js_code = false;
-  } else if (function_name != keys::kExecuteScriptFunction) {
+  } else if (function_name != TabsExecuteScriptFunction::function_name()) {
     DCHECK(false);
   }
   registrar_.Add(this, NotificationType::TAB_CODE_EXECUTED,

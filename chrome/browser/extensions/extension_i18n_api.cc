@@ -7,10 +7,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-namespace extension_i18n_api_functions {
-  const char kGetAcceptLanguagesFunction[] = "i18n.getAcceptLanguages";
-}  // namespace extension_i18n_api_functions
-
 namespace {
   // Errors.
   const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";

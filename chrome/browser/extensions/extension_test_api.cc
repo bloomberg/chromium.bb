@@ -5,12 +5,6 @@
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/common/notification_service.h"
 
-namespace extension_test_api_functions {
-const char kPassFunction[] = "test.notifyPass";
-const char kFailFunction[] = "test.notifyFail";
-const char kLogFunction[] = "test.log";
-};  // namespace extension_test_api_functions
-
 bool ExtensionTestPassFunction::RunImpl() {
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_TEST_PASSED,

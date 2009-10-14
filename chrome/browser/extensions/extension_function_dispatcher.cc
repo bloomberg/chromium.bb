@@ -60,6 +60,11 @@ class FactoryRegistry {
   ExtensionFunction* NewFunction(const std::string& name);
 
  private:
+  template<class T>
+  void RegisterFunction() {
+    factories_[T::function_name()] = &NewExtensionFunction<T>;
+  }
+
   typedef std::map<std::string, ExtensionFunctionFactory> FactoryMap;
   FactoryMap factories_;
 };
@@ -71,107 +76,60 @@ FactoryRegistry* FactoryRegistry::instance() {
 void FactoryRegistry::ResetFunctions() {
   // Register all functions here.
 
-  namespace bookmarks = extension_bookmarks_module_constants;
-  namespace i18n = extension_i18n_api_functions;
-  namespace page_actions = extension_page_actions_module_constants;
-  namespace browser_actions = extension_browser_actions_api_constants;
-  namespace tabs = extension_tabs_module_constants;
-  namespace test = extension_test_api_functions;
-  namespace toolstrip = extension_toolstrip_api_functions;
-
   // Windows
-  factories_[tabs::kGetWindowFunction] =
-      &NewExtensionFunction<GetWindowFunction>;
-  factories_[tabs::kGetCurrentWindowFunction] =
-      &NewExtensionFunction<GetCurrentWindowFunction>;
-  factories_[tabs::kGetLastFocusedWindowFunction] =
-      &NewExtensionFunction<GetLastFocusedWindowFunction>;
-  factories_[tabs::kGetAllWindowsFunction] =
-      &NewExtensionFunction<GetAllWindowsFunction>;
-  factories_[tabs::kCreateWindowFunction] =
-      &NewExtensionFunction<CreateWindowFunction>;
-  factories_[tabs::kUpdateWindowFunction] =
-      &NewExtensionFunction<UpdateWindowFunction>;
-  factories_[tabs::kRemoveWindowFunction] =
-      &NewExtensionFunction<RemoveWindowFunction>;
+  RegisterFunction<GetWindowFunction>();
+  RegisterFunction<GetCurrentWindowFunction>();
+  RegisterFunction<GetLastFocusedWindowFunction>();
+  RegisterFunction<GetAllWindowsFunction>();
+  RegisterFunction<CreateWindowFunction>();
+  RegisterFunction<UpdateWindowFunction>();
+  RegisterFunction<RemoveWindowFunction>();
 
   // Tabs
-  factories_[tabs::kGetTabFunction] =
-      &NewExtensionFunction<GetTabFunction>;
-  factories_[tabs::kGetSelectedTabFunction] =
-      &NewExtensionFunction<GetSelectedTabFunction>;
-  factories_[tabs::kGetAllTabsInWindowFunction] =
-      &NewExtensionFunction<GetAllTabsInWindowFunction>;
-  factories_[tabs::kCreateTabFunction] =
-      &NewExtensionFunction<CreateTabFunction>;
-  factories_[tabs::kUpdateTabFunction] =
-      &NewExtensionFunction<UpdateTabFunction>;
-  factories_[tabs::kMoveTabFunction] =
-      &NewExtensionFunction<MoveTabFunction>;
-  factories_[tabs::kRemoveTabFunction] =
-      &NewExtensionFunction<RemoveTabFunction>;
-  factories_[tabs::kDetectTabLanguageFunction] =
-      &NewExtensionFunction<DetectTabLanguageFunction>;
-  factories_[tabs::kCaptureVisibleTabFunction] =
-      &NewExtensionFunction<CaptureVisibleTabFunction>;
-  factories_[tabs::kExecuteScriptFunction] =
-      &NewExtensionFunction<ExecuteCodeInTabFunction>;
-  factories_[tabs::kInsertCSSFunction] =
-      &NewExtensionFunction<ExecuteCodeInTabFunction>;
+  RegisterFunction<GetTabFunction>();
+  RegisterFunction<GetSelectedTabFunction>();
+  RegisterFunction<GetAllTabsInWindowFunction>();
+  RegisterFunction<CreateTabFunction>();
+  RegisterFunction<UpdateTabFunction>();
+  RegisterFunction<MoveTabFunction>();
+  RegisterFunction<RemoveTabFunction>();
+  RegisterFunction<DetectTabLanguageFunction>();
+  RegisterFunction<CaptureVisibleTabFunction>();
+  RegisterFunction<TabsExecuteScriptFunction>();
+  RegisterFunction<TabsInsertCSSFunction>();
 
   // Page Actions.
-  factories_[page_actions::kEnablePageActionFunction] =
-      &NewExtensionFunction<EnablePageActionFunction>;
-  factories_[page_actions::kDisablePageActionFunction] =
-      &NewExtensionFunction<DisablePageActionFunction>;
+  RegisterFunction<EnablePageActionFunction>();
+  RegisterFunction<DisablePageActionFunction>();
 
   // Browser Actions.
-  factories_[browser_actions::kSetNameFunction] =
-      &NewExtensionFunction<BrowserActionSetNameFunction>;
-  factories_[browser_actions::kSetIconFunction] =
-      &NewExtensionFunction<BrowserActionSetIconFunction>;
-  factories_[browser_actions::kSetBadgeTextFunction] =
-      &NewExtensionFunction<BrowserActionSetBadgeTextFunction>;
-  factories_[browser_actions::kSetBadgeBackgroundColorFunction] =
-      &NewExtensionFunction<BrowserActionSetBadgeBackgroundColorFunction>;
+  RegisterFunction<BrowserActionSetNameFunction>();
+  RegisterFunction<BrowserActionSetIconFunction>();
+  RegisterFunction<BrowserActionSetBadgeTextFunction>();
+  RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
 
   // Bookmarks.
-  factories_[bookmarks::kGetBookmarksFunction] =
-      &NewExtensionFunction<GetBookmarksFunction>;
-  factories_[bookmarks::kGetBookmarkChildrenFunction] =
-      &NewExtensionFunction<GetBookmarkChildrenFunction>;
-  factories_[bookmarks::kGetBookmarkTreeFunction] =
-      &NewExtensionFunction<GetBookmarkTreeFunction>;
-  factories_[bookmarks::kSearchBookmarksFunction] =
-      &NewExtensionFunction<SearchBookmarksFunction>;
-  factories_[bookmarks::kRemoveBookmarkFunction] =
-      &NewExtensionFunction<RemoveBookmarkFunction>;
-  factories_[bookmarks::kRemoveBookmarkTreeFunction] =
-    &NewExtensionFunction<RemoveBookmarkFunction>;
-  factories_[bookmarks::kCreateBookmarkFunction] =
-      &NewExtensionFunction<CreateBookmarkFunction>;
-  factories_[bookmarks::kMoveBookmarkFunction] =
-      &NewExtensionFunction<MoveBookmarkFunction>;
-  factories_[bookmarks::kUpdateBookmarkFunction] =
-      &NewExtensionFunction<UpdateBookmarkFunction>;
+  RegisterFunction<GetBookmarksFunction>();
+  RegisterFunction<GetBookmarkChildrenFunction>();
+  RegisterFunction<GetBookmarkTreeFunction>();
+  RegisterFunction<SearchBookmarksFunction>();
+  RegisterFunction<RemoveBookmarkFunction>();
+  RegisterFunction<RemoveTreeBookmarkFunction>();
+  RegisterFunction<CreateBookmarkFunction>();
+  RegisterFunction<MoveBookmarkFunction>();
+  RegisterFunction<UpdateBookmarkFunction>();
 
   // Toolstrips.
-  factories_[toolstrip::kExpandFunction] =
-      &NewExtensionFunction<ToolstripExpandFunction>;
-  factories_[toolstrip::kCollapseFunction] =
-      &NewExtensionFunction<ToolstripCollapseFunction>;
+  RegisterFunction<ToolstripExpandFunction>();
+  RegisterFunction<ToolstripCollapseFunction>();
 
   // I18N.
-  factories_[i18n::kGetAcceptLanguagesFunction] =
-      &NewExtensionFunction<GetAcceptLanguagesFunction>;
+  RegisterFunction<GetAcceptLanguagesFunction>();
 
   // Test.
-  factories_[test::kPassFunction] =
-      &NewExtensionFunction<ExtensionTestPassFunction>;
-  factories_[test::kFailFunction] =
-      &NewExtensionFunction<ExtensionTestFailFunction>;
-  factories_[test::kLogFunction] =
-      &NewExtensionFunction<ExtensionTestLogFunction>;
+  RegisterFunction<ExtensionTestPassFunction>();
+  RegisterFunction<ExtensionTestFailFunction>();
+  RegisterFunction<ExtensionTestLogFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

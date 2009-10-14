@@ -9,16 +9,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 
-namespace extension_browser_actions_api_constants {
-
-const char kSetNameFunction[] = "browserAction.setName";
-const char kSetIconFunction[] = "browserAction.setIcon";
-const char kSetBadgeTextFunction[] = "browserAction.setBadgeText";
-const char kSetBadgeBackgroundColorFunction[] =
-    "browserAction.setBadgeBackgroundColor";
-
-}  // namespace extension_browser_actions_api_constants
-
 namespace {
 // Errors.
 const char kNoBrowserActionError[] =

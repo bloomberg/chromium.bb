@@ -82,34 +82,46 @@ class BookmarksFunction : public AsyncExtensionFunction,
 
 class GetBookmarksFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.get")
 };
 
 class GetBookmarkChildrenFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getChildren")
 };
 
 class GetBookmarkTreeFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getTree")
 };
 
 class SearchBookmarksFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.search")
 };
 
 class RemoveBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
+};
+
+class RemoveTreeBookmarkFunction : public RemoveBookmarkFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.removeTree")
 };
 
 class CreateBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.create")
 };
 
 class MoveBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.move")
 };
 
 class UpdateBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_H_

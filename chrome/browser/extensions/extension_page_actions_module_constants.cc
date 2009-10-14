@@ -17,7 +17,4 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kNoPageActionError[] = "No PageAction with id: *.";
 const char kUrlNotActiveError[] = "This url is no longer active: *.";
 
-const char kEnablePageActionFunction[] = "pageActions.enableForTab";
-const char kDisablePageActionFunction[] = "pageActions.disableForTab";
-
 }  // namespace extension_page_actions_module_constants
