@@ -33,7 +33,7 @@ test.must_match(['relocate', 'copies', 'copies-out', 'file1'],
 
 if test.format == 'xcode':
   chdir = 'relocate/copies/build'
-if test.format == 'make':
+elif test.format == 'make':
   chdir = 'relocate/gypfiles/out'
 else:
   chdir = 'relocate/gypfiles'
@@ -44,7 +44,7 @@ test.must_match(['relocate', 'copies', 'subdir', 'copies-out', 'file3'],
 
 if test.format == 'xcode':
   chdir = 'relocate/copies/subdir/build'
-if test.format == 'make':
+elif test.format == 'make':
   chdir = 'relocate/gypfiles/out'
 else:
   chdir = 'relocate/gypfiles'
