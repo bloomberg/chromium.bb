@@ -4,6 +4,10 @@
 
 #include "chrome/browser/views/frame/browser_view.h"
 
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
@@ -75,9 +79,11 @@
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
-#include <gtk/gtk.h>
-
 #include "views/window/hit_test.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/browser_extender.h"
 #endif
 
 using base::TimeDelta;
@@ -122,7 +128,6 @@ static const int kNewtabBarRoundness = 5;
 
 // Returned from BrowserView::GetClassName.
 static const char kBrowserViewClassName[] = "browser/views/BrowserView";
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
@@ -1508,6 +1513,11 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     }
   }
 
+#if defined(OS_CHROMEOS)
+  if (browser_extender_->NonClientHitTest(point))
+    return HTCLIENT;
+#endif
+
   // If the point's y coordinate is below the top of the toolbar and otherwise
   // within the bounds of this view, the point is considered to be within the
   // client area.
@@ -1702,6 +1712,13 @@ void BrowserView::Init() {
     jumplist_->AddObserver(browser_->profile());
   }
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (browser_->type() == Browser::TYPE_NORMAL) {
+    browser_extender_.reset(new BrowserExtender(this));
+    browser_extender_->Init();
+  }
+#endif
 }
 
 #if defined(OS_WIN)
@@ -1730,6 +1747,12 @@ int BrowserView::LayoutTabStrip() {
   gfx::Point tabstrip_origin = tabstrip_bounds.origin();
   ConvertPointToView(GetParent(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
+
+#if defined(OS_CHROMEOS)
+  // Layout chromeos specific components.
+  tabstrip_bounds = browser_extender_->Layout(tabstrip_bounds);
+#endif
+
   bool visible = IsTabStripVisible();
   int y = visible ? tabstrip_bounds.y() : 0;
   int height = visible ? tabstrip_bounds.height() : 0;

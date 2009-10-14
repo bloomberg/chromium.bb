@@ -16,7 +16,9 @@
 #include "chrome/browser/chromeos/clock_menu_button.h"
 #include "chrome/browser/chromeos/network_menu_button.h"
 #include "chrome/browser/chromeos/power_menu_button.h"
+#if !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#endif
 #include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -76,6 +78,10 @@ class OptionsMenuModel : public views::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
       case CREATE_NEW_WINDOW:
+#if defined(TOOLKIT_VIEWS)
+        // TODO(oshima): Implement accelerator to enable/disable
+        // compact nav bar.
+#else
         // Reach into the GTK browser window and enable the flag to create the
         // next window as a compact nav one.
         // TODO(brettw) this is an evil hack, and is here so this can be tested.
@@ -83,6 +89,7 @@ class OptionsMenuModel : public views::SimpleMenuModel,
         static_cast<BrowserWindowGtk*>(browser_->window())->
             set_next_window_should_use_compact_nav();
         browser_->ExecuteCommand(IDC_NEW_WINDOW);
+#endif
         break;
       case StatusAreaView::OPEN_TABS_ON_LEFT:
       case StatusAreaView::OPEN_TABS_CLOBBER:
@@ -263,4 +270,3 @@ void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt) {
   CreateAppMenu();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
-

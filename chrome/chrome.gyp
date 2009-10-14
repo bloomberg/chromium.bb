@@ -929,6 +929,8 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/browser_extender.cc',
+        'browser/chromeos/browser_extender.h',
         'browser/chromeos/chromeos_version_loader.cc',
         'browser/chromeos/chromeos_version_loader.h',
         'browser/chromeos/clock_menu_button.cc',

@@ -49,6 +49,9 @@ class TabContentsContainer;
 class TabStripWrapper;
 class ToolbarView;
 class ZoomMenuModel;
+#if defined(OS_CHROMEOS)
+class BrowserExtender;
+#endif
 
 namespace views {
 class ExternalFocusTracker;
@@ -513,6 +516,10 @@ class BrowserView : public BrowserWindow,
 
   // The accessible name of this view.
   std::wstring accessible_name_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<BrowserExtender> browser_extender_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
