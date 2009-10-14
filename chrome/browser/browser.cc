@@ -2136,8 +2136,7 @@ bool Browser::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
          command_id == IDC_NEW_WINDOW ||
          command_id == IDC_RESTORE_TAB ||
          command_id == IDC_SELECT_NEXT_TAB ||
-         command_id == IDC_SELECT_PREVIOUS_TAB ||
-         command_id == IDC_TASK_MANAGER;
+         command_id == IDC_SELECT_PREVIOUS_TAB;
 }
 
 void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
