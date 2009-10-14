@@ -357,16 +357,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeed) {
   EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  std::cout << "Moving on to foo.xml (doesn't exist).\n";
-
-  // Try a feed that doesn't exist.
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, L"foo.xml"));
-  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
-  EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
-  EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
-  EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
-  EXPECT_STREQ("Not a valid feed.", error.c_str());
-
   std::cout << "Moving on to kInvalidFeed1.\n";
 
   // Try an empty feed.
@@ -407,6 +397,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeed) {
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("This feed contains no entries.", error.c_str());
+
+  std::cout << "Moving on to foo.xml (doesn't exist).\n";
+
+  // Try a feed that doesn't exist.
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, L"foo.xml"));
+  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
+  EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
+  EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
+  EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
+  EXPECT_STREQ("Not a valid feed.", error.c_str());
 }
 
 #if defined(OS_WIN)  // TODO(port) - enable.
