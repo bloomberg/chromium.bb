@@ -321,8 +321,7 @@ class MakefileWriter:
 
     Arguments:
       qualified_target: target we're generating
-      base_path: path relative to source root we're building in, used to resolv
-
+      base_path: path relative to source root we're building in, used to resolve
                  target-relative paths
       output_filename: output .mk file name to write
       spec, configs: gyp info
@@ -429,7 +428,7 @@ class MakefileWriter:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
       # Set LD_LIBRARY_PATH in case the action runs an executable from this
       # build which links to shared libs from this build.
-      cd_action = 'cd %s; ' % self.path if self.path else ''
+      cd_action = 'cd %s; ' % Sourceify(self.path) if self.path else ''
       self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib:'
                    '$$LD_LIBRARY_PATH; %s%s'
                    % (name, cd_action, command))
@@ -441,7 +440,8 @@ class MakefileWriter:
       # goes in the right place.
       self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
       self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
-      self.WriteDoCmd(outputs, map(self.Absolutify, inputs), command = name)
+      self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
+                      command = name)
 
       # Stuff the outputs in a variable so we can refer to them later.
       outputs_variable = 'action_%s_outputs' % name
@@ -542,7 +542,8 @@ class MakefileWriter:
       for path in copy['files']:
         path = Sourceify(self.Absolutify(path))
         filename = os.path.split(path)[1]
-        output = os.path.join(copy['destination'], filename)
+        output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
+                                                        filename)))
         self.WriteDoCmd([output], [path], 'copy')
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
