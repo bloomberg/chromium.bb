@@ -21,12 +21,14 @@ CODESIGN_ID="${3}"
 # Use custom resource rules for the browser application.
 BROWSER_APP_RULES="$(dirname "${0}")/app_resource_rules.plist"
 
-# An .app bundle to be signed can be signed directly.  Signging a framework
-# bundle requires that each version within be signed individually.
+# An .app bundle to be signed can be signed directly.  Normally, signging a
+# framework bundle requires that each version within be signed individually.
 # http://developer.apple.com/mac/library/technotes/tn2007/tn2206.html#TNTAG13
+# In Chrome's case, the framework bundle is unversioned, so it too can be
+# signed directly.  See copy_framework_unversioned.
 
 BROWSER_APP="${APP_PATH}"
-FRAMEWORK="${BROWSER_APP}/Contents/Versions/@VERSION@/@MAC_PRODUCT_NAME@ Framework.framework/Versions/A"
+FRAMEWORK="${BROWSER_APP}/Contents/Versions/@VERSION@/@MAC_PRODUCT_NAME@ Framework.framework"
 HELPER_APP="${BROWSER_APP}/Contents/Versions/@VERSION@/@MAC_PRODUCT_NAME@ Helper.app"
 
 echo "${0}: signing..."

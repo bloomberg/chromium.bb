@@ -3446,10 +3446,6 @@
             ['mac_keystone==1', {
               'copies': [
                 {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Frameworks/',
-                  'files': ['../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework'],
-                },
-                {
                   # Put keystone_install.sh where the packaging system will
                   # find it.  The packager will copy this script to the
                   # correct location on the disk image.
@@ -3468,7 +3464,7 @@
                   'action_name': 'Make sign.sh',
                   'variables': {
                     'make_sign_sh_path': 'tools/build/mac/make_sign_sh',
-                    'sign_sh_in_path': 'tools/build/mac/make_sign_sh',
+                    'sign_sh_in_path': 'tools/build/mac/sign.sh.in',
                     'app_resource_rules_in_path':
                         'tools/build/mac/app_resource_rules.plist.in',
                   },
@@ -3558,12 +3554,19 @@
             {
               'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)',
               'files': [
-                '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework',
                 '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
               ],
             },
           ],
           'postbuilds': [
+            {
+              'postbuild_name': 'Copy <(mac_product_name) Framework.framework',
+              'action': [
+                'tools/build/mac/copy_framework_unversioned',
+                '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Framework.framework',
+                '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Versions/<(version_full)',
+              ],
+            },
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the helper_app and chrome_dll
@@ -5045,6 +5048,7 @@
               'product_name': '<(mac_product_name) Framework',
               'mac_bundle': 1,
               'xcode_settings': {
+                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
                 # The dylib versions are of the form a[.b[.c]], where a is a
                 # 16-bit unsigned integer, and b and c are 8-bit unsigned
                 # integers.  Any missing component is taken to be 0.  The
@@ -5055,20 +5059,14 @@
                 # version numbers.
                 'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
                 'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
+                # See tools/build/mac/copy_framework_unversioned for
+                # The framework is placed within the .app's versioned
+                # directory.
                 'DYLIB_INSTALL_NAME_BASE':
                     '@executable_path/../Versions/<(version_full)',
-                # FRAMEWORK_VERSION is used as the name of the directory in
-                # the framework's Versions directory that the Current symbolic
-                # link points to.  Unfortunately, Xcode does not create this
-                # symbolic link properly: in a non-clobber build, if the
-                # version changes, Xcode won't adjust the Current link to point
-                # to the new version.  Instead of setting FRAMEWORK_VERSION
-                # to correspond to the application version, just leave it at
-                # its default, 'A'.  This is more than sufficient for our
-                # purposes, because the framework does not need to maintain
-                # any sort of stable public interface.
-                # 'FRAMEWORK_VERSION': '<(version_full)',
-                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+                # information on LD_DYLIB_INSTALL_NAME.
+                'LD_DYLIB_INSTALL_NAME':
+                    '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
                 'INFOPLIST_FILE': 'app/framework-Info.plist',
               },
               'sources': [
@@ -5303,21 +5301,13 @@
                   ],
                 }],  # mac_breakpad
                 ['mac_keystone==1', {
-                  'copies': [
-                    {
-                      'destination':
-                          '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Frameworks',
-                      'files': [
-                        '../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework'
-                      ],
-                    },
-                  ],
                   'postbuilds': [
                     {
-                      'postbuild_name': 'Remove Keystone Headers',
+                      'postbuild_name': 'Copy KeystoneRegistration.framework',
                       'action': [
-                        'tools/build/mac/remove_headers_from_framework',
-                        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Frameworks/KeystoneRegistration.framework',
+                        'tools/build/mac/copy_framework_unversioned',
+                        '../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework',
+                        '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks',
                       ],
                     },
                     {
@@ -5465,8 +5455,8 @@
               'action': [
                 'install_name_tool',
                 '-change',
-                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
-                '@executable_path/../../../<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/<(mac_product_name) Framework',
+                '@executable_path/../../../<(mac_product_name) Framework.framework/<(mac_product_name) Framework',
                 '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
               ],
             },
@@ -5582,8 +5572,8 @@
               'action': [
                 'install_name_tool',
                 '-change',
-                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
-                '@executable_path/../../../<(mac_product_name) Framework.framework/Versions/A/<(mac_product_name) Framework',
+                '@executable_path/../Versions/<(version_full)/<(mac_product_name) Framework.framework/<(mac_product_name) Framework',
+                '@executable_path/../../../<(mac_product_name) Framework.framework/<(mac_product_name) Framework',
                 '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
               ],
             },
