@@ -19,5 +19,6 @@ URLRequestTestFTP.*
 SSLClientSocketTest.*
 DiskCacheTest.*
 DiskCacheEntryTest.*Async*
+DiskCacheEntryTest.CancelSparseIO
 DiskCacheEntryTest.DoomSparseEntry
 FlipNetworkTransactionTest.Connect
