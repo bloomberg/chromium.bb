@@ -310,7 +310,7 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
 }
 
 // Tests that we can parse feeds.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeed) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
