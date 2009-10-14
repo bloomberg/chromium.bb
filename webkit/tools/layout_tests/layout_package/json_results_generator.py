@@ -19,7 +19,7 @@ import simplejson
 
 class JSONResultsGenerator:
 
-  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 9
+  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 750
   # Min time (seconds) that will be added to the JSON.
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
