@@ -32,9 +32,6 @@ import os
 import sys
 Import('env')
 
-# TODO(kschimpf): remove the need for the next line
-env.FilterOut(CCFLAGS=['-Wswitch-enum'])
-
 env.ComponentLibrary('utils',
                      ['flags.c',
                       'formatting.c'])

@@ -84,6 +84,7 @@ void FormatDataAppend(char* buffer,
   while (ch != '\0') {
     format++;
     switch (state) {
+      case RESET:
       default:
         /* This shouldn't happen!! process like ordinary text.*/
         state = ORDINARY;
@@ -135,6 +136,8 @@ void FormatDataAppend(char* buffer,
       case RESET:
         state = ORDINARY;
         break;
+      case AFTER_BACKSLASH:
+      case AFTER_PERCENT:
       default:
         break;
     }

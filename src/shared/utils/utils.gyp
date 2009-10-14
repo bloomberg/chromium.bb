@@ -42,15 +42,6 @@
         'formatting.h',
         'types.h',
       ],
-      # TODO(kschimpf): remove the need for the warning flag removals below
-      'cflags!': [
-         '-Wswitch-enum'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wswitch-enum'
-        ]
-      }
     }
   ]
 }
