@@ -130,13 +130,19 @@ SyncerThread* SyncerThreadFactory::Create(
   }
 }
 
-bool SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
+void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
   AutoLock lock(lock_);
   if (vault_.syncer_ == NULL) {
-    return false;
+    return;
   }
+
+  if (vault_.current_wait_interval_.had_nudge_during_backoff) {
+    // Drop nudges on the floor if we've already had one since starting this
+    // stage of exponential backoff.
+    return;
+  }
+
   NudgeSyncImpl(milliseconds_from_now, source);
-  return true;
 }
 
 SyncerThread::SyncerThread()
@@ -307,7 +313,7 @@ void SyncerThread::ThreadMainLoop() {
   LOG(INFO) << "In thread main loop.";
 
   // Use the short poll value by default.
-  TimeDelta poll_seconds =
+  vault_.current_wait_interval_.poll_delta =
       TimeDelta::FromSeconds(syncer_short_poll_interval_seconds_);
   int user_idle_milliseconds = 0;
   TimeTicks last_sync_time;
@@ -335,7 +341,8 @@ void SyncerThread::ThreadMainLoop() {
       continue;
     }
 
-    const TimeTicks next_poll = last_sync_time + poll_seconds;
+    const TimeTicks next_poll = last_sync_time +
+        vault_.current_wait_interval_.poll_delta;
     const TimeTicks end_wait =
         !vault_.nudge_queue_.empty() &&
         vault_.nudge_queue_.top().first < next_poll ?
@@ -365,28 +372,32 @@ void SyncerThread::ThreadMainLoop() {
 
     // Handle a nudge, caused by either a notification or a local bookmark
     // event.  This will also update the source of the following SyncMain call.
-    UpdateNudgeSource(&continue_sync_cycle, &initial_sync_for_thread);
+    bool nudged = UpdateNudgeSource(continue_sync_cycle,
+                                    &initial_sync_for_thread);
 
     LOG(INFO) << "Calling Sync Main at time " << Time::Now().ToInternalValue();
     SyncMain(vault_.syncer_);
     last_sync_time = TimeTicks::Now();
 
     LOG(INFO) << "Updating the next polling time after SyncMain";
-    poll_seconds = TimeDelta::FromSeconds(CalculatePollingWaitTime(
-        allstatus_->status(), static_cast<int>(poll_seconds.InSeconds()),
-        &user_idle_milliseconds, &continue_sync_cycle));
+    vault_.current_wait_interval_ = CalculatePollingWaitTime(
+        allstatus_->status(),
+        static_cast<int>(vault_.current_wait_interval_.poll_delta.InSeconds()),
+        &user_idle_milliseconds, &continue_sync_cycle, nudged);
   }
-
 }
 
 // We check how long the user's been idle and sync less often if the machine is
 // not in use. The aim is to reduce server load.
 // TODO(timsteele): Should use Time(Delta).
-int SyncerThread::CalculatePollingWaitTime(
+SyncerThread::WaitInterval SyncerThread::CalculatePollingWaitTime(
     const AllStatus::Status& status,
     int last_poll_wait,  // Time in seconds.
     int* user_idle_milliseconds,
-    bool* continue_sync_cycle) {
+    bool* continue_sync_cycle,
+    bool was_nudged) {
+  lock_.AssertAcquired();  // We access 'vault' in here, so we need the lock.
+  WaitInterval return_interval;
   bool is_continuing_sync_cyle = *continue_sync_cycle;
   *continue_sync_cycle = false;
 
@@ -402,15 +413,28 @@ int SyncerThread::CalculatePollingWaitTime(
       syncer_short_poll_interval_seconds_ :
       syncer_long_poll_interval_seconds_;
   int default_next_wait = syncer_polling_interval_;
-  int actual_next_wait = default_next_wait;
+  return_interval.poll_delta = TimeDelta::FromSeconds(default_next_wait);
 
   if (syncer_has_work_to_do) {
     // Provide exponential backoff due to consecutive errors, else attempt to
     // complete the work as soon as possible.
-    if (!is_continuing_sync_cyle) {
-      actual_next_wait = AllStatus::GetRecommendedDelaySeconds(0);
+    if (is_continuing_sync_cyle) {
+      return_interval.mode = WaitInterval::EXPONENTIAL_BACKOFF;
+      if (was_nudged && vault_.current_wait_interval_.mode ==
+          WaitInterval::EXPONENTIAL_BACKOFF) {
+          // We were nudged, it failed, and we were already in backoff.
+          return_interval.had_nudge_during_backoff = true;
+          // Keep exponent for exponential backoff the same in this case.
+          return_interval.poll_delta = vault_.current_wait_interval_.poll_delta;
+      } else {
+        // We weren't nudged, or we were in a NORMAL wait interval until now.
+        return_interval.poll_delta = TimeDelta::FromSeconds(
+            AllStatus::GetRecommendedDelaySeconds(last_poll_wait));
+      }
     } else {
-      actual_next_wait = AllStatus::GetRecommendedDelaySeconds(last_poll_wait);
+      // No consecutive error.
+      return_interval.poll_delta = TimeDelta::FromSeconds(
+           AllStatus::GetRecommendedDelaySeconds(0));
     }
     *continue_sync_cycle = true;
   } else if (!status.notifications_enabled) {
@@ -424,15 +448,17 @@ int SyncerThread::CalculatePollingWaitTime(
     if (new_idle_time < *user_idle_milliseconds) {
       *user_idle_milliseconds = new_idle_time;
     }
-    actual_next_wait = CalculateSyncWaitTime(last_poll_wait * 1000,
-                                              *user_idle_milliseconds) / 1000;
-    DCHECK_GE(actual_next_wait, default_next_wait);
+    return_interval.poll_delta = TimeDelta::FromMilliseconds(
+        CalculateSyncWaitTime(last_poll_wait * 1000,
+                              *user_idle_milliseconds));
+    DCHECK_GE(return_interval.poll_delta.InSeconds(), default_next_wait);
   }
 
   LOG(INFO) << "Sync wait: idle " << default_next_wait
-            << " non-idle or backoff " << actual_next_wait << ".";
+            << " non-idle or backoff "
+            << return_interval.poll_delta.InSeconds() << ".";
 
-  return actual_next_wait;
+  return return_interval;
 }
 
 void SyncerThread::ThreadMain() {
@@ -453,7 +479,7 @@ void SyncerThread::SyncMain(Syncer* syncer) {
   LOG(INFO) << "Done looping in sync share";
 }
 
-void SyncerThread::UpdateNudgeSource(bool* continue_sync_cycle,
+bool SyncerThread::UpdateNudgeSource(bool continue_sync_cycle,
                                      bool* initial_sync) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
@@ -467,12 +493,12 @@ void SyncerThread::UpdateNudgeSource(bool* continue_sync_cycle,
          TimeTicks::Now() >= vault_.nudge_queue_.top().first) {
     if (!nudged) {
       nudge_source = vault_.nudge_queue_.top().second;
-      *continue_sync_cycle = false;  //  Reset the continuation token on nudge.
       nudged = true;
     }
     vault_.nudge_queue_.pop();
   }
   SetUpdatesSource(nudged, nudge_source, initial_sync);
+  return nudged;
 }
 
 void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,

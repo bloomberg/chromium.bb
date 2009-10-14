@@ -74,6 +74,30 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread> {
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
 public:
+  // Encapsulates the parameters that make up an interval on which the
+  // syncer thread is sleeping.
+  struct WaitInterval {
+    enum Mode {
+      // A wait interval whose duration has not been affected by exponential
+      // backoff.  The base case for exponential backoff falls in to this case
+      // (e.g when the exponent is 1).  So far, we don't need a separate case.
+      // NORMAL intervals are not nudge-rate limited.
+      NORMAL,
+      // A wait interval whose duration has been affected by exponential
+      // backoff.
+      // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
+      EXPONENTIAL_BACKOFF,
+    };
+
+    Mode mode;
+    // This bool is set to true if we have observed a nudge during during this
+    // interval and mode == EXPONENTIAL_BACKOFF.
+    bool had_nudge_during_backoff;
+    base::TimeDelta poll_delta;  // The wait duration until the next poll.
+
+    WaitInterval() : mode(NORMAL), had_nudge_during_backoff(false) { }
+  };
+
   enum NudgeSource {
     kUnknown = 0,
     kNotification,
@@ -103,7 +127,7 @@ public:
 
   // Nudges the syncer to sync with a delay specified. This API is for access
   // from the SyncerThread's controller and will cause a mutex lock.
-  virtual bool NudgeSyncer(int milliseconds_from_now, NudgeSource source);
+  virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
 
   // Registers this thread to watch talk mediator events.
   virtual void WatchTalkMediator(TalkMediator* talk_mediator);
@@ -172,6 +196,13 @@ public:
     // NudgeQueue().
     NudgeQueue nudge_queue_;
 
+    // The wait interval for to the current iteration of our main loop.  This is
+    // only written to by the syncer thread, and since the only reader from a
+    // different thread (NudgeSync) is called at totally random times, we don't
+    // really need to access mutually exclusively as the data races that exist
+    // are intrinsic, but do so anyway and avoid using 'volatile'.
+    WaitInterval current_wait_interval_;
+
     ProtectedFields()
         : stop_syncer_thread_(false), syncer_(NULL), connected_(false) {}
   } vault_;
@@ -184,12 +215,6 @@ public:
   Lock lock_;
 
  private:
-  // A few members to gate the rate at which we nudge the syncer.
-  enum {
-    kNudgeRateLimitCount = 6,
-    kNudgeRateLimitTime = 180,
-  };
-
   // Threshold multipler for how long before user should be considered idle.
   static const int kPollBackoffThresholdMultiplier = 10;
 
@@ -206,25 +231,30 @@ public:
 
   void SyncMain(Syncer* syncer);
 
-  // Calculates the next sync wait time in seconds.  last_poll_wait is the time
-  // duration of the previous polling timeout which was used.
-  // user_idle_milliseconds is updated by this method, and is a report of the
-  // full amount of time since the last period of activity for the user.  The
-  // continue_sync_cycle parameter is used to determine whether or not we are
-  // calculating a polling wait time that is a continuation of an sync cycle
-  // which terminated while the syncer still had work to do.
-  virtual int CalculatePollingWaitTime(
+  // Calculates the next sync wait time and exponential backoff state.
+  // last_poll_wait is the time duration of the previous polling timeout which
+  // was used. user_idle_milliseconds is updated by this method, and is a report
+  // of the full amount of time since the last period of activity for the user.
+  // The continue_sync_cycle parameter is used to determine whether or not we
+  // are calculating a polling wait time that is a continuation of an sync cycle
+  // which terminated while the syncer still had work to do. was_nudged is used
+  // in case of exponential backoff so we only allow one nudge per backoff
+  // interval.
+  WaitInterval CalculatePollingWaitTime(
       const AllStatus::Status& status,
       int last_poll_wait,  // in s
       int* user_idle_milliseconds,
-      bool* continue_sync_cycle);
+      bool* continue_sync_cycle,
+      bool was_nudged);
+
   // Helper to above function, considers effect of user idle time.
   virtual int CalculateSyncWaitTime(int last_wait, int user_idle_ms);
 
   // Sets the source value of the controlled syncer's updates_source value.
   // The initial sync boolean is updated if read as a sentinel.  The following
-  // two methods work in concert to achieve this goal.
-  void UpdateNudgeSource(bool* continue_sync_cycle,
+  // two methods work in concert to achieve this goal.  Returns true if it
+  // determines a nudge actually occurred.
+  bool UpdateNudgeSource(bool continue_sync_cycle,
                          bool* initial_sync);
   void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                         bool* initial_sync);

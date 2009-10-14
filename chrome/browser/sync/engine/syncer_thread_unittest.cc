@@ -22,6 +22,7 @@ using base::TimeDelta;
 namespace browser_sync {
 
 typedef testing::Test SyncerThreadTest;
+typedef SyncerThread::WaitInterval WaitInterval;
 
 class SyncerThreadWithSyncerTest : public testing::Test {
  public:
@@ -158,6 +159,8 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   scoped_refptr<SyncerThread> syncer_thread(
       SyncerThreadFactory::Create(NULL, NULL, NULL, NULL, NULL));
   syncer_thread->DisableIdleDetection();
+  // Hold the lock to appease asserts in code.
+  AutoLock lock(syncer_thread->lock_);
 
   // Notifications disabled should result in a polling interval of
   // kDefaultShortPollInterval.
@@ -167,27 +170,33 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
-    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    0,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
+    WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+              interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
-    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    0,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
-    ASSERT_FALSE(continue_sync_cycle_param);
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
 
-    // TODO(brg) : Find a way to test exponential backoff is inoperable.
-    // Exponential backoff should be turned on when notifications are disabled
-    // but this can not be tested since we can not set the last input info.
+    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+        interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+    ASSERT_FALSE(continue_sync_cycle_param);
   }
 
   // Notifications enabled should result in a polling interval of
@@ -198,27 +207,33 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
-    ASSERT_TRUE(SyncerThread::kDefaultLongPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    0,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
+    WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
+              interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
-    ASSERT_TRUE(SyncerThread::kDefaultLongPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    0,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
-    ASSERT_FALSE(continue_sync_cycle_param);
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
 
-    // TODO(brg) : Find a way to test exponential backoff.
-    // Exponential backoff should be turned off when notifications are enabled,
-    // but this can not be tested since we can not set the last input info.
+    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
+              interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+    ASSERT_FALSE(continue_sync_cycle_param);
   }
 
   // There are two states which can cause a continuation, either the updates
@@ -230,40 +245,66 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     status.updates_received = 0;
     bool continue_sync_cycle_param = false;
 
-    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_LE(0, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_TRUE(3 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(3, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
-    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
-    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_LE(0, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(2, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     status.updates_received = 1;
-    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    10,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+                interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 
@@ -272,28 +313,43 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     status.unsynced_count = 1;
     bool continue_sync_cycle_param = false;
 
-    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_LE(0, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         0,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        0,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(2, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     status.unsynced_count = 0;
-    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    4,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        4,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+              interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 
@@ -305,60 +361,144 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     // Expect move from default polling interval to exponential backoff due to
     // unsynced_count != 0.
-    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         3600,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        3600,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_LE(0, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         3600,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        3600,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(2, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Expect exponential backoff.
-    ASSERT_TRUE(2 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         2,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
-    ASSERT_TRUE(6 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         2,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        2,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_LE(2, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+    ASSERT_TRUE(continue_sync_cycle_param);
+
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        2,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(6, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+    ASSERT_TRUE(continue_sync_cycle_param);
+
+    syncer_thread->vault_.current_wait_interval_ = interval;
+
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        static_cast<int>(interval.poll_delta.InSeconds()),
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        true);
+
+    // Don't change poll on a failed nudge during backoff.
+    ASSERT_TRUE(syncer_thread->vault_.current_wait_interval_.poll_delta ==
+              interval.poll_delta);
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_TRUE(interval.had_nudge_during_backoff);
+    ASSERT_TRUE(continue_sync_cycle_param);
+
+    // If we got a nudge and we weren't in backoff mode, we see exponential
+    // backoff.
+    syncer_thread->vault_.current_wait_interval_.mode = WaitInterval::NORMAL;
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        2,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        true);
+
+    // 5 and 3 are bounds on the backoff randomization formula given input of 2.
+    ASSERT_GE(5, interval.poll_delta.InSeconds());
+    ASSERT_LE(3, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
+    ASSERT_TRUE(continue_sync_cycle_param);
+
+    // And if another interval expires, we get a bigger backoff.
+    WaitInterval new_interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        static_cast<int>(interval.poll_delta.InSeconds()),
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        false);
+
+    ASSERT_GE(12, new_interval.poll_delta.InSeconds());
+    ASSERT_LE(5, new_interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::EXPONENTIAL_BACKOFF, interval.mode);
+    ASSERT_FALSE(new_interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // A nudge resets the continue_sync_cycle_param value, so our backoff
     // should return to the minimum.
     continue_sync_cycle_param = false;
-    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         3600,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        3600,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        true);
+
+    ASSERT_LE(0, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
-                         status,
-                         3600,
-                         &user_idle_milliseconds_param,
-                         &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        3600,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        true);
+
+    ASSERT_GE(2, interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Setting unsynced_count = 0 returns us to the default polling interval.
     status.unsynced_count = 0;
-    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
-                syncer_thread->CalculatePollingWaitTime(
-                    status,
-                    4,
-                    &user_idle_milliseconds_param,
-                    &continue_sync_cycle_param));
+    interval = syncer_thread->CalculatePollingWaitTime(
+        status,
+        4,
+        &user_idle_milliseconds_param,
+        &continue_sync_cycle_param,
+        true);
+
+    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+              interval.poll_delta.InSeconds());
+    ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
+    ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 }
