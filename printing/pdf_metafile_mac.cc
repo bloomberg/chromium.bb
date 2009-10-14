@@ -4,7 +4,11 @@
 
 #include "printing/pdf_metafile_mac.h"
 
+#include "base/file_path.h"
+#include "base/gfx/rect.h"
 #include "base/logging.h"
+#include "base/scoped_cftyperef.h"
+#include "base/sys_string_conversions.h"
 
 namespace printing {
 
@@ -85,7 +89,58 @@ void PdfMetafile::Close() {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
+#ifndef NDEBUG
+  // Check that the context will be torn down properly; if it's not, pdf_data_
+  // will be incomplete and generate invalid PDF files/documents.
+  if (context_.get()) {
+    CFIndex extra_retain_count = CFGetRetainCount(context_.get()) - 1;
+    if (extra_retain_count > 0) {
+      LOG(ERROR) << "Metafile context has " << extra_retain_count
+                 << " extra retain(s) on Close";
+    }
+  }
+#endif
   context_.reset(NULL);
+}
+
+bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
+                             const CGRect rect) const {
+  CGPDFDocumentRef pdf_doc = GetPDFDocument();
+  if (!pdf_doc) {
+    LOG(ERROR) << "Unable to create PDF document from data";
+    return false;
+  }
+  CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
+  CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFMediaBox);
+
+  CGContextSaveGState(context);
+  CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
+  CGContextScaleCTM(context, rect.size.width / source_rect.size.width,
+                    rect.size.height / source_rect.size.height);
+  CGContextDrawPDFPage(context, pdf_page);
+  CGContextRestoreGState(context);
+
+  return true;
+}
+
+size_t PdfMetafile::GetPageCount() const {
+  CGPDFDocumentRef pdf_doc = GetPDFDocument();
+  return pdf_doc ? CGPDFDocumentGetNumberOfPages(pdf_doc) : 0;
+}
+
+gfx::Rect PdfMetafile::GetPageBounds(unsigned int page_number) const {
+  CGPDFDocumentRef pdf_doc = GetPDFDocument();
+  if (!pdf_doc) {
+    LOG(ERROR) << "Unable to create PDF document from data";
+    return gfx::Rect();
+  }
+  if (page_number > GetPageCount()) {
+    LOG(ERROR) << "Invalid page number: " << page_number;
+    return gfx::Rect();
+  }
+  CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
+  CGRect page_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFMediaBox);
+  return gfx::Rect(page_rect);
 }
 
 unsigned int PdfMetafile::GetDataSize() const {
@@ -112,6 +167,32 @@ bool PdfMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
   CFDataGetBytes(pdf_data_, CFRangeMake(0, dst_buffer_size),
                  static_cast<UInt8*>(dst_buffer));
   return true;
+}
+
+bool PdfMetafile::SaveTo(const FilePath& file_path) const {
+  DCHECK(pdf_data_.get());
+  DCHECK(!context_.get());
+
+  std::string path_string = file_path.value();
+  scoped_cftyperef<CFURLRef> path_url(CFURLCreateFromFileSystemRepresentation(
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.c_str()),
+      path_string.length(), false));
+  SInt32 error_code;
+  CFURLWriteDataAndPropertiesToResource(path_url, pdf_data_, NULL, &error_code);
+  return error_code == 0;
+}
+
+CGPDFDocumentRef PdfMetafile::GetPDFDocument() const {
+  // Make sure that we have data, and that it's not being modified any more.
+  DCHECK(pdf_data_.get());
+  DCHECK(!context_.get());
+
+  if (!pdf_doc_.get()) {
+    scoped_cftyperef<CGDataProviderRef> pdf_data_provider(
+        CGDataProviderCreateWithCFData(pdf_data_));
+    pdf_doc_.reset(CGPDFDocumentCreateWithProvider(pdf_data_provider));
+  }
+  return pdf_doc_.get();
 }
 
 }  // namespace printing

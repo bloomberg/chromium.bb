@@ -372,7 +372,7 @@ TEST_F(RenderViewTest, PrintWithJavascript) {
 }
 
 TEST_F(RenderViewTest, PrintWithIframe) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Document that populates an iframe..
   const char html[] =
       "<html><body>Lorem Ipsum:"
@@ -416,14 +416,16 @@ TEST_F(RenderViewTest, PrintWithIframe) {
 // i.e. a simplified version of the PrintingLayoutTextTest UI test.
 namespace {
 // Test cases used in this test.
-const struct {
+struct TestPageData {
   const char* page;
-  int printed_pages;
+  size_t printed_pages;
   int width;
   int height;
   const char* checksum;
   const wchar_t* file;
-} kTestPages[] = {
+};
+
+const TestPageData kTestPages[] = {
   {"<html>"
   "<head>"
   "<meta"
@@ -434,7 +436,13 @@ const struct {
   "<body style=\"background-color: white;\">"
   "<p style=\"font-family: arial;\">Hello World!</p>"
   "</body>",
+#if defined(OS_MACOSX)
+  // Mac printing code compensates for the WebKit scale factor while generating
+  // the metafile, so we expect smaller pages.
+  1, 612, 792,
+#else
   1, 764, 972,
+#endif
   NULL,
   NULL,
   },
@@ -442,7 +450,7 @@ const struct {
 }  // namespace
 
 TEST_F(RenderViewTest, PrintLayoutTest) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   bool baseline = false;
 
   EXPECT_TRUE(render_thread_.printer() != NULL);
@@ -484,11 +492,11 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
       // create base-line results.
       FilePath source_path;
       file_util::CreateTemporaryFile(&source_path);
-      render_thread_.printer()->SaveSource(0, source_path.value());
+      render_thread_.printer()->SaveSource(0, source_path);
 
       FilePath bitmap_path;
       file_util::CreateTemporaryFile(&bitmap_path);
-      render_thread_.printer()->SaveBitmap(0, bitmap_path.value());
+      render_thread_.printer()->SaveBitmap(0, bitmap_path);
     }
   }
 #else
@@ -498,7 +506,7 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
 
 // Print page as bitmap test.
 TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Lets simulate a print pages with Hello world.
   LoadHTML("<body><p>Hello world!</p></body>");
 

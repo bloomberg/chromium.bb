@@ -96,8 +96,8 @@ class MockPrinter {
   bool GetBitmapChecksum(size_t page, std::string* checksum) const;
   bool GetSource(size_t page, const void** data, size_t* size) const;
   bool GetBitmap(size_t page, const void** data, size_t* size) const;
-  bool SaveSource(size_t page, const std::wstring& filename) const;
-  bool SaveBitmap(size_t page, const std::wstring& filename) const;
+  bool SaveSource(size_t page, const FilePath& filepath) const;
+  bool SaveBitmap(size_t page, const FilePath& filepath) const;
 
  protected:
   int CreateDocumentCookie();

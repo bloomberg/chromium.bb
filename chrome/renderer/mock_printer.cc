@@ -105,19 +105,22 @@ void MockPrinter::PrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
   EXPECT_EQ(page_number_, params.page_number);
   EXPECT_LE(params.page_number, number_pages_);
 
-#if defined(OS_WIN)
-  // Load the EMF data sent from a RenderView object and create a PageData
-  // object.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // Load the data sent from a RenderView object and create a PageData object.
   // We duplicate the given file handle when creating a base::SharedMemory
   // instance so that its destructor closes the copy.
   EXPECT_GT(params.data_size, 0U);
-  base::SharedMemory emf_data(params.metafile_data_handle, true,
-                              GetCurrentProcess());
-  emf_data.Map(params.data_size);
+#if defined(OS_WIN)
+  base::SharedMemory metafile_data(params.metafile_data_handle, true,
+                                   GetCurrentProcess());
+#elif defined(OS_MACOSX)
+  base::SharedMemory metafile_data(params.metafile_data_handle, true);
+#endif
+  metafile_data.Map(params.data_size);
   printing::NativeMetafile metafile;
-  metafile.CreateFromData(emf_data.memory(), params.data_size);
+  metafile.CreateFromData(metafile_data.memory(), params.data_size);
   printing::Image image(metafile);
-  MockPrinterPage* page_data = new MockPrinterPage(emf_data.memory(),
+  MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
                                                    params.data_size,
                                                    image);
   if (!page_data) {
@@ -168,23 +171,21 @@ bool MockPrinter::GetBitmapChecksum(size_t page, std::string* checksum) const {
   return true;
 }
 
-bool MockPrinter::SaveSource(size_t page,
-                             const std::wstring& filename) const {
+bool MockPrinter::SaveSource(size_t page, const FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
   const uint8* source_data = pages_[page]->source_data();
   size_t source_size = pages_[page]->source_size();
-  file_util::WriteFile(filename, reinterpret_cast<const char*>(source_data),
+  file_util::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
                        source_size);
   return true;
 }
 
-bool MockPrinter::SaveBitmap(size_t page,
-                             const std::wstring& filename) const {
+bool MockPrinter::SaveBitmap(size_t page, const FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
 
-  pages_[page]->image().SaveToPng(filename);
+  pages_[page]->image().SaveToPng(filepath);
   return true;
 }
 

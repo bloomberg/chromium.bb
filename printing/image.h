@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/gfx/size.h"
 #include "base/logging.h"
 #include "printing/native_metafile.h"
@@ -39,7 +40,7 @@ class Image {
   std::string checksum() const;
 
   // Save image as PNG.
-  bool SaveToPng(const std::wstring& filename) const;
+  bool SaveToPng(const FilePath& filepath) const;
 
   // Returns % of pixels different
   double PercentageDifferent(const Image& rhs) const;

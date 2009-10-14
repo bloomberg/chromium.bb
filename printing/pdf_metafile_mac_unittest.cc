@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PdfMetafileTest, Pdf) {
@@ -46,4 +47,13 @@ TEST(PdfMetafileTest, Pdf) {
   // Test that the header begins with "%PDF".
   std::string header(&buffer2.front(), 4);
   EXPECT_EQ(0U, header.find("%PDF", 0));
+
+  // Test that the PDF is correctly reconstructed.
+  EXPECT_EQ(2U, pdf2.GetPageCount());
+  gfx::Size page_size = pdf2.GetPageBounds(1).size();
+  EXPECT_EQ(540, page_size.width());
+  EXPECT_EQ(720, page_size.height());
+  page_size = pdf2.GetPageBounds(2).size();
+  EXPECT_EQ(720, page_size.width());
+  EXPECT_EQ(540, page_size.height());
 }

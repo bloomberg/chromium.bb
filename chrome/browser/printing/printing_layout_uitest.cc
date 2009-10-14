@@ -82,7 +82,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
       // Copy the .emf and generate an .png.
       file_util::CopyFile(test_result, emf);
       Image emf_content(emf.value());
-      emf_content.SaveToPng(png.value());
+      emf_content.SaveToPng(png);
       // Saving is always fine.
       return 0;
     } else {
@@ -109,7 +109,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
           L" result size:" << test_content.size();
       if (diff_png) {
         // Backup the rendered emf file to detect the rendering difference.
-        emf_content.SaveToPng(verification_file + L"_rendering.png");
+        emf_content.SaveToPng(FilePath(verification_file + L"_rendering.png"));
       }
       return std::max(diff_png, diff_emf);
     }

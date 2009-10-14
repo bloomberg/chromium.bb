@@ -5,11 +5,16 @@
 #ifndef PRINTING_PDF_METAFILE_MAC_H_
 #define PRINTING_PDF_METAFILE_MAC_H_
 
-#import <ApplicationServices/ApplicationServices.h>
-#import <CoreFoundation/CoreFoundation.h>
+#include <ApplicationServices/ApplicationServices.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
 #include "base/scoped_cftyperef.h"
+
+namespace gfx {
+class Rect;
+}
+class FilePath;
 
 namespace printing {
 
@@ -45,6 +50,17 @@ class PdfMetafile {
   // Closes the PDF file; no further rendering is allowed.
   void Close();
 
+  // Renders the given page into |rect| in the given context.
+  // Pages use a 1-based index.
+  bool RenderPage(unsigned int page_number, CGContextRef context,
+                  const CGRect rect) const;
+
+  size_t GetPageCount() const;
+
+  // Returns the bounds of the given page.
+  // Pages use a 1-based index.
+  gfx::Rect GetPageBounds(unsigned int page_number) const;
+
   // Returns the size of the underlying PDF data. Only valid after Close() has
   // been called.
   unsigned int GetDataSize() const;
@@ -54,12 +70,22 @@ class PdfMetafile {
   // Returns true if the copy succeeds.
   bool GetData(void* dst_buffer, size_t dst_buffer_size) const;
 
+  // Saves the raw PDF data to the given file. For testing only.
+  // Returns true if writing succeeded.
+  bool SaveTo(const FilePath& file_path) const;
+
  private:
+  // Returns a CGPDFDocumentRef version of pdf_data_.
+  CGPDFDocumentRef GetPDFDocument() const;
+
   // Context for rendering to the pdf.
   scoped_cftyperef<CGContextRef> context_;
 
   // PDF backing store.
   scoped_cftyperef<CFMutableDataRef> pdf_data_;
+
+  // Lazily-created CGPDFDocument representation of pdf_data_.
+  mutable scoped_cftyperef<CGPDFDocumentRef> pdf_doc_;
 
   // Whether or not a page is currently open.
   bool page_is_open_;
