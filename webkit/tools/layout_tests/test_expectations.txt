@@ -106,7 +106,8 @@ BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
 // BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/animate-elem-29-b.svg = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/media/video-display-toggle.html = PASS
-BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
+//BUG24852 started failing since webkit 49583
+//BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/http/tests/misc/onload-remove-iframe-crash-2.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/media/video-controls-rendering.html = PASS
 BUG24182 SLOW LINUX MAC DEBUG : LayoutTests/editing/selection/doubleclick-whitespace.html = PASS
@@ -3168,5 +3169,17 @@ BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
 // See also bug 23475:
 BUG24775 : LayoutTests/svg/custom/missing-xlink.svg = FAIL PASS
 
-// WebKit roll 28932:28964
+// WebKit roll 49502:49562
 BUG_DIMICH : LayoutTests/fast/events/add-event-without-document.html = TIMEOUT
+
+//WebKit roll 49562:49583
+BUG24851 : LayoutTests/css2.1/t090501-c414-flt-ln-00-d.html = FAIL
+BUG24851 : LayoutTests/css2.1/t090501-c414-flt-ln-01-d-g.html = FAIL
+BUG24851 : LayoutTests/css2.1/t090501-c414-flt-ln-02-d.html = FAIL
+BUG24851 : LayoutTests/css2.1/t090501-c414-flt-ln-03-d.html = FAIL
+SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
+BUG24852 SLOW WIN LINUX : LayoutTests/css1/font_properties/font.html = FAIL
+BUG24854 WIN LINUX : LayoutTests/fast/forms/menulist-no-renderer-onmousedown.html = CRASH
+BUG24855 WIN LINUX : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
+BUG24856 WIN : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = FAIL
+BUG_YAAR LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
