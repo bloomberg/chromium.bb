@@ -31,7 +31,7 @@
 
 
 // NaCl-NPAPI Interface
-
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 
 #include <stdarg.h>

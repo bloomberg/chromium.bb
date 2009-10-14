@@ -35,6 +35,7 @@
 // The "proxy" side is in the process scripting the object.
 // The "stub" side is in the process implementing the object.
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 
 #include <stdarg.h>

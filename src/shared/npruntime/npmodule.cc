@@ -29,9 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
-
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
