@@ -196,12 +196,17 @@ TEST_F(AutocompleteTextFieldEditorTest, CannotPasteAndGoMenu) {
 
   NSMenu* menu = [editor_.get() menuForEvent:nil];
   NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 3U);
+  ASSERT_EQ([items count], 5U);
   // TODO(shess): Check the titles, too?
   NSUInteger i = 0;  // Use an index to make future changes easier.
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+  EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
+
+  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
+  EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
+  i++;
 }
 
 // Test that the menu is constructed correctly when field isn't

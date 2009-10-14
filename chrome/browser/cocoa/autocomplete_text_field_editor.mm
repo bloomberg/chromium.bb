@@ -106,16 +106,16 @@
                         action:@selector(pasteAndGo:)
                  keyEquivalent:@""];
       }
+    }
 
-      label = l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
-      DCHECK([label length]);
-      if ([label length]) {
-        [menu addItem:[NSMenuItem separatorItem]];
-        NSMenuItem* item = [menu addItemWithTitle:label
-                                           action:@selector(commandDispatch:)
-                                    keyEquivalent:@""];
-        [item setTag:IDC_EDIT_SEARCH_ENGINES];
-      }
+    NSString* label = l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
+    DCHECK([label length]);
+    if ([label length]) {
+      [menu addItem:[NSMenuItem separatorItem]];
+      NSMenuItem* item = [menu addItemWithTitle:label
+                                         action:@selector(commandDispatch:)
+                                  keyEquivalent:@""];
+      [item setTag:IDC_EDIT_SEARCH_ENGINES];
     }
   }
 
