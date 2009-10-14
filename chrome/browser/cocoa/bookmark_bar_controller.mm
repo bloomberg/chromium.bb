@@ -422,7 +422,7 @@
   // TODO(jrg): identify when we NO_TREE.  I can see it in the code
   // for the other platforms but can't find a way to trigger it in the
   // UI.
-  BookmarkEditor::Show([[[self view] window] contentView],
+  BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        node->GetParent(),
                        node,
