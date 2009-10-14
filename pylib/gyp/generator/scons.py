@@ -495,10 +495,14 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
 
   fmt = "\ngyp_target = env.Alias('%s', target_files)\n"
   fp.write(fmt % target_name)
+
   dependencies = spec.get('scons_dependencies', [])
   if dependencies:
-    WriteList(fp, dependencies, preamble='env.Requires(gyp_target, [\n    ',
-                                postamble='\n])\n')
+    WriteList(fp, dependencies, preamble='dependencies = [\n    ',
+                                postamble='\n]\n')
+    fp.write('env.Requires(gyp_target, dependencies)\n')
+    fp.write('for prerequisite in prerequisites:\n')
+    fp.write('  env.Requires(prerequisite, dependencies)\n')
   fp.write('env.Requires(gyp_target, prerequisites)\n')
 
   if spec.get('run_as', 0) or int(spec.get('test', 0)):
