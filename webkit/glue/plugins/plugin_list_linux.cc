@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -89,6 +90,14 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/firefox/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/xulrunner-addons/plugins"));
+
+#if defined(ARCH_CPU_64_BITS)
+  // On my Ubuntu system, /usr/lib64 is a symlink to /usr/lib.
+  // But a user reported on their Fedora system they are separate.
+  plugin_dirs->push_back(FilePath("/usr/lib64/mozilla/plugins"));
+  plugin_dirs->push_back(FilePath("/usr/lib64/firefox/plugins"));
+  plugin_dirs->push_back(FilePath("/usr/lib64/xulrunner-addons/plugins"));
+#endif
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath& path,
