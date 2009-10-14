@@ -1221,9 +1221,8 @@ void Browser::OpenExtensionsTab() {
 
 #if defined(OS_CHROMEOS)
 void Browser::ShowControlPanel() {
-  GURL url("http://localhost:8080");
-  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, true, -1,
-                false, NULL);
+  UserMetrics::RecordAction(L"ShowControlPanel", profile_);
+  ShowOptionsWindow(OPTIONS_PAGE_SETTINGS, OPTIONS_GROUP_NONE, profile_);
 }
 #endif
 
