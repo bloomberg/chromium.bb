@@ -19,7 +19,7 @@ import simplejson
 
 class JSONResultsGenerator:
 
-  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 750
+  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 9
   # Min time (seconds) that will be added to the JSON.
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
@@ -326,7 +326,9 @@ class JSONResultsGenerator:
           [[3,'A'],[1,'Q']] encodes AAAQ.
     """
     if len(encoded_results) and item == encoded_results[0][1]:
-      encoded_results[0][0] += 1
+      num_results = encoded_results[0][0]
+      if num_results <= self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
+        encoded_results[0][0] = num_results + 1
     else:
       # Use a list instead of a class for the run-length encoding since we
       # want the serialized form to be concise.
@@ -340,22 +342,7 @@ class JSONResultsGenerator:
         results_json[self.VERSION_KEY] == self.VERSION):
       return
 
-    for builder in results_json:
-      tests = results_json[builder][self.TESTS]
-      for path in tests:
-        test = tests[path]
-        test[self.RESULTS] = self._RunLengthEncode(test[self.RESULTS])
-        test[self.TIMES] = self._RunLengthEncode(test[self.TIMES])
-
     results_json[self.VERSION_KEY] = self.VERSION
-
-  def _RunLengthEncode(self, result_list):
-    """Run-length encodes a list or string of results."""
-    encoded_results = [];
-    current_result = None;
-    for item in reversed(result_list):
-      self._InsertItemRunLengthEncoded(item, encoded_results)
-    return encoded_results
 
   def _CreateResultsAndTimesJSON(self):
     results_and_times = {}
@@ -424,18 +411,22 @@ class JSONResultsGenerator:
         test[self.RESULTS])
     test[self.TIMES] = self._RemoveItemsOverMaxNumberOfBuilds(test[self.TIMES])
 
-    # Remove all passes/no-data from the results to reduce noise and filesize.
-    if (self._IsResultsAllOfType(test[self.RESULTS], self.PASS_RESULT) or
-        (self._IsResultsAllOfType(test[self.RESULTS], self.NO_DATA_RESULT) and
-         max(test[self.TIMES],
-             lambda x, y : cmp(x[1], y[1])) <= self.MIN_TIME)):
-      del tests[test_path]
+    is_all_pass = self._IsResultsAllOfType(test[self.RESULTS], self.PASS_RESULT)
+    is_all_no_data = self._IsResultsAllOfType(test[self.RESULTS],
+        self.NO_DATA_RESULT)
+    max_time = max(test[self.TIMES], lambda x, y : cmp(x[1], y[1]))
 
-    # Remove tests that don't exist anymore.
-    full_path = os.path.join(path_utils.LayoutTestsDir(test_path), test_path)
-    full_path = os.path.normpath(full_path)
-    if not os.path.exists(full_path):
+    # Remove all passes/no-data from the results to reduce noise and filesize.
+    # If a test passes every run, but takes > MIN_TIME to run, don't throw away
+    # the data.
+    if is_all_no_data or (is_all_pass and max_time <= self.MIN_TIME):
       del tests[test_path]
+    else:
+      # Remove tests that don't exist anymore.
+      full_path = os.path.join(path_utils.LayoutTestsDir(test_path), test_path)
+      full_path = os.path.normpath(full_path)
+      if not os.path.exists(full_path):
+        del tests[test_path]
 
   def _IsResultsAllOfType(self, results, type):
     """Returns whether all teh results are of the given type (e.g. all passes).
