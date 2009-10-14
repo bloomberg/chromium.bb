@@ -406,10 +406,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   std::vector<SBFullHashResult> full_hashes;
   bool re_key = false;
   SafeBrowsingProtocolParser parser;
-  parser.ParseGetHash(get_hash.data(),
-                      static_cast<int>(get_hash.length()), "",
-                      &re_key,
-                      &full_hashes);
+  EXPECT_TRUE(parser.ParseGetHash(get_hash.data(),
+                                  static_cast<int>(get_hash.length()), "",
+                                  &re_key,
+                                  &full_hashes));
 
   EXPECT_FALSE(re_key);
   EXPECT_EQ(full_hashes.size(), static_cast<size_t>(3));
@@ -432,10 +432,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                         "goog-malware-shavar:19:64\n"
                         "cafebeefcafebeefdeaddeaddeaddead"
                         "zzzzyyyyxxxxwwwwvvvvuuuuttttssss");
-  parser.ParseGetHash(get_hash2.data(),
-                      static_cast<int>(get_hash2.length()), "",
-                      &re_key,
-                      &full_hashes);
+  EXPECT_TRUE(parser.ParseGetHash(get_hash2.data(),
+                                  static_cast<int>(get_hash2.length()), "",
+                                  &re_key,
+                                  &full_hashes));
 
   EXPECT_FALSE(re_key);
   EXPECT_EQ(full_hashes.size(), static_cast<size_t>(3));
