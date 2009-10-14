@@ -596,7 +596,7 @@
         'common/logging_chrome.h',
         'common/main_function_params.h',
         'common/message_router.cc',
-        'common/message_router.h'
+        'common/message_router.h',
         'common/mru_cache.h',
         'common/navigation_gesture.h',
         'common/navigation_types.h',
