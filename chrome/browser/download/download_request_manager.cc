@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/thread.h"
-#include "chrome/browser/download/download_request_dialog_delegate.h"
+#include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -23,7 +23,7 @@ DownloadRequestManager::TabDownloadState::TabDownloadState(
     : host_(host),
       controller_(controller),
       status_(DownloadRequestManager::ALLOW_ONE_DOWNLOAD),
-      dialog_delegate_(NULL) {
+      infobar_(NULL) {
   Source<NavigationController> notification_source(controller);
   registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
                  notification_source);
@@ -39,8 +39,8 @@ DownloadRequestManager::TabDownloadState::~TabDownloadState() {
   // We should only be destroyed after the callbacks have been notified.
   DCHECK(callbacks_.empty());
 
-  // And we should have closed the message box.
-  DCHECK(!dialog_delegate_);
+  // And we should have closed the infobar.
+  DCHECK(!infobar_);
 }
 
 void DownloadRequestManager::TabDownloadState::OnUserGesture() {
@@ -69,7 +69,7 @@ void DownloadRequestManager::TabDownloadState::PromptUserForDownload(
   if (DownloadRequestManager::delegate_) {
     NotifyCallbacks(DownloadRequestManager::delegate_->ShouldAllowDownload());
   } else {
-    dialog_delegate_ = DownloadRequestDialogDelegate::Create(tab, this);
+    infobar_ = new DownloadRequestInfoBarDelegate(tab, this);
   }
 }
 
@@ -109,13 +109,8 @@ void DownloadRequestManager::TabDownloadState::Observe(
         return;
       }
 
-      if (is_showing_prompt()) {
-        // We're prompting the user and they navigated away. Close the popup and
-        // cancel the downloads.
-        dialog_delegate_->CloseWindow();
-        // After switch we'll notify callbacks and get deleted.
-      } else if (status_ == DownloadRequestManager::ALLOW_ALL_DOWNLOADS ||
-                 status_ == DownloadRequestManager::DOWNLOADS_NOT_ALLOWED) {
+      if (status_ == DownloadRequestManager::ALLOW_ALL_DOWNLOADS ||
+          status_ == DownloadRequestManager::DOWNLOADS_NOT_ALLOWED) {
         // User has either allowed all downloads or canceled all downloads. Only
         // reset the download state if the user is navigating to a different
         // host (or host is empty).
@@ -123,8 +118,7 @@ void DownloadRequestManager::TabDownloadState::Observe(
             entry->url().host() == initial_page_host_) {
           return;
         }
-      }  // else case: we're not prompting user and user hasn't allowed or
-         // disallowed downloads, break so that we get deleted after switch.
+      }
       break;
     }
 
@@ -142,10 +136,10 @@ void DownloadRequestManager::TabDownloadState::Observe(
 }
 
 void DownloadRequestManager::TabDownloadState::NotifyCallbacks(bool allow) {
-  if (dialog_delegate_) {
+  if (infobar_) {
     // Reset the delegate so we don't get notified again.
-    dialog_delegate_->set_host(NULL);
-    dialog_delegate_ = NULL;
+    infobar_->set_host(NULL);
+    infobar_ = NULL;
   }
   status_ = allow ?
       DownloadRequestManager::ALLOW_ALL_DOWNLOADS :

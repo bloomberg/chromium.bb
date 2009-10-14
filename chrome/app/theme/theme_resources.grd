@@ -228,6 +228,8 @@
       <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin.png" type="BINDATA" />
       <include name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark.png" type="BINDATA" />
       <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />
       <include name="IDR_MENU_MARKER" file="menu_marker.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
@@ -240,7 +242,6 @@
       <include name="IDR_DEFAULT_THUMBNAIL" file="default_thumbnail.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />

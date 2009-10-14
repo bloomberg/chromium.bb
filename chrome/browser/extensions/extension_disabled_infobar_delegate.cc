@@ -37,6 +37,9 @@ class ExtensionDisabledDialogDelegate
         NewRunnableMethod(this, &ExtensionDisabledDialogDelegate::Start));
   }
 
+  virtual ~ExtensionDisabledDialogDelegate() {
+  }
+
   // ExtensionInstallUI::Delegate
   virtual void ContinueInstall() {
     service_->EnableExtension(extension_->id());
@@ -89,8 +92,7 @@ class ExtensionDisabledInfobarDelegate
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                    Source<ExtensionsService>(service));
   }
-  virtual void InfoBarClosed() {
-    delete this;
+  virtual ~ExtensionDisabledInfobarDelegate() {
   }
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(IDS_EXTENSION_DISABLED_INFOBAR_LABEL,

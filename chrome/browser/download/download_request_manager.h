@@ -13,7 +13,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class DownloadRequestDialogDelegate;
+class DownloadRequestInfoBarDelegate;
 class MessageLoop;
 class NavigationController;
 class TabContents;
@@ -60,8 +60,7 @@ class DownloadRequestManager :
   };
 
   // TabDownloadState maintains the download state for a particular tab.
-  // TabDownloadState installs observers to update the download status
-  // appropriately. Additionally TabDownloadState prompts the user as necessary.
+  // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestManager::Remove) as necessary.
   class TabDownloadState : public NotificationObserver {
@@ -96,15 +95,24 @@ class DownloadRequestManager :
                                DownloadRequestManager::Callback* callback);
 
     // Are we showing a prompt to the user?
-    bool is_showing_prompt() const { return (dialog_delegate_ != NULL); }
+    bool is_showing_prompt() const { return (infobar_ != NULL); }
 
     // NavigationController we're tracking.
     NavigationController* controller() const { return controller_; }
 
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
-    // changes the status appropriately.
-    void Cancel();
-    void Accept();
+    // changes the status appropriately. Virtual for testing.
+    virtual void Cancel();
+    virtual void Accept();
+
+   protected:
+    // Used for testing.
+    TabDownloadState()
+        : host_(NULL),
+          controller_(NULL),
+          status_(DownloadRequestManager::ALLOW_ONE_DOWNLOAD),
+          infobar_(NULL) {
+    }
 
    private:
     // NotificationObserver method.
@@ -134,8 +142,8 @@ class DownloadRequestManager :
     // Used to remove observers installed on NavigationController.
     NotificationRegistrar registrar_;
 
-    // Handles showing the dialog to the user, may be null.
-    DownloadRequestDialogDelegate* dialog_delegate_;
+    // Handles showing the infobar to the user, may be null.
+    DownloadRequestInfoBarDelegate* infobar_;
 
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
