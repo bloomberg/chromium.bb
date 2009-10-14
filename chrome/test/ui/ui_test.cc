@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -371,6 +372,9 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
     if (profile_type_ == UITest::COMPLEX_THEME) {
       RewritePreferencesFile(user_data_dir_);
     }
+
+    // Update the history file to include recent dates.
+    UpdateHistoryDates();
   }
 
   ASSERT_TRUE(LaunchBrowserHelper(arguments, use_existing_browser_, false,
@@ -929,6 +933,7 @@ void UITest::RewritePreferencesFile(const FilePath& user_data_dir) {
       UTF16ToASCII(ReplaceStringPlaceholders(format_string, subst, NULL));
   EXPECT_TRUE(file_util::WriteFile(pref_path, prefs_string.c_str(),
                                    prefs_string.size()));
+  file_util::EvictFileFromSystemCache(pref_path);
 }
 
 // static
@@ -1147,4 +1152,27 @@ bool UITest::LaunchBrowserHelper(const CommandLine& arguments,
   }
 
   return true;
+}
+
+void UITest::UpdateHistoryDates() {
+  // Migrate the times in the segment_usage table to yesterday so we get
+  // actual thumbnails on the NTP.
+  sql::Connection db;
+  FilePath history =
+      user_data_dir_.AppendASCII("Default").AppendASCII("History");
+  // Not all test profiles have a history file.
+  if (!file_util::PathExists(history))
+    return;
+
+  ASSERT_TRUE(db.Open(history));
+  base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
+  std::string yesterday_str = Int64ToString(yesterday.ToInternalValue());
+  std::string query = StringPrintf(
+      "UPDATE segment_usage "
+      "SET time_slot = %s "
+      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);",
+      yesterday_str.c_str());
+  ASSERT_TRUE(db.Execute(query.c_str()));
+  db.Close();
+  file_util::EvictFileFromSystemCache(history);
 }
