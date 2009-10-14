@@ -230,8 +230,21 @@ void BrowsingDataRemover::ClearCacheOnIOThread(base::Time delete_begin,
       profile_->GetRequestContext()->http_transaction_factory();
   disk_cache::Backend* cache = factory->GetCache()->disk_cache();
 
-  // The cache can be empty, for example on startup, in which case |cache| will
-  // be null and we don't need to do anything.
+  // |cache| can be null since it is lazily initialized, in this case we do
+  // nothing.
+  if (cache) {
+    if (delete_begin.is_null())
+      cache->DoomAllEntries();
+    else
+      cache->DoomEntriesBetween(delete_begin, delete_end);
+  }
+
+  // Get a pointer to the media cache.
+  factory = profile_->GetRequestContextForMedia()->http_transaction_factory();
+  cache = factory->GetCache()->disk_cache();
+
+  // |cache| can be null since it is lazily initialized, in this case we do
+  // nothing.
   if (cache) {
     if (delete_begin.is_null())
       cache->DoomAllEntries();
