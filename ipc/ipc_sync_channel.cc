@@ -468,7 +468,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop() {
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);
-  if (old_send_done_event_watcher) {
+  if (old_send_done_event_watcher && old_event) {
     old_send_done_event_watcher->StartWatching(old_event, old_delegate);
   }
 }
