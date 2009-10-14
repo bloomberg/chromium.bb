@@ -95,6 +95,63 @@ TEST_F(FlipFramerTest, ProtocolConstants) {
   EXPECT_EQ(3, FIN_STREAM);
 }
 
+// Test some of the protocol helper functions
+TEST_F(FlipFramerTest, FrameStructs) {
+  FlipFrame frame;
+  memset(&frame, 0, sizeof(frame));
+  frame.set_length(12345);
+  frame.set_flags(10);
+  EXPECT_EQ(12345u, frame.length());
+  EXPECT_EQ(10u, frame.flags());
+  EXPECT_EQ(false, frame.is_control_frame());
+
+  memset(&frame, 0, sizeof(frame));
+  frame.set_length(0);
+  frame.set_flags(10);
+  EXPECT_EQ(0u, frame.length());
+  EXPECT_EQ(10u, frame.flags());
+  EXPECT_EQ(false, frame.is_control_frame());
+}
+
+TEST_F(FlipFramerTest, DataFrameStructs) {
+  FlipDataFrame data_frame;
+  memset(&data_frame, 0, sizeof(data_frame));
+  data_frame.set_stream_id(12345);
+  EXPECT_EQ(12345u, data_frame.stream_id());
+}
+
+TEST_F(FlipFramerTest, ControlFrameStructs) {
+  FlipFramer framer;
+  FlipHeaderBlock headers;
+
+  scoped_array<FlipSynStreamControlFrame> syn_frame(
+      framer.CreateSynStream(123, 2, false, &headers));
+  EXPECT_EQ(kFlipProtocolVersion, syn_frame.get()->version());
+  EXPECT_EQ(true, syn_frame.get()->is_control_frame());
+  EXPECT_EQ(SYN_STREAM, syn_frame.get()->type());
+  EXPECT_EQ(123u, syn_frame.get()->stream_id());
+  EXPECT_EQ(2u, syn_frame.get()->priority());
+  EXPECT_EQ(2, syn_frame.get()->header_block_len());
+
+  scoped_array<FlipSynReplyControlFrame> syn_reply(
+      framer.CreateSynReply(123, false, &headers));
+  EXPECT_EQ(kFlipProtocolVersion, syn_reply.get()->version());
+  EXPECT_EQ(true, syn_reply.get()->is_control_frame());
+  EXPECT_EQ(SYN_REPLY, syn_reply.get()->type());
+  EXPECT_EQ(123u, syn_reply.get()->stream_id());
+  EXPECT_EQ(2, syn_reply.get()->header_block_len());
+
+  scoped_array<FlipFinStreamControlFrame> fin_frame(
+      framer.CreateFinStream(123, 444));
+  EXPECT_EQ(kFlipProtocolVersion, fin_frame.get()->version());
+  EXPECT_EQ(true, fin_frame.get()->is_control_frame());
+  EXPECT_EQ(FIN_STREAM, fin_frame.get()->type());
+  EXPECT_EQ(123u, fin_frame.get()->stream_id());
+  EXPECT_EQ(444u, fin_frame.get()->status());
+  fin_frame.get()->set_status(555);
+  EXPECT_EQ(555u, fin_frame.get()->status());
+}
+
 // Test that we can encode and decode a FlipHeaderBlock.
 TEST_F(FlipFramerTest, HeaderBlock) {
   FlipHeaderBlock headers;

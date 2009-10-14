@@ -17,32 +17,29 @@
 #include "flip_bitmasks.h"  // cross-google3 directory naming.
 
 
-//    Stream Frame Format
-//  +-------------------------------+
-//  |0|     Stream-ID (31bits)      |
-//  +-------------------------------+
-//  |flags (16)|  Length (16bits)   |
-//  +-------------------------------+
-//  |             Data              |
-//  +-------------------------------+
+//  Data Frame Format
+//  +----------------------------------+
+//  |0|       Stream-ID (31bits)       |
+//  +----------------------------------+
+//  | flags (8)  |  Length (24 bits)   |
+//  +----------------------------------+
+//  |               Data               |
+//  +----------------------------------+
 //
-
-//   Control Frame Format
-//  +-------------------------------+
-//  |1| Version(15bits)|Type(16bits)|
-//  +-------------------------------+
-//  |         Length (32bits)       |
-//  +-------------------------------+
-//  |             Data              |
-//  +-------------------------------+
+//  Control Frame Format
+//  +----------------------------------+
+//  |1| Version(15bits) | Type(16bits) |
+//  +----------------------------------+
+//  | flags (8)  |  Length (24 bits)   |
+//  +----------------------------------+
+//  |               Data               |
+//  +----------------------------------+
 //
-
-
 //  Control Frame: SYN_STREAM
 //  +----------------------------------+
 //  |1|000000000000001|0000000000000001|
 //  +----------------------------------+
-//  |           Length (32bits)        |  >= 8
+//  | flags (8)  |  Length (24 bits)   |  >= 8
 //  +----------------------------------+
 //  |X|       Stream-ID(31bits)        |
 //  +----------------------------------+
@@ -53,7 +50,7 @@
 //  +----------------------------------+
 //  |1|000000000000001|0000000000000010|
 //  +----------------------------------+
-//  |           Length (32bits)        |  >= 8
+//  | flags (8)  |  Length (24 bits)   |  >= 8
 //  +----------------------------------+
 //  |X|       Stream-ID(31bits)        |
 //  +----------------------------------+
@@ -64,7 +61,7 @@
 //  +----------------------------------+
 //  |1|000000000000001|0000000000000011|
 //  +----------------------------------+
-//  |           Length (32bits)        |  >= 4
+//  | flags (8)  |  Length (24 bits)   |  >= 4
 //  +----------------------------------+
 //  |X|       Stream-ID(31bits)        |
 //  +----------------------------------+
@@ -75,7 +72,7 @@
 //  +----------------------------------+
 //  |1|000000000000001|0000000000000100|
 //  +----------------------------------+
-//  |           Length (32bits)        |  >= 4
+//  | flags (8)  |  Length (24 bits)   |  >= 4
 //  +----------------------------------+
 //  |X|       Stream-ID(31bits)        |
 //  +----------------------------------+
@@ -83,6 +80,9 @@
 // TODO(fenix): add ChangePriority support.
 
 namespace flip {
+
+// This implementation of Flip is version 1.
+const int kFlipProtocolVersion = 1;
 
 // Note: all protocol data structures are on-the-wire format.  That means that
 //       data is stored in network-normalized order.  Readers must use the
@@ -98,8 +98,14 @@ typedef enum {
 
 // Flags on data packets
 typedef enum {
-  DATA_FLAG_COMPRESSED = 1
+  DATA_FLAG_FIN = 1,
+  DATA_FLAG_COMPRESSED = 2  // TODO(mbelshe): remove me.
 } FlipDataFlags;
+
+// Flags on control packets
+typedef enum {
+  CONTROL_FLAG_FIN = 1
+} FlipControlFlags;
 
 // A FLIP stream id is a 31 bit entity.
 typedef uint32 FlipStreamId;
@@ -108,10 +114,24 @@ typedef uint32 FlipStreamId;
 #define FLIP_PRIORITY_LOWEST 3
 #define FLIP_PRIORITY_HIGHEST 0
 
+// A special structure for the 8 bit flags and 24 bit length fields.
+typedef union {
+  uint8 flags_[4]; // 8 bits
+  uint32 length_;  // 24 bits
+} FlagsLength;
+
 // All Flip Frame types derive from the FlipFrame struct.
 typedef struct {
-  uint32 length() const { return ntohs(data_.length_); }
-  void set_length(uint16 length) { data_.length_ = htons(length); }
+  uint8 flags() const { return flags_length_.flags_[0]; }
+  void set_flags(uint8 flags) { flags_length_.flags_[0] = flags; }
+
+  uint32 length() const { return ntohl(flags_length_.length_) & kLengthMask; }
+  void set_length(uint32 length) {
+    DCHECK((length & ~kLengthMask) == 0);
+    length = htonl(length & kLengthMask);
+    flags_length_.length_ = (flags() << 6) | length;
+  }
+
   bool is_control_frame() const {
     return (ntohs(control_.version_) & kControlFlagMask) == kControlFlagMask;
   }
@@ -121,14 +141,12 @@ typedef struct {
     struct {
       uint16 version_;
       uint16 type_;
-      uint32 length_;
     } control_;
     struct {
       FlipStreamId stream_id_;
-      uint16 flags_;
-      uint16 length_;
     } data_;
   };
+  FlagsLength flags_length_;
 } FlipFrame;
 
 // A Data Frame.
@@ -137,8 +155,6 @@ typedef struct : public FlipFrame {
       return ntohl(data_.stream_id_) & kStreamIdMask;
   }
   void set_stream_id(FlipStreamId id) { data_.stream_id_ = htonl(id); }
-  uint16 flags() const { return ntohs(data_.flags_); }
-  void set_flags(uint16 flags) { data_.flags_ = htons(flags); }
 } FlipDataFrame;
 
 // A Control Frame.
@@ -161,6 +177,7 @@ typedef struct : public FlipFrame {
 // A SYN_STREAM frame.
 typedef struct FlipSynStreamControlFrame : public FlipControlFrame {
   uint8 priority() const { return (priority_ & kPriorityMask) >> 6; }
+  // The number of bytes in the header block beyond the frame header length.
   int header_block_len() const { return length() - kHeaderBlockOffset; }
   const char* header_block() const {
     return reinterpret_cast<const char*>(this) +

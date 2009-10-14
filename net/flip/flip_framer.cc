@@ -20,9 +20,6 @@ static const size_t kControlFrameBufferInitialSize = 32 * 1024;
 // TODO(mbelshe): We should make this stream-based so there are no limits.
 static const size_t kControlFrameBufferMaxSize = 64 * 1024;
 
-// This implementation of Flip is version 1.
-static const int kFlipProtocolVersion = 1;
-
 // By default is compression on or off.
 bool FlipFramer::compression_default_ = true;
 
@@ -652,7 +649,7 @@ FlipFrame* FlipFramer::DecompressFrame(const FlipFrame* frame) {
   if (!frame->is_control_frame()) {
     const FlipDataFrame* data_frame =
         reinterpret_cast<const FlipDataFrame*>(frame);
-    if (!data_frame->flags() & DATA_FLAG_COMPRESSED)
+    if ((data_frame->flags() & DATA_FLAG_COMPRESSED) == 0)
       return DuplicateFrame(frame);
   }
 
