@@ -6,21 +6,27 @@
 
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/generated_resources.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
+#include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "app/l10n_util_win.h"
 #include "views/widget/widget_win.h"
+#elif defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 
 // FullscreenExitView ----------------------------------------------------------
 
 class FullscreenExitBubble::FullscreenExitView : public views::View {
  public:
-   FullscreenExitView(FullscreenExitBubble* bubble,
-                      views::WidgetWin* popup,
-                      const std::wstring& accelerator);
+  FullscreenExitView(FullscreenExitBubble* bubble,
+                     const std::wstring& accelerator);
   virtual ~FullscreenExitView();
 
   // views::View
@@ -33,9 +39,6 @@ class FullscreenExitBubble::FullscreenExitView : public views::View {
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Handle to the HWND that contains us.
-  views::WidgetWin* popup_;
-
   // Clickable hint text to show in the bubble.
   views::Link link_;
 };
@@ -44,9 +47,7 @@ const int FullscreenExitBubble::FullscreenExitView::kPaddingPixels = 8;
 
 FullscreenExitBubble::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubble* bubble,
-    views::WidgetWin* popup,
-    const std::wstring& accelerator)
-    : popup_(popup) {
+    const std::wstring& accelerator) {
   link_.SetParentOwned(false);
   link_.SetText(l10n_util::GetStringF(IDS_EXIT_FULLSCREEN_MODE, accelerator));
   link_.SetController(bubble);
@@ -97,10 +98,11 @@ void FullscreenExitBubble::FullscreenExitView::Paint(gfx::Canvas* canvas) {
 
 // FullscreenExitPopup ---------------------------------------------------------
 
+#if defined(OS_WIN)
 class FullscreenExitBubble::FullscreenExitPopup : public views::WidgetWin {
  public:
-  FullscreenExitPopup() : views::WidgetWin() { }
-  virtual ~FullscreenExitPopup() { }
+  FullscreenExitPopup() : views::WidgetWin() {}
+  virtual ~FullscreenExitPopup() {}
 
   // views::WidgetWin:
   virtual LRESULT OnMouseActivate(HWND window,
@@ -112,7 +114,9 @@ class FullscreenExitBubble::FullscreenExitPopup : public views::WidgetWin {
     return MA_NOACTIVATE;
   }
 };
-
+#elif defined(OS_LINUX)
+// TODO: figure out the equivalent of MA_NOACTIVATE for gtk.
+#endif
 
 // FullscreenExitBubble --------------------------------------------------------
 
@@ -129,7 +133,7 @@ FullscreenExitBubble::FullscreenExitBubble(
     CommandUpdater::CommandUpdaterDelegate* delegate)
     : root_view_(frame->GetRootView()),
       delegate_(delegate),
-      popup_(new FullscreenExitPopup()),
+      popup_(NULL),
       size_animation_(new SlideAnimation(this)) {
   size_animation_->Reset(1);
 
@@ -137,23 +141,28 @@ FullscreenExitBubble::FullscreenExitBubble(
   views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new FullscreenExitView(this, popup_, accelerator.GetShortcutText());
+  view_ = new FullscreenExitView(this, accelerator.GetShortcutText());
 
   // Initialize the popup.
-  popup_->set_delete_on_destroy(false);
+#if defined(OS_WIN)
+  popup_ = new FullscreenExitPopup();
   popup_->set_window_style(WS_POPUP);
   popup_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
                               l10n_util::GetExtendedTooltipStyles());
+#elif defined(OS_LINUX)
+  popup_ = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
+  popup_->MakeTransparent();
+#endif
   popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
   popup_->Init(frame->GetNativeView(), GetPopupRect(false));
+  popup_->set_delete_on_destroy(false);
   popup_->SetContentsView(view_);
   popup_->Show();  // This does not activate the popup.
 
   // Start the initial delay timer and begin watching the mouse.
   initial_delay_.Start(base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
                        &FullscreenExitBubble::CheckMousePosition);
-  POINT cursor_pos;
-  GetCursorPos(&cursor_pos);
+  gfx::Point cursor_pos = views::Screen::GetCursorScreenPoint();
   last_mouse_pos_ = cursor_pos;
   views::View::ConvertPointToView(NULL, root_view_, &last_mouse_pos_);
   mouse_position_checker_.Start(
@@ -185,8 +194,12 @@ void FullscreenExitBubble::AnimationProgressed(
   if (popup_rect.IsEmpty()) {
     popup_->Hide();
   } else {
+#if defined(OS_WIN)
     popup_->MoveWindow(popup_rect.x(), popup_rect.y(), popup_rect.width(),
                        popup_rect.height());
+#elif defined(OS_LINUX)
+    popup_->SetBounds(popup_rect);
+#endif
     popup_->Show();
   }
 }
@@ -216,8 +229,7 @@ void FullscreenExitBubble::CheckMousePosition() {
   //   either the popup is hidden or the mouse is not idle, so we don't want to
   //   change anything's state.
 
-  POINT cursor_pos;
-  GetCursorPos(&cursor_pos);
+  gfx::Point cursor_pos = views::Screen::GetCursorScreenPoint();
   gfx::Point transformed_pos(cursor_pos);
   views::View::ConvertPointToView(NULL, root_view_, &transformed_pos);
 
@@ -230,13 +242,13 @@ void FullscreenExitBubble::CheckMousePosition() {
   }
   last_mouse_pos_ = transformed_pos;
 
-  if ((GetActiveWindow() != root_view_->GetWidget()->GetNativeView()) ||
+  if ((!root_view_->GetWidget()->IsActive()) ||
       !root_view_->HitTest(transformed_pos) ||
-      (cursor_pos.y >= GetPopupRect(true).bottom()) ||
+      (cursor_pos.y() >= GetPopupRect(true).bottom()) ||
       !idle_timeout_.IsRunning()) {
     // The cursor is offscreen, in the slide-out region, or idle.
     Hide();
-  } else if ((cursor_pos.y < kSlideInRegionHeightPx) ||
+  } else if ((cursor_pos.y() < kSlideInRegionHeightPx) ||
              (size_animation_->GetCurrentValue() != 0)) {
     // The cursor is not idle, and either it's in the slide-in region or it's in
     // the neutral region and we're sliding out.
@@ -248,8 +260,7 @@ void FullscreenExitBubble::CheckMousePosition() {
 void FullscreenExitBubble::Hide() {
   // Allow the bubble to hide if the window is deactivated or our initial delay
   // finishes.
-  if ((GetActiveWindow() != root_view_->GetWidget()->GetNativeView()) ||
-      !initial_delay_.IsRunning()) {
+  if ((!root_view_->GetWidget()->IsActive()) || !initial_delay_.IsRunning()) {
     size_animation_->SetSlideDuration(kSlideOutDurationMs);
     size_animation_->Hide();
   }
@@ -262,7 +273,12 @@ gfx::Rect FullscreenExitBubble::GetPopupRect(
     size.set_height(static_cast<int>(static_cast<double>(size.height()) *
         size_animation_->GetCurrentValue()));
   }
-  gfx::Point origin((root_view_->width() - size.width()) / 2, 0);
-  views::View::ConvertPointToScreen(root_view_, &origin);
+  // NOTE: don't use the bounds of the root_view_. On linux changing window
+  // size is async. Instead we use the size of the screen.
+  gfx::Rect screen_bounds = views::Screen::GetMonitorAreaNearestWindow(
+      root_view_->GetWidget()->GetNativeView());
+  gfx::Point origin(screen_bounds.x() +
+                    (screen_bounds.width() - size.width()) / 2,
+                    screen_bounds.y());
   return gfx::Rect(origin, size);
 }

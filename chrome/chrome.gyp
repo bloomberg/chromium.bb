@@ -2674,6 +2674,8 @@
                 ['include', '^browser/views/find_bar_host_gtk.cc'],
                 ['include', '^browser/views/find_bar_host.cc'],
                 ['include', '^browser/views/find_bar_host.h'],
+                ['include', '^browser/views/fullscreen_exit_bubble.cc'],
+                ['include', '^browser/views/fullscreen_exit_bubble.h'],
                 ['include', '^browser/views/go_button.cc'],
                 ['include', '^browser/views/go_button.h'],
                 ['include', '^browser/views/toolbar_star_toggle.h'],

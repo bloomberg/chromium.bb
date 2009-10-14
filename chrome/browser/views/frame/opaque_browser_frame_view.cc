@@ -750,8 +750,11 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   if (!browser_view_->IsToolbarVisible())
     return;
 
-  ThemeProvider* tp = GetThemeProvider();
   gfx::Rect toolbar_bounds(browser_view_->GetToolbarBounds());
+  if (toolbar_bounds.IsEmpty())
+    return;
+
+  ThemeProvider* tp = GetThemeProvider();
   gfx::Point toolbar_origin(toolbar_bounds.origin());
   View::ConvertPointToView(frame_->GetWindow()->GetClientView(),
                            this, &toolbar_origin);

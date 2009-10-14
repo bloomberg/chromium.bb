@@ -836,7 +836,6 @@ bool BrowserView::IsMaximized() const {
 }
 
 void BrowserView::SetFullscreen(bool fullscreen) {
-#if defined(OS_WIN)
   if (IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
@@ -846,8 +845,10 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   //     thus are slow and look ugly
   ignore_layout_ = true;
   LocationBarView* location_bar = toolbar_->location_bar();
+#if defined(OS_WIN)
   AutocompleteEditViewWin* edit_view =
       static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
+#endif
   if (IsFullscreen()) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
@@ -859,6 +860,7 @@ void BrowserView::SetFullscreen(bool fullscreen) {
     if (focus_manager->GetFocusedView() == location_bar)
       focus_manager->ClearFocus();
 
+#if defined(OS_WIN)
     // If we don't hide the edit and force it to not show until we come out of
     // fullscreen, then if the user was on the New Tab Page, the edit contents
     // will appear atop the web contents once we go into fullscreen mode.  This
@@ -866,8 +868,11 @@ void BrowserView::SetFullscreen(bool fullscreen) {
     // if we don't hide the main window below, we don't get this problem.
     edit_view->set_force_hidden(true);
     ShowWindow(edit_view->m_hWnd, SW_HIDE);
+#endif
   }
+#if defined(OS_WIN)
   frame_->GetWindow()->PushForceHidden();
+#endif
 
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
   if (bookmark_bar_view_.get())
@@ -881,22 +886,23 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   // Toggle fullscreen mode.
   frame_->GetWindow()->SetFullscreen(fullscreen);
 
-  if (IsFullscreen()) {
+  if (fullscreen) {
     fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
                                                       browser_.get()));
   } else {
+#if defined(OS_WIN)
     // Show the edit again since we're no longer in fullscreen mode.
     edit_view->set_force_hidden(false);
     ShowWindow(edit_view->m_hWnd, SW_SHOW);
+#endif
   }
 
   // Undo our anti-jankiness hacks and force the window to relayout now that
   // it's in its final position.
   ignore_layout_ = false;
   Layout();
+#if defined(OS_WIN)
   frame_->GetWindow()->PopForceHidden();
-#else
-  NOTIMPLEMENTED();
 #endif
 }
 

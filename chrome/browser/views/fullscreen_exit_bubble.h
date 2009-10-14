@@ -10,6 +10,12 @@
 #include "chrome/browser/command_updater.h"
 #include "views/controls/link.h"
 
+#if defined(OS_LINUX)
+namespace views {
+class WidgetGtk;
+}
+#endif
+
 // FullscreenExitBubble is responsible for showing a bubble atop the screen in
 // fullscreen mode, telling users how to exit and providing a click target.
 // The bubble auto-hides, and re-shows when the user moves to the screen top.
@@ -62,9 +68,13 @@ class FullscreenExitBubble : public views::LinkController,
   // it.
   CommandUpdater::CommandUpdaterDelegate* delegate_;
 
+#if defined(OS_WIN)
   // The popup itself, which is a slightly modified WidgetWin.  We need to use
   // a WidgetWin (and thus an HWND) to make the popup float over other HWNDs.
   FullscreenExitPopup* popup_;
+#elif defined(OS_LINUX)
+  views::WidgetGtk* popup_;
+#endif
 
   // The contents of the popup.
   FullscreenExitView* view_;
