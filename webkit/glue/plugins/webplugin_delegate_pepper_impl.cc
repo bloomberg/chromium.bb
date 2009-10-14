@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define PEPPER_APIS_ENABLED 1
+
 #include "webkit/glue/plugins/webplugin_delegate_pepper_impl.h"
 
 #include <string>
@@ -29,6 +31,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebMouseWheelEvent;
 
 
 WebPluginDelegatePepperImpl* WebPluginDelegatePepperImpl::Create(
@@ -256,8 +259,6 @@ void WebPluginDelegatePepperImpl::WindowlessSetWindow(bool force_set_window) {
   if (window_rect_.IsEmpty())  // wait for geometry to be set.
     return;
 
-  DCHECK(instance()->windowless());
-
   window_.clipRect.top = clip_rect_.y();
   window_.clipRect.left = clip_rect_.x();
   window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
@@ -273,14 +274,122 @@ void WebPluginDelegatePepperImpl::WindowlessSetWindow(bool force_set_window) {
 }
 
 void WebPluginDelegatePepperImpl::SetFocus() {
-  // TODO(sehr): what to do here?
+  NPEvent npevent;
+
+  npevent.type = NPEventType_Focus;
+  npevent.size = sizeof(NPEvent);
+  // TODO(sehr): what timestamp should this have?
+  npevent.timeStampSeconds = 0.0;
+  // Currently this API only supports gaining focus.
+  npevent.u.focus.value = 1;
+  instance()->NPP_HandleEvent(&npevent);
 }
+
+// Anonymous namespace for functions converting WebInputEvents to NPAPI types.
+namespace {
+NPEventTypes ConvertEventTypes(WebInputEvent::Type wetype) {
+  switch (wetype) {
+    case WebInputEvent::MouseDown:
+      return NPEventType_MouseDown;
+    case WebInputEvent::MouseUp:
+      return NPEventType_MouseUp;
+    case WebInputEvent::MouseMove:
+      return NPEventType_MouseMove;
+    case WebInputEvent::MouseEnter:
+      return NPEventType_MouseEnter;
+    case WebInputEvent::MouseLeave:
+      return NPEventType_MouseLeave;
+    case WebInputEvent::MouseWheel:
+      return NPEventType_MouseWheel;
+    case WebInputEvent::RawKeyDown:
+      return NPEventType_RawKeyDown;
+    case WebInputEvent::KeyDown:
+      return NPEventType_KeyDown;
+    case WebInputEvent::KeyUp:
+      return NPEventType_KeyUp;
+    case WebInputEvent::Char:
+      return NPEventType_Char;
+    case WebInputEvent::Undefined:
+    default:
+      return NPEventType_Undefined;
+  }
+}
+
+void BuildKeyEvent(const WebInputEvent* event, NPEvent* npevent) {
+  const WebKeyboardEvent* key_event =
+      reinterpret_cast<const WebKeyboardEvent*>(event);
+  npevent->u.key.modifier = key_event->modifiers;
+  npevent->u.key.normalizedKeyCode = key_event->windowsKeyCode;
+}
+
+void BuildCharEvent(const WebInputEvent* event, NPEvent* npevent) {
+  const WebKeyboardEvent* key_event =
+      reinterpret_cast<const WebKeyboardEvent*>(event);
+  npevent->u.character.modifier = key_event->modifiers;
+  // For consistency, check that the sizes of the texts agree.
+  DCHECK(sizeof(npevent->u.character.text) == sizeof(key_event->text));
+  DCHECK(sizeof(npevent->u.character.unmodifiedText) ==
+         sizeof(key_event->unmodifiedText));
+  for (size_t i = 0; i < WebKeyboardEvent::textLengthCap; ++i) {
+    npevent->u.character.text[i] = key_event->text[i];
+    npevent->u.character.unmodifiedText[i] = key_event->unmodifiedText[i];
+  }
+}
+
+void BuildMouseEvent(const WebInputEvent* event, NPEvent* npevent) {
+  const WebMouseEvent* mouse_event =
+      reinterpret_cast<const WebMouseEvent*>(event);
+  npevent->u.mouse.modifier = mouse_event->modifiers;
+  npevent->u.mouse.button = mouse_event->button;
+  npevent->u.mouse.x = mouse_event->x;
+  npevent->u.mouse.y = mouse_event->y;
+  npevent->u.mouse.clickCount = mouse_event->clickCount;
+}
+
+void BuildMouseWheelEvent(const WebInputEvent* event, NPEvent* npevent) {
+  const WebMouseWheelEvent* mouse_wheel_event =
+      reinterpret_cast<const WebMouseWheelEvent*>(event);
+  npevent->u.wheel.modifier = mouse_wheel_event->modifiers;
+  npevent->u.wheel.deltaX = mouse_wheel_event->deltaX;
+  npevent->u.wheel.deltaY = mouse_wheel_event->deltaY;
+  npevent->u.wheel.wheelTicksX = mouse_wheel_event->wheelTicksX;
+  npevent->u.wheel.wheelTicksY = mouse_wheel_event->wheelTicksY;
+  npevent->u.wheel.scrollByPage = mouse_wheel_event->scrollByPage;
+}
+}  // namespace
 
 bool WebPluginDelegatePepperImpl::HandleInputEvent(const WebInputEvent& event,
                                                    WebCursorInfo* cursor_info) {
-  bool ret = false;
-  // TODO(sehr): pass event to plugin.
-  // instance()->NPP_HandleEvent(&np_event) != 0;
+  NPEvent npevent;
 
-  return ret;
+  npevent.type = ConvertEventTypes(event.type);
+  npevent.size = sizeof(NPEvent);
+  npevent.timeStampSeconds = event.timeStampSeconds;
+  switch (npevent.type) {
+    case NPEventType_Undefined:
+      return false;
+    case NPEventType_MouseDown:
+    case NPEventType_MouseUp:
+    case NPEventType_MouseMove:
+    case NPEventType_MouseEnter:
+    case NPEventType_MouseLeave:
+      BuildMouseEvent(&event, &npevent);
+      break;
+    case NPEventType_MouseWheel:
+      BuildMouseWheelEvent(&event, &npevent);
+      break;
+    case NPEventType_RawKeyDown:
+    case NPEventType_KeyDown:
+    case NPEventType_KeyUp:
+      BuildKeyEvent(&event, &npevent);
+    case NPEventType_Char:
+      BuildCharEvent(&event, &npevent);
+      break;
+    case NPEventType_Minimize:
+    case NPEventType_Focus:
+    case NPEventType_Device:
+      NOTIMPLEMENTED();
+      break;
+  }
+  return instance()->NPP_HandleEvent(&npevent) != 0;
 }

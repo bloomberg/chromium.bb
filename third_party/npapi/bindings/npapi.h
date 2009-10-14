@@ -793,8 +793,8 @@ typedef struct _NPKeyEvent
 typedef struct _NPCharacterEvent
 {
   uint32 modifier;
-  uint32 text;
-  uint32 unmodifiedText;
+  uint16 text[4];
+  uint16 unmodifiedText[4];
 } NPCharacterEvent;
 
 typedef struct _NPMouseEvent
