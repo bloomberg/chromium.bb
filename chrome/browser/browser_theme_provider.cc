@@ -470,6 +470,13 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
                extension->path());
   SetColorData(extension->GetThemeColors());
   SetTintData(extension->GetThemeTints());
+
+  // Drop out to default theme if the theme data is empty.
+  if (images_.empty() && colors_.empty() && tints_.empty()) {
+    UseDefaultTheme();
+    return;
+  }
+
   SetDisplayPropertyData(extension->GetThemeDisplayProperties());
   raw_data_.clear();
 

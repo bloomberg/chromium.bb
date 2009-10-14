@@ -86,6 +86,7 @@ void RemoveAllButLastView(NSArray* views) {
 - (void)setShowPageOptionsButtons:(BOOL)value;
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value;
 - (void)setFormAutofillEnabledIndex:(NSInteger)value;
+- (void)setIsUsingDefaultTheme:(BOOL)value;
 - (void)setShowAlternateErrorPages:(BOOL)value;
 - (void)setUseSuggest:(BOOL)value;
 - (void)setDnsPrefetch:(BOOL)value;
@@ -249,10 +250,11 @@ class PrefObserverBridge : public NotificationObserver {
                               observer_.get());
   // TODO(pinkerton): Register Default search.
 
-  // UserData panel
+  // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
                          prefs_, observer_.get());
   formAutofill_.Init(prefs::kFormAutofillEnabled, prefs_, observer_.get());
+  currentTheme_.Init(prefs::kCurrentThemeID, prefs_, observer_.get());
 
   // Under the hood panel
   alternateErrorPages_.Init(prefs::kAlternateErrorPagesEnabled,
@@ -260,6 +262,7 @@ class PrefObserverBridge : public NotificationObserver {
   useSuggest_.Init(prefs::kSearchSuggestEnabled, prefs_, observer_.get());
   dnsPrefetch_.Init(prefs::kDnsPrefetchingEnabled, prefs_, observer_.get());
   safeBrowsing_.Init(prefs::kSafeBrowsingEnabled, prefs_, observer_.get());
+
   // During unit tests, there is no local state object, so we fall back to
   // the prefs object (where we've explicitly registered this pref so we
   // know it's there).
@@ -671,7 +674,7 @@ const int kDisabledIndex = 1;
 // Callback when preferences are changed. |prefName| is the name of the pref
 // that has changed. Unlike on Windows, we don't need to use this method for
 // initializing, that's handled by Cocoa Bindings.
-// Handles prefs for the "Minor Tweaks" panel.
+// Handles prefs for the "Personal Stuff" panel.
 - (void)userDataPrefChanged:(std::wstring*)prefName {
   if (*prefName == prefs::kPasswordManagerEnabled) {
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
@@ -680,6 +683,9 @@ const int kDisabledIndex = 1;
   if (*prefName == prefs::kFormAutofillEnabled) {
     [self setFormAutofillEnabledIndex:formAutofill_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
+  }
+  if (*prefName == prefs::kCurrentThemeID) {
+    [self setIsUsingDefaultTheme:currentTheme_.GetValue().length() == 0];
   }
 }
 
@@ -753,6 +759,17 @@ const int kDisabledIndex = 1;
 
 - (NSInteger)formAutofillEnabledIndex {
   return formAutofill_.GetValue() ? kEnabledIndex : kDisabledIndex;
+}
+
+- (void)setIsUsingDefaultTheme:(BOOL)value {
+  if (value)
+    [self recordUserAction:L"Options_IsUsingDefaultTheme_Enable"];
+  else
+    [self recordUserAction:L"Options_IsUsingDefaultTheme_Disable"];
+}
+
+- (BOOL)isUsingDefaultTheme {
+  return currentTheme_.GetValue().length() == 0;
 }
 
 //-------------------------------------------------------------------------

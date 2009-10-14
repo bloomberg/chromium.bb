@@ -71,6 +71,7 @@ class Profile;
   IBOutlet NSPathControl* downloadLocationControl_;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
+  StringPrefMember currentTheme_;
 }
 
 // Designated initializer. |profile| should not be NULL.
