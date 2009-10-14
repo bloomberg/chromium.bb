@@ -35,9 +35,13 @@
 #include <stddef.h>
 #include "native_client/src/shared/imc/nacl_imc.h"
 
-typedef bool (*LaunchNaClProcessFunc)(int imc_fd,
-                                      nacl::Handle* handle);
+typedef bool (*LaunchNaClProcessFunc)(const char* url,
+                                      int imc_fd,
+                                      nacl::Handle* imc_handle,
+                                      nacl::Handle* nacl_process_handle,
+                                      int* nacl_process_id);
 
+extern LaunchNaClProcessFunc launch_nacl_process;
 
 // Registers the internal NaCl plugin with PluginList.
 void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func = NULL);

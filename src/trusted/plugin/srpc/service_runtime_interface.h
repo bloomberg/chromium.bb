@@ -68,7 +68,7 @@ class ServiceRuntimeInterface {
   ~ServiceRuntimeInterface();
 
   bool Start(const char* nacl_file);
-  bool Start(const void* buffer, int32_t size);
+  bool Start(const char* url, const void* buffer, int32_t size);
   bool Kill();
   bool LogAtServiceRuntime(int severity, std::string msg);
   ScriptableHandle<SocketAddress>* default_socket_address() const;

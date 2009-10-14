@@ -497,7 +497,9 @@ bool Plugin::Load(const void* buffer, int32_t size) {
   if (NULL == buffer) {
     service_runtime_started = service_runtime_interface_->Start(local_url_);
   } else {
-    service_runtime_started = service_runtime_interface_->Start(buffer, size);
+    service_runtime_started = service_runtime_interface_->Start(local_url_,
+                                                                buffer,
+                                                                size);
   }
   if (!service_runtime_started) {
     dprintf(("  Load: FAILED to start service runtime"));

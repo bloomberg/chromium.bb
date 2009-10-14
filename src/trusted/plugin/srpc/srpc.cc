@@ -344,7 +344,9 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
       nacl_srpc::Plugin* real_plugin =
         static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
       real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
-      real_plugin->Load(stream_buffer->get_buffer(), stream_buffer->size());
+      real_plugin->set_local_url(stream->url);
+      real_plugin->Load(stream_buffer->get_buffer(),
+                        stream_buffer->size());
 
       delete(stream_buffer);
       stream->pdata = NULL;

@@ -303,12 +303,14 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   return true;
 }
 
-bool ServiceRuntimeInterface::Start(const void* buffer, int32_t size) {
+bool ServiceRuntimeInterface::Start(const char* url,
+                                    const void* buffer,
+                                    int32_t size) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
   }
-  if (!subprocess_->Start(5)) {
+  if (!subprocess_->Start(url, 5)) {
       delete subprocess_;
       subprocess_ = NULL;
       return false;

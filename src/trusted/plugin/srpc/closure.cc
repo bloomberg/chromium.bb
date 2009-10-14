@@ -83,6 +83,7 @@ void LoadNaClAppNotify::Run(const char *url,
   dprintf(("LoadNaClAppNotify Run %s, %p, %x\n", url, buffer, size));
   if (NULL != buffer) {
     plugin()->set_nacl_module_origin(nacl::UrlToOrigin(url));
+    plugin()->set_local_url(url);
     plugin()->Load(buffer, size);
   }
 }
