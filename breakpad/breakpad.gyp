@@ -190,6 +190,10 @@
               '-lurlmon.lib',
             ],
           },
+          'defines': [
+            # Avoid the TerminateThread Application Verifier Failure.
+            'BREAKPAD_NO_TERMINATE_THREAD',
+          ],
           'direct_dependent_settings': {
             'include_dirs': [
               'src',
