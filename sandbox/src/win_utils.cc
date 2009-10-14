@@ -200,8 +200,7 @@ bool GetPathFromHandle(HANDLE handle, std::wstring* path) {
 // TODO(cpu): This is not the final code we want here but we are yet
 // to understand what is going on. See bug 11789.
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
-  static HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
-
+  HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
   FARPROC* function_ptr = reinterpret_cast<FARPROC*>(ptr);
   *function_ptr = ::GetProcAddress(ntdll, name);
   if (*function_ptr)
