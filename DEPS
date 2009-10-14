@@ -17,6 +17,8 @@ deps_os = {
   "win": {
     "third_party/python_24":
       "http://src.chromium.org/svn/trunk/deps/third_party/python_24@22967",
+  "third_party/wix_2_0_4221":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@153",
   },
 }
 
