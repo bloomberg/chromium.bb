@@ -2420,11 +2420,6 @@ BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 // Been passing lately (9/09). If it keeps passing, drop it from the list.
 BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL PASS
 
-// Newly added tests with merge 41588:41613.
-// They pass on windows given a new baseline and likely only need to be given
-// platform specific baselines for Linux and Mac.
-BUG10450 LINUX : LayoutTests/fast/css/percent-top-value-with-relative-position.html = FAIL
-
 // Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
 BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
 
