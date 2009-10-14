@@ -2583,7 +2583,6 @@ BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.
 BUG9798 WIN LINUX RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-utf-7.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
