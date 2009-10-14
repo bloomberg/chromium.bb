@@ -2201,7 +2201,6 @@ BUG23475 MAC : LayoutTests/fast/invalid/missing-end-tag.xhtml = IMAGE
 BUG23475 MAC : LayoutTests/fast/parser/xhtml-alternate-entities.xml = IMAGE
 BUG23475 MAC : LayoutTests/fast/xsl/xslt-extra-content-at-end.xml = IMAGE
 BUG23475 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
-BUG23475 MAC : LayoutTests/svg/custom/missing-xlink.svg = IMAGE
 
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : LayoutTests/fast/repaint = IMAGE
@@ -3187,5 +3186,5 @@ BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = CRASH
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
 BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
+// See also bug 23475:
 BUG24775 : LayoutTests/svg/custom/missing-xlink.svg = FAIL PASS
-
