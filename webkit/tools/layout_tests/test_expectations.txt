@@ -1270,6 +1270,8 @@ BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
 BUG10322 : LayoutTests/platform/mac-snowleopard/accessibility = FAIL
 BUG10322 : LayoutTests/platform/win/accessibility = FAIL
+// Introduced in http://trac.webkit.org/changeset/48368
+BUG10322 SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
 // Border radius not anti-aliased.
 // New test. We should fix it, but it doesn't need to block the current release
@@ -3047,8 +3049,6 @@ BUG21841 MAC RELEASE : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
-// missing upstream baseline from 48368
-BUG10322 SKIP WIN LINUX MAC : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
 BUG21859 WIN-VISTA : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 BUG21859 WIN : LayoutTests/fast/forms/search-styled.html = FAIL
