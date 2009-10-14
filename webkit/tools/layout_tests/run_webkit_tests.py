@@ -43,6 +43,7 @@ from layout_package import path_utils
 from layout_package import test_failures
 from layout_package import test_shell_thread
 from layout_package import test_files
+from layout_package import websocket_server
 from test_types import fuzzy_image_diff
 from test_types import image_diff
 from test_types import test_type_base
@@ -112,6 +113,7 @@ class TestRunner:
   files."""
 
   HTTP_SUBDIR = os.sep.join(['', 'http', ''])
+  WEBSOCKET_SUBDIR = os.sep.join(['', 'websocket', ''])
 
   # The per-test timeout in milliseconds, if no --time-out-ms option was given
   # to run_webkit_tests. This should correspond to the default timeout in
@@ -127,6 +129,8 @@ class TestRunner:
     self._options = options
 
     self._http_server = http_server.Lighttpd(options.results_directory)
+    self._websocket_server = websocket_server.PyWebSocket(
+        options.results_directory)
     # a list of TestType objects
     self._test_types = []
 
@@ -143,6 +147,8 @@ class TestRunner:
     logging.info("stopping http server")
     # Stop the http server.
     self._http_server.Stop()
+    # Stop the Web Socket server.
+    self._websocket_server.Stop()
 
   def GatherFilePaths(self, paths):
     """Find all the files to test.
@@ -420,6 +426,14 @@ class TestRunner:
 
     return (test_args, shell_args)
 
+  def _ContainWebSocketTest(self, test_files):
+    if not test_files:
+      return False
+    for test_file in test_files:
+      if test_file.find(self.WEBSOCKET_SUBDIR) >= 0:
+        return True
+    return False
+
   def _InstantiateTestShellThreads(self, test_shell_binary):
     """Instantitates and starts the TestShellThread(s).
 
@@ -442,6 +456,10 @@ class TestRunner:
     if ((test_files and test_files[0].find(self.HTTP_SUBDIR) >= 0)
         or self._options.randomize_order):
       self._http_server.Start()
+
+    # Start Web Socket server.
+    if (self._ContainWebSocketTest(test_files)):
+      self._websocket_server.Start()
 
     # Instantiate TestShellThreads and start them.
     threads = []
