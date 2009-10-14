@@ -428,6 +428,9 @@ class View : public AcceleratorTarget {
   virtual Widget* GetWidget() const;
 
   // Gets the Widget that most closely contains this View, if any.
+  // NOTE: almost all views displayed on screen have a Widget, but not
+  // necessarily a Window. This is due to widgets being able to create top
+  // level windows (as is done for popups, bubbles and menus).
   virtual Window* GetWindow() const;
 
   // Get the containing RootView

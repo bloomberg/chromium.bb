@@ -31,16 +31,19 @@ gfx::Rect static GetPrimaryMonitorBounds() {
 }
 
 // static
-gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  // TODO(beng): use |window|.
+gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeView view) {
+  // TODO(beng): use |view|.
   return GetPrimaryMonitorBounds();
 }
 
 // static
-gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
+gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeView view) {
+  GtkWidget* top_level = gtk_widget_get_toplevel(view);
+  DCHECK(GTK_IS_WINDOW(top_level));
+  GtkWindow* window = GTK_WINDOW(top_level);
   GdkScreen* screen = gtk_window_get_screen(window);
   gint monitor_num = gdk_screen_get_monitor_at_window(screen,
-      (GTK_WIDGET(window))->window);
+                                                      top_level->window);
   GdkRectangle bounds;
   gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);
   return gfx::Rect(bounds);

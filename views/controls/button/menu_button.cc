@@ -103,13 +103,13 @@ void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
 ////////////////////////////////////////////////////////////////////////////////
 
 int MenuButton::GetMaximumScreenXCoordinate() {
-  if (!GetWindow()) {
+  if (!GetWidget()) {
     NOTREACHED();
     return 0;
   }
 
   gfx::Rect monitor_bounds =
-      Screen::GetMonitorWorkAreaNearestWindow(GetWindow()->GetNativeWindow());
+      Screen::GetMonitorWorkAreaNearestWindow(GetWidget()->GetNativeView());
   return monitor_bounds.right() - 1;
 }
 

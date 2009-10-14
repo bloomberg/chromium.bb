@@ -442,7 +442,7 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
     center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
   } else {
     // We have no parent window, center over the screen.
-    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeWindow());
+    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
   }
   gfx::Size size = non_client_view_->GetPreferredSize();
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
