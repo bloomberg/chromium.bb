@@ -3167,9 +3167,6 @@ BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PA
 
 BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
-// Webkit roll  49284:49321
-BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
-
 // WebKit roll 49321:49372
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
 BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
