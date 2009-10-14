@@ -26,7 +26,7 @@ else:
 # This is not currently implemented on mac, which has the opposite behavior.
 if test.format == 'xcode':
   test.built_lib_must_not_exist('b')
-if test.format == 'make':
+elif test.format == 'make':
   test.must_exist(test.workpath(), 'out/Default/obj/b/libb.a')
 else:
   test.built_lib_must_exist('b')
