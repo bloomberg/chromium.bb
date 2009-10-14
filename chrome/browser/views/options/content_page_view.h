@@ -109,6 +109,7 @@ class ContentPageView : public OptionsPageView,
 
   BooleanPrefMember ask_to_save_passwords_;
   BooleanPrefMember ask_to_save_form_autofill_;
+  StringPrefMember is_using_default_theme_;
 
 #ifdef CHROME_PERSONALIZATION
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date

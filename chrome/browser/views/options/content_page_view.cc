@@ -204,6 +204,8 @@ void ContentPageView::InitControlLayout() {
                               profile()->GetPrefs(), this);
   ask_to_save_form_autofill_.Init(prefs::kFormAutofillEnabled,
                                   profile()->GetPrefs(), this);
+  is_using_default_theme_.Init(prefs::kCurrentThemeID,
+                               profile()->GetPrefs(), this);
 }
 
 void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
@@ -220,6 +222,10 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
     } else {
       form_autofill_neversave_radio_->SetChecked(true);
     }
+  }
+  if (!pref_name || *pref_name == prefs::kCurrentThemeID) {
+    themes_reset_button_->SetEnabled(
+        is_using_default_theme_.GetValue().length() > 0);
   }
 }
 
