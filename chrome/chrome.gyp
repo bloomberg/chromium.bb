@@ -140,6 +140,7 @@
         ],
       },],
       ['OS=="mac"', {
+        'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
         'nacl_defines': [
           'NACL_WINDOWS=0',
           'NACL_LINUX=0',
@@ -3572,11 +3573,12 @@
               # Keystone information; that all goes into the framework's
               # Info.plist.  Use -s1 to include Subversion information.
               'postbuild_name': 'Tweak Info.plist',
-              'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+              'action': ['<(tweak_info_plist_path)',
                          '-b0',
                          '-k0',
                          '-s1',
-                         '<(branding)'],
+                         '<(branding)',
+                         '<(mac_bundle_id)'],
             },
             {
               'postbuild_name': 'Tweak Mac lproj folders',
@@ -5243,11 +5245,12 @@
                   # Subversion keys for anything, but this seems like a really
                   # good place to store them.
                   'postbuild_name': 'Tweak Info.plist',
-                  'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+                  'action': ['<(tweak_info_plist_path)',
                              '-b<(mac_breakpad)',
                              '-k<(mac_keystone)',
                              '-s1',
-                             '<(branding)'],
+                             '<(branding)',
+                             '<(mac_bundle_id)'],
                 },
                 {
                   'postbuild_name': 'Tweak Mac lproj folders',
@@ -5467,11 +5470,12 @@
               # the framework.  -s0 is used because Subversion keys are only
               # placed into the main app.
               'postbuild_name': 'Tweak Info.plist',
-              'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+              'action': ['<(tweak_info_plist_path)',
                          '-b0',
                          '-k0',
                          '-s0',
-                         '<(branding)'],
+                         '<(branding)',
+                         '<(mac_bundle_id)'],
             },
             {
               'postbuild_name': 'Tweak Mac lproj folders',

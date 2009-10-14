@@ -39,8 +39,8 @@ done
 shift $(($OPTIND - 1))
 
 # Make sure the branding argument was supplied.
-if [ $# -ne 1 ]; then
-  echo "error: missing branding as an argument" >&2
+if [ $# -ne 2 ]; then
+  echo "usage: $0 [-b 1] [-k 1] [-s 1] BRANDING IDENTIFIER" >&2
   exit 1
 fi
 
@@ -62,6 +62,7 @@ fi
 
 TOP="${SRCROOT}/.."
 BUILD_BRANDING=$1
+IDENTIFIER=$2
 
 set -x
 
@@ -159,8 +160,7 @@ fi
 # Add or remove the Keystone keys (only supported in release builds).
 if [ "${USE_KEYSTONE}" = "1" ] && [ "${CONFIGURATION}" = "Release" ] ; then
   KEYSTONE_URL="https://tools.google.com/service/update2"
-  KEYSTONE_APP_ID=$(defaults read "${TMP_INFO_PLIST_DEFAULTS}" \
-                                                            CFBundleIdentifier)
+  KEYSTONE_APP_ID="${IDENTIFIER}"
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
       KSVersion -string "${FULL_VERSION}"
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" KSProductID "${KEYSTONE_APP_ID}"
