@@ -106,6 +106,7 @@ TEST_EXPECTATIONS_WONTFIX = "WONTFIX"
 
 TEMP_ZIP_DIR = "temp-zip-dir"
 
+TARGETS = ["Release", "Debug"]
 
 def GetURLBase(use_fyi):
   if use_fyi:
@@ -159,10 +160,21 @@ def ExtractSingleRegexAtURL(url, regex):
 def ScrapeURL(url):
   return urllib2.urlopen(urllib2.Request(url)).read()
 
+def GetImageDiffExecutable():
+  for target in TARGETS:
+    try:
+      return path_utils.ImageDiffPath(target)
+    except Exception, e:
+      continue
+      # This build target did not exist, try the next one.
+  raise Exception("No image diff executable could be found.  You may need "
+                  "to build the image diff project under at least one build "
+                  "target to create image diffs.")
+
 def GeneratePNGDiff(file1, file2, output_file):
   _compare_available = False;
   try:
-    executable = path_utils.ImageDiffPath("Debug")
+    executable = GetImageDiffExecutable()
     cmd = [executable, '--diff', file1, file2, output_file]
     _compare_available = True;
   except Exception, e:
