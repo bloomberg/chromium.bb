@@ -3170,7 +3170,8 @@ BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.ht
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
-BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
+// New test requires new test_shell hook.
+BUG24768 : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
 
