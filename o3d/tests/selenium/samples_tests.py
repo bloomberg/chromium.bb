@@ -181,10 +181,11 @@ class SampleTests(selenium_utilities.SeleniumTestCase):
     self.assertEqual("Tutorial B4: Cameras and events", s.get_title())
     self.assertEqual("null", s.get_eval("window.undefined_symbol_xxxyyy"))
 
-    # Try different views of the camera
-    # Set delay between each operation at 10ms.
+    # Try different views of the camera.
+    # Set delay between each operation at 100ms. This is needed for some
+    # versions of IE and Chrome.
     speed = int(s.get_speed())
-    s.set_speed(10)
+    s.set_speed(100)
     s.type("eyeX", "5")
     s.type("eyeY", "5")
     s.type("eyeZ", "5")

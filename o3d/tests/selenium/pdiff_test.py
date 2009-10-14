@@ -125,7 +125,7 @@ class PDiffTest(unittest.TestCase):
     all_tests_passed = True
     msg = "Pixel threshold is %s. Failing screenshots:\n" % pixel_threshold
     for name, pixels in results:
-      if pixels >= pixel_threshold:
+      if pixels >= int(pixel_threshold):
         all_tests_passed = False
         msg += "     %s, differing by %s\n" % (name, str(pixels))
 
