@@ -38,6 +38,68 @@
 typedef intptr_t AtomicWord;
 typedef int32_t Atomic32;
 
+#ifdef NATIVE_CLIENT_USE_KERNEL_ATOMIC_OPS
+
+/*
+ * The Linux Kernel provides an atomic compare-exchange instruction sequence
+ * at a published place in memory, for use by user-space code.  Unfortunately
+ * there does not appear to be a runtime API for this, so we provide one
+ * ourselves!
+ *
+ * This indirection allows us to use the same atomic operation code on ARMv4
+ * and later, and takes into account processor errata (e.g. the fact that SWP
+ * creates cache inconsistencies on the StrongARM family).  In the worst case
+ * this may invoke a syscall.
+ *
+ * Note that this involves a call into high memory, and will only work from
+ * trusted code!  Untrusted code currently has no portable atomic op story.
+ *
+ * For more information see arch/arm/kernel/entry-armv.S in the 2.6.x kernels.
+ */
+typedef int (__kernel_cmpxchg_t)(AtomicWord oldval, AtomicWord newval,
+                                 volatile AtomicWord* ptr);
+#define __kernel_cmpxchg (*(__kernel_cmpxchg_t *)0xFFFF0FC0)
+
+static inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
+                                        AtomicWord old_value,
+                                        AtomicWord new_value) {
+  (void) __kernel_cmpxchg(old_value, new_value, ptr);
+  return old_value;
+}
+
+static inline AtomicWord AtomicExchange(volatile AtomicWord *ptr,
+                                        AtomicWord new_value) {
+  /*
+   * Implemented in terms of cmpxchg for simplicity and portability -- would
+   * be more efficient on ARMv6+ if we used inline assembly.
+   */
+  int r = 0;
+  AtomicWord before;
+  do {
+    before = *ptr;
+    r = __kernel_cmpxchg(before, new_value, ptr);
+  } while (r == 0);
+  return before;
+}
+
+static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
+                                         AtomicWord increment) {
+  /*
+   * Implemented in terms of cmpxchg for simplicity and portability -- would
+   * be more efficient on ARMv6+ if we used inline assembly.
+   */
+  AtomicWord after;
+  int r = 0;
+  do {
+    AtomicWord before = *ptr;
+    after = before + increment;
+    r = __kernel_cmpxchg(before, after, ptr);
+  } while (r == 0);
+  return after;
+}
+
+#else /* !defined(NATIVE_CLIENT_USE_KERNEL_ATOMIC_OPS) */
+
 static inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
                                  AtomicWord old_value,
                                  AtomicWord new_value) {
@@ -88,5 +150,7 @@ static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
                        : "cc");
   return res;
 }
+
+#endif /* NATIVE_CLIENT_USE_KERNEL_ATOMIC_OPS */
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_ */
