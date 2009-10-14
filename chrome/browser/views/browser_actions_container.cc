@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -390,6 +391,7 @@ BrowserActionsContainer::BrowserActionsContainer(
                  Source<ExtensionsService>(extension_service));
 
   RefreshBrowserActionViews();
+  SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {

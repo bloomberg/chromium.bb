@@ -13,6 +13,29 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
+#if defined(OS_LINUX)
+#include "chrome/browser/gtk/view_id_util.h"
+#endif
+
+static void CheckButtonCount(Browser* browser, const int expected_count) {
+#if defined(OS_WIN)
+  BrowserActionsContainer* browser_actions =
+      browser->window()->GetBrowserWindowTesting()->GetToolbarView()->
+      browser_actions();
+  int num_buttons = browser_actions->num_browser_actions();
+#elif defined(OS_LINUX)
+  GtkWidget* widget = ViewIDUtil::GetWidget(
+      GTK_WIDGET(browser->window()->GetNativeHandle()),
+      VIEW_ID_BROWSER_ACTION_TOOLBAR);
+  ASSERT_TRUE(widget);
+  GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
+  int num_buttons = g_list_length(children);
+  g_list_free(children);
+#endif
+
+  EXPECT_EQ(expected_count, num_buttons);
+}
+
 static void TestAction(Browser* browser) {
   // Navigate to a page we have permission to modify.
   ui_test_utils::NavigateToURL(browser,
@@ -43,10 +66,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BrowserAction) {
                     .AppendASCII("make_page_red")));
 
   // Test that there is a browser action in the toolbar.
-  BrowserActionsContainer* browser_actions =
-      browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
-      browser_actions();
-  ASSERT_EQ(1, browser_actions->num_browser_actions());
+  CheckButtonCount(browser(), 1);
 
   TestAction(browser());
 }
@@ -59,10 +79,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BrowserActionNoIcon) {
                     .AppendASCII("make_page_red_no_icon")));
 
   // Test that there is a *not* a browser action in the toolbar.
-  BrowserActionsContainer* browser_actions =
-      browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
-      browser_actions();
-  ASSERT_EQ(0, browser_actions->num_browser_actions());
+  CheckButtonCount(browser(), 0);
 
   TestAction(browser());
 }

@@ -265,6 +265,10 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
   ViewIDUtil::SetID(page_menu_button_.get(), VIEW_ID_PAGE_MENU);
   ViewIDUtil::SetID(app_menu_button_.get(), VIEW_ID_APP_MENU);
+  if (actions_toolbar_.get()) {
+    ViewIDUtil::SetID(actions_toolbar_->widget(),
+                      VIEW_ID_BROWSER_ACTION_TOOLBAR);
+  }
 }
 
 void BrowserToolbarGtk::Show() {
