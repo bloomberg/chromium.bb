@@ -243,7 +243,6 @@ extern void MacConvertYUVToRGB32Row(const uint8* y_buf,
                                     int width,
                                     int16 *kCoefficientsRgbY);
   __asm__(
-" .globl _MacConvertYUVToRGB32Row\n"
 "_MacConvertYUVToRGB32Row:\n"
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
@@ -313,7 +312,6 @@ extern void MacScaleYUVToRGB32Row(const uint8* y_buf,
                                int16 *kCoefficientsRgbY);
 
   __asm__(
-" .globl _MacScaleYUVToRGB32Row\n"
 "_MacScaleYUVToRGB32Row:\n"
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
