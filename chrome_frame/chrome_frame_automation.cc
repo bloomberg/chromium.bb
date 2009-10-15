@@ -630,8 +630,7 @@ void ChromeFrameAutomationClient::CreateExternalTabComplete(HWND chrome_window,
   }
 
   AutomationLaunchResult launch_result = AUTOMATION_SUCCESS;
-  if (tab_handle == 0 || !::IsWindow(chrome_window) ||
-      !::IsWindow(chrome_window)) {
+  if (tab_handle == 0 || !::IsWindow(chrome_window)) {
     launch_result = AUTOMATION_CREATE_TAB_FAILED;
   } else {
     chrome_window_ = chrome_window;
