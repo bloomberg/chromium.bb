@@ -108,8 +108,13 @@ class DromaeoTest : public UITest {
     PrintResult("score", "", trace_name, score, unit_name, true);
 
     ResultsMap::const_iterator it = results.begin();
-    for (; it != results.end(); ++it)
-      PrintResult(it->first, "", trace_name, it->second, unit_name, false);
+    for (; it != results.end(); ++it) {
+      std::string test_name = it->first;
+      for (size_t i = 0; i < test_name.length(); i++)
+        if (!isalnum(test_name[i]))
+          test_name[i] = '_';
+      PrintResult(test_name, "", trace_name, it->second, unit_name, false);
+    }
   }
 
   DISALLOW_COPY_AND_ASSIGN(DromaeoTest);
@@ -140,17 +145,17 @@ class DromaeoReferenceTest : public DromaeoTest {
 };
 
 TEST_F(DromaeoTest, Perf) {
-  //if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-  //  return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+    return;
 
-  //RunTest();
+  RunTest();
 }
 
 TEST_F(DromaeoReferenceTest, Perf) {
-  //if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-  //  return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+    return;
 
-  //RunTest();
+  RunTest();
 }
 
 }  // namespace
