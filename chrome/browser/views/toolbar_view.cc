@@ -551,6 +551,16 @@ void ToolbarView::Layout() {
   int next_menu_x = go_->x() + go_->width() + kMenuButtonOffset;
 
   browser_actions_->SetBounds(next_menu_x, 0, browser_actions_width, height());
+
+  // The browser actions need to do a layout explicitly, because when an
+  // extension is loaded/unloaded/changed, BrowserActionContainer removes and
+  // re-adds everything, regardless of whether it has a page action. For a
+  // page action, browser action bounds do not change, as a result of which
+  // SetBounds does not do a layout at all.
+  // TODO(sidchat): Rework the above bahavior so that explicit layout is not
+  //                required.
+  browser_actions_->Layout();
+
   next_menu_x += browser_actions_width;
 
   if (bookmark_menu_) {
