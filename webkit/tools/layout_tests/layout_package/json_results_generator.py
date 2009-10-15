@@ -414,7 +414,7 @@ class JSONResultsGenerator:
     is_all_pass = self._IsResultsAllOfType(test[self.RESULTS], self.PASS_RESULT)
     is_all_no_data = self._IsResultsAllOfType(test[self.RESULTS],
         self.NO_DATA_RESULT)
-    max_time = max(test[self.TIMES], lambda x, y : cmp(x[1], y[1]))
+    max_time = max([time[1] for time in test[self.TIMES]])
 
     # Remove all passes/no-data from the results to reduce noise and filesize.
     # If a test passes every run, but takes > MIN_TIME to run, don't throw away
