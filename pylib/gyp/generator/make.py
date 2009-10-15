@@ -35,7 +35,7 @@ generator_default_variables = {
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
-  'RULE_INPUT_PATH': '$<',
+  'RULE_INPUT_PATH': '$(abspath $<)',
 
   # These appear unused -- ???
   'RULE_INPUT_EXT': 'XXXEXT$(suffix $^)',
@@ -475,7 +475,6 @@ class MakefileWriter:
 
         outputs = [self.ExpandInputRoot(out, rule_source_root)
                    for out in rule['outputs']]
-        outputs = map(self.FixupArgPath, outputs)
         for out in outputs:
           dir = os.path.dirname(out)
           if dir:
@@ -483,7 +482,8 @@ class MakefileWriter:
           if int(rule.get('process_outputs_as_sources', False)):
             extra_sources.append(out)
         all_outputs += outputs
-        inputs = map(self.Absolutify, [rule_source] + rule.get('inputs', []))
+        inputs = map(Sourceify, map(self.Absolutify, [rule_source] +
+                                    rule.get('inputs', [])))
         actions = ['$(call do_cmd,%s_%d)' % (name, count)]
 
         if name == 'resources_grit':
@@ -495,6 +495,8 @@ class MakefileWriter:
           # amount of pain.
           actions += ['@touch --no-create $@']
 
+        self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
+        self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
         self.WriteLn('all_targets += %s' % ' '.join(outputs))
 
@@ -503,9 +505,10 @@ class MakefileWriter:
         mkdirs = ''
         if len(dirs) > 0:
           mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
-        self.WriteLn("cmd_%(name)s_%(count)d = %(mkdirs)s%(action)s" % {
-          'action': gyp.common.EncodePOSIXShellList(
-              map(self.FixupArgPath, action)),
+        cd_action = 'cd %s; ' % Sourceify(self.path) if self.path else ''
+        self.WriteLn("cmd_%(name)s_%(count)d = %(cd_action)s%(mkdirs)s%(action)s" % {
+          'action': gyp.common.EncodePOSIXShellList(action),
+          'cd_action': cd_action,
           'count': count,
           'mkdirs': mkdirs,
           'name': name,
