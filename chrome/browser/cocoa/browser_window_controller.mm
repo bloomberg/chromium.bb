@@ -756,6 +756,17 @@ willPositionSheet:(NSWindow*)sheet
   [toolbarController_ setIsLoading:isLoading];
 }
 
+- (void)activate {
+  // TODO(rohitrao): Figure out the proper activation behavior for fullscreen
+  // windows.  When there is only one window open, this code makes sense, but
+  // what should we do if we need to activate a non-fullscreen background window
+  // while a fullscreen window has focus?  http://crbug.com/24893
+  if (fullscreen_)
+    [fullscreen_window_ makeKeyAndOrderFront:self];
+  else
+    [window_ makeKeyAndOrderFront:self];
+}
+
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar {
   [toolbarController_ focusLocationBar];

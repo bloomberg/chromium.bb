@@ -71,7 +71,7 @@ void BrowserWindowCocoa::Close() {
 }
 
 void BrowserWindowCocoa::Activate() {
-  [window_ makeKeyAndOrderFront:controller_];
+  [controller_ activate];
 }
 
 void BrowserWindowCocoa::FlashFrame() {

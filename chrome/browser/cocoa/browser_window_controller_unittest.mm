@@ -132,6 +132,27 @@ TEST_F(BrowserWindowControllerTest, TestFullscreen) {
   EXPECT_TRUE([controller_ fullscreenWindow]);
 }
 
+TEST_F(BrowserWindowControllerTest, TestActivate) {
+  // Note use of "controller", not "controller_"
+  scoped_nsobject<BrowserWindowController> controller;
+  controller.reset([[BrowserWindowControllerFakeFullscreen alloc]
+                        initWithBrowser:browser_helper_.browser()
+                          takeOwnership:NO]);
+  EXPECT_FALSE([controller isFullscreen]);
+
+  [controller activate];
+  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_EQ(frontmostWindow, [controller window]);
+
+  [controller setFullscreen:YES];
+  [controller activate];
+  frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_EQ(frontmostWindow, [controller fullscreenWindow]);
+
+  // We have to cleanup after ourselves by unfullscreening.
+  [controller setFullscreen:NO];
+}
+
 TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
   browser_helper_.profile()->GetPrefs()->

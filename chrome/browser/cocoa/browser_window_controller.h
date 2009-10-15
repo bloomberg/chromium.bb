@@ -110,6 +110,9 @@ class TabStripModelObserverBridge;
 // Called to tell the selected tab to update its loading state.
 - (void)setIsLoading:(BOOL)isLoading;
 
+// Brings this controller's window to the front.
+- (void)activate;
+
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
 
