@@ -117,7 +117,7 @@
     'webkit': ['darin@chromium.org'],
     'plugin': ['darin@chromium.org', 'jam@chromium.org'],
     'worker': ['jam@chromium.org'],
-    'extension': ['erikkay@chromium.org', 'pam+watch@chromium.org'],
+    'extension': ['aa@chromium.org', 'erikkay@chromium.org', 'pam+watch@chromium.org'],
     'purify': ['erikkay@chromium.org'],
     'net': ['darin@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
