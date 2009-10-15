@@ -23,10 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "TestObject.h"
-#include "PluginObject.h"
+#include "webkit/tools/pepper_test_plugin/test_object.h"
 
 #include <stdlib.h>
+
+#include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
 static bool testEnumerate(NPObject*, NPIdentifier **value, uint32_t *count);
 static bool testHasMethod(NPObject*, NPIdentifier name);
@@ -37,7 +38,6 @@ static bool testGetProperty(NPObject*, NPIdentifier name, NPVariant *variant);
 static NPObject *testAllocate(NPP npp, NPClass *theClass);
 static void testDeallocate(NPObject*);
 static bool testConstruct(NPObject*, const NPVariant* args, uint32_t argCount, NPVariant* result);
-
 
 static NPClass testClass = {
     NP_CLASS_STRUCT_VERSION,
@@ -55,14 +55,15 @@ static NPClass testClass = {
     testConstruct
 };
 
-NPClass *getTestClass(void)
+NPClass* GetTestClass()
 {
     return &testClass;
 }
 
 int testObjectCount = 0;
 
-int getTestObjectCount(void) {
+int GetTestObjectCount()
+{
   return testObjectCount;
 }
 
@@ -104,7 +105,7 @@ static NPObject *testAllocate(NPP npp, NPClass *theClass)
 {
     TestObject *newInstance =
         static_cast<TestObject*>(malloc(sizeof(TestObject)));
-    newInstance->testObject = NULL;
+    newInstance->test_object = NULL;
     ++testObjectCount;
 
     if (!identifiersInitialized) {
@@ -118,8 +119,8 @@ static NPObject *testAllocate(NPP npp, NPClass *theClass)
 static void testDeallocate(NPObject *obj)
 {
     TestObject *testObject = reinterpret_cast<TestObject*>(obj);
-    if (testObject->testObject)
-      browser->releaseobject(testObject->testObject);
+    if (testObject->test_object)
+      browser->releaseobject(testObject->test_object);
     --testObjectCount;
     free(obj);
 }
@@ -172,10 +173,10 @@ static bool testGetProperty(NPObject *obj, NPIdentifier name,
         return true;
     } else if (name == testIdentifiers[ID_PROPERTY_TEST_OBJECT]) {
         TestObject* testObject = reinterpret_cast<TestObject*>(obj);
-        if (testObject->testObject == NULL)
-          testObject->testObject = browser->createobject(NULL, &testClass);
-        browser->retainobject(testObject->testObject);
-        OBJECT_TO_NPVARIANT(testObject->testObject, *variant);
+        if (testObject->test_object == NULL)
+          testObject->test_object = browser->createobject(NULL, &testClass);
+        browser->retainobject(testObject->test_object);
+        OBJECT_TO_NPVARIANT(testObject->test_object, *variant);
         return true;
     } else if (name == testIdentifiers[ID_PROPERTY_REF_COUNT]) {
         INT32_TO_NPVARIANT(obj->referenceCount, *variant);

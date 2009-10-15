@@ -6,6 +6,7 @@
       'type': 'shared_library',
       'dependencies': [
         '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../../skia/skia.gyp:skia',
       ],
       'include_dirs': [
         '../../..',  # Root of Chrome Checkout
@@ -22,11 +23,11 @@
         }]
       ],
       'sources': [
-        'main.cpp',
-        'PluginObject.cpp',
-        'PluginObject.h',
-        'TestObject.cpp',
-        'TestObject.h',
+        'main.cc',
+        'plugin_object.cc',
+        'plugin_object.h',
+        'test_object.cc',
+        'test_object.h',
       ],
     }
   ],

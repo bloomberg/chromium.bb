@@ -23,14 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_TEST_OBJECT_H_
+#define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_TEST_OBJECT_H_
+
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 
-typedef struct {
-    NPObject header;
-    NPObject* testObject;
-} TestObject;
+struct TestObject {
+  NPObject header;
+  NPObject* test_object;
+};
 
-NPClass *getTestClass(void);
-int getTestObjectCount(void);
+NPClass* GetTestClass();
+int GetTestObjectCount();
+
+#endif  // WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_TEST_OBJECT_H_

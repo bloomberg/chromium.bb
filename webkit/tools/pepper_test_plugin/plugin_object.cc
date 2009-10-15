@@ -23,12 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PluginObject.h"
+#include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
-#include "TestObject.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "webkit/tools/pepper_test_plugin/test_object.h"
+
 #ifdef WIN32
 #define snprintf sprintf_s
 #endif
@@ -58,7 +60,7 @@ static NPClass pluginClass = {
     pluginSetProperty,
 };
 
-NPClass *getPluginClass(void)
+NPClass* GetPluginClass(void)
 {
     return &pluginClass;
 }
@@ -201,7 +203,7 @@ static bool pluginGetProperty(NPObject* obj, NPIdentifier name, NPVariant* resul
         BOOLEAN_TO_NPVARIANT(plugin->returnErrorFromNewStream, *result);
         return true;
     } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_TEST_OBJECT_COUNT]) {
-        INT32_TO_NPVARIANT(getTestObjectCount(), *result);
+        INT32_TO_NPVARIANT(GetTestObjectCount(), *result);
         return true;
     }
     return false;
@@ -694,7 +696,7 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
             return true;
         }
     } else if (name == pluginMethodIdentifiers[ID_TEST_CREATE_TEST_OBJECT]) {
-        NPObject *testObject = browser->createobject(plugin->npp, getTestClass());
+        NPObject *testObject = browser->createobject(plugin->npp, GetTestClass());
         assert(testObject->referenceCount == 1);
         OBJECT_TO_NPVARIANT(testObject, *result);
         return true;
@@ -820,7 +822,7 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
     }
 
     newInstance->npp = npp;
-    newInstance->testObject = browser->createobject(npp, getTestClass());
+    newInstance->testObject = browser->createobject(npp, GetTestClass());
     newInstance->eventLogging = FALSE;
     newInstance->onStreamLoad = 0;
     newInstance->onStreamDestroy = 0;
@@ -850,7 +852,8 @@ static void pluginDeallocate(NPObject* header)
     free(plugin);
 }
 
-void handleCallback(PluginObject* object, const char *url, NPReason reason, void *notifyData)
+void HandleCallback(PluginObject* object, const char *url, NPReason reason,
+                    void* notifyData)
 {
     assert(object);
 
@@ -886,7 +889,7 @@ void handleCallback(PluginObject* object, const char *url, NPReason reason, void
     free(strHdr);
 }
 
-void notifyStream(PluginObject* object, const char *url, const char *headers)
+void NotifyStream(PluginObject* object, const char* url, const char* headers)
 {
     if (object->firstUrl == NULL) {
         if (url)
@@ -901,7 +904,7 @@ void notifyStream(PluginObject* object, const char *url, const char *headers)
     }
 }
 
-void testNPRuntime(NPP npp)
+void TestNPRuntime(NPP npp)
 {
     NPObject* windowScriptObject;
     browser->getvalue(npp, NPNVWindowNPObject, &windowScriptObject);

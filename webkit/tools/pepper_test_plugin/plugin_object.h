@@ -23,29 +23,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
+#define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
+
 #include "webkit/glue/plugins/nphostapi.h"
 
-extern NPNetscapeFuncs *browser;
+extern NPNetscapeFuncs* browser;
 
-typedef struct {
-    NPObject header;
-    NPP npp;
-    NPBool eventLogging;
-    NPBool logSetWindow;
-    NPBool logDestroy;
-    NPBool returnErrorFromNewStream;
-    NPObject* testObject;
-    NPStream* stream;
-    char* onStreamLoad;
-    char* onStreamDestroy;
-    char* onURLNotify;
-    char* firstUrl;
-    char* firstHeaders;
-    char* lastUrl;
-    char* lastHeaders;
-} PluginObject;
+struct PluginObject {
+  NPObject header;
+  NPP npp;
+  NPBool eventLogging;
+  NPBool logSetWindow;
+  NPBool logDestroy;
+  NPBool returnErrorFromNewStream;
+  NPObject* testObject;
+  NPStream* stream;
+  char* onStreamLoad;
+  char* onStreamDestroy;
+  char* onURLNotify;
+  char* firstUrl;
+  char* firstHeaders;
+  char* lastUrl;
+  char* lastHeaders;
+};
 
-extern NPClass *getPluginClass(void);
-extern void handleCallback(PluginObject* object, const char *url, NPReason reason, void *notifyData);
-extern void notifyStream(PluginObject* object, const char *url, const char *headers);
-extern void testNPRuntime(NPP npp);
+extern NPClass* GetPluginClass();
+extern void HandleCallback(PluginObject* object, const char *url,
+                           NPReason reason, void* notify_data);
+extern void NotifyStream(PluginObject* object, const char* url,
+                         const char* headers);
+extern void TestNPRuntime(NPP npp);
+
+#endif  // WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
