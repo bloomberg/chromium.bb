@@ -133,13 +133,14 @@ BrowserActionButton::BrowserActionButton(
   // Load the images this view needs asynchronously on the file thread. We'll
   // get a call back into OnImageLoaded if the image loads successfully. If not,
   // the ImageView will have no image and will not appear in the browser chrome.
-  DCHECK(!browser_action->icon_paths().empty());
-  const std::vector<std::string>& icon_paths = browser_action->icon_paths();
-  browser_action_icons_.resize(icon_paths.size());
-  tracker_ = new ImageLoadingTracker(this, icon_paths.size());
-  for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
-       iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(extension->GetResource(*iter));
+  if (!browser_action->icon_paths().empty()) {
+    const std::vector<std::string>& icon_paths = browser_action->icon_paths();
+    browser_action_icons_.resize(icon_paths.size());
+    tracker_ = new ImageLoadingTracker(this, icon_paths.size());
+    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+         iter != icon_paths.end(); ++iter) {
+      tracker_->PostLoadImageTask(extension->GetResource(*iter));
+    }
   }
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
@@ -174,9 +175,16 @@ void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
 
 void BrowserActionButton::OnStateUpdated() {
   SkBitmap* image = browser_action_state_->icon();
-  if (!image)
-    image = &browser_action_icons_[browser_action_state_->icon_index()];
-  SetIcon(*image);
+  if (!image) {
+    if (static_cast<size_t>(browser_action_state_->icon_index()) <
+        browser_action_icons_.size()) {
+      image = &browser_action_icons_[browser_action_state_->icon_index()];
+    }
+  }
+
+  if (image)
+    SetIcon(*image);
+
   SetTooltipText(ASCIIToWide(browser_action_state_->title()));
   panel_->OnBrowserActionVisibilityChanged();
   GetParent()->SchedulePaint();
@@ -414,13 +422,10 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
         browser_actions[i]->extension_id());
     DCHECK(extension);
 
-    // Only show browser actions that have an icon.
-    if (browser_actions[i]->icon_paths().size() > 0) {
-      BrowserActionView* view =
-          new BrowserActionView(browser_actions[i], extension, this);
-      browser_action_views_.push_back(view);
-      AddChildView(view);
-    }
+    BrowserActionView* view =
+        new BrowserActionView(browser_actions[i], extension, this);
+    browser_action_views_.push_back(view);
+    AddChildView(view);
   }
 }
 

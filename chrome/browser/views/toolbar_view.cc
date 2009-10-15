@@ -1081,8 +1081,8 @@ void ToolbarView::CreateDevToolsMenuContents() {
 #endif
 
 void ToolbarView::CreateAppMenu() {
-  // We always rebuild the app menu so that we can get the current state of the
-  // extension system.
+  if (app_menu_contents_.get())
+    return;
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -1112,47 +1112,12 @@ void ToolbarView::CreateAppMenu() {
   app_menu_contents_->AddItemWithStringId(IDC_SHOW_DOWNLOADS,
                                           IDS_SHOW_DOWNLOADS);
 
-  // Create the extensions item or submenu.
-  // If there are any browser actions, we create an "Extensions" submenu, of
-  // which "Manage extensions" is the first entry. If there are no browser
-  // actions, we just create an "Extensions" menu item which does the same thing
-  // as "Manage extensions".
+  // Create the manage extensions menu item.
   ExtensionsService* extensions_service =
       browser_->profile()->GetExtensionsService();
   if (extensions_service && extensions_service->extensions_enabled()) {
-    // Get a count of all non-popup browser actions to decide how to layout
-    // the Extensions menu.
-    std::vector<ExtensionAction*> browser_actions =
-        browser_->profile()->GetExtensionsService()->GetBrowserActions(false);
-    if (browser_actions.size() == 0) {
-      app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
-                                              IDS_SHOW_EXTENSIONS);
-    } else {
-      extension_menu_contents_.reset(new views::SimpleMenuModel(this));
-      app_menu_contents_->AddSubMenuWithStringId(
-          IDS_SHOW_EXTENSIONS, extension_menu_contents_.get());
-
-      extension_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
-                                                    IDS_MANAGE_EXTENSIONS);
-
-      // TODO(erikkay) Even though we just got the list of all browser actions,
-      // we have to enumerate the list of extensions in order to get the action
-      // state.  It seems like we should find a way to combine these.
-      const ExtensionList* extensions = extensions_service->extensions();
-      for (size_t i = 0; i < extensions->size(); ++i) {
-        Extension* extension = extensions->at(i);
-        if (!extension->browser_action()) {
-          continue;
-        } else if (extension->browser_action()->command_id() >
-                   IDC_BROWSER_ACTION_LAST) {
-          NOTREACHED() << "Too many browser actions.";
-        } else if (!extension->browser_action()->is_popup()) {
-          extension_menu_contents_->AddItem(
-              extension->browser_action()->command_id(),
-              UTF8ToUTF16(extension->browser_action_state()->title()));
-        }
-      }
-    }
+    app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
+                                            IDS_SHOW_EXTENSIONS);
   }
 
   app_menu_contents_->AddSeparator();

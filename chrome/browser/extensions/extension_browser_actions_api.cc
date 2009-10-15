@@ -42,6 +42,7 @@ bool BrowserActionSetIconFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(
         static_cast<DictionaryValue*>(args_)->GetInteger(
             L"iconIndex", &icon_index));
+
     if (icon_index < 0 ||
         static_cast<size_t>(icon_index) >=
             extension->browser_action()->icon_paths().size()) {

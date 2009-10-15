@@ -19,25 +19,42 @@
 
 class ExtensionApiTest : public ExtensionBrowserTest {
  protected:
+  // Helper class that observes tests failing or passing. Observation starts when
+  // the class is constructed. Get the next result by calling GetNextResult() and
+  // message() if GetNextResult() return false. If there are no results, this
+  // method will pump the UI message loop until one is received.
+  class ResultCatcher : public NotificationObserver {
+   public:
+    ResultCatcher();
+
+    // Pumps the UI loop until a notification is received that an API test
+    // succeeded or failed. Returns true if the test succeeded, false otherwise.
+    bool GetNextResult();
+
+    const std::string& message() { return message_; }
+
+   private:
+    virtual void Observe(NotificationType type, const NotificationSource& source,
+                         const NotificationDetails& details);
+
+    NotificationRegistrar registrar_;
+
+    // A sequential list of pass/fail notifications from the test extension(s).
+    std::deque<bool> results_;
+
+    // If it failed, what was the error message?
+    std::deque<std::string> messages_;
+    std::string message_;
+  };
+
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
 
-  // Reset |completed_| and wait for a new pass / fail notification.
-  bool WaitForPassFail();
-
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
   virtual void SetUpCommandLine(CommandLine* command_line);
 
-  // NotificationObserver
-  void Observe(NotificationType type, const NotificationSource& source,
-               const NotificationDetails& details);
-
-  // A sequential list of pass/fail notifications from the test extension(s).
-  std::deque<bool> results_;
-
   // If it failed, what was the error message?
-  std::deque<std::string> messages_;
   std::string message_;
 };
 
