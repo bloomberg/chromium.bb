@@ -6,7 +6,6 @@
 
 #include "app/gfx/text_elider.h"
 #include "app/resource_bundle.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"

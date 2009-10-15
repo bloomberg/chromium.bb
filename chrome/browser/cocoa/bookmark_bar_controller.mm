@@ -5,7 +5,6 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
