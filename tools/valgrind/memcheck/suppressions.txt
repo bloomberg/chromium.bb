@@ -1076,15 +1076,14 @@
    fun:_ZN2v88internal8Snapshot11DeserializeEPKhi
    fun:_ZN2v88internal8Snapshot10InitializeEPKc
    fun:_ZN2v82V810InitializeEv
-   fun:_ZN2v817EnsureInitializedEPKc
-   fun:_ZN2v82V818AddMessageListenerEPFvNS_6HandleINS_7MessageEEENS1_INS_5ValueEEEES5_
-   fun:_ZN7WebCore7V8Proxy19initContextIfNeededEv
-   fun:_ZN7WebCore7V8Proxy16mainWorldContextEPNS_5FrameE
-   fun:_ZN7WebCore16ScriptController8evaluateERKNS_16ScriptSourceCodeE
-   fun:_ZN7WebCore16ScriptController13executeScriptERKNS_16ScriptSourceCodeE
-   fun:_ZN7WebCore13HTMLTokenizer15scriptExecutionERKNS_16ScriptSourceCodeENS0_5StateE
-   fun:_ZN7WebCore13HTMLTokenizer13scriptHandlerENS0_5StateE
-   fun:_ZN7WebCore13HTMLTokenizer16parseNonHTMLTextERNS_15SegmentedStringENS0_5StateE
-   fun:_ZN7WebCore13HTMLTokenizer8parseTagERNS_15SegmentedStringENS0_5StateE
-   fun:_ZN7WebCore13HTMLTokenizer5writeERKNS_15SegmentedStringEb
+}
+Suppression:
+{
+   bug_24936
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+   fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+   fun:_Z10cssyyparsePv
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
