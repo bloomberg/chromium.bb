@@ -617,6 +617,13 @@ class NotificationType {
     PERSONALIZATION,
     PERSONALIZATION_CREATED,
 
+    // Privacy blacklists ------------------------------------------------------
+
+    // Sent when a privacy blacklist path provider changes the list of its
+    // blacklist paths (like adds/removes items). The details are
+    // a BlacklistPathProvider, and the source is a Profile.
+    PRIVACY_BLACKLIST_PATH_PROVIDER_UPDATED,
+
     // User Scripts ------------------------------------------------------------
 
     // Sent when there are new user scripts available.  The details are a

@@ -92,6 +92,7 @@ const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
 const wchar_t kUserDataDirname[] = L"User Data";
 const FilePath::CharType kUserScriptsDirname[] = FPL("User Scripts");
 const FilePath::CharType kWebDataFilename[] = FPL("Web Data");
+const FilePath::CharType kPrivacyBlacklistFileName[] = FPL("Privacy Blacklist");
 const FilePath::CharType kBookmarksFileName[] = FPL("Bookmarks");
 const FilePath::CharType kHistoryBookmarksFileName[] =
     FPL("Bookmarks From History");

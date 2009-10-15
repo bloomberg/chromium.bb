@@ -52,6 +52,7 @@ extern const wchar_t kUserDataDirname[];
 extern const FilePath::CharType kUserScriptsDirname[];
 extern const FilePath::CharType kWebDataFilename[];
 extern const FilePath::CharType kBookmarksFileName[];
+extern const FilePath::CharType kPrivacyBlacklistFileName[];
 extern const FilePath::CharType kHistoryBookmarksFileName[];
 extern const FilePath::CharType kCustomDictionaryFileName[];
 extern const FilePath::CharType kLoginDataFileName[];
