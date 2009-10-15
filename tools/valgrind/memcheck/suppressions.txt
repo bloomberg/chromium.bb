@@ -1077,7 +1077,6 @@
    fun:_ZN2v88internal8Snapshot10InitializeEPKc
    fun:_ZN2v82V810InitializeEv
 }
-Suppression:
 {
    bug_24936
    Memcheck:Free
