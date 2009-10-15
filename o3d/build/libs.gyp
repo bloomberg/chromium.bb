@@ -33,8 +33,9 @@
                 ],
               },
               'libraries': [
-                "-lGL",
-                "-lGLEW",
+                '-lGL',
+                '-lGLEW',
+                '-lX11',
               ],
             },
           },
