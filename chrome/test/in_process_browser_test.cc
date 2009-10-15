@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,7 +247,11 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 void InProcessBrowserTest::TimedOut() {
   DCHECK(MessageLoopForUI::current()->IsNested());
 
-  GTEST_NONFATAL_FAILURE_("Timed-out");
+  std::string error_message = "Test timed out. Each test runs for a max of ";
+  error_message += IntToString(kInitialTimeoutInMS);
+  error_message += " ms (kInitialTimeoutInMS).";
+
+  GTEST_NONFATAL_FAILURE_(error_message.c_str());
 
   // Start the timeout timer to prevent hangs.
   MessageLoopForUI::current()->PostDelayedTask(FROM_HERE,
