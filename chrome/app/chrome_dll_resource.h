@@ -179,7 +179,6 @@
 #define IDC_SHOW_APP_MENU               40020
 #define IDC_SHOW_PAGE_MENU              40021
 #define IDC_SHOW_EXTENSION_SHELF        40022
-#define IDC_MANAGE_EXTENSIONS           40023
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -217,3 +216,11 @@
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_HISTORY_MENU_VISITED        46100     // OSX only
 #define IDC_HISTORY_MENU_CLOSED         46200     // OSX only
+
+// Extensions menu
+// Dynamic items from extensions are filled in between _FIRST and _LAST. If we
+// end up with more than 997 browser actions registered, we have other problems.
+#define IDC_SHOW_EXTENSIONS_SUBMENU     47000
+#define IDC_MANAGE_EXTENSIONS           47001
+#define IDC_BROWSER_ACTION_FIRST        47002
+#define IDC_BROWSER_ACTION_LAST         47999

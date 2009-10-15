@@ -9,12 +9,12 @@
 
 class BrowserActionSetIconFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setName")
 };
 
 class BrowserActionSetTitleFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
 class BrowserActionSetBadgeTextFunction : public SyncExtensionFunction {

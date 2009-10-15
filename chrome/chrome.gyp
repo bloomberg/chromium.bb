@@ -58,6 +58,7 @@
       'browser/browser_init_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
       'browser/download/save_page_browsertest.cc',
+      'browser/extensions/browser_action_test.cc',
       'browser/extensions/autoupdate_interceptor.cc',
       'browser/extensions/autoupdate_interceptor.h',
       'browser/extensions/cross_origin_xhr_apitest.cc',
@@ -78,7 +79,6 @@
       'browser/ssl/ssl_browser_tests.cc',
     ],
     'browser_tests_sources_win_specific': [
-      'browser/extensions/browser_action_apitest.cc',
       'browser/extensions/extension_devtools_browsertest.cc',
       'browser/extensions/extension_devtools_browsertest.h',
       'browser/extensions/extension_devtools_browsertests.cc',
@@ -98,6 +98,7 @@
       'browser/task_manager_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
+      'browser/extensions/browser_action_test.cc',
       'browser/extensions/cross_origin_xhr_apitest.cc',
       'browser/extensions/execute_script_apitest.cc',
       'browser/extensions/extension_apitest.cc',

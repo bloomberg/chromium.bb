@@ -12,14 +12,35 @@ namespace {
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
 };
 
-ExtensionApiTest::ResultCatcher::ResultCatcher() {
-  registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_TEST_FAILED,
-                 NotificationService::AllSources());
+// Load an extension and wait for it to notify of PASSED or FAILED.
+bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
+  // Note the inner scope here. The |registrar| will fall out of scope and
+  // remove listeners *before* the call to WaitForPassFail() below.
+  {
+    LOG(INFO) << "Running ExtensionApiTest with: " << extension_name;
+    NotificationRegistrar registrar;
+    registrar.Add(this, NotificationType::EXTENSION_TEST_PASSED,
+                  NotificationService::AllSources());
+    registrar.Add(this, NotificationType::EXTENSION_TEST_FAILED,
+                  NotificationService::AllSources());
+
+    if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
+      message_ = "Failed to load extension.";
+      return false;
+    }
+  }
+
+  // TODO(erikkay) perhaps we shouldn't do this implicitly.
+  return WaitForPassFail();
 }
 
-bool ExtensionApiTest::ResultCatcher::GetNextResult() {
+bool ExtensionApiTest::WaitForPassFail() {
+  NotificationRegistrar registrar;
+  registrar.Add(this, NotificationType::EXTENSION_TEST_PASSED,
+                NotificationService::AllSources());
+  registrar.Add(this, NotificationType::EXTENSION_TEST_FAILED,
+                NotificationService::AllSources());
+
   // Depending on the tests, multiple results can come in from a single call
   // to RunMessageLoop(), so we maintain a queue of results and just pull them
   // off as the test calls this, going to the run loop only when the queue is
@@ -40,9 +61,14 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
   return false;
 }
 
-void ExtensionApiTest::ResultCatcher::Observe(
-    NotificationType type, const NotificationSource& source,
-    const NotificationDetails& details) {
+void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
+  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  test_data_dir_ = test_data_dir_.AppendASCII("api_test");
+}
+
+void ExtensionApiTest::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_TEST_PASSED:
       std::cout << "Got EXTENSION_TEST_PASSED notification.\n";
@@ -59,29 +85,6 @@ void ExtensionApiTest::ResultCatcher::Observe(
       break;
 
     default:
-      NOTREACHED();
+      ExtensionBrowserTest::Observe(type, source, details);
   }
-}
-
-// Load an extension and wait for it to notify of PASSED or FAILED.
-bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
-  ResultCatcher catcher;
-
-  LOG(INFO) << "Running ExtensionApiTest with: " << extension_name;
-  if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
-    message_ = "Failed to load extension.";
-    return false;
-  }
-
-  if (!catcher.GetNextResult()) {
-    message_ = catcher.message();
-    return false;
-  } else {
-    return true;
-  }
-}
-
-void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
-  test_data_dir_ = test_data_dir_.AppendASCII("api_test");
 }

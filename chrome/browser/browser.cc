@@ -137,6 +137,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
@@ -1467,6 +1469,27 @@ void Browser::ExecuteCommandWithDisposition(
 // Browser, CommandUpdater::CommandUpdaterDelegate implementation:
 
 void Browser::ExecuteCommand(int id) {
+  if (id >= IDC_BROWSER_ACTION_FIRST && id <= IDC_BROWSER_ACTION_LAST) {
+    ExtensionsService* service = profile_->GetExtensionsService();
+    DCHECK(service);  // No browser action command should have been created
+                      // in this window.
+
+    // Go find the browser action in question.
+    std::vector<ExtensionAction*> browser_actions =
+        service->GetBrowserActions(false);  // false means no popup actions.
+    for (size_t i = 0; i < browser_actions.size(); ++i) {
+      if (browser_actions[i]->command_id() == id) {
+        ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+            profile_, browser_actions[i]->extension_id(), this);
+        return;
+      }
+    }
+
+    // Could not find the command in question. Perhaps it went away while the
+    // menu was open? More likely, it is a bug.
+    LOG(WARNING) << "Unknown browser action executed: " << id;
+  }
+
   ExecuteCommandWithDisposition(id, CURRENT_TAB);
 }
 
@@ -2167,6 +2190,16 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::EXTENSION_LOADED: {
+      // Enable the browser action for the extension, if it has one.
+      Extension* extension = Details<Extension>(details).ptr();
+      if (extension->browser_action()) {
+        command_updater_.UpdateCommandEnabled(
+            extension->browser_action()->command_id(), true);
+      }
+      break;
+    }
+
     case NotificationType::EXTENSION_UNLOADED: {
       window()->GetLocationBar()->InvalidatePageActions();
 
@@ -2179,6 +2212,12 @@ void Browser::Observe(NotificationType type,
           CloseTabContents(tc);
           return;
         }
+      }
+
+      // Disable the browser action for the extension, if it has one.
+      if (extension->browser_action()) {
+        command_updater_.UpdateCommandEnabled(
+            extension->browser_action()->command_id(), false);
       }
 
       break;
@@ -2337,6 +2376,17 @@ void Browser::InitCommandState() {
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_CONTROL_PANEL, true);
 #endif
+
+  // Set up any browser action commands that are installed.
+  ExtensionsService* service = profile()->GetExtensionsService();
+  if (service) {
+    std::vector<ExtensionAction*> browser_actions =
+        service->GetBrowserActions(false);  // false means no popup actions.
+    for (size_t i = 0; i < browser_actions.size(); ++i) {
+      command_updater_.UpdateCommandEnabled(browser_actions[i]->command_id(),
+                                            true);
+    }
+  }
 
   // Initialize other commands based on the window type.
   {
