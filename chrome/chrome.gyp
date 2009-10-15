@@ -4102,7 +4102,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
-            # We run this test in the linux_page_load_uitest target.
+            # We run this test in the reliability_tests target.
             'test/reliability/page_load_test.cc',
             # TODO(port)
             'browser/login_prompt_uitest.cc',
@@ -5755,6 +5755,11 @@
           'includes': ['test/interactive_ui/interactive_ui_tests.gypi']
         },
         # TODO(port): enable on mac.
+        # To run the tests from page_load_test.cc on Linux, we need to:
+        #
+        #   a) Build with Breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
+        #   b) Run with CHROME_HEADLESS=1 to generate crash dumps.
+        #   c) Strip the binary if it's a debug build. (binary may be over 2GB)
         {
           'target_name': 'reliability_tests',
           'type': 'executable',
@@ -5792,32 +5797,6 @@
     },],  # OS!="mac"
     ['OS=="linux"',
       { 'targets': [
-        {
-          # The page load tests are separated from the ui tests on Linux
-          # because we need to
-          #
-          #   a) Build with breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
-          #   b) Build in release mode only (debug mode generates too large
-          #      of a binary since it includes symbols twice)
-          #   c) Run with CHROME_HEADLESS=1 to generate crash dumps.
-          'target_name': 'linux_page_load_uitest',
-          'type': 'executable',
-          'dependencies': [
-            'test_support_common',
-            'test_support_ui',
-            'theme_resources',
-            '../build/linux/system.gyp:gtk',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/reliability/page_load_test.cc',
-            'test/reliability/page_load_test.h',
-          ],
-        },
         {
           'target_name': 'linux_symbols',
           'type': 'none',
