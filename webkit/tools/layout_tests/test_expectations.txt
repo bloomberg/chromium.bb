@@ -883,6 +883,7 @@ BUG6735 MAC : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
 
+//also BUG24863
 BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 
@@ -979,7 +980,7 @@ BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-40-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-14-b.svg = FAIL
 
 // Pixel test passes. Texts differ by 1 on SVGRenderText bounding box.
-BUG10297 LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = FAIL
+BUG10297 LINUX WIN : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = FAIL
 
 // No anti-aliasing on the text.
 BUG10298 LINUX : LayoutTests/svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
@@ -2594,6 +2595,7 @@ BUG9798 WIN SLOW : LayoutTests/transitions/change-values-during-transition.html 
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/interrupted-all-transition.html = FAIL PASS
+//also BUG24868 (crash)
 BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS CRASH
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-background-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
@@ -3170,4 +3172,9 @@ BUG_DIMICH : LayoutTests/fast/events/add-event-without-document.html = TIMEOUT
 //WebKit roll 49562:49583
 SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 BUG24854 WIN LINUX : LayoutTests/fast/forms/menulist-no-renderer-onmousedown.html = CRASH
-BUG_YAAR LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
+BUG24855 WIN LINUX : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
+
+BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
+
+// WebKit roll 49583:49597
+BUG24865 WIN : LayoutTests/fast/css/large-number-round-trip.html = FAIL
