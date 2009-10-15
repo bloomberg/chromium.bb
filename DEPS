@@ -132,7 +132,7 @@ deps_os = {
   "unix": {
     # Linux, really.
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@26314",
+      "/trunk/deps/third_party/xdg-utils@29103",
 
     "src/third_party/ffmpeg/binaries/chromium/linux/ia32":
       "/trunk/deps/third_party/ffmpeg/binaries/linux@" +
