@@ -6,16 +6,7 @@
 #define CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
 
 #include "build/build_config.h"
-
 #include "base/file_path.h"
-
-#if defined(OS_MACOSX)
-#ifdef __OBJC__
-@class NSBundle;
-#else
-class NSBundle;
-#endif
-#endif
 
 namespace chrome {
 

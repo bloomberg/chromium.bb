@@ -67,18 +67,21 @@ bool GetUserDesktop(FilePath* result) {
 }
 
 FilePath GetVersionedDirectory() {
-  // Start out with the path to the running .app.
-  NSBundle* app_bundle = [NSBundle mainBundle];
-  FilePath path = FilePath([[app_bundle bundlePath] fileSystemRepresentation]);
+  // Start out with the path to the running executable.
+  FilePath path;
+  PathService::Get(base::FILE_EXE, &path);
+
+  // One step up to MacOS, another to Contents.
+  path = path.DirName().DirName();
 
   if (mac_util::IsBackgroundOnlyProcess()) {
-    // path identifies the helper .app in the browser .app's versioned
-    // directory.  Go up one level to get to the browser .app's versioned
-    // directory.
-    path = path.DirName();
+    // path identifies the helper .app's Contents directory in the browser
+    // .app's versioned directory.  Go up two steps to get to the browser
+    // .app's versioned directory.
+    path = path.DirName().DirName();
   } else {
-    // path identifies the browser .app.  Go into its versioned directory.
-    path = path.Append("Contents").Append("Versions").Append(kChromeVersion);
+    // Go into the versioned directory.
+    path = path.Append("Versions").Append(kChromeVersion);
   }
 
   return path;
@@ -92,7 +95,8 @@ FilePath GetFrameworkBundlePath() {
   // essentially takes no time at all, at least when the bundle has already
   // been loaded as it will have been in this case.  The FilePath operations
   // needed to compute the framework's path are also effectively free, so that
-  // is the approach that is used here.
+  // is the approach that is used here.  NSBundle is also documented as being
+  // not thread-safe, and thread safety may be a concern here.
 
   // The framework bundle is at a known path and name from the browser .app's
   // versioned directory.
