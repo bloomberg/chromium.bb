@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/cocoa/chrome_event_processing_window.h"
 
 // Offset from the top of the window frame to the top of the window controls
 // (zoom, close, miniaturize) for a window with a tabstrip.
@@ -28,7 +29,7 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
 // this. We also handle our own window controls and custom window frame drawing.
-@interface ChromeBrowserWindow : NSWindow {
+@interface ChromeBrowserWindow : ChromeEventProcessingWindow {
  @private
   BOOL shouldHideTitle_;
   NSButton* closeButton_;
@@ -37,19 +38,6 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
   BOOL entered_;
   scoped_nsobject<NSTrackingArea> widgetTrackingArea_;
 }
-
-// See global_keyboard_shortcuts_mac.h for details on the next two functions.
-
-// Checks if |event| is a window keyboard shortcut. If so, dispatches it to the
-// window controller's |executeCommand:| and returns |YES|.
-- (BOOL)handleExtraWindowKeyboardShortcut:(NSEvent*)event;
-
-// Checks if |event| is a browser keyboard shortcut. If so, dispatches it to the
-// window controller's |executeCommand:| and returns |YES|.
-- (BOOL)handleExtraBrowserKeyboardShortcut:(NSEvent*)event;
-
-// Override, so we can handle global keyboard events.
-- (BOOL)performKeyEquivalent:(NSEvent*)theEvent;
 
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
@@ -60,6 +48,7 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
 
 // Update the tracking areas for our window widgets as appropriate.
 - (void)updateTrackingAreas;
+
 @end
 
 @interface ChromeBrowserWindow (UndocumentedAPI)

@@ -932,6 +932,12 @@ willPositionSheet:(NSWindow*)sheet
     [content removeFromSuperview];
     [fullscreen_window_ setContentView:content];
     [self setWindow:fullscreen_window_.get()];
+    [window_ setWindowController:nil];
+    [window_ setDelegate:nil];
+    // Required for proper event dispatch.
+    [fullscreen_window_ setWindowController:self];
+    [fullscreen_window_ setDelegate:self];
+
     // Minimize our UI.  This call triggers a relayout, so it needs to come
     // after we move the contentview to the new window.
     [self adjustUIForFullscreen:fullscreen];
@@ -947,6 +953,10 @@ willPositionSheet:(NSWindow*)sheet
     [content setAutoresizesSubviews:NO];
     [content removeFromSuperview];
     [window_ setContentView:content];
+    [fullscreen_window_ setDelegate:nil];
+    [fullscreen_window_ setWindowController:nil];
+    [window_ setWindowController:self];
+    [window_ setDelegate:self];
     [self setWindow:window_.get()];
     // This call triggers a relayout, so it needs to come after we move the
     // contentview to the new window.

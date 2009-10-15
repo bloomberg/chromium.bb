@@ -12,22 +12,6 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
-
-namespace {
-
-NSEvent* KeyEvent(const NSUInteger flags, const NSUInteger keyCode) {
-  return [NSEvent keyEventWithType:NSKeyDown
-                          location:NSZeroPoint
-                     modifierFlags:flags
-                         timestamp:0.0
-                      windowNumber:0
-                           context:nil
-                        characters:@""
-       charactersIgnoringModifiers:@""
-                         isARepeat:NO
-                          keyCode:keyCode];
-}
 
 class ChromeBrowserWindowTest : public PlatformTest {
  public:
@@ -68,48 +52,6 @@ class ChromeBrowserWindowTest : public PlatformTest {
 // releases.
 TEST_F(ChromeBrowserWindowTest, ShowAndClose) {
   [window_ display];
-}
-
-// Verify that the window intercepts a particular key event and
-// forwards it to [delegate executeCommand:].  Assume that other
-// CommandForKeyboardShortcut() will work the same for the rest.
-TEST_F(ChromeBrowserWindowTest, PerformKeyEquivalentForwardToExecuteCommand) {
-  NSEvent* event = KeyEvent(NSCommandKeyMask, kVK_ANSI_1);
-
-  id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
-  // -stub to satisfy the DCHECK.
-  BOOL yes = YES;
-  [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
-    isKindOfClass:[BrowserWindowController class]];
-  [[delegate expect] executeCommand:IDC_SELECT_TAB_0];
-
-  [window_ setDelegate:delegate];
-  [window_ performKeyEquivalent:event];
-
-  // Don't wish to mock all the way down...
-  [window_ setDelegate:nil];
-  [delegate verify];
-}
-
-// Verify that an unhandled shortcut does not get forwarded via
-// -executeCommand:.
-// TODO(shess) Think of a way to test that it is sent to the
-// superclass.
-TEST_F(ChromeBrowserWindowTest, PerformKeyEquivalentNoForward) {
-  NSEvent* event = KeyEvent(0, 0);
-
-  id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
-  // -stub to satisfy the DCHECK.
-  BOOL yes = YES;
-  [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
-    isKindOfClass:[BrowserWindowController class]];
-
-  [window_ setDelegate:delegate];
-  [window_ performKeyEquivalent:event];
-
-  // Don't wish to mock all the way down...
-  [window_ setDelegate:nil];
-  [delegate verify];
 }
 
 // Test that undocumented title-hiding API we're using does the job.
@@ -191,4 +133,3 @@ TEST_F(ChromeBrowserWindowTest, DISABLED_WindowWidgetTrackingArea) {
   EXPECT_TRUE(foundArea);
 }
 
-}  // namespace
