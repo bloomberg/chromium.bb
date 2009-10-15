@@ -712,7 +712,13 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   sources.add(os.path.split(build_file)[1])
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
-    inputs = a.get('inputs', [])
+    inputs = a.get('inputs')
+    if not inputs:
+      # This is an action with no inputs.  Add a fake, nonexistent
+      # input file (which will be the primary by definition)
+      # for the Visual Studio custom build rule.
+      inputs = ['__null_input__']
+      a['inputs'] = inputs
     primary_input = _PickPrimaryInput(inputs)
     inputs = set(inputs)
     sources.update(inputs)

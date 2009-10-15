@@ -14,6 +14,7 @@ test.relocate('src', 'relocate/src')
 
 test.build_default('actions.gyp', chdir='relocate/src')
 
+
 expect = """\
 Hello from program.c
 Hello from make-prog1.py
@@ -26,6 +27,17 @@ else:
   chdir = 'relocate/src'
 test.run_built_executable('program', chdir=chdir, stdout=expect)
 
+
 test.must_match('relocate/src/subdir2/file.out', "Hello from make-file.py\n")
+
+
+expect = "Hello from generate_main.py\n"
+
+if test.format == 'xcode':
+  chdir = 'relocate/src/subdir3'
+else:
+  chdir = 'relocate/src'
+test.run_built_executable('null_input', chdir=chdir, stdout=expect)
+
 
 test.pass_test()

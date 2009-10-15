@@ -6,6 +6,7 @@
       'dependencies': [
         'subdir1/executable.gyp:*',
         'subdir2/none.gyp:*',
+        'subdir3/null_input.gyp:*',
       ],
     },
   ],

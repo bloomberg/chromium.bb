@@ -1791,9 +1791,6 @@ def ValidateActionsInTarget(target, target_dict, build_file):
                       "An action must have an 'action_name' field." %
                       target_name)
     inputs = action.get('inputs', [])
-    if not inputs:
-      raise Exception("Need at least one input in action %s in target %s" %
-                      (action_name, target_name))
 
 
 def ValidateRunAsInTarget(target, target_dict, build_file):
