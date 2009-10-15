@@ -45,8 +45,8 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
-      unrecoverable_error_detected_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
+      unrecoverable_error_detected_(false) {
   change_processor_.reset(new ChangeProcessor(this));
 }
 
@@ -72,7 +72,7 @@ void ProfileSyncService::Initialize() {
 void ProfileSyncService::InitSettings() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // Override the sync server URL from the command-line, if sync server 
+  // Override the sync server URL from the command-line, if sync server
   // command-line argument exists.
   if (command_line.HasSwitch(switches::kSyncServiceURL)) {
     std::wstring value(command_line.GetSwitchValue(switches::kSyncServiceURL));
@@ -152,7 +152,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 }
 
 void ProfileSyncService::EnableForUser() {
-  if (wizard_.IsVisible()) {
+  if (WizardIsVisible()) {
     // TODO(timsteele): Focus wizard.
     return;
   }
@@ -163,7 +163,7 @@ void ProfileSyncService::EnableForUser() {
 }
 
 void ProfileSyncService::DisableForUser() {
-  if (wizard_.IsVisible()) {
+  if (WizardIsVisible()) {
     // TODO(timsteele): Focus wizard.
     return;
   }
@@ -212,6 +212,7 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
   change_processor_->Stop();
+
   if (SetupInProgress())
     wizard_.Step(SyncSetupWizard::FATAL_ERROR);
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -240,7 +241,7 @@ void ProfileSyncService::OnAuthError() {
   // Protect against the in-your-face dialogs that pop out of nowhere.
   // Require the user to click somewhere to run the setup wizard in the case
   // of a steady-state auth failure.
-  if (wizard_.IsVisible() || expecting_first_run_auth_needed_event_) {
+  if (WizardIsVisible() || expecting_first_run_auth_needed_event_) {
     wizard_.Step(AUTH_ERROR_NONE == backend_->GetAuthErrorState() ?
         SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GAIA_LOGIN);
   }
@@ -250,7 +251,7 @@ void ProfileSyncService::OnAuthError() {
     expecting_first_run_auth_needed_event_ = false;
   }
 
-  if (!wizard_.IsVisible()) {
+  if (!WizardIsVisible()) {
     auth_error_time_ == base::TimeTicks::Now();
   }
 
@@ -266,7 +267,7 @@ void ProfileSyncService::OnAuthError() {
 }
 
 void ProfileSyncService::ShowLoginDialog() {
-  if (wizard_.IsVisible())
+  if (WizardIsVisible())
     return;
 
   if (!auth_error_time_.is_null()) {
@@ -275,8 +276,9 @@ void ProfileSyncService::ShowLoginDialog() {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  if (last_auth_error_ != AUTH_ERROR_NONE)
+  if (last_auth_error_ != AUTH_ERROR_NONE) {
     wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
+  }
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {

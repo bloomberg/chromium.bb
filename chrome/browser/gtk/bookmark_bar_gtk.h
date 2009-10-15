@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -31,6 +32,9 @@ class TabstripOriginProvider;
 struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
+#ifdef CHROME_PERSONALIZATION
+                       public ProfileSyncServiceObserver,
+#endif
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public NotificationObserver {
@@ -247,6 +251,18 @@ class BookmarkBarGtk : public AnimationDelegate,
   static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,
                                     BookmarkBarGtk* window);
 
+#ifdef CHROME_PERSONALIZATION
+  // ProfileSyncServiceObserver method.
+  virtual void OnStateChanged();
+
+  // Determines whether the sync error button should appear on the bookmarks
+  // bar.
+  bool ShouldShowSyncErrorButton();
+
+  // Creates the sync error button and adds it as a child view.
+  GtkWidget* CreateSyncErrorButton();
+#endif
+
   Profile* profile_;
 
   // Used for opening urls.
@@ -290,6 +306,15 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
+
+#ifdef CHROME_PERSONALIZATION
+  // The sync re-login indicator which appears when the user needs to re-enter
+  // credentials in order to continue syncing.
+  GtkWidget* sync_error_button_;
+
+  // A pointer to the ProfileSyncService instance if one exists.
+  ProfileSyncService* sync_service_;
+#endif
 
   // The BookmarkNode from the model being dragged. NULL when we aren't
   // dragging.

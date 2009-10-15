@@ -70,20 +70,23 @@ Login::Login(talk_base::Task* parent,
       network_status->Start();
     }
   }
-  network_status->SignalNetworkStateDetected.connect(
-      this, &Login::OnNetworkStateDetected);
-  auto_reconnect_.reset(new AutoReconnect(parent_, network_status));
-  auto_reconnect_->SignalStartConnection.connect(this,
-                                                 &Login::StartConnection);
-  auto_reconnect_->SignalTimerStartStop.connect(
-      this,
-      &Login::OnAutoReconnectTimerChange);
-  SignalClientStateChange.connect(auto_reconnect_.get(),
-                                  &AutoReconnect::OnClientStateChange);
-  SignalIdleChange.connect(auto_reconnect_.get(),
-                           &AutoReconnect::set_idle);
-  SignalPowerSuspended.connect(auto_reconnect_.get(),
-                               &AutoReconnect::OnPowerSuspend);
+
+  if (network_status) {
+    network_status->SignalNetworkStateDetected.connect(
+        this, &Login::OnNetworkStateDetected);
+    auto_reconnect_.reset(new AutoReconnect(parent_, network_status));
+    auto_reconnect_->SignalStartConnection.connect(this,
+                                                   &Login::StartConnection);
+    auto_reconnect_->SignalTimerStartStop.connect(
+        this,
+        &Login::OnAutoReconnectTimerChange);
+    SignalClientStateChange.connect(auto_reconnect_.get(),
+                                    &AutoReconnect::OnClientStateChange);
+    SignalIdleChange.connect(auto_reconnect_.get(),
+                             &AutoReconnect::set_idle);
+    SignalPowerSuspended.connect(auto_reconnect_.get(),
+                                 &AutoReconnect::OnPowerSuspend);
+  }
 }
 
 // Defined so that the destructors are executed here (and the corresponding
@@ -190,7 +193,7 @@ void Login::OnClientStateChange(buzz::XmppEngine::State state) {
 
 void Login::HandleClientStateChange(ConnectionState new_state) {
   // Do we need to transition between the retrying and closed states?
-  if (auto_reconnect_->is_retrying()) {
+  if (auto_reconnect_.get() && auto_reconnect_->is_retrying()) {
     if (new_state == STATE_CLOSED) {
       new_state = STATE_RETRYING;
     }

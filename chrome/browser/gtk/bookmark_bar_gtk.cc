@@ -118,6 +118,10 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       model_(NULL),
       instructions_label_(NULL),
       instructions_(NULL),
+#ifdef CHROME_PERSONALIZATION
+      sync_error_button_(NULL),
+      sync_service_(NULL),
+#endif
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
@@ -125,6 +129,15 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       menu_bar_helper_(this),
       floating_(false),
       last_allocation_width_(-1) {
+#ifdef CHROME_PERSONALIZATION
+  if (profile->GetProfileSyncService()) {
+    // Obtain a pointer to the profile sync service and add our instance as an
+    // observer.
+    sync_service_ = profile->GetProfileSyncService();
+    sync_service_->AddObserver(this);
+  }
+#endif
+
   Init(profile);
   SetProfile(profile);
   // Force an update by simulating being in the wrong state.
@@ -142,6 +155,11 @@ BookmarkBarGtk::~BookmarkBarGtk() {
   RemoveAllBookmarkButtons();
   bookmark_toolbar_.Destroy();
   event_box_.Destroy();
+
+#ifdef CHROME_PERSONALIZATION
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+#endif
 }
 
 void BookmarkBarGtk::SetProfile(Profile* profile) {
@@ -248,6 +266,13 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(vseparator, "expose-event",
                    G_CALLBACK(OnSeparatorExpose), this);
 
+#ifdef CHROME_PERSONALIZATION
+  sync_error_button_ = theme_provider_->BuildChromeButton();
+  ConnectFolderButtonEvents(sync_error_button_);
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
+                     FALSE, FALSE, 0);
+#endif
+
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_provider_->BuildChromeButton();
@@ -310,6 +335,12 @@ void BookmarkBarGtk::Hide(bool animate) {
     AnimationProgressed(slide_animation_.get());
   }
 }
+
+#ifdef CHROME_PERSONALIZATION
+void BookmarkBarGtk::OnStateChanged() {
+  // TODO(zork): TODO
+}
+#endif
 
 void BookmarkBarGtk::EnterFullscreen() {
   UpdateFloatingState();

@@ -144,7 +144,9 @@ class ProfileSyncService : public NotificationObserver,
   bool SetupInProgress() const {
     return !HasSyncSetupCompleted() && WizardIsVisible();
   }
-  bool WizardIsVisible() const { return wizard_.IsVisible(); }
+  bool WizardIsVisible() const {
+    return wizard_.IsVisible();
+  }
   void ShowLoginDialog();
 
   // Pretty-printed strings for a given StatusSummary.
@@ -298,12 +300,12 @@ class ProfileSyncService : public NotificationObserver,
   // As its name suggests, this should NOT be used for anything other than UI.
   bool is_auth_in_progress_;
 
+  SyncSetupWizard wizard_;
+
   // True if an unrecoverable error (e.g. violation of an assumed invariant)
   // occurred during syncer operation.  This value should be checked before
   // doing any work that might corrupt things further.
   bool unrecoverable_error_detected_;
-
-  SyncSetupWizard wizard_;
 
   ObserverList<Observer> observers_;
 
