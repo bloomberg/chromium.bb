@@ -25,8 +25,6 @@ class ExtensionAction {
     BROWSER_ACTION = 1,
   } ExtensionActionType;
 
-  int command_id() const { return command_id_; }
-
   std::string id() const { return id_; }
   void set_id(const std::string& id) { id_ = id; }
 
@@ -55,8 +53,6 @@ class ExtensionAction {
   bool is_popup() const { return !popup_url_.is_empty(); }
 
  private:
-  static int next_command_id_;
-
   // The id for the ExtensionAction, for example: "RssPageAction".
   // For BrowserActions this is blank.
   std::string id_;
@@ -73,10 +69,6 @@ class ExtensionAction {
 
   // The paths to the icons that this PageIcon can show.
   std::vector<std::string> icon_paths_;
-
-  // An integer for use with the browser's command system. These should always
-  // be in the range [IDC_BROWSER_ACTION_FIRST, IDC_BROWSER_ACTION_LAST].
-  int command_id_;
 
   // If the action has a popup, it has a URL and a height.
   GURL popup_url_;

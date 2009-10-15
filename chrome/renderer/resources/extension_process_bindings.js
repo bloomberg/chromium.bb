@@ -349,6 +349,7 @@ var chrome = chrome || {};
           throw new Error(
               "The imageData property must contain an ImageData object.");
         }
+
         sendCustomRequest(SetBrowserActionIcon, "browserAction.setIcon",
                           details, this.definition.parameters);
       } else {

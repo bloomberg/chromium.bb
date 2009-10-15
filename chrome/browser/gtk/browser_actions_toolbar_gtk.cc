@@ -9,6 +9,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
@@ -64,8 +65,9 @@ class BrowserActionButton : public NotificationObserver,
   GtkWidget* widget() { return button_.get(); }
 
   static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
-    action->browser_->ExecuteCommand(
-        action->extension_->browser_action()->command_id());
+    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+        action->browser_->profile(), action->extension_->id(),
+        action->browser_);
   }
 
   // Called when the tooltip has changed or an image has loaded.
