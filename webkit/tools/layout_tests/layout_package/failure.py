@@ -12,7 +12,7 @@ UNKNOWN = "Unknown"
 
 EXPECTED_IMAGE_FILE_ENDING = "-expected.png"
 ACTUAL_IMAGE_FILE_ENDING = "-actual.png"
-UPSTREAM_IMAGE_FILE_ENDING = "-upstream.png"
+UPSTREAM_IMAGE_FILE_ENDING = "-expected-upstream.png"
 EXPECTED_TEXT_FILE_ENDING = "-expected.txt"
 ACTUAL_TEXT_FILE_ENDING = "-actual.txt"
 DIFF_IMAGE_FILE_ENDING = "-diff.png"
@@ -84,6 +84,9 @@ class Failure(object):
 
   def GetTextDiffFilename(self):
     return self._RenameEndOfTestPath(DIFF_TEXT_FILE_ENDING)
+
+  def GetImageUpstreamFilename(self):
+    return self._RenameEndOfTestPath(UPSTREAM_IMAGE_FILE_ENDING)
 
   def _RenameEndOfTestPath(self, suffix):
     last_index = self.test_path.rfind(".")

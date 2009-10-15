@@ -209,11 +209,7 @@ class HTMLGenerator(object):
     html += self._GenerateImageFailureTD(failure.GetImageDiffFilename())
     if (failure.image_baseline_upstream_local and
         failure.image_baseline_upstream_local != ""):
-      html += """
-                <td><a href="%s"><img style="width: %s" src="%s" /></a></td>
-              """ % (failure.image_baseline_upstream_local,
-                     self.image_size,
-                     failure.image_baseline_upstream_local)
+      html += self._GenerateImageFailureTD(failure.GetImageUpstreamFilename())
     else:
       html += """
               <td>&nbsp;</td>
