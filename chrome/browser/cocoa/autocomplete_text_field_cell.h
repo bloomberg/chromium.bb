@@ -49,19 +49,27 @@
 
 @property BOOL fieldEditorNeedsReset;
 
-// TODO(shess): There should be two alternatives for
-// -setKeywordString:, the normal string and the min string.  Min can
-// be used when the text field's contents gets too wide to fit both it
-// and this.
-
 // The following setup |keywordString_| or |hintString_| based on the
 // input, and set |fieldEditorNeedsReset_| if the layout of the field
 // changed.
-- (void)setKeywordString:(NSString*)aString;
+
+// Chooses |partialString| if |width| won't fit |fullString|.  Strings
+// must be non-nil.
+- (void)setKeywordString:(NSString*)fullString
+           partialString:(NSString*)partialString
+          availableWidth:(CGFloat)width;
+
+// Chooses |anImage| only if all pieces won't fit w/in |width|.
+// Inputs must be non-nil.
 - (void)setKeywordHintPrefix:(NSString*)prefixString
                        image:(NSImage*)anImage
-                      suffix:(NSString*)suffixString;
-- (void)setSearchHintString:(NSString*)aString;
+                      suffix:(NSString*)suffixString
+              availableWidth:(CGFloat)width;
+
+// Suppresses hint entirely if |aString| won't fit w/in |width|.
+// String must be non-nil.
+- (void)setSearchHintString:(NSString*)aString
+             availableWidth:(CGFloat)width;
 - (void)clearKeywordAndHint;
 
 // Sets the hint icon and optional icon label. If |icon| is nil, the current

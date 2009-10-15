@@ -55,12 +55,16 @@ NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type) {
   return Event(view, point, type, 1);
 }
 
+// Width of the field so that we don't have to ask |field_| for it all
+// the time.
+static const CGFloat kWidth(300.0);
+
 class AutocompleteTextFieldTest : public PlatformTest {
  public:
   AutocompleteTextFieldTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
-    NSRect frame = NSMakeRect(0, 0, 300, 30);
+    NSRect frame = NSMakeRect(0, 0, kWidth, 30);
     field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
     [field_ setStringValue:@"Test test"];
     [field_ setObserver:&field_observer_];
@@ -147,6 +151,40 @@ TEST_F(AutocompleteTextFieldTest, FirstResponder) {
   EXPECT_TRUE([[field_ currentEditor] isKindOfClass:c]);
 }
 
+TEST_F(AutocompleteTextFieldTest, AvailableDecorationWidth) {
+  // A fudge factor to account for how much space the border takes up.
+  // The test shouldn't be too dependent on the field's internals, but
+  // it also shouldn't let deranged cases fall through the cracks
+  // (like nothing available with no text, or everything available
+  // with some text).
+  const CGFloat kBorderWidth = 20.0;
+
+  // With no contents, almost the entire width is available for
+  // decorations.
+  [field_ setStringValue:@""];
+  CGFloat availableWidth = [field_ availableDecorationWidth];
+  EXPECT_LE(availableWidth, kWidth);
+  EXPECT_GT(availableWidth, kWidth - kBorderWidth);
+
+  // With minor contents, most of the remaining width is available for
+  // decorations.
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:[field_ font]
+                                  forKey:NSFontAttributeName];
+  NSString* string = @"Hello world";
+  const NSSize size([string sizeWithAttributes:attributes]);
+  [field_ setStringValue:string];
+  availableWidth = [field_ availableDecorationWidth];
+  EXPECT_LE(availableWidth, kWidth - size.width);
+  EXPECT_GT(availableWidth, kWidth - size.width - kBorderWidth);
+
+  // With huge contents, nothing at all is left for decorations.
+  string = @"A long string which is surely wider than field_ can hold.";
+  [field_ setStringValue:string];
+  availableWidth = [field_ availableDecorationWidth];
+  EXPECT_LT(availableWidth, 0.0);
+}
+
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
@@ -159,14 +197,17 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   // Test display of various cell configurations.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   [field_ display];
 
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  [cell setKeywordHintPrefix:@"prefix" image:image suffix:@"suffix"];
+  [cell setKeywordHintPrefix:@"prefix" image:image suffix:@"suffix"
+              availableWidth:kWidth];
   [field_ display];
 
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   [field_ display];
 
   [cell clearKeywordAndHint];
@@ -204,6 +245,14 @@ TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
   [firstResponder flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
 }
 
+// Frame size changes are propagated to |observer_|.
+TEST_F(AutocompleteTextFieldTest, FrameChanged) {
+  EXPECT_CALL(field_observer_, OnFrameChanged());
+  NSRect frame = [field_ frame];
+  frame.size.width += 10.0;
+  [field_ setFrame:frame];
+}
+
 // Test that the field editor gets the same bounds when focus is
 // delivered by the standard focusing machinery, or by
 // -resetFieldEditorFrameIfNeeded.
@@ -217,7 +266,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
   const NSRect baseEditorFrame(EditorFrame());
 
   // Setting a hint should result in a strictly smaller editor frame.
-  [cell setSearchHintString:@"search hint"];
+  [cell setSearchHintString:@"search hint" availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
@@ -244,7 +293,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
-  [cell setSearchHintString:kHintString];
+  [cell setSearchHintString:kHintString availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
@@ -263,7 +312,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
   // Setting the same hint string and using
   // -resetFieldEditorFrameIfNeeded should result in the same frame as
   // the standard focus machinery.
-  [cell setSearchHintString:kHintString];
+  [cell setSearchHintString:kHintString availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
@@ -277,11 +326,14 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
-  const NSString* kHintString(@"Search Engine:");
+  const NSString* kFullString(@"Search Engine:");
+  const NSString* kPartialString(@"Search Eng:");
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
-  [cell setKeywordString:kHintString];
+  [cell setKeywordString:kFullString
+           partialString:kPartialString
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
@@ -300,7 +352,9 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   // Setting the same hint string and using
   // -resetFieldEditorFrameIfNeeded should result in the same frame as
   // the standard focus machinery.
-  [cell setKeywordString:kHintString];
+  [cell setKeywordString:kFullString
+           partialString:kPartialString
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
@@ -357,7 +411,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
     // No more messages to mockDelegate.
     AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
     EXPECT_FALSE([cell fieldEditorNeedsReset]);
-    [cell setSearchHintString:@"Type to search"];
+    [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
     EXPECT_TRUE([cell fieldEditorNeedsReset]);
     [field_ resetFieldEditorFrameIfNeeded];
     [mockDelegate verify];
@@ -372,7 +426,7 @@ TEST_F(AutocompleteTextFieldTest, ClickSearchHintPutsCaretRightmost) {
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
 
   // Can't rely on the window machinery to make us first responder,
   // here.
@@ -395,7 +449,9 @@ TEST_F(AutocompleteTextFieldTest, ClickKeywordPutsCaretLeftmost) {
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search:"
+          availableWidth:kWidth];
 
   // Can't rely on the window machinery to make us first responder,
   // here.

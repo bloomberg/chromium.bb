@@ -302,9 +302,6 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 // Call |popup_view_| OnMiddleClick().
 - (void)middleSelect:(id)sender;
 
-// Resize the popup when the field's window resizes.
-- (void)windowDidResize:(NSNotification*)notification;
-
 @end
 
 AutocompletePopupViewMac::AutocompletePopupViewMac(
@@ -363,13 +360,6 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
     [matrix setAction:@selector(select:)];
     [matrix setMiddleClickAction:@selector(middleSelect:)];
     [popup_ setContentView:matrix];
-
-    // We need the popup to follow window resize.
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:matrix_target_
-           selector:@selector(windowDidResize:)
-               name:NSWindowDidResizeNotification
-             object:[field_ window]];
   }
 }
 
@@ -382,11 +372,6 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
     // Break references to matrix_target_ before releasing popup_.
     NSMatrix* matrix = [popup_ contentView];
     [matrix setTarget:nil];
-
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc removeObserver:matrix_target_
-                  name:NSWindowDidResizeNotification
-                object:[field_ window]];
 
     popup_.reset(nil);
 
@@ -734,16 +719,6 @@ void AutocompletePopupViewMac::OnMiddleClick() {
 - (void)middleSelect:(id)sender {
   DCHECK(popup_view_);
   popup_view_->OnMiddleClick();
-}
-
-- (void)windowDidResize:(NSNotification*)notification {
-  DCHECK(popup_view_);
-
-  // TODO(shess): UpdatePopupAppearance() is called frequently, so it
-  // should be really cheap, but in this case we could probably make
-  // things even cheaper by refactoring between the popup-placement
-  // code and the matrix-population code.
-  popup_view_->UpdatePopupAppearance();
 }
 
 @end

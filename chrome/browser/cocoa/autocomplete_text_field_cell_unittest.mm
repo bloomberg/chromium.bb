@@ -12,12 +12,19 @@
 
 namespace {
 
+// Width of the field so that we don't have to ask |field_| for it all
+// the time.
+const CGFloat kWidth(300.0);
+
+// A narrow width for tests which test things that don't fit.
+const CGFloat kNarrowWidth(5.0);
+
 class AutocompleteTextFieldCellTest : public PlatformTest {
  public:
   AutocompleteTextFieldCellTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
-    const NSRect frame = NSMakeRect(0, 0, 300, 30);
+    const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
     view_.reset([[NSTextField alloc] initWithFrame:frame]);
     scoped_nsobject<AutocompleteTextFieldCell> cell(
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
@@ -52,14 +59,17 @@ TEST_F(AutocompleteTextFieldCellTest, Display) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
 
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   [view_ display];
 
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  [cell setKeywordHintPrefix:@"prefix" image:image suffix:@"suffix"];
+  [cell setKeywordHintPrefix:@"prefix" image:image suffix:@"suffix"
+              availableWidth:kWidth];
   [view_ display];
 
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   [view_ display];
 }
 
@@ -71,19 +81,19 @@ TEST_F(AutocompleteTextFieldCellTest, SearchHint) {
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Setting a search hint will need a reset.
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing the search hint needs a reset.
-  [cell setSearchHintString:@"Type to find"];
+  [cell setSearchHintString:@"Type to find" availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing to an identical string doesn't need a reset.
-  [cell setSearchHintString:@"Type to find"];
+  [cell setSearchHintString:@"Type to find" availableWidth:kWidth];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 }
 
@@ -96,19 +106,22 @@ TEST_F(AutocompleteTextFieldCellTest, KeywordHint) {
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Setting a keyword hint will need a reset.
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing the keyword hint needs a reset.
-  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing to identical strings doesn't need a reset.
-  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 }
 
@@ -120,19 +133,25 @@ TEST_F(AutocompleteTextFieldCellTest, KeywordString) {
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Setting a keyword string will need a reset.
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing the keyword string needs a reset.
-  [cell setKeywordString:@"Search on Engine:"];
+  [cell setKeywordString:@"Search on Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing to an identical string doesn't need a reset.
-  [cell setKeywordString:@"Search on Engine:"];
+  [cell setKeywordString:@"Search on Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 }
 
@@ -203,19 +222,22 @@ TEST_F(AutocompleteTextFieldCellTest, Transitions) {
 
   // Transitions from hint to keyword string, keyword hint, and
   // cleared.
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
   [cell clearKeywordAndHint];
@@ -223,19 +245,24 @@ TEST_F(AutocompleteTextFieldCellTest, Transitions) {
 
   // Transitions from keyword hint to keyword string, simple hint, and
   // cleared.
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
   [cell clearKeywordAndHint];
@@ -243,19 +270,26 @@ TEST_F(AutocompleteTextFieldCellTest, Transitions) {
 
   // Transitions from keyword string to either type of hint, or
   // cleared.
-  [cell setKeywordString:@"Search on Engine:"];
+  [cell setKeywordString:@"Search on Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setSearchHintString:@"Type to search"];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setKeywordString:@"Search on Engine:"];
+  [cell setKeywordString:@"Search on Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"];
+  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
+              availableWidth:kWidth];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
 
-  [cell setKeywordString:@"Search on Engine:"];
+  [cell setKeywordString:@"Search on Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
   [cell clearKeywordAndHint];
@@ -280,7 +314,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSEqualRects(cursorFrame, textFrame));
 
   // Small search hint leaves text frame to left.
-  [cell setSearchHintString:@"Search hint"];
+  [cell setSearchHintString:@"Search hint" availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
@@ -295,7 +329,8 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   // changed (keyword hint overrode search hint), and that they aren't
   // handled identically w/out reference to the actual button cell.
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  [cell setKeywordHintPrefix:@"Keyword " image:image suffix:@" hint"];
+  [cell setKeywordHintPrefix:@"Keyword " image:image suffix:@" hint"
+              availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
@@ -304,7 +339,9 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Keyword search leaves text area to right.
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
@@ -333,7 +370,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   // Search hint text takes precedence over the hint icon; the text frame
   // should be smaller in order to accomodate the text that is wider than
   // the icon.
-  [cell setSearchHintString:@"Search hint"];
+  [cell setSearchHintString:@"Search hint" availableWidth:kWidth];
   NSRect textFrameWithHintText = [cell textFrameForFrame:bounds];
   EXPECT_TRUE(NSContainsRect(textFrame, textFrameWithHintText));
   EXPECT_LT(NSWidth(textFrameWithHintText), NSWidth(textFrame));
@@ -356,20 +393,23 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
 
   // TODO(shess): Do we really need to test every combination?
 
-  [cell setSearchHintString:@"Search hint"];
+  [cell setSearchHintString:@"Search hint" availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(textFrame, NSInsetRect(drawingRect, 1, 1)));
 
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  [cell setKeywordHintPrefix:@"Keyword " image:image suffix:@" hint"];
+  [cell setKeywordHintPrefix:@"Keyword " image:image suffix:@" hint"
+              availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 
-  [cell setKeywordString:@"Search Engine:"];
+  [cell setKeywordString:@"Search Engine:"
+           partialString:@"Search Eng:"
+          availableWidth:kWidth];
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
@@ -421,6 +461,79 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   iconRect = [cell hintImageFrameForFrame:bounds];
   EXPECT_TRUE(NSEqualRects(iconRect, originalIconRect));
   EXPECT_TRUE(NSIsEmptyRect(iconRect));
+}
+
+// Test that the cell correctly chooses the partial keyword if there's
+// no enough room.
+TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+
+  const NSString* kFullString = @"Search Engine:";
+  const NSString* kPartialString = @"Search Eng:";
+
+  // Wide width chooses the full string.
+  [cell setKeywordString:kFullString
+           partialString:kPartialString
+          availableWidth:kWidth];
+  EXPECT_TRUE([cell keywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
+
+  // Narrow width chooses the partial string.
+  [cell setKeywordString:kFullString
+           partialString:kPartialString
+          availableWidth:kNarrowWidth];
+  EXPECT_TRUE([cell keywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kPartialString]);
+
+  // But not if there isn't one!
+  [cell setKeywordString:kFullString
+           partialString:nil
+          availableWidth:kNarrowWidth];
+  EXPECT_TRUE([cell keywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
+}
+
+// Test that the cell drops the search hint if there is no room for
+// it.
+TEST_F(AutocompleteTextFieldCellTest, OmitsSearchHintIfNarrow) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+
+  const NSString* kSearchHint = @"Type to search";
+
+  // Wide width chooses the full string.
+  [cell setSearchHintString:kSearchHint availableWidth:kWidth];
+  EXPECT_TRUE([cell hintString]);
+  EXPECT_TRUE([[[cell hintString] string] isEqualToString:kSearchHint]);
+
+  // Narrow width suppresses entirely.
+  [cell setSearchHintString:kSearchHint availableWidth:kNarrowWidth];
+  EXPECT_FALSE([cell hintString]);
+}
+
+// Test that the cell drops all but the image if there is no room for
+// the entire keyword hint.
+TEST_F(AutocompleteTextFieldCellTest, TrimsKeywordHintIfNarrow) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
+
+  const NSString* kHintPrefix = @"Press ";
+  const NSString* kHintSuffix = @" to search Engine";
+
+  // Wide width chooses the full string.
+  [cell setKeywordHintPrefix:kHintPrefix image:image suffix:kHintSuffix
+              availableWidth:kWidth];
+  EXPECT_TRUE([cell hintString]);
+  EXPECT_TRUE([[[cell hintString] string] hasPrefix:kHintPrefix]);
+  EXPECT_TRUE([[[cell hintString] string] hasSuffix:kHintSuffix]);
+
+  // Narrow width suppresses everything but the image.
+  [cell setKeywordHintPrefix:kHintPrefix image:image suffix:kHintSuffix
+              availableWidth:kNarrowWidth];
+  EXPECT_EQ([[cell hintString] length], 1U);
 }
 
 }  // namespace

@@ -64,7 +64,7 @@ class LocationBarViewMacTest : public PlatformTest {
   LocationBarViewMacTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
-    NSRect frame = NSMakeRect(0, 0, 300, 30);
+    NSRect frame = NSMakeRect(0, 0, 400.0, 30);
     field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
     [field_ setStringValue:@"Testing"];
     [cocoa_helper_.contentView() addSubview:field_.get()];
@@ -84,6 +84,9 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   const NSString* kKeywordPrefix = @"Press ";
   const NSString* kKeywordSuffix = @" to search Google";
   const NSString* kKeywordString = @"Search Google:";
+  // 0x2026 is Unicode ellipses.
+  const NSString* kPartialString =
+      [NSString stringWithFormat:@"Search Go%C:", 0x2026];
 
   // With no special hints requested, none set.
   LocationBarViewMac::OnChangedImpl(
@@ -119,6 +122,18 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   LocationBarViewMac::OnChangedImpl(
       field_.get(), kKeyword, kKeyword, false, false, image);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
+  EXPECT_FALSE([cell hintString]);
+
+  // Check that a partial keyword-search string is passed down in case
+  // the view is narrow.
+  // TODO(shess): Is this test a good argument for re-writing using a
+  // mock field?
+  NSRect frame([field_ frame]);
+  frame.size.width = 10.0;
+  [field_ setFrame:frame];
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), kKeyword, kKeyword, false, true, image);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kPartialString]);
   EXPECT_FALSE([cell hintString]);
 
   // Transition back to baseline.

@@ -30,6 +30,8 @@ namespace {
 // is here so the mock interface doesn't have to change in multiple
 // places.
 
+// Any method you add here needs a unit test.  You knew that.
+
 class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
  public:
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
@@ -38,6 +40,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD0(GetPasteActionStringId, int());
   MOCK_METHOD0(OnPasteAndGo, void());
   MOCK_METHOD0(OnSecurityIconClicked, void());
+  MOCK_METHOD0(OnFrameChanged, void());
 };
 
 }  // namespace

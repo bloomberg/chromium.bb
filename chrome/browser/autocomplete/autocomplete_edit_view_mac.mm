@@ -658,6 +658,17 @@ void AutocompleteEditViewMac::OnPasteAndGo() {
     model_->PasteAndGo();
 }
 
+void AutocompleteEditViewMac::OnFrameChanged() {
+  // TODO(shess): UpdatePopupAppearance() is called frequently, so it
+  // should be really cheap, but in this case we could probably make
+  // things even cheaper by refactoring between the popup-placement
+  // code and the matrix-population code.
+  popup_view_->UpdatePopupAppearance();
+
+  // Give controller a chance to rearrange decorations.
+  controller_->OnChanged();
+}
+
 bool AutocompleteEditViewMac::OnTabPressed() {
   if (model_->is_keyword_hint() && !model_->keyword().empty()) {
     model_->AcceptKeyword();

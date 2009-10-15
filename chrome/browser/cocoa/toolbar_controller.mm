@@ -510,11 +510,14 @@ class PrefObserverBridge : public NotificationObserver {
   // up with the visible borders on the location stack.
   const int kLocationStackEdgeWidth = 2;
 
-  NSRect locationFrame = [locationBar_ frame];
-  int minX = NSMinX([starButton_ frame]);
-  int maxX = NSMaxX([goButton_ frame]);
-  DCHECK(minX < NSMinX(locationFrame));
-  DCHECK(maxX > NSMaxX(locationFrame));
+  const NSRect locationFrame = [locationBar_ frame];
+
+  // Expand to include star and go buttons.  Including the widths
+  // rather that calculating from their current placement because this
+  // method can be called while the resize is still rearranging the
+  // views involved.
+  const CGFloat minX = NSMinX(locationFrame) - NSWidth([starButton_ frame]);
+  const CGFloat maxX = NSMaxX(locationFrame) + NSWidth([goButton_ frame]);
 
   NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX,
                         NSHeight(locationFrame));

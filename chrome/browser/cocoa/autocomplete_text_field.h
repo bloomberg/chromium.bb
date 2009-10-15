@@ -53,6 +53,9 @@ class AutocompleteTextFieldObserver {
   // Called when the user clicks the hint icon (i.e. the security icon) in the
   // location bar.
   virtual void OnSecurityIconClicked() = 0;
+
+  // Called when the field's frame changes.
+  virtual void OnFrameChanged() = 0;
 };
 
 @interface AutocompleteTextField : NSTextField {
@@ -68,6 +71,11 @@ class AutocompleteTextFieldObserver {
 // If the keyword, keyword hint, or search hint changed, then the
 // field editor may need to be repositioned.
 - (void)resetFieldEditorFrameIfNeeded;
+
+// Returns the amount of the field's width which is not being taken up
+// by the text contents.  May be negative if the contents are large
+// enough to scroll.
+- (CGFloat)availableDecorationWidth;
 
 @end
 

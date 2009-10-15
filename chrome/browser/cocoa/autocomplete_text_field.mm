@@ -164,4 +164,18 @@
   [editor mouseDown:theEvent];
 }
 
+- (CGFloat)availableDecorationWidth {
+  NSAttributedString* as = [self attributedStringValue];
+  const NSSize size([as size]);
+  const NSRect bounds([self bounds]);
+  return NSWidth(bounds) - size.width;
+}
+
+- (void)setFrame:(NSRect)frameRect {
+  [super setFrame:frameRect];
+  if (observer_) {
+    observer_->OnFrameChanged();
+  }
+}
+
 @end

@@ -47,6 +47,19 @@ const NSInteger kHintIconHorizontalPad = 3;
 // How far to shift bounding box of hint icon label down from top of field.
 const NSInteger kHintIconLabelYOffset = 7;
 
+// How far the editor insets itself, for purposes of determining if
+// decorations need to be trimmed.
+const CGFloat kEditorHorizontalInset = 3.0;
+
+// Conveniences to centralize width+offset calculations.
+CGFloat WidthForHint(NSAttributedString* hintString) {
+  return kHintXOffset + ceil([hintString size].width);
+}
+CGFloat WidthForKeyword(NSAttributedString* keywordString) {
+  return kKeywordXOffset + ceil([keywordString size].width) +
+      2 * kKeywordTokenInset;
+}
+
 }  // namespace
 
 @implementation AutocompleteTextFieldCell
@@ -61,76 +74,101 @@ const NSInteger kHintIconLabelYOffset = 7;
   return hintString_.get();
 }
 
-- (void)setKeywordString:(NSString*)aString {
-  DCHECK(aString != nil);
-  if (hintString_ || ![[keywordString_ string] isEqualToString:aString]) {
-    NSDictionary* attributes =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-             [self font], NSFontAttributeName,
-              nil];
+- (void)setKeywordString:(NSString*)fullString
+           partialString:(NSString*)partialString
+          availableWidth:(CGFloat)width {
+  DCHECK(fullString != nil);
 
-    keywordString_.reset(
-        [[NSAttributedString alloc] initWithString:aString
-                                        attributes:attributes]);
+  // Overriding |hintString_| always requires a reset.
+  if (hintString_) {
     hintString_.reset();
-
     fieldEditorNeedsReset_ = YES;
   }
-}
 
-- (void)setHintString:(NSAttributedString*)aString {
-  keywordString_.reset();
-  hintString_.reset([aString copy]);
+  // Adjust for space between editor and decorations.
+  width -= 2 * kEditorHorizontalInset;
 
-  fieldEditorNeedsReset_ = YES;
+  // If |fullString| won't fit, choose |partialString|.
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:[self font]
+                                  forKey:NSFontAttributeName];
+  NSString* s = fullString;
+  if ([s sizeWithAttributes:attributes].width > width) {
+    if (partialString) {
+      s = partialString;
+    }
+  }
+  scoped_nsobject<NSAttributedString> as(
+      [[NSAttributedString alloc] initWithString:s attributes:attributes]);
+
+  // If the value has changed, require a reset.
+  if (![keywordString_ isEqualToAttributedString:as]) {
+    keywordString_.reset([as retain]);
+    fieldEditorNeedsReset_ = YES;
+  }
 }
 
 // Convenience for the attributes used in the right-justified info
 // cells.
 - (NSDictionary*)hintAttributes {
-  NSMutableParagraphStyle* style =
-      [[[NSMutableParagraphStyle alloc] init] autorelease];
+  scoped_nsobject<NSMutableParagraphStyle> style(
+      [[NSMutableParagraphStyle alloc] init]);
   [style setAlignment:NSRightTextAlignment];
 
   return [NSDictionary dictionaryWithObjectsAndKeys:
               [self font], NSFontAttributeName,
               [NSColor lightGrayColor], NSForegroundColorAttributeName,
-              style, NSParagraphStyleAttributeName,
+              style.get(), NSParagraphStyleAttributeName,
               nil];
 }
 
 - (void)setKeywordHintPrefix:(NSString*)prefixString
                        image:(NSImage*)anImage
-                      suffix:(NSString*)suffixString {
+                      suffix:(NSString*)suffixString
+              availableWidth:(CGFloat)width {
   DCHECK(prefixString != nil);
   DCHECK(anImage != nil);
   DCHECK(suffixString != nil);
 
+  // Adjust for space between editor and decorations.
+  width -= 2 * kEditorHorizontalInset;
+
+  // Overriding |keywordString_| always requires a reset.
+  if (keywordString_) {
+    keywordString_.reset();
+    fieldEditorNeedsReset_ = YES;
+  }
+
+  // If |hintString_| is now too wide, clear it so that we don't pass
+  // the equality tests.
+  if (hintString_ && WidthForHint(hintString_) > width) {
+    [self clearKeywordAndHint];
+  }
+
   // TODO(shess): Also check the length?
-  if (keywordString_ ||
-      ![[hintString_ string] hasPrefix:prefixString] ||
+  if (![[hintString_ string] hasPrefix:prefixString] ||
       ![[hintString_ string] hasSuffix:suffixString]) {
 
     // Build an attributed string with the concatenation of the prefix
     // and suffix.
     NSString* s = [prefixString stringByAppendingString:suffixString];
-    NSMutableAttributedString* as =
-        [[[NSMutableAttributedString alloc]
-           initWithString:s attributes:[self hintAttributes]] autorelease];
+    scoped_nsobject<NSMutableAttributedString> as(
+        [[NSMutableAttributedString alloc]
+          initWithString:s attributes:[self hintAttributes]]);
 
     // Build an attachment containing the hint image.
-    NSTextAttachmentCell* attachmentCell =
-        [[[NSTextAttachmentCell alloc] initImageCell:anImage] autorelease];
-    NSTextAttachment* attachment =
-        [[[NSTextAttachment alloc] init] autorelease];
+    scoped_nsobject<NSTextAttachmentCell> attachmentCell(
+        [[NSTextAttachmentCell alloc] initImageCell:anImage]);
+    scoped_nsobject<NSTextAttachment> attachment(
+        [[NSTextAttachment alloc] init]);
     [attachment setAttachmentCell:attachmentCell];
 
     // The attachment's baseline needs to be adjusted so the image
     // doesn't sit on the same baseline as the text and make
     // everything too tall.
-    NSMutableAttributedString* is =
-        [[[NSAttributedString attributedStringWithAttachment:attachment]
-           mutableCopy] autorelease];
+    scoped_nsobject<NSMutableAttributedString> is(
+        [[NSAttributedString attributedStringWithAttachment:attachment]
+          mutableCopy]);
     [is addAttribute:NSBaselineOffsetAttributeName
         value:[NSNumber numberWithFloat:kKeywordHintImageBaseline]
         range:NSMakeRange(0, [is length])];
@@ -138,20 +176,41 @@ const NSInteger kHintIconLabelYOffset = 7;
     // Stuff the image attachment between the prefix and suffix.
     [as insertAttributedString:is atIndex:[prefixString length]];
 
-    [self setHintString:as];
+    // If too wide, just show the image.
+    hintString_.reset(WidthForHint(as) > width ? [is copy] : [as copy]);
+
+    fieldEditorNeedsReset_ = YES;
   }
 }
 
-- (void)setSearchHintString:(NSString*)aString {
+- (void)setSearchHintString:(NSString*)aString
+             availableWidth:(CGFloat)width {
   DCHECK(aString != nil);
 
-  if (keywordString_ || ![[hintString_ string] isEqualToString:aString]) {
-    NSAttributedString* as =
-        [[[NSAttributedString alloc] initWithString:aString
-                                         attributes:[self hintAttributes]]
-          autorelease];
+  // Adjust for space between editor and decorations.
+  width -= 2 * kEditorHorizontalInset;
 
-    [self setHintString:as];
+  // Overriding |keywordString_| always requires a reset.
+  if (keywordString_) {
+    keywordString_.reset();
+    fieldEditorNeedsReset_ = YES;
+  }
+
+  // If |hintString_| is now too wide, clear it so that we don't pass
+  // the equality tests.
+  if (hintString_ && WidthForHint(hintString_) > width) {
+    [self clearKeywordAndHint];
+  }
+
+  if (![[hintString_ string] isEqualToString:aString]) {
+    scoped_nsobject<NSAttributedString> as(
+        [[NSAttributedString alloc] initWithString:aString
+                                        attributes:[self hintAttributes]]);
+
+    // If too wide, don't keep the hint.
+    hintString_.reset(WidthForHint(as) > width ? nil : [as copy]);
+
+    fieldEditorNeedsReset_ = YES;
   }
 }
 
@@ -246,7 +305,7 @@ const NSInteger kHintIconLabelYOffset = 7;
 
   if (hintString_) {
     DCHECK(!keywordString_);
-    const CGFloat hintWidth = kHintXOffset + ceil([hintString_ size].width);
+    const CGFloat hintWidth(WidthForHint(hintString_));
 
     // TODO(shess): This could be better.  Show the hint until the
     // non-hint text bumps against it?
@@ -255,8 +314,7 @@ const NSInteger kHintIconLabelYOffset = 7;
     }
   } else if (keywordString_) {
     DCHECK(!hintString_);
-    const CGFloat keywordWidth = kKeywordXOffset +
-        ceil([keywordString_ size].width) + 2 * kKeywordTokenInset;
+    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
 
     // TODO(shess): This could be better.  There's support for a
     // "short" version of the keyword string, work that in in a

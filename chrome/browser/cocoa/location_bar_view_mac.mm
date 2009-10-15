@@ -4,7 +4,7 @@
 
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -48,6 +48,25 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
 static const CGFloat kEvTextColorRedComponent = 0.0;
 static const CGFloat kEvTextColorGreenComponent = 0.59;
 static const CGFloat kEvTextColorBlueComponent = 0.08;
+
+// Build a short string to use in keyword-search when the field isn't
+// very big.
+// TODO(shess): Copied from views/location_bar_view.cc.  Try to share.
+std::wstring CalculateMinString(const std::wstring& description) {
+  // Chop at the first '.' or whitespace.
+  const size_t dot_index = description.find(L'.');
+  const size_t ws_index = description.find_first_of(kWhitespaceWide);
+  size_t chop_index = std::min(dot_index, ws_index);
+  std::wstring min_string;
+  if (chop_index == std::wstring::npos) {
+    // No dot or whitespace, truncate to at most 3 chars.
+    min_string = l10n_util::TruncateString(description, 3);
+  } else {
+    min_string = description.substr(0, chop_index);
+  }
+  l10n_util::AdjustStringForLocaleDirection(min_string, &min_string);
+  return min_string;
+}
 
 }  // namespace
 
@@ -162,17 +181,27 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
                                        const bool show_search_hint,
                                        NSImage* image) {
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
+  const CGFloat availableWidth([field availableDecorationWidth]);
 
   if (!keyword.empty() && !is_keyword_hint) {
     // Keyword search mode.  The text will be like "Search Engine:".
     // "Engine" is a parameter to be replaced by text based on the
     // keyword.
 
-    // TODO(shess): This needs to additionally support a minimized
-    // version, to be used when the string below is too long.
-    const std::wstring keyword_text(
-        l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT, short_name));
-    [cell setKeywordString:base::SysWideToNSString(keyword_text)];
+    const std::wstring min_name(CalculateMinString(short_name));
+    NSString* partial_string = nil;
+    if (!min_name.empty()) {
+      partial_string =
+          l10n_util::GetNSStringF(IDS_OMNIBOX_KEYWORD_TEXT,
+                                  WideToUTF16(min_name));
+    }
+
+    NSString* keyword_string =
+        l10n_util::GetNSStringF(IDS_OMNIBOX_KEYWORD_TEXT,
+                                WideToUTF16(short_name));
+    [cell setKeywordString:keyword_string
+             partialString:partial_string
+            availableWidth:availableWidth];
   } else if (!keyword.empty() && is_keyword_hint) {
     // Keyword is a hint, like "Press [Tab] to search Engine".  [Tab]
     // is a parameter to be replaced by an image.  "Engine" is a
@@ -193,12 +222,14 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
     NSString* prefix = base::SysWideToNSString(keyword_hint.substr(0, split));
     NSString* suffix = base::SysWideToNSString(keyword_hint.substr(split));
 
-    [cell setKeywordHintPrefix:prefix image:image suffix:suffix];
+    [cell setKeywordHintPrefix:prefix image:image suffix:suffix
+                availableWidth:availableWidth];
   } else if (show_search_hint) {
     // Show a search hint right-justified in the field if there is no
     // keyword.
     const std::wstring hint(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT));
-    [cell setSearchHintString:base::SysWideToNSString(hint)];
+    [cell setSearchHintString:base::SysWideToNSString(hint)
+               availableWidth:availableWidth];
   } else {
     // Nothing interesting to show, plain old text field.
     [cell clearKeywordAndHint];
