@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 
-#include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/storage_area.h"
@@ -109,18 +108,5 @@ class DOMStorageDispatcherHost :
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageDispatcherHost);
 };
-
-#if defined(COMPILER_GCC)
-namespace __gnu_cxx {
-
-template<>
-struct hash<DOMStorageDispatcherHost*> {
-  std::size_t operator()(DOMStorageDispatcherHost* const& p) const {
-    return reinterpret_cast<std::size_t>(p);
-  }
-};
-
-}  // namespace __gnu_cxx
-#endif
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
