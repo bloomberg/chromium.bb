@@ -110,6 +110,18 @@
             'sources': [
               'common/mac/testing_common.mm',
             ],
+            'postbuilds': [
+              {
+                'variables': {
+                  # Define install_name in a variable ending in _path
+                  # so that gyp understands it's a path and performs proper
+                  # relativization during dict merging.
+                  'install_name_path': 'mac/unit_tests_install_name.sh',
+                },
+                'postbuild_name': 'Fix Framework Paths',
+                'action': ['<(install_name_path)'],
+              },
+            ],
             'copies': [
               {
                 'destination': '<(PRODUCT_DIR)',

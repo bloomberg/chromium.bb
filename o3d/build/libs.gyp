@@ -101,8 +101,11 @@
         [ 'OS=="mac"',
           {
             'direct_dependent_settings': {
+              'mac_framework_dirs': [
+                "<(PRODUCT_DIR)/Library/Frameworks",
+              ],
               'libraries': [
-                "<(PRODUCT_DIR)/Cg.framework",
+                "<(PRODUCT_DIR)/Library/Frameworks/Cg.framework",
               ],
             },
           }
@@ -110,10 +113,10 @@
       ],
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)',
           'conditions' : [
             [ 'OS=="linux"',
               {
+                'destination': '<(PRODUCT_DIR)',
                 'files': [
                   "../../<(cgdir)/lib/libCg.so",
                   "../../<(cgdir)/lib/libCgGL.so",
@@ -123,6 +126,7 @@
             ],
             [ 'OS=="win"',
               {
+                'destination': '<(PRODUCT_DIR)',
                 'files': [
                   "../../<(cgdir)/bin/cg.dll",
                   "../../<(cgdir)/bin/cgD3D9.dll",
@@ -134,6 +138,7 @@
             ],
             [ 'OS=="mac"',
               {
+                'destination': '<(PRODUCT_DIR)/Library/Frameworks',
                 'files': [
                   "../../<(cgdir)/Cg.framework",
                 ]
