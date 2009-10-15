@@ -148,13 +148,18 @@
                   <a>h3Name</a>
                 </li>
               </ol>
-            </li><li jsinstance="*1">
-              <a href="#description">Description</a>
+            </li><li jsinstance="1">
+              <a href="#description">Objects and properties</a>
               <ol>
-                <li jsinstance="0">
-                  <a href="#overview-properties">Properties</a>
-                </li><li jsinstance="*1">
-                  <a href="#overview-examples">Examples</a>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li jsinstance="*2">
+              <a href="#overview-examples">Examples</a>
+              <ol>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
                 </li>
               </ol>
             </li>
@@ -236,91 +241,54 @@ and otherwise manipulate bookmarks.
 
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "bookmarks" permission
-in your extension's manifest to use the bookmarks API.
+in the <a href="manifest.html">extension manifest</a>
+to use the bookmarks API.
 For example:</p>
 <pre>{
   "name": "My extension that uses bookmarks",
   "version": "0.1",
 <b>  "permissions": [
     "bookmarks"
-  ]</b>
+  ]</b>,
+  ...
 }</pre>
 
-<h2 id="description">Description</h2>
+<h2 id="description">Objects and properties</h2>
 
 <p>
-<a href="#type-BookmarkTreeNode">BookmarkTreeNode</a> objects
-are an important part of the <code>chrome.bookmarks</code> API.
-Each bookmark tree node represents
-either a URL or a group of bookmarks, as you can see in the following figure.
+Bookmarks are organized in a tree,
+where each node in the tree
+is either a bookmark or a group
+(a folder that can contain nodes).
+Each node in the tree
+is represented by a
+<a href="#type-BookmarkTreeNode"><code>BookmarkTreeNode</code></a> object.
+</p>
+
+<p>
+<code>BookmarkTreeNode</code> properties
+are used throughout the <code>chrome.bookmarks</code> API.
+For example, when you call
+<a href="#method-create"><code>create()</code></a>,
+you pass in the new node's parent (<code>parentId</code>),
+and, optionally, the node's
+<code>index</code>, <code>title</code>, and <code>url</code> properties.
+See <a href="#type-BookmarkTreeNode"><code>BookmarkTreeNode</code></a>
+for information about the properties a node can have.
+</p>
+
+<div class="comment">
+<p>
+[PENDING:
+Update and introduce the following image or delete the file.]
 </p>
 
 <img alt="2 kinds of bookmark objects" width="415" height="123" src="images/bookmarks.png">
-<br>
-<span class="tbd">
-[PENDING: this figure needs to be updated]
-</span>
+</div>
 
+<div class="comment">
 
-<h3 id="overview-properties">Properties</h3>
-
-<p>
-Objects that represent bookmarks can have the following properties:
-</p>
-
-<dl>
-<dt> <code>id</code> </dt>
-<dd> An integer ID that's unique for each bookmark.
-     IDs are unique and persisted within the current profile and are
-     and stable across shutdown and startup of the browser.
-     </dd>
-
-<dt> <code>title</code> </dt>
-<dd> The name of the bookmark.
-     This is the user-visible string that describes the URL or group.
-     </dd>
-
-<dt> <code>parentId </code>
-     <em>(omitted for the root group)</em>
-     </dt>
-<dd> The ID of the group that this bookmark is in. </dd>
-
-<dt> <code>index</code>
-     <em>(optional; omitted for the root group)</em>
-     </dt>
-<dd> The 0-based integer position of the bookmark within its group. </dd>
-
-<dt> <code>url</code>
-     <em>(omitted for groups)</em>
-     </dt>
-<dd> The URL of the page that the bookmark points to. </dd>
-
-<dt> ... </dt>
-</dl>
-
-<h3 id="overview-examples">Examples</h3>
-
-<p>
-The following code creates a bookmark group with the title "Chromium bookmarks".
-The last argument defines a function to be executed after the folder is created.
-</p>
-
-<pre>chrome.bookmarks.create({'parentId': bookmarkBar.id,
-                         'title': 'Chromium bookmarks'},
-                        function(newFolder) {...});
-</pre>
-
-<p>
-The next snippet creates a bookmark pointing to the Chromium developer doc.
-Since nothing too bad will happen if creating the bookmark fails,
-this snippet doesn't bother to define a callback function.
-</p>
-
-<pre>chrome.bookmarks.create({'parentId': chromiumBookmarks.id,
-                         'title': 'dev doc',
-                         'url': 'http://code.google.com/chrome/extensions'});
-</pre>
-
+<p> [PENDING: The following section needs to be updated or deleted.] </p>
 <p>
 Say you have bookmark hierarchy that looks like this:</p>
 
@@ -346,19 +314,38 @@ Here's how those bookmarks might be represented with bookmark objects:</p>
 
 <img alt="a hierarchy of bookmarks" width="522" height="594" src="images/bookmarks-hierarchy.png">
 
-<p>
-Here's some code you could use to create that hierarchy:</p>
+</div>
 
-<pre class="example tbd">[PENDING: ...code goes here...]
+
+<h2 id="overview-examples">Examples</h2>
+
+<p>
+The following code creates a folder with the title "Extension bookmarks".
+The first argument to <code>create()</code> specifies properties
+for the new folder.
+The second argument defines a function
+to be executed after the folder is created.
+</p>
+
+<pre>chrome.bookmarks.create({'parentId': bookmarkBar.id,
+                         'title': 'Extension bookmarks'},
+                        function(newFolder) {
+  console.log("added folder: " + newFolder.title);
+});
 </pre>
 
+<p>
+The next snippet creates a bookmark pointing to
+the developer documentation for extensions.
+Since nothing bad will happen if creating the bookmark fails,
+this code doesn't bother to define a callback function.
+</p>
 
-<!-- PENDING: we could have links to source code and sample extensions. E.g.:
-<div class="exampleLink">
-<a href="http://www.google.com/url?q=http%3A%2F%2Fexample.com&amp;sa=D&amp;sntz=1&amp;usg=AFrqEzd0oeJ1qGwYPoKuq1dTesEchMDLIQ">Full source code</a> |
-<a href="http://www.google.com/url?q=http%3A%2F%2Fexample.com&amp;sa=D&amp;sntz=1&amp;usg=AFrqEzd0oeJ1qGwYPoKuq1dTesEchMDLIQ">Install extension</a>
-</div>
--->
+<pre>chrome.bookmarks.create({'parentId': extensionsFolderId,
+                         'title': 'Extensions doc',
+                         'url': 'http://code.google.com/chrome/extensions'});
+</pre>
+
 <!-- END AUTHORED CONTENT -->
 </div>
 
@@ -3207,7 +3194,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A node in the bookmarks tree, which is either a bookmark or a folder.  Child nodes are ordered within their parent.</dd>
+          <dd>A node (either a bookmark or a folder) in the bookmark tree.  Child nodes are ordered within their parent folder.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -3241,7 +3228,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The unique identifier for the node.</dd>
+          <dd>The unique identifier for the node. IDs are unique within the current profile, and they remain valid even after the browser is restarted.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3282,7 +3269,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the parent folder node.  Not present in the root node.</dd>
+          <dd>The <code>id</code> of the parent folder.  Omitted for the root node.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3323,7 +3310,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The 0-based position of this node within its parent.</dd>
+          <dd>The 0-based position of this node within its parent folder.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3364,7 +3351,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The URL navigated to when a user clicks on the bookmark.  This field isn't present for folders.</dd>
+          <dd>The URL navigated to when a user clicks the bookmark. Omitted for folders.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3446,7 +3433,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>When this node was created, represented in milliseconds since the epoch (new Date(dateAdded)).</dd>
+          <dd>When this node was created, in milliseconds since the epoch (<code>new Date(dateAdded)</code>).</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3487,7 +3474,7 @@ Here's some code you could use to create that hierarchy:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>When the contents of this folder last changed, represented in milliseconds since the epoch.</dd>
+          <dd>When the contents of this folder last changed, in milliseconds since the epoch.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

@@ -926,15 +926,15 @@
       {
         "id": "BookmarkTreeNode",
         "type": "object",
-        "description": "A node in the bookmarks tree, which is either a bookmark or a folder.  Child nodes are ordered within their parent.",
+        "description": "A node (either a bookmark or a folder) in the bookmark tree.  Child nodes are ordered within their parent folder.",
         "properties": {
-          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the node."},
-          "parentId": {"type": "string", "minimum": 0, "optional": true, "description": "The id of the parent folder node.  Not present in the root node."},
-          "index": {"type": "integer", "optional": true, "description": "The 0-based position of this node within its parent."},
-          "url": {"type": "string", "optional": true, "description": "The URL navigated to when a user clicks on the bookmark.  This field isn't present for folders."},
+          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the node. IDs are unique within the current profile, and they remain valid even after the browser is restarted."},
+          "parentId": {"type": "string", "minimum": 0, "optional": true, "description": "The <code>id</code> of the parent folder.  Omitted for the root node."},
+          "index": {"type": "integer", "optional": true, "description": "The 0-based position of this node within its parent folder."},
+          "url": {"type": "string", "optional": true, "description": "The URL navigated to when a user clicks the bookmark. Omitted for folders."},
           "title": {"type": "string", "description": "The text displayed for the node."},
-          "dateAdded": {"type": "number", "optional": true, "description": "When this node was created, represented in milliseconds since the epoch (new Date(dateAdded))."},
-          "dateGroupModified": {"type": "number", "optional": true, "description": "When the contents of this folder last changed, represented in milliseconds since the epoch."},
+          "dateAdded": {"type": "number", "optional": true, "description": "When this node was created, in milliseconds since the epoch (<code>new Date(dateAdded)</code>)."},
+          "dateGroupModified": {"type": "number", "optional": true, "description": "When the contents of this folder last changed, in milliseconds since the epoch."},
           "children": {"type": "array", "optional": true, "items": {"$ref": "BookmarkTreeNode"}, "description": "An ordered list of children of this node."}
         }
       }
