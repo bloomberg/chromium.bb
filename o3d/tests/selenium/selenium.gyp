@@ -38,6 +38,7 @@
             'tests/pixel-perfection.html',
             'tests/quaternion-test.html',
             'tests/render-test.html',
+            'tests/render-target-clear-test.html',
             'tests/serialization-test.html',
             'tests/test-test.html',
             'tests/texture-set-test.html',

@@ -49,7 +49,7 @@
 #       environment(s) where the test should be skipped.
 #       Default = ""
 #
-#   pdiff_edge_ignore_off : Turn off edge detection function in pdiff. 
+#   pdiff_edge_ignore_off : Turn off edge detection function in pdiff.
 #       By default, it's on with a default edge detect threshold 5.
 #
 #   pdiff_edge_threshold(0 to 7) : Set edge detect threshold in pdiff.
@@ -78,6 +78,7 @@ small   pixel-perfection      screenshot pdiff_threshold(200) pdiff_threshold_ma
 medium  offscreen-test
 medium  texture-set-test      screenshot
 medium  param-array-test      screenshot
+small   render-target-clear-test screenshot
 small   no-rendergraph        screenshot
 small   non-cachable-params   screenshot pdiff_threshold(200)
 small   type-test

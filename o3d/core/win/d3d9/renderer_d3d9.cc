@@ -842,6 +842,8 @@ RendererD3D9::RendererD3D9(ServiceLocator* service_locator)
       off_screen_surface_(NULL),
       back_buffer_surface_(NULL),
       back_buffer_depth_surface_(NULL),
+      current_d3d_surface_(NULL),
+      current_d3d_depth_surface_(NULL),
       have_device_(false),
       fullscreen_(false),
       fullscreen_message_font_(NULL),
@@ -1028,29 +1030,23 @@ void RendererD3D9::PlatformSpecificClear(const Float4 &color,
                                          bool depth_flag,
                                          int stencil,
                                          bool stencil_flag) {
-  // is this safe to call inside BeginScene/EndScene?
-  CComPtr<IDirect3DSurface9> current_surface;
-  if (!HR(d3d_device()->GetRenderTarget(0, &current_surface)))
-    return;
-
-  CComPtr<IDirect3DSurface9> current_depth_surface;
-  if (!HR(d3d_device()->GetDepthStencilSurface(&current_depth_surface)))
-    return;
-
-  // Conditionally clear the properties of the back buffer based on the
-  // argument flags, and the existence of currently bound buffers.
-  HR(d3d_device_->Clear(
+  // Conditionally clear the properties of the current render target or back
+  // buffer based on the argument flags, and the existence of currently bound
+  // buffers.
+  if (!HR(d3d_device_->Clear(
          0,
          NULL,
-         ((color_flag && current_surface) ? D3DCLEAR_TARGET  : 0) |
-         ((depth_flag && current_depth_surface) ? D3DCLEAR_ZBUFFER : 0) |
-         ((stencil_flag && current_depth_surface) ? D3DCLEAR_STENCIL : 0),
+         ((current_d3d_surface_ && color_flag) ? D3DCLEAR_TARGET  : 0) |
+         ((current_d3d_depth_surface_ && depth_flag) ? D3DCLEAR_ZBUFFER : 0) |
+         ((current_d3d_depth_surface_ && stencil_flag ? D3DCLEAR_STENCIL : 0)),
          D3DCOLOR_COLORVALUE(color[0],
                              color[1],
                              color[2],
                              color[3]),
          depth,
-         stencil));
+         stencil))) {
+    DLOG(ERROR) << "Clear Failed.";
+  }
 }
 
 void RendererD3D9::SetViewportInPixels(int left,
@@ -1426,6 +1422,9 @@ bool RendererD3D9::PlatformSpecificStartRendering() {
     back_buffer_depth_surface_ = NULL;
   }
 
+  current_d3d_surface_ = back_buffer_surface_;
+  current_d3d_depth_surface_ = back_buffer_depth_surface_;
+
   return result;
 }
 
@@ -1449,6 +1448,9 @@ void RendererD3D9::PlatformSpecificEndDraw() {
 }
 
 void RendererD3D9::PlatformSpecificFinishRendering() {
+  current_d3d_surface_ = NULL;
+  current_d3d_depth_surface_ = NULL;
+
   if (have_device_) {
     // Release the back-buffer references.
     back_buffer_surface_ = NULL;
@@ -1559,11 +1561,17 @@ void RendererD3D9::SetRenderSurfacesPlatformSpecific(
   // At least one of the surfaces must be non-null.
   DCHECK(d3d_surface || d3d_depth_surface);
 
+  current_d3d_surface_ = d3d_surface;
+  current_d3d_depth_surface_ = d3d_depth_surface;
+
   HR(d3d_device()->SetRenderTarget(0, d3d_surface));
   HR(d3d_device()->SetDepthStencilSurface(d3d_depth_surface));
 }
 
 void RendererD3D9::SetBackBufferPlatformSpecific() {
+  current_d3d_surface_ = back_buffer_surface_;
+  current_d3d_depth_surface_ = back_buffer_depth_surface_;
+
   HR(d3d_device()->SetRenderTarget(0, back_buffer_surface_));
   HR(d3d_device()->SetDepthStencilSurface(back_buffer_depth_surface_));
 }

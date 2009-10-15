@@ -1,0 +1,156 @@
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!--
+Tests that Render Targets clear correctly.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Render Target Clear Test.
+</title>
+<link rel="stylesheet" type="text/css" href="assets/style.css" />
+<!-- Include sample javascript library functions-->
+<script type="text/javascript" src="../../../samples/o3djs/base.js"></script>
+
+<!-- Our javascript code -->
+<script type="text/javascript" id="o3dscript">
+o3djs.require('o3djs.util');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.primitives');
+o3djs.require('o3djs.material');
+
+// Events
+// init() once the page has finished loading.
+// unload() when the page is unloaded.
+window.onload = init;
+window.onunload = unload;
+
+// global variables
+var g_o3dElement;
+var g_o3d;
+var g_math;
+var g_client;
+var g_viewInfo;
+var g_pack;
+var g_root;
+var g_o3dElement;
+
+/**
+ * Creates the client area.
+ */
+function init() {
+  o3djs.util.makeClients(initStep2);
+}
+
+/**
+ * Initializes O3D and creates one shape.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function initStep2(clientElements) {
+  // Initializes global variables and libraries.
+  g_o3dElement = clientElements[0];
+  g_o3d = g_o3dElement.o3d;
+  g_math = o3djs.math;
+  g_client = g_o3dElement.client;
+
+  // Creates a pack to manage our resources/assets
+  g_pack = g_client.createPack();
+
+  g_root = g_pack.createObject('Transform');
+
+  g_viewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_root,
+      g_client.renderGraphRoot,
+      [0.2, 0.3, 0.4, 1]);
+
+  var clientWidth = g_client.width;
+  var clientHeight = g_client.height;
+  g_viewInfo.drawContext.projection = g_math.matrix4.orthographic(
+      -clientWidth * 0.5 + 0.5,
+      clientWidth * 0.5 + 0.5,
+      -clientHeight * 0.5 + 0.5,
+      clientHeight * 0.5 + 0.5,
+      0.001,
+      1000);
+  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
+      [0, 500, 0], // eye
+      [0, 0, 0],   // target
+      [0, 0, -1]); // up
+
+  for (var ii = 0; ii < 3; ++ii) {
+    var texture = g_pack.createTexture2D(
+        256, 256, g_o3d.Texture.ARGB8, 1, true);
+    var surface = texture.getRenderSurface(0);
+    var renderSet = g_pack.createObject('RenderSurfaceSet');
+    renderSet.renderSurface = surface;
+    // Make render before the main display.
+    renderSet.priority = -10 + ii;
+
+    var material = o3djs.material.createConstantMaterial(
+        g_pack, g_viewInfo, texture);
+    var shape = o3djs.primitives.createPlane(g_pack, material, 128, 128, 1, 1);
+    var transform = g_pack.createObject("Transform");
+    transform.translate(-200 + 150 * ii, 0, 0);
+    transform.parent = g_root;
+    transform.addShape(shape);
+    var clearColor = [0, 0, 0, 1];
+    clearColor[ii] = 1;
+    var viewInfo = o3djs.rendergraph.createBasicView(
+        g_pack, null, renderSet, clearColor);
+    // Splice it into the render graph AFTER everything is setup.
+    renderSet.parent = g_client.renderGraphRoot;
+  }
+
+  window.g_testResult = true;
+}
+
+/**
+ * Remove any callbacks so they don't get called after the page has unloaded.
+ */
+function unload() {
+  if (g_client) {
+    g_client.cleanup();
+  }
+}
+</script>
+</head>
+<body>
+<h1>Tests that render targets clear correctly.</h1>
+Should be red, green, blue on dark blue background.
+<div id="o3d" style="width: 600px; height: 600px"></div>
+</body>
+</html>
+

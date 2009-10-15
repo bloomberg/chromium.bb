@@ -1,5 +1,5 @@
 vars = {
-  "o3d_code_rev": "149",
+  "o3d_code_rev": "154",
 }
 
 deps = {
