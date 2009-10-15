@@ -102,6 +102,13 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     contents()->TestDidNavigate(contents_->render_view_host(), params);
   }
 
+  void GoBack() {
+    NavigationEntry* entry = contents()->controller().GetEntryAtOffset(-1);
+    ASSERT_TRUE(entry);
+    contents()->controller().GoBack();
+    Navigate(entry->url().spec().c_str(), entry->page_id());
+  }
+
   void ShowInterstitial(ResourceType::Type resource_type,
                         const char* url) {
     SafeBrowsingService::UnsafeResource resource;
@@ -354,4 +361,42 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   // We did proceed, we should be back to the initial page.
   ASSERT_EQ(1, controller().entry_count());
   EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
+}
+
+// Tests showing a blocking page then navigating back and forth to make sure the
+// controller entries are OK.  http://crbug.com/17627
+TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
+  // Navigate somewhere.
+  Navigate(kGoodURL, 1);
+
+  // Now navigate to a bad page triggerring an interstitial.
+  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
+  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  // Proceed, then navigate back.
+  ProceedThroughInterstitial(sb_interstitial);
+  Navigate(kBadURL, 2);  // Commit the navigation.
+  GoBack();
+
+  // We are back on the good page.
+  sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_FALSE(sb_interstitial);
+  ASSERT_EQ(2, controller().entry_count());
+  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
+
+  // Navigate forward to the malware URL.
+  contents()->controller().GoForward();
+  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  // Let's proceed and make sure everything is OK (bug 17627).
+  ProceedThroughInterstitial(sb_interstitial);
+  Navigate(kBadURL, 2);  // Commit the navigation.
+  sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_FALSE(sb_interstitial);
+  ASSERT_EQ(2, controller().entry_count());
+  EXPECT_EQ(kBadURL, controller().GetActiveEntry()->url().spec());
 }

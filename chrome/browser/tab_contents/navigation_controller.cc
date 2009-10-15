@@ -661,7 +661,10 @@ void NavigationController::RendererDidNavigateToExistingPage(
   if (entry == pending_entry_)
     DiscardNonCommittedEntriesInternal();
 
-  last_committed_entry_index_ = entry_index;
+  // If a transient entry was removed, the indices might have changed, so we
+  // have to query the entry index again.
+  last_committed_entry_index_ =
+      GetEntryIndexWithPageID(tab_contents_->GetSiteInstance(), params.page_id);
 }
 
 void NavigationController::RendererDidNavigateToSamePage(
@@ -977,6 +980,8 @@ void NavigationController::DiscardTransientEntry() {
   if (transient_entry_index_ == -1)
     return;
   entries_.erase(entries_.begin() + transient_entry_index_);
+  if (last_committed_entry_index_ > transient_entry_index_)
+    last_committed_entry_index_--;
   transient_entry_index_ = -1;
 }
 

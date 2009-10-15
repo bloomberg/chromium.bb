@@ -461,7 +461,18 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       unsafe_resource.render_process_host_id, unsafe_resource.render_view_id);
 
-  if (!InterstitialPage::GetInterstitialPage(tab_contents)) {
+  InterstitialPage* interstitial =
+      InterstitialPage::GetInterstitialPage(tab_contents);
+  if (interstitial &&
+      unsafe_resource.resource_type == ResourceType::MAIN_FRAME) {
+    // There is already an interstitial showing and we are about to display a
+    // new one for the main frame. Just hide the current one, it is now
+    // irrelevent
+    interstitial->DontProceed();
+    interstitial = NULL;
+  }
+
+  if (!interstitial) {
     // There are no interstitial currently showing in that tab, go ahead and
     // show this interstitial.
     std::vector<SafeBrowsingService::UnsafeResource> resources;
@@ -476,9 +487,7 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     return;
   }
 
-  // Let's queue the interstitial.
-  // Note we only expect resources from the page at this point.
-  DCHECK(unsafe_resource.resource_type != ResourceType::MAIN_FRAME);
+  // This is an interstitial for a page's resource, let's queue it.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
   (*unsafe_resource_map)[tab_contents].push_back(unsafe_resource);
 }
