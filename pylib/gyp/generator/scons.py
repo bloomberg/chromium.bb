@@ -179,8 +179,11 @@ def GenerateConfig(fp, config, indent='', src_dir=''):
       'CXXFLAGS' : 'cflags_cc',
       'CPPDEFINES' : 'defines',
       'CPPPATH' : 'include_dirs',
+      # Add the ldflags value to $LINKFLAGS, but not $SHLINKFLAGS.
+      # SCons defines $SHLINKFLAGS to incorporate $LINKFLAGS, so
+      # listing both here would case 'ldflags' to get appended to
+      # both, and then have it show up twice on the command line.
       'LINKFLAGS' : 'ldflags',
-      'SHLINKFLAGS' : 'ldflags',
   }
   postamble='\n%s],\n' % indent
   for scons_var in sorted(var_mapping.keys()):
