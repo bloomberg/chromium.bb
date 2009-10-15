@@ -59,6 +59,7 @@
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/task_manager_gtk.h"
+#include "chrome/browser/gtk/theme_install_bubble_view_gtk.h"
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/page_info_window.h"
@@ -1130,8 +1131,7 @@ void BrowserWindowGtk::ShowHistoryTooNewDialog() {
 }
 
 void BrowserWindowGtk::ShowThemeInstallBubble() {
-  // http://crbug.com/24360
-  NOTIMPLEMENTED();
+  ThemeInstallBubbleViewGtk::Show(window_);
 }
 
 void BrowserWindowGtk::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
