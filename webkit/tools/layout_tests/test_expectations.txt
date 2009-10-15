@@ -2286,7 +2286,6 @@ BUG4360 SKIP : LayoutTests/http/tests/navigation/post-goback-repost-policy.html 
 BUG10394 WIN LINUX : LayoutTests/fast/events/standalone-image-drag-to-editable.html = FAIL
 
 // Merge 39309:39335 Regressions (RenderButton::setupInnerStyle regression).
-BUG5737 LINUX : LayoutTests/fast/box-sizing/percentage-height.html = FAIL
 BUG5737 LINUX : LayoutTests/fast/forms/001.html = FAIL
 BUG5737 LINUX : LayoutTests/fast/forms/input-first-letter.html = FAIL
 
