@@ -17,12 +17,11 @@ namespace browser_sync {
 
 class GaiaAuthenticatorTest : public testing::Test { };
 
-class GaiaAuthMock : public GaiaAuthenticator {
+class GaiaAuthMockForGaiaAuthenticator : public GaiaAuthenticator {
  public:
-  GaiaAuthMock() : GaiaAuthenticator("useragent",
-                                     "serviceid",
-                                     "http://gaia_url") {}
-  ~GaiaAuthMock() {}
+  GaiaAuthMockForGaiaAuthenticator()
+      : GaiaAuthenticator("useragent", "serviceid", "http://gaia_url") {}
+  ~GaiaAuthMockForGaiaAuthenticator() {}
  protected:
   bool Post(const GURL& url, const string& post_body,
             unsigned long* response_code, string* response_body) {
@@ -33,7 +32,7 @@ class GaiaAuthMock : public GaiaAuthenticator {
 };
 
 TEST(GaiaAuthenticatorTest, TestNewlineAtEndOfAuthTokenRemoved) {
-  GaiaAuthMock mock_auth;
+  GaiaAuthMockForGaiaAuthenticator mock_auth;
   MessageLoop message_loop;
   mock_auth.set_message_loop(&message_loop);
   GaiaAuthenticator::AuthResults results;

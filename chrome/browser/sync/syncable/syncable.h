@@ -839,7 +839,6 @@ class Directory {
   friend class ScopedKernelLock;
   friend class ScopedKernelUnlock;
   friend class WriteTransaction;
-  friend class TestUnsaveableDirectory;
  public:
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.

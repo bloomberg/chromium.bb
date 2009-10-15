@@ -1113,8 +1113,6 @@ TEST(Syncable, PathNameMatch) {
 }
 #endif  // OS_WIN
 
-}  // namespace
-
 void FakeSync(MutableEntry* e, const char* fake_id) {
   e->Put(IS_UNSYNCED, false);
   e->Put(BASE_VERSION, 2);
@@ -1141,4 +1139,5 @@ TEST_F(SyncableDirectoryTest, Bug1509232) {
   dir_.get()->SaveChanges();
 }
 
+}  // namespace
 }  // namespace syncable

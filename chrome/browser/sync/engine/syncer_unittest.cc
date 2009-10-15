@@ -4344,8 +4344,6 @@ TEST_F(SyncerTest, SingletonTagUpdates) {
   }
 }
 
-namespace {
-
 class SyncerPositionUpdateTest : public SyncerTest {
  public:
   SyncerPositionUpdateTest() : next_update_id_(1), next_revision_(1) {}
@@ -4394,8 +4392,6 @@ class SyncerPositionUpdateTest : public SyncerTest {
   int next_revision_;
   DISALLOW_COPY_AND_ASSIGN(SyncerPositionUpdateTest);
 };
-
-}  // namespace
 
 TEST_F(SyncerPositionUpdateTest, InOrderPositive) {
   // Add a bunch of items in increasing order, starting with just positive
@@ -4462,8 +4458,6 @@ TEST_F(SyncerPositionUpdateTest, RandomOrderInBatches) {
   ExpectLocalItemsInServerOrder();
 }
 
-namespace {
-
 class SyncerPositionTiebreakingTest : public SyncerTest {
  public:
   SyncerPositionTiebreakingTest()
@@ -4517,8 +4511,6 @@ class SyncerPositionTiebreakingTest : public SyncerTest {
   int next_revision_;
   DISALLOW_COPY_AND_ASSIGN(SyncerPositionTiebreakingTest);
 };
-
-}  // namespace
 
 TEST_F(SyncerPositionTiebreakingTest, LowMidHigh) {
   Add(low_id_);

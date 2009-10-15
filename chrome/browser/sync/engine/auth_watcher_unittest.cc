@@ -32,14 +32,14 @@ static const char* kValidLSID = "validLSID";
 static const char* kInvalidAuthToken = "invalidAuthToken";
 static const char* kValidAuthToken = "validAuthToken";
 
-namespace {
+namespace browser_sync {
 
-class GaiaAuthMock : public browser_sync::GaiaAuthenticator {
+class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
  public:
-  GaiaAuthMock() : browser_sync::GaiaAuthenticator(
+  GaiaAuthMockForAuthWatcher() : browser_sync::GaiaAuthenticator(
       kTestUserAgent, kTestServiceId, kTestGaiaURL),
       use_bad_auth_token_(false) {}
-  virtual ~GaiaAuthMock() {}
+  virtual ~GaiaAuthMockForAuthWatcher() {}
 
   void SendBadAuthTokenForNextRequest() { use_bad_auth_token_ = true; }
 
@@ -71,10 +71,6 @@ class GaiaAuthMock : public browser_sync::GaiaAuthenticator {
   bool use_bad_auth_token_;
 };
 
-}  // namespace
-
-namespace browser_sync {
-
 class AuthWatcherTest : public testing::Test {
  public:
   AuthWatcherTest() : metadb_(kUserDisplayEmail),
@@ -92,7 +88,7 @@ class AuthWatcherTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     PathString user_settings_path = temp_dir_.path().value() + kUserSettingsDB;
     user_settings_->Init(user_settings_path);
-    gaia_auth_ = new GaiaAuthMock();
+    gaia_auth_ = new GaiaAuthMockForAuthWatcher();
     talk_mediator_.reset(new TalkMediatorImpl());
     auth_watcher_ = new AuthWatcher(metadb_.manager(), connection_.get(),
         allstatus_.get(), kTestUserAgent, kTestServiceId, kTestGaiaURL,
@@ -127,7 +123,7 @@ class AuthWatcherTest : public testing::Test {
 
   AuthWatcher* auth_watcher() { return auth_watcher_.get(); }
   MockConnectionManager* connection() { return connection_.get(); }
-  GaiaAuthMock* gaia_auth() { return gaia_auth_; }
+  GaiaAuthMockForAuthWatcher* gaia_auth() { return gaia_auth_; }
   const std::string& user_email() { return user_email_; }
 
  private:
@@ -142,7 +138,7 @@ class AuthWatcherTest : public testing::Test {
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<AllStatus> allstatus_;
   scoped_ptr<UserSettings> user_settings_;
-  GaiaAuthMock* gaia_auth_;  // Owned by auth_watcher_.
+  GaiaAuthMockForAuthWatcher* gaia_auth_;  // Owned by auth_watcher_.
   scoped_ptr<TalkMediator> talk_mediator_;
   scoped_refptr<AuthWatcher> auth_watcher_;
 
