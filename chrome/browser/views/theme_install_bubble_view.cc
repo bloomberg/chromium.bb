@@ -8,13 +8,18 @@
 #include "grit/generated_resources.h"
 
 namespace {
-  // Padding around text in popup box.
-  static const int kTextHorizPadding = 90;
-  static const int kTextVertPadding = 45;
 
-  // Multiple loads can be started at once.  Only show one bubble, and keep
-  // track of number of loads happening.  Close bubble when num_loads < 1.
-  static int num_loads_extant_ = 0;
+// The roundedness of the edges of our bubble.
+static const int kBubbleCornerRadius = 4;
+
+// Padding around text in popup box.
+static const int kTextHorizPadding = 90;
+static const int kTextVertPadding = 45;
+
+// Multiple loads can be started at once.  Only show one bubble, and keep
+// track of number of loads happening.  Close bubble when num_loads < 1.
+static int num_loads_extant_ = 0;
+
 }
 
 ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
@@ -22,6 +27,7 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   if (!tab_contents)
     Close();
 
+  // Need our own copy of the "Loading..." string: http://crbug.com/24177
   text_ = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font font(rb.GetFont(ResourceBundle::LargeFont));

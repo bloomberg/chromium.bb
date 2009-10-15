@@ -76,6 +76,7 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #include "chrome/browser/jumplist.h"
+#include "chrome/browser/views/theme_install_bubble_view.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
@@ -1100,6 +1101,21 @@ void BrowserView::ShowHistoryTooNewDialog() {
   gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
+#else
+  NOTIMPLEMENTED();
+#endif
+}
+
+void BrowserView::ShowThemeInstallBubble() {
+#if defined(OS_WIN)
+  TabContents* tab_contents = browser_->GetSelectedTabContents();
+  if (!tab_contents)
+    return;
+  ThemeInstallBubbleView::Show(tab_contents);
+#elif defined(OS_LINUX)
+  // Alas, the Views version of ThemeInstallBubbleView is Windows Views only.
+  // http://crbug.com/24360
+  NOTIMPLEMENTED();
 #else
   NOTIMPLEMENTED();
 #endif

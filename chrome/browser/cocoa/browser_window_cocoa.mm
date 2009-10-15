@@ -14,6 +14,7 @@
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
+#import "chrome/browser/cocoa/theme_install_bubble_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/common/notification_service.h"
@@ -276,6 +277,10 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
 
 void BrowserWindowCocoa::ShowHistoryTooNewDialog() {
   NOTIMPLEMENTED();
+}
+
+void BrowserWindowCocoa::ShowThemeInstallBubble() {
+  ThemeInstallBubbleView::Show(window_);
 }
 
 // We allow closing the window here since the real quit decision on Mac is made

@@ -254,6 +254,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowNewProfileDialog();
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
   virtual void ShowHistoryTooNewDialog();
+  virtual void ShowThemeInstallBubble();
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);

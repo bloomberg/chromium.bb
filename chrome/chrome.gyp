@@ -1168,6 +1168,8 @@
         'browser/cocoa/tab_window_controller.mm',
         'browser/cocoa/task_manager_mac.h',
         'browser/cocoa/task_manager_mac.mm',
+        'browser/cocoa/theme_install_bubble_view.h',
+        'browser/cocoa/theme_install_bubble_view.mm',
         'browser/cocoa/throbber_view.h',
         'browser/cocoa/throbber_view.mm',
         'browser/cocoa/toolbar_button_cell.h',

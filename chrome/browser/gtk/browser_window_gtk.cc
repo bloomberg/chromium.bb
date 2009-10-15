@@ -1129,6 +1129,11 @@ void BrowserWindowGtk::ShowHistoryTooNewDialog() {
   gtk_widget_destroy(dialog);
 }
 
+void BrowserWindowGtk::ShowThemeInstallBubble() {
+  // http://crbug.com/24360
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                                       gfx::NativeWindow parent_window) {
   NOTIMPLEMENTED();

@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
-
-#include "app/gfx/canvas.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
-#include "views/controls/label.h"
-#include "views/widget/widget_win.h"
+
+@class NSWindow;
+@class ThemeInstallBubbleViewCocoa;
 
 // ThemeInstallBubbleView is a view that provides a "Loading..." bubble in the
 // center of a browser window for use when an extension or theme is loaded.
@@ -25,8 +21,7 @@
 // between install begin and theme caching seizing the UI thread), the loading
 // bubble will only appear over the first window, as there is only ever one
 // instance of the bubble.
-class ThemeInstallBubbleView : public NotificationObserver,
-                               public views::Label {
+class ThemeInstallBubbleView : public NotificationObserver {
  public:
   ~ThemeInstallBubbleView();
 
@@ -36,36 +31,26 @@ class ThemeInstallBubbleView : public NotificationObserver,
                        const NotificationDetails& details);
 
   // Show the loading bubble.
-  static void Show(TabContents* tab_contents);
+  static void Show(NSWindow* window);
 
  private:
-  explicit ThemeInstallBubbleView(TabContents* tab_contents);
+  explicit ThemeInstallBubbleView(NSWindow* window);
 
-  // The content area at the start of the animation.
-  gfx::Rect tab_contents_bounds_;
-
-  // We use a HWND for the popup so that it may float above any HWNDs in our UI.
-  views::WidgetWin* popup_;
-
-  // Text to show warning that theme is being installed.
-  std::wstring text_;
+  // The one copy of the loading bubble.
+  static ThemeInstallBubbleView* view_;
 
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;
 
-  // Put the popup in the correct place on the tab.
-  void Reposition();
-
-  // Inherited from views.
-  gfx::Size GetPreferredSize();
-
   // Shut down the popup and remove our notifications.
   void Close();
 
-  virtual void Paint(gfx::Canvas* canvas);
+  // The actual Cocoa view implementing the bubble.
+  ThemeInstallBubbleViewCocoa* cocoa_view_;
+
+  // Multiple loads can be started at once.  Only show one bubble, and keep
+  // track of number of loads happening.  Close bubble when num_loads < 1.
+  int num_loads_extant_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeInstallBubbleView);
 };
-
-#endif  // CHROME_BROWSER_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
-
