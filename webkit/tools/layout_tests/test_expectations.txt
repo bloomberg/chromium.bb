@@ -74,7 +74,7 @@ BUG24182 SLOW DEBUG : LayoutTests/fast/js/toString-and-valueOf-override.html = P
 // This tests is normally <1 second, but occasionally takes >20s.
 BUG24182 SLOW WIN : LayoutTests/fast/dom/Window/webkitConvertPoint.html = PASS
 
-BUG24182 WIN DEBUG SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
+BUG24182 WIN SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
 BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/bug5797.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
@@ -2571,14 +2571,14 @@ BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with
 BUG9798 MAC RELEASE : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
+BUG9798 MAC WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-allow.html = TIMEOUT PASS
 BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/post-content-type.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
-BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
+BUG9797 BUG9798 MAC WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = PASS
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
@@ -2608,6 +2608,12 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = 
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-set-none.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
 BUG9798 LINUX SLOW : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
+BUG9798 MAC : LayoutTests/fast/forms/search-placeholder-value-changed.html = CRASH PASS
+BUG9798 MAC : LayoutTests/transitions/extra-transition.html = CRASH PASS
+BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
+BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = PASS TIMEOUT
+BUG9798 WIN : LayoutTests/media/video-src.html = PASS TIMEOUT
+BUG9798 LINUX : LayoutTests/media/video-buffered.html = PASS TIMEOUT
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
