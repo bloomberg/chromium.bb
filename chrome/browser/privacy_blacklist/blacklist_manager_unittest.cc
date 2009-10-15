@@ -74,6 +74,17 @@ class BlacklistManagerTest : public testing::Test {
   MessageLoop loop_;
 };
 
+// Returns true if |blacklist| contains a match for |url|.
+bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
+  Blacklist::Match* match = blacklist->findMatch(GURL(url));
+
+  if (!match)
+    return false;
+
+  delete match;
+  return true;
+}
+
 TEST_F(BlacklistManagerTest, Basic) {
   scoped_refptr<BlacklistManager> manager(
       new BlacklistManager(&profile_, NULL));
@@ -93,7 +104,8 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
       new BlacklistManager(&profile_, NULL));
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
-  EXPECT_FALSE(blacklist1->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
+                                 "http://host/annoying_ads/ad.jpg"));
 
   TestBlacklistPathProvider provider(&profile_);
   manager->RegisterBlacklistPathProvider(&provider);
@@ -107,7 +119,7 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
 
   // Added a real blacklist, the manager should recompile.
   EXPECT_NE(blacklist1, blacklist2);
-  EXPECT_TRUE(blacklist2->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
 
   manager->UnregisterBlacklistPathProvider(&provider);
 
@@ -128,7 +140,8 @@ TEST_F(BlacklistManagerTest, RealThread) {
   backend_thread.Start();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
-  EXPECT_FALSE(blacklist1->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
+                                 "http://host/annoying_ads/ad.jpg"));
 
   TestBlacklistPathProvider provider(&profile_);
   manager->RegisterBlacklistPathProvider(&provider);
@@ -150,7 +163,7 @@ TEST_F(BlacklistManagerTest, RealThread) {
 
   // Added a real blacklist, the manager should recompile.
   EXPECT_NE(blacklist1, blacklist2);
-  EXPECT_TRUE(blacklist2->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
 
   manager->UnregisterBlacklistPathProvider(&provider);
 
@@ -172,7 +185,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistStaysOnDisk) {
     manager->RegisterBlacklistPathProvider(&provider);
     provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_TRUE(blacklist->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+    EXPECT_TRUE(BlacklistHasMatch(blacklist,
+                                  "http://host/annoying_ads/ad.jpg"));
     manager->UnregisterBlacklistPathProvider(&provider);
   }
 
@@ -183,7 +197,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistStaysOnDisk) {
     // Make sure we read the compiled blacklist from disk and don't even touch
     // the paths providers.
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_TRUE(blacklist->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+    EXPECT_TRUE(BlacklistHasMatch(blacklist,
+                                  "http://host/annoying_ads/ad.jpg"));
   }
 }
 
@@ -218,7 +233,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
     manager->RegisterBlacklistPathProvider(&provider);
     provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_TRUE(blacklist->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+    EXPECT_TRUE(BlacklistHasMatch(blacklist,
+                                  "http://host/annoying_ads/ad.jpg"));
     manager->UnregisterBlacklistPathProvider(&provider);
 
     compiled_blacklist_path = manager->compiled_blacklist_path();
@@ -234,7 +250,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
     // Now we don't have any providers, and no compiled blacklist file. We
     // shouldn't match any URLs.
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_FALSE(blacklist->findMatch(GURL("http://host/annoying_ads/ad.jpg")));
+    EXPECT_FALSE(BlacklistHasMatch(blacklist,
+                                   "http://host/annoying_ads/ad.jpg"));
   }
 }
 
@@ -248,9 +265,11 @@ TEST_F(BlacklistManagerTest, MultipleProviders) {
   manager->RegisterBlacklistPathProvider(&provider2);
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
-  EXPECT_FALSE(blacklist1->findMatch(GURL("http://sample/annoying_ads/a.jpg")));
-  EXPECT_FALSE(blacklist1->findMatch(GURL("http://sample/other_ads/a.jpg")));
-  EXPECT_FALSE(blacklist1->findMatch(GURL("http://host/something.doc")));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
+                                 "http://sample/annoying_ads/a.jpg"));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
+                                 "http://sample/other_ads/a.jpg"));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist1, "http://host/something.doc"));
 
   provider1.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
   const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
@@ -260,18 +279,20 @@ TEST_F(BlacklistManagerTest, MultipleProviders) {
   const Blacklist* blacklist3 = manager->GetCompiledBlacklist();
   EXPECT_NE(blacklist2, blacklist3);
 
-  EXPECT_TRUE(blacklist3->findMatch(GURL("http://sample/annoying_ads/a.jpg")));
-  EXPECT_FALSE(blacklist3->findMatch(GURL("http://sample/other_ads/a.jpg")));
-  EXPECT_TRUE(blacklist3->findMatch(GURL("http://host/something.doc")));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist3,
+                                "http://sample/annoying_ads/a.jpg"));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist3, "http://sample/other_ads/a.jpg"));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/something.doc"));
 
   provider1.AddPath(test_data_dir_.AppendASCII("other_ads.pbl"));
 
   const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
 
   EXPECT_NE(blacklist3, blacklist4);
-  EXPECT_TRUE(blacklist4->findMatch(GURL("http://sample/annoying_ads/a.jpg")));
-  EXPECT_TRUE(blacklist4->findMatch(GURL("http://sample/other_ads/a.jpg")));
-  EXPECT_TRUE(blacklist4->findMatch(GURL("http://host/something.doc")));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist4,
+                                "http://sample/annoying_ads/a.jpg"));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://sample/other_ads/a.jpg"));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://host/something.doc"));
 
   manager->UnregisterBlacklistPathProvider(&provider1);
   manager->UnregisterBlacklistPathProvider(&provider2);
