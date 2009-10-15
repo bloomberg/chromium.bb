@@ -1408,9 +1408,6 @@ BUG24227 : LayoutTests/fast/js/primitive-method-this.html = FAIL
 // not urgent for current release.
 BUG24227 : LayoutTests/http/tests/plugins/local-geturl-from-remote.html = FAIL
 
-// MERGE REGRESSIONS 36102:37604
-
-BUG10353 LINUX : LayoutTests/fast/events/mouse-click-events.html = FAIL
 // These tests are wrong because of:
 // https://bugs.webkit.org/show_bug.cgi?id=24161. This is not
 // important for current release.
@@ -2946,7 +2943,7 @@ BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
-BUG24230 WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
+BUG24904 WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
 // Fallout from webkit 47265:47277
 BUG24231 : LayoutTests/fast/js/Array-isArray.html = FAIL
