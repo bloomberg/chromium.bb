@@ -3181,3 +3181,13 @@ BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 // WebKit roll 49583:49597
 BUG24865 WIN : LayoutTests/fast/css/large-number-round-trip.html = FAIL
 BUG24930 MAC LINUX : LayoutTests/editing/selection/editable-html-element.html = FAIL
+
+// WebKit Roll 49597:49640
+BUG24959 : LayoutTests/fast/block/float/float-in-float-hit-testing.html = FAIL
+BUG24961 : LayoutTests/fast/events/clientXY-in-zoom-and-scroll.html = FAIL
+BUG24962 WIN LINUX : LayoutTests/fast/events/click-focus-anchor.html = FAIL
+BUG24963 MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL
+BUG24964 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
+BUG24964 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
+BUG24965 LINUX : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = CRASH
+BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
