@@ -127,11 +127,15 @@ void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Fill the background.
-  SkBitmap* background;
-  if (browser_->window()->IsActive())
-    background = theme->GetBitmapNamed(IDR_THEME_FRAME);
-  else
-    background = theme->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+  int image_name;
+  if (browser_->window()->IsActive()) {
+    image_name = browser_->profile()->IsOffTheRecord() ?
+                 IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  } else {
+    image_name = browser_->profile()->IsOffTheRecord() ?
+                 IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
+  }
+  SkBitmap* background = theme->GetBitmapNamed(image_name);
   canvas->TileImageInt(*background, 0, 0, width(), height());
 
   // Draw a white box around the edit field so that it looks larger. This is
