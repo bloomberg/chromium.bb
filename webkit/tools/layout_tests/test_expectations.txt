@@ -2598,7 +2598,7 @@ BUG9798 WIN SLOW : LayoutTests/transitions/change-values-during-transition.html 
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/interrupted-all-transition.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS CRASH
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-background-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
 BUG9798 LINUX SLOW : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
