@@ -140,17 +140,17 @@ class DromaeoReferenceTest : public DromaeoTest {
 };
 
 TEST_F(DromaeoTest, Perf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
+  //if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+  //  return;
 
-  RunTest();
+  //RunTest();
 }
 
 TEST_F(DromaeoReferenceTest, Perf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
+  //if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+  //  return;
 
-  RunTest();
+  //RunTest();
 }
 
 }  // namespace
