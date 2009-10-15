@@ -653,10 +653,6 @@ BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
 // Other
 // -----------------------------------------------------------------
 
-// Vertical scrollbar created when there is no overflow.
-// See also https://bugs.webkit.org/show_bug.cgi?id=24434 .
-BUG20826 LINUX WIN : LayoutTests/fast/forms/textarea-scrollbar-height.html = FAIL
-
 // Pixeltest failure: Form control metrics incorrect
 BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL PASS TIMEOUT
 
