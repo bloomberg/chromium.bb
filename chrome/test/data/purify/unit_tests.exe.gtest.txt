@@ -35,3 +35,5 @@ ResourceDispatcherHostTest.TooManyOutstandingRequests
 # issue 22252
 HistoryQueryTest.*
 
+# issue 24769
+SiteInstanceTest.*
