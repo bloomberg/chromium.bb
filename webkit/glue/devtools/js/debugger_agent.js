@@ -1122,7 +1122,6 @@ devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame) {
     scope.frameNumber = stackFrame.index;
     var scopeObjectProxy = new WebInspector.ObjectProxy(scope, [], 0, '', true);
     scopeObjectProxy.isScope = true;
-    scopeObjectProxy.properties = {};  // TODO(pfeldman): Fix autocomplete.
     switch(scope.type) {
       case ScopeType.Global:
         scopeObjectProxy.isDocument = true;

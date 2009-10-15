@@ -725,7 +725,7 @@ TestSuite.prototype.testCompletionOnPause = function() {
                 ' not found among the completions: ' +
                 JSON.stringify(result));
           }
-          test.releaseControl();
+          setTimeout(callback, 0);
         });
     WebInspector.console.prompt.text = expression;
     WebInspector.console.prompt.autoCompleteSoon();
