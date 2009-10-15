@@ -2588,7 +2588,7 @@ BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
+BUG9798 SLOW LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
 BUG9798 LINUX RELEASE : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
