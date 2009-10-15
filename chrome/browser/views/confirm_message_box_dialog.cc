@@ -25,11 +25,38 @@ void ConfirmMessageBoxDialog::Run(gfx::NativeWindow parent,
   window->Show();
 }
 
+// static
+void ConfirmMessageBoxDialog::RunWithCustomConfiguration(
+    gfx::NativeWindow parent,
+    ConfirmMessageBoxObserver* observer,
+    const std::wstring& message_text,
+    const std::wstring& window_title,
+    const std::wstring& confirm_label,
+    const std::wstring& reject_label,
+    const gfx::Size& preferred_size) {
+  DCHECK(observer);
+  ConfirmMessageBoxDialog* dialog = new ConfirmMessageBoxDialog(observer,
+      message_text, window_title);
+  dialog->preferred_size_ = preferred_size;
+  dialog->confirm_label_ = confirm_label;
+  dialog->reject_label_ = reject_label;
+  views::Window* window = views::Window::CreateChromeWindow(
+      parent, gfx::Rect(), dialog);
+  window->Show();
+}
+
 ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(
     ConfirmMessageBoxObserver* observer, const std::wstring& message_text,
     const std::wstring& window_title)
     : observer_(observer),
-      window_title_(window_title) {
+      window_title_(window_title),
+      preferred_size_(gfx::Size(views::Window::GetLocalizedContentsSize(
+          IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS,
+          IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES))),
+      confirm_label_(l10n_util::GetString(
+          IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)),
+      reject_label_(l10n_util::GetString(
+          IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)) {
   message_label_ = new views::Label(message_text);
   message_label_->SetMultiLine(true);
   l10n_util::TextDirection direction =
@@ -59,10 +86,10 @@ std::wstring ConfirmMessageBoxDialog::GetWindowTitle() const {
 std::wstring ConfirmMessageBoxDialog::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+    return confirm_label_;
   }
   if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL)
-    return l10n_util::GetString(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+    return reject_label_;
   return DialogDelegate::GetDialogButtonLabel(button);
 }
 
@@ -84,7 +111,5 @@ void ConfirmMessageBoxDialog::Layout() {
 }
 
 gfx::Size ConfirmMessageBoxDialog::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS,
-      IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES));
+  return preferred_size_;
 }

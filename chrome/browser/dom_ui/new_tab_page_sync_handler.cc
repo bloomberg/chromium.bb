@@ -80,6 +80,20 @@ NewTabPageSyncHandler::~NewTabPageSyncHandler() {
     sync_service_->RemoveObserver(this);
 }
 
+// static
+NewTabPageSyncHandler::MessageType
+    NewTabPageSyncHandler::FromSyncStatusMessageType(
+        SyncStatusUIHelper::MessageType type) {
+  switch (type) {
+    case SyncStatusUIHelper::SYNC_ERROR:
+      return SYNC_ERROR;
+    case SyncStatusUIHelper::PRE_SYNCED:
+    case SyncStatusUIHelper::SYNCED:
+    default:
+      return HIDE;
+  }
+}
+
 DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
   sync_service_ = dom_ui->GetProfile()->GetProfileSyncService();
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
@@ -100,8 +114,7 @@ void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
 }
 
 void NewTabPageSyncHandler::HideSyncStatusSection() {
-  SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED, std::string(),
-                        std::string());
+  SendSyncMessageToPage(HIDE, std::string(), std::string());
 }
 
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
@@ -116,14 +129,11 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   // We show the sync promotion if sync has not been enabled and the user is
   // logged in to Google Accounts. If the user is not signed in to GA, we
   // should hide the sync status section entirely.
-  if (!sync_service_->HasSyncSetupCompleted() &&
-      !sync_service_->SetupInProgress()) {
-    if (IsGoogleGAIACookieInstalled()) {
-      SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED,
+  if (!sync_service_->HasSyncSetupCompleted()) {
+    if(!sync_service_->SetupInProgress() && IsGoogleGAIACookieInstalled()) {
+      SendSyncMessageToPage(PROMOTION,
           WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_PROMOTION_MESSAGE)),
           WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_START_NOW_LINK_LABEL)));
-    } else {
-      HideSyncStatusSection();
     }
     return;
   }
@@ -131,17 +141,15 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   // Once sync has been enabled, the supported "sync statuses" for the NNTP
   // from the user's perspective are:
   //
-  // "Synced to foo@gmail.com", when we are successfully authenticated and
-  //                            connected to a sync server.
   // "Sync error", when we can't authenticate or establish a connection with
   //               the sync server (appropriate information appended to
   //               message).
-  // "Authenticating", when credentials are in flight.
-  SyncStatusUIHelper::MessageType type(SyncStatusUIHelper::PRE_SYNCED);
   std::wstring status_msg;
   std::wstring link_text;
-  type = SyncStatusUIHelper::GetLabels(sync_service_, &status_msg, &link_text);
-  SendSyncMessageToPage(type, WideToUTF8(status_msg), WideToUTF8(link_text));
+  SyncStatusUIHelper::MessageType type =
+      SyncStatusUIHelper::GetLabels(sync_service_, &status_msg, &link_text);
+  SendSyncMessageToPage(FromSyncStatusMessageType(type),
+                        WideToUTF8(status_msg), WideToUTF8(link_text));
 }
 
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
@@ -165,7 +173,7 @@ void NewTabPageSyncHandler::OnStateChanged() {
 }
 
 void NewTabPageSyncHandler::SendSyncMessageToPage(
-    SyncStatusUIHelper::MessageType type, std::string msg,
+    MessageType type, std::string msg,
     std::string linktext) {
   DictionaryValue value;
   std::string msgtype;
@@ -174,28 +182,24 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
       WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
   std::string linkurl;
   switch (type) {
-    case SyncStatusUIHelper::PRE_SYNCED:
+    case HIDE:
+    case PROMOTION:
       msgtype = "presynced";
       break;
-    case SyncStatusUIHelper::SYNCED:
-      msgtype = "synced";
-      linktext =
-          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_VIEW_ONLINE_LINK));
-      linkurl = kSyncDefaultViewOnlineUrl;
-      user = UTF16ToWide(sync_service_->GetAuthenticatedUsername());
-      msg = WideToUTF8(l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, user));
-      break;
-    case SyncStatusUIHelper::SYNC_ERROR:
+    case SYNC_ERROR:
       title =
           WideToUTF8(
               l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE));
       msgtype = "error";
       break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   // If there is no message to show, we should hide the sync section
   // altogether.
-  if (msg.empty()) {
+  if (type == HIDE || msg.empty()) {
     value.SetBoolean(L"syncsectionisvisible", false);
   } else {
     value.SetBoolean(L"syncsectionisvisible", true);

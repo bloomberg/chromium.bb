@@ -212,9 +212,9 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
   change_processor_->Stop();
-
-  if (SetupInProgress())
-    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+  
+  // Tell the wizard so it can inform the user only if it is already open.
+  wizard_.Step(SyncSetupWizard::FATAL_ERROR);
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable.";
 }
@@ -338,16 +338,18 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   base::TimeTicks start_time = base::TimeTicks::Now();
+  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
   bool merge_success = model_associator_->AssociateModels();
   UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
                              base::TimeTicks::Now() - start_time);
-
-  wizard_.Step(SyncSetupWizard::DONE);  // TODO(timsteele): error state?
   if (!merge_success) {
     LOG(ERROR) << "Model assocation failed.";
     OnUnrecoverableError();
     return;
   }
+
+  wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
+               SyncSetupWizard::DONE_FIRST_TIME);
 
   change_processor_->Start(profile_->GetBookmarkModel(),
                            backend_->GetUserShareHandle());
@@ -385,16 +387,18 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
 
   // We're ready to merge the models.
   base::TimeTicks start_time = base::TimeTicks::Now();
+  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
   bool merge_success = model_associator_->AssociateModels();
   UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
                       base::TimeTicks::Now() - start_time);
-
-  wizard_.Step(SyncSetupWizard::DONE);  // TODO(timsteele): error state?
   if (!merge_success) {
-    LOG(ERROR) << "Model assocation failed.";
-    OnUnrecoverableError();
-    return;
+      LOG(ERROR) << "Model assocation failed.";
+      OnUnrecoverableError();
+      return;
   }
+
+  wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
+               SyncSetupWizard::DONE_FIRST_TIME);
 
   change_processor_->Start(profile_->GetBookmarkModel(),
                            backend_->GetUserShareHandle());

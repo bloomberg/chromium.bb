@@ -80,7 +80,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     localized_strings.SetString(L"settingup",
         l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
     localized_strings.SetString(L"success",
-        l10n_util::GetString(IDS_SYNC_LOGIN_SUCCESS));
+        l10n_util::GetString(IDS_SYNC_SUCCESS));
     localized_strings.SetString(L"errorsigningin",
         l10n_util::GetString(IDS_SYNC_ERROR_SIGNING_IN));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
@@ -98,8 +98,6 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetString(IDS_ABORT));
     localized_strings.SetString(L"closelabel",
         l10n_util::GetString(IDS_CLOSE));
-    localized_strings.SetString(L"alldone",
-        l10n_util::GetString(IDS_SYNC_MERGE_ALL_DONE));
     localized_strings.SetString(L"mergeandsyncwarning",
         l10n_util::GetString(IDS_SYNC_MERGE_WARNING));
     localized_strings.SetString(L"setuperror",
@@ -107,6 +105,21 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));
+    SetFontAndTextDirection(&localized_strings);
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, &localized_strings);
+  } else if (path_raw == chrome::kSyncSetupDonePath) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString(L"success",
+        l10n_util::GetString(IDS_SYNC_SUCCESS));
+    localized_strings.SetString(L"setupsummary",
+        l10n_util::GetString(IDS_SYNC_SETUP_ALL_DONE));
+    localized_strings.SetString(L"firsttimesetupsummary",
+        l10n_util::GetString(IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE));
+    localized_strings.SetString(L"okay",
+        l10n_util::GetString(IDS_SYNC_SETUP_OK_BUTTON_LABEL));
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
+        .GetRawDataResource(IDR_SYNC_SETUP_DONE_HTML));
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
@@ -146,7 +159,7 @@ void SyncSetupWizard::Step(State advance_state) {
     flow->Advance(advance_state);
   } else if (!service_->profile()->GetPrefs()->GetBoolean(
              prefs::kSyncHasSetupCompleted)) {
-    if (advance_state == DONE || advance_state == GAIA_SUCCESS)
+    if (IsTerminalState(advance_state))
       return;
     // No flow is in progress, and we have never escorted the user all the
     // way through the wizard flow.
@@ -155,11 +168,19 @@ void SyncSetupWizard::Step(State advance_state) {
   } else {
     // No flow in in progress, but we've finished the wizard flow once before.
     // This is just a discrete run.
-    if (advance_state == DONE || advance_state == GAIA_SUCCESS)
+    if (IsTerminalState(advance_state))
       return;  // Nothing to do.
     flow_container_->set_flow(SyncSetupFlow::Run(service_, flow_container_,
         advance_state, GetEndStateForDiscreteRun(advance_state)));
   }
+}
+
+// static
+bool SyncSetupWizard::IsTerminalState(State advance_state) {
+  return advance_state == GAIA_SUCCESS ||
+         advance_state == DONE ||
+         advance_state == DONE_FIRST_TIME ||
+         advance_state == FATAL_ERROR;
 }
 
 bool SyncSetupWizard::IsVisible() const {

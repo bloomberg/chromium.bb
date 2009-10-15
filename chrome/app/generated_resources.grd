@@ -5235,7 +5235,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
         Stop syncing this account
       </message>
-
+      <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
+        Stop syncing
+      </message>
+      <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
+        If you disable sync, your bookmarks will no longer be kept in sync with those stored in your Google Account or on your other machines. No bookmarks will be deleted. All existing bookmarks will remain on this computer and in your Google Account.
+      </message>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
         Never
@@ -5263,18 +5268,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_NTP_SYNCED_TO" desc="The message to display in the New Tab Page sync section when the user is in sync.">
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
-      <message name="IDS_SYNC_NTP_VIEW_ONLINE_LINK" desc="The message to display in the New Tab Page link inside the sync section which allows the user to view the synced data online.">
-        View in Google Docs
-      </message>
 
       <!-- Login dialog strings -->
       <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Text to show for the sync login dialog.">
         Sync my bookmarks
       </message>
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
-        Google Chrome can store your bookmark data in your Google Account.
-        Bookmarks that you create on this computer will instantly be made
-        available on all the computers synced to this account.
+        Bookmark Sync makes it easy to keep the same set of bookmarks on multiple computers.
+        When you enable sync, your bookmarks will get stored online in your Google Account.
+        Each additional computer on which you enable sync will receive the same bookmarks.
       </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
@@ -5309,10 +5311,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
         Setting up...
       </message>
-      <message name="IDS_SYNC_LOGIN_SUCCESS" desc="Operation successful">
+      <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
         Success!
       </message>
-
+      
+      <!-- Sync app menu item strings -->
+      <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
+        Bookmarks synced...
+      </message>
+      <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
+        Bookmark sync error...
+      </message>
+      
       <!-- Merge and Sync dialog strings -->
       <message name="IDS_SYNC_MERGE_INTRODUCTION" desc="The header at the top of the merge and sync dialog.">
         Your bookmarks will be merged.
@@ -5325,10 +5335,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         bookmarks on this machine. You can use the Bookmark Manager to organize
         your bookmarks after the merge.
       </message>
-      <message name="IDS_SYNC_MERGE_ALL_DONE" desc="Operation finished">
-        All done!
+      <message name="IDS_SYNC_SETUP_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when there were already bookmarks in the cloud.">
+        Your bookmarks will now be synced between all computers where you have enabled sync.
       </message>
-
+      <message name="IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when no bookmarks exist in the cloud.">
+        Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to Chrome on another computer, just repeat the same setup process on that computer.
+      </message>
+      <message name="IDS_SYNC_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end of sync setup.">
+        OK
+      </message>
       <!-- Bookmarks bar strings -->
       <message name="IDS_SYNC_BOOKMARK_BAR_ERROR" desc="The text to display on the bookmark bar button which indicates a sync error.">
         Sync Error

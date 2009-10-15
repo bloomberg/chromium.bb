@@ -36,8 +36,13 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
   virtual void OnStateChanged();
 
  private:
+  enum MessageType {
+    HIDE,
+    PROMOTION,
+    SYNC_ERROR,
+  };
   // Helper to invoke the |syncMessageChanged| JS function on the new tab page.
-  void SendSyncMessageToPage(SyncStatusUIHelper::MessageType type,
+  void SendSyncMessageToPage(MessageType type,
                              std::string msg, std::string linktext);
 
   // Helper to query the sync service and figure out what to send to
@@ -47,6 +52,10 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
 
   // Helper to send a message to the NNTP which hides the sync section.
   void HideSyncStatusSection();
+
+  // Helper to convert from a sync status message type to an NTP specific one.
+  static MessageType FromSyncStatusMessageType(
+      SyncStatusUIHelper::MessageType type);
 
   // Cached pointer to ProfileSyncService.
   ProfileSyncService* sync_service_;

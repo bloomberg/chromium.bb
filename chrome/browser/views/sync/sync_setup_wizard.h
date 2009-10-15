@@ -19,10 +19,23 @@ class ProfileSyncService;
 class SyncSetupWizard {
  public:
   enum State {
+    // Show the Google Account login UI.
     GAIA_LOGIN = 0,
+    // A login attempt succeeded.  Depending on initial conditions, this may
+    // cause a transition to DONE, or to wait for an explicit transition (via
+    // Step) to the next state.
     GAIA_SUCCESS,
+    // The user needs to accept a merge and sync warning to proceed.
     MERGE_AND_SYNC,
+    // The panic switch.  Something went terribly wrong during setup and we
+    // can't recover.
     FATAL_ERROR,
+    // A final state for when setup completes and it is possible it is the
+    // user's first time (globally speaking) as the cloud doesn't have any
+    // bookmarks.  We show additional info in this case to explain setting up
+    // more computers.
+    DONE_FIRST_TIME,
+    // A catch-all done case for any setup process.
     DONE
   };
 
@@ -50,6 +63,9 @@ class SyncSetupWizard {
   // a "discrete" run (as in not a continuous wizard flow).  This returns
   // the end state to pass to Run for a given |start_state|.
   static State GetEndStateForDiscreteRun(State start_state);
+
+  // Helper to return whether |state| warrants starting a new flow.
+  static bool IsTerminalState(State state);
 
   ProfileSyncService* service_;
 

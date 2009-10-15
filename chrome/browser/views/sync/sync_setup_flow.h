@@ -170,8 +170,9 @@ class FlowHandler : public DOMMessageHandler {
   void ShowGaiaSuccessAndClose();
   void ShowGaiaSuccessAndSettingUp();
   void ShowMergeAndSync();
-  void ShowMergeAndSyncDone();
   void ShowMergeAndSyncError();
+  void ShowSetupDone(const std::wstring& user);
+  void ShowFirstTimeDone(const std::wstring& user);
 
   void set_flow(SyncSetupFlow* flow) {
     flow_ = flow;

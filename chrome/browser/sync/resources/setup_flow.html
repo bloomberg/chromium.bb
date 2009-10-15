@@ -8,6 +8,11 @@
     document.getElementById("login").style.display = "none";
     document.getElementById("merge").style.display = "block";
   }
+  function showSetupDone() {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("merge").style.display = "none";
+    document.getElementById("done").style.display = "block";
+  }
 </script>
 </HEAD>
 <BODY style="margin:0; border:0;">
@@ -15,5 +20,7 @@
           src="chrome://syncresources/gaialogin"></iframe>
   <iframe id="merge" frameborder="0" width="100%" scrolling="no" height="100%"
           src="chrome://syncresources/mergeandsync" style="display:none"></iframe>
+  <iframe id="done" frameborder="0" width="100%" scrolling="no" height="100%"
+          src="chrome://syncresources/setupdone" style="display:none"></iframe>
 </BODY>
 </HTML>

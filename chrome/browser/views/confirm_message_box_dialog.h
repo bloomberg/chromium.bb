@@ -28,17 +28,27 @@ class ConfirmMessageBoxDialog : public views::DialogDelegate,
                                 public views::View {
  public:
   // The method presents a modal confirmation dialog to the user with the title
-  // |window_title| and message |message_text|. |observer| will be notified
-  // when the user makes a decision or closes the dialog. Note that this class
-  // guarantees it will call one of the observer's methods, so it is the
-  // caller's responsibility to ensure |observer| lives until one of the
-  // methods is invoked; it can be deleted thereafter from this class' point
-  // of view. |parent| specifies where to insert the view into the hierarchy
-  // and effectively assumes ownership of the dialog.
+  // |window_title| and message |message_text|, and 'Yes' 'No' buttons.
+  // |observer| will be notified when the user makes a decision or closes the
+  // dialog. Note that this class guarantees it will call one of the observer's
+  // methods, so it is the caller's responsibility to ensure |observer| lives
+  // until one of the methods is invoked; it can be deleted thereafter from this
+  // class' point of view. |parent| specifies where to insert the view into the
+  // hierarchy and effectively assumes ownership of the dialog.
   static void Run(gfx::NativeWindow parent,
                   ConfirmMessageBoxObserver* observer,
                   const std::wstring& message_text,
                   const std::wstring& window_title);
+
+  // A variant of the above for when the message text is longer/shorter than
+  // what the default size of this dialog can accommodate.
+  static void RunWithCustomConfiguration(gfx::NativeWindow parent,
+                                         ConfirmMessageBoxObserver* observer,
+                                         const std::wstring& message_text,
+                                         const std::wstring& window_title,
+                                         const std::wstring& confirm_label,
+                                         const std::wstring& reject_label,
+                                         const gfx::Size& preferred_size);
 
   virtual ~ConfirmMessageBoxDialog() {}
 
@@ -47,6 +57,10 @@ class ConfirmMessageBoxDialog : public views::DialogDelegate,
   virtual std::wstring GetWindowTitle() const;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
+  virtual int GetDefaultDialogButton() const {
+    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  }
+
   virtual bool Accept();
   virtual bool Cancel();
 
@@ -68,6 +82,13 @@ class ConfirmMessageBoxDialog : public views::DialogDelegate,
 
   // This is the Title bar text.
   std::wstring window_title_;
+
+  // The text for the 'OK' and 'CANCEL' buttons.
+  std::wstring confirm_label_;
+  std::wstring reject_label_;
+
+  // The preferred size of the dialog.
+  gfx::Size preferred_size_;
 
   // The observer to notify of acceptance or cancellation.
   ConfirmMessageBoxObserver* observer_;

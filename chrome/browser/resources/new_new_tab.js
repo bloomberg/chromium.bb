@@ -728,6 +728,7 @@ function syncMessageChanged(newMessage) {
 
   // Hide the section if the message is emtpy.
   if (!newMessage.syncsectionisvisible) {
+    style.display = 'none';
     return;
   }
   style.display = 'block';

@@ -25,6 +25,7 @@
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
 static const wchar_t* kMergeIFrameXPath = L"//iframe[@id='merge']";
+static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
 
 // Helper function to read the JSON string from the Value parameter.
 static std::string GetJsonResponse(const Value* content) {
@@ -114,8 +115,23 @@ void FlowHandler::ShowMergeAndSync() {
     dom_ui_->CallJavascriptFunction(L"showMergeAndSync");
 }
 
-void FlowHandler::ShowMergeAndSyncDone() {
-  ExecuteJavascriptInIFrame(kMergeIFrameXPath, L"showMergeAndSyncDone();");
+void FlowHandler::ShowSetupDone(const std::wstring& user) {
+  StringValue synced_to_string(WideToUTF8(l10n_util::GetStringF(
+      IDS_SYNC_NTP_SYNCED_TO, user)));
+  std::string json;
+  JSONWriter::Write(&synced_to_string, false, &json);
+  std::wstring javascript = std::wstring(L"setSyncedToUser") +
+      L"(" + UTF8ToWide(json) + L");";
+  ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
+
+  if (dom_ui_)
+    dom_ui_->CallJavascriptFunction(L"showSetupDone", synced_to_string);
+}
+
+void FlowHandler::ShowFirstTimeDone(const std::wstring& user) {
+  ExecuteJavascriptInIFrame(kDoneIframeXPath,
+                            L"setShowFirstTimeSetupSummary();");
+  ShowSetupDone(user);
 }
 
 void FlowHandler::ShowMergeAndSyncError() {
@@ -153,7 +169,8 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
-  if (current_state_ == SyncSetupWizard::DONE) {
+  if (current_state_ == SyncSetupWizard::DONE ||
+      current_state_ == SyncSetupWizard::DONE_FIRST_TIME) {
     service_->SetSyncSetupCompleted();
   }
 
@@ -171,6 +188,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_SIGNON_AFTER_MERGE);
       break;
+    case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedAuthorizationTime",
                                  base::TimeTicks::Now() - login_start_time_);
@@ -212,6 +230,7 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
+    case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       return current_state_ == SyncSetupWizard::MERGE_AND_SYNC ||
              current_state_ == SyncSetupWizard::GAIA_SUCCESS;
@@ -244,11 +263,11 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       if (current_state_ == SyncSetupWizard::MERGE_AND_SYNC)
         flow_handler_->ShowMergeAndSyncError();
       break;
+    case SyncSetupWizard::DONE_FIRST_TIME:
+      flow_handler_->ShowFirstTimeDone(service_->GetAuthenticatedUsername());
+      break;
     case SyncSetupWizard::DONE:
-      if (current_state_ == SyncSetupWizard::MERGE_AND_SYNC)
-        flow_handler_->ShowMergeAndSyncDone();
-      else if (current_state_ == SyncSetupWizard::GAIA_SUCCESS)
-        flow_handler_->ShowGaiaSuccessAndClose();
+      flow_handler_->ShowSetupDone(service_->GetAuthenticatedUsername());
       break;
     default:
       NOTREACHED() << "Invalid advance state: " << advance_state;

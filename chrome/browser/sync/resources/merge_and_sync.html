@@ -3,8 +3,20 @@
 <title></title>
 <style type="text/css">
  body,td,div,p,a,font,span {font-family: arial,sans-serif;}
- body { bgcolor:"#ffffff" } 
+ body { bgcolor:"#ffffff" }
 .gaia.le.button { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.endaligned {
+  text-align: right;
+}
+html[dir='rtl'] .endaligned {
+  text-align: left;
+}
+.textaligned {
+  text-align: left;
+}
+html[dir='rtl'] .textaligned {
+  text-align: right;
+}
 </style>
 <script>
     function advanceThrobber() {
@@ -12,18 +24,18 @@
       throbber.style.backgroundPositionX =
       ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
     }
-    
+
     function acceptMergeAndSync() {
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "inline";
      document.getElementById("acceptMerge").disabled = true;
      chrome.send("SubmitMergeAndSync", [""]);
     }
-       
+
     function Close() {
       chrome.send("DialogClose", [""]);
     }
-    
+
     function showMergeAndSyncDone() {
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "none";
@@ -33,7 +45,7 @@
      document.getElementById("close").value = templateData['closelabel'];
      setTimeout(Close, 1600);
     }
-    
+
     function showMergeAndSyncError() {
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "none";
@@ -41,36 +53,37 @@
          "<p><font size='-1'><b>" + templateData['setuperror']
          + "</b></font></p>";
     }
-    
+
 </script>
 </head>
 <body onload="setInterval(advanceThrobber, 30);">
-<div id="header">
-  <p><font size="-1"><b><span i18n-content="introduction"></span></b>
-  </font></p>
-</div>
-<br />
-<img src="merge_and_sync.png" i18n-values="alt:mergeandsynclabel" />
-<br />
-<p><font size="-1"><span i18n-content="mergeandsyncwarning"></span></font></p>
-<br />
-<table align="right">
-  <tr>
-    <td>
+<table height="100%">
+  <tr valign="top">
+    <td align="center">
+      <div id="header" align="left">
+        <p class="textaligned"><font size="-1"><b>
+          <span i18n-content="introduction"></span>
+        </b></font></p>
+      </div>
+      <br />
+      <img src="merge_and_sync.png" i18n-values="alt:mergeandsynclabel" />
+      <br />
+      <p class="textaligned"><font size="-1"><span i18n-content="mergeandsyncwarning"></span></font></p>
+      <br />
       <div id="throbber_container" style="display:none">
         <div id="throb" style="background-image:url(throbber.png);
              width:16px; height:16px; background-position:0px;">
         </div>
       </div>
     </td>
-    <td>
+  </tr>
+  <tr class="endaligned" valign="bottom">
+    <td class="endaligned">
       <input id="acceptMerge" type="button" class="gaia le button" name="accept"
              i18n-values="value:mergeandsynclabel"
              onclick="acceptMergeAndSync();" />
-    </td>
-    <td>
       <input id="close" type="button" i18n-values="value:abortlabel"
-             onclick="Close();"/>
+             onclick="Close();" style="width:85"/>
     </td>
   </tr>
 </table>

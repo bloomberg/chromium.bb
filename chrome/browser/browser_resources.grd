@@ -48,6 +48,7 @@ without changes to the corresponding grd file. ek -->
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MERGE_AND_SYNC_HTML" file="sync\resources\merge_and_sync.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_BLACKLIST_HTML" file="resources\privacy_blacklist_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_BLACKLIST_IMAGE" file="resources\privacy_blacklist_block.png" type="BINDATA" />
       <include name="IDR_DEFAULT_EXTENSION_ICON_128" file="resources\default_extension_icon_128.png" type="BINDATA" />

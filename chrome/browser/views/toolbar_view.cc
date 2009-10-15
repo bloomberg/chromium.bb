@@ -20,14 +20,15 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/views/bookmark_menu_button.h"
 #include "chrome/browser/views/browser_actions_container.h"
@@ -1133,8 +1134,18 @@ void ToolbarView::CreateAppMenu() {
   app_menu_contents_->AddSeparator();
 #ifdef CHROME_PERSONALIZATION
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
-    app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS,
-        l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL) + L"...");
+    std::wstring label;
+    std::wstring link;
+    // TODO(timsteele): Need a ui helper method to just get the type without
+    // needing labels.
+    SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
+        browser_->profile()->GetProfileSyncService(), &label, &link);
+    label = type == SyncStatusUIHelper::SYNCED ?
+        l10n_util::GetString(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
+        type == SyncStatusUIHelper::SYNC_ERROR ?
+        l10n_util::GetString(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL) :
+        l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, label);
     app_menu_contents_->AddSeparator();
   }
 #endif

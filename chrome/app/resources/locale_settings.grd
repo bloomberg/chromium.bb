@@ -658,21 +658,29 @@
       
       <!-- The width of the sync setup wizard / login dialog in characters. -->
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
-        30
+        46
       </message>
       
       <!-- The height of the sync setup wizard / login dialog in lines. -->
       <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
-        15.5
+        14
       </message>
 
+      <!-- The default width/height for confirmation dialogs. -->
       <message name="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS" use_name_for_id="true">
         50
       </message>
       <message name="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES" use_name_for_id="true">
         5
       </message>
-      
+
+      <!-- The default width/height for the stop syncing confirmation dialog. -->
+      <message name="IDS_CONFIRM_STOP_SYNCING_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        60
+      </message>
+      <message name="IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        8
+      </message>
     </messages>
   </release>
 </grit>

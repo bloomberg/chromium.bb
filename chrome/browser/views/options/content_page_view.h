@@ -7,6 +7,7 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/options/options_page_view.h"
+#include "chrome/browser/views/confirm_message_box_dialog.h"
 #include "chrome/common/pref_member.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
@@ -30,7 +31,8 @@ class ContentPageView : public OptionsPageView,
                         public views::LinkController,
                         public ProfileSyncServiceObserver,
 #endif
-                        public views::ButtonListener {
+                        public views::ButtonListener,
+                        public ConfirmMessageBoxObserver {
  public:
   explicit ContentPageView(Profile* profile);
   virtual ~ContentPageView();
@@ -40,6 +42,9 @@ class ContentPageView : public OptionsPageView,
 
   // views::LinkController method.
   virtual void LinkActivated(views::Link* source, int event_flags);
+
+  // ConfirmMessageBoxObserver implementation.
+  virtual void OnConfirmMessageAccept();
 
 #ifdef CHROME_PERSONALIZATION
   // ProfileSyncServiceObserver method.

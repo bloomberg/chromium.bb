@@ -34,6 +34,9 @@
         text-align: left;
         margin: 5px;
       }
+      #gaia_loginform {
+        margin-bottom: 0.5em;
+      }
     --></style> 
   </head> 
   <body bgcolor="#ffffff" vlink="#666666"
@@ -190,8 +193,8 @@
 </div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;"> 
 <div id="gaia_loginbox"> 
-<table class="form-noindent" cellspacing="3" cellpadding="5" width="100%"
-       border="0"> 
+<table class="form-noindent" cellspacing="3" cellpadding="5" width="75%"
+       border="0" align="center"> 
   <tr> 
     <td valign="top" style="text-align:center" nowrap="nowrap"
         bgcolor="#e8eefa"> 
@@ -313,7 +316,8 @@
                   <td>
                     <input id="signIn" type="button" class="gaia le button"
                            name="signIn" i18n-values="value:signin"
-                           onclick="sendCredentialsAndClose();" />
+                           onclick="sendCredentialsAndClose();"
+                           style="width:85" />
                   </td>
                 </tr>
               </table>
@@ -346,7 +350,8 @@
 </tr> 
 </table> 
 <div class="endaligned">
-  <input type="button" name="cancel" i18n-values="value:cancel" onclick="CloseDialog();"/>
+  <input type="button" name="cancel" i18n-values="value:cancel"
+         onclick="CloseDialog();" style="width:85" />
 </div>
 </body> 
 </html>

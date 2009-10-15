@@ -254,10 +254,11 @@ TEST_F(SyncSetupWizardTest, InitialStepMergeAndSync) {
   EXPECT_TRUE(service_->user_accepted_merge_and_sync_);
   EXPECT_FALSE(service_->user_cancelled_dialog_);
   service_->ResetTestStats();
-  wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
+  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);  // No merge and sync.
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE_FIRST_TIME,
+            test_window_->flow()->current_state_);
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
@@ -294,11 +295,17 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
+  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
+  EXPECT_FALSE(wizard_->IsVisible());
+  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::DONE);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
+  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -319,6 +326,17 @@ TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   wizard_->Step(SyncSetupWizard::DONE);
+  test_window_->CloseDialog();
+  EXPECT_FALSE(wizard_->IsVisible());
+  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSyncHasSetupCompleted));
+}
+
+TEST_F(SyncSetupWizardTest, FirstFullSuccessfulRunSetsPref) {
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
+  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(

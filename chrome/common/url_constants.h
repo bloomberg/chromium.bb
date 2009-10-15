@@ -73,6 +73,7 @@ extern const char kSyncGaiaLoginPath[];
 extern const char kSyncMergeAndSyncPath[];
 extern const char kSyncThrobberPath[];
 extern const char kSyncSetupFlowPath[];
+extern const char kSyncSetupDonePath[];
 
 // Network related URLs.
 extern const char kNetworkViewCacheURL[];

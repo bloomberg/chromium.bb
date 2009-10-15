@@ -1,0 +1,59 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body,td,div,p,a,font,span {
+   font-family: arial,sans-serif;
+ }
+body {
+   bgcolor:"#ffffff"
+ } 
+.gaia.le.button {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: smaller;
+}
+.endaligned {
+  text-align: right;
+  align: right;
+}
+html[dir='rtl'] .endaligned {
+  text-align: left;
+  align: left;
+}
+</style>
+<script>
+  function setShowFirstTimeSetupSummary() {
+    document.getElementById("summary").innerHTML =
+        "<p><font size='-1'>" + templateData['firsttimesetupsummary']
+        + "</font></p>";
+  }
+  function setSyncedToUser(synced_to) {
+    document.getElementById('user').innerHTML = synced_to;
+  }
+</script>
+<body  bgcolor="#ffffff" vlink="#666666
+       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+       style="margin: 10px">
+<table height="100%" width="100%" margin="0" cellpadding="0">
+  <tr valign="top">
+  <td>
+    <p><font size="-1"><b><span i18n-content="success"></span></b></font></p>
+    <div align="center">
+      <img src="success-large.png" />
+    </div>
+    <br />
+    <p><font size="-1"><span id="user"></span></font></p>
+    <div id="summary">
+      <p><font size="-1"><span i18n-content="setupsummary"></span></font></p>
+    </div>
+  </td>
+  </tr>
+  <tr valign="bottom">
+    <td class="endaligned">
+      <input id="close" type="submit" i18n-values="value:okay" style="width:85"
+             onclick='chrome.send("DialogClose", [""])' />
+    </td>
+  </tr>
+</table>
+</body>
+</html>

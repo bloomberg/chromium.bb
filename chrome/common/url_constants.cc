@@ -73,6 +73,7 @@ const char kSyncGaiaLoginPath[] = "gaialogin";
 const char kSyncMergeAndSyncPath[] = "mergeandsync";
 const char kSyncThrobberPath[] = "throbber.png";
 const char kSyncSetupFlowPath[] = "setup";
+const char kSyncSetupDonePath[] = "setupdone";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://net-internals/view-cache";
