@@ -107,10 +107,20 @@ const SkColor BrowserThemeProvider::kDefaultColorBackgroundTabText =
     SkColorSetRGB(64, 64, 64);
 const SkColor BrowserThemeProvider::kDefaultColorBookmarkText =
     SkColorSetRGB(18, 50, 114);
+#if defined(OS_WIN)
+const SkColor BrowserThemeProvider::kDefaultColorNTPBackground =
+    color_utils::GetSysSkColor(COLOR_WINDOW);
+const SkColor BrowserThemeProvider::kDefaultColorNTPText =
+    color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
+    color_utils::GetSysSkColor(COLOR_HOTLIGHT);
+#else
+// TODO(beng): source from theme provider.
 const SkColor BrowserThemeProvider::kDefaultColorNTPBackground = SK_ColorWHITE;
 const SkColor BrowserThemeProvider::kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
     SkColorSetRGB(6, 55, 116);
+#endif
 const SkColor BrowserThemeProvider::kDefaultColorNTPHeader =
     SkColorSetRGB(75, 140, 220);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
