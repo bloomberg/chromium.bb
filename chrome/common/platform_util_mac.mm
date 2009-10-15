@@ -58,13 +58,15 @@ string16 GetWindowTitle(gfx::NativeWindow window) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
-  NOTIMPLEMENTED();
-  return false;
+  return [window isKeyWindow] || [window isMainWindow];
 }
 
 bool IsVisible(gfx::NativeView view) {
-  NOTIMPLEMENTED();
-  return true;
+  // A reasonable approximation of how you'd expect this to behave.
+  return (view &&
+          ![view isHiddenOrHasHiddenAncestor] &&
+          [view window] &&
+          [[view window] isVisible]);
 }
 
 }  // namespace platform_util
