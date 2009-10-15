@@ -89,7 +89,7 @@ class MockCookieStore : public net::CookieStore {
 };
 
 
-TEST_F(ExternalCookieHandlerTest, MockCookieStoreSanityTest) {
+TEST_F(ExternalCookieHandlerTest, DISABLED_MockCookieStoreSanityTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
   MockCookieStore cookie_store;
   net::CookieOptions options;
@@ -120,7 +120,7 @@ class MockReader : public PipeReader {
   std::vector<std::string> data_;
 };
 
-TEST_F(ExternalCookieHandlerTest, SuccessfulReadTest) {
+TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulReadTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
 
   MockCookieStore cookie_store;
@@ -135,7 +135,7 @@ TEST_F(ExternalCookieHandlerTest, SuccessfulReadTest) {
   EXPECT_TRUE(handler.HandleCookies(&cookie_store));
 }
 
-TEST_F(ExternalCookieHandlerTest, SuccessfulSlowReadTest) {
+TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulSlowReadTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
 
   MockCookieStore cookie_store;
