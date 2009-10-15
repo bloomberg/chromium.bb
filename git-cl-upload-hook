@@ -8,7 +8,7 @@ import sys
 
 # Try locating depot_tools from the user's PATH.
 depot_tools_path = None
-for path in os.environ.get("PATH").split(':'):
+for path in os.environ.get("PATH").split(os.pathsep):
   if not path.endswith("depot_tools"):
     continue
   depot_tools_path = path
@@ -26,8 +26,7 @@ else:
 try:
   import git_cl_hooks
 except ImportError:
-  print ("ERROR: Could not import git_cl_hooks from your depot_tools at %s." %
-      depot_tools_path)
+  print "ERROR: Could not import git_cl_hooks from depot_tools in your PATH."
   print "ERROR: Make sure %s is up-to-date and try again." % depot_tools_path
   sys.exit(1)
 
