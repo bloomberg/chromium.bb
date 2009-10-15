@@ -9,6 +9,8 @@
 #include "base/base_switches.h"
 #import "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #import "base/logging.h"
 #include "base/mac_util.h"
 #import "base/scoped_nsautorelease_pool.h"
@@ -84,6 +86,33 @@ void InitCrashReporter() {
   // restart it.
   if (is_browser)
     [breakpad_config setObject:@"NO" forKey:@BREAKPAD_SEND_AND_EXIT];
+
+  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
+  // location to write brekapad crash dumps can be set.
+  const char* alternate_minidump_location = getenv("BREAKPAD_DUMP_LOCATION");
+  if (alternate_minidump_location) {
+    FilePath alternate_minidump_location_path(alternate_minidump_location);
+    if (!file_util::PathExists(alternate_minidump_location_path)) {
+      LOG(ERROR) << "Directory " << alternate_minidump_location <<
+          " doesn't exist";
+    } else {
+      NSFileManager* file_manager = [NSFileManager defaultManager];
+      size_t minidump_location_len = strlen(alternate_minidump_location);
+      DCHECK(minidump_location_len > 0);
+      NSString* minidump_location = [file_manager
+          stringWithFileSystemRepresentation:alternate_minidump_location
+                                      length:minidump_location_len];
+      [breakpad_config
+          setObject:minidump_location
+             forKey:@BREAKPAD_DUMP_DIRECTORY];
+      if (is_browser) {
+        // Print out confirmation message to the stdout, but only print
+        // from browser process so we don't flood the terminal.
+        LOG(WARNING) << "Breakpad dumps will now be written in " <<
+            alternate_minidump_location;
+      }
+    }
+  }
 
   // Initialize Breakpad.
   gBreakpadRef = BreakpadCreate(breakpad_config);
