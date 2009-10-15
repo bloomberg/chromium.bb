@@ -145,22 +145,21 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return YES;
 }
 
-// Find all the windows that could be a target. It has to be of the
-// appropriate class, and visible (obviously). Note that the window cannot be
-// a target for itself.
+// Returns an array of controllers that could be a drop target, ordered front to
+// back. It has to be of the appropriate class, and visible (obviously). Note
+// that the window cannot be a target for itself.
 - (NSArray*)dropTargetsForController:(TabWindowController*)dragController {
   NSMutableArray* targets = [NSMutableArray array];
   NSWindow* dragWindow = [dragController window];
-  for (NSWindow* window in [NSApp windows]) {
+  for (NSWindow* window in [NSApp orderedWindows]) {
     if (window == dragWindow) continue;
     if (![window isVisible]) continue;
     NSWindowController* controller = [window windowController];
     if ([controller isKindOfClass:[TabWindowController class]]) {
       TabWindowController* realController =
           static_cast<TabWindowController*>(controller);
-      if ([realController canReceiveFrom:dragController]) {
+      if ([realController canReceiveFrom:dragController])
         [targets addObject:controller];
-      }
     }
   }
   return targets;
@@ -335,12 +334,20 @@ static const CGFloat kRapidCloseDist = 2.5;
   NSPoint thisPoint = [NSEvent mouseLocation];
 
   // Iterate over possible targets checking for the one the mouse is in.
-  // The mouse can be in either the tab or window frame.
+  // If the tab is just in the frame, bring the window forward to make it
+  // easier to drop something there. If it's in the tab strip, set the new
+  // target so that it pops into that window. We can't cache this because we
+  // need the z-order to be correct.
   NSArray* targets = [self dropTargetsForController:draggedController_];
   TabWindowController* newTarget = nil;
   for (TabWindowController* target in targets) {
     NSRect windowFrame = [[target window] frame];
     if (NSPointInRect(thisPoint, windowFrame)) {
+      // TODO(pinkerton): If bringing the window to the front immediately is too
+      // annoying, use another dwell date. Can't use |targetDwellDate| because
+      // this hasn't yet become the new target until the mouse is in the tab
+      // strip.
+      [[target window] orderFront:self];
       NSRect tabStripFrame = [[target tabStripView] frame];
       tabStripFrame.origin = [[target window]
                               convertBaseToScreen:tabStripFrame.origin];
