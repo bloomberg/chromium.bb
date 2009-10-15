@@ -5,7 +5,8 @@ http://freedesktop.org/wiki/Software/HarfBuzz
 This code was taken from cb83c38045a7dd098f8edd4530d328e999a7bbaf
 (git://anongit.freedesktop.org/harfbuzz)
 
-The contrib/ directory was written by us and is in the process of getting upstreamed. Additionally, this patch was applied:
+The contrib/ directory was written by us and is in the process of getting upstreamed. Additionally, these patches were applied:
+
 
 diff --git a/src/harfbuzz-shaper.h b/src/harfbuzz-shaper.h
 index e8f5513..1577b59 100644
@@ -30,3 +31,19 @@ index e8f5513..1577b59 100644
 +};
  
  HB_Bool HB_ShapeItem(HB_ShaperItem *item);
+
+
+http://bugs.freedesktop.org/show_bug.cgi?id=24540:
+diff --git a/third_party/harfbuzz/src/harfbuzz-arabic.c b/third_party/harfbuzz/src/harfbuzz-arabic.c
+index 0609232..de3c1f4 100644
+--- a/third_party/harfbuzz/src/harfbuzz-arabic.c
++++ b/third_party/harfbuzz/src/harfbuzz-arabic.c
+@@ -1009,7 +1009,7 @@ static HB_Bool arabicSyriacOpenTypeShape(HB_ShaperItem *item, HB_Bool *ot_ok)
+         ++l;
+         ++properties;
+     }
+-    if (f + l < item->stringLength) {
++    if (f + l + item->item.pos < item->stringLength) {
+         ++l;
+     }
+     getArabicProperties(uc+f, l, props);

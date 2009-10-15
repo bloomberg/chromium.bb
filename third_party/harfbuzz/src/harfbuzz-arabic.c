@@ -1009,7 +1009,7 @@ static HB_Bool arabicSyriacOpenTypeShape(HB_ShaperItem *item, HB_Bool *ot_ok)
         ++l;
         ++properties;
     }
-    if (f + l < item->stringLength) {
+    if (f + l + item->item.pos < item->stringLength) {
         ++l;
     }
     getArabicProperties(uc+f, l, props);
@@ -1086,5 +1086,3 @@ HB_Bool HB_ArabicShape(HB_ShaperItem *item)
     HB_HeuristicPosition(item);
     return TRUE;
 }
-
-

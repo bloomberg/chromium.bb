@@ -993,31 +993,6 @@
    fun:main
 }
 {
-   bug_23450
-   Memcheck:Addr2
-   fun:getArabicProperties
-   fun:arabicSyriacOpenTypeShape
-   fun:HB_ArabicShape
-   fun:HB_ShapeItem
-   fun:_ZN7WebCore13TextRunWalker11shapeGlyphsEv
-   fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
-   fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
-   fun:_ZNK7WebCore4Font24floatWidthForComplexTextERKNS_7TextRunEPN3WTF7HashSetIPKNS_14SimpleFontDataENS4_7PtrHashIS8_EENS4_10HashTraitsIS8_EEEE
-   fun:_ZNK7WebCore4Font10floatWidthERKNS_7TextRunEPN3WTF7HashSetIPKNS_14SimpleFontDataENS4_7PtrHashIS8_EENS4_10HashTraitsIS8_EEEE
-   fun:_ZN7WebCore13RenderListBox17updateFromElementEv
-   fun:_ZN7WebCore22HTMLFormControlElement11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore17HTMLSelectElement11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore8Document11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore8Document19updateStyleIfNeededEv
-   fun:_ZN7WebCore8Document26updateStyleForAllDocumentsEv
-   fun:_ZN7WebCore4Node20dispatchGenericEventEN3WTF10PassRefPtrINS_5EventEEE
-   fun:_ZN7WebCore4Node13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
-   fun:_ZN7WebCore8Document15finishedParsingEv
-   fun:_ZN7WebCore10HTMLParser8finishedEv
-}
-{
    bug_23310
    Memcheck:Leak
    fun:_Znw*
