@@ -166,7 +166,7 @@ if __name__ == '__main__':
   parser = optparse.OptionParser(
       usage='git try [options] [branch]',
       description='Upload the current diff of branch...HEAD to the try server.')
-  parser.add_option("-b", "--bot",
+  parser.add_option("-b", "--bot", action="append",
                     help="Force the use of a specific build slave (eg mac, "
                          "win, or linux)")
   parser.add_option("-c", "--clobber", action="store_true",
@@ -246,8 +246,8 @@ if __name__ == '__main__':
         'svn://svn.chromium.org/chrome-try/try',
     ])
 
-  if options.bot:
-    args.extend(['--bot', options.bot])
+  for bot in options.bot:
+    args.extend(['--bot', bot])
   if options.clobber:
     args.append('--clobber')
   if options.revision:
