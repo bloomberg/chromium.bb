@@ -884,7 +884,7 @@ BUG6735 MAC : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
 
 //also BUG24863
-BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
+BUG9071 MAC WIN SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 
 // -----------------------------------------------------------------
