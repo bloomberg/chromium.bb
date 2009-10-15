@@ -73,7 +73,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     FilePath png(verification_file + L".png");
 
     // Looks for Cleartype override.
-    if (file_util::PathExists(verification_file + L"_cleartype.png") &&
+    if (file_util::PathExists(
+            FilePath::FromWStringHack(verification_file + L"_cleartype.png")) &&
         IsClearTypeEnabled()) {
       png = FilePath(verification_file + L"_cleartype.png");
     }

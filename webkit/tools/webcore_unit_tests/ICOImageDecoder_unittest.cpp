@@ -37,7 +37,7 @@
 
 class ICOImageDecoderTest : public ImageDecoderTest {
  public:
-  ICOImageDecoderTest() : ImageDecoderTest(L"ico") { }
+  ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
   virtual WebCore::ImageDecoder* CreateDecoder() const {
@@ -59,13 +59,13 @@ TEST_F(ICOImageDecoderTest, FaviconSize) {
   // Test that the decoder decodes multiple sizes of icons which have them.
 
   // Load an icon that has both favicon-size and larger entries.
-  std::wstring multisize_icon_path(data_dir_);
-  file_util::AppendToPath(&multisize_icon_path, L"yahoo.ico");
+  FilePath multisize_icon_path(data_dir_.AppendASCII("yahoo.ico"));
   scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(multisize_icon_path,
                                                          false));
 
   // Verify the decoding.
-  const std::wstring md5_sum_path(GetMD5SumPath(multisize_icon_path) + L"2");
+  const FilePath md5_sum_path(
+      GetMD5SumPath(multisize_icon_path).value() + FILE_PATH_LITERAL("2"));
   static const int kDesiredFrameIndex = 3;
 #ifdef CALCULATE_MD5_SUMS
   SaveMD5Sum(md5_sum_path, decoder->frameBufferAtIndex(kDesiredFrameIndex));

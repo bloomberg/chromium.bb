@@ -88,7 +88,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     NavigationControllerTest::TearDown();
 
     ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    ASSERT_FALSE(file_util::PathExists(FilePath::FromWStringHack(test_dir_)));
   }
 
   // Deletes the current profile manager and creates a new one. Indirectly this

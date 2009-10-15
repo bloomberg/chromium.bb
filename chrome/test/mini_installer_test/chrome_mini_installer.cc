@@ -112,7 +112,7 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
   printf("\nChrome will be installed at %ls level\n", install_type_.c_str());
   printf("\nWill proceed with the test only if this path exists: %ls\n\n",
          path.c_str());
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path)));
   LaunchInstaller(path, exe_name.c_str());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey()));
@@ -230,7 +230,7 @@ void ChromeMiniInstaller::UnInstall() {
     CleanChromeInstall();
     return;
   }
-  ASSERT_TRUE(file_util::PathExists(uninstall_path));
+  ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(uninstall_path)));
   std::wstring uninstall_args = L"\"" + uninstall_path +
                                 L"\"" + L" --uninstall --force-uninstall";
   if (install_type_ == mini_installer_constants::kSystemInstall)
@@ -403,15 +403,16 @@ void ChromeMiniInstaller::FindChromeShortcut() {
   path = GetStartMenuShortcutPath();
   file_util::AppendToPath(&path, mini_installer_constants::kChromeBuildType);
   // Verify if path exists.
-  if (file_util::PathExists(path)) {
+  if (file_util::PathExists(FilePath::FromWStringHack(path))) {
     return_val = true;
     uninstall_lnk = path;
     file_util::AppendToPath(&path,
                             mini_installer_constants::kChromeLaunchShortcut);
     file_util::AppendToPath(&uninstall_lnk,
                             mini_installer_constants::kChromeUninstallShortcut);
-    ASSERT_TRUE(file_util::PathExists(path));
-    ASSERT_TRUE(file_util::PathExists(uninstall_lnk));
+    ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path)));
+    ASSERT_TRUE(file_util::PathExists(
+        FilePath::FromWStringHack(uninstall_lnk)));
   }
   if (return_val)
     printf("Chrome shortcuts found are:\n%ls\n%ls\n\n",
@@ -452,7 +453,7 @@ std::wstring ChromeMiniInstaller::GetUninstallPath() {
   file_util::AppendToPath(&path, installer_util::kInstallerDir);
   file_util::AppendToPath(&path,
       mini_installer_constants::kChromeSetupExecutable);
-  if (!file_util::PathExists(path)) {
+  if (!file_util::PathExists(FilePath::FromWStringHack(path))) {
     printf("This uninstall path is not correct %ls. Will not proceed further",
            path.c_str());
     return L"";
@@ -485,7 +486,7 @@ HKEY ChromeMiniInstaller::GetRootRegistryKey() {
 // Launches the chrome installer and waits for it to end.
 void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
                                           const wchar_t* process_name) {
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path)));
   if (install_type_ == mini_installer_constants::kSystemInstall) {
     std::wstring launch_args = L" -system-level";
     base::LaunchApp(L"\"" + path + L"\"" + launch_args, false, false, NULL);
@@ -504,7 +505,7 @@ bool ChromeMiniInstaller::GetChromeLaunchPath(std::wstring* launch_path) {
   file_util::AppendToPath(&path, mini_installer_constants::kChromeAppDir);
   file_util::AppendToPath(&path, installer_util::kChromeExe);
   launch_path->assign(path);
-  return(file_util::PathExists(path));
+  return(file_util::PathExists(FilePath::FromWStringHack(path)));
 }
 
 // Launch Chrome to see if it works after overinstall. Then close it.

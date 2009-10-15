@@ -117,14 +117,14 @@ bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
       ++builds_list_size;
     } else {
       file_util::AppendToPath(path, exe_list.at(0).name_.c_str());
-      if (!file_util::PathExists(*path)) {
+      if (!file_util::PathExists(FilePath::FromWStringHack(*path))) {
         ++builds_list_size;
       } else {
         break;
       }
     }
   }
-  return (file_util::PathExists(path->c_str()));
+  return file_util::PathExists(FilePath::FromWStringHack(*path));
 }
 
 // This method will get the latest installer filename from the directory.
@@ -202,7 +202,7 @@ bool MiniInstallerTestUtil::GetPreviousFullInstaller(
                      &directory_list))
     return false;
   file_util::AppendToPath(previous, directory_list.at(0).name_);
-  return (file_util::PathExists(previous->c_str()));
+  return file_util::PathExists(FilePath::FromWStringHack(*previous));
 }
 
 bool MiniInstallerTestUtil::GetStandaloneInstallerFileName(
@@ -210,9 +210,9 @@ bool MiniInstallerTestUtil::GetStandaloneInstallerFileName(
   std::wstring standalone_installer(
       mini_installer_constants::kChromeStandAloneInstallerLocation);
   standalone_installer.append(L"*.exe");
-  return (GetLatestFile(standalone_installer.c_str(),
-                        mini_installer_constants::kUntaggedInstallerPattern,
-                        file_name));
+  return GetLatestFile(standalone_installer.c_str(),
+                       mini_installer_constants::kUntaggedInstallerPattern,
+                       file_name);
 }
 
 bool MiniInstallerTestUtil::GetStandaloneVersion(
