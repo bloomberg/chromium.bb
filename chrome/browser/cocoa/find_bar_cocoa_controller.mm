@@ -30,6 +30,10 @@ static float kFindBarCloseDuration = 0.15;
 - (void)setFindBarFrame:(NSRect)endFrame
                 animate:(BOOL)animate
                duration:(float)duration;
+
+// Optionally stops the current search, puts |text| into the find bar, and
+// enables the buttons, but doesn't start a new search for |text|.
+- (void)prepopulateText:(NSString*)text stopSearch:(BOOL)stopSearch;
 @end
 
 @implementation FindBarCocoaController
@@ -61,6 +65,11 @@ static float kFindBarCloseDuration = 0.15;
 
 - (void)awakeFromNib {
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
+
+  // Stopping the search requires a findbar controller, which isn't valid yet
+  // during setup. Furthermore, there is no active search yet anyway.
+  [self prepopulateText:[[FindPasteboard sharedInstance] findText]
+             stopSearch:NO];
 }
 
 - (IBAction)close:(id)sender {
@@ -83,7 +92,8 @@ static float kFindBarCloseDuration = 0.15;
 }
 
 - (void)findPboardUpdated:(NSNotification*)notification {
-  [self setFindText:[[FindPasteboard sharedInstance] findText]];
+  [self prepopulateText:[[FindPasteboard sharedInstance] findText]
+             stopSearch:YES];
 }
 
 // Positions the find bar container view in the correct location based on the
@@ -143,9 +153,8 @@ static float kFindBarCloseDuration = 0.15;
 
     if ([event modifierFlags] & NSShiftKeyMask)
       [previousButton_ performClick:nil];
-    else {
+    else
       [nextButton_ performClick:nil];
-    }
 
     return YES;
   } else if (command == @selector(pageUp:) ||
@@ -343,6 +352,26 @@ static float kFindBarCloseDuration = 0.15;
   [currentAnimation_ setDuration:duration];
   [currentAnimation_ setDelegate:self];
   [currentAnimation_ startAnimation];
+}
+
+- (void)prepopulateText:(NSString*)text stopSearch:(BOOL)stopSearch{
+  [self setFindText:text];
+
+  // End the find session, hide the "x of y" text and disable the
+  // buttons, but do not close the find bar or raise the window here.
+  if (stopSearch && findBarBridge_) {
+    TabContents* contents =
+        findBarBridge_->GetFindBarController()->tab_contents();
+    if (contents) {
+      contents->StopFinding(true);
+      findBarBridge_->ClearResults(contents->find_result());
+    }
+  }
+
+  // Has to happen after |ClearResults()| above.
+  BOOL buttonsEnabled = [text length] > 0 ? YES : NO;
+  [previousButton_ setEnabled:buttonsEnabled];
+  [nextButton_ setEnabled:buttonsEnabled];
 }
 
 @end

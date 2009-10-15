@@ -7,7 +7,8 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 
-FindBarBridge::FindBarBridge() {
+FindBarBridge::FindBarBridge()
+    : find_bar_controller_(NULL) {
   cocoa_controller_.reset([[FindBarCocoaController alloc] init]);
   [cocoa_controller_ setFindBarBridge:this];
 }
