@@ -709,15 +709,16 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   sources = set(spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  sources.add(os.path.split(build_file)[1])
+  gyp_file = os.path.split(build_file)[1]
+  sources.add(gyp_file)
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
     inputs = a.get('inputs')
     if not inputs:
-      # This is an action with no inputs.  Add a fake, nonexistent
-      # input file (which will be the primary by definition)
-      # for the Visual Studio custom build rule.
-      inputs = ['__null_input__']
+      # This is an action with no inputs.  Make the primary input
+      # by the .gyp file itself so Visual Studio has a place to
+      # hang the custom build rule.
+      inputs = [gyp_file]
       a['inputs'] = inputs
     primary_input = _PickPrimaryInput(inputs)
     inputs = set(inputs)
