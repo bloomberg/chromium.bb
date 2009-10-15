@@ -1,0 +1,7 @@
+reliability_tests.exe
+test_shell.exe
+automated_ui_tests.exe
+icudt38.dll
+icudt42.dll
+plugins\npapi_layout_test_plugin.dll
+fonts\*
