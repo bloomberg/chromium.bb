@@ -468,12 +468,16 @@ TEST_F(SiteInstanceTest, GetSiteInstanceMap) {
   scoped_ptr<Profile> p2(new TestingProfile());
   scoped_ptr<Profile> p3(new DerivedTestingProfile(p1.get()));
 
+  // In this test, instances 1 and 2 will be deleted automatically when the
+  // SiteInstance objects they return are deleted.  However, instance 3 never
+  // returns any SitesIntance objects in this test, so will not be automatically
+  // deleted.  It must be deleted manually.
   TestBrowsingInstance* instance1(new TestBrowsingInstance(p1.get(),
       &deleteCounter));
   TestBrowsingInstance* instance2(new TestBrowsingInstance(p2.get(),
       &deleteCounter));
-  TestBrowsingInstance* instance3(new TestBrowsingInstance(p3.get(),
-      &deleteCounter));
+  scoped_refptr<TestBrowsingInstance> instance3(
+      new TestBrowsingInstance(p3.get(), &deleteCounter));
 
   instance1->use_process_per_site = true;
   instance2->use_process_per_site = true;

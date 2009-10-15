@@ -6,5 +6,3 @@ VisitedLinkRelayTest.Basics
 RenderViewTest.ImeComposition
 # Hangs sometimes; see http://crbug.com/24416
 DnsMasterTest.MassiveConcurrentLookupTest
-# New tests that leaks; see http://crbug.com/24769
-SiteInstanceTest.GetSiteInstanceMap
