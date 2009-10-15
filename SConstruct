@@ -510,6 +510,7 @@ base_env.Append(
     'src/trusted/validator_x86/build.scons',
     'tests/python_version/build.scons',
     'tests/tools/build.scons',
+    'installer/build.scons'
     ],
   )
 

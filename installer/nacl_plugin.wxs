@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='windows-1252'?>
+
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+Wix script for building o3d installer.
+-->
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
+    <?define NaClProductGuid="{730DA897-1182-428d-ACBA-E200187F0F51}"?>
+    <?define NaClPackageGuid="{730DA897-1182-428d-ACBA-E200187F0F51}"?>
+    <?define NaClVersion="1.0"?>
+    <?define NaClUpgradeCode="{18416876-EA3B-4dd7-BC2F-EDB90000E1C1}"?>
+
+  <Product Name='Google Native Client Plugin' Id='$(var.NaClProductGuid)'
+           Language='1033' Codepage='1252' Version='$(var.NaClVersion)'
+           Manufacturer='Google' UpgradeCode='$(var.NaClUpgradeCode)'>
+
+    <Package Id='$(var.NaClPackageGuid)' Keywords='Installer'
+             Description='Native Client Plugin Installer' Manufacturer='Google'
+             InstallerVersion='101' InstallPrivileges='limited'
+             Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='naclplugin.cab' EmbedCab='yes'
+           CompressionLevel='high'/>
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+        <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory
+                Id='MozillaDir'
+                LongName='Mozilla Firefox'
+                Name='Mozilla'
+            >
+                <Directory Id='PlugsDir' Name='Plugins'>
+                    <Component
+                        Id='FirefoxPlugin'
+                        Guid='2899E135-8F25-495e-8DDC-8850F2B74EA0'
+                    >
+                        <File
+                            Id='sel_ldr'
+                            DiskId='1'
+                            Name='sel_ldr.exe'
+                            Source='$(var.SRC_ROOT)\sel_ldr.exe'
+                            />
+
+                        <File
+                            Id='SDL'
+                            DiskId='1'
+                            Name='SDL.dll'
+                            Source='$(var.SRC_ROOT)\SDL.dll'
+                            />
+
+                        <File
+                            Id='PlugDll'
+                            DiskId='1'
+                            LongName='npGoogleNaClPlugin.dll'
+                            Name='npNacl.dll'
+                            Source='$(var.SRC_ROOT)\npGoogleNaClPlugin.dll'
+                            />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+    </Directory>
+
+    <Feature
+       Id='MozillaPlug'
+       Title='Native Client Plugin for Firefox'
+       Level='1'
+    >
+        <ComponentRef Id='FirefoxPlugin'/>
+    </Feature>
+  </Product>
+
+</Wix>

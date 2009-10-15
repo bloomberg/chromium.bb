@@ -381,6 +381,7 @@ def SiteInitMain():
       'environment_tools',
       'publish',
       'replicate',
+      'wix',
   ]
 
   # Patch Tool._tool_module method to fill in an exists() method for the
