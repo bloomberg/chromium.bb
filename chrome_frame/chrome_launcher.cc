@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/chrome_frame_automation.h"
-#include "chrome_frame/crash_report.h"
 
 namespace chrome_launcher {
 

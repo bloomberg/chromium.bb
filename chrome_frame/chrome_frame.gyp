@@ -616,6 +616,8 @@
         'chrome_frame_activex.rgs',
         'chrome_frame_npapi.rgs',
         'chrome_frame_npapi_entrypoints.cc',
+        'chrome_frame_reporting.cc',
+        'chrome_frame_reporting.h',
         'chrome_protocol.cc',
         'chrome_protocol.h',
         'chrome_protocol.rgs',
@@ -632,8 +634,6 @@
         'com_message_event.h',
         'com_type_info_holder.cc',
         'com_type_info_holder.h',
-        'crash_report.cc',
-        'crash_report.h',
         'ff_30_privilege_check.cc',
         'ff_privilege_check.h',
         'find_dialog.cc',
@@ -654,8 +654,6 @@
         'urlmon_url_request.h',
         'urlmon_upload_data_stream.cc',
         'urlmon_upload_data_stream.h',
-        'vectored_handler-impl.h',
-        'vectored_handler.h',
         'vtable_patch_manager.cc',
         'vtable_patch_manager.h',
         'chrome_frame_histograms.h',
@@ -686,6 +684,8 @@
             # Installer
             '../chrome/installer/installer.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
+            # Crash Reporting
+            'crash_reporting/crash_reporting.gyp:crash_report',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

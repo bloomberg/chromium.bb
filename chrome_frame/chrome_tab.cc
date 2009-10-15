@@ -18,8 +18,8 @@
 #include "grit/chrome_frame_resources.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_frame_automation.h"
+#include "chrome_frame/chrome_frame_reporting.h"
 #include "chrome_frame/chrome_launcher.h"
-#include "chrome_frame/crash_report.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 
@@ -124,7 +124,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     ATL::CTrace::s_trace.ChangeCategory(atlTraceRegistrar, 0,
                                         ATLTRACESTATUS_DISABLED);
 #endif
-    InitializeCrashReporting(false, false);
+    InitializeCrashReporting();
     g_exit_manager = new base::AtExitManager();
     CommandLine::Init(0, NULL);
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
