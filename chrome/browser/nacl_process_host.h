@@ -20,13 +20,16 @@ class ResourceMessageFilter;
 // running in the renderer and NaCl processes.
 class NaClProcessHost : public ChildProcessHost {
  public:
-  explicit NaClProcessHost(ResourceDispatcherHost *resource_dispatcher_host);
+  NaClProcessHost(ResourceDispatcherHost *resource_dispatcher_host,
+                  const std::wstring& url);
   ~NaClProcessHost() {}
 
   // Initialize the new NaCl process, returning true on success.
   bool Launch(ResourceMessageFilter* renderer_msg_filter,
               const int descriptor,
-              nacl::FileDescriptor *handle);
+              nacl::FileDescriptor* handle,
+              nacl::FileDescriptor* nacl_process_handle,
+              int* nacl_process_id);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
 

@@ -54,7 +54,11 @@ class RenderProcess : public ChildProcess {
 
   // Sends a message to the browser process asking to launch a new NaCl process.
   // Called from NaCl plugin code.
-  static bool LaunchNaClProcess(int imc_fd, nacl::Handle *handle);
+  static bool LaunchNaClProcess(const char* url,
+                                int imc_fd,
+                                nacl::Handle* imc_handle,
+                                nacl::Handle* nacl_process_handle,
+                                int* nacl_process_id);
 
  private:
   // Look in the shared memory cache for a suitable object to reuse.

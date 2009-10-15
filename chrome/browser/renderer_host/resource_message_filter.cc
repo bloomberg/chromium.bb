@@ -603,10 +603,18 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
       this, url, mime_type, locale, reply_msg);
 }
 
-void ResourceMessageFilter::OnLaunchNaCl(int channel_descriptor,
-                                         nacl::FileDescriptor* handle) {
-  NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_);
-  nacl_host->Launch(this, channel_descriptor, handle);
+void ResourceMessageFilter::OnLaunchNaCl(const std::wstring& url,
+    int channel_descriptor,
+    nacl::FileDescriptor* imc_handle,
+    nacl::FileDescriptor* nacl_process_handle,
+    int* nacl_process_id) {
+  NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_,
+                                                   url);
+  nacl_host->Launch(this,
+                    channel_descriptor,
+                    imc_handle,
+                    nacl_process_handle,
+                    nacl_process_id);
 }
 
 void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,

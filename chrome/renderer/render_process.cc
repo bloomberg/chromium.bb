@@ -100,7 +100,6 @@ RenderProcess::RenderProcess()
 
   initialized_media_library_ =
      media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
-        
 #else
   FilePath module_path;
   initialized_media_library_ =
@@ -135,16 +134,25 @@ bool RenderProcess::InProcessPlugins() {
 #endif
 }
 
-bool RenderProcess::LaunchNaClProcess(int imc_fd,
-                                      nacl::Handle* handle) {
+bool RenderProcess::LaunchNaClProcess(const char* url,
+                                      int imc_fd,
+                                      nacl::Handle* imc_handle,
+                                      nacl::Handle* nacl_process_handle,
+                                      int* nacl_process_id) {
   // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
   // base::FileDescriptor
-  nacl::FileDescriptor descriptor;
+  nacl::FileDescriptor imc_descriptor;
+  nacl::FileDescriptor nacl_process_descriptor;
   if (!RenderThread::current()->Send(
-      new ViewHostMsg_LaunchNaCl(imc_fd, &descriptor))) {
+    new ViewHostMsg_LaunchNaCl(ASCIIToWide(url),
+                               imc_fd,
+                               &imc_descriptor,
+                               &nacl_process_descriptor,
+                               nacl_process_id))) {
     return false;
   }
-  *handle = NATIVE_HANDLE(descriptor);
+  *imc_handle = NATIVE_HANDLE(imc_descriptor);
+  *nacl_process_handle = NATIVE_HANDLE(nacl_process_descriptor);
   return true;
 }
 

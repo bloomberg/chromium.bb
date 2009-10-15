@@ -31,25 +31,31 @@
 #endif
 
 NaClProcessHost::NaClProcessHost(
-    ResourceDispatcherHost *resource_dispatcher_host)
+    ResourceDispatcherHost *resource_dispatcher_host,
+    const std::wstring& url)
     : ChildProcessHost(NACL_PROCESS, resource_dispatcher_host),
       resource_dispatcher_host_(resource_dispatcher_host) {
-  // TODO(gregoryd): fix this to include the nexe name.
-  set_name(L"nexe name should appear here");
+  set_name(url);
 }
 
 bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
                              const int descriptor,
-                             nacl::FileDescriptor* handle) {
+                             nacl::FileDescriptor* imc_handle,
+                             nacl::FileDescriptor* nacl_process_handle,
+                             int* nacl_process_id) {
 #ifdef DISABLE_NACL
   NOTIMPLEMENTED() << "Native Client disabled at build time";
   return false;
 #else
   nacl::Handle pair[2];
   bool success = false;
+
+  NATIVE_HANDLE(*imc_handle) = nacl::kInvalidHandle;
+  NATIVE_HANDLE(*nacl_process_handle) = nacl::kInvalidHandle;
+  *nacl_process_id = 0;
+
   // Create a connected socket
   if (nacl::SocketPair(pair) == -1) {
-    NATIVE_HANDLE(*handle) = nacl::kInvalidHandle;
     return false;
   }
 
@@ -58,32 +64,45 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
 
   if (!success) {
     nacl::Close(pair[0]);
-    NATIVE_HANDLE(*handle) = nacl::kInvalidHandle;
     return false;
   }
 
-  nacl::Handle duplicate_handle = nacl::kInvalidHandle;
 #if NACL_WINDOWS
+  // Duplicate the IMC handle
   DuplicateHandle(base::GetCurrentProcessHandle(),
                   reinterpret_cast<HANDLE>(pair[0]),
                   renderer_msg_filter->handle(),
-                  reinterpret_cast<HANDLE*>(&duplicate_handle),
+                  imc_handle,
                   GENERIC_READ | GENERIC_WRITE,
                   FALSE,
                   DUPLICATE_CLOSE_SOURCE);
-  *handle = duplicate_handle;
+
+  // Duplicate the process handle
+  DuplicateHandle(base::GetCurrentProcessHandle(),
+                  handle(),
+                  renderer_msg_filter->handle(),
+                  nacl_process_handle,
+                  PROCESS_DUP_HANDLE,
+                  FALSE,
+                  0);
+
 #else
-  duplicate_handle = pair[0];
-  int flags = fcntl(duplicate_handle, F_GETFD);
+  int flags = fcntl(pair[0], F_GETFD);
   if (flags != -1) {
     flags |= FD_CLOEXEC;
-    fcntl(duplicate_handle, F_SETFD, flags);
+    fcntl(pair[0], F_SETFD, flags);
   }
-  // No need to dup the handle - we don't pass it anywhere else so
+  // No need to dup the imc_handle - we don't pass it anywhere else so
   // it cannot be closed.
-  handle->fd = duplicate_handle;
-  handle->auto_close = true;
+  imc_handle->fd = pair[0];
+  imc_handle->auto_close = true;
+
+  // Process handles are used on Windows only
+  NATIVE_HANDLE(*nacl_process_handle) = nacl::kInvalidHandle;
 #endif
+
+  // Get the pid of the NaCl process
+  *nacl_process_id = base::GetProcId(handle());
 
   return true;
 #endif  // DISABLE_NACL
@@ -91,7 +110,7 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
 
 bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
                                    const int descriptor,
-                                   const nacl::Handle handle) {
+                                   const nacl::Handle imc_handle) {
   if (!CreateChannel())
     return false;
 
@@ -152,17 +171,17 @@ bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
     return false;
   SetHandle(process);
 
-  // send a message with duplicated handle to sel_ldr
-  return SendStartMessage(process, descriptor, handle);
+  // send a message with duplicated imc_handle to sel_ldr
+  return SendStartMessage(process, descriptor, imc_handle);
 }
 
 bool NaClProcessHost::SendStartMessage(base::ProcessHandle process,
                                        int descriptor,
-                                       nacl::Handle handle) {
+                                       nacl::Handle imc_handle) {
   nacl::FileDescriptor channel;
 #if defined(OS_WIN)
   if (!DuplicateHandle(GetCurrentProcess(),
-                       reinterpret_cast<HANDLE>(handle),
+                       reinterpret_cast<HANDLE>(imc_handle),
                        process,
                        reinterpret_cast<HANDLE*>(&channel),
                        GENERIC_READ | GENERIC_WRITE,
@@ -170,7 +189,7 @@ bool NaClProcessHost::SendStartMessage(base::ProcessHandle process,
     return false;
   }
 #else
-  channel.fd = dup(handle);
+  channel.fd = dup(imc_handle);
   channel.auto_close = true;
 #endif
   NaClProcessMsg_Start* msg = new NaClProcessMsg_Start(descriptor,
