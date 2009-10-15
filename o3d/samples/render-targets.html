@@ -155,7 +155,7 @@ function initStep2(clientElements) {
   var texture2d = g_pack.createTexture2D(RENDER_TARGET_WIDTH,
                                          RENDER_TARGET_HEIGHT,
                                          g_o3d.Texture.XRGB8, 1, true);
-  var renderSurface = texture2d.getRenderSurface(0, g_pack);
+  var renderSurface = texture2d.getRenderSurface(0);
 
   // Create the depth-stencil buffer required when rendering the teapot.
   var depthSurface = g_pack.createDepthStencilSurface(RENDER_TARGET_WIDTH,

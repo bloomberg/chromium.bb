@@ -182,7 +182,7 @@ function createSobelMaterial(viewInfo, kernelSize) {
 }
 
 function createRenderSurfaceSet(texture) {
-  var renderSurface = texture.getRenderSurface(0, g_pack);
+  var renderSurface = texture.getRenderSurface(0);
 
   // Create the depth-stencil buffer required when rendering this pass.
   var depthSurface = g_pack.createDepthStencilSurface(RENDER_TARGET_WIDTH,

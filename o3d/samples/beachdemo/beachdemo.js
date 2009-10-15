@@ -1880,12 +1880,12 @@ function setupRenderTargets() {
                                                    g_renderTargetHeight,
                                                    g_o3d.Texture.ARGB8, 1,
                                                    true);
-  var reflectionSurface = g_reflectionTexture.getRenderSurface(0, g_mainPack);
+  var reflectionSurface = g_reflectionTexture.getRenderSurface(0);
   g_refractionTexture = g_mainPack.createTexture2D(g_renderTargetWidth,
                                                    g_renderTargetHeight,
                                                    g_o3d.Texture.XRGB8, 1,
                                                    true);
-  var refractionSurface = g_refractionTexture.getRenderSurface(0, g_mainPack);
+  var refractionSurface = g_refractionTexture.getRenderSurface(0);
   g_depthSurface = g_mainPack.createDepthStencilSurface(g_renderTargetWidth,
                                                         g_renderTargetHeight);
 

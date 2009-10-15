@@ -168,7 +168,7 @@ function initRenderGraph() {
                                            g_o3d.Texture.ABGR32F,
                                            1,
                                            true);
-  var renderSurface = g_shadowTexture.getRenderSurface(0, g_pack);
+  var renderSurface = g_shadowTexture.getRenderSurface(0);
 
   // Create the depth-stencil buffer required when rendering the teapot.
   var depthSurface = g_pack.createDepthStencilSurface(SHADOW_MAP_WIDTH,
