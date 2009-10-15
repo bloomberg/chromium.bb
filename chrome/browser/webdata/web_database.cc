@@ -14,6 +14,7 @@
 #include "app/sql/transaction.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "webkit/glue/password_form.h"
@@ -133,6 +134,9 @@ void WebDatabase::CommitTransaction() {
 }
 
 bool WebDatabase::Init(const FilePath& db_name) {
+  // Set the exceptional sqlite error handler.
+  db_.set_error_delegate(GetErrorHandlerForWebDb());
+
   // We don't store that much data in the tables so use a small page size.
   // This provides a large benefit for empty tables (which is very likely with
   // the tables we create).

@@ -14,6 +14,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 // There are two tables in each database, one full-text search (FTS) table which
 // indexes the contents and title of the pages. The other is a regular SQLITE
@@ -52,27 +53,6 @@ const char kBodyColumnIndex[] = "2";
 const FilePath::CharType kFilePrefix[] = FILE_PATH_LITERAL("History Index ");
 
 }  // namespace
-
-// This class handles the exceptional sqlite errors that we might encounter
-// if for example the db is corrupted. Right now we just generate a UMA
-// histogram for release and an assert for debug builds.
-class TextDbSqliteErrrorHandler : public sql::ErrorDelegate {
- public:
-  virtual int OnError(int error, sql::Connection* connection,
-                      sql::Statement* stmt) {
-    NOTREACHED() << "history db sqlite error " << error;
-    RecordErrorInHistogram(error);
-    return error;
-  }
- private:
-  static void RecordErrorInHistogram(int error) {
-    // The histogram values from sqlite result codes go currently from 1 to
-    // 26 currently but 100 gives them room to grow.
-    static LinearHistogram histogram("Sqlite.History.Error", 1, 50, 51);
-    histogram.SetFlags(kUmaTargetedHistogramFlag);
-    histogram.Add(error);
-  }
-};
 
 TextDatabase::TextDatabase(const FilePath& path,
                            DBIdent id,
@@ -137,7 +117,7 @@ bool TextDatabase::Init() {
   }
 
   // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(new TextDbSqliteErrrorHandler());
+  db_.set_error_delegate(GetErrorHandlerForTextDb());
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

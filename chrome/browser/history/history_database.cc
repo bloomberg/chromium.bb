@@ -13,6 +13,7 @@
 #include "base/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 namespace history {
 
@@ -59,6 +60,9 @@ HistoryDatabase::~HistoryDatabase() {
 
 InitStatus HistoryDatabase::Init(const FilePath& history_name,
                                  const FilePath& bookmarks_path) {
+  // Set the exceptional sqlite error handler.
+  db_.set_error_delegate(GetErrorHandlerForHistoryDb());
+
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise

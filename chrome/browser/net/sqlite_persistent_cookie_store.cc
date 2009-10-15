@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 using base::Time;
 
@@ -281,27 +282,6 @@ static const int kCompatibleVersionNumber = 3;
 
 namespace {
 
-// This class handles the exceptional sqlite errors that we might encounter
-// if for example the db is corrupted. Right now we just generate a UMA
-// histogram for release and an assert for debug builds.
-class CookieDbSqliteErrrorHandler : public sql::ErrorDelegate {
- public:
-  virtual int OnError(int error, sql::Connection* connection,
-                      sql::Statement* stmt) {
-    NOTREACHED() << "cookie db sqlite error " << error;
-    RecordErrorInHistogram(error);
-    return error;
-  }
- private:
-  static void RecordErrorInHistogram(int error) {
-    // The histogram values from sqlite result codes go currently from 1 to
-    // 26 currently but 50 gives them room to grow.
-    static LinearHistogram histogram("Sqlite.Cookie.Error", 1, 50, 51);
-    histogram.SetFlags(kUmaTargetedHistogramFlag);
-    histogram.Add(error);
-  }
-};
-
 // Initializes the cookies table, returning true on success.
 bool InitTable(sql::Connection* db) {
   if (!db->DoesTableExist("cookies")) {
@@ -335,7 +315,7 @@ bool SQLitePersistentCookieStore::Load(
     return false;
   }
 
-  db->set_error_delegate(new CookieDbSqliteErrrorHandler());
+  db->set_error_delegate(GetErrorHandlerForCookieDb());
 
   if (!EnsureDatabaseVersion(db.get()) || !InitTable(db.get())) {
     NOTREACHED() << "Unable to initialize cookie DB.";

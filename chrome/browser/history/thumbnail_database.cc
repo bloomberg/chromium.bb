@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/time.h"
 #include "base/string_util.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/thumbnail_score.h"
@@ -31,6 +32,9 @@ ThumbnailDatabase::~ThumbnailDatabase() {
 InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
                                    const HistoryPublisher* history_publisher) {
   history_publisher_ = history_publisher;
+
+  // Set the exceptional sqlite error handler.
+  db_.set_error_delegate(GetErrorHandlerForThumbnailDb());
 
   // Set the database page size to something  larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

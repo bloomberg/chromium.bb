@@ -5,5 +5,18 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 #define CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 
+namespace sql {
+  class ErrorDelegate;
+}
+
+sql::ErrorDelegate* GetErrorHandlerForCookieDb();
+
+sql::ErrorDelegate* GetErrorHandlerForHistoryDb();
+
+sql::ErrorDelegate* GetErrorHandlerForThumbnailDb();
+
+sql::ErrorDelegate* GetErrorHandlerForTextDb();
+
+sql::ErrorDelegate* GetErrorHandlerForWebDb();
 
 #endif  // CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
