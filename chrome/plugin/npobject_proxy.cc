@@ -156,7 +156,11 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
 
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
-    return obj->_class->invoke(obj, name, args, arg_count, np_result);
+    if (is_default) {
+      return obj->_class->invokeDefault(obj, args, arg_count, np_result);
+    } else {
+      return obj->_class->invoke(obj, name, args, arg_count, np_result);
+    }
   }
 
   bool result = false;
