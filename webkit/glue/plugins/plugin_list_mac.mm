@@ -20,7 +20,7 @@ void GetPluginCommonDirectory(std::vector<FilePath>* plugin_dirs,
   // Interestingly, Safari hard-codes the location (see
   // WebKit/WebKit/mac/Plugins/WebPluginDatabase.mm's +_defaultPlugInPaths).
   FSRef ref;
-  OSErr err = FSFindFolder(user ? kLocalDomain : kUserDomain,
+  OSErr err = FSFindFolder(user ? kUserDomain : kLocalDomain,
                            kInternetPlugInFolderType, false, &ref);
 
   if (err)
