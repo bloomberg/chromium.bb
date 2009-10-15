@@ -5556,8 +5556,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Recently Closed
         </message>
         <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for booking the current page in the bookmark menu.">
+        <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for bookmarking the current page in the bookmark menu.">
           Bookmark This Page...
+        </message>
+        <message name="IDS_BOOKMARK_ALL_TABS_MAC" desc="The Mac menu item for bookmarking all tabs in the current window.">
+          Bookmark All Tabs...
         </message>
         <!-- Window menu -->
         <message name="IDS_MINIMIZE_WINDOW_MAC" desc="The Mac menu item for minimize the window menu.">

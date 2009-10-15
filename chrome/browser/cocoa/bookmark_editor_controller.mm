@@ -146,7 +146,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
     name_valid = false;
   }
 
-  if (newURL.is_valid() && name_valid) {
+  if (node_ && (node_->is_folder() || newURL.is_valid()) && name_valid) {
     [okButton_ setEnabled:YES];
   } else {
     [okButton_ setEnabled:NO];

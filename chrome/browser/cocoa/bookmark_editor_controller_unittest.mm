@@ -58,6 +58,7 @@ TEST_F(BookmarkEditorControllerTest, NoNodeNoTree) {
   EXPECT_NE((NSWindow*)nil, [controller window]);  // Forces a nib load
   EXPECT_EQ(@"", [controller displayName]);
   EXPECT_EQ(@"", [controller displayURL]);
+  EXPECT_FALSE([controller okButtonEnabled]);
 }
 
 TEST_F(BookmarkEditorControllerTest, YesNodeShowTree) {
