@@ -152,11 +152,6 @@
             'src/client/mac/Framework/Breakpad.mm',
             'src/client/mac/Framework/OnDemandServer.mm',
           ],
-          'xcode_settings': {
-            # The Mac Breakpad framework uses C++ exceptions internally, but
-            # is careful to not propagate them to callers.
-            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-          },
         },
       ],
     }],
