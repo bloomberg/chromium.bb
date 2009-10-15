@@ -313,7 +313,7 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
 // Tests that we can parse valid feeds.
 // This test was originally one big test that kept timing out because there is
 // an overall timeout per browser tests. It was then split up into multiple.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeeds1) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
@@ -321,37 +321,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds1) {
   std::string item_desc;
   std::string error;
 
-  std::cout << "Starting test ParseFeed with kValidFeed1.\n";
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed1));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeedTitle'", feed_title.c_str());
   EXPECT_STREQ("Title 1", item_title.c_str());
   EXPECT_STREQ("Desc", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  std::cout << "Moving on to kValidFeed2.\n";
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed2));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeed2'", feed_title.c_str());
   EXPECT_STREQ("My item title1", item_title.c_str());
   EXPECT_STREQ("This is a summary.", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  std::cout << "Moving on to kValidFeed3.\n";
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed3));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Google Code buglist rss feed'", feed_title.c_str());
   EXPECT_STREQ("My dear title", item_title.c_str());
   EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  std::cout << "Moving on to kValidFeed4.\n";
   // Feed with weird characters in title.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed4));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Title chars <script> %23 stop'", feed_title.c_str());
   EXPECT_STREQ("Title chars <script> %23 stop", item_title.c_str());
@@ -362,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds1) {
 // Tests that we can parse valid feeds.
 // This test was originally one big test that kept timing out because there is
 // an overall timeout per browser tests. It was then split up into multiple.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeeds2) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
@@ -370,21 +362,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds2) {
   std::string item_desc;
   std::string error;
 
-  std::cout << "Moving on to kValidFeed0.\n";
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed0));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeedTitle'", feed_title.c_str());
   EXPECT_STREQ("Title 1", item_title.c_str());
   EXPECT_STREQ("Desc VIDEO", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  std::cout << "Moving on to kValidFeed5.\n";
   // Feed with valid but mostly empty xml.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed5));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
@@ -395,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds2) {
 // Tests that we can parse invalid feeds.
 // This test was originally one big test that kept timing out because there is
 // an overall timeout per browser tests. It was then split up into multiple.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeeds1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeeds1) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
@@ -403,30 +391,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeeds1) {
   std::string item_desc;
   std::string error;
 
-  std::cout << "Moving on to kInvalidFeed1.\n";
   // Try an empty feed.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed1));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed.", error.c_str());
 
-  std::cout << "Moving on to kInvalidFeed2.\n";
   // Try a garbage feed.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed2));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed.", error.c_str());
 
-  std::cout << "Moving on to foo.xml (doesn't exist).\n";
   // Try a feed that doesn't exist.
   ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, L"foo.xml"));
-  std::cout << "GetParseFeedData.\n";
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
