@@ -326,13 +326,13 @@ set_browser_gnome()
     gconftool-2 --type bool --set /desktop/gnome/applications/browser/nremote true
     # Set the handler for HTTP and HTTPS.
     for protocol in http https; do
-        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary"
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary %s"
         gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/needs_terminal false
         gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/enabled true
     done
     # Set the handler for about: and unknown URL types.
     for protocol in about unknown; do
-        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary"
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary %s"
     done
 }
 
