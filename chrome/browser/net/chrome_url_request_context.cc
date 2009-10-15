@@ -131,7 +131,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
       new net::HttpCache(context->host_resolver_,
                          context->proxy_service_,
                          context->ssl_config_service_,
-                         disk_cache_path.ToWStringHack(), cache_size);
+                         disk_cache_path, cache_size);
 
   if (command_line.HasSwitch(switches::kEnableByteRangeSupport))
     cache->set_enable_range_support(true);
@@ -297,14 +297,14 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateRequestContextForMedia(
     net::HttpNetworkLayer* original_network_layer =
         static_cast<net::HttpNetworkLayer*>(original_cache->network_layer());
     cache = new net::HttpCache(original_network_layer->GetSession(),
-                               disk_cache_path.ToWStringHack(), cache_size);
+                               disk_cache_path, cache_size);
   } else {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
     cache = new net::HttpCache(original_context->host_resolver(),
                                original_context->proxy_service(),
                                original_context->ssl_config_service(),
-                               disk_cache_path.ToWStringHack(), cache_size);
+                               disk_cache_path, cache_size);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

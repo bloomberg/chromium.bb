@@ -8,6 +8,8 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 
+class FilePath;
+
 // A basic URLRequestContext that only provides an in-memory cookie store.
 class TestShellRequestContext : public URLRequestContext {
  public:
@@ -16,7 +18,7 @@ class TestShellRequestContext : public URLRequestContext {
 
   // Use an on-disk cache at the specified location.  Optionally, use the cache
   // in playback or record mode.
-  TestShellRequestContext(const std::wstring& cache_path,
+  TestShellRequestContext(const FilePath& cache_path,
                           net::HttpCache::Mode cache_mode,
                           bool no_proxy);
 
@@ -25,7 +27,7 @@ class TestShellRequestContext : public URLRequestContext {
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
  private:
-  void Init(const std::wstring& cache_path, net::HttpCache::Mode cache_mode,
+  void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
 };
 

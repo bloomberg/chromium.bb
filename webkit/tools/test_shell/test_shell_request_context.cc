@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include "base/file_path.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service.h"
@@ -14,18 +15,18 @@
 #include "webkit/glue/webkit_glue.h"
 
 TestShellRequestContext::TestShellRequestContext() {
-  Init(std::wstring(), net::HttpCache::NORMAL, false);
+  Init(FilePath(), net::HttpCache::NORMAL, false);
 }
 
 TestShellRequestContext::TestShellRequestContext(
-    const std::wstring& cache_path,
+    const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   Init(cache_path, cache_mode, no_proxy);
 }
 
 void TestShellRequestContext::Init(
-    const std::wstring& cache_path,
+    const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   cookie_store_ = new net::CookieMonster();
