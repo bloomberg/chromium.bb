@@ -52,6 +52,9 @@ class TaskManager {
       return WebKit::WebCache::ResourceTypeStats();
     }
 
+    virtual bool ReportsSqliteMemoryUsed() const { return false; }
+    virtual size_t SqliteMemoryUsedBytes() const { return 0; }
+
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an assoiciated tab.
     virtual TabContents* GetTabContents() const { return NULL; }
@@ -191,6 +194,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   std::wstring GetResourceWebCoreImageCacheSize(int index) const;
   std::wstring GetResourceWebCoreScriptsCacheSize(int index) const;
   std::wstring GetResourceWebCoreCSSCacheSize(int index) const;
+  std::wstring GetResourceSqliteMemoryUsed(int index) const;
   std::wstring GetResourceGoatsTeleported(int index) const;
 
   // Returns true if the resource is first in its group (resources

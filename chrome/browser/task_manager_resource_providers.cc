@@ -36,6 +36,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/sqlite_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -699,6 +700,10 @@ std::wstring TaskManagerBrowserProcessResource::GetTitle() const {
 
 SkBitmap TaskManagerBrowserProcessResource::GetIcon() const {
   return *default_icon_;
+}
+
+size_t TaskManagerBrowserProcessResource::SqliteMemoryUsedBytes() const {
+  return static_cast<size_t>(sqlite3_memory_used());
 }
 
 base::ProcessHandle TaskManagerBrowserProcessResource::GetProcess() const {

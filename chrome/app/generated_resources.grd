@@ -2478,6 +2478,9 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
         CSS cache
       </message>
+      <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
+        SQLite memory
+      </message>
       <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
         <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
       </message>

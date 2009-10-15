@@ -273,6 +273,9 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { NOTREACHED(); }
 
+  bool ReportsSqliteMemoryUsed() const { return true; }
+  size_t SqliteMemoryUsedBytes() const;
+
   // Returns the pid of the browser process.
   int process_id() const { return pid_; }
 

@@ -199,6 +199,12 @@ std::wstring TaskManagerModel::GetResourceWebCoreCSSCacheSize(
   return FormatStatsSize(stats.cssStyleSheets);
 }
 
+std::wstring TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
+  DCHECK(index < ResourceCount());
+  if (!resources_[index]->ReportsSqliteMemoryUsed())
+    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes() / 1024);
+}
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
   DCHECK(index < ResourceCount());

@@ -128,6 +128,11 @@ std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
         return std::wstring();
       return model_->GetResourceWebCoreCSSCacheSize(row);
 
+    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::wstring();
+      return model_->GetResourceSqliteMemoryUsed(row);
+
     default:
       return model_->GetResourceStatsValue(row, col_id);
   }
@@ -322,6 +327,9 @@ void TaskManagerView::Init() {
   columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
                                  TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
+  columns_.push_back(TableColumn(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
+                                 TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
 
   tab_table_ = new views::GroupTableView(table_model_.get(), columns_,
                                          views::ICON_AND_TEXT, false, true,
@@ -336,6 +344,8 @@ void TaskManagerView::Init() {
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
                                   false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+                                  false);
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
                                   false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
                                   false);
