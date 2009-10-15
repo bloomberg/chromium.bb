@@ -37,6 +37,9 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   void Show(size_t num_results);
   void Hide();
 
+  // Restack the popup window directly above the browser's toplevel window.
+  void StackWindow();
+
   // Convert a y-coordinate to the closest line / result.
   size_t LineFromY(int y);
 

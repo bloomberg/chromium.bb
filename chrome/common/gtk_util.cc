@@ -540,4 +540,32 @@ GdkCursor* GetCursor(GdkCursorType type) {
   return impl.GetCursorImpl(type);
 }
 
+void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
+  DCHECK(GTK_IS_WINDOW(popup) && GTK_WIDGET_TOPLEVEL(popup) &&
+         GTK_WIDGET_REALIZED(popup));
+  DCHECK(GTK_IS_WINDOW(toplevel) && GTK_WIDGET_TOPLEVEL(toplevel) &&
+         GTK_WIDGET_REALIZED(toplevel));
+
+  // Stack the |popup| window directly above the |toplevel| window.
+  // The |popup| window is a direct child of the root window, so we need to
+  // find a similar ancestor for the toplevel window (which might have been
+  // reparented by a window manager).
+  XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
+      x11_util::GetX11WindowFromGtkWidget(toplevel),
+      x11_util::GetX11RootWindow());
+  if (toplevel_window_base) {
+    XID window_xid = x11_util::GetX11WindowFromGtkWidget(popup);
+    XID window_parent = x11_util::GetParentWindow(window_xid);
+    if (window_parent == x11_util::GetX11RootWindow()) {
+      x11_util::RestackWindow(window_xid, toplevel_window_base, true);
+    } else {
+      // The window manager shouldn't reparent override-redirect windows.
+      DLOG(ERROR) << "override-redirect window " << window_xid
+                  << "'s parent is " << window_parent
+                  << ", rather than root window "
+                  << x11_util::GetX11RootWindow();
+    }
+  }
+}
+
 }  // namespace gtk_util

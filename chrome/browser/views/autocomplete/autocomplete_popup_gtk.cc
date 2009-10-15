@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
+#include "chrome/common/gtk_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupGtk, public:
@@ -15,7 +16,8 @@
 AutocompletePopupGtk::AutocompletePopupGtk(
     AutocompletePopupContentsView* contents)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
-      contents_(contents) {
+      contents_(contents),
+      edit_view_(NULL) {
   set_delete_on_destroy(false);
 }
 
@@ -31,14 +33,18 @@ void AutocompletePopupGtk::Init(AutocompleteEditView* edit_view,
   // The contents is owned by the LocationBarView.
   contents_->SetParentOwned(false);
   SetContentsView(contents_);
+
+  edit_view_ = edit_view;
 }
 
 void AutocompletePopupGtk::Show() {
   // Move the popup to the place appropriate for the window's current position -
   // it may have been moved since it was last shown.
   SetBounds(contents_->GetPopupBounds());
-  if (!IsVisible())
+  if (!IsVisible()) {
     WidgetGtk::Show();
+    StackWindow();
+  }
 }
 
 bool AutocompletePopupGtk::IsOpen() const {
@@ -47,4 +53,10 @@ bool AutocompletePopupGtk::IsOpen() const {
 
 bool AutocompletePopupGtk::IsCreated() const {
   return GTK_IS_WIDGET(GetNativeView());
+}
+
+void AutocompletePopupGtk::StackWindow() {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_view_->GetNativeView());
+  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  gtk_util::StackPopupWindow(GetNativeView(), toplevel);
 }

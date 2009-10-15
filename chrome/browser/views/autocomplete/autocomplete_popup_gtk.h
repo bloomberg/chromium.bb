@@ -28,8 +28,12 @@ class AutocompletePopupGtk : public views::WidgetGtk {
   // Returns true if the popup has been created.
   bool IsCreated() const;
 
+  // Restack the popup window directly above the browser's toplevel window.
+  void StackWindow();
+
  private:
   AutocompletePopupContentsView* contents_;
+  AutocompleteEditView* edit_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupGtk);
 };

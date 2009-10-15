@@ -181,6 +181,9 @@ void SetAlwaysShowImage(GtkWidget* image_menu_item);
 // with gdk_cursor_new(); owner must gdk_cursor_unref() it when done with it.
 GdkCursor* GetCursor(GdkCursorType type);
 
+// Stacks a |popup| window directly on top of a |toplevel| window.
+void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_
