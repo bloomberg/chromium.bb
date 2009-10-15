@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/file_path.h"
+
 class CommandLine;
 
 namespace chrome_launcher {
