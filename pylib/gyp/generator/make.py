@@ -865,8 +865,21 @@ def GenerateOutput(target_list, target_dicts, data, params):
   root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
                                             default_configuration))
 
+  # Find the list of targets that derive from the gyp file(s) being built.
+  needed_targets = set()
+  for build_file in params['build_files']:
+    for target in gyp.common.AllTargets(target_list, target_dicts, build_file):
+      needed_targets.add(target)
+
   build_files = set()
   for qualified_target in target_list:
+    # target_list is all the targets defined in all referenced gyp files, so
+    # weed out the ones that aren't actually needed for this build. We could
+    # generate the .mk even for unneeded targets, as long as we don't
+    # reference them in the top-level Makefile, but skipping them entirely
+    # should work too.
+    if qualified_target not in needed_targets:
+      continue
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
     build_files.add(gyp.common.RelativePath(build_file, options.depth))
     included_files = data[build_file]['included_files']
@@ -902,6 +915,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     submakefile_path = gyp.common.RelativePath(output_file, options.depth)
     root_makefile.write('include ' + submakefile_path + "\n")
 
+  # Write the target to regenerate the Makefile.
   if generator_flags.get('auto_regeneration', True):
     build_files_args = [gyp.common.RelativePath(filename, options.depth)
                         for filename in params['build_files_arg']]
