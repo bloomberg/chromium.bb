@@ -497,7 +497,8 @@ TEST_F(SessionHistoryTest, DISABLED_LocationReplace) {
   EXPECT_EQ(L"", GetTabTitle());
 }
 
-TEST_F(SessionHistoryTest, HistorySearchXSS) {
+// This test is flaky. See bug 22111.
+TEST_F(SessionHistoryTest, FLAKY_HistorySearchXSS) {
   // about:blank should be loaded first.
   ASSERT_FALSE(tab_->GoBack());
   EXPECT_EQ(L"", GetTabTitle());
