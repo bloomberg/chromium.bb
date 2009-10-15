@@ -93,6 +93,10 @@ extern const char kPrint[];
 extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
 
+#if defined(OS_LINUX)
+extern const char kAutoSSLClientAuth[];
+#endif
+
 extern const char kDisableDevTools[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kEnableExtensionTimelineApi[];

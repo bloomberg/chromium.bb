@@ -266,6 +266,16 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 extern const char kDnsLogDetails[]          = "dns-log-details";
 extern const char kDnsPrefetchDisable[]     = "dns-prefetch-disable";
 
+#if defined(OS_LINUX)
+// A temporary switch before we implement the client certificate selection UI.
+// When an SSL server requests client authentication, select a client
+// certificate automatically.
+// WARNING: This switch has privacy issues because it reveals the user's
+// identity to any server that requests a client certificate without the
+// user's consent.
+const char kAutoSSLClientAuth[]             = "auto-ssl-client-auth";
+#endif
+
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
 
