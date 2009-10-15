@@ -3129,7 +3129,6 @@ BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 
 // WebKit roll 49245:49254
 BUG24142 LINUX : LayoutTests/fast/css/large-number-round-trip.html = FAIL
-BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.html = FAIL PASS CRASH
 
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
