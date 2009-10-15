@@ -1,7 +1,10 @@
 # There are two kinds of suppressions in this file.
 # 1. third party stuff we have no control over
 #
-# 2. Suppressions for real chromium bugs that are not yet fixed.
+# 2. Intentional unit test errors, or stuff that is somehow a false positive
+# in our own code, or stuff that is so trivial it's not worth fixing
+#
+# 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
@@ -96,7 +99,17 @@
 }
 
 #-----------------------------------------------------------------------
-# 2. Suppressions for real chromium bugs that are not yet fixed.
+# 2. Intentional unit test errors, or stuff that is somehow a false positive
+# in our own code, or stuff that is so trivial it's not worth fixing
+
+{
+  Benign data race inside PCMQueueOutAudioOutputStream::Stop bug_24801
+  ThreadSanitizer:Race
+  fun:*PCMQueueOutAudioOutputStream*Stop*
+}
+
+#-----------------------------------------------------------------------
+# 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
