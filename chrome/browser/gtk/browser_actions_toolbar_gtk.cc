@@ -93,7 +93,13 @@ class BrowserActionButton : public NotificationObserver,
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, size_t index) {
-    browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(image);
+    if (image) {
+      browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(image);
+    } else {
+      SkBitmap empty;
+      browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(&empty);
+    }
+
     OnStateUpdated();
   }
 

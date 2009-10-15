@@ -38,7 +38,6 @@ class ImageLoadingTracker::LoadImageTask : public Task {
       index_(index) {}
 
   void ReportBack(SkBitmap* image) {
-    DCHECK(image);
     callback_loop_->PostTask(FROM_HERE, NewRunnableMethod(tracker_,
         &ImageLoadingTracker::OnImageLoaded,
         image,
@@ -103,13 +102,12 @@ void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource) {
 }
 
 void ImageLoadingTracker::OnImageLoaded(SkBitmap* image, size_t index) {
-  if (image == NULL) {
-    NOTREACHED() << "Image failed to decode.";
-    image = new SkBitmap();
-  }
   if (observer_)
     observer_->OnImageLoaded(image, index);
-  delete image;
+
+  if (image)
+    delete image;
+
   if (--image_count_ == 0)
     Release();  // We are no longer needed.
 }

@@ -375,10 +375,14 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
 }
 
 void ExtensionBrowserEventRouter::BrowserActionExecuted(
-    Profile* profile, const std::string& extension_id, int window_id) {
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(window_id));
+    Profile* profile, const std::string& extension_id, Browser* browser) {
+  TabContents* tab_contents = NULL;
+  int tab_id = 0;
+  if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
+    return;
 
+  ListValue args;
+  args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);
 

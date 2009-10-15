@@ -62,7 +62,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Browser Actions execute event.
   void BrowserActionExecuted(Profile* profile,
                              const std::string& extension_id,
-                             int window_id);
+                             Browser* browser);
 
   // NotificationObserver.
   void Observe(NotificationType type,

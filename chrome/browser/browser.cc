@@ -1479,9 +1479,8 @@ void Browser::ExecuteCommand(int id) {
         service->GetBrowserActions(false);  // false means no popup actions.
     for (size_t i = 0; i < browser_actions.size(); ++i) {
       if (browser_actions[i]->command_id() == id) {
-        int window_id = ExtensionTabUtil::GetWindowId(this);
         ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-            profile_, browser_actions[i]->extension_id(), window_id);
+            profile_, browser_actions[i]->extension_id(), this);
         return;
       }
     }

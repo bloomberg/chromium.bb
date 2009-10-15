@@ -2,15 +2,15 @@
 <head>
 <script>
   // Called when the user clicks on the browser action.
-  chrome.browserAction.onClicked.addListener(function(windowId) {
+  chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.executeScript(null, {code:"document.body.bgColor='red'"});
   });
 
-  chrome.browserAction.setBadgeBackgroundColor([100, 0, 200, 0]);
+  chrome.browserAction.setBadgeBackgroundColor({color:[100, 0, 200, 0]});
 
   var i = 0;
   window.setInterval(function() {
-    chrome.browserAction.setBadgeText(String(i));
+    chrome.browserAction.setBadgeText({text:String(i)});
     i++;
   }, 10);
 </script>

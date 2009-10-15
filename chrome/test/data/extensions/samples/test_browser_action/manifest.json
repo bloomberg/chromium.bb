@@ -5,6 +5,6 @@
   "background_page": "background.html",
   "browser_action": {
       "name": "First icon",
-      "icons": ["badicon.png", "print_16x16.png"]
+      "icons": ["print_16x16.png"]
   }
 }

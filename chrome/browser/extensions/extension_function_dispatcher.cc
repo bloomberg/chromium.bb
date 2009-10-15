@@ -103,8 +103,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DisablePageActionFunction>();
 
   // Browser Actions.
-  RegisterFunction<BrowserActionSetNameFunction>();
   RegisterFunction<BrowserActionSetIconFunction>();
+  RegisterFunction<BrowserActionSetTitleFunction>();
   RegisterFunction<BrowserActionSetBadgeTextFunction>();
   RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
 

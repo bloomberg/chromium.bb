@@ -165,7 +165,7 @@ void BrowserActionButton::ButtonPressed(
 
 void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
   DCHECK(index < browser_action_icons_.size());
-  browser_action_icons_[index] = *image;
+  browser_action_icons_[index] = image ? *image : SkBitmap();
   if (index == browser_action_icons_.size() - 1) {
     OnStateUpdated();
     tracker_ = NULL;  // The tracker object will delete itself when we return.
@@ -482,9 +482,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   }
 
   // Otherwise, we send the action to the extension.
-  int window_id = ExtensionTabUtil::GetWindowId(toolbar_->browser());
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-      profile_, browser_action.extension_id(), window_id);
+      profile_, browser_action.extension_id(), toolbar_->browser());
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {

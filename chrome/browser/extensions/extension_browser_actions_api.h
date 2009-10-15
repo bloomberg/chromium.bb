@@ -7,12 +7,12 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-class BrowserActionSetNameFunction : public SyncExtensionFunction {
+class BrowserActionSetIconFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setName")
 };
 
-class BrowserActionSetIconFunction : public SyncExtensionFunction {
+class BrowserActionSetTitleFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };

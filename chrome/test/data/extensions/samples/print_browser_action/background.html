@@ -2,11 +2,9 @@
 <head>
 <script>
   // Called when the user clicks on the browser action.
-  chrome.browserAction.onClicked.addListener(function(windowId) {
-    chrome.tabs.getSelected(windowId, function(tab) {
-      var action_url = "javascript:window.print();";
-      chrome.tabs.update(tab.id, {url: action_url});
-    });
+  chrome.browserAction.onClicked.addListener(function(tab) {
+    var action_url = "javascript:window.print();";
+    chrome.tabs.update(tab.id, {url: action_url});
   });
 </script>
 </head>

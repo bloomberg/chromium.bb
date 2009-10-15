@@ -333,18 +333,32 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders);
     }
 
-    apiFunctions["browserAction.setIcon"].handleRequest =
-        function(idOrImageData) {
-      if (typeof(idOrImageData) == "number") {
+    apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
+      if ("iconIndex" in details) {
         sendRequest(this.name, arguments, this.definition.parameters);
-      } else if (typeof(idOrImageData) == "object") {
+      } else if ("imageData" in details) {
+        // Verify that this at least looks like an ImageData element.
+        // Unfortunately, we cannot use instanceof because the ImageData
+        // constructor is not public.
+        //
+        // We do this manually instead of using JSONSchema to avoid having these
+        // properties show up in the doc.
+        if (!("width" in details.imageData) ||
+            !("height" in details.imageData) ||
+            !("data" in details.imageData)) {
+          throw new Error(
+              "The imageData property must contain an ImageData object.");
+        }
         sendCustomRequest(SetBrowserActionIcon, "browserAction.setIcon",
-                          idOrImageData, this.definition.parameters);
+                          details, this.definition.parameters);
+      } else {
+        throw new Error(
+            "Either the iconIndex or imageData property must be specified.");
       }
     }
 
-    setupPageActionEvents(extensionId);
     setupBrowserActionEvent(extensionId);
+    setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
   });
 })();

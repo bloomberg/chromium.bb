@@ -67,8 +67,10 @@ TEST(ExtensionResourceTest, CreateWithBothResourcesOnDisk) {
   ExtensionResource resource(temp.path(), FilePath().AppendASCII(filename));
   FilePath resolved_path = resource.GetFilePath();
 
-  EXPECT_EQ(l10n_path.AppendASCII(filename).value(), resolved_path.value());
-  EXPECT_EQ(temp.path().value(), resource.extension_root().value());
-  EXPECT_EQ(FilePath().AppendASCII(filename).value(),
-      resource.relative_path().value());
+  EXPECT_EQ(ToLower(l10n_path.AppendASCII(filename).value()),
+            ToLower(resolved_path.value()));
+  EXPECT_EQ(ToLower(temp.path().value()),
+            ToLower(resource.extension_root().value()));
+  EXPECT_EQ(ToLower(FilePath().AppendASCII(filename).value()),
+            ToLower(resource.relative_path().value()));
 }

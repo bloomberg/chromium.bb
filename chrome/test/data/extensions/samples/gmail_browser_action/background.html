@@ -8,8 +8,8 @@ var browserActionHeight = 23;
 var canvasContext;
 var gmail = "http://mail.google.com/";
 var gmailAtomRef = "http://mail.google.com/mail/feed/atom";
-var gmailIconName = 'gmail_logged_in.png';
-var gmailImage;
+var loggedInImage;
+var loggedOutImage;
 var pollInterval = 1000 * 10;  // 10 seconds
 var requestTimeout = 1000 * 2;  // 5 seconds
 var rotation = 0;
@@ -26,16 +26,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
 });
 
 function init() {
-  chrome.browserAction.setBadgeBackgroundColor([230, 190, 190, 190]);
-  chrome.browserAction.setBadgeText("?");
-
-  var canvas = document.getElementById('canvas');  
+  var canvas = document.getElementById('canvas');
+  loggedInImage = document.getElementById('logged_in');
+  loggedOutImage = document.getElementById('logged_out');
   canvasContext = canvas.getContext('2d');
-  gmailImage = new Image();
-  gmailImage.onload = function() {
-    window.setTimeout(startRequest, 0);
-  } 
-  gmailImage.src = gmailIconName; 
+  startRequest();
 }
 
 function scheduleRequest() {
@@ -50,6 +45,7 @@ function startRequest() {
       scheduleRequest();
     },
     function() {
+      showLoggedOut();
       scheduleRequest();
     }
   );
@@ -142,10 +138,24 @@ function animateFlip() {
   } else {
     rotation = 0;
     drawIconAtRotation();
-    chrome.browserAction.setBadgeText(unreadCount);
-    chrome.browserAction.setBadgeBackgroundColor([255, 208, 0, 24]);
-    chrome.browserAction.setName(unreadCount + " unread emails");
+    chrome.browserAction.setBadgeText({text:unreadCount});
+    chrome.browserAction.setBadgeBackgroundColor({color:[255, 208, 0, 24]});
+    chrome.browserAction.setTitle({title:unreadCount + " unread emails"});
   }
+}
+
+function showLoggedOut() {
+  canvasContext.save();
+  canvasContext.clearRect(0, 0, browserActionWidth, browserActionHeight);
+  canvasContext.translate(browserActionWidth/2, browserActionHeight/2);
+  canvasContext.drawImage(loggedOutImage, 
+      -loggedOutImage.width/2 - 1, -loggedOutImage.height/2);
+  canvasContext.restore();
+
+  chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0,
+      browserActionWidth,browserActionHeight)});
+  chrome.browserAction.setBadgeBackgroundColor({color:[230, 190, 190, 190]});
+  chrome.browserAction.setBadgeText({text:"?"});
 }
 
 function drawIconAtRotation() {
@@ -153,12 +163,12 @@ function drawIconAtRotation() {
   canvasContext.clearRect(0, 0, browserActionWidth, browserActionHeight);
   canvasContext.translate(browserActionWidth/2, browserActionHeight/2);
   canvasContext.rotate(2*Math.PI*ease(rotation));
-  canvasContext.drawImage(gmailImage, -gmailImage.width/2,
-      -gmailImage.height/2);
+  canvasContext.drawImage(loggedInImage, 
+      -loggedInImage.width/2 - 1, -loggedInImage.height/2);
   canvasContext.restore();
 
-  chrome.browserAction.setIcon(canvasContext.getImageData(0, 0,
-      browserActionWidth,browserActionHeight));
+  chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0,
+      browserActionWidth,browserActionHeight)});
 }
 
 function goToInbox() {
@@ -166,13 +176,15 @@ function goToInbox() {
 }
 
 // Called when the user clicks on the browser action.
-chrome.browserAction.onClicked.addListener(function(windowId) {
+chrome.browserAction.onClicked.addListener(function(tab) {
   goToInbox();
 });
 
 </script>
 </head>
 <body onload="init()">
+<img id="logged_in" src="gmail_logged_in.png">
+<img id="logged_out" src="gmail_not_logged_in.png">
 <canvas id="canvas" width="27" height="23">
 </body>
 </html>

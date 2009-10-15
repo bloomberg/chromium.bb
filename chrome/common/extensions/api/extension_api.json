@@ -824,32 +824,43 @@
     "types": [],
     "functions": [
       {
-        "name": "setName",
+        "name": "setTitle",
         "type": "function",
-        "description": "Sets the text for the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.",
+        "description": "Sets the title of the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.",
         "parameters": [
-          {"type": "string", "name": "name", "description": "The string the browser action should display when moused over.", "optional": false}
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "The string the browser action should display when moused over."
+              }
+            }
+          }
         ]
       },
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets the icon for the browser action. Can be up to about 22px square.",
+        "description": "Sets the icon for the browser action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.",
         "parameters": [
           {
-            "name": "iconId",
-            "description": "An ImageData object from a canvas element, or a zero-based index into the |icons| vector specified in the manifest. This is useful to represent different browser action states.  Example: A GMail checker could have a 'new email' icon and a 'no unread email' icon.",
-            "choices": [
-              {"type": "integer", "minimum": 0},
-              {
-                "type": "object",
-                "properties": {
-                  "width": {"type": "integer", "description": "The image's width."},
-                  "height": {"type": "integer", "description": "The image's height."},
-                  "data": {"type": "any", "description": "The pixel data. Must be a CanvasPixelArray, with 32 bits per pixel and size equal to 4*width*height."}
-                }
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "imageData": {
+                "type": "any",
+                "description": "Pixel data for an image. Must be an ImageData object (eg from a <code>canvas</code> element).",
+                "optional": true
+              },
+              "iconIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The zero-based index into the |icons| vector specified in the manifest.",
+                "optional": true
               }
-            ]
+            }
           }
         ]
       },
@@ -858,7 +869,16 @@
         "type": "function",
         "description": "Sets the badge text for the browser action. This is printed on top of the icon.",
         "parameters": [
-          {"type": "string", "name": "text", "description": "Any number of characters can be passed, but only about four can fit in the space."}
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Any number of characters can be passed, but only about four can fit in the space."
+              }
+            }
+          }
         ]
       },
       {
@@ -867,21 +887,37 @@
         "description": "Sets the background color for the badge.",
         "parameters": [
           {
-            "type": "array",
-            "name": "color",
-            "description": "An array of four integers in the range [0,255] that make up the ARGB color for the bakground of the badge.",
-            "items": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 255
-            },
-            "minItems": 4,
-            "maxItems": 4
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "array",
+                "description": "An array of four integers in the range [0,255] that make up the ARGB color for the bakground of the badge.",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "minItems": 4,
+                "maxItems": 4
+              }
+            }
           }
         ]
       }
     ],
     "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "description": "Fired when a page action button is clicked.",
+        "parameters": [
+          {
+            "name": "tab",
+            "$ref": "Tab"
+          }
+        ]
+      }
     ]
   },
   {

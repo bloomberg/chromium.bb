@@ -171,15 +171,15 @@
                       </li><li jsinstance="2">
                         <a href="#method-setIcon">setIcon</a>
                       </li><li jsinstance="*3">
-                        <a href="#method-setName">setName</a>
+                        <a href="#method-setTitle">setTitle</a>
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#events">Events</a>
                     <ol>
-                      <li>
-                        <a href="#event-anchor">eventName</a>
+                      <li jsinstance="*0">
+                        <a href="#event-onClicked">onClicked</a>
                       </li>
                     </ol>
                   </li>
@@ -236,8 +236,8 @@
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.browserAction.setBadgeBackgroundColor</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>array of integer</span>
-                      <var><span>color</span></var></span>)</div>
+                  <span>chrome.browserAction.setBadgeBackgroundColor</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>details</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
@@ -248,6 +248,42 @@
                 <dl>
                   <div jsinstance="*0">
                     <div>
+          <dt>
+            <var>details</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div jsinstance="*0">
+                <div>
           <dt>
             <var>color</var>
               <em>
@@ -297,6 +333,10 @@
             </dl>
           </dd>
         </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
@@ -337,8 +377,8 @@
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.browserAction.setBadgeText</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>text</span></var></span>)</div>
+                  <span>chrome.browserAction.setBadgeText</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>details</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
@@ -349,6 +389,42 @@
                 <dl>
                   <div jsinstance="*0">
                     <div>
+          <dt>
+            <var>details</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div jsinstance="*0">
+                <div>
           <dt>
             <var>text</var>
               <em>
@@ -384,6 +460,10 @@
               <div>
                 <div>
                 </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
               </div>
             </dl>
           </dd>
@@ -428,12 +508,12 @@
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.browserAction.setIcon</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>integer or object</span>
-                      <var><span>iconId</span></var></span>)</div>
+                  <span>chrome.browserAction.setIcon</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>details</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sets the icon for the browser action. Can be up to about 22px square.</p>
+                <p>Sets the icon for the browser action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -441,7 +521,7 @@
                   <div jsinstance="*0">
                     <div>
           <dt>
-            <var>iconId</var>
+            <var>details</var>
               <em>
 
                 <!-- TYPE -->
@@ -456,7 +536,43 @@
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>integer or object</span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div jsinstance="0">
+                <div>
+          <dt>
+            <var>imageData</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>any</span>
                       </span>
                     </span>
                   )
@@ -467,7 +583,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An ImageData object from a canvas element, or a zero-based index into the |icons| vector specified in the manifest. This is useful to represent different browser action states.  Example: A GMail checker could have a 'new email' icon and a 'no unread email' icon.</dd>
+          <dd>Pixel data for an image. Must be an ImageData object (eg from a <code>canvas</code> element).</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -475,6 +591,51 @@
               <div>
                 <div>
                 </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*1">
+                <div>
+          <dt>
+            <var>iconIndex</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The zero-based index into the |icons| vector specified in the manifest.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
               </div>
             </dl>
           </dd>
@@ -514,17 +675,17 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem" jsinstance="*3">
-              <a name="method-setName"></a> <!-- method-anchor -->
-              <h4>setName</h4>
+              <a name="method-setTitle"></a> <!-- method-anchor -->
+              <h4>setTitle</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.browserAction.setName</span>(<span jsinstance="*0" class=""><span style="display: none; ">, </span><span>string</span>
-                      <var><span>name</span></var></span>)</div>
+                  <span>chrome.browserAction.setTitle</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>details</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sets the text for the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.</p>
+                <p>Sets the title of the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -532,7 +693,43 @@
                   <div jsinstance="*0">
                     <div>
           <dt>
-            <var>name</var>
+            <var>details</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div jsinstance="*0">
+                <div>
+          <dt>
+            <var>title</var>
               <em>
 
                 <!-- TYPE -->
@@ -566,6 +763,10 @@
               <div>
                 <div>
                 </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
               </div>
             </dl>
           </dd>
@@ -609,32 +810,70 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="events"></a>
             <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
+            <div class="apiItem" jsinstance="*0">
+              <a name="event-onClicked"></a>
+              <h4>onClicked</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.browserAction.</span><span>onClicked</span><span class="subdued">.addListener</span>(function(<span>Tab tab</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a page action button is clicked.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
-                  <div>
+                  <div jsinstance="*0">
                     <div>
-                    </div>
+          <dt>
+            <var>tab</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="tabs.html#type-Tab">Tab</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 

@@ -411,7 +411,9 @@ class ExtensionImpl : public ExtensionBase {
   // accepts a canvas ImageData object, so it needs to do extra processing
   // before sending the request to the browser.
   static v8::Handle<v8::Value> SetBrowserActionIcon(const v8::Arguments& args) {
-    v8::Local<v8::Object> image_data = args[1]->ToObject();
+    v8::Local<v8::Object> details = args[1]->ToObject();
+    v8::Local<v8::Object> image_data =
+        details->Get(v8::String::New("imageData"))->ToObject();
     v8::Local<v8::Object> data =
         image_data->Get(v8::String::New("data"))->ToObject();
     int width = image_data->Get(v8::String::New("width"))->Int32Value();
