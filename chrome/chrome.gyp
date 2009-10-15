@@ -3455,12 +3455,28 @@
                 '../breakpad/breakpad.gyp:dump_syms',
                 '../breakpad/breakpad.gyp:symupload',
               ],
-              'postbuilds': [
-                {
-                  'postbuild_name': 'Dump Symbols',
-                  'action': ['<(DEPTH)/build/mac/dump_app_syms',
-                             '<(branding)'],
-                },
+              # The "Dump Symbols" post-build step is in a target_conditions
+              # block so that it will follow the "Strip If Needed" step if that
+              # is also being used.  There is no standard configuration where
+              # both of these steps occur together, but Mark likes to use this
+              # configuraiton sometimes when testing Breakpad-enabled builds
+              # without the time overhead of creating real .dSYM files.  When
+              # both "Dump Symbols" and "Strip If Needed" are present, "Dump
+              # Symbols" must come second because "Strip If Needed" creates
+              # a fake .dSYM that dump_syms needs to fake dump.  Since
+              # "Strip If Needed" is added in a target_conditions block in
+              # common.gypi, "Dump Symbols" needs to be in an (always true)
+              # target_conditions block.
+              'target_conditions': [
+                ['1 == 1', {
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Dump Symbols',
+                      'action': ['<(DEPTH)/build/mac/dump_app_syms',
+                                 '<(branding)'],
+                    },
+                  ],
+                }],
               ],
             }],  # mac_breakpad
             ['mac_keystone==1', {
