@@ -64,6 +64,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
   virtual ThemeProvider* GetThemeProvider() const;
   virtual ThemeProvider* GetDefaultThemeProvider() const;
+  virtual bool SizeRootViewToWindowRect() const;
 
   // Overridden from views::Window:
   virtual int GetShowState() const;

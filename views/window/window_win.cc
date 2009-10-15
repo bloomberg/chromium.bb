@@ -190,14 +190,6 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 }  // namespace
 
 void WindowWin::FrameTypeChanged() {
-  WINDOWPLACEMENT wp = {0};
-  GetWindowPlacement(GetNativeWindow(), &wp);
-  Hide();
-
-  // Update the non-client view with the correct frame view for the active frame
-  // type.
-  non_client_view_->UpdateFrame();
-
   if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
     // We need to toggle the rendering policy of the DWM/glass frame as we
     // change from opaque to glass. "Non client rendering enabled" means that
@@ -217,11 +209,19 @@ void WindowWin::FrameTypeChanged() {
                SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
                    SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
+  // The frame type change results in the client rect changing size, but this
+  // does not explicitly send a WM_SIZE, so we need to force the root view to
+  // be resized now.
+  LayoutRootView();
+
+  // Update the non-client view with the correct frame view for the active frame
+  // type.
+  non_client_view_->UpdateFrame();
+
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
   // update their appearance.
   EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
-  SetWindowPlacement(GetNativeWindow(), &wp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -789,6 +789,8 @@ static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
 
 void WindowWin::OnNCPaint(HRGN rgn) {
   // We only do non-client painting if we're not using the native frame.
+  // It's required to avoid some native painting artifacts from appearing when
+  // the window is resized.
   if (non_client_view_->UseNativeFrame()) {
     WidgetWin::OnNCPaint(rgn);
     return;
@@ -1004,7 +1006,7 @@ void WindowWin::OnSize(UINT size_param, const CSize& new_size) {
   // and maximized bounds are the same, then we need to layout (because we
   // layout differently when maximized).
   SaveWindowPosition();
-  ChangeSize(size_param, new_size);
+  LayoutRootView();
   RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've

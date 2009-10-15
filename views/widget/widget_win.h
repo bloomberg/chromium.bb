@@ -387,6 +387,13 @@ class WidgetWin : public app::WindowImpl,
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
+  // Returns true if the RootView should be sized to the window rect instead of
+  // the client rect when the widget is resized. This is true if the widget's
+  // WM_NCCALCSIZE handler returns a client rect that differs from the window
+  // rect but the painted content of the window should still fill the entire
+  // visible window.
+  virtual bool SizeRootViewToWindowRect() const { return false; }
+
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
@@ -403,8 +410,9 @@ class WidgetWin : public app::WindowImpl,
   void ProcessMouseMoved(const CPoint& point, UINT flags, bool is_nonclient);
   void ProcessMouseExited();
 
-  // Handles re-laying out content in response to a window size change.
-  virtual void ChangeSize(UINT size_param, const CSize& size);
+  // Lays out the root view to fit the appropriate area within the widget.
+  // Called when the window size or non client metrics change.
+  void LayoutRootView();
 
   // Returns whether capture should be released on mouse release. The default
   // is true.

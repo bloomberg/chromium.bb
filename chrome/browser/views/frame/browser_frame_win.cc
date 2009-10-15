@@ -182,12 +182,17 @@ LRESULT BrowserFrameWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT BrowserFrameWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  // We don't adjust the client area unless we're a tabbed browser window and
-  // are using the native frame.
-  if (!GetNonClientView()->UseNativeFrame() ||
-      !browser_view_->IsBrowserTypeNormal()) {
+  // This class' client rect calculations are specific to the tabbed browser
+  // window. When the glass frame is active, the client area is reported to be
+  // a rectangle that touches the top of the window and is inset from the left,
+  // right and bottom edges. The client rect touches the top because the
+  // tabstrip is painted over the caption at a custom offset.
+  // When the glass frame is not active, the client area is reported to be the
+  // entire window rect, except for the cases noted below.
+  // For non-tabbed browser windows, we use the default handling from the
+  // views system.
+  if (!browser_view_->IsBrowserTypeNormal())
     return WindowWin::OnNCCalcSize(mode, l_param);
-  }
 
   RECT* client_rect = mode ?
       &reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0] :
@@ -221,8 +226,22 @@ LRESULT BrowserFrameWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
       --client_rect->bottom;
     }
   } else if (!browser_view_->IsFullscreen()) {
-    // We draw our own client edge over part of the default frame would be.
-    border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) - kClientEdgeThickness;
+    if (GetNonClientView()->UseNativeFrame()) {
+      // We draw our own client edge over part of the default frame.
+      border_thickness =
+          GetSystemMetrics(SM_CXSIZEFRAME) - kClientEdgeThickness;
+    } else {
+      // This is weird, but highly essential. If we don't offset the bottom edge
+      // of the client rect, the window client area and window area will match,
+      // and when returning to glass rendering mode from non-glass, the client
+      // area will not paint black as transparent. This is because (and I don't
+      // know why) the client area goes from matching the window rect to being
+      // something else. If the client area is not the window rect in both
+      // modes, the blackness doesn't occur. Because of this, we need to tell
+      // the RootView to lay out to fit the window rect, rather than the client
+      // rect when using the opaque frame. See SizeRootViewToWindowRect.
+      --client_rect->bottom;
+    }
   }
   client_rect->left += border_thickness;
   client_rect->right -= border_thickness;
@@ -301,6 +320,10 @@ ThemeProvider* BrowserFrameWin::GetDefaultThemeProvider() const {
   return profile_->GetThemeProvider();
 }
 
+bool BrowserFrameWin::SizeRootViewToWindowRect() const {
+  return !GetNonClientView()->UseNativeFrame();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::CustomFrameWindow overrides:
 
@@ -317,8 +340,10 @@ views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
 }
 
 void BrowserFrameWin::UpdateFrameAfterFrameChange() {
-  WindowWin::UpdateFrameAfterFrameChange();
+  // We need to update the glass region on or off before the base class adjusts
+  // the window region.
   UpdateDWMFrame();
+  WindowWin::UpdateFrameAfterFrameChange();
 }
 
 views::RootView* BrowserFrameWin::CreateRootView() {
@@ -352,8 +377,6 @@ void BrowserFrameWin::UpdateDWMFrame() {
     }
   } else {
     // For popup and app windows we want to use the default margins.
-    margins.cxLeftWidth = margins.cxRightWidth = margins.cyTopHeight =
-        margins.cyBottomHeight = 0;
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 }
