@@ -74,10 +74,7 @@ WebInspector.ProfilesPanel.prototype.snapshotViewForSnapshot = function(snapshot
 // TODO(mnaganov): remove this hack after Alexander's change landed in WebKit.
 if ("getProfileType" in WebInspector.ProfilesPanel.prototype) {
     WebInspector.ProfilesPanel.prototype.__defineGetter__("profilesListTreeElement",
-        function() { return this.getProfileType(WebInspector.ProfilesPanel.CPUProfileType.TYPE_ID).treeElement; });
-
-    WebInspector.ProfilesPanel.prototype.__defineGetter__("snapshotsListTreeElement",
-        function() { return this.getProfileType(WebInspector.ProfilesPanel.HeapSnapshotProfileType.TYPE_ID).treeElement; });                                                          
+        function() { return this.getProfileType(WebInspector.CPUProfileType.TypeId).treeElement; });
 }
 
 
