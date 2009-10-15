@@ -26,6 +26,6 @@
 	/>
 	<Tool
 		Name="VCManifestTool"
-		AdditionalManifestFiles="$(SolutionDir)installer\mini_installer\mini_installer.exe.manifest"
+		AdditionalManifestFiles="$(ProjectDir)mini_installer\mini_installer.exe.manifest"
 	/>
 </VisualStudioPropertySheet>
