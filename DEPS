@@ -24,7 +24,7 @@ deps_os = {
 
 hooks = [
   {
-    "pattern": "\\.gypi?$|[/\\\]tools[/\\\]gyp[/\\\]",
+    "pattern": ".",
     "action": ["python", "native_client/build/gyp_nacl",
                "native_client/build/all.gyp"],
   },
