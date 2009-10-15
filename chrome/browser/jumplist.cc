@@ -486,9 +486,10 @@ void JumpListUpdateTask::Run() {
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
   std::wstring icon_dir_old(icon_dir_ + L"Old");
-  if (file_util::PathExists(icon_dir_old))
+  if (file_util::PathExists(FilePath::FromWStringHack(icon_dir_old)))
     file_util::Delete(icon_dir_old, true);
-  file_util::Move(icon_dir_, icon_dir_old);
+  file_util::Move(FilePath::FromWStringHack(icon_dir_),
+                  FilePath::FromWStringHack(icon_dir_old));
   file_util::CreateDirectory(icon_dir_);
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.

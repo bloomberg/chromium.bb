@@ -34,7 +34,7 @@
 
 class XBMImageDecoderTest : public ImageDecoderTest {
  public:
-  XBMImageDecoderTest() : ImageDecoderTest(L"xbm") { }
+  XBMImageDecoderTest() : ImageDecoderTest("xbm") { }
 
  protected:
   virtual WebCore::ImageDecoder* CreateDecoder() const {

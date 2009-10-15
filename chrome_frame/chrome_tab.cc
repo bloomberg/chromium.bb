@@ -61,10 +61,10 @@ class ChromeTabModule
     }
 
     if (SUCCEEDED(hr)) {
-      std::wstring app_path(
-          chrome_launcher::GetChromeExecutablePath());
-      app_path = file_util::GetDirectoryFromPath(app_path);
-      hr = registrar->AddReplacement(L"CHROME_APPPATH", app_path.c_str());
+      FilePath app_path =
+          chrome_launcher::GetChromeExecutablePath().DirName();
+      hr = registrar->AddReplacement(L"CHROME_APPPATH",
+                                     app_path.value().c_str());
       DCHECK(SUCCEEDED(hr));
     }
 

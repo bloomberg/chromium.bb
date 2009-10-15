@@ -61,11 +61,11 @@ namespace {
     file.close();
   }
 
-  bool IsFileInUse(const std::wstring& path) {
+  bool IsFileInUse(const FilePath& path) {
     if (!file_util::PathExists(path))
       return false;
 
-    HANDLE handle = ::CreateFile(path.c_str(), FILE_ALL_ACCESS,
+    HANDLE handle = ::CreateFile(path.value().c_str(), FILE_ALL_ACCESS,
                                  NULL, NULL, OPEN_EXISTING, NULL, NULL);
     if (handle  == INVALID_HANDLE_VALUE)
       return true;
@@ -478,10 +478,10 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
       file_name_from.ToWStringHack(), file_name_to.ToWStringHack(),
       temp_dir_.ToWStringHack(), WorkItem::NEW_NAME_IF_IN_USE,
       alternate_to.ToWStringHack()));
-  if (IsFileInUse(file_name_to.value()))
+  if (IsFileInUse(file_name_to))
     PlatformThread::Sleep(2000);
   // If file is still in use, the rest of the test will fail.
-  ASSERT_FALSE(IsFileInUse(file_name_to.value()));
+  ASSERT_FALSE(IsFileInUse(file_name_to));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(file_name_from));

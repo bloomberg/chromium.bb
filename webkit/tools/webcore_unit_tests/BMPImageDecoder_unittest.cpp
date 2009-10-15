@@ -34,7 +34,7 @@
 
 class BMPImageDecoderTest : public ImageDecoderTest {
  public:
-  BMPImageDecoderTest() : ImageDecoderTest(L"bmp") { }
+  BMPImageDecoderTest() : ImageDecoderTest("bmp") { }
 
  protected:
   virtual WebCore::ImageDecoder* CreateDecoder() const {

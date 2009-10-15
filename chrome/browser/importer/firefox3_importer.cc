@@ -68,7 +68,7 @@ void Firefox3Importer::StartImport(ProfileInfo profile_info,
 void Firefox3Importer::ImportHistory() {
   std::wstring file = source_path_;
   file_util::AppendToPath(&file, L"places.sqlite");
-  if (!file_util::PathExists(file))
+  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
     return;
 
   sqlite3* sqlite;
@@ -116,7 +116,7 @@ void Firefox3Importer::ImportHistory() {
 void Firefox3Importer::ImportBookmarks() {
   std::wstring file = source_path_;
   file_util::AppendToPath(&file, L"places.sqlite");
-  if (!file_util::PathExists(file))
+  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
     return;
 
   sqlite3* sqlite;
@@ -314,7 +314,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     std::vector<std::wstring>* files) {
   std::wstring file = source_path_;
   file_util::AppendToPath(&file, L"search.sqlite");
-  if (!file_util::PathExists(file))
+  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
     return;
 
   sqlite3* sqlite;

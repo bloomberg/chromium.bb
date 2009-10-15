@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/file_path.h"
+
 // Helper class used to register different chrome frame DLLs while running
 // tests. At construction, this registers the DLL found in the build path.
 // At destruction, again registers the DLL found in the build path if another
@@ -24,7 +26,7 @@ class ScopedChromeFrameRegistrar {
 
   std::wstring GetChromeFrameDllPath() const;
 
-  static std::wstring GetChromeFrameBuildPath();
+  static FilePath GetChromeFrameBuildPath();
   static void RegisterAtPath(const std::wstring& path);
   static void RegisterDefaults();
 

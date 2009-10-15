@@ -15,17 +15,18 @@
 
 // Statics
 
-std::wstring ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
-  std::wstring build_path;
+FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
+  FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
-  file_util::AppendToPath(&build_path, L"servers\\npchrome_tab.dll");
+  build_path = build_path.Append(L"servers").
+                          Append(L"npchrome_tab.dll");
   file_util::PathExists(build_path);
   return build_path;
 }
 
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
-  std::wstring dll_path_ = GetChromeFrameBuildPath();
-  RegisterAtPath(dll_path_);
+  FilePath dll_path = GetChromeFrameBuildPath();
+  RegisterAtPath(dll_path.value());
 }
 
 void ScopedChromeFrameRegistrar::RegisterAtPath(
@@ -56,7 +57,7 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
 // Non-statics
 
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar() {
-  original_dll_path_ = GetChromeFrameBuildPath();
+  original_dll_path_ = GetChromeFrameBuildPath().ToWStringHack();
   RegisterChromeFrameAtPath(original_dll_path_);
 }
 

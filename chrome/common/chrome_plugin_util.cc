@@ -131,7 +131,7 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
   if (!user_data_dir.empty()) {
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
-        file_util::PathExists(user_data_dir)) {
+        file_util::PathExists(FilePath::FromWStringHack(user_data_dir))) {
       // TODO(evanm): use CommandLine APIs instead of this.
       arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
                      L"=\"" + user_data_dir + L"\" ";

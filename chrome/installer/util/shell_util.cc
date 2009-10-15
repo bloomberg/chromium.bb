@@ -295,7 +295,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
                               const std::wstring& suffix) {
   std::wstring exe_path(file_util::GetDirectoryFromPath(chrome_exe));
   file_util::AppendToPath(&exe_path, installer_util::kSetupExe);
-  if (!file_util::PathExists(exe_path)) {
+  if (!file_util::PathExists(FilePath::FromWStringHack(exe_path))) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
@@ -305,7 +305,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
     command_line.ParseFromString(exe_path);
     exe_path = command_line.program();
   }
-  if (file_util::PathExists(exe_path)) {
+  if (file_util::PathExists(FilePath::FromWStringHack(exe_path))) {
     std::wstring params(L"--");
     params.append(installer_util::switches::kRegisterChromeBrowser);
     params.append(L"=\"" + chrome_exe + L"\"");

@@ -84,7 +84,7 @@ class Bitmap {
 class Image {
  public:
   // Creates the image from the given filename on disk.
-  Image(const std::wstring& filename) : ignore_alpha_(true) {
+  explicit Image(const FilePath& filename) : ignore_alpha_(true) {
     Vector<char> compressed;
     ReadFileToVector(filename, &compressed);
     EXPECT_TRUE(compressed.size());
@@ -123,7 +123,7 @@ class Image {
   int row_length() const { return row_length_; }
 
   // Save the image to a png file. Used to create the initial test files.
-  void SaveToFile(const std::wstring& filename) {
+  void SaveToFile(const FilePath& filename) {
     std::vector<unsigned char> compressed;
     ASSERT_TRUE(gfx::PNGCodec::Encode(&*data_.begin(),
                                       gfx::PNGCodec::FORMAT_BGRA,
@@ -229,18 +229,17 @@ class ImageTest : public testing::Test {
     const testing::TestInfo& test_info =
         *testing::UnitTest::GetInstance()->current_test_info();
     PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
-    file_util::AppendToPath(&test_dir_, L"skia");
-    file_util::AppendToPath(&test_dir_, L"ext");
-    file_util::AppendToPath(&test_dir_, L"data");
-    file_util::AppendToPath(&test_dir_,
-        ASCIIToWide(test_info.test_case_name()));
-    file_util::AppendToPath(&test_dir_, ASCIIToWide(test_info.name()));
+    test_dir_ = test_dir_.AppendASCII("skia").
+                          AppendASCII("ext").
+                          AppendASCII("data").
+                          AppendASCII(test_info.test_case_name()).
+                          AppendASCII(test_info.name());
 
     // Hack for a quick lowercase. We assume all the tests names are ASCII.
-    std::string tmp(WideToASCII(test_dir_));
+    std::string tmp(WideToASCII(test_dir_.ToWStringHack()));
     for (size_t i = 0; i < tmp.size(); ++i)
       tmp[i] = ToLowerASCII(tmp[i]);
-    test_dir_ = ASCIIToWide(tmp);
+    test_dir_ = FilePath::FromWStringHack(ASCIIToWide(tmp));
 
     if (action_ == GENERATE) {
       // Make sure the directory exist.
@@ -249,16 +248,18 @@ class ImageTest : public testing::Test {
   }
 
   // Returns the fully qualified path of a data file.
-  std::wstring test_file(const std::wstring& filename) const {
+  FilePath test_file(const FilePath::StringType& filename) const {
     // Hack for a quick lowercase. We assume all the test data file names are
     // ASCII.
-    std::string tmp(WideToASCII(filename));
+#if defined(OS_WIN)
+    std::string tmp = WideToASCII(filename);
+#else
+    std::string tmp(filename);
+#endif
     for (size_t i = 0; i < tmp.size(); ++i)
       tmp[i] = ToLowerASCII(tmp[i]);
 
-    std::wstring path(test_dir_);
-    file_util::AppendToPath(&path, ASCIIToWide(tmp));
-    return path;
+    return test_dir_.AppendASCII(tmp);
   }
 
   // Compares or saves the bitmap currently loaded in the context, depending on
@@ -266,8 +267,8 @@ class ImageTest : public testing::Test {
   // 100] on failure. The return value is the percentage of difference between
   // the image in the file and the image in the canvas.
   double ProcessCanvas(const skia::PlatformCanvas& canvas,
-                       std::wstring filename) const {
-    filename +=  L".png";
+                       FilePath::StringType filename) const {
+    filename = filename + FILE_PATH_LITERAL(".png");
     switch (action_) {
       case GENERATE:
         SaveImage(canvas, filename);
@@ -285,7 +286,7 @@ class ImageTest : public testing::Test {
   // Compares the bitmap currently loaded in the context with the file. Returns
   // the percentage of pixel difference between both images, between 0 and 100.
   double CompareImage(const skia::PlatformCanvas& canvas,
-                      const std::wstring& filename) const {
+                      const FilePath::StringType& filename) const {
     Image image1(canvas);
     Image image2(test_file(filename));
     double diff = image1.PercentageDifferent(image2);
@@ -294,14 +295,14 @@ class ImageTest : public testing::Test {
 
   // Saves the bitmap currently loaded in the context into the file.
   void SaveImage(const skia::PlatformCanvas& canvas,
-                 const std::wstring& filename) const {
+                 const FilePath::StringType& filename) const {
     Image(canvas).SaveToFile(test_file(filename));
   }
 
   ProcessAction action_;
 
   // Path to directory used to contain the test data.
-  std::wstring test_dir_;
+  FilePath test_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTest);
 };
@@ -328,7 +329,7 @@ void Premultiply(SkBitmap bitmap) {
   }
 }
 
-void LoadPngFileToSkBitmap(const std::wstring& filename,
+void LoadPngFileToSkBitmap(const FilePath& filename,
                            SkBitmap* bitmap,
                            bool is_opaque) {
   Vector<char> compressed;
@@ -397,7 +398,7 @@ class VectorCanvasTest : public ImageTest {
 
   // Compares both canvas and returns the pixel difference in percentage between
   // both images. 0 on success and ]0, 100] on failure.
-  double ProcessImage(const std::wstring& filename) {
+  double ProcessImage(const FilePath::StringType& filename) {
     std::wstring number(StringPrintf(L"%02d_", number_++));
     double diff1 = parent::ProcessCanvas(*vcanvas_, number + L"vc_" + filename);
     double diff2 = parent::ProcessCanvas(*pcanvas_, number + L"pc_" + filename);
@@ -460,20 +461,20 @@ TEST_F(VectorCanvasTest, Uninitialized) {
   // PlatformCanvas default initialization is almost white 0x01FFFEFD (invalid
   // Skia color) in both Debug and Release. See magicTransparencyColor in
   // platform_device.cc
-  EXPECT_EQ(0., ProcessImage(L"empty"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("empty")));
 }
 
 TEST_F(VectorCanvasTest, BasicDrawing) {
   EXPECT_EQ(Image(*vcanvas_).PercentageDifferent(Image(*pcanvas_)), 0.)
       << L"clean";
-  EXPECT_EQ(0., ProcessImage(L"clean"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("clean")));
 
   // Clear white.
   {
     vcanvas_->drawARGB(255, 255, 255, 255, SkXfermode::kSrc_Mode);
     pcanvas_->drawARGB(255, 255, 255, 255, SkXfermode::kSrc_Mode);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawARGB"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawARGB")));
 
   // Diagonal line top-left to bottom-right.
   {
@@ -482,7 +483,7 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawLine(10, 10, 90, 90, paint);
     pcanvas_->drawLine(10, 10, 90, 90, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawLine_black"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawLine_black")));
 
   // Rect.
   {
@@ -491,7 +492,7 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawRectCoords(25, 25, 75, 75, paint);
     pcanvas_->drawRectCoords(25, 25, 75, 75, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawRect_green"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawRect_green")));
 
   // A single-point rect doesn't leave any mark.
   {
@@ -500,7 +501,7 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawRectCoords(5, 5, 5, 5, paint);
     pcanvas_->drawRectCoords(5, 5, 5, 5, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawRect_noop"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawRect_noop")));
 
   // Rect.
   {
@@ -509,14 +510,14 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawRectCoords(75, 50, 80, 55, paint);
     pcanvas_->drawRectCoords(75, 50, 80, 55, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawRect_noop"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawRect_noop")));
 
   // Empty again
   {
     vcanvas_->drawPaint(SkPaint());
     pcanvas_->drawPaint(SkPaint());
   }
-  EXPECT_EQ(0., ProcessImage(L"drawPaint_black"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawPaint_black")));
 
   // Horizontal line left to right.
   {
@@ -525,7 +526,7 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawLine(10, 20, 90, 20, paint);
     pcanvas_->drawLine(10, 20, 90, 20, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawLine_left_to_right"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawLine_left_to_right")));
 
   // Vertical line downward.
   {
@@ -534,7 +535,7 @@ TEST_F(VectorCanvasTest, BasicDrawing) {
     vcanvas_->drawLine(30, 10, 30, 90, paint);
     pcanvas_->drawLine(30, 10, 30, 90, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawLine_red"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawLine_red")));
 }
 
 TEST_F(VectorCanvasTest, Circles) {
@@ -552,7 +553,7 @@ TEST_F(VectorCanvasTest, Circles) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"circle_stroke"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("circle_stroke")));
 
   // Filled Circle.
   {
@@ -563,7 +564,7 @@ TEST_F(VectorCanvasTest, Circles) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"circle_fill"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("circle_fill")));
 
   // Stroked Circle over.
   {
@@ -575,7 +576,7 @@ TEST_F(VectorCanvasTest, Circles) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"circle_over_strike"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("circle_over_strike")));
 
   // Stroke and Fill Circle.
   {
@@ -587,7 +588,7 @@ TEST_F(VectorCanvasTest, Circles) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"circle_stroke_and_fill"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("circle_stroke_and_fill")));
 
   // Line + Quad + Cubic.
   {
@@ -606,7 +607,7 @@ TEST_F(VectorCanvasTest, Circles) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"mixed_stroke"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("mixed_stroke")));
 }
 
 TEST_F(VectorCanvasTest, LineOrientation) {
@@ -625,7 +626,7 @@ TEST_F(VectorCanvasTest, LineOrientation) {
     vcanvas_->drawLine(90, 30, 10, 30, paint);
     pcanvas_->drawLine(90, 30, 10, 30, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"horizontal"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("horizontal")));
 
   // Vertical lines.
   {
@@ -638,7 +639,7 @@ TEST_F(VectorCanvasTest, LineOrientation) {
     vcanvas_->drawLine(30, 90, 30, 10, paint);
     pcanvas_->drawLine(30, 90, 30, 10, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"vertical"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("vertical")));
 
   // Try again with a 180 degres rotation.
   vcanvas_->rotate(180);
@@ -653,7 +654,7 @@ TEST_F(VectorCanvasTest, LineOrientation) {
     vcanvas_->drawLine(-90, -35, -10, -35, paint);
     pcanvas_->drawLine(-90, -35, -10, -35, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"horizontal_180"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("horizontal_180")));
 
   // Vertical lines (rotated).
   {
@@ -664,7 +665,7 @@ TEST_F(VectorCanvasTest, LineOrientation) {
     vcanvas_->drawLine(-35, -90, -35, -10, paint);
     pcanvas_->drawLine(-35, -90, -35, -10, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"vertical_180"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("vertical_180")));
 }
 
 TEST_F(VectorCanvasTest, PathOrientation) {
@@ -687,7 +688,7 @@ TEST_F(VectorCanvasTest, PathOrientation) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawPath_ltr"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawPath_ltr")));
 
   // Horizontal lines.
   {
@@ -704,7 +705,7 @@ TEST_F(VectorCanvasTest, PathOrientation) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"drawPath_rtl"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("drawPath_rtl")));
 }
 
 TEST_F(VectorCanvasTest, DiagonalLines) {
@@ -713,7 +714,7 @@ TEST_F(VectorCanvasTest, DiagonalLines) {
 
   vcanvas_->drawLine(10, 10, 90, 90, paint);
   pcanvas_->drawLine(10, 10, 90, 90, paint);
-  EXPECT_EQ(0., ProcessImage(L"nw-se"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("nw-se")));
 
   // Starting here, there is NO WAY to make them agree. At least verify that the
   // output doesn't change across versions. This test is disabled. See bug
@@ -722,15 +723,15 @@ TEST_F(VectorCanvasTest, DiagonalLines) {
 
   vcanvas_->drawLine(10, 95, 90, 15, paint);
   pcanvas_->drawLine(10, 95, 90, 15, paint);
-  EXPECT_EQ(0., ProcessImage(L"sw-ne"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("sw-ne")));
 
   vcanvas_->drawLine(90, 10, 10, 90, paint);
   pcanvas_->drawLine(90, 10, 10, 90, paint);
-  EXPECT_EQ(0., ProcessImage(L"ne-sw"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("ne-sw")));
 
   vcanvas_->drawLine(95, 90, 15, 10, paint);
   pcanvas_->drawLine(95, 90, 15, 10, paint);
-  EXPECT_EQ(0., ProcessImage(L"se-nw"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("se-nw")));
 }
 
 TEST_F(VectorCanvasTest, PathEffects) {
@@ -746,7 +747,7 @@ TEST_F(VectorCanvasTest, PathEffects) {
     vcanvas_->drawLine(10, 10, 90, 10, paint);
     pcanvas_->drawLine(10, 10, 90, 10, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"dash_line"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("dash_line")));
 
 
   // Starting here, there is NO WAY to make them agree. At least verify that the
@@ -770,7 +771,7 @@ TEST_F(VectorCanvasTest, PathEffects) {
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"dash_path"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("dash_path")));
 
   {
     SkPaint paint;
@@ -784,7 +785,7 @@ TEST_F(VectorCanvasTest, PathEffects) {
     vcanvas_->drawRectCoords(20, 20, 30, 30, paint);
     pcanvas_->drawRectCoords(20, 20, 30, 30, paint);
   }
-  EXPECT_EQ(0., ProcessImage(L"dash_rect"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("dash_rect")));
 
   // This thing looks like it has been drawn by a 3 years old kid. I haven't
   // filed a bug on this since I guess nobody is expecting this to look nice.
@@ -801,7 +802,7 @@ TEST_F(VectorCanvasTest, PathEffects) {
     path.addCircle(50, 75, 10);
     vcanvas_->drawPath(path, paint);
     pcanvas_->drawPath(path, paint);
-    EXPECT_EQ(0., ProcessImage(L"circle"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("circle")));
   }
 }
 
@@ -811,7 +812,7 @@ TEST_F(VectorCanvasTest, Bitmaps) {
     LoadPngFileToSkBitmap(test_file(L"bitmap_opaque.png"), &bitmap, true);
     vcanvas_->drawBitmap(bitmap, 13, 3, NULL);
     pcanvas_->drawBitmap(bitmap, 13, 3, NULL);
-    EXPECT_EQ(0., ProcessImage(L"opaque"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("opaque")));
   }
 
   {
@@ -819,7 +820,7 @@ TEST_F(VectorCanvasTest, Bitmaps) {
     LoadPngFileToSkBitmap(test_file(L"bitmap_alpha.png"), &bitmap, false);
     vcanvas_->drawBitmap(bitmap, 5, 15, NULL);
     pcanvas_->drawBitmap(bitmap, 5, 15, NULL);
-    EXPECT_EQ(0., ProcessImage(L"alpha"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("alpha")));
   }
 }
 
@@ -837,7 +838,7 @@ TEST_F(VectorCanvasTest, ClippingRect) {
 
   vcanvas_->drawBitmap(bitmap, 13, 3, NULL);
   pcanvas_->drawBitmap(bitmap, 13, 3, NULL);
-  EXPECT_EQ(0., ProcessImage(L"rect"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("rect")));
 }
 
 TEST_F(VectorCanvasTest, ClippingPath) {
@@ -851,7 +852,7 @@ TEST_F(VectorCanvasTest, ClippingPath) {
 
   vcanvas_->drawBitmap(bitmap, 14, 3, NULL);
   pcanvas_->drawBitmap(bitmap, 14, 3, NULL);
-  EXPECT_EQ(0., ProcessImage(L"path"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("path")));
 }
 
 TEST_F(VectorCanvasTest, ClippingCombined) {
@@ -873,7 +874,7 @@ TEST_F(VectorCanvasTest, ClippingCombined) {
 
   vcanvas_->drawBitmap(bitmap, 15, 3, NULL);
   pcanvas_->drawBitmap(bitmap, 15, 3, NULL);
-  EXPECT_EQ(0., ProcessImage(L"combined"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("combined")));
 }
 
 TEST_F(VectorCanvasTest, ClippingIntersect) {
@@ -895,7 +896,7 @@ TEST_F(VectorCanvasTest, ClippingIntersect) {
 
   vcanvas_->drawBitmap(bitmap, 15, 3, NULL);
   pcanvas_->drawBitmap(bitmap, 15, 3, NULL);
-  EXPECT_EQ(0., ProcessImage(L"intersect"));
+  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("intersect")));
 }
 
 TEST_F(VectorCanvasTest, ClippingClean) {
@@ -914,7 +915,7 @@ TEST_F(VectorCanvasTest, ClippingClean) {
 
     vcanvas_->drawBitmap(bitmap, 15, 3, NULL);
     pcanvas_->drawBitmap(bitmap, 15, 3, NULL);
-    EXPECT_EQ(0., ProcessImage(L"clipped"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("clipped")));
     vcanvas_->clipRegion(old_region, SkRegion::kReplace_Op);
     pcanvas_->clipRegion(old_region, SkRegion::kReplace_Op);
   }
@@ -922,7 +923,7 @@ TEST_F(VectorCanvasTest, ClippingClean) {
     // Verify that the clipping region has been fixed back.
     vcanvas_->drawBitmap(bitmap, 55, 3, NULL);
     pcanvas_->drawBitmap(bitmap, 55, 3, NULL);
-    EXPECT_EQ(0., ProcessImage(L"unclipped"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("unclipped")));
   }
 }
 
@@ -935,14 +936,14 @@ TEST_F(VectorCanvasTest, DISABLED_Matrix) {
     pcanvas_->translate(15, 3);
     vcanvas_->drawBitmap(bitmap, 0, 0, NULL);
     pcanvas_->drawBitmap(bitmap, 0, 0, NULL);
-    EXPECT_EQ(0., ProcessImage(L"translate1"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("translate1")));
   }
   {
     vcanvas_->translate(-30, -23);
     pcanvas_->translate(-30, -23);
     vcanvas_->drawBitmap(bitmap, 0, 0, NULL);
     pcanvas_->drawBitmap(bitmap, 0, 0, NULL);
-    EXPECT_EQ(0., ProcessImage(L"translate2"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("translate2")));
   }
   vcanvas_->resetMatrix();
   pcanvas_->resetMatrix();
@@ -957,7 +958,7 @@ TEST_F(VectorCanvasTest, DISABLED_Matrix) {
     pcanvas_->scale(SkDoubleToScalar(1.9), SkDoubleToScalar(1.5));
     vcanvas_->drawBitmap(bitmap, 1, 1, NULL);
     pcanvas_->drawBitmap(bitmap, 1, 1, NULL);
-    EXPECT_EQ(0., ProcessImage(L"scale"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("scale")));
   }
   vcanvas_->resetMatrix();
   pcanvas_->resetMatrix();
@@ -967,7 +968,7 @@ TEST_F(VectorCanvasTest, DISABLED_Matrix) {
     pcanvas_->rotate(67);
     vcanvas_->drawBitmap(bitmap, 20, -50, NULL);
     pcanvas_->drawBitmap(bitmap, 20, -50, NULL);
-    EXPECT_EQ(0., ProcessImage(L"rotate"));
+    EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("rotate")));
   }
 }
 
