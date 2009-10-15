@@ -12,6 +12,22 @@
 @interface CrApplication : NSApplication
 @end
 
+// Namespace for exception-reporting helper functions.  Exposed for
+// testing purposes.
+namespace CrApplicationNSException {
+
+// Bin for unknown exceptions.
+extern const size_t kUnknownNSException;
+
+// Returns the histogram bin for |exception| if it is one we track
+// specifically, or |kUnknownNSException| if unknown.
+size_t BinForException(NSException* exception);
+
+// Use UMA to track exception occurance.
+void RecordExceptionWithUma(NSException* exception);
+
+}  // CrApplicationNSException
+
 #endif  // __OBJC__
 
 // CrApplicationCC provides access to CrApplication Objective-C selectors from

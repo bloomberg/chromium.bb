@@ -4,8 +4,62 @@
 
 #import "chrome/browser/chrome_application_mac.h"
 
+#import "base/histogram.h"
+#import "base/logging.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/app/breakpad_mac.h"
+
+namespace CrApplicationNSException {
+
+// Maximum number of known named exceptions we'll support.  There is
+// no central registration, but I only find about 75 possibilities in
+// the system frameworks, and many of them are probably not
+// interesting to track in aggregate (those relating to distributed
+// objects, for instance).
+const size_t kKnownNSExceptionCount = 25;
+
+const size_t kUnknownNSException = kKnownNSExceptionCount;
+
+size_t BinForException(NSException* exception) {
+  // A list of common known exceptions.  The list position will
+  // determine where they live in the histogram, so never move them
+  // around, only add to the end.
+  static const NSString* kKnownNSExceptionNames[] = {
+    // ???
+    NSGenericException,
+
+    // Out-of-range on NSString or NSArray.
+    NSRangeException,
+
+    // Invalid arg to method, unrecognized selector.
+    NSInvalidArgumentException,
+
+    // malloc() returned null in object creation, I think.
+    NSMallocException,
+
+    nil
+  };
+
+  // Make sure our array hasn't outgrown our abilities to track it.
+  DCHECK_LE(arraysize(kKnownNSExceptionNames), kKnownNSExceptionCount);
+
+  const NSString* name = [exception name];
+  for (int i = 0; kKnownNSExceptionNames[i]; ++i) {
+    if (name == kKnownNSExceptionNames[i]) {
+      return i;
+    }
+  }
+  return kUnknownNSException;
+}
+
+void RecordExceptionWithUma(NSException* exception) {
+  static LinearHistogram histogram("OSX.NSException", 0, kUnknownNSException,
+                                   kUnknownNSException + 1);
+  histogram.SetFlags(kUmaTargetedHistogramFlag);
+  histogram.Add(BinForException(exception));
+}
+
+}  // CrApplicationNSException
 
 namespace {
 
@@ -128,6 +182,24 @@ class ScopedCrashKey {
 
   ScopedCrashKey key(kActionKey, value);
   return [super sendAction:anAction to:aTarget from:sender];
+}
+
+// NSExceptions which are caught by the event loop are logged here.
+// NSException uses setjmp/longjmp, which can be very bad for C++, so
+// we attempt to track and report them.
+- (void)reportException:(NSException *)anException {
+  // If we throw an exception in this code, we can create an infinite
+  // loop.  If we throw out of the if() without resetting
+  // |reportException|, we'll stop reporting exceptions for this run.
+  static BOOL reportingException = NO;
+  DCHECK(!reportingException);
+  if (!reportingException) {
+    reportingException = YES;
+    CrApplicationNSException::RecordExceptionWithUma(anException);
+    reportingException = NO;
+  }
+
+  [super reportException:anException];
 }
 
 @end
