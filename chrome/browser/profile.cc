@@ -60,7 +60,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/touchpad.h"
+#include "chrome/browser/chromeos/preferences.h"
 #endif
 
 using base::Time;
@@ -665,7 +665,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       SSLConfigServiceManager::CreateDefaultManager(this));
 
 #if defined(OS_CHROMEOS)
-  touchpad_.Init(prefs);
+  chromeos_preferences_.Init(prefs);
 #endif
 }
 
@@ -916,7 +916,7 @@ PrefService* ProfileImpl::GetPrefs() {
     // Register Touchpad prefs here instead of in browser_prefs because these
     // prefs are used in the constructor of ProfileImpl which happens before
     // browser_prefs' RegisterAllPrefs is called.
-    Touchpad::RegisterUserPrefs(prefs_.get());
+    chromeos::Preferences::RegisterUserPrefs(prefs_.get());
 #endif
 
     // The last session exited cleanly if there is no pref for

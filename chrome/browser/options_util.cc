@@ -31,6 +31,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kTLS1Enabled,
 #endif
 #if defined(OS_CHROMEOS)
+    prefs::kTimeZone,
     prefs::kTapToClickEnabled,
     prefs::kVertEdgeScrollEnabled,
     prefs::kTouchpadSpeedFactor,

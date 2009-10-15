@@ -5657,6 +5657,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
+        Date and Time
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK">
         Network
       </message>
@@ -5665,6 +5668,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD">
         Network Password
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
+        Timezone:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
         Enable tap-to-click
@@ -5680,6 +5686,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
+      </message>
+      <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
+        Open date and time options...
       </message>
       <message name="IDS_STATUSBAR_CLOCK_SHORT_TIME_AM" desc="In the clock menu button, this shows the AM time in a short format.">
         <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MIUTE">$2<ex>30</ex></ph>a

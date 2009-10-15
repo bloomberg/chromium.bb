@@ -18,7 +18,7 @@
 #include "chrome/common/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/touchpad.h"
+#include "chrome/browser/chromeos/preferences.h"
 #endif
 
 namespace net {
@@ -553,7 +553,7 @@ class ProfileImpl : public Profile,
   bool shutdown_session_service_;
 
 #if defined(OS_CHROMEOS)
-  Touchpad touchpad_;
+  chromeos::Preferences chromeos_preferences_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);

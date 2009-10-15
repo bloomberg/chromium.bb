@@ -6,17 +6,22 @@
 #define CHROME_BROWSER_CHROMEOS_CLOCK_MENU_BUTTON_H_
 
 #include "base/timer.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/pref_member.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
+
+class Browser;
 
 // The clock menu button in the status area.
 // This button shows the current time.
 class ClockMenuButton : public views::MenuButton,
                         public views::ViewMenuDelegate,
-                        public views::Menu2Model {
+                        public views::Menu2Model,
+                        public NotificationObserver {
  public:
-  ClockMenuButton();
+  explicit ClockMenuButton(Browser* browser);
   virtual ~ClockMenuButton() {}
 
   // views::Menu2Model implementation.
@@ -31,26 +36,36 @@ class ClockMenuButton : public views::MenuButton,
   virtual bool IsItemCheckedAt(int index) const { return false; }
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
-  virtual bool IsEnabledAt(int index) const { return false; }
+  virtual bool IsEnabledAt(int index) const;
   virtual Menu2Model* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
-  virtual void ActivatedAt(int index) {}
+  virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // Schedules the timer to fire at the next minute interval.
-  void SetNextTimer();
+  // Updates text and schedules the timer to fire at the next minute interval.
+  void UpdateTextAndSetNextTimer();
 
-  // Updates the time on the menu button and sets the next timer.
+  // Updates the time on the menu button.
   void UpdateText();
 
   base::OneShotTimer<ClockMenuButton> timer_;
 
+  StringPrefMember timezone_;
+
   // The clock menu.
   views::Menu2 clock_menu_;
+
+  // The browser window that owns us.
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

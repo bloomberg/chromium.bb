@@ -69,6 +69,7 @@ extern const wchar_t kSSL3Enabled[];
 extern const wchar_t kTLS1Enabled[];
 #endif
 #if defined(OS_CHROMEOS)
+extern const wchar_t kTimeZone[];
 extern const wchar_t kTapToClickEnabled[];
 extern const wchar_t kVertEdgeScrollEnabled[];
 extern const wchar_t kTouchpadSpeedFactor[];

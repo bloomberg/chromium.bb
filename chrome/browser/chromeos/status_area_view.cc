@@ -126,7 +126,7 @@ void StatusAreaView::Init() {
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Clock.
-  clock_view_ = new ClockMenuButton();
+  clock_view_ = new ClockMenuButton(browser_);
   AddChildView(clock_view_);
 
   // Network.

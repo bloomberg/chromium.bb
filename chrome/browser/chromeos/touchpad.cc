@@ -8,69 +8,19 @@
 #include <string>
 #include <vector>
 
-#include "base/string_util.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/pref_member.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
-
-// Allows InvokeLater without adding refcounting.  The object is only deleted
-// when its last InvokeLater is run anyway.
-template <>
-struct RunnableMethodTraits<Touchpad> {
-  void RetainCallee(Touchpad*) {}
-  void ReleaseCallee(Touchpad*) {}
-};
 
 // static
-void Touchpad::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
-  prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
-  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
-}
-
-void Touchpad::Init(PrefService* prefs) {
-  tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
-  vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
-  speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
-  sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
-
-  // Initialize touchpad settings to what's saved in user preferences.
-  SetTapToClick();
-  SetVertEdgeScroll();
-  SetSpeedFactor();
-  SetSensitivity();
-}
-
-void Touchpad::Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED)
-    NotifyPrefChanged(Details<std::wstring>(details).ptr());
-}
-
-void Touchpad::NotifyPrefChanged(const std::wstring* pref_name) {
-  if (!pref_name || *pref_name == prefs::kTapToClickEnabled)
-    SetTapToClick();
-  if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled)
-    SetVertEdgeScroll();
-  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor)
-    SetSpeedFactor();
-  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity)
-    SetSensitivity();
-}
-
 void Touchpad::SetSynclientParam(const std::string& param, double value) {
   // If not running on the file thread, then re-run on the file thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
     base::Thread* file_thread = g_browser_process->file_thread();
     if (file_thread)
       file_thread->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &Touchpad::SetSynclientParam, param, value));
+          NewRunnableFunction(&Touchpad::SetSynclientParam, param, value));
   } else {
     // launch binary synclient to set the parameter
     std::vector<std::string> argv;
@@ -83,31 +33,33 @@ void Touchpad::SetSynclientParam(const std::string& param, double value) {
   }
 }
 
-void Touchpad::SetTapToClick() {
+// static
+void Touchpad::SetTapToClick(bool value) {
   // To disable tap-to-click (i.e. a tap on the touchpad is recognized as a left
   // mouse click event), we set MaxTapTime to 0. MaxTapTime is the maximum time
   // (in milliseconds) for detecting a tap. The default is 180.
-  if (tap_to_click_enabled_.GetValue())
+  if (value)
     SetSynclientParam("MaxTapTime", 180);
   else
     SetSynclientParam("MaxTapTime", 0);
 }
 
-void Touchpad::SetVertEdgeScroll() {
+// static
+void Touchpad::SetVertEdgeScroll(bool value) {
   // To disable vertical edge scroll, we set VertEdgeScroll to 0. Vertical edge
   // scroll lets you use the right edge of the touchpad to control the movement
   // of the vertical scroll bar.
-  if (vert_edge_scroll_enabled_.GetValue())
+  if (value)
     SetSynclientParam("VertEdgeScroll", 1);
   else
     SetSynclientParam("VertEdgeScroll", 0);
 }
 
-void Touchpad::SetSpeedFactor() {
+// static
+void Touchpad::SetSpeedFactor(int value) {
   // To set speed factor, we use MaxSpeed. MinSpeed is set to 0.2.
   // MaxSpeed can go from 0.2 to 1.1. The preference is an integer between
   // 1 and 10, so we divide that by 10 and add 0.1 for the value of MaxSpeed.
-  int value = speed_factor_.GetValue();
   if (value < 1)
     value = 1;
   if (value > 10)
@@ -117,13 +69,13 @@ void Touchpad::SetSpeedFactor() {
   SetSynclientParam("MaxSpeed", d);
 }
 
-void Touchpad::SetSensitivity() {
+// static
+void Touchpad::SetSensitivity(int value) {
   // To set the touch sensitivity, we use FingerHigh, which represents the
   // the pressure needed for a tap to be registered. The range of FingerHigh
   // goes from 25 to 70. We store the sensitivity preference as an int from
   // 1 to 10. So we need to map the preference value of 1 to 10 to the
   // FingerHigh value of 25 to 70 inversely.
-  int value = sensitivity_.GetValue();
   if (value < 1)
     value = 1;
   if (value > 10)

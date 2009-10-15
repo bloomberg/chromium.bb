@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros_network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
@@ -19,6 +20,8 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "unicode/strenum.h"
+#include "unicode/timezone.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
@@ -33,60 +36,223 @@ using views::ColumnSet;
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
-// WifiNetworkComboModel
+// SettingsContentsSection
 
-// The Combobox model for the list of wifi networks
-class WifiNetworkComboModel : public ComboboxModel {
+// Base section class settings
+class SettingsContentsSection : public OptionsPageView {
  public:
-  WifiNetworkComboModel();
+  explicit SettingsContentsSection(Profile* profile, int title_msg_id);
+  virtual ~SettingsContentsSection() {}
 
-  virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+ protected:
+  // OptionsPageView overrides:
+  virtual void InitControlLayout();
+  virtual void InitContents(GridLayout* layout) = 0;
 
-  bool HasWifiNetworks();
-  const WifiNetwork& GetWifiNetworkAt(int index);
+  int single_column_view_set_id() const { return single_column_view_set_id_; }
+  int double_column_view_set_id() const { return double_column_view_set_id_; }
 
  private:
-  WifiNetworkVector wifi_networks_;
+  // The message id for the title of this section.
+  int title_msg_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(WifiNetworkComboModel);
+  int single_column_view_set_id_;
+  int double_column_view_set_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsContentsSection);
 };
 
-WifiNetworkComboModel::WifiNetworkComboModel() {
-  wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
+SettingsContentsSection::SettingsContentsSection(Profile* profile,
+                                                 int title_msg_id)
+    : OptionsPageView(profile),
+      title_msg_id_(title_msg_id),
+      single_column_view_set_id_(0),
+      double_column_view_set_id_(1) {
 }
 
-int WifiNetworkComboModel::GetItemCount() {
-  // Item count is always 1 more than number of networks.
-  // If there are no networks, then we show a message stating that.
-  // If there are networks, the first item is empty.
-  return static_cast<int>(wifi_networks_.size()) + 1;
+void SettingsContentsSection::InitControlLayout() {
+  GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
+
+  int single_column_layout_id = 0;
+  ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  int inset_column_layout_id = 1;
+  column_set = layout->AddColumnSet(inset_column_layout_id);
+  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, single_column_layout_id);
+  views::Label* title_label = new views::Label(
+      l10n_util::GetString(title_msg_id_));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font title_font =
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  title_label->SetFont(title_font);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, inset_column_layout_id);
+
+  views::View* contents = new views::View;
+  GridLayout* child_layout = new GridLayout(contents);
+  contents->SetLayoutManager(child_layout);
+
+  column_set = child_layout->AddColumnSet(single_column_view_set_id_);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  column_set = child_layout->AddColumnSet(double_column_view_set_id_);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  InitContents(child_layout);
+  layout->AddView(contents);
 }
 
-std::wstring WifiNetworkComboModel::GetItemAt(int index) {
-  if (index == 0) {
-    return wifi_networks_.empty() ?
-        l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-        ASCIIToWide("");
+////////////////////////////////////////////////////////////////////////////////
+// DateTimeSection
+
+// Date/Time section for datetime settings
+class DateTimeSection : public SettingsContentsSection,
+                        public views::Combobox::Listener {
+ public:
+  explicit DateTimeSection(Profile* profile);
+  virtual ~DateTimeSection() {}
+
+  // Overridden from views::Combobox::Listener:
+  virtual void ItemChanged(views::Combobox* sender,
+                           int prev_index,
+                           int new_index);
+
+ protected:
+  // SettingsContentsSection overrides:
+  virtual void InitContents(GridLayout* layout);
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
+ private:
+  // The combobox model for the list of timezones.
+  class TimezoneComboboxModel : public ComboboxModel {
+   public:
+    TimezoneComboboxModel() {
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Pacific")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Mountain")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Central")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Eastern")));
+      // For now, add all the GMT timezones.
+      // We may eventually want to use icu::TimeZone::createEnumeration()
+      // to list all the timezones and pick the ones we want to show.
+      for (int i = 11; i >= -12; i--) {
+        // For positive i's, add the extra '+'.
+        std::string str = StringPrintf(i > 0 ? "Etc/GMT+%d" : "Etc/GMT%d", i);
+        icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
+            icu::UnicodeString::fromUTF8(str.c_str()));
+        timezones_.push_back(timezone);
+      }
+    }
+
+    virtual ~TimezoneComboboxModel() {
+      STLDeleteElements(&timezones_);
+    }
+
+    virtual int GetItemCount() {
+      return static_cast<int>(timezones_.size());
+    }
+
+    virtual std::wstring GetItemAt(int index) {
+      icu::UnicodeString name;
+      timezones_[index]->getDisplayName(name);
+      std::wstring output;
+      UTF16ToWide(name.getBuffer(), name.length(), &output);
+      return output;
+    }
+
+    virtual std::wstring GetTimeZoneIDAt(int index) {
+      icu::UnicodeString id;
+      timezones_[index]->getID(id);
+      std::wstring output;
+      UTF16ToWide(id.getBuffer(), id.length(), &output);
+      return output;
+    }
+
+   private:
+    std::vector<icu::TimeZone*> timezones_;
+
+    DISALLOW_COPY_AND_ASSIGN(TimezoneComboboxModel);
+  };
+
+  // Selects the timezone.
+  void SelectTimeZone(const std::wstring& id);
+
+  // TimeZone combobox model.
+  views::Combobox* timezone_combobox_;
+
+  // Controls for this section:
+  TimezoneComboboxModel timezone_combobox_model_;
+
+  // Preferences for this section:
+  StringPrefMember timezone_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeSection);
+};
+
+DateTimeSection::DateTimeSection(Profile* profile)
+    : SettingsContentsSection(profile,
+                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME),
+      timezone_combobox_(NULL) {
+}
+
+void DateTimeSection::ItemChanged(views::Combobox* sender,
+                                  int prev_index,
+                                  int new_index) {
+  if (new_index == prev_index)
+    return;
+  timezone_.SetValue(timezone_combobox_model_.GetTimeZoneIDAt(new_index));
+}
+
+void DateTimeSection::InitContents(GridLayout* layout) {
+  timezone_combobox_ = new views::Combobox(&timezone_combobox_model_);
+  timezone_combobox_->set_listener(this);
+
+  layout->StartRow(0, double_column_view_set_id());
+  layout->AddView(new views::Label(
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION)));
+  layout->AddView(timezone_combobox_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  // Init member prefs so we can update the controls if prefs change.
+  timezone_.Init(prefs::kTimeZone, profile()->GetPrefs(), this);
+}
+
+void DateTimeSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || *pref_name == prefs::kTimeZone) {
+    std::wstring timezone = timezone_.GetValue();
+    SelectTimeZone(timezone);
   }
-  // If index is greater than one, we get the corresponding network, which is
-  // in the wifi_networks_ list in [index-1] position.
-  return ASCIIToWide(wifi_networks_[index-1].ssid);
 }
 
-bool WifiNetworkComboModel::HasWifiNetworks() {
-  return !wifi_networks_.empty();
-}
-
-const WifiNetwork& WifiNetworkComboModel::GetWifiNetworkAt(int index) {
-  return wifi_networks_[index-1];
+void DateTimeSection::SelectTimeZone(const std::wstring& id) {
+  for (int i = 0; i < timezone_combobox_model_.GetItemCount(); i++) {
+    if (timezone_combobox_model_.GetTimeZoneIDAt(i) == id) {
+      timezone_combobox_->SetSelectedItem(i);
+      return;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSection
 
 // Network section for wifi settings
-class NetworkSection : public OptionsPageView,
+class NetworkSection : public SettingsContentsSection,
                        public views::Combobox::Listener,
                        public PasswordDialogDelegate,
                        public CrosNetworkLibrary::Observer {
@@ -108,17 +274,51 @@ class NetworkSection : public OptionsPageView,
   virtual void NetworkChanged(CrosNetworkLibrary* obj);
 
  protected:
-  // OptionsPageView overrides:
-  virtual void InitControlLayout();
-  virtual void InitContents();
+  // SettingsContentsSection overrides:
+  virtual void InitContents(GridLayout* layout);
 
  private:
+  // The Combobox model for the list of wifi networks
+  class WifiNetworkComboModel : public ComboboxModel {
+   public:
+    WifiNetworkComboModel() {
+      wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
+    }
+
+    virtual int GetItemCount() {
+      // Item count is always 1 more than number of networks.
+      // If there are no networks, then we show a message stating that.
+      // If there are networks, the first item is empty.
+      return static_cast<int>(wifi_networks_.size()) + 1;
+    }
+
+    virtual std::wstring GetItemAt(int index) {
+      if (index == 0) {
+        return wifi_networks_.empty() ?
+            l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
+            std::wstring();
+      }
+      // If index is greater than one, we get the corresponding network,
+      // which is in the wifi_networks_ list in [index-1] position.
+      return ASCIIToWide(wifi_networks_[index-1].ssid);
+    }
+
+    virtual bool HasWifiNetworks() {
+      return !wifi_networks_.empty();
+    }
+
+    virtual const WifiNetwork& GetWifiNetworkAt(int index) {
+      return wifi_networks_[index-1];
+    }
+
+   private:
+    WifiNetworkVector wifi_networks_;
+
+    DISALLOW_COPY_AND_ASSIGN(WifiNetworkComboModel);
+  };
 
   // This method will change the combobox selection to the passed in wifi ssid.
   void SelectWifi(const std::string& wifi_ssid);
-
-  // The View that contains the contents of the section.
-  views::View* contents_;
 
   // Controls for this section:
   views::Combobox* wifi_ssid_combobox_;
@@ -135,12 +335,9 @@ class NetworkSection : public OptionsPageView,
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// NetworkSection
-
 NetworkSection::NetworkSection(Profile* profile)
-    : OptionsPageView(profile),
-      contents_(NULL),
+    : SettingsContentsSection(profile,
+                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK),
       wifi_ssid_combobox_(NULL),
       last_selected_wifi_ssid_index_(0) {
   CrosNetworkLibrary::Get()->AddObserver(this);
@@ -198,49 +395,12 @@ void NetworkSection::NetworkChanged(CrosNetworkLibrary* obj) {
   SelectWifi(obj->wifi_ssid());
 }
 
-void NetworkSection::InitControlLayout() {
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
-
-  int single_column_layout_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  int inset_column_layout_id = 1;
-  column_set = layout->AddColumnSet(inset_column_layout_id);
-  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, single_column_layout_id);
-  views::Label* title_label = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK));
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font =
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  title_label->SetFont(title_font);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, inset_column_layout_id);
-  InitContents();
-  layout->AddView(contents_);
-}
-
-void NetworkSection::InitContents() {
-  contents_ = new views::View;
-  GridLayout* layout = new GridLayout(contents_);
-  contents_->SetLayoutManager(layout);
-
+void NetworkSection::InitContents(GridLayout* layout) {
   wifi_ssid_combobox_ = new views::Combobox(&wifi_ssid_model_);
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   wifi_ssid_combobox_->set_listener(this);
 
-  int single_column_view_set_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, single_column_view_set_id());
   layout->AddView(wifi_ssid_combobox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
@@ -270,7 +430,7 @@ void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchpadSection
 
-class TouchpadSection : public OptionsPageView,
+class TouchpadSection : public SettingsContentsSection,
                         public views::ButtonListener,
                         public views::SliderListener {
  public:
@@ -284,9 +444,8 @@ class TouchpadSection : public OptionsPageView,
   virtual void SliderValueChanged(views::Slider* sender);
 
  protected:
-  // OptionsPageView overrides:
-  virtual void InitControlLayout();
-  virtual void InitContents();
+  // SettingsContentsSection overrides:
+  virtual void InitContents(GridLayout* layout);
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
  private:
@@ -309,8 +468,8 @@ class TouchpadSection : public OptionsPageView,
 };
 
 TouchpadSection::TouchpadSection(Profile* profile)
-    : OptionsPageView(profile),
-      contents_(NULL),
+    : SettingsContentsSection(profile,
+                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD),
       enable_tap_to_click_checkbox_(NULL),
       enable_vert_edge_scroll_checkbox_(NULL),
       speed_factor_slider_(NULL),
@@ -350,39 +509,7 @@ void TouchpadSection::SliderValueChanged(views::Slider* sender) {
   }
 }
 
-void TouchpadSection::InitControlLayout() {
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
-
-  int single_column_layout_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  int inset_column_layout_id = 1;
-  column_set = layout->AddColumnSet(inset_column_layout_id);
-  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, single_column_layout_id);
-  views::Label* title_label = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD));
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font =
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  title_label->SetFont(title_font);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, inset_column_layout_id);
-  InitContents();
-  layout->AddView(contents_);
-}
-
-void TouchpadSection::InitContents() {
-  contents_ = new views::View;
-  GridLayout* layout = new GridLayout(contents_);
-  contents_->SetLayoutManager(layout);
-
+void TouchpadSection::InitContents(GridLayout* layout) {
   enable_tap_to_click_checkbox_ = new views::Checkbox(l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
   enable_tap_to_click_checkbox_->set_listener(this);
@@ -404,33 +531,20 @@ void TouchpadSection::InitContents() {
           views::Slider::STYLE_UPDATE_ON_RELEASE),
       this);
 
-  int single_column_view_set_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  int double_column_view_set_id = 1;
-  column_set = layout->AddColumnSet(double_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, double_column_view_set_id);
+  layout->StartRow(0, double_column_view_set_id());
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION)));
   layout->AddView(sensitivity_slider_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, double_column_view_set_id);
+  layout->StartRow(0, double_column_view_set_id());
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION)));
   layout->AddView(speed_factor_slider_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, single_column_view_set_id());
   layout->AddView(enable_tap_to_click_checkbox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, single_column_view_set_id());
   layout->AddView(enable_vert_edge_scroll_checkbox_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
@@ -481,6 +595,9 @@ void SettingsContentsView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new DateTimeSection(profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new NetworkSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
