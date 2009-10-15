@@ -63,7 +63,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 }  // extern "C"
 
 #if !defined(USE_MMX)
-// Windows, Mac and Linux x86 use MMX; x64 and other CPUs do not.
+// Windows, Mac and Linux use MMX
 #if defined(ARCH_CPU_X86) || (defined(ARCH_CPU_X86_64) && defined(OS_LINUX))
 #define USE_MMX 1
 #else
@@ -71,7 +71,8 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 #endif
 
-#if USE_MMX
+// x64 uses MMX2 (SSE) so emms is not required.
+#if USE_MMX && !defined(ARCH_CPU_X86_64)
 #if defined(_MSC_VER)
 #define EMMS() __asm emms
 #else
