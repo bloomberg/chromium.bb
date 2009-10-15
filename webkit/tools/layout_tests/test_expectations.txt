@@ -3175,3 +3175,4 @@ BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
 BUG24865 WIN : LayoutTests/fast/css/large-number-round-trip.html = FAIL
+BUG24930 MAC LINUX : LayoutTests/editing/selection/editable-html-element.html = FAIL
