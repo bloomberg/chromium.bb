@@ -86,7 +86,7 @@ static void CPUIDWhitelistUnitTests() {
   printf("All whitelist unit tests passed\n");
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   printf("white list ID: %s\n", GetCPUIDString());
   if (NaCl_ThisCPUIsWhitelisted()) {
     printf("this CPU is on the whitelist\n");

@@ -45,15 +45,6 @@
         'nacl_os_qualify.h',
         'vcpuid.h',
       ],
-      # TODO(gregoryd): eliminate the need for the removal of -Wextra
-      'cflags!': [
-        '-Wextra',
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-        ]
-      },
       'conditions': [
         ['OS=="linux"', {
           'sources': [

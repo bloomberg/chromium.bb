@@ -45,7 +45,7 @@
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/platform_qualify/vcpuid.h"
 
-int main(int argc, char *argv[]) {
+int main() {
   if (!CPUIDImplIsValid()) return -1;
   printf("CPUID implementation looks okay\n");
   if (NaCl_ThisCPUIsBlacklisted()) return -1;

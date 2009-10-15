@@ -28,13 +28,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-import sys
-
 Import('env')
 
-# TODO(gregoryd): eliminate need for the next line
-env.FilterOut(CCFLAGS=['-Wextra'])
 
 # NOTE: this is just stubbing things out to create a 'compatible' library.
 #       Needs to be revisited once we understand arm better
