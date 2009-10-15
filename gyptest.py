@@ -118,7 +118,7 @@ def find_all_gyptest_files(directory):
       if '.svn' in dirs:
         dirs.remove('.svn')
       result.extend([ os.path.join(root, f) for f in files
-                                            if f.startswith('gyptest') ])
+                     if f.startswith('gyptest') and f.endswith('.py') ])
     result.sort()
     return result
 
