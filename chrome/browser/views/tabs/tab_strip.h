@@ -46,7 +46,7 @@ class TabStrip : public views::View,
                  public MessageLoopForUI::Observer,
                  public TabStripWrapper {
  public:
-  TabStrip(TabStripModel* model);
+  explicit TabStrip(TabStripModel* model);
   virtual ~TabStrip();
 
   // Returns true if the TabStrip can accept input events. This returns false

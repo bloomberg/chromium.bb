@@ -1192,6 +1192,37 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
   // the user is dragging.
   if (IsAnimating() || tab->closing() || !HasAvailableDragActions())
     return;
+  int index = GetIndexOfTab(tab);
+  if (!model_->ContainsIndex(index)) {
+    // It appears to be possible for a drag to start with an invalid tab.
+    // This records some extra information in hopes of tracking down why.
+    // The string contains the following, in order:
+    // . If a drag is already in progress, a 'D'.
+    // . Index of tab the user is dragging.
+    // . Number of tabs.
+    // . Size of the model.
+    // . Indices of any tabs that are being closed.
+    // . ! end marker.
+    std::string tmp;
+    if (drag_controller_.get())
+      tmp += "D";
+    tmp += " " + IntToString(index);
+    tmp += " " + IntToString(GetTabCount());
+    tmp += " " + IntToString(model_->count());
+    for (int i = 0; i < GetTabCount(); ++i) {
+      if (GetTabAt(i)->closing())
+        tmp += " " + IntToString(i);
+    }
+    tmp += "!";  // End marker so we know we got all closing tabs.
+
+    volatile char tab_state[128];
+    for (size_t i = 0; i < std::min(ARRAYSIZE_UNSAFE(tab_state),
+                                    tmp.size()); ++i) {
+      tab_state[i] = tmp[i];
+    }
+    CHECK(false);
+    return;
+  }
   drag_controller_.reset(new DraggedTabController(tab, this));
   drag_controller_->CaptureDragInfo(gfx::Point(event.x(), event.y()));
 }
