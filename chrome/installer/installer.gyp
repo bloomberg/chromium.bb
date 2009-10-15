@@ -486,11 +486,12 @@
               '<(PRODUCT_DIR)/locales/en-US.pak',
               '<(PRODUCT_DIR)/themes/default.pak',
             ],
+            'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
             'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
             'rpm_build': '<(PRODUCT_DIR)/installer/rpm/build.sh',
-            'deb_cmd': ['bash', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
+            'deb_cmd': ['<@(flock_bash)', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
                         '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
-            'rpm_cmd': ['bash', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
+            'rpm_cmd': ['<@(flock_bash)', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
                         '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
             'conditions': [
               ['target_arch=="ia32"', {
