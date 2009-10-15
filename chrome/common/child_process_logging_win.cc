@@ -15,7 +15,6 @@ namespace child_process_logging {
 typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 
 void SetActiveURL(const GURL& url) {
-  return;  // TODO(jar): Revert this.  This is a test to see the perf impact of not calling SetActiveURL.
   HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
   if (!exe_module)
     return;
