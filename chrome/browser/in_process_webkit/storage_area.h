@@ -9,6 +9,8 @@
 #include "base/nullable_string16.h"
 #include "base/scoped_ptr.h"
 
+class StorageNamespace;
+
 namespace WebKit {
 class WebStorageArea;
 }
@@ -17,8 +19,7 @@ class WebStorageArea;
 // with DOMStorageContext.
 class StorageArea {
  public:
-  StorageArea(const string16& origin, WebKit::WebStorageArea* storage_area,
-              int64 id);
+  StorageArea(const string16& origin, int64 id, StorageNamespace* owner);
   ~StorageArea();
 
   unsigned Length();
@@ -28,10 +29,14 @@ class StorageArea {
                bool* quota_xception);
   void RemoveItem(const string16& key);
   void Clear();
+  void PurgeMemory();
 
   int64 id() const { return id_; }
 
  private:
+  // Creates the underlying WebStorageArea on demand.
+  void CreateWebStorageAreaIfNecessary();
+
   // The origin this storage area represents.
   string16 origin_;
 
@@ -40,6 +45,9 @@ class StorageArea {
 
   // Our storage area id.  Unique to our parent WebKitContext.
   int64 id_;
+
+  // The StorageNamespace that owns us.
+  StorageNamespace* owner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StorageArea);
 };

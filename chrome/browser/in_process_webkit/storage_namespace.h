@@ -9,12 +9,14 @@
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/dom_storage_type.h"
+#include "webkit/api/public/WebString.h"
 
 class DOMStorageContext;
 class FilePath;
 class StorageArea;
 
 namespace WebKit {
+class WebStorageArea;
 class WebStorageNamespace;
 }
 
@@ -30,7 +32,7 @@ class StorageNamespace {
 
   StorageArea* GetStorageArea(const string16& origin);
   StorageNamespace* Copy();
-  void Close();
+  void PurgeMemory();
 
   const DOMStorageContext* dom_storage_context() const {
     return dom_storage_context_;
@@ -38,11 +40,19 @@ class StorageNamespace {
   int64 id() const { return id_; }
   DOMStorageType dom_storage_type() const { return dom_storage_type_; }
 
+  // Creates a WebStorageArea for the given origin.  This should only be called
+  // by an owned StorageArea.
+  WebKit::WebStorageArea* CreateWebStorageArea(const string16& origin);
+
  private:
   // Called by the static factory methods above.
   StorageNamespace(DOMStorageContext* dom_storage_context,
-                   WebKit::WebStorageNamespace* web_storage_namespace,
-                   int64 id, DOMStorageType storage_type);
+                   int64 id,
+                   const WebKit::WebString& data_dir_path,
+                   DOMStorageType storage_type);
+
+  // Creates the underlying WebStorageNamespace on demand.
+  void CreateWebStorageNamespaceIfNecessary();
 
   // All the storage areas we own.
   typedef base::hash_map<string16, StorageArea*> OriginToStorageAreaMap;
@@ -56,6 +66,10 @@ class StorageNamespace {
 
   // Our id.  Unique to our parent WebKitContext class.
   int64 id_;
+
+  // The path used to create us, so we can recreate our WebStorageNamespace on
+  // demand.
+  WebKit::WebString data_dir_path_;
 
   // SessionStorage vs. LocalStorage.
   const DOMStorageType dom_storage_type_;

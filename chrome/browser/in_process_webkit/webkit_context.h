@@ -8,12 +8,15 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
 
-class DOMStorageContext;
 class WebKitThread;
 
 // There's one WebKitContext per profile.  Various DispatcherHost classes
 // have a pointer to the Context to store shared state.
+//
+// This class is created on the UI thread and accessed on the UI, IO, and WebKit
+// threads.
 class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
  public:
   WebKitContext(const FilePath& data_path, bool is_incognito);
@@ -23,6 +26,17 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   DOMStorageContext* dom_storage_context() {
     return dom_storage_context_.get();
   }
+
+#ifdef UNIT_TEST
+  // For unit tests, allow specifying a DOMStorageContext directly so it can be
+  // mocked.
+  void set_dom_storage_context(DOMStorageContext* dom_storage_context) {
+    dom_storage_context_.reset(dom_storage_context);
+  }
+#endif
+
+  // Tells the DOMStorageContext to purge any memory it does not need.
+  void PurgeMemory();
 
  private:
   friend class base::RefCountedThreadSafe<WebKitContext>;

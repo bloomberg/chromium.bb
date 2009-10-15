@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
 
-#include "base/file_path.h"
-#include "base/hash_tables.h"
-#include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include <map>
+#include <set>
 
+#include "base/file_path.h"
+
+class DOMStorageDispatcherHost;
 class StorageArea;
 class StorageNamespace;
 class WebKitContext;
@@ -18,10 +20,12 @@ class WebKitContext;
 // the same profile.  The specifics of responsibilities are fairly well
 // documented here and in StorageNamespace and StorageArea.  Everything is only
 // to be accessed on the WebKit thread unless noted otherwise.
+//
+// NOTE: Virtual methods facilitate mocking functions for testing.
 class DOMStorageContext {
  public:
   explicit DOMStorageContext(WebKitContext* webkit_context);
-  ~DOMStorageContext();
+  virtual ~DOMStorageContext();
 
   // Get the local storage instance.  The pointer is owned by this class.
   StorageNamespace* LocalStorage();
@@ -48,10 +52,13 @@ class DOMStorageContext {
 
   // Sometimes an event from one DOM storage dispatcher host requires
   // communication to all of them.
-  typedef base::hash_set<DOMStorageDispatcherHost*> DispatcherHostSet;
+  typedef std::set<DOMStorageDispatcherHost*> DispatcherHostSet;
   void RegisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
   void UnregisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
   const DispatcherHostSet* GetDispatcherHostSet() const;
+
+  // Tells storage namespaces to purge any memory they do not need.
+  virtual void PurgeMemory();
 
   // The special ID used for local storage.
   static const int64 kLocalStorageNamespaceId = 0;
@@ -72,11 +79,11 @@ class DOMStorageContext {
 
   // Maps ids to StorageAreas.  We do NOT own these objects.  StorageNamespace
   // (which does own them) will notify us when we should remove the entries.
-  typedef base::hash_map<int64, StorageArea*> StorageAreaMap;
+  typedef std::map<int64, StorageArea*> StorageAreaMap;
   StorageAreaMap storage_area_map_;
 
   // Maps ids to StorageNamespaces.  We own these objects.
-  typedef base::hash_map<int64, StorageNamespace*> StorageNamespaceMap;
+  typedef std::map<int64, StorageNamespace*> StorageNamespaceMap;
   StorageNamespaceMap storage_namespace_map_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContext);

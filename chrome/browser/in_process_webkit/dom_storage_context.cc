@@ -119,3 +119,14 @@ DOMStorageContext::GetDispatcherHostSet() const {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   return &dispatcher_host_set_;
 }
+
+void DOMStorageContext::PurgeMemory() {
+  // It is only safe to purge the memory from the LocalStorage namespace,
+  // because it is backed by disk and can be reloaded later.  If we purge a
+  // SessionStorage namespace, its data will be gone forever, because it isn't
+  // currently backed by disk.
+  StorageNamespace* local_storage =
+      GetStorageNamespace(kLocalStorageNamespaceId);
+  if (local_storage)
+    local_storage->PurgeMemory();
+}
