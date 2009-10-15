@@ -176,7 +176,8 @@ class DownloadTest : public UITest {
 
 // Download a file with non-viewable content, verify that the
 // download tab opened and the file exists.
-TEST_F(DownloadTest, DownloadMimeType) {
+// This test is flaky. See bug 24889.
+TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
 
   EXPECT_EQ(1, GetTabCount());
