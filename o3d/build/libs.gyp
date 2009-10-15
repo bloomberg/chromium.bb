@@ -64,6 +64,7 @@
     {
       'target_name': 'cg_libs',
       'type': 'none',
+      'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
           '../../<(cgdir)/include',
