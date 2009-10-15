@@ -6,20 +6,36 @@
 import os
 import sys
 
-# Find depot_tools in PATH, append it to sys.path so we can import.
-paths = os.environ.get("PATH")
-for path in paths.split(':'):
+# Try locating depot_tools from the user's PATH.
+depot_tools_path = None
+for path in os.environ.get("PATH").split(':'):
   if not path.endswith("depot_tools"):
     continue
-  sys.path.append(path)
+  depot_tools_path = path
   break
 
-import git_cl_hooks
+# If we found depot_tools, add it to the script's import path.
+if depot_tools_path:
+  sys.path.append(depot_tools_path)
+else:
+  print "ERROR: Could not find depot_tools in your PATH."
+  print "ERROR: Please add it to your PATH and try again."
+  sys.exit(1)
+
+# Try importing git_cl_hooks from depot_tools.
+try:
+  import git_cl_hooks
+except ImportError:
+  print ("ERROR: Could not import git_cl_hooks from your depot_tools at %s." %
+      depot_tools_path)
+  print "ERROR: Make sure %s is up-to-date and try again." % depot_tools_path
+  sys.exit(1)
 
 # Ensure we were called with the necessary number of arguments.
 program_name = os.path.basename(sys.argv[0])
 if len(sys.argv) != 2:
-  raise Exception("usage: %s [upstream branch]" % program_name)
+  print "usage: %s [upstream branch]" % program_name
+  sys.exit(1)
 
 # Run the hooks library with our arguments.
 exec git_cl_hooks.RunHooks(hook_name=program_name, upstream_branch=sys.argv[1])
