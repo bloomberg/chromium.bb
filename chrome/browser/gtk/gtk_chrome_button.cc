@@ -81,8 +81,6 @@ static void gtk_chrome_button_init(GtkChromeButton* button) {
   priv->paint_state = -1;
   priv->use_gtk_rendering = FALSE;
 
-  gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
-
   GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
 }
 
@@ -97,14 +95,8 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
     // rendering AND we're in either the prelight or active state so that we
     // get the button border for the current GTK theme drawn.
     if (paint_state == GTK_STATE_PRELIGHT || paint_state == GTK_STATE_ACTIVE) {
-      (*GTK_WIDGET_CLASS(gtk_chrome_button_parent_class)->expose_event)
+      return GTK_WIDGET_CLASS(gtk_chrome_button_parent_class)->expose_event
           (widget, event);
-    } else if (gtk_bin_get_child(GTK_BIN(widget))) {
-      // Otherwise, we're still responsible for rendering our children if we
-      // have any.
-      gtk_container_propagate_expose(GTK_CONTAINER(widget),
-                                     gtk_bin_get_child(GTK_BIN(widget)),
-                                     event);
     }
   } else {
     NineBox* nine_box = NULL;
@@ -116,16 +108,16 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
     // Only draw theme graphics if we have some.
     if (nine_box)
       nine_box->RenderToWidget(widget);
-
-    // If we have a child widget, draw it.
-    if (gtk_bin_get_child(GTK_BIN(widget))) {
-      gtk_container_propagate_expose(GTK_CONTAINER(widget),
-                                     gtk_bin_get_child(GTK_BIN(widget)),
-                                     event);
-    }
   }
 
-  return TRUE;  // Don't propagate, we are the default handler.
+  // If we have a child widget, draw it.
+  if (gtk_bin_get_child(GTK_BIN(widget))) {
+    gtk_container_propagate_expose(GTK_CONTAINER(widget),
+                                   gtk_bin_get_child(GTK_BIN(widget)),
+                                   event);
+  }
+
+  return FALSE;
 }
 
 GtkWidget* gtk_chrome_button_new(void) {

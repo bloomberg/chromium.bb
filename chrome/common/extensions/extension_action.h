@@ -15,6 +15,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace gfx {
+class Canvas;
+class Rect;
+}
+
 class ExtensionAction {
  public:
   ExtensionAction();
@@ -106,6 +111,8 @@ class ExtensionActionState {
 
   SkBitmap* icon() const { return icon_.get(); }
   void set_icon(SkBitmap* icon) { icon_.reset(icon); }
+
+  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds);
 
  private:
   // The title text to use for tooltips and labels.

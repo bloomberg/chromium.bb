@@ -34,7 +34,7 @@ static const int kHorizontalPadding = 4;
 
 // This is the same value from toolbar.cc. We position the browser actions
 // container flush with the edges of the toolbar as a special case so that we
-// can draw the badge outside the visual bounds of the contianer.
+// can draw the badge outside the visual bounds of the container.
 static const int kControlVertOffset = 6;
 
 // The maximum of the minimum number of browser actions present when there is

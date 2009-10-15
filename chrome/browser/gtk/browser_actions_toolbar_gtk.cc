@@ -7,15 +7,18 @@
 #include <gtk/gtk.h>
 #include <vector>
 
+#include "app/gfx/canvas_paint.h"
 #include "app/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 
@@ -47,9 +50,15 @@ class BrowserActionButton : public NotificationObserver,
     // We need to hook up extension popups here. http://crbug.com/23897
     g_signal_connect(button_.get(), "clicked",
                      G_CALLBACK(OnButtonClicked), this);
+    g_signal_connect_after(button_.get(), "expose-event",
+                           G_CALLBACK(OnExposeEvent), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));
+    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                   NotificationService::AllSources());
+
+    OnThemeChanged();
   }
 
   ~BrowserActionButton() {
@@ -64,12 +73,26 @@ class BrowserActionButton : public NotificationObserver,
 
   GtkWidget* widget() { return button_.get(); }
 
-  static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-        action->browser_->profile(), action->extension_->id(),
-        action->browser_);
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED)
+      OnStateUpdated();
+    else if (type == NotificationType::BROWSER_THEME_CHANGED)
+      OnThemeChanged();
+    else
+      NOTREACHED();
   }
 
+  // ImageLoadingTracker::Observer implementation.
+  void OnImageLoaded(SkBitmap* image, size_t index) {
+    SkBitmap empty;
+    SkBitmap* bitmap = image ? image : &empty;
+    browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(bitmap);
+    OnStateUpdated();
+  }
+
+ private:
   // Called when the tooltip has changed or an image has loaded.
   void OnStateUpdated() {
     gtk_widget_set_tooltip_text(button_.get(),
@@ -86,26 +109,30 @@ class BrowserActionButton : public NotificationObserver,
     }
   }
 
-  // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
-    OnStateUpdated();
+  void OnThemeChanged() {
+    gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button_.get()),
+        GtkThemeProvider::GetFrom(browser_->profile())->UseGtkTheme());
   }
 
-  // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, size_t index) {
-    if (image) {
-      browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(image);
-    } else {
-      SkBitmap empty;
-      browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(&empty);
-    }
-
-    OnStateUpdated();
+  static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
+    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+        action->browser_->profile(), action->extension_->id(),
+        action->browser_);
   }
 
- private:
+  static gboolean OnExposeEvent(GtkWidget* widget,
+                                GdkEventExpose* event,
+                                BrowserActionButton* action) {
+    if (action->extension_->browser_action_state()->badge_text().empty())
+      return FALSE;
+
+    gfx::CanvasPaint canvas(event, false);
+    gfx::Rect bounding_rect(widget->allocation);
+    action->extension_->browser_action_state()->PaintBadge(&canvas,
+                                                           bounding_rect);
+    return FALSE;
+  }
+
   // The Browser that executes a command when the button is pressed.
   Browser* browser_;
 

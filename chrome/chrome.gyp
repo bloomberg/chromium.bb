@@ -502,6 +502,7 @@
         'chrome_strings',
         'theme_resources',
         '../app/app.gyp:app_base',
+        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../build/temp_gyp/googleurl.gyp:googleurl',
