@@ -15,20 +15,22 @@ void BackUpProfile() {
     exit(1);
   }
   ChromeMiniInstaller installer(mini_installer_constants::kUserInstall);
-  FilePath path =
-      FilePath::FromWStringHack(installer.GetChromeInstallDirectoryLocation());
-  path = path.Append(mini_installer_constants::kChromeAppDir).DirName();
-  FilePath backup_path = path;
+  std::wstring path = installer.GetChromeInstallDirectoryLocation();
+  file_util::AppendToPath(&path, mini_installer_constants::kChromeAppDir);
+  file_util::UpOneDirectory(&path);
+  std::wstring backup_path = path;
   // Will hold User Data path that needs to be backed-up.
-  path = path.Append(mini_installer_constants::kChromeUserDataDir);
+  file_util::AppendToPath(&path,
+      mini_installer_constants::kChromeUserDataDir);
   // Will hold new backup path to save the profile.
-  backup_path = path.Append(mini_installer_constants::kChromeUserDataBackupDir);
+  file_util::AppendToPath(&backup_path,
+      mini_installer_constants::kChromeUserDataBackupDir);
   // Will check if User Data profile is available.
   if (file_util::PathExists(path)) {
     // Will check if User Data is already backed up.
     // If yes, will delete and create new one.
     if (file_util::PathExists(backup_path))
-      file_util::Delete(backup_path, true);
+      file_util::Delete(backup_path.c_str(), true);
     file_util::CopyDirectory(path, backup_path, true);
   } else {
     printf("Chrome is not installed. Will not take any backup\n");

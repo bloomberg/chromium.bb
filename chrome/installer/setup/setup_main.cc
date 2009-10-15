@@ -67,7 +67,7 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
   // Check if this is differential update and if it is, patch it to the
   // installer archive that should already be on the machine. We assume
   // it is a differential installer if chrome.7z is not found.
-  if (!file_util::PathExists(FilePath::FromWStringHack(uncompressed_archive))) {
+  if (!file_util::PathExists(uncompressed_archive)) {
     incremental_install = true;
     LOG(INFO) << "Differential patch found. Applying to existing archive.";
     if (!installed_version) {
@@ -163,11 +163,10 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
   // either does not exist or can be deleted (i.e. is not locked by some other
   // process).
   if (!installed_version) {
-    FilePath install_path = FilePath::FromWStringHack(
-        installer::GetChromeInstallPath(system_install));
+    std::wstring install_path(installer::GetChromeInstallPath(system_install));
     if (file_util::PathExists(install_path) &&
         !file_util::Delete(install_path, true)) {
-      LOG(ERROR) << "Installation directory " << install_path.value()
+      LOG(ERROR) << "Installation directory " << install_path
                  << " exists and can not be deleted.";
       status = installer_util::INSTALL_DIR_IN_USE;
       int str_id = IDS_INSTALL_DIR_IN_USE_BASE;

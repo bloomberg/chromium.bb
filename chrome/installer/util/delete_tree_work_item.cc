@@ -7,11 +7,11 @@
 #include "chrome/installer/util/delete_tree_work_item.h"
 
 DeleteTreeWorkItem::~DeleteTreeWorkItem() {
-  FilePath tmp_dir = backup_path_.DirName();
+  std::wstring tmp_dir = file_util::GetDirectoryFromPath(backup_path_);
   if (file_util::PathExists(tmp_dir)) {
     file_util::Delete(tmp_dir, true);
   }
-  tmp_dir = key_backup_path_.DirName();
+  tmp_dir = file_util::GetDirectoryFromPath(key_backup_path_);
   if (file_util::PathExists(tmp_dir)) {
     file_util::Delete(tmp_dir, true);
   }
@@ -30,8 +30,8 @@ bool DeleteTreeWorkItem::Do() {
     if (!GetBackupPath(key_path_, &key_backup_path_) ||
         !file_util::CopyDirectory(key_path_, key_backup_path_, true) ||
         !file_util::Delete(key_path_, true)) {
-      LOG(ERROR) << "can not delete " << key_path_.value()
-                 << " OR copy it to backup path " << key_backup_path_.value();
+      LOG(ERROR) << "can not delete " << key_path_
+                 << " OR copy it to backup path " << key_backup_path_;
       return false;
     }
   }
@@ -40,8 +40,8 @@ bool DeleteTreeWorkItem::Do() {
     if (!GetBackupPath(root_path_, &backup_path_) ||
         !file_util::CopyDirectory(root_path_, backup_path_, true) ||
         !file_util::Delete(root_path_, true)) {
-      LOG(ERROR) << "can not delete " << root_path_.value()
-                 << " OR copy it to backup path " << backup_path_.value();
+      LOG(ERROR) << "can not delete " << root_path_
+                 << " OR copy it to backup path " << backup_path_;
       return false;
     }
   }
@@ -58,14 +58,15 @@ void DeleteTreeWorkItem::Rollback() {
   }
 }
 
-bool DeleteTreeWorkItem::GetBackupPath(const FilePath& for_path,
-                                       FilePath* backup_path) {
+bool DeleteTreeWorkItem::GetBackupPath(const std::wstring& for_path,
+                                       std::wstring* backup_path) {
   if (!file_util::CreateNewTempDirectory(L"", backup_path)) {
     // We assume that CreateNewTempDirectory() is doing its job well.
     LOG(ERROR) << "Couldn't get backup path for delete.";
     return false;
   }
+  std::wstring file_name = file_util::GetFilenameFromPath(for_path);
+  file_util::AppendToPath(backup_path, file_name);
 
-  *backup_path = backup_path->Append(for_path.BaseName());
   return true;
 }

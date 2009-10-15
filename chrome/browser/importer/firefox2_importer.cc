@@ -291,7 +291,7 @@ void Firefox2Importer::ImportPasswords() {
   // exist, we try to find its older version.
   std::wstring file = source_path_;
   file_util::AppendToPath(&file, L"signons2.txt");
-  if (!file_util::PathExists(FilePath::FromWStringHack(file))) {
+  if (!file_util::PathExists(file)) {
     file = source_path_;
     file_util::AppendToPath(&file, L"signons.txt");
   }

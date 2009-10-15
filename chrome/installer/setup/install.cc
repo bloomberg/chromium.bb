@@ -157,13 +157,12 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
 // only on the first install of Chrome.
 void CopyPreferenceFileForFirstRun(bool system_level,
                                    const std::wstring& prefs_source_path) {
-  FilePath prefs_dest_path = FilePath::FromWStringHack(
+  std::wstring prefs_dest_path(
       installer::GetChromeInstallPath(system_level));
-  prefs_dest_path = prefs_dest_path.Append(installer_util::kDefaultMasterPrefs);
-  if (!file_util::CopyFile(FilePath::FromWStringHack(prefs_source_path),
-                           prefs_dest_path)) {
+  file_util::AppendToPath(&prefs_dest_path,
+                          installer_util::kDefaultMasterPrefs);
+  if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
     LOG(INFO) << "Failed to copy master preferences.";
-  }
 }
 
 // This method creates Chrome shortcuts in Start->Programs for all users or
@@ -305,7 +304,7 @@ bool DoPostInstallTasks(HKEY reg_root,
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring version_key = dist->GetVersionKey();
 
-  if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe))) {
+  if (file_util::PathExists(new_chrome_exe)) {
     // Looks like this was in use update. So make sure we update the 'opv' key
     // with the current version that is active and 'cmd' key with the rename
     // command to run.
@@ -493,7 +492,7 @@ bool InstallNewVersion(const std::wstring& exe_path,
                                            installer_util::kChromeNewExe);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   RegKey chrome_key(reg_root, dist->GetVersionKey().c_str(), KEY_READ);
-  if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)))
+  if (file_util::PathExists(new_chrome_exe))
     chrome_key.ReadValue(google_update::kRegOldVersionField, current_version);
   if (current_version->empty())
     chrome_key.ReadValue(google_update::kRegVersionField, current_version);

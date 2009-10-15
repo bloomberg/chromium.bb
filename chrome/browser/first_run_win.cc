@@ -311,7 +311,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   std::wstring new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
-  if (!file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)))
+  if (!file_util::PathExists(new_chrome_exe))
     return false;
   std::wstring curr_chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &curr_chrome_exe))

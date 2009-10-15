@@ -621,8 +621,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     file_util::AppendToPath(&chrome_exe_test_path,
                             chrome::kBrowserProcessExecutableName);
 
-    if (!file_util::PathExists(
-        FilePath::FromWStringHack(chrome_exe_test_path))) {
+    if (!file_util::PathExists(chrome_exe_test_path)) {
       file_util::UpOneDirectory(&chrome_exe_path);
 
       chrome_exe_test_path = chrome_exe_path;
@@ -630,8 +629,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
                               chrome::kBrowserProcessExecutableName);
     }
 
-    EXPECT_TRUE(
-        file_util::PathExists(FilePath::FromWStringHack(chrome_exe_test_path)));
+    EXPECT_TRUE(file_util::PathExists(chrome_exe_test_path));
 
     return chrome_exe_path;
   }

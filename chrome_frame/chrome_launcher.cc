@@ -90,10 +90,10 @@ bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
   return base::LaunchApp(sanitized.command_line_string(), false, false, NULL);
 }
 
-FilePath GetChromeExecutablePath() {
-  FilePath cur_path;
+std::wstring GetChromeExecutablePath() {
+  std::wstring cur_path;
   PathService::Get(base::DIR_MODULE, &cur_path);
-  cur_path = cur_path.Append(chrome::kBrowserProcessExecutableName);
+  file_util::AppendToPath(&cur_path, chrome::kBrowserProcessExecutableName);
 
   // The installation model for Chrome places the DLLs in a versioned
   // sub-folder one down from the Chrome executable. If we fail to find
@@ -101,7 +101,8 @@ FilePath GetChromeExecutablePath() {
   // instead.
   if (!file_util::PathExists(cur_path)) {
     PathService::Get(base::DIR_MODULE, &cur_path);
-    cur_path = cur_path.DirName().Append(chrome::kBrowserProcessExecutableName);
+    file_util::UpOneDirectory(&cur_path);
+    file_util::AppendToPath(&cur_path, chrome::kBrowserProcessExecutableName);
   }
 
   return cur_path;

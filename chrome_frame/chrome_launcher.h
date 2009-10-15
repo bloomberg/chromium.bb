@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
-
 class CommandLine;
 
 namespace chrome_launcher {
@@ -32,12 +30,12 @@ CommandLine* CreateLaunchCommandLine();
 void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized);
 
 // Given a command-line without an initial program part, launch our associated
-// chrome.exe with a sanitized version of that command line. Returns true iff
+// chrome.exe with a sanitized version of that command line. Returns true iff 
 // successful.
 bool SanitizeAndLaunchChrome(const wchar_t* command_line);
 
 // Returns the full path to the Chrome executable.
-FilePath GetChromeExecutablePath();
+std::wstring GetChromeExecutablePath();
 
 // The type of the CfLaunchChrome entrypoint exported from this DLL.
 typedef int (__stdcall *CfLaunchChromeProc)();

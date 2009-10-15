@@ -49,7 +49,7 @@ class ImporterTest : public testing::Test {
   virtual void TearDown() {
     // Deletes the profile and cleans up the profile directory.
     ASSERT_TRUE(file_util::Delete(test_path_, true));
-    ASSERT_FALSE(file_util::PathExists(FilePath::FromWStringHack(test_path_)));
+    ASSERT_FALSE(file_util::PathExists(test_path_));
   }
 
   void Firefox3xImporterTest(std::wstring profile_dir,
@@ -70,7 +70,7 @@ class ImporterTest : public testing::Test {
     if (import_search_plugins) {
       ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
       file_util::AppendToPath(&data_path, L"firefox3_searchplugins");
-      if (!file_util::PathExists(FilePath::FromWStringHack(data_path))) {
+      if (!file_util::PathExists(data_path)) {
         // TODO(maruel):  Create search test data that we can open source!
         LOG(ERROR) << L"Missing internal test data";
         return;
@@ -646,7 +646,7 @@ TEST_F(ImporterTest, Firefox2Importer) {
   CreateDirectory(search_engine_path.c_str(), NULL);
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   file_util::AppendToPath(&data_path, L"firefox2_searchplugins");
-  if (!file_util::PathExists(FilePath::FromWStringHack(data_path))) {
+  if (!file_util::PathExists(data_path)) {
     // TODO(maruel):  Create test data that we can open source!
     LOG(ERROR) << L"Missing internal test data";
     return;

@@ -38,17 +38,17 @@ class MoveTreeWorkItem : public WorkItem {
                    const std::wstring& temp_dir);
 
   // Source path to move files from.
-  FilePath source_path_;
+  std::wstring source_path_;
 
   // Destination path to move files to.
-  FilePath dest_path_;
+  std::wstring dest_path_;
 
   // Temporary directory to backup dest_path_ (if it already exists).
-  FilePath temp_dir_;
+  std::wstring temp_dir_;
 
   // The full path in temp_dir_ where the original dest_path_ has
   // been moved to.
-  FilePath backup_path_;
+  std::wstring backup_path_;
 
   // Whether the source was moved to dest_path_
   bool moved_to_dest_path_;

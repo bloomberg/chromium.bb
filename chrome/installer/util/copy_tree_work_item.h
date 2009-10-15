@@ -7,8 +7,6 @@
 
 #include <string>
 #include <windows.h>
-
-#include "base/file_path.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively copies a file system hierarchy from
@@ -42,20 +40,20 @@ class CopyTreeWorkItem : public WorkItem {
                    const std::wstring& alternative_path);
 
   // Checks if the path specified is in use (and hence can not be deleted)
-  bool IsFileInUse(const FilePath& path);
+  bool IsFileInUse(const std::wstring& path);
 
   // Get a backup path that can keep the original files under dest_path_,
   // and set backup_path_ with the result.
   bool GetBackupPath();
 
   // Source path to copy files from.
-  FilePath source_path_;
+  std::wstring source_path_;
 
   // Destination path to copy files to.
-  FilePath dest_path_;
+  std::wstring dest_path_;
 
   // Temporary directory that can be used.
-  FilePath temp_dir_;
+  std::wstring temp_dir_;
 
   // Controls the behavior for overwriting.
   CopyOverWriteOption overwrite_option_;
@@ -63,7 +61,7 @@ class CopyTreeWorkItem : public WorkItem {
   // If overwrite_option_ = NEW_NAME_IF_IN_USE, this variables stores the path
   // to be used if the file is in use and hence we want to copy it to a
   // different path.
-  FilePath alternative_path_;
+  std::wstring alternative_path_;
 
   // Whether the source was copied to dest_path_
   bool copied_to_dest_path_;
@@ -78,7 +76,7 @@ class CopyTreeWorkItem : public WorkItem {
 
   // The full path in temporary directory that the original dest_path_ has
   // been moved to.
-  FilePath backup_path_;
+  std::wstring backup_path_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_COPY_TREE_WORK_ITEM_H_

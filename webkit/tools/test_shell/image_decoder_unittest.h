@@ -5,7 +5,6 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_IMAGE_DECODER_UNITTEST_H_
 #define WEBKIT_TOOLS_TEST_SHELL_IMAGE_DECODER_UNITTEST_H_
 
-#include <string>
 #include <vector>
 
 #include "Vector.h"
@@ -14,7 +13,6 @@
 #undef LOG
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // If CALCULATE_MD5_SUMS is not defined, then this test decodes a handful of
@@ -38,40 +36,40 @@ enum ImageDecoderTestFileSelection {
 };
 
 // Reads the contents of the specified file into the specified vector.
-void ReadFileToVector(const FilePath& path, Vector<char>* contents);
+void ReadFileToVector(const std::wstring& path, Vector<char>* contents);
 
 // Returns the path the decoded data is saved at.
-FilePath GetMD5SumPath(const FilePath& path);
+std::wstring GetMD5SumPath(const std::wstring& path);
 
 #ifdef CALCULATE_MD5_SUMS
 // Saves the MD5 sum to the specified file.
-void SaveMD5Sum(const FilePath& path, WebCore::RGBA32Buffer* buffer);
+void SaveMD5Sum(const std::wstring& path, WebCore::RGBA32Buffer* buffer);
 #else
 // Verifies the image.  |path| identifies the path the image was loaded from.
 // |frame_index| indicates which index from the decoder we should examine.
 void VerifyImage(WebCore::ImageDecoder* decoder,
-                 const FilePath& path,
-                 const FilePath& md5_sum_path,
+                 const std::wstring& path,
+                 const std::wstring& md5_sum_path,
                  size_t frame_index);
 #endif
 
 class ImageDecoderTest : public testing::Test {
  public:
-  explicit ImageDecoderTest(const std::string& format) : format_(format) { }
+  explicit ImageDecoderTest(const std::wstring& format) : format_(format) { }
 
  protected:
   virtual void SetUp();
 
   // Returns the vector of image files for testing.
-  std::vector<FilePath> GetImageFiles() const;
+  std::vector<std::wstring> GetImageFiles() const;
 
   // Returns true if the image is bogus and should not be successfully decoded.
-  bool ShouldImageFail(const FilePath& path) const;
+  bool ShouldImageFail(const std::wstring& path) const;
 
   // Creates and returns an ImageDecoder for the file at the given |path|.  If
   // |split_at_random| is true, also verifies that breaking the data supplied to
   // the decoder into two random pieces does not cause problems.
-  WebCore::ImageDecoder* SetupDecoder(const FilePath& path,
+  WebCore::ImageDecoder* SetupDecoder(const std::wstring& path,
                                       bool split_at_random) const;
 
   // Verifies each of the test image files is decoded correctly and matches the
@@ -101,14 +99,14 @@ class ImageDecoderTest : public testing::Test {
   virtual WebCore::ImageDecoder* CreateDecoder() const = 0;
 
   // The format to be decoded, like "bmp" or "ico".
-  std::string format_;
+  std::wstring format_;
 
  protected:
   // Path to the test files.
-  FilePath data_dir_;
+  std::wstring data_dir_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ImageDecoderTest);
+  DISALLOW_EVIL_CONSTRUCTORS(ImageDecoderTest);
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_IMAGE_DECODER_UNITTEST_H_

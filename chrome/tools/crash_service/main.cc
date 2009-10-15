@@ -17,11 +17,11 @@ namespace {
 
 const wchar_t kStandardLogFile[] = L"operation_log.txt";
 
-bool GetCrashServiceDirectory(FilePath* dir) {
-  FilePath temp_dir;
+bool GetCrashServiceDirectory(std::wstring* dir) {
+  std::wstring temp_dir;
   if (!file_util::GetTempDir(&temp_dir))
     return false;
-  temp_dir = temp_dir.Append(L"chrome_crashes");
+  file_util::AppendToPath(&temp_dir, L"chrome_crashes");
   if (!file_util::PathExists(temp_dir)) {
     if (!file_util::CreateDirectory(temp_dir))
       return false;
@@ -40,18 +40,19 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
   CommandLine::Init(0, NULL);
 
   // We use/create a directory under the user's temp folder, for logging.
-  FilePath operating_dir;
+  std::wstring operating_dir;
   GetCrashServiceDirectory(&operating_dir);
-  FilePath log_file = operating_dir.Append(kStandardLogFile);
+  std::wstring log_file(operating_dir);
+  file_util::AppendToPath(&log_file, kStandardLogFile);
 
   // Logging to a file with pid, tid and timestamp.
-  logging::InitLogging(log_file.value().c_str(), logging::LOG_ONLY_TO_FILE,
+  logging::InitLogging(log_file.c_str(), logging::LOG_ONLY_TO_FILE,
                        logging::LOCK_LOG_FILE, logging::APPEND_TO_OLD_LOG_FILE);
   logging::SetLogItems(true, true, true, false);
 
   LOG(INFO) << "session start. cmdline is [" << cmd_line << "]";
 
-  CrashService crash_service(operating_dir.ToWStringHack());
+  CrashService crash_service(operating_dir);
   if (!crash_service.Initialize(::GetCommandLineW()))
     return 1;
 

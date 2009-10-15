@@ -26,26 +26,30 @@ MoveTreeWorkItem::MoveTreeWorkItem(const std::wstring& source_path,
 
 bool MoveTreeWorkItem::Do() {
   if (!file_util::PathExists(source_path_)) {
-    LOG(ERROR) << source_path_.value() << " does not exist";
+    LOG(ERROR) << source_path_ << " does not exist";
     return false;
   }
+
+  FilePath backup_path;
 
   // If dest_path_ exists, move destination to a backup path.
   if (file_util::PathExists(dest_path_)) {
     // Generate a backup path that can keep the original files under dest_path_.
     if (!file_util::CreateTemporaryFileInDir(FilePath(temp_dir_),
-                                             &backup_path_)) {
-      LOG(ERROR) << "Failed to get backup path in folder " << temp_dir_.value();
+                                             &backup_path)) {
+      LOG(ERROR) << "Failed to get backup path in folder " << temp_dir_;
       return false;
     }
 
+    backup_path_ = backup_path.value();
+
     if (file_util::Move(dest_path_, backup_path_)) {
       moved_to_backup_ = true;
-      LOG(INFO) << "Moved destination " << dest_path_.value()
-                << " to backup path " << backup_path_.value();
+      LOG(INFO) << "Moved destination " << dest_path_
+                << " to backup path " << backup_path_;
     } else {
-      LOG(ERROR) << "failed moving " << dest_path_.value()
-                 << " to " << backup_path_.value();
+      LOG(ERROR) << "failed moving " << dest_path_
+                 << " to " << backup_path_;
       return false;
     }
   }
@@ -53,11 +57,10 @@ bool MoveTreeWorkItem::Do() {
   // Now move source to destination.
   if (file_util::Move(source_path_, dest_path_)) {
     moved_to_dest_path_ = true;
-    LOG(INFO) << "Moved source " << source_path_.value()
-              << " to destination " << dest_path_.value();
+    LOG(INFO) << "Moved source " << source_path_
+              << " to destination " << dest_path_;
   } else {
-    LOG(ERROR) << "failed move " << source_path_.value() << " to " <<
-                  dest_path_.value();
+    LOG(ERROR) << "failed move " << source_path_ << " to " << dest_path_;
     return false;
   }
 
@@ -66,10 +69,8 @@ bool MoveTreeWorkItem::Do() {
 
 void MoveTreeWorkItem::Rollback() {
   if (moved_to_dest_path_ && !file_util::Move(dest_path_, source_path_))
-    LOG(ERROR) << "Can not move " << dest_path_.value() <<
-                   " to " << source_path_.value();
+    LOG(ERROR) << "Can not move " << dest_path_ << " to " << source_path_;
 
   if (moved_to_backup_ && !file_util::Move(backup_path_, dest_path_))
-    LOG(ERROR) << "failed move " << backup_path_.value() <<
-                  " to " << dest_path_.value();
+    LOG(ERROR) << "failed move " << backup_path_ << " to " << dest_path_;
 }
