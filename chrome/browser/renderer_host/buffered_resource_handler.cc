@@ -154,12 +154,11 @@ bool BufferedResourceHandler::DelayResponse() {
 
   const bool sniffing_blocked =
       LowerCaseEqualsASCII(content_type_options, "nosniff");
-  const bool no_data =
-      response_->response_head.headers &&  // Can be NULL if FTP.
-      (response_->response_head.headers->response_code() == 304 ||
-       response_->response_head.headers->response_code() == 204);
-  const bool we_would_like_to_sniff =
-      no_data ? false : net::ShouldSniffMimeType(request_->url(), mime_type);
+  const bool not_modified_status =
+      response_->response_head.headers &&
+      response_->response_head.headers->response_code() == 304;
+  const bool we_would_like_to_sniff = not_modified_status ?
+      false : net::ShouldSniffMimeType(request_->url(), mime_type);
 
   RecordSnifferMetrics(sniffing_blocked, we_would_like_to_sniff, mime_type);
 
@@ -172,7 +171,7 @@ bool BufferedResourceHandler::DelayResponse() {
     return true;
   }
 
-  if (sniffing_blocked && mime_type.empty() && !no_data) {
+  if (sniffing_blocked && mime_type.empty() && !not_modified_status) {
     // Ugg.  The server told us not to sniff the content but didn't give us a
     // mime type.  What's a browser to do?  Turns out, we're supposed to treat
     // the response as "text/plain".  This is the most secure option.
@@ -202,7 +201,7 @@ bool BufferedResourceHandler::DelayResponse() {
     return true;
   }
 
-  if (!no_data && ShouldWaitForPlugins()) {
+  if (!not_modified_status && ShouldWaitForPlugins()) {
     wait_for_plugins_ = true;
     return true;
   }

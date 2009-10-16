@@ -846,3 +846,30 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("", response_head.mime_type);
 }
+
+TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  std::string response("HTTP/1.1 204 No Content\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data;
+  SetResponse(raw_headers, response_data);
+
+  HandleScheme("http");
+  MakeTestRequest(0, 1, GURL("http:bla"));
+
+  // Flush all pending requests.
+  while (URLRequestTestJob::ProcessOnePendingMessage());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Sorts out all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  ASSERT_EQ(1U, msgs.size());
+
+  ResourceResponseHead response_head;
+  GetResponseHead(msgs[0], &response_head);
+  ASSERT_EQ("text/plain", response_head.mime_type);
+}
