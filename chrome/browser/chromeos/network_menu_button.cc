@@ -9,8 +9,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/widget/widget.h"
@@ -23,11 +21,11 @@
 const int NetworkMenuButton::kNumWifiImages = 8;
 const int NetworkMenuButton::kThrobDuration = 1000;
 
-NetworkMenuButton::NetworkMenuButton(Browser* browser)
+NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
     : MenuButton(NULL, std::wstring(), this, false),
       refreshing_menu_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
-      browser_(browser),
+      browser_window_(browser_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
   SetShowHighlighted(false);
   animation_.SetThrobDuration(kThrobDuration);
@@ -89,17 +87,16 @@ void NetworkMenuButton::ActivatedAt(int index) {
   if (!wifi_networks_[index].encrypted) {
     cros->ConnectToWifiNetwork(wifi_networks_[index], string16());
   } else {
-    gfx::NativeWindow parent = browser_->window()->GetNativeHandle();
     PasswordDialogView* dialog = new PasswordDialogView(this,
         wifi_networks_[index].ssid);
     views::Window* window = views::Window::CreateChromeWindow(
-        parent, gfx::Rect(), dialog);
+        browser_window_, gfx::Rect(), dialog);
     // Draw the password dialog right below this button and right aligned.
     gfx::Size size = dialog->GetPreferredSize();
     gfx::Rect rect = bounds();
     gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
     ConvertPointToScreen(this, &point);
-    window->SetBounds(gfx::Rect(point, size), parent);
+    window->SetBounds(gfx::Rect(point, size), browser_window_);
     window->Show();
   }
 }

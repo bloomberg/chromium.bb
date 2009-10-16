@@ -130,7 +130,7 @@ void StatusAreaView::Init() {
   AddChildView(clock_view_);
 
   // Network.
-  network_view_ = new NetworkMenuButton(browser_);
+  network_view_ = new NetworkMenuButton(browser_->window()->GetNativeHandle());
   AddChildView(network_view_);
 
   // Battery.

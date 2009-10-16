@@ -28,7 +28,7 @@ class NetworkMenuButton : public views::MenuButton,
                           public PasswordDialogDelegate,
                           public CrosNetworkLibrary::Observer {
  public:
-  explicit NetworkMenuButton(Browser* browser);
+  explicit NetworkMenuButton(gfx::NativeWindow browser_window);
   virtual ~NetworkMenuButton();
 
   // views::Menu2Model implementation.
@@ -82,8 +82,8 @@ class NetworkMenuButton : public views::MenuButton,
   // The network menu.
   views::Menu2 network_menu_;
 
-  // The browser window that owns us.
-  Browser* browser_;
+  // Our parent window
+  gfx::NativeWindow browser_window_;
 
   // The throb animation that does the wifi connecting animation.
   ThrobAnimation animation_;
