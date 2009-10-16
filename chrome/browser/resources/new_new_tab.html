@@ -43,7 +43,6 @@ function registerCallback(name) {
   global[name] = f;
 }
 
-chrome.send('getShownSections');
 chrome.send('getMostVisited');
 chrome.send('getRecentlyClosedTabs');
 chrome.send('getTips');
@@ -55,12 +54,112 @@ registerCallback('syncMessageChanged');
 registerCallback('tips');
 
 </script>
+<!-- template data placeholder -->
 <link rel="stylesheet" href="new_new_tab.css">
 <script>
+
+/**
+ * Bitmask for the different UI sections.
+ * This matches the Section enum in ../dom_ui/shown_sections_handler.h
+ * @enum {number}
+ */
+var Section = {
+  THUMB: 1,
+  LIST: 2,
+  RECENT: 4
+};
+
+var shownSections = templateData['shown_sections'];
+
+function $(id) {
+  return document.getElementById(id);
+}
+
 // Until themes can clear the cache, force-reload the theme stylesheet.
 document.write('<link id="themecss" rel="stylesheet" ' +
                'href="chrome://theme/css/newtab.css?' +
                (new Date()).getTime() + '">');
+
+function useSmallGrid() {
+  return window.innerWidth <= 920;
+}
+
+function isRtl() {
+  return templateData['textdirection'] == 'rtl';
+}
+
+function getMostVisitedLayoutRects() {
+  var small = useSmallGrid();
+
+  var cols = 4;
+  var rows = 2;
+  var marginWidth = 10;
+  var marginHeight = 7;
+  var borderWidth = 4;
+  var thumbWidth = small ? 150 : 207;
+  var thumbHeight = small ? 93 : 129;
+  var w = thumbWidth + 2 * borderWidth + 2 * marginWidth;
+  var h = thumbHeight + 40 + 2 * marginHeight;
+  var sumWidth = cols * w  - 2 * marginWidth;
+  // Since the list mode does not have a toolbar move it down a little to add
+  // some spacing at the top.
+  var LIST_TOP_SPACING = 22;
+
+  if (shownSections & Section.LIST) {
+    h = 34;
+    rows = 8;
+    cols = 1;
+  }
+
+  var rtl = isRtl();
+  var rects = [];
+
+  if (shownSections & Section.THUMB || shownSections & Section.LIST) {
+    for (var i = 0; i < rows * cols; i++) {
+      var row, col, left, top;
+      if (shownSections & Section.THUMB) {
+        row = Math.floor(i / cols);
+        col = i % cols;
+      } else {
+        col = Math.floor(i / rows);
+        row = i % rows;
+      }
+
+      if (shownSections & Section.THUMB) {
+        left = rtl ? sumWidth - col * w - thumbWidth - 2 * borderWidth :
+            col * w;
+      } else {
+        left = rtl ? sumWidth - col * w - w + 2 * marginWidth : col * w;
+      }
+      top = row * h;
+
+      if (shownSections & Section.LIST) {
+        top += LIST_TOP_SPACING;
+      }
+
+      rects[i] = {left: left, top: top};
+    }
+  }
+  return rects;
+}
+
+function applyMostVisitedRects() {
+  var isList = shownSections & Section.LIST;
+  if (shownSections & Section.THUMB || isList) {
+    var rects = getMostVisitedLayoutRects();
+    var rtlList = isRtl() && isList;
+    var children = $('most-visited').children;
+    for (var i = 0; i < 8; i++) {
+      var t = children[i];
+      t.style.left = rtlList ? '' : rects[i].left + 'px';
+      t.style.top = rects[i].top + 'px';
+      t.style.right = '';
+      var innerStyle = t.firstElementChild.style;
+      innerStyle.left = innerStyle.top = '';
+    }
+  }
+}
+
 </script>
 </head>
 <body class="loading"
@@ -84,6 +183,11 @@ document.write('<link id="themecss" rel="stylesheet" ' +
          i18n-content="restorethumbnails"></div>
   </div>
 
+  <script>
+    $('thumb-checkbox').checked = shownSections & Section.THUMB;
+    $('list-checkbox').checked = shownSections & Section.LIST;
+  </script>
+
   <div id="notification">
     <span>&nbsp;</span>
     <span class="link"><span class="link-color"></span></span>
@@ -105,120 +209,24 @@ document.write('<link id="themecss" rel="stylesheet" ' +
         <div></div>
       </div>
     </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t1">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t2">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t3">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t4">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t5">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t6">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
-    <a class="thumbnail-container filler" tabindex="1" id="t7">
-      <div class="edit-mode-border">
-        <div class="edit-bar">
-          <div class="pin"></div>
-          <div class="spacer"></div>
-          <div class="remove"></div>
-        </div>
-        <span class="thumbnail-wrapper">
-          <span class="thumbnail"></span>
-        </span>
-      </div>
-      <div class="title">
-        <div></div>
-      </div>
-    </a>
-
   </div>
+
+  <script>
+    (function() {
+      var el = $('most-visited');
+      if (shownSections & Section.LIST) {
+        el.className += ' list';
+      } else if (!(shownSections & Section.THUMB)) {
+        el.className += ' collapsed';
+      }
+
+      for (var i = 1; i < 8; i++) {
+        el.appendChild(el.firstElementChild.cloneNode(true)).id = 't' + i;
+      }
+
+      applyMostVisitedRects();
+    })();
+  </script>
 
   <div id="recently-closed">
     <h2 i18n-content="recentlyclosed"></h2>
@@ -227,6 +235,11 @@ document.write('<link id="themecss" rel="stylesheet" ' +
           i18n-content="viewfullhistory"></a>
     </span>
   </div>
+  <script>
+    if (!(shownSections & Section.RECENT)) {
+      $('recently-closed').className = 'collapsed';
+    }
+  </script>
 
   <div id="sync-status">
     <h2></h2>
@@ -257,6 +270,7 @@ document.write('<link id="themecss" rel="stylesheet" ' +
 <div class="window-menu" id="window-tooltip"></div>
 
 </body>
+<script src="i18n_template.js"></script>
 <script src="local_strings.js"></script>
 <script src="new_new_tab.js"></script>
 </html>

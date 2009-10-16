@@ -1,10 +1,6 @@
 
 // Helpers
 
-function $(id) {
-  return document.getElementById(id);
-}
-
 // TODO(arv): Remove these when classList is available in HTML5.
 // https://bugs.webkit.org/show_bug.cgi?id=20709
 function hasClass(el, name) {
@@ -68,7 +64,6 @@ function bind(fn, selfObj, var_args) {
 var loading = true;
 var mostVisitedData = [];
 var gotMostVisited = false;
-var gotShownSections = false;
 
 function mostVisitedPages(data, firstRun) {
   logEvent('received most visited pages');
@@ -189,11 +184,7 @@ function onShownSections(mask) {
 
     mostVisited.updateDisplayMode();
     renderRecentlyClosed();
-    updateOptionMenu();
   }
-
-  gotShownSections = true;
-  onDataLoaded();
 }
 
 function saveShownSections() {
@@ -275,10 +266,6 @@ function chromeSend(name, params, callbackName, callback) {
   chrome.send(name, params);
 }
 
-function useSmallGrid() {
-  return window.innerWidth <= 920;
-}
-
 var LayoutMode = {
   SMALL: 1,
   NORMAL: 2
@@ -302,19 +289,6 @@ function handleWindowResize() {
   }
 }
 
-/**
- * Bitmask for the different UI sections.
- * This matches the Section enum in ../dom_ui/shown_sections_handler.h
- * @enum {number}
- */
-var Section = {
-  THUMB: 1,
-  LIST: 2,
-  RECENT: 4
-};
-
-var shownSections = Section.THUMB | Section.RECENT;
-
 function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
@@ -332,7 +306,6 @@ function showSection(section) {
       renderRecentlyClosed();
     }
 
-    updateOptionMenu();
     mostVisited.updateDisplayMode();
     mostVisited.layout();
   }
@@ -350,7 +323,6 @@ function hideSection(section) {
       renderRecentlyClosed();
     }
 
-    updateOptionMenu();
     mostVisited.updateDisplayMode();
     mostVisited.layout();
   }
@@ -508,13 +480,16 @@ var mostVisited = {
       thumbCheckbox.checked = true;
       listCheckbox.checked = false;
       removeClass(mostVisitedElement, 'list');
+      removeClass(mostVisitedElement, 'collapsed');
     } else if (shownSections & Section.LIST) {
       thumbCheckbox.checked = false;
       listCheckbox.checked = true;
       addClass(mostVisitedElement, 'list');
+      removeClass(mostVisitedElement, 'collapsed');
     } else {
       thumbCheckbox.checked = false;
       listCheckbox.checked = false;
+      addClass(mostVisitedElement, 'collapsed');
     }
   },
 
@@ -522,7 +497,6 @@ var mostVisited = {
 
   invalidate: function() {
     this.dirty_ = true;
-    this.calculationsDirty_ = true;
   },
 
   layout: function() {
@@ -531,137 +505,40 @@ var mostVisited = {
     }
     var d0 = Date.now();
 
-    this.calculateLayout_();
-
     var mostVisitedElement = $('most-visited');
     var thumbnails = mostVisitedElement.children;
+    var collapsed = false;
 
     if (shownSections & Section.LIST) {
       addClass(mostVisitedElement, 'list');
     } else if (shownSections & Section.THUMB) {
       removeClass(mostVisitedElement, 'list');
+    } else {
+      collapsed = true;
     }
 
-    var cache = this.layoutCache_;
-    mostVisitedElement.style.height = cache.sumHeight + 'px';
-    mostVisitedElement.style.opacity = cache.opacity;
     // We set overflow to hidden so that the most visited element does not
     // "leak" when we hide and show it.
-    if (!cache.opacity) {
+    if (collapsed) {
       mostVisitedElement.style.overflow = 'hidden';
     }
 
-    if (shownSections & Section.THUMB || shownSections & Section.LIST) {
-      for (var i = 0; i < thumbnails.length; i++) {
-        var t = thumbnails[i];
+    applyMostVisitedRects();
 
-        // Remove temporary ID that was used during startup layout.
-        t.id = '';
-
-        var rect = cache.rects[i];
-        t.style.left = rect.left + 'px';
-        t.style.top = rect.top + 'px';
-        t.style.width = rect.width != undefined ? rect.width + 'px' : '';
-        var innerStyle = t.firstElementChild.style;
-        innerStyle.left = innerStyle.top = '';
-      }
-    }
-
-    afterTransition(function() {
-      // Only set overflow to visible if the element is shown.
-      if (cache.opacity) {
+    // Only set overflow to visible if the element is shown.
+    if (!collapsed) {
+      afterTransition(function() {
         mostVisitedElement.style.overflow = '';
-      }
-    });
+      });
+    }
 
     this.dirty_ = false;
 
     logEvent('mostVisited.layout: ' + (Date.now() - d0));
   },
 
-  layoutCache_: {},
-  calculationsDirty_: true,
-
-  /**
-   * Calculates and caches the layout positions for the thumbnails.
-   */
-  calculateLayout_: function() {
-    if (!this.calculationsDirty_) {
-      return;
-    }
-
-    var small = useSmallGrid();
-
-    var cols = 4;
-    var rows = 2;
-    var marginWidth = 10;
-    var marginHeight = 7;
-    var borderWidth = 4;
-    var thumbWidth = small ? 150 : 207;
-    var thumbHeight = small ? 93 : 129;
-    var w = thumbWidth + 2 * borderWidth + 2 * marginWidth;
-    var h = thumbHeight + 40 + 2 * marginHeight;
-    var sumWidth = cols * w  - 2 * marginWidth;
-    var sumHeight = rows * h;
-    var opacity = 1;
-    // Since the list mode does not have a toolbar move it down a little to add
-    // some spacing at the top.
-    var LIST_TOP_SPACING = 22;
-
-    if (shownSections & Section.LIST) {
-      w = sumWidth;
-      h = 34;
-      rows = 8;
-      cols = 1;
-      sumHeight = rows * h + LIST_TOP_SPACING;
-    } else if (!(shownSections & Section.THUMB)) {
-      sumHeight = 0;
-      opacity = 0;
-    }
-
-    var rtl = document.documentElement.dir == 'rtl';
-    var rects = [];
-
-    if (shownSections & Section.THUMB || shownSections & Section.LIST) {
-      for (var i = 0; i < rows * cols; i++) {
-        var row, col, left, top, width;
-        if (shownSections & Section.THUMB) {
-          row = Math.floor(i / cols);
-          col = i % cols;
-        } else {
-          col = Math.floor(i / rows);
-          row = i % rows;
-        }
-
-        if (shownSections & Section.THUMB) {
-          left = rtl ? sumWidth - col * w - thumbWidth - 2 * borderWidth :
-              col * w;
-        } else {
-          left = rtl ? sumWidth - col * w - w + 2 * marginWidth : col * w;
-        }
-        top = row * h;
-
-        if (shownSections & Section.LIST) {
-          width = w;
-          top += LIST_TOP_SPACING;
-        }
-
-        rects[i] = {left: left, top: top, width: width};
-      }
-    }
-
-    this.layoutCache_ = {
-      opacity: opacity,
-      sumHeight: sumHeight,
-      rects: rects
-    }
-
-    this.calculationsDirty_ = false;
-  },
-
   getRectByIndex: function(index) {
-    this.calculateLayout_();
-    return this.layoutCache_.rects[index]
+    return getMostVisitedLayoutRects()[index];
   }
 };
 
@@ -673,9 +550,9 @@ function layoutRecentlyClosed() {
   var style = recentElement.style;
 
   if (!recentShown) {
-    style.opacity = style.height = 0;
+    addClass(recentElement, 'collapsed');
   } else {
-    style.opacity = style.height = '';
+    removeClass(recentElement, 'collapsed');
 
     // We cannot use clientWidth here since the width has a transition.
     var spacing = 20;
@@ -792,7 +669,7 @@ function formatTabsText(numTabs) {
  * @return {boolean}
  */
 function onDataLoaded() {
-  if (gotMostVisited && gotShownSections) {
+  if (gotMostVisited) {
     mostVisited.layout();
     loading = false;
     // Remove class name in a timeout so that changes done in this JS thread are
@@ -959,6 +836,7 @@ function OptionMenu(button, menu) {
 
 OptionMenu.prototype = {
   show: function() {
+    updateOptionMenu();
     this.menu.style.display = 'block';
     addClass(this.button, 'open');
     this.button.focus();
@@ -1558,6 +1436,8 @@ var dnd = {
     y = Math.min(y, document.body.clientHeight - rect.top - item.offsetHeight -
                  2);
 
+    // Override right in case of RTL.
+    item.style.right = 'auto';
     item.style.left = x + 'px';
     item.style.top = y + 'px';
     item.style.zIndex = 2;

@@ -1198,6 +1198,11 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
       Animation::ShouldRenderRichAnimation() ? L"true" : L"false";
   localized_strings.SetString(L"anim", anim);
 
+  // Pass the shown_sections pref early so that we can prevent flicker.
+  const int shown_sections = profile_->GetPrefs()->GetInteger(
+      prefs::kNTPShownSections);
+  localized_strings.SetInteger(L"shown_sections", shown_sections);
+
   // In case we have the new new tab page enabled we first try to read the file
   // provided on the command line. If that fails we just get the resource from
   // the resource bundle.
@@ -1215,7 +1220,16 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
   }
 
   full_html_.assign(new_tab_html.data(), new_tab_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html_);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html_);
+
+  // Inject the template data into the HTML so that it is available before any
+  // layout is needed.
+  std::string json_html;
+  jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
+
+  static const std::string template_data_placeholder =
+      "<!-- template data placeholder -->";
+  ReplaceFirstSubstringAfterOffset(&full_html_, 0, template_data_placeholder,
+      json_html);
+
   jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
 }
