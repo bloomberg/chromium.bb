@@ -1154,6 +1154,10 @@ void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
       MarkAndNotifyInitializationComplete();
   }
 
+  // Load the last-known good auth token into the connection manager and send
+  // it off to the AuthWatcher for validation.  The result of the validation
+  // will update the connection manager if necessary.
+  connection_manager()->set_auth_token(auth_token);
   auth_watcher()->AuthenticateWithToken(username, auth_token);
 }
 
