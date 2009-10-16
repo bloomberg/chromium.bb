@@ -3190,4 +3190,6 @@ BUG24963 MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL
 BUG24964 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 BUG24964 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 BUG24965 LINUX : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = CRASH
+BUG_JEREMY MAC : LayoutTests/fast/forms/search-display-none-cancel-button.html = CRASH
+BUG_JEREMY LINUX : LayoutTests/fast/forms/menulist-option-wrap.html = CRASH
 BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
