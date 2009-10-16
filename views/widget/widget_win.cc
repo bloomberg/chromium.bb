@@ -1124,6 +1124,9 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
     return;
   }
   if (WA_INACTIVE == activation_state) {
+    // We might get activated/inactivated without being enabled, so we need to
+    // clear restore_focus_when_enabled_.
+    widget->restore_focus_when_enabled_ = false;
     widget->focus_manager_->StoreFocusedView();
   } else {
     // We must restore the focus after the message has been DefProc'ed as it
