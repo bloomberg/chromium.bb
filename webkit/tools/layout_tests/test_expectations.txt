@@ -2542,7 +2542,6 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-order.html = CRASH 
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
-BUG9798 MAC LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
 BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
@@ -3117,7 +3116,7 @@ BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEO
 BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
 
 // V8 update to 1.3.15
-BUG24102 LINUX MAC : LayoutTests/fast/css/large-list-of-rules-crash.html = TIMEOUT PASS
+BUG24102 : LayoutTests/fast/css/large-list-of-rules-crash.html = TIMEOUT
 
 // Got slow with V8 update to 1.3.15. Debug logging perhaps?
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = PASS
@@ -3193,3 +3192,8 @@ BUG24965 LINUX : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = C
 BUG_JEREMY MAC : LayoutTests/fast/forms/search-display-none-cancel-button.html = CRASH
 BUG_JEREMY LINUX : LayoutTests/fast/forms/menulist-option-wrap.html = CRASH
 BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
+
+// Started timing out when reduced windows watchdog timeout from timeout*2.5 to timeout+1.
+BUG_OJAN WIN RELEASE : LayoutTests/http/tests/incremental/split-hex-entities.pl = TIMEOUT
+// Was already timing out on LINUX/MAC debug, which already had a reduced watchdog timeout.
+BUG_OJAN DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT
