@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/sync_cycle_state.h"
 #include "chrome/browser/sync/engine/sync_process_state.h"
@@ -122,11 +123,11 @@ class SyncerSession {
     return sync_process_state_->conflicting_updates();
   }
 
-  time_t silenced_until() const {
+  base::TimeTicks silenced_until() const {
     return sync_process_state_->silenced_until();
   }
 
-  void set_silenced_until(time_t silenced_until) const {
+  void set_silenced_until(base::TimeTicks silenced_until) const {
     sync_process_state_->set_silenced_until(silenced_until);
   }
 
@@ -321,7 +322,7 @@ class SyncerSession {
   // TODO(chron): Unit test for this method.
   // returns true iff this session contains data that should go through the
   // sync engine again.
-  bool ShouldSyncAgain() const {
+  bool HasMoreToSync() const {
     return (HasRemainingItemsToCommit() &&
               sync_process_state_->successful_commits() > 0) ||
            conflict_sets_built() ||

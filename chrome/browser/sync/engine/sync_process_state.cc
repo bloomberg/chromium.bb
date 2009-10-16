@@ -44,7 +44,6 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
       resolver_(resolver),
       model_safe_worker_(model_safe_worker),
       syncer_event_channel_(syncer_event_channel),
-      silenced_until_(0),
       error_rate_(0),
       current_sync_timestamp_(0),
       servers_latest_timestamp_(0),
@@ -141,7 +140,7 @@ void SyncProcessState::increment_num_sync_cycles() {
   ++num_sync_cycles_;
 }
 
-void SyncProcessState::set_silenced_until(const time_t val) {
+void SyncProcessState::set_silenced_until(const base::TimeTicks& val) {
   UpdateDirty(val != silenced_until_);
   silenced_until_ = val;
 }

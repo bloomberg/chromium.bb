@@ -117,6 +117,18 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
+  // A visitor class to allow a test to change some monitoring state atomically
+  // with the action of throttling requests (for example, so you can say
+  // "ThrottleNextRequest, and assert no more requests are made once throttling
+  // is in effect" in one step.
+  class ThrottleRequestVisitor {
+   public:
+    // Called with throttle parameter lock acquired.
+    virtual void VisitAtomically() = 0;
+  };
+  void ThrottleNextRequest(ThrottleRequestVisitor* visitor);
+  void FailNonPeriodicGetUpdates() { fail_non_periodic_get_updates_ = true; }
+
   // Simple inspectors.
   bool client_stuck() const { return client_stuck_; }
 
@@ -203,6 +215,14 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   sync_pb::AuthenticateResponse auth_response_;
   // What we use to determine if we should return SUCCESS or BAD_AUTH_TOKEN.
   std::string valid_auth_token_;
+
+  // Whether we are faking a server mandating clients to throttle requests.
+  // Protected by |throttle_lock_|.
+  bool throttling_;
+  Lock throttle_lock_;
+
+  // True if we are only accepting GetUpdatesCallerInfo::PERIODIC requests.
+  bool fail_non_periodic_get_updates_;
 
   scoped_ptr<sync_pb::ClientCommand> client_command_;
 

@@ -19,6 +19,7 @@
 #include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/port.h"
+#include "base/time.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -184,8 +185,8 @@ class SyncProcessState {
   void set_num_sync_cycles(const int val);
   void increment_num_sync_cycles();
 
-  time_t silenced_until() const { return silenced_until_; }
-  void set_silenced_until(const time_t val);
+  base::TimeTicks silenced_until() const { return silenced_until_; }
+  void set_silenced_until(const base::TimeTicks& val);
 
   // Info that is tracked purely for status reporting.
 
@@ -297,7 +298,6 @@ class SyncProcessState {
         resolver_(NULL),
         model_safe_worker_(NULL),
         syncer_event_channel_(NULL),
-        silenced_until_(0),
         error_rate_(0),
         current_sync_timestamp_(0),
         servers_latest_timestamp_(0),
@@ -335,7 +335,7 @@ class SyncProcessState {
   std::set<ConflictSet*> conflict_sets_;
 
   // When we're over bandwidth quota, we don't update until past this time.
-  time_t silenced_until_;
+  base::TimeTicks silenced_until_;
 
   // Status information, as opposed to state info that may also be exposed for
   // status reporting purposes.

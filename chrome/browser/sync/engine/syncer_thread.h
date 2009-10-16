@@ -71,6 +71,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread> {
   FRIEND_TEST(SyncerThreadTest, CalculatePollingWaitTime);
   FRIEND_TEST(SyncerThreadWithSyncerTest, Polling);
   FRIEND_TEST(SyncerThreadWithSyncerTest, Nudge);
+  FRIEND_TEST(SyncerThreadWithSyncerTest, Throttling);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
 public:
@@ -87,6 +88,9 @@ public:
       // backoff.
       // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
       EXPONENTIAL_BACKOFF,
+      // A server-initiated throttled interval.  We do not allow any syncing
+      // during such an interval.
+      THROTTLED,
     };
 
     Mode mode;
@@ -252,9 +256,13 @@ public:
 
   // Sets the source value of the controlled syncer's updates_source value.
   // The initial sync boolean is updated if read as a sentinel.  The following
-  // two methods work in concert to achieve this goal.  Returns true if it
-  // determines a nudge actually occurred.
-  bool UpdateNudgeSource(bool continue_sync_cycle,
+  // two methods work in concert to achieve this goal.
+  // If |was_throttled| was true, this still discards elapsed nudges, but we
+  // treat the request as a periodic poll rather than a nudge from a source.
+  // TODO(timsteele/code reviewer): The first poll after a throttle period
+  // will appear as a periodic request.  Do we want to be more specific?
+  // Returns true if it determines a nudge actually occurred.
+  bool UpdateNudgeSource(bool was_throttled, bool continue_sync_cycle,
                          bool* initial_sync);
   void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                         bool* initial_sync);

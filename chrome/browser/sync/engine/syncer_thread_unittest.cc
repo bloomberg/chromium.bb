@@ -57,14 +57,26 @@ class SyncerThreadWithSyncerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
 };
 
-class SyncShareIntercept : public MockConnectionManager::MidCommitObserver {
+class SyncShareIntercept : public MockConnectionManager::ThrottleRequestVisitor,
+                           public MockConnectionManager::MidCommitObserver {
  public:
-  SyncShareIntercept() : sync_occured_(false, false) {}
+  SyncShareIntercept() : sync_occured_(false, false),
+                         allow_multiple_interceptions_(true) {}
   virtual ~SyncShareIntercept() {}
   virtual void Observe() {
+    if (!allow_multiple_interceptions_ && !times_sync_occured_.empty())
+      FAIL() << "Multiple sync shares occured.";
     times_sync_occured_.push_back(TimeTicks::Now());
     sync_occured_.Signal();
   }
+
+  // ThrottleRequestVisitor implementation.
+  virtual void VisitAtomically() {
+    // Server has told the client to throttle.  We should not see any syncing.
+    allow_multiple_interceptions_ = false;
+    times_sync_occured_.clear();
+  }
+
   void WaitForSyncShare(int at_least_this_many, TimeDelta max_wait) {
     while (at_least_this_many-- > 0)
       sync_occured_.TimedWait(max_wait);
@@ -75,6 +87,7 @@ class SyncShareIntercept : public MockConnectionManager::MidCommitObserver {
  private:
   std::vector<TimeTicks> times_sync_occured_;
   base::WaitableEvent sync_occured_;
+  bool allow_multiple_interceptions_;
   DISALLOW_COPY_AND_ASSIGN(SyncShareIntercept);
 };
 
@@ -558,6 +571,35 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
       interceptor.times_sync_occured().size());
 
   // SyncerThread should be waiting again.  Signal it to stop.
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+TEST_F(SyncerThreadWithSyncerTest, Throttling) {
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  const TimeDelta poll_interval = TimeDelta::FromMilliseconds(10);
+  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+
+  // Wait for some healthy syncing.
+  interceptor.WaitForSyncShare(4, poll_interval + poll_interval);
+
+  // Tell the server to throttle a single request, which should be all it takes
+  // to silence our syncer (for 2 hours, so we shouldn't hit that in this test).
+  // This will atomically visit the interceptor so it can switch to throttled
+  // mode and fail on multiple requests.
+  connection()->ThrottleNextRequest(&interceptor);
+
+  // Try to trigger a sync (we have a really short poll interval already).
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+
+  // Stick around for several poll intervals for good measure. Any sync is
+  // a failure.
+  interceptor.WaitForSyncShare(1, poll_interval * 10);
+
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 

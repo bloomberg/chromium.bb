@@ -44,6 +44,8 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       mid_commit_callback_function_(NULL),
       mid_commit_observer_(NULL),
       client_command_(NULL),
+      throttling_(false),
+      fail_non_periodic_get_updates_(false),
       next_position_in_parent_(2) {
     server_reachable_ = true;
 };
@@ -105,6 +107,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   EXPECT_TRUE(!store_birthday_sent_ || post.has_store_birthday() ||
               post.message_contents() == ClientToServerMessage::AUTHENTICATE);
   store_birthday_sent_ = true;
+
   if (post.message_contents() == ClientToServerMessage::COMMIT) {
     ProcessCommit(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
@@ -118,6 +121,15 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   if (client_command_.get()) {
     response.mutable_client_command()->CopyFrom(*client_command_.get());
   }
+
+  {
+    AutoLock throttle_lock(throttle_lock_);
+    if (throttling_) {
+        response.set_error_code(ClientToServerResponse::THROTTLED);
+        throttling_ = false;
+    }
+  }
+
   response.SerializeToString(params->buffer_out);
   if (mid_commit_callback_function_) {
     if (mid_commit_callback_function_(directory))
@@ -126,6 +138,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   if (mid_commit_observer_) {
     mid_commit_observer_->Observe();
   }
+
   return result;
 }
 
@@ -248,6 +261,11 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::GET_UPDATES);
   const GetUpdatesMessage& gu = csm->get_updates();
   EXPECT_TRUE(gu.has_from_timestamp());
+  if (fail_non_periodic_get_updates_) {
+    EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
+              gu.caller_info().source());
+  }
+
   // TODO(sync): filter results dependant on timestamp? or check limits?
   response->mutable_get_updates()->CopyFrom(updates_);
   ResetUpdates();
@@ -379,4 +397,12 @@ SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
 const CommitMessage& MockConnectionManager::last_sent_commit() const {
   DCHECK(!commit_messages_.empty());
   return *commit_messages_.back();
+}
+
+void MockConnectionManager::ThrottleNextRequest(
+    ThrottleRequestVisitor* visitor) {
+  AutoLock lock(throttle_lock_);
+  throttling_ = true;
+  if (visitor)
+    visitor->VisitAtomically();
 }

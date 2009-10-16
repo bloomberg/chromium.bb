@@ -22,7 +22,7 @@ void SyncerEndCommand::ExecuteImpl(SyncerSession* session) {
   SyncerStatus status(session);
   status.set_syncing(false);
 
-  if (!session->ShouldSyncAgain()) {
+  if (!session->HasMoreToSync()) {
     // This might be the first time we've fully completed a sync cycle.
     DCHECK(session->got_zero_updates());
 

@@ -1395,11 +1395,11 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
   if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
-    if (!event.last_session->ShouldSyncAgain()) {
+    if (!event.last_session->HasMoreToSync()) {
       observer_->OnSyncCycleCompleted();
     }
 
-    // TODO(chron): Consider changing this back to track ShouldSyncAgain
+    // TODO(chron): Consider changing this back to track HasMoreToSync
     // Only notify peers if a commit has occurred and change the bookmark model.
     if (event.last_session && event.last_session->items_committed()) {
       notification_pending_ = true;

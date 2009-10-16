@@ -99,7 +99,7 @@ struct SyncerEvent {
 
     // We have reached the SYNCER_END state in the main sync loop.
     // Check the SyncerSession for information like whether we need to continue
-    // syncing (SyncerSession::ShouldSyncAgain).
+    // syncing (SyncerSession::HasMoreToSync).
     SYNC_CYCLE_ENDED,
   };
 

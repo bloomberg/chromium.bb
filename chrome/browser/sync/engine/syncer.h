@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/sync/engine/client_command_channel.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -84,7 +85,11 @@ class Syncer {
   void RequestEarlyExit() { early_exit_requested_ = true; }
 
   // SyncShare(...) variants cause one sync cycle to occur.  The return value
-  // indicates whether we should sync again.
+  // indicates whether we should sync again.  If we should not sync again,
+  // it doesn't necessarily mean everything is OK; we could be throttled for
+  // example.  Like a good parent, it is the caller's responsibility to clean up
+  // after the syncer when it finishes a sync share operation and honor
+  // server mandated throttles.
   // The zero-argument version of SyncShare is provided for unit tests.
   // When |sync_process_state| is provided, it is used as the syncer state
   // for the sync cycle.  It is treated as an input/output parameter.
@@ -140,6 +145,8 @@ class Syncer {
     notifications_enabled_ = state;
   }
 
+  base::TimeTicks silenced_until() const { return silenced_until_; }
+  bool is_silenced() const { return !silenced_until_.is_null(); }
  private:
   void RequestNudge(int milliseconds);
 
@@ -162,7 +169,7 @@ class Syncer {
   syncable::DirectoryManager* const dirman_;
 
   // When we're over bandwidth quota, we don't update until past this time.
-  time_t silenced_until_;
+  base::TimeTicks silenced_until_;
 
   scoped_ptr<SyncerEventChannel> syncer_event_channel_;
   scoped_ptr<ShutdownChannel> shutdown_channel_;

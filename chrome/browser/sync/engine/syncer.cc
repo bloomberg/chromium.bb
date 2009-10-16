@@ -57,7 +57,6 @@ Syncer::Syncer(
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       connection_manager_(connection_manager),
       dirman_(dirman),
-      silenced_until_(0),
       command_channel_(NULL),
       model_safe_worker_(model_safe_worker),
       updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
@@ -94,7 +93,7 @@ bool Syncer::SyncShare(SyncProcessState* process_state) {
   session.set_source(TestAndSetUpdatesSource());
   session.set_notifications_enabled(notifications_enabled());
   SyncShare(&session, SYNCER_BEGIN, SYNCER_END);
-  return session.ShouldSyncAgain();
+  return session.HasMoreToSync();
 }
 
 bool Syncer::SyncShare(SyncerStep first_step, SyncerStep last_step) {
@@ -104,7 +103,7 @@ bool Syncer::SyncShare(SyncerStep first_step, SyncerStep last_step) {
                          model_safe_worker());
   SyncerSession session(&cycle_state, &state);
   SyncShare(&session, first_step, last_step);
-  return session.ShouldSyncAgain();
+  return session.HasMoreToSync();
 }
 
 void Syncer::SyncShare(SyncerSession* session) {
@@ -115,6 +114,9 @@ void Syncer::SyncShare(SyncerSession* session,
                        const SyncerStep first_step,
                        const SyncerStep last_step) {
   SyncerStep current_step = first_step;
+
+  // Reset silenced_until_, it is the callers responsibility to honor throttles.
+  silenced_until_ = session->silenced_until();
 
   SyncerStep next_step;
   while (!ExitRequested()) {

@@ -101,7 +101,8 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   }
   status.syncing |= syncerStatus.syncing();
   // Show a syncer as syncing if it's got stalled updates.
-  status.syncing = event.last_session->ShouldSyncAgain();
+  status.syncing = event.last_session->HasMoreToSync() &&
+      event.last_session->silenced_until().is_null();
   status.initial_sync_ended |= syncerStatus.IsShareUsable();
   status.syncer_stuck |= syncerStatus.syncer_stuck();
   if (syncerStatus.consecutive_errors() > status.max_consecutive_errors)

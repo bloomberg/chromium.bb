@@ -136,12 +136,6 @@ void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
     return;
   }
 
-  if (vault_.current_wait_interval_.had_nudge_during_backoff) {
-    // Drop nudges on the floor if we've already had one since starting this
-    // stage of exponential backoff.
-    return;
-  }
-
   NudgeSyncImpl(milliseconds_from_now, source);
 }
 
@@ -343,7 +337,11 @@ void SyncerThread::ThreadMainLoop() {
 
     const TimeTicks next_poll = last_sync_time +
         vault_.current_wait_interval_.poll_delta;
-    const TimeTicks end_wait =
+    bool throttled = vault_.current_wait_interval_.mode ==
+        WaitInterval::THROTTLED;
+    // If we are throttled, we must wait.  Otherwise, wait until either the next
+    // nudge (if one exists) or the poll interval.
+    const TimeTicks end_wait = throttled ? next_poll :
         !vault_.nudge_queue_.empty() &&
         vault_.nudge_queue_.top().first < next_poll ?
         vault_.nudge_queue_.top().first : next_poll;
@@ -372,7 +370,7 @@ void SyncerThread::ThreadMainLoop() {
 
     // Handle a nudge, caused by either a notification or a local bookmark
     // event.  This will also update the source of the following SyncMain call.
-    bool nudged = UpdateNudgeSource(continue_sync_cycle,
+    bool nudged = UpdateNudgeSource(throttled, continue_sync_cycle,
                                     &initial_sync_for_thread);
 
     LOG(INFO) << "Calling Sync Main at time " << Time::Now().ToInternalValue();
@@ -398,6 +396,16 @@ SyncerThread::WaitInterval SyncerThread::CalculatePollingWaitTime(
     bool was_nudged) {
   lock_.AssertAcquired();  // We access 'vault' in here, so we need the lock.
   WaitInterval return_interval;
+
+  // Server initiated throttling trumps everything.
+  if (vault_.syncer_ && vault_.syncer_->is_silenced()) {
+    // We don't need to reset other state, it can continue where it left off.
+    return_interval.mode = WaitInterval::THROTTLED;
+    return_interval.poll_delta = vault_.syncer_->silenced_until() -
+        TimeTicks::Now();
+    return return_interval;
+  }
+
   bool is_continuing_sync_cyle = *continue_sync_cycle;
   *continue_sync_cycle = false;
 
@@ -473,13 +481,14 @@ void SyncerThread::ThreadMain() {
 void SyncerThread::SyncMain(Syncer* syncer) {
   CHECK(syncer);
   AutoUnlock unlock(lock_);
-  while (syncer->SyncShare()) {
+  while (syncer->SyncShare() && !syncer->is_silenced()) {
     LOG(INFO) << "Looping in sync share";
   }
   LOG(INFO) << "Done looping in sync share";
 }
 
-bool SyncerThread::UpdateNudgeSource(bool continue_sync_cycle,
+bool SyncerThread::UpdateNudgeSource(bool was_throttled,
+                                     bool continue_sync_cycle,
                                      bool* initial_sync) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
@@ -491,7 +500,7 @@ bool SyncerThread::UpdateNudgeSource(bool continue_sync_cycle,
   // previous sync cycle.
   while (!vault_.nudge_queue_.empty() &&
          TimeTicks::Now() >= vault_.nudge_queue_.top().first) {
-    if (!nudged) {
+    if (!was_throttled && !nudged) {
       nudge_source = vault_.nudge_queue_.top().second;
       nudged = true;
     }
@@ -618,6 +627,13 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
 // Called with mutex_ already locked.
 void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
                                  NudgeSource source) {
+  if (vault_.current_wait_interval_.mode == WaitInterval::THROTTLED ||
+      vault_.current_wait_interval_.had_nudge_during_backoff) {
+    // Drop nudges on the floor if we've already had one since starting this
+    // stage of exponential backoff or we are throttled.
+    return;
+  }
+
   const TimeTicks nudge_time = TimeTicks::Now() +
       TimeDelta::FromMilliseconds(milliseconds_from_now);
   NudgeObject nudge_object(nudge_time, source);

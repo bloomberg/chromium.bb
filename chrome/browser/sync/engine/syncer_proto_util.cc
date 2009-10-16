@@ -158,7 +158,8 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
         break;
       case ClientToServerResponse::THROTTLED:
         LOG(WARNING) << "Client silenced by server.";
-        session->set_silenced_until(time(0) + kSyncDelayAfterThrottled);
+        session->set_silenced_until(base::TimeTicks::Now() +
+            base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
         rv = false;
         break;
       default:
