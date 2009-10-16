@@ -286,12 +286,7 @@ env.ComponentLibrary('gio', ['gio.c',
 
 env.ComponentLibrary('container', ['generic_container/container.c'])
 
-# struct tm has extra fields in glibc/linux
-expiration_env = env.Clone()
-if not env.Bit('windows'):
-  expiration_env.Append(CCFLAGS=['-Wno-missing-field-initializers' ])
-
-expiration_env.ComponentLibrary('expiration', ['expiration.c'])
+env.ComponentLibrary('expiration', ['expiration.c'])
 
 env.ComponentLibrary('nacl_xdr', ['fs/xdr.c', 'fs/obj_proxy.c'])
 

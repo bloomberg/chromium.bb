@@ -205,14 +205,6 @@
       'sources': [
         'expiration.c',
       ],
-      'cflags': [
-        '-Wno-missing-field-initializers'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS': [
-          '-Wno-missing-field-initializers'
-        ]
-      },
     }, {
       'target_name': 'nacl_xdr',
       'type': 'static_library',

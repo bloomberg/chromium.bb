@@ -33,35 +33,35 @@
  * NaCl expiration check
  */
 
+#include <string.h>
 #include <time.h>
-
 #include "native_client/src/trusted/service_runtime/expiration.h"
 
+/* NOTE: the timefn and mktimefn params will usually be the corresponding
+ *  libc functions except for unittesting
+ */
 int NaClHasExpiredMockable(time_t (*timefn)(time_t *),
                            time_t (*mktimefn)(struct tm *)) {
 #if defined(EXPIRATION_CHECK)
-  static struct tm expiration_tm = {
-    0,                       /* tm_sec, 0..60 (leap seconds) */
-    0,                       /* tm_min, 0..59 */
-    0,                       /* tm_hour, 0..23 */
-    EXPIRATION_DAY + 1,      /* tm_mday, 1..31 */
-    EXPIRATION_MONTH - 1,    /* tm_mon, 0..11 */
-    EXPIRATION_YEAR - 1900,  /* tm_year, years since 1900 */
-    0,                       /* tm_wday, ignored by mktime */
-    0,                       /* tm_yday, ignored by mktime */
-    -1                       /* tm_isdst, -1 tells mktime to figure it out */
-  };
 
+  struct tm expiration_tm;
   time_t expiration;
   time_t now;
 
   if (-1 == timefn(&now)) {
     return 1;
   }
+
+  memset(&expiration_tm, 0, sizeof expiration_tm);
+  expiration_tm.tm_mday = EXPIRATION_DAY + 1;
+  expiration_tm.tm_mon = EXPIRATION_MONTH - 1;
+  expiration_tm.tm_year =  EXPIRATION_YEAR - 1900;
+  expiration_tm.tm_isdst = -1;
   expiration = mktimefn(&expiration_tm);
   if (-1 == expiration) {
     return 1;
   }
+
   return now >= expiration;
 #else   /* !defined(EXPIRATION_CHECK) */
   return 0;
