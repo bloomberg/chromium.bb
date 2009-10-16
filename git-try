@@ -246,8 +246,9 @@ if __name__ == '__main__':
         'svn://svn.chromium.org/chrome-try/try',
     ])
 
-  for bot in options.bot:
-    args.extend(['--bot', bot])
+  if options.bot:
+    for bot in options.bot:
+      args.extend(['--bot', bot])
   if options.clobber:
     args.append('--clobber')
   if options.revision:
