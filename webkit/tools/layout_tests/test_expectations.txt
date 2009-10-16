@@ -789,6 +789,7 @@ BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-canvas-source.html = FAI
 BUG9798 BUG13907 SKIP : LayoutTests/media/video-controls.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-controls-transformed.html = FAIL
 BUG9798 BUG13907 SKIP: LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
+BUG9798 BUG13907 SKIP LINUX DEBUG: LayoutTests/media/video-currentTime-set2.html = FAIL TIMEOUT
 BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
 BUG9798 BUG13907 : LayoutTests/media/video-layer-crash.html = FAIL PASS
 BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-load-networkState.html = TIMEOUT PASS
