@@ -18,7 +18,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection,
       BookmarkContextMenuController::ConfigurationType configuration);
-  virtual ~BookmarkContextMenu() {}
+  virtual ~BookmarkContextMenu();
 
   // Shows the context menu at the specified point.
   void RunMenuAt(const gfx::Point& point);

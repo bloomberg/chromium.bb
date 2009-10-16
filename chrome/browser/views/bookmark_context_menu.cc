@@ -29,6 +29,9 @@ BookmarkContextMenu::BookmarkContextMenu(
   controller_->BuildMenu();
 }
 
+BookmarkContextMenu::~BookmarkContextMenu() {
+}
+
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   // width/height don't matter here.
   views::MenuItemView::AnchorPosition anchor =
