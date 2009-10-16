@@ -838,8 +838,6 @@ bool BookmarkManagerGtk::RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter,
 
 void BookmarkManagerGtk::PerformSearch() {
   bool search_selected = GetSelectedRowID() == kSearchID;
-  std::wstring search_text(
-      UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(search_entry_))));
 
   // If the search node is not selected, we'll select it to force a search.
   if (!search_selected) {
