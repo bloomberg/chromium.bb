@@ -519,7 +519,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
     // Only keep one time range starting from 0.
-    WebKit::WebTimeRanges new_buffered(1u);
+    WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
     new_buffered[0].start = 0.0f;
     new_buffered[0].end =
         static_cast<float>(pipeline_->GetDuration().InSecondsF());
