@@ -152,9 +152,9 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
       ChangeSelectedContentsFrom(removed_contents, next_selected_index_,
                                  false);
     } else if (index < selected_index_) {
-      // If the removed tab was before the selected index, we need to account
-      // for this in the selected index...
-      SelectTabContentsAt(selected_index_ - 1, false);
+      // The selected tab didn't change, but its position shifted; update our
+      // index to continue to point at it.
+      --selected_index_;
     }
   }
   next_selected_index_ = selected_index_;
