@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // Make sure Find box disappears on Navigate but not on Refresh.
 // Flaky, see http://crbug.com/16447.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       DISABLED_FindDisappearOnNavigate) {
+                       FLAKY_FindDisappearOnNavigate) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our special focus tracking page.
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // Make sure Find box moves out of the way if it is obscuring the active match.
 // Flaky, see http://crbug.com/16447.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       DISABLED_FindMovesWhenObscuring) {
+                       FLAKY_FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
 
   GURL url = server->TestServerPageW(kMoveIfOver);

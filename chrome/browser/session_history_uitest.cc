@@ -483,9 +483,9 @@ TEST_F(SessionHistoryTest, JavascriptHistory) {
   // NotificationService.)
 }
 
-// This test is flaky and has been disabled. It looks like the server does not
-// start fast enough, and the navigation fails (with 404). See bug 8444.
-TEST_F(SessionHistoryTest, DISABLED_LocationReplace) {
+// This test is flaky. It looks like the server does not start fast enough,
+// and the navigation fails (with 404). See http://crbug.com/8444.
+TEST_F(SessionHistoryTest, FLAKY_LocationReplace) {
   // Test that using location.replace doesn't leave the title of the old page
   // visible.
   scoped_refptr<HTTPTestServer> server =

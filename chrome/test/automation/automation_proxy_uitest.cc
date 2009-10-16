@@ -1071,7 +1071,8 @@ TEST_F(AutomationProxyVisibleTest, DISABLED_AutocompleteMatchesTest) {
   EXPECT_FALSE(matches.empty());
 }
 
-// Disabled because flaky see bug #5314.
+// This test is flaky, see http://crbug.com/5314. Disabled because it hangs
+// on Mac (http://crbug.com/25039).
 TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
