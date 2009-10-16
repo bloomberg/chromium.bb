@@ -1,0 +1,44 @@
+<head>
+<script>
+function run_tests() {
+  // Compute the size of the popup.
+  var width = 100;
+  var height = 100;
+  if (localStorage.height) {
+    height = parseInt(localStorage.height);
+  }
+  if (localStorage.width) {
+    width = parseInt(localStorage.width);
+  }
+
+  // Set the div's size.
+  var test = document.getElementById("test");
+  test.style.width = width + "px";
+  test.style.height = height + "px";  
+  chrome.test.log("height: " + test.offsetHeight);
+  chrome.test.log("width: " + test.offsetWidth);
+  
+  // We should be done.  Let the test harness know.
+  //window.setTimeout(chrome.test.notifyPass, 0);
+  chrome.test.notifyPass();
+
+  height += 100;
+  width += 100;
+  localStorage.height = JSON.stringify(height);
+  localStorage.width = JSON.stringify(width);
+}
+</script>
+<style>
+body {
+  padding: 0px;
+  margin: 0px;
+}
+div {
+  padding: 0px;
+  margin: 0px;
+}
+</style>
+</head>
+<body onload="window.setTimeout(run_tests, 0)">
+<div id="test">TEST</div>
+</body>

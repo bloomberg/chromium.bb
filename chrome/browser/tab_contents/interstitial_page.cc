@@ -105,7 +105,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
                            const gfx::Rect& selection_rect,
                            int active_match_ordinal,
                            bool final_update);
-  virtual void UpdatePreferredWidth(int pref_width);
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
 
  private:
   InterstitialPage* interstitial_page_;
@@ -569,8 +569,8 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::UpdateDragCursor(
 void InterstitialPage::InterstitialPageRVHViewDelegate::GotFocus() {
 }
 
-void InterstitialPage::InterstitialPageRVHViewDelegate::UpdatePreferredWidth(
-    int pref_width) {
+void InterstitialPage::InterstitialPageRVHViewDelegate::UpdatePreferredSize(
+    const gfx::Size& pref_size) {
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(

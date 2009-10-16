@@ -42,6 +42,7 @@ class WaitableEvent;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace IPC {
@@ -140,8 +141,8 @@ class RenderViewHostDelegate {
     virtual void HandleMouseEvent() = 0;
     virtual void HandleMouseLeave() = 0;
 
-    // The content's intrinsic width (prefWidth) changed.
-    virtual void UpdatePreferredWidth(int pref_width) = 0;
+    // The contents' preferred size changed.
+    virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
   };
 
   // RendererManagerment -------------------------------------------------------

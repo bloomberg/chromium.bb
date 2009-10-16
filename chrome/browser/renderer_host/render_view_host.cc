@@ -764,8 +764,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavIcon, OnMsgDidDownloadFavIcon)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredWidthChange,
-                        OnMsgDidContentsPreferredWidthChange)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
+                        OnMsgDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnMsgDomOperationResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMUISend,
@@ -1189,11 +1189,12 @@ void RenderViewHost::OnMsgOpenURL(const GURL& url,
   delegate_->RequestOpenURL(validated_url, referrer, disposition);
 }
 
-void RenderViewHost::OnMsgDidContentsPreferredWidthChange(int pref_width) {
+void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
+    const gfx::Size& new_size) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
-  view->UpdatePreferredWidth(pref_width);
+  view->UpdatePreferredSize(new_size);
 }
 
 void RenderViewHost::OnMsgDomOperationResponse(

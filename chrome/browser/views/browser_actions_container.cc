@@ -271,6 +271,8 @@ class BrowserActionView : public views::View {
   BrowserActionView(ExtensionAction* browser_action, Extension* extension,
                     BrowserActionsContainer* panel);
 
+  BrowserActionButton* button() { return button_; }
+
  private:
   virtual void Layout();
 
@@ -445,13 +447,28 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 
 void BrowserActionsContainer::HidePopup() {
   if (popup_) {
-    popup_->DetachFromBrowser();
-    delete popup_;
+    // This sometimes gets called via a timer (See BubbleLostFocus), so clear
+    // the task factory. in case one is pending.
+    task_factory_.RevokeAll();
+
+    // Save these variables in local temporaries since destroying the popup
+    // calls BubbleLostFocus to be called, which will try to call HidePopup()
+    // again if popup_ is non-null.
+    ExtensionPopup* closing_popup = popup_;
+    BrowserActionButton* closing_button = popup_button_;
     popup_ = NULL;
-    popup_button_->PopupDidHide();
     popup_button_ = NULL;
+
+    closing_popup->DetachFromBrowser();
+    delete closing_popup;
+    closing_button->PopupDidHide();
     return;
   }
+}
+
+void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
+  BrowserActionButton* button = browser_action_views_[index]->button();
+  OnBrowserActionExecuted(button);
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
@@ -478,8 +495,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     rect.set_y(origin.y());
     popup_ = ExtensionPopup::Show(browser_action.popup_url(),
                                   toolbar_->browser(),
-                                  rect,
-                                  browser_action.popup_height());
+                                  rect);
     popup_->set_delegate(this);
     popup_button_ = button;
     popup_button_->PopupDidShow();
@@ -539,6 +555,9 @@ void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
 }
 
 void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
+  if (!popup_)
+    return;
+
   // This is a bit annoying.  If you click on the button that generated the
   // current popup, then we first get this lost focus message, and then
   // we get the click action.  This results in the popup being immediately

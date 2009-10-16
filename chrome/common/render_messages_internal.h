@@ -694,9 +694,8 @@ IPC_BEGIN_MESSAGES(View)
   // the widget position while these asynchronous operations are in progress.
   IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 
-  // Used to instruct the RenderView to send back updates to the intrinsic
-  // width.
-  IPC_MESSAGE_ROUTED0(ViewMsg_EnableIntrinsicWidthChangedMode)
+  // Used to instruct the RenderView to send back updates to the preferred size.
+  IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
 
   // Used to inform the renderer that the browser has displayed its
   // requested notification.
@@ -1135,8 +1134,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* referrer */,
                       WindowOpenDisposition /* disposition */)
 
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredWidthChange,
-                      int /* pref_width */)
+  // Notify that the preferred size of the content changed.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
+                      gfx::Size /* pref_size */)
 
   // Following message is used to communicate the values received by the
   // callback binding the JS to Cpp.

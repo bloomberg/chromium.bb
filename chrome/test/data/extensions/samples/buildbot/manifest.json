@@ -12,6 +12,6 @@
   "browser_action": {
       "name": "Buildbot status",
       "icons": ["chromium.png"],
-      "popup": { "path": "popup.html", "height": 200 }
+      "popup": "popup.html"
   }
 }

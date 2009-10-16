@@ -44,7 +44,7 @@ void ExtensionViewMac::SetBackground(const SkBitmap& background) {
   }
 }
 
-void ExtensionViewMac::UpdatePreferredWidth(int pref_width) {
+void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   // TODO(thakis, erikkay): Windows does some tricks to resize the extension
   // view not before it's visible. Do something similar here.
 
@@ -52,7 +52,7 @@ void ExtensionViewMac::UpdatePreferredWidth(int pref_width) {
   // resizing.
   NSView* view = native_view();
   NSRect frame = [view frame];
-  frame.size.width = pref_width;
+  frame.size.width = new_size.width();
 
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
   [view setFrame:frame];

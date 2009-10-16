@@ -213,9 +213,9 @@ void ExtensionHost::Observe(NotificationType type,
   }
 }
 
-void ExtensionHost::UpdatePreferredWidth(int pref_width) {
+void ExtensionHost::UpdatePreferredSize(const gfx::Size& new_size) {
   if (view_.get())
-    view_->UpdatePreferredWidth(pref_width);
+    view_->UpdatePreferredSize(new_size);
 }
 
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
@@ -503,7 +503,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url_));
 
-  render_view_host->Send(new ViewMsg_EnableIntrinsicWidthChangedMode(
+  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
       render_view_host->routing_id()));
 }
 

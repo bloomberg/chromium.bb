@@ -69,11 +69,17 @@ class BrowserActionsContainer : public views::View,
   // by default irrespective of the available space to draw them.
   int GetClippedPreferredWidth(int available_width);
 
- private:
-
   // Hide the current popup.
   void HidePopup();
 
+  // Simulate a click on a browser action button.  This should only be
+  // used by unit tests.
+  void TestExecuteBrowserAction(int index);
+
+  // Retrieve the current popup.  This should only be used by unit tests.
+  ExtensionPopup* TestGetPopup() { return popup_; }
+
+ private:
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<BrowserActionView*> browser_action_views_;
 

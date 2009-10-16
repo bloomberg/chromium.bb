@@ -13,8 +13,10 @@
 #include "views/widget/widget.h"
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
-    : host_(host), browser_(browser),
-      initialized_(false), pending_preferred_width_(0), container_(NULL),
+    : host_(host),
+      browser_(browser),
+      initialized_(false),
+      container_(NULL),
       is_clipped_(false) {
   host_->set_view(this);
 }
@@ -110,7 +112,8 @@ void ExtensionView::ShowIfCompletelyLoaded() {
       return;
     }
     SetVisible(true);
-    UpdatePreferredWidth(pending_preferred_width_);
+
+    UpdatePreferredSize(pending_preferred_size_);
   }
 }
 
@@ -131,17 +134,17 @@ void ExtensionView::SetBackground(const SkBitmap& background) {
   ShowIfCompletelyLoaded();
 }
 
-void ExtensionView::UpdatePreferredWidth(int pref_width) {
+void ExtensionView::UpdatePreferredSize(const gfx::Size& new_size) {
   // Don't actually do anything with this information until we have been shown.
   // Size changes will not be honored by lower layers while we are hidden.
-  gfx::Size preferred_size = GetPreferredSize();
   if (!IsVisible()) {
-    pending_preferred_width_ = pref_width;
-  } else if (pref_width > 0 && pref_width != preferred_size.width()) {
-    if (preferred_size.height() == 0)
-      preferred_size.set_height(height());
-    SetPreferredSize(gfx::Size(pref_width, preferred_size.height()));
+    pending_preferred_size_ = new_size;
+    return;
   }
+
+  gfx::Size preferred_size = GetPreferredSize();
+  if (new_size != preferred_size)
+    SetPreferredSize(new_size);
 }
 
 void ExtensionView::ViewHierarchyChanged(bool is_add,
@@ -167,4 +170,10 @@ void ExtensionView::RenderViewCreated() {
     render_view_host()->view()->SetBackground(pending_background_);
     pending_background_.reset();
   }
+}
+
+void ExtensionView::SetPreferredSize(const gfx::Size& size) {
+  views::NativeViewHost::SetPreferredSize(size);
+  if (container_)
+    container_->OnExtensionPreferredSizeChanged(this);
 }

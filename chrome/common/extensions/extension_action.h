@@ -52,9 +52,6 @@ class ExtensionAction {
   const GURL& popup_url() const { return popup_url_; }
   void set_popup_url(const GURL& url) { popup_url_ = url; }
 
-  const int popup_height() const { return popup_height_; }
-  void set_popup_height(int height) { popup_height_ = height; }
-
   bool is_popup() const { return !popup_url_.is_empty(); }
 
  private:
@@ -77,7 +74,6 @@ class ExtensionAction {
 
   // If the action has a popup, it has a URL and a height.
   GURL popup_url_;
-  int popup_height_;
 };
 
 typedef std::map<std::string, ExtensionAction*> ExtensionActionMap;

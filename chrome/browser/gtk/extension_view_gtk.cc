@@ -36,8 +36,8 @@ void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
   }
 }
 
-void ExtensionViewGtk::UpdatePreferredWidth(int pref_width) {
-  gtk_widget_set_size_request(native_view(), pref_width, -1);
+void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
+  gtk_widget_set_size_request(native_view(), new_size.width(), -1);
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {

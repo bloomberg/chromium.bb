@@ -7,6 +7,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
@@ -29,9 +30,9 @@ class ExtensionViewGtk {
 
   void SetBackground(const SkBitmap& background);
 
-  // Method for the ExtensionHost to notify us about the correct width for
+  // Method for the ExtensionHost to notify us about the correct size for
   // extension contents.
-  void UpdatePreferredWidth(int pref_width);
+  void UpdatePreferredSize(const gfx::Size& new_size);
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.

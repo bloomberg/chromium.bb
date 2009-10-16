@@ -11,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_actions_container.h"
+#include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
@@ -62,7 +63,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
   ASSERT_TRUE(result);
 }
 
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action_no_icon")) << message_;
 
@@ -83,4 +83,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DynamicBrowserAction) {
   // Test that we received the changes.
   ExtensionActionState* action_state = extension->browser_action_state();
   ASSERT_TRUE(action_state->icon());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserActionPopup) {
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("popup")));
+
+  ResultCatcher catcher;
+  BrowserActionsContainer* browser_actions =
+      browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
+      browser_actions();
+
+  // Simulate a click on the browser action and verify the size of the resulting
+  // popup.
+  browser_actions->TestExecuteBrowserAction(0);
+  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  gfx::Rect bounds = browser_actions->TestGetPopup()->view()->bounds();
+  EXPECT_EQ(100, bounds.width());
+  EXPECT_EQ(100, bounds.height());
+  browser_actions->HidePopup();
+  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
+
+  // Do it again, and verify the new bigger size (the popup grows each time it's
+  // opened).
+  browser_actions->TestExecuteBrowserAction(0);
+  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  bounds = browser_actions->TestGetPopup()->view()->bounds();
+  EXPECT_EQ(200, bounds.width());
+  EXPECT_EQ(200, bounds.height());
+  browser_actions->HidePopup();
+  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
 }

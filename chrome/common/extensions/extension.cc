@@ -367,14 +367,6 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       return NULL;
     }
     result->set_popup_url(url);
-
-    int height;
-    if (!popup->GetInteger(keys::kPageActionPopupHeight, &height)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupHeight, "<missing>");
-      return NULL;
-    }
-    result->set_popup_height(height);
   } else if (!url_str.empty()) {
     GURL url = GetResourceURL(url_str);
     if (!url.is_valid()) {
@@ -383,9 +375,6 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       return NULL;
     }
     result->set_popup_url(url);
-    // TODO(erikkay): Need dynamic sizing of popups.
-    // http://code.google.com/p/chromium/issues/detail?id=24471
-    result->set_popup_height(100);
   }
 
   return result.release();

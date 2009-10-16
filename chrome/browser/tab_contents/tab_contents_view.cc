@@ -23,8 +23,8 @@ void TabContentsView::RenderViewCreated(RenderViewHost* host) {
   // Default implementation does nothing. Platforms may override.
 }
 
-void TabContentsView::UpdatePreferredWidth(int pref_width) {
-  preferred_width_ = pref_width;
+void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
+  preferred_width_ = pref_size.width();
 }
 
 void TabContentsView::CreateNewWindow(int route_id) {

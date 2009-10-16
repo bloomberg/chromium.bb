@@ -123,7 +123,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void HandleMouseLeave() {}
 
   // Set and return the content's intrinsic width.
-  virtual void UpdatePreferredWidth(int pref_width);
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
   int preferred_width() const {
     return preferred_width_;
   }

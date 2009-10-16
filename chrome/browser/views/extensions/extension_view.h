@@ -17,20 +17,21 @@ class ExtensionHost;
 class ExtensionView;
 class RenderViewHost;
 
-// A class that represents the container that this view is in.
-// (bottom shelf, side bar, etc.)
-class ExtensionContainer {
- public:
-  // Mouse event notifications from the view. (useful for hover UI).
-  virtual void OnExtensionMouseEvent(ExtensionView* view) = 0;
-  virtual void OnExtensionMouseLeave(ExtensionView* view) = 0;
-};
-
 // This handles the display portion of an ExtensionHost.
 class ExtensionView : public views::NativeViewHost {
  public:
   ExtensionView(ExtensionHost* host, Browser* browser);
   ~ExtensionView();
+
+  // A class that represents the container that this view is in.
+  // (bottom shelf, side bar, etc.)
+  class Container {
+   public:
+    // Mouse event notifications from the view. (useful for hover UI).
+    virtual void OnExtensionMouseEvent(ExtensionView* view) = 0;
+    virtual void OnExtensionMouseLeave(ExtensionView* view) = 0;
+    virtual void OnExtensionPreferredSizeChanged(ExtensionView* view) {}
+  };
 
   ExtensionHost* host() const { return host_; }
   Browser* browser() const { return browser_; }
@@ -40,7 +41,7 @@ class ExtensionView : public views::NativeViewHost {
   void SetIsClipped(bool is_clipped);
 
   // Notification from ExtensionHost.
-  void UpdatePreferredWidth(int pref_width);
+  void UpdatePreferredSize(const gfx::Size& new_size);
   void HandleMouseEvent();
   void HandleMouseLeave();
 
@@ -52,7 +53,7 @@ class ExtensionView : public views::NativeViewHost {
   void SetBackground(const SkBitmap& background);
 
   // Sets the container for this view.
-  void SetContainer(ExtensionContainer* container) { container_ = container; }
+  void SetContainer(Container* container) { container_ = container; }
 
   // Overridden from views::NativeViewHost:
   virtual void SetVisible(bool is_visible);
@@ -60,6 +61,7 @@ class ExtensionView : public views::NativeViewHost {
                                const gfx::Rect& current);
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View *parent, views::View *child);
+  virtual void SetPreferredSize(const gfx::Size& size);
 
  private:
   friend class ExtensionHost;
@@ -90,11 +92,11 @@ class ExtensionView : public views::NativeViewHost {
 
   // What we should set the preferred width to once the ExtensionView has
   // loaded.
-  int pending_preferred_width_;
+  gfx::Size pending_preferred_size_;
 
   // The container this view is in (not necessarily its direct superview).
   // Note: the view does not own its container.
-  ExtensionContainer* container_;
+  Container* container_;
 
   // Whether this extension view is clipped.
   bool is_clipped_;

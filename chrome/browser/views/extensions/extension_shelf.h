@@ -22,7 +22,7 @@ namespace views {
 
 // A shelf that contains Extension toolstrips.
 class ExtensionShelf : public DetachableToolbarView,
-                       public ExtensionContainer,
+                       public ExtensionView::Container,
                        public ExtensionShelfModelObserver,
                        public AnimationDelegate,
                        public NotificationObserver {

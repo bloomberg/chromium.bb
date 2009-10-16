@@ -16,7 +16,8 @@ class Browser;
 class ExtensionHost;
 
 class ExtensionPopup : public BrowserBubble,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public ExtensionView::Container {
  public:
   virtual ~ExtensionPopup();
 
@@ -27,19 +28,24 @@ class ExtensionPopup : public BrowserBubble,
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
   static ExtensionPopup* Show(const GURL& url, Browser* browser,
-                              const gfx::Rect& relative_to,
-                              int height);
+                              const gfx::Rect& relative_to);
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // BrowserBubble overrides.
-  virtual void Show();
   virtual void Hide();
+  virtual void Show();
+  virtual void ResizeToView();
 
   // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // ExtensionView::Container overrides.
+  virtual void OnExtensionMouseEvent(ExtensionView* view) { };
+  virtual void OnExtensionMouseLeave(ExtensionView* view) { };
+  virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
  private:
   ExtensionPopup(ExtensionHost* host,

@@ -22,6 +22,7 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
     : BrowserBubble(host->view(), frame, gfx::Point()),
       relative_to_(relative_to),
       extension_host_(host) {
+  host->view()->SetContainer(this);
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                  Source<Profile>(host->profile()));
 
@@ -51,7 +52,18 @@ void ExtensionPopup::Hide() {
 }
 
 void ExtensionPopup::Show() {
+  if (visible())
+    return;
+
   ResizeToView();
+
+  // Show the border first, then the popup overlaid on top.
+  border_widget_->Show();
+  BrowserBubble::Show(true);
+}
+
+void ExtensionPopup::ResizeToView() {
+  BrowserBubble::ResizeToView();
 
   // The rounded corners cut off more of the view than the border insets claim.
   // Since we can't clip the ExtensionView's corners, we need to increase the
@@ -73,10 +85,6 @@ void ExtensionPopup::Show() {
   origin.set_x(origin.x() + border_insets.left() + corner_inset);
   origin.set_y(origin.y() + border_insets.top() + corner_inset);
   MoveTo(origin.x(), origin.y());
-
-  // Show the border first, then the popup overlaid on top.
-  border_widget_->Show();
-  BrowserBubble::Show(true);
 }
 
 void ExtensionPopup::Observe(NotificationType type,
@@ -92,10 +100,14 @@ void ExtensionPopup::Observe(NotificationType type,
   }
 }
 
+void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
+  view->SizeToPreferredSize();
+  ResizeToView();
+}
+
 // static
 ExtensionPopup* ExtensionPopup::Show(const GURL& url, Browser* browser,
-                                     const gfx::Rect& relative_to,
-                                     int height) {
+                                     const gfx::Rect& relative_to) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
@@ -106,9 +118,6 @@ ExtensionPopup* ExtensionPopup::Show(const GURL& url, Browser* browser,
   views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeHandle())->GetWidget();
   ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to);
-  gfx::Size sz = host->view()->GetPreferredSize();
-  sz.set_height(height);
-  host->view()->SetPreferredSize(sz);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

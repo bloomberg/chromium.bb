@@ -134,7 +134,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
-  virtual void UpdatePreferredWidth(int pref_width);
+  virtual void UpdatePreferredSize(const gfx::Size& new_size);
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

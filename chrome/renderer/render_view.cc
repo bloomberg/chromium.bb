@@ -227,8 +227,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       popup_notification_visible_(false),
       spelling_panel_visible_(false),
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
-      preferred_width_(0),
-      send_preferred_width_changes_(false),
+      send_preferred_size_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
       determine_page_text_after_loading_stops_(false),
@@ -475,8 +474,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedNode, OnClearFocusedNode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableIntrinsicWidthChangedMode,
-                        OnEnableIntrinsicWidthChangedMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
+                        OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
@@ -2366,16 +2365,23 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
 
 void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   // We don't always want to send the change messages over IPC, only if we've
-  // be put in that mode by getting a |ViewMsg_EnableIntrinsicWidthChangedMode|
+  // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
-  if (send_preferred_width_changes_) {
+  if (send_preferred_size_changes_) {
     // WebCore likes to tell us things have changed even when they haven't, so
-    // cache the width and only send the IPC message when we're sure the
-    // width is different.
+    // cache the width and height and only send the IPC message when we're sure
+    // they're different.
     int width = webview()->mainFrame()->contentsPreferredWidth();
-    if (width != preferred_width_) {
-      Send(new ViewHostMsg_DidContentsPreferredWidthChange(routing_id_, width));
-      preferred_width_ = width;
+    if (width != preferred_size_.width() ||
+        size.height != preferred_size_.height()) {
+      preferred_size_.set_width(width);
+
+      // TODO(erikkay) the contents size is not really the same as the
+      // preferred size.  It's just the current size.  This means that for
+      // height, it will only ever grow, it will never shrink.
+      preferred_size_.set_height(size.height);
+      Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
+                                                          preferred_size_));
     }
   }
 }
@@ -3027,8 +3033,8 @@ void RenderView::OnEnableViewSourceMode() {
   main_frame->enableViewSourceMode(true);
 }
 
-void RenderView::OnEnableIntrinsicWidthChangedMode() {
-  send_preferred_width_changes_ = true;
+void RenderView::OnEnablePreferredSizeChangedMode() {
+  send_preferred_size_changes_ = true;
 }
 
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {

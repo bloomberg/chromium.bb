@@ -18,6 +18,9 @@ class Browser;
 class RenderWidgetHostViewGtk;
 class SiteInstance;
 
+namespace gfx {
+class Size;
+}
 namespace views {
 class WidgetGtk;
 }
@@ -162,7 +165,7 @@ class MainMenu : public RenderViewHostDelegate,
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
-  virtual void UpdatePreferredWidth(int pref_width) {}
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   // The currently active browser. We use this to open urls.
   Browser* browser_;

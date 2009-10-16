@@ -601,7 +601,7 @@ class RenderView : public RenderWidget,
   void OnInstallMissingPlugin();
   void OnFileChooserResponse(const std::vector<FilePath>& file_names);
   void OnEnableViewSourceMode();
-  void OnEnableIntrinsicWidthChangedMode();
+  void OnEnablePreferredSizeChangedMode();
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
@@ -901,12 +901,12 @@ class RenderView : public RenderWidget,
   // it's for the selection clipboard.
   std::string selection_text_;
 
-  // Cache the preferred width of the page in order to prevent sending the IPC
-  // when layout() recomputes it but it doesn't actually change.
-  int preferred_width_;
+  // Cache the preferred size of the page in order to prevent sending the IPC
+  // when layout() recomputes but doesn't actually change sizes.
+  gfx::Size preferred_size_;
 
-  // If true, we send IPC messages when the preferred width changes.
-  bool send_preferred_width_changes_;
+  // If true, we send IPC messages when |preferred_size_| changes.
+  bool send_preferred_size_changes_;
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;

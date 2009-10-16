@@ -1,3 +1,4 @@
+<head>
 <script>
 var botRoot = "http://build.chromium.org/buildbot/waterfall";
 //var botRoot = "http://chrome-buildbot.corp.google.com:8010";
@@ -82,17 +83,34 @@ function requestURL(url, callback) {
 }
 window.onload = function() {
   bots = document.getElementById("bots");
-  bots.innerHTML = "onload";
-  //window.setTimeout(requestUrl(waterfallURL, updateBotList), 10);
-  requestURL(waterfallURL, updateBotList);
+  
+  // XHR from onload winds up blocking the load, so we put it in a setTimeout.
+  window.setTimeout(requestURL, 0, waterfallURL, updateBotList);
 }
+
+function toggle_size() {
+  if (document.body.className == "big") {
+    document.body.className = "small";
+  } else {
+    document.body.className = "big";
+  }
+}
+
 </script>
 <style>
 body {
   font: menu;
-  width: 200px;
-  background-color: #dddddd;
   overflow: hidden;
+}
+
+body.big .bot {
+  -webkit-transition: all .5s ease-out;
+  padding-right: 100px;
+}
+
+body.small .bot{
+  -webkit-transition: all .5s ease-out;
+  padding-right: 3px;
 }
 
 .bot {
@@ -100,6 +118,7 @@ body {
   -webkit-border-radius: 5px;
   margin-top: 1px;
   padding: 3px;
+  white-space: nowrap;
 }
 
 .bot:hover {
@@ -144,4 +163,7 @@ body {
   border: 1px solid rgb(172, 160, 179);
 }
 </style>
+</head>
+<body onClick="toggle_size()">
 <div id="bots">Loading....</div>
+</body>
