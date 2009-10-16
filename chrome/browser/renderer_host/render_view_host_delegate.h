@@ -353,14 +353,14 @@ class RenderViewHostDelegate {
     // retrieves the calling RenderViewHost and then passes the vector of
     // suggestions to RenderViewHost::AutofillSuggestionsReturned.
     // Return true to indicate that AutofillSuggestionsReturned will be called.
-    virtual bool GetAutofillSuggestions(int request_id,
-                                        const std::wstring& field_name,
-                                        const std::wstring& user_text) = 0;
+    virtual bool GetAutofillSuggestions(int query_id,
+                                        const string16& field_name,
+                                        const string16& user_text) = 0;
 
     // Called when the user has indicated that she wants to remove the specified
     // autofill suggestion from the database.
-    virtual void RemoveAutofillEntry(const std::wstring& field_name,
-                                     const std::wstring& value) = 0;
+    virtual void RemoveAutofillEntry(const string16& field_name,
+                                     const string16& value) = 0;
   };
 
   // ---------------------------------------------------------------------------

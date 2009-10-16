@@ -593,7 +593,7 @@ IPC_BEGIN_MESSAGES(View)
   // suggestions.
   IPC_MESSAGE_ROUTED3(ViewMsg_QueryFormFieldAutofill_ACK,
                       int /* id of the request message */,
-                      std::vector<std::wstring> /* suggestions */,
+                      std::vector<string16> /* suggestions */,
                       int /* index of default suggestion */)
 
   // Sent by the Browser process to alert a window about whether a blocked
@@ -1604,14 +1604,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Queries the browser for suggestion for autofill in a form input field.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutofill,
                       int /* id of this message */,
-                      std::wstring /* field name */,
-                      std::wstring /* user entered text */)
+                      string16 /* field name */,
+                      string16 /* user entered text */)
 
   // Instructs the browser to remove the specified autofill-entry from the
   // database.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_RemoveAutofillEntry,
-                      std::wstring /* field name */,
-                      std::wstring /* value */)
+                      string16 /* field name */,
+                      string16 /* value */)
 
   // Get the list of proxies to use for |url|, as a semicolon delimited list
   // of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also

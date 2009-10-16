@@ -252,6 +252,21 @@ namespace WebKit {
         virtual void didUpdateInspectorSettings() = 0;
 
 
+        // Autofill ------------------------------------------------------------
+
+        // Queries the browser for suggestions to be shown for the form text
+        // field named |name|.  |value| is the text entered by the user so
+        // far and the WebNode corresponds to the input field.
+        virtual void queryAutofillSuggestions(const WebNode&,
+                                              const WebString& name,
+                                              const WebString& value) = 0;
+
+        // Instructs the browser to remove the autofill entry specified from
+        // its DB.
+        virtual void removeAutofillSuggestions(const WebString& name,
+                                               const WebString& value) = 0;
+
+
         // FIXME need to something for:
         // OnPasswordFormsSeen
         // OnAutofillFormSubmitted

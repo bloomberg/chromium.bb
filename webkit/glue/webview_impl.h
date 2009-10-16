@@ -138,13 +138,13 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual WebKit::WebString inspectorSettings() const;
   virtual void setInspectorSettings(const WebKit::WebString& settings);
   virtual WebKit::WebAccessibilityObject accessibilityObject();
+  virtual void applyAutofillSuggestions(
+      const WebKit::WebNode&,
+      const WebKit::WebVector<WebKit::WebString>& suggestions,
+      int defaultSuggestionIndex);
+  virtual void hideAutofillPopup();
 
   // WebView methods:
-  virtual void AutofillSuggestionsForNode(
-      int64 node_id,
-      const std::vector<std::wstring>& suggestions,
-      int default_suggestion_index);
-  virtual void HideAutofillPopup();
   virtual void SetIgnoreInputEvents(bool new_value);
   virtual WebDevToolsAgent* GetWebDevToolsAgent();
   WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();

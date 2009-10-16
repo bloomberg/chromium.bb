@@ -223,8 +223,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       history_forward_list_count_(0),
       has_unload_listener_(false),
       decrement_shared_popup_at_destruction_(false),
-      form_field_autofill_request_id_(0),
-      form_field_autofill_node_id_(0),
+      autofill_query_id_(0),
       popup_notification_visible_(false),
       spelling_panel_visible_(false),
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
@@ -1233,30 +1232,15 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
                                      autodetected));
 }
 
-void RenderView::QueryFormFieldAutofill(const std::wstring& field_name,
-                                        const std::wstring& text,
-                                        int64 node_id) {
-  static int message_id_counter = 0;
-  form_field_autofill_request_id_ = message_id_counter++;
-  form_field_autofill_node_id_ = node_id;
-  Send(new ViewHostMsg_QueryFormFieldAutofill(
-      routing_id_, form_field_autofill_request_id_, field_name, text));
-}
-
-void RenderView::RemoveStoredAutofillEntry(const std::wstring& name,
-                                           const std::wstring& value) {
-  Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
-}
-
 void RenderView::OnQueryFormFieldAutofillAck(
-    int request_id,
-    const std::vector<std::wstring>& suggestions,
+    int query_id,
+    const std::vector<string16>& suggestions,
     int default_suggestion_index) {
-  if (!webview() || request_id != form_field_autofill_request_id_)
-    return;
-
-  webview()->AutofillSuggestionsForNode(
-      form_field_autofill_node_id_, suggestions, default_suggestion_index);
+  if (webview() && query_id == autofill_query_id_ && !suggestions.empty()) {
+    webview()->applyAutofillSuggestions(
+        autofill_query_node_, suggestions, default_suggestion_index);
+  }
+  autofill_query_node_.reset();
 }
 
 void RenderView::OnPopupNotificationVisibilityChanged(bool visible) {
@@ -1714,6 +1698,21 @@ void RenderView::didAddHistoryItem() {
 void RenderView::didUpdateInspectorSettings() {
   Send(new ViewHostMsg_UpdateInspectorSettings(
       routing_id_, webview()->inspectorSettings().utf8()));
+}
+
+void RenderView::queryAutofillSuggestions(const WebNode& node,
+                                          const WebString& name,
+                                          const WebString& value) {
+  static int query_counter = 0;
+  autofill_query_id_ = query_counter++;
+  autofill_query_node_ = node;
+  Send(new ViewHostMsg_QueryFormFieldAutofill(
+      routing_id_, autofill_query_id_, name, value));
+}
+
+void RenderView::removeAutofillSuggestions(const WebString& name,
+                                           const WebString& value) {
+  Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -3286,13 +3285,13 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
 
 void RenderView::OnMoveOrResizeStarted() {
   if (webview())
-    webview()->HideAutofillPopup();
+    webview()->hideAutofillPopup();
 }
 
 void RenderView::OnResize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect) {
   if (webview())
-    webview()->HideAutofillPopup();
+    webview()->hideAutofillPopup();
   RenderWidget::OnResize(new_size, resizer_rect);
 }
 

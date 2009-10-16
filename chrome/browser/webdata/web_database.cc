@@ -850,8 +850,8 @@ bool WebDatabase::GetIDAndCountOfFormElement(
     return false;
   }
 
-  s.BindString(0, WideToUTF8(element.name));
-  s.BindString(1, WideToUTF8(element.value));
+  s.BindString(0, UTF16ToUTF8(element.name));
+  s.BindString(1, UTF16ToUTF8(element.value));
 
   *count = 0;
 
@@ -889,10 +889,9 @@ bool WebDatabase::InsertFormElement(const AutofillForm::Element& element,
     return false;
   }
 
-  s.BindString(0, WideToUTF8(element.name));
-  s.BindString(1, WideToUTF8(element.value));
-  s.BindString(2, UTF16ToUTF8(
-      l10n_util::ToLower(WideToUTF16Hack(element.value))));
+  s.BindString(0, UTF16ToUTF8(element.name));
+  s.BindString(1, UTF16ToUTF8(element.value));
+  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(element.value)));
 
   if (!s.Run()) {
     NOTREACHED();
@@ -956,9 +955,9 @@ bool WebDatabase::AddAutofillFormElement(const AutofillForm::Element& element) {
       InsertPairIDAndDate(pair_id, Time::Now());
 }
 
-bool WebDatabase::GetFormValuesForElementName(const std::wstring& name,
-                                              const std::wstring& prefix,
-                                              std::vector<std::wstring>* values,
+bool WebDatabase::GetFormValuesForElementName(const string16& name,
+                                              const string16& prefix,
+                                              std::vector<string16>* values,
                                               int limit) {
   DCHECK(values);
   sql::Statement s;
@@ -974,10 +973,10 @@ bool WebDatabase::GetFormValuesForElementName(const std::wstring& name,
       return false;
     }
 
-    s.BindString(0, WideToUTF8(name));
+    s.BindString(0, UTF16ToUTF8(name));
     s.BindInt(1, limit);
   } else {
-    string16 prefix_lower = l10n_util::ToLower(WideToUTF16Hack(prefix));
+    string16 prefix_lower = l10n_util::ToLower(prefix);
     string16 next_prefix = prefix_lower;
     next_prefix[next_prefix.length() - 1]++;
 
@@ -993,7 +992,7 @@ bool WebDatabase::GetFormValuesForElementName(const std::wstring& name,
       return false;
     }
 
-    s.BindString(0, WideToUTF8(name));
+    s.BindString(0, UTF16ToUTF8(name));
     s.BindString(1, UTF16ToUTF8(prefix_lower));
     s.BindString(2, UTF16ToUTF8(next_prefix));
     s.BindInt(3, limit);
@@ -1001,7 +1000,7 @@ bool WebDatabase::GetFormValuesForElementName(const std::wstring& name,
 
   values->clear();
   while (s.Step())
-    values->push_back(UTF8ToWide(s.ColumnString(0)));
+    values->push_back(UTF8ToUTF16(s.ColumnString(0)));
   return s.Succeeded();
 }
 
@@ -1067,8 +1066,8 @@ bool WebDatabase::RemoveFormElementForTimeRange(int64 pair_id,
   return result;
 }
 
-bool WebDatabase::RemoveFormElement(const std::wstring& name,
-                                    const std::wstring& value) {
+bool WebDatabase::RemoveFormElement(const string16& name,
+                                    const string16& value) {
   // Find the id for that pair.
   sql::Statement s(db_.GetUniqueStatement(
       "SELECT pair_id FROM autofill WHERE  name = ? AND value= ?"));
@@ -1076,8 +1075,8 @@ bool WebDatabase::RemoveFormElement(const std::wstring& name,
     NOTREACHED() << "Statement 1 prepare failed";
     return false;
   }
-  s.BindString(0, WideToUTF8(name));
-  s.BindString(1, WideToUTF8(value));
+  s.BindString(0, UTF16ToUTF8(name));
+  s.BindString(1, UTF16ToUTF8(value));
 
   if (s.Step())
     return RemoveFormElementForID(s.ColumnInt64(0));

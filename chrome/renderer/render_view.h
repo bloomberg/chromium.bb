@@ -38,6 +38,7 @@
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebFrameClient.h"
+#include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
@@ -164,11 +165,6 @@ class RenderView : public RenderWidget,
   virtual void OnMessageReceived(const IPC::Message& msg);
 
   // WebViewDelegate
-  virtual void QueryFormFieldAutofill(const std::wstring& field_name,
-                                      const std::wstring& text,
-                                      int64 node_id);
-  virtual void RemoveStoredAutofillEntry(const std::wstring& field_name,
-                                         const std::wstring& text);
   virtual void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
@@ -258,9 +254,14 @@ class RenderView : public RenderWidget,
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem();
-  virtual void didUpdateInspectorSettings();
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& acc_obj);
+  virtual void didUpdateInspectorSettings();
+  virtual void queryAutofillSuggestions(
+      const WebKit::WebNode& node, const WebKit::WebString& name,
+      const WebKit::WebString& value);
+  virtual void removeAutofillSuggestions(
+      const WebKit::WebString& name, const WebKit::WebString& value);
 
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();
@@ -636,8 +637,8 @@ class RenderView : public RenderWidget,
 
   // Notification that we have received autofill suggestion.
   void OnQueryFormFieldAutofillAck(
-      int request_id,
-      const std::vector<std::wstring>& suggestions,
+      int query_id,
+      const std::vector<string16>& suggestions,
       int default_suggestions_index);
 
   // Message that the popup notification has been shown or hidden.
@@ -871,11 +872,11 @@ class RenderView : public RenderWidget,
 
   // The id of the last request sent for form field autofill.  Used to ignore
   // out of date responses.
-  int form_field_autofill_request_id_;
+  int autofill_query_id_;
 
   // The id of the node corresponding to the last request sent for form field
   // autofill.
-  int64 form_field_autofill_node_id_;
+  WebKit::WebNode autofill_query_node_;
 
   // We need to prevent windows from closing themselves with a window.close()
   // call while a blocked popup notification is being displayed. We cannot

@@ -63,15 +63,6 @@ class WebView : public WebKit::WebView {
   // links.
   static void ResetVisitedLinkState();
 
-  // Notifies the webview that autofill suggestions are available for a node.
-  virtual void AutofillSuggestionsForNode(
-      int64 node_id,
-      const std::vector<std::wstring>& suggestions,
-      int default_suggestion_index) = 0;
-
-  // Hides the autofill popup if any are showing.
-  virtual void HideAutofillPopup() = 0;
-
   // Returns development tools agent instance belonging to this view.
   virtual WebDevToolsAgent* GetWebDevToolsAgent() = 0;
 

@@ -142,9 +142,9 @@ class WebDatabase {
   // Retrieves a vector of all values which have been recorded in the autofill
   // table as the value in a form element with name |name| and which start with
   // |prefix|.  The comparison of the prefix is case insensitive.
-  bool GetFormValuesForElementName(const std::wstring& name,
-                                   const std::wstring& prefix,
-                                   std::vector<std::wstring>* values,
+  bool GetFormValuesForElementName(const string16& name,
+                                   const string16& prefix,
+                                   std::vector<string16>* values,
                                    int limit);
 
   // Removes rows from autofill_dates if they were created on or after
@@ -191,7 +191,7 @@ class WebDatabase {
   bool RemoveFormElementForID(int64 pair_id);
 
   // Removes row from the autofill tables for the given |name| |value| pair.
-  bool RemoveFormElement(const std::wstring& name, const std::wstring& value);
+  bool RemoveFormElement(const string16& name, const string16& value);
 
   //////////////////////////////////////////////////////////////////////////////
   //

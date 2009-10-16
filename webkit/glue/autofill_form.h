@@ -25,12 +25,12 @@ class AutofillForm {
   // Struct for storing name/value pairs.
   struct Element {
     Element() {}
-    Element(const std::wstring& in_name, const std::wstring& in_value) {
+    Element(const string16& in_name, const string16& in_value) {
       name = in_name;
       value = in_value;
     }
-    std::wstring name;
-    std::wstring value;
+    string16 name;
+    string16 value;
   };
 
   static AutofillForm* Create(const WebKit::WebForm& form);
@@ -38,7 +38,7 @@ class AutofillForm {
   // Returns the name that should be used for the specified |element| when
   // storing autofill data.  This is either the field name or its id, an empty
   // string if it has no name and no id.
-  static std::wstring GetNameForInputElement(WebCore::HTMLInputElement*
+  static string16 GetNameForInputElement(WebCore::HTMLInputElement*
       element);
 
   // A vector of all the input fields in the form.

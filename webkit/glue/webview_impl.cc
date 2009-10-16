@@ -69,6 +69,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebVector.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/dom_operations.h"
@@ -111,6 +112,7 @@ using WebKit::WebMediaPlayerAction;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebNode;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSettings;
@@ -122,8 +124,8 @@ using WebKit::WebTextDirectionDefault;
 using WebKit::WebTextDirectionLeftToRight;
 using WebKit::WebTextDirectionRightToLeft;
 using WebKit::WebURL;
+using WebKit::WebVector;
 
-using webkit_glue::ImageResourceFetcher;
 using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
 // Change the text zoom level by kTextSizeMultiplierRatio each time the user
@@ -165,7 +167,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   }
 
   void Init(WebCore::HTMLInputElement* text_field,
-            const std::vector<std::wstring>& suggestions,
+            const WebVector<WebString>& suggestions,
             int default_suggestion_index) {
     DCHECK(default_suggestion_index < static_cast<int>(suggestions.size()));
     text_field_ = text_field;
@@ -284,12 +286,10 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   }
 
   // AutocompletePopupMenuClient specific methods:
-  void SetSuggestions(const std::vector<std::wstring>& suggestions) {
+  void SetSuggestions(const WebVector<WebString>& suggestions) {
     suggestions_.clear();
-    for (std::vector<std::wstring>::const_iterator iter = suggestions.begin();
-         iter != suggestions.end(); ++iter) {
-      suggestions_.push_back(webkit_glue::StdWStringToString(*iter));
-    }
+    for (size_t i = 0; i < suggestions.size(); ++i)
+      suggestions_.append(webkit_glue::WebStringToString(suggestions[i]));
     // Try to preserve selection if possible.
     if (selected_index_ >= static_cast<int>(suggestions.size()))
       selected_index_ = -1;
@@ -297,7 +297,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
 
   void RemoveItemAtIndex(int index) {
     DCHECK(index >= 0 && index < static_cast<int>(suggestions_.size()));
-    suggestions_.erase(suggestions_.begin() + index);
+    suggestions_.remove(index);
   }
 
   WebCore::HTMLInputElement* text_field() const {
@@ -317,7 +317,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
 
  private:
   RefPtr<WebCore::HTMLInputElement> text_field_;
-  std::vector<WebCore::String> suggestions_;
+  Vector<WebCore::String> suggestions_;
   int selected_index_;
   WebViewImpl* webview_;
   scoped_ptr<PopupMenuStyle> style_;
@@ -679,10 +679,11 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
     int selected_index = autocomplete_popup_->selectedIndex();
     WebCore::HTMLInputElement* input_element =
         static_cast<WebCore::HTMLInputElement*>(element);
-    std::wstring name = webkit_glue::StringToStdWString(input_element->name());
-    std::wstring value = webkit_glue::StringToStdWString(
-        autocomplete_popup_client_->itemText(selected_index ));
-    delegate()->RemoveStoredAutofillEntry(name, value);
+    const WebString& name = webkit_glue::StringToWebString(
+        input_element->name());
+    const WebString& value = webkit_glue::StringToWebString(
+        autocomplete_popup_client_->itemText(selected_index));
+    client()->removeAutofillSuggestions(name, value);
     // Update the entries in the currently showing popup to reflect the
     // deletion.
     autocomplete_popup_client_->RemoveItemAtIndex(selected_index);
@@ -1673,22 +1674,11 @@ WebAccessibilityObject WebViewImpl::accessibilityObject() {
       document->axObjectCache()->getOrCreate(document->renderer()));
 }
 
-// WebView --------------------------------------------------------------------
-
-bool WebViewImpl::setDropEffect(bool accept) {
-  if (drag_target_dispatch_) {
-    drop_effect_ = accept ? DROP_EFFECT_COPY : DROP_EFFECT_NONE;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void WebViewImpl::AutofillSuggestionsForNode(
-      int64 node_id,
-      const std::vector<std::wstring>& suggestions,
-      int default_suggestion_index) {
-  if (!page_.get() || suggestions.empty()) {
+void WebViewImpl::applyAutofillSuggestions(
+    const WebNode& node,
+    const WebVector<WebString>& suggestions,
+    int default_suggestion_index) {
+  if (!page_.get() || suggestions.isEmpty()) {
     HideAutoCompletePopup();
     return;
   }
@@ -1708,7 +1698,7 @@ void WebViewImpl::AutofillSuggestionsForNode(
     // TODO(jcampan): also check the carret is at the end and that the text has
     // not changed.
     if (!focused_node.get() ||
-        reinterpret_cast<int64>(focused_node.get()) != node_id) {
+        focused_node != webkit_glue::WebNodeToNode(node)) {
       HideAutoCompletePopup();
       return;
     }
@@ -1742,6 +1732,21 @@ void WebViewImpl::AutofillSuggestionsForNode(
                                 focused_node->ownerDocument()->view(), 0);
       autocomplete_popup_showing_ = true;
     }
+  }
+}
+
+void WebViewImpl::hideAutofillPopup() {
+  HideAutoCompletePopup();
+}
+
+// WebView --------------------------------------------------------------------
+
+bool WebViewImpl::setDropEffect(bool accept) {
+  if (drag_target_dispatch_) {
+    drop_effect_ = accept ? DROP_EFFECT_COPY : DROP_EFFECT_NONE;
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -1875,10 +1880,6 @@ WebKit::NotificationPresenterImpl* WebViewImpl::GetNotificationPresenter() {
   return &notification_presenter_;
 }
 #endif
-
-void WebViewImpl::HideAutofillPopup() {
-  HideAutoCompletePopup();
-}
 
 void WebViewImpl::RefreshAutofillPopup() {
   DCHECK(autocomplete_popup_showing_);

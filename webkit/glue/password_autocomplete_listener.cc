@@ -12,6 +12,8 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "webkit/api/public/WebNode.h"
+#include "webkit/api/public/WebVector.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webframe_impl.h"
@@ -32,8 +34,8 @@ HTMLInputDelegate::~HTMLInputDelegate() {
     element_->deref();
 }
 
-void HTMLInputDelegate::SetValue(const std::wstring& value) {
-  element_->setValue(StdWStringToString(value));
+void HTMLInputDelegate::SetValue(const string16& value) {
+  element_->setValue(String16ToString(value));
 }
 
 void HTMLInputDelegate::SetSelectionRange(size_t start, size_t end) {
@@ -49,7 +51,7 @@ void HTMLInputDelegate::OnFinishedAutocompleting() {
 }
 
 void HTMLInputDelegate::RefreshAutofillPopup(
-    const std::vector<std::wstring>& suggestions,
+    const std::vector<string16>& suggestions,
     int default_suggestion_index) {
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(element_->document()->frame());
@@ -57,8 +59,8 @@ void HTMLInputDelegate::RefreshAutofillPopup(
   if (!webview)
     return;
 
-  int64 node_id = reinterpret_cast<int64>(element_);
-  webview->AutofillSuggestionsForNode(node_id, suggestions, 0);
+  webview->applyAutofillSuggestions(
+      webkit_glue::NodeToWebNode(element_), suggestions, 0);
 }
 
 PasswordAutocompleteListener::PasswordAutocompleteListener(
@@ -71,27 +73,28 @@ PasswordAutocompleteListener::PasswordAutocompleteListener(
 }
 
 void PasswordAutocompleteListener::OnBlur(WebCore::HTMLInputElement* element,
-                                          const std::wstring& user_input) {
+                                          const string16& user_input) {
   // If this listener exists, its because the password manager had more than
   // one match for the password form, which implies it had at least one
   // [preferred] username/password pair.
   DCHECK(data_.basic_data.values.size() == 2);
 
   // Set the password field to match the current username.
-  if (data_.basic_data.values[0] == user_input) {
+  if (WideToUTF16Hack(data_.basic_data.values[0]) == user_input) {
     // Preferred username/login is selected.
-    password_delegate_->SetValue(data_.basic_data.values[1]);
-  } else if (data_.additional_logins.find(user_input) !=
+    password_delegate_->SetValue(WideToUTF16Hack(data_.basic_data.values[1]));
+  } else if (data_.additional_logins.find(UTF16ToWideHack(user_input)) !=
              data_.additional_logins.end()) {
     // One of the extra username/logins is selected.
-    password_delegate_->SetValue(data_.additional_logins[user_input]);
+    password_delegate_->SetValue(
+        WideToUTF16Hack(data_.additional_logins[UTF16ToWideHack(user_input)]));
   }
   password_delegate_->OnFinishedAutocompleting();
 }
 
 void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
     WebCore::HTMLInputElement* element,
-    const std::wstring& user_input,
+    const string16& user_input,
     bool backspace_or_delete,
     bool with_suggestion_popup) {
   // If wait_for_username is true, we only autofill the password when
@@ -101,7 +104,7 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
     return;
 
   if (with_suggestion_popup) {
-    std::vector<std::wstring> suggestions;
+    std::vector<string16> suggestions;
     GetSuggestions(user_input, &suggestions);
     username_delegate_->RefreshAutofillPopup(suggestions, 0);
   }
@@ -117,8 +120,8 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
   // conversions (see SetValue) on each successful call to
   // OnInlineAutocompleteNeeded.
   if (TryToMatch(user_input,
-                 data_.basic_data.values[0],
-                 data_.basic_data.values[1])) {
+                 WideToUTF16Hack(data_.basic_data.values[0]),
+                 WideToUTF16Hack(data_.basic_data.values[1]))) {
     return;
   }
 
@@ -127,14 +130,16 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
            data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {
-    if (TryToMatch(user_input, it->first, it->second))
+    if (TryToMatch(user_input,
+                   WideToUTF16Hack(it->first),
+                   WideToUTF16Hack(it->second)))
       return;
   }
 }
 
-bool PasswordAutocompleteListener::TryToMatch(const std::wstring& input,
-                                              const std::wstring& username,
-                                              const std::wstring& password) {
+bool PasswordAutocompleteListener::TryToMatch(const string16& input,
+                                              const string16& username,
+                                              const string16& password) {
   if (!StartsWith(username, input, false))
     return false;
 
@@ -148,16 +153,17 @@ bool PasswordAutocompleteListener::TryToMatch(const std::wstring& input,
 }
 
 void PasswordAutocompleteListener::GetSuggestions(
-    const std::wstring& input, std::vector<std::wstring>* suggestions) {
-  if (StartsWith(data_.basic_data.values[0], input, false))
-    suggestions->push_back(data_.basic_data.values[0]);
+    const string16& input, std::vector<string16>* suggestions) {
+  std::wstring wide_input = UTF16ToWideHack(input);
+  if (StartsWith(data_.basic_data.values[0], wide_input, false))
+    suggestions->push_back(WideToUTF16Hack(data_.basic_data.values[0]));
 
   for (PasswordFormDomManager::LoginCollection::iterator it =
        data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {
-    if (StartsWith(it->first, input, false))
-      suggestions->push_back(it->first);
+    if (StartsWith(it->first, wide_input, false))
+      suggestions->push_back(WideToUTF16Hack(it->first));
   }
 }
 

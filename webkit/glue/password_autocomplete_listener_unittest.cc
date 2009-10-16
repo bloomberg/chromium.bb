@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,6 +24,7 @@ MSVC_POP_WARNING();
 
 #undef LOG
 
+#include "base/string_util.h"
 #include "webkit/glue/password_autocomplete_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,7 @@ class TestHTMLInputDelegate : public HTMLInputDelegate {
   }
 
   // Override those methods we implicitly invoke in the tests.
-  virtual void SetValue(const std::wstring& value) {
+  virtual void SetValue(const string16& value) {
     value_ = value;
     did_set_value_ = true;
   }
@@ -64,7 +65,7 @@ class TestHTMLInputDelegate : public HTMLInputDelegate {
     did_set_selection_ = false;
   }
 
-  std::wstring value() const {
+  string16 value() const {
     return value_;
   }
 
@@ -92,7 +93,7 @@ class TestHTMLInputDelegate : public HTMLInputDelegate {
   bool did_call_on_finish_;
   bool did_set_value_;
   bool did_set_selection_;
-  std::wstring value_;
+  string16 value_;
   size_t selection_start_;
   size_t selection_end_;
 };
@@ -102,20 +103,21 @@ class PasswordManagerAutocompleteTests : public testing::Test {
  public:
   virtual void SetUp() {
     // Add a preferred login and an additional login to the FillData.
-    username1_ = L"alice";
-    password1_ = L"password";
-    username2_ = L"bob";
-    password2_ = L"bobsyouruncle";
-    data_.basic_data.values.push_back(username1_);
-    data_.basic_data.values.push_back(password1_);
-    data_.additional_logins[username2_] = password2_;
+    username1_ = ASCIIToUTF16("alice");
+    password1_ = ASCIIToUTF16("password");
+    username2_ = ASCIIToUTF16("bob");
+    password2_ = ASCIIToUTF16("bobsyouruncle");
+    data_.basic_data.values.push_back(UTF16ToWideHack(username1_));
+    data_.basic_data.values.push_back(UTF16ToWideHack(password1_));
+    data_.additional_logins[UTF16ToWideHack(username2_)] =
+        UTF16ToWideHack(password2_);
     testing::Test::SetUp();
   }
 
-  std::wstring username1_;
-  std::wstring password1_;
-  std::wstring username2_;
-  std::wstring password2_;
+  string16 username1_;
+  string16 password1_;
+  string16 username2_;
+  string16 password2_;
   PasswordFormDomManager::FillData data_;
 };
 
@@ -128,14 +130,14 @@ TEST_F(PasswordManagerAutocompleteTests, OnBlur) {
                                        data_));
 
   // Clear the password field.
-  password_delegate->SetValue(std::wstring());
+  password_delegate->SetValue(string16());
   // Simulate a blur event on the username field and expect a password autofill.
   listener->OnBlur(NULL, username1_);
   EXPECT_EQ(password1_, password_delegate->value());
 
   // Now the user goes back and changes the username to something we don't
   // have saved. The password should remain unchanged.
-  listener->OnBlur(NULL, L"blahblahblah");
+  listener->OnBlur(NULL, ASCIIToUTF16("blahblahblah"));
   EXPECT_EQ(password1_, password_delegate->value());
 
   // Now they type in the additional login username.
@@ -151,9 +153,9 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
       new PasswordAutocompleteListener(username_delegate, password_delegate,
                                        data_));
 
-  password_delegate->SetValue(std::wstring());
+  password_delegate->SetValue(string16());
   // Simulate the user typing in the first letter of 'alice', a stored username.
-  listener->OnInlineAutocompleteNeeded(NULL, L"a", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("a"), false, false);
   // Both the username and password delegates should reflect selection
   // of the stored login.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -166,7 +168,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_TRUE(password_delegate->did_call_on_finish());
 
   // Now the user types the next letter of the same username, 'l'.
-  listener->OnInlineAutocompleteNeeded(NULL, L"al", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("al"), false, false);
   // Now the fields should have the same value, but the selection should have a
   // different start value.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -186,7 +188,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   // was invoked during OnInlineAutocompleteNeeded.
   username_delegate->ResetTestState();
   password_delegate->ResetTestState();
-  listener->OnInlineAutocompleteNeeded(NULL, L"alf", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("alf"), false, false);
   EXPECT_FALSE(username_delegate->did_set_selection());
   EXPECT_FALSE(username_delegate->did_set_value());
   EXPECT_FALSE(username_delegate->did_call_on_finish());
@@ -194,7 +196,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_FALSE(password_delegate->did_call_on_finish());
 
   // Ok, so now the user removes all the text and enters the letter 'b'.
-  listener->OnInlineAutocompleteNeeded(NULL, L"b", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("b"), false, false);
   // The username and password fields should match the 'bob' entry.
   EXPECT_EQ(username2_, username_delegate->value());
   EXPECT_EQ(password2_, password_delegate->value());
@@ -215,30 +217,31 @@ TEST_F(PasswordManagerAutocompleteTests, TestWaitUsername) {
       new PasswordAutocompleteListener(username_delegate, password_delegate,
                                        data_));
 
-  std::wstring empty;
+  string16 empty;
   // In all cases, username_delegate should remain empty because we should
   // never modify it when wait_for_username is true; only the user can by
   // typing into (in real life) the HTMLInputElement.
-  password_delegate->SetValue(std::wstring());
-  listener->OnInlineAutocompleteNeeded(NULL, L"a", false, false);
+  password_delegate->SetValue(string16());
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("a"), false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, L"al", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("al"), false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, L"alice", false, false);
+  listener->OnInlineAutocompleteNeeded(NULL, ASCIIToUTF16("alice"), false,
+                                       false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
 
-  listener->OnBlur(NULL, L"a");
+  listener->OnBlur(NULL, ASCIIToUTF16("a"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnBlur(NULL, L"ali");
+  listener->OnBlur(NULL, ASCIIToUTF16("ali"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
 
   // Blur with 'alice' should allow password autofill.
-  listener->OnBlur(NULL, L"alice");
+  listener->OnBlur(NULL, ASCIIToUTF16("alice"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(password1_, password_delegate->value());
 }

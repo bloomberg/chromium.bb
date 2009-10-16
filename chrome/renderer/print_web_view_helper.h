@@ -205,13 +205,19 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual int historyBackListCount() { return 0; }
   virtual int historyForwardListCount() { return 0; }
   virtual void didAddHistoryItem() {}
-  virtual void didUpdateInspectorSettings() {}
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object) {}
+  virtual void didUpdateInspectorSettings() {}
+  virtual void queryAutofillSuggestions(
+      const WebKit::WebNode& node, const WebKit::WebString& name,
+      const WebKit::WebString& value) {}
+  virtual void removeAutofillSuggestions(
+      const WebKit::WebString& name, const WebKit::WebString& value) {}
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&) {}
-  virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect) {}
+  virtual void didScrollRect(
+      int dx, int dy, const WebKit::WebRect& clipRect) {}
   virtual void didFocus() {}
   virtual void didBlur() {}
   virtual void didChangeCursor(const WebKit::WebCursorInfo&) {}

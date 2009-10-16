@@ -39,11 +39,13 @@ namespace WebKit {
     class WebDragData;
     class WebFrame;
     class WebFrameClient;
+    class WebNode;
     class WebSettings;
     class WebString;
     class WebViewClient;
     struct WebMediaPlayerAction;
     struct WebPoint;
+    template <typename T> class WebVector;
 
     class WebView : public WebWidget {
     public:
@@ -206,6 +208,19 @@ namespace WebKit {
 
         // Returns the accessibility object for this view.
         virtual WebAccessibilityObject accessibilityObject() = 0;
+
+
+        // Autofill ------------------------------------------------------------
+
+        // Notifies the WebView that autofill suggestions are available for a node.
+        virtual void applyAutofillSuggestions(
+            const WebNode&,
+            const WebVector<WebString>& suggestions,
+            int defaultSuggestionIndex) = 0;
+
+        // Hides the autofill popup if any are showing.
+        virtual void hideAutofillPopup() = 0;
+
 
         // FIXME what about:
         // GetDelegate

@@ -671,8 +671,8 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
   if (!listener)
     return;
 
-  std::wstring value =
-      webkit_glue::StringToStdWString(input_element->value());
+  string16 value =
+      webkit_glue::StringToString16(input_element->value());
   listener->OnBlur(input_element, value);
 }
 
@@ -706,7 +706,7 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
     return false;
   }
 
-  std::wstring name = AutofillForm::GetNameForInputElement(input_element);
+  string16 name = AutofillForm::GetNameForInputElement(input_element);
   if (name.empty())  // If the field has no name, then we won't have values.
     return false;
 
@@ -736,7 +736,7 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   OwnPtr<AutofillArgs> args(autofill_args_.release());
   WebCore::HTMLInputElement* input_element = args->input_element.get();
 
-  std::wstring value = webkit_glue::StringToStdWString(input_element->value());
+  string16 value = webkit_glue::StringToString16(input_element->value());
 
   // Enforce autofill_on_empty_value and caret_at_end.
   bool is_caret_at_end = args->require_caret_at_end ?
@@ -766,12 +766,13 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   }
 
   // Then trigger form autofill.
-  std::wstring name = AutofillForm::GetNameForInputElement(input_element);
+  string16 name = AutofillForm::GetNameForInputElement(input_element);
   ASSERT(static_cast<int>(name.length()) > 0);
 
-  if (webview_->delegate())
-    webview_->delegate()->QueryFormFieldAutofill(name, value,
-        reinterpret_cast<int64>(input_element));
+  if (webview_->client()) {
+    webview_->client()->queryAutofillSuggestions(
+        webkit_glue::NodeToWebNode(input_element), name, value);
+  }
 }
 
 void EditorClientImpl::CancelPendingAutofill() {
@@ -785,7 +786,7 @@ void EditorClientImpl::OnAutofillSuggestionAccepted(
       WebFrameImpl::FromFrame(text_field->document()->frame());
   webkit_glue::PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(text_field);
-  std::wstring value = webkit_glue::StringToStdWString(text_field->value());
+  string16 value = webkit_glue::StringToString16(text_field->value());
   // Password listeners need to autocomplete other fields that depend on the
   // input element with autofill suggestions.
   if (listener)

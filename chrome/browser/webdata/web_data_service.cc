@@ -126,7 +126,7 @@ void WebDataService::AddAutofillFormElements(
 }
 
 WebDataService::Handle WebDataService::GetFormValuesForElementName(
-    const std::wstring& name, const std::wstring& prefix, int limit,
+    const string16& name, const string16& prefix, int limit,
     WebDataServiceConsumer* consumer) {
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
@@ -142,12 +142,12 @@ WebDataService::Handle WebDataService::GetFormValuesForElementName(
 }
 
 void WebDataService::RemoveFormValueForElementName(
-    const std::wstring& name, const std::wstring& value) {
-  GenericRequest2<std::wstring, std::wstring>* request =
-      new GenericRequest2<std::wstring, std::wstring>(this,
-                                                      GetNextRequestHandle(),
-                                                      NULL,
-                                                      name, value);
+    const string16& name, const string16& value) {
+  GenericRequest2<string16, string16>* request =
+      new GenericRequest2<string16, string16>(this,
+                                              GetNextRequestHandle(),
+                                              NULL,
+                                              name, value);
   RegisterRequest(request);
   ScheduleTask(
       NewRunnableMethod(this,
@@ -582,12 +582,12 @@ void WebDataService::AddAutofillFormElementsImpl(
 }
 
 void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
-    const std::wstring& name, const std::wstring& prefix, int limit) {
+    const string16& name, const string16& prefix, int limit) {
   if (db_ && !request->IsCancelled()) {
-    std::vector<std::wstring> values;
+    std::vector<string16> values;
     db_->GetFormValuesForElementName(name, prefix, &values, limit);
     request->SetResult(
-        new WDResult<std::vector<std::wstring> >(AUTOFILL_VALUE_RESULT,
+        new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT,
             values));
   }
   request->RequestComplete();
@@ -604,7 +604,7 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
 }
 
 void WebDataService::RemoveFormValueForElementNameImpl(
-    GenericRequest2<std::wstring, std::wstring>* request) {
+    GenericRequest2<string16, string16>* request) {
   if (db_ && !request->IsCancelled()) {
     if (db_->RemoveFormElement(request->GetArgument1(),
                                request->GetArgument2()))

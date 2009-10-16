@@ -23,7 +23,7 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
 AutofillManager::AutofillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       pending_query_handle_(0),
-      request_id_(0) {
+      query_id_(0) {
   form_autofill_enabled_.Init(prefs::kFormAutofillEnabled,
       profile()->GetPrefs(), NULL);
 }
@@ -55,9 +55,9 @@ void AutofillManager::AutofillFormSubmitted(
   StoreFormEntriesInWebDatabase(form);
 }
 
-bool AutofillManager::GetAutofillSuggestions(int request_id,
-                                             const std::wstring& name,
-                                             const std::wstring& prefix) {
+bool AutofillManager::GetAutofillSuggestions(int query_id,
+                                             const string16& name,
+                                             const string16& prefix) {
   if (!*form_autofill_enabled_)
     return false;
 
@@ -70,15 +70,15 @@ bool AutofillManager::GetAutofillSuggestions(int request_id,
 
   CancelPendingQuery();
 
-  request_id_ = request_id;
+  query_id_ = query_id;
 
   pending_query_handle_ = web_data_service->GetFormValuesForElementName(
       name, prefix, kMaxAutofillMenuItems, this);
   return true;
 }
 
-void AutofillManager::RemoveAutofillEntry(const std::wstring& name,
-                                          const std::wstring& value) {
+void AutofillManager::RemoveAutofillEntry(const string16& name,
+                                          const string16& value) {
   WebDataService* web_data_service =
       profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!web_data_service) {
@@ -120,12 +120,12 @@ void AutofillManager::SendSuggestions(const WDTypedResult* result) {
     return;
   if (result) {
     DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
-    const WDResult<std::vector<std::wstring> >* autofill_result =
-        static_cast<const WDResult<std::vector<std::wstring> >*>(result);
+    const WDResult<std::vector<string16> >* autofill_result =
+        static_cast<const WDResult<std::vector<string16> >*>(result);
     host->AutofillSuggestionsReturned(
-        request_id_, autofill_result->GetValue(), -1);
+        query_id_, autofill_result->GetValue(), -1);
   } else {
     host->AutofillSuggestionsReturned(
-        request_id_, std::vector<std::wstring>(), -1);
+        query_id_, std::vector<string16>(), -1);
   }
 }

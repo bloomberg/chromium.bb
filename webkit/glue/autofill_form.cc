@@ -57,12 +57,12 @@ AutofillForm* AutofillForm::Create(const WebForm& webform) {
       continue;
 
     // For each TEXT input field, store the name and value
-    std::wstring value = StringToStdWString(input_element->value());
+    string16 value = StringToString16(input_element->value());
     TrimWhitespace(value, TRIM_LEADING, &value);
     if (value.length() == 0)
       continue;
 
-    std::wstring name = GetNameForInputElement(input_element);
+    string16 name = GetNameForInputElement(input_element);
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
@@ -73,20 +73,20 @@ AutofillForm* AutofillForm::Create(const WebForm& webform) {
 }
 
 // static
-std::wstring AutofillForm::GetNameForInputElement(WebCore::HTMLInputElement*
+string16 AutofillForm::GetNameForInputElement(WebCore::HTMLInputElement*
     element) {
-  std::wstring name = StringToStdWString(element->name());
-  std::wstring trimmed_name;
+  string16 name = StringToString16(element->name());
+  string16 trimmed_name;
   TrimWhitespace(name, TRIM_LEADING, &trimmed_name);
   if (trimmed_name.length() > 0)
     return trimmed_name;
 
-  name = StringToStdWString(element->getAttribute(WebCore::HTMLNames::idAttr));
+  name = StringToString16(element->getAttribute(WebCore::HTMLNames::idAttr));
   TrimWhitespace(name, TRIM_LEADING, &trimmed_name);
   if (trimmed_name.length() > 0)
     return trimmed_name;
 
-  return std::wstring();
+  return string16();
 }
 
 }  // namespace webkit_glue

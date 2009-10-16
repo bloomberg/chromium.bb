@@ -62,21 +62,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
     return true;
   }
 
-  // ChromeClient ------------------------------------------------------------
-
-  // Queries the browser for suggestions to be shown for the form text field
-  // named |field_name|.  |text| is the text entered by the user so far and
-  // |node_id| is the id of the node of the input field.
-  virtual void QueryFormFieldAutofill(const std::wstring& field_name,
-                                      const std::wstring& text,
-                                      int64 node_id) {
-  }
-
-  // Instructs the browser to remove the autofill entry specified from it DB.
-  virtual void RemoveStoredAutofillEntry(const std::wstring& name,
-                                         const std::wstring& value) {
-  }
-
   // DevTools ----------------------------------------------------------------
 
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate() {

@@ -25,11 +25,11 @@ class HTMLInputDelegate {
   explicit HTMLInputDelegate(WebCore::HTMLInputElement* element);
   virtual ~HTMLInputDelegate();
 
-  virtual void SetValue(const std::wstring& value);
+  virtual void SetValue(const string16& value);
   virtual void SetSelectionRange(size_t start, size_t end);
   virtual void OnFinishedAutocompleting();
   virtual void RefreshAutofillPopup(
-      const std::vector<std::wstring>& suggestions,
+      const std::vector<string16>& suggestions,
       int default_suggestion_index);
 
  private:
@@ -51,9 +51,9 @@ class PasswordAutocompleteListener {
   }
 
   virtual void OnBlur(WebCore::HTMLInputElement* element,
-                      const std::wstring& user_input);
+                      const string16& user_input);
   virtual void OnInlineAutocompleteNeeded(WebCore::HTMLInputElement* element,
-                                          const std::wstring& user_input,
+                                          const string16& user_input,
                                           bool backspace_or_delete,
                                           bool with_suggestion_popup);
 
@@ -61,13 +61,13 @@ class PasswordAutocompleteListener {
   // Check if the input string resembles a potential matching login
   // (username/password) and if so, match them up by autocompleting the edit
   // delegates.
-  bool TryToMatch(const std::wstring& input,
-                  const std::wstring& username,
-                  const std::wstring& password);
+  bool TryToMatch(const string16& input,
+                  const string16& username,
+                  const string16& password);
 
   // Scan |data_| for prefix matches of |input| and add each to |suggestions|.
-  void GetSuggestions(const std::wstring& input,
-                      std::vector<std::wstring>* suggestions);
+  void GetSuggestions(const string16& input,
+                      std::vector<string16>* suggestions);
 
   // Access to password field to autocomplete on blur/username updates.
   scoped_ptr<HTMLInputDelegate> password_delegate_;
