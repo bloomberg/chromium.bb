@@ -304,11 +304,7 @@ void LanguagesPageView::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   button_stack_layout->StartRow(0, single_column_view_set_id);
-  button_stack_layout->AddView(move_up_button_, 1, 1, GridLayout::FILL,
-                               GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  button_stack_layout->StartRow(0, single_column_view_set_id);
-  button_stack_layout->AddView(move_down_button_, 1, 1, GridLayout::FILL,
+  button_stack_layout->AddView(add_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
   button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
@@ -316,7 +312,11 @@ void LanguagesPageView::InitControlLayout() {
                                GridLayout::CENTER);
   button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
-  button_stack_layout->AddView(add_button_, 1, 1, GridLayout::FILL,
+  button_stack_layout->AddView(move_up_button_, 1, 1, GridLayout::FILL,
+                               GridLayout::CENTER);
+  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->StartRow(0, single_column_view_set_id);
+  button_stack_layout->AddView(move_down_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
 
   layout->AddView(button_stack_);
