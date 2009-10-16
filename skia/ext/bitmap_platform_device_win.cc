@@ -160,9 +160,8 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
   config_dirty_ = false;
 
   // Transform.
-  SkMatrix t(transform_);
-  LoadTransformToDC(hdc_, t);
-  LoadClippingRegionToDC(hdc_, clip_region_, t);
+  LoadTransformToDC(hdc_, transform_);
+  LoadClippingRegionToDC(hdc_, clip_region_, transform_);
 }
 
 // We use this static factory function instead of the regular constructor so
