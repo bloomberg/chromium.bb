@@ -774,12 +774,15 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
     return E_INVALIDARG;
   }
 
-  HWND render_view_window =
+  HWND native_view_window =
       static_cast<HWND>(GetProp(native_host->native_view(),
                                 kViewsNativeHostPropForAccessibility));
+  if (!IsWindow(native_view_window)) {
+    native_view_window = native_host->native_view();
+  }
 
-  if (IsWindow(render_view_window)) {
-    LRESULT ret = SendMessage(render_view_window, WM_GETOBJECT, 0,
+  if (IsWindow(native_view_window)) {
+    LRESULT ret = SendMessage(native_view_window, WM_GETOBJECT, 0,
                               OBJID_CLIENT);
     return ObjectFromLresult(ret, IID_IDispatch, 0,
                              reinterpret_cast<void**>(disp_child));
