@@ -40,8 +40,6 @@ const KeyboardShortcutData* GetBrowserKeyboardShortcutTable
   static const KeyboardShortcutData keyboard_shortcuts[] = {
     {true,  false, false, kVK_LeftArrow,     IDC_BACK},
     {true,  false, false, kVK_RightArrow,    IDC_FORWARD},
-    {false, false, false, kVK_Delete,        IDC_BACK},
-    {false, true,  false, kVK_Delete,        IDC_FORWARD},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
