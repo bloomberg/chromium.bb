@@ -75,7 +75,7 @@ int UserIdleTime() {
   }
 
   int64 idle_time;  // in nanoseconds
-  Boolean success;
+  Boolean success = false;
   if (CFGetTypeID(object) == CFNumberGetTypeID()) {
     success = CFNumberGetValue((CFNumberRef)object,
                                kCFNumberSInt64Type,

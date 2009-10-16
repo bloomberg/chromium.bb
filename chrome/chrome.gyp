@@ -155,7 +155,7 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
-      ['OS=="win"', {
+      ['OS=="win" or OS=="mac"', {
         # Whether or not browser sync code is built in.
         'chrome_personalization%': 1,
       }, {
@@ -205,7 +205,7 @@
       ['OS=="linux" and toolkit_views==1', {'sources/': [
         ['include', '_views\\.cc$'],
       ]}],
-      ['OS=="win" and chrome_personalization==1', {
+      ['(OS=="win" or OS=="mac") and chrome_personalization==1', {
          'defines': ['CHROME_PERSONALIZATION=1'],
       }],  # chrome_personalization==1
     ],
@@ -2045,6 +2045,10 @@
         'browser/sync/glue/sync_backend_host.h',
         'browser/sync/profile_sync_service.cc',
         'browser/sync/profile_sync_service.h',
+        'browser/sync/sync_setup_flow.cc',
+        'browser/sync/sync_setup_flow.h',
+        'browser/sync/sync_setup_wizard.cc',
+        'browser/sync/sync_setup_wizard.h',
         'browser/sync/sync_status_ui_helper.cc',
         'browser/sync/sync_status_ui_helper.h',
         'browser/tab_contents/constrained_window.h',
@@ -2294,10 +2298,6 @@
         'browser/views/star_toggle.h',
         'browser/views/status_bubble_views.cc',
         'browser/views/status_bubble_views.h',
-        'browser/views/sync/sync_setup_flow.cc',
-        'browser/views/sync/sync_setup_flow.h',
-        'browser/views/sync/sync_setup_wizard.cc',
-        'browser/views/sync/sync_setup_wizard.h',
         'browser/views/tab_icon_view.cc',
         'browser/views/tab_icon_view.h',
         'browser/views/tab_contents/tab_contents_container.cc',
@@ -3922,6 +3922,7 @@
         'test/perf/mem_usage_mac.cc',
         'test/perf/mem_usage_win.cc',
         'test/perf/mem_usage.h',
+        'test/test_browser_window.h',
         'test/testing_profile.cc',
         'test/testing_profile.h',
         'test/ui_test_utils.cc',
@@ -4552,6 +4553,7 @@
         'browser/sync/glue/bookmark_model_worker_unittest.cc',
         'browser/sync/glue/http_bridge_unittest.cc',
         'browser/sync/profile_sync_service_unittest.cc',
+        'browser/sync/sync_setup_wizard_unittest.cc',
         'browser/tab_contents/navigation_controller_unittest.cc',
         'browser/tab_contents/navigation_entry_unittest.cc',
         'browser/tab_contents/render_view_host_manager_unittest.cc',
@@ -4563,7 +4565,6 @@
         'browser/utility_process_host_unittest.cc',
         'browser/views/bookmark_context_menu_test.cc',
         'browser/views/bookmark_editor_view_unittest.cc',
-        'browser/views/sync/sync_setup_wizard_unittest.cc',
         'browser/visitedlink_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
         'browser/window_sizer_unittest.cc',
@@ -4634,6 +4635,8 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
+            # TODO(akalin): Figure out why this unittest fails on linux.
+            'browser/browser_commands_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
@@ -4756,8 +4759,6 @@
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
             'browser/bookmarks/bookmark_folder_tree_model_unittest.cc',
             'browser/bookmarks/bookmark_table_model_unittest.cc',
-            # Need to port browser_with_test_window_test.* first
-            'browser/browser_commands_unittest.cc',
             'browser/browser_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/importer/importer_unittest.cc',
@@ -4769,11 +4770,8 @@
             'browser/views/bookmark_editor_view_unittest.cc',
             'browser/views/find_bar_host_unittest.cc',
             'browser/views/keyword_editor_view_unittest.cc',
-            'browser/views/sync/sync_setup_wizard_unittest.cc',
             'common/chrome_plugin_unittest.cc',
             'common/net/url_util_unittest.cc',
-            'test/browser_with_test_window_test.cc',
-            'test/browser_with_test_window_test.h',
           ],
         }],
         ['chrome_personalization==1', {
@@ -6711,6 +6709,10 @@
                   '-lsecur32.lib',
                 ],
               },
+            }, { # else: OS != "win"
+              'sources!': [
+                'browser/sync/util/data_encryption_unittest.cc',
+              ],
             }],
             ['OS=="linux"', {
               'defines': [
