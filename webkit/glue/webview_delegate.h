@@ -55,13 +55,6 @@ class WebView;
 // TODO(darin): Eliminate WebViewDelegate in favor of WebViewClient.
 class WebViewDelegate : public WebKit::WebViewClient {
  public:
-  // WebView additions -------------------------------------------------------
-
-  // Returns whether this WebView was opened by a user gesture.
-  virtual bool WasOpenedByUserGesture() const {
-    return true;
-  }
-
   // DevTools ----------------------------------------------------------------
 
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate() {

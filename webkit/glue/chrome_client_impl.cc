@@ -256,8 +256,7 @@ void ChromeClientImpl::show() {
         !statusbar_visible_ ||
         !scrollbars_visible_ ||
         !menubar_visible_ ||
-        !resizable_ ||
-        !delegate->WasOpenedByUserGesture();
+        !resizable_;
 
     WebNavigationPolicy policy = WebKit::WebNavigationPolicyNewForegroundTab;
     if (as_popup)

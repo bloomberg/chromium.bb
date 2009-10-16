@@ -1732,6 +1732,15 @@ void RenderView::show(WebNavigationPolicy policy) {
     return;
   did_show_ = true;
 
+  // Force new windows to a popup if they were not opened with a user gesture.
+  if (!opened_by_user_gesture_) {
+    // We exempt background tabs for compat with older versions of Chrome.
+    // TODO(darin): This seems bogus.  These should have a user gesture, so
+    // we probably don't need this check.
+    if (policy != WebKit::WebNavigationPolicyNewBackgroundTab)
+      policy = WebKit::WebNavigationPolicyNewPopup;
+  }
+
   // NOTE: initial_pos_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
   // browser process will impose a default position otherwise.
@@ -2762,10 +2771,6 @@ void RenderView::OnDeterminePageText() {
   // We set |determine_page_text_after_loading_stops_| true here so that,
   // after page has been loaded completely, the text in the page is captured.
   determine_page_text_after_loading_stops_ = true;
-}
-
-bool RenderView::WasOpenedByUserGesture() const {
-  return opened_by_user_gesture_;
 }
 
 void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {

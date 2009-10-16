@@ -404,7 +404,8 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
       operations_allowed_(WebKit::WebDragOperationNone),
       drag_operation_(WebKit::WebDragOperationNone),
       autocomplete_popup_showing_(false),
-      is_transparent_(false) {
+      is_transparent_(false),
+      tabs_to_links_(false) {
   // WebKit/win/WebView.cpp does the same thing, except they call the
   // KJS specific wrapper around this method. We need to have threading
   // initialized because CollatorICU requires it.

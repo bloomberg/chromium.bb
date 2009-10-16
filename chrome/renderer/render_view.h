@@ -175,7 +175,6 @@ class RenderView : public RenderWidget,
       WebPluginDelegateProxy* delegate,
       int status);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
-  virtual bool WasOpenedByUserGesture() const;
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
