@@ -89,7 +89,6 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
   for (int i = 0; i < parent_node_->GetChildCount(); ++i) {
     child_nodes_.insert(parent_node_->GetChild(i));
   }
-  DCHECK_EQ(child_nodes_.size(), parent_node_->GetChildCount());
 }
 
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
