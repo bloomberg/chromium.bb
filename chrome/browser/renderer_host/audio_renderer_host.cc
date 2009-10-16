@@ -1,6 +1,24 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// TODO(hclam): Several changes need to be made to this code:
+// 1. We should host AudioRendererHost on a dedicated audio thread. Doing
+//    so we don't have to worry about blocking method calls such as
+//    play / stop an audio stream.
+// 2. Move locked data structures into a separate structure that sanity
+//    checks access by different threads that use it.
+//
+// SEMANTICS OF |state_|
+// Note that |state_| of IPCAudioSource is accessed on two thread. Namely
+// the IO thread and the audio thread. IO thread is the thread on which
+// IPAudioSource::Play(), IPCAudioSource::Pause() are called. Audio thread
+// is a thread operated by the audio hardware for requesting data.
+// It is important that |state_| is only written on the IO thread because
+// reading of such state in Play() and Pause() is not protected. However,
+// since OnMoreData() is called on the audio thread and reads |state_|
+// variable. Writing to this variable needs to be protected in Play()
+// and Pause().
 
 #include "base/histogram.h"
 #include "base/lock.h"
@@ -148,10 +166,15 @@ void AudioRendererHost::IPCAudioSource::Play() {
   if (!stream_ || (state_ != kCreated && state_ != kPaused))
     return;
 
-  stream_->Start(this);
+  if (state_ == kCreated) {
+    stream_->Start(this);
+  }
 
   // Update the state and notify renderer.
-  state_ = kPlaying;
+  {
+    AutoLock auto_lock(lock_);
+    state_ = kPlaying;
+  }
 
   ViewMsg_AudioStreamState state;
   state.state = ViewMsg_AudioStreamState::kPlaying;
@@ -164,12 +187,11 @@ void AudioRendererHost::IPCAudioSource::Pause() {
   if (!stream_ || state_ != kPlaying)
     return;
 
-  // TODO(hclam): use stop to simulate pause, make sure the AudioOutpusStream
-  // can be started again after stop.
-  stream_->Stop();
-
   // Update the state and notify renderer.
-  state_ = kPaused;
+  {
+    AutoLock auto_lock(lock_);
+    state_ = kPaused;
+  }
 
   ViewMsg_AudioStreamState state;
   state.state = ViewMsg_AudioStreamState::kPaused;
@@ -213,18 +235,29 @@ size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
                                                      void* dest,
                                                      size_t max_size,
                                                      int pending_bytes) {
-  size_t size = push_source_.OnMoreData(stream, dest, max_size, pending_bytes);
-  {
-    AutoLock auto_lock(lock_);
-    pending_bytes_ = pending_bytes + size;
-    last_callback_time_ = base::Time::Now();
-    SubmitPacketRequest(&auto_lock);
+  AutoLock auto_lock(lock_);
+
+  // Record the callback time.
+  last_callback_time_ = base::Time::Now();
+
+  if (state_ == kPaused) {
+    // Don't read anything from the push source and save the number of
+    // bytes in the hardware buffer.
+    pending_bytes_  = pending_bytes;
+    return 0;
   }
+
+  // Push source doesn't need to know the stream and number of pending bytes.
+  // So just pass in NULL and 0 for these two parameters.
+  size_t size = push_source_.OnMoreData(NULL, dest, max_size, 0);
+  pending_bytes_ = pending_bytes + size;
+  SubmitPacketRequest(&auto_lock);
   return size;
 }
 
 void AudioRendererHost::IPCAudioSource::OnClose(AudioOutputStream* stream) {
-  push_source_.OnClose(stream);
+  // Push source doesn't need to know the stream so just pass in NULL.
+  push_source_.OnClose(NULL);
 }
 
 void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
@@ -237,31 +270,25 @@ void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
 
 void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
     size_t decoded_packet_size) {
+  AutoLock auto_lock(lock_);
   bool ok = true;
-  {
-    AutoLock auto_lock(lock_);
-    outstanding_request_ = false;
-    // If reported size is greater than capacity of the shared memory, we have
-    // an error.
-    if (decoded_packet_size <= decoded_packet_size_) {
-      for (size_t i = 0; i < decoded_packet_size; i += hardware_packet_size_) {
-        size_t size = std::min(decoded_packet_size - i, hardware_packet_size_);
-        ok &= push_source_.Write(
-            static_cast<char*>(shared_memory_.memory()) + i, size);
-        if (!ok)
-          break;
-      }
-
-      // Submit packet request if we have written something.
-      if (ok)
-        SubmitPacketRequest(&auto_lock);
+  outstanding_request_ = false;
+  // If reported size is greater than capacity of the shared memory, we have
+  // an error.
+  if (decoded_packet_size <= decoded_packet_size_) {
+    for (size_t i = 0; i < decoded_packet_size; i += hardware_packet_size_) {
+      size_t size = std::min(decoded_packet_size - i, hardware_packet_size_);
+      ok &= push_source_.Write(
+          static_cast<char*>(shared_memory_.memory()) + i, size);
+      // We have received a data packet but we didn't finish writing to push
+      // source. There's error an error and we should stop.
+      if (!ok)
+        NOTREACHED() << "Writing to push source failed.";
     }
-  }
 
-  // We have received a data packet but we didn't finish writing to push source.
-  // There's error an error and we should stop.
-  if (!ok) {
-    NOTREACHED();
+    // Submit packet request if we have written something.
+    if (ok)
+      SubmitPacketRequest(&auto_lock);
   }
 }
 
