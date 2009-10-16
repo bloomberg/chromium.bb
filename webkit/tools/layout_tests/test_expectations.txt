@@ -1204,6 +1204,7 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // ----------------------------------------------------------------------------
 
 // Need to finish implementing window.accessibilityController for these to work.
+BUG10322 MAC : LayoutTests/accessibility/aria-roles.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-readonly.html = FAIL
 BUG10322 : LayoutTests/accessibility/aria-tables.html = FAIL
