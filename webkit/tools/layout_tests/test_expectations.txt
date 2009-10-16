@@ -119,6 +119,8 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/editing/pasteboard/smart-paste-001.h
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/fast/dom/Window/window-lookup-precedence.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
+BUG24182 DEBUG SLOW : LayoutTests/fast/frames/frame-limit.html = PASS
+BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
 
 
 BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
@@ -2545,7 +2547,7 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-order.html = CRASH 
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
-BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
+BUG9798 WIN LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
 BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
@@ -3172,13 +3174,6 @@ BUG24965 LINUX : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = C
 BUG_JEREMY MAC : LayoutTests/fast/forms/search-display-none-cancel-button.html = CRASH
 BUG_JEREMY LINUX : LayoutTests/fast/forms/menulist-option-wrap.html = CRASH
 BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
-
-// Started timing out when reduced windows watchdog timeout from timeout*2.5 to timeout+1.
-BUG_OJAN WIN RELEASE : LayoutTests/http/tests/incremental/split-hex-entities.pl = TIMEOUT
-// Was already timing out on LINUX/MAC debug, which already had a reduced watchdog timeout.
-BUG_OJAN DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT
-// Win is now crashing some just like linux
-BUG_OJAN BUG9798 WIN RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 
 // WebKit Roll 49640:49684
 BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
