@@ -5,7 +5,7 @@
 #include "views/window/window.h"
 
 #include "app/gfx/font.h"
-#include "app/l10n_util.h"
+#include "app/gfx/font_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/size.h"
 #include "base/string_util.h"
@@ -14,42 +14,15 @@
 namespace views {
 
 // static
-int Window::GetLocalizedContentsWidthForFont(int col_resource_id,
-                                             const gfx::Font& font) {
-  double chars = 0;
-  StringToDouble(WideToUTF8(l10n_util::GetString(col_resource_id)), &chars);
-  int width = font.GetExpectedTextWidth(static_cast<int>(chars));
-  DCHECK(width > 0);
-  return width;
-}
-
-// static
 int Window::GetLocalizedContentsWidth(int col_resource_id) {
-  return GetLocalizedContentsWidthForFont(col_resource_id,
+  return gfx::GetLocalizedContentsWidthForFont(col_resource_id,
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
-}
-
-// static
-int Window::GetLocalizedContentsHeightForFont(int row_resource_id,
-                                              const gfx::Font& font) {
-  double lines = 0;
-  StringToDouble(WideToUTF8(l10n_util::GetString(row_resource_id)), &lines);
-  int height = static_cast<int>(font.height() * lines);
-  DCHECK(height > 0);
-  return height;
 }
 
 // static
 int Window::GetLocalizedContentsHeight(int row_resource_id) {
-  return GetLocalizedContentsHeightForFont(row_resource_id,
+  return gfx::GetLocalizedContentsHeightForFont(row_resource_id,
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
-}
-
-gfx::Size Window::GetLocalizedContentsSizeForFont(int col_resource_id,
-                                                  int row_resource_id,
-                                                  const gfx::Font& font) {
-  return gfx::Size(GetLocalizedContentsWidthForFont(col_resource_id, font),
-                   GetLocalizedContentsHeightForFont(row_resource_id, font));
 }
 
 // static

@@ -136,6 +136,21 @@ inline void AppendPathStringToUTF8(const PathString& wide,
   return AppendPathStringToUTF8(wide.data(), wide.length(), output_string);
 }
 
+// Versions of UTF8ToPathString/PathStringToUTF8 that return the converted
+// string directly.  Any errors encountered will CHECK().  These functions are
+// intended to be used only for testing.
+
+inline PathString UTF8ToPathStringQuick(const std::string &utf8) {
+  PathString wide;
+  CHECK(UTF8ToPathString(utf8.data(), utf8.size(), &wide));
+  return wide;
+}
+
+inline std::string PathStringToUTF8Quick(const PathString& wide) {
+  std::string utf8;
+  PathStringToUTF8(wide.data(), wide.size(), &utf8);
+  return utf8;
+}
 
 inline bool Append(const PathChar* wide, int size,
                    std::string* output_string) {

@@ -43,9 +43,9 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       directory_name_(name),
       mid_commit_callback_function_(NULL),
       mid_commit_observer_(NULL),
-      client_command_(NULL),
       throttling_(false),
       fail_non_periodic_get_updates_(false),
+      client_command_(NULL),
       next_position_in_parent_(2) {
     server_reachable_ = true;
 };
@@ -406,3 +406,4 @@ void MockConnectionManager::ThrottleNextRequest(
   if (visitor)
     visitor->VisitAtomically();
 }
+
