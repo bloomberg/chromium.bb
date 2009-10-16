@@ -86,7 +86,8 @@ BUG24182 WIN SLOW : LayoutTests/svg/hixie/perf/007.xml = PASS
 BUG24182 WIN LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS
 BUG24182 MAC SLOW : LayoutTests/dom/html/level2/html/HTMLImageElement01.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS
-BUG24182 DEBUG SLOW : LayoutTests/media/audio-controls-rendering.html = PASS
+// BUG24182 DEBUG SLOW WIN MAC : LayoutTests/media/audio-controls-rendering.html = PASS
+BUG24182 DEBUG SLOW MAC : LayoutTests/media/audio-controls-rendering.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 BUG24182 SLOW WONTFIX DEBUG : LayoutTests/platform/mac-snowleopard/accessibility/aria-list-and-listitem.html = FAIL
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
@@ -105,11 +106,11 @@ BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
 // This test starts to crash since to r28630
 // BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/animate-elem-29-b.svg = PASS
-BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/media/video-display-toggle.html = PASS
+// BUG24182 SLOW WIN DEBUG : LayoutTests/media/video-display-toggle.html = PASS
 //BUG24852 started failing since webkit 49583
 //BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/http/tests/misc/onload-remove-iframe-crash-2.html = PASS
-BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/media/video-controls-rendering.html = PASS
+// BUG24182 SLOW WIN DEBUG : LayoutTests/media/video-controls-rendering.html = PASS
 BUG24182 SLOW LINUX MAC DEBUG : LayoutTests/editing/selection/doubleclick-whitespace.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/scrollbars/overflow-scrollbar-combinations.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/security/xssAuditor/meta-tag-http-refresh-javascript-url.html = PASS
@@ -1685,7 +1686,7 @@ BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE CR
 BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
 BUG23498 MAC RELEASE : LayoutTests/fast/frames/invalid.html = IMAGE
 BUG23498 MAC DEBUG SLOW : LayoutTests/fast/frames/invalid.html = IMAGE
-BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/valid.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/gradients/background-clipped.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/images/pdf-as-image-landscape.html = IMAGE
@@ -3172,3 +3173,58 @@ BUG_OJAN WIN RELEASE : LayoutTests/http/tests/incremental/split-hex-entities.pl 
 BUG_OJAN DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT
 // Win is now crashing some just like linux
 BUG_OJAN BUG9798 WIN RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
+
+// WebKit Roll 49640:49684
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-huge-assert.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusArcs01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted02.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted03.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble02.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble03.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusGroove01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusGroove02.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusInset01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusInvalidColor.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusOutset01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusRidge01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid01.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid02.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid03.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid04.html = FAIL
+BUG_JEREMY LINUX : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/basic-shadows.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/border-radius-big.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/overflow/border-radius-clipping.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/repaint/border-radius-repaint.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/fast/transforms/shadows.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/http/tests/navigation/reload-subframe-object.html = FAIL
+// When fixing , uncomment line in BUG24182 to mark this test as slow for WIN!
+BUG_JEREMY LINUX WIN : LayoutTests/media/audio-controls-rendering.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/media/controls-after-reload.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/media/controls-strict.html = FAIL
+// When fixing, uncomment line above to mark this test as slow.
+BUG_JEREMY LINUX WIN : LayoutTests/media/video-controls-rendering.html = FAIL
+// When fixing, uncomment line above to mark this test as slow.
+BUG_JEREMY LINUX WIN : LayoutTests/media/video-display-toggle.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/media/video-empty-source.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-01-b.svg = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/focus-ring.svg = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-and-object-creation.svg = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-creation.svg = FAIL
+BUG_JEREMY LINUX : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
+BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
+BUG_JEREMY WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
+BUG_JEREMY WIN : chrome/fast/forms/basic-selects.html = FAIL
+BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
+BUG_JEREMY MAC : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = FAIL
