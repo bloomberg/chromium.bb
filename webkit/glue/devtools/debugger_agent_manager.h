@@ -38,9 +38,9 @@ class DebuggerAgentManager {
   static void DebugAttach(DebuggerAgentImpl* debugger_agent);
   static void DebugDetach(DebuggerAgentImpl* debugger_agent);
   static void DebugBreak(DebuggerAgentImpl* debugger_agent);
-  static void DebugCommand(const std::string& command);
+  static void DebugCommand(const WebCore::String& command);
 
-  static void ExecuteDebuggerCommand(const std::string& command,
+  static void ExecuteDebuggerCommand(const WebCore::String& command,
                                      int caller_id);
   static void SetMessageLoopDispatchHandler(
       WebDevToolsAgent::MessageLoopDispatchHandler handler);
@@ -76,7 +76,7 @@ class DebuggerAgentManager {
 
   static void V8DebugHostDispatchHandler();
   static void OnV8DebugMessage(const v8::Debug::Message& message);
-  static void SendCommandToV8(const string16& cmd,
+  static void SendCommandToV8(const WebCore::String& cmd,
                               v8::Debug::ClientData* data);
   static void SendContinueCommandToV8();
 

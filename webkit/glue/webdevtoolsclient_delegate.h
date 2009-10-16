@@ -5,20 +5,23 @@
 #ifndef WEBKIT_GLUE_WEBDEVTOOLSCLIENT_DELEGATE_H_
 #define WEBKIT_GLUE_WEBDEVTOOLSCLIENT_DELEGATE_H_
 
-#include <string>
 #include "base/basictypes.h"
+
+namespace WebKit {
+class WebString;
+}
 
 class WebDevToolsClientDelegate {
  public:
   WebDevToolsClientDelegate() {}
   virtual ~WebDevToolsClientDelegate() {}
 
-  virtual void SendMessageToAgent(const std::string& class_name,
-                                  const std::string& method_name,
-                                  const std::string& param1,
-                                  const std::string& param2,
-                                  const std::string& param3) = 0;
-  virtual void SendDebuggerCommandToAgent(const std::string& command) = 0;
+  virtual void SendMessageToAgent(const WebKit::WebString& class_name,
+                                  const WebKit::WebString& method_name,
+                                  const WebKit::WebString& param1,
+                                  const WebKit::WebString& param2,
+                                  const WebKit::WebString& param3) = 0;
+  virtual void SendDebuggerCommandToAgent(const WebKit::WebString& command) = 0;
 
   virtual void ActivateWindow() = 0;
   virtual void CloseWindow() = 0;

@@ -142,12 +142,11 @@ void DebuggerAgentManager::DebugDetach(DebuggerAgentImpl* debugger_agent) {
     }
   } else {
     // Remove all breakpoints set by the agent.
-    std::wstring clear_breakpoint_group_cmd(StringPrintf(
-        L"{\"seq\":1,\"type\":\"request\",\"command\":\"clearbreakpointgroup\","
-            L"\"arguments\":{\"groupId\":%d}}",
-        host_id));
-    SendCommandToV8(WideToUTF16(clear_breakpoint_group_cmd),
-                    new CallerIdWrapper());
+    String clear_breakpoint_group_cmd = String::format(
+        "{\"seq\":1,\"type\":\"request\",\"command\":\"clearbreakpointgroup\","
+            "\"arguments\":{\"groupId\":%d}}",
+        host_id);
+    SendCommandToV8(clear_breakpoint_group_cmd, new CallerIdWrapper());
 
     if (is_on_breakpoint) {
       // Force continue if detach happened in nessted message loop while
@@ -174,8 +173,8 @@ void DebuggerAgentManager::DebugBreak(DebuggerAgentImpl* debugger_agent) {
 // static
 void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
   v8::HandleScope scope;
-  v8::String::Utf8Value value(message.GetJSON());
-  std::string out(*value, value.length());
+  v8::String::Value value(message.GetJSON());
+  String out(reinterpret_cast<const UChar*>(*value), value.length());
 
   // If caller_data is not NULL the message is a response to a debugger command.
   if (v8::Debug::ClientData* caller_data = message.GetClientData()) {
@@ -239,9 +238,9 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
 
 // static
 void DebuggerAgentManager::ExecuteDebuggerCommand(
-    const std::string& command,
+    const String& command,
     int caller_id) {
-  SendCommandToV8(UTF8ToUTF16(command), new CallerIdWrapper(caller_id));
+  SendCommandToV8(command, new CallerIdWrapper(caller_id));
 }
 
 // static
@@ -275,19 +274,19 @@ void DebuggerAgentManager::OnNavigate() {
 }
 
 // static
-void DebuggerAgentManager::SendCommandToV8(const string16& cmd,
+void DebuggerAgentManager::SendCommandToV8(const String& cmd,
                                            v8::Debug::ClientData* data) {
 #if USE(V8)
-  v8::Debug::SendCommand(reinterpret_cast<const uint16_t*>(cmd.data()),
+  v8::Debug::SendCommand(reinterpret_cast<const uint16_t*>(cmd.characters()),
                          cmd.length(),
                          data);
 #endif
 }
 
 void DebuggerAgentManager::SendContinueCommandToV8() {
-  std::wstring continue_cmd(
-      L"{\"seq\":1,\"type\":\"request\",\"command\":\"continue\"}");
-  SendCommandToV8(WideToUTF16(continue_cmd), new CallerIdWrapper());
+  String continue_cmd(
+      "{\"seq\":1,\"type\":\"request\",\"command\":\"continue\"}");
+  SendCommandToV8(continue_cmd, new CallerIdWrapper());
 }
 
 // static

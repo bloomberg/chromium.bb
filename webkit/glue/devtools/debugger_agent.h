@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_H_
 
-#include <string>
-
 #include "webkit/glue/devtools/devtools_rpc.h"
 
 #define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
@@ -31,7 +29,7 @@
 DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
 
 #define DEBUGGER_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
-  METHOD1(DebuggerOutput, std::string /* output text */) \
+  METHOD1(DebuggerOutput, String /* output text */) \
   \
   /* Pushes debugger context id into the client. */ \
   METHOD1(SetContextId, int /* context id */) \
@@ -40,7 +38,7 @@ DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
   METHOD1(DidGetActiveProfilerModules, int /* flags */) \
   \
   /* Response to GetNextLogLines. */ \
-  METHOD1(DidGetNextLogLines, std::string /* log */)
+  METHOD1(DidGetNextLogLines, String /* log */)
 
 DEFINE_RPC_CLASS(DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
 

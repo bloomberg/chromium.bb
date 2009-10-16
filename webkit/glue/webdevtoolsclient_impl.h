@@ -35,29 +35,29 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   WebDevToolsClientImpl(
       WebViewImpl* web_view_impl,
       WebDevToolsClientDelegate* delegate,
-      const std::string& application_locale);
+      const String& application_locale);
   virtual ~WebDevToolsClientImpl();
 
   // DevToolsRpc::Delegate implementation.
-  virtual void SendRpcMessage(const std::string& class_name,
-                              const std::string& method_name,
-                              const std::string& param1,
-                              const std::string& param2,
-                              const std::string& param3);
+  virtual void SendRpcMessage(const String& class_name,
+                              const String& method_name,
+                              const String& param1,
+                              const String& param2,
+                              const String& param3);
 
   // WebDevToolsClient implementation.
-  virtual void DispatchMessageFromAgent(const std::string& class_name,
-                                        const std::string& method_name,
-                                        const std::string& param1,
-                                        const std::string& param2,
-                                        const std::string& param3);
+  virtual void DispatchMessageFromAgent(const WebKit::WebString& class_name,
+                                        const WebKit::WebString& method_name,
+                                        const WebKit::WebString& param1,
+                                        const WebKit::WebString& param2,
+                                        const WebKit::WebString& param3);
 
  private:
   void AddResourceSourceToFrame(int resource_id,
                                 String mime_type,
                                 WebCore::Node* frame);
 
-  void ExecuteScript(const Vector<std::string>& v);
+  void ExecuteScript(const Vector<String>& v);
   static v8::Handle<v8::Value> JsReset(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddSourceToFrame(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddResourceSourceToFrame(
@@ -85,7 +85,7 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;
-  Vector<Vector<std::string> > pending_incoming_messages_;
+  Vector<Vector<String> > pending_incoming_messages_;
   OwnPtr<BoundObject> dev_tools_host_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsClientImpl);

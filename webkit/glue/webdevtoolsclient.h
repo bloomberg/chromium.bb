@@ -5,11 +5,14 @@
 #ifndef WEBKIT_GLUE_WEBDEVTOOLSCLIENT_H_
 #define WEBKIT_GLUE_WEBDEVTOOLSCLIENT_H_
 
-#include <string>
 #include "base/basictypes.h"
 
 class WebDevToolsClientDelegate;
 class WebView;
+
+namespace WebKit {
+class WebString;
+}
 
 // WebDevToolsClient represents DevTools client sitting in the Glue. It provides
 // direct and delegate Apis to the host.
@@ -18,16 +21,16 @@ class WebDevToolsClient {
   static WebDevToolsClient* Create(
       WebView* view,
       WebDevToolsClientDelegate* delegate,
-      const std::string& application_locale);
+      const WebKit::WebString& application_locale);
 
   WebDevToolsClient() {}
   virtual ~WebDevToolsClient() {}
 
-  virtual void DispatchMessageFromAgent(const std::string& class_name,
-                                        const std::string& method_name,
-                                        const std::string& param1,
-                                        const std::string& param2,
-                                        const std::string& param3) = 0;
+  virtual void DispatchMessageFromAgent(const WebKit::WebString& class_name,
+                                        const WebKit::WebString& method_name,
+                                        const WebKit::WebString& param1,
+                                        const WebKit::WebString& param2,
+                                        const WebKit::WebString& param3) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsClient);

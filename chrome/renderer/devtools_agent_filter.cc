@@ -9,7 +9,10 @@
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_view.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/webdevtoolsagent.h"
+
+using WebKit::WebString;
 
 // static
 void DevToolsAgentFilter::DispatchMessageLoop() {
@@ -45,5 +48,6 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
-  WebDevToolsAgent::ExecuteDebuggerCommand(command, current_routing_id_);
+  WebDevToolsAgent::ExecuteDebuggerCommand(
+      WebString::fromUTF8(command), current_routing_id_);
 }

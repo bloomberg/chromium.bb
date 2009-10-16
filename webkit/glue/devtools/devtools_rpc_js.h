@@ -7,8 +7,6 @@
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_
 
-#include <string>
-
 // Do not remove this one although it is not used.
 #include <wtf/OwnPtr.h>
 
@@ -103,9 +101,9 @@ class Js##Class##BoundObj : public Class##Stub { \
     self->delegate_->SendRpcMessage( \
         #Class, \
         method, \
-        webkit_glue::StringToStdString(param1), \
-        webkit_glue::StringToStdString(param2), \
-        webkit_glue::StringToStdString(param3)); \
+        param1, \
+        param2, \
+        param3); \
   } \
   OwnPtr<BoundObject> bound_obj_; \
   DISALLOW_COPY_AND_ASSIGN(Js##Class##BoundObj); \

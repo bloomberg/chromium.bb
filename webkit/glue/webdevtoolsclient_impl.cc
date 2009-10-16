@@ -41,6 +41,14 @@ using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
+static v8::Local<v8::String> ToV8String(const String& s) {
+  if (s.isNull())
+    return v8::Local<v8::String>();
+
+  return v8::String::New(reinterpret_cast<const uint16_t*>(s.characters()),
+                         s.length());
+}
+
 DEFINE_RPC_JS_BOUND_OBJ(DebuggerAgent, DEBUGGER_AGENT_STRUCT,
     DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
 DEFINE_RPC_JS_BOUND_OBJ(ToolsAgent, TOOLS_AGENT_STRUCT,
@@ -100,19 +108,20 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
 WebDevToolsClient* WebDevToolsClient::Create(
     WebView* view,
     WebDevToolsClientDelegate* delegate,
-    const std::string& application_locale) {
-  return new WebDevToolsClientImpl(static_cast<WebViewImpl*>(view),
-                                   delegate,
-                                   application_locale);
+    const WebString& application_locale) {
+  return new WebDevToolsClientImpl(
+      static_cast<WebViewImpl*>(view),
+      delegate,
+      webkit_glue::WebStringToString(application_locale));
 }
 
 WebDevToolsClientImpl::WebDevToolsClientImpl(
     WebViewImpl* web_view_impl,
     WebDevToolsClientDelegate* delegate,
-    const std::string& application_locale)
+    const String& application_locale)
     : web_view_impl_(web_view_impl),
       delegate_(delegate),
-      application_locale_(application_locale.c_str()),
+      application_locale_(application_locale),
       loaded_(false) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
   v8::HandleScope scope;
@@ -178,27 +187,27 @@ WebDevToolsClientImpl::~WebDevToolsClientImpl() {
 }
 
 void WebDevToolsClientImpl::DispatchMessageFromAgent(
-      const std::string& class_name,
-      const std::string& method_name,
-      const std::string& param1,
-      const std::string& param2,
-      const std::string& param3) {
+      const WebString& class_name,
+      const WebString& method_name,
+      const WebString& param1,
+      const WebString& param2,
+      const WebString& param3) {
   if (ToolsAgentNativeDelegateDispatch::Dispatch(
           tools_agent_native_delegate_impl_.get(),
-          class_name,
-          method_name,
-          param1,
-          param2,
-          param3)) {
+          webkit_glue::WebStringToString(class_name),
+          webkit_glue::WebStringToString(method_name),
+          webkit_glue::WebStringToString(param1),
+          webkit_glue::WebStringToString(param2),
+          webkit_glue::WebStringToString(param3))) {
     return;
   }
 
-  Vector<std::string> v;
-  v.append(class_name);
-  v.append(method_name);
-  v.append(param1);
-  v.append(param2);
-  v.append(param3);
+  Vector<String> v;
+  v.append(webkit_glue::WebStringToString(class_name));
+  v.append(webkit_glue::WebStringToString(method_name));
+  v.append(webkit_glue::WebStringToString(param1));
+  v.append(webkit_glue::WebStringToString(param2));
+  v.append(webkit_glue::WebStringToString(param3));
   if (!loaded_) {
     pending_incoming_messages_.append(v);
     return;
@@ -217,7 +226,7 @@ void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
   tools_agent_native_delegate_impl_->RequestSent(resource_id, mime_type, frame);
 }
 
-void WebDevToolsClientImpl::ExecuteScript(const Vector<std::string>& v) {
+void WebDevToolsClientImpl::ExecuteScript(const Vector<String>& v) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
@@ -227,22 +236,26 @@ void WebDevToolsClientImpl::ExecuteScript(const Vector<std::string>& v) {
   ASSERT(dispatch_function->IsFunction());
   v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatch_function);
   v8::Handle<v8::Value> args[] = {
-    v8::String::New(v.at(0).c_str()),
-    v8::String::New(v.at(1).c_str()),
-    v8::String::New(v.at(2).c_str()),
-    v8::String::New(v.at(3).c_str()),
-    v8::String::New(v.at(4).c_str())
+    ToV8String(v.at(0)),
+    ToV8String(v.at(1)),
+    ToV8String(v.at(2)),
+    ToV8String(v.at(3)),
+    ToV8String(v.at(4)),
   };
   function->Call(frame_context->Global(), 5, args);
 }
 
-void WebDevToolsClientImpl::SendRpcMessage(const std::string& class_name,
-                                           const std::string& method_name,
-                                           const std::string& param1,
-                                           const std::string& param2,
-                                           const std::string& param3) {
-  delegate_->SendMessageToAgent(class_name, method_name, param1, param2,
-                                param3);
+void WebDevToolsClientImpl::SendRpcMessage(const String& class_name,
+                                           const String& method_name,
+                                           const String& param1,
+                                           const String& param2,
+                                           const String& param3) {
+  delegate_->SendMessageToAgent(
+      webkit_glue::StringToWebString(class_name),
+      webkit_glue::StringToWebString(method_name),
+      webkit_glue::StringToWebString(param1),
+      webkit_glue::StringToWebString(param2),
+      webkit_glue::StringToWebString(param3));
 }
 
 // static
@@ -313,7 +326,7 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsLoaded(
   SecurityOrigin* origin = page->mainFrame()->domWindow()->securityOrigin();
   origin->grantUniversalAccess();
 
-  for (Vector<Vector<std::string> >::iterator it =
+  for (Vector<Vector<String> >::iterator it =
            client->pending_incoming_messages_.begin();
        it != client->pending_incoming_messages_.end();
        ++it) {
@@ -402,7 +415,7 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsDebuggerCommand(
   WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
       v8::External::Cast(*args.Data())->Value());
   String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
-  std::string std_command = webkit_glue::StringToStdString(command);
+  WebString std_command = webkit_glue::StringToWebString(command);
   client->delegate_->SendDebuggerCommandToAgent(std_command);
   return v8::Undefined();
 }

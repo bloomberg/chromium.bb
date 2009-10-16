@@ -50,15 +50,11 @@
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_H_
 
-#include <string>
+#include "PlatformString.h"
 
-// Do not remove this one although it is not used.
-#include <wtf/OwnPtr.h>
-
+// TODO(darin): Remove these dependencies on Chromium base/.
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
-#include "webkit/glue/glue_util.h"
 
 namespace WebCore {
 class String;
@@ -77,50 +73,39 @@ struct RpcTypeTrait {
 template<>
 struct RpcTypeTrait<bool> {
   typedef bool ApiType;
-  static bool Parse(const std::string& t) {
-    int i;
-    ALLOW_UNUSED bool success = StringToInt(t, &i);
+  static bool Parse(const WebCore::String& t) {
+    ALLOW_UNUSED bool success;
+    int i = t.toIntStrict(&success);
     ASSERT(success);
     return i;
   }
-  static std::string ToString(bool b) {
-    return IntToString(b ? 1 : 0);
+  static WebCore::String ToString(bool b) {
+    return WebCore::String::number(b ? 1 : 0);
   }
 };
 
 template<>
 struct RpcTypeTrait<int> {
   typedef int ApiType;
-  static int Parse(const std::string& t) {
-    int i;
-    ALLOW_UNUSED bool success = StringToInt(t, &i);
+  static int Parse(const WebCore::String& t) {
+    ALLOW_UNUSED bool success;
+    int i = t.toIntStrict(&success);
     ASSERT(success);
     return i;
   }
-  static std::string ToString(int i) {
-    return IntToString(i);
+  static WebCore::String ToString(int i) {
+    return WebCore::String::number(i);
   }
 };
 
 template<>
 struct RpcTypeTrait<String> {
   typedef const String& ApiType;
-  static String Parse(const std::string& t) {
-    return webkit_glue::StdStringToString(t);
+  static String Parse(const WebCore::String& t) {
+    return t;
   }
-  static std::string ToString(const String& t) {
-    return webkit_glue::StringToStdString(t);
-  }
-};
-
-template<>
-struct RpcTypeTrait<std::string> {
-  typedef const std::string& ApiType;
-  static std::string Parse(const std::string& s) {
-    return s;
-  }
-  static std::string ToString(const std::string& s) {
-    return s;
+  static WebCore::String ToString(const String& t) {
+    return t;
   }
 };
 
@@ -233,7 +218,7 @@ class Class {\
       TOOLS_RPC_API_METHOD1, \
       TOOLS_RPC_API_METHOD2, \
       TOOLS_RPC_API_METHOD3) \
-  std::string class_name; \
+  WebCore::String class_name; \
  private: \
   DISALLOW_COPY_AND_ASSIGN(Class); \
 }; \
@@ -258,11 +243,11 @@ class Class##Dispatch { \
   virtual ~Class##Dispatch() {} \
   \
   static bool Dispatch(Class* delegate, \
-                       const std::string& class_name, \
-                       const std::string& method_name, \
-                       const std::string& p1, \
-                       const std::string& p2, \
-                       const std::string& p3) { \
+                       const WebCore::String& class_name, \
+                       const WebCore::String& method_name, \
+                       const WebCore::String& p1, \
+                       const WebCore::String& p2, \
+                       const WebCore::String& p3) { \
     if (class_name != #Class) { \
       return false; \
     } \
@@ -286,11 +271,11 @@ class DevToolsRpc {
    public:
     Delegate() {}
     virtual ~Delegate() {}
-    virtual void SendRpcMessage(const std::string& class_name,
-                                const std::string& method_name,
-                                const std::string& p1 = "",
-                                const std::string& p2 = "",
-                                const std::string& p3 = "") = 0;
+    virtual void SendRpcMessage(const WebCore::String& class_name,
+                                const WebCore::String& method_name,
+                                const WebCore::String& p1 = "",
+                                const WebCore::String& p2 = "",
+                                const WebCore::String& p3 = "") = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };

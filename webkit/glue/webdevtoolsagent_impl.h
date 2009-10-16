@@ -62,19 +62,19 @@ class WebDevToolsAgentImpl
   virtual void Attach();
   virtual void Detach();
   virtual void OnNavigate();
-  virtual void DispatchMessageFromClient(const std::string& class_name,
-                                         const std::string& method_name,
-                                         const std::string& param1,
-                                         const std::string& param2,
-                                         const std::string& param3);
+  virtual void DispatchMessageFromClient(const WebKit::WebString& class_name,
+                                         const WebKit::WebString& method_name,
+                                         const WebKit::WebString& param1,
+                                         const WebKit::WebString& param2,
+                                         const WebKit::WebString& param3);
   virtual void InspectElement(int x, int y);
 
   // DevToolsRpc::Delegate implementation.
-  void SendRpcMessage(const std::string& class_name,
-                      const std::string& method_name,
-                      const std::string& param1,
-                      const std::string& param2,
-                      const std::string& param3);
+  void SendRpcMessage(const WebCore::String& class_name,
+                      const WebCore::String& method_name,
+                      const WebCore::String& param1,
+                      const WebCore::String& param2,
+                      const WebCore::String& param3);
 
   // Methods called by the glue.
   void SetMainFrameDocumentReady(bool ready);

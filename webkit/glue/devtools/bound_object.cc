@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#include <string>
-
 #include "V8Proxy.h"
 #include "webkit/glue/devtools/bound_object.h"
 

@@ -5,8 +5,11 @@
 #ifndef WEBKIT_GLUE_WEBDEVTOOLSAGENT_H_
 #define WEBKIT_GLUE_WEBDEVTOOLSAGENT_H_
 
-#include <string>
 #include "base/basictypes.h"
+
+namespace WebKit {
+class WebString;
+}
 
 // WebDevToolsAgent represents DevTools agent sitting in the Glue. It provides
 // direct and delegate Apis to the host.
@@ -30,11 +33,11 @@ class WebDevToolsAgent {
 
   virtual void OnNavigate() = 0;
 
-  virtual void DispatchMessageFromClient(const std::string& class_name,
-                                         const std::string& method_name,
-                                         const std::string& param1,
-                                         const std::string& param2,
-                                         const std::string& param3) = 0;
+  virtual void DispatchMessageFromClient(const WebKit::WebString& class_name,
+                                         const WebKit::WebString& method_name,
+                                         const WebKit::WebString& param1,
+                                         const WebKit::WebString& param2,
+                                         const WebKit::WebString& param3) = 0;
 
   virtual void InspectElement(int x, int y) = 0;
 
@@ -42,7 +45,7 @@ class WebDevToolsAgent {
 
   // Asynchronously executes debugger command in the render thread.
   // |caller_id| will be used for sending response.
-  static void ExecuteDebuggerCommand(const std::string& command,
+  static void ExecuteDebuggerCommand(const WebKit::WebString& command,
                                      int caller_id);
 
   typedef void (*MessageLoopDispatchHandler)();

@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_
 
-#include <string>
-
 #include <wtf/HashSet.h>
 
 #include "v8.h"
@@ -46,7 +44,7 @@ class DebuggerAgentImpl : public DebuggerAgent {
 
   virtual void GetNextLogLines();
 
-  void DebuggerOutput(const std::string& out);
+  void DebuggerOutput(const WebCore::String& out);
 
   // Executes function with the given name in the utility context. Passes node
   // and json args as parameters. Note that the function called must be

@@ -7,7 +7,10 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/webdevtoolsagent.h"
+
+using WebKit::WebString;
 
 // static
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
@@ -44,15 +47,19 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsAgent::SendMessageToClient(const std::string& class_name,
-                                        const std::string& method_name,
-                                        const std::string& param1,
-                                        const std::string& param2,
-                                        const std::string& param3) {
+void DevToolsAgent::SendMessageToClient(const WebKit::WebString& class_name,
+                                        const WebKit::WebString& method_name,
+                                        const WebKit::WebString& param1,
+                                        const WebKit::WebString& param2,
+                                        const WebKit::WebString& param3) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
-      DevToolsClientMsg_RpcMessage(class_name, method_name, param1, param2,
-                                   param3));
+      DevToolsClientMsg_RpcMessage(
+          class_name.utf8(),
+          method_name.utf8(),
+          param1.utf8(),
+          param2.utf8(),
+          param3.utf8()));
   view_->Send(m);
 }
 
@@ -95,8 +102,12 @@ void DevToolsAgent::OnRpcMessage(const std::string& class_name,
                                  const std::string& param3) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->DispatchMessageFromClient(class_name, method_name, param1,
-                                         param2, param3);
+    web_agent->DispatchMessageFromClient(
+        WebString::fromUTF8(class_name),
+        WebString::fromUTF8(method_name),
+        WebString::fromUTF8(param1),
+        WebString::fromUTF8(param2),
+        WebString::fromUTF8(param3));
   }
 }
 

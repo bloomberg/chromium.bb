@@ -52,8 +52,9 @@ using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
+using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebURLRequest;
-
 
 namespace {
 
@@ -154,13 +155,13 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
   }
   WebDataSource* ds = frame->dataSource();
   const WebURLRequest& request = ds->request();
-  GURL url = ds->hasUnreachableURL() ?
+  WebURL url = ds->hasUnreachableURL() ?
       ds->unreachableURL() :
       request.url();
   if (webview->mainFrame() == frame) {
     ResetInspectorFrontendProxy();
     tools_agent_delegate_stub_->FrameNavigate(
-        url.possibly_invalid_spec());
+        webkit_glue::WebURLToKURL(url).string());
     SetApuAgentEnabledInUtilityContext(utility_context_, apu_agent_enabled_);
   }
   UnhideResourcesPanelIfNecessary();
@@ -251,13 +252,18 @@ void WebDevToolsAgentImpl::SetApuAgentEnabled(bool enable) {
 }
 
 void WebDevToolsAgentImpl::DispatchMessageFromClient(
-    const std::string& class_name,
-    const std::string& method_name,
-    const std::string& param1,
-    const std::string& param2,
-    const std::string& param3) {
+    const WebString& class_name,
+    const WebString& method_name,
+    const WebString& param1,
+    const WebString& param2,
+    const WebString& param3) {
   if (ToolsAgentDispatch::Dispatch(
-      this, class_name, method_name, param1, param2, param3)) {
+      this,
+      webkit_glue::WebStringToString(class_name),
+      webkit_glue::WebStringToString(method_name),
+      webkit_glue::WebStringToString(param1),
+      webkit_glue::WebStringToString(param2),
+      webkit_glue::WebStringToString(param3))) {
     return;
   }
 
@@ -267,8 +273,12 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
 
   if (debugger_agent_impl_.get() &&
       DebuggerAgentDispatch::Dispatch(
-          debugger_agent_impl_.get(), class_name, method_name,
-          param1, param2, param3)) {
+          debugger_agent_impl_.get(),
+          webkit_glue::WebStringToString(class_name),
+          webkit_glue::WebStringToString(method_name),
+          webkit_glue::WebStringToString(param1),
+          webkit_glue::WebStringToString(param2),
+          webkit_glue::WebStringToString(param3))) {
     return;
   }
 }
@@ -283,13 +293,17 @@ void WebDevToolsAgentImpl::InspectElement(int x, int y) {
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(
-    const std::string& class_name,
-    const std::string& method_name,
-    const std::string& param1,
-    const std::string& param2,
-    const std::string& param3) {
-  delegate_->SendMessageToClient(class_name, method_name, param1, param2,
-      param3);
+    const String& class_name,
+    const String& method_name,
+    const String& param1,
+    const String& param2,
+    const String& param3) {
+  delegate_->SendMessageToClient(
+      webkit_glue::StringToWebString(class_name),
+      webkit_glue::StringToWebString(method_name),
+      webkit_glue::StringToWebString(param1),
+      webkit_glue::StringToWebString(param2),
+      webkit_glue::StringToWebString(param3));
 }
 
 void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
@@ -395,9 +409,10 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchToApu(
 
 // static
 void WebDevToolsAgent::ExecuteDebuggerCommand(
-    const std::string& command,
+    const WebString& command,
     int caller_id) {
-  DebuggerAgentManager::ExecuteDebuggerCommand(command, caller_id);
+  DebuggerAgentManager::ExecuteDebuggerCommand(
+      webkit_glue::WebStringToString(command), caller_id);
 }
 
 // static

@@ -5,19 +5,22 @@
 #ifndef WEBKIT_GLUE_WEBDEVTOOLSAGENT_DELEGATE_H_
 #define WEBKIT_GLUE_WEBDEVTOOLSAGENT_DELEGATE_H_
 
-#include <string>
 #include "base/basictypes.h"
+
+namespace WebKit {
+class WebString;
+}
 
 class WebDevToolsAgentDelegate {
  public:
   WebDevToolsAgentDelegate() {}
   virtual ~WebDevToolsAgentDelegate() {}
 
-  virtual void SendMessageToClient(const std::string& class_name,
-                                   const std::string& method_name,
-                                   const std::string& param1,
-                                   const std::string& param2,
-                                   const std::string& param3) = 0;
+  virtual void SendMessageToClient(const WebKit::WebString& class_name,
+                                   const WebKit::WebString& method_name,
+                                   const WebKit::WebString& param1,
+                                   const WebKit::WebString& param2,
+                                   const WebKit::WebString& param3) = 0;
 
   // Invalidates widget which leads to the repaint.
   virtual void ForceRepaint() = 0;

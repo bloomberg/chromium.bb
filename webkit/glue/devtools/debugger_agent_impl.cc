@@ -84,7 +84,7 @@ void DebuggerAgentImpl::GetNextLogLines() {
   delegate_->DidGetNextLogLines(buffer);
 }
 
-void DebuggerAgentImpl::DebuggerOutput(const std::string& command) {
+void DebuggerAgentImpl::DebuggerOutput(const String& command) {
   delegate_->DebuggerOutput(command);
   webdevtools_agent_->ForceRepaint();
 }

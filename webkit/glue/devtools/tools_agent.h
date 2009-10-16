@@ -30,7 +30,7 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 
 #define TOOLS_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
   /* Updates focused node on the client. */ \
-  METHOD1(FrameNavigate, std::string /* url */) \
+  METHOD1(FrameNavigate, String /* url */) \
   \
   /* Response to the DispatchOn*. */ \
   METHOD3(DidDispatchOn, int /* call_id */, String /* result */, \
