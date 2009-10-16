@@ -12,7 +12,9 @@
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : rph_factory_(),
       rvh_factory_(&rph_factory_) {
+#if defined(OS_WIN)
   OleInitialize(NULL);
+#endif
 }
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -38,7 +40,9 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
   MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
   MessageLoop::current()->Run();
 
+#if defined(OS_WIN)
   OleUninitialize();
+#endif
 }
 
 TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(

@@ -87,8 +87,8 @@ class EventLogger {
   }
 
   void HandlePairEvent(const string& name, const TestEvent& event) {
-    const char* what_changed;
-    int new_value;
+    const char* what_changed = NULL;
+    int new_value = 0;
     Hookups::iterator dead;
     switch (event.what_happened) {
     case TestEvent::A_CHANGED:

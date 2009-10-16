@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE entry.
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,15 +43,10 @@ class UserSettingsTest : public testing::Test {
     ExecOrDie(primer_handle, "CREATE TABLE shares"
               " (email, share_name, file_name,"
               "  PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)");
-#if OS_WIN
     // Populate a share.
     ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
-              "foo@foo.com", "foo@foo.com", WideToUTF8(kOldStyleSyncDataDB));
-#elif OS_LINUX
-    // Populate a share.
-    ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
-              "foo@foo.com", "foo@foo.com", kOldStyleSyncDataDB);
-#endif
+              "foo@foo.com", "foo@foo.com",
+              browser_sync::PathStringToUTF8Quick(kOldStyleSyncDataDB));
     sqlite3_close(primer_handle);
   }
 
