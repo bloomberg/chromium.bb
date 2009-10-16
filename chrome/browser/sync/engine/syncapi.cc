@@ -1404,8 +1404,10 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
     }
 
     // TODO(chron): Consider changing this back to track HasMoreToSync
-    // Only notify peers if a commit has occurred and change the bookmark model.
-    if (event.last_session && event.last_session->items_committed()) {
+    // Only notify peers if a successful commit has occurred.
+    if (event.last_session && event.last_session->HadSuccessfulCommits()) {
+      // We use a member variable here because talk may not have connected yet.
+      // The notification must be stored until it can be sent.
       notification_pending_ = true;
     }
 

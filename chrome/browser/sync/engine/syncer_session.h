@@ -153,6 +153,10 @@ class SyncerSession {
     return sync_cycle_state_->commit_ids_empty();
   }
 
+  bool HadSuccessfulCommits() const {
+    return sync_process_state_->successful_commits() > 0;
+  }
+
   syncable::WriteTransaction* write_transaction() const {
     return sync_cycle_state_->write_transaction();
   }
