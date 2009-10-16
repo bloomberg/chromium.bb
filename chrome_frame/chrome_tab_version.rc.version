@@ -24,6 +24,7 @@ BEGIN
             VALUE "CompanyName", "@COMPANY_FULLNAME@"
             VALUE "CompanyShortName", "@COMPANY_SHORTNAME@"
             VALUE "ProductName", "Google Chrome Frame"
+            VALUE "ProductShortName", "ChromeFrame"
             VALUE "ProductVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
             VALUE "FileDescription", "Chrome Frame renders the Web of the future in the browsers of the past. It's like strapping a rocket engine to a minivan."
             VALUE "FileVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"

@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/file_version_info.h"
 #include "base/win_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -14,12 +15,25 @@
 // Well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 
-// Returns the custom info structure based on the dll in parameter and the
-// process type.
-google_breakpad::CustomClientInfo* GetCustomInfo() {
-  // TODO(joshia): Grab these based on build.
-  static google_breakpad::CustomInfoEntry ver_entry(L"ver", L"0.1.0.0");
-  static google_breakpad::CustomInfoEntry prod_entry(L"prod", L"ChromeFrame");
+// Returns the custom info structure based on the dll in parameter
+google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
+  std::wstring product;
+  std::wstring version;
+  scoped_ptr<FileVersionInfo>
+      version_info(FileVersionInfo::CreateFileVersionInfo(dll_path));
+  if (version_info.get()) {
+    version = version_info->product_version();
+    product = version_info->product_short_name();
+  }
+
+  if (version.empty())
+    version = L"0.1.0.0";
+
+  if (product.empty())
+    product = L"ChromeFrame";
+
+  static google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
+  static google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
   static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
   static google_breakpad::CustomInfoEntry type_entry(L"ptype", L"chrome_frame");
   static google_breakpad::CustomInfoEntry entries[] = {
@@ -60,7 +74,7 @@ bool InitializeCrashReporting() {
   }
 
   return InitializeVectoredCrashReporting(false, user_sid.c_str(),
-      temp_directory.value(), GetCustomInfo());
+      temp_directory.value(), GetCustomInfo(dll_path));
 }
 
 bool ShutdownCrashReporting() {
