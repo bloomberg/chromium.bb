@@ -75,17 +75,20 @@ NSColor* BrowserThemeProvider::GetNSColor(int id) const {
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  SkColor sk_color = GetColor(id);
-  NSColor* color = [NSColor
-      colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
-                       green:SkColorGetG(sk_color)/255.0
-                        blue:SkColorGetB(sk_color)/255.0
-                       alpha:SkColorGetA(sk_color)/255.0];
+  ColorMap::const_iterator color_iter = colors_.find(GetColorKey(id));
+  if (color_iter != colors_.end()) {
+    const SkColor& sk_color = color_iter->second;
+    NSColor* color = [NSColor
+        colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
+                         green:SkColorGetG(sk_color)/255.0
+                          blue:SkColorGetB(sk_color)/255.0
+                         alpha:SkColorGetA(sk_color)/255.0];
 
-  // We loaded successfully.  Cache the color.
-  if (color) {
-    nscolor_cache_[id] = [color retain];
-    return color;
+    // We loaded successfully.  Cache the color.
+    if (color) {
+      nscolor_cache_[id] = [color retain];
+      return color;
+    }
   }
 
   return nil;

@@ -54,11 +54,6 @@ const CGFloat kBorderRadius = 3.0;
   }
 }
 
-@end
-
-
-@implementation BookmarkBarToolbarView (Private)
-
 - (void)drawRectAsFloating:(NSRect)rect {
   NSRect bounds = [self bounds];
 
@@ -86,15 +81,27 @@ const CGFloat kBorderRadius = 3.0;
                  bookmarks::kNTPBookmarkBarPadding,
                  NSWidth(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding,
                  NSHeight(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding);
-  // Now draw a beizer path with rounded rectangles around the area
+  // Now draw a bezier path with rounded rectangles around the area
   NSBezierPath* border =
       [NSBezierPath bezierPathWithRoundedRect:frame_rect
                                       xRadius:kBorderRadius
                                       yRadius:kBorderRadius];
-  [themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR) set];;
+  NSColor* toolbarColor =
+      [[self gtm_theme] backgroundColorForStyle:GTMThemeStyleToolBar
+                                          state:GTMThemeStateActiveWindow];
+  // workaround for default theme
+  // TODO(alcor) next GTM update return nil for background color if not set;
+  if ([toolbarColor isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
+    toolbarColor = nil;
+  if (!toolbarColor)
+    toolbarColor = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
+  [toolbarColor set];
   [border fill];
 
-  [themeProvider->GetNSColor(BrowserThemeProvider::COLOR_NTP_HEADER) set];
+  NSColor* borderColor =
+      [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
+                                      state:GTMThemeStateActiveWindow];
+  [borderColor set];
   [border stroke];
 
   [theContext restoreGraphicsState];
