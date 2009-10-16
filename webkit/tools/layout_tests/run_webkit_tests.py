@@ -131,6 +131,9 @@ class TestRunner:
     self._http_server = http_server.Lighttpd(options.results_directory)
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
+    self._websocket_secure_server = websocket_server.PyWebSocket(
+        options.results_directory, use_tls=True, port=9323)
+
     # a list of TestType objects
     self._test_types = []
 
@@ -147,8 +150,9 @@ class TestRunner:
     logging.info("stopping http server")
     # Stop the http server.
     self._http_server.Stop()
-    # Stop the Web Socket server.
+    # Stop the Web Socket / Web Socket Secure servers.
     self._websocket_server.Stop()
+    self._websocket_secure_server.Stop()
 
   def GatherFilePaths(self, paths):
     """Find all the files to test.
@@ -460,6 +464,7 @@ class TestRunner:
     # Start Web Socket server.
     if (self._ContainWebSocketTest(test_files)):
       self._websocket_server.Start()
+      self._websocket_secure_server.Start()
 
     # Instantiate TestShellThreads and start them.
     threads = []
