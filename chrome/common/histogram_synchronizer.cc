@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include "chrome/common/histogram_synchronizer.h"
 
 #include "base/histogram.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/histogram_synchronizer.h"
 
 using base::Time;
 using base::TimeDelta;

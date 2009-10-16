@@ -5,23 +5,17 @@
 #ifndef CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_
 #define CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_
 
-#include <list>
-#include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/condition_variable.h"
 #include "base/lock.h"
-#include "base/message_loop.h"
-#include "base/process.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "base/time.h"
 
 class MessageLoop;
+class Task;
 
 class HistogramSynchronizer : public
     base::RefCountedThreadSafe<HistogramSynchronizer> {
