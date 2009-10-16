@@ -106,11 +106,11 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       NOTREACHED();
   }
 
-  // Set the "don't warn me again" info if the protocol was blocked ("cancel"
+  // Set the "don't warn me again" info if the protocol was allowed ("cancel"
   // always means "make this dialog go away with no permanent effect" no matter
   // what).
   if ([[alert_ suppressionButton] state] == NSOnState &&
-      blockState == ExternalProtocolHandler::BLOCK) {
+      blockState == ExternalProtocolHandler::DONT_BLOCK) {
     ExternalProtocolHandler::SetBlockState(UTF8ToWide(url_.scheme()),
                                            blockState);
   }
