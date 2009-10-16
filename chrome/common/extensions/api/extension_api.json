@@ -820,6 +820,146 @@
     ]
   },
   {
+    "namespace": "pageAction",
+    "types": [],
+    "functions": [
+      {
+        "name": "show",
+        "type": "function",
+        "description": "Show the page action. The page action is shown whenever the tab is selected.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."}
+        ]
+      },
+      {
+        "name": "hide",
+        "type": "function",
+        "description": "Hide the page action.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."}
+        ]
+      },
+      {
+        "name": "setTitle",
+        "type": "function",
+        "description": "Set the title of the page action. This is displayed in a tooltip over the page action.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
+              "title": {"type": "string", "description": "The tooltip string."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "setIcon",
+        "type": "function",
+        "description": "Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
+              "imageData": {
+                "type": "any",
+                "description": "Pixel data for an image. Must be an ImageData object (eg from a <code>canvas</code> element).",
+                "optional": true
+              },
+              "iconIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The zero-based index into the |icons| vector specified in the manifest.",
+                "optional": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "setBadgeText",
+        "type": "function",
+        "description": "Sets the badge text for the page action. This is printed on top of the icon.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
+              "text": {"type": "string", "description": "Any number of characters can be passed, but only about four can fit in the space."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "setBadgeTextColor",
+        "type": "function",
+        "description": "Sets the text color for the badge.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
+              "color": {
+                "type": "array",
+                "description": "An array of four integers in the range [0,255] that make up the ARGB color for the text of the badge.",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "minItems": 4,
+                "maxItems": 4
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "setBadgeBackgroundColor",
+        "type": "function",
+        "description": "Sets the background color for the badge.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
+              "color": {
+                "type": "array",
+                "description": "An array of four integers in the range [0,255] that make up the ARGB color for the text of the badge.",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "minItems": 4,
+                "maxItems": 4
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "description": "Fired when a page action button is clicked.",
+        "parameters": [
+          {
+            "name": "tab",
+            "$ref": "Tab"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "browserAction",
     "types": [],
     "functions": [

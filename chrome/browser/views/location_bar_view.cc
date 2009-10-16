@@ -1245,19 +1245,24 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
 
   const ExtensionActionState* state =
       contents->GetPageActionState(page_action_);
-  bool visible = state != NULL;
+  bool visible = state && !state->hidden();
   if (visible) {
     // Set the tooltip.
     if (state->title().empty())
       tooltip_ = page_action_->title();
     else
       tooltip_ = state->title();
+
     // Set the image.
-    int index = state->icon_index();
-    // The image index (if not within bounds) will be set to the first image.
-    if (index < 0 || index >= static_cast<int>(page_action_icons_.size()))
-      index = 0;
-    ImageView::SetImage(page_action_icons_[index]);
+    SkBitmap* icon = state->icon();
+    if (!icon) {
+      int index = state->icon_index();
+      // The image index (if not within bounds) will be set to the first image.
+      if (index < 0 || index >= static_cast<int>(page_action_icons_.size()))
+        index = 0;
+      icon = &page_action_icons_[index];
+    }
+    ImageView::SetImage(icon);
   }
   SetVisible(visible);
 }

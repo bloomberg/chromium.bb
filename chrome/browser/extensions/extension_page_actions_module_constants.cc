@@ -12,9 +12,4 @@ const wchar_t kTitleKey[] = L"title";
 const wchar_t kIconIdKey[] = L"iconId";
 const wchar_t kButtonKey[] = L"button";
 
-const char kNoExtensionError[] = "No extension with id: *.";
-const char kNoTabError[] = "No tab with id: *.";
-const char kNoPageActionError[] = "No PageAction with id: *.";
-const char kUrlNotActiveError[] = "This url is no longer active: *.";
-
 }  // namespace extension_page_actions_module_constants

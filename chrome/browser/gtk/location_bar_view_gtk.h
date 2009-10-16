@@ -134,6 +134,12 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // The icons representing different states for the page action.
     std::vector<GdkPixbuf*> pixbufs_;
 
+    // A cache of the last dynamically generated bitmap and the pixbuf that
+    // corresponds to it. We keep track of both so we can free old pixbufs as
+    // their icons are replaced.
+    SkBitmap* last_icon_skbitmap_;
+    GdkPixbuf* last_icon_pixbuf_;
+
     // The object that is waiting for the image loading to complete
     // asynchronously.  It will delete itself once it is done.
     ImageLoadingTracker* tracker_;

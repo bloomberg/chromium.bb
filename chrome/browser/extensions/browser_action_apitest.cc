@@ -37,7 +37,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
   // Test that we received the changes.
   ExtensionActionState* action_state = extension->browser_action_state();
   ASSERT_EQ("Modified", action_state->title());
-  ASSERT_EQ(1, action_state->icon_index());
   ASSERT_EQ("badge", action_state->badge_text());
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action_state->badge_background_color());

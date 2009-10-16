@@ -83,7 +83,7 @@ typedef std::map<std::string, ExtensionAction*> ExtensionActionMap;
 class ExtensionActionState {
  public:
   ExtensionActionState(std::string title, int icon_index)
-    : title_(title), icon_index_(icon_index),
+    : hidden_(false), title_(title), icon_index_(icon_index),
       badge_background_color_(SkColorSetARGB(255, 218, 0, 24)) {
   }
 
@@ -108,9 +108,15 @@ class ExtensionActionState {
   SkBitmap* icon() const { return icon_.get(); }
   void set_icon(SkBitmap* icon) { icon_.reset(icon); }
 
+  bool hidden() const { return hidden_; }
+  void set_hidden(bool hidden) { hidden_ = hidden; }
+
   void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds);
 
  private:
+  // True if the action is in the hidden state.
+  bool hidden_;
+
   // The title text to use for tooltips and labels.
   std::string title_;
 

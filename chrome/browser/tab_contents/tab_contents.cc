@@ -609,26 +609,33 @@ void TabContents::SetPageActionEnabled(const ExtensionAction* page_action,
                                        const std::string& title,
                                        int icon_id) {
   DCHECK(page_action);
-
-  if (!enable &&
-      enabled_page_actions_.end() == enabled_page_actions_.find(page_action)) {
-    return;  // Don't need to disable twice.
-  }
-
-  if (enable) {
-    enabled_page_actions_[page_action].reset(
-        new ExtensionActionState(title, icon_id));
-  } else {
-    enabled_page_actions_.erase(page_action);
-  }
+  ExtensionActionState* state = GetOrCreatePageActionState(page_action);
+  state->set_hidden(!enable);
+  state->set_title(title);
+  state->set_icon_index(icon_id);
+  state->set_icon(NULL);
 }
 
 const ExtensionActionState* TabContents::GetPageActionState(
     const ExtensionAction* page_action) {
-  if (enabled_page_actions_.end() == enabled_page_actions_.find(page_action))
+  if (page_actions_.end() == page_actions_.find(page_action))
     return NULL;
 
-  return enabled_page_actions_[page_action].get();
+  return page_actions_[page_action].get();
+}
+
+ExtensionActionState* TabContents::GetOrCreatePageActionState(
+    const ExtensionAction* page_action) {
+  if (page_actions_.end() == page_actions_.find(page_action)) {
+    page_actions_[page_action].reset(
+        new ExtensionActionState(page_action->title(), 0));
+  }
+
+  return page_actions_[page_action].get();
+}
+
+void TabContents::PageActionStateChanged() {
+  NotifyNavigationStateChanged(TabContents::INVALIDATE_PAGE_ACTIONS);
 }
 
 void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
@@ -1400,12 +1407,12 @@ void TabContents::DidNavigateMainFramePostCommit(
   fav_icon_helper_.FetchFavIcon(details.entry->url());
 
   // Disable all page actions, unless this is an in-page navigation.
-  if (!enabled_page_actions_.empty()) {
+  if (!page_actions_.empty()) {
     url_canon::Replacements<char> replacements;
     replacements.ClearRef();
     if (params.url.ReplaceComponents(replacements) !=
         params.referrer.ReplaceComponents(replacements)) {
-      enabled_page_actions_.clear();
+      page_actions_.clear();
     }
   }
 
@@ -2625,4 +2632,3 @@ void TabContents::Observe(NotificationType type,
 void TabContents::set_encoding(const std::string& encoding) {
   encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
 }
-

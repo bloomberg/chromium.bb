@@ -269,6 +269,16 @@ class TabContents : public PageNavigator,
   const ExtensionActionState* GetPageActionState(
       const ExtensionAction* page_action);
 
+  // Same as above, but creates an enable state if it doesn't exist. The return
+  // value can be updated. The caller should call PageActionStateChanged when
+  // done modifying the state.
+  ExtensionActionState* GetOrCreatePageActionState(
+      const ExtensionAction* page_action);
+
+  // Call this after updating a ExtensionActionState object returned by
+  // GetOrCreatePageActionState to notify clients about the changes.
+  void PageActionStateChanged();
+
   // Whether the tab is in the process of being destroyed.
   // Added as a tentative work-around for focus related bug #4633.  This allows
   // us not to store focus when a tab is being closed.
@@ -1111,12 +1121,13 @@ class TabContents : public PageNavigator,
 
   // Data for Page Actions -----------------------------------------------------
 
-  // A map of page actions that are enabled in this tab (and a state object
-  // that can be used to override the title and icon used for the page action).
-  // This map is cleared every time the mainframe navigates and populated by the
-  // PageAction extension API.
-  std::map< const ExtensionAction*, linked_ptr<ExtensionActionState> >
-      enabled_page_actions_;
+  // A map of page actions that this tab knows about (and a state object that
+  // can be used to update the title, icon, visibilty, etc used for the page
+  // action). This map is cleared every time the mainframe navigates and
+  // populated by the PageAction extension API.
+  typedef std::map< const ExtensionAction*, linked_ptr<ExtensionActionState> >
+      PageActionStateMap;
+  PageActionStateMap page_actions_;
 
   // Data for misc internal state ----------------------------------------------
 

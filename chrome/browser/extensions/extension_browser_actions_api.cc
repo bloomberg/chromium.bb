@@ -18,10 +18,8 @@ const char kIconIndexOutOfBounds[] =
 }
 
 bool BrowserActionSetIconFunction::RunImpl() {
-  // setIcon can take a variant argument: either a canvas ImageData, or an
-  // icon index.
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_BINARY) ||
-                              args_->IsType(Value::TYPE_DICTIONARY));
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
+  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
 
   Extension* extension = dispatcher()->GetExtension();
   if (!extension->browser_action()) {
@@ -29,28 +27,28 @@ bool BrowserActionSetIconFunction::RunImpl() {
     return false;
   }
 
-  if (args_->IsType(Value::TYPE_BINARY)) {
-    BinaryValue* binary = static_cast<BinaryValue*>(args_);
+  // setIcon can take a variant argument: either a canvas ImageData, or an
+  // icon index.
+  BinaryValue* binary;
+  int icon_index;
+  if (args->GetBinary(L"imageData", &binary)) {
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
     void* iter = NULL;
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     EXTENSION_FUNCTION_VALIDATE(
         IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));
     extension->browser_action_state()->set_icon(bitmap.release());
-  } else {
-    int icon_index = -1;
-    EXTENSION_FUNCTION_VALIDATE(
-        static_cast<DictionaryValue*>(args_)->GetInteger(
-            L"iconIndex", &icon_index));
+  } else if (args->GetInteger(L"iconIndex", &icon_index)) {
+    if (icon_index < 0 || static_cast<size_t>(icon_index) >=
 
-    if (icon_index < 0 ||
-        static_cast<size_t>(icon_index) >=
             extension->browser_action()->icon_paths().size()) {
       error_ = kIconIndexOutOfBounds;
       return false;
     }
     extension->browser_action_state()->set_icon_index(icon_index);
     extension->browser_action_state()->set_icon(NULL);
+  } else {
+    EXTENSION_FUNCTION_VALIDATE(false);
   }
 
   NotificationService::current()->Notify(

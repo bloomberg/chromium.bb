@@ -16,12 +16,6 @@ extern const wchar_t kTitleKey[];
 extern const wchar_t kIconIdKey[];
 extern const wchar_t kButtonKey[];
 
-// Error messages.
-extern const char kNoExtensionError[];
-extern const char kNoTabError[];
-extern const char kNoPageActionError[];
-extern const char kUrlNotActiveError[];
-
 };  // namespace extension_page_actions_module_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_ACTIONS_MODULE_CONSTANTS_H_

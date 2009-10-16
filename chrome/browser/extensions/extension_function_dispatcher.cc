@@ -101,6 +101,13 @@ void FactoryRegistry::ResetFunctions() {
   // Page Actions.
   RegisterFunction<EnablePageActionFunction>();
   RegisterFunction<DisablePageActionFunction>();
+  RegisterFunction<PageActionShowFunction>();
+  RegisterFunction<PageActionHideFunction>();
+  RegisterFunction<PageActionSetIconFunction>();
+  RegisterFunction<PageActionSetTitleFunction>();
+  RegisterFunction<PageActionSetBadgeBackgroundColorFunction>();
+  RegisterFunction<PageActionSetBadgeTextColorFunction>();
+  RegisterFunction<PageActionSetBadgeTextFunction>();
 
   // Browser Actions.
   RegisterFunction<BrowserActionSetIconFunction>();

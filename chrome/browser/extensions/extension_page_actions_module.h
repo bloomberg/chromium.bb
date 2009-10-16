@@ -7,9 +7,20 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+class TabContents;
+class ExtensionAction;
+class ExtensionActionState;
+
 class PageActionFunction : public SyncExtensionFunction {
  protected:
   bool SetPageActionEnabled(bool enable);
+
+  bool InitCommon(int tab_id);
+  bool SetHidden(bool hidden);
+
+  ExtensionAction* page_action_;
+  TabContents* contents_;
+  ExtensionActionState* state_;
 };
 
 class EnablePageActionFunction : public PageActionFunction {
@@ -20,6 +31,41 @@ class EnablePageActionFunction : public PageActionFunction {
 class DisablePageActionFunction : public PageActionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageActions.disableForTab")
+};
+
+class PageActionShowFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.show")
+};
+
+class PageActionHideFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.hide")
+};
+
+class PageActionSetIconFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setIcon")
+};
+
+class PageActionSetTitleFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setTitle")
+};
+
+class PageActionSetBadgeBackgroundColorFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeBackgroundColor")
+};
+
+class PageActionSetBadgeTextColorFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeTextColor")
+};
+
+class PageActionSetBadgeTextFunction : public PageActionFunction {
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeText")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_ACTIONS_MODULE_H_

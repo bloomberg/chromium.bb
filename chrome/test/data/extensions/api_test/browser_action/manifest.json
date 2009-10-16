@@ -6,7 +6,7 @@
     "tabs", "http://*/*"
   ],
   "browser_action": {
-      "name": "Make this page red",
-      "icons": ["icon.png", "icon2.png"]
+    "default_title": "Make this page red",
+    "default_icon": "icon.png"
   }
 }

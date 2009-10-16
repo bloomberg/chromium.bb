@@ -211,8 +211,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetRenderViewId);
     } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
       return v8::FunctionTemplate::New(GetL10nMessage);
-    } else if (name->Equals(v8::String::New("SetBrowserActionIcon"))) {
-      return v8::FunctionTemplate::New(SetBrowserActionIcon);
+    } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
+      return v8::FunctionTemplate::New(SetExtensionActionIcon);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -407,11 +407,12 @@ class ExtensionImpl : public ExtensionBase {
     return StartRequestCommon(args, value_args);
   }
 
-  // A special request for setting the browser action icon. This function
+  // A special request for setting the extension action icon. This function
   // accepts a canvas ImageData object, so it needs to do extra processing
   // before sending the request to the browser.
-  static v8::Handle<v8::Value> SetBrowserActionIcon(const v8::Arguments& args) {
+  static v8::Handle<v8::Value> SetExtensionActionIcon(const v8::Arguments& args) {
     v8::Local<v8::Object> details = args[1]->ToObject();
+    int tab_id = details->Get(v8::String::New("tabId"))->Int32Value();
     v8::Local<v8::Object> image_data =
         details->Get(v8::String::New("imageData"))->ToObject();
     v8::Local<v8::Object> data =
@@ -421,8 +422,7 @@ class ExtensionImpl : public ExtensionBase {
 
     int data_length = data->Get(v8::String::New("length"))->Int32Value();
     if (data_length != 4 * width * height) {
-      NOTREACHED() <<
-          "Invalid argument to browserAction.setIcon. Expecting ImageData.";
+      NOTREACHED() << "Invalid argument to setIcon. Expecting ImageData.";
       return v8::Undefined();
     }
 
@@ -447,7 +447,11 @@ class ExtensionImpl : public ExtensionBase {
     Value* bitmap_value = BinaryValue::CreateWithCopiedBuffer(
         static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
 
-    return StartRequestCommon(args, bitmap_value);
+    DictionaryValue* dict = new DictionaryValue();
+    dict->Set(L"imageData", bitmap_value);
+    dict->SetInteger(L"tabId", tab_id);
+
+    return StartRequestCommon(args, dict);
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {

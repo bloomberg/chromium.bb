@@ -16,7 +16,7 @@ var chrome = chrome || {};
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function GetL10nMessage();
-  native function SetBrowserActionIcon();
+  native function SetExtensionActionIcon();
 
   if (!chrome)
     chrome = {};
@@ -177,7 +177,7 @@ var chrome = chrome || {};
     var request = prepareRequest(args, argSchemas);
     var requestId = GetNextRequestId();
     requests[requestId] = request;
-    return nativeFunction(functionName, args, requestId,
+    return nativeFunction(functionName, request.args, requestId,
                           request.callback ? true : false);
   }
 
@@ -333,9 +333,9 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders);
     }
 
-    apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
+    function setIconCommon(details, name, parameters) {
       if ("iconIndex" in details) {
-        sendRequest(this.name, arguments, this.definition.parameters);
+        sendRequest(name, [details], parameters);
       } else if ("imageData" in details) {
         // Verify that this at least looks like an ImageData element.
         // Unfortunately, we cannot use instanceof because the ImageData
@@ -349,14 +349,20 @@ var chrome = chrome || {};
           throw new Error(
               "The imageData property must contain an ImageData object.");
         }
-
-        sendCustomRequest(SetBrowserActionIcon, "browserAction.setIcon",
-                          details, this.definition.parameters);
+        sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
       } else {
         throw new Error(
             "Either the iconIndex or imageData property must be specified.");
       }
     }
+
+    apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
+      setIconCommon(details, this.name, this.definition.parameters);
+    };
+
+    apiFunctions["pageAction.setIcon"].handleRequest = function(details) {
+      setIconCommon(details, this.name, this.definition.parameters);
+    };
 
     setupBrowserActionEvent(extensionId);
     setupPageActionEvents(extensionId);

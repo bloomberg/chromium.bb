@@ -676,7 +676,9 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     const ExtensionAction* page_action)
     : owner_(owner),
       profile_(profile),
-      page_action_(page_action) {
+      page_action_(page_action),
+      last_icon_skbitmap_(NULL),
+      last_icon_pixbuf_(NULL) {
   event_box_.Own(gtk_event_box_new());
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
@@ -709,6 +711,8 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
     if (pixbufs_[i])
       g_object_unref(pixbufs_[i]);
   }
+  if (last_icon_pixbuf_)
+    g_object_unref(last_icon_pixbuf_);
 }
 
 void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
@@ -720,7 +724,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 
   const ExtensionActionState* state =
       contents->GetPageActionState(page_action_);
-  bool visible = state != NULL;
+  bool visible = state && !state->hidden();
   if (visible) {
     // Set the tooltip.
     if (state->title().empty())
@@ -728,14 +732,30 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
                                   page_action_->title().c_str());
     else
       gtk_widget_set_tooltip_text(event_box_.get(), state->title().c_str());
+
     // Set the image.
-    int index = state->icon_index();
-    // The image index (if not within bounds) will be set to the first image.
-    if (index < 0 || index >= static_cast<int>(pixbufs_.size()))
-      index = 0;
+    SkBitmap* icon = state->icon();
+    GdkPixbuf* pixbuf = NULL;
+    if (icon) {
+      if (icon != last_icon_skbitmap_) {
+        if (last_icon_pixbuf_)
+          g_object_unref(last_icon_pixbuf_);
+        last_icon_skbitmap_ = icon;
+        last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(icon);
+      }
+      DCHECK(last_icon_pixbuf_);
+      pixbuf = last_icon_pixbuf_;
+    } else {
+      int index = state->icon_index();
+      // The image index (if not within bounds) will be set to the first image.
+      if (index < 0 || index >= static_cast<int>(pixbufs_.size()))
+        index = 0;
+      pixbuf = pixbufs_[index];
+    }
+
     // The pixbuf might not be loaded yet.
-    if (pixbufs_[index])
-      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbufs_[index]);
+    if (pixbuf)
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
     else
       visible = false;
   }
