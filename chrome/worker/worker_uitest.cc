@@ -90,8 +90,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",
-    // Disabled afer r27553 (WebKit merge), http://crbug.com/23391
-    // "worker-script-error.html",
+    "worker-script-error.html",
     "worker-terminate.html",
     "worker-timeout.html"
   };
