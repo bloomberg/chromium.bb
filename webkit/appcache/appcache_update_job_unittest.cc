@@ -1422,11 +1422,11 @@ TEST_F(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeSuccessMergedTypesTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, DISABLED_CacheAttemptFailUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, CacheAttemptFailUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CacheAttemptFailUrlFetchTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, DISABLED_UpgradeFailUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFailUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailUrlFetchTest);
 }
 
