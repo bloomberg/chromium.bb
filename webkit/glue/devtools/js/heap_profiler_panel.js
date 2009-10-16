@@ -30,9 +30,12 @@ WebInspector.ProfilesPanel.prototype.addSnapshot = function(snapshot) {
     snapshotsTreeElement.small = false;
     snapshot._snapshotsTreeElement = snapshotsTreeElement;
 
-    this.snapshotsListTreeElement.appendChild(snapshotsTreeElement);
+    this.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId).treeElement.appendChild(snapshotsTreeElement);
 
     this.dispatchEventToListeners("snapshot added");
+
+    if (!this.visibleView)
+        this.showSnapshot(snapshot);
 }
 
 
@@ -68,13 +71,6 @@ WebInspector.ProfilesPanel.prototype.snapshotViewForSnapshot = function(snapshot
     if (!snapshot._snapshotView)
         snapshot._snapshotView = new WebInspector.HeapSnapshotView(this, snapshot);
     return snapshot._snapshotView;
-}
-
-
-// TODO(mnaganov): remove this hack after Alexander's change landed in WebKit.
-if ("getProfileType" in WebInspector.ProfilesPanel.prototype) {
-    WebInspector.ProfilesPanel.prototype.__defineGetter__("profilesListTreeElement",
-        function() { return this.getProfileType(WebInspector.CPUProfileType.TypeId).treeElement; });
 }
 
 
@@ -716,3 +712,39 @@ WebInspector.HeapSnapshotDataGridRetainerNode.prototype = {
 
 WebInspector.HeapSnapshotDataGridRetainerNode.prototype.__proto__ = WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype;
 
+
+WebInspector.HeapSnapshotProfileType = function()
+{
+    WebInspector.ProfileType.call(this, WebInspector.HeapSnapshotProfileType.TypeId, WebInspector.UIString("HEAP SNAPSHOTS"));
+}
+
+WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
+
+WebInspector.HeapSnapshotProfileType.prototype = {
+    get buttonTooltip()
+    {
+        return WebInspector.UIString("Take heap snapshot.");
+    },
+
+    get buttonStyle()
+    {
+        return "heap-snapshot-status-bar-item status-bar-item";
+    },
+
+    buttonClicked: function()
+    {
+        InspectorController.takeHeapSnapshot();
+    }
+}
+
+WebInspector.HeapSnapshotProfileType.prototype.__proto__ = WebInspector.ProfileType.prototype;
+
+
+(function() {
+    var originalCreatePanels = WebInspector._createPanels;
+    WebInspector._createPanels = function() {
+        originalCreatePanels.apply(this, arguments);
+        if (WebInspector.panels.profiles)
+            WebInspector.panels.profiles.registerProfileType(new WebInspector.HeapSnapshotProfileType());
+    }
+})();

@@ -638,7 +638,8 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
       'profile-sidebar-tree-item',
       WebInspector.UIString('Processing...'),
       '', null, false);
-  var profilesSidebar = WebInspector.panels.profiles.profilesListTreeElement;
+  var profilesSidebar = WebInspector.panels.profiles.getProfileType(
+      WebInspector.CPUProfileType.TypeId).treeElement;
 
   this.profilerProcessor_.setCallbacks(
       function onProfileProcessingStarted() {
