@@ -947,6 +947,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
 
   // Initialize browser action (optional).
   if (source.HasKey(keys::kBrowserAction)) {
+    // Restrict extensions to one UI surface.
+    if (source.HasKey(keys::kPageAction) || source.HasKey(keys::kPageActions)) {
+      *error = errors::kOneUISurfaceOnly;
+      return false;
+    }
+
     DictionaryValue* browser_action_value;
     if (!source.GetDictionary(keys::kBrowserAction, &browser_action_value)) {
       *error = errors::kInvalidBrowserAction;

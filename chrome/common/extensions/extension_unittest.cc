@@ -219,6 +219,18 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   privacy_blacklists->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPrivacyBlacklistsPath));
+
+  // Test invalid UI surface count (both page action and browser action).
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  DictionaryValue* action = new DictionaryValue;
+  action->SetString(keys::kPageActionId, "MyExtensionActionId");
+  action->SetString(keys::kName, "MyExtensionActionName");
+  ListValue* action_list = new ListValue;
+  action_list->Append(action->DeepCopy());
+  input_value->Set(keys::kPageActions, action_list);
+  input_value->Set(keys::kBrowserAction, action);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_STREQ(error.c_str(), errors::kOneUISurfaceOnly);
 }
 
 TEST(ExtensionTest, InitFromValueValid) {
@@ -401,7 +413,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(NULL != action.get());
 
   // Now test that we can parse the new format for page actions.
-  
+
   // Now setup some values to use in the page action.
   const std::string kTitle("MyExtensionActionTitle");
   const std::string kIcon("image1.png");

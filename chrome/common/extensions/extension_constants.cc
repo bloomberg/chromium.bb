@@ -167,6 +167,8 @@ const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
 const char* kInvalidDefaultLocale =
     "Invalid value for default locale - locale name must be a string.";
+const char* kOneUISurfaceOnly =
+    "An extension cannot have both a page action and a browser action.";
 const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
 const char* kLocalesNoDefaultLocaleSpecified =
