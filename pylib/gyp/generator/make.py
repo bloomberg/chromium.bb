@@ -31,9 +31,14 @@ generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
   'OS': 'linux',
+  'STATIC_LIB_PREFIX': 'lib',
+  'SHARED_LIB_PREFIX': 'lib',
+  'STATIC_LIB_SUFFIX': '.a',
+  'SHARED_LIB_SUFFIX': '.so',
   'INTERMEDIATE_DIR': '$(obj)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
+  'LIB_DIR': '$(obj)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$(abspath $<)',
 

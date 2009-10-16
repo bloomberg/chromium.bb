@@ -30,7 +30,8 @@ _shared_intermediate_var = 'SHARED_INTERMEDIATE_DIR'
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
-  'LIBRARY_PREFIX': '',
+  'STATIC_LIB_PREFIX': 'lib',
+  'SHARED_LIB_PREFIX': '',
   'STATIC_LIB_SUFFIX': '.a',
   'SHARED_LIB_SUFFIX': '.dylib',
   # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
@@ -41,6 +42,7 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$(%s)' % _intermediate_var,
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
+  'LIB_DIR': '$(BUILT_PRODUCTS_DIR)',
   'RULE_INPUT_ROOT': '$(INPUT_FILE_BASE)',
   'RULE_INPUT_EXT': '$(INPUT_FILE_SUFFIX)',
   'RULE_INPUT_NAME': '$(INPUT_FILE_NAME)',

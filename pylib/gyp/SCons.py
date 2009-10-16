@@ -110,7 +110,7 @@ input_files = _result
 class CompilableSourcesTargetBase(TargetBase):
   """
   An abstract base class for targets that compile their source files.
-                                 
+
   We explicitly transform compilable files into object files,
   even though SCons could infer that for us, because we want
   to control where the object file ends up.  (The implicit rules
@@ -128,7 +128,6 @@ class CompilableSourcesTargetBase(TargetBase):
     }
     fp.write(compilable_sources_template % variables)
     super(CompilableSourcesTargetBase, self).write_target(fp)
-    
 
 
 class ProgramTarget(CompilableSourcesTargetBase):

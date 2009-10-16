@@ -16,13 +16,15 @@ WriteList = SCons.WriteList
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
-    'LIBRARY_PREFIX': '${LIBPREFIX}',
+    'STATIC_LIB_PREFIX': '${LIBPREFIX}',
+    'SHARED_LIB_PREFIX': '${SHLIBPREFIX}',
     'STATIC_LIB_SUFFIX': '${LIBSUFFIX}',
     'SHARED_LIB_SUFFIX': '${SHLIBSUFFIX}',
     'INTERMEDIATE_DIR': '${INTERMEDIATE_DIR}',
     'SHARED_INTERMEDIATE_DIR': '${SHARED_INTERMEDIATE_DIR}',
     'OS': 'linux',
     'PRODUCT_DIR': '$TOP_BUILDDIR',
+    'LIB_DIR': '$LIB_DIR',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
     'RULE_INPUT_EXT': '${SOURCE.suffix}',
     'RULE_INPUT_NAME': '${SOURCE.file}',
@@ -503,6 +505,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   if dependencies:
     WriteList(fp, dependencies, preamble='dependencies = [\n    ',
                                 postamble='\n]\n')
+    fp.write('env.Requires(target_files, dependencies)\n')
     fp.write('env.Requires(gyp_target, dependencies)\n')
     fp.write('for prerequisite in prerequisites:\n')
     fp.write('  env.Requires(prerequisite, dependencies)\n')
