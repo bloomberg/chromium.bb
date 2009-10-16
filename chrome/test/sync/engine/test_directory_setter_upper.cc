@@ -85,6 +85,12 @@ void ManuallyOpenedTestDirectorySetterUpper::TearDown() {
     TestDirectorySetterUpper::TearDown();
   }
 }
+    
+static PathString UTF8ToPathStringQuick(const std::string &str) {	
+  PathString ret;	
+  CHECK(browser_sync::UTF8ToPathString(str.data(), str.size(), &ret));	
+  return ret;	
+}
 
 TriggeredOpenTestDirectorySetterUpper::TriggeredOpenTestDirectorySetterUpper(
     const std::string& name)
