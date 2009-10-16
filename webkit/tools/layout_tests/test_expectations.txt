@@ -781,6 +781,7 @@ BUG13907 LINUX WIN DEBUG SLOW : LayoutTests/media/audio-delete-while-step-button
 BUG13907 MAC : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
+BUG13907 WIN : LayoutTests/media/controls-strict.html = PASS FAIL
 BUG13907 LINUX RELEASE : LayoutTests/media/controls-strict.html = PASS FAIL
 BUG13907 RELEASE : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 DEBUG SLOW : LayoutTests/media/controls-styling.html = FAIL
