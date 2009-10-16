@@ -984,7 +984,7 @@ BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-40-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-14-b.svg = FAIL
 
 // Pixel test passes. Texts differ by 1 on SVGRenderText bounding box.
-BUG10297 LINUX WIN : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = FAIL
+BUG10297 LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
 
 // No anti-aliasing on the text.
 BUG10298 LINUX : LayoutTests/svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
@@ -2088,7 +2088,6 @@ BUG23488 MAC : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = IMA
 BUG23488 MAC : LayoutTests/svg/custom/non-circular-marker-reference.svg = IMAGE
 BUG23488 MAC : LayoutTests/svg/custom/pattern-rotate.svg = IMAGE
 BUG23488 MAC : LayoutTests/svg/custom/pointer-events-path.svg = IMAGE
-// BUG23488 MAC : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
 // BUG23488 MAC : LayoutTests/svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
 BUG23488 MAC : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = IMAGE
 BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-06-b.svg = IMAGE
@@ -2217,9 +2216,6 @@ BUG23466 MAC : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
 // SVG marker changes
 BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = FAIL
 BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = FAIL
-
-// SVG expected doesn't have rounded corner like actual does
-BUG23464 MAC : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
 
 // SVG failure to use the same fonts
 BUG23462 MAC : LayoutTests/svg/W3C-SVG-1.1/text-fonts-01-t.svg = IMAGE
@@ -2953,9 +2949,6 @@ BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
 BUG24904 WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
-// Fallout from webkit 47265:47277
-BUG24231 : LayoutTests/fast/js/Array-isArray.html = FAIL
-
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
@@ -3128,9 +3121,6 @@ BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
 // Failing at WebKit Linux (dbg)(3) build 7795
 BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 
-// WebKit roll 49245:49254
-BUG24142 LINUX : LayoutTests/fast/css/large-number-round-trip.html = FAIL
-
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
@@ -3150,9 +3140,6 @@ BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
 // WebKit roll 49414:49427
 BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = PASS CRASH
 
-// Fixed in tip of tree V8, hasn't reached us yet.
-BUG_JAPHET : LayoutTests/fast/js/string-trim.html = FAIL
-
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
 BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
@@ -3164,8 +3151,6 @@ BUG_DIMICH : LayoutTests/fast/events/add-event-without-document.html = TIMEOUT
 
 //WebKit roll 49562:49583
 SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
-BUG24854 WIN LINUX : LayoutTests/fast/forms/menulist-no-renderer-onmousedown.html = CRASH
-BUG24855 WIN LINUX : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
