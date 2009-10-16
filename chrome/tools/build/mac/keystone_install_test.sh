@@ -23,7 +23,7 @@ APPNAME="${PRODNAME}.app"
 FWKNAME="${PRODNAME} Framework.framework"
 
 # Temp directory to be used as the disk image (source)
-TEMPDIR=$(mktemp -d ${TMPDIR}/$(basename ${0}).XXXXXX)
+TEMPDIR=$(mktemp -d -t $(basename ${0}))
 PATH=$PATH:"${TEMPDIR}"
 
 # Clean up the temp directory
@@ -37,7 +37,7 @@ function cleanup_tempdir() {
 # Arg0: string to print
 function fail_installer() {
   echo $1
-  "${INSTALLER}" "${TEMPDIR}" >/dev/null 2>&1
+  "${INSTALLER}" "${TEMPDIR}" >& /dev/null
   RETURN=$?
   if [ $RETURN -eq 0 ]; then
     echo "Did not fail (which is a failure)" >& 2
@@ -52,7 +52,7 @@ function fail_installer() {
 # Arg0: string to print
 function pass_installer() {
   echo $1
-  "${INSTALLER}" "${TEMPDIR}" >/dev/null 2>&1
+  "${INSTALLER}" "${TEMPDIR}" >& /dev/null
   RETURN=$?
   if [ $RETURN -ne 0 ]; then
     echo "FAILED; returned $RETURN but should have worked" >& 2
@@ -72,7 +72,7 @@ function make_old_dest() {
   defaults write "${DEST}/Contents/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
 #!/bin/sh
-echo "echo xc=<blah path=$DEST>"
+echo " xc=<KSPathExistenceChecker:0x45 path=${DEST}>"
 exit 0
 EOF
   chmod u+x "${TEMPDIR}"/ksadmin
@@ -89,7 +89,7 @@ function make_new_dest() {
   defaults write "${RSRCDIR}/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
 #!/bin/sh
-echo "echo xc=<blah path=$DEST>"
+echo " xc=<KSPathExistenceChecker:0x45 path=${DEST}>"
 exit 0
 EOF
   chmod u+x "${TEMPDIR}"/ksadmin
