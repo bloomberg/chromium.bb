@@ -88,18 +88,19 @@ class MockCookieStore : public net::CookieStore {
   DISALLOW_EVIL_CONSTRUCTORS(MockCookieStore);
 };
 
-
-TEST_F(ExternalCookieHandlerTest, DISABLED_MockCookieStoreSanityTest) {
+TEST_F(ExternalCookieHandlerTest, MockCookieStoreSanityTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
-  MockCookieStore cookie_store;
+  // Need to use a scoped_refptr here because net::CookieStore extends
+  // base::RefCountedThreadSafe<> in base/ref_counted.h.
+  scoped_refptr<MockCookieStore> cookie_store(new MockCookieStore);
   net::CookieOptions options;
   options.set_include_httponly();
-  EXPECT_TRUE(cookie_store.SetCookieWithOptions(url, cookie1, options));
-  EXPECT_TRUE(cookie_store.SetCookieWithOptions(url, cookie2, options));
-  EXPECT_TRUE(cookie_store.SetCookieWithOptions(url, cookie3, options));
-  EXPECT_FALSE(cookie_store.SetCookieWithOptions(url, cookie1, options));
-  EXPECT_FALSE(cookie_store.SetCookieWithOptions(url, cookie2, options));
-  EXPECT_FALSE(cookie_store.SetCookieWithOptions(url, cookie3, options));
+  EXPECT_TRUE(cookie_store->SetCookieWithOptions(url, cookie1, options));
+  EXPECT_TRUE(cookie_store->SetCookieWithOptions(url, cookie2, options));
+  EXPECT_TRUE(cookie_store->SetCookieWithOptions(url, cookie3, options));
+  EXPECT_FALSE(cookie_store->SetCookieWithOptions(url, cookie1, options));
+  EXPECT_FALSE(cookie_store->SetCookieWithOptions(url, cookie2, options));
+  EXPECT_FALSE(cookie_store->SetCookieWithOptions(url, cookie3, options));
 }
 
 class MockReader : public PipeReader {
@@ -120,10 +121,10 @@ class MockReader : public PipeReader {
   std::vector<std::string> data_;
 };
 
-TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulReadTest) {
+TEST_F(ExternalCookieHandlerTest, SuccessfulReadTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
 
-  MockCookieStore cookie_store;
+  scoped_refptr<MockCookieStore> cookie_store(new MockCookieStore);
 
   std::vector<std::string> cookies;
   cookies.push_back(cookie3);
@@ -132,13 +133,13 @@ TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulReadTest) {
   MockReader *reader = new MockReader(cookies);
 
   ExternalCookieHandler handler(reader);  // takes ownership.
-  EXPECT_TRUE(handler.HandleCookies(&cookie_store));
+  EXPECT_TRUE(handler.HandleCookies(cookie_store.get()));
 }
 
-TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulSlowReadTest) {
+TEST_F(ExternalCookieHandlerTest, SuccessfulSlowReadTest) {
   GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
 
-  MockCookieStore cookie_store;
+  scoped_refptr<MockCookieStore> cookie_store(new MockCookieStore);
 
   std::vector<std::string> cookies;
   cookies.push_back(cookie3);
@@ -148,5 +149,5 @@ TEST_F(ExternalCookieHandlerTest, DISABLED_SuccessfulSlowReadTest) {
   MockReader *reader = new MockReader(cookies);
 
   ExternalCookieHandler handler(reader);  // takes ownership.
-  EXPECT_TRUE(handler.HandleCookies(&cookie_store));
+  EXPECT_TRUE(handler.HandleCookies(cookie_store.get()));
 }
