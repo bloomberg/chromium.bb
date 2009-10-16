@@ -159,8 +159,8 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
 }
 
 void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
-  if (internal_state_ == CACHE_FAILURE || internal_state_ == CANCELLED
-      || internal_state_ == COMPLETED)
+  if (internal_state_ == CACHE_FAILURE || internal_state_ == CANCELLED ||
+      internal_state_ == COMPLETED)
     return;
 
   int bytes_read = 0;
