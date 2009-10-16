@@ -123,6 +123,11 @@ void WebMediaPlayerImpl::Proxy::PipelineErrorCallback() {
       &WebMediaPlayerImpl::Proxy::PipelineErrorTask));
 }
 
+void WebMediaPlayerImpl::Proxy::NetworkEventCallback() {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &WebMediaPlayerImpl::Proxy::NetworkEventTask));
+}
+
 void WebMediaPlayerImpl::Proxy::RepaintTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   {
@@ -163,6 +168,13 @@ void WebMediaPlayerImpl::Proxy::PipelineErrorTask() {
   }
 }
 
+void WebMediaPlayerImpl::Proxy::NetworkEventTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (webmediaplayer_) {
+    webmediaplayer_->OnNetworkEvent();
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // WebMediaPlayerImpl implementation
 
@@ -199,6 +211,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
       &WebMediaPlayerImpl::Proxy::PipelineEndedCallback));
   pipeline_->SetPipelineErrorCallback(NewCallback(proxy_.get(),
       &WebMediaPlayerImpl::Proxy::PipelineErrorCallback));
+  pipeline_->SetNetworkEventCallback(NewCallback(proxy_.get(),
+      &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
 
   // Add in the default filter factories.
   filter_factory_->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
@@ -505,10 +519,10 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
     // Only keep one time range starting from 0.
-    WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
+    WebKit::WebTimeRanges new_buffered(1u);
     new_buffered[0].start = 0.0f;
     new_buffered[0].end =
-        static_cast<float>(pipeline_->GetBufferedTime().InSecondsF());
+        static_cast<float>(pipeline_->GetDuration().InSecondsF());
     buffered_.swap(new_buffered);
 
     // Since we have initialized the pipeline, say we have everything.
@@ -581,6 +595,16 @@ void WebMediaPlayerImpl::OnPipelineError() {
 
   // Repaint to trigger UI update.
   Repaint();
+}
+
+void WebMediaPlayerImpl::OnNetworkEvent() {
+  DCHECK(MessageLoop::current() == main_loop_);
+  if (pipeline_->GetError() == media::PIPELINE_OK) {
+    if (pipeline_->IsNetworkActive())
+      SetNetworkState(WebKit::WebMediaPlayer::Loading);
+    else
+      SetNetworkState(WebKit::WebMediaPlayer::Idle);
+  }
 }
 
 void WebMediaPlayerImpl::SetNetworkState(

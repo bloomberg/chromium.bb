@@ -64,7 +64,10 @@ class FilterHost {
   // Sets the flag to indicate that our media is now loaded.
   virtual void SetLoaded(bool loaded) = 0;
 
-  // Broadcast a message of type |message| to all other filters from |source|.
+  // Sets the flag to indicate current network activity.
+  virtual void SetNetworkActivity(bool network_activity) = 0;
+
+  // Broadcast a message of type |message| to all filters.
   virtual void BroadcastMessage(FilterMessage message) = 0;
 
  protected:

@@ -5,7 +5,9 @@
 #ifndef WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
 #define WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -33,6 +35,8 @@ class BufferedResourceLoader :
     public base::RefCountedThreadSafe<BufferedResourceLoader>,
     public webkit_glue::ResourceLoaderBridge::Peer {
  public:
+  typedef Callback0::Type NetworkEventCallback;
+
   // |bridge_factory| - Factory to create a ResourceLoaderBridge.
   // |url| - URL for the resource to be loaded.
   // |first_byte_position| - First byte to start loading from, -1 for not
@@ -57,7 +61,10 @@ class BufferedResourceLoader :
   //   An invalid response is received from the server.
   // - (Anything else)
   //   An error code that indicates the request has failed.
-  virtual void Start(net::CompletionCallback* callback);
+  // |event_callback| is called when the response is completed, data is
+  // received, the request is suspended or resumed.
+  virtual void Start(net::CompletionCallback* callback,
+                     NetworkEventCallback* event_callback);
 
   // Stop this loader, cancels and request and release internal buffer.
   virtual void Stop();
@@ -75,6 +82,14 @@ class BufferedResourceLoader :
   virtual void Read(int64 position, int read_size,
                     uint8* buffer, net::CompletionCallback* callback);
 
+  // Returns the position of the first byte buffered. Returns -1 if such value
+  // is not available.
+  virtual int64 GetBufferedFirstBytePosition();
+
+  // Returns the position of the last byte buffered. Returns -1 if such value
+  // is not available.
+  virtual int64 GetBufferedLastBytePosition();
+
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is -1, then content length is unknown.
   virtual int64 content_length() { return content_length_; }
@@ -86,6 +101,9 @@ class BufferedResourceLoader :
   // Returns true if the response for this loader is a partial response.
   // It means a 206 response in HTTP/HTTPS protocol.
   virtual bool partial_response() { return partial_response_; }
+
+  // Returns true if network is currently active.
+  virtual bool network_activity() { return !completed_ && !deferred_; }
 
   /////////////////////////////////////////////////////////////////////////////
   // webkit_glue::ResourceLoaderBridge::Peer implementations.
@@ -134,6 +152,9 @@ class BufferedResourceLoader :
   // Done with start. Invokes the start callback and reset it.
   void DoneStart(int error);
 
+  // Calls |event_callback_| in terms of a network event.
+  void NotifyNetworkEvent();
+
   bool HasPendingRead() { return read_callback_.get() != NULL; }
 
   // A sliding window of buffer.
@@ -155,6 +176,9 @@ class BufferedResourceLoader :
   GURL url_;
   int64 first_byte_position_;
   int64 last_byte_position_;
+
+  // Callback method that listens to network events.
+  scoped_ptr<NetworkEventCallback> event_callback_;
 
   // Members used during request start.
   scoped_ptr<net::CompletionCallback> start_callback_;
@@ -218,8 +242,8 @@ class BufferedDataSource : public media::DataSource {
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters. We can override this file to object a mock
   // BufferedResourceLoader for testing.
-  virtual BufferedResourceLoader* CreateLoader(int64 first_byte_position,
-                                               int64 last_byte_position);
+  virtual BufferedResourceLoader* CreateResourceLoader(
+      int64 first_byte_position, int64 last_byte_position);
 
   // Gets the number of milliseconds to declare a request timeout since
   // the request was made. This method is made virtual so as to inject a
@@ -232,25 +256,23 @@ class BufferedDataSource : public media::DataSource {
       MessageLoop*,
       webkit_glue::MediaResourceLoaderBridgeFactory*>;
 
-  // Posted to perform initialization on render thread.
+  // Posted to perform initialization on render thread and start resource
+  // loading.
   void InitializeTask();
 
-  // Task posted to perform resource loading and actual reading on the render
-  // thread.
-  void ReadTask(int64 position, int read_size,
-                uint8* read_buffer,
+  // Task posted to perform actual reading on the render thread.
+  void ReadTask(int64 position, int read_size, uint8* read_buffer,
                 media::DataSource::ReadCallback* read_callback);
 
   // Task posted when Stop() is called.
   void StopTask();
 
-  // Reset |loader_| with |loader| and starts it. This task is posted from
-  // callback method from the current buffered resource loader.
-  void SwapLoaderTask(scoped_refptr<BufferedResourceLoader> loader);
+  // Restart resource loading on render thread.
+  void RestartLoadingTask();
 
   // This task monitors the current active read request. If the current read
   // request has timed out, this task will destroy the current loader and
-  // creates a new to accomodate the read request.
+  // creates a new one to accomodate the read request.
   void WatchDogTask();
 
   // The method that performs actual read. This method can only be executed on
@@ -258,10 +280,10 @@ class BufferedDataSource : public media::DataSource {
   void ReadInternal();
 
   // Calls |read_callback_| and reset all read parameters.
-  void DoneRead(int error);
+  void DoneRead_Locked(int error);
 
   // Calls |initialize_callback_| and reset it.
-  void DoneInitialization();
+  void DoneInitialization_Locked();
 
   // Callback method for |loader_| if URL for the resource requested is using
   // HTTP protocol. This method is called when response for initial request is
@@ -284,6 +306,9 @@ class BufferedDataSource : public media::DataSource {
   // the error code or the number of bytes read.
   void ReadCallback(int error);
 
+  // Callback method when a network event is received.
+  void NetworkEventCallback();
+
   media::MediaFormat media_format_;
 
   // URL of the resource requested.
@@ -295,6 +320,9 @@ class BufferedDataSource : public media::DataSource {
   // need to protect it.
   int64 total_bytes_;
 
+  // True if this data source is considered loaded.
+  bool loaded_;
+
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.
   bool streaming_;
@@ -304,6 +332,9 @@ class BufferedDataSource : public media::DataSource {
 
   // A resource loader for the media resource.
   scoped_refptr<BufferedResourceLoader> loader_;
+
+  // True if network is active.
+  bool network_activity_;
 
   // Callback method from the pipeline for initialization.
   scoped_ptr<media::FilterCallback> initialize_callback_;
@@ -337,11 +368,11 @@ class BufferedDataSource : public media::DataSource {
 
   // Stop signal to suppressing activities. This variable is set on the pipeline
   // thread and read from the render thread.
-  bool stopped_;
+  bool stop_signal_received_;
 
-  // This variable is set by StopTask() and read from ReadTask(). It is used to
-  // prevent ReadTask() from doing anything after StopTask() is executed.
-  bool stop_task_finished_;
+  // This variable is set by StopTask() that indicates this object is stopped
+  // on the render thread.
+  bool stopped_on_render_loop_;
 
   // This timer is to run the WatchDogTask repeatedly. We use a timer instead
   // of doing PostDelayedTask() reduce the extra reference held by the message

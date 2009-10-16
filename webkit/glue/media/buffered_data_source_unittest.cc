@@ -82,8 +82,9 @@ class BufferedResourceLoaderTest : public testing::Test {
                 CreateBridge(gurl_, _, first_position_, last_position_))
         .WillOnce(Return(bridge_.get()));
     EXPECT_CALL(*bridge_, Start(loader_.get()));
-    loader_->Start(NewCallback(this,
-                               &BufferedResourceLoaderTest::StartCallback));
+    loader_->Start(
+        NewCallback(this, &BufferedResourceLoaderTest::StartCallback),
+        NewCallback(this, &BufferedResourceLoaderTest::NetworkCallback));
   }
 
   void FullResponse(int64 instance_size) {
@@ -134,6 +135,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   // Helper method to write to |loader_| from |data_|.
   void WriteLoader(int position, int size) {
+    EXPECT_CALL(*this, NetworkCallback());
     loader_->OnReceivedData(reinterpret_cast<char*>(data_ + position), size);
   }
 
@@ -150,6 +152,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   MOCK_METHOD1(StartCallback, void(int error));
   MOCK_METHOD1(ReadCallback, void(int error));
+  MOCK_METHOD0(NetworkCallback, void());
 
  protected:
   GURL gurl_;
@@ -282,6 +285,7 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
   ReadLoader(9, 10, buffer);
 
   // Response has completed.
+  EXPECT_CALL(*this, NetworkCallback());
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
@@ -327,6 +331,7 @@ TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
   ReadLoader(25, 10, buffer);
 
   EXPECT_CALL(*this, ReadCallback(5));
+  EXPECT_CALL(*this, NetworkCallback());
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
@@ -344,6 +349,7 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
 
   ReadLoader(10, 10, buffer);
   EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
+  EXPECT_CALL(*this, NetworkCallback());
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
   URLRequestStatus status;
@@ -358,20 +364,24 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   MockBufferedResourceLoader() : BufferedResourceLoader() {
   }
 
-  MOCK_METHOD1(Start, void(net::CompletionCallback* read_callback));
+  MOCK_METHOD2(Start, void(net::CompletionCallback* read_callback,
+                           NetworkEventCallback* network_callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD4(Read, void(int64 position, int read_size, uint8* buffer,
                           net::CompletionCallback* callback));
   MOCK_METHOD0(content_length, int64());
   MOCK_METHOD0(instance_size, int64());
   MOCK_METHOD0(partial_response, bool());
+  MOCK_METHOD0(network_activity, bool());
+  MOCK_METHOD0(GetBufferedFirstBytePosition, int64());
+  MOCK_METHOD0(GetBufferedLastBytePosition, int64());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBufferedResourceLoader);
 };
 
 // A mock BufferedDataSource to inject mock BufferedResourceLoader through
-// CreateLoader() method.
+// CreateResourceLoader() method.
 class MockBufferedDataSource : public BufferedDataSource {
  public:
   // Static methods for creating this class.
@@ -390,13 +400,12 @@ class MockBufferedDataSource : public BufferedDataSource {
     return base::TimeDelta::FromMilliseconds(100);
   }
 
-  MOCK_METHOD2(CreateLoader, BufferedResourceLoader*(int64 first_position,
-                                                     int64 last_position));
+  MOCK_METHOD2(CreateResourceLoader, BufferedResourceLoader*(
+      int64 first_position, int64 last_position));
 
  protected:
   MockBufferedDataSource(
-      MessageLoop* message_loop,
-      MediaResourceLoaderBridgeFactory* factory)
+      MessageLoop* message_loop, MediaResourceLoaderBridgeFactory* factory)
       : BufferedDataSource(message_loop, factory) {
   }
 
@@ -459,11 +468,11 @@ class BufferedDataSourceTest : public testing::Test {
     bool loaded = networkState == LOADED;
     {
       InSequence s;
-      EXPECT_CALL(*data_source_, CreateLoader(_, _))
+      EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
           .WillOnce(Return(loader_.get()));
 
       // The initial response loader will be started.
-      EXPECT_CALL(*loader_, Start(NotNull()))
+      EXPECT_CALL(*loader_, Start(NotNull(), NotNull()))
           .WillOnce(
               DoAll(Assign(&error_, error),
                     Invoke(this,
@@ -471,18 +480,21 @@ class BufferedDataSourceTest : public testing::Test {
     }
 
     StrictMock<media::MockFilterCallback> callback;
+    EXPECT_CALL(*loader_, instance_size())
+        .WillRepeatedly(Return(instance_size));
+    EXPECT_CALL(*loader_, partial_response())
+        .WillRepeatedly(Return(partial_response));
     if (error == net::OK) {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));
-      EXPECT_CALL(*loader_, instance_size())
-          .WillRepeatedly(Return(instance_size));
-      EXPECT_CALL(*loader_, partial_response())
-          .WillRepeatedly(Return(partial_response));
 
       // TODO(hclam): The condition for streaming needs to be adjusted.
       if (instance_size != -1 && (loaded || partial_response)) {
         EXPECT_CALL(host_, SetTotalBytes(instance_size));
-        EXPECT_CALL(host_, SetBufferedBytes(instance_size));
+        if (loaded)
+          EXPECT_CALL(host_, SetBufferedBytes(instance_size));
+        else
+          EXPECT_CALL(host_, SetBufferedBytes(0));
       } else {
         EXPECT_CALL(host_, SetStreaming(true));
       }
@@ -526,9 +538,13 @@ class BufferedDataSourceTest : public testing::Test {
     bridge_factory_.release();
   }
 
-  void InvokeStartCallback(net::CompletionCallback* callback) {
+  void InvokeStartCallback(
+      net::CompletionCallback* callback,
+      BufferedResourceLoader::NetworkEventCallback* network_callback) {
     callback->RunWithParams(Tuple1<int>(error_));
     delete callback;
+    // TODO(hclam): Save this callback.
+    delete network_callback;
   }
 
   void InvokeReadCallback(int64 position, int size, uint8* buffer,
@@ -578,11 +594,11 @@ class BufferedDataSourceTest : public testing::Test {
     // 2. Then the current loader will be stop and destroyed.
     StrictMock<MockBufferedResourceLoader> *new_loader =
         new StrictMock<MockBufferedResourceLoader>();
-    EXPECT_CALL(*data_source_, CreateLoader(position, -1))
+    EXPECT_CALL(*data_source_, CreateResourceLoader(position, -1))
         .WillOnce(Return(new_loader));
 
     // 3. Then the new loader will be started.
-    EXPECT_CALL(*new_loader, Start(NotNull()))
+    EXPECT_CALL(*new_loader, Start(NotNull(), NotNull()))
         .WillOnce(DoAll(Assign(&error_, net::OK),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
@@ -642,13 +658,13 @@ class BufferedDataSourceTest : public testing::Test {
     // 2. Then the current loader will be stop and destroyed.
     StrictMock<MockBufferedResourceLoader> *new_loader =
         new StrictMock<MockBufferedResourceLoader>();
-    EXPECT_CALL(*data_source_, CreateLoader(position, -1))
+    EXPECT_CALL(*data_source_, CreateResourceLoader(position, -1))
         .WillOnce(Return(new_loader));
 
     // 3. Then the new loader will be started and respond to queries about
     //    whether this is a partial response using the value of the previous
     //    loader.
-    EXPECT_CALL(*new_loader, Start(NotNull()))
+    EXPECT_CALL(*new_loader, Start(NotNull(), NotNull()))
         .WillOnce(DoAll(Assign(&error_, net::OK),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
@@ -684,7 +700,7 @@ class BufferedDataSourceTest : public testing::Test {
   scoped_ptr<StrictMock<MockMediaResourceLoaderBridgeFactory> >
       bridge_factory_;
   scoped_refptr<StrictMock<MockBufferedResourceLoader> > loader_;
-  scoped_refptr<MockBufferedDataSource > data_source_;
+  scoped_refptr<MockBufferedDataSource> data_source_;
   scoped_refptr<media::FilterFactory> factory_;
 
   StrictMock<media::MockFilterHost> host_;
