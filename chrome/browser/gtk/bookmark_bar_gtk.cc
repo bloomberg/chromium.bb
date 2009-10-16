@@ -343,8 +343,9 @@ void BookmarkBarGtk::OnStateChanged() {
 #endif
 
 void BookmarkBarGtk::EnterFullscreen() {
-  UpdateFloatingState();
-  if (!floating_)
+  if (ShouldBeFloating())
+    Show(false);
+  else
     gtk_widget_hide(widget());
 }
 
