@@ -34,7 +34,6 @@
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"

@@ -39,6 +39,8 @@
 #include "FrameLoader.h"
 #include "Page.h"
 #include "TextEncoding.h"
+#include "V8Binding.h"
+#include "V8Proxy.h"
 #include "WorkerContextExecutionProxy.h"
 #include <wtf/Assertions.h>
 #include <wtf/Threading.h>
@@ -105,6 +107,27 @@ void registerURLSchemeAsNoAccess(const WebString& scheme)
     WebCore::SecurityOrigin::registerURLSchemeAsNoAccess(scheme);
 }
 
+void registerExtension(v8::Extension* extension)
+{
+    WebCore::V8Proxy::registerExtension(extension, WebString());
+}
+
+void registerExtension(v8::Extension* extension,
+                       const WebString& schemeRestriction)
+{
+    WebCore::V8Proxy::registerExtension(extension, schemeRestriction);
+}
+
+void registerExtension(v8::Extension* extension, int extensionGroup)
+{
+    WebCore::V8Proxy::registerExtension(extension, extensionGroup);
+}
+
+void flushConsoleMessages()
+{
+    WebCore::V8Proxy::processConsoleMessages();
+}
+
 void enableMediaPlayer()
 {
 #if ENABLE(VIDEO)
@@ -127,6 +150,11 @@ void enableDatabases()
 bool databasesEnabled()
 {
     return s_databasesEnabled;
+}
+
+void enableV8SingleThreadMode()
+{
+    WebCore::enableStringImplCache();
 }
 
 void whiteListAccessFromOrigin(const WebURL& sourceOrigin,

@@ -51,7 +51,6 @@
 #include "webkit/api/public/WebFontCache.h"
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
