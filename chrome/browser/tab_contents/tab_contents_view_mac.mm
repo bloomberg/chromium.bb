@@ -16,6 +16,7 @@
 #include "chrome/browser/cocoa/sad_tab_view.h"
 #import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
+#include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
@@ -71,7 +72,16 @@ void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
 
 RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
-  DCHECK(!render_widget_host->view());
+  if (render_widget_host->view()) {
+    // During testing, the view will already be set up in most cases to the
+    // test view, so we don't want to clobber it with a real one. To verify that
+    // this actually is happening (and somebody isn't accidentally creating the
+    // view twice), we check for the RVH Factory, which will be set when we're
+    // making special ones (which go along with the special views).
+    DCHECK(RenderViewHostFactory::has_factory());
+    return render_widget_host->view();
+  }
+
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host);
 

@@ -4,13 +4,15 @@
 
 #ifdef CHROME_PERSONALIZATION
 
-#include "chrome/browser/views/sync/sync_setup_flow.h"
+#include "chrome/browser/sync/sync_setup_flow.h"
 
 #include "app/gfx/font.h"
+#include "app/gfx/font_util.h"
 #include "base/histogram.h"
 #include "base/json_reader.h"
 #include "base/json_writer.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
-#include "views/window/window.h"
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
@@ -156,7 +157,7 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
       prefs->GetString(prefs::kWebKitSansSerifFontFamily),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
-  gfx::Size s = views::Window::GetLocalizedContentsSizeForFont(
+  gfx::Size s = gfx::GetLocalizedContentsSizeForFont(
       IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
       IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);
@@ -264,10 +265,12 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
         flow_handler_->ShowMergeAndSyncError();
       break;
     case SyncSetupWizard::DONE_FIRST_TIME:
-      flow_handler_->ShowFirstTimeDone(service_->GetAuthenticatedUsername());
+      flow_handler_->ShowFirstTimeDone(
+          UTF16ToWide(service_->GetAuthenticatedUsername()));
       break;
     case SyncSetupWizard::DONE:
-      flow_handler_->ShowSetupDone(service_->GetAuthenticatedUsername());
+      flow_handler_->ShowSetupDone(
+          UTF16ToWide(service_->GetAuthenticatedUsername()));
       break;
     default:
       NOTREACHED() << "Invalid advance state: " << advance_state;
