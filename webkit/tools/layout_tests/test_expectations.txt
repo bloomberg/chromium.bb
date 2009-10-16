@@ -3189,3 +3189,5 @@ BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
 BUG_OJAN WIN RELEASE : LayoutTests/http/tests/incremental/split-hex-entities.pl = TIMEOUT
 // Was already timing out on LINUX/MAC debug, which already had a reduced watchdog timeout.
 BUG_OJAN DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT
+// Win is now crashing some just like linux
+BUG_OJAN BUG9798 WIN RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
