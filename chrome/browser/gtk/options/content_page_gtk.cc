@@ -11,10 +11,12 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
@@ -56,12 +58,19 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
                                   profile->GetPrefs(), this);
   }
 
-  // Load initial values
+  // Load initial values.
   NotifyPrefChanged(NULL);
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  ObserveThemeChanged();
 }
 
 ContentPageGtk::~ContentPageGtk() {
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentPageGtk, private:
 
 // If |pref_name| is NULL, set the state of all the widgets. (This is used
 // in ContentPageGtk() above to initialize the dialog.) Otherwise, reset the
@@ -99,8 +108,29 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
   initializing_ = false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// ContentPageGtk, private:
+void ContentPageGtk::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  if (type == NotificationType::BROWSER_THEME_CHANGED)
+    ObserveThemeChanged();
+  else
+    OptionsPageBase::Observe(type, source, details);
+}
+
+void ContentPageGtk::ObserveThemeChanged() {
+#if defined(TOOLKIT_GTK)
+  GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile());
+  bool is_gtk_theme = provider->UseGtkTheme();
+  gtk_widget_set_sensitive(gtk_theme_button_, !is_gtk_theme);
+#else
+  BrowserThemeProvider* provider =
+      reinterpret_cast<BrowserThemeProvider*>(profile()->GetThemeProvider());
+  bool is_gtk_theme = false;
+#endif
+
+  bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
+  gtk_widget_set_sensitive(themes_reset_button_, !is_classic_theme);
+}
 
 GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -196,19 +226,19 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
 
 #if defined(TOOLKIT_GTK)
   // GTK theme button.
-  GtkWidget* gtk_theme_button = gtk_button_new_with_label(
+  gtk_theme_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_GTK_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(gtk_theme_button), "clicked",
+  g_signal_connect(G_OBJECT(gtk_theme_button_), "clicked",
                    G_CALLBACK(OnGtkThemeButtonClicked), this);
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button_, FALSE, FALSE, 0);
 #endif
 
   // Reset theme button.
-  GtkWidget* themes_reset_button = gtk_button_new_with_label(
+  themes_reset_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_SET_CLASSIC).c_str());
-  g_signal_connect(G_OBJECT(themes_reset_button), "clicked",
+  g_signal_connect(G_OBJECT(themes_reset_button_), "clicked",
                    G_CALLBACK(OnResetDefaultThemeButtonClicked), this);
-  gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button_, FALSE, FALSE, 0);
 
   // Get themes button.
   GtkWidget* themes_gallery_button = gtk_chrome_link_button_new(

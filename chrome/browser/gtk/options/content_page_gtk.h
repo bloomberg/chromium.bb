@@ -24,6 +24,14 @@ class ContentPageGtk : public OptionsPageBase {
   // Overridden from OptionsPageBase.
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
+  // Overridden from OptionsPageBase.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Update content area after a theme changed.
+  void ObserveThemeChanged();
+
   // Initialize the option group widgets, return their container.
   GtkWidget* InitPasswordSavingGroup();
   GtkWidget* InitFormAutofillGroup();
@@ -76,6 +84,10 @@ class ContentPageGtk : public OptionsPageBase {
   // Widgets for the Appearance group.
   GtkWidget* system_title_bar_show_radio_;
   GtkWidget* system_title_bar_hide_radio_;
+  GtkWidget* themes_reset_button_;
+#if defined(TOOLKIT_GTK)
+  GtkWidget* gtk_theme_button_;
+#endif
 
   // The parent GtkTable widget
   GtkWidget* page_;
@@ -88,6 +100,8 @@ class ContentPageGtk : public OptionsPageBase {
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
   bool initializing_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageGtk);
 };
