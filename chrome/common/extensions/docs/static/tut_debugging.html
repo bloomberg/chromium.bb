@@ -1,21 +1,39 @@
 <div id="pageData-title" class="pageData">Tutorial: Debugging</div>
-
-<p class="tbd">
-[PENDING: intro goes here.
-This tutorial starts where
-<a href="getstarted.html">Getting Started</a> ends.
-Point to files needed.]
-</p>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-You can use the browser's built-in developer tools
+This tutorial shows you how to use
+Google Chrome's built-in developer tools
 to view your extension's code,
 display debugging output,
-and debug your extension.
+and interactively debug your extension.
 </p>
+
+<p class="comment">
+[PENDING: Rewrite this when we update the example.]
+</p>
+
+<h2 id="files"> Get the source code </h2>
+
+<p>
+To follow this tutorial,
+you use a modified version of
+the Hello World extension that was featured in
+<a href="getstarted.html">Getting Started</a>.
+</p>
+
 <ol>
+
   <li>
-    <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
+    <p>
+    Find your copy of the Hello World extension's files.
+    If you don't have a handy copy,
+    extract them from this
+    <a href="samples/tut_debugging.zip">ZIP file</a>.
+    </p>
+  </li>
+  <li>
+    <p> Edit <code>my_toolstrip.html</code> so that it has the following code: </p>
 <pre><b>&lt;script&gt;
 function helloWorld() {
   var hwFile = 'hello_world.html';
@@ -27,53 +45,71 @@ function helloWorld() {
 &lt;div class=&quot;toolstrip-button&quot; onclick=&quot;<b>helloWorld();</b>&quot;&gt;
 &lt;span&gt;Hello, World!&lt;/span&gt;
 &lt;/div&gt;</pre>
-    <p> The relocated code still has the same effect,
-    but now it has some debugging output,
+    <p> The revised code has the same effect
+    but now has some debugging output,
     thanks to the call to <code>console.log()</code>.</p>
   </li>
-  <li>
-  Restart the browser, so that it loads your new version of the extension.
+</ol>
 
-<!--
-This might be confusing.
-Maybe we should instead cover location.reload() later,
-after we've shown the console.
-  <div class="note">
-  <b>Tip:</b>
-  If you don't want to restart your browser,
-  you can get an updated version of the extension
-  by opening a new window.
-  The new window will contain the updated extension;
-  old windows will contain the old version.
-  </div>
--->
+<h2 id="load"> Load and inspect the extension </h2>
+
+<ol>
+  <li>
+  <em>Optional:</em>
+  Close all your Google Chrome windows, except for one.
+  <br />
+  The fewer windows you have open,
+  the easier it'll be to debug the extension.
+  <span class="comment">
+  [PENDING: OK to say?
+  Is there a better way
+  to match extensions to windows?]
+  </span>
   </li>
   <li>
-  Under the wrench menu, select <strong>extensions</strong>
-  to go to the extensions management page.
-  
-  Find your extensions and click <strong>inspect</strong>
-  on the page you want to debug.
-  
-  This should bring up the inspector window:
+  Go to <b>chrome://extensions</b>.
+  If the extension is already running, click <b>Reload</b>.
+  Otherwise, load the extension by clicking
+  <b>Load unpacked extension</b>
+  and choosing the folder that contains
+  the modified extension files.
+  </li>
+
+  <li>
+  In <b>chrome://extensions</b>,
+  click the <b>Inspect</b> link
+  next to <b>my_toolstrip.html</b>.
+  <span class="comment">[PENDING: show this?]</span>
+  <br />
+  A Developer Tools window like this should appear:
+
   <p>
      <img src="images/devtools-1.gif" alt="" />  </p>
-<!--
-Possibly we should recommend starting the Dev Tools
-using chrome://extensions, rather than right-click.
-However, that adds some stuff (such as id)
-that might be confusing.
--->
 
+  <p>
+  <b>Note:</b>
+  If you have multiple browser windows open,
+  you'll see multiple copies of <b>my_toolstrip.html</b>
+  in <b>chrome://extensions</b>.
+  Each copy corresponds to a window &mdash;
+  or, more precisely, to an instance of the toolstrip.
+  </p>
   </li>
   <li>
-  Click the <strong>Scripts</strong> button.
-  If necessary, choose <strong>my_toolstrip.html</strong>
-  from the list of scripts.
+  If the <strong>Scripts</strong> button isn't already selected,
+  click it.
+  </li>
+  <li>
+  If <strong>my_toolstrip.html</strong> isn't already selected,
+  choose it from the list of scripts.
   The result should be something like this:
   <p>
   <img src="images/devtools-2.gif" alt="" />  </p>
   </li>
+</ol>
+
+<h2 id="debug"> Debug the extension </h2>
+<ol>
   <li>
   Set a debugging breakpoint at the <code>window.open()</code> statement
   by clicking <strong>5</strong> in the left column:
@@ -123,13 +159,43 @@ that might be confusing.
   the main browser window should open a new tab
   that displays the contents of <code>hello_world.html</code>.</li>
 </ol>
+
+<div class="comment">
+[PENDING: more stuff we might want to cover:]
+<ul>
+  <li>
+    You can't currently use the debugger with content scripts;
+    you need to use console.*.
+  </li>
+  <li>
+    location.reload()
+  </li>
+</ul>
+</div>
+
+<h2 id="summary">Now what?</h2>
+
 <p>
-You now know how to debug an extension!</p>
+Now that you've been introduced to debugging,
+here are suggestions for what to do next:
+</p>
 
-<h2 id="summary">What next?</h2>
+<ul>
+  <li>
+    Explore the developer tools to find more features
+    <span class="comment">
+    [PENDING: should point to dev tools doc]
+    </span>
+  </li>
+  <li>
+    Try installing and debugging other extensions,
+    such as the
+    <a href="http://dev.chromium.org/developers/design-documents/extensions/samples">samples</a>
+  </li>
+</ul>
 
-<p class="tbd">
-[PENDING: Summarize what we did,
-what it means,
-and where to find more information.
-Suggest where to go next.]</p>
+<p>
+For more ideas,
+see the <a href="getstarted.html#summary">Now what?</a> section
+of Getting Started.
+</p>
