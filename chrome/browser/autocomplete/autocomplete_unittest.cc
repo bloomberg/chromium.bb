@@ -211,13 +211,17 @@ TEST(AutocompleteTest, InputType) {
     { L"?http://foo.com/bar", AutocompleteInput::FORCED_QUERY },
     { L"foo", AutocompleteInput::UNKNOWN },
     { L"foo.com", AutocompleteInput::URL },
+    { L"-.com", AutocompleteInput::QUERY },
     { L"foo/bar", AutocompleteInput::URL },
     { L"foo/bar baz", AutocompleteInput::UNKNOWN },
     { L"http://foo/bar baz", AutocompleteInput::URL },
     { L"foo bar", AutocompleteInput::QUERY },
+    { L"\"foo:bar\"", AutocompleteInput::QUERY },
     { L"link:foo.com", AutocompleteInput::UNKNOWN },
     { L"www.foo.com:81", AutocompleteInput::URL },
     { L"localhost:8080", AutocompleteInput::URL },
+    { L"foo.com:123456", AutocompleteInput::QUERY },
+    { L"foo.com:abc", AutocompleteInput::QUERY },
     { L"en.wikipedia.org/wiki/James Bond", AutocompleteInput::URL },
     // In Chrome itself, mailto: will get handled by ShellExecute, but in
     // unittest mode, we don't have the data loaded in the external protocol
