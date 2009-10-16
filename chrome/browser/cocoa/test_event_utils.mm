@@ -44,4 +44,16 @@ NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
                             pressure:1.0];
 }
 
+NSEvent* LeftMouseDownAtPoint(NSPoint point) {
+  return [NSEvent mouseEventWithType:NSLeftMouseDown
+                            location:point
+                       modifierFlags:0
+                           timestamp:0
+                        windowNumber:0
+                             context:nil
+                         eventNumber:0
+                          clickCount:1
+                            pressure:1.0];
+}
+
 }  // namespace test_event_utils

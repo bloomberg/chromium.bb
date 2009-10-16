@@ -25,9 +25,10 @@ class ScopedClassSwizzler {
 
 namespace test_event_utils {
 
-// Create a synthetic mouse event for testing. Currently this is very basic,
+// Create synthetic mouse events for testing. Currently these are very basic,
 // flesh out as needed.
 NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers);
+NSEvent* LeftMouseDownAtPoint(NSPoint point);
 
 }  // namespace test_event_utils
 
