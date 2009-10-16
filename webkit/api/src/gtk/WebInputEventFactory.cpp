@@ -170,6 +170,52 @@ static int gdkEventToWindowsKeyCode(const GdkEventKey* event)
     return WebCore::windowsKeyCodeForKeyEvent(event->keyval);
 }
 
+// Gets the corresponding control character of a specified key code. See:
+// http://en.wikipedia.org/wiki/Control_characters
+// We emulate Windows behavior here.
+static WebUChar getControlCharacter(int windowsKeyCode, bool shift)
+{
+    if (windowsKeyCode >= WebCore::VKEY_A && windowsKeyCode <= WebCore::VKEY_Z) {
+        // ctrl-A ~ ctrl-Z map to \x01 ~ \x1A
+        return windowsKeyCode - WebCore::VKEY_A + 1;
+    }
+    if (shift) {
+        // following graphics chars require shift key to input.
+        switch (windowsKeyCode) {
+        // ctrl-@ maps to \x00 (Null byte)
+        case WebCore::VKEY_2:
+            return 0;
+        // ctrl-^ maps to \x1E (Record separator, Information separator two)
+        case WebCore::VKEY_6:
+            return 0x1E;
+        // ctrl-_ maps to \x1F (Unit separator, Information separator one)
+        case WebCore::VKEY_OEM_MINUS:
+            return 0x1F;
+        // Returns 0 for all other keys to avoid inputting unexpected chars.
+        default:
+            return 0;
+        }
+    } else {
+        switch (windowsKeyCode) {
+        // ctrl-[ maps to \x1B (Escape)
+        case WebCore::VKEY_OEM_4:
+            return 0x1B;
+        // ctrl-\ maps to \x1C (File separator, Information separator four)
+        case WebCore::VKEY_OEM_5:
+            return 0x1C;
+        // ctrl-] maps to \x1D (Group separator, Information separator three)
+        case WebCore::VKEY_OEM_6:
+            return 0x1D;
+        // ctrl-Enter maps to \x0A (Line feed)
+        case WebCore::VKEY_RETURN:
+            return 0x0A;
+        // Returns 0 for all other keys to avoid inputting unexpected chars.
+        default:
+            return 0;
+        }
+    }
+}
+
 // WebKeyboardEvent -----------------------------------------------------------
 
 WebKeyboardEvent WebInputEventFactory::keyboardEvent(const GdkEventKey* event)
@@ -205,23 +251,21 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(const GdkEventKey* event)
     result.windowsKeyCode = gdkEventToWindowsKeyCode(event);
     result.nativeKeyCode = event->hardware_keycode;
 
-    switch (event->keyval) {
-    // We need to treat the enter key as a key press of character \r.  This
-    // is apparently just how webkit handles it and what it expects.
-    case GDK_ISO_Enter:
-    case GDK_KP_Enter:
-    case GDK_Return:
-        result.unmodifiedText[0] = result.text[0] = static_cast<WebUChar>('\r');
-        break;
-    default:
-        // This should set text to 0 when it's not a real character.
+    if (result.windowsKeyCode == WebCore::VKEY_RETURN)
+        // We need to treat the enter key as a key press of character \r.  This
+        // is apparently just how webkit handles it and what it expects.
+        result.unmodifiedText[0] = '\r';
+    else
         // FIXME: fix for non BMP chars
-        // TODO(james.su@gmail.com):
-        // Support control characters input like Windows.
-        // See: http://en.wikipedia.org/wiki/Control_characters
-        result.unmodifiedText[0] = result.text[0] =
+        result.unmodifiedText[0] =
             static_cast<WebUChar>(gdk_keyval_to_unicode(event->keyval));
-    }
+
+    // If ctrl key is pressed down, then control character shall be input.
+    if (result.modifiers & WebInputEvent::ControlKey)
+        result.text[0] = getControlCharacter(
+            result.windowsKeyCode, result.modifiers & WebInputEvent::ShiftKey);
+    else
+        result.text[0] = result.unmodifiedText[0];
 
     result.setKeyIdentifierFromWindowsKeyCode();
 
