@@ -338,7 +338,8 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
           editor_config = BookmarkEditor::SHOW_TREE;
         else
           editor_config = BookmarkEditor::NO_TREE;
-        BookmarkEditor::Show(wnd_, profile_, parent_, selection_[0],
+        BookmarkEditor::Show(wnd_, profile_, parent_,
+                             BookmarkEditor::EditDetails(selection_[0]),
                              editor_config, NULL);
       } else {
         EditFolderController::Show(profile_, wnd_, selection_[0], false,
@@ -370,8 +371,9 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
         // This is owned by the BookmarkEditorView.
         handler = new SelectOnCreationHandler(profile_);
       }
-      BookmarkEditor::Show(wnd_, profile_, GetParentForNewNodes(), NULL,
-                           editor_config, handler);
+      BookmarkEditor::Show(wnd_, profile_, GetParentForNewNodes(),
+                           BookmarkEditor::EditDetails(), editor_config,
+                           handler);
       break;
     }
 

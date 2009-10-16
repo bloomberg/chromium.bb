@@ -98,10 +98,8 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
                         IDS_TAB_CXMENU_CLOSETABSOPENEDBY);
     AddSeparator();
     AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
-#if defined(OS_WIN)
     AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                         IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-#endif
     menu_.reset(new views::Menu2(this));
   }
 

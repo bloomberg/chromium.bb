@@ -55,11 +55,11 @@ class BookmarkEditorViewTest : public testing::Test {
 
   void CreateEditor(Profile* profile,
                     const BookmarkNode* parent,
-                    const BookmarkNode* node,
+                    const BookmarkEditor::EditDetails& details,
                     BookmarkEditor::Configuration configuration,
                     BookmarkEditor::Handler* handler) {
-    editor_.reset(new BookmarkEditorView(profile, parent, node, configuration,
-                                         handler));
+    editor_.reset(new BookmarkEditorView(profile, parent, details,
+                                         configuration, handler));
   }
 
   void SetTitleText(const std::wstring& title) {
@@ -121,8 +121,8 @@ class BookmarkEditorViewTest : public testing::Test {
 
 // Makes sure the tree model matches that of the bookmark bar model.
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
-  CreateEditor(profile_.get(), NULL, NULL, BookmarkEditorView::SHOW_TREE,
-               NULL);
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(),
+               BookmarkEditorView::SHOW_TREE, NULL);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two children, one for the bookmark bar node,
   // the other for the 'other bookmarks' folder.
@@ -146,7 +146,7 @@ TEST_F(BookmarkEditorViewTest, ModelsMatch) {
 
 // Changes the title and makes sure parent/visual order doesn't change.
 TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
-  CreateEditor(profile_.get(), NULL, GetNode("a"),
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(GetNode("a")),
                BookmarkEditorView::SHOW_TREE, NULL);
   SetTitleText(L"new_a");
 
@@ -163,7 +163,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
 TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
   Time node_time = Time::Now() + TimeDelta::FromDays(2);
   GetMutableNode("a")->set_date_added(node_time);
-  CreateEditor(profile_.get(), NULL, GetNode("a"),
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(GetNode("a")),
                BookmarkEditorView::SHOW_TREE, NULL);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "new_a").spec()));
@@ -180,7 +180,7 @@ TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
 
 // Moves 'a' to be a child of the other node.
 TEST_F(BookmarkEditorViewTest, ChangeParent) {
-  CreateEditor(profile_.get(), NULL, GetNode("a"),
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(GetNode("a")),
                BookmarkEditorView::SHOW_TREE, NULL);
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
@@ -194,7 +194,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
   Time node_time = Time::Now() + TimeDelta::FromDays(2);
   GetMutableNode("a")->set_date_added(node_time);
-  CreateEditor(profile_.get(), NULL, GetNode("a"),
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(GetNode("a")),
                BookmarkEditorView::SHOW_TREE, NULL);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "new_a").spec()));
@@ -209,7 +209,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
 
 // Creates a new folder and moves a node to it.
 TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
-  CreateEditor(profile_.get(), NULL, GetNode("a"),
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(GetNode("a")),
                BookmarkEditorView::SHOW_TREE, NULL);
 
   // Create two nodes: "F21" as a child of "F2" and "F211" as a child of "F21".
@@ -242,8 +242,8 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
 
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorViewTest, NewURL) {
-  CreateEditor(profile_.get(), NULL, NULL, BookmarkEditorView::SHOW_TREE,
-               NULL);
+  CreateEditor(profile_.get(), NULL, BookmarkEditor::EditDetails(),
+               BookmarkEditorView::SHOW_TREE, NULL);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
   SetTitleText(L"new_a");
@@ -262,7 +262,8 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
 
 // Brings up the editor with no tree and modifies the url.
 TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
-  CreateEditor(profile_.get(), NULL, model_->other_node()->GetChild(0),
+  CreateEditor(profile_.get(), NULL,
+               BookmarkEditor::EditDetails(model_->other_node()->GetChild(0)),
                BookmarkEditorView::NO_TREE, NULL);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
@@ -281,7 +282,8 @@ TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
 
 // Brings up the editor with no tree and modifies only the title.
 TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
-  CreateEditor(profile_.get(), NULL, model_->other_node()->GetChild(0),
+  CreateEditor(profile_.get(), NULL,
+               BookmarkEditor::EditDetails(model_->other_node()->GetChild(0)),
                BookmarkEditorView::NO_TREE, NULL);
 
   SetTitleText(L"new_a");
@@ -296,62 +298,59 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
   EXPECT_EQ(L"new_a", new_node->GetTitle());
 }
 
-// Modifies the title of a folder.
-TEST_F(BookmarkEditorViewTest, ModifyFolderTitle) {
-  int64 start_id = model_->GetBookmarkBarNode()->GetChild(2)->id();
-  CreateEditor(profile_.get(), NULL, model_->GetBookmarkBarNode()->GetChild(2),
-               BookmarkEditorView::SHOW_TREE, NULL);
+// Creates a new folder.
+TEST_F(BookmarkEditorViewTest, NewFolder) {
+  BookmarkEditor::EditDetails details;
+  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), L"z"));
+  details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
+  CreateEditor(profile_.get(), model_->GetBookmarkBarNode(),
+               details, BookmarkEditorView::SHOW_TREE, NULL);
 
   // The url field shouldn't be visible.
   EXPECT_FALSE(URLTFHasParent());
   SetTitleText(L"new_F");
 
-  // Make sure the tree isn't showing the folder we're editing.
-  EXPECT_EQ(1, editor_tree_model()->GetRoot()->GetChild(0)->GetChildCount());
-
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
-  // Make sure the folder we edited is still there.
-  ASSERT_EQ(3, model_->GetBookmarkBarNode()->GetChildCount());
-  EXPECT_EQ(start_id, model_->GetBookmarkBarNode()->GetChild(2)->id());
-  EXPECT_TRUE(model_->GetBookmarkBarNode()->GetChild(2)->is_folder());
-  EXPECT_EQ(L"new_F", model_->GetBookmarkBarNode()->GetChild(2)->GetTitle());
+  // Make sure the folder was created.
+  ASSERT_EQ(4, model_->GetBookmarkBarNode()->GetChildCount());
+  const BookmarkNode* new_node =
+      model_->GetBookmarkBarNode()->GetChild(3);
+  EXPECT_EQ(BookmarkNode::FOLDER, new_node->GetType());
+  EXPECT_EQ(L"new_F", new_node->GetTitle());
+  // The node should have one child.
+  ASSERT_EQ(1, new_node->GetChildCount());
+  const BookmarkNode* new_child = new_node->GetChild(0);
+  // Make sure the child url/title match.
+  EXPECT_EQ(BookmarkNode::URL, new_child->GetType());
+  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
+  EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
 }
 
-// Moves a folder.
+// Creates a new folder and selects a different folder for the folder to appear
+// in then the editor is initially created showing.
 TEST_F(BookmarkEditorViewTest, MoveFolder) {
-  const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(2);
-  int64 start_id = node->id();
-  CreateEditor(profile_.get(), NULL, node, BookmarkEditorView::SHOW_TREE, NULL);
+  BookmarkEditor::EditDetails details;
+  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), L"z"));
+  details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
+  CreateEditor(profile_.get(), model_->GetBookmarkBarNode(),
+               details, BookmarkEditorView::SHOW_TREE, NULL);
 
   SetTitleText(L"new_F");
 
-  // Moves to the 'other' folder.
+  // Create the folder in the 'other' folder.
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
   // Make sure the folder we edited is still there.
   ASSERT_EQ(3, model_->other_node()->GetChildCount());
-  EXPECT_EQ(node, model_->other_node()->GetChild(2));
-  EXPECT_TRUE(node->is_folder());
-  EXPECT_EQ(L"new_F", node->GetTitle());
-}
-
-// Moves a folder under a new folder.
-TEST_F(BookmarkEditorViewTest, MoveFolderNewParent) {
-  const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(2);
-  CreateEditor(profile_.get(), NULL, node, BookmarkEditorView::SHOW_TREE, NULL);
-
-  BookmarkEditorView::EditorNode* other =
-      editor_tree_model()->GetRoot()->GetChild(1);
-  BookmarkEditorView::EditorNode* new_f = AddNewGroup(other);
-  new_f->SetTitle(L"new_f");
-
-  ApplyEdits(new_f);
-
-  // Make sure the folder we edited is still there.
-  ASSERT_EQ(3, model_->other_node()->GetChildCount());
-  const BookmarkNode* new_folder = model_->other_node()->GetChild(2);
-  EXPECT_EQ(L"new_f", new_folder->GetTitle());
-  ASSERT_EQ(1, new_folder->GetChildCount());
-  ASSERT_EQ(node, new_folder->GetChild(0));
+  const BookmarkNode* new_node = model_->other_node()->GetChild(2);
+  EXPECT_EQ(BookmarkNode::FOLDER, new_node->GetType());
+  EXPECT_EQ(L"new_F", new_node->GetTitle());
+  // The node should have one child.
+  ASSERT_EQ(1, new_node->GetChildCount());
+  const BookmarkNode* new_child = new_node->GetChild(0);
+  // Make sure the child url/title match.
+  EXPECT_EQ(BookmarkNode::URL, new_child->GetType());
+  EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
+  EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
 }

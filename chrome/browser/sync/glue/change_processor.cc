@@ -457,7 +457,8 @@ const BookmarkNode* ChangeProcessor::CreateOrUpdateBookmarkNode(
     // that can happen if both a local user change and server change occur
     // within a sufficiently small time interval.
     const BookmarkNode* old_dst = dst;
-    dst = bookmark_utils::ApplyEditsWithNoGroupChange(model, parent, dst,
+    dst = bookmark_utils::ApplyEditsWithNoGroupChange(model, parent,
+        BookmarkEditor::EditDetails(dst),
         UTF16ToWide(src->GetTitle()),
         src->GetIsFolder() ? GURL() : GURL(src->GetURL()),
         NULL);  // NULL because we don't need a BookmarkEditor::Handler.

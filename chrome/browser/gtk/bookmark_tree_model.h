@@ -41,17 +41,14 @@ GtkTreeStore* MakeFolderTreeStore();
 // |recursive| indicates whether to recurse into sub-directories (if false,
 // the tree store will effectively be a list). |only_folders| indicates whether
 // to include bookmarks in the tree, or to only show folders.
-// If |node_to_ignore| is non-null, a node in the tree store is not created for
-// it.
 void AddToTreeStore(BookmarkModel* model, int64 selected_id,
-                    const BookmarkNode* node_to_ignore, GtkTreeStore* store,
-                    GtkTreeIter* selected_iter);
+                    GtkTreeStore* store, GtkTreeIter* selected_iter);
 
 // As above, but inserts just the tree rooted at |node| as a child of |parent|.
 // If |parent| is NULL, add it at the top level.
 void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
-                      const BookmarkNode* node_to_ignore, GtkTreeStore* store,
-                      GtkTreeIter* selected_iter, GtkTreeIter* parent);
+                      GtkTreeStore* store, GtkTreeIter* selected_iter,
+                      GtkTreeIter* parent);
 
 // Makes a tree view for the store. This will take ownership of |store| and the
 // returned widget has a floating reference.

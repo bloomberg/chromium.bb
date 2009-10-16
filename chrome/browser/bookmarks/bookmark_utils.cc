@@ -505,21 +505,43 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
   return (node->is_url() && DoesBookmarkContainWords(node, words, languages));
 }
 
-const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
-    const BookmarkNode* parent, const BookmarkNode* node,
+static const BookmarkNode* CreateNewNode(BookmarkModel* model,
+    const BookmarkNode* parent, const BookmarkEditor::EditDetails& details,
     const std::wstring& new_title, const GURL& new_url,
     BookmarkEditor::Handler* handler) {
-  const BookmarkNode* old_parent = node ? node->GetParent() : NULL;
-  const int old_index = old_parent ? old_parent->IndexOfChild(node) : -1;
-
-  if (!node) {
-    node =
-        model->AddURL(parent, parent->GetChildCount(), new_title, new_url);
-
-    if (handler)
-      handler->NodeCreated(node);
-    return node;
+  const BookmarkNode* node;
+  if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
+    node = model->AddURL(parent, parent->GetChildCount(), new_title, new_url);
+  } else if (details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
+    node = model->AddGroup(parent, parent->GetChildCount(), new_title);
+    for (size_t i = 0; i < details.urls.size(); ++i) {
+      model->AddURL(node, node->GetChildCount(), details.urls[i].second,
+                    details.urls[i].first);
+    }
+    // TODO(sky): update parent modified time.
+  } else {
+    NOTREACHED();
+    return NULL;
   }
+
+  if (handler)
+    handler->NodeCreated(node);
+  return node;
+}
+
+const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
+    const BookmarkNode* parent, const BookmarkEditor::EditDetails& details,
+    const std::wstring& new_title, const GURL& new_url,
+    BookmarkEditor::Handler* handler) {
+  if (details.type == BookmarkEditor::EditDetails::NEW_URL ||
+      details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
+    return CreateNewNode(model, parent, details, new_title, new_url, handler);
+  }
+
+  const BookmarkNode* node = details.existing_node;
+  DCHECK(node);
+  const BookmarkNode* old_parent = node->GetParent();
+  int old_index = old_parent ? old_parent->IndexOfChild(node) : -1;
 
   // If we're not showing the tree we only need to modify the node.
   if (old_index == -1) {
@@ -528,6 +550,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
   }
 
   if (new_url != node->GetURL()) {
+    // TODO(sky): need SetURL on the model.
     const BookmarkNode* new_node = model->AddURLWithCreationTime(old_parent,
         old_index, new_title, new_url, node->date_added());
     model->Remove(old_parent, old_index + 1);
@@ -539,40 +562,40 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
 }
 
 const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
-    const BookmarkNode* new_parent, const BookmarkNode* node,
+    const BookmarkNode* new_parent, const BookmarkEditor::EditDetails& details,
     const std::wstring& new_title, const GURL& new_url,
     BookmarkEditor::Handler* handler) {
-  const BookmarkNode* old_parent = node ? node->GetParent() : NULL;
-  const int old_index = old_parent ? old_parent->IndexOfChild(node) : -1;
+  if (details.type == BookmarkEditor::EditDetails::NEW_URL ||
+      details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
+    return CreateNewNode(model, new_parent, details, new_title, new_url,
+                         handler);
+  }
+
+  const BookmarkNode* node = details.existing_node;
+  DCHECK(node);
+  const BookmarkNode* old_parent = node->GetParent();
+  int old_index = old_parent->IndexOfChild(node);
   const BookmarkNode* return_node = node;
-  if (node) {
-    Time date_added = node->date_added();
-    if (new_parent == node->GetParent()) {
-      // The parent is the same.
-      if (node->is_url() && new_url != node->GetURL()) {
-        model->Remove(old_parent, old_index);
-        return_node = model->AddURLWithCreationTime(old_parent, old_index,
-            new_title, new_url, date_added);
-      } else {
-        model->SetTitle(node, new_title);
-      }
-    } else if (node->is_url() && new_url != node->GetURL()) {
-      // The parent and URL changed.
+
+  Time date_added = node->date_added();
+  if (new_parent == node->GetParent()) {
+    // The parent is the same.
+    if (node->is_url() && new_url != node->GetURL()) {
       model->Remove(old_parent, old_index);
-      return_node = model->AddURLWithCreationTime(new_parent,
-          new_parent->GetChildCount(), new_title, new_url, date_added);
+      return_node = model->AddURLWithCreationTime(old_parent, old_index,
+          new_title, new_url, date_added);
     } else {
-      // The parent and title changed. Move the node and change the title.
-      model->Move(node, new_parent, new_parent->GetChildCount());
       model->SetTitle(node, new_title);
     }
+  } else if (node->is_url() && new_url != node->GetURL()) {
+    // The parent and URL changed.
+    model->Remove(old_parent, old_index);
+    return_node = model->AddURLWithCreationTime(new_parent,
+        new_parent->GetChildCount(), new_title, new_url, date_added);
   } else {
-    // We're adding a new URL.
-    return_node =
-        model->AddURL(new_parent, new_parent->GetChildCount(), new_title,
-                      new_url);
-    if (handler)
-      handler->NodeCreated(return_node);
+    // The parent and title changed. Move the node and change the title.
+    model->Move(node, new_parent, new_parent->GetChildCount());
+    model->SetTitle(node, new_title);
   }
   return return_node;
 }
@@ -618,20 +641,14 @@ void GetURLAndTitleToBookmark(TabContents* tab_contents,
   *title = UTF16ToWideHack(tab_contents->GetTitle());
 }
 
-const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
-  BookmarkModel* model = browser->profile()->GetBookmarkModel();
-  DCHECK(model && model->IsLoaded());
-  const BookmarkNode* parent = model->GetParentForNewNodes();
-  const BookmarkNode* folder = model->AddGroup(
-      parent, parent->GetChildCount(),
-      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+void GetURLsForOpenTabs(Browser* browser,
+    std::vector<std::pair<GURL, std::wstring> >* urls) {
   for (int i = 0; i < browser->tab_count(); ++i) {
-    GURL url;
-    std::wstring title;
-    GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title);
-    model->AddURL(folder, folder->GetChildCount(), title, url);
+    std::pair<GURL, std::wstring> entry;
+    GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &(entry.first),
+                             &(entry.second));
+    urls->push_back(entry);
   }
-  return folder;
 }
 
 }  // namespace bookmark_utils

@@ -420,7 +420,8 @@ void BookmarkBubbleView::ShowEditor() {
   Close();
 
   if (node) {
-    BookmarkEditor::Show(parent, profile_, NULL, node,
+    BookmarkEditor::Show(parent, profile_, NULL,
+                         BookmarkEditor::EditDetails(node),
                          BookmarkEditor::SHOW_TREE, NULL);
   }
 }

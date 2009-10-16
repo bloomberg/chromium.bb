@@ -237,9 +237,10 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
   const BookmarkNode* v_node = NULL;
   FindNodeInVerifier(model, node, &v_node);
   const BookmarkNode* result = bookmark_utils::ApplyEditsWithNoGroupChange(
-      model, node->GetParent(), node, node->GetTitle(), new_url, NULL);
+      model, node->GetParent(), BookmarkEditor::EditDetails(node),
+      node->GetTitle(), new_url, NULL);
   bookmark_utils::ApplyEditsWithNoGroupChange(verifier_, v_node->GetParent(),
-      v_node, v_node->GetTitle(), new_url, NULL);
+      BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url, NULL);
   return result;
 }
 

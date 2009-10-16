@@ -155,7 +155,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
 const BookmarkNode* ApplyEditsWithNoGroupChange(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    const BookmarkNode* node,
+    const BookmarkEditor::EditDetails& details,
     const std::wstring& new_title,
     const GURL& new_url,
     BookmarkEditor::Handler* handler);
@@ -167,7 +167,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(
 const BookmarkNode* ApplyEditsWithPossibleGroupChange(
     BookmarkModel* model,
     const BookmarkNode* new_parent,
-    const BookmarkNode* node,
+    const BookmarkEditor::EditDetails& details,
     const std::wstring& new_title,
     const GURL& new_url,
     BookmarkEditor::Handler* handler);
@@ -187,9 +187,10 @@ void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               std::wstring* title);
 
-// Creates a new folder containing a bookmark for each of the tabs in
-// |browser|.
-const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser);
+// Returns, by reference in |urls|, the url and title pairs for each open
+// tab in browser.
+void GetURLsForOpenTabs(Browser* browser,
+                        std::vector<std::pair<GURL, std::wstring> >* urls);
 
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.

@@ -1654,13 +1654,17 @@ bool Browser::CanBookmarkAllTabs() const {
 }
 
 void Browser::BookmarkAllTabs() {
-  const BookmarkNode* node = bookmark_utils::CreateBookmarkForAllTabs(this);
-  if (!node)
-    return;
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  DCHECK(model && model->IsLoaded());
+
+  BookmarkEditor::EditDetails details;
+  details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
+  bookmark_utils::GetURLsForOpenTabs(this, &(details.urls));
+  DCHECK(!details.urls.empty());
 
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
-                       node->GetParent(), node, BookmarkEditor::SHOW_TREE,
-                       NULL);
+                       model->GetParentForNewNodes(),  details,
+                       BookmarkEditor::SHOW_TREE, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

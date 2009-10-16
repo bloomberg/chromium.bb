@@ -69,7 +69,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   BookmarkEditorView(Profile* profile,
                      const BookmarkNode* parent,
-                     const BookmarkNode* node,
+                     const EditDetails& details,
                      BookmarkEditor::Configuration configuration,
                      BookmarkEditor::Handler* handler);
 
@@ -167,7 +167,7 @@ class BookmarkEditorView : public BookmarkEditor,
   EditorNode* CreateRootNode();
 
   // Adds and creates a child node in b_node for all children of bb_node that
-  // are groups, except for |node_| if editing a folder.
+  // are groups.
   void CreateNodes(const BookmarkNode* bb_node, EditorNode* b_node);
 
   // Returns the node with the specified id, or NULL if one can't be found.
@@ -215,9 +215,6 @@ class BookmarkEditorView : public BookmarkEditor,
   // internally by NewGroup and broken into a separate method for testing.
   EditorNode* AddNewGroup(EditorNode* parent);
 
-  // Returns true if editing a folder.
-  bool IsEditingFolder() const;
-
   // Profile the entry is from.
   Profile* profile_;
 
@@ -236,11 +233,11 @@ class BookmarkEditorView : public BookmarkEditor,
   // Used for editing the title.
   views::Textfield title_tf_;
 
-  // Initial parent to select. Is only used if node_ is NULL.
+  // Initial parent to select. Is only used if |details_.existing_node| is
+  // NULL.
   const BookmarkNode* parent_;
 
-  // Node being edited. Is NULL if creating a new node.
-  const BookmarkNode* node_;
+  const EditDetails details_;
 
   // The context menu.
   scoped_ptr<views::SimpleMenuModel> context_menu_contents_;

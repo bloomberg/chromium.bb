@@ -224,7 +224,7 @@ void BookmarkManagerGtk::BookmarkNodeAdded(BookmarkModel* model,
   if (node->is_folder()) {
     GtkTreeIter iter = { 0, };
     if (RecursiveFind(GTK_TREE_MODEL(left_store_), &iter, parent->id()))
-      bookmark_utils::AddToTreeStoreAt(node, 0, NULL, left_store_, NULL, &iter);
+      bookmark_utils::AddToTreeStoreAt(node, 0, left_store_, NULL, &iter);
   }
 }
 
@@ -615,7 +615,7 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
 void BookmarkManagerGtk::BuildLeftStore() {
   GtkTreeIter select_iter;
   bookmark_utils::AddToTreeStore(model_,
-      model_->GetBookmarkBarNode()->id(), NULL, left_store_, &select_iter);
+      model_->GetBookmarkBarNode()->id(), left_store_, &select_iter);
   gtk_tree_selection_select_iter(left_selection(), &select_iter);
 
   // TODO(estade): is there a decent stock icon we can use here?

@@ -33,7 +33,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
   BookmarkEditorGtk(GtkWindow* window,
                     Profile* profile,
                     const BookmarkNode* parent,
-                    const BookmarkNode* node,
+                    const EditDetails& details,
                     BookmarkEditor::Configuration configuration,
                     BookmarkEditor::Handler* handler);
 
@@ -90,9 +90,6 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // new group.
   void AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child);
 
-  // Returns true if editing a folder.
-  bool IsEditingFolder() const;
-
   static void OnSelectionChanged(GtkTreeSelection* treeselection,
                                  BookmarkEditorGtk* dialog);
 
@@ -132,8 +129,8 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // Initial parent to select. Is only used if node_ is NULL.
   const BookmarkNode* parent_;
 
-  // Node being edited. Is NULL if creating a new node.
-  const BookmarkNode* node_;
+  // Details about the node we're editing.
+  const EditDetails details_;
 
   // Mode used to create nodes from.
   BookmarkModel* bb_model_;

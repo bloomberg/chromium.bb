@@ -435,7 +435,7 @@
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        node->GetParent(),
-                       node,
+                       BookmarkEditor::EditDetails(node),
                        BookmarkEditor::SHOW_TREE,
                        nil);
 }
@@ -486,7 +486,7 @@
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        parent,
-                       nil,
+                       BookmarkEditor::EditDetails(),
                        BookmarkEditor::SHOW_TREE,
                        nil);
 }

@@ -14,16 +14,21 @@
 void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
-                          const BookmarkNode* node,
+                          const EditDetails& details,
                           Configuration configuration,
                           Handler* handler) {
+  if (details.type == EditDetails::NEW_FOLDER) {
+    // TODO(sky): implement this.
+    NOTIMPLEMENTED();
+    return;
+  }
   BookmarkEditorController* controller = [[BookmarkEditorController alloc]
-                                           initWithParentWindow:parent_hwnd
-                                                        profile:profile
-                                                         parent:parent
-                                                           node:node
-                                                  configuration:configuration
-                                                        handler:handler];
+      initWithParentWindow:parent_hwnd
+                   profile:profile
+                    parent:parent
+                      node:details.existing_node
+             configuration:configuration
+                   handler:handler];
   [controller runAsModalSheet];
 }
 
