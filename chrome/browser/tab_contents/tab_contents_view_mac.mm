@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Carbon/Carbon.h>
+
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 
 #include <string>
@@ -259,6 +261,10 @@ void TabContentsViewMac::Observe(NotificationType type,
   }
 }
 
+@interface NSApplication(SPI)
+- (void)_cycleWindowsReversed:(BOOL)reversed;
+@end
+
 @implementation TabContentsViewCocoa
 
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w {
@@ -301,6 +307,25 @@ void TabContentsViewMac::Observe(NotificationType type,
     // We need to dispatch this to the menu.
     if ([[NSApp mainMenu] performKeyEquivalent:event])
       return;
+  }
+
+  // Cmd-` is not in the menu and it's apparently handled by |NSApp sendEvent|
+  // if the application doesn't swallow it. We do, so we need to handle this
+  // key ourself. On foreign keyboards, the "switch windows" key is not the
+  // ` key, so do this by keycode instead of |event characters|.
+  if ([event type] == NSKeyDown &&
+      [event keyCode] == kVK_ANSI_Grave &&
+      [NSApp respondsToSelector:@selector(_cycleWindowsReversed:)]) {
+    const NSUInteger kModifierMask = NSShiftKeyMask |
+                                     NSControlKeyMask |
+                                     NSAlternateKeyMask |
+                                     NSCommandKeyMask;
+    if (([event modifierFlags] & kModifierMask) == NSCommandKeyMask)
+      [NSApp _cycleWindowsReversed:NO];
+    else if (([event modifierFlags] & kModifierMask) ==
+        (NSCommandKeyMask | NSShiftKeyMask) &&
+        [NSApp respondsToSelector:@selector(_cycleWindowsReversed:)])
+      [NSApp _cycleWindowsReversed:YES];
   }
 
   // If this tab is no longer active, it's window will be |nil|. In that case,
