@@ -845,13 +845,6 @@
    fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExj
 }
 {
-   bug_20939
-   Memcheck:Cond
-   fun:_ZN7WebCore9CSSParser9validUnitEPNS_14CSSParserValueENS0_5UnitsEb
-   fun:_ZN7WebCore9CSSParser10parseValueEib
-   fun:_Z10cssyyparsePv
-}
-{
    bug_20941
    Memcheck:Cond
    fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
