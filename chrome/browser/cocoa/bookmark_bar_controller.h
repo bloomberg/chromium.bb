@@ -36,6 +36,10 @@ const CGFloat kDefaultBookmarkWidth = 150.0;
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
 
+const CGFloat kNoBookmarksHorizontalOffset = 5.0;
+const CGFloat kNoBookmarksVerticalOffset = 20.0;
+const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
+
 }  // namespace
 
 // The interface for an object which can open URLs for a bookmark.

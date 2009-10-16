@@ -145,6 +145,17 @@
 // TODO(jrg): be smarter (e.g. add/remove buttons as appropriate).
 - (void)frameDidChange {
   [self checkHideOffTheSideButton];
+
+  // Need to keep the "no items" label centered.
+  NSView* noItemsView = [buttonView_ noItemTextfield];
+  NSRect frame = [noItemsView frame];
+  NSRect parent = [buttonView_ bounds];
+  NSPoint newOrigin;
+  newOrigin.x = parent.origin.x + bookmarks::kNoBookmarksHorizontalOffset;
+  newOrigin.y = parent.origin.y + parent.size.height -
+      ([self isAlwaysVisible] ? bookmarks::kNoBookmarksVerticalOffset :
+                                bookmarks::kNoBookmarksNTPVerticalOffset);
+  [noItemsView setFrameOrigin:newOrigin];
 }
 
 // Show or hide the bar based on the value of |show|. Handles animating the
