@@ -196,6 +196,35 @@ class ScopedCrashKey {
   if (!reportingException) {
     reportingException = YES;
     CrApplicationNSException::RecordExceptionWithUma(anException);
+
+    // Store some human-readable information in breakpad keys in case
+    // there is a crash.  Since breakpad does not provide infinite
+    // storage, we track two exceptions.  The first exception thrown
+    // is tracked because it may be the one which caused the system to
+    // go off the rails.  The last exception thrown is tracked because
+    // it may be the one most directly associated with the crash.
+    static const NSString* kFirstExceptionKey = @"firstexception";
+    static BOOL trackedFirstException = NO;
+    static const NSString* kLastExceptionKey = @"lastexception";
+
+    // TODO(shess): It would be useful to post some stacktrace info
+    // from the exception.
+    // 10.6 has -[NSException callStackSymbols]
+    // 10.5 has -[NSException callStackReturnAddresses]
+    // 10.5 has backtrace_symbols().
+    // I've tried to combine the latter two, but got nothing useful.
+    // The addresses are right, though, maybe we could train the crash
+    // server to decode them for us.
+
+    NSString* value = [NSString stringWithFormat:@"%@ reason %@",
+                                [anException name], [anException reason]];
+    if (!trackedFirstException) {
+      SetCrashKeyValue(kFirstExceptionKey, value);
+      trackedFirstException = YES;
+    } else {
+      SetCrashKeyValue(kLastExceptionKey, value);
+    }
+
     reportingException = NO;
   }
 
