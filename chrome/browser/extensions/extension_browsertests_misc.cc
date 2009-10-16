@@ -313,7 +313,7 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
 // Tests that we can parse valid feeds.
 // This test was originally one big test that kept timing out because there is
 // an overall timeout per browser tests. It was then split up into multiple.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeeds1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds1) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeeds1) {
 // Tests that we can parse valid feeds.
 // This test was originally one big test that kept timing out because there is
 // an overall timeout per browser tests. It was then split up into multiple.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeeds2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeeds2) {
   HTTPTestServer* server = StartHTTPServer();
 
   std::string feed_title;
