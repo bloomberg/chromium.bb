@@ -264,5 +264,25 @@ for versioned_dir in "${DEST}/Contents/Versions/"* ; do
   fi
 done
 
+# If this script is not running as root (indicating an update driven by user
+# Keystone) and the application is installed somewhere under /Applications,
+# try to make it writeable by all admin users.  This will allow other admin
+# users to update the application from their own user Keystone instances.
+#
+# If this script is running as root, it's driven by system Keystone, and
+# future updates can be expected to be applied the same way, so
+# admin-writeability is not a concern.
+#
+# If the application is not installed under /Applications, it might not be in
+# a system-wide location, and it probably won't be something that other users
+# are running, so err on the side of safety and don't make it group-writeable.
+#
+# If this script is running as a user that is not a member of the admin group,
+# this operation will not succeed.  Tolerate that case, because it's better
+# than the alternative, which is to make the applicaiton world-writeable.
+if [ ${EUID} -ne 0 ] && [ "${DEST:0:14}" = "/Applications/" ] ; then
+  (chgrp -Rfh admin "${DEST}" && chmod -Rfh g+w "${DEST}") >& /dev/null
+fi
+
 # Great success!
 exit 0
