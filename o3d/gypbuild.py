@@ -39,6 +39,7 @@ class GypBuilder(object):
     self.verbose = False
 
     modes = ["build", "presubmit", "selenium", "unit_tests"]
+    versions = ["Debug", "Release"]
 
     parser = OptionParser()
     parser.add_option(
@@ -57,8 +58,11 @@ class GypBuilder(object):
         "--clean", action="store_true",
         help="clean the targets")
     parser.add_option(
-        "--mode", choices=modes,
-        default="build",
+        "--version", choices=versions, default="Debug",
+        help="version to build. Versions are '%s'. Default='Debug' " %
+             "', '".join(versions))
+    parser.add_option(
+        "--mode", choices=modes, default="build",
         help="mode to use. Valid modes are '%s'. Default='build' " %
              "', '".join(modes))
 
@@ -100,10 +104,11 @@ class GypBuilder(object):
     """Builds the specifed targets."""
     if os.name == 'nt':
       self.Execute(['msbuild',
-                    os.path.abspath('all.sln')])
+                    os.path.abspath('o3d_all.sln'),
+                    '/p:Configuration=%s' % options.version])
     elif platform.system() == 'Darwin':
       self.Execute(['xcodebuild',
-                    '-project', 'all.xcodeproj'])
+                    '-project', 'o3d_all.xcodeproj'])
     elif platform.system() == 'Linux':
       self.Execute(['hammer',
                     '-f', 'all_main.scons'])
