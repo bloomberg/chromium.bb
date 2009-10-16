@@ -135,6 +135,7 @@ private:
   ThreadPriority priority_;
   CriticalSection started_crit_;
   bool started_;
+  bool stopped_;
   bool has_sends_;
 
 #ifdef POSIX

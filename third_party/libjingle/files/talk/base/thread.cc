@@ -106,6 +106,7 @@ bool ThreadManager::ThreadActive(Thread *thread) {
 Thread::Thread(SocketServer* ss) : MessageQueue(ss), priority_(PRIORITY_NORMAL) {
   g_thmgr.Add(this);
   started_ = false;
+  stopped_ = false;
   has_sends_ = false;
 }
 
@@ -127,12 +128,16 @@ void Thread::Start() {
     pthread_attr_setschedparam(&attr, &param);
   }
   CritScope cs(&started_crit_);
+  // Make sure Join() hasn't been called yet.
+  if (stopped_)
+    return;
   pthread_create(&thread_, &attr, PreRun, this);
   started_ = true;
 }
 
 void Thread::Join() {
   CritScope cs(&started_crit_);
+  stopped_ = true;
   if (started_) {
     void *pv;
     pthread_join(thread_, &pv);
@@ -174,6 +179,9 @@ void Thread::Start() {
     flags = CREATE_SUSPENDED;
   }
   CritScope cs(&started_crit_);
+  // Make sure Join() hasn't been called yet.
+  if (stopped_)
+    return;
   thread_ = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PreRun, this, flags, NULL);
   if (thread_) {
     if (priority_ != PRIORITY_NORMAL) {
@@ -188,6 +196,7 @@ void Thread::Start() {
 
 void Thread::Join() {
   CritScope cs(&started_crit_);
+  stopped_ = true;
   if (started_) {
     WaitForSingleObject(thread_, INFINITE);
     CloseHandle(thread_);
