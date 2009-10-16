@@ -186,7 +186,7 @@ bool NativeCheckboxWin::ProcessMessage(UINT message, WPARAM w_param,
 
 void NativeCheckboxWin::CreateNativeControl() {
   HWND control_hwnd = CreateWindowEx(
-      WS_EX_TRANSPARENT | GetAdditionalExStyle(), L"BUTTON", L"",
+      GetAdditionalExStyle(), L"BUTTON", L"",
       WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_CHECKBOX,
       0, 0, width(), height(), GetWidget()->GetNativeView(), NULL, NULL, NULL);
   NativeControlCreated(control_hwnd);
