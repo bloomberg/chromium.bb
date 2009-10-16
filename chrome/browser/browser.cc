@@ -2674,8 +2674,11 @@ void Browser::ClearUnloadState(TabContents* tab) {
 
 bool Browser::CanCloseWithInProgressDownloads() {
   if (cancel_download_confirmation_state_ != NOT_PROMPTED) {
-    // This should probably not happen.
-    DCHECK(cancel_download_confirmation_state_ != WAITING_FOR_RESPONSE);
+    if (cancel_download_confirmation_state_ == WAITING_FOR_RESPONSE) {
+      // We need to hear from the user before we can close.
+      return false;
+    }
+    // RESPONSE_RECEIVED case, the user decided to go along with the closing.
     return true;
   }
 
