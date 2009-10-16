@@ -11,12 +11,12 @@
 # 0  Happiness
 # 1  Unknown failure
 # 2  Basic sanity check destination failure (e.g. ticket points to nothing)
-# 3  Cannot get version of currently installed Chrome
+# 3  (currently unused) indicates a problem with the existing installed copy
 # 4  rsync failed (could not assure presence of Versions directory)
 # 5  rsync failed (could not copy new versioned directory to Versions)
 # 6  rsync failed (could not update outer .app bundle)
-# 7  Cannot get version or update URL of newly installed Chrome
-# 8  Post-install Chrome has same version as pre-install Chrome
+# 7  Could not get the version, update URL, or channel after update
+# 8  Updated application does not have the version number from the update
 # 9  ksadmin failure
 # 10 Basic sanity check source failure (e.g. no app on disk image)
 
@@ -47,7 +47,12 @@ APP_VERSION_KEY="CFBundleShortVersionString"
 UPD_VERSION_APP=$(defaults read "${SRC}/Contents/Info" "${APP_VERSION_KEY}" ||
                   exit 10)
 UPD_KS_PLIST="${SRC}/Contents/Versions/${UPD_VERSION_APP}/${FRAMEWORK_DIR}/Resources/Info"
+KS_VERSION_KEY="KSVersion"
+UPD_VERSION_KS=$(defaults read "${UPD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 10)
 PRODUCT_ID=$(defaults read "${UPD_KS_PLIST}" KSProductID || exit 10)
+if [ -z "${UPD_VERSION_KS}" ] || [ -z "${PRODUCT_ID}" ] ; then
+  exit 2
+fi
 DEST=$(ksadmin -pP "${PRODUCT_ID}" |
        sed -Ene \
            's%^[[:space:]]+xc=<KSPathExistenceChecker:.* path=(/.+)>$%\1%p')
@@ -57,18 +62,12 @@ if [ -z "${DEST}" ] || [ ! -d "${DEST}" ]; then
   exit 2
 fi
 
-# Read old version to help confirm install happiness.  Older versions kept
-# the KSVersion key in the application's Info.plist.  Newer versions keep it
-# in the versioned framework's Info.plist.
+# Figure out what the existing version is using for its versioned directory.
+# This will be used later, to avoid removing the currently-installed version's
+# versioned directory in case anything is still using it.
 OLD_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
                   true)
 OLD_VERSIONED_DIR="${DEST}/Contents/Versions/${OLD_VERSION_APP}"
-OLD_KS_PLIST="${OLD_VERSIONED_DIR}/${FRAMEWORK_DIR}/Resources/Info"
-if [ -z "${OLD_VERSION_APP}" ] || [ ! -e "${OLD_KS_PLIST}.plist" ] ; then
-  OLD_KS_PLIST="${DEST}/Contents/Info"
-fi
-KS_VERSION_KEY="KSVersion"
-OLD_VERSION_KS=$(defaults read "${OLD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 3)
 
 # Don't use rsync -a, because -a expands to -rlptgoD.  -g and -o copy owners
 # and groups, respectively, from the source, and that is undesirable in this
@@ -150,8 +149,9 @@ URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 7)
 # possible error output.
 CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" KSChannelID 2>/dev/null || true)
 
-# Compare old and new versions.  If they are equal we failed somewhere.
-if [ "${OLD_VERSION_KS}" = "${NEW_VERSION_KS}" ]; then
+# Make sure that the update was successful by comparing the version found in
+# the update with the version now on disk.
+if [ "${NEW_VERSION_KS}" != "${UPD_VERSION_KS}" ]; then
   exit 8
 fi
 
