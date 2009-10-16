@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_WIZARD_H_
-#define CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_WIZARD_H_
+#ifndef CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
+#define CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
 
 #include "base/basictypes.h"
 
-#if defined(OS_WIN)
-class SyncSetupFlowContainer;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
+#else
+class SyncSetupFlowContainer;
 #endif
 
 class ProfileSyncService;
@@ -69,13 +69,14 @@ class SyncSetupWizard {
 
   ProfileSyncService* service_;
 
-#if defined(OS_WIN)
-  SyncSetupFlowContainer* flow_container_;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   bool visible_;
+#else
+  SyncSetupFlowContainer* flow_container_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupWizard);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_WIZARD_H_
+#endif  // CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
+

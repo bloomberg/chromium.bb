@@ -43,16 +43,6 @@ class Window {
   static gfx::Size GetLocalizedContentsSize(int col_resource_id,
                                             int row_resource_id);
 
-  // These versions of GetLocalizedContents allow a font to be specified
-  // other than the default UI font.
-  static int GetLocalizedContentsWidthForFont(int col_resource_id,
-                                              const gfx::Font& font);
-  static int GetLocalizedContentsHeightForFont(int row_resource_id,
-                                               const gfx::Font& font);
-  static gfx::Size GetLocalizedContentsSizeForFont(int col_resource_id,
-                                                   int row_resource_id,
-                                                   const gfx::Font& font);
-
   // Closes all windows that aren't identified as "app windows" via
   // IsAppWindow. Called during application shutdown when the last "app window"
   // is closed.

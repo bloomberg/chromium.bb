@@ -31,7 +31,7 @@ class Rect;
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
 //
-// NOTE: All getters except GetTabStrip() may return NULL.
+// NOTE: All getters may return NULL.
 class BrowserWindow {
  public:
   // Show the window, or activates it if it's already visible.
