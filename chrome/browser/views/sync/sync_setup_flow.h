@@ -4,8 +4,8 @@
 
 #ifdef CHROME_PERSONALIZATION
 
-#ifndef CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
-#define CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
+#ifndef CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_FLOW_H_
+#define CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_FLOW_H_
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_setup_wizard.h"
+#include "chrome/browser/views/sync/sync_setup_wizard.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -185,5 +185,5 @@ class FlowHandler : public DOMMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(FlowHandler);
 };
 
-#endif  // CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
+#endif  // CHROME_BROWSER_VIEWS_SYNC_SYNC_SETUP_FLOW_H_
 #endif  // CHROME_PERSONALIZATION

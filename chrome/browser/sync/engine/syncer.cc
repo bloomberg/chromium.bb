@@ -118,7 +118,7 @@ void Syncer::SyncShare(SyncerSession* session,
   // Reset silenced_until_, it is the callers responsibility to honor throttles.
   silenced_until_ = session->silenced_until();
 
-  SyncerStep next_step = current_step;
+  SyncerStep next_step;
   while (!ExitRequested()) {
     switch (current_step) {
       case SYNCER_BEGIN:
