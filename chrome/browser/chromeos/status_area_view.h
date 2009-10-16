@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -31,7 +32,9 @@ class StatusAreaView : public views::View,
     OPEN_TABS_ON_RIGHT
   };
 
-  explicit StatusAreaView(Browser* browser);
+  // NOTE: this takes the handle to the window as browser->window() may not
+  // have been assigned yet.
+  StatusAreaView(Browser* browser, gfx::NativeWindow window);
   virtual ~StatusAreaView() {}
 
   void Init();
@@ -59,6 +62,10 @@ class StatusAreaView : public views::View,
 
   // The browser window that owns us.
   Browser* browser_;
+
+  // Browser's NativeWindow. See description above constructor as to why this
+  // is cached.
+  gfx::NativeWindow window_;
 
   ClockMenuButton* clock_view_;
   NetworkMenuButton* network_view_;

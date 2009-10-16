@@ -114,8 +114,10 @@ class OptionsMenuModel : public views::SimpleMenuModel,
 StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
     StatusAreaView::OPEN_TABS_ON_LEFT;
 
-StatusAreaView::StatusAreaView(Browser* browser)
+StatusAreaView::StatusAreaView(Browser* browser,
+                               gfx::NativeWindow window)
     : browser_(browser),
+      window_(window),
       clock_view_(NULL),
       network_view_(NULL),
       battery_view_(NULL),
@@ -130,7 +132,7 @@ void StatusAreaView::Init() {
   AddChildView(clock_view_);
 
   // Network.
-  network_view_ = new NetworkMenuButton(browser_->window()->GetNativeHandle());
+  network_view_ = new NetworkMenuButton(window_);
   AddChildView(network_view_);
 
   // Battery.

@@ -15,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
+#include "views/window/window.h"
 
 BrowserExtender::BrowserExtender(BrowserView* browser_view)
     : browser_view_(browser_view),
@@ -33,7 +34,9 @@ void BrowserExtender::Init() {
   main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
   browser_view_->AddChildView(main_menu_);
 
-  status_area_ = new StatusAreaView(browser_view_->browser());
+  status_area_ = new StatusAreaView(
+      browser_view_->browser(),
+      browser_view_->GetWindow()->GetNativeWindow());
   browser_view_->AddChildView(status_area_);
   status_area_->Init();
 

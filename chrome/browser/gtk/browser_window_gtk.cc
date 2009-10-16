@@ -1780,7 +1780,7 @@ void BrowserWindowGtk::InitWidgets() {
     status_widget->set_delete_on_destroy(true);
     status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
     gtk_widget_reparent(status_widget->GetNativeView(), status_container);
-    status_area_ = new StatusAreaView(browser());
+    status_area_ = new StatusAreaView(browser(), GetNativeHandle());
     status_widget->SetContentsView(status_area_);
     status_area_->Init();
 
