@@ -67,7 +67,7 @@ class BookmarkComparer {
 // matching child node for many sync nodes.
 class BookmarkNodeFinder {
  public:
-  // Creats an instance with the given parent bookmark node.
+  // Creates an instance with the given parent bookmark node.
   explicit BookmarkNodeFinder(const BookmarkNode* parent_node);
 
   // Finds best matching node for the given sync node.
@@ -76,7 +76,7 @@ class BookmarkNodeFinder {
   const BookmarkNode* FindBookmarkNode(const sync_api::BaseNode& sync_node);
 
  private:
-  typedef std::set<const BookmarkNode*, BookmarkComparer> BookmarkNodesSet;
+  typedef std::multiset<const BookmarkNode*, BookmarkComparer> BookmarkNodesSet;
 
   const BookmarkNode* parent_node_;
   BookmarkNodesSet child_nodes_;
@@ -86,8 +86,10 @@ class BookmarkNodeFinder {
 
 BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
-  for (int i = 0; i < parent_node_->GetChildCount(); ++i)
+  for (int i = 0; i < parent_node_->GetChildCount(); ++i) {
     child_nodes_.insert(parent_node_->GetChild(i));
+  }
+  DCHECK_EQ(child_nodes_.size(), parent_node_->GetChildCount());
 }
 
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
@@ -315,7 +317,7 @@ bool ModelAssociator::BuildAssocations() {
   DCHECK(bookmark_bar_sync_id != sync_api::kInvalidId);
   int64 other_bookmarks_sync_id = GetSyncIdFromBookmarkId(
       model->other_node()->id());
-  DCHECK(other_bookmarks_sync_id!= sync_api::kInvalidId);
+  DCHECK(other_bookmarks_sync_id != sync_api::kInvalidId);
 
   std::stack<int64> dfs_stack;
   dfs_stack.push(other_bookmarks_sync_id);
