@@ -39,7 +39,8 @@ extern "C" {
 
 #define MMX_ALIGNED(var) var __attribute__((aligned(16)))
 
-MMX_ALIGNED(int16 kCoefficientsRgbY[256][4]) = {
+
+MMX_ALIGNED(int16 kCoefficientsRgbY[768][4]) = {
   RGBY(0x00), RGBY(0x01), RGBY(0x02), RGBY(0x03),
   RGBY(0x04), RGBY(0x05), RGBY(0x06), RGBY(0x07),
   RGBY(0x08), RGBY(0x09), RGBY(0x0A), RGBY(0x0B),
@@ -104,9 +105,8 @@ MMX_ALIGNED(int16 kCoefficientsRgbY[256][4]) = {
   RGBY(0xF4), RGBY(0xF5), RGBY(0xF6), RGBY(0xF7),
   RGBY(0xF8), RGBY(0xF9), RGBY(0xFA), RGBY(0xFB),
   RGBY(0xFC), RGBY(0xFD), RGBY(0xFE), RGBY(0xFF),
-};
 
-MMX_ALIGNED(int16 kCoefficientsRgbU[256][4]) = {
+  // Chroma U table.
   RGBU(0x00), RGBU(0x01), RGBU(0x02), RGBU(0x03),
   RGBU(0x04), RGBU(0x05), RGBU(0x06), RGBU(0x07),
   RGBU(0x08), RGBU(0x09), RGBU(0x0A), RGBU(0x0B),
@@ -171,9 +171,8 @@ MMX_ALIGNED(int16 kCoefficientsRgbU[256][4]) = {
   RGBU(0xF4), RGBU(0xF5), RGBU(0xF6), RGBU(0xF7),
   RGBU(0xF8), RGBU(0xF9), RGBU(0xFA), RGBU(0xFB),
   RGBU(0xFC), RGBU(0xFD), RGBU(0xFE), RGBU(0xFF),
-};
 
-MMX_ALIGNED(int16 kCoefficientsRgbV[256][4]) = {
+  // Chroma V table.
   RGBV(0x00), RGBV(0x01), RGBV(0x02), RGBV(0x03),
   RGBV(0x04), RGBV(0x05), RGBV(0x06), RGBV(0x07),
   RGBV(0x08), RGBV(0x09), RGBV(0x0A), RGBV(0x0B),
@@ -247,123 +246,133 @@ MMX_ALIGNED(int16 kCoefficientsRgbV[256][4]) = {
 
 #if defined(ARCH_CPU_X86_64)
 
+// AMD64 ABI uses register paremters.
 void FastConvertYUVToRGB32Row(const uint8* y_buf,  // rdi
                               const uint8* u_buf,  // rsi
                               const uint8* v_buf,  // rdx
                               uint8* rgb_buf,      // rcx
-                              int width);          // r8
-
+                              int width) {         // r8
   asm(
-".global FastConvertYUVToRGB32Row\n"
-"FastConvertYUVToRGB32Row:\n"
   "jmp    convertend\n"
-
 "convertloop:"
-  "movzb  (%rsi),%r10\n"
-  "add    $0x1,%rsi\n"
-  "movzb  (%rdx),%r11\n"
-  "add    $0x1,%rdx\n"
-  "movq   kCoefficientsRgbU(,%r10,8),%xmm0\n"
-  "movzb  (%rdi),%r10\n"
-  "movq   kCoefficientsRgbV(,%r11,8),%xmm1\n"
-  "movzb  0x1(%rdi),%r11\n"
-  "paddsw %xmm1,%xmm0\n"
-  "movq   kCoefficientsRgbY(,%r10,8),%xmm2\n"
-  "add    $0x2,%rdi\n"
-  "movq   kCoefficientsRgbY(,%r11,8),%xmm3\n"
-  "paddsw %xmm0,%xmm2\n"
-  "paddsw %xmm0,%xmm3\n"
-  "shufps $0x44,%xmm3,%xmm2\n"
-  "psraw  $0x6,%xmm2\n"
-  "packuswb %xmm2,%xmm2\n"
-  "movq   %xmm2,0x0(%rcx)\n"
-  "add    $0x8,%rcx\n"
+  "movzb  (%1),%%r10\n"
+  "add    $0x1,%1\n"
+  "movzb  (%2),%%r11\n"
+  "add    $0x1,%2\n"
+  "movq   2048(%5,%%r10,8),%%xmm0\n"
+  "movzb  (%0),%%r10\n"
+  "movq   4096(%5,%%r11,8),%%xmm1\n"
+  "movzb  0x1(%0),%%r11\n"
+  "paddsw %%xmm1,%%xmm0\n"
+  "movq   (%5,%%r10,8),%%xmm2\n"
+  "add    $0x2,%0\n"
+  "movq   (%5,%%r11,8),%%xmm3\n"
+  "paddsw %%xmm0,%%xmm2\n"
+  "paddsw %%xmm0,%%xmm3\n"
+  "shufps $0x44,%%xmm3,%%xmm2\n"
+  "psraw  $0x6,%%xmm2\n"
+  "packuswb %%xmm2,%%xmm2\n"
+  "movq   %%xmm2,0x0(%3)\n"
+  "add    $0x8,%3\n"
 "convertend:"
-  "sub    $0x2,%r8\n"
+  "sub    $0x2,%4\n"
   "jns    convertloop\n"
 
 "convertnext:"
-  "add    $0x1,%r8\n"
+  "add    $0x1,%4\n"
   "js     convertdone\n"
 
-  "movzb  (%rsi),%r10\n"
-  "movq   kCoefficientsRgbU(,%r10,8),%xmm0\n"
-  "movzb  (%rdx),%r10\n"
-  "movq   kCoefficientsRgbV(,%r10,8),%xmm1\n"
-  "paddsw %xmm1,%xmm0\n"
-  "movzb  (%rdi),%r10\n"
-  "movq   kCoefficientsRgbY(,%r10,8),%xmm1\n"
-  "paddsw %xmm0,%xmm1\n"
-  "psraw  $0x6,%xmm1\n"
-  "packuswb %xmm1,%xmm1\n"
-  "movd   %xmm1,0x0(%rcx)\n"
+  "movzb  (%1),%%r10\n"
+  "movq   2048(%5,%%r10,8),%%xmm0\n"
+  "movzb  (%2),%%r10\n"
+  "movq   4096(%5,%%r10,8),%%xmm1\n"
+  "paddsw %%xmm1,%%xmm0\n"
+  "movzb  (%0),%%r10\n"
+  "movq   (%5,%%r10,8),%%xmm1\n"
+  "paddsw %%xmm0,%%xmm1\n"
+  "psraw  $0x6,%%xmm1\n"
+  "packuswb %%xmm1,%%xmm1\n"
+  "movd   %%xmm1,0x0(%3)\n"
 "convertdone:"
-  "ret\n"
+  :
+  : "r"(y_buf),  // %0
+    "r"(u_buf),  // %1
+    "r"(v_buf),  // %2
+    "r"(rgb_buf),  // %3
+    "r"(width),  // %4
+    "r" (kCoefficientsRgbY)  // %5
+  : "memory", "r10", "r11", "xmm0", "xmm1", "xmm2", "xmm3"
 );
-
+}
 
 void ScaleYUVToRGB32Row(const uint8* y_buf,  // rdi
                         const uint8* u_buf,  // rsi
                         const uint8* v_buf,  // rdx
                         uint8* rgb_buf,      // rcx
                         int width,           // r8
-                        int scaled_dx);      // r9
-
+                        int scaled_dx) {     // r9
   asm(
-  ".global ScaleYUVToRGB32Row\n"
-"ScaleYUVToRGB32Row:\n"
-  "xor    %r11,%r11\n"
-  "sub    $0x2,%r8\n"
+  "xor    %%r11,%%r11\n"
+  "sub    $0x2,%4\n"
   "js     scalenext\n"
 
 "scaleloop:"
-  "mov    %r11,%r10\n"
-  "sar    $0x5,%r10\n"
-  "movzb  (%rsi,%r10,1),%rax\n"
-  "movq   kCoefficientsRgbU(,%rax,8),%xmm0\n"
-  "movzb  (%rdx,%r10,1),%rax\n"
-  "movq   kCoefficientsRgbV(,%rax,8),%xmm1\n"
-  "lea    (%r11,%r9),%r10\n"
-  "sar    $0x4,%r11\n"
-  "movzb  (%rdi,%r11,1),%rax\n"
-  "paddsw %xmm1,%xmm0\n"
-  "movq   kCoefficientsRgbY(,%rax,8),%xmm1\n"
-  "lea    (%r10,%r9),%r11\n"
-  "sar    $0x4,%r10\n"
-  "movzb  (%rdi,%r10,1),%rax\n"
-  "movq   kCoefficientsRgbY(,%rax,8),%xmm2\n"
-  "paddsw %xmm0,%xmm1\n"
-  "paddsw %xmm0,%xmm2\n"
-  "shufps $0x44,%xmm2,%xmm1\n"
-  "psraw  $0x6,%xmm1\n"
-  "packuswb %xmm1,%xmm1\n"
-  "movq   %xmm1,0x0(%rcx)\n"
-  "add    $0x8,%rcx\n"
-  "sub    $0x2,%r8\n"
+  "mov    %%r11,%%r10\n"
+  "sar    $0x5,%%r10\n"
+  "movzb  (%1,%%r10,1),%%rax\n"
+  "movq   2048(%5,%%rax,8),%%xmm0\n"
+  "movzb  (%2,%%r10,1),%%rax\n"
+  "movq   4096(%5,%%rax,8),%%xmm1\n"
+  "lea    (%%r11,%6),%%r10\n"
+  "sar    $0x4,%%r11\n"
+  "movzb  (%0,%%r11,1),%%rax\n"
+  "paddsw %%xmm1,%%xmm0\n"
+  "movq   (%5,%%rax,8),%%xmm1\n"
+  "lea    (%%r10,%6),%%r11\n"
+  "sar    $0x4,%%r10\n"
+  "movzb  (%0,%%r10,1),%%rax\n"
+  "movq   (%5,%%rax,8),%%xmm2\n"
+  "paddsw %%xmm0,%%xmm1\n"
+  "paddsw %%xmm0,%%xmm2\n"
+  "shufps $0x44,%%xmm2,%%xmm1\n"
+  "psraw  $0x6,%%xmm1\n"
+  "packuswb %%xmm1,%%xmm1\n"
+  "movq   %%xmm1,0x0(%3)\n"
+  "add    $0x8,%3\n"
+  "sub    $0x2,%4\n"
   "jns    scaleloop\n"
 
 "scalenext:"
-  "add    $0x1,%r8\n"
+  "add    $0x1,%4\n"
   "js     scaledone\n"
 
-  "mov    %r11,%r10\n"
-  "sar    $0x5,%r10\n"
-  "movzb  (%rsi,%r10,1),%rax\n"
-  "movq   kCoefficientsRgbU(,%rax,8),%xmm0\n"
-  "movzb  (%rdx,%r10,1),%rax\n"
-  "movq   kCoefficientsRgbV(,%rax,8),%xmm1\n"
-  "paddsw %xmm1,%xmm0\n"
-  "sar    $0x4,%r11\n"
-  "movzb  (%rdi,%r11,1),%rax\n"
-  "movq   kCoefficientsRgbY(,%rax,8),%xmm1\n"
-  "paddsw %xmm0,%xmm1\n"
-  "psraw  $0x6,%xmm1\n"
-  "packuswb %xmm1,%xmm1\n"
-  "movd   %xmm1,0x0(%rcx)\n"
+  "mov    %%r11,%%r10\n"
+  "sar    $0x5,%%r10\n"
+  "movzb  (%1,%%r10,1),%%rax\n"
+  "movq   2048(%5,%%rax,8),%%xmm0\n"
+  "movzb  (%2,%%r10,1),%%rax\n"
+  "movq   4096(%5,%%rax,8),%%xmm1\n"
+  "paddsw %%xmm1,%%xmm0\n"
+  "sar    $0x4,%%r11\n"
+  "movzb  (%0,%%r11,1),%%rax\n"
+  "movq   (%5,%%rax,8),%%xmm1\n"
+  "paddsw %%xmm0,%%xmm1\n"
+  "psraw  $0x6,%%xmm1\n"
+  "packuswb %%xmm1,%%xmm1\n"
+  "movd   %%xmm1,0x0(%3)\n"
 
 "scaledone:"
-  "ret\n"
+  :
+  : "r"(y_buf),  // %0
+    "r"(u_buf),  // %1
+    "r"(v_buf),  // %2
+    "r"(rgb_buf),  // %3
+    "r"(width),  // %4
+    "r" (kCoefficientsRgbY),  // %5
+    "r"(static_cast<long>(scaled_dx))  // %6
+  : "memory", "r10", "r11", "rax", "xmm0", "xmm1", "xmm2"
 );
+}
 
 #else
 
@@ -389,9 +398,9 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "add    $0x1,%edi\n"
   "movzbl (%esi),%ebx\n"
   "add    $0x1,%esi\n"
-  "movq   kCoefficientsRgbU(,%eax,8),%mm0\n"
+  "movq   kCoefficientsRgbY+2048(,%eax,8),%mm0\n"
   "movzbl (%edx),%eax\n"
-  "paddsw kCoefficientsRgbV(,%ebx,8),%mm0\n"
+  "paddsw kCoefficientsRgbY+4096(,%ebx,8),%mm0\n"
   "movzbl 0x1(%edx),%ebx\n"
   "movq   kCoefficientsRgbY(,%eax,8),%mm1\n"
   "add    $0x2,%edx\n"
@@ -411,9 +420,9 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "je     convertdone\n"
 
   "movzbl (%edi),%eax\n"
-  "movq   kCoefficientsRgbU(,%eax,8),%mm0\n"
+  "movq   kCoefficientsRgbY+2048(,%eax,8),%mm0\n"
   "movzbl (%esi),%eax\n"
-  "paddsw kCoefficientsRgbV(,%eax,8),%mm0\n"
+  "paddsw kCoefficientsRgbY+4096(,%eax,8),%mm0\n"
   "movzbl (%edx),%eax\n"
   "movq   kCoefficientsRgbY(,%eax,8),%mm1\n"
   "paddsw %mm0,%mm1\n"
@@ -449,11 +458,11 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
   "movzbl (%edi,%eax,1),%eax\n"
-  "movq   kCoefficientsRgbU(,%eax,8),%mm0\n"
+  "movq   kCoefficientsRgbY+2048(,%eax,8),%mm0\n"
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
   "movzbl (%esi,%eax,1),%eax\n"
-  "paddsw kCoefficientsRgbV(,%eax,8),%mm0\n"
+  "paddsw kCoefficientsRgbY+4096(,%eax,8),%mm0\n"
   "mov    %ebx,%eax\n"
   "add    0x38(%esp),%ebx\n"
   "sar    $0x4,%eax\n"
@@ -481,11 +490,11 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
   "movzbl (%edi,%eax,1),%eax\n"
-  "movq   kCoefficientsRgbU(,%eax,8),%mm0\n"
+  "movq   kCoefficientsRgbY+2048(,%eax,8),%mm0\n"
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
   "movzbl (%esi,%eax,1),%eax\n"
-  "paddsw kCoefficientsRgbV(,%eax,8),%mm0\n"
+  "paddsw kCoefficientsRgbY+4096(,%eax,8),%mm0\n"
   "mov    %ebx,%eax\n"
   "sar    $0x4,%eax\n"
   "movzbl (%edx,%eax,1),%eax\n"
