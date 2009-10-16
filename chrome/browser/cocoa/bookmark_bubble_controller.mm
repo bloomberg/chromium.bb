@@ -156,7 +156,7 @@
 
   // Add "Choose another folder...".  Remember it for later to compare against.
   chooseAnotherFolder_.reset(
-    [l10n_util::GetNSString(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER)
+    [l10n_util::GetNSStringWithFixup(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER)
               retain]);
   [folderComboBox_ addItemWithObjectValue:chooseAnotherFolder_.get()];
 

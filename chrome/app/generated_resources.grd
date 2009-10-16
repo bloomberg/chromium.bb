@@ -3400,9 +3400,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
         Folder:
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
-        Choose another folder...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
+          Choose another folder...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
+          Choose Another Folder...
+        </message>
+      </if>
       <message name="IDS_BOOMARK_BUBBLE_FOLDER_MRU_MORE" desc="Text used in the folder selector to take the user to the edit bookmark dialog">
         Choose another folder...
       </message>
