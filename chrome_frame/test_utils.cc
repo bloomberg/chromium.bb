@@ -80,11 +80,11 @@ void ScopedChromeFrameRegistrar::RegisterReferenceChromeFrameBuild() {
   file_util::UpOneDirectory(&reference_build_dir);
   file_util::UpOneDirectory(&reference_build_dir);
 
-  file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
+  file_util::AppendToPath(&reference_build_dir, L"chrome");
   file_util::AppendToPath(&reference_build_dir, L"tools");
   file_util::AppendToPath(&reference_build_dir, L"test");
   file_util::AppendToPath(&reference_build_dir, L"reference_build");
-  file_util::AppendToPath(&reference_build_dir, L"chrome");
+  file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
   file_util::AppendToPath(&reference_build_dir, L"servers");
   file_util::AppendToPath(&reference_build_dir, L"npchrome_tab.dll");
 
