@@ -820,6 +820,7 @@ BUG13907 MAC : LayoutTests/media/video-transformed.html = FAIL PASS
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/controls-strict.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime-set2.html = TIMEOUT
+BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-toggle.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-none-crash.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-dom-src.html = TIMEOUT
 
@@ -3215,7 +3216,6 @@ BUG_JEREMY LINUX WIN : LayoutTests/media/controls-after-reload.html = FAIL
 // When fixing, uncomment line above to mark this test as slow.
 BUG_JEREMY LINUX WIN : LayoutTests/media/video-controls-rendering.html = FAIL
 // When fixing, uncomment line above to mark this test as slow.
-BUG_JEREMY LINUX WIN : LayoutTests/media/video-display-toggle.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/media/video-empty-source.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-01-b.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
