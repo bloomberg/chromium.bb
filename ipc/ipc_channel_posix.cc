@@ -447,13 +447,14 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           // to the console.
           return false;
 #endif  // defined(OS_MACOSX)
+        } else if (errno == ECONNRESET) {
+          return false;
         } else {
           PLOG(ERROR) << "pipe error (" << pipe_ << ")";
           return false;
         }
       } else if (bytes_read == 0) {
         // The pipe has closed...
-        Close();
         return false;
       }
     }
