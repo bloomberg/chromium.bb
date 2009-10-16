@@ -38,6 +38,7 @@
 #include "DOMTimer.h"
 #include "FrameLoader.h"
 #include "Page.h"
+#include "SecurityOrigin.h"
 #include "TextEncoding.h"
 #include "WorkerContextExecutionProxy.h"
 #include <wtf/Assertions.h>
