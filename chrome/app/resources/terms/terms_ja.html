@@ -12,16 +12,16 @@ function carry_tracking(obj) {
     var s = '(\\?.*)';
     var regex = new RegExp(s);
     var results = regex.exec(window.location.href);
-	if (results != null) {
-		obj.href = obj.href + results[1];
-	} else {
-		s2 = 'intl/([^/]*)';
-		regex2 = new RegExp(s2);
-		results2 = regex2.exec(window.location.href);
-		if (results2 != null) {
-			obj.href = obj.href + '?hl=' + results2[1];
-		}
-	}
+  if (results != null) {
+    obj.href = obj.href + results[1];
+  } else {
+    s2 = 'intl/([^/]*)';
+    regex2 = new RegExp(s2);
+    results2 = regex2.exec(window.location.href);
+    if (results2 != null) {
+      obj.href = obj.href + '?hl=' + results2[1];
+    }
+  }
 }
 </script></head>
 
@@ -129,6 +129,6 @@ function carry_tracking(obj) {
 <p>19.5 この件を決定する司法管轄権を有する裁判所が本規約の条項が無効であると裁定した場合、本規約の残りの条項に影響を与えることなく、その条項は本規約から削除されます。本規約の残りの規定は、引続き有効かつ執行可能とします。</p>
 <p>19.6 ユーザーは、Google が親会社である企業グループの各メンバーが本規約の第三受益者であり、それらの他社は、自社に利益または有利な権利を与える本規約中の条項を直接実施したり適用する権利があることについて了承し、これに同意するものとします。上記の場合を除き、他のいかなる者または企業も、本規約の第三受益者ではないものとします。</p>
 <p>19.7 本規約および本規約に基づくユーザーと Google との関係は、カリフォルニア州法に準拠するものとし、抵触法については施行されません。ユーザーと Google は、本規約に起因するいかなる法的事項を解決する際も、カリフォルニア州サンタクララ郡に所在する裁判所の専属的司法管轄区に従うことに同意するものとします。上記の規定にもかかわらず、Google が、いずれの法域においても、仮処分や差止めによる救済 （またはこれに準ずる緊急の法的救済措置） を申請できることについて同意するものとします。</p>
-<p>2008年12月___日</p>
+<p>2008年12月16日</p>
 </body>
 </html>

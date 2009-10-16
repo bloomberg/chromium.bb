@@ -12,20 +12,20 @@ function carry_tracking(obj) {
     var s = '(\\?.*)';
     var regex = new RegExp(s);
     var results = regex.exec(window.location.href);
-	if (results != null) {
-		obj.href = obj.href + results[1];
-	} else {
-		s2 = 'intl/([^/]*)';
-		regex2 = new RegExp(s2);
-		results2 = regex2.exec(window.location.href);
-		if (results2 != null) {
-			obj.href = obj.href + '?hl=' + results2[1];
-		}
-	}
+  if (results != null) {
+    obj.href = obj.href + results[1];
+  } else {
+    s2 = 'intl/([^/]*)';
+    regex2 = new RegExp(s2);
+    results2 = regex2.exec(window.location.href);
+    if (results2 != null) {
+      obj.href = obj.href + '?hl=' + results2[1];
+    }
+  }
 }
 </script></head>
 
-<body dir="rtl">
+<body>
 <h3>بنود الخدمة الخاصة بـ Google Chrome</h3>
 <p>تنطبق بنود الخدمة هذه على إصدار شفرة Google Chrome القابلة للتنفيذ. ويتوفر مصدر شفرة Google Chrome مجانًا بموجب اتفاقيات ترخيص البرامج ذات المصدر المفتوح في <a href="http://code.google.com/chromium/terms.html">http://code.google.com/chromium/terms.html</a>.&nbsp; </p>
 <p><b>1- علاقتك مع Google</b></p>

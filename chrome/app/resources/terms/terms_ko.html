@@ -12,16 +12,16 @@ function carry_tracking(obj) {
     var s = '(\\?.*)';
     var regex = new RegExp(s);
     var results = regex.exec(window.location.href);
-	if (results != null) {
-		obj.href = obj.href + results[1];
-	} else {
-		s2 = 'intl/([^/]*)';
-		regex2 = new RegExp(s2);
-		results2 = regex2.exec(window.location.href);
-		if (results2 != null) {
-			obj.href = obj.href + '?hl=' + results2[1];
-		}
-	}
+  if (results != null) {
+    obj.href = obj.href + results[1];
+  } else {
+    s2 = 'intl/([^/]*)';
+    regex2 = new RegExp(s2);
+    results2 = regex2.exec(window.location.href);
+    if (results2 != null) {
+      obj.href = obj.href + '?hl=' + results2[1];
+    }
+  }
 }
 </script></head>
 
@@ -129,6 +129,6 @@ function carry_tracking(obj) {
 <p>19.5 본 사안을 판결할 수 있는 관할권을 갖는 법원에서 본 약관의 조항이 무효인 것으로 판결하는 경우 해당 조항만 약관에서 삭제되며 약관의 나머지 부분은 아무런 영향을 받지 않습니다. 본 약관의 나머지 조항은 계속해서 유효하며 실행 가능합니다.</p>
 <p>19.6 귀하는 Google의 계열사에 속하는 각 업체가 약관에 대한 제3의 수혜자이며 이들 업체는 각자에게 이익이 되는 약관의 조항을 직접 행사하고 이행할 자격이 있음을 인정하고 이에 동의합니다. 해당 업체를 제외한 다른 회사 또는 개인은 본 약관에 대한 제3의 수혜자가 될 수 없습니다.</p>
 <p>19.7 본 약관, 그리고 본 약관에 따른 귀하와 Google의 관계는 법률 조항의 상충 여부에 관계없이 캘리포니아 주 법률의 적용을 받습니다. 귀하와 Google은 본 약관으로부터 발생하는 모든 법적 분쟁을 해결하기 위해 캘리포니아 주 산타클라라 카운티 소재 법원의 전속 관할권에 따르는 데 동의합니다. 이와는 별도로 귀하는 Google이 관할지역과 상관없이 보존처분 또는 이에 상응하는 긴급 구제책을 시행할 자격이 있음에 동의합니다.</p>
-<p>2008년 12월 ___일</p>
+<p>2008년 12월 4일</p>
 </body>
 </html>

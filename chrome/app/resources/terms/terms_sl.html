@@ -12,16 +12,16 @@ function carry_tracking(obj) {
     var s = '(\\?.*)';
     var regex = new RegExp(s);
     var results = regex.exec(window.location.href);
-	if (results != null) {
-		obj.href = obj.href + results[1];
-	} else {
-		s2 = 'intl/([^/]*)';
-		regex2 = new RegExp(s2);
-		results2 = regex2.exec(window.location.href);
-		if (results2 != null) {
-			obj.href = obj.href + '?hl=' + results2[1];
-		}
-	}
+  if (results != null) {
+    obj.href = obj.href + results[1];
+  } else {
+    s2 = 'intl/([^/]*)';
+    regex2 = new RegExp(s2);
+    results2 = regex2.exec(window.location.href);
+    if (results2 != null) {
+      obj.href = obj.href + '?hl=' + results2[1];
+    }
+  }
 }
 </script></head>
 
@@ -129,7 +129,7 @@ function carry_tracking(obj) {
 <p>19.6 Potrjujete in strinjate se, da bo vsak član skupine podjetij, katerih matično podjetje je Google, tretji upravičenec do pogojev in da so taka podjetja upravičena do neposrednega izvrševanja in upoštevanja katerega koli določila pogojev, ki je zanje koristno. Nobena druga oseba ali podjetje ne more postati tretji upravičenec do pogojev.</p>
 <p>19.7 Pogoje in vaše razmerje z Googlom v skladu s temi pogoji ureja angleško pravo. Vi in Google se strinjate, da sprejemate izključno pristojnost sodišč v Angliji, ki razrešujejo pravne zadeve glede pogojev. Ne glede na to se strinjate, da lahko Google še vedno uporabi pravna sredstva (ali enakovredno vrsto nujnega pravnega varstva) pod katero koli pristojnostjo.</p>
 <p>4. december 2008</p>
-<h3>&nbsp;</h3>
+<h3> </h3>
 <br />
 </body>
 </html>

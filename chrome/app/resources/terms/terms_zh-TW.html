@@ -12,16 +12,16 @@ function carry_tracking(obj) {
     var s = '(\\?.*)';
     var regex = new RegExp(s);
     var results = regex.exec(window.location.href);
-	if (results != null) {
-		obj.href = obj.href + results[1];
-	} else {
-		s2 = 'intl/([^/]*)';
-		regex2 = new RegExp(s2);
-		results2 = regex2.exec(window.location.href);
-		if (results2 != null) {
-			obj.href = obj.href + '?hl=' + results2[1];
-		}
-	}
+  if (results != null) {
+    obj.href = obj.href + results[1];
+  } else {
+    s2 = 'intl/([^/]*)';
+    regex2 = new RegExp(s2);
+    results2 = regex2.exec(window.location.href);
+    if (results2 != null) {
+      obj.href = obj.href + '?hl=' + results2[1];
+    }
+  }
 }
 </script></head>
 
@@ -129,6 +129,6 @@ function carry_tracking(obj) {
 <p>19.5 如有任何法庭裁定本「條款」的任一規定無效，則該規定將自「條款」移除，其餘「條款」則不受影響。「條款」的其餘規定仍將有效並具法律效力。</p>
 <p>19.6 您瞭解並同意，Google 旗下的所有成員公司應為「條款」的第三方受益人，此類公司有權直接行使並倚賴「條款」中對其有利的規定或權利。除此之外，無其他任何個人或公司可做為本「條款」的第三方受益人。</p>
 <p>19.7 無論是否與法規相抵觸，「條款」以及您和 Google 在「條款」之下的關係均受美國加州的法律規範。對於「條款」的所有法律事宜，您和 Google 均同意遵守美國加州聖塔克拉拉法院的判決。儘管有上述規定，您同意 Google 仍可以申請任何管轄地的強制令補救 (或同等類型的緊急法定救濟)。</p>
-<p>2008 年 12 月 ___ 日</p>
+<p>2008 年 12 月 4 日</p>
 </body>
 </html>
