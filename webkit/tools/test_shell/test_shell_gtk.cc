@@ -439,7 +439,7 @@ void TestShell::WaitTestFinished() {
 
   // Install an alarm signal handler that will kill us if we time out.
   signal(SIGALRM, AlarmHandler);
-  alarm(GetLayoutTestTimeoutInSeconds());
+  alarm(GetLayoutTestTimeoutForWatchDog() / 1000);
 
   // TestFinished() will post a quit message to break this loop when the page
   // finishes loading.

@@ -399,7 +399,7 @@ unsigned int __stdcall WatchDogThread(void *arg) {
     return 0;
 
   TestShell* shell = static_cast<TestShell*>(arg);
-  DWORD timeout = static_cast<DWORD>(shell->GetLayoutTestTimeout() * 2.5);
+  DWORD timeout = static_cast<DWORD>(shell->GetLayoutTestTimeoutForWatchDog());
   DWORD rv = WaitForSingleObject(shell->finished_event(), timeout);
   if (rv == WAIT_TIMEOUT) {
     // Print a warning to be caught by the layout-test script.

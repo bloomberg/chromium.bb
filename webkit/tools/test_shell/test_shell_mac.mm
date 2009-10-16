@@ -405,7 +405,7 @@ void TestShell::WaitTestFinished() {
   // Windows multiplies by 2.5, but that causes us to run for far, far too
   // long. We use the passed value and let the scripts flag override
   // the value as needed.
-  NSTimeInterval timeout_seconds = GetLayoutTestTimeoutInSeconds();
+  NSTimeInterval timeout_seconds = GetLayoutTestTimeoutForWatchDog() / 1000;
   WatchDogTarget* watchdog = [[[WatchDogTarget alloc]
                                 initWithTimeout:timeout_seconds] autorelease];
   NSThread* thread = [[NSThread alloc] initWithTarget:watchdog

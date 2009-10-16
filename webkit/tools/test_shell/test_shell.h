@@ -242,9 +242,11 @@ public:
     // Get the timeout for running a test.
     static int GetLayoutTestTimeout() { return file_test_timeout_ms_; }
 
-    // Get the timeout for running a test in seconds
-    static int GetLayoutTestTimeoutInSeconds() {
-      return file_test_timeout_ms_ / 1000;
+    // Get the timeout killing an unresponsive TestShell.
+    // Make it a bit longer than the regular timeout to avoid killing the
+    // TestShell process unless we really need to.
+    static int GetLayoutTestTimeoutForWatchDog() {
+      return file_test_timeout_ms_ + 1000;
     }
 
 #if defined(OS_WIN)
