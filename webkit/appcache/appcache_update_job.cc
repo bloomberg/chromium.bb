@@ -88,12 +88,15 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
 }
 
 AppCacheUpdateJob::~AppCacheUpdateJob() {
-  Cancel();
+  if (internal_state_ != COMPLETED)
+    Cancel();
 
   DCHECK(!manifest_url_request_);
   DCHECK(pending_url_fetches_.empty());
+  DCHECK(!inprogress_cache_);
 
-  group_->SetUpdateStatus(AppCacheGroup::IDLE);
+  if (group_)
+    group_->SetUpdateStatus(AppCacheGroup::IDLE);
 }
 
 void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
@@ -156,7 +159,7 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
 }
 
 void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
-  if (internal_state_ == CACHE_FAILURE)
+  if (internal_state_ == CACHE_FAILURE || internal_state_ == CANCELLED)
     return;
 
   int bytes_read = 0;
@@ -311,14 +314,16 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
       ContinueHandleManifestFetchCompleted(true);
   } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
     ContinueHandleManifestFetchCompleted(false);
-  } else if (response_code == 404 || response_code == 410) {
-    group_->set_obsolete(true);
-    NotifyAllAssociatedHosts(OBSOLETE_EVENT);
-    NotifyAllPendingMasterHosts(ERROR_EVENT);
-    DeleteSoon();
   } else {
-    LOG(INFO) << "Cache failure, response code: " << response_code;
-    internal_state_ = CACHE_FAILURE;
+    if (response_code == 404 || response_code == 410) {
+      group_->set_obsolete(true);
+      NotifyAllAssociatedHosts(OBSOLETE_EVENT);
+      NotifyAllPendingMasterHosts(ERROR_EVENT);
+      internal_state_ = COMPLETED;
+    } else {
+      LOG(INFO) << "Cache failure, response code: " << response_code;
+      internal_state_ = CACHE_FAILURE;
+    }
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
   }
 }
@@ -346,7 +351,6 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   internal_state_ = DOWNLOADING;
   inprogress_cache_ = new AppCache(service_,
                                    service_->storage()->NewCacheId());
-  inprogress_cache_->set_owning_group(group_);
   BuildUrlFileList(manifest);
   inprogress_cache_->InitializeWithManifest(&manifest);
 
@@ -398,7 +402,6 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
       // Cancel any pending URL requests.
       for (PendingUrlFetches::iterator it = pending_url_fetches_.begin();
            it != pending_url_fetches_.end(); ++it) {
-        it->second->Cancel();
         delete it->second;
       }
 
@@ -436,21 +439,19 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     inprogress_cache_->AddOrModifyEntry(manifest_url_, entry);
     inprogress_cache_->set_update_time(base::TimeTicks::Now());
 
-    // TODO(jennb): start of part to make async (cache storage may fail;
-    // group storage may fail)
+    // TODO(jennb): start of part to make async (cache/group storage may fail)
     inprogress_cache_->set_complete(true);
-
-    // TODO(jennb): write new cache to storage here
     group_->AddCache(inprogress_cache_);
-    // TODO(jennb): write new group to storage here
-    inprogress_cache_ = NULL;
+    protect_new_cache_.swap(inprogress_cache_);
+
+    // TODO(jennb): write new group and cache to storage here
 
     if (update_type_ == CACHE_ATTEMPT) {
       NotifyAllAssociatedHosts(CACHED_EVENT);
     } else {
       NotifyAllAssociatedHosts(UPDATE_READY_EVENT);
     }
-    DeleteSoon();
+    internal_state_ = COMPLETED;
     // TODO(jennb): end of part that needs to be made async.
   } else {
     LOG(INFO) << "Request status: " << request->status().status()
@@ -458,8 +459,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
         << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
     internal_state_ = CACHE_FAILURE;
-    HandleCacheFailure();
   }
+
+  MaybeCompleteUpdate();  // will definitely complete
 }
 
 void AppCacheUpdateJob::NotifySingleHost(AppCacheHost* host,
@@ -655,10 +657,12 @@ void AppCacheUpdateJob::CopyEntryToCache(const GURL& url,
   inprogress_cache_->AddEntry(url, *dest);
 }
 
-bool AppCacheUpdateJob::MaybeCompleteUpdate() {
+void AppCacheUpdateJob::MaybeCompleteUpdate() {
+  // Must wait for any pending master entries or url fetches to complete.
   if (master_entries_completed_ != pending_master_entries_.size() ||
       url_fetches_completed_ != url_file_list_.size() ) {
-    return false;
+    DCHECK(internal_state_ != COMPLETED);
+    return;
   }
 
   switch (internal_state_) {
@@ -666,37 +670,30 @@ bool AppCacheUpdateJob::MaybeCompleteUpdate() {
       // 6.9.4 steps 7.3-7.7.
       NotifyAllAssociatedHosts(NO_UPDATE_EVENT);
       pending_master_entries_.clear();
-      DeleteSoon();
+      internal_state_ = COMPLETED;
       break;
     case DOWNLOADING:
       internal_state_ = REFETCH_MANIFEST;
       FetchManifest(false);
-      return false;
+      break;
     case CACHE_FAILURE:
-      HandleCacheFailure();
+      // 6.9.4 cache failure steps 2-8.
+      NotifyAllAssociatedHosts(ERROR_EVENT);
+      pending_master_entries_.clear();
+      DiscardInprogressCache();
+      // For a CACHE_ATTEMPT, group will be discarded when the host(s) that
+      // started this update removes its reference to the group. Nothing more
+      // to do here.
+      internal_state_ = COMPLETED;
       break;
     default:
-      NOTREACHED();
-  }
-  return true;
-}
-
-void AppCacheUpdateJob::HandleCacheFailure() {
-  // 6.9.4 cache failure steps 2-8.
-  NotifyAllAssociatedHosts(ERROR_EVENT);
-  pending_master_entries_.clear();
-
-  // Discard the inprogress cache.
-  // TODO(jennb): cleanup possible storage for entries in the cache
-  if (inprogress_cache_) {
-    inprogress_cache_->set_owning_group(NULL);
-    inprogress_cache_ = NULL;
+      break;
   }
 
-  // For a CACHE_ATTEMPT, group will be discarded when this update
-  // job removes its reference to the group. Nothing more to do here.
-
-  DeleteSoon();
+  // Let the stack unwind before deletion to make it less risky as this
+  // method is called from multiple places in this file.
+  if (internal_state_ == COMPLETED)
+    DeleteSoon();
 }
 
 void AppCacheUpdateJob::ScheduleUpdateRetry(int delay_ms) {
@@ -706,16 +703,39 @@ void AppCacheUpdateJob::ScheduleUpdateRetry(int delay_ms) {
 }
 
 void AppCacheUpdateJob::Cancel() {
+  internal_state_ = CANCELLED;
+
   if (manifest_url_request_) {
     delete manifest_url_request_;
     manifest_url_request_ = NULL;
   }
 
-  // TODO(jennb): code other cancel cleanup (pending url requests, storage)
+  for (PendingUrlFetches::iterator it = pending_url_fetches_.begin();
+       it != pending_url_fetches_.end(); ++it) {
+    delete it->second;
+  }
+
+  pending_master_entries_.clear();
+  DiscardInprogressCache();
+  // TODO(jennb): cancel any storage callbacks
+}
+
+void AppCacheUpdateJob::DiscardInprogressCache() {
+  if (!inprogress_cache_)
+    return;
+
+  // TODO(jennb): cleanup stored responses for entries in the cache
+  inprogress_cache_ = NULL;
 }
 
 void AppCacheUpdateJob::DeleteSoon() {
-  // TODO(jennb): revisit if update should be deleting itself
+  // Break the connection with the group so the group cannot call delete
+  // on this object after we've posted a task to delete ourselves.
+  group_->SetUpdateStatus(AppCacheGroup::IDLE);
+  protect_new_cache_ = NULL;
+  group_ = NULL;
+
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
+
 }  // namespace appcache

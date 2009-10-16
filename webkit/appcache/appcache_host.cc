@@ -5,11 +5,7 @@
 #include "webkit/appcache/appcache_host.h"
 
 #include "base/logging.h"
-#include "webkit/appcache/appcache.h"
-#include "webkit/appcache/appcache_group.h"
-#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_request_handler.h"
-#include "webkit/appcache/appcache_service.h"
 
 namespace appcache {
 
@@ -25,6 +21,8 @@ AppCacheHost::~AppCacheHost() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
   if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
+  if (group_being_updated_.get())
+    group_being_updated_->RemoveUpdateObserver(this);
   service_->storage()->CancelDelegateCallbacks(this);
 }
 
@@ -232,7 +230,7 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(new_master_entry_url_.is_empty());
     AssociateCache(cache);
     cache->owning_group()->StartUpdateWithHost(this);
-
+    ObserveGroupBeingUpdated(cache->owning_group());
   } else if (group) {
     // If document was loaded using HTTP GET or equivalent, and, there is a
     // manifest URL, and manifest URL has the same origin as document.
@@ -242,7 +240,7 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(new_master_entry_url_.is_valid());
     AssociateCache(NULL);  // The UpdateJob may produce one for us later.
     group->StartUpdateWithNewMasterEntry(this, new_master_entry_url_);
-
+    ObserveGroupBeingUpdated(group);
   } else {
     // Otherwise, the Document is not associated with any application cache.
     AssociateCache(NULL);
@@ -259,21 +257,45 @@ void AppCacheHost::FinishCacheSelection(
   FOR_EACH_OBSERVER(Observer, observers_, OnCacheSelectionComplete(this));
 }
 
+void AppCacheHost::ObserveGroupBeingUpdated(AppCacheGroup* group) {
+  DCHECK(!group_being_updated_);
+  group_being_updated_ = group;
+  group->AddUpdateObserver(this);
+}
+
+void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
+  DCHECK_EQ(group, group_being_updated_);
+  group->RemoveUpdateObserver(this);
+
+  // Add a reference to the newest complete cache.
+  SetSwappableCache(group);
+
+  group_being_updated_ = NULL;
+}
+
+void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
+  AppCache* new_cache = group ? group->newest_complete_cache() : NULL;
+  if (new_cache != associated_cache_)
+    swappable_cache_ = new_cache;
+  else
+    swappable_cache_ = NULL;
+}
+
 void AppCacheHost::AssociateCache(AppCache* cache) {
   if (associated_cache_.get()) {
     associated_cache_->UnassociateHost(this);
-    group_ = NULL;
   }
 
   associated_cache_ = cache;
 
   if (cache) {
     cache->AssociateHost(this);
-    group_ = cache->owning_group();
     frontend_->OnCacheSelected(host_id_, cache->cache_id(), GetStatus());
   } else {
     frontend_->OnCacheSelected(host_id_, kNoCacheId, UNCACHED);
   }
+
+  SetSwappableCache(cache ? cache->owning_group() : NULL);
 }
 
 }  // namespace appcache

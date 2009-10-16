@@ -24,11 +24,11 @@ class AppCacheUpdateJob;
 class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  public:
 
-  class Observer {
+  class UpdateObserver {
     public:
       // Called just after an appcache update has completed.
       virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
-      virtual ~Observer() { }
+      virtual ~UpdateObserver() { }
   };
 
   enum UpdateStatus {
@@ -40,10 +40,10 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   AppCacheGroup(AppCacheService* service, const GURL& manifest_url);
   ~AppCacheGroup();
 
-  // Adds/removes an observer, the AppCacheGroup does not take
+  // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddUpdateObserver(UpdateObserver* observer);
+  void RemoveUpdateObserver(UpdateObserver* observer);
 
   const GURL& manifest_url() { return manifest_url_; }
 
@@ -54,11 +54,9 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   void AddCache(AppCache* complete_cache);
 
-  // Returns false if cache cannot be removed. The newest complete cache
-  // cannot be removed as long as the group is still in use.
-  bool RemoveCache(AppCache* cache);
+  void RemoveCache(AppCache* cache);
 
-  bool HasCache() { return newest_complete_cache_ || !old_caches_.empty(); }
+  bool HasCache() { return newest_complete_cache_ != NULL; }
 
   UpdateStatus update_status() { return update_status_; }
 
@@ -82,7 +80,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   friend class AppCacheUpdateJob;
   friend class AppCacheUpdateJobTest;
 
-  typedef std::vector<scoped_refptr<AppCache> > Caches;
+  typedef std::vector<AppCache*> Caches;
 
   AppCacheUpdateJob* update_job() { return update_job_; }
   void SetUpdateStatus(UpdateStatus status);
@@ -97,7 +95,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   Caches old_caches_;
 
   // Newest cache in this group to be complete, aka relevant cache.
-  scoped_refptr<AppCache> newest_complete_cache_;
+  AppCache* newest_complete_cache_;
 
   // Current update job for this group, if any.
   AppCacheUpdateJob* update_job_;
@@ -106,9 +104,10 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   AppCacheService* service_;
 
   // List of objects observing this group.
-  ObserverList<Observer> observers_;
+  ObserverList<UpdateObserver> observers_;
 
   FRIEND_TEST(AppCacheGroupTest, StartUpdate);
+  FRIEND_TEST(AppCacheGroupTest, CancelUpdate);
   FRIEND_TEST(AppCacheUpdateJobTest, AlreadyChecking);
   FRIEND_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
   DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);

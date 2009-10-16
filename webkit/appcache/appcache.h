@@ -29,6 +29,7 @@ class AppCacheService;
 class AppCache : public base::RefCounted<AppCache> {
  public:
   typedef std::map<GURL, AppCacheEntry> EntryMap;
+  typedef std::set<AppCacheHost*> AppCacheHosts;
 
   AppCache(AppCacheService *service, int64 cache_id);
   ~AppCache();
@@ -36,7 +37,6 @@ class AppCache : public base::RefCounted<AppCache> {
   int64 cache_id() const { return cache_id_; }
 
   AppCacheGroup* owning_group() const { return owning_group_; }
-  void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
 
   bool is_complete() const { return is_complete_; }
   void set_complete(bool value) { is_complete_ = value; }
@@ -55,9 +55,7 @@ class AppCache : public base::RefCounted<AppCache> {
 
   const EntryMap& entries() const { return entries_; }
 
-  const std::set<AppCacheHost*>& associated_hosts() const {
-    return associated_hosts_;
-  }
+  AppCacheHosts& associated_hosts() { return associated_hosts_; }
 
   bool IsNewerThan(AppCache* cache) const {
     if (update_time_ > cache->update_time_)
@@ -79,8 +77,12 @@ class AppCache : public base::RefCounted<AppCache> {
   void InitializeWithManifest(Manifest* manifest);
 
  private:
+  friend class AppCacheGroup;
   friend class AppCacheHost;
   friend class AppCacheUpdateJobTest;
+
+  // Use AppCacheGroup::Add/RemoveCache() to manipulate owning group.
+  void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
 
   // Use AppCacheHost::AssociateCache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {
@@ -89,8 +91,8 @@ class AppCache : public base::RefCounted<AppCache> {
   void UnassociateHost(AppCacheHost* host);
 
   const int64 cache_id_;
-  AppCacheGroup* owning_group_;
-  std::set<AppCacheHost*> associated_hosts_;
+  scoped_refptr<AppCacheGroup> owning_group_;
+  AppCacheHosts associated_hosts_;
 
   EntryMap entries_;    // contains entries of all types
 

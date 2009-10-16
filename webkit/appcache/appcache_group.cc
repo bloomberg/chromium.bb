@@ -28,26 +28,27 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
 
 AppCacheGroup::~AppCacheGroup() {
   DCHECK(old_caches_.empty());
-  DCHECK(!update_job_);
+  DCHECK(!newest_complete_cache_);
 
-  // Newest complete cache might never have been associated with a host
-  // and thus would not be cleaned up by the backend impl during shutdown.
-  if (newest_complete_cache_)
-    RemoveCache(newest_complete_cache_);
+  if (update_job_)
+    delete update_job_;
+  DCHECK_EQ(IDLE, update_status_);
 
   service_->storage()->working_set()->RemoveGroup(this);
 }
 
-void AppCacheGroup::AddObserver(Observer* observer) {
+void AppCacheGroup::AddUpdateObserver(UpdateObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void AppCacheGroup::RemoveObserver(Observer* observer) {
+void AppCacheGroup::RemoveUpdateObserver(UpdateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
 void AppCacheGroup::AddCache(AppCache* complete_cache) {
   DCHECK(complete_cache->is_complete());
+  complete_cache->set_owning_group(this);
+
   if (!newest_complete_cache_) {
     newest_complete_cache_ = complete_cache;
     return;
@@ -56,41 +57,44 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
   if (complete_cache->IsNewerThan(newest_complete_cache_)) {
     old_caches_.push_back(newest_complete_cache_);
     newest_complete_cache_ = complete_cache;
+
+    // Update hosts of older caches to add a reference to the newest cache.
+    for (Caches::iterator it = old_caches_.begin();
+         it != old_caches_.end(); ++it) {
+      AppCache::AppCacheHosts& hosts = (*it)->associated_hosts();
+      for (AppCache::AppCacheHosts::iterator host_it = hosts.begin();
+           host_it != hosts.end(); ++host_it) {
+        (*host_it)->SetSwappableCache(this);
+      }
+    }
   } else {
     old_caches_.push_back(complete_cache);
   }
 }
 
-bool AppCacheGroup::RemoveCache(AppCache* cache) {
+void AppCacheGroup::RemoveCache(AppCache* cache) {
+  DCHECK(cache->associated_hosts().empty());
   if (cache == newest_complete_cache_) {
-    // Cannot remove newest cache if there are older caches as those may
-    // eventually be swapped to the newest cache.
-    if (!old_caches_.empty())
-      return false;
-
-    newest_complete_cache_->set_owning_group(NULL);
+    AppCache* cache = newest_complete_cache_;
     newest_complete_cache_ = NULL;
+    cache->set_owning_group(NULL);  // may cause this group to be deleted
   } else {
-    // Unused old cache can always be removed.
     Caches::iterator it =
         std::find(old_caches_.begin(), old_caches_.end(), cache);
     if (it != old_caches_.end()) {
-      (*it)->set_owning_group(NULL);
+      AppCache* cache = *it;
       old_caches_.erase(it);
+      cache->set_owning_group(NULL);  // may cause group to be deleted
     }
   }
-
-  return true;
 }
 
 void AppCacheGroup::StartUpdateWithNewMasterEntry(
     AppCacheHost* host, const GURL& new_master_resource) {
-  /* TODO(jennb): enable after have logic for cancelling an update
   if (!update_job_)
     update_job_ = new AppCacheUpdateJob(service_, this);
 
   update_job_->StartUpdate(host, new_master_resource);
-  */
 }
 
 void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
@@ -103,7 +107,7 @@ void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
     DCHECK(update_job_);
   } else {
     update_job_ = NULL;
-    FOR_EACH_OBSERVER(Observer, observers_, OnUpdateComplete(this));
+    FOR_EACH_OBSERVER(UpdateObserver, observers_, OnUpdateComplete(this));
   }
 }
 

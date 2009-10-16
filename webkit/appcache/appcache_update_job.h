@@ -60,6 +60,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
     REFETCH_MANIFEST,
     CACHE_FAILURE,
     CANCELLED,
+    COMPLETED,
   };
 
   // Methods for URLRequest::Delegate.
@@ -130,18 +131,14 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
   // Does nothing if update process is still waiting for pending master
   // entries or URL fetches to complete downloading. Otherwise, completes
   // the update process.
-  // Returns true if update process is completed.
-  bool MaybeCompleteUpdate();
-
-  // Runs the cache failure steps after all pending master entry downloads
-  // have completed.
-  void HandleCacheFailure();
+  void MaybeCompleteUpdate();
 
   // Schedules a rerun of the entire update with the same parameters as
   // this update job after a short delay.
   void ScheduleUpdateRetry(int delay_ms);
 
   void Cancel();
+  void DiscardInprogressCache();
 
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
@@ -151,8 +148,16 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
 
   GURL manifest_url_;  // here for easier access
   AppCacheService* service_;
+
   scoped_refptr<AppCache> inprogress_cache_;
-  scoped_refptr<AppCacheGroup> group_;
+
+  // Hold a reference to the newly created cache until this update is
+  // destroyed. The host that started the update will add a reference to the
+  // new cache when notified that the update is complete. AppCacheGroup sends
+  // the notification when its status is set to IDLE in ~AppCacheUpdateJob.
+  scoped_refptr<AppCache> protect_new_cache_;
+
+  AppCacheGroup* group_;
 
   UpdateType update_type_;
   InternalUpdateState internal_state_;

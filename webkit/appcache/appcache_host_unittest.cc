@@ -224,6 +224,65 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 }
 
+TEST_F(AppCacheHostTest, SetSwappableCache) {
+  AppCacheHost host(1, &mock_frontend_, &service_);
+  host.SetSwappableCache(NULL);
+  EXPECT_FALSE(host.swappable_cache_.get());
+
+  scoped_refptr<AppCacheGroup> group1 =
+      new AppCacheGroup(&service_, GURL::EmptyGURL());
+  host.SetSwappableCache(group1);
+  EXPECT_FALSE(host.swappable_cache_.get());
+
+  AppCache* cache1 = new AppCache(&service_, 111);
+  cache1->set_complete(true);
+  group1->AddCache(cache1);
+  host.SetSwappableCache(group1);
+  EXPECT_EQ(cache1, host.swappable_cache_.get());
+
+  host.AssociateCache(cache1);
+  EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
+
+  AppCache* cache2 = new AppCache(&service_, 222);
+  cache2->set_complete(true);
+  group1->AddCache(cache2);
+  EXPECT_EQ(cache2, host.swappable_cache_.get());  // updated to newest
+
+  scoped_refptr<AppCacheGroup> group2 =
+      new AppCacheGroup(&service_, GURL("http://foo.com"));
+  AppCache* cache3 = new AppCache(&service_, 333);
+  cache3->set_complete(true);
+  group2->AddCache(cache3);
+
+  AppCache* cache4 = new AppCache(&service_, 444);
+  cache4->set_complete(true);
+  group2->AddCache(cache4);
+  EXPECT_EQ(cache2, host.swappable_cache_.get());  // unchanged
+
+  host.AssociateCache(cache3);
+  EXPECT_EQ(cache4, host.swappable_cache_.get());  // newest cache in group2
+  EXPECT_FALSE(group1->HasCache());  // both caches in group1 have refcount 0
+
+  host.AssociateCache(NULL);
+  EXPECT_FALSE(host.swappable_cache_.get());
+  EXPECT_FALSE(group2->HasCache());  // both caches in group2 have refcount 0
+
+  // Host adds reference to newest cache when an update is complete.
+  AppCache* cache5 = new AppCache(&service_, 555);
+  cache5->set_complete(true);
+  group2->AddCache(cache5);
+  host.group_being_updated_ = group2;
+  host.OnUpdateComplete(group2);
+  EXPECT_FALSE(host.group_being_updated_);
+  EXPECT_EQ(cache5, host.swappable_cache_.get());
+
+  group2->RemoveCache(cache5);
+  EXPECT_FALSE(group2->HasCache());
+  host.group_being_updated_ = group2;
+  host.OnUpdateComplete(group2);
+  EXPECT_FALSE(host.group_being_updated_);
+  EXPECT_FALSE(host.swappable_cache_.get());  // group2 had no newest cache
+}
 // TODO(michaeln): Flesh these tests out more.
 
 }  // namespace appcache

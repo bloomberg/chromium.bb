@@ -24,16 +24,16 @@ AppCache::AppCache(AppCacheService *service, int64 cache_id)
 
 AppCache::~AppCache() {
   DCHECK(associated_hosts_.empty());
+  if (owning_group_) {
+    DCHECK(is_complete_);
+    owning_group_->RemoveCache(this);
+  }
   DCHECK(!owning_group_);
   service_->storage()->working_set()->RemoveCache(this);
 }
 
 void AppCache::UnassociateHost(AppCacheHost* host) {
   associated_hosts_.erase(host);
-
-  // Inform group if this cache is no longer in use.
-  if (associated_hosts_.empty() && owning_group_)
-    owning_group_->RemoveCache(this);
 }
 
 void AppCache::AddEntry(const GURL& url, const AppCacheEntry& entry) {

@@ -42,6 +42,20 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
 
 namespace appcache {
 
+class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
+ public:
+  TestUpdateObserver() : update_completed_(false), group_has_cache_(false) {
+  }
+
+  virtual void OnUpdateComplete(AppCacheGroup* group) {
+    update_completed_ = true;
+    group_has_cache_ = group->HasCache();
+  }
+
+  bool update_completed_;
+  bool group_has_cache_;
+};
+
 class AppCacheGroupTest : public testing::Test {
 };
 
@@ -52,61 +66,66 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
 
   base::TimeTicks ticks = base::TimeTicks::Now();
 
-  AppCache* cache1 = new AppCache(&service, 111);
+  scoped_refptr<AppCache> cache1 = new AppCache(&service, 111);
   cache1->set_complete(true);
   cache1->set_update_time(ticks);
-  cache1->set_owning_group(group);
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
   // Adding older cache does not change newest complete cache.
-  AppCache* cache2 = new AppCache(&service, 222);
+  scoped_refptr<AppCache> cache2 = new AppCache(&service, 222);
   cache2->set_complete(true);
   cache2->set_update_time(ticks - base::TimeDelta::FromDays(1));
-  cache2->set_owning_group(group);
   group->AddCache(cache2);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
   // Adding newer cache does change newest complete cache.
-  AppCache* cache3 = new AppCache(&service, 333);
+  scoped_refptr<AppCache> cache3 = new AppCache(&service, 333);
   cache3->set_complete(true);
   cache3->set_update_time(ticks + base::TimeDelta::FromDays(1));
-  cache3->set_owning_group(group);
   group->AddCache(cache3);
   EXPECT_EQ(cache3, group->newest_complete_cache());
 
   // Adding cache with same update time uses one with larger ID.
-  AppCache* cache4 = new AppCache(&service, 444);
+  scoped_refptr<AppCache> cache4 = new AppCache(&service, 444);
   cache4->set_complete(true);
-  cache4->set_update_time(ticks + base::TimeDelta::FromDays(1)); // same as 3
-  cache4->set_owning_group(group);
+  cache4->set_update_time(ticks + base::TimeDelta::FromDays(1));  // same as 3
   group->AddCache(cache4);
   EXPECT_EQ(cache4, group->newest_complete_cache());
 
-  AppCache* cache5 = new AppCache(&service, 55);  // smaller id
+  scoped_refptr<AppCache> cache5 = new AppCache(&service, 55);  // smaller id
   cache5->set_complete(true);
-  cache5->set_update_time(ticks + base::TimeDelta::FromDays(1)); // same as 4
-  cache5->set_owning_group(group);
+  cache5->set_update_time(ticks + base::TimeDelta::FromDays(1));  // same as 4
   group->AddCache(cache5);
   EXPECT_EQ(cache4, group->newest_complete_cache());  // no change
 
   // Old caches can always be removed.
-  EXPECT_TRUE(group->RemoveCache(cache1));
+  group->RemoveCache(cache1);
+  EXPECT_FALSE(cache1->owning_group());
   EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
 
-  // Cannot remove newest cache if there are older caches.
-  EXPECT_FALSE(group->RemoveCache(cache4));
+  // Remove rest of caches.
+  group->RemoveCache(cache2);
+  EXPECT_FALSE(cache2->owning_group());
   EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
-
-  // Can remove newest cache after all older caches are removed.
-  EXPECT_TRUE(group->RemoveCache(cache2));
+  group->RemoveCache(cache3);
+  EXPECT_FALSE(cache3->owning_group());
   EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
-  EXPECT_TRUE(group->RemoveCache(cache3));
+  group->RemoveCache(cache5);
+  EXPECT_FALSE(cache5->owning_group());
   EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
-  EXPECT_TRUE(group->RemoveCache(cache5));
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
-  EXPECT_TRUE(group->RemoveCache(cache4));            // newest removed
+  group->RemoveCache(cache4);  // newest removed
+  EXPECT_FALSE(cache4->owning_group());
   EXPECT_FALSE(group->newest_complete_cache());       // no more newest cache
+
+  // Can remove newest cache if there are older caches.
+  group->AddCache(cache1);
+  EXPECT_EQ(cache1, group->newest_complete_cache());
+  group->AddCache(cache4);
+  EXPECT_EQ(cache4, group->newest_complete_cache());
+  group->RemoveCache(cache4);  // remove newest
+  EXPECT_FALSE(cache4->owning_group());
+  EXPECT_FALSE(group->newest_complete_cache());  // newest removed
 }
 
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {
@@ -122,7 +141,6 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCache* cache1 = new AppCache(&service, 111);
   cache1->set_complete(true);
   cache1->set_update_time(ticks);
-  cache1->set_owning_group(group);
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
@@ -139,7 +157,6 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCache* cache2 = new AppCache(&service, 222);
   cache2->set_complete(true);
   cache2->set_update_time(ticks + base::TimeDelta::FromDays(1));
-  cache2->set_owning_group(group);
   group->AddCache(cache2);
   EXPECT_EQ(cache2, group->newest_complete_cache());
 
@@ -152,7 +169,6 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
 }
 
 TEST(AppCacheGroupTest, StartUpdate) {
-  /* TODO(jennb) - uncomment after AppCacheGroup::StartUpdate does something.
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL("http://foo.com"));
@@ -167,11 +183,29 @@ TEST(AppCacheGroupTest, StartUpdate) {
   group->StartUpdateWithHost(NULL);
   EXPECT_EQ(update, group->update_job_);
 
-  // Remove update job's reference to this group.
+  // Deleting the update should restore the group to IDLE.
   delete update;
   EXPECT_TRUE(group->update_job_ == NULL);
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());
-  */
+}
+
+TEST(AppCacheGroupTest, CancelUpdate) {
+  MockAppCacheService service;
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, GURL("http://foo.com"));
+
+  // Set state to checking to prevent update job from executing fetches.
+  group->update_status_ = AppCacheGroup::CHECKING;
+  group->StartUpdate();
+  AppCacheUpdateJob* update = group->update_job_;
+  EXPECT_TRUE(update != NULL);
+
+  // Deleting the group should cancel the update.
+  TestUpdateObserver observer;
+  group->AddUpdateObserver(&observer);
+  group = NULL;  // causes group to be deleted
+  EXPECT_TRUE(observer.update_completed_);
+  EXPECT_FALSE(observer.group_has_cache_);
 }
 
 }  // namespace appcache

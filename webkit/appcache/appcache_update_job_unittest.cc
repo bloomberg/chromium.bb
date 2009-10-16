@@ -177,7 +177,7 @@ RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
 int RetryRequestTestJob::expected_requests_ = 0;
 
 class AppCacheUpdateJobTest : public testing::Test,
-                              public AppCacheGroup::Observer {
+                              public AppCacheGroup::UpdateObserver {
  public:
   AppCacheUpdateJobTest()
       : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
@@ -1043,11 +1043,12 @@ class AppCacheUpdateJobTest : public testing::Test,
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
     else
-      group_->AddObserver(this);
+      group_->AddUpdateObserver(this);
   }
 
   void OnUpdateComplete(AppCacheGroup* group) {
     ASSERT_EQ(group_, group);
+    protect_newest_cache_ = group->newest_complete_cache();
     UpdateFinished();
   }
 
@@ -1066,6 +1067,7 @@ class AppCacheUpdateJobTest : public testing::Test,
       VerifyExpectations();
 
     // Clean up everything that was created on the IO thread.
+    protect_newest_cache_ = NULL;
     group_ = NULL;
     STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
     STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
@@ -1086,7 +1088,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCache* cache = new AppCache(service_.get(), cache_id);
     cache->set_complete(true);
     cache->set_update_time(base::TimeTicks::Now());
-    cache->set_owning_group(group_);
     group_->AddCache(cache);
     return cache;
   }
@@ -1280,6 +1281,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_ptr<MockAppCacheService> service_;
   scoped_refptr<TestURLRequestContext> request_context_;
   scoped_refptr<AppCacheGroup> group_;
+  scoped_refptr<AppCache> protect_newest_cache_;
   scoped_ptr<base::WaitableEvent> event_;
 
   // Hosts used by an async test that need to live until update job finishes.

@@ -11,6 +11,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage.h"
@@ -21,7 +22,6 @@ namespace appcache {
 
 class AppCache;
 class AppCacheFrontend;
-class AppCacheGroup;
 class AppCacheRequestHandler;
 
 typedef Callback2<Status, void*>::Type GetStatusCallback;
@@ -29,7 +29,8 @@ typedef Callback2<bool, void*>::Type StartUpdateCallback;
 typedef Callback2<bool, void*>::Type SwapCacheCallback;
 
 // Server-side representation of an application cache host.
-class AppCacheHost : public AppCacheStorage::Delegate {
+class AppCacheHost : public AppCacheStorage::Delegate,
+                     public AppCacheGroup::UpdateObserver {
  public:
 
   class Observer {
@@ -76,6 +77,10 @@ class AppCacheHost : public AppCacheStorage::Delegate {
   // or by the update algorithm (see AppCacheUpdateJob).
   void AssociateCache(AppCache* cache);
 
+  // Adds a reference to the newest complete cache in a group, unless it's the
+  // same as the cache that is currently associated with the host.
+  void SetSwappableCache(AppCacheGroup* group);
+
   int host_id() const { return host_id_; }
   AppCacheService* service() const { return service_; }
   AppCacheFrontend* frontend() const { return frontend_; }
@@ -100,15 +105,25 @@ class AppCacheHost : public AppCacheStorage::Delegate {
   void DoPendingStartUpdate();
   void DoPendingSwapCache();
 
+  void ObserveGroupBeingUpdated(AppCacheGroup* group);
+
+  // AppCacheGroup::UpdateObserver method
+  virtual void OnUpdateComplete(AppCacheGroup* group);
+
   // Identifies the corresponding appcache host in the child process.
   int host_id_;
 
   // The cache associated with this host, if any.
   scoped_refptr<AppCache> associated_cache_;
 
-  // The reference to the group ensures the group exists
-  // while we have an association with a cache in the group.
-  scoped_refptr<AppCacheGroup> group_;
+  // Hold a reference to the newest complete cache (if associated cache is
+  // not the newest) to keep the newest cache in existence while the app cache
+  // group is in use. The newest complete cache may have no associated hosts
+  // holding any references to it and would otherwise be deleted prematurely.
+  scoped_refptr<AppCache> swappable_cache_;
+
+  // Keep a reference to the group being updated until the update completes.
+  scoped_refptr<AppCacheGroup> group_being_updated_;
 
   // Cache loading is async, if we're loading a specific cache or group
   // for the purposes of cache selection, one or the other of these will
@@ -145,6 +160,7 @@ class AppCacheHost : public AppCacheStorage::Delegate {
   FRIEND_TEST(AppCacheHostTest, ForeignEntry);
   FRIEND_TEST(AppCacheHostTest, FailedCacheLoad);
   FRIEND_TEST(AppCacheHostTest, FailedGroupLoad);
+  FRIEND_TEST(AppCacheHostTest, SetSwappableCache);
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);
 };
 
