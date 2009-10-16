@@ -3145,7 +3145,6 @@ BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = PASS CRASH
 
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
-BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
 // See also bug 23475:
 BUG24775 : LayoutTests/svg/custom/missing-xlink.svg = FAIL PASS
 
