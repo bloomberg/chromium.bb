@@ -4,7 +4,7 @@
 
 #ifdef CHROME_PERSONALIZATION
 
-#include "chrome/browser/sync/sync_setup_wizard.h"
+#include "chrome/browser/views/sync/sync_setup_wizard.h"
 
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/views/sync/sync_setup_flow.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"

@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/sync_setup_wizard.h"
+#include "chrome/browser/views/sync/sync_setup_wizard.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
