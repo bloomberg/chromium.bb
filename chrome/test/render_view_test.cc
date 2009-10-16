@@ -17,6 +17,7 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webview.h"
