@@ -1092,8 +1092,8 @@ void ToolbarView::CreateDevToolsMenuContents() {
 #endif
 
 void ToolbarView::CreateAppMenu() {
-  if (app_menu_contents_.get())
-    return;
+  // We always rebuild the app menu so that we can get the current state of
+  // the sync system.
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
