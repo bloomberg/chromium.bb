@@ -20,6 +20,7 @@
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/signalthread.h"
 #include "talk/base/taskrunner.h"
+#include "talk/base/winsock_initializer.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/xmppclient.h"
@@ -74,6 +75,9 @@ SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
       successful_connection_(successful_connection),
       login_settings_(login_settings),
       client_(NULL) {
+#if defined(OS_WIN)
+  talk_base::EnsureWinsockInit();
+#endif
   connection_generator_.reset(new XmppConnectionGenerator(
                                   this,
                                   &login_settings_->connection_options(),

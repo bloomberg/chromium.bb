@@ -29,6 +29,7 @@
 #include "talk/base/common.h"
 #include "talk/base/logging.h"
 #include "talk/base/winping.h"
+#include "talk/base/winsock_initializer.h"
 #include "talk/base/win32socketserver.h"
 #include "talk/base/win32window.h"
 #include <ws2tcpip.h>
@@ -267,6 +268,7 @@ Win32Socket::EventSink::OnFinalMessage(HWND hWnd) {
 Win32Socket::Win32Socket()
   : socket_(INVALID_SOCKET), error_(0), state_(CS_CLOSED),
     signal_close_(false), sink_(NULL), dns_(NULL) {
+  talk_base::EnsureWinsockInit();
   // TODO: replace addr_ with SocketAddress
   memset(&addr_, 0, sizeof(addr_));
 }

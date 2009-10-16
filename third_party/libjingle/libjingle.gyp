@@ -61,6 +61,7 @@
         # 'files/talk/base/natserver_main.cc',  # has a main()
         # 'files/talk/base/openssladapter.cc',  # openssl
         # 'files/talk/base/openssladapter.h',   # openssl
+        # 'files/talk/base/winsock_initializer.cc',  # overridden
         'files/talk/base/asynchttprequest.cc',
         'files/talk/base/asynchttprequest.h',
         'files/talk/base/asyncpacketsocket.cc',
@@ -164,6 +165,7 @@
         'files/talk/base/urlencode.h',
         'files/talk/base/virtualsocketserver.cc',
         'files/talk/base/virtualsocketserver.h',
+        'files/talk/base/winsock_initializer.h',
         'files/talk/p2p/base/candidate.h',
         'files/talk/p2p/base/common.h',
         'files/talk/p2p/base/constants.cc',
@@ -266,6 +268,7 @@
             'files/talk/base/winfirewall.h',
             'files/talk/base/winping.cc',
             'files/talk/base/winping.h',
+            'overrides/talk/base/winsock_initializer.cc',
           ],
         }],
         ['OS=="linux" or OS=="mac"', {

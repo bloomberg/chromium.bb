@@ -59,30 +59,11 @@ extern "C" {
 #include "talk/base/physicalsocketserver.h"
 #include "talk/base/time.h"
 #include "talk/base/winping.h"
+#include "talk/base/winsock_initializer.h"
 
 #ifdef __linux 
 #define IP_MTU 14 // Until this is integrated from linux/in.h to netinet/in.h
 #endif  // __linux
-
-#ifdef WIN32
-class WinsockInitializer {
-public:
-  WinsockInitializer() {
-    WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(1, 0);
-    err_ = WSAStartup(wVersionRequested, &wsaData);
-  }
-  ~WinsockInitializer() {
-    WSACleanup();
-  }
-  int error() {
-    return err_;
-  }
-private:
-  int err_;
-};
-WinsockInitializer g_winsockinit;
-#endif
 
 namespace talk_base {
 
@@ -122,6 +103,9 @@ public:
   PhysicalSocket(PhysicalSocketServer* ss, SOCKET s = INVALID_SOCKET)
     : ss_(ss), s_(s), enabled_events_(0), error_(0),
       state_((s == INVALID_SOCKET) ? CS_CLOSED : CS_CONNECTED) {
+#ifdef WIN32
+    EnsureWinsockInit();
+#endif
     if (s != INVALID_SOCKET)
       enabled_events_ = kfRead | kfWrite;
   }
