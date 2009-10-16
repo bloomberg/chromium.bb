@@ -1,3 +1,5 @@
+SUBDIRS = table_test_corpuses
+
 AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 
 LDADD = $(top_builddir)/liblouis/liblouis.la
@@ -29,12 +31,17 @@ check_PROGRAMS = \
 	inpos_compbrl
 
 dist_check_SCRIPTS = \
-	check_all_tables
+	check_all_tables \
+	check_tables_against_corpus.pl
 
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough
 # interest to fix it.
 XFAIL_TESTS = present_progressive
+
+# The check_tables_against_corpus currently fails because it uses
+# UTF-8 characters which are not properly handled by lou_translate.
+XFAIL_TESTS += check_tables_against_corpus.pl
 
 TESTS =	\
 	$(check_PROGRAMS) \
