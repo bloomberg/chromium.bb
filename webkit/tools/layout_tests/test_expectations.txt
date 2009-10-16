@@ -429,6 +429,10 @@ WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automat
 // security model is different from it.
 BUG21814 WONTFIX SKIP: LayoutTests/fast/encoding/idn-security.html = FAIL
 
+// Our implementation of global history is completely different, and
+// these tests are irrelevant.
+BUG23748 WONTFIX : LayoutTests/http/tests/globalhistory = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -3075,11 +3079,6 @@ BUG23740 : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-d
 BUG23740 : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context.html = FAIL
 BUG23745 LINUX MAC : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
 
-// WebKit update 48904:48927
-// These seem to have some missing text; not sure if it's actual failure or not.
-BUG23748 : LayoutTests/http/tests/globalhistory/history-delegate-basic-302-redirect.html = FAIL
-BUG23748 : LayoutTests/http/tests/globalhistory/history-delegate-basic-refresh-redirect.html = FAIL
-
 // WebKit update 48937:48947
 BUG23751 WIN LINUX DEBUG : LayoutTests/fast/inline/relative-positioned-overflow.html = CRASH
 
@@ -3136,9 +3135,6 @@ BUG24142 LINUX : LayoutTests/fast/css/large-number-round-trip.html = FAIL
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
-// New test requires new test_shell hook.
-BUG24768 : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
-
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
 
 BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
@@ -3146,7 +3142,6 @@ BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PA
 BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
 // WebKit roll 49321:49372
-BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
 BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
 BUG_HCLAM MAC SLOW : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
 
