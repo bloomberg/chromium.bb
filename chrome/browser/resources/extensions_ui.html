@@ -206,6 +206,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "options_url": "options.html",
       "content_scripts": [
         {
           "js": ["script1_file1.js", "script1_file2.js"],
@@ -345,12 +346,19 @@ function handleUninstallExtension(node) {
 }
 
 /**
- * Utility function which asks the C++ to show a platform-specific file select
- * dialog, and fire |callback| with the |filePath| that resulted. |selectType|
- * can be either 'file' or 'folder'. |operation| can be 'load', 'packRoot',
- * or 'pem' which are signals to the C++ to do some operation-specific 
- * configuration.
+ * Handles an 'options' button getting clicked.
  */
+function handleOptions(node) {
+  chrome.send('options', [node.extensionId]);
+}
+
+/**
+* Utility function which asks the C++ to show a platform-specific file select
+* dialog, and fire |callback| with the |filePath| that resulted. |selectType|
+* can be either 'file' or 'folder'. |operation| can be 'load', 'packRoot',
+* or 'pem' which are signals to the C++ to do some operation-specific
+* configuration.
+*/
 function showFileDialog(selectType, operation, callback) {
   handleFilePathSelected = function(filePath) {
     callback(filePath);
@@ -387,7 +395,7 @@ function showPackDialog() {
 
 /**
  * Hides the pack dialog.
- */ 
+ */
 function hidePackDialog() {
   document.getElementById('dialogBackground').style.display="none"
 }
@@ -438,7 +446,7 @@ function autoUpdate() {
               <input type="text" id="extensionPathText">
             </div>
             <div>
-              <input type="button" value="BROWSE" 
+              <input type="button" value="BROWSE"
                      i18n-values="value:packDialogBrowse"
                      onclick="selectExtensionPath();">
             </div>
@@ -451,7 +459,7 @@ function autoUpdate() {
               <input type="text" id="privateKeyPath">
             </div>
             <div>
-              <input type="button" value="BROWSE" 
+              <input type="button" value="BROWSE"
                      i18n-values="value:packDialogBrowse"
                      onclick="selectPrivateKeyPath();">
             </div>
@@ -463,7 +471,7 @@ function autoUpdate() {
             <div>
               <input type="button" value="Cancel" onclick="hidePackDialog();">
             </div>
-          </div>        
+          </div>
         </div>
       </div>
     </div>
@@ -524,6 +532,11 @@ function autoUpdate() {
                           jsvalues=".extensionId:id"
                           onclick="handleUninstallExtension(this)"
                           >Uninstall</button>
+                        <button
+                          jsdisplay="options_url"
+                          jsvalues=".extensionId:id"
+                          onclick="handleOptions(this)"
+                          >Options</button>
                       </div>
                     </div>
                   </div>

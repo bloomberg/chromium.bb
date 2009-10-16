@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -95,6 +96,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
+  dom_ui_->RegisterMessageCallback("options",
+    NewCallback(this, &ExtensionsDOMHandler::HandleOptionsMessage));
   dom_ui_->RegisterMessageCallback("load",
       NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
   dom_ui_->RegisterMessageCallback("pack",
@@ -196,6 +199,22 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
   extensions_service_->UninstallExtension(extension_id, false);
+}
+
+void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
+  CHECK(value->IsType(Value::TYPE_LIST));
+  const ListValue* list = static_cast<const ListValue*>(value);
+  CHECK(list->GetSize() == 1);
+  std::string extension_id;
+  CHECK(list->GetString(0, &extension_id));
+  Extension *extension = extensions_service_->GetExtensionById(extension_id);
+  if (!extension || extension->options_url().is_empty()) {
+    return;
+  }
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(dom_ui_->GetProfile());
+  CHECK(browser);
+  browser->OpenURL(extension->options_url(), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::LINK);
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
@@ -399,6 +418,9 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
+  if (!extension->options_url().is_empty()) {
+    extension_data->SetString(L"options_url", extension->options_url().spec());
+  }
 
   // Add list of content_script detail DictionaryValues
   ListValue *content_script_list = new ListValue();

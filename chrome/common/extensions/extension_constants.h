@@ -47,6 +47,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kType;
   extern const wchar_t* kVersion;
   extern const wchar_t* kUpdateURL;
+  extern const wchar_t* kOptionsPage;
 }  // namespace extension_manifest_keys
 
 // Some values expected in manifests.
@@ -116,6 +117,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidDefaultLocale;
   extern const char* kLocalesNoDefaultLocaleSpecified;
   extern const char* kLocalesNoValidLocaleNamesListed;
+  extern const char* kInvalidOptionsPage;
 }  // namespace extension_manifest_errors
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

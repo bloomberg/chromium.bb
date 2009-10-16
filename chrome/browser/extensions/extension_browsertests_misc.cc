@@ -788,3 +788,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, AutoUpdate) {
   ASSERT_EQ("2.0", extensions->at(0)->VersionString());
 }
 
+// Used to simulate a click on the first button named 'Options'.
+static const wchar_t* jscript_click_option_button =
+    L"(function() { "
+    L"  var button = document.evaluate(\"//button[text()='Options']\","
+    L"      document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,"
+    L"      null).snapshotItem(0);"
+    L"  button.click();"
+    L"  window.domAutomationController.send(0);"
+    L"})();";
+
+// Test that an extension with an options page makes an 'Options' button appear
+// on chrome://extensions, and that clicking the button opens a new tab with the
+// extension's options page.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OptionsPage) {
+  // Install an extension with an options page.
+  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1));
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  Extension* extension = extensions->at(0);
+
+  // Go to the chrome://extensions page and click the Options button.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
+  TabStripModel* tab_strip = browser()->tabstrip_model();
+  TabContents* extensions_tab = browser()->GetSelectedTabContents();
+  ui_test_utils::ExecuteJavaScript(extensions_tab->render_view_host(), L"",
+                                   jscript_click_option_button);
+
+  // If the options page hasn't already come up, wait for it.
+  if (tab_strip->count() == 1) {
+    ui_test_utils::WaitForNewTab(browser());
+  }
+  ASSERT_EQ(2, tab_strip->count());
+
+  EXPECT_EQ(extension->GetResourceURL("options.html"),
+            tab_strip->GetTabContentsAt(1)->GetURL());
+}
+

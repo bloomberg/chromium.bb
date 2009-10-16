@@ -95,6 +95,9 @@ class ExtensionsDOMHandler
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);
 
+  // Callback for "options" message.
+  void HandleOptionsMessage(const Value* value);
+
   // Callback for "load" message.
   void HandleLoadMessage(const Value* value);
 

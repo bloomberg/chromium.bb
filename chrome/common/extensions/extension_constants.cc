@@ -46,6 +46,7 @@ const wchar_t* kToolstrips = L"toolstrips";
 const wchar_t* kType = L"type";
 const wchar_t* kVersion = L"version";
 const wchar_t* kUpdateURL = L"update_url";
+const wchar_t* kOptionsPage = L"options_page";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
@@ -133,7 +134,7 @@ const char* kInvalidPrivacyBlacklists =
 const char* kInvalidPrivacyBlacklistsPath =
     "Invalid value for 'privacy_blacklists[*]'.";
 const char* kInvalidBackground =
-    "Invalid value for 'background'.";
+    "Invalid value for 'background_page'.";
 const char* kInvalidRunAt =
     "Invalid value for 'content_scripts[*].run_at'.";
 const char* kInvalidSignature =
@@ -175,4 +176,6 @@ const char* kLocalesNoDefaultLocaleSpecified =
     "Localization used, but default_locale wasn't specified in the manifest.";
 const char* kLocalesNoValidLocaleNamesListed =
     "No valid locale name could be found in _locales directory.";
+const char* kInvalidOptionsPage =
+    "Invalid value for 'options_page'.";
 }  // namespace extension_manifest_errors

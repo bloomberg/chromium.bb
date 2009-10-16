@@ -195,6 +195,7 @@ class Extension {
   }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
+  const GURL& options_url() const { return options_url_; }
   const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
   const std::vector<std::string>& api_permissions() const {
     return api_permissions_;
@@ -333,6 +334,9 @@ class Extension {
   // Optional URL to a master page of which a single instance should be always
   // loaded in the background.
   GURL background_url_;
+
+  // Optional URL to a page for setting options/preferences.
+  GURL options_url_;
 
   // Optional list of toolstrips_ and associated properties.
   std::vector<ToolstripInfo> toolstrips_;

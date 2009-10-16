@@ -830,6 +830,16 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     background_url_ = GetResourceURL(background_str);
   }
 
+  // Initialize options page url (optional).
+  if (source.HasKey(keys::kOptionsPage)) {
+    std::string options_str;
+    if (!source.GetString(keys::kOptionsPage, &options_str)) {
+      *error = errors::kInvalidOptionsPage;
+      return false;
+    }
+    options_url_ = GetResourceURL(options_str);
+  }
+
   // Initialize toolstrips (optional).
   if (source.HasKey(keys::kToolstrips)) {
     ListValue* list_value;

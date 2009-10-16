@@ -231,6 +231,12 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   input_value->Set(keys::kBrowserAction, action);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_STREQ(error.c_str(), errors::kOneUISurfaceOnly);
+
+  // Test invalid options page url.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {
@@ -254,6 +260,13 @@ TEST(ExtensionTest, InitFromValueValid) {
   EXPECT_EQ("my extension", extension.name());
   EXPECT_EQ(extension.id(), extension.url().host());
   EXPECT_EQ(path.value(), extension.path().value());
+
+  // Test with an options page.
+  input_value.SetString(keys::kOptionsPage, "options.html");
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_EQ("", error);
+  EXPECT_EQ("chrome-extension", extension.options_url().scheme());
+  EXPECT_EQ("/options.html", extension.options_url().path());
 }
 
 TEST(ExtensionTest, GetResourceURLAndPath) {
