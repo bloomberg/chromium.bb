@@ -347,7 +347,7 @@
                     {
                       'destination': '<(PRODUCT_DIR)',
                       'files': [
-                        '<(PRODUCT_DIR)/obj/o3d/plugin/<(LIBRARY_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
+                        '<(PRODUCT_DIR)/obj/o3d/plugin/<(SHARED_LIB_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
                       ],
                     },
                   ],
