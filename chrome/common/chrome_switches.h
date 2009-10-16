@@ -250,7 +250,7 @@ extern const char kCookiePipe[];
 extern const char kEnableGView[];
 #endif
 
-extern const char kEnableByteRangeSupport[];
+extern const char kDisableByteRangeSupport[];
 
 extern const char kExplicitlyAllowedPorts[];
 

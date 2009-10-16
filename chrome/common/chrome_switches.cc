@@ -626,8 +626,8 @@ const char kCookiePipe[]                    = "cookie-pipe";
 const char kEnableGView[]                   = "enable-gview";
 #endif
 
-// Enable experimental support for cached byte-ranges.
-const char kEnableByteRangeSupport[]        = "enable-byte-range-support";
+// Disable support for cached byte-ranges.
+const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 
 // Explicitly allow additional ports using a comma separated list of port
 // numbers.

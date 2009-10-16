@@ -91,7 +91,7 @@ RenderProcess::RenderProcess()
     RegisterInternalNaClPlugin(RenderProcess::LaunchNaClProcess);
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableByteRangeSupport)) {
+  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport)) {
     webkit_glue::SetMediaCacheEnabled(true);
   }
 

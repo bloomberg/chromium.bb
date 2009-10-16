@@ -521,7 +521,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kEnableBenchmarking,
     switches::kInternalNaCl,
     switches::kEnableDatabases,
-    switches::kEnableByteRangeSupport,
+    switches::kDisableByteRangeSupport,
     switches::kEnableWebSockets,
   };
 
