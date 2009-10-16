@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -239,7 +240,8 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
                                                int file_type_index) {
   DCHECK(file_types);
   scoped_nsobject<NSNib> nib (
-      [[NSNib alloc] initWithNibNamed:@"SaveAccessoryView" bundle:nil]);
+      [[NSNib alloc] initWithNibNamed:@"SaveAccessoryView"
+                               bundle:mac_util::MainAppBundle()]);
   if (!nib)
     return nil;
 
