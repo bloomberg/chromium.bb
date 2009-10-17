@@ -88,7 +88,7 @@ BUG24182 MAC SLOW : LayoutTests/dom/html/level2/html/HTMLImageElement01.html = P
 BUG24182 SLOW WIN DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS
 // BUG24182 DEBUG SLOW WIN MAC : LayoutTests/media/audio-controls-rendering.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
-BUG24182 SLOW WONTFIX DEBUG : LayoutTests/platform/mac-snowleopard/accessibility/aria-list-and-listitem.html = FAIL
+BUG24182 SLOW WONTFIX DEBUG : LayoutTests/platform/mac-snowleopard/accessibility/aria-list-and-listitem.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/local/file-url-sent-as-referer.html = PASS
 BUG24182 SLOW WIN : LayoutTests/svg/carto.net/window.svg = PASS
@@ -104,7 +104,6 @@ BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
 // This test starts to crash since to r28630
 // BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/animate-elem-29-b.svg = PASS
-// BUG24182 SLOW WIN DEBUG : LayoutTests/media/video-display-toggle.html = PASS
 //BUG24852 started failing since webkit 49583
 //BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/http/tests/misc/onload-remove-iframe-crash-2.html = PASS
@@ -118,7 +117,6 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/editing/pasteboard/smart-paste-001.h
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/fast/dom/Window/window-lookup-precedence.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
-BUG24182 DEBUG SLOW : LayoutTests/fast/frames/frame-limit.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
 
 
@@ -222,7 +220,9 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html =
 // between a key event and a search event.  You cannot count on this
 // always being exactly the same, so we allow this to either PASS or FAIL
 // but not CRASH or TIMEOUT.
-WONTFIX SLOW WIN MAC LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
+
+// Actually, this test has started to crash lately, so now it's CRASH too.
+WONTFIX SLOW WIN MAC LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS CRASH
 
 // Chrome uses different keyboard accelerators from those used by Safari, so
 // these tests will always fail.
@@ -1131,11 +1131,6 @@ BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
 // End of SVG tests
 // -----------------------------------------------------------------
 
-// This fails because of differences between how CG and Skia tests for
-// a point in a path. See
-// http://code.google.com/p/chromium/issues/detail?id=7465 for details.
-BUG10311 WIN LINUX : LayoutTests/fast/canvas/pointInPath.html = FAIL
-
 // These fail the pixel tests in debug mode because they have
 // unpainted space (filled red in Debug but not in Release).
 // https://bugs.webkit.org/show_bug.cgi?id=8423
@@ -1691,8 +1686,7 @@ BUG23498 MAC : LayoutTests/fast/forms/input-table.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textAreaLineHeight.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textarea-rows-cols.html = IMAGE
 
-BUG24121 WIN DEBUG : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
-BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE CRASH
+BUG23498 MAC SLOW : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE
 
 BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
 BUG23498 MAC RELEASE : LayoutTests/fast/frames/invalid.html = IMAGE
@@ -2549,7 +2543,7 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-order.html = CRASH 
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
-BUG9798 WIN LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
+BUG9798 : LayoutTests/fast/frames/frame-limit.html = CRASH PASS TIMEOUT
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
 BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
@@ -2577,7 +2571,7 @@ BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with
 BUG9798 MAC RELEASE : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
-BUG9798 MAC WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS
+BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-allow.html = TIMEOUT PASS
 BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
@@ -2917,9 +2911,6 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 // Test failures from WebKit merge r46143:46194
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
-// Test failures from WebKit merge r46194:46229
-BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
-
 // not sure why this started failing
 BUG17509 LINUX SLOW : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
@@ -3103,7 +3094,7 @@ BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html =
 BUG_JPARENT MAC WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
-BUG_JPARENT WIN DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
+BUG_JPARENT WIN LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124
 BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
@@ -3120,8 +3111,8 @@ BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = 
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-maxlength.html = PASS
 
 // Webkit update: 49221:49245
-BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
-BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
+BUG_HAMAJI WIN LINUX : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
+BUG_HAMAJI WIN LINUX : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
 
 // Failing after r28267
 BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
@@ -3162,8 +3153,8 @@ SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
-BUG24865 WIN : LayoutTests/fast/css/large-number-round-trip.html = FAIL
-BUG24930 MAC LINUX : LayoutTests/editing/selection/editable-html-element.html = FAIL
+BUG24930 LINUX RELEASE : LayoutTests/editing/selection/editable-html-element.html = FAIL
+BUG24930 MAC DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
 
 // WebKit Roll 49597:49640
 BUG24959 : LayoutTests/fast/block/float/float-in-float-hit-testing.html = FAIL
@@ -3172,10 +3163,10 @@ BUG24962 WIN LINUX : LayoutTests/fast/events/click-focus-anchor.html = FAIL
 BUG24963 MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL
 BUG24964 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 BUG24964 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
-BUG24965 LINUX : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = CRASH
-BUG_JEREMY MAC : LayoutTests/fast/forms/search-display-none-cancel-button.html = CRASH
-BUG_JEREMY LINUX : LayoutTests/fast/forms/menulist-option-wrap.html = CRASH
-BUG24966 MAC : LayoutTests/fast/frames/calculate-fixed.html = CRASH
+BUG24965 LINUX RELEASE : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = CRASH PASS
+BUG_JEREMY MAC : LayoutTests/fast/forms/search-display-none-cancel-button.html = CRASH PASS
+BUG_JEREMY LINUX DEBUG : LayoutTests/fast/forms/menulist-option-wrap.html = CRASH PASS
+BUG24966 MAC DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
 
 // WebKit Roll 49640:49684
 BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
@@ -3217,11 +3208,9 @@ BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/focus-ring.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-and-object-creation.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-creation.svg = FAIL
-BUG_JEREMY LINUX : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG_JEREMY WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
 BUG_JEREMY WIN : chrome/fast/forms/basic-selects.html = FAIL
 BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
-BUG_JEREMY MAC : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = FAIL
 BUG_JEREMY WIN : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 BUG_JEREMY WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
