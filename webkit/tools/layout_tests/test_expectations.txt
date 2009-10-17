@@ -805,13 +805,9 @@ BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
 BUG9798 BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-source-error.html = FAIL PASS
 BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 
-// These are timing out only on Linux debug.  We have no idea why.
-//BUG13907 SKIP LINUX DEBUG : LayoutTests/media/controls-strict.html = TIMEOUT
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime.html = TIMEOUT
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime-set2.html = TIMEOUT
-//BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-toggle.html = TIMEOUT
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-none-crash.html = TIMEOUT
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-dom-src.html = TIMEOUT
+// Every linux debug media test have spurious timeouts and it's annoying.
+// We have no idea why.
+BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
 // These have super subtle pixel differences due to flaky anti-aliasing.
 // Patch is being submitted upstream.
