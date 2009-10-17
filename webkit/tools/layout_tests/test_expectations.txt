@@ -97,7 +97,6 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/storage/domstorage/localstorage/quot
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1818-4.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/fast/xpath/4XPath/Borrowed/cz_20030217.html = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/custom/viewbox-syntax.svg = PASS
-BUG24182 SLOW LINUX DEBUG : LayoutTests/media/video-transformed.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug131020.html = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/tables/mozilla/other/wa_table_thtd_rowspan.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug113424.html = PASS
@@ -781,8 +780,6 @@ BUG13907 LINUX WIN DEBUG SLOW : LayoutTests/media/audio-delete-while-step-button
 BUG13907 MAC : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
-BUG13907 WIN : LayoutTests/media/controls-strict.html = PASS FAIL
-BUG13907 LINUX RELEASE : LayoutTests/media/controls-strict.html = PASS FAIL
 BUG13907 RELEASE : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 DEBUG SLOW : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 SKIP : LayoutTests/media/event-attributes.html = TIMEOUT
@@ -793,7 +790,6 @@ BUG9798 BUG13907 SKIP : LayoutTests/media/video-controls.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-controls-transformed.html = FAIL
 BUG9798 BUG13907 SKIP: LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
 BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
-BUG9798 BUG13907 : LayoutTests/media/video-layer-crash.html = FAIL PASS
 BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-load-networkState.html = TIMEOUT PASS
 BUG13907 SLOW: LayoutTests/media/video-loop.html = FAIL
 BUG13907 SKIP : LayoutTests/media/video-no-audio.html = TIMEOUT
@@ -808,21 +804,29 @@ BUG9798 BUG13907 : LayoutTests/media/video-seeking.html = FAIL PASS
 BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
 BUG9798 BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-source-error.html = FAIL PASS
 BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
-BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-zoom.html = FAIL PASS
-BUG13907 WIN SLOW : LayoutTests/media/video-zoom-controls.html = FAIL
-BUG13907 LINUX RELEASE: LayoutTests/media/video-zoom-controls.html = FAIL
-BUG13907 LINUX DEBUG SLOW : LayoutTests/media/video-zoom-controls.html = FAIL
-BUG13907 MAC : LayoutTests/media/video-zoom-controls.html = FAIL
-// Image mismatch on mac only. This test appears to be flaky.
-BUG13907 MAC : LayoutTests/media/video-transformed.html = FAIL PASS
 
 // These are timing out only on Linux debug.  We have no idea why.
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/controls-strict.html = TIMEOUT
+//BUG13907 SKIP LINUX DEBUG : LayoutTests/media/controls-strict.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-currentTime-set2.html = TIMEOUT
-BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-toggle.html = TIMEOUT
+//BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-toggle.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-display-none-crash.html = TIMEOUT
 BUG13907 SKIP LINUX DEBUG : LayoutTests/media/video-dom-src.html = TIMEOUT
+
+// These have super subtle pixel differences due to flaky anti-aliasing.
+// Patch is being submitted upstream.
+BUG9798 BUG13907 : LayoutTests/media/audio-controls-rendering.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/controls-after-reload.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/controls-strict.html = PASS FAIL TIMEOUT
+BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-controls-rendering.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-display-toggle.html = PASS FAIL TIMEOUT
+BUG9798 BUG13907 : LayoutTests/media/video-empty-source.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-layer-crash.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-zoom-controls.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-zoom.html = PASS FAIL
 
 // These tests are WONTFIX because they uess codecs chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
@@ -3210,13 +3214,7 @@ BUG_JEREMY LINUX WIN : LayoutTests/fast/overflow/border-radius-clipping.html = F
 BUG_JEREMY LINUX WIN : LayoutTests/fast/repaint/border-radius-repaint.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/fast/transforms/shadows.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/http/tests/navigation/reload-subframe-object.html = FAIL
-// When fixing , uncomment line in BUG24182 to mark this test as slow for WIN!
-BUG_JEREMY LINUX WIN : LayoutTests/media/audio-controls-rendering.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/media/controls-after-reload.html = FAIL
-// When fixing, uncomment line above to mark this test as slow.
-BUG_JEREMY LINUX WIN : LayoutTests/media/video-controls-rendering.html = FAIL
-// When fixing, uncomment line above to mark this test as slow.
-BUG_JEREMY LINUX WIN : LayoutTests/media/video-empty-source.html = FAIL
+// When fixing, uncomment line in BUG24182 to mark this test as slow for WIN!
 BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-01-b.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
