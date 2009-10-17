@@ -1036,13 +1036,15 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       *error = errors::kInvalidChromeURLOverrides;
       return false;
     }
+
     // Validate that the overrides are all strings
     DictionaryValue::key_iterator iter = overrides->begin_keys();
     while (iter != overrides->end_keys()) {
+      std::string page = WideToUTF8(*iter);
       // For now, only allow the new tab page.  Others will work when we remove
       // this check, but let's keep it simple for now.
       // TODO(erikkay) enable other pages as well
-      if (WideToUTF8(*iter) != chrome::kChromeUINewTabHost) {
+      if (page != chrome::kChromeUINewTabHost) {
         *error = errors::kInvalidChromeURLOverrides;
         return false;
       }
@@ -1052,13 +1054,17 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         return false;
       }
       // Replace the entry with a fully qualified chrome-extension:// URL.
-      GURL url = GetResourceURL(val);
-      overrides->SetString(*iter, url.spec());
+      chrome_url_overrides_[page] = GetResourceURL(val);
       ++iter;
     }
-    chrome_url_overrides_.reset(
-        static_cast<DictionaryValue*>(overrides->DeepCopy()));
   }
+
+  // Although |source| is passed in as a const, it's still possible to modify
+  // it.  This is dangerous since the utility process re-uses |source| after
+  // it calls InitFromValue, passing it up to the browser process which calls
+  // InitFromValue again.  As a result, we need to make sure that nobody
+  // accidentally modifies it.
+  DCHECK(source.Equals(manifest_value_.get()));
 
   return true;
 }

@@ -138,8 +138,8 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
 
 // static
 void ExtensionDOMUI::RegisterChromeURLOverrides(
-    Profile* profile, const DictionaryValue* new_overrides) {
-  if (!new_overrides)
+    Profile* profile, const Extension::URLOverrideMap& overrides) {
+  if (overrides.empty())
     return;
 
   PrefService* prefs = profile->GetPrefs();
@@ -148,19 +148,13 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
 
   // For each override provided by the extension, add it to the front of
   // the override list if it's not already in the list.
-  DictionaryValue::key_iterator iter = new_overrides->begin_keys();
-  for (;iter != new_overrides->end_keys(); ++iter) {
-    Value* val;
-    new_overrides->Get(*iter, &val);
-    std::string string_val;
-    if (!val->GetAsString(&string_val)) {
-      NOTREACHED();
-      continue;
-    }
+  Extension::URLOverrideMap::const_iterator iter = overrides.begin();
+  for (;iter != overrides.end(); ++iter) {
+    const std::wstring key = UTF8ToWide((*iter).first);
     ListValue* page_overrides;
-    if (!all_overrides->GetList(*iter, &page_overrides)) {
+    if (!all_overrides->GetList(key, &page_overrides)) {
       page_overrides = new ListValue();
-      all_overrides->Set(*iter, page_overrides);
+      all_overrides->Set(key, page_overrides);
     } else {
       // Verify that the override isn't already in the list.
       ListValue::iterator i = page_overrides->begin();
@@ -170,7 +164,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
           NOTREACHED();
           continue;
         }
-        if (override_val == string_val)
+        if (override_val == (*iter).first)
           break;
       }
       // This value is already in the list, leave it alone.
@@ -179,7 +173,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
     }
     // Insert the override at the front of the list.  Last registered override
     // wins.
-    page_overrides->Insert(0, val->DeepCopy());
+    page_overrides->Insert(0, new StringValue((*iter).second.spec()));
   }
 }
 
@@ -226,27 +220,24 @@ void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
 
 // static
 void ExtensionDOMUI::UnregisterChromeURLOverrides(
-    Profile* profile, const DictionaryValue* new_overrides) {
-  if (!new_overrides)
+    Profile* profile, const Extension::URLOverrideMap& overrides) {
+  if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
   DictionaryValue* all_overrides =
       prefs->GetMutableDictionary(kExtensionURLOverrides);
-  DictionaryValue::key_iterator iter = new_overrides->begin_keys();
-  for (; iter != new_overrides->end_keys(); ++iter) {
-    Value* val;
-    if (!new_overrides->Get(*iter, &val)) {
-      NOTREACHED();
-      return;
-    }
+  Extension::URLOverrideMap::const_iterator iter = overrides.begin();
+  for (;iter != overrides.end(); ++iter) {
+    std::wstring page = UTF8ToWide((*iter).first);
     ListValue* page_overrides;
-    if (!all_overrides->GetList(*iter, &page_overrides)) {
+    if (!all_overrides->GetList(page, &page_overrides)) {
       // If it's being unregistered, it should already be in the list.
       NOTREACHED();
       continue;
     } else {
-      UnregisterAndReplaceOverride(WideToUTF8(*iter), profile, page_overrides,
-                                   val);
+      StringValue override((*iter).second.spec());
+      UnregisterAndReplaceOverride((*iter).first, profile,
+                                   page_overrides, &override);
     }
   }
 }

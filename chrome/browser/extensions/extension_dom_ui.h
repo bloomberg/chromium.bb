@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/common/extensions/extension.h"
 
 class ListValue;
 class PrefService;
@@ -15,7 +16,7 @@ class TabContents;
 
 // This class implements DOMUI for extensions and allows extensions to put UI in
 // the main tab contents area.
-class ExtensionDOMUI 
+class ExtensionDOMUI
     : public DOMUI,
       public ExtensionFunctionDispatcher::Delegate {
  public:
@@ -43,9 +44,9 @@ class ExtensionDOMUI
   // Page names are the keys, and chrome-extension: URLs are the values.
   // (e.g. { "newtab": "chrome-extension://<id>/my_new_tab.html" }
   static void RegisterChromeURLOverrides(Profile* profile,
-                                         const DictionaryValue* overrides);
+    const Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverrides(Profile* profile,
-                                           const DictionaryValue* overrides);
+    const Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverride(const std::string& page,
                                           Profile* profile,
                                           Value* override);

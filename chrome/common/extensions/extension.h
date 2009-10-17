@@ -26,6 +26,7 @@
 class Extension {
  public:
   typedef std::vector<URLPattern> HostPermissions;
+  typedef std::map<const std::string, GURL> URLOverrideMap;
 
   // What an extension was loaded from.
   enum Location {
@@ -259,8 +260,8 @@ class Extension {
   }
 
   // Chrome URL overrides (see ExtensionOverrideUI).
-  DictionaryValue* GetChromeURLOverrides() const {
-    return chrome_url_overrides_.get();
+  const URLOverrideMap& GetChromeURLOverrides() const {
+    return chrome_url_overrides_;
   }
 
   // Runtime data:
@@ -384,7 +385,7 @@ class Extension {
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs.
-  scoped_ptr<DictionaryValue> chrome_url_overrides_;
+  URLOverrideMap chrome_url_overrides_;
 
   // Runtime data:
 
