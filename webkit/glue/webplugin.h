@@ -26,6 +26,7 @@ class WebFrame;
 
 namespace webkit_glue {
 
+class WebPluginDelegate;
 class WebPluginParentView;
 class WebPluginResourceClient;
 
@@ -125,6 +126,11 @@ class WebPlugin {
   // Defers the loading of the resource identified by resource_id. This is
   // controlled by the defer parameter.
   virtual void SetDeferResourceLoading(int resource_id, bool defer) = 0;
+
+  // Gets the WebPluginDelegate that implements the interface.
+  // This API is only for use with Pepper, and hence only with
+  // in renderer process plugins.
+  virtual WebPluginDelegate* delegate() { return NULL; }
 };
 
 // Simpler version of ResourceHandleClient that lends itself to proxying.

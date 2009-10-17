@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Pepper API support should be enabled for this file.
-#define PEPPER_APIS_ENABLED
-
 #include "build/build_config.h"
 
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -14,6 +11,7 @@
 #include "base/string_util.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
+#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -354,27 +352,6 @@ void PluginInstance::DidManualLoadFail() {
     plugin_data_stream_ = NULL;
   }
 }
-
-#ifndef PEPPER_APIS_DISABLED
-NPError PluginInstance::InitializeRenderContext(NPRenderType type,
-                                                NPRenderContext* context) {
-  // Set up the renderer for the specified type.
-  // Return no errors.
-  return NPERR_NO_ERROR;
-}
-
-NPError PluginInstance::FlushRenderContext(NPRenderContext* context,
-    NPFlushRenderContextCallbackPtr callback, void* user_data) {
-  // Do the flush.
-  NPError err = NPERR_NO_ERROR;
-  // Invoke the callback to inform the caller the work was done.
-  if (callback != NULL) {
-    (*callback)(context, err, user_data);
-  }
-  // Return no errors.
-  return NPERR_NO_ERROR;
-}
-#endif  // PEPPER_APIS_DISABLED
 
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
                                            void *user_data) {

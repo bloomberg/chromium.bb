@@ -537,8 +537,6 @@
         'glue/plugins/webplugin_delegate_impl_gtk.cc',
         'glue/plugins/webplugin_delegate_impl_mac.mm',
         'glue/plugins/webplugin_delegate_impl_win.cc',
-        'glue/plugins/webplugin_delegate_pepper_impl.cc',
-        'glue/plugins/webplugin_delegate_pepper_impl.h',
         'glue/alt_error_page_resource_fetcher.cc',
         'glue/alt_error_page_resource_fetcher.h',
         'glue/autofill_form.cc',

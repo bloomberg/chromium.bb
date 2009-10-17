@@ -55,6 +55,8 @@ class WebPluginImpl : public WebPlugin,
                           const char* buf,
                           uint32 length);
 
+  virtual WebPluginDelegate* delegate() { return delegate_; }
+
  private:
   // WebKit::WebPlugin methods:
   virtual bool initialize(

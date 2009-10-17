@@ -108,15 +108,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void set_event_model(int value) { event_model_ = value; }
 #endif
 
-#if defined(PEPPER_APIS_ENABLED)
-  NPError InitializeRenderContext(NPRenderType type,
-                                  NPRenderContext* context);
-  NPError FlushRenderContext(NPRenderContext* context,
-                             NPFlushRenderContextCallbackPtr callback,
-                             void* userData);
-
-#endif  // defined(PEPPER_APIS_ENABLED)
-
   // Creates a stream for sending an URL.  If notify_needed
   // is true, it will send a notification to the plugin
   // when the stream is complete; otherwise it will not.

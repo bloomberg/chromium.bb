@@ -747,6 +747,10 @@ enum NPEventType {
 
 #endif /* XP_MACOSX */
 
+/* Stub typedefs for interfaces requiring Pepper types. */
+typedef int NPRenderType;
+typedef struct _NPRenderContext NPRenderContext;
+
 #else  // defined(PEPPER_APIS_ENABLED)
 typedef enum {
   NPMouseButton_None    = -1,

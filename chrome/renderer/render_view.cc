@@ -50,6 +50,7 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
 #include "grit/generated_resources.h"
@@ -90,7 +91,6 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
-#include "webkit/glue/plugins/webplugin_delegate_pepper_impl.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 #include "webkit/glue/webdropdata.h"
@@ -2458,7 +2458,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 #if defined(PEPPER_APIS_ENABLED)
   const char kPepperPrefix[] = "pepper-";
   if (StartsWithASCII(*mime_type_to_use, kPepperPrefix, true)) {
-    return WebPluginDelegatePepperImpl::Create(
+    return WebPluginDelegatePepper::Create(
         path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
   }
 #endif

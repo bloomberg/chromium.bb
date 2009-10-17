@@ -18,6 +18,7 @@
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugininfo.h"
+#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -667,7 +668,9 @@ static NPError InitializeRenderContext(NPP id,
                                        NPRenderContext* context) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
-    return plugin->InitializeRenderContext(type, context);
+    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
+    // Set up the renderer for the specified type.
+    return delegate->InitializeRenderContext(type, context);
   }
   return NPERR_GENERIC_ERROR;
 }
@@ -675,10 +678,18 @@ static NPError InitializeRenderContext(NPP id,
 static NPError FlushRenderContext(NPP id,
                                   NPRenderContext* context,
                                   NPFlushRenderContextCallbackPtr callback,
-                                  void* userData) {
+                                  void* user_data) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
-    return plugin->FlushRenderContext(context, callback, userData);
+    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
+    // Do the flush.
+    NPError err = delegate->FlushRenderContext(context);
+    // Invoke the callback to inform the caller the work was done.
+    if (callback != NULL) {
+      (*callback)(context, err, user_data);
+    }
+    // Return any errors.
+    return err;
   }
   return NPERR_GENERIC_ERROR;
 }
@@ -974,29 +985,6 @@ void NPN_PluginThreadAsyncCall(NPP id,
     plugin->PluginThreadAsyncCall(func, userData);
   }
 }
-
-#if defined(PEPPER_APIS_ENABLED)
-NPError NPN_InitializeRenderContext(NPP id,
-                                    NPRenderType type,
-                                    NPRenderContext* context) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->InitializeRenderContext(type, context);
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-NPError NPN_FlushRenderContext(NPP id,
-                               NPRenderContext* context,
-                               NPFlushRenderContextCallbackPtr callback,
-                               void* userData) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->FlushRenderContext(context, callback, userData);
-  }
-  return NPERR_GENERIC_ERROR;
-}
-#endif  // defined(PEPPER_APIS_ENABLED)
 
 NPError NPN_GetValueForURL(NPP id,
                            NPNURLVariable variable,

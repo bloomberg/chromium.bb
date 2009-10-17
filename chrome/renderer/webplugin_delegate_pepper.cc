@@ -4,11 +4,12 @@
 
 #define PEPPER_APIS_ENABLED 1
 
-#include "webkit/glue/plugins/webplugin_delegate_pepper_impl.h"
+#include "chrome/renderer/webplugin_delegate_pepper.h"
 
 #include <string>
 #include <vector>
 
+#include "app/gfx/blit.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -33,8 +34,13 @@ using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
+namespace {
+  const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
+}  // namespace
 
-WebPluginDelegatePepperImpl* WebPluginDelegatePepperImpl::Create(
+uint32 WebPluginDelegatePepper::next_buffer_id = 0;
+
+WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
     const std::string& mime_type,
     gfx::PluginWindowHandle containing_view) {
@@ -49,10 +55,10 @@ WebPluginDelegatePepperImpl* WebPluginDelegatePepperImpl::Create(
 
   scoped_refptr<NPAPI::PluginInstance> instance =
       plugin_lib->CreateInstance(mime_type);
-  return new WebPluginDelegatePepperImpl(containing_view, instance.get());
+  return new WebPluginDelegatePepper(containing_view, instance.get());
 }
 
-bool WebPluginDelegatePepperImpl::Initialize(
+bool WebPluginDelegatePepper::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
@@ -87,7 +93,7 @@ bool WebPluginDelegatePepperImpl::Initialize(
   return true;
 }
 
-void WebPluginDelegatePepperImpl::DestroyInstance() {
+void WebPluginDelegatePepper::DestroyInstance() {
   if (instance_ && (instance_->npp()->ndata != NULL)) {
     // Shutdown all streams before destroying so that
     // no streams are left "in progress".  Need to do
@@ -106,17 +112,47 @@ void WebPluginDelegatePepperImpl::DestroyInstance() {
   }
 }
 
-void WebPluginDelegatePepperImpl::UpdateGeometry(
+void WebPluginDelegatePepper::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
-  WindowlessUpdateGeometry(window_rect, clip_rect);
+  // Only resend to the instance if the geometry has changed.
+  if (window_rect == window_rect_ && clip_rect == clip_rect_)
+    return;
+
+  clip_rect_ = clip_rect;
+  cutout_rects_.clear();
+
+  if (window_rect_ == window_rect)
+    return;
+  window_rect_ = window_rect;
+  uint32 buffer_size = window_rect.height() *
+                       window_rect.width() *
+                       kBytesPerPixel;
+  if (buffer_size_ < buffer_size) {
+    buffer_size_ = buffer_size;
+    plugin_buffer_ = TransportDIB::Create(buffer_size, ++next_buffer_id);
+  }
+
+  if (!instance())
+    return;
+
+  // TODO(sehr): do we need all this?
+  window_.clipRect.top = clip_rect_.y();
+  window_.clipRect.left = clip_rect_.x();
+  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
+  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
+  window_.height = window_rect_.height();
+  window_.width = window_rect_.width();
+  window_.x = window_rect_.x();
+  window_.y = window_rect_.y();
+  window_.type = NPWindowTypeDrawable;
 }
 
-NPObject* WebPluginDelegatePepperImpl::GetPluginScriptableObject() {
+NPObject* WebPluginDelegatePepper::GetPluginScriptableObject() {
   return instance_->GetPluginScriptableObject();
 }
 
-void WebPluginDelegatePepperImpl::DidFinishLoadWithReason(
+void WebPluginDelegatePepper::DidFinishLoadWithReason(
     const GURL& url,
     NPReason reason,
     intptr_t notify_data) {
@@ -124,12 +160,12 @@ void WebPluginDelegatePepperImpl::DidFinishLoadWithReason(
       url, reason, reinterpret_cast<void*>(notify_data));
 }
 
-int WebPluginDelegatePepperImpl::GetProcessId() {
+int WebPluginDelegatePepper::GetProcessId() {
   // We are in process, so the plugin pid is this current process pid.
   return base::GetCurrentProcId();
 }
 
-void WebPluginDelegatePepperImpl::SendJavaScriptStream(
+void WebPluginDelegatePepper::SendJavaScriptStream(
     const GURL& url,
     const std::string& result,
     bool success,
@@ -139,31 +175,31 @@ void WebPluginDelegatePepperImpl::SendJavaScriptStream(
                                    notify_data);
 }
 
-void WebPluginDelegatePepperImpl::DidReceiveManualResponse(
+void WebPluginDelegatePepper::DidReceiveManualResponse(
     const GURL& url, const std::string& mime_type,
     const std::string& headers, uint32 expected_length, uint32 last_modified) {
   instance()->DidReceiveManualResponse(url, mime_type, headers,
                                        expected_length, last_modified);
 }
 
-void WebPluginDelegatePepperImpl::DidReceiveManualData(const char* buffer,
+void WebPluginDelegatePepper::DidReceiveManualData(const char* buffer,
                                                        int length) {
   instance()->DidReceiveManualData(buffer, length);
 }
 
-void WebPluginDelegatePepperImpl::DidFinishManualLoading() {
+void WebPluginDelegatePepper::DidFinishManualLoading() {
   instance()->DidFinishManualLoading();
 }
 
-void WebPluginDelegatePepperImpl::DidManualLoadFail() {
+void WebPluginDelegatePepper::DidManualLoadFail() {
   instance()->DidManualLoadFail();
 }
 
-FilePath WebPluginDelegatePepperImpl::GetPluginPath() {
+FilePath WebPluginDelegatePepper::GetPluginPath() {
   return instance()->plugin_lib()->plugin_info().path;
 }
 
-WebPluginResourceClient* WebPluginDelegatePepperImpl::CreateResourceClient(
+WebPluginResourceClient* WebPluginDelegatePepper::CreateResourceClient(
     int resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t existing_stream) {
   // Stream already exists. This typically happens for range requests
@@ -182,98 +218,61 @@ WebPluginResourceClient* WebPluginDelegatePepperImpl::CreateResourceClient(
   return stream;
 }
 
-bool WebPluginDelegatePepperImpl::IsPluginDelegateWindow(
+bool WebPluginDelegatePepper::IsPluginDelegateWindow(
     gfx::NativeWindow window) {
   return false;
 }
 
-bool WebPluginDelegatePepperImpl::GetPluginNameFromWindow(
+bool WebPluginDelegatePepper::GetPluginNameFromWindow(
     gfx::NativeWindow window, std::wstring *plugin_name) {
   return false;
 }
 
-bool WebPluginDelegatePepperImpl::IsDummyActivationWindow(
+bool WebPluginDelegatePepper::IsDummyActivationWindow(
     gfx::NativeWindow window) {
   return false;
 }
 
-WebPluginDelegatePepperImpl::WebPluginDelegatePepperImpl(
+WebPluginDelegatePepper::WebPluginDelegatePepper(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
     : plugin_(NULL),
       instance_(instance),
-      parent_(containing_view) {
+      parent_(containing_view),
+      buffer_size_(0),
+      plugin_buffer_(0),
+      background_canvas_(0) {
   memset(&window_, 0, sizeof(window_));
 }
 
-WebPluginDelegatePepperImpl::~WebPluginDelegatePepperImpl() {
+WebPluginDelegatePepper::~WebPluginDelegatePepper() {
   DestroyInstance();
 }
 
-void WebPluginDelegatePepperImpl::PluginDestroyed() {
+void WebPluginDelegatePepper::PluginDestroyed() {
   delete this;
 }
 
-void WebPluginDelegatePepperImpl::Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
-}
-
-void WebPluginDelegatePepperImpl::Print(gfx::NativeDrawingContext context) {
-  NOTIMPLEMENTED();
-}
-
-void WebPluginDelegatePepperImpl::InstallMissingPlugin() {
-  NOTIMPLEMENTED();
-}
-
-void WebPluginDelegatePepperImpl::WindowlessUpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  // Only resend to the instance if the geometry has changed.
-  if (window_rect == window_rect_ && clip_rect == clip_rect_)
-    return;
-
-  // We will inform the instance of this change when we call NPP_SetWindow.
-  clip_rect_ = clip_rect;
-  cutout_rects_.clear();
-
-  if (window_rect_ != window_rect) {
-    window_rect_ = window_rect;
-    WindowlessSetWindow(true);
-    // TODO(sehr): update the context here?
+void WebPluginDelegatePepper::Paint(gfx::NativeDrawingContext context,
+                                    const gfx::Rect& rect) {
+  static StatsRate plugin_paint("Plugin.Paint");
+  StatsScope<StatsRate> scope(plugin_paint);
+  // Blit from background_context to context.
+  if (background_canvas_ != NULL) {
+    gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
+    gfx::BlitCanvasToContext(context, rect, background_canvas_, origin);
   }
 }
 
-void WebPluginDelegatePepperImpl::WindowlessPaint(
-    gfx::NativeDrawingContext context,
-    const gfx::Rect& damage_rect) {
-  static StatsRate plugin_paint("Plugin.Paint");
-  StatsScope<StatsRate> scope(plugin_paint);
-  // TODO(sehr): save the context here?
+void WebPluginDelegatePepper::Print(gfx::NativeDrawingContext context) {
+  NOTIMPLEMENTED();
 }
 
-void WebPluginDelegatePepperImpl::WindowlessSetWindow(bool force_set_window) {
-  if (!instance())
-    return;
-
-  if (window_rect_.IsEmpty())  // wait for geometry to be set.
-    return;
-
-  window_.clipRect.top = clip_rect_.y();
-  window_.clipRect.left = clip_rect_.x();
-  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
-  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
-  window_.height = window_rect_.height();
-  window_.width = window_rect_.width();
-  window_.x = window_rect_.x();
-  window_.y = window_rect_.y();
-  window_.type = NPWindowTypeDrawable;
-
-  NPError err = instance()->NPP_SetWindow(&window_);
-  DCHECK(err == NPERR_NO_ERROR);
+void WebPluginDelegatePepper::InstallMissingPlugin() {
+  NOTIMPLEMENTED();
 }
 
-void WebPluginDelegatePepperImpl::SetFocus() {
+void WebPluginDelegatePepper::SetFocus() {
   NPEvent npevent;
 
   npevent.type = NPEventType_Focus;
@@ -358,8 +357,8 @@ void BuildMouseWheelEvent(const WebInputEvent* event, NPEvent* npevent) {
 }
 }  // namespace
 
-bool WebPluginDelegatePepperImpl::HandleInputEvent(const WebInputEvent& event,
-                                                   WebCursorInfo* cursor_info) {
+bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
+                                               WebCursorInfo* cursor_info) {
   NPEvent npevent;
 
   npevent.type = ConvertEventTypes(event.type);
@@ -392,4 +391,33 @@ bool WebPluginDelegatePepperImpl::HandleInputEvent(const WebInputEvent& event,
       break;
   }
   return instance()->NPP_HandleEvent(&npevent) != 0;
+}
+
+NPError WebPluginDelegatePepper::InitializeRenderContext(
+    NPRenderType type, NPRenderContext* context) {
+  switch (type) {
+    case NPRenderGraphicsRGBA: {
+      int width = window_rect_.width();
+      int height = window_rect_.height();
+      background_canvas_ = new skia::PlatformCanvas(width, height, false);
+      plugin_canvas_ = plugin_buffer_->GetPlatformCanvas(width, height);
+      if (background_canvas_ == NULL || plugin_canvas_ == NULL) {
+        return NPERR_GENERIC_ERROR;
+      }
+      context->u.graphicsRgba.region = plugin_buffer_->memory();
+      context->u.graphicsRgba.stride = width * kBytesPerPixel;
+      return NPERR_NO_ERROR;
+    }
+    default:
+      return NPERR_GENERIC_ERROR;
+  }
+}
+
+NPError WebPluginDelegatePepper::FlushRenderContext(
+    NPRenderContext* context) {
+  gfx::BlitCanvasToCanvas(background_canvas_,
+                          window_rect_,
+                          plugin_canvas_,
+                          window_rect_.origin());
+  return NPERR_NO_ERROR;
 }

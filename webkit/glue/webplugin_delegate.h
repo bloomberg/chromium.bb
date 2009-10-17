@@ -123,6 +123,17 @@ class WebPluginDelegate {
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;
+
+  // The following two methods are for use in implementing Pepper renderers.
+  // They should not be called outside of that context.
+  virtual NPError InitializeRenderContext(NPRenderType type,
+                                          NPRenderContext* context) {
+    return NPERR_GENERIC_ERROR;
+  }
+
+  virtual NPError FlushRenderContext(NPRenderContext* context) {
+    return NPERR_GENERIC_ERROR;
+  }
 };
 
 }  // namespace webkit_glue

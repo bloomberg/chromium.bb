@@ -12,6 +12,7 @@ include_rules = [
   "+webkit/glue",
   "+webkit/glue/plugins",
   "+v8/include",
+  "+third_party/npapi/bindings",
   "+third_party/sqlite/preprocessed",
   "+third_party/tcmalloc",
 

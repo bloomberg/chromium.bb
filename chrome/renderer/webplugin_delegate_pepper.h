@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_PEPPER_IMPL_H_
-#define WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_PEPPER_IMPL_H_
+#ifndef CHROME_RENDERER_WEBPLUGIN_DELEGATE_PEPPER_H_
+#define CHROME_RENDERER_WEBPLUGIN_DELEGATE_PEPPER_H_
 
 #include "build/build_config.h"
 
@@ -16,6 +16,8 @@
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "chrome/common/transport_dib.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
@@ -25,9 +27,9 @@ class PluginInstance;
 }
 
 // An implementation of WebPluginDelegate for Pepper in-process plugins.
-class WebPluginDelegatePepperImpl : public webkit_glue::WebPluginDelegate {
+class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
  public:
-  static WebPluginDelegatePepperImpl* Create(const FilePath& filename,
+  static WebPluginDelegatePepper* Create(const FilePath& filename,
       const std::string& mime_type, gfx::PluginWindowHandle containing_view);
 
   static bool IsPluginDelegateWindow(gfx::NativeWindow window);
@@ -85,17 +87,15 @@ class WebPluginDelegatePepperImpl : public webkit_glue::WebPluginDelegate {
   FilePath GetPluginPath();
 
  private:
-  friend class DeleteTask<WebPluginDelegatePepperImpl>;
-
-  WebPluginDelegatePepperImpl(gfx::PluginWindowHandle containing_view,
-                        NPAPI::PluginInstance *instance);
-  ~WebPluginDelegatePepperImpl();
+  WebPluginDelegatePepper(gfx::PluginWindowHandle containing_view,
+                          NPAPI::PluginInstance *instance);
+  ~WebPluginDelegatePepper();
 
   //----------------------------
   // used for windowless plugins
-  void WindowlessUpdateGeometry(const gfx::Rect& window_rect,
-                                const gfx::Rect& clip_rect);
-  void WindowlessPaint(gfx::NativeDrawingContext hdc, const gfx::Rect& rect);
+  virtual NPError InitializeRenderContext(NPRenderType type,
+                                          NPRenderContext* context);
+  virtual NPError FlushRenderContext(NPRenderContext* context);
 
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
@@ -118,10 +118,17 @@ class WebPluginDelegatePepperImpl : public webkit_glue::WebPluginDelegate {
   gfx::Rect clip_rect_;
   std::vector<gfx::Rect> cutout_rects_;
 
+  // Plugin graphics context implementation
+  size_t buffer_size_;
+  TransportDIB* plugin_buffer_;
+  static uint32 next_buffer_id;
+  skia::PlatformCanvas* plugin_canvas_;
+  skia::PlatformCanvas* background_canvas_;
+
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepperImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };
 
-#endif  // WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_PEPPER_IMPL_H_
+#endif  // CHROME_RENDERER_WEBPLUGIN_DELEGATE_PEPPER_H_

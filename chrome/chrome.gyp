@@ -3219,6 +3219,8 @@
         'renderer/visitedlink_slave.h',
         'renderer/webplugin_delegate_proxy.cc',
         'renderer/webplugin_delegate_proxy.h',
+        'renderer/webplugin_delegate_pepper.cc',
+        'renderer/webplugin_delegate_pepper.h',
         'renderer/webworker_proxy.cc',
         'renderer/webworker_proxy.h',
       ],
