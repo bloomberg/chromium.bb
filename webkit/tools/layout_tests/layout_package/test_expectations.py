@@ -116,6 +116,11 @@ class TestExpectations:
     # we expect it to pass (and nothing else).
     return set([PASS])
 
+  def GetModifiers(self, test):
+    if self._expected_failures.Contains(test):
+      return self._expected_failures.GetModifiers(test)
+    return []
+
   def IsDeferred(self, test):
     return self._expected_failures.HasModifier(test, DEFER)
 
@@ -253,6 +258,9 @@ class TestExpectationsFile:
     # Maps a test to its list of expectations.
     self._test_to_expectations = {}
 
+    # Maps a test to its list of modifiers.
+    self._test_to_modifiers = {}
+
     # Maps a test to the base path that it was listed with in the test list.
     self._test_list_paths = {}
 
@@ -293,6 +301,9 @@ class TestExpectationsFile:
 
   def HasModifier(self, test, modifier):
     return test in self._modifier_to_tests[modifier]
+
+  def GetModifiers(self, test):
+    return self._test_to_modifiers[test]
 
   def GetExpectations(self, test):
     return self._test_to_expectations[test]
@@ -405,13 +416,13 @@ class TestExpectationsFile:
 
     options = []
     if line.find(':') is -1:
-      test_and_expecation = line.split('=')
+      test_and_expectation = line.split('=')
     else:
       parts = line.split(':')
       options = self._GetOptionsList(parts[0])
-      test_and_expecation = parts[1].split('=')
+      test_and_expectation = parts[1].split('=')
 
-    test = test_and_expecation[0].strip()
+    test = test_and_expectation[0].strip()
     if not test in tests:
       return NO_CHANGE
 
@@ -512,20 +523,21 @@ class TestExpectationsFile:
       expectations_string = None
 
       if line.find(':') is -1:
-        self._AddError(lineno, 'Must have some modifier (e.g. bug number).', line)
+        self._AddError(lineno, 'Must have some modifier (e.g. bug number).',
+            line)
         continue
 
       parts = line.split(':')
       test_and_expectations = parts[1]
       options_string = parts[0]
 
-      tests_and_expecation_parts = test_and_expectations.split('=')
-      if (len(tests_and_expecation_parts) is not 2):
+      tests_and_expectation_parts = test_and_expectations.split('=')
+      if (len(tests_and_expectation_parts) is not 2):
         self._AddError(lineno, 'Missing expectations.', test_and_expectations)
         continue
 
-      test_list_path = tests_and_expecation_parts[0].strip()
-      expectations_string = tests_and_expecation_parts[1]
+      test_list_path = tests_and_expectation_parts[0].strip()
+      expectations_string = tests_and_expectation_parts[1]
 
       self._AddToAllExpectations(test_list_path, options_string,
           expectations_string)
@@ -563,7 +575,8 @@ class TestExpectationsFile:
       else:
         tests = self._ExpandTests(test_list_path)
 
-      self._AddTests(tests, expectations, test_list_path, lineno, modifiers)
+      self._AddTests(tests, expectations, test_list_path, lineno,
+          modifiers, options)
 
     if len(self._errors) or len(self._non_fatal_errors):
       if self._is_debug_mode:
@@ -607,13 +620,15 @@ class TestExpectationsFile:
       if test.startswith(path): result.append(test)
     return result
 
-  def _AddTests(self, tests, expectations, test_list_path, lineno, modifiers):
+  def _AddTests(self, tests, expectations, test_list_path, lineno, modifiers,
+      options):
     for test in tests:
       if self._AlreadySeenTest(test, test_list_path, lineno):
         continue
 
       self._ClearExpectationsForTest(test, test_list_path)
       self._test_to_expectations[test] = expectations
+      self._test_to_modifiers[test] = options
 
       if len(modifiers) is 0:
         self._AddTest(test, NONE, expectations)
