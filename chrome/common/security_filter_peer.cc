@@ -192,7 +192,7 @@ void BufferedPeer::OnCompletedRequest(const URLRequestStatus& status,
   if (status.status() != URLRequestStatus::SUCCESS || !DataReady()) {
     // Pretend we failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_, true);
-    URLRequestStatus status(URLRequestStatus::CANCELED, 0);
+    URLRequestStatus status(URLRequestStatus::CANCELED, net::ERR_ABORTED);
     original_peer_->OnCompletedRequest(status, security_info);
     return;
   }

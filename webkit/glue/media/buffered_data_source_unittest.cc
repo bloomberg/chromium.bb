@@ -48,6 +48,7 @@ namespace webkit_glue {
 ACTION_P(RequestCanceled, loader) {
   URLRequestStatus status;
   status.set_status(URLRequestStatus::CANCELED);
+  status.set_os_error(net::ERR_ABORTED);
   loader->OnCompletedRequest(status, "");
 }
 

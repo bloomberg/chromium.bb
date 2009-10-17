@@ -477,7 +477,7 @@ void ResourceDispatcherHost::BeginRequest(
         receiver_->Send(new ViewMsg_Resource_RequestComplete(
             route_id,
             request_id,
-            URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_FAILED),
+            URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED),
             std::string()));
       }
     }
