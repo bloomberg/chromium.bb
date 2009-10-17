@@ -1,8 +1,8 @@
 <head>
 <script>
-var botRoot = "http://build.chromium.org/buildbot/waterfall";
+var botRoot = "http://build.chromium.org/buildbot";
 //var botRoot = "http://chrome-buildbot.corp.google.com:8010";
-var waterfallURL = botRoot + "/bot_status.json?json=1";
+var waterfallURL = botRoot + "/waterfall/bot_status.json?json=1";
 var botList;
 var checkinResults;
 var bots;
@@ -38,24 +38,49 @@ function updateBotList(text) {
 function displayFailures() {
   var html = "";
   if (failures.length == 0) {
-    html = "<a href='" + botroot +
-        "' class='open'>The tree is completely green.</a> (no way!)";
+    html = "<a href='' onClick='showConsole()' class='open'>" +
+        "The tree is completely green.</a> (no way!)";
   } else {
-    html = "<div class='closed'>Failures:</div>";
+    html = "<div><a class='closed' href='' onClick='showFailures()'>" + 
+           "failures:</a></div>";
     failures.forEach(function(bot, i) {
       html += "<div class='bot " + bot.color +
-          "' onclick='botClicked(" + i + ")'>" +
+          "' onclick='showBot(" + i + ")'>" +
           bot.title + "</div>";
     });
   }
   bots.innerHTML = html;
 }
 
-function botClicked(botIndex) {
-  var bot = failures[botIndex];
-  var url = botRoot + "/waterfall?builder=" + bot.name;
+function showURL(url) {
   window.open(url);
   window.event.stopPropagation();
+}
+
+function showBot(botIndex) {
+  var bot = failures[botIndex];
+  var url = botRoot + "/waterfall/waterfall?builder=" + bot.name;
+  showURL(url);
+}
+
+function showConsole() {
+  var url = botRoot + "/waterfall/console";
+  showURL(url);
+}
+
+function showTry() {
+  var url = botRoot + "/try-server/waterfall";
+  showURL(url);
+}
+
+function showFyi() {
+  var url = botRoot + "/waterfall.fyi/console";
+  showURL(url);
+}
+
+function showFailures() {
+  var url = botRoot + "/waterfall/waterfall?show_events=true&failures_only=true";
+  showURL(url);
 }
 
 function requestURL(url, callback) {
@@ -103,14 +128,33 @@ body {
   overflow: hidden;
 }
 
-body.big .bot {
-  -webkit-transition: all .5s ease-out;
-  padding-right: 100px;
+#links {
+  background-color: #efefef;
+  border: 1px solid #cccccc;
+  -webkit-border-radius: 5px;
+  margin-top: 1px;
+  padding: 3px;
+  white-space: nowrap;
+  text-align: center;
 }
 
-body.small .bot{
+a {
+  text-decoration: underline;
+  color: #444;
+}
+
+a:hover {
+  color: black;
+  cursor: pointer;
+}
+
+body.big .bot {
   -webkit-transition: all .5s ease-out;
-  padding-right: 3px;
+  margin: 20px;
+}
+
+body.small .bot {
+  -webkit-transition: all .5s ease-out;
 }
 
 .bot {
@@ -165,5 +209,10 @@ body.small .bot{
 </style>
 </head>
 <body onClick="toggle_size()">
+<div id="links">
+<a href="" onclick='showConsole()'>console</a> -
+<a href="" onclick='showTry()'>try</a> -
+<a href="" onclick='showFyi()'>fyi</a>
+</div>
 <div id="bots">Loading....</div>
 </body>

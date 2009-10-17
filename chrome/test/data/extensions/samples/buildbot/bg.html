@@ -10,16 +10,16 @@ function updateStatus(text) {
     throw new Error("couldn't find status div in " + text);
   }
   var status = results[1];
-  chrome.browserAction.setName(status);
+  chrome.browserAction.setTitle({title:status});
   var open = /open/i;
   if (open.exec(status)) {
     //chrome.browserAction.setBadgeText("\u263A");
-    chrome.browserAction.setBadgeText("\u2022");
-    chrome.browserAction.setBadgeBackgroundColor([255,0,255,0]);
+    chrome.browserAction.setBadgeText({text:"\u2022"});
+    chrome.browserAction.setBadgeBackgroundColor({color:[255,0,255,0]});
   } else {
     //chrome.browserAction.setBadgeText("\u2639");
-    chrome.browserAction.setBadgeText("\u00D7");
-    chrome.browserAction.setBadgeBackgroundColor([255,255,0,0]);
+    chrome.browserAction.setBadgeText({text:"\u00D7"});
+    chrome.browserAction.setBadgeBackgroundColor({color:[255,255,0,0]});
   }
 }
 
