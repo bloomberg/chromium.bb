@@ -466,8 +466,6 @@ class LinearHistogram : public Histogram {
  protected:
   // Initialize ranges_ mapping.
   virtual void InitializeBucketRange();
-  // Find bucket to increment for sample value.
-  virtual size_t BucketIndex(Sample value) const;
   virtual double GetBucketSize(Count current, size_t i) const;
 
   // If we have a description for a bucket, then return that.  Otherwise

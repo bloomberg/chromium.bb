@@ -401,11 +401,10 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
                                        declared_max,
                                        bucket_count);
     } else if (histogram_type == LINEAR) {
-      render_histogram = reinterpret_cast<Histogram*>
-        (new LinearHistogram(histogram_name.c_str(),
-                             declared_min,
-                             declared_max,
-                             bucket_count));
+      render_histogram = new LinearHistogram(histogram_name.c_str(),
+                                             declared_min,
+                                             declared_max,
+                                             bucket_count);
     } else {
       LOG(ERROR) << "Error Deserializing Histogram Unknown histogram_type: " <<
           histogram_type;
@@ -584,17 +583,6 @@ void LinearHistogram::InitializeBucketRange() {
   }
 }
 
-// Find bucket to increment for sample value.
-size_t LinearHistogram::BucketIndex(Sample value) const {
-  if (value < declared_min()) return 0;
-  if (value >= declared_max()) return bucket_count() - 1;
-  size_t index;
-  index = static_cast<size_t>(((value - declared_min()) * (bucket_count() - 2))
-                              / (declared_max() - declared_min()) + 1);
-  DCHECK(1 <= index && bucket_count() > index);
-  return index;
-}
-
 double LinearHistogram::GetBucketSize(Count current, size_t i) const {
   DCHECK(ranges(i + 1) > ranges(i));
   // Adjacent buckets with different widths would have "surprisingly" many (few)
@@ -673,9 +661,10 @@ bool StatisticsRecorder::Register(Histogram* histogram) {
   const std::string name = histogram->histogram_name();
   AutoLock auto_lock(*lock_);
 
-  DCHECK(histograms_->end() == histograms_->find(name)) << name << " is already"
-      "registered as a histogram.  Check for duplicate use of the name, or a "
-      "race where a static initializer could be run by several threads.";
+  if (histograms_->end() != histograms_->find(name)) {
+    // Check to be sure it is compatible.... and if not, then do a CHECK()
+    return false;  // This name is already registered.
+  }
   (*histograms_)[name] = histogram;
   return true;
 }
