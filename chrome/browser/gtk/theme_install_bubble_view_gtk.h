@@ -33,15 +33,6 @@ class ThemeInstallBubbleViewGtk : public NotificationObserver {
   // Reposition |widget_| to be centered over |parent_|.
   void MoveWindow();
 
-  // Move with the parent window.
-  static gboolean HandleParentConfigureThunk(GtkWidget* widget,
-                                             GdkEventConfigure* event,
-                                             gpointer user_data) {
-    return reinterpret_cast<ThemeInstallBubbleViewGtk*>(user_data)->
-        HandleParentConfigure(event);
-  }
-  gboolean HandleParentConfigure(GdkEventConfigure* event);
-
   // Our parent is going down; self destruct.
   static gboolean HandleParentUnmapThunk(GtkWidget* widget,
                                          GdkEvent* event,
@@ -50,6 +41,16 @@ class ThemeInstallBubbleViewGtk : public NotificationObserver {
         HandleParentUnmap();
   }
   gboolean HandleParentUnmap();
+
+  // Draw the background. This is only signalled if we are using a compositing
+  // window manager, otherwise we just use ActAsRoundedWindow().
+  static gboolean HandleExposeEventThunk(GtkWidget* widget,
+                                         GdkEventExpose* event,
+                                         gpointer user_data) {
+    return reinterpret_cast<ThemeInstallBubbleViewGtk*>(user_data)->
+        HandleExposeEvent(event);
+  }
+  gboolean HandleExposeEvent(GdkEventExpose* event);
 
   GtkWidget* widget_;
 

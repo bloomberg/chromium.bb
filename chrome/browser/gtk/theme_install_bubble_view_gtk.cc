@@ -4,9 +4,12 @@
 
 #include "chrome/browser/gtk/theme_install_bubble_view_gtk.h"
 
+#include <math.h>
+
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
@@ -73,7 +76,6 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   // Widgematically, the bubble is just a label in a popup window.
   widget_ = gtk_window_new(GTK_WINDOW_POPUP);
   gtk_container_set_border_width(GTK_CONTAINER(widget_), kTextPadding);
-  gtk_widget_modify_bg(widget_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
   GtkWidget* label = gtk_label_new(NULL);
 
   // Need our own copy of the "Loading..." string: http://crbug.com/24177
@@ -86,21 +88,37 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(widget_), label);
 
-  gtk_widget_realize(widget_);
-  GdkColor color;
-  gtk_util::ActAsRoundedWindow(widget_, color, kBubbleCornerRadius,
-                               gtk_util::ROUNDED_ALL, gtk_util::BORDER_NONE);
-  gtk_window_set_opacity(GTK_WINDOW(widget_), kBubbleOpacity);
+  bool composited = false;
+  if (gtk_util::IsScreenComposited()) {
+    composited = true;
+    GdkScreen* screen = gtk_widget_get_screen(widget_);
+    GdkColormap* colormap = gdk_screen_get_rgba_colormap(screen);
+
+    if (colormap)
+      gtk_widget_set_colormap(widget_, colormap);
+    else
+      composited = false;
+  }
+
+  if (composited) {
+    gtk_widget_set_app_paintable(widget_, TRUE);
+    g_signal_connect(widget_, "expose-event",
+                     G_CALLBACK(HandleExposeEventThunk), this);
+    gtk_widget_realize(widget_);
+  } else {
+    gtk_widget_modify_bg(widget_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+    GdkColor color;
+    gtk_util::ActAsRoundedWindow(widget_, color, kBubbleCornerRadius,
+                                 gtk_util::ROUNDED_ALL, gtk_util::BORDER_NONE);
+  }
+
   MoveWindow();
 
-  g_signal_connect(widget_, "configure-event",
-                   G_CALLBACK(&HandleParentConfigureThunk), this);
   g_signal_connect(widget_, "unmap-event",
                    G_CALLBACK(&HandleParentUnmapThunk), this);
 
   gtk_widget_show_all(widget_);
 }
-
 
 void ThemeInstallBubbleViewGtk::MoveWindow() {
   GtkRequisition req;
@@ -117,13 +135,39 @@ void ThemeInstallBubbleViewGtk::MoveWindow() {
   gtk_window_move(GTK_WINDOW(widget_), x, y);
 }
 
-gboolean ThemeInstallBubbleViewGtk::HandleParentConfigure(
-    GdkEventConfigure* event) {
-  MoveWindow();
+gboolean ThemeInstallBubbleViewGtk::HandleParentUnmap() {
+  delete this;
   return FALSE;
 }
 
-gboolean ThemeInstallBubbleViewGtk::HandleParentUnmap() {
-  delete this;
+gboolean ThemeInstallBubbleViewGtk::HandleExposeEvent(
+    GdkEventExpose* event) {
+  cairo_t* cr = gdk_cairo_create(event->window);
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+  // |inner_rect| has its corners at the centerpoints of the corner arcs.
+  gfx::Rect inner_rect(widget_->allocation);
+  int inset = kBubbleCornerRadius;
+  inner_rect.Inset(inset, inset);
+
+  // The positive y axis is down, so M_PI_2 is down.
+  cairo_arc(cr, inner_rect.x(), inner_rect.y(), inset,
+            M_PI, 3 * M_PI_2);
+  cairo_arc(cr, inner_rect.right(), inner_rect.y(), inset,
+            3 * M_PI_2, 0);
+  cairo_arc(cr, inner_rect.right(), inner_rect.bottom(), inset,
+            0, M_PI_2);
+  cairo_arc(cr, inner_rect.x(), inner_rect.bottom(), inset,
+            M_PI_2, M_PI);
+
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, kBubbleOpacity);
+  cairo_fill(cr);
+  cairo_destroy(cr);
+
   return FALSE;
 }
