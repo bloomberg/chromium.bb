@@ -61,6 +61,7 @@
 #include "skia/ext/image_operations.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebDevToolsAgentClient.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/api/public/WebFrame.h"
@@ -92,7 +93,6 @@
 #include "webkit/glue/plugins/webplugin_delegate_pepper_impl.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webaccessibilitymanager_impl.h"
-#include "webkit/glue/webdevtoolsagent_delegate.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -120,6 +120,7 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
 using WebKit::WebData;
 using WebKit::WebDataSource;
+using WebKit::WebDevToolsAgentClient;
 using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -1699,6 +1700,10 @@ void RenderView::didUpdateInspectorSettings() {
       routing_id_, webview()->inspectorSettings().utf8()));
 }
 
+WebDevToolsAgentClient* RenderView::devToolsAgentClient() {
+  return devtools_agent_.get();
+}
+
 void RenderView::queryAutofillSuggestions(const WebNode& node,
                                           const WebString& name,
                                           const WebString& value) {
@@ -2807,10 +2812,6 @@ void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderView::OnResetPageEncodingToDefault() {
   WebString no_encoding;
   webview()->setPageEncoding(no_encoding);
-}
-
-WebDevToolsAgentDelegate* RenderView::GetWebDevToolsAgentDelegate() {
-  return devtools_agent_.get();
 }
 
 WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {

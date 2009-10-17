@@ -23,6 +23,7 @@
 #include "grit/webkit_resources.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/resource_loader_bridge.h"

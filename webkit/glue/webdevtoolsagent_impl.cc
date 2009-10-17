@@ -25,13 +25,13 @@
 #undef LOG
 
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebDevToolsAgentClient.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdevtoolsagent_delegate.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -51,7 +51,9 @@ using WebCore::V8ClassIndex;
 using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
 using WebKit::WebDataSource;
+using WebKit::WebDevToolsAgentClient;
 using WebKit::WebFrame;
+using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
@@ -81,9 +83,9 @@ void SetApuAgentEnabledInUtilityContext(v8::Handle<v8::Context> context,
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* web_view_impl,
-    WebDevToolsAgentDelegate* delegate)
-    : host_id_(delegate->GetHostId()),
-      delegate_(delegate),
+    WebDevToolsAgentClient* client)
+    : host_id_(client->hostIdentifier()),
+      client_(client),
       web_view_impl_(web_view_impl),
       apu_agent_enabled_(false),
       resource_tracking_was_enabled_(false),
@@ -114,7 +116,7 @@ void WebDevToolsAgentImpl::UnhideResourcesPanelIfNecessary() {
   tools_agent_delegate_stub_->DispatchOnClient(command);
 }
 
-void WebDevToolsAgentImpl::Attach() {
+void WebDevToolsAgentImpl::attach() {
   if (attached_) {
     return;
   }
@@ -130,7 +132,7 @@ void WebDevToolsAgentImpl::Attach() {
   attached_ = true;
 }
 
-void WebDevToolsAgentImpl::Detach() {
+void WebDevToolsAgentImpl::detach() {
   // Prevent controller from sending messages to the frontend.
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->hideHighlight();
@@ -142,7 +144,7 @@ void WebDevToolsAgentImpl::Detach() {
   attached_ = false;
 }
 
-void WebDevToolsAgentImpl::OnNavigate() {
+void WebDevToolsAgentImpl::didNavigate() {
   DebuggerAgentManager::OnNavigate();
 }
 
@@ -176,7 +178,7 @@ void WebDevToolsAgentImpl::WindowObjectCleared(WebFrameImpl* webframe) {
 }
 
 void WebDevToolsAgentImpl::ForceRepaint() {
-  delegate_->ForceRepaint();
+  client_->forceRepaint();
 }
 
 void WebDevToolsAgentImpl::DispatchOnInspectorController(
@@ -230,28 +232,7 @@ void WebDevToolsAgentImpl::GetResourceContent(
   tools_agent_native_delegate_stub_->DidGetResourceContent(call_id, content);
 }
 
-void WebDevToolsAgentImpl::SetApuAgentEnabled(bool enable) {
-  apu_agent_enabled_ = enable;
-  SetApuAgentEnabledInUtilityContext(utility_context_, enable);
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  if (enable) {
-    resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
-    ic->startTimelineProfiler();
-    if (!resource_tracking_was_enabled_) {
-      // TODO(knorton): Introduce some kind of agents dependency here so that
-      // user could turn off resource tracking while apu agent is on.
-      ic->enableResourceTracking(false);
-    }
-  } else {
-    ic->stopTimelineProfiler();
-    if (!resource_tracking_was_enabled_) {
-      ic->disableResourceTracking(false);
-    }
-    resource_tracking_was_enabled_ = false;
-  }
-}
-
-void WebDevToolsAgentImpl::DispatchMessageFromClient(
+void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
     const WebString& class_name,
     const WebString& method_name,
     const WebString& param1,
@@ -283,13 +264,29 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
   }
 }
 
-void WebDevToolsAgentImpl::InspectElement(int x, int y) {
-  Node* node = web_view_impl_->GetNodeForWindowPos(x, y);
-  if (!node) {
-    return;
-  }
+void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point) {
+  web_view_impl_->inspectElementAt(point);
+}
+
+void WebDevToolsAgentImpl::setApuAgentEnabled(bool enable) {
+  apu_agent_enabled_ = enable;
+  SetApuAgentEnabledInUtilityContext(utility_context_, enable);
   InspectorController* ic = web_view_impl_->page()->inspectorController();
-  ic->inspect(node);
+  if (enable) {
+    resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
+    ic->startTimelineProfiler();
+    if (!resource_tracking_was_enabled_) {
+      // TODO(knorton): Introduce some kind of agents dependency here so that
+      // user could turn off resource tracking while apu agent is on.
+      ic->enableResourceTracking(false);
+    }
+  } else {
+    ic->stopTimelineProfiler();
+    if (!resource_tracking_was_enabled_) {
+      ic->disableResourceTracking(false);
+    }
+    resource_tracking_was_enabled_ = false;
+  }
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(
@@ -298,7 +295,7 @@ void WebDevToolsAgentImpl::SendRpcMessage(
     const String& param1,
     const String& param2,
     const String& param3) {
-  delegate_->SendMessageToClient(
+  client_->sendMessageToFrontend(
       webkit_glue::StringToWebString(class_name),
       webkit_glue::StringToWebString(method_name),
       webkit_glue::StringToWebString(param1),
@@ -407,8 +404,10 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchToApu(
   return v8::Undefined();
 }
 
+namespace WebKit {
+
 // static
-void WebDevToolsAgent::ExecuteDebuggerCommand(
+void WebDevToolsAgent::executeDebuggerCommand(
     const WebString& command,
     int caller_id) {
   DebuggerAgentManager::ExecuteDebuggerCommand(
@@ -416,7 +415,9 @@ void WebDevToolsAgent::ExecuteDebuggerCommand(
 }
 
 // static
-void WebDevToolsAgent::SetMessageLoopDispatchHandler(
+void WebDevToolsAgent::setMessageLoopDispatchHandler(
     MessageLoopDispatchHandler handler) {
   DebuggerAgentManager::SetMessageLoopDispatchHandler(handler);
 }
+
+} // namespace WebKit

@@ -10,8 +10,6 @@
 
 #include "ipc/ipc_channel_proxy.h"
 
-class WebDevToolsAgent;
-
 // DevToolsAgentFilter is registered as an IPC filter in order to be able to
 // dispatch messages while on the IO thread. The reason for that is that while
 // debugging, Render thread is being held by the v8 and hence no messages

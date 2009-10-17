@@ -10,10 +10,10 @@
 #include <wtf/OwnPtr.h>
 
 #include "v8.h"
+#include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/devtools/apu_agent_delegate.h"
 #include "webkit/glue/devtools/tools_agent.h"
-#include "webkit/glue/webdevtoolsagent.h"
 
 namespace WebCore {
 class Document;
@@ -23,6 +23,7 @@ class String;
 }
 
 namespace WebKit {
+class WebDevToolsAgentClient;
 class WebFrame;
 }
 
@@ -30,17 +31,15 @@ class BoundObject;
 class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
 class Value;
-class WebDevToolsAgentDelegate;
 class WebFrameImpl;
 class WebViewImpl;
 
-class WebDevToolsAgentImpl
-    : public WebDevToolsAgent,
-      public ToolsAgent,
-      public DevToolsRpc::Delegate {
+class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
+                             public ToolsAgent,
+                             public DevToolsRpc::Delegate {
  public:
   WebDevToolsAgentImpl(WebViewImpl* web_view_impl,
-      WebDevToolsAgentDelegate* delegate);
+                       WebKit::WebDevToolsAgentClient* client);
   virtual ~WebDevToolsAgentImpl();
 
   // ToolsAgent implementation.
@@ -56,18 +55,19 @@ class WebDevToolsAgentImpl
   virtual void GetResourceContent(
       int call_id,
       int identifier);
-  virtual void SetApuAgentEnabled(bool enable);
 
   // WebDevToolsAgent implementation.
-  virtual void Attach();
-  virtual void Detach();
-  virtual void OnNavigate();
-  virtual void DispatchMessageFromClient(const WebKit::WebString& class_name,
-                                         const WebKit::WebString& method_name,
-                                         const WebKit::WebString& param1,
-                                         const WebKit::WebString& param2,
-                                         const WebKit::WebString& param3);
-  virtual void InspectElement(int x, int y);
+  virtual void attach();
+  virtual void detach();
+  virtual void didNavigate();
+  virtual void dispatchMessageFromFrontend(
+      const WebKit::WebString& class_name,
+      const WebKit::WebString& method_name,
+      const WebKit::WebString& param1,
+      const WebKit::WebString& param2,
+      const WebKit::WebString& param3);
+  virtual void inspectElementAt(const WebKit::WebPoint& point);
+  virtual void setApuAgentEnabled(bool enable);
 
   // DevToolsRpc::Delegate implementation.
   void SendRpcMessage(const WebCore::String& class_name,
@@ -104,7 +104,7 @@ class WebDevToolsAgentImpl
   v8::Local<v8::Object> CreateInspectorBackendV8Wrapper();
 
   int host_id_;
-  WebDevToolsAgentDelegate* delegate_;
+  WebKit::WebDevToolsAgentClient* client_;
   WebViewImpl* web_view_impl_;
   OwnPtr<DebuggerAgentDelegateStub> debugger_agent_delegate_stub_;
   OwnPtr<ToolsAgentDelegateStub> tools_agent_delegate_stub_;

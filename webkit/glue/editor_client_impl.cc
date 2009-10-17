@@ -32,7 +32,6 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
 #include "webkit/glue/webview_impl.h"
 

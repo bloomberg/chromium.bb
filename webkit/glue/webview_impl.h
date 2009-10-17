@@ -57,7 +57,6 @@ class ImageResourceFetcher;
 class AutocompletePopupMenuClient;
 class SearchableFormData;
 class WebHistoryItemImpl;
-class WebDevToolsAgent;
 class WebDevToolsAgentImpl;
 class WebViewDelegate;
 
@@ -137,6 +136,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void inspectElementAt(const WebKit::WebPoint& point);
   virtual WebKit::WebString inspectorSettings() const;
   virtual void setInspectorSettings(const WebKit::WebString& settings);
+  virtual WebKit::WebDevToolsAgent* devToolsAgent();
   virtual WebKit::WebAccessibilityObject accessibilityObject();
   virtual void applyAutofillSuggestions(
       const WebKit::WebNode&,
@@ -146,7 +146,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // WebView methods:
   virtual void SetIgnoreInputEvents(bool new_value);
-  virtual WebDevToolsAgent* GetWebDevToolsAgent();
   WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();
 
   // WebViewImpl
@@ -246,10 +245,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // Hides the autocomplete popup if it is showing.
   void HideAutoCompletePopup();
   void AutoCompletePopupDidHide();
-
-  // Converts |x|, |y| from window coordinates to contents coordinates and gets
-  // the underlying Node for them.
-  WebCore::Node* GetNodeForWindowPos(int x, int y);
 
 #if ENABLE(NOTIFICATIONS)
   // Returns the provider of desktop notifications.

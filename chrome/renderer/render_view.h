@@ -67,7 +67,6 @@ class ListValue;
 class NavigationState;
 class PrintWebViewHelper;
 class WebPluginDelegateProxy;
-class WebDevToolsAgentDelegate;
 struct ContextMenuMediaParams;
 struct ThumbnailScore;
 struct ViewMsg_ClosePage_Params;
@@ -174,7 +173,6 @@ class RenderView : public RenderWidget,
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
-  virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
@@ -256,6 +254,7 @@ class RenderView : public RenderWidget,
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& acc_obj);
   virtual void didUpdateInspectorSettings();
+  virtual WebKit::WebDevToolsAgentClient* devToolsAgentClient();
   virtual void queryAutofillSuggestions(
       const WebKit::WebNode& node, const WebKit::WebString& name,
       const WebKit::WebString& value);

@@ -123,7 +123,7 @@ namespace WebKit {
         // Hierarchy ----------------------------------------------------------
 
         // Returns the containing view.
-        virtual WebView* view() const = 0;
+        virtual ::WebView* view() const = 0;
 
         // Returns the frame that opened this frame or 0 if there is none.
         virtual WebFrame* opener() const = 0;

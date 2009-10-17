@@ -26,41 +26,10 @@
 #ifndef WEBKIT_GLUE_WEBVIEW_DELEGATE_H_
 #define WEBKIT_GLUE_WEBVIEW_DELEGATE_H_
 
-#include <vector>
-
-#include "webkit/api/public/WebDragOperation.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebViewClient.h"
-#include "webkit/glue/context_menu.h"
-
-namespace WebCore {
-class AccessibilityObject;
-}
-
-namespace WebKit {
-class WebDragData;
-class WebNotificationPresenter;
-class WebWidget;
-struct WebPopupMenuInfo;
-struct WebPoint;
-struct WebRect;
-}
-
-class FilePath;
-class SkBitmap;
-class WebDevToolsAgentDelegate;
-class WebView;
 
 // TODO(darin): Eliminate WebViewDelegate in favor of WebViewClient.
 class WebViewDelegate : public WebKit::WebViewClient {
- public:
-  // DevTools ----------------------------------------------------------------
-
-  virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate() {
-    return NULL;
-  }
-
  protected:
   ~WebViewDelegate() { }
 };

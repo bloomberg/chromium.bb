@@ -7,9 +7,12 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
+#include "webkit/api/public/WebDevToolsAgent.h"
+#include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebString.h"
-#include "webkit/glue/webdevtoolsagent.h"
 
+using WebKit::WebDevToolsAgent;
+using WebKit::WebPoint;
 using WebKit::WebString;
 
 // static
@@ -28,7 +31,7 @@ DevToolsAgent::~DevToolsAgent() {
 void DevToolsAgent::OnNavigate() {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->OnNavigate();
+    web_agent->didNavigate();
   }
 }
 
@@ -47,11 +50,11 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsAgent::SendMessageToClient(const WebKit::WebString& class_name,
-                                        const WebKit::WebString& method_name,
-                                        const WebKit::WebString& param1,
-                                        const WebKit::WebString& param2,
-                                        const WebKit::WebString& param3) {
+void DevToolsAgent::sendMessageToFrontend(const WebString& class_name,
+                                          const WebString& method_name,
+                                          const WebString& param1,
+                                          const WebString& param2,
+                                          const WebString& param3) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
       DevToolsClientMsg_RpcMessage(
@@ -63,11 +66,11 @@ void DevToolsAgent::SendMessageToClient(const WebKit::WebString& class_name,
   view_->Send(m);
 }
 
-int DevToolsAgent::GetHostId() {
+int DevToolsAgent::hostIdentifier() {
   return routing_id_;
 }
 
-void DevToolsAgent::ForceRepaint() {
+void DevToolsAgent::forceRepaint() {
   view_->GenerateFullRepaint();
 }
 
@@ -84,14 +87,14 @@ DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
 void DevToolsAgent::OnAttach() {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->Attach();
+    web_agent->attach();
   }
 }
 
 void DevToolsAgent::OnDetach() {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->Detach();
+    web_agent->detach();
   }
 }
 
@@ -102,7 +105,7 @@ void DevToolsAgent::OnRpcMessage(const std::string& class_name,
                                  const std::string& param3) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->DispatchMessageFromClient(
+    web_agent->dispatchMessageFromFrontend(
         WebString::fromUTF8(class_name),
         WebString::fromUTF8(method_name),
         WebString::fromUTF8(param1),
@@ -114,15 +117,15 @@ void DevToolsAgent::OnRpcMessage(const std::string& class_name,
 void DevToolsAgent::OnInspectElement(int x, int y) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->Attach();
-    web_agent->InspectElement(x, y);
+    web_agent->attach();
+    web_agent->inspectElementAt(WebPoint(x, y));
   }
 }
 
 void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->SetApuAgentEnabled(enabled);
+    web_agent->setApuAgentEnabled(enabled);
   }
 }
 
@@ -130,5 +133,5 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
   WebView* web_view = view_->webview();
   if (!web_view)
     return NULL;
-  return web_view->GetWebDevToolsAgent();
+  return web_view->devToolsAgent();
 }

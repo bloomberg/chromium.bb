@@ -11,6 +11,7 @@
 #undef LOG
 
 #include "base/string_util.h"
+#include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
@@ -19,6 +20,8 @@
 #if USE(V8)
 #include "v8/include/v8-debug.h"
 #endif
+
+using WebKit::WebDevToolsAgent;
 
 WebDevToolsAgent::MessageLoopDispatchHandler
     DebuggerAgentManager::message_loop_dispatch_handler_ = NULL;

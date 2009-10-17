@@ -5,23 +5,9 @@
 #ifndef WEBKIT_GLUE_WEBVIEW_H_
 #define WEBKIT_GLUE_WEBVIEW_H_
 
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
-#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebView.h"
 
-namespace WebKit {
-class WebDragData;
-class WebFrameClient;
-class WebFrame;
-class WebSettings;
-struct WebPoint;
-}
-
-class GURL;
-class WebDevToolsAgent;
 class WebViewDelegate;
 
 //
@@ -62,9 +48,6 @@ class WebView : public WebKit::WebView {
   // Tells all Page instances of this view to update visited state for all their
   // links.
   static void ResetVisitedLinkState();
-
-  // Returns development tools agent instance belonging to this view.
-  virtual WebDevToolsAgent* GetWebDevToolsAgent() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebView);

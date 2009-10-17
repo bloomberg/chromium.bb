@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "v8/include/v8-debug.h"
-#include "webkit/glue/webdevtoolsagent.h"
+#include "webkit/api/public/WebDevToolsAgent.h"
 
 namespace WebCore {
 class PageGroupLoadDeferrer;
@@ -43,7 +43,7 @@ class DebuggerAgentManager {
   static void ExecuteDebuggerCommand(const WebCore::String& command,
                                      int caller_id);
   static void SetMessageLoopDispatchHandler(
-      WebDevToolsAgent::MessageLoopDispatchHandler handler);
+      WebKit::WebDevToolsAgent::MessageLoopDispatchHandler handler);
 
   // Sets |host_id| as the frame context data. This id is used to filter scripts
   // related to the inspected page.
@@ -86,7 +86,7 @@ class DebuggerAgentManager {
   typedef HashMap<int, DebuggerAgentImpl*> AttachedAgentsMap;
   static AttachedAgentsMap* attached_agents_map_;
 
-  static WebDevToolsAgent::MessageLoopDispatchHandler
+  static WebKit::WebDevToolsAgent::MessageLoopDispatchHandler
       message_loop_dispatch_handler_;
   static bool in_host_dispatch_handler_;
   typedef HashMap<WebViewImpl*, WebCore::PageGroupLoadDeferrer*>

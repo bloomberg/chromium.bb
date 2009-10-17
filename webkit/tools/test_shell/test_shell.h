@@ -48,6 +48,7 @@ typedef std::list<gfx::NativeWindow> WindowList;
 
 struct WebPreferences;
 class AccessibilityController;
+class FilePath;
 class TestNavigationEntry;
 class TestNavigationController;
 

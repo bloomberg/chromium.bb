@@ -36,6 +36,7 @@
 
 namespace WebKit {
     class WebAccessibilityObject;
+    class WebDevToolsAgent;
     class WebDragData;
     class WebFrame;
     class WebFrameClient;
@@ -202,6 +203,8 @@ namespace WebKit {
         // Settings used by the inspector.
         virtual WebString inspectorSettings() const = 0;
         virtual void setInspectorSettings(const WebString&) = 0;
+
+        virtual WebDevToolsAgent* devToolsAgent() = 0;
 
 
         // Accessibility -------------------------------------------------------

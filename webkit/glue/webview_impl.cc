@@ -80,7 +80,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
-#include "webkit/glue/webdevtoolsagent.h"
 #include "webkit/glue/webdevtoolsclient.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
@@ -99,6 +98,8 @@ using WebKit::WebCanvas;
 using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
 using WebKit::WebCompositionCommandDiscard;
+using WebKit::WebDevToolsAgent;
+using WebKit::WebDevToolsAgentClient;
 using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationCopy;
@@ -354,11 +355,10 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
 
   main_frame->InitMainFrame(this);
 
-  if (delegate_) {
-    WebDevToolsAgentDelegate* tools_delegate =
-        delegate_->GetWebDevToolsAgentDelegate();
-    if (tools_delegate)
-      devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_delegate));
+  if (client()) {
+    WebDevToolsAgentClient* tools_client = client()->devToolsAgentClient();
+    if (tools_client)
+      devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_client));
   }
 
   // Restrict the access to the local file system
@@ -1665,6 +1665,10 @@ void WebViewImpl::setInspectorSettings(const WebString& settings) {
   inspector_settings_ = settings;
 }
 
+WebDevToolsAgent* WebViewImpl::devToolsAgent() {
+  return devtools_agent_.get();
+}
+
 WebAccessibilityObject WebViewImpl::accessibilityObject() {
   if (!main_frame())
     return WebAccessibilityObject();
@@ -1749,10 +1753,6 @@ bool WebViewImpl::setDropEffect(bool accept) {
   } else {
     return false;
   }
-}
-
-WebDevToolsAgent* WebViewImpl::GetWebDevToolsAgent() {
-  return GetWebDevToolsAgentImpl();
 }
 
 WebDevToolsAgentImpl* WebViewImpl::GetWebDevToolsAgentImpl() {
@@ -1867,11 +1867,6 @@ void WebViewImpl::AutoCompletePopupDidHide() {
 void WebViewImpl::SetIgnoreInputEvents(bool new_value) {
   DCHECK(ignore_input_events_ != new_value);
   ignore_input_events_ = new_value;
-}
-
-WebCore::Node* WebViewImpl::GetNodeForWindowPos(int x, int y) {
-  HitTestResult result = HitTestResultForWindowPos(IntPoint(x, y));
-  return result.innerNonSharedNode();
 }
 
 #if ENABLE(NOTIFICATIONS)

@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/api/public/WebBindings.h"
+#include "webkit/api/public/WebFrame.h"
 
 using WebKit::WebBindings;
 

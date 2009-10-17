@@ -35,12 +35,14 @@
 #include "WebEditingAction.h"
 #include "WebFileChooserCompletion.h"
 #include "WebTextAffinity.h"
+#include "WebTextDirection.h"
 #include "WebWidgetClient.h"
 
 class WebView;  // FIXME: Move into the WebKit namespace.
 
 namespace WebKit {
     class WebAccessibilityObject;
+    class WebDevToolsAgentClient;
     class WebDragData;
     class WebFileChooserCompletion;
     class WebFrame;
@@ -48,6 +50,7 @@ namespace WebKit {
     class WebNotificationPresenter;
     class WebRange;
     class WebString;
+    class WebURL;
     class WebWidget;
     struct WebConsoleMessage;
     struct WebContextMenuData;
@@ -245,11 +248,14 @@ namespace WebKit {
         // accessibility object.
         virtual void focusAccessibilityObject(const WebAccessibilityObject&) = 0;
 
+
         // Developer tools -----------------------------------------------------
 
         // Called to notify the client that the inspector's settings were
         // changed and should be saved.  See WebView::inspectorSettings.
         virtual void didUpdateInspectorSettings() = 0;
+
+        virtual WebDevToolsAgentClient* devToolsAgentClient() = 0;
 
 
         // Autofill ------------------------------------------------------------

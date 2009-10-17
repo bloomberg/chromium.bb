@@ -9,6 +9,7 @@
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/webwidget_host.h"

@@ -9,7 +9,6 @@
 
 #include "v8.h"
 #include "webkit/glue/devtools/debugger_agent.h"
-#include "webkit/glue/webdevtoolsagent.h"
 
 class WebDevToolsAgentImpl;
 class WebViewImpl;

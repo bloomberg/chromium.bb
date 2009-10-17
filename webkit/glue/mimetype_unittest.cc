@@ -10,6 +10,7 @@
 
 #include "base/string_util.h"
 #include "net/url_request/url_request_unittest.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/unittest_test_server.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
