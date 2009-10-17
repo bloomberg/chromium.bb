@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 // Forward declarations
@@ -116,5 +117,28 @@ class HTMLScanner {
 
   DISALLOW_COPY_AND_ASSIGN(HTMLScanner);
 };
+
+namespace http_utils {
+
+// Adds "chromeframe/x.y" to the end of the User-Agent string (x.y is the
+// version).  If the cf tag has already been added to the string,
+// the original string is returned.
+std::string AddChromeFrameToUserAgentValue(const std::string& value);
+
+// Fetches the user agent from urlmon and adds chrome frame to the
+// comment section.
+// NOTE: The returned string includes the "User-Agent: " header name.
+std::string GetDefaultUserAgentHeaderWithCFTag();
+
+// Fetches the default user agent string from urlmon.
+// This value does not include the "User-Agent:" header name.
+std::string GetDefaultUserAgent();
+
+// Returns the Chrome Frame user agent.  E.g. "chromeframe/1.0".
+// Note that in unit tests this will be "chromeframe/0.0" due to the version
+// table not being present in the unit test executable.
+const char* GetChromeFrameUserAgent();
+
+}  // namespace http_utils
 
 #endif  // CHROME_FRAME_HTML_UTILS_H_

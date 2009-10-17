@@ -9,6 +9,7 @@
 #include <urlmon.h>
 #include <atlbase.h>
 #include <atlcom.h>
+
 #include <map>
 #include <string>
 
@@ -17,6 +18,7 @@
 #include "base/scoped_comptr_win.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/ie8_types.h"
+#include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 
 // Typedefs for IInternetProtocol and related methods that we patch.
@@ -60,11 +62,6 @@ class ProtocolSinkWrap
       public IUriContainer {
  public:
 
-#define COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(x) \
-    COM_INTERFACE_ENTRY_FUNC(_ATL_IIDOF(x), \
-        offsetofclass(x, _ComMapClass), \
-        IfDelegateSupports)
-
 BEGIN_COM_MAP(ProtocolSinkWrap)
   COM_INTERFACE_ENTRY(IInternetProtocolSink)
   COM_INTERFACE_ENTRY(IInternetBindInfo)
@@ -77,7 +74,7 @@ BEGIN_COM_MAP(ProtocolSinkWrap)
   COM_INTERFACE_ENTRY(IInternetPriority)
   COM_INTERFACE_ENTRY(IWrappedProtocol)
   COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(IUriContainer)
-  COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface)
+  COM_INTERFACE_BLIND_DELEGATE()
 END_COM_MAP()
 
   ProtocolSinkWrap();
@@ -94,17 +91,17 @@ END_COM_MAP()
   static void UnpatchProtocolHandlers();
 
   // IInternetProtocol/Ex patches.
-  static HRESULT STDMETHODCALLTYPE OnStart(InternetProtocol_Start_Fn orig_start,
+  static STDMETHODIMP OnStart(InternetProtocol_Start_Fn orig_start,
       IInternetProtocol* protocol, LPCWSTR url,
       IInternetProtocolSink* prot_sink, IInternetBindInfo* bind_info,
       DWORD flags, HANDLE_PTR reserved);
 
-  static HRESULT STDMETHODCALLTYPE OnStartEx(
+  static STDMETHODIMP OnStartEx(
       InternetProtocol_StartEx_Fn orig_start_ex, IInternetProtocolEx* protocol,
       IUri* uri, IInternetProtocolSink* prot_sink,
       IInternetBindInfo* bind_info, DWORD flags, HANDLE_PTR reserved);
 
-  static HRESULT STDMETHODCALLTYPE OnRead(InternetProtocol_Read_Fn orig_read,
+  static STDMETHODIMP OnRead(InternetProtocol_Read_Fn orig_read,
       IInternetProtocol* protocol, void* buffer, ULONG size, ULONG* size_read);
 
   // IInternetProtocolSink methods
@@ -155,6 +152,10 @@ END_COM_MAP()
   // ITransProtocolSink, // Undocumented
   // ITransactionInternal, // undocumented
 
+  IInternetProtocolSink* delegate() const {
+    return delegate_;
+  }
+
  protected:
   enum RendererType {
     UNDETERMINED,
@@ -172,10 +173,6 @@ END_COM_MAP()
   static ScopedComPtr<IInternetProtocolSink> MaybeWrapSink(
       IInternetProtocol* protocol, IInternetProtocolSink* prot_sink,
       const wchar_t* url);
-  static HRESULT WINAPI CheckOutgoingInterface(void* obj, REFIID iid,
-      LPVOID* ret, DWORD cookie);
-  static HRESULT WINAPI IfDelegateSupports(void* obj, REFIID iid,
-      LPVOID* ret, DWORD cookie);
 
   void DetermineRendererType();
   HRESULT OnReadImpl(void* buffer, ULONG size, ULONG* size_read,
@@ -207,15 +204,16 @@ END_COM_MAP()
   // http://b/issue?id=2102171 for details.
 
   // Remember original sink
-  CComPtr<IInternetProtocolSink> delegate_;
+  ScopedComPtr<IInternetProtocolSink> delegate_;
+
   // Cannot take a reference on the protocol.
   IInternetProtocol* protocol_;
   RendererType renderer_type_;
 
   // Buffer for accumulated data including 1 extra for NULL-terminator
   char buffer_[kMaxContentSniffLength + 1];
-  unsigned long buffer_size_;
-  unsigned long buffer_pos_;
+  unsigned long buffer_size_;  // NOLINT
+  unsigned long buffer_pos_;  // NOLINT
 
   // Accumulated result
   bool is_saved_result_;
@@ -236,6 +234,4 @@ END_COM_MAP()
   DISALLOW_COPY_AND_ASSIGN(ProtocolSinkWrap);
 };
 
-
 #endif  // CHROME_FRAME_PROTOCOL_SINK_WRAP_H_
-

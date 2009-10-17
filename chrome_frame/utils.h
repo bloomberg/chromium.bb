@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 // utils.h : Various utility functions and classes
 
@@ -202,7 +203,8 @@ bool IsOptInUrl(const wchar_t* url);
 
 // A shortcut for QueryService
 template <typename T>
-HRESULT DoQueryService(const CLSID& class_id, IUnknown* unk, T** service) {
+HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
+  DCHECK(service);
   if (!unk)
     return E_INVALIDARG;
   ScopedComPtr<IServiceProvider> service_provider;
@@ -210,7 +212,7 @@ HRESULT DoQueryService(const CLSID& class_id, IUnknown* unk, T** service) {
   if (!service_provider)
     return hr;
 
-  return service_provider->QueryService(class_id, service);
+  return service_provider->QueryService(service_id, service);
 }
 
 // Get url (display name) from a moniker, |bind_context| is optional
@@ -224,5 +226,61 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
 
 // This returns the base directory in which to store user profiles.
 bool GetUserProfileBaseDirectory(std::wstring* path);
+
+// See COM_INTERFACE_BLIND_DELEGATE below for details.
+template <class T>
+STDMETHODIMP CheckOutgoingInterface(void* obj, REFIID iid, void** ret,
+                                    DWORD cookie) {
+  T* instance = reinterpret_cast<T*>(obj);
+  HRESULT hr = E_NOINTERFACE;
+  IUnknown* delegate = instance ? instance->delegate() : NULL;
+  if (delegate) {
+    hr = delegate->QueryInterface(iid, ret);
+#if !defined(NDEBUG)
+    if (SUCCEEDED(hr)) {
+      wchar_t iid_string[64] = {0};
+      StringFromGUID2(iid, iid_string, arraysize(iid_string));
+      DLOG(INFO) << __FUNCTION__ << " Giving out wrapped interface: "
+          << iid_string;
+    }
+#endif
+  }
+
+  return hr;
+}
+
+// See COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS below for details.
+template <class T>
+STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
+                                              void** ret, DWORD cookie) {
+  HRESULT hr = E_NOINTERFACE;
+  T* instance = reinterpret_cast<T*>(obj);
+  IUnknown* delegate = instance ? instance->delegate() : NULL;
+  if (delegate) {
+    ScopedComPtr<IUnknown> original;
+    hr = delegate->QueryInterface(iid,
+                                  reinterpret_cast<void**>(original.Receive()));
+    if (original) {
+      IUnknown* supported_interface = reinterpret_cast<IUnknown*>(
+          reinterpret_cast<DWORD_PTR>(obj) + cookie);
+      supported_interface->AddRef();
+      *ret = supported_interface;
+      hr = S_OK;
+    }
+  }
+
+  return hr;
+}
+
+// Same as COM_INTERFACE_ENTRY but relies on the class to implement a
+// delegate() method that returns a pointer to the delegated COM object.
+#define COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(x) \
+    COM_INTERFACE_ENTRY_FUNC(_ATL_IIDOF(x), \
+        offsetofclass(x, _ComMapClass), \
+        QueryInterfaceIfDelegateSupports<_ComMapClass>)
+
+// Queries the delegated COM object for an interface, bypassing the wrapper.
+#define COM_INTERFACE_BLIND_DELEGATE() \
+    COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface<_ComMapClass>)
 
 #endif  // CHROME_FRAME_UTILS_H_

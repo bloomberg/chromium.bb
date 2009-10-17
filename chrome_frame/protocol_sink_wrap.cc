@@ -6,7 +6,6 @@
 
 #include "chrome_frame/protocol_sink_wrap.h"
 
-#include "base/scoped_bstr_win.h"
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_bstr_win.h"
@@ -233,44 +232,6 @@ bool ProtocolSinkWrap::Initialize(IInternetProtocol* protocol,
   return true;
 }
 
-HRESULT WINAPI ProtocolSinkWrap::CheckOutgoingInterface(void* obj,
-    REFIID iid, LPVOID* ret, DWORD cookie) {
-  ProtocolSinkWrap* instance = reinterpret_cast<ProtocolSinkWrap*>(obj);
-  HRESULT hr = E_NOINTERFACE;
-  if (instance && instance->delegate_)
-    hr = instance->delegate_->QueryInterface(iid, ret);
-
-#ifndef NDEBUG
-  if (SUCCEEDED(hr)) {
-    wchar_t iid_string[64] = {0};
-    StringFromGUID2(iid, iid_string, arraysize(iid_string));
-    DLOG(INFO) << "Giving out wrapped interface: " << iid_string;
-  }
-#endif
-
-  return hr;
-}
-
-HRESULT WINAPI ProtocolSinkWrap::IfDelegateSupports(void* obj,
-    REFIID iid, LPVOID* ret, DWORD cookie) {
-  HRESULT hr = E_NOINTERFACE;
-  ProtocolSinkWrap* instance = reinterpret_cast<ProtocolSinkWrap*>(obj);
-  if (instance && instance->delegate_) {
-    ScopedComPtr<IUnknown> original;
-    hr = instance->delegate_->QueryInterface(iid,
-        reinterpret_cast<void**>(original.Receive()));
-    if (original) {
-      IUnknown* supported_interface = reinterpret_cast<IUnknown*>(
-          reinterpret_cast<DWORD_PTR>(obj) + cookie);
-      supported_interface->AddRef();
-      *ret = supported_interface;
-      hr = S_OK;
-    }
-  }
-
-  return hr;
-}
-
 // IInternetProtocolSink methods
 STDMETHODIMP ProtocolSinkWrap::Switch(PROTOCOLDATA* protocol_data) {
   HRESULT hr = E_FAIL;
@@ -282,7 +243,7 @@ STDMETHODIMP ProtocolSinkWrap::Switch(PROTOCOLDATA* protocol_data) {
 STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
     LPCWSTR status_text) {
   DLOG(INFO) << "ProtocolSinkWrap::ReportProgress: Code:" << status_code <<
-    " Text: " << (status_text ? status_text : L"");
+      " Text: " << (status_text ? status_text : L"");
   if ((BINDSTATUS_MIMETYPEAVAILABLE == status_code) ||
       (BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE == status_code)) {
     // If we have a MIMETYPE and that MIMETYPE is not "text/html". we don't
@@ -412,8 +373,8 @@ STDMETHODIMP ProtocolSinkWrap::ReportResult(HRESULT result, DWORD error,
 }
 
 // IInternetBindInfoEx
-STDMETHODIMP ProtocolSinkWrap::GetBindInfo(
-    DWORD* flags, BINDINFO* bind_info_ret) {
+STDMETHODIMP ProtocolSinkWrap::GetBindInfo(DWORD* flags,
+    BINDINFO* bind_info_ret) {
   ScopedComPtr<IInternetBindInfo> bind_info;
   HRESULT hr = bind_info.QueryFrom(delegate_);
   if (bind_info)
@@ -431,8 +392,8 @@ STDMETHODIMP ProtocolSinkWrap::GetBindString(ULONG string_type,
   return hr;
 }
 
-STDMETHODIMP ProtocolSinkWrap::GetBindInfoEx(DWORD *flags, BINDINFO* bind_info,
-    DWORD* bindf2, DWORD *reserved) {
+STDMETHODIMP ProtocolSinkWrap::GetBindInfoEx(DWORD* flags, BINDINFO* bind_info,
+    DWORD* bindf2, DWORD* reserved) {
   ScopedComPtr<IInternetBindInfoEx> bind_info_ex;
   HRESULT hr = bind_info_ex.QueryFrom(delegate_);
   if (bind_info_ex)
@@ -664,8 +625,7 @@ HRESULT ProtocolSinkWrap::WebBrowserFromProtocolSink(
 ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::MaybeWrapSink(
     IInternetProtocol* protocol, IInternetProtocolSink* prot_sink,
     const wchar_t* url) {
-  ScopedComPtr<IInternetProtocolSink> sink_to_use;
-  sink_to_use.QueryFrom(prot_sink);
+  ScopedComPtr<IInternetProtocolSink> sink_to_use(prot_sink);
   ScopedComPtr<IWebBrowser2> web_browser;
   WebBrowserFromProtocolSink(prot_sink, web_browser.Receive());
   if (web_browser) {

@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 // chrome_tab.cc : Implementation of DLL Exports.
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
+
+#include <atlsecurity.h>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -22,10 +28,6 @@
 #include "chrome_frame/chrome_launcher.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
-
-// Include without path to make GYP build see it.
-#include "chrome_tab.h"  // NOLINT
-#include <atlsecurity.h>
 
 static const wchar_t kBhoRegistryPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer"
@@ -148,6 +150,7 @@ const wchar_t kPostPlatformUAKey[] =
 const wchar_t kClockUserAgent[] = L"chromeframe";
 
 // To delete the clock user agent, set value to NULL.
+// TODO(tommi): Remove this method when it's no longer used.
 HRESULT SetClockUserAgent(const wchar_t* value) {
   HRESULT hr;
   RegKey ua_key;
@@ -214,12 +217,14 @@ HRESULT RegisterChromeTabBHO() {
   ie_bho_key.WriteValue(kBhoNoLoadExplorerValue, 1);
   DLOG(INFO) << "Registered ChromeTab BHO";
 
-  SetClockUserAgent(L"1");
+  // We now add the chromeframe user agent at runtime.
+  // SetClockUserAgent(L"1");
   RefreshElevationPolicy();
   return S_OK;
 }
 
 HRESULT UnregisterChromeTabBHO() {
+  // TODO(tommi): remove this in future versions.
   SetClockUserAgent(NULL);
 
   RegKey ie_bho_key;

@@ -4,7 +4,10 @@
 
 #include "chrome_frame/vtable_patch_manager.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 #include "chrome_frame/function_stub.h"
 
@@ -87,5 +90,73 @@ HRESULT UnpatchInterfaceMethods(MethodPatchInfo* patches) {
 
   return S_OK;
 }
+
+// Disabled for now as we're not using it atm.
+#if 0
+
+DynamicPatchManager::DynamicPatchManager(const MethodPatchInfo* patch_prototype)
+    : patch_prototype_(patch_prototype) {
+  DCHECK(patch_prototype_);
+  DCHECK(patch_prototype_->stub_ == NULL);
+}
+
+DynamicPatchManager::~DynamicPatchManager() {
+  UnpatchAll();
+}
+
+HRESULT DynamicPatchManager::PatchObject(void* unknown) {
+  int patched_methods = 0;
+  for (; patch_prototype_[patched_methods].index_ != -1; patched_methods++) {
+    // If you hit this, then you are likely using the prototype instance for
+    // patching in _addition_ to this class.  This is not a good idea :)
+    DCHECK(patch_prototype_[patched_methods].stub_ == NULL);
+  }
+
+  // Prepare a new patch object using the patch info from the prototype.
+  int mem_size = sizeof(PatchedObject) +
+                 sizeof(MethodPatchInfo) * patched_methods;
+  PatchedObject* entry = reinterpret_cast<PatchedObject*>(new char[mem_size]);
+  entry->vtable_ = GetIFVTable(unknown);
+  memcpy(entry->patch_info_, patch_prototype_,
+         sizeof(MethodPatchInfo) * (patched_methods + 1));
+
+  patch_list_lock_.Acquire();
+
+  // See if we've already patched this vtable before.
+  // The search is done via the == operator of the PatchedObject class.
+  PatchList::const_iterator it = std::find(patch_list_.begin(),
+                                           patch_list_.end(), entry);
+  HRESULT hr;
+  if (it == patch_list_.end()) {
+    hr = PatchInterfaceMethods(unknown, entry->patch_info_);
+    if (SUCCEEDED(hr)) {
+      patch_list_.push_back(entry);
+      entry = NULL;  // Ownership transferred to the array.
+    }
+  } else {
+    hr = S_FALSE;
+  }
+
+  patch_list_lock_.Release();
+
+  delete entry;
+
+  return hr;
+}
+
+bool DynamicPatchManager::UnpatchAll() {
+  patch_list_lock_.Acquire();
+  PatchList::iterator it;
+  for (it = patch_list_.begin(); it != patch_list_.end(); it++) {
+    UnpatchInterfaceMethods((*it)->patch_info_);
+    delete (*it);
+  }
+  patch_list_.clear();
+  patch_list_lock_.Release();
+
+  return true;
+}
+
+#endif  // disabled DynamicPatchManager
 
 }  // namespace vtable_patch

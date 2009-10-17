@@ -14,6 +14,7 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
+#include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/protocol_sink_wrap.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -214,6 +215,8 @@ void PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
   if (state_ != UNKNOWN)
     return;
 
+  HttpNegotiatePatch::Initialize();
+
   bool patch_protocol = GetConfigBool(true, kPatchProtocols);
   if (patch_protocol) {
     ProtocolSinkWrap::PatchProtocolHandlers();
@@ -236,6 +239,8 @@ void PatchHelper::UnpatchIfNeeded() {
   } else if (state_ == PATCH_IBROWSER_OK) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
   }
+
+  HttpNegotiatePatch::Uninitialize();
 
   state_ = UNKNOWN;
 }

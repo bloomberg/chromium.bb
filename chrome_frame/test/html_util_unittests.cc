@@ -23,6 +23,8 @@
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+const char kChromeFrameUserAgent[] = "chromeframe";
+
 class HtmlUtilUnittest : public testing::Test {
  protected:
   // Constructor
@@ -212,4 +214,98 @@ TEST_F(HtmlUtilUnittest, CloseTagInsideHTMLCommentTest) {
   HTMLScanner::StringRangeList tag_list;
   scanner.GetTagsByName(L"meta", &tag_list, L"body");
   ASSERT_TRUE(tag_list.empty());
+}
+
+TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
+  struct TestCase {
+    std::string input_;
+    std::string expected_;
+  } test_cases[] = {
+    {
+      "", ""
+    }, {
+      "Mozilla/4.7 [en] (WinNT; U)",
+      "Mozilla/4.7 [en] (WinNT; U) chromeframe/0.0"
+    }, {
+      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT)",
+      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT) chromeframe/0.0"
+    }, {
+      "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
+        ".NET CLR 1.1.4322)",
+      "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
+        ".NET CLR 1.1.4322) chromeframe/0.0"
+    }, {
+      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) Opera 5.11 [en]",
+      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) "
+          "Opera 5.11 [en] chromeframe/0.0"
+    }, {
+      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
+          "Gecko/20030208 Netscape/7.02",
+      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
+          "Gecko/20030208 Netscape/7.02 chromeframe/0.0"
+    }, {
+      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
+          "Firefox/0.8",
+      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
+          "Firefox/0.8 chromeframe/0.0"
+    }, {
+      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) (KHTML, like Gecko)",
+      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) "
+          "(KHTML, like Gecko) chromeframe/0.0"
+    }, {
+      "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.6h",
+      "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 "
+          "OpenSSL/0.9.6h chromeframe/0.0",
+    }, {
+      "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
+          "Gecko/20050716 Firefox/1.0.6",
+      "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
+          "Gecko/20050716 Firefox/1.0.6 chromeframe/0.0"
+    }, {
+      "Invalid/1.1 ((((((",
+      "Invalid/1.1 (((((( chromeframe/0.0",
+    }, {
+      "Invalid/1.1 ()))))",
+      "Invalid/1.1 ())))) chromeframe/0.0",
+    }, {
+      "Strange/1.1 ()",
+      "Strange/1.1 () chromeframe/0.0",
+    }
+  };
+
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    std::string new_ua(
+        http_utils::AddChromeFrameToUserAgentValue(test_cases[i].input_));
+    EXPECT_EQ(test_cases[i].expected_, new_ua);
+  }
+
+  // Now do the same test again, but test that we don't add the chromeframe
+  // tag if we've already added it.
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    std::string ua(test_cases[i].expected_);
+    std::string new_ua(http_utils::AddChromeFrameToUserAgentValue(ua));
+    EXPECT_EQ(test_cases[i].expected_, new_ua);
+  }
+}
+
+TEST_F(HtmlUtilUnittest, GetDefaultUserAgentHeaderWithCFTag) {
+  std::string ua(http_utils::GetDefaultUserAgentHeaderWithCFTag());
+  EXPECT_NE(0, ua.length());
+  EXPECT_NE(std::string::npos, ua.find("Mozilla"));
+  EXPECT_NE(std::string::npos, ua.find(kChromeFrameUserAgent));
+}
+
+TEST_F(HtmlUtilUnittest, GetDefaultUserAgent) {
+  std::string ua(http_utils::GetDefaultUserAgent());
+  EXPECT_NE(0, ua.length());
+  EXPECT_NE(std::string::npos, ua.find("Mozilla"));
+}
+
+TEST_F(HtmlUtilUnittest, GetChromeFrameUserAgent) {
+  const char* call1 = http_utils::GetChromeFrameUserAgent();
+  const char* call2 = http_utils::GetChromeFrameUserAgent();
+  // Expect static buffer since caller does no cleanup.
+  EXPECT_EQ(call1, call2);
+  std::string ua(call1);
+  EXPECT_EQ("chromeframe/0.0", ua);
 }

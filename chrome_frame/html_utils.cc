@@ -4,10 +4,14 @@
 //
 #include "chrome_frame/html_utils.h"
 
+#include <atlbase.h>
+#include <urlmon.h>
+
 #include "base/string_util.h"
 #include "base/string_tokenizer.h"
+#include "chrome_frame/utils.h"
 
-const wchar_t* kQuotes = L"\"'";
+const wchar_t kQuotes[] = L"\"'";
 
 HTMLScanner::StringRange::StringRange() {
 }
@@ -279,3 +283,73 @@ bool HTMLScanner::NextTag(StringRange* html_string, StringRange* tag) {
   return true;
 }
 
+namespace http_utils {
+
+const char kChromeFrameUserAgent[] = "chromeframe";
+
+const char* GetChromeFrameUserAgent() {
+  static char cf_user_agent[100] = {0};
+  if (!cf_user_agent[0]) {
+    _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
+    if (!cf_user_agent[0]) {
+      uint32 version = 0;
+      GetModuleVersion(reinterpret_cast<HMODULE>(&__ImageBase), &version, NULL);
+      wsprintfA(cf_user_agent, "%s/%i.%i", kChromeFrameUserAgent,
+                HIWORD(version), LOWORD(version));
+    }
+    _pAtlModule->m_csStaticDataInitAndTypeInfo.Unlock();
+  }
+  return cf_user_agent;
+}
+
+std::string AddChromeFrameToUserAgentValue(const std::string& value) {
+  if (value.empty()) {
+    DLOG(WARNING) << "empty user agent value";
+    return "";
+  }
+
+  DCHECK_EQ(false, StartsWithASCII(value, "User-Agent:", true));
+
+  if (value.find(kChromeFrameUserAgent) != std::string::npos) {
+    // Our user agent has already been added.
+    return value;
+  }
+
+  std::string ret(value);
+  ret += " ";
+  ret += GetChromeFrameUserAgent();
+
+  return ret;
+}
+
+std::string GetDefaultUserAgentHeaderWithCFTag() {
+  std::string ua(GetDefaultUserAgent());
+  return "User-Agent: " + AddChromeFrameToUserAgentValue(ua);
+}
+
+std::string GetDefaultUserAgent() {
+  std::string ret;
+  DWORD size = MAX_PATH;  // NOLINT
+  HRESULT hr = E_OUTOFMEMORY;
+  for (int retries = 1; hr == E_OUTOFMEMORY && retries <= 10; ++retries) {
+    hr = ::ObtainUserAgentString(0, WriteInto(&ret, size + 1), &size);
+    if (hr == E_OUTOFMEMORY) {
+      size = MAX_PATH * retries;
+    } else if (SUCCEEDED(hr)) {
+      // Truncate the extra allocation.
+      DCHECK(size > 0);  // NOLINT
+      ret.resize(size - sizeof(char));  // NOLINT
+    }
+  }
+
+  if (FAILED(hr)) {
+    NOTREACHED() << StringPrintf("ObtainUserAgentString==0x%08X", hr);
+    return "";
+  } else {
+    DCHECK(ret.length() == lstrlenA(ret.c_str()));
+  }
+
+  return ret;
+}
+
+}  // namespace http_utils
