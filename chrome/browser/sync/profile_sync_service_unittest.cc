@@ -20,11 +20,13 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/test/sync/test_http_bridge_factory.h"
 
 using std::vector;
 using browser_sync::ChangeProcessingInterface;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::TestHttpBridgeFactory;
 
 class TestModelAssociator : public ModelAssociator {
  public:
@@ -41,12 +43,11 @@ class TestModelAssociator : public ModelAssociator {
     // First, try to find a node with the title among the root's children.
     // This will be the case if we are testing model persistence, and
     // are reloading a sync repository created earlier in the test.
+    int64 last_child_id = sync_api::kInvalidId;
     for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
       sync_api::ReadNode child(&trans);
-      if (!child.InitByIdLookup(id)) {
-        NOTREACHED();
-        break;
-      }
+      child.InitByIdLookup(id);
+      last_child_id = id;
       if (tag == child.GetTitle()) {
         *sync_id = id;
         return true;
@@ -54,9 +55,15 @@ class TestModelAssociator : public ModelAssociator {
       id = child.GetSuccessorId();
     }
 
+    sync_api::ReadNode predecessor_node(&trans);
+    sync_api::ReadNode* predecessor = NULL;
+    if (last_child_id != sync_api::kInvalidId) {
+      predecessor_node.InitByIdLookup(last_child_id);
+      predecessor = &predecessor_node;
+    }
     sync_api::WriteNode node(&trans);
-    if (!node.InitByCreation(root, NULL))
-      return false;
+    // Create new fake tagged nodes at the end of the ordering.
+    node.InitByCreation(root, predecessor);
     node.SetIsFolder(true);
     node.SetTitle(tag.c_str());
     node.SetExternalId(0);
@@ -77,7 +84,9 @@ class TestProfileSyncService : public ProfileSyncService {
 
   virtual void InitializeBackend() {
     set_model_associator(new TestModelAssociator(this));
-    backend()->InitializeForTestMode(L"testuser");
+    TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
+    TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
+    backend()->InitializeForTestMode(L"testuser", factory, factory2);
     // The SyncBackend posts a task to the current loop when initialization
     // completes.
     MessageLoop::current()->Run();

@@ -121,7 +121,7 @@ ModelAssociator::ModelAssociator(ProfileSyncService* sync_service)
 void ModelAssociator::ClearAll() {
   id_map_.clear();
   id_map_inverse_.clear();
-  dirty_assocations_sync_ids_.clear();
+  dirty_associations_sync_ids_.clear();
 }
 
 int64 ModelAssociator::GetSyncIdFromBookmarkId(int64 node_id) const {
@@ -165,7 +165,7 @@ void ModelAssociator::AssociateIds(int64 node_id, int64 sync_id) {
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[node_id] = sync_id;
   id_map_inverse_[sync_id] = node_id;
-  dirty_assocations_sync_ids_.insert(sync_id);
+  dirty_associations_sync_ids_.insert(sync_id);
   PostPersistAssociationsTask();
 }
 
@@ -175,7 +175,7 @@ void ModelAssociator::DisassociateIds(int64 sync_id) {
     return;
   id_map_.erase(iter->second);
   id_map_inverse_.erase(iter);
-  dirty_assocations_sync_ids_.erase(sync_id);
+  dirty_associations_sync_ids_.erase(sync_id);
 }
 
 bool ModelAssociator::BookmarkModelHasUserCreatedNodes() const {
@@ -269,12 +269,12 @@ bool ModelAssociator::AssociateModels() {
 
   ClearAll();
 
-  // We couldn't load model assocations from persisted assocations. So build
+  // We couldn't load model associations from persisted associations. So build
   // them.
-  return BuildAssocations();
+  return BuildAssociations();
 }
 
-bool ModelAssociator::BuildAssocations() {
+bool ModelAssociator::BuildAssociations() {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -403,10 +403,10 @@ void ModelAssociator::PersistAssociations() {
   DCHECK(task_pending_);
   task_pending_ = false;
 
-  // If there are no dirty assocations we have nothing to do. We handle this
+  // If there are no dirty associations we have nothing to do. We handle this
   // explicity instead of letting the for loop do it to avoid creating a write
   // transaction in this case.
-  if (dirty_assocations_sync_ids_.empty()) {
+  if (dirty_associations_sync_ids_.empty()) {
     DCHECK(id_map_.empty());
     DCHECK(id_map_inverse_.empty());
     return;
@@ -414,9 +414,9 @@ void ModelAssociator::PersistAssociations() {
 
   sync_api::WriteTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
-  DirtyAssocationsSyncIds::iterator iter;
-  for (iter = dirty_assocations_sync_ids_.begin();
-       iter != dirty_assocations_sync_ids_.end();
+  DirtyAssociationsSyncIds::iterator iter;
+  for (iter = dirty_associations_sync_ids_.begin();
+       iter != dirty_associations_sync_ids_.end();
        ++iter) {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
@@ -430,32 +430,33 @@ void ModelAssociator::PersistAssociations() {
     else
       NOTREACHED();
   }
-  dirty_assocations_sync_ids_.clear();
+  dirty_associations_sync_ids_.clear();
 }
 
 bool ModelAssociator::LoadAssociations() {
   BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
   DCHECK(model->IsLoaded());
-  // If the bookmarks changed externally, our previous assocations may not be
+  // If the bookmarks changed externally, our previous associations may not be
   // valid; so return false.
   if (model->file_changed())
     return false;
 
-  // Our persisted assocations should be valid. Try to populate id assocation
-  // maps using persisted assocations.
-
-  int64 other_bookmarks_id;
-  if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
-                              &other_bookmarks_id)) {
-    // We should always be able to find the permanent nodes.
-    sync_service_->OnUnrecoverableError();
-    return false;
-  }
+  // Our persisted associations should be valid. Try to populate id association
+  // maps using persisted associations.  Note that the unit tests will
+  // create the tagged nodes on demand, and the order in which we probe for
+  // them here will impact their positional ordering in that case.
   int64 bookmark_bar_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kBookmarkBarTag), &bookmark_bar_id)) {
     // We should always be able to find the permanent nodes.
     sync_service_->OnUnrecoverableError();
     return false;
+  }
+  int64 other_bookmarks_id;
+  if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
+    &other_bookmarks_id)) {
+      // We should always be able to find the permanent nodes.
+      sync_service_->OnUnrecoverableError();
+      return false;
   }
 
   std::stack<int64> dfs_stack;

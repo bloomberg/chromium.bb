@@ -45,10 +45,12 @@ void SyncBackendHost::Initialize(const GURL& sync_service_url,
   if (!core_thread_.Start())
     return;
   bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
-  core_.get()->SetBaseRequestContext(baseline_context);
+
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
-                        sync_service_url, bookmark_model_worker_, true));
+                        sync_service_url, bookmark_model_worker_, true,
+                        new HttpBridgeFactory(baseline_context),
+                        new HttpBridgeFactory(baseline_context)));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
@@ -127,26 +129,9 @@ AuthErrorState SyncBackendHost::GetAuthErrorState() const {
   return last_auth_error_;
 }
 
-void SyncBackendHost::Core::SetBaseRequestContext(
-    URLRequestContext* request_context) {
-  DCHECK(base_request_context_ == NULL);
-  base_request_context_ = request_context;
-  // This ref is removed on the IO thread after the core thread is over.
-  base_request_context_->AddRef();
-}
-
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
-      base_request_context_(NULL),
       syncapi_(new sync_api::SyncManager()) {
-}
-
-SyncBackendHost::Core::~Core() {
-  if (base_request_context_) {
-    ChromeThread::GetMessageLoop(ChromeThread::IO)->ReleaseSoon(FROM_HERE,
-        base_request_context_);
-    base_request_context_ = NULL;
-  }
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by
@@ -179,7 +164,9 @@ std::string MakeUserAgentForSyncapi() {
 void SyncBackendHost::Core::DoInitialize(
     const GURL& service_url,
     BookmarkModelWorker* bookmark_model_worker,
-    bool attempt_last_user_authentication) {
+    bool attempt_last_user_authentication,
+    sync_api::HttpPostProviderFactory* http_provider_factory,
+    sync_api::HttpPostProviderFactory* auth_http_provider_factory) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
 
   // Make sure that the directory exists before initializing the backend.
@@ -200,8 +187,8 @@ void SyncBackendHost::Core::DoInitialize(
       kGaiaServiceId,
       kGaiaSourceForChrome,
       service_url.SchemeIsSecure(),
-      new HttpBridgeFactory(base_request_context_),
-      new HttpBridgeFactory(base_request_context_),
+      http_provider_factory,
+      auth_http_provider_factory,
       bookmark_model_worker,
       attempt_last_user_authentication,
       MakeUserAgentForSyncapi().c_str());

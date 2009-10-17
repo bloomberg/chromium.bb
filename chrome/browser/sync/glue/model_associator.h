@@ -4,8 +4,8 @@
 
 #if defined(BROWSER_SYNC)
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCATOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCATOR_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_H_
+#define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_H_
 
 #include <map>
 #include <set>
@@ -30,17 +30,17 @@ namespace browser_sync {
 
 class ChangeProcessor;
 
-// Contains all model assocation related logic:
+// Contains all model association related logic:
 // * Algorithm to associate bookmark model and sync model.
 // * Methods to get a bookmark node for a given sync node and vice versa.
-// * Persisting model assocations and loading them back.
+// * Persisting model associations and loading them back.
 class ModelAssociator
     : public base::RefCountedThreadSafe<ModelAssociator> {
  public:
   explicit ModelAssociator(ProfileSyncService* sync_service);
   virtual ~ModelAssociator() { }
 
-  // Clears all assocations.
+  // Clears all associations.
   void ClearAll();
 
   // Returns sync id for the given bookmark node id.
@@ -96,21 +96,21 @@ class ModelAssociator
  private:
   typedef std::map<int64, int64> BookmarkIdToSyncIdMap;
   typedef std::map<int64, int64> SyncIdToBookmarkIdMap;
-  typedef std::set<int64> DirtyAssocationsSyncIds;
+  typedef std::set<int64> DirtyAssociationsSyncIds;
 
-  // Posts a task to persist dirty assocations.
+  // Posts a task to persist dirty associations.
   void PostPersistAssociationsTask();
-  // Persists all dirty assocations.
+  // Persists all dirty associations.
   void PersistAssociations();
 
-  // Loads the persisted assocations into in-memory maps.
+  // Loads the persisted associations into in-memory maps.
   // If the persisted associations are out-of-date due to some reason, returns
-  // false; otehrwise returns true.
+  // false; otherwise returns true.
   bool LoadAssociations();
 
   // Matches up the bookmark model and the sync model to build model
-  // assocations.
-  bool BuildAssocations();
+  // associations.
+  bool BuildAssociations();
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is
@@ -128,7 +128,7 @@ class ModelAssociator
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkIdMap id_map_inverse_;
   // Stores sync ids for dirty associations.
-  DirtyAssocationsSyncIds dirty_assocations_sync_ids_;
+  DirtyAssociationsSyncIds dirty_associations_sync_ids_;
 
   // Indicates whether there is already a pending task to persist dirty model
   // associations.
@@ -139,5 +139,5 @@ class ModelAssociator
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCATOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_H_
 #endif  // defined(BROWSER_SYNC)

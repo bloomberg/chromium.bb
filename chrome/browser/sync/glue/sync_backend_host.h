@@ -117,15 +117,20 @@ class SyncBackendHost {
 #if defined(UNIT_TEST)
   // Called from unit test to bypass authentication and initialize the syncapi
   // to a state suitable for testing but not production.
-  void InitializeForTestMode(const std::wstring& test_user) {
+  void InitializeForTestMode(const std::wstring& test_user,
+                             sync_api::HttpPostProviderFactory* factory,
+                             sync_api::HttpPostProviderFactory* auth_factory) {
     if (!core_thread_.Start())
       return;
     bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
+
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
         &SyncBackendHost::Core::DoInitializeForTest,
         bookmark_model_worker_,
-        test_user));
+        test_user,
+        factory,
+        auth_factory));
   }
 #endif
 
@@ -135,12 +140,6 @@ class SyncBackendHost {
                public sync_api::SyncManager::Observer {
    public:
     explicit Core(SyncBackendHost* backend);
-
-    // Note: This destructor should *always* be called from the thread that
-    // created it, and *always* after core_thread_ has exited. The syncapi
-    // watches thread exit events and keeps pointers to objects this dtor will
-    // destroy, so this ordering is important.
-    ~Core();
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate
@@ -163,8 +162,10 @@ class SyncBackendHost {
     // Called on the SyncBackendHost core_thread_ to perform initialization
     // of the syncapi on behalf of SyncBackendHost::Initialize.
     void DoInitialize(const GURL& service_url,
-                      BookmarkModelWorker* bookmark_model_worker,
-                      bool attempt_last_user_authentication);
+        BookmarkModelWorker* bookmark_model_worker,
+        bool attempt_last_user_authentication,
+        sync_api::HttpPostProviderFactory* http_bridge_factory,
+        sync_api::HttpPostProviderFactory* auth_http_bridge_factory);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
@@ -185,9 +186,6 @@ class SyncBackendHost {
     // Set the base request context to use when making HTTP calls.
     // This method will add a reference to the context to persist it
     // on the IO thread. Must be removed from IO thread.
-    // TODO(chron): After HttpNetworkSession reorganization happens, try
-    //              getting HttpBridgeFactory to initialize earlier.
-    void SetBaseRequestContext(URLRequestContext* request_context);
 
     sync_api::SyncManager* syncapi() { return syncapi_.get(); }
 
@@ -196,8 +194,11 @@ class SyncBackendHost {
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a useable state.
     void DoInitializeForTest(BookmarkModelWorker* bookmark_model_worker,
-                             const std::wstring& test_user) {
-        DoInitialize(GURL(), bookmark_model_worker, false);
+                             const std::wstring& test_user,
+                             sync_api::HttpPostProviderFactory* factory,
+                             sync_api::HttpPostProviderFactory* auth_factory) {
+        DoInitialize(GURL(), bookmark_model_worker, false, factory,
+                     auth_factory);
         syncapi_->SetupForTestMode(WideToUTF16(test_user).c_str());
     }
 #endif
@@ -240,10 +241,6 @@ class SyncBackendHost {
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
-
-    // Our request context that we have to keep a ref to.
-    // Contains session data.
-    URLRequestContext* base_request_context_;
 
     // The timer used to periodically call SaveChanges.
     base::RepeatingTimer<Core> save_changes_timer_;

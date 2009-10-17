@@ -68,7 +68,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
    private:
     std::string user_agent_;
-    scoped_refptr<URLRequestContext> baseline_context_;
+    URLRequestContext* baseline_context_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };
