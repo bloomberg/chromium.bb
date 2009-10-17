@@ -134,6 +134,9 @@ struct CrashReporterInfo {
   std::wstring process_type;
 };
 
+// flag to indicate that we are already handling an exception.
+volatile LONG handling_exception = 0;
+
 // This callback is executed when the browser process has crashed, after
 // the crash dump has been created. We need to minimize the amount of work
 // done here since we have potentially corrupted process. Our job is to
@@ -143,6 +146,12 @@ struct CrashReporterInfo {
 bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
                       EXCEPTION_POINTERS* ex_info,
                       MDRawAssertionInfo*, bool) {
+  // Capture every thread except the first one in the sleep. We don't
+  // want multiple threads to concurrently execute the rest of the code.
+  if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
+    ::Sleep(INFINITE);
+  }
+
   // If the exception is because there was a problem loading a delay-loaded
   // module, then show the user a dialog explaining the problem and then exit.
   if (DelayLoadFailureExceptionMessageBox(ex_info))
