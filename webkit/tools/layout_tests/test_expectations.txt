@@ -2589,7 +2589,7 @@ BUG9798 LINUX RELEASE : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
 BUG9798 WIN RELEASE : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL PASS
 BUG9798 WIN SLOW : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
+BUG9798 LINUX MAC : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/interrupted-all-transition.html = FAIL PASS
 //also BUG24868 (crash)
@@ -2609,7 +2609,6 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-set-none.html = FAI
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
 BUG9798 LINUX SLOW : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 BUG9798 MAC : LayoutTests/fast/forms/search-placeholder-value-changed.html = CRASH PASS
-BUG9798 MAC : LayoutTests/transitions/extra-transition.html = CRASH PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
 BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = PASS TIMEOUT
 BUG9798 WIN : LayoutTests/media/video-src.html = PASS TIMEOUT
@@ -3153,7 +3152,7 @@ SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
-BUG24930 LINUX RELEASE : LayoutTests/editing/selection/editable-html-element.html = FAIL
+BUG24930 LINUX : LayoutTests/editing/selection/editable-html-element.html = FAIL
 BUG24930 MAC DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
 
 // WebKit Roll 49597:49640
