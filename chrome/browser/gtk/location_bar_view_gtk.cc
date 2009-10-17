@@ -698,7 +698,10 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(extension->GetResource(*iter));
+    tracker_->PostLoadImageTask(
+        extension->GetResource(*iter),
+        gfx::Size(Extension::kPageActionIconMaxSize,
+                  Extension::kPageActionIconMaxSize));
   }
 }
 

@@ -10,6 +10,10 @@
 class ExtensionResource;
 class SkBitmap;
 
+namespace gfx {
+class Size;
+}
+
 // The views need to load their icons asynchronously but might be deleted before
 // the images have loaded. This class stays alive while the request is in
 // progress (manages its own lifetime) and keeps track of whether the view still
@@ -44,8 +48,10 @@ class ImageLoadingTracker
 
   // Specify image resource to load.  This method must be called a number of
   // times equal to the |image_count| arugment to the constructor.  Calling it
-  // any more or less than that is an error.
-  void PostLoadImageTask(const ExtensionResource& resource);
+  // any more or less than that is an error. If the loaded image is larger than
+  // |max_size| it will be resized to those dimensions.
+  void PostLoadImageTask(const ExtensionResource& resource,
+                         const gfx::Size& max_size);
 
  private:
   class LoadImageTask;

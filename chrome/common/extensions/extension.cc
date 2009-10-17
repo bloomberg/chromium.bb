@@ -96,6 +96,9 @@ const int Extension::kIconSizes[] = {
   EXTENSION_ICON_BITTY
 };
 
+const int Extension::kPageActionIconMaxSize = 19;
+const int Extension::kBrowserActionIconMaxSize = 19;
+
 const char* Extension::kPermissionNames[] = {
   "tabs",
   "bookmarks",

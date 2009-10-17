@@ -1,0 +1,11 @@
+{
+  "name": "A browser action with a large icon",
+  "version": "1.0",
+  "permissions": [
+    "tabs", "http://*/*"
+  ],
+  "browser_action": {
+      "name": "Make this page red",
+      "icons": ["icon.png"]
+  }
+}

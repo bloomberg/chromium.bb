@@ -26,8 +26,8 @@
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 
-// The size of the icon for page actions.
-static const int kIconSize = 29;
+// The size (both dimensions) of the buttons for page actions.
+static const int kButtonSize = 29;
 
 // The padding between the browser actions and the omnibox/page menu.
 static const int kHorizontalPadding = 4;
@@ -139,7 +139,10 @@ BrowserActionButton::BrowserActionButton(
     tracker_ = new ImageLoadingTracker(this, icon_paths.size());
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      tracker_->PostLoadImageTask(extension->GetResource(*iter));
+      tracker_->PostLoadImageTask(
+          extension->GetResource(*iter),
+          gfx::Size(Extension::kBrowserActionIconMaxSize,
+                    Extension::kBrowserActionIconMaxSize));
     }
   }
 
@@ -291,8 +294,7 @@ BrowserActionView::BrowserActionView(ExtensionAction* browser_action,
 }
 
 void BrowserActionView::Layout() {
-  button_->SetBounds(0, kControlVertOffset, width(),
-                     height() - 2 * kControlVertOffset);
+  button_->SetBounds(0, kControlVertOffset, width(), kButtonSize);
 }
 
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
@@ -511,16 +513,16 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
   if (browser_action_views_.empty())
     return gfx::Size(0, 0);
   int width = kHorizontalPadding * 2 +
-      browser_action_views_.size() * kIconSize;
-  return gfx::Size(width, kIconSize);
+      browser_action_views_.size() * kButtonSize;
+  return gfx::Size(width, kButtonSize);
 }
 
 void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
     BrowserActionView* view = browser_action_views_[i];
-    int x = kHorizontalPadding + i * kIconSize;
-    if (x + kIconSize <= width()) {
-      view->SetBounds(x, 0, kIconSize, height());
+    int x = kHorizontalPadding + i * kButtonSize;
+    if (x + kButtonSize <= width()) {
+      view->SetBounds(x, 0, kButtonSize, height());
       view->SetVisible(true);
     } else {
       view->SetVisible(false);
@@ -573,12 +575,12 @@ int BrowserActionsContainer::GetClippedPreferredWidth(int available_width) {
   // We have at least one browser action. Make some of them sticky.
   int min_width = kHorizontalPadding * 2 +
       std::min(static_cast<int>(browser_action_views_.size()),
-               kMinimumNumberOfVisibleBrowserActions) * kIconSize;
+               kMinimumNumberOfVisibleBrowserActions) * kButtonSize;
 
   // Even if available_width is <= 0, we still return at least the |min_width|.
   if (available_width <= 0)
     return min_width;
 
-  return std::max(min_width, available_width - available_width % kIconSize +
+  return std::max(min_width, available_width - available_width % kButtonSize +
                   kHorizontalPadding * 2);
 }

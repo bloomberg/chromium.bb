@@ -65,6 +65,10 @@ class Extension {
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
 
+  // Max size (both dimensions) for browser and page actions.
+  static const int kPageActionIconMaxSize;
+  static const int kBrowserActionIconMaxSize;
+
   // Each permission is a module that the extension is permitted to use.
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;

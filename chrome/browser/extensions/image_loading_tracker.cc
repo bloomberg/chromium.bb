@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
-#include "app/gfx/favicon_size.h"
 #include "base/file_util.h"
+#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -27,14 +27,18 @@ class ImageLoadingTracker::LoadImageTask : public Task {
  public:
   // Constructor for the LoadImageTask class. |tracker| is the object that
   // we use to communicate back to the entity that wants the image after we
-  // decode it. |path| is the path to load the image from. |index| is an
-  // identifier for the image that we pass back to the caller.
+  // decode it. |path| is the path to load the image from. |max_size| is the
+  // maximum size for the loaded image. It will be resized to fit this if
+  // larger. |index| is an identifier for the image that we pass back to the
+  // caller.
   LoadImageTask(ImageLoadingTracker* tracker,
                 const ExtensionResource& resource,
+                const gfx::Size& max_size,
                 size_t index)
     : callback_loop_(MessageLoop::current()),
       tracker_(tracker),
       resource_(resource),
+      max_size_(max_size),
       index_(index) {}
 
   void ReportBack(SkBitmap* image) {
@@ -56,7 +60,7 @@ class ImageLoadingTracker::LoadImageTask : public Task {
     // Decode the image using WebKit's image decoder.
     const unsigned char* data =
         reinterpret_cast<const unsigned char*>(file_contents.data());
-    webkit_glue::ImageDecoder decoder(gfx::Size(kFavIconSize, kFavIconSize));
+    webkit_glue::ImageDecoder decoder;
     scoped_ptr<SkBitmap> decoded(new SkBitmap());
     *decoded = decoder.Decode(data, file_contents.length());
     if (decoded->empty()) {
@@ -64,15 +68,12 @@ class ImageLoadingTracker::LoadImageTask : public Task {
       return;  // Unable to decode.
     }
 
-    if (decoded->width() != kFavIconSize || decoded->height() != kFavIconSize) {
-      // The bitmap is not the correct size, re-sample.
-      int new_width = decoded->width();
-      int new_height = decoded->height();
-      // Calculate what dimensions to use within the constraints (16x16 max).
-      calc_favicon_target_size(&new_width, &new_height);
+    if (decoded->width() > max_size_.width() ||
+        decoded->height() > max_size_.height()) {
+      // The bitmap is too big, re-sample.
       *decoded = skia::ImageOperations::Resize(
           *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
-          new_width, new_height);
+          max_size_.width(), max_size_.height());
     }
 
     ReportBack(decoded.release());
@@ -88,6 +89,9 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   // The image resource to load asynchronously.
   ExtensionResource resource_;
 
+  // The max size for the loaded image.
+  gfx::Size max_size_;
+
   // The index of the icon being loaded.
   size_t index_;
 };
@@ -95,9 +99,10 @@ class ImageLoadingTracker::LoadImageTask : public Task {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker
 
-void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource) {
+void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource,
+                                            const gfx::Size& max_size) {
   MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
-  file_loop->PostTask(FROM_HERE, new LoadImageTask(this, resource,
+  file_loop->PostTask(FROM_HERE, new LoadImageTask(this, resource, max_size,
                                                    posted_count_++));
 }
 

@@ -41,8 +41,10 @@ class BrowserActionButton : public NotificationObserver,
     tracker_ = new ImageLoadingTracker(this, browser_action_icons_.size());
     for (size_t i = 0; i < extension->browser_action()->icon_paths().size();
          ++i) {
-      tracker_->PostLoadImageTask(extension->GetResource(
-          extension->browser_action()->icon_paths()[i]));
+      tracker_->PostLoadImageTask(
+          extension->GetResource(extension->browser_action()->icon_paths()[i]),
+          gfx::Size(Extension::kBrowserActionIconMaxSize,
+                    Extension::kBrowserActionIconMaxSize));
     }
 
     OnStateUpdated();
