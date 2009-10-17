@@ -4,17 +4,20 @@
 
 #include "chrome/browser/sync/notifier/base/async_dns_lookup.h"
 
-#ifdef POSIX
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#endif  // POSIX
+#endif  // defined(OS_POSIX)
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/base/nethelpers.h"
 #include "chrome/browser/sync/notifier/gaia_auth/inet_aton.h"

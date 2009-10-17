@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/notifier/listener/subscribe_task.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "talk/base/thread.h"
-#ifdef WIN32
+#if defined(OS_WIN)
 #include "talk/base/win32socketserver.h"
 #endif
 #include "talk/xmpp/xmppclient.h"
@@ -41,7 +41,7 @@ void MediatorThreadImpl::Run() {
   PlatformThread::SetName("SyncEngine_MediatorThread");
   // For win32, this sets up the win32socketserver. Note that it needs to
   // dispatch windows messages since that is what the win32 socket server uses.
-#ifdef WIN32
+#if defined(OS_WIN)
   scoped_ptr<talk_base::SocketServer> socket_server(
       new talk_base::Win32SocketServer(this));
   talk_base::SocketServer* old_socket_server = socketserver();
@@ -62,7 +62,7 @@ void MediatorThreadImpl::Run() {
 
   ProcessMessages(talk_base::kForever);
 
-#ifdef WIN32
+#if defined(OS_WIN)
   set_socketserver(old_socket_server);
   socket_server.reset();
 #endif

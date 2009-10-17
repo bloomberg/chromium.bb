@@ -21,7 +21,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/views/bookmark_editor_view.h"
 #include "chrome/browser/views/bookmark_folder_tree_view.h"
 #include "chrome/browser/views/bookmark_table_view.h"
@@ -31,19 +33,14 @@
 #include "grit/locale_settings.h"
 #include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "views/grid_layout.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/single_split_view.h"
+#include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
-
-#if defined(CHROME_PERSONALIZATION)
-#include "chrome/browser/options_window.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
-#endif
 
 // If non-null, there is an open editor and this is the window it is contained
 // in it.
@@ -168,7 +165,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
     : profile_(profile->GetOriginalProfile()),
       table_view_(NULL),
       tree_view_(NULL),
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
       sync_status_button_(NULL),
       sync_service_(NULL),
 #endif
@@ -210,7 +207,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
 #endif
@@ -229,7 +226,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   layout->StartRow(0, top_id);
   layout->AddView(organize_menu_button);
   layout->AddView(tools_menu_button);
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   sync_status_button_ = new views::TextButton(this, std::wstring());
   layout->AddView(sync_status_button_);
 #endif
@@ -249,7 +246,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   if (!bookmark_model->IsLoaded())
     bookmark_model->AddObserver(this);
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile_->GetProfileSyncService();
     sync_service_->AddObserver(this);
@@ -274,7 +271,7 @@ BookmarkManagerView::~BookmarkManagerView() {
   manager = NULL;
   open_window = NULL;
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
 #endif
@@ -386,7 +383,7 @@ void BookmarkManagerView::WindowClosing() {
       prefs::kBookmarkManagerSplitLocation, split_view_->divider_offset());
 }
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
 void BookmarkManagerView::OnStateChanged() {
   UpdateSyncStatus();
 }
@@ -524,7 +521,7 @@ void BookmarkManagerView::OnTreeViewKeyDown(unsigned short virtual_keycode) {
   }
 }
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
 void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
@@ -835,7 +832,7 @@ void BookmarkManagerView::ShowExportBookmarksFileChooser() {
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
 }
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
 void BookmarkManagerView::UpdateSyncStatus() {
   DCHECK(sync_service_);
   std::wstring status_label;
@@ -865,4 +862,4 @@ void BookmarkManagerView::OpenSyncMyBookmarksDialog() {
         ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
   }
 }
-#endif
+#endif  // defined(BROWSER_SYNC)

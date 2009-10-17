@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 
 // TODO(timsteele): Use base/file_path.h instead of PathString.
-#ifdef OS_WIN
+#if defined(OS_WIN)
 #define PATHSTRING_IS_STD_STRING 0
 typedef std::wstring PathString;
 

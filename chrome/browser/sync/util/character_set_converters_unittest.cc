@@ -35,7 +35,7 @@ TEST_F(CharacterSetConverterTest, ASCIIConversionTest) {
   ToPathString to_16(ascii);
   ASSERT_TRUE(to_16.good());
   ASSERT_TRUE(PathString(wide) == to_16.get_string16());
-#ifdef OS_WIN
+#if defined(OS_WIN)
   // On Linux, PathString is already UTF8
   ASSERT_EQ(string(ascii), static_cast<string>(ToUTF8(wide)));
 #endif
@@ -44,7 +44,7 @@ TEST_F(CharacterSetConverterTest, ASCIIConversionTest) {
   // ASSERT_TRUE(wide == ToPathString(utf8).get_string16());
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
   // On Linux, PathString is already UTF8
 TEST_F(CharacterSetConverterTest, UnicodeConversionText) {
   // Source data obtained by running od -b on files saved in utf-8 and unicode
@@ -78,7 +78,7 @@ TEST_F(CharacterSetConverterTest, UnicodeConversionText) {
   ASSERT_TRUE(wide == to_16.get_string16());
   ASSERT_EQ(string(utf8), reinterpret_cast<const string&>(ToUTF8(wide)));
 }
-#endif
+#endif  // defined(OS_WIN)
 
 TEST_F(CharacterSetConverterTest, AppendUTF8Tests) {
   PathString one = PSTR("one");
@@ -108,7 +108,7 @@ TEST_F(CharacterSetConverterTest, AppendPathStringTests) {
   ASSERT_TRUE(out == PathString(PSTR("onetwothree")));
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 namespace {
 // See http://en.wikipedia.org/wiki/UTF-16 for an explanation of UTF16.
 // For a test case we use the UTF-8 and UTF-16 encoding of char 119070

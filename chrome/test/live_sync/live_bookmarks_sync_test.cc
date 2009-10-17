@@ -1,7 +1,7 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 
@@ -96,4 +96,4 @@ void LiveBookmarksSyncTest::TearDownInProcessBrowserTestFixture() {
   mock_host_resolver_override_.reset();
 }
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

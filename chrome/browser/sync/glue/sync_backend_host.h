@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
@@ -114,7 +114,7 @@ class SyncBackendHost {
   // GAIA) has confirmed the username is authentic.
   string16 GetAuthenticatedUsername() const;
 
-#ifdef UNIT_TEST
+#if defined(UNIT_TEST)
   // Called from unit test to bypass authentication and initialize the syncapi
   // to a state suitable for testing but not production.
   void InitializeForTestMode(const std::wstring& test_user) {
@@ -191,7 +191,7 @@ class SyncBackendHost {
 
     sync_api::SyncManager* syncapi() { return syncapi_.get(); }
 
-#ifdef UNIT_TEST
+#if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a useable state.
@@ -290,4 +290,4 @@ class SyncBackendHost {
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

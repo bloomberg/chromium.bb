@@ -5,6 +5,7 @@
 // High resolution timer unit tests.
 
 #include "base/basictypes.h"
+#include "base/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/highres_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,20 +32,10 @@ TEST(HighresTimer, DISABLED_SecondClock) {
   HighresTimer timer;
 
   EXPECT_TRUE(0 == timer.GetElapsedSec());
-#ifdef OS_WIN
-  ::Sleep(250);
-#else
-  struct timespec ts1 = {0, 250000000};
-  nanosleep(&ts1, 0);
-#endif
+  PlatformThread::Sleep(250);
   EXPECT_TRUE(0 == timer.GetElapsedSec());
   EXPECT_TRUE(230 <= timer.GetElapsedMs());
   EXPECT_TRUE(270 >= timer.GetElapsedMs());
-#ifdef OS_WIN
-  ::Sleep(251);
-#else
-  struct timespec ts2 = {0, 251000000};
-  nanosleep(&ts2, 0);
-#endif
+  PlatformThread::Sleep(251);
   EXPECT_TRUE(1 == timer.GetElapsedSec());
 }

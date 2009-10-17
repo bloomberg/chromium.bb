@@ -758,7 +758,7 @@ ProfileImpl::~ProfileImpl() {
   prefs->RemovePrefObserver(prefs::kEnableSpellCheck, this);
   prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   sync_service_.reset();
 #endif
 
@@ -1398,7 +1398,7 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     if (!sync_service_.get())
       InitSyncService();
@@ -1409,7 +1409,7 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 }
 
 void ProfileImpl::InitSyncService() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   sync_service_.reset(new ProfileSyncService(this));
   sync_service_->Initialize();
 #endif

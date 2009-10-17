@@ -158,9 +158,9 @@
       }],  # OS=="mac"
       ['OS=="win" or OS=="mac"', {
         # Whether or not browser sync code is built in.
-        'chrome_personalization%': 1,
+        'browser_sync%': 1,
       }, {
-        'chrome_personalization%': 0,
+        'browser_sync%': 0,
       }],  # OS=="win"
       ['target_arch=="ia32"', {
         'nacl_defines': [
@@ -206,9 +206,11 @@
       ['OS=="linux" and toolkit_views==1', {'sources/': [
         ['include', '_views\\.cc$'],
       ]}],
-      ['(OS=="win" or OS=="mac") and chrome_personalization==1', {
-         'defines': ['CHROME_PERSONALIZATION=1'],
-      }],  # chrome_personalization==1
+      ['browser_sync==0', {'sources/': [
+        ['exclude', '^(browser/sync|browser/views/sync).*cc$'],
+      ]}, {'defines': [
+        'BROWSER_SYNC=1',
+      ]}],
     ],
   },
   'targets': [
@@ -4782,7 +4784,7 @@
             'common/net/url_util_unittest.cc',
           ],
         }],
-        ['chrome_personalization==1', {
+        ['browser_sync==1', {
           'sources!': [
             'browser/sync/profile_sync_service_unittest.cc',
           ]
@@ -4835,7 +4837,7 @@
       'target_name': 'syncapi',
 
       'conditions': [
-        ['chrome_personalization==0', {
+        ['browser_sync==0', {
           # Empty target.
           'type': 'none',
         }, {
@@ -6521,7 +6523,7 @@
         },
       ]
     }],
-    ['chrome_personalization==1', {
+    ['browser_sync==1', {
       # These targets get built only where sync is supported.
       'targets': [
         {
@@ -6891,7 +6893,7 @@
             }],
           ],
         },
-      ],  # targets when chrome_personalization==1
+      ],  # targets when browser_sync==1
     }],
   ],  # 'conditions'
 }

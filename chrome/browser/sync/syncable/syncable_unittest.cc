@@ -1088,7 +1088,7 @@ TEST(Syncable, ComparePathNames) {
   }
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 TEST(Syncable, PathNameMatch) {
   // basic stuff, not too many otherwise we're testing the os.
   EXPECT_TRUE(PathNameMatch(PSTR("bob"), PSTR("bob")));
@@ -1111,7 +1111,7 @@ TEST(Syncable, PathNameMatch) {
   // other whitespace should give no matches.
   EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("\tbob")));
 }
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 void FakeSync(MutableEntry* e, const char* fake_id) {
   e->Put(IS_UNSYNCED, false);

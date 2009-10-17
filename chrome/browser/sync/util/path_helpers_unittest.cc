@@ -65,7 +65,7 @@ TEST(PathHelpersTest, PathStrutil) {
 }
 
 TEST(PathHelpersTest, SanitizePathComponent) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   EXPECT_EQ(MakePathComponentOSLegal(L"bar"), L"");
   EXPECT_EQ(MakePathComponentOSLegal(L"bar <"), L"bar");
   EXPECT_EQ(MakePathComponentOSLegal(L"bar.<"), L"bar");
@@ -117,7 +117,7 @@ TEST(PathHelpersTest, SanitizePathComponent) {
   EXPECT_EQ(MakePathComponentOSLegal(L"<.<"), L"~1");
   EXPECT_EQ(MakePathComponentOSLegal(L"<.<txt"), L".txt");
   EXPECT_EQ(MakePathComponentOSLegal(L"txt<.<"), L"txt");
-#else  // OS_WIN
+#else  // !defined(OS_WIN)
 
   EXPECT_EQ(MakePathComponentOSLegal("bar"), "");
   EXPECT_EQ(MakePathComponentOSLegal("b"), "");
@@ -126,7 +126,7 @@ TEST(PathHelpersTest, SanitizePathComponent) {
   EXPECT_EQ(MakePathComponentOSLegal("/"), ":");
   EXPECT_EQ(MakePathComponentOSLegal(":"), "");
 
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 }
 
 }  // namespace syncable

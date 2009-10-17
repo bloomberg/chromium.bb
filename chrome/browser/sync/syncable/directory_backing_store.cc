@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -75,7 +75,7 @@ static void PathNameMatch16WithEscape(sqlite3_context* context,
 #endif
 
 static void RegisterPathNameCollate(sqlite3* dbhandle) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   const int collate = SQLITE_UTF16;
 #else
   const int collate = SQLITE_UTF8;
@@ -93,7 +93,7 @@ static void RegisterPathNameMatch(sqlite3* dbhandle) {
   // comparison on mac, so that would have to be fixed if
   // we really wanted to use PathNameMatch on mac/linux w/ the
   // same pattern strings as we do on windows.
-#ifdef OS_WIN
+#if defined(OS_WIN)
   CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",
       2, SQLITE_ANY, NULL, &PathNameMatch16, NULL, NULL));
   CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",

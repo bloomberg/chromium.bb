@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "chrome/browser/sync/glue/model_associator.h"
 
@@ -509,4 +509,4 @@ bool ModelAssociator::LoadAssociations() {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

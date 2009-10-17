@@ -43,7 +43,7 @@ class BookmarkManagerView : public views::View,
                             public views::TreeViewController,
                             public views::ViewMenuDelegate,
                             public views::WindowDelegate,
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
                             public views::ButtonListener,
                             public ProfileSyncServiceObserver,
 #endif
@@ -94,7 +94,7 @@ class BookmarkManagerView : public views::View,
   //virtual bool ShouldShowWindowIcon() const { return true; }
   virtual void WindowClosing();
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 #endif
@@ -118,7 +118,7 @@ class BookmarkManagerView : public views::View,
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
   virtual void OnTreeViewKeyDown(unsigned short virtual_keycode);
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 #endif
@@ -213,7 +213,7 @@ class BookmarkManagerView : public views::View,
   void ShowImportBookmarksFileChooser();
   void ShowExportBookmarksFileChooser();
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   void UpdateSyncStatus();
   void OpenSyncMyBookmarksDialog();
 #endif
@@ -229,7 +229,7 @@ class BookmarkManagerView : public views::View,
   // Import/export file dialog.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
-#if defined(CHROME_PERSONALIZATION)
+#if defined(BROWSER_SYNC)
   // The sync status button that notifies the user about the current status of
   // bookmarks synchronization.
   views::TextButton* sync_status_button_;

@@ -20,7 +20,7 @@ extern const PathChar* const kPathSeparator;
 // Returns 0 on success, non-zero on failure.
 int PathRemove(const PathString& path);
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 inline int PathRemove(const PathString& path) {
   return _wremove(path.c_str());
 }

@@ -118,7 +118,7 @@ class EventChannel {
 
     // Make sure all the listeners have been disconnected. Otherwise, they
     // will try to call RemoveListener() at a later date.
-#ifdef DEBUG
+#if defined(DEBUG)
     AutoLock lock(listeners_mutex_);
     for (typename Listeners::iterator i = listeners_.begin();
          i != listeners_.end(); ++i) {

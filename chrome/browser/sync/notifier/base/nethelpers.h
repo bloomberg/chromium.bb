@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_BASE_NETHELPERS_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_BASE_NETHELPERS_H_
 
-#ifdef POSIX
+#include "base/basictypes.h"
+
+#if defined(OS_POSIX)
 #include <cstddef>
 #include <netdb.h>
-#elif WIN32
+#elif defined(OS_WIN)
 #include <winsock2.h>
 #endif
 

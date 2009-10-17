@@ -202,7 +202,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 }
 
 void TestingProfile::CreateProfileSyncService() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (!profile_sync_service_.get()) {
     profile_sync_service_.reset(new ProfileSyncService(this));
     profile_sync_service_->Initialize();
@@ -211,7 +211,7 @@ void TestingProfile::CreateProfileSyncService() {
 }
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   return profile_sync_service_.get();
 #endif
   return NULL;

@@ -105,7 +105,7 @@ class MessageThread {
   bool starred() const;
   bool unread() const;
 
-#ifdef _DEBUG
+#if defined(DEBUG)
   void AssertValid() const;
 #else
   inline void AssertValid() const {}

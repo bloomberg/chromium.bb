@@ -38,7 +38,7 @@ class FastAlloc {
 
  private:
   void freeBuffer() {
-#ifdef DEBUG
+#if defined(DEBUG)
     memset(buffer_, 0xCC, size_ * sizeof(T));
 #endif
 

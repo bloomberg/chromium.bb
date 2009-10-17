@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 
@@ -114,4 +114,4 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
   return result_type;
 }
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

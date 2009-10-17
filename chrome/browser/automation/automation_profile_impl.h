@@ -172,7 +172,7 @@ class AutomationProfileImpl : public Profile {
     return original_profile_->GetDesktopNotificationService();
   }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   virtual ProfileSyncService* GetProfileSyncService() {
     return original_profile_->GetProfileSyncService();
   }

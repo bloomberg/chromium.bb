@@ -27,7 +27,7 @@ class PrefService;
 // ContentPageView
 
 class ContentPageView : public OptionsPageView,
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
                         public views::LinkController,
                         public ProfileSyncServiceObserver,
 #endif
@@ -46,7 +46,7 @@ class ContentPageView : public OptionsPageView,
   // ConfirmMessageBoxObserver implementation.
   virtual void OnConfirmMessageAccept();
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 #endif
@@ -60,7 +60,7 @@ class ContentPageView : public OptionsPageView,
   virtual void Layout();
 
  private:
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Updates various sync controls based on the current sync state.
   void UpdateSyncControls();
 
@@ -78,7 +78,7 @@ class ContentPageView : public OptionsPageView,
   void InitFormAutofillGroup();
   void InitBrowsingDataGroup();
   void InitThemesGroup();
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   void InitSyncGroup();
 #endif
 
@@ -104,7 +104,7 @@ class ContentPageView : public OptionsPageView,
   views::NativeButton* import_button_;
   views::NativeButton* clear_data_button_;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Controls for the Sync group.
   OptionsGroupView* sync_group_;
   views::Label* sync_status_label_;
@@ -116,7 +116,7 @@ class ContentPageView : public OptionsPageView,
   BooleanPrefMember ask_to_save_form_autofill_;
   StringPrefMember is_using_default_theme_;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date
   // and NULL-ed out on destruction.
   ProfileSyncService* sync_service_;

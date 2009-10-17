@@ -43,6 +43,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/status_bubble.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -58,9 +59,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/profile_sync_service.h"
-#endif
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1184,7 +1182,7 @@ void Browser::OpenImportSettingsDialog() {
   window_->ShowImportDialog();
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 void Browser::OpenSyncMyBookmarksDialog() {
   ProfileSyncService* service = profile_->GetProfileSyncService();
   // TODO(timsteele): Incognito has no sync service for the time being,
@@ -1198,7 +1196,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_WRENCH);
   }
 }
-#endif
+#endif  // defined(BROWSER_SYNC)
 
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(L"AboutChrome", profile_);
@@ -1441,7 +1439,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                 break;
     case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                break;
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
 #endif
     case IDC_OPTIONS:               OpenOptionsDialog();           break;

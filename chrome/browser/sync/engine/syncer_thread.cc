@@ -5,7 +5,7 @@
 
 #include "build/build_config.h"
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
 #include <CoreFoundation/CFNumber.h>
 #include <IOKit/IOTypes.h>
 #include <IOKit/IOKitLib.h>
@@ -37,7 +37,7 @@ namespace {
 // Returns the amount of time since the user last interacted with the computer,
 // in milliseconds
 int UserIdleTime() {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   LASTINPUTINFO last_input_info;
   last_input_info.cbSize = sizeof(LASTINPUTINFO);
 

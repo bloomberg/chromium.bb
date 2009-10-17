@@ -1132,7 +1132,7 @@ void ToolbarView::CreateAppMenu() {
   }
 
   app_menu_contents_->AddSeparator();
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     std::wstring label;
     std::wstring link;

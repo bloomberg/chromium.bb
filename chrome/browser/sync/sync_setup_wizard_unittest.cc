@@ -1,7 +1,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -373,4 +373,4 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 }
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

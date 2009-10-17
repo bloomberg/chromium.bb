@@ -7,7 +7,7 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_INET_ATON_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_INET_ATON_H_
 
-#ifdef WIN32
+#if defined(OS_WIN)
 int inet_aton(const char* cp, struct in_addr* inp);
 #endif
 

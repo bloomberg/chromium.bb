@@ -501,7 +501,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<WebResourceService> web_resource_service_;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   scoped_ptr<ProfileSyncService> sync_service_;
 #endif
 

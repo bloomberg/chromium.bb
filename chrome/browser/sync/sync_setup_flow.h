@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
 #define CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
@@ -186,4 +186,4 @@ class FlowHandler : public DOMMessageHandler {
 };
 
 #endif  // CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

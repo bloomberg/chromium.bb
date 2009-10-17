@@ -5,7 +5,7 @@
 
 #include "build/build_config.h"
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
 #include <CoreFoundation/CFNumber.h>
 #include <IOKit/IOTypes.h>
 #include <IOKit/IOKitLib.h>

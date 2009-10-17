@@ -28,6 +28,8 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/sync/auth_error_state.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -59,12 +61,9 @@
 #include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 #endif
 
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/auth_error_state.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#if defined(BROWSER_SYNC)
 using sync_api::SyncManager;
 #endif
-
 
 using base::Time;
 using base::TimeDelta;
@@ -470,7 +469,7 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   return output;
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 static void AddBoolSyncDetail(ListValue* details, const std::wstring& stat_name,
                               bool stat_value) {
   DictionaryValue* val = new DictionaryValue;
@@ -561,7 +560,7 @@ std::string AboutSync() {
   return jstemplate_builder::GetTemplateHtml(
       sync_html, &strings , "t" /* template root node id */);
 }
-#endif
+#endif  // defined(BROWSER_SYNC)
 
 // AboutSource -----------------------------------------------------------------
 
@@ -625,7 +624,7 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kTermsPath) {
     response = AboutTerms();
   } else if (path == kSyncPath) {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
     response = AboutSync();
 #endif
   }

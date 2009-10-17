@@ -205,7 +205,7 @@ class TestingProfile : public Profile {
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   scoped_ptr<ProfileSyncService> profile_sync_service_;
 #endif
 

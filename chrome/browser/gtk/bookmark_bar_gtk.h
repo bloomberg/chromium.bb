@@ -32,7 +32,7 @@ class TabstripOriginProvider;
 struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
                        public ProfileSyncServiceObserver,
 #endif
                        public BookmarkModelObserver,
@@ -251,7 +251,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,
                                     BookmarkBarGtk* window);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
@@ -307,7 +307,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // The sync re-login indicator which appears when the user needs to re-enter
   // credentials in order to continue syncing.
   GtkWidget* sync_error_button_;

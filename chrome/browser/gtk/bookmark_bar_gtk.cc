@@ -118,7 +118,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       model_(NULL),
       instructions_label_(NULL),
       instructions_(NULL),
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
       sync_error_button_(NULL),
       sync_service_(NULL),
 #endif
@@ -129,7 +129,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       menu_bar_helper_(this),
       floating_(false),
       last_allocation_width_(-1) {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
@@ -156,7 +156,7 @@ BookmarkBarGtk::~BookmarkBarGtk() {
   bookmark_toolbar_.Destroy();
   event_box_.Destroy();
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
 #endif
@@ -266,7 +266,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(vseparator, "expose-event",
                    G_CALLBACK(OnSeparatorExpose), this);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   sync_error_button_ = theme_provider_->BuildChromeButton();
   ConnectFolderButtonEvents(sync_error_button_);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
@@ -336,7 +336,7 @@ void BookmarkBarGtk::Hide(bool animate) {
   }
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 void BookmarkBarGtk::OnStateChanged() {
   // TODO(zork): TODO
 }

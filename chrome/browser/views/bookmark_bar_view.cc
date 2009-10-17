@@ -112,7 +112,7 @@ static const SkColor kInstructionsColor = SkColorSetRGB(128, 128, 142);
 // Tag for the 'Other bookmarks' button.
 static const int kOtherFolderButtonTag = 1;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 // Tag for the sync error button.
 static const int kSyncErrorButtonTag = 2;
 #endif
@@ -368,7 +368,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       other_bookmarked_button_(NULL),
       model_changed_listener_(NULL),
       show_folder_drop_menu_task_(NULL),
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
       sync_error_button_(NULL),
       sync_service_(NULL),
 #endif
@@ -377,7 +377,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       bookmarks_separator_view_(NULL),
       browser_(browser),
       throbbing_view_(NULL) {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
@@ -402,9 +402,9 @@ BookmarkBarView::~BookmarkBarView() {
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
 
-#ifdef CHROME_PERSONALIZATION
-if (sync_service_)
-  sync_service_->RemoveObserver(this);
+#if defined(BROWSER_SYNC)
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 #endif
 }
 
@@ -464,7 +464,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
   }
 
   int sync_error_total_width = 0;
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
   if (ShouldShowSyncErrorButton())
     sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
@@ -716,7 +716,7 @@ void BookmarkBarView::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 void BookmarkBarView::OnStateChanged() {
   // When the sync state changes, it is sufficient to invoke View::Layout since
   // during layout we query the profile sync service and determine whether the
@@ -730,7 +730,7 @@ void BookmarkBarView::OnStateChanged() {
   Layout();
   SchedulePaint();
 }
-#endif
+#endif  // defined(BROWSER_SYNC)
 
 void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
   if (!fullscreen)
@@ -811,7 +811,7 @@ void BookmarkBarView::Init() {
   other_bookmarked_button_ = CreateOtherBookmarkedButton();
   AddChildView(other_bookmarked_button_);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   sync_error_button_ = CreateSyncErrorButton();
   AddChildView(sync_error_button_);
 #endif
@@ -870,7 +870,7 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // We contain at least four non-bookmark button views: other bookmarks,
   // bookmarks separator, chevrons (for overflow), the instruction label and
   // the sync error button.
@@ -1125,7 +1125,7 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
                                     const views::Event& event) {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Show the login wizard if the user clicked the re-login button.
   if (sender->tag() == kSyncErrorButtonTag) {
     DCHECK(sender == sync_error_button_);
@@ -1589,21 +1589,17 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   gfx::Size bookmarks_separator_pref =
       bookmarks_separator_view_->GetPreferredSize();
 
-#ifdef CHROME_PERSONALIZATION
+  int sync_error_total_width = 0;
+#if defined(BROWSER_SYNC)
   gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
   const bool should_show_sync_error_button = ShouldShowSyncErrorButton();
-  int sync_error_total_width = 0;
   if (should_show_sync_error_button) {
     sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
   }
-  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
-              overflow_pref.width() - kButtonPadding -
-              bookmarks_separator_pref.width() - sync_error_total_width;
-#else
-  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
-              overflow_pref.width() - kButtonPadding -
-              bookmarks_separator_pref.width();
 #endif
+  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
+      overflow_pref.width() - kButtonPadding -
+      bookmarks_separator_pref.width() - sync_error_total_width;
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
   // visible region and made invisible.
@@ -1669,7 +1665,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   }
   x += other_bookmarked_pref.width() + kButtonPadding;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Set the real bounds of the sync error button only if it needs to appear on
   // the bookmarks bar.
   if (should_show_sync_error_button) {
@@ -1684,7 +1680,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     sync_error_button_->SetBounds(x, y, 0, height);
     sync_error_button_->SetVisible(false);
   }
-#endif
+#endif  // defined(BROWSER_SYNC)
 
   // Set the preferred size computed so far.
   if (compute_bounds_only) {
@@ -1704,7 +1700,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   return prefsize;
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 // The sync state reported by the profile sync service determines whether or
 // not the re-login indicator button should be visible.
 bool BookmarkBarView::ShouldShowSyncErrorButton() {
@@ -1738,5 +1734,5 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;
 }
-#endif
+#endif  // defined(BROWSER_SYNC)
 

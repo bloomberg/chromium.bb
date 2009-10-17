@@ -195,7 +195,7 @@ bool MessageThread::unread() const {
   return (labels_->find("^u") != labels_->end());
 }
 
-#ifdef _DEBUG
+#if defined(DEBUG)
 // Non-debug version is inline and empty.
 void MessageThread::AssertValid() const {
   assert(thread_id_ != 0);

@@ -35,7 +35,7 @@ namespace {
 const int kPasswordSavingRadioGroup = 1;
 const int kFormAutofillRadioGroup = 2;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 // Background color for the status label when it's showing an error.
 static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
 
@@ -59,7 +59,7 @@ ContentPageView::ContentPageView(Profile* profile)
       browsing_data_group_(NULL),
       import_button_(NULL),
       clear_data_button_(NULL),
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
       sync_group_(NULL),
       sync_status_label_(NULL),
       sync_action_link_(NULL),
@@ -67,7 +67,7 @@ ContentPageView::ContentPageView(Profile* profile)
       sync_service_(NULL),
 #endif
       OptionsPageView(profile) {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
@@ -76,7 +76,7 @@ ContentPageView::ContentPageView(Profile* profile)
 }
 
 ContentPageView::~ContentPageView() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
 #endif
@@ -125,7 +125,7 @@ void ContentPageView::ButtonPressed(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
       new ClearBrowsingDataView(profile()))->Show();
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   } else if (sender == sync_start_stop_button_) {
     DCHECK(sync_service_);
 
@@ -157,7 +157,7 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
         GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
     return;
   }
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   DCHECK_EQ(source, sync_action_link_);
   DCHECK(sync_service_);
   sync_service_->ShowLoginDialog();
@@ -180,7 +180,7 @@ void ContentPageView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (sync_service_) {
     layout->StartRow(0, single_column_view_set_id);
     InitSyncGroup();
@@ -243,7 +243,7 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
 // ContentsPageView, views::View overrides:
 
 void ContentPageView::Layout() {
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (is_initialized())
     UpdateSyncControls();
 #endif
@@ -255,7 +255,7 @@ void ContentPageView::Layout() {
       0, 0, passwords_group_->GetContentsWidth(), 0);
   browsing_data_label_->SetBounds(
       0, 0, browsing_data_group_->GetContentsWidth(), 0);
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   if (is_initialized()) {
     sync_status_label_->SetBounds(
         0, 0, sync_group_->GetContentsWidth(), 0);
@@ -268,7 +268,7 @@ void ContentPageView::Layout() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentsPageView, ProfileSyncServiceObserver implementation:
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 void ContentPageView::OnStateChanged() {
   // If the UI controls are not yet initialized, then don't do anything. This
   // can happen if the Options dialog is up, but the Content tab is not yet
@@ -437,7 +437,7 @@ void ContentPageView::OnConfirmMessageAccept() {
   ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
 }
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 void ContentPageView::InitSyncGroup() {
   sync_status_label_ = new views::Label;
   sync_status_label_->SetMultiLine(true);
@@ -502,4 +502,4 @@ void ContentPageView::UpdateSyncControls() {
   }
 }
 
-#endif
+#endif  // defined(BROWSER_SYNC)

@@ -21,7 +21,7 @@ const time64 kMaxTime100ns = UINT64_C(9223372036854775807);
 
 // Time difference in 100NS granularity between platform-dependent starting
 // time and Jan 1, 1970.
-#ifdef WIN32
+#if defined(OS_WIN)
 // On Windows time64 is seconds since Jan 1, 1601.
 #define kStart100NsTimeToEpoch (116444736000000000uI64)
 #else

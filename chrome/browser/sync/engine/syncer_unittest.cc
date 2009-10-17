@@ -935,7 +935,7 @@ TEST_F(SyncerTest, UpdateWithZeroLengthName) {
   syncer_->SyncShare();
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 TEST_F(SyncerTest, NameSanitizationWithClientRename) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());

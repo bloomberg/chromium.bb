@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "build/build_config.h"
 #include "base/file_version_info.h"
@@ -326,4 +326,4 @@ void SyncBackendHost::Core::SaveChanges() {
 
 }  // namespace browser_sync
 
-#endif
+#endif  // defined(BROWSER_SYNC)

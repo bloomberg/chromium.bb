@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
@@ -131,4 +131,4 @@ class BookmarkModelWorker
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)

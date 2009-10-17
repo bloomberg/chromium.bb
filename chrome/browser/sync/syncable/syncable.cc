@@ -7,12 +7,12 @@
 #include "build/build_config.h"
 
 #include <sys/stat.h>
-#ifdef OS_POSIX
+#if defined(OS_POSIX)
 #include <sys/time.h>
 #endif
 #include <sys/types.h>
 #include <time.h>
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(OS_WIN)
 #include <shlwapi.h>  // for PathMatchSpec
@@ -70,7 +70,7 @@ using std::string;
 namespace syncable {
 
 int64 Now() {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   FILETIME filetime;
   SYSTEMTIME systime;
   GetSystemTime(&systime);
@@ -94,7 +94,7 @@ int64 Now() {
 // Callback for sqlite3
 int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
                        const void* b) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   DCHECK_EQ(0, a_bytes % 2);
   DCHECK_EQ(0, b_bytes % 2);
   int result = CompareString(LOCALE_INVARIANT, NORM_IGNORECASE,
@@ -238,7 +238,7 @@ Directory::~Directory() {
 }
 
 BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   // Note that if we go Vista only this is easier:
   // http://msdn2.microsoft.com/en-us/library/ms628611.aspx
 
@@ -1729,7 +1729,7 @@ void DBName::MakeNoncollidingForEntry(BaseTransaction* trans,
 
 PathString GetFullPath(BaseTransaction* trans, const Entry& e) {
   PathString result;
-#ifdef COMPILER_MSVC
+#if defined(COMPILER_MSVC)
   result.reserve(MAX_PATH);
 #endif
   ReverseAppend(e.Get(NAME), &result);

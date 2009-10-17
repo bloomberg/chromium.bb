@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/platform_thread.h"
 #include "base/port.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
@@ -223,12 +224,7 @@ class ThreadTester : public EventListener<TestEvent>,
     remove_event_mutex_.Release();
     remove_event_.Broadcast();
 
-    // Windows and posix use different functions to sleep.
-#ifdef OS_WIN
-    Sleep(1);
-#else
-    sleep(1);
-#endif
+    PlatformThread::Sleep(1);
 
     for (size_t i = 0; i < threads_.size(); i++) {
       if (threads_[i].completed)

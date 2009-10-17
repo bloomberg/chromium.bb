@@ -390,7 +390,7 @@ class Browser : public TabStripModelDelegate,
   void OpenOptionsDialog();
   void OpenKeywordEditor();
   void OpenPasswordManager();
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   void OpenSyncMyBookmarksDialog();
 #endif
   void OpenImportSettingsDialog();

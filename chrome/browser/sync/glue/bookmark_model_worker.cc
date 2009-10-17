@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
 
@@ -111,5 +111,4 @@ void BookmarkModelWorker::CallDoWorkAndSignalTask::Run() {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_PERSONALIZATION
-
+#endif  // defined(BROWSER_SYNC)

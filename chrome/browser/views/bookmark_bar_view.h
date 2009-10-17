@@ -35,7 +35,7 @@ class MenuItemView;
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
 class BookmarkBarView : public DetachableToolbarView,
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
                         public ProfileSyncServiceObserver,
 #endif
                         public BookmarkModelObserver,
@@ -117,7 +117,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 #endif
@@ -403,7 +403,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // Determines whether the sync error button should appear on the bookmarks
   // bar.
   bool ShouldShowSyncErrorButton();
@@ -443,7 +443,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Used to track drops on the bookmark bar view.
   scoped_ptr<DropInfo> drop_info_;
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
   // The sync re-login indicator which appears when the user needs to re-enter
   // credentials in order to continue syncing.
   views::TextButton* sync_error_button_;

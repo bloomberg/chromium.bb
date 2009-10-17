@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef CHROME_PERSONALIZATION
+#if defined(BROWSER_SYNC)
 
 #ifndef CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
 #define CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
@@ -113,4 +113,4 @@ class BookmarkModelVerifier {
 
 #endif  // CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
 
-#endif  // CHROME_PERSONALIZATION
+#endif  // defined(BROWSER_SYNC)
