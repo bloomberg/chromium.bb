@@ -552,6 +552,24 @@ nouveau_bo_busy(struct nouveau_bo *bo, uint32_t access)
 	return nouveau_bo_wait(bo, (access & NOUVEAU_BO_WR), 1, 1);
 }
 
+uint32_t
+nouveau_bo_pending(struct nouveau_bo *bo)
+{
+	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
+	uint32_t flags;
+
+	if (!nvbo->pending)
+		return 0;
+
+	flags = 0;
+	if (nvbo->pending->read_domains)
+		flags |= NOUVEAU_BO_RD;
+	if (nvbo->pending->write_domains)
+		flags |= NOUVEAU_BO_WR;
+
+	return flags;
+}
+
 struct drm_nouveau_gem_pushbuf_bo *
 nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 {

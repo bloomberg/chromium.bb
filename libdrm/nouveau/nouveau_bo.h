@@ -106,4 +106,7 @@ nouveau_bo_unpin(struct nouveau_bo *);
 int
 nouveau_bo_busy(struct nouveau_bo *, uint32_t access);
 
+uint32_t
+nouveau_bo_pending(struct nouveau_bo *);
+
 #endif
