@@ -18,6 +18,12 @@
 // caller must own the object it gives to scoped_nsobject<>, and relinquishes
 // an ownership claim to that object.  scoped_nsobject<> does not call
 // -retain.
+//
+// scoped_nsobject<> is not to be used for NSAutoreleasePools. For
+// NSAutoreleasePools use ScopedNSAutoreleasePool from
+// scoped_nsautorelease_pool.h instead.
+// We check for bad uses of scoped_nsobject and NSAutoreleasePool at compile
+// time with a template specialization (see below).
 template<typename NST>
 class scoped_nsobject {
  public:
@@ -32,6 +38,11 @@ class scoped_nsobject {
   }
 
   void reset(NST* object = nil) {
+    // We intentionally do not check that object != object_ as the caller must
+    // already have an ownership claim over whatever it gives to scoped_nsobject
+    // and scoped_cftyperef, whether it's in the constructor or in a call to
+    // reset().  In either case, it relinquishes that claim and the scoper
+    // assumes it.
     [object_ release];
     object_ = object;
   }
@@ -88,6 +99,11 @@ class scoped_nsobject<id> {
   }
 
   void reset(id object = nil) {
+    // We intentionally do not check that object != object_ as the caller must
+    // already have an ownership claim over whatever it gives to scoped_nsobject
+    // and scoped_cftyperef, whether it's in the constructor or in a call to
+    // reset().  In either case, it relinquishes that claim and the scoper
+    // assumes it.
     [object_ release];
     object_ = object;
   }
@@ -126,6 +142,16 @@ class scoped_nsobject<id> {
  private:
   id object_;
 
+  DISALLOW_COPY_AND_ASSIGN(scoped_nsobject);
+};
+
+// Do not use scoped_nsobject for NSAutoreleasePools, use
+// ScopedNSAutoreleasePool instead. This is a compile time check. See details
+// at top of header.
+template<>
+class scoped_nsobject<NSAutoreleasePool> {
+ private:
+  explicit scoped_nsobject(NSAutoreleasePool* object = nil);
   DISALLOW_COPY_AND_ASSIGN(scoped_nsobject);
 };
 
