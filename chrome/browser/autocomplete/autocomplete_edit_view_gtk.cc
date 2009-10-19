@@ -500,8 +500,14 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_changed_, just_deleted_text, at_end_of_edit);
 
+  // If only selection was changed, we don't need to call |controller_|'s
+  // OnChanged() method, which is called in TextChanged().
+  // But we still need to call EmphasizeURLComponents() to make sure the text
+  // attributes are updated correctly.
   if (something_changed && text_changed_)
     TextChanged();
+  else if (selection_differs)
+    EmphasizeURLComponents();
 
   return something_changed;
 }
@@ -730,6 +736,10 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
     button_1_pressed_ = true;
     text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
     text_selected_during_click_ = false;
+
+    // Button press event may change the selection, we need to record the change
+    // and report it to |model_| later when button is released.
+    OnBeforePossibleChange();
   } else if (event->button == 2) {
     // GtkTextView pastes PRIMARY selection with middle click.
     // We can't call model_->on_paste_replacing_all() here, because the actual
@@ -765,6 +775,9 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
     gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
   }
 
+  // Inform |model_| about possible text selection change.
+  OnAfterPossibleChange();
+
   return TRUE;  // Don't continue, we called the default handler already.
 }
 
@@ -790,23 +803,40 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
     GtkMovementStep step,
     gint count,
     gboolean extend_selection) {
+  GtkTextIter sel_start, sel_end;
+  gboolean has_selection =
+      gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
+
   // We want the GtkEntry behavior when you move the cursor while you have a
   // selection.  GtkTextView just drops the selection and moves the cursor, but
   // instead we want to move the cursor to the appropiate end of the selection.
-  GtkTextIter sstart, send;
-  if (step == GTK_MOVEMENT_VISUAL_POSITIONS &&
-      !extend_selection &&
-      (count == 1 || count == -1) &&
-      gtk_text_buffer_get_selection_bounds(text_buffer_, &sstart, &send)) {
+  if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection &&
+      (count == 1 || count == -1) && has_selection) {
     // We have a selection and start / end are in ascending order.
-    gtk_text_buffer_place_cursor(text_buffer_, count == 1 ? &send : &sstart);
+    // Cursor placement will remove the selection, so we need inform |model_|
+    // about this change by calling On{Before|After}PossibleChange() methods.
+    OnBeforePossibleChange();
+    gtk_text_buffer_place_cursor(text_buffer_,
+                                 count == 1 ? &sel_end : &sel_start);
+    OnAfterPossibleChange();
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
     model_->OnUpOrDownKeyPressed(model_->result().size() * count);
   } else if (step == GTK_MOVEMENT_DISPLAY_LINES) {  // Arrow up and down.
     model_->OnUpOrDownKeyPressed(count);
   } else {
-    return;  // Propagate into GtkTextView
+    // Cursor movement may change the selection, we need to record the change
+    // and report it to |model_|.
+    if (has_selection || extend_selection)
+      OnBeforePossibleChange();
+
+    // Propagate into GtkTextView
+    GtkTextViewClass* klass = GTK_TEXT_VIEW_GET_CLASS(text_view_);
+    klass->move_cursor(GTK_TEXT_VIEW(text_view_), step, count,
+                       extend_selection);
+
+    if (has_selection || extend_selection)
+      OnAfterPossibleChange();
   }
 
   // move-cursor doesn't use a signal accumulator on the return value (it
