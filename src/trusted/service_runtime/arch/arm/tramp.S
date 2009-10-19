@@ -44,9 +44,9 @@
 
 
   .text
-  .globl  IDENTIFIER(NaCl_trampoline_seg_code)
-  .globl  IDENTIFIER(NaCl_trampoline_seg_end)
 
+.globl  IDENTIFIER(NaCl_trampoline_seg_code)
+  HIDDEN(NaCl_trampoline_seg_code)
 IDENTIFIER(NaCl_trampoline_seg_code):
 /*
  * ARM passes parameters to a callee in registers r0-r3. If there are more
@@ -84,5 +84,6 @@ IDENTIFIER(NaCl_trampoline_seg_code):
   NACL_HALT
 
   .word   NaClSyscallSeg
+.globl  IDENTIFIER(NaCl_trampoline_seg_end)
+  HIDDEN(NaCl_trampoline_seg_end)
 IDENTIFIER(NaCl_trampoline_seg_end):
-

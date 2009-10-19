@@ -120,12 +120,22 @@
 #define NACL_TRAMPOLINE_END     (NACL_TRAMPOLINE_START + NACL_TRAMPOLINE_SIZE)
 /*
  * macros to provide uniform access to identifiers from assembly due
- * to different C -> asm name mangling convention
+ * to different C -> asm name mangling conventions and other platform-specific
+ * requirements
  */
 #if NACL_WINDOWS || NACL_OSX
 # define IDENTIFIER(n)  _##n
 #else /* Linux */
 # define IDENTIFIER(n)  n
+#endif
+
+#if NACL_OSX
+# define HIDDEN(n)  .private_extern IDENTIFIER(n)
+#elif NACL_LINUX
+# define HIDDEN(n)  .hidden IDENTIFIER(n)
+#else /* Windows */
+/* On Windows, symbols are hidden by default. */
+# define HIDDEN(n)
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86

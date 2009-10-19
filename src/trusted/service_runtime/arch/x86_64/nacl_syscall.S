@@ -40,11 +40,8 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-        .globl  IDENTIFIER(nacl_user)
-        .globl  IDENTIFIER(nacl_sys)
-
-        .globl  IDENTIFIER(NaClSyscallCSegHook)
-        .globl  IDENTIFIER(NaClSyscallSeg)
+.globl  IDENTIFIER(NaClSyscallSeg)
+        HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
         /*
          * As far as we know, glibc-derived code always explicitly clears

@@ -39,8 +39,7 @@
  */
 
 .globl  IDENTIFIER(NaClReadTP_start)
-.globl  IDENTIFIER(NaClReadTP_end)
-
+  HIDDEN(NaClReadTP_start)
 IDENTIFIER(NaClReadTP_start):
 
   /* r9 keeps the TLS_IDX which is concatenation of a tdb pointer and index in
@@ -62,5 +61,6 @@ IDENTIFIER(NaClReadTP_start):
 #endif
   bx lr
 
+.globl  IDENTIFIER(NaClReadTP_end)
+  HIDDEN(NaClReadTP_end)
 IDENTIFIER(NaClReadTP_end):
-

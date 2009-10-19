@@ -32,7 +32,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
   .text
-  .globl  IDENTIFIER(NaClSwitch)
+.globl  IDENTIFIER(NaClSwitch)
+  HIDDEN(NaClSwitch)
 IDENTIFIER(NaClSwitch):
 
   /*
@@ -57,4 +58,3 @@ IDENTIFIER(NaClSwitch):
   ldmia r0!, {r4, r5, r6, r7, r8, r9, r10, fp, sp}
   add r0, #4 /* skip prog_ctr in struct NaClThreadContext */
   ldmia r0, {r0, r1, pc}
-

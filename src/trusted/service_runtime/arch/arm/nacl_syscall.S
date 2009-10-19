@@ -50,12 +50,8 @@
  * arg N
  */
 
-  .globl  IDENTIFIER(nacl_user)
-  .globl  IDENTIFIER(nacl_sys)
-
-  .globl  IDENTIFIER(NaClSyscallCSegHook)
-  .globl  IDENTIFIER(NaClSyscallSeg)
-
+.globl  IDENTIFIER(NaClSyscallSeg)
+  HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
 
   push {lr}

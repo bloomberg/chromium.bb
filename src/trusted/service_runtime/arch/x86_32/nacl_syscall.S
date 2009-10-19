@@ -51,11 +51,8 @@
  *  RA for trampoline lcall (used to compute syscall number)
  */
 
-        .globl  IDENTIFIER(nacl_user)
-        .globl  IDENTIFIER(nacl_sys)
-
-        .globl  IDENTIFIER(NaClSyscallCSegHook)
-        .globl  IDENTIFIER(NaClSyscallSeg)
+.globl  IDENTIFIER(NaClSyscallSeg)
+        HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
         /*
          * Visual Studio "protects" the stack in compiler generated prolog

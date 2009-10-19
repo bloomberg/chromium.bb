@@ -40,24 +40,28 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-	.text
-	.globl	IDENTIFIER(NaCl_trampoline_seg_code)
-	.globl	IDENTIFIER(NaCl_tramp_dseg_patch)
-	.globl	IDENTIFIER(NaCl_tramp_cseg_patch)
-	.globl	IDENTIFIER(NaCl_trampoline_seg_end)
+        .text
+.globl IDENTIFIER(NaCl_trampoline_seg_code)
+        HIDDEN(NaCl_trampoline_seg_code)
 IDENTIFIER(NaCl_trampoline_seg_code):
-	movl	$0xdeadbeef, %eax
+        movl    $0xdeadbeef, %eax
+.globl IDENTIFIER(NaCl_tramp_dseg_patch)
+        HIDDEN(NaCl_tramp_dseg_patch)
 IDENTIFIER(NaCl_tramp_dseg_patch):
-	mov	%eax, %ds  /* remove data sandbox */
-	lcall	$0xcafe, $0xdeadbeef
-	/* trampoline installer will s/0xdeadbeef/NaClSyscallSeg/ */
+        mov     %eax, %ds  /* remove data sandbox */
+        lcall   $0xcafe, $0xdeadbeef
+        /* trampoline installer will s/0xdeadbeef/NaClSyscallSeg/ */
+.globl IDENTIFIER(NaCl_tramp_cseg_patch)
+        HIDDEN(NaCl_tramp_cseg_patch)
 IDENTIFIER(NaCl_tramp_cseg_patch):
-	ret
+        ret
+.globl IDENTIFIER(NaCl_trampoline_seg_end)
 IDENTIFIER(NaCl_trampoline_seg_end):
 
-	.globl	IDENTIFIER(NaCl_text_prot)
-	.globl	IDENTIFIER(NaCl_text_prot_end)
-
+.globl IDENTIFIER(NaCl_text_prot)
+        HIDDEN(NaCl_text_prot)
 IDENTIFIER(NaCl_text_prot):
-	hlt
+        hlt
+.globl IDENTIFIER(NaCl_text_prot_end)
+        HIDDEN(NaCl_text_prot_end)
 IDENTIFIER(NaCl_text_prot_end):

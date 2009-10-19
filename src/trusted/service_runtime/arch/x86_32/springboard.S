@@ -42,14 +42,13 @@
          * region.
          */
 
-        .globl  IDENTIFIER(NaCl_springboard)
-        .globl  IDENTIFIER(NaCl_springboard_end)
-
         /*
-         * NaCl_pringboard is used for syscall return and any time we want
+         * NaCl_springboard is used for syscall return and any time we want
          * to do an upcall into NaCl application.
          */
 
+.globl  IDENTIFIER(NaCl_springboard)
+        HIDDEN(NaCl_springboard)
 IDENTIFIER(NaCl_springboard):
         hlt  /* one byte */
         /* syscall return value, if any, from trusted stack */
@@ -57,4 +56,6 @@ IDENTIFIER(NaCl_springboard):
         lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
         mov     0x28(%ecx), %ds /* ds */
         jmp     *%edx
+.globl  IDENTIFIER(NaCl_springboard_end)
+        HIDDEN(NaCl_springboard_end)
 IDENTIFIER(NaCl_springboard_end):

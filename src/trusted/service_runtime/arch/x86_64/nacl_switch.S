@@ -38,7 +38,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
         .text
-        .globl  IDENTIFIER(NaClSwitch)
+.globl  IDENTIFIER(NaClSwitch)
+        HIDDEN(NaClSwitch)
 IDENTIFIER(NaClSwitch):
 #if NACL_LINUX || NACL_OSX
         /* if Linux/OSX, 1st param is in %rdi. move %rdi to %rcx */

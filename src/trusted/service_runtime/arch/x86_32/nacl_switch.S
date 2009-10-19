@@ -36,7 +36,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
         .text
-        .globl  IDENTIFIER(NaClSwitch)
+.globl  IDENTIFIER(NaClSwitch)
+        HIDDEN(NaClSwitch)
 IDENTIFIER(NaClSwitch):
         popl    %eax /* throw away the return addr */
 

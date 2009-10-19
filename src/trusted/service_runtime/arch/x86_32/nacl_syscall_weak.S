@@ -43,6 +43,7 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-        .globl  IDENTIFIER(NaClSyscallSeg)
+.globl  IDENTIFIER(NaClSyscallSeg)
+        HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
          hlt

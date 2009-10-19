@@ -40,14 +40,13 @@
    * loaded by NaClLoadSpringboard() (sel_ldr.c).
    */
 
-  .globl  IDENTIFIER(NaCl_springboard)
-  .globl  IDENTIFIER(NaCl_springboard_end)
-
   /*
    * NaCl_springboard is used for syscall return and any time we want
    * to do an upcall into NaCl application.
    */
 
+.globl  IDENTIFIER(NaCl_springboard)
+  HIDDEN(NaCl_springboard)
 IDENTIFIER(NaCl_springboard):
   /*
    * r0 -- syscall return value
@@ -74,4 +73,6 @@ IDENTIFIER(NaCl_springboard):
   bic r1, r1, #0xF000000F
 #endif
   bx r1
+.globl  IDENTIFIER(NaCl_springboard_end)
+  HIDDEN(NaCl_springboard_end)
 IDENTIFIER(NaCl_springboard_end):
