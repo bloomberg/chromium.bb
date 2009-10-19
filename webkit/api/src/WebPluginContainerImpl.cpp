@@ -350,11 +350,23 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
         containingFrame->document()->setFocusedNode(m_element);
     }
 
-    // TODO(pkasting): http://b/1119691 This conditional seems exactly
-    // backwards, but it matches Safari's code, and if I reverse it, giving
-    // focus to a transparent (windowless) plugin fails.
     WebCursorInfo cursorInfo;
-    if (!m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+    bool handled = m_webPlugin->handleInputEvent(webEvent, cursorInfo);
+#if !PLATFORM(DARWIN)
+    // TODO(pkasting): http://b/1119691 This conditional seems exactly
+    // backwards, but if I reverse it, giving focus to a transparent
+    // (windowless) plugin fails.
+    handled = !handled;
+    // TODO(awalker): oddly, the above is not true in Mac builds.  Looking
+    // at Apple's corresponding code for Mac and Windows (PluginViewMac and
+    // PluginViewWin), setDefaultHandled() gets called when handleInputEvent()
+    // returns true, which then indicates to WebCore that the plugin wants to
+    // swallow the event--which is what we want.  Calling setDefaultHandled()
+    // fixes several Mac Chromium bugs, but does indeed prevent windowless plugins
+    // from getting focus in Windows builds, as pkasting notes above.  So for
+    // now, we only do so in Mac builds.
+#endif
+    if (handled)
         event->setDefaultHandled();
 
     // A windowless plugin can change the cursor in response to a mouse move
@@ -369,9 +381,13 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
-    // TODO(pkasting): http://b/1119691 See above.
     WebCursorInfo cursor_info;
-    if (!m_webPlugin->handleInputEvent(webEvent, cursor_info))
+    bool handled = m_webPlugin->handleInputEvent(webEvent, cursor_info);
+#if !PLATFORM(DARWIN)
+    // TODO(pkasting): http://b/1119691 See above.
+    handled = !handled;
+#endif
+    if (handled)
         event->setDefaultHandled();
 }
 

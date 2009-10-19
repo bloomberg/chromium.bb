@@ -237,12 +237,20 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
         type = KeyDown;
     else if (event.type() == eventNames().keyupEvent)
         type = WebInputEvent::KeyUp;
+    else if (event.type() == eventNames().keypressEvent)
+        type = WebInputEvent::Char;
     else
         return; // Skip all other keyboard events.
     modifiers = getWebInputModifiers(event);
     timeStampSeconds = event.timeStamp() * 1.0e-3;
     windowsKeyCode = event.keyCode();
     nativeKeyCode = event.keyEvent()->nativeVirtualKeyCode();
+    unsigned int numChars = std::min(event.keyEvent()->text().length(),
+        static_cast<unsigned int>(WebKeyboardEvent::textLengthCap));
+    for (unsigned int i = 0; i < numChars; i++) {
+        text[i] = event.keyEvent()->text()[i];
+        unmodifiedText[i] = event.keyEvent()->unmodifiedText()[i];
+    }
 }
 
 } // namespace WebKit
