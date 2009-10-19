@@ -51,10 +51,11 @@ void ShowBookmarkManagerView(Profile* profile) {
   BookmarkManagerGtk::Show(profile);
 }
 
-void ShowAboutChromeView(views::Widget* parent,
-                         Profile* profile) {
-  ShowAboutDialogForProfile(GTK_WINDOW(parent->GetNativeView()), profile);
+#if not defined(OS_CHROMEOS)
+void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
+  ShowAboutDialogForProfile(parent, profile);
 }
+#endif
 
 void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
                         HtmlDialogUIDelegate* delegate) {

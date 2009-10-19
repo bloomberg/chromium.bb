@@ -206,6 +206,9 @@ class Font {
   // The default font, used for the default constructor.
   static Font* default_font_;
 
+  // The average width of a character, initialized and cached if needed.
+  double avg_width();
+
   // These two both point to the same SkTypeface. We use the SkAutoUnref to
   // handle the reference counting, but without @typeface_ we would have to
   // cast the SkRefCnt from @typeface_helper_ every time.
@@ -221,7 +224,7 @@ class Font {
   // Cached metrics, generated at construction
   int height_;
   int ascent_;
-  int avg_width_;
+  double avg_width_;
 #elif defined(OS_MACOSX)
   explicit Font(const std::wstring& font_name, int font_size, int style);
 

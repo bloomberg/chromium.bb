@@ -2894,6 +2894,10 @@
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
               'sources/': [
+                ['include', 'browser/views/about_chrome_view.cc'],
+                ['include', 'browser/views/about_chrome_view.h'],
+                ['exclude', 'browser/gtk/about_chrome_dialog.cc'],
+                ['exclude', 'browser/gtk/about_chrome_dialog.h'],
                 ['include', 'browser/views/new_browser_window_widget.cc'],
                 ['include', 'browser/views/new_browser_window_widget.h'],
                 ['include', 'browser/views/options/options_page_view.cc'],

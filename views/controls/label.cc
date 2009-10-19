@@ -100,6 +100,14 @@ gfx::Size Label::GetPreferredSize() {
 
 int Label::ComputeMultiLineFlags() {
   int flags = gfx::Canvas::MULTI_LINE;
+ #if !defined(OS_WIN)
+    // Don't ellide multiline labels on Linux.
+    // Todo(davemoore): Do we depend on elliding multiline text?
+    // Pango insists on limiting the number of lines to one if text is
+    // ellided. You can get around this if you can pass a maximum height
+    // but we don't currently have that data when we call the pango code.
+    flags |= gfx::Canvas::NO_ELLIPSIS;
+ #endif
   if (allow_character_break_)
     flags |= gfx::Canvas::CHARACTER_BREAK;
   switch (horiz_alignment_) {

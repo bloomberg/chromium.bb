@@ -69,22 +69,14 @@ Font::Font(SkTypeface* tf, const std::wstring& font_family, int font_size,
 void Font::calculateMetrics() {
   SkPaint paint;
   SkPaint::FontMetrics metrics;
-
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
   ascent_ = SkScalarCeil(-metrics.fAscent);
   height_ = ascent_ + SkScalarCeil(metrics.fDescent);
+  // avg_width_ is calculated lazily, as it's expensive and not used often.
+  avg_width_ = -1.0;
 
-  if (metrics.fAvgCharWidth) {
-    avg_width_ = SkScalarRound(metrics.fAvgCharWidth);
-  } else {
-    static const char x_char = 'x';
-    paint.setTextEncoding(SkPaint::kUTF8_TextEncoding);
-    SkScalar width = paint.measureText(&x_char, 1);
-
-    avg_width_ = static_cast<int>(ceilf(SkScalarToFloat(width)));
-  }
 }
 
 void Font::CopyFont(const Font& other) {
@@ -108,7 +100,7 @@ int Font::baseline() const {
 }
 
 int Font::ave_char_width() const {
-  return avg_width_;
+  return SkScalarRound(const_cast<Font*>(this)->avg_width());
 }
 
 Font Font::CreateFont(const std::wstring& font_family, int font_size) {
@@ -176,10 +168,35 @@ int Font::GetStringWidth(const std::wstring& text) const {
   return width;
 }
 
-int Font::GetExpectedTextWidth(int length) const {
-  return length * avg_width_;
+double Font::avg_width() {
+  if (avg_width_ < 0) {
+    // First get the pango based width
+    PangoFontDescription* pango_desc = gfx::Font::PangoFontFromGfxFont(*this);
+    PangoContext* context =
+        gdk_pango_context_get_for_screen(gdk_screen_get_default());
+    PangoFontMetrics* pango_metrics =
+        pango_context_get_metrics(context,
+                                  pango_desc,
+                                  pango_language_get_default());
+    double pango_width =
+        pango_font_metrics_get_approximate_char_width(pango_metrics);
+    pango_width /= PANGO_SCALE;
+
+    // Yes, this is how Microsoft recommends calculating the dialog unit
+    // conversions.
+    int text_width = GetStringWidth(
+        L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    double dialog_units = (text_width / 26 + 1) / 2;
+
+    avg_width_ = std::min(pango_width, dialog_units);
+  }
+  return avg_width_;
 }
 
+int Font::GetExpectedTextWidth(int length) const {
+  double char_width = const_cast<Font*>(this)->avg_width();
+  return round(static_cast<float>(length) * char_width);
+}
 
 int Font::style() const {
   return style_;

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/about_chrome_view.h"
 
-#include <commdlg.h>
-
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "base/i18n/word_iterator.h"
@@ -13,13 +11,10 @@
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/installer/util/install_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -30,6 +25,14 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_WIN)
+#include <commdlg.h>
+
+#include "base/win_util.h"
+#include "chrome/browser/views/restart_message_box.h"
+#include "chrome/installer/util/install_util.h"
+#endif
 
 namespace {
 // The pixel width of the version text field. Ideally, we'd like to have the
@@ -63,9 +66,10 @@ std::wstring StringSubRange(const std::wstring& text, size_t start,
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowAboutChromeView(views::Widget* parent,
+void ShowAboutChromeView(gfx::NativeWindow parent,
                          Profile* profile) {
-  views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
+  views::Window::CreateChromeWindow(parent,
+                                    gfx::Rect(),
                                     new AboutChromeView(profile))->Show();
 }
 
@@ -82,17 +86,19 @@ AboutChromeView::AboutChromeView(Profile* profile)
       copyright_label_(NULL),
       main_text_label_(NULL),
       main_text_label_height_(0),
-      terms_of_service_url_(NULL),
       chromium_url_(NULL),
       open_source_url_(NULL),
-      chromium_url_appears_first_(true),
+      terms_of_service_url_(NULL),
       check_button_status_(CHECKBUTTON_HIDDEN),
+      chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
   DCHECK(profile);
   Init();
 
+#if defined(OS_WIN)
   google_updater_ = new GoogleUpdate();
   google_updater_->AddStatusChangeListener(this);
+#endif
 
   if (kBackgroundBmp == NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -101,10 +107,12 @@ AboutChromeView::AboutChromeView(Profile* profile)
 }
 
 AboutChromeView::~AboutChromeView() {
+#if defined(OS_WIN)
   // The Google Updater will hold a pointer to us until it reports status, so we
   // need to let it know that we will no longer be listening.
   if (google_updater_)
     google_updater_->RemoveStatusChangeListener();
+#endif
 }
 
 void AboutChromeView::Init() {
@@ -165,19 +173,19 @@ void AboutChromeView::Init() {
   about_title_label_ = new views::Label(
       l10n_util::GetString(IDS_PRODUCT_NAME));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(18, BOLD_FONTTYPE));
+      ResourceBundle::BaseFont).DeriveFont(18, gfx::Font::BOLD));
   about_title_label_->SetColor(SK_ColorBLACK);
   AddChildView(about_title_label_);
 
   // This is a text field so people can copy the version number from the dialog.
   version_label_ = new views::Textfield();
-  version_label_->SetText(current_version_);
+  version_label_->SetText(WideToUTF16Hack(current_version_));
   version_label_->SetReadOnly(true);
   version_label_->RemoveBorder();
   version_label_->SetTextColor(SK_ColorBLACK);
   version_label_->SetBackgroundColor(SK_ColorWHITE);
   version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(0, BOLD_FONTTYPE));
+      ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
   AddChildView(version_label_);
 
   // The copyright URL portion of the main label.
@@ -476,9 +484,10 @@ void AboutChromeView::DrawTextAndPositionUrl(gfx::Canvas* canvas,
   // figure out here where to place it.
   if (link && rect) {
     gfx::Size sz = link->GetPreferredSize();
+    gfx::Insets insets = link->GetInsets();
     WrapIfWordDoesntFit(sz.width(), font.height(), position, bounds);
-    *rect = gfx::Rect(position->width(), position->height(), sz.width(),
-                      sz.height());
+    *rect = gfx::Rect(position->width(), position->height() - insets.top(),
+                      sz.width(), sz.height());
 
     // Go from relative pixel coordinates (within the label we are drawing on)
     // to absolute pixel coordinates (relative to the top left corner of the
@@ -499,7 +508,7 @@ void AboutChromeView::DrawTextStartingFrom(gfx::Canvas* canvas,
   const SkColor text_color = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
 #else
   // TODO(beng): source from theme provider.
-  const SkColor text_color = SkColor_BLACK;
+  const SkColor text_color = SK_ColorBLACK;
 #endif
 
   // Iterate through line breaking opportunities (which in English would be
@@ -591,6 +600,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
       parent->AddChildView(&timeout_indicator_);
       timeout_indicator_.SetVisible(false);
 
+#if defined (OS_WIN)
       // On-demand updates for Chrome don't work in Vista RTM when UAC is turned
       // off. So, in this case we just want the About box to not mention
       // on-demand updates. Silent updates (in the background) should still
@@ -607,6 +617,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
         // CheckForUpdate(false, ...) means don't upgrade yet.
         google_updater_->CheckForUpdate(false, window());
       }
+#endif
     } else {
       parent->RemoveChildView(&update_label_);
       parent->RemoveChildView(throbber_.get());
@@ -680,6 +691,7 @@ std::wstring AboutChromeView::GetWindowTitle() const {
 }
 
 bool AboutChromeView::Accept() {
+#if defined(OS_WIN)
   UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR);
 
   // The Upgrade button isn't available until we have received notification
@@ -690,6 +702,7 @@ bool AboutChromeView::Accept() {
   google_updater_->AddStatusChangeListener(this);
   // CheckForUpdate(true,...) means perform the upgrade if new version found.
   google_updater_->CheckForUpdate(true, window());
+#endif
 
   return false;  // We never allow this button to close the window.
 }
@@ -707,7 +720,7 @@ void AboutChromeView::LinkActivated(views::Link* source,
   if (source == terms_of_service_url_)
     url = GURL(chrome::kAboutTermsURL);
   else if (source == chromium_url_)
-    url = GURL(l10n_util::GetString(IDS_CHROMIUM_PROJECT_URL));
+    url = GURL(WideToUTF16Hack(l10n_util::GetString(IDS_CHROMIUM_PROJECT_URL)));
   else if (source == open_source_url_)
     url = GURL(chrome::kAboutCreditsURL);
   else
@@ -717,6 +730,7 @@ void AboutChromeView::LinkActivated(views::Link* source,
   browser->OpenURL(url, GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
+#if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, GoogleUpdateStatusListener implementation:
 
@@ -843,3 +857,5 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
   if (window())
     GetDialogClientView()->UpdateDialogButtons();
 }
+
+#endif

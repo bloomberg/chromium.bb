@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_VIEWS_ABOUT_CHROME_VIEW_H_
 #define CHROME_BROWSER_VIEWS_ABOUT_CHROME_VIEW_H_
 
-#include "chrome/browser/google_update.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/google_update.h"
+#endif
 
 namespace views {
 class Textfield;
@@ -29,8 +32,11 @@ class Profile;
 ////////////////////////////////////////////////////////////////////////////////
 class AboutChromeView : public views::View,
                         public views::DialogDelegate,
-                        public views::LinkController,
-                        public GoogleUpdateStatusListener {
+                        public views::LinkController
+#if defined (OS_WIN)
+                        , public GoogleUpdateStatusListener
+#endif
+                        {
  public:
   explicit AboutChromeView(Profile* profile);
   virtual ~AboutChromeView();
@@ -65,10 +71,12 @@ class AboutChromeView : public views::View,
   // Overridden from views::LinkController:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
+#if defined(OS_WIN)
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
                                const std::wstring& version);
+#endif
 
  private:
   // The visible state of the Check For Updates button.
@@ -78,9 +86,11 @@ class AboutChromeView : public views::View,
     CHECKBUTTON_ENABLED,
   };
 
+#if defined(OS_WIN)
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
                     GoogleUpdateErrorCode error_code);
+#endif
 
   // Draws a string onto the canvas (wrapping if needed) while also keeping
   // track of where it ends so we can position a URL after the text. The
@@ -160,9 +170,11 @@ class AboutChromeView : public views::View,
   // Determines the order of the two links we draw in the main label.
   bool chromium_url_appears_first_;
 
+#if defined(OS_WIN)
   // The class that communicates with Google Update to find out if an update is
   // available and asks it to start an upgrade.
   scoped_refptr<GoogleUpdate> google_updater_;
+#endif
 
   // Our current version.
   std::wstring current_version_;

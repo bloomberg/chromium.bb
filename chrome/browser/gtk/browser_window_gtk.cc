@@ -81,6 +81,7 @@
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "views/widget/widget_gtk.h"
@@ -1059,7 +1060,11 @@ void BrowserWindowGtk::ToggleExtensionShelf() {
 }
 
 void BrowserWindowGtk::ShowAboutChromeDialog() {
+#if defined(OS_CHROMEOS)
+  browser::ShowAboutChromeView(window_, browser_->profile());
+#else
   ShowAboutDialogForProfile(window_, browser_->profile());
+#endif
 }
 
 void BrowserWindowGtk::ShowTaskManager() {

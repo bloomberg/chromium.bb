@@ -98,8 +98,10 @@ Canvas::Canvas() : skia::PlatformCanvas() {
 Canvas::~Canvas() {
 }
 
+// Pass a width > 0 to force wrapping and elliding.
 static void SetupPangoLayout(PangoLayout* layout,
                              const gfx::Font& font,
+                             int width,
                              int flags) {
   if (!cairo_font_options)
     UpdateCairoFontOptions();
@@ -111,6 +113,9 @@ static void SetupPangoLayout(PangoLayout* layout,
   // Callers of DrawStringInt handle RTL layout themselves, so tell pango to not
   // scope out RTL characters.
   pango_layout_set_auto_dir(layout, FALSE);
+
+  if (width > 0)
+    pango_layout_set_width(layout, width * PANGO_SCALE);
 
   if (flags & Canvas::NO_ELLIPSIS) {
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_NONE);
@@ -144,14 +149,16 @@ void Canvas::SizeStringInt(const std::wstring& text,
   cairo_t* cr = cairo_create(surface);
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
-  SetupPangoLayout(layout, font, flags);
+  SetupPangoLayout(layout, font, *width, flags);
 
   std::string utf8 = WideToUTF8(text);
   pango_layout_set_text(layout, utf8.data(), utf8.size());
 
-  pango_layout_get_size(layout, width, height);
+  int chars_height;
+  pango_layout_get_size(layout, width, &chars_height);
   *width /= PANGO_SCALE;
-  *height /= PANGO_SCALE;
+  // Pango returns the height of the characters, not the height of the font.
+  *height = font.height();
 
   g_object_unref(layout);
   cairo_destroy(cr);
@@ -160,14 +167,14 @@ void Canvas::SizeStringInt(const std::wstring& text,
 
 void Canvas::DrawStringInt(const std::wstring& text,
                            const gfx::Font& font,
-                           const SkColor& color, int x, int y, int w, int h,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
                            int flags) {
   cairo_t* cr = beginPlatformPaint();
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
-  SetupPangoLayout(layout, font, flags);
+  SetupPangoLayout(layout, font, w, flags);
 
-  pango_layout_set_width(layout, w * PANGO_SCALE);
   pango_layout_set_height(layout, h * PANGO_SCALE);
 
   cairo_save(cr);
@@ -179,16 +186,19 @@ void Canvas::DrawStringInt(const std::wstring& text,
   std::string utf8 = WideToUTF8(text);
   pango_layout_set_text(layout, utf8.data(), utf8.size());
 
-  int width, height;
-  pango_layout_get_size(layout, &width, &height);
+  int width, height, chars_height;
+  pango_layout_get_size(layout, &width, &chars_height);
+  width /= PANGO_SCALE;
+  // Pango returns the height of the characters, not the height of the font.
+  height = font.height();
 
   if (flags & Canvas::TEXT_VALIGN_TOP) {
     // Cairo should draw from the top left corner already.
   } else if (flags & Canvas::TEXT_VALIGN_BOTTOM) {
-    y = y + (h - (height / PANGO_SCALE));
+    y += (h - height);
   } else {
     // Vertically centered.
-    y = y + ((h - (height / PANGO_SCALE)) / 2);
+    y += ((h - height) / 2);
   }
 
   cairo_rectangle(cr, x, y, w, h);

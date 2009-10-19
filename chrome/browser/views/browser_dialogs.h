@@ -64,7 +64,7 @@ bool IsBookmarkBubbleViewShowing();
 void ShowBookmarkManagerView(Profile* profile);
 
 // Shows the about dialog. See AboutChromeView.
-void ShowAboutChromeView(views::Widget* parent,
+void ShowAboutChromeView(gfx::NativeWindow parent,
                          Profile* profile);
 
 // Shows an HTML dialog. See HtmlDialogView.

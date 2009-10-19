@@ -40,7 +40,7 @@ class ChromeOSVersionLoader : public CancelableRequestProvider {
 
   // ChromeOSVersionLoader calls into the Backend on the file thread to load
   // and extract the version.
-  class Backend : public base::RefCounted<Backend> {
+  class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
     Backend() {}
 
