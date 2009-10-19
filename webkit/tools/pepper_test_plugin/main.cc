@@ -34,28 +34,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
 #ifdef WIN32
-#define strcasecmp _stricmp
 #define NPAPI WINAPI
 #else
 #define NPAPI
 #endif
 
-static void Log(NPP instance, const char* format, ...) {
+namespace {
+
+void Log(NPP instance, const char* format, ...) {
   va_list args;
   va_start(args, format);
-  char message[2048] = "PLUGIN: ";
-  vsprintf(message + strlen(message), format, args);
+  std::string message("PLUGIN: ");
+  StringAppendV(&message, format, args);
   va_end(args);
 
   NPObject* window_object = 0;
   NPError error = browser->getvalue(instance, NPNVWindowNPObject,
                                     &window_object);
   if (error != NPERR_NO_ERROR) {
-    fprintf(stderr, "Failed to retrieve window object while logging: %s\n",
-            message);
+    LOG(ERROR) << "Failed to retrieve window object while logging: "
+               << message;
     return;
   }
 
@@ -63,8 +66,8 @@ static void Log(NPP instance, const char* format, ...) {
   if (!browser->getproperty(instance, window_object,
                             browser->getstringidentifier("console"),
                             &console_variant)) {
-    fprintf(stderr, "Failed to retrieve console object while logging: %s\n",
-            message);
+    LOG(ERROR) << "Failed to retrieve console object while logging: "
+               << message;
     browser->releaseobject(window_object);
     return;
   }
@@ -72,7 +75,7 @@ static void Log(NPP instance, const char* format, ...) {
   NPObject* console_object = NPVARIANT_TO_OBJECT(console_variant);
 
   NPVariant message_variant;
-  STRINGZ_TO_NPVARIANT(message, message_variant);
+  STRINGZ_TO_NPVARIANT(message.c_str(), message_variant);
 
   NPVariant result;
   if (!browser->invoke(instance, console_object,
@@ -90,6 +93,8 @@ static void Log(NPP instance, const char* format, ...) {
   browser->releaseobject(window_object);
 }
 
+}  // namespace
+
 // Plugin entry points
 extern "C" {
 
@@ -99,7 +104,9 @@ NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs
 #endif
                             );
 NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs);
-void NPAPI NP_Shutdown();
+
+void NPAPI NP_Shutdown() {
+}
 
 #if defined(OS_LINUX)
 NPError NP_GetValue(NPP instance, NPPVariable variable, void* value);
@@ -122,6 +129,8 @@ NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs
 #endif
 }
 
+// Entrypoints -----------------------------------------------------------------
+
 NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
   plugin_funcs->version = 11;
   plugin_funcs->size = sizeof(plugin_funcs);
@@ -142,41 +151,14 @@ NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
   return NPERR_NO_ERROR;
 }
 
-void NPAPI NP_Shutdown(void) {
-}
-
-static void executeScript(const PluginObject* obj, const char* script);
-
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
-                char* argn[], char* argv[], NPSavedData* saved) {
+NPError NPP_New(NPMIMEType pluginType,
+                NPP instance,
+                uint16 mode,
+                int16 argc, char* argn[], char* argv[],
+                NPSavedData* saved) {
   if (browser->version >= 14) {
-    PluginObject* obj = (PluginObject*)browser->createobject(instance,
-                                                             GetPluginClass());
-
-    for (int i = 0; i < argc; i++) {
-      if (strcasecmp(argn[i], "onstreamload") == 0 && !obj->onStreamLoad) {
-        obj->onStreamLoad = strdup(argv[i]);
-      } else if (strcasecmp(argn[i], "onStreamDestroy") == 0 &&
-                 !obj->onStreamDestroy) {
-        obj->onStreamDestroy = strdup(argv[i]);
-      } else if (strcasecmp(argn[i], "onURLNotify") == 0 && !obj->onURLNotify) {
-        obj->onURLNotify = strdup(argv[i]);
-      } else if (strcasecmp(argn[i], "logfirstsetwindow") == 0) {
-        obj->logSetWindow = TRUE;
-      } else if (strcasecmp(argn[i], "testnpruntime") == 0) {
-        TestNPRuntime(instance);
-      } else if (strcasecmp(argn[i], "logSrc") == 0) {
-        for (int i = 0; i < argc; i++) {
-          if (strcasecmp(argn[i], "src") == 0) {
-            Log(instance, "src: %s", argv[i]);
-            fflush(stdout);
-          }
-        }
-      } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0) {
-        executeScript(obj, "document.body.innerHTML = ''");
-      }
-    }
-
+    PluginObject* obj = reinterpret_cast<PluginObject*>(
+        browser->createobject(instance, PluginObject::GetPluginClass()));
     instance->pdata = obj;
   }
 
@@ -186,93 +168,43 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
 
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  if (obj) {
-    if (obj->onStreamLoad)
-      free(obj->onStreamLoad);
-
-    if (obj->onURLNotify)
-      free(obj->onURLNotify);
-
-    if (obj->onStreamDestroy)
-      free(obj->onStreamDestroy);
-
-    if (obj->logDestroy)
-      Log(instance, "NPP_Destroy");
-
-    browser->releaseobject(&obj->header);
-  }
+  if (obj)
+    browser->releaseobject(obj->header());
 
   fflush(stdout);
   return NPERR_NO_ERROR;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-
-  if (obj) {
-    if (obj->logSetWindow) {
-      Log(instance, "NPP_SetWindow: %d %d", static_cast<int>(window->width),
-          static_cast<int>(window->height));
-      fflush(stdout);
-      obj->logSetWindow = false;
-    }
-  }
-
   return NPERR_NO_ERROR;
 }
 
-static void executeScript(const PluginObject* obj, const char* script) {
-  NPObject* window_script_object;
-  browser->getvalue(obj->npp, NPNVWindowNPObject, &window_script_object);
-
-  NPString np_script;
-  np_script.UTF8Characters = script;
-  np_script.UTF8Length = strlen(script);
-
-  NPVariant browser_result;
-  browser->evaluate(obj->npp, window_script_object, &np_script,
-                    &browser_result);
-  browser->releasevariantvalue(&browser_result);
-}
-
-NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
-                      NPBool seekable, uint16* stype) {
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-
-  if (obj->returnErrorFromNewStream)
-    return NPERR_GENERIC_ERROR;
-
-  obj->stream = stream;
+NPError NPP_NewStream(NPP instance,
+                      NPMIMEType type,
+                      NPStream* stream,
+                      NPBool seekable,
+                      uint16* stype) {
   *stype = NP_ASFILEONLY;
-
-  if (browser->version >= NPVERS_HAS_RESPONSE_HEADERS)
-    NotifyStream(obj, stream->url, stream->headers);
-
-  if (obj->onStreamLoad)
-    executeScript(obj, obj->onStreamLoad);
-
   return NPERR_NO_ERROR;
 }
 
 NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-
-  if (obj->onStreamDestroy)
-    executeScript(obj, obj->onStreamDestroy);
-
   return NPERR_NO_ERROR;
 }
 
-int32 NPP_WriteReady(NPP instance, NPStream* stream) {
-  return 0;
+void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
 }
 
-int32 NPP_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
+int32 NPP_Write(NPP instance,
+                NPStream* stream,
+                int32 offset,
+                int32 len,
                 void* buffer) {
   return 0;
 }
 
-void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
+int32 NPP_WriteReady(NPP instance, NPStream* stream) {
+  return 0;
 }
 
 void NPP_Print(NPP instance, NPPrint* platformPrint) {
@@ -285,10 +217,6 @@ int16 NPP_HandleEvent(NPP instance, void* event) {
 void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
                    void* notify_data) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  if (obj->onURLNotify)
-    executeScript(obj, obj->onURLNotify);
-
-  HandleCallback(obj, url, reason, notify_data);
 }
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {

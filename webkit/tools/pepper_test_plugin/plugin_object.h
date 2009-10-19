@@ -26,33 +26,28 @@
 #ifndef WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
 #define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
 
+#include "base/basictypes.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
 extern NPNetscapeFuncs* browser;
 
-struct PluginObject {
-  NPObject header;
-  NPP npp;
-  NPBool eventLogging;
-  NPBool logSetWindow;
-  NPBool logDestroy;
-  NPBool returnErrorFromNewStream;
-  NPObject* testObject;
-  NPStream* stream;
-  char* onStreamLoad;
-  char* onStreamDestroy;
-  char* onURLNotify;
-  char* firstUrl;
-  char* firstHeaders;
-  char* lastUrl;
-  char* lastHeaders;
+class PluginObject {
+ public:
+  PluginObject(NPP npp);
+  ~PluginObject();
+
+  static NPClass* GetPluginClass();
+
+  NPObject* header() { return &header_; }
+  NPP npp() const { return npp_; }
+
+ private:
+  NPObject header_;
+  NPP npp_;
+  NPObject* test_object_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };
 
-extern NPClass* GetPluginClass();
-extern void HandleCallback(PluginObject* object, const char *url,
-                           NPReason reason, void* notify_data);
-extern void NotifyStream(PluginObject* object, const char* url,
-                         const char* headers);
-extern void TestNPRuntime(NPP npp);
 
 #endif  // WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_

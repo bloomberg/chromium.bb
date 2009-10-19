@@ -5,8 +5,9 @@
       'target_name': 'pepper_test_plugin',
       'type': 'shared_library',
       'dependencies': [
-        '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../../base/base.gyp:base',
         '../../../skia/skia.gyp:skia',
+        '../../../third_party/npapi/npapi.gyp:npapi',
       ],
       'include_dirs': [
         '../../..',  # Root of Chrome Checkout
