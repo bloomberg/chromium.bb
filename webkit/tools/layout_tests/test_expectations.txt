@@ -117,9 +117,8 @@ BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/misc/SVGFont-delayed-load.htm
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/fast/dom/Window/window-lookup-precedence.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
-
-
-BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
+BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -692,6 +691,8 @@ BUG24193 : LayoutTests/fast/replaced/applet-rendering-java-disabled.html = FAIL
 // Due to differences in error pages. Needs re-baselining.
 BUG24208 WIN SLOW : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 BUG24208 LINUX MAC : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
+
+BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 // Since we don't have Aqua-themed controls, don't ignore the
 // box-shadow properties of controls that request Aqua theming.  But since Aqua
@@ -2542,7 +2543,8 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-order.html = CRASH 
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
-BUG9798 : LayoutTests/fast/frames/frame-limit.html = CRASH PASS TIMEOUT
+BUG9798 RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
+BUG9798 DEBUG SLOW : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
 BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
