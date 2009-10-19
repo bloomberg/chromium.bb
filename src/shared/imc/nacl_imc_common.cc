@@ -32,6 +32,7 @@
 
 // NaCl inter-module communication primitives.
 
+// TODO(robertm): stdio.h is included for NULL only - find a better way
 #include <stdio.h>
 #include "native_client/src/shared/imc/nacl_imc.h"
 

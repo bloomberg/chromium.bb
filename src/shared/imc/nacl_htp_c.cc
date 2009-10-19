@@ -31,6 +31,7 @@
 
 
 // NaCl Handle Transfer Protocol
+// NOTE: only used for trusted version
 
 #include "native_client/src/shared/imc/nacl_htp_c.h"
 #include <assert.h>
@@ -39,7 +40,6 @@
 #include "native_client/src/shared/imc/nacl_htp.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
-#ifndef __native_client__
 
 int NaClHtpSendDatagram(NaClHtpHandle socket, const NaClHtpHeader* message,
                         int flags) {
@@ -48,6 +48,7 @@ int NaClHtpSendDatagram(NaClHtpHandle socket, const NaClHtpHeader* message,
                             flags);
 }
 
+
 int NaClHtpReceiveDatagram(NaClHtpHandle socket, NaClHtpHeader* message,
                            int flags) {
   return nacl::ReceiveDatagram(socket,
@@ -55,8 +56,7 @@ int NaClHtpReceiveDatagram(NaClHtpHandle socket, NaClHtpHeader* message,
                                flags);
 }
 
+
 int NaClHtpClose(NaClHtpHandle handle) {
   return nacl::Close(*reinterpret_cast<nacl::HtpHandle*>(&handle));
 }
-
-#endif  // __native_client__

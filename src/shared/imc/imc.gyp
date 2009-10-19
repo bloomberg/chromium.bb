@@ -28,7 +28,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
+  ######################################################################
   'variables': {
+    'COMMAND_TESTER': '../../../tools/command_tester.py',
     'common_sources': [
       'nacl_imc_common.cc',
       'nacl_imc.h',
@@ -61,12 +63,15 @@
       }],
     ],
   },
+  ######################################################################
   'includes': [
     '../../../build/common.gypi',
   ],
+  ######################################################################
   'target_defaults': {
   },
   'targets': [
+    # ----------------------------------------------------------------------
     {
       'target_name': 'google_nacl_imc',
       'type': 'static_library',
@@ -74,37 +79,64 @@
         '<@(common_sources)',
       ],
     },
+    # ----------------------------------------------------------------------
     {
       'target_name': 'libgoogle_nacl_imc_c',
       'type': 'static_library',
       'sources': [
         '<@(common_sources)',
-        # TODO env_no_strict_aliasing.ComponentObject('nacl_htp_c.cc')
         'nacl_htp_c.cc',
         'nacl_htp_c.h',
         'nacl_imc_c.cc',
         'nacl_imc_c.h',
       ],
-    }
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'sigpipe_test',
+      'type': 'executable',
+      'sources': [
+        'sigpipe_test.cc',
+      ],
+      'dependencies': [
+        '../../shared/imc/imc.gyp:google_nacl_imc',
+        '../../shared/platform/platform.gyp:platform',
+        '../../trusted/service_runtime/service_runtime.gyp:gio',
+      ],
+    },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'run_sigpipe_test',
+      'message': 'running test run_imc_tests',
+      'type': 'none',
+      'dependencies': [
+        'sigpipe_test',
+      ],
+      'actions': [
+        {
+          'action_name': 'run_sigpipe_test',
+          'msvs_cygwin_shell': 0,
+          'inputs': [
+            '<(COMMAND_TESTER)',
+            '<(PRODUCT_DIR)/sigpipe_test',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/test-output/sigpipe_test.out',
+          ],
+          'action': [
+            '<@(python_exe)',
+            '<(COMMAND_TESTER)',
+            '<(PRODUCT_DIR)/sigpipe_test',
+            '>',
+            '<@(_outputs)',
+           ],
+        },
+      ]
+
+    },
+    # ----------------------------------------------------------------------
   ]
 }
 
-# TODO:
-# Currently, this is only defined for x86, so only compile if x86.
-# if env['TARGET_ARCHITECTURE'] != 'x86':
-#    Return()
-#
-#env_no_strict_aliasing = env.Clone()
-#if env.Bit('linux'):
-#   env_no_strict_aliasing.Append(CCFLAGS = ['-fno-strict-aliasing'])
-#
-#env.ComponentProgram('client', 'nacl_imc_test_client.cc')
-#env.ComponentProgram('server', 'nacl_imc_test_server.cc')
-#
-#sigpipe_test_exe = env.ComponentProgram('sigpipe_test', ['sigpipe_test.cc'],
-#                                        EXTRA_LIBS=['platform', 'gio'])
-#node = env.CommandTestAgainstGoldenOutput(
-#    'sigpipe_test.out',
-#    [sigpipe_test_exe])
-#env.AddNodeToTestSuite(node, ['small_tests'], 'run_imc_tests')
-#
+# TODO: some tests missing, c.f. build.scons
+

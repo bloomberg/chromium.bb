@@ -60,20 +60,13 @@ if env['TARGET_PLATFORM'] == 'MAC':
     'osx/nacl_imc.cc',
   ]
 
-env_no_strict_aliasing = env.Clone()
-if env.Bit('linux'):
-    # TODO:  try to avoid this
-   env_no_strict_aliasing.Append(CCFLAGS = ['-fno-strict-aliasing'])
 
-# Build inputs, so that c and c++ variants share the same environment.
-nacl_imc_inputs = env.ComponentObject(nacl_imc_inputs)
+common_objs = env.ComponentObject(nacl_imc_inputs)
 
-nacl_htp_c_obj = env_no_strict_aliasing.ComponentObject('nacl_htp_c.cc')
+nacl_imc_c_inputs = ['nacl_imc_c.cc', 'nacl_htp_c.cc']
 
-nacl_imc_c_inputs = nacl_imc_inputs + ['nacl_imc_c.cc', nacl_htp_c_obj]
-
-env.ComponentLibrary('google_nacl_imc', nacl_imc_inputs)
-env.ComponentLibrary('google_nacl_imc_c', nacl_imc_c_inputs)
+env.ComponentLibrary('google_nacl_imc', common_objs)
+env.ComponentLibrary('google_nacl_imc_c', common_objs + nacl_imc_c_inputs)
 
 env.ComponentProgram('client',
                      'nacl_imc_test_client.cc',
@@ -91,4 +84,4 @@ sigpipe_test_exe = env.ComponentProgram(
 node = env.CommandTestAgainstGoldenOutput(
     'sigpipe_test.out',
     command=[sigpipe_test_exe])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_imc_tests')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_sigpipe_test')
