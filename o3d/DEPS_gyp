@@ -156,6 +156,6 @@ hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|[/\\\\]src[/\\\\]o3d[/\\\\]build[/\\\\]gyp_o3d$|MANIFEST$",
-    "action": ["python", "o3d/build/gyp_o3d", "o3d/build/o3d.gyp"],
+    "action": ["python", "o3d/build/gyp_o3d", "o3d/build/o3d.gyp", "o3d/tests/lab/ChangeResolution/change_resolution.gyp"],
   },
 ]
