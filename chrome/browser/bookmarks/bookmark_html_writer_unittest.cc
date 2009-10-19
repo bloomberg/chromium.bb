@@ -159,7 +159,13 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   ASSERT_EQ(7U, parsed_bookmarks.size());
   // Hardcode the value of IDS_BOOKMARK_BAR_FOLDER_NAME in en-US locale
   // because all the unit tests are run in en-US locale.
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+  // Windows and ChromeOS builds use Sentence case.
   const wchar_t* kBookmarkBarFolderName = L"Bookmarks bar";
+#else
+  // Mac and Linux + GTK uses Title Case.
+  const wchar_t* kBookmarkBarFolderName = L"Bookmarks Bar";
+#endif
   AssertBookmarkEntryEquals(parsed_bookmarks[0], false, url1, url1_title, t1,
                             kBookmarkBarFolderName, f1_title, std::wstring());
   AssertBookmarkEntryEquals(parsed_bookmarks[1], false, url2, url2_title, t2,
