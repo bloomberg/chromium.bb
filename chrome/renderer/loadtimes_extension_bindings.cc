@@ -23,7 +23,7 @@ const int kTransitionReload = 16;
 
 namespace extensions_v8 {
 
-static const char* kLoadTimesExtensionName = "v8/LoadTimes";
+static const char* const kLoadTimesExtensionName = "v8/LoadTimes";
 
 class LoadTimesExtensionWrapper : public v8::Extension {
  public:
@@ -60,7 +60,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static const char *GetNavigationType(WebNavigationType nav_type) {
+  static const char* GetNavigationType(WebNavigationType nav_type) {
     switch (nav_type) {
       case WebKit::WebNavigationTypeLinkClicked:
         return "LinkClicked";

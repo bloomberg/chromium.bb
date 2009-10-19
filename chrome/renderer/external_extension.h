@@ -7,7 +7,9 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_V8_EXTERNAL_EXTENSION_H_
 #define CHROME_RENDERER_EXTENSIONS_V8_EXTERNAL_EXTENSION_H_
 
-#include "v8/include/v8.h"
+namespace v8 {
+class Extension;
+}
 
 namespace extensions_v8 {
 
