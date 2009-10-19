@@ -196,7 +196,7 @@ def RunTest(browser):
     if not run_util.EnsureWindowsScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT, 
                                                   SCREEN_BPP):
       logging.error('Failed to configure screen resolution.')
-      return False
+      return 1
 
   
     
