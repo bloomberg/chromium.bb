@@ -77,7 +77,7 @@ void SetOverrideAppBundle(NSBundle* bundle) {
 void SetOverrideAppBundlePath(const FilePath& file_path) {
   NSString* path = base::SysUTF8ToNSString(file_path.value());
   NSBundle* bundle = [NSBundle bundleWithPath:path];
-  DCHECK(bundle) << "failed to load the bundle: " << file_path.value();
+  CHECK(bundle) << "Failed to load the bundle at " << file_path.value();
 
   SetOverrideAppBundle(bundle);
 }
@@ -146,7 +146,8 @@ static int g_full_screen_requests = 0;
 // Add a request for full screen mode.  If the menu bar is not currently
 // hidden, hide it.  Must be called on main thread.
 void RequestFullScreen() {
-  if (!g_full_screen_requests)
+  DCHECK_GE(g_full_screen_requests, 0);
+  if (g_full_screen_requests == 0)
     SetSystemUIMode(kUIModeAllSuppressed, kUIOptionAutoShowMenuBar);
   ++g_full_screen_requests;
 }
@@ -154,7 +155,7 @@ void RequestFullScreen() {
 // Release a request for full screen mode.  If there are no other outstanding
 // requests, show the menu bar. Must be called on main thread.
 void ReleaseFullScreen() {
-  DCHECK(g_full_screen_requests > 0);
+  DCHECK_GT(g_full_screen_requests, 0);
   --g_full_screen_requests;
   if (g_full_screen_requests == 0)
     SetSystemUIMode(kUIModeNormal, 0);
