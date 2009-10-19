@@ -2371,7 +2371,6 @@ BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
 BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
-BUG10435 WIN RELEASE : LayoutTests/editing/selection/move-by-line-001.html = IMAGE
 // IMAGE+TEXT is flaky
 BUG10435 WIN DEBUG : LayoutTests/editing/selection/move-by-line-001.html = IMAGE IMAGE+TEXT
 
