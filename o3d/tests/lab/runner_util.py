@@ -145,7 +145,7 @@ def UninstallO3DPlugin():
   else:
     for path in const.INSTALL_PATHS:
       if os.path.exists(path):
-        os.remove(path)
+        os.system('echo g00gl3 | sudo -S rm -rf "%s"' % path)
     
   return not DoesAnO3DPluginExist()
 
