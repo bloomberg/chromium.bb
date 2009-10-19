@@ -12,13 +12,16 @@
       'type': '<(library)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../build/o3d_in_chrome.gyp:o3d_in_chrome',
       ],
       'include_dirs': [
         '../..',
+        '../../third_party/npapi',
       ],
       'all_dependent_settings': {
         'include_dirs': [
           '../..',
+          '../../third_party/npapi',
         ],
       },  # 'all_dependent_settings'
       'sources': [
@@ -65,6 +68,11 @@
       'include_dirs': [
         '../..',
       ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '../..',
+        ],
+      },  # 'all_dependent_settings'
       'sources': [
         'np_utils/dispatched_np_object_unittest.cc',
         'np_utils/dynamic_np_object_unittest.cc',
