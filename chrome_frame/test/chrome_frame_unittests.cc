@@ -191,7 +191,7 @@ bool ChromeFrameTestWithWebServer::CheckResultFile(
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
-  EXPECT_TRUE(LaunchBrowser(browser, page));
+  ASSERT_TRUE(LaunchBrowser(browser, page));
   ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
   ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
 }
