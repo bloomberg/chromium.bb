@@ -892,6 +892,7 @@
         'browser/bookmarks/bookmark_manager.h',
         'browser/bookmarks/bookmark_model.cc',
         'browser/bookmarks/bookmark_model.h',
+        'browser/bookmarks/bookmark_model_observer.h',
         'browser/bookmarks/bookmark_service.h',
         'browser/bookmarks/bookmark_storage.cc',
         'browser/bookmarks/bookmark_storage.h',
