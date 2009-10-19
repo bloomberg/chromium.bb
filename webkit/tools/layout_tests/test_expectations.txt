@@ -1386,6 +1386,7 @@ BUG10351 MAC : LayoutTests/plugins/netscape-get-property-return-value.html = FAI
 BUG10351 MAC : LayoutTests/plugins/netscape-identifier-conversion.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
+BUG10351 MAC : LayoutTests/plugins/netscape-invoke-failure.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/npruntime.html = TIMEOUT
 BUG10351 MAC : LayoutTests/plugins/plugin-remove-subframe.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html = TIMEOUT
@@ -3167,3 +3168,9 @@ BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.htm
 BUG_YUTAK : LayoutTests/svg/W3C-SVG-1.1/masking-mask-01-b.svg = FAIL
 BUG_YUTAK MAC : LayoutTests/svg/custom/grayscale-gradient-mask.svg = FAIL
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL
+
+// WebKit Roll 49761:49809
+BUG_JAPHET LINUX WIN : LayoutTests/fast/canvas/arc360.html = FAIL
+BUG_JAPHET LINUX : LayoutTests/fast/css/transition-color-unspecified.html = FAIL
+BUG_JAPHET : LayoutTests/media/media-load-event.html = FAIL
+BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL

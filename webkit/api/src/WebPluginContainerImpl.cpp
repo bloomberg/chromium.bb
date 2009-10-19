@@ -279,7 +279,8 @@ void WebPluginContainerImpl::loadFrameRequest(
         false,  // lock history
         false,  // lock back forward list
         0,      // event
-        0);     // form state
+        0,     // form state
+        SendReferrer);
 }
 
 void WebPluginContainerImpl::didReceiveResponse(const ResourceResponse& response)
