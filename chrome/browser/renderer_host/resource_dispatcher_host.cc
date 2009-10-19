@@ -43,6 +43,7 @@
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/ssl/ssl_manager.h"
+#include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
@@ -1487,8 +1488,21 @@ bool ResourceDispatcherHost::RenderViewForRequest(const URLRequest* request,
     return false;
   }
 
-  *render_process_host_id = info->child_id();
-  *render_view_host_id = info->route_id();
+  // If the request is from the worker process, find a tab that owns the worker.
+  if (info->process_type() == ChildProcessInfo::WORKER_PROCESS) {
+      const WorkerProcessHost::WorkerInstance* worker_instance =
+          WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
+      if (!worker_instance) {
+        *render_process_host_id = -1;
+        *render_view_host_id = -1;
+        return false;
+      }
+      *render_process_host_id = worker_instance->renderer_id;
+      *render_view_host_id = worker_instance->render_view_route_id;
+  } else {
+    *render_process_host_id = info->child_id();
+    *render_view_host_id = info->route_id();
+  }
   return true;
 }
 

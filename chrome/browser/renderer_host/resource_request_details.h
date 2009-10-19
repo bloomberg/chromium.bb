@@ -14,6 +14,7 @@
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/worker_host/worker_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
@@ -39,7 +40,14 @@ class ResourceRequestDetails {
     frame_origin_ = info->frame_origin();
     main_frame_origin_ = info->main_frame_origin();
     filter_policy_ = info->filter_policy();
-    origin_child_id_ = info->child_id();
+
+    // If request is from the worker process on behalf of a renderer, use
+    // the renderer process id, since it consumes the notification response
+    // such as ssl state etc.
+    const WorkerProcessHost::WorkerInstance* worker_instance =
+        WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
+    origin_child_id_ =
+        worker_instance ? worker_instance->renderer_id : info->child_id();
   }
 
   virtual ~ResourceRequestDetails() {}

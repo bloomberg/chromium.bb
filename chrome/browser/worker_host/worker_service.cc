@@ -265,3 +265,18 @@ void WorkerService::WorkerProcessDestroyed(WorkerProcessHost* process) {
     }
   }
 }
+
+const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
+      int worker_process_id) {
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+       !iter.Done(); ++iter) {
+    if (iter->id() != worker_process_id)
+        continue;
+
+    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+    WorkerProcessHost::Instances::const_iterator instance =
+        worker->instances().begin();
+    return instance == worker->instances().end() ? NULL : &*instance;
+  }
+  return NULL;
+}

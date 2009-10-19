@@ -250,8 +250,10 @@ ChildProcessHost::Iterator::Iterator()
 
 ChildProcessHost::Iterator::Iterator(ProcessType type)
     : all_(false), type_(type) {
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::IO)) <<
+  // IO loop can be NULL in unit tests.
+  DCHECK(!ChromeThread::GetMessageLoop(ChromeThread::IO) ||
+         MessageLoop::current() ==
+             ChromeThread::GetMessageLoop(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
   if (!Done() && (*iterator_)->type() != type_)

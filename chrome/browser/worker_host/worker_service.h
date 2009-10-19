@@ -46,6 +46,11 @@ class WorkerService : public NotificationObserver {
 
   int next_worker_route_id() { return ++next_worker_route_id_; }
 
+  // TODO(dimich): This code assumes there is 1 worker per worker process, which
+  // is how it is today until V8 can run in separate threads.
+  const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
+      int worker_process_id);
+
   // Used when multiple workers can run in the same process.
   static const int kMaxWorkerProcessesWhenSharing;
 

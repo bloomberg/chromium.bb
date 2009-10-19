@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
@@ -69,6 +70,46 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_FALSE(entry->ssl().has_unsafe_content());
   }
 
+  void CheckWorkerLoadResult(TabContents* tab, bool expectLoaded) {
+    // Workers are async and we don't have notifications for them passing
+    // messages since they do it between renderer and worker processes.
+    // So have a polling loop, check every 200ms, timeout at 30s.
+    const int timeout_ms = 200;
+    base::Time timeToQuit = base::Time::Now() +
+        base::TimeDelta::FromMilliseconds(30000);
+
+    while(base::Time::Now() < timeToQuit) {
+      bool workerFinished = false;
+      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+          tab->render_view_host(), L"",
+          L"window.domAutomationController.send(IsWorkerFinished());",
+          &workerFinished));
+
+      if (workerFinished)
+        break;
+
+      // Wait a bit.
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, new MessageLoop::QuitTask, timeout_ms);
+      ui_test_utils::RunMessageLoop();
+    }
+
+    bool actuallyLoadedContent = false;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), L"",
+        L"window.domAutomationController.send(IsContentLoaded());",
+        &actuallyLoadedContent));
+    EXPECT_EQ(expectLoaded, actuallyLoadedContent);
+  }
+
+  void ProceedThroughInterstitial(TabContents* tab) {
+    InterstitialPage* interstitial_page = tab->interstitial_page();
+    ASSERT_TRUE(interstitial_page);
+    interstitial_page->Proceed();
+    // Wait for the navigation to be done.
+    ui_test_utils::WaitForNavigation(&(tab->controller()));
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
@@ -124,12 +165,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
-  // Proceed through the interstitial.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  false);  // No interstitial showing
@@ -396,12 +432,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  true);  // Interstitial showing.
 
-  // We proceed through the interstitial page.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  false);  // No interstitial showing.
@@ -443,11 +474,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing.
 
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  false);  // No interstitial showing.
@@ -516,12 +543,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing.
 
-  // We proceed through the interstitial page.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   // We have been redirected to the good page.
   CheckAuthenticatedState(tab, false, false);  // No mixed/unsafe content.
@@ -542,12 +564,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing.
 
-  // We proceed through the interstitial page.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  false);  // No interstitial showing.
@@ -589,12 +606,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing.
 
-  // Continue on the interstitial.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  // Wait for the navigation to be done.
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  false);  // No interstitial showing.
@@ -725,11 +737,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
-  // Continue on the interstitial.
-  InterstitialPage* interstitial_page = tab->interstitial_page();
-  ASSERT_TRUE(interstitial_page);
-  interstitial_page->Proceed();
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ProceedThroughInterstitial(tab);
 
   // Navigate to a good frame.
   bool success = false;
@@ -795,6 +803,48 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnauthenticatedFrameNavigation) {
       tab->render_view_host(), content_frame_xpath, is_frame_evil_js,
       &is_content_evil));
   EXPECT_FALSE(is_content_evil);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerFiltered) {
+  scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
+
+  // This page will spawn a Worker which will try to load content from
+  // BadCertServer.
+  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
+      "files/ssl/page_with_unsafe_worker.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  // Expect Worker not to load mixed content.
+  CheckWorkerLoadResult(tab, false);
+  // The bad content is filtered, expect the state to be authenticated.
+  CheckAuthenticatedState(tab, false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorker) {
+  scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
+  ASSERT_TRUE(good_https_server.get() != NULL);
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
+
+  // Navigate to an unsafe site. Proceed with interstitial page to indicate
+  // the user approves the bad certificate.
+  ui_test_utils::NavigateToURL(browser(), bad_https_server->TestServerPage(
+      "files/ssl/blank_page.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 true);  // Interstitial showing
+  ProceedThroughInterstitial(tab);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 false);  // No Interstitial
+
+  // Navigate to safe page that has Worker loading unsafe content.
+  // Expect content to load but 'mixed' indicators show up.
+  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
+      "files/ssl/page_with_unsafe_worker.html"));
+  CheckWorkerLoadResult(tab, true);  // Worker loads mixed content
+  CheckAuthenticatedState(tab, true, false);  // Mixed content UI shown.
 }
 
 // TODO(jcampan): more tests to do below.
