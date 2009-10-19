@@ -179,8 +179,10 @@ void ChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
   DCHECK(running_);
   // We shouldn't see changes to the top-level nodes.
-  DCHECK_NE(node, model->GetBookmarkBarNode());
-  DCHECK_NE(node, model->other_node());
+  if (node == model->GetBookmarkBarNode() || node == model->other_node()) {
+    NOTREACHED() << "Saw update to permanent node!";
+    return;
+  }
 
   // Acquire a scoped write lock via a transaction.
   sync_api::WriteTransaction trans(share_handle_);
@@ -213,8 +215,10 @@ void ChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
   DCHECK(running_);
   const BookmarkNode* child = new_parent->GetChild(new_index);
   // We shouldn't see changes to the top-level nodes.
-  DCHECK_NE(child, model->GetBookmarkBarNode());
-  DCHECK_NE(child, model->other_node());
+  if (child == model->GetBookmarkBarNode() || child == model->other_node()) {
+    NOTREACHED() << "Saw update to permanent node!";
+    return;
+  }
 
   // Acquire a scoped write lock via a transaction.
   sync_api::WriteTransaction trans(share_handle_);
