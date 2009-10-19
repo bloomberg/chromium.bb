@@ -640,7 +640,7 @@ class MinidumpWriter {
       { "processor", -1, false },
       { "model", 0, false },
       { "stepping",  0, false },
-      { "cpuid level", 0, false },
+      { "cpu family", 0, false },
     };
 
     // processor_architecture should always be set, do this first
