@@ -51,15 +51,16 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
-  // Give the web site a chance to handle the event. If it doesn't want to
-  // handle it, it will call us back with one of the |handle*| methods above.
-  NSResponder* r = [self firstResponder];
-  if ([r isKindOfClass:[RenderWidgetHostViewCocoa class]])
-    return [r performKeyEquivalent:event];
+  // We have some magic in |CrApplication sendEvent:| that always sends key 
+  // events to |RWHVCocoa keyEvent:| so that cocoa doesn't have a chance to
+  // intercept it.
+  DCHECK(![[self firstResponder]
+      isKindOfClass:[RenderWidgetHostViewCocoa class]]);
 
   // Handle per-window shortcuts like cmd-1, but do not handle browser-level
   // shortcuts like cmd-left (else, cmd-left would do history navigation even
-  // if e.g. the Omnibox has focus).
+  // if e.g. the Omnibox has focus). If the web has focus, don't do this here,
+  // since the web needs to get a chance at swallowing the event first.
   if ([self handleExtraWindowKeyboardShortcut:event])
     return YES;
   return [super performKeyEquivalent:event];
