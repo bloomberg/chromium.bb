@@ -418,9 +418,10 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
 
     _populate: function(event)
     {
-        for (var retainer in this.retainers) {
-            this.appendChild(new WebInspector.HeapSnapshotDataGridRetainerNode(this.snapshotView, null, this.retainers[retainer], this.tree));
-        }
+        var self = this;
+        this.produceDiff(this.baseRetainers, this.retainers, function(baseItem, snapshotItem) {
+            self.appendChild(new WebInspector.HeapSnapshotDataGridRetainerNode(self.snapshotView, baseItem, snapshotItem, self.tree));
+        });
 
         if (this._parent) {
             var currentComparator = this._parent.lastComparator;
@@ -429,6 +430,17 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
         }
 
         this.removeEventListener("populate", this._populate, this);
+    },
+
+    produceDiff: function(baseEntries, currentEntries, callback)
+    {
+        for (var item in currentEntries)
+            callback(baseEntries[item], currentEntries[item]);
+
+        for (item in baseEntries) {
+            if (!(item in currentEntries))
+                callback(baseEntries[item], null);
+        }
     },
 
     sort: function(comparator, force) {
@@ -446,6 +458,26 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
             child.sort(comparator, force);
         }
         this.lastComparator = comparator;
+    },
+
+    signForDelta: function(delta) {
+        if (delta == 0)
+            return "";
+        if (delta > 0)
+            return "+";
+        else
+            // Math minus sign, same width as plus.
+            return "\u2212";
+    },
+
+    showDeltaAsPercent: function(value) {
+        if (value === Number.POSITIVE_INFINITY)
+            return WebInspector.UIString("new");
+        else if (value === Number.NEGATIVE_INFINITY)
+            return WebInspector.UIString("deleted");
+        if (value > 1000.0)
+            return WebInspector.UIString("%s >1000%%", this.signForDelta(value));
+        return WebInspector.UIString("%s%.2f%%", this.signForDelta(value), Math.abs(value));
     },
 
     getTotalCount: function() {
@@ -476,6 +508,65 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
     get sizePercent()
     {
         return this.size / this._parent.getTotalSize() * 100.0;
+    },
+
+    get countDeltaPercent()
+    {
+        if (this.baseCount > 0) {
+            if (this.count > 0)
+                return this.countDelta / this.baseCount * 100.0;
+            else
+                return Number.NEGATIVE_INFINITY;
+        } else
+            return Number.POSITIVE_INFINITY;
+    },
+
+    get sizeDeltaPercent()
+    {
+        if (this.baseSize > 0) {
+            if (this.size > 0)
+                return this.sizeDelta / this.baseSize * 100.0;
+            else
+                return Number.NEGATIVE_INFINITY;
+        } else
+            return Number.POSITIVE_INFINITY;
+    },
+
+    getData: function(showSize)
+    {
+        var data = {};
+
+        data["cons"] = this.constructorName;
+
+        if (this.snapshotView.showCountAsPercent)
+            data["count"] = WebInspector.UIString("%.2f%%", this.countPercent);
+        else
+            data["count"] = this.count;
+
+        if (showSize) {
+            if (this.snapshotView.showSizeAsPercent)
+                data["size"] = WebInspector.UIString("%.2f%%", this.sizePercent);
+            else
+                data["size"] = Number.bytesToString(this.size);
+        } else {
+            data["size"] = "";
+        }
+
+        if (this.snapshotView.showCountDeltaAsPercent)
+            data["countDelta"] = this.showDeltaAsPercent(this.countDeltaPercent);
+        else
+            data["countDelta"] = WebInspector.UIString("%s%d", this.signForDelta(this.countDelta), Math.abs(this.countDelta));
+
+        if (showSize) {
+            if (this.snapshotView.showSizeDeltaAsPercent)
+                data["sizeDelta"] = this.showDeltaAsPercent(this.sizeDeltaPercent);
+            else
+                data["sizeDelta"] = WebInspector.UIString("%s%s", this.signForDelta(this.sizeDelta), Number.bytesToString(Math.abs(this.sizeDelta)));
+        } else {
+            data["sizeDelta"] = "";
+        }
+
+        return data;
     }
 };
 
@@ -506,73 +597,7 @@ WebInspector.HeapSnapshotDataGridNode = function(snapshotView, baseEntry, snapsh
 WebInspector.HeapSnapshotDataGridNode.prototype = {
     get data()
     {
-        var data = {};
-
-        data["cons"] = this.constructorName;
-
-        if (this.snapshotView.showCountAsPercent)
-            data["count"] = WebInspector.UIString("%.2f%%", this.countPercent);
-        else
-            data["count"] = this.count;
-
-        if (this.snapshotView.showSizeAsPercent)
-            data["size"] = WebInspector.UIString("%.2f%%", this.sizePercent);
-        else
-            data["size"] = Number.bytesToString(this.size);
-
-        function signForDelta(delta) {
-            if (delta == 0)
-                return "";
-            if (delta > 0)
-                return "+";
-            else
-                // Math minus sign, same width as plus.
-                return "\u2212";
-        }
-
-        function showDeltaAsPercent(value) {
-            if (value === Number.POSITIVE_INFINITY)
-                return WebInspector.UIString("new");
-            else if (value === Number.NEGATIVE_INFINITY)
-                return WebInspector.UIString("deleted");
-            if (value > 1000.0)
-                return WebInspector.UIString("%s >1000%%", signForDelta(value));
-            return WebInspector.UIString("%s%.2f%%", signForDelta(value), Math.abs(value));
-        }
-
-        if (this.snapshotView.showCountDeltaAsPercent)
-            data["countDelta"] = showDeltaAsPercent(this.countDeltaPercent);
-        else
-            data["countDelta"] = WebInspector.UIString("%s%d", signForDelta(this.countDelta), Math.abs(this.countDelta));
-
-        if (this.snapshotView.showSizeDeltaAsPercent)
-            data["sizeDelta"] = showDeltaAsPercent(this.sizeDeltaPercent);
-        else
-            data["sizeDelta"] = WebInspector.UIString("%s%s", signForDelta(this.sizeDelta), Number.bytesToString(Math.abs(this.sizeDelta)));
-
-        return data;
-    },
-
-    get countDeltaPercent()
-    {
-        if (this.baseCount > 0) {
-            if (this.count > 0)
-                return this.countDelta / this.baseCount * 100.0;
-            else
-                return Number.NEGATIVE_INFINITY;
-        } else
-            return Number.POSITIVE_INFINITY;
-    },
-
-    get sizeDeltaPercent()
-    {
-        if (this.baseSize > 0) {
-            if (this.size > 0)
-                return this.sizeDelta / this.baseSize * 100.0;
-            else
-                return Number.NEGATIVE_INFINITY;
-        } else
-            return Number.POSITIVE_INFINITY;
+        return this.getData(true);
     }
 };
 
@@ -603,17 +628,6 @@ WebInspector.HeapSnapshotDataGridList.prototype = {
         this.children = [];
     },
 
-    produceDiff: function(baseEntries, currentEntries, callback)
-    {
-        for (var item in currentEntries)
-            callback(baseEntries[item], currentEntries[item]);
-
-        for (item in baseEntries) {
-            if (!(item in currentEntries))
-                callback(baseEntries[item], null);
-        }
-    },
-
     populateChildren: function(baseEntries, snapshotEntries)
     {
         var self = this;
@@ -622,6 +636,7 @@ WebInspector.HeapSnapshotDataGridList.prototype = {
         });
     },
 
+    produceDiff: WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype.produceDiff,
     sort: WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype.sort,
     getTotalCount: WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype.getTotalCount,
     getTotalSize: WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype.getTotalSize
@@ -651,41 +666,13 @@ WebInspector.HeapSnapshotDataGridRetainerNode = function(snapshotView, baseEntry
         snapshotEntry = { cons: baseEntry.cons, count: 0, clusters: {} };
     this.constructorName = snapshotEntry.cons;
     this.count = snapshotEntry.count;
-    this.retainers = {};
-    if (this.isEmptySet(snapshotEntry.clusters)) {
-        if (this.constructorName in this.snapshotView.snapshot.entries)
-            this.retainers = this.snapshotView.snapshot.entries[this.constructorName].retainers;
-    } else {
-        // In case when an entry is retained by clusters, we need to gather up the list
-        // of retainers by merging retainers of every cluster.
-        // E.g. having such a tree:
-        //   A
-        //     Object:1  10
-        //       X       3
-        //       Y       4
-        //     Object:2  5
-        //       X       6
-        //
-        // will result in a following retainers list: X 9, Y 4.
-        for (var clusterName in snapshotEntry.clusters) {
-            if (clusterName in this.snapshotView.snapshot.clusters) {
-                var clusterRetainers = this.snapshotView.snapshot.clusters[clusterName].retainers;
-                for (var clusterRetainer in clusterRetainers) {
-                    var clusterRetainerEntry = clusterRetainers[clusterRetainer];
-                    if (!(clusterRetainer in this.retainers))
-                        this.retainers[clusterRetainer] = { cons: clusterRetainerEntry.cons, count: 0, clusters: {} };
-                    this.retainers[clusterRetainer].count += clusterRetainerEntry.count;
-                    for (var clusterRetainerCluster in clusterRetainerEntry.clusters)
-                        this.retainers[clusterRetainer].clusters[clusterRetainerCluster] = true;
-                }
-            }
-        }
-    }  
+    this.retainers = this._calculateRetainers(this.snapshotView.snapshot, snapshotEntry.clusters);
 
     if (!baseEntry)
         baseEntry = { count: 0, clusters: {} };
     this.baseCount = baseEntry.count;
     this.countDelta = this.count - this.baseCount;
+    this.baseRetainers = this._calculateRetainers(this.snapshotView.baseSnapshot, baseEntry.clusters);
 
     this.size = this.count;  // This way, when sorting by sizes entries will be sorted by references count.
 
@@ -695,18 +682,41 @@ WebInspector.HeapSnapshotDataGridRetainerNode = function(snapshotView, baseEntry
 WebInspector.HeapSnapshotDataGridRetainerNode.prototype = {
     get data()
     {
-        var data = {};
+        return this.getData(false);
+    },
 
-        data["cons"] = this.constructorName;
-        if (this.snapshotView.showCountAsPercent)
-            data["count"] = WebInspector.UIString("%.2f%%", this.countPercent);
-        else
-            data["count"] = this.count;
-        data["size"] = "";
-        data["countDelta"] = "";
-        data["sizeDelta"] = "";
-
-        return data;
+    _calculateRetainers: function(snapshot, clusters) {
+        var retainers = {};
+        if (this.isEmptySet(clusters)) {
+            if (this.constructorName in snapshot.entries)
+                return snapshot.entries[this.constructorName].retainers;
+        } else {
+            // In case when an entry is retained by clusters, we need to gather up the list
+            // of retainers by merging retainers of every cluster.
+            // E.g. having such a tree:
+            //   A
+            //     Object:1  10
+            //       X       3
+            //       Y       4
+            //     Object:2  5
+            //       X       6
+            //
+            // will result in a following retainers list: X 9, Y 4.
+            for (var clusterName in clusters) {
+                if (clusterName in snapshot.clusters) {
+                    var clusterRetainers = snapshot.clusters[clusterName].retainers;
+                    for (var clusterRetainer in clusterRetainers) {
+                        var clusterRetainerEntry = clusterRetainers[clusterRetainer];
+                        if (!(clusterRetainer in retainers))
+                            retainers[clusterRetainer] = { cons: clusterRetainerEntry.cons, count: 0, clusters: {} };
+                        retainers[clusterRetainer].count += clusterRetainerEntry.count;
+                        for (var clusterRetainerCluster in clusterRetainerEntry.clusters)
+                            retainers[clusterRetainer].clusters[clusterRetainerCluster] = true;
+                    }
+                }
+            }
+        }
+        return retainers;
     }
 };
 

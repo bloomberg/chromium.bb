@@ -263,6 +263,11 @@ DevToolsHostStub.prototype.getPlatform = function() {
 };
 
 
+DevToolsHostStub.prototype.hiddenPanels = function() {
+  return "";
+};
+
+
 DevToolsHostStub.prototype.addResourceSourceToFrame = function(
     identifier, mimeType, element) {
 };
