@@ -171,7 +171,7 @@ int Font::GetStringWidth(const std::wstring& text) const {
 double Font::avg_width() {
   if (avg_width_ < 0) {
     // First get the pango based width
-    PangoFontDescription* pango_desc = gfx::Font::PangoFontFromGfxFont(*this);
+    PangoFontDescription* pango_desc = PangoFontFromGfxFont(*this);
     PangoContext* context =
         gdk_pango_context_get_for_screen(gdk_screen_get_default());
     PangoFontMetrics* pango_metrics =
@@ -189,6 +189,8 @@ double Font::avg_width() {
     double dialog_units = (text_width / 26 + 1) / 2;
 
     avg_width_ = std::min(pango_width, dialog_units);
+    pango_font_metrics_unref(pango_metrics);
+    pango_font_description_free(pango_desc);
   }
   return avg_width_;
 }
