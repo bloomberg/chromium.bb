@@ -1259,10 +1259,6 @@ BUG10322 : LayoutTests/platform/win/accessibility = FAIL
 // Introduced in http://trac.webkit.org/changeset/48368
 BUG10322 SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
-// Border radius not anti-aliased.
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10322 WIN : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
-
 // This test isn't hanging, it just takes 12-13 seconds to run.
 BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
 
@@ -2447,9 +2443,6 @@ BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-verti
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
 
-// New tests, need Chromium baseline.
-BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
-
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
@@ -3161,50 +3154,13 @@ BUG_JEREMY LINUX DEBUG : LayoutTests/fast/forms/menulist-option-wrap.html = CRAS
 BUG24966 MAC DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
 
 // WebKit Roll 49640:49684
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-huge-assert.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusArcs01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted02.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDotted03.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble02.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusDouble03.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusGroove01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusGroove02.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusInset01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusInvalidColor.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusOutset01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusRidge01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid01.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid02.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid03.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/borders/borderRadiusSolid04.html = FAIL
-BUG_JEREMY LINUX : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/basic-shadows.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/border-radius-big.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/overflow/border-radius-clipping.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/repaint/border-radius-repaint.html = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/fast/transforms/shadows.html = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/http/tests/navigation/reload-subframe-object.html = FAIL
-// When fixing, uncomment line in BUG24182 to mark this test as slow for WIN!
-BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-01-b.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/focus-ring.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-and-object-creation.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/js-late-clipPath-creation.svg = FAIL
+BUG25202 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
+BUG25208 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
 BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG_JEREMY WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
-BUG_JEREMY WIN : chrome/fast/forms/basic-selects.html = FAIL
+BUG25204 WIN : chrome/fast/forms/basic-selects.html = FAIL
 BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
-BUG_JEREMY WIN : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 BUG_JEREMY WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // WebKit Roll 49684:49761
