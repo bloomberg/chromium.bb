@@ -174,20 +174,29 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
   header.key_size = public_key.size();
   header.signature_size = signature.size();
 
-  fwrite(&header, sizeof(SandboxedExtensionUnpacker::ExtensionHeader), 1,
-      crx_handle.get());
-  fwrite(&public_key.front(), sizeof(uint8), public_key.size(),
-      crx_handle.get());
-  fwrite(&signature.front(), sizeof(uint8), signature.size(),
-      crx_handle.get());
+  if (fwrite(&header, sizeof(SandboxedExtensionUnpacker::ExtensionHeader), 1,
+             crx_handle.get()) != 1) {
+    PLOG(ERROR) << "fwrite failed to write header";
+  }
+  if (fwrite(&public_key.front(), sizeof(uint8), public_key.size(),
+             crx_handle.get()) != public_key.size()) {
+    PLOG(ERROR) << "fwrite failed to write public_key.front";
+  }
+  if (fwrite(&signature.front(), sizeof(uint8), signature.size(),
+             crx_handle.get()) != signature.size()) {
+    PLOG(ERROR) << "fwrite failed to write signature.front";
+  }
 
   size_t buffer_size = 1 << 16;
   scoped_array<uint8> buffer(new uint8[buffer_size]);
-  int bytes_read = -1;
+  size_t bytes_read = 0;
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
   while ((bytes_read = fread(buffer.get(), 1, buffer_size,
-      zip_handle.get())) > 0) {
-    fwrite(buffer.get(), sizeof(char), bytes_read, crx_handle.get());
+                             zip_handle.get())) > 0) {
+    if (fwrite(buffer.get(), sizeof(char), bytes_read, crx_handle.get()) !=
+        bytes_read) {
+      PLOG(ERROR) << "fwrite failed to write buffer";
+    }
   }
 
   return true;
