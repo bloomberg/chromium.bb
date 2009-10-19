@@ -536,7 +536,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 }
 
+- (void)setIgnoreKeyEvents:(BOOL)ignorekeyEvents {
+  ignoreKeyEvents_ = ignorekeyEvents;
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
+  if (ignoreKeyEvents_)
+    return NO;
+
   // We have some magic in |CrApplication sendEvent:| that always sends key 
   // events to |keyEvent:| so that cocoa doesn't have a chance to intercept it.
   DCHECK([[self window] firstResponder] != self);
@@ -544,6 +551,9 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 }
 
 - (void)keyEvent:(NSEvent*)theEvent {
+  if (ignoreKeyEvents_)
+    return;
+
   // TODO(avi): Possibly kill self? See RenderWidgetHostViewWin::OnKeyEvent and
   // http://b/issue?id=1192881 .
 

@@ -50,10 +50,30 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
                                  fromTable:CommandForBrowserKeyboardShortcut];
 }
 
+- (BOOL)shortcircuitEvent:(NSEvent*)event {
+  if (!redispatchingEvent_ &&
+      ([event type] == NSKeyDown || [event type] == NSKeyUp)) {
+    if ([[self firstResponder]
+        isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
+      // No other mac browser sends keyup() for keyboard equivalents, so let's
+      // suppress this.
+      if (([event modifierFlags] & NSCommandKeyMask) && [event type] == NSKeyUp)
+        return YES;
+
+      RenderWidgetHostViewCocoa* rwhv = static_cast<RenderWidgetHostViewCocoa*>(
+          [self firstResponder]);
+      [rwhv keyEvent:event];
+      return YES;
+    }
+  }
+  return NO;
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
-  // We have some magic in |CrApplication sendEvent:| that always sends key 
-  // events to |RWHVCocoa keyEvent:| so that cocoa doesn't have a chance to
-  // intercept it.
+  if (redispatchingEvent_)
+    return NO;
+
+  // |shortcircuitEvent:| should handle all events directed to the RWHV.
   DCHECK(![[self firstResponder]
       isKindOfClass:[RenderWidgetHostViewCocoa class]]);
 
@@ -64,6 +84,18 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
   if ([self handleExtraWindowKeyboardShortcut:event])
     return YES;
   return [super performKeyEquivalent:event];
+}
+
+- (void)redispatchEvent:(NSEvent*)event {
+  DCHECK([event window] == self);
+  redispatchingEvent_ = YES;
+  [NSApp sendEvent:event];
+  redispatchingEvent_ = NO;
+}
+
+- (void)sendEvent:(NSEvent*)event {
+  if (!redispatchingEvent_)
+    [super sendEvent:event];
 }
 
 @end  // ChromeEventProcessingWindow

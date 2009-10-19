@@ -42,12 +42,18 @@ class RWHVMEditCommandHelper;
   void *trackingRectUserData_;
   NSTrackingRectTag lastToolTipTag_;
   NSString* toolTip_;
+
+  BOOL ignoreKeyEvents_;
 }
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
 
+// When a keyboard event comes back from the renderer, we redispatch it. This
+// makes sure we ignore it if we should receive it during redispatch, instead
+// of sending it to the renderer again.
+- (void)setIgnoreKeyEvents:(BOOL)ignorekeyEvents;
 @end
 
 ///////////////////////////////////////////////////////////////////////////////

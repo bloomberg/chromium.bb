@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
+#import "chrome/browser/chrome_application_mac.h"
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -316,50 +317,30 @@ void TabContentsViewMac::Observe(NotificationType type,
 
   NSEvent* event = wkEvent->os_event;
 
-  if ([event type] == NSKeyDown && ([event modifierFlags] & NSCommandKeyMask)) {
-    // We need to dispatch this to the menu.
-    if ([[NSApp mainMenu] performKeyEquivalent:event])
-      return;
-  }
-
-  // Cmd-` is not in the menu and it's apparently handled by |NSApp sendEvent|
-  // if the application doesn't swallow it. We do, so we need to handle this
-  // key ourself. On foreign keyboards, the "switch windows" key is not the
-  // ` key, so do this by keycode instead of |event characters|.
-  if ([event type] == NSKeyDown &&
-      [event keyCode] == kVK_ANSI_Grave &&
-      [NSApp respondsToSelector:@selector(_cycleWindowsReversed:)]) {
-    const NSUInteger kModifierMask = NSShiftKeyMask |
-                                     NSControlKeyMask |
-                                     NSAlternateKeyMask |
-                                     NSCommandKeyMask;
-    if (([event modifierFlags] & kModifierMask) == NSCommandKeyMask)
-      [NSApp _cycleWindowsReversed:NO];
-    else if (([event modifierFlags] & kModifierMask) ==
-        (NSCommandKeyMask | NSShiftKeyMask) &&
-        [NSApp respondsToSelector:@selector(_cycleWindowsReversed:)])
-      [NSApp _cycleWindowsReversed:YES];
-  }
-
-  // If this tab is no longer active, it's window will be |nil|. In that case,
+  // If this tab is no longer active, its window will be |nil|. In that case,
   // best ignore the event.
   if (![self window])
     return;
+  ChromeEventProcessingWindow* window =
+      (ChromeEventProcessingWindow*)[self window];
+  DCHECK([window isKindOfClass:[ChromeEventProcessingWindow class]]);
 
   // Do not fire shortcuts on key up.
   if ([event type] == NSKeyDown) {
-    ChromeBrowserWindow* window = (ChromeBrowserWindow*)[self window];
-    DCHECK([window isKindOfClass:[ChromeBrowserWindow class]]);
     if ([window handleExtraBrowserKeyboardShortcut:event])
       return;
     if ([window handleExtraWindowKeyboardShortcut:event])
       return;
   }
 
-  if ([event type] == NSKeyDown)
-    [super keyDown:event];
-  else if ([event type] == NSKeyUp)
-    [super keyUp:event];
+  // We need to re-dispatch the event, so that it is sent to the menu or other
+  // cocoa mechanisms (such as the cmd-` handler).
+  RenderWidgetHostViewCocoa* rwhv = static_cast<RenderWidgetHostViewCocoa*>(
+      tabContentsView_->GetContentNativeView());
+  DCHECK([rwhv isKindOfClass:[RenderWidgetHostViewCocoa class]]);
+  [rwhv setIgnoreKeyEvents:YES];
+  [window redispatchEvent:event];
+  [rwhv setIgnoreKeyEvents:NO];
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {

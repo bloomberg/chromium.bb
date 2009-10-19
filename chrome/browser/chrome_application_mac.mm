@@ -8,7 +8,7 @@
 #import "base/logging.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/app/breakpad_mac.h"
-#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#import "chrome/browser/cocoa/chrome_event_processing_window.h"
 
 namespace CrApplicationNSException {
 
@@ -190,19 +190,11 @@ class ScopedCrashKey {
   // view loop before dispatching them to |keyDown:|. Since we want to send keys
   // to the renderer before sending them to the menu, and we never want them to
   // the kev view loop when the web is focussed, we change this behavior.
-  if ([event type] == NSKeyDown || [event type] == NSKeyUp) {
-    if ([[[self keyWindow] firstResponder]
-        isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
-      // No other mac browser sends keyup() for keyboard equivalents, so let's
-      // suppress this.
-      if (([event modifierFlags] & NSCommandKeyMask) && [event type] == NSKeyUp)
-        return;
-
-      RenderWidgetHostViewCocoa* rwhv = static_cast<RenderWidgetHostViewCocoa*>(
-          [[self keyWindow] firstResponder]);
-      [rwhv keyEvent:event];
+  if ([[self keyWindow]
+      isKindOfClass:[ChromeEventProcessingWindow class]]) {
+    if ([static_cast<ChromeEventProcessingWindow*>([self keyWindow])
+        shortcircuitEvent:event])
       return;
-    }
   }
 
   [super sendEvent:event];
