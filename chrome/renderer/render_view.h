@@ -72,7 +72,6 @@ struct ContextMenuMediaParams;
 struct ThumbnailScore;
 struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
-struct ViewMsg_UploadFile_Params;
 struct WebDropData;
 
 namespace base {
@@ -565,7 +564,6 @@ class RenderView : public RenderWidget,
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
-  void OnUploadFileRequest(const ViewMsg_UploadFile_Params& p);
   void OnFormFill(const FormData& form);
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormDomManager::FillData& form_data);
@@ -668,14 +666,6 @@ class RenderView : public RenderWidget,
   // Activate/deactivate the RenderView (i.e., set its controls' tint
   // accordingly, etc.).
   void OnSetActive(bool active);
-
-  // Attempt to upload the file that we are trying to process if any.
-  // Reset the pending file upload data if the form was successfully
-  // posted.
-  void ProcessPendingUpload();
-
-  // Reset the pending file upload.
-  void ResetPendingUpload();
 
   // Exposes the DOMAutomationController object that allows JS to send
   // information to the browser process.
@@ -819,9 +809,6 @@ class RenderView : public RenderWidget,
 
   // The alternate error page URL, if one exists.
   GURL alternate_error_page_url_;
-
-  // The pending file upload.
-  scoped_ptr<webkit_glue::FileUploadData> pending_upload_data_;
 
   ScopedRunnableMethodFactory<RenderView> method_factory_;
 

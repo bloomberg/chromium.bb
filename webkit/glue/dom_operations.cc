@@ -194,111 +194,12 @@ struct FormElements {
 
 typedef std::vector<FormElements*> FormElementsList;
 
-static bool FillFormToUploadFileImpl(WebCore::HTMLFormElement* fe,
-                                     const FileUploadData& data) {
-  std::vector<WebCore::HTMLInputElement*> changed;
-  PassRefPtr<WebCore::HTMLCollection> elements = fe->elements();
-  int i, c;
-
-  bool file_found = false;
-  bool submit_found = false;
-
-  // We reference the form element itself just in case it is destroyed by one
-  // of the onLoad() handler.
-  fe->ref();
-
-  for (i = 0, c = elements->length(); i < c; ++i) {
-    WebCore::HTMLInputElement* ie =
-        static_cast<WebCore::HTMLInputElement*>(elements->item(i));
-
-    std::wstring name = StringToStdWString(ie->name());
-    std::wstring id = StringToStdWString(
-        ie->getAttribute(WebCore::HTMLNames::idAttr));
-
-    if (!file_found &&
-        ie->inputType() == WebCore::HTMLInputElement::FILE &&
-        (name == data.file_name || id == data.file_name)) {
-      ie->setValueFromRenderer(StdWStringToString(data.file_path));
-      ie->ref();
-      changed.push_back(ie);
-      file_found = true;
-    } else if (!submit_found &&
-               ie->inputType() == WebCore::HTMLInputElement::SUBMIT &&
-               (name == data.submit_name || id == data.submit_name)) {
-      ie->setActivatedSubmit(true);
-      submit_found = true;
-    } else {
-      FormValueMap::const_iterator val = data.other_form_values.find(name);
-      if (val != data.other_form_values.end()) {
-        ie->setValueFromRenderer(StdWStringToString(val->second));
-        ie->ref();
-        changed.push_back(ie);
-      } else {
-        val = data.other_form_values.find(id);
-        if (val != data.other_form_values.end()) {
-          ie->setValueFromRenderer(StdWStringToString(val->second));
-          ie->ref();
-          changed.push_back(ie);
-        }
-      }
-    }
-  }
-
-  // Call all the onChange functions.
-  std::vector<WebCore::HTMLInputElement*>::iterator changed_ie;
-  for (changed_ie = changed.begin(); changed_ie != changed.end();
-       ++changed_ie) {
-    (*changed_ie)->dispatchFormControlChangeEvent();
-    (*changed_ie)->deref();
-  }
-
-  // If we found both the file and the submit button, let's submit.
-  if (file_found && submit_found) {
-    fe->submit(0, false, false);
-  }
-
-  fe->deref();
-
-  // This operation is successful if the file input has been
-  // configured.
-  return file_found;
-}
-
-bool FillFormToUploadFile(WebView* view, const FileUploadData& data) {
-  WebFrame* main_frame = view->mainFrame();
-  if (!main_frame)
-    return false;
-  WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
-  WebCore::Frame* frame = main_frame_impl->frame();
-  WebCore::Frame* f;
-  for (f = frame; f; f = f->tree()->traverseNext()) {
-    WebCore::Document* doc = f->document();
-    if (doc->isHTMLDocument()) {
-      PassRefPtr<WebCore::HTMLCollection> forms = doc->forms();
-      int i, c;
-      for (i = 0, c = forms->length(); i < c; ++i) {
-        WebCore::HTMLFormElement* fe =
-            static_cast<WebCore::HTMLFormElement*>(forms->item(i));
-        std::wstring name = StringToStdWString(fe->name());
-        std::wstring id = StringToStdWString(
-            fe->getAttribute(WebCore::HTMLNames::idAttr));
-        if (data.form_name.empty() ||
-            id == data.form_name || name == data.form_name) {
-          if (FillFormToUploadFileImpl(fe, data))
-            return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
 // Internal implementation of FillForm API.
 static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
   if (!fe->form_element->autoComplete())
     return false;
 
-  FormValueMap data_map;
+  std::map<std::wstring, std::wstring> data_map;
   for (unsigned int i = 0; i < data.elements.size(); i++) {
     data_map[data.elements[i]] = data.values[i];
   }

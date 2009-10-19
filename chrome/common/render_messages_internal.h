@@ -385,8 +385,6 @@ IPC_BEGIN_MESSAGES(View)
                       gfx::Point /* client_pt */,
                       gfx::Point /* screen_pt */)
 
-  IPC_MESSAGE_ROUTED1(ViewMsg_UploadFile, ViewMsg_UploadFile_Params)
-
   // Notifies the renderer of updates in mouse position of an in-progress
   // drag.  if |ended| is true, then the user has ended the drag operation.
   IPC_MESSAGE_ROUTED4(ViewMsg_DragSourceEndedOrMoved,

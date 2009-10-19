@@ -426,7 +426,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
-    IPC_MESSAGE_HANDLER(ViewMsg_UploadFile, OnUploadFileRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_FormFill, OnFormFill)
     IPC_MESSAGE_HANDLER(ViewMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragEnter, OnDragTargetDragEnter)
@@ -1392,12 +1391,6 @@ void RenderView::didStopLoading() {
                                         false),
       kDelayForCaptureMs);
 
-  // The page is loaded. Try to process the file we need to upload if any.
-  ProcessPendingUpload();
-
-  // Since the page is done loading, we are sure we don't need to try
-  // again.
-  ResetPendingUpload();
 }
 
 bool RenderView::shouldBeginEditing(const WebRange& range) {
@@ -2930,42 +2923,6 @@ void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
 
 void RenderView::OnDragSourceSystemDragEnded() {
   webview()->dragSourceSystemDragEnded();
-}
-
-void RenderView::OnUploadFileRequest(const ViewMsg_UploadFile_Params& p) {
-  webkit_glue::FileUploadData* f = new webkit_glue::FileUploadData;
-  f->file_path = p.file_path;
-  f->form_name = p.form;
-  f->file_name = p.file;
-  f->submit_name = p.submit;
-
-  // Build the other form values map.
-  if (!p.other_values.empty()) {
-    std::vector<std::wstring> e;
-    std::vector<std::wstring> kvp;
-    std::vector<std::wstring>::iterator i;
-
-    SplitString(p.other_values, L'\n', &e);
-    for (i = e.begin(); i != e.end(); ++i) {
-      SplitString(*i, L'=', &kvp);
-      if (kvp.size() == 2)
-        f->other_form_values[kvp[0]] = kvp[1];
-      kvp.clear();
-    }
-  }
-
-  pending_upload_data_.reset(f);
-  ProcessPendingUpload();
-}
-
-void RenderView::ProcessPendingUpload() {
-  webkit_glue::FileUploadData* f = pending_upload_data_.get();
-  if (f && webview() && webkit_glue::FillFormToUploadFile(webview(), *f))
-    ResetPendingUpload();
-}
-
-void RenderView::ResetPendingUpload() {
-  pending_upload_data_.reset();
 }
 
 void RenderView::OnFormFill(const FormData& form) {

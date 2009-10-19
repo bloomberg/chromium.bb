@@ -238,16 +238,6 @@ struct ViewHostMsg_ScrollRect_Params {
   std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;
 };
 
-// Parameters structure for ViewMsg_UploadFile.
-struct ViewMsg_UploadFile_Params {
-  // See TabContents::StartFileUpload for a description of these fields.
-  std::wstring file_path;
-  std::wstring form;
-  std::wstring file;
-  std::wstring submit;
-  std::wstring other_values;
-};
-
 // Information on closing a tab. This is used both for ViewMsg_ClosePage, and
 // the corresponding ViewHostMsg_ClosePage_ACK.
 struct ViewMsg_ClosePage_Params {
@@ -1069,30 +1059,6 @@ struct ParamTraits<WebPluginInfo> {
     l->append(L", ");
     LogParam(p.mime_types, l);
     l->append(L")");
-  }
-};
-
-// Traits for ViewMsg_UploadFile_Params structure to pack/unpack.
-template <>
-struct ParamTraits<ViewMsg_UploadFile_Params> {
-  typedef ViewMsg_UploadFile_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.file_path);
-    WriteParam(m, p.form);
-    WriteParam(m, p.file);
-    WriteParam(m, p.submit);
-    WriteParam(m, p.other_values);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->file_path) &&
-      ReadParam(m, iter, &p->form) &&
-      ReadParam(m, iter, &p->file) &&
-      ReadParam(m, iter, &p->submit) &&
-      ReadParam(m, iter, &p->other_values);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<ViewMsg_UploadFile_Params>");
   }
 };
 
