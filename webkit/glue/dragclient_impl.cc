@@ -10,9 +10,9 @@
 #undef LOG
 
 #include "webkit/api/public/WebDragData.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebDragData;

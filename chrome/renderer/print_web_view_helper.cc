@@ -23,6 +23,7 @@ using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
+using WebKit::WebView;
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const ViewMsg_Print_Params& print_params,
@@ -63,13 +64,14 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : render_view_(render_view),
+      print_web_view_(NULL),
       user_cancelled_scripted_print_count_(0) {}
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
 void PrintWebViewHelper::DidFinishPrinting(bool success) {
   if (!success) {
-    WebView* web_view = print_web_view_.get();
+    WebView* web_view = print_web_view_;
     if (!web_view)
       web_view = render_view_->webview();
 
@@ -80,9 +82,9 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
             l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT)));
   }
 
-  if (print_web_view_.get()) {
+  if (print_web_view_) {
     print_web_view_->close();
-    print_web_view_.release();  // Close deletes object.
+    print_web_view_ = NULL;
     print_pages_params_.reset();
   }
 }
@@ -96,8 +98,8 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
-  print_web_view_.reset(WebView::Create(this));
-  prefs.Apply(print_web_view_.get());
+  print_web_view_ = WebView::create(this);
+  prefs.Apply(print_web_view_);
   print_web_view_->initializeMainFrame(NULL);
 
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));

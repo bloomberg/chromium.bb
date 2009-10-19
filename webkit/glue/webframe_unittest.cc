@@ -8,14 +8,14 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
-#include "webkit/glue/webview.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
+using WebKit::WebView;
 
 class WebFrameTest : public TestShellTest {
- public:
 };
 
 TEST_F(WebFrameTest, GetContentAsPlainText) {

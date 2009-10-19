@@ -41,10 +41,10 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -56,6 +56,7 @@ using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebURLRequest;
+using WebKit::WebView;
 
 namespace {
 

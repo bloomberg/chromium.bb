@@ -28,6 +28,7 @@
 #include "webkit/api/public/WebPluginListBuilder.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -72,7 +73,7 @@ WebWidgetClient* ToWebWidgetClient(WebCore::Widget* widget) {
   ChromeClientImpl* chrome_client = ToChromeClient(widget);
   if (!chrome_client || !chrome_client->webview())
     return NULL;
-  return chrome_client->webview()->delegate();
+  return chrome_client->webview()->client();
 }
 
 }

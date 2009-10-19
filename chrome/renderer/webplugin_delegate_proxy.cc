@@ -35,9 +35,9 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
-#include "webkit/glue/webview.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -49,10 +49,11 @@
 
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
-using WebKit::WebInputEvent;
 using WebKit::WebDragData;
-using WebKit::WebVector;
+using WebKit::WebInputEvent;
 using WebKit::WebString;
+using WebKit::WebVector;
+using WebKit::WebView;
 
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
 // deleting itself after its callback has been called.

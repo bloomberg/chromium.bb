@@ -11,11 +11,12 @@
 #include "base/gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebSize;
+using WebKit::WebView;
 
 // static
 WebViewHost* WebViewHost::Create(NSView* parent_view,
@@ -35,7 +36,7 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
   [parent_view addSubview:host->view_];
   [host->view_ release];
 
-  host->webwidget_ = WebView::Create(delegate);
+  host->webwidget_ = WebView::create(delegate);
   prefs.Apply(host->webview());
   host->webview()->initializeMainFrame(delegate);
   host->webwidget_->resize(WebSize(content_rect.size.width,

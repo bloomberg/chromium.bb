@@ -9,12 +9,13 @@
 #include "webkit/api/public/WebSettings.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview.h"
 
 using WebKit::WebSettings;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebView;
 
 void WebPreferences::Apply(WebView* web_view) const {
   WebSettings* settings = web_view->settings();

@@ -35,6 +35,7 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/api/src/WebPluginContainerImpl.h"
 #include "webkit/api/src/WebPluginLoadObserver.h"

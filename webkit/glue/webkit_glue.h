@@ -21,7 +21,6 @@
 
 class GURL;
 class SkBitmap;
-class WebView;
 struct WebPluginInfo;
 
 namespace base {
@@ -35,6 +34,7 @@ class PlatformCanvas;
 namespace WebKit {
 class WebFrame;
 class WebString;
+class WebView;
 }
 
 namespace webkit_glue {
@@ -67,7 +67,7 @@ std::wstring DumpHistoryState(const std::string& history_state, int indent,
                               bool is_current);
 
 // Cleans up state left over from the previous test run.
-void ResetBeforeTestRun(WebView* view);
+void ResetBeforeTestRun(WebKit::WebView* view);
 
 // Returns the WebKit version (major.minor).
 std::string GetWebKitVersion();

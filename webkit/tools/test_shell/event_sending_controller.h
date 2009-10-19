@@ -24,10 +24,10 @@
 #include "webkit/glue/cpp_bound_class.h"
 
 class TestShell;
-class WebView;
 
 namespace WebKit {
 class WebDragData;
+class WebView;
 struct WebPoint;
 }
 
@@ -81,7 +81,7 @@ class EventSendingController : public CppBoundClass {
 
  private:
   // Returns the test shell's webview.
-  static WebView* webview();
+  static WebKit::WebView* webview();
 
   // Returns true if dragMode is true.
   bool drag_mode() { return dragMode.isBool() && dragMode.ToBoolean(); }

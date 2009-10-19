@@ -14,6 +14,7 @@
 using WebKit::WebDevToolsAgent;
 using WebKit::WebPoint;
 using WebKit::WebString;
+using WebKit::WebView;
 
 // static
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;

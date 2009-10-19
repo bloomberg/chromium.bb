@@ -14,7 +14,9 @@
 #include <string>
 #include "googleurl/src/gurl.h"
 
+namespace WebKit {
 class WebView;
+}
 
 struct WebPreferences {
   std::wstring standard_font_family;
@@ -103,7 +105,7 @@ struct WebPreferences {
         experimental_notifications_enabled(false) {
   }
 
-  void Apply(WebView* web_view) const;
+  void Apply(WebKit::WebView* web_view) const;
 };
 
 #endif  // WEBKIT_GLUE_WEBPREFERENCES_H__

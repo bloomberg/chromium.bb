@@ -97,7 +97,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/webplugin_impl.h"
-#include "webkit/glue/webview.h"
 
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
@@ -152,6 +151,7 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
+using WebKit::WebView;
 using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -346,7 +346,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  webwidget_ = WebView::Create(this);
+  webwidget_ = WebView::create(this);
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);

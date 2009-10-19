@@ -6,12 +6,13 @@
 
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webview.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebPoint;
+using WebKit::WebView;
 
 // BaseDropTarget methods ----------------------------------------------------
 

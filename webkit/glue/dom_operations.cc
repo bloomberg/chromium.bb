@@ -39,6 +39,7 @@ MSVC_POP_WARNING();
 
 using WebCore::String;
 using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace {
 

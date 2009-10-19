@@ -7,6 +7,7 @@
 #include "webkit/api/public/WebFrame.h"
 
 using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace extensions_v8 {
 

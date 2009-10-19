@@ -52,13 +52,15 @@ namespace WebKit {
     public:
         // Initialization ------------------------------------------------------
 
-        // FIXME enable this once WebViewDelegate has been eliminated.
-        //WEBKIT_API WebView* create(WebViewClient*);
+        // Creates a WebView that is NOT yet initialized.  You will need to
+        // call initializeMainFrame to finish the initialization.  It is valid
+        // to pass a null WebViewClient pointer.
+        WEBKIT_API static WebView* create(WebViewClient*);
 
         // After creating a WebView, you should immediately call this method.
         // You can optionally modify the settings before calling this method.
         // The WebFrameClient will receive events for the main frame and any
-        // child frames.
+        // child frames.  It is valid to pass a null WebFrameClient pointer.
         virtual void initializeMainFrame(WebFrameClient*) = 0;
 
 
@@ -225,10 +227,16 @@ namespace WebKit {
         virtual void hideAutofillPopup() = 0;
 
 
-        // FIXME what about:
-        // GetDelegate
-        // AutofillSuggestionsForNode
-        // HideAutofillPopup
+        // Visited link state --------------------------------------------------
+
+        // Tells all WebView instances to update the visited link state for the
+        // specified hash.
+        WEBKIT_API static void updateVisitedLinkState(unsigned long long hash);
+
+        // Tells all WebView instances to update the visited state for all
+        // their links.
+        WEBKIT_API static void resetVisitedLinkState();
+
 
     protected:
         ~WebView() {}

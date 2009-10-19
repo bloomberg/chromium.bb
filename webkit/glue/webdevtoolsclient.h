@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 
 class WebDevToolsClientDelegate;
-class WebView;
 
 namespace WebKit {
 class WebString;
+class WebView;
 }
 
 // WebDevToolsClient represents DevTools client sitting in the Glue. It provides
@@ -19,7 +19,7 @@ class WebString;
 class WebDevToolsClient {
  public:
   static WebDevToolsClient* Create(
-      WebView* view,
+      WebKit::WebView* view,
       WebDevToolsClientDelegate* delegate,
       const WebKit::WebString& application_locale);
 

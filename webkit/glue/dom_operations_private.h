@@ -54,7 +54,7 @@ bool ElementHasLegalLinkAttribute(const WebCore::Element* element,
                                   const WebCore::QualifiedName& attr_name);
 
 // Get pointer of WebFrameImpl from webview according to specific URL.
-WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebView* view,
+WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebKit::WebView* view,
                                                        const GURL& page_url);
 
 }  // namespace webkit_glue

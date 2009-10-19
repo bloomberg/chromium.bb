@@ -20,12 +20,12 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview.h"
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -39,6 +39,7 @@ using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebWidget;
+using WebKit::WebView;
 
 namespace {
 

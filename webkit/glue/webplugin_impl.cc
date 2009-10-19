@@ -26,13 +26,13 @@
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webplugin_page_delegate.h"
-#include "webkit/glue/webview.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebCanvas;
@@ -58,6 +58,7 @@ using WebKit::WebURLLoaderClient;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
+using WebKit::WebView;
 using webkit_glue::MultipartResponseDelegate;
 
 namespace webkit_glue {

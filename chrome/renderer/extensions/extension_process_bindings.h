@@ -16,7 +16,10 @@
 
 class GURL;
 class URLPattern;
+
+namespace WebKit {
 class WebView;
+}
 
 class ExtensionProcessBindings {
  public:
@@ -58,7 +61,7 @@ class ExtensionProcessBindings {
   // For EXTENSION_* |type| values, adds/replaces a special class name on to
   // the document element (e.g. "extension_toolstrip", "extension_mole") so
   // that the page can use CSS rules to control its display appropriately.
-  static void SetViewType(WebView* view, ViewType::Type type);
+  static void SetViewType(WebKit::WebView* view, ViewType::Type type);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_

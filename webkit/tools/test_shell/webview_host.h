@@ -16,8 +16,11 @@
 #endif
 
 struct WebPreferences;
-class WebView;
 class TestWebViewDelegate;
+
+namespace WebKit {
+class WebView;
+}
 
 // This class is a simple NativeView-based host for a WebView
 class WebViewHost : public WebWidgetHost {
@@ -29,7 +32,7 @@ class WebViewHost : public WebWidgetHost {
                              TestWebViewDelegate* delegate,
                              const WebPreferences& prefs);
 
-  WebView* webview() const;
+  WebKit::WebView* webview() const;
 
 #if defined(OS_LINUX)
   // Create a new plugin parent container for a given plugin XID.

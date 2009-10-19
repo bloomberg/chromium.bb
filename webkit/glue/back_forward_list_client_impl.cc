@@ -7,6 +7,7 @@
 #include "HistoryItem.h"
 #undef LOG
 
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
 #include "webkit/glue/webview_impl.h"
 

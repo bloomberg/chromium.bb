@@ -234,6 +234,7 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
+using WebKit::WebView;
 
 // Key for a StatsCounter tracking how many WebFrames are active.
 static const char* const kWebFrameActiveCount = "WebFrameActiveCount";

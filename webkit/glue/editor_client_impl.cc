@@ -28,11 +28,11 @@
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebTextAffinity.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webview.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebEditingAction;

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webview.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+using WebKit::WebView;
 
 class WebViewTest : public TestShellTest {
 };

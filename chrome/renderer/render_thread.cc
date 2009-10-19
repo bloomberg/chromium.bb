@@ -70,6 +70,7 @@ using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
+using WebKit::WebView;
 
 namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
@@ -216,11 +217,11 @@ void RenderThread::OnUpdateVisitedLinks(base::SharedMemoryHandle table) {
 void RenderThread::OnAddVisitedLinks(
     const VisitedLinkSlave::Fingerprints& fingerprints) {
   for (size_t i = 0; i < fingerprints.size(); ++i)
-    WebView::UpdateVisitedLinkState(fingerprints[i]);
+    WebView::updateVisitedLinkState(fingerprints[i]);
 }
 
 void RenderThread::OnResetVisitedLinks() {
-  WebView::ResetVisitedLinkState();
+  WebView::resetVisitedLinkState();
 }
 
 void RenderThread::OnUpdateUserScripts(

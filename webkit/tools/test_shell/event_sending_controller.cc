@@ -36,8 +36,8 @@
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 #if defined(OS_WIN)
@@ -58,6 +58,7 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebPoint;
 using WebKit::WebString;
+using WebKit::WebView;
 
 TestShell* EventSendingController::shell_ = NULL;
 gfx::Point EventSendingController::last_mouse_pos_;

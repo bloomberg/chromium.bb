@@ -28,6 +28,7 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/context_menu_client_impl.h"

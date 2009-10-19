@@ -37,6 +37,7 @@ using bindings_utils::PendingRequest;
 using bindings_utils::PendingRequestMap;
 using bindings_utils::ExtensionBase;
 using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace {
 

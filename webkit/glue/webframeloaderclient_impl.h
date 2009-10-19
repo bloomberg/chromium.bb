@@ -11,7 +11,6 @@
 #include <wtf/RefPtr.h>
 
 #include "webkit/api/public/WebNavigationPolicy.h"
-#include "webkit/glue/webview_delegate.h"
 
 class WebFrameImpl;
 

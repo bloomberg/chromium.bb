@@ -18,9 +18,12 @@ class HTMLInputElement;
 class Node;
 }
 
+namespace WebKit {
+class WebView;
+}
+
 struct FormData;
 class WebFrameImpl;
-class WebView;
 
 // A collection of operations that access the underlying WebKit DOM directly.
 namespace webkit_glue {
@@ -47,14 +50,14 @@ struct FileUploadData {
   FormValueMap other_form_values;
 };
 
-bool FillFormToUploadFile(WebView* view, const FileUploadData& data);
+bool FillFormToUploadFile(WebKit::WebView* view, const FileUploadData& data);
 
 // Fill in a form identified by form |data|.
-bool FillForm(WebView* view, const FormData& data);
+bool FillForm(WebKit::WebView* view, const FormData& data);
 
 // Fill matching password forms and trigger autocomplete in the case of multiple
 // matching logins.
-void FillPasswordForm(WebView* view,
+void FillPasswordForm(WebKit::WebView* view,
                       const PasswordFormDomManager::FillData& data);
 
 // Structure for storage the result of getting all savable resource links
@@ -86,7 +89,7 @@ struct SavableResourcesResult {
 // and sub-frame. After collecting all savable resource links, this function
 // will send those links to embedder. Return value indicates whether we get
 // all saved resource links successfully.
-bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
+bool GetAllSavableResourceLinksForCurrentPage(WebKit::WebView* view,
     const GURL& page_url, SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
 
@@ -127,12 +130,12 @@ bool ParseIconSizes(const std::wstring& text,
 
 // Gets the application info for the specified page. See the description of
 // WebApplicationInfo for details as to where each field comes from.
-void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info);
+void GetApplicationInfo(WebKit::WebView* view, WebApplicationInfo* app_info);
 
 // Invokes pauseAnimationAtTime on the AnimationController associated with the
 // |view|s main frame.
 // This is used by test shell.
-bool PauseAnimationAtTimeOnElementWithId(WebView* view,
+bool PauseAnimationAtTimeOnElementWithId(WebKit::WebView* view,
                                          const std::string& animation_name,
                                          double time,
                                          const std::string& element_id);
@@ -140,18 +143,18 @@ bool PauseAnimationAtTimeOnElementWithId(WebView* view,
 // Invokes pauseTransitionAtTime on the AnimationController associated with the
 // |view|s main frame.
 // This is used by test shell.
-bool PauseTransitionAtTimeOnElementWithId(WebView* view,
+bool PauseTransitionAtTimeOnElementWithId(WebKit::WebView* view,
                                           const std::string& property_name,
                                           double time,
                                           const std::string& element_id);
 
 // Returns true if the element with |element_id| as its id has autocomplete
 // on.
-bool ElementDoesAutoCompleteForElementWithId(WebView* view,
+bool ElementDoesAutoCompleteForElementWithId(WebKit::WebView* view,
                                              const std::string& element_id);
 
 // Returns the number of animations currently running.
-int NumberOfActiveAnimations(WebView* view);
+int NumberOfActiveAnimations(WebKit::WebView* view);
 
 // Returns the passed element/node casted to an HTMLInputElement if it is one,
 // NULL if it is not an HTMLInputElement.

@@ -9,11 +9,13 @@
 
 #include "base/base_drop_target.h"
 
+namespace WebKit {
 class WebView;
+}
 
 class TestDropDelegate : public BaseDropTarget {
  public:
-  TestDropDelegate(HWND source_hwnd, WebView* webview)
+  TestDropDelegate(HWND source_hwnd, WebKit::WebView* webview)
       : BaseDropTarget(source_hwnd),
         webview_(webview) { }
 
@@ -35,7 +37,7 @@ class TestDropDelegate : public BaseDropTarget {
 
 
  private:
-  WebView* webview_;
+  WebKit::WebView* webview_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_DROP_DELEGATE_H__

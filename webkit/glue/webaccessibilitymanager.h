@@ -9,9 +9,8 @@
 
 namespace WebKit {
 class WebAccessibilityObject;
-}
-
 class WebView;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -35,7 +34,7 @@ class WebAccessibilityManager {
   // calling into WebKit's AccessibilityObject. Maintains a hashmap of the
   // currently active (browser side ref-count non-zero) instances. Returns true
   // if successful, false otherwise.
-  virtual bool GetAccObjInfo(WebView* view,
+  virtual bool GetAccObjInfo(WebKit::WebView* view,
       const WebAccessibility::InParams& in_params,
       WebAccessibility::OutParams* out_params) = 0;
 
@@ -53,7 +52,7 @@ class WebAccessibilityManager {
   // initialize the root of the GlueAccessibilityObject tree with the
   // associated accessibility information. Returns true if successful, false
   // otherwise.
-  virtual bool InitAccObjRoot(WebView* view) = 0;
+  virtual bool InitAccObjRoot(WebKit::WebView* view) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAccessibilityManager);
 };

@@ -34,7 +34,6 @@
 #include "WebCanvas.h"
 #include "WebURL.h"
 
-class WebView;  // FIXME: Move into the WebKit namespace.
 struct NPObject;
 
 #if WEBKIT_USING_V8
@@ -54,6 +53,7 @@ namespace WebKit {
     class WebString;
     class WebURL;
     class WebURLRequest;
+    class WebView;
     struct WebConsoleMessage;
     struct WebFindOptions;
     struct WebRect;
@@ -123,7 +123,7 @@ namespace WebKit {
         // Hierarchy ----------------------------------------------------------
 
         // Returns the containing view.
-        virtual ::WebView* view() const = 0;
+        virtual WebView* view() const = 0;
 
         // Returns the frame that opened this frame or 0 if there is none.
         virtual WebFrame* opener() const = 0;

@@ -70,6 +70,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/dom_operations.h"
@@ -81,7 +82,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
 #include "webkit/glue/webdevtoolsclient.h"
-#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 
 // Get rid of WTF's pow define so we can use std::pow.
@@ -126,6 +126,7 @@ using WebKit::WebTextDirectionLeftToRight;
 using WebKit::WebTextDirectionRightToLeft;
 using WebKit::WebURL;
 using WebKit::WebVector;
+using WebKit::WebViewClient;
 
 using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 
@@ -341,12 +342,28 @@ static const WebCore::PopupContainerSettings kAutocompletePopupSettings = {
 
 // WebView ----------------------------------------------------------------
 
-/*static*/
-WebView* WebView::Create(WebViewDelegate* delegate) {
-  WebViewImpl* instance = new WebViewImpl(delegate);
+namespace WebKit {
+
+// static
+WebView* WebView::create(WebViewClient* client) {
+  WebViewImpl* instance = new WebViewImpl(client);
   instance->AddRef();
   return instance;
 }
+
+// static
+void WebView::updateVisitedLinkState(unsigned long long link_hash) {
+  WebCore::Page::visitedStateChanged(
+      WebCore::PageGroup::pageGroup(pageGroupName), link_hash);
+}
+
+// static
+void WebView::resetVisitedLinkState() {
+  WebCore::Page::allVisitedStateChanged(
+      WebCore::PageGroup::pageGroup(pageGroupName));
+}
+
+}  // namespace WebKit
 
 void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
@@ -355,8 +372,8 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
 
   main_frame->InitMainFrame(this);
 
-  if (client()) {
-    WebDevToolsAgentClient* tools_client = client()->devToolsAgentClient();
+  if (client_) {
+    WebDevToolsAgentClient* tools_client = client_->devToolsAgentClient();
     if (tools_client)
       devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_client));
   }
@@ -367,20 +384,8 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
       SecurityOrigin::AllowLocalLoadsForLocalOnly);
 }
 
-// static
-void WebView::UpdateVisitedLinkState(uint64 link_hash) {
-  WebCore::Page::visitedStateChanged(
-      WebCore::PageGroup::pageGroup(pageGroupName), link_hash);
-}
-
-// static
-void WebView::ResetVisitedLinkState() {
-  WebCore::Page::allVisitedStateChanged(
-      WebCore::PageGroup::pageGroup(pageGroupName));
-}
-
-WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
-    : delegate_(delegate),
+WebViewImpl::WebViewImpl(WebViewClient* client)
+    : client_(client),
       ALLOW_THIS_IN_INITIALIZER_LIST(back_forward_list_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(chrome_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(context_menu_client_impl_(this)),
@@ -464,7 +469,7 @@ void WebViewImpl::MouseLeave(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-  client()->setMouseOverURL(WebURL());
+  client_->setMouseOverURL(WebURL());
 
   main_frame()->frame()->eventHandler()->handleMouseMoveEvent(
       PlatformMouseEventBuilder(main_frame()->frameview(), event));
@@ -684,7 +689,7 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
         input_element->name());
     const WebString& value = webkit_glue::StringToWebString(
         autocomplete_popup_client_->itemText(selected_index));
-    client()->removeAutofillSuggestions(name, value);
+    client_->removeAutofillSuggestions(name, value);
     // Update the entries in the currently showing popup to reflect the
     // deletion.
     autocomplete_popup_client_->RemoveItemAtIndex(selected_index);
@@ -974,9 +979,9 @@ void WebViewImpl::close() {
 
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
-  delegate_ = NULL;
+  client_ = NULL;
 
-  Release();  // Balances AddRef from WebView::Create
+  Release();  // Balances AddRef from WebView::create
 }
 
 void WebViewImpl::resize(const WebSize& new_size) {
@@ -989,9 +994,9 @@ void WebViewImpl::resize(const WebSize& new_size) {
     main_frame()->frame()->eventHandler()->sendResizeEvent();
   }
 
-  if (delegate_) {
+  if (client_) {
     WebRect damaged_rect(0, 0, size_.width, size_.height);
-    delegate_->didInvalidateRect(damaged_rect);
+    client_->didInvalidateRect(damaged_rect);
   }
 }
 
@@ -1831,11 +1836,11 @@ bool WebViewImpl::NavigationPolicyFromMouseEvent(unsigned short button,
 void WebViewImpl::StartDragging(const WebPoint& event_pos,
                                 const WebDragData& drag_data,
                                 WebDragOperationsMask mask) {
-  if (!client())
+  if (!client_)
     return;
   DCHECK(!doing_drag_and_drop_);
   doing_drag_and_drop_ = true;
-  client()->startDragging(event_pos, drag_data, mask);
+  client_->startDragging(event_pos, drag_data, mask);
 }
 
 void WebViewImpl::SetCurrentHistoryItem(WebCore::HistoryItem* item) {
@@ -1871,8 +1876,8 @@ void WebViewImpl::SetIgnoreInputEvents(bool new_value) {
 
 #if ENABLE(NOTIFICATIONS)
 WebKit::NotificationPresenterImpl* WebViewImpl::GetNotificationPresenter() {
-  if (!notification_presenter_.isInitialized() && client())
-    notification_presenter_.initialize(client()->notificationPresenter());
+  if (!notification_presenter_.isInitialized() && client_)
+    notification_presenter_.initialize(client_->notificationPresenter());
   return &notification_presenter_;
 }
 #endif

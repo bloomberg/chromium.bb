@@ -9,6 +9,7 @@
 #include "webkit/api/public/WebFrame.h"
 
 using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace bindings_utils {
 

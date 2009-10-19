@@ -20,7 +20,7 @@
 #include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/webview.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;

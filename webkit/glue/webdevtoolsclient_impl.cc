@@ -40,6 +40,7 @@ using namespace WebCore;
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
+using WebKit::WebView;
 
 static v8::Local<v8::String> ToV8String(const String& s) {
   if (s.isNull())

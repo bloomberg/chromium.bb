@@ -26,7 +26,8 @@ namespace webkit_glue {
 class WebAccessibilityManagerImpl : public WebAccessibilityManager {
  public:
   // From WebAccessibilityManager.
-  bool GetAccObjInfo(WebView* view, const WebAccessibility::InParams& in_params,
+  bool GetAccObjInfo(WebKit::WebView* view,
+                     const WebAccessibility::InParams& in_params,
                      WebAccessibility::OutParams* out_params);
   bool ClearAccObjMap(int acc_obj_id, bool clear_all);
   int FocusAccObj(const WebKit::WebAccessibilityObject& object);
@@ -43,7 +44,7 @@ class WebAccessibilityManagerImpl : public WebAccessibilityManager {
 
  private:
   // From WebAccessibilityManager.
-  bool InitAccObjRoot(WebView* view);
+  bool InitAccObjRoot(WebKit::WebView* view);
 
   // Wrapper around the pointer that holds the root of the AccessibilityObject
   // tree, to allow the use of a scoped_refptr.

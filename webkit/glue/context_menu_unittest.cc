@@ -10,12 +10,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebView;
 
 // Right clicking inside on an iframe should produce a context menu
 class ContextMenuCapturing : public TestShellTest {

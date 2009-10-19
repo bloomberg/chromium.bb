@@ -28,6 +28,7 @@
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/api/public/WebWorkerClient.h"
 #include "webkit/api/src/PlatformMessagePortChannel.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
@@ -35,8 +36,6 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview.h"
-#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebCursorInfo;
@@ -53,6 +52,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
+using WebKit::WebView;
 
 #if ENABLE(WORKERS)
 
@@ -143,7 +143,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   // loading requests from the worker context to the rest of WebKit and Chromium
   // infrastructure.
   DCHECK(!web_view_);
-  web_view_ = WebView::Create(NULL);
+  web_view_ = WebView::create(NULL);
   WebPreferences().Apply(web_view_);
   web_view_->initializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
 

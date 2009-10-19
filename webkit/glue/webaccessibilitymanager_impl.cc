@@ -19,6 +19,7 @@
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebAccessibilityObject;
+using WebKit::WebView;
 
 namespace webkit_glue {
 

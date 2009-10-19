@@ -10,7 +10,7 @@
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "webkit/glue/webview_delegate.h"
+#include "webkit/api/public/WebViewClient.h"
 
 namespace gfx {
 class Size;
@@ -28,11 +28,9 @@ typedef PdfPsMetafile NativeMetafile;
 #endif
 
 class RenderView;
-class WebView;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
-
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
@@ -42,7 +40,7 @@ class PrepareFrameAndViewForPrint {
  public:
   PrepareFrameAndViewForPrint(const ViewMsg_Print_Params& print_params,
                               WebKit::WebFrame* frame,
-                              WebView* web_view);
+                              WebKit::WebView* web_view);
   ~PrepareFrameAndViewForPrint();
 
   int GetExpectedPageCount() const {
@@ -55,7 +53,7 @@ class PrepareFrameAndViewForPrint {
 
  private:
   WebKit::WebFrame* frame_;
-  WebView* web_view_;
+  WebKit::WebView* web_view_;
   gfx::Size print_canvas_size_;
   gfx::Size prev_view_size_;
   int expected_pages_count_;
@@ -67,7 +65,7 @@ class PrepareFrameAndViewForPrint {
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
-class PrintWebViewHelper : public WebViewDelegate {
+class PrintWebViewHelper : public WebKit::WebViewClient {
  public:
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();
@@ -76,7 +74,7 @@ class PrintWebViewHelper : public WebViewDelegate {
 
   // Is there a background print in progress?
   bool IsPrinting() {
-    return print_web_view_.get() != NULL;
+    return print_web_view_ != NULL;
   }
 
   // Notification when printing is done - signal teardown
@@ -117,7 +115,7 @@ class PrintWebViewHelper : public WebViewDelegate {
   int32 routing_id();
 
   // WebKit::WebViewClient
-  virtual WebView* createView(WebKit::WebFrame* creator) { return NULL; }
+  virtual WebKit::WebView* createView(WebKit::WebFrame* creator) { return NULL; }
   virtual WebKit::WebWidget* createPopupMenu(bool activatable) { return NULL; }
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info) { return NULL; }
@@ -235,7 +233,7 @@ class PrintWebViewHelper : public WebViewDelegate {
 
  private:
   RenderView* render_view_;
-  scoped_ptr<WebView> print_web_view_;
+  WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;

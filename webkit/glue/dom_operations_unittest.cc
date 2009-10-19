@@ -7,8 +7,8 @@
 #include "base/string_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 

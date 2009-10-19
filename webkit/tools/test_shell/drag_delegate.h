@@ -9,11 +9,13 @@
 
 #include "base/base_drag_source.h"
 
+namespace WebKit {
 class WebView;
+}
 
 class TestDragDelegate : public BaseDragSource {
  public:
-  TestDragDelegate(HWND source_hwnd, WebView* webview)
+  TestDragDelegate(HWND source_hwnd, WebKit::WebView* webview)
       : BaseDragSource(),
         source_hwnd_(source_hwnd),
         webview_(webview) { }
@@ -25,7 +27,7 @@ class TestDragDelegate : public BaseDragSource {
   virtual void OnDragSourceMove();
 
  private:
-  WebView* webview_;
+  WebKit::WebView* webview_;
 
   // A HWND for the source we are associated with, used for translating
   // mouse coordinates from screen to client coordinates.

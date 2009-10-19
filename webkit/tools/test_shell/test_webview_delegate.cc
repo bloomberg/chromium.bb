@@ -40,6 +40,7 @@
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
@@ -50,7 +51,6 @@
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -101,6 +101,7 @@ using WebKit::WebURLResponse;
 using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
+using WebKit::WebView;
 
 using webkit_glue::AccessibilityObjectToWebAccessibilityObject;
 

@@ -17,9 +17,11 @@
 
 namespace WebCore {
 class WorkerThread;
-};
+}
 
+namespace WebKit {
 class WebView;
+}
 
 // This class is used by the worker process code to talk to the WebCore::Worker
 // implementation.  It can't use it directly since it uses WebKit types, so this
@@ -127,7 +129,7 @@ class WebWorkerImpl: public WebCore::WorkerObjectProxy,
 
   // 'shadow page' - created to proxy loading requests from the worker.
   WTF::RefPtr<WebCore::ScriptExecutionContext> loading_document_;
-  WebView* web_view_;
+  WebKit::WebView* web_view_;
   bool asked_to_terminate_;
 
   WTF::RefPtr<WebCore::WorkerThread> worker_thread_;

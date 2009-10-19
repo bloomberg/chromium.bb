@@ -30,9 +30,9 @@
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebPopupMenuInfo.h"
 #endif
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_page_delegate.h"
-#include "webkit/glue/webview_delegate.h"
 #if defined(OS_WIN)
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
@@ -44,7 +44,7 @@ class GURL;
 class TestShell;
 class WebWidgetHost;
 
-class TestWebViewDelegate : public WebViewDelegate,
+class TestWebViewDelegate : public WebKit::WebViewClient,
                             public WebKit::WebFrameClient,
                             public webkit_glue::WebPluginPageDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
@@ -66,7 +66,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
 
   // WebKit::WebViewClient
-  virtual WebView* createView(WebKit::WebFrame* creator);
+  virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
   virtual WebKit::WebWidget* createPopupMenu(bool activatable);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
@@ -316,7 +316,7 @@ class TestWebViewDelegate : public WebViewDelegate,
 
   // Called when the URL of the page changes.
   // Extracts the URL and forwards on to SetAddressBarURL().
-  void UpdateAddressBar(WebView* webView);
+  void UpdateAddressBar(WebKit::WebView* webView);
 
   // Called when the URL of the page changes.
   // Should be used to update the text of the URL bar.

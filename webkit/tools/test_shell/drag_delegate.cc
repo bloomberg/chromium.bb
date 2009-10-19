@@ -5,9 +5,10 @@
 #include "webkit/tools/test_shell/drag_delegate.h"
 
 #include "webkit/api/public/WebPoint.h"
-#include "webkit/glue/webview.h"
+#include "webkit/api/public/WebView.h"
 
 using WebKit::WebPoint;
+using WebKit::WebView;
 
 namespace {
 

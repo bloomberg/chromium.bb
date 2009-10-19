@@ -22,6 +22,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"

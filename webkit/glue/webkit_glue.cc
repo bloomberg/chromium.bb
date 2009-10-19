@@ -56,6 +56,7 @@ using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebString;
 using WebKit::WebVector;
+using WebKit::WebView;
 
 namespace {
 

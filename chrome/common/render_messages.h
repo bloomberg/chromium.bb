@@ -46,7 +46,6 @@
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/platform_file.h"

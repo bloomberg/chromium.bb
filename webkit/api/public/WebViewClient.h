@@ -38,8 +38,6 @@
 #include "WebTextDirection.h"
 #include "WebWidgetClient.h"
 
-class WebView;  // FIXME: Move into the WebKit namespace.
-
 namespace WebKit {
     class WebAccessibilityObject;
     class WebDevToolsAgentClient;
@@ -51,6 +49,7 @@ namespace WebKit {
     class WebRange;
     class WebString;
     class WebURL;
+    class WebView;
     class WebWidget;
     struct WebConsoleMessage;
     struct WebContextMenuData;
@@ -272,15 +271,8 @@ namespace WebKit {
         virtual void removeAutofillSuggestions(const WebString& name,
                                                const WebString& value) = 0;
 
-
-        // FIXME need to something for:
-        // OnPasswordFormsSeen
-        // OnAutofillFormSubmitted
-        // QueryFormFieldAutofill
-        // RemoveStoredAutofillEntry
-        // ShowModalHTMLDialog <-- we should be able to kill this
-        // GetWebDevToolsAgentDelegate
-        // WasOpenedByUserGesture
+    protected:
+        ~WebViewClient() { }
     };
 
 } // namespace WebKit

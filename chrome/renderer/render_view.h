@@ -38,8 +38,11 @@
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebFrameClient.h"
+#include "webkit/api/public/WebMediaPlayerAction.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebTextDirection.h"
+#include "webkit/api/public/WebView.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/image_resource_fetcher.h"
@@ -47,8 +50,6 @@
 #include "webkit/glue/webaccessibilitymanager.h"
 #include "webkit/glue/webplugin_page_delegate.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview_delegate.h"
-#include "webkit/glue/webview.h"
 
 #if defined(OS_WIN)
 // RenderView is a diamond-shaped hierarchy, with WebWidgetClient at the root.
@@ -109,7 +110,7 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // communication interface with an embedding application process
 //
 class RenderView : public RenderWidget,
-                   public WebViewDelegate,
+                   public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public webkit_glue::WebPluginPageDelegate,
                    public webkit_glue::DomSerializerDelegate,
@@ -120,7 +121,7 @@ class RenderView : public RenderWidget,
   static void ForEach(RenderViewVisitor* visitor);
 
   // Returns the RenderView containing the given WebView.
-  static RenderView* FromWebView(WebView* webview);
+  static RenderView* FromWebView(WebKit::WebView* webview);
 
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
   // parent of the WebView HWND that will be created.  If this is a constrained
@@ -141,8 +142,8 @@ class RenderView : public RenderWidget,
   static void SetNextPageID(int32 next_page_id);
 
   // May return NULL when the view is closing.
-  WebView* webview() const {
-    return static_cast<WebView*>(webwidget());
+  WebKit::WebView* webview() const {
+    return static_cast<WebKit::WebView*>(webwidget());
   }
 
   gfx::NativeViewId host_window() const {
@@ -178,7 +179,7 @@ class RenderView : public RenderWidget,
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
   // WebKit::WebViewClient
-  virtual WebView* createView(WebKit::WebFrame* creator);
+  virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
   virtual WebKit::WebWidget* createPopupMenu(bool activatable);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
@@ -502,7 +503,7 @@ class RenderView : public RenderWidget,
 
   // Creates a thumbnail of |frame|'s contents resized to (|w|, |h|)
   // and puts that in |thumbnail|. Thumbnail metadata goes in |score|.
-  bool CaptureThumbnail(WebView* view, int w, int h,
+  bool CaptureThumbnail(WebKit::WebView* view, int w, int h,
                         SkBitmap* thumbnail,
                         ThumbnailScore* score);
 
@@ -988,7 +989,7 @@ class RenderView : public RenderWidget,
   typedef std::set<webkit_glue::ImageResourceFetcher*> ImageResourceFetcherSet;
   ImageResourceFetcherSet image_fetchers_;
 
-  typedef std::map<WebView*, RenderView*> ViewMap;
+  typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

@@ -94,7 +94,7 @@ public:
     // cleanup.
     void PlatformCleanUp();
 
-    WebView* webView() {
+    WebKit::WebView* webView() {
       return m_webViewHost.get() ? m_webViewHost->webview() : NULL;
     }
     WebViewHost* webViewHost() { return m_webViewHost.get(); }
@@ -186,7 +186,7 @@ public:
 
     // Implements CreateWebView for TestWebViewDelegate, which in turn
     // is called as a WebViewDelegate.
-    WebView* CreateWebView();
+    WebKit::WebView* CreateWebView();
     WebKit::WebWidget* CreatePopupWidget();
     void ClosePopup();
 

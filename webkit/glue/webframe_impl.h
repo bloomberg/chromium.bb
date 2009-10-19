@@ -41,7 +41,6 @@ MSVC_PUSH_WARNING_LEVEL(0);
 MSVC_POP_WARNING();
 
 class ChromePrintContext;
-class WebView;
 class WebViewImpl;
 
 namespace gfx {
@@ -62,6 +61,7 @@ struct WindowFeatures;
 namespace WebKit {
 class WebDataSourceImpl;
 class WebFrameClient;
+class WebView;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
@@ -76,7 +76,7 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   virtual WebKit::WebSize contentsSize() const;
   virtual int contentsPreferredWidth() const;
   virtual bool hasVisibleContent() const;
-  virtual WebView* view() const;
+  virtual WebKit::WebView* view() const;
   virtual WebKit::WebFrame* opener() const;
   virtual WebKit::WebFrame* parent() const;
   virtual WebKit::WebFrame* top() const;

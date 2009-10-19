@@ -17,6 +17,7 @@
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
 #include "webkit/glue/chrome_client_impl.h"
@@ -26,7 +27,6 @@
 #include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webview.h"
 
 namespace WebCore {
 class ChromiumDataObject;
@@ -58,9 +58,9 @@ class AutocompletePopupMenuClient;
 class SearchableFormData;
 class WebHistoryItemImpl;
 class WebDevToolsAgentImpl;
-class WebViewDelegate;
 
-class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
+class WebViewImpl : public WebKit::WebView,
+                    public base::RefCounted<WebViewImpl> {
  public:
   // WebWidget methods:
   virtual void close();
@@ -144,11 +144,10 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
       int defaultSuggestionIndex);
   virtual void hideAutofillPopup();
 
-  // WebView methods:
-  virtual void SetIgnoreInputEvents(bool new_value);
-  WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();
-
   // WebViewImpl
+
+  void SetIgnoreInputEvents(bool new_value);
+  WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();
 
   const WebKit::WebPoint& last_mouse_down_point() const {
       return last_mouse_down_point_;
@@ -162,12 +161,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   static WebViewImpl* FromPage(WebCore::Page* page);
 
   WebKit::WebViewClient* client() {
-    return delegate_;
-  }
-
-  // TODO(darin): Remove this method in favor of client().
-  WebViewDelegate* delegate() {
-    return delegate_;
+    return client_;
   }
 
   // Returns the page object associated with this view.  This may be NULL when
@@ -257,17 +251,17 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
                        WebCore::ScrollGranularity scroll_granularity);
 
  protected:
-  friend class WebView;  // So WebView::Create can call our constructor
+  friend class WebKit::WebView;  // So WebView::Create can call our constructor
   friend class base::RefCounted<WebViewImpl>;
 
-  WebViewImpl(WebViewDelegate* delegate);
+  WebViewImpl(WebKit::WebViewClient* client);
   ~WebViewImpl();
 
   void ModifySelection(uint32 message,
                        WebCore::Frame* frame,
                        const WebCore::PlatformKeyboardEvent& e);
 
-  WebViewDelegate* delegate_;
+  WebKit::WebViewClient* client_;
 
   webkit_glue::BackForwardListClientImpl back_forward_list_client_impl_;
   ChromeClientImpl chrome_client_impl_;
@@ -282,7 +276,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   scoped_ptr<WebCore::Page> page_;
 
   // This flag is set when a new navigation is detected.  It is used to satisfy
-  // the corresponding argument to WebViewDelegate::DidCommitLoadForFrame.
+  // the corresponding argument to WebFrameClient::didCommitProvisionalLoad.
   bool observed_new_navigation_;
 #ifndef NDEBUG
   // Used to assert that the new navigation we observed is the same navigation

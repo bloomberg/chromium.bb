@@ -48,7 +48,6 @@
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
-#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebCore::PopupContainer;
@@ -245,28 +244,27 @@ static inline bool CurrentEventShouldCauseBackgroundTab(
 }
 
 void ChromeClientImpl::show() {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    // If our default configuration was modified by a script or wasn't
-    // created by a user gesture, then show as a popup. Else, let this
-    // new window be opened as a toplevel window.
-    //
-    bool as_popup =
-        !toolbars_visible_ ||
-        !statusbar_visible_ ||
-        !scrollbars_visible_ ||
-        !menubar_visible_ ||
-        !resizable_;
+  if (!webview_->client())
+    return;
 
-    WebNavigationPolicy policy = WebKit::WebNavigationPolicyNewForegroundTab;
-    if (as_popup)
-      policy = WebKit::WebNavigationPolicyNewPopup;
-    if (CurrentEventShouldCauseBackgroundTab(
-          WebViewImpl::current_input_event()))
-      policy = WebKit::WebNavigationPolicyNewBackgroundTab;
+  // If our default configuration was modified by a script or wasn't
+  // created by a user gesture, then show as a popup. Else, let this
+  // new window be opened as a toplevel window.
+  bool as_popup =
+      !toolbars_visible_ ||
+      !statusbar_visible_ ||
+      !scrollbars_visible_ ||
+      !menubar_visible_ ||
+      !resizable_;
 
-    delegate->show(policy);
-  }
+  WebNavigationPolicy policy = WebKit::WebNavigationPolicyNewForegroundTab;
+  if (as_popup)
+    policy = WebKit::WebNavigationPolicyNewPopup;
+  if (CurrentEventShouldCauseBackgroundTab(
+        WebViewImpl::current_input_event()))
+    policy = WebKit::WebNavigationPolicyNewBackgroundTab;
+
+  webview_->client()->show(policy);
 }
 
 bool ChromeClientImpl::canRunModal() {
