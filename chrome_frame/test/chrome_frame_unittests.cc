@@ -1026,8 +1026,8 @@ template <> struct RunnableMethodTraits<TimedMsgLoop> {
 // Saves typing. It's somewhat hard to create a wrapper around
 // testing::InvokeWithoutArgs since it returns a
 // non-public (testing::internal) type.
-#define QUIT_LOOP(loop) testing::InvokeWithoutArgs(TaskHolder(\
-    NewRunnableMethod(&loop, &TimedMsgLoop::Quit)))
+#define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
+    CreateFunctor(&loop, &TimedMsgLoop::Quit))
 
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
 TEST(CFACWithChrome, CreateTooFast) {
@@ -1099,7 +1099,7 @@ TEST(CFACWithChrome, NavigateOk) {
   client.reset(new ChromeFrameAutomationClient);
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
-      .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
+      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, false))));
 
@@ -1139,7 +1139,7 @@ TEST(CFACWithChrome, DISABLED_NavigateFailed) {
   client.reset(new ChromeFrameAutomationClient);
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
-      .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
+      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, false))));
 
@@ -1197,7 +1197,7 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   cfd.SetAutomationSender(client.get());
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
-      .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
+      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, false))));
 
@@ -1219,16 +1219,18 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
 
   EXPECT_CALL(cfd, OnRequestStart(tab_id, request_id, EqUrlGet(url + '/')))
       .Times(1)
-      .WillOnce(testing::Invoke(CBF(&cfd, &MockCFDelegate::ReplyStarted,
-                                    &found)));
+      .WillOnce(testing::Invoke(CreateFunctor(&cfd,
+                                              &MockCFDelegate::ReplyStarted,
+                                              &found)));
 
   // Return some trivial page, that have a link to a "logo.gif" image
   const std::string data = "<!DOCTYPE html><title>Hello</title>"
                            "<img src=\"logo.gif\">";
   EXPECT_CALL(cfd, OnRequestRead(tab_id, request_id, testing::Ge(0)))
       .Times(2)
-      .WillOnce(testing::Invoke(CBF(&cfd, &MockCFDelegate::ReplyData, &data)))
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CBF(&cfd,
+      .WillOnce(testing::Invoke(CreateFunctor(&cfd, &MockCFDelegate::ReplyData,
+                                &data)))
+      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(&cfd,
                                                  &MockCFDelegate::ReplyEOF))));
 
   EXPECT_CALL(cfd, OnDidNavigate(tab_id, EqNavigationInfoUrl(GURL(url))))
@@ -1241,7 +1243,8 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   EXPECT_CALL(cfd,
       OnRequestStart(tab_id, request_id, EqUrlGet(url + "/logo.gif")))
           .Times(1)
-          .WillOnce(testing::Invoke(CBF(&cfd, &MockCFDelegate::Reply404)));
+          .WillOnce(testing::Invoke(CreateFunctor(&cfd,
+                                                  &MockCFDelegate::Reply404)));
 
   EXPECT_CALL(cfd, OnRequestRead(tab_id, request_id, testing::_))
       .Times(testing::AtMost(1));
@@ -1251,7 +1254,8 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   EXPECT_CALL(cfd,
       OnRequestStart(tab_id, request_id, EqUrlGet(url + "/favicon.ico")))
           .Times(1)
-          .WillOnce(testing::Invoke(CBF(&cfd, &MockCFDelegate::Reply404)));
+          .WillOnce(testing::Invoke(CreateFunctor(&cfd,
+                                                  &MockCFDelegate::Reply404)));
 
   EXPECT_CALL(cfd, OnRequestRead(tab_id, request_id, testing::_))
       .Times(testing::AtMost(1));
@@ -1315,8 +1319,9 @@ class CFACMockTest : public testing::Test {
     .Times(1)
     .WillOnce(testing::DoAll(
         testing::WithArgs<0, 4>(
-            testing::Invoke(CBF(&factory_, &MockProxyFactory::GetServerImpl,
-                                get_proxy(), AUTOMATION_SUCCESS))),
+            testing::Invoke(CreateFunctor(&factory_,
+                                          &MockProxyFactory::GetServerImpl,
+                                          get_proxy(), AUTOMATION_SUCCESS))),
         testing::Return(id_)));
 
     EXPECT_CALL(factory_, ReleaseAutomationServer(testing::Eq(id_))).Times(1);
