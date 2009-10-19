@@ -657,6 +657,32 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
   return result;
 }
 
+bool TestWebViewDelegate::canHandleRequest(const WebURLRequest& request) {
+  GURL url = request.url();
+  // Just reject the scheme used in
+  // LayoutTests/http/tests/misc/redirect-to-external-url.html
+  return !url.SchemeIs("spaceballs");
+}
+
+WebURLError TestWebViewDelegate::cannotShowURLError(
+    const WebURLRequest& request) {
+  WebURLError error;
+  // A WebKit layout test expects the following values.
+  // unableToImplementPolicyWithError() below prints them.
+  error.domain = WebString::fromUTF8("WebKitErrorDomain");
+  error.reason = 101;
+  error.unreachableURL = request.url();
+  return error;
+}
+
+void TestWebViewDelegate::unableToImplementPolicyWithError(
+    WebFrame* frame, const WebURLError& error) {
+  std::string domain = error.domain.utf8();
+  printf("Policy delegate: unable to implement policy with error domain '%s', "
+      "error code %d, in frame '%s'\n",
+      domain.data(), error.reason, frame->name().utf8().data());
+}
+
 void TestWebViewDelegate::willPerformClientRedirect(
     WebFrame* frame, const WebURL& from, const WebURL& to,
     double interval, double fire_time) {

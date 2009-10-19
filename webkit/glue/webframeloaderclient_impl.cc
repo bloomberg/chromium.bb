@@ -849,8 +849,11 @@ void WebFrameLoaderClient::cancelPolicyCheck() {
   // FIXME
 }
 
-void WebFrameLoaderClient::dispatchUnableToImplementPolicy(const ResourceError&) {
-  // FIXME
+void WebFrameLoaderClient::dispatchUnableToImplementPolicy(
+    const ResourceError& error) {
+  WebKit::WebURLError url_error =
+      webkit_glue::ResourceErrorToWebURLError(error);
+  webframe_->client()->unableToImplementPolicyWithError(webframe_, url_error);
 }
 
 void WebFrameLoaderClient::dispatchWillSubmitForm(FramePolicyFunction function,
@@ -999,10 +1002,13 @@ ResourceError WebFrameLoaderClient::cancelledError(
   return ResourceError(net::kErrorDomain, net::ERR_ABORTED,
                        request.url().string(), String());
 }
-ResourceError WebFrameLoaderClient::cannotShowURLError(const ResourceRequest&) {
-  // FIXME
-  return ResourceError();
+
+ResourceError WebFrameLoaderClient::cannotShowURLError(
+    const ResourceRequest& request) {
+  return webkit_glue::WebURLErrorToResourceError(
+      webframe_->client()->cannotShowURLError(WrappedResourceRequest(request)));
 }
+
 ResourceError WebFrameLoaderClient::interruptForPolicyChangeError(
     const ResourceRequest& request) {
   return ResourceError(kInternalErrorDomain, ERR_POLICY_CHANGE,
@@ -1034,10 +1040,9 @@ bool WebFrameLoaderClient::shouldFallBack(const ResourceError& error) {
   return error.errorCode() != net::ERR_ABORTED;
 }
 
-bool WebFrameLoaderClient::canHandleRequest(const ResourceRequest&) const {
-  // FIXME: this appears to be used only by the context menu code to determine
-  // if "open" should be displayed in the menu when clicking on a link.
-  return true;
+bool WebFrameLoaderClient::canHandleRequest(
+    const ResourceRequest& request) const {
+  return webframe_->client()->canHandleRequest(WrappedResourceRequest(request));
 }
 
 bool WebFrameLoaderClient::canShowMIMEType(const String& mime_type) const {

@@ -86,6 +86,7 @@ namespace WebKit {
 class WebDragData;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebURLRequest;
 struct WebFindOptions;
 }
 
@@ -286,6 +287,11 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type, const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy, bool is_redirect);
+  virtual bool canHandleRequest(const WebKit::WebURLRequest& request);
+  virtual WebKit::WebURLError cannotShowURLError(
+      const WebKit::WebURLRequest& request);
+  virtual void unableToImplementPolicyWithError(
+      WebKit::WebFrame* frame, const WebKit::WebURLError& error);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
       const WebKit::WebForm& form);
   virtual void willPerformClientRedirect(

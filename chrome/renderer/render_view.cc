@@ -1919,6 +1919,24 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   return default_policy;
 }
 
+bool RenderView::canHandleRequest(const WebKit::WebURLRequest& request) {
+  return true;
+}
+
+WebKit::WebURLError RenderView::cannotShowURLError(
+    const WebKit::WebURLRequest& request) {
+  // No need to set fields of WebURLError.  It is passed to
+  // unableToImplementPolicyWithError() below.
+  return WebKit::WebURLError();
+}
+
+void RenderView::unableToImplementPolicyWithError(
+    WebFrame*, const WebKit::WebURLError&) {
+  // We don't need to do anything here.
+  // The implementations of this method in WebKit/mac WebKit/win are
+  // just to log some information of the parameters.
+}
+
 void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());

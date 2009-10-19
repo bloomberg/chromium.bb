@@ -2643,10 +2643,6 @@ BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
 BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
 
 // New failures from WebKit merge 42725:42805
-// Need to implement WebFrameLoaderClient::dispatchUnableToImplmentPolicy().
-BUG24074 : LayoutTests/http/tests/misc/redirect-to-external-url.html = FAIL
-
-// New failures from WebKit merge 42725:42805
 // WebKit change http://trac.webkit.org/changeset/42785
 // added a test which submits a form and then uses history.back()
 // to go back. in test_shell history.back() does not go back,

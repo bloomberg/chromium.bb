@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_EMPTY_WEBFRAMECLIENT_H_
 
 #include "webkit/api/public/WebFrameClient.h"
+#include "webkit/api/public/WebURLError.h"
 
 namespace webkit_glue {
 
@@ -30,6 +31,11 @@ class EmptyWebFrameClient : public WebKit::WebFrameClient {
       WebKit::WebNavigationType type, const WebKit::WebNode& originating_node,
       WebKit::WebNavigationPolicy default_policy, bool is_redirect) {
     return default_policy; }
+  virtual bool canHandleRequest(const WebKit::WebURLRequest&) { return true; }
+  virtual WebKit::WebURLError cannotShowURLError(
+      const WebKit::WebURLRequest& request) { return WebKit::WebURLError(); }
+  virtual void unableToImplementPolicyWithError(
+      WebKit::WebFrame*, const WebKit::WebURLError&) {}
   virtual void willSubmitForm(WebKit::WebFrame* frame,
       const WebKit::WebForm& form) {}
   virtual void willPerformClientRedirect(

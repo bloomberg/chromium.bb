@@ -182,6 +182,11 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationType, const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy, bool isRedirect);
+  virtual bool canHandleRequest(const WebKit::WebURLRequest&);
+  virtual WebKit::WebURLError cannotShowURLError(
+      const WebKit::WebURLRequest& request);
+  virtual void unableToImplementPolicyWithError(
+      WebKit::WebFrame*, const WebKit::WebURLError&);
   virtual void willSubmitForm(WebKit::WebFrame*, const WebKit::WebForm&) {}
   virtual void willPerformClientRedirect(
       WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to,
