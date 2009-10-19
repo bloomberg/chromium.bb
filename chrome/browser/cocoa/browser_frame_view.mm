@@ -8,7 +8,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
-#include "base/scoped_nsobject.h"
+#include "base/scoped_nsautorelease_pool.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
@@ -33,7 +33,7 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
   // others. If they all fail, we will lose window frame theming and
   // roll overs for our close widgets, but things should still function
   // correctly.
-  scoped_nsobject<NSAutoreleasePool> pool([[NSAutoreleasePool alloc] init]);
+  base::ScopedNSAutoreleasePool pool;
   Class grayFrameClass = NSClassFromString(@"NSGrayFrame");
   DCHECK(grayFrameClass);
   if (!grayFrameClass) return;
