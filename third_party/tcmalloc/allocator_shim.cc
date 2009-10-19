@@ -140,6 +140,12 @@ void free(void* p) __THROW {
 }
 
 void* realloc(void* ptr, size_t size) __THROW {
+  // Webkit is brittle for allocators that return NULL for malloc(0).  The
+  // realloc(0, 0) code path does not guarantee a non-NULL return, so be sure
+  // to call malloc for this case.
+  if (!ptr)
+    return malloc(size);
+
   void* new_ptr;
   for (;;) {
 #ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
