@@ -1852,7 +1852,8 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     GURL frame_origin = GURL(frame->url()).GetOrigin();
     if (url.GetOrigin() != frame_origin || url.ref().empty()) {
       last_top_level_navigation_page_id_ = page_id_;
-      OpenURL(url, GURL(), default_policy);
+      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+      OpenURL(url, referrer, default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }

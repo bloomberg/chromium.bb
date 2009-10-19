@@ -1041,7 +1041,9 @@ void ChromeFrameNPAPI::OnAutomationServerReady() {
   }
 
   if (!src_.empty()) {
-    if (!automation_client_->InitiateNavigation(src_, is_privileged_)) {
+    if (!automation_client_->InitiateNavigation(src_,
+                                                GetDocumentUrl(),
+                                                is_privileged_)) {
       DLOG(ERROR) << "Failed to navigate to: " << src_;
       src_.clear();
     }
@@ -1309,7 +1311,9 @@ bool ChromeFrameNPAPI::NavigateToURL(const NPVariant* args, uint32_t arg_count,
   src_ = full_url;
   // Navigate only if we completed initialization i.e. proxy is set etc.
   if (ready_state_ == READYSTATE_COMPLETE) {
-    if (!automation_client_->InitiateNavigation(full_url, is_privileged_)) {
+    if (!automation_client_->InitiateNavigation(full_url,
+                                                GetDocumentUrl(),
+                                                is_privileged_)) {
       // TODO(tommi): call NPN_SetException.
       src_.clear();
       return false;

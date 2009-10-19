@@ -888,7 +888,7 @@ TEST_F(ExternalTabTestType, CreateExternalTab2) {
 
   if (tab != NULL) {
     // Wait for navigation
-    tab->NavigateInExternalTab(simple_data_url);
+    tab->NavigateInExternalTab(simple_data_url, GURL());
     EXPECT_TRUE(proxy->WaitForNavigation(action_max_timeout_ms()));
 
     // Now destroy the external tab

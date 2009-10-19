@@ -14,6 +14,8 @@
 #include <mshtml.h>
 #include <shdeprecated.h>
 
+#include "base/lazy_instance.h"
+#include "base/thread_local.h"
 #include "chrome_tab.h"  // NOLINT
 #include "chrome_frame/resource.h"
 #include "grit/chrome_frame_resources.h"
@@ -85,13 +87,24 @@ END_SINK_MAP()
       IBrowserService* browser, IShellView* shell_view, BOOL done,
       VARIANT* in_arg, VARIANT* out_arg);
 
+  std::string referrer() const {
+    return referrer_;
+  }
+
+  // Returns the Bho instance for the current thread. This is returned from
+  // TLS.
+  static Bho* GetCurrentThreadBhoInstance();
+
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);
   static bool HasSubFrames(IWebBrowser2* web_browser2);
   static HRESULT SwitchRenderer(IWebBrowser2* web_browser2,
       IBrowserService* browser, IShellView* shell_view,
       const wchar_t* meta_tag);
+  std::string referrer_;
 
+  static base::LazyInstance<base::ThreadLocalPointer<Bho> >
+      bho_current_thread_instance_;
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
 };
 

@@ -190,7 +190,9 @@ class ChromeFrameAutomationClient
                           bool incognito);
   void Uninitialize();
 
-  virtual bool InitiateNavigation(const std::string& url, bool is_privileged);
+  virtual bool InitiateNavigation(const std::string& url,
+                                  const std::string& referrer,
+                                  bool is_privileged);
   virtual bool NavigateToIndex(int index);
   bool ForwardMessageFromExternalHost(const std::string& message,
                                       const std::string& origin,
@@ -308,7 +310,7 @@ class ChromeFrameAutomationClient
   void CallDelegateImpl(Task* delegate_task);
 
   HWND chrome_window() const { return chrome_window_; }
-  void BeginNavigate(const GURL& url);
+  void BeginNavigate(const GURL& url, const GURL& referrer);
   void BeginNavigateCompleted(AutomationMsg_NavigationResponseValues result);
 
   // Helpers

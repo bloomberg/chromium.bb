@@ -33,6 +33,7 @@
 #include "chrome/common/navigation_types.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome_frame/bho.h"
 #include "chrome_frame/utils.h"
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
@@ -521,7 +522,7 @@ void ChromeActiveDocument::OnViewSource() {
   DCHECK(navigation_info_.url.is_valid());
   std::string url_to_open = "view-source:";
   url_to_open += navigation_info_.url.spec();
-  OnOpenURL(0, GURL(url_to_open), NEW_WINDOW);
+  OnOpenURL(0, GURL(url_to_open), GURL(), NEW_WINDOW);
 }
 
 void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
@@ -535,7 +536,9 @@ void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
   }
 }
 
-void ChromeActiveDocument::OnOpenURL(int tab_handle, const GURL& url_to_open,
+void ChromeActiveDocument::OnOpenURL(int tab_handle,
+                                     const GURL& url_to_open,
+                                     const GURL& referrer,
                                      int open_disposition) {
   // If the disposition indicates that we should be opening the URL in the
   // current tab, then we can reuse the ChromeFrameAutomationClient instance
@@ -548,7 +551,7 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle, const GURL& url_to_open,
     g_active_doc_cache.Set(this);
   }
 
-  Base::OnOpenURL(tab_handle, url_to_open, open_disposition);
+  Base::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
 }
 
 void ChromeActiveDocument::OnLoad(int tab_handle, const GURL& url) {
@@ -723,7 +726,16 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
       if (url_.Length()) {
         std::string utf8_url;
         WideToUTF8(url_, url_.Length(), &utf8_url);
-        if (!automation_client_->InitiateNavigation(utf8_url, is_privileged_)) {
+
+        std::string referrer;
+        Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
+        DCHECK(chrome_frame_bho != NULL);
+        if (chrome_frame_bho) {
+          referrer = chrome_frame_bho->referrer();
+        }
+        if (!automation_client_->InitiateNavigation(utf8_url,
+                                                    referrer,
+                                                    is_privileged_)) {
           DLOG(ERROR) << "Invalid URL: " << url;
           Error(L"Invalid URL");
           url_.Reset();

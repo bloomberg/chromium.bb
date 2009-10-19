@@ -69,7 +69,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message) {}
   virtual void OnTabbedOut(int tab_handle, bool reverse) {}
   virtual void OnOpenURL(int tab_handle, const GURL& url,
-                         int open_disposition) {}
+                         const GURL& referrer, int open_disposition) {}
   virtual void OnDidNavigate(int tab_handle,
                              const IPC::NavigationInfo& navigation_info) {}
   virtual void OnNavigationFailed(int tab_handle, int error_code,

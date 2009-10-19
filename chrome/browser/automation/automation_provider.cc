@@ -1378,13 +1378,13 @@ void AutomationProvider::CloseBrowserAsync(int browser_handle) {
 }
 
 void AutomationProvider::NavigateInExternalTab(
-    int handle, const GURL& url,
+    int handle, const GURL& url, const GURL& referrer,
     AutomationMsg_NavigationResponseValues* status) {
   *status = AUTOMATION_MSG_NAVIGATION_ERROR;
 
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    tab->LoadURL(url, GURL(), PageTransition::TYPED);
+    tab->LoadURL(url, referrer, PageTransition::TYPED);
     *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
   }
 }

@@ -215,7 +215,7 @@ END_EXEC_COMMAND_MAP()
  protected:
   // ChromeFrameActivexBase overrides
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
-                         int open_disposition);
+                         const GURL& referrer, int open_disposition);
 
   virtual void OnLoad(int tab_handle, const GURL& url);
   virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset);

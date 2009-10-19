@@ -18,9 +18,13 @@
 #include "chrome_frame/protocol_sink_wrap.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
+#include "net/http/http_util.h"
 
 const wchar_t kPatchProtocols[] = L"PatchProtocols";
 static const int kIBrowserServiceOnHttpEquivIndex = 30;
+
+base::LazyInstance<base::ThreadLocalPointer<Bho> >
+    Bho::bho_current_thread_instance_(base::LINKER_INITIALIZED);
 
 PatchHelper g_patch_helper;
 
@@ -64,6 +68,14 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
             << " Site: " << site << " Error: " << hr;
       }
     }
+    // Save away our BHO instance in TLS which enables it to be referenced by
+    // our active document/activex instances to query referrer and other
+    // information for a URL.
+    AddRef();
+    bho_current_thread_instance_.Pointer()->Set(this);
+  } else {
+    bho_current_thread_instance_.Pointer()->Set(NULL);
+    Release();
   }
 
   return IObjectWithSiteImpl<Bho>::SetSite(site);
@@ -110,6 +122,25 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
             << std::endl << "flags: " << flags
             << std::endl << "post data: " << post_data
             << std::endl << "headers: " << headers;
+      }
+    }
+  }
+
+  referrer_.clear();
+
+  // Save away the referrer in case our active document needs it to initiate
+  // navigation in chrome.
+  if (headers && V_VT(headers) == VT_BSTR && headers->bstrVal != NULL) {
+    std::string raw_headers_utf8 = WideToUTF8(headers->bstrVal);
+    std::string http_headers =
+        net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
+                                          raw_headers_utf8.length());
+    net::HttpUtil::HeadersIterator it(http_headers.begin(), http_headers.end(),
+                                      "\r\n");
+    while (it.GetNext()) {
+      if (LowerCaseEqualsASCII(it.name(), "referer")) {
+        referrer_ = it.values();
+        break;
       }
     }
   }
@@ -209,6 +240,11 @@ HRESULT Bho::SwitchRenderer(IWebBrowser2* web_browser2,
   }
 
   return S_OK;
+}
+
+Bho* Bho::GetCurrentThreadBhoInstance() {
+  DCHECK(bho_current_thread_instance_.Pointer()->Get() != NULL);
+  return bho_current_thread_instance_.Pointer()->Get();
 }
 
 void PatchHelper::InitializeAndPatchProtocolsIfNeeded() {

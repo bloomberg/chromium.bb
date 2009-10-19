@@ -71,7 +71,7 @@ class ExtensionUITest : public ParentTestType {
       // so that the test can control when it gets loaded, and so that we test
       // the intended behavior that tabs should be able to show extension pages
       // (useful for development etc.)
-      tab->NavigateInExternalTab(url);
+      tab->NavigateInExternalTab(url, GURL());
       EXPECT_TRUE(proxy->WaitForMessage(action_max_timeout_ms()));
 
       proxy->DestroyHostWindow();

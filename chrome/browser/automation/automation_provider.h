@@ -303,7 +303,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void OnSetPageFontSize(int tab_handle, int font_size);
 
   void NavigateInExternalTab(
-      int handle, const GURL& url,
+      int handle, const GURL& url, const GURL& referrer,
       AutomationMsg_NavigationResponseValues* status);
   void NavigateExternalTabAtIndex(
       int handle, int index, AutomationMsg_NavigationResponseValues* status);

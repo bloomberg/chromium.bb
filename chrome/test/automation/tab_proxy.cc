@@ -108,12 +108,13 @@ AutomationMsg_NavigationResponseValues TabProxy::NavigateToURLWithTimeout(
 }
 
 AutomationMsg_NavigationResponseValues TabProxy::NavigateInExternalTab(
-    const GURL& url) {
+    const GURL& url, const GURL& referrer) {
   if (!is_valid())
     return AUTOMATION_MSG_NAVIGATION_ERROR;
 
   AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_NavigateInExternalTab(0, handle_, url, &rv));
+  sender_->Send(new AutomationMsg_NavigateInExternalTab(0, handle_, url,
+                                                        referrer, &rv));
   return rv;
 }
 

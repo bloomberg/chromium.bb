@@ -433,9 +433,13 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message notifies the AutomationProvider to navigate to a specified
   // url in the external tab with given handle. The first parameter is the
   // handle to the tab resource. The second parameter is the target url.
+  // The third parameter is the referrer.
   // The return value contains a status code which is nonnegative on success.
   // see AutomationMsg_NavigationResponseValues for the navigation response.
-  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_NavigateInExternalTab, int, GURL,
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_NavigateInExternalTab,
+                             int,
+                             GURL,
+                             GURL,
                              AutomationMsg_NavigationResponseValues)
 
   // This message is an outgoing message from Chrome to an external host.
@@ -552,11 +556,12 @@ IPC_BEGIN_MESSAGES(Automation)
   // Request:
   //   -int: Tab handle
   //   -GURL: The URL to open
+  //   -GURL: The referrer
   //   -int: The WindowOpenDisposition that specifies where the URL should
   //         be opened (new tab, new window etc).
   // Response:
   //   None expected
-  IPC_MESSAGE_ROUTED3(AutomationMsg_OpenURL, int, GURL, int)
+  IPC_MESSAGE_ROUTED4(AutomationMsg_OpenURL, int, GURL, GURL, int)
 
   // This message requests the provider to wait until the specified tab has
   // finished restoring after session restore.

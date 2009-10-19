@@ -108,7 +108,9 @@ class TabProxy : public AutomationResourceProxy {
   // This method accepts the same kinds of URL input that
   // can be passed to Chrome on the command line. This is a synchronous call and
   // hence blocks until the navigation completes.
-  AutomationMsg_NavigationResponseValues NavigateInExternalTab(const GURL& url);
+  AutomationMsg_NavigationResponseValues NavigateInExternalTab(
+      const GURL& url, const GURL& referrer);
+
   AutomationMsg_NavigationResponseValues NavigateExternalTabAtIndex(int index);
 
   // Navigates to a url. This is an asynchronous version of NavigateToURL.

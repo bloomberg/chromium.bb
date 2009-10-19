@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame referrer frame</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function onLoad() {
+        var referrer_search = /referrer_main.html/;
+        var referrer_pos = document.referrer.search(referrer_search);
+
+        if (referrer_pos != -1) {
+          onSuccess("FullTab_ReferrerTest", 1);
+        } else {
+          onFailure("FullTab_ReferrerTest", 1, "Failed to find referrer");
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="onLoad()">
+    ChromeFrame full tab mode referrer test
+  </body>
+</html>

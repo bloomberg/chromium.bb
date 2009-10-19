@@ -275,7 +275,7 @@ END_MSG_MAP()
   bool HandleContextMenuCommand(UINT cmd) {
     if (cmd == IDC_ABOUT_CHROME_FRAME) {
       int tab_handle = automation_client_->tab()->handle();
-      OnOpenURL(tab_handle, GURL("about:version"), NEW_WINDOW);
+      OnOpenURL(tab_handle, GURL("about:version"), GURL(), NEW_WINDOW);
       return true;
     }
 
@@ -307,7 +307,7 @@ END_MSG_MAP()
   }
 
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
-                         int open_disposition) {
+                         const GURL& referrer, int open_disposition) {
     ScopedComPtr<IWebBrowser2> web_browser2;
     DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
     DCHECK(web_browser2);
@@ -379,7 +379,17 @@ END_MSG_MAP()
     // }
     // End of MSHTML-like logic
     VARIANT empty = ScopedVariant::kEmptyVariant;
-    web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty, &empty);
+    ScopedVariant http_headers;
+
+    if (referrer.is_valid()) {
+      std::wstring referrer_header = L"Referer: ";
+      referrer_header += UTF8ToWide(referrer.spec());
+      referrer_header += L"\r\n\r\n";
+      http_headers.Set(referrer_header.c_str());
+    }
+
+    web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
+                            http_headers.AsInput());
     web_browser2->put_Visible(VARIANT_TRUE);
   }
 
@@ -442,7 +452,7 @@ END_MSG_MAP()
     std::string url;
     url = StringPrintf("cf:attach_external_tab&%d&%d",
                        cookie, disposition);
-    OnOpenURL(tab_handle, GURL(url), disposition);
+    OnOpenURL(tab_handle, GURL(url), GURL(), disposition);
   }
 
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
@@ -509,7 +519,9 @@ END_MSG_MAP()
     // We can initiate navigation here even if ready_state is not complete.
     // We do not have to set proxy, and AutomationClient will take care
     // of navigation just after CreateExternalTab is done.
-    if (!automation_client_->InitiateNavigation(full_url, is_privileged_)) {
+    if (!automation_client_->InitiateNavigation(full_url,
+                                                GetDocumentUrl(),
+                                                is_privileged_)) {
       // TODO(robertshield): Make InitiateNavigation return more useful
       // error information.
       return E_INVALIDARG;

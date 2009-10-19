@@ -1101,7 +1101,7 @@ TEST(CFACWithChrome, NavigateOk) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url, false))));
+          url, std::string(), false))));
 
 //  cfd.SetOnNavigationStateChanged();
   EXPECT_CALL(cfd,
@@ -1141,7 +1141,7 @@ TEST(CFACWithChrome, DISABLED_NavigateFailed) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url, false))));
+          url, std::string(), false))));
 
   EXPECT_CALL(cfd,
     OnNavigationStateChanged(testing::_, testing::_))
@@ -1199,7 +1199,7 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url, false))));
+          url, std::string(), false))));
 
   EXPECT_CALL(cfd, OnNavigationStateChanged(testing::_, testing::_))
       .Times(testing::AnyNumber());
@@ -1434,6 +1434,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
 const wchar_t kNavigateOutPage[] = L"files/navigate_out.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
   SimpleBrowserTest(IE, kNavigateOutPage, L"navigate_out");
+}
+
+const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
+  SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 
 HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {

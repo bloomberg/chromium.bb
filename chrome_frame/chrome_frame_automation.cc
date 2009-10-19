@@ -483,8 +483,8 @@ void ChromeFrameAutomationClient::Uninitialize() {
   init_state_ = UNINITIALIZED;
 }
 
-bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
-                                                     bool is_privileged) {
+bool ChromeFrameAutomationClient::InitiateNavigation(
+    const std::string& url, const std::string& referrer, bool is_privileged) {
   if (url.empty())
     return false;
 
@@ -498,7 +498,7 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
   }
 
   if (is_initialized()) {
-    BeginNavigate(GURL(url));
+    BeginNavigate(GURL(url), GURL(referrer));
   }
 
   return true;
@@ -538,7 +538,8 @@ bool ChromeFrameAutomationClient::SetProxySettings(
   return true;
 }
 
-void ChromeFrameAutomationClient::BeginNavigate(const GURL& url) {
+void ChromeFrameAutomationClient::BeginNavigate(const GURL& url,
+                                                const GURL& referrer) {
   // Could be NULL if we failed to launch Chrome in LaunchAutomationServer()
   if (!automation_server_ || !tab_.get()) {
     DLOG(WARNING) << "BeginNavigate - can't navigate.";
@@ -554,7 +555,8 @@ void ChromeFrameAutomationClient::BeginNavigate(const GURL& url) {
   }
 
   IPC::SyncMessage* msg =
-      new AutomationMsg_NavigateInExternalTab(0, tab_->handle(), url, NULL);
+      new AutomationMsg_NavigateInExternalTab(0, tab_->handle(), url,
+                                              referrer, NULL);
   automation_server_->SendAsAsync(msg, NewCallback(this,
       &ChromeFrameAutomationClient::BeginNavigateCompleted), this);
 

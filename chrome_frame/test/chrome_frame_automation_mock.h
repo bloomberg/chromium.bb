@@ -41,7 +41,7 @@ class AutomationMockDelegate
   // Navigate external tab to the specified url through automation
   bool Navigate(const std::string& url) {
     url_ = GURL(url);
-    return automation_client_->InitiateNavigation(url, false);
+    return automation_client_->InitiateNavigation(url, std::string(), false);
   }
 
   // Navigate the external to a 'file://' url for unit test files

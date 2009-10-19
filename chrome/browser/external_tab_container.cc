@@ -264,7 +264,8 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
     case SAVE_TO_DISK:
       if (automation_) {
         automation_->Send(new AutomationMsg_OpenURL(0, tab_handle_,
-                                                    url, disposition));
+                                                    url, referrer,
+                                                    disposition));
       }
       break;
     default:
