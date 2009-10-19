@@ -50,17 +50,42 @@ __thread char tls_var_data_string[100] = kHelloWorldString;
 __thread int tls_var_bss_int;
 __thread char tls_var_bss_string[100];
 
-
-/* shared vars */
-AtomicWord GlobalMutex = 0;
-AtomicWord GlobalError = 0;
-
-
 int GlobalCounter = 0;
+
+AtomicWord GlobalError = 0;
 
 
 void IncError() {
   AtomicIncrement(&GlobalError, 1);
+}
+
+
+#define USE_PTHREAD_LIB
+#if defined(USE_PTHREAD_LIB)
+
+pthread_mutex_t mutex;
+
+
+void Init() {
+  pthread_mutex_init(&mutex, NULL);
+}
+
+
+void CriticalSectionEnter() {
+  pthread_mutex_lock(&mutex);
+}
+
+
+void CriticalSectionLeave() {
+  pthread_mutex_unlock(&mutex);
+}
+
+#else
+
+AtomicWord GlobalMutex = 0;
+
+
+void Init() {
 }
 
 
@@ -75,6 +100,8 @@ void CriticalSectionEnter() {
 void CriticalSectionLeave() {
   AtomicExchange(&GlobalMutex, 0);
 }
+
+#endif
 
 
 void CounterWait(int id, int round) {
@@ -157,6 +184,9 @@ int main(int argc, char *argv[]) {
   pthread_t tid[kNumThreads];
   int ids[kNumThreads];
   int i = 0;
+
+  Init();
+
   for (i = 0; i < kNumThreads; ++i) {
     int rv;
     ids[i] = i;

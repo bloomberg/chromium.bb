@@ -30,22 +30,23 @@
 
 Import('env')
 
-# we do not need/want libsrpc and other defaut libs
-env.Replace(LIBS=['pthread'])
-
-
-env.ComponentProgram('thread_test.nexe', 'thread_test.c')
+env.ComponentProgram('thread_test.nexe',
+                     'thread_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
 node = env.CommandSelLdrTestNacl('thread_test.out',
                                  command=[env.File('thread_test.nexe')],
                                  # TODO: investigate why this is slow
                                  #       on old linux system
                                  size='huge',
-                                 stdout_golden=env.File('thread_test.stdout'),
                                  )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test')
 
 
-env.ComponentProgram('simple_thread_test.nexe', 'simple_thread_test.c')
+env.ComponentProgram('simple_thread_test.nexe',
+                     'simple_thread_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
 node = env.CommandSelLdrTestNacl('simple_thread_test.out',
                                  command=[env.File('simple_thread_test.nexe')],
                                  size='small',
