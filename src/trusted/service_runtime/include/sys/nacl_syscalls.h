@@ -196,6 +196,19 @@ extern int gettimeofday(struct timeval *tv, void *tz);
  */
 extern clock_t clock(void);
 /**
+ *  @posix
+ *  Suspends execution of the current thread by the specified time.
+ *  @param req A pointer to a struct timespec containing the requested
+ *  sleep time.
+ *  @param rem A pointer to a struct timespec where, if non-NULL and the
+ *  call to nanosleep were interrupted, the remaining sleep time is written
+ *  (and nanosleep returns -1, with errno set to EINTR).
+ *  @return On success, nanosleep returns 0.  On error, it returns -1 and
+ *  sets errno appropriately.
+ */
+extern int nanosleep(const struct timespec *req, struct timespec *rem);
+
+/**
  *  @nqPosix
  *  Returns information about a file.
  *  @param path The posix pathname of the file.
@@ -208,9 +221,20 @@ extern int stat(const char *path, struct stat *buf);
 
 #if defined(HAVE_SDL)
 
-extern int video_init(int width, int height); /**< does this show up? (how do we define HAVE_SDL?) */
-extern int video_fini(void); /**< does this show up? (how do we define HAVE_SDL?) */
-extern int video_blt_rgb(int width, int height, unsigned char const *data); /**< does this show up? (how do we define HAVE_SDL?) */
+/**
+ *  does this show up? (how do we define HAVE_SDL?)
+ */
+extern int video_init(int width, int height);
+
+/**
+ *  does this show up? (how do we define HAVE_SDL?)
+ */
+extern int video_fini(void);
+
+/**
+ *  does this show up? (how do we define HAVE_SDL?)
+ */
+extern int video_blt_rgb(int width, int height, unsigned char const *data);
 
 #endif
 

@@ -156,6 +156,9 @@ typedef pid_t (*TYPE_nacl_getpid) (void);
 
 typedef clock_t (*TYPE_nacl_clock) (void);
 
+typedef int (*TYPE_nacl_nanosleep) (const struct timespec *req,
+                                    struct timespec *rem);
+
 typedef void (*TYPE_nacl_exit) (int status);
 
 typedef void (*TYPE_nacl_null) (void);

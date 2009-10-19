@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2008  The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 
@@ -354,6 +329,62 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
 
   NaClSysCommonThreadSyscallEnter(natp);
   retval = clock();
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
+
+int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
+                         struct nacl_abi_timespec *req,
+                         struct nacl_abi_timespec *rem) {
+  uintptr_t                 sys_req;
+  struct nacl_abi_timespec  t_sleep;
+  int                       retval = -NACL_ABI_EINVAL;
+  struct timespec           host_req;
+  struct timespec           host_rem;
+
+  UNREFERENCED_PARAMETER(rem);
+
+  NaClLog(4, "NaClSysNanosleep(%08"PRIxPTR"x)\n", (uintptr_t) req);
+
+  NaClSysCommonThreadSyscallEnter(natp);
+
+  sys_req = NaClUserToSysAddrRange(natp->nap, (uintptr_t) req, sizeof *req);
+  if (kNaClBadAddress == sys_req) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
+  NaClLog(4, " copying timespec from %08"PRIxPTR"x\n", sys_req);
+  /* copy once */
+  t_sleep = *(struct nacl_abi_timespec *) sys_req;
+
+  /* definitely different types, and shape may actually differ too. */
+  host_req.tv_sec = t_sleep.tv_sec;
+  host_req.tv_nsec = t_sleep.tv_nsec;
+  /*
+   * We assume that we do not need to normalize the time request values.
+   *
+   * If bogus values can cause the underlying OS to get into trouble,
+   * then we need more checking here.
+   */
+
+  NaClLog(4, "NaClSysNanosleep(time = %ld.%09ld S)\n",
+          (long) host_req.tv_sec, (long) host_req.tv_nsec);
+
+  NaClLog(4, "About to call host-OS nanosleep\n");
+  /*
+   * We don't need to worry about signal handlers, since we don't use
+   * signals.  Hence, nanosleep shouldn't actually return with EINTR,
+   * but having this code is defensive.
+   */
+  while (-1 == (retval = nanosleep(&host_req, &host_rem)) && EINTR == errno) {
+    host_req = host_rem;
+  }
+  if (-1 == retval) {
+    retval = -NaClXlateErrno(errno);
+  }
+cleanup:
+  NaClLog(4, "nanosleep done.\n");
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }

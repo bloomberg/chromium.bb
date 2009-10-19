@@ -68,6 +68,7 @@
 
 #define NACL_sys_gettimeofday           40
 #define NACL_sys_clock                  41
+#define NACL_sys_nanosleep              42
 
 #define NACL_sys_multimedia_init        50
 #define NACL_sys_multimedia_shutdown    51
