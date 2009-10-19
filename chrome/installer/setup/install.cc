@@ -577,8 +577,9 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
     const std::wstring& install_temp_path, const std::wstring& prefs_path,
     const DictionaryValue* prefs, const Version& new_version,
     const Version* installed_version) {
-  bool system_install = installer_util::GetDistroBooleanPreference(prefs,
-      installer_util::master_preferences::kSystemLevel);
+  bool system_install = false;
+  installer_util::GetDistroBooleanPreference(prefs,
+      installer_util::master_preferences::kSystemLevel, &system_install);
   std::wstring install_path(GetChromeInstallPath(system_install));
   if (install_path.empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
@@ -621,20 +622,28 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       result = installer_util::NEW_VERSION_UPDATED;
     }
 
+    bool value = false;
     if (!installer_util::GetDistroBooleanPreference(prefs,
-            installer_util::master_preferences::kDoNotCreateShortcuts)) {
-      bool create_all_shortcut = installer_util::GetDistroBooleanPreference(
-          prefs, installer_util::master_preferences::kCreateAllShortcuts);
-      bool alt_shortcut = installer_util::GetDistroBooleanPreference(prefs,
-          installer_util::master_preferences::kAltShortcutText);
+        installer_util::master_preferences::kDoNotCreateShortcuts, &value) ||
+        !value) {
+      bool create_all_shortcut = false;
+      installer_util::GetDistroBooleanPreference(prefs,
+          installer_util::master_preferences::kCreateAllShortcuts,
+          &create_all_shortcut);
+      bool alt_shortcut = false;
+      installer_util::GetDistroBooleanPreference(prefs,
+          installer_util::master_preferences::kAltShortcutText,
+          &alt_shortcut);
       if (!CreateOrUpdateChromeShortcuts(exe_path, install_path,
                                          new_version.GetString(), result,
                                          system_install, create_all_shortcut,
                                          alt_shortcut))
         LOG(WARNING) << "Failed to create/update start menu shortcut.";
 
-      bool make_chrome_default = installer_util::GetDistroBooleanPreference(
-          prefs, installer_util::master_preferences::kMakeChromeDefault);
+      bool make_chrome_default = false;
+      installer_util::GetDistroBooleanPreference(prefs,
+          installer_util::master_preferences::kMakeChromeDefault,
+          &make_chrome_default);
       RegisterChromeOnMachine(install_path, system_install,
                               make_chrome_default);
     }

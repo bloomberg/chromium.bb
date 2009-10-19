@@ -197,8 +197,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (homepage_defined)
     prefs->GetBoolean(prefs::kHomePage, homepage_defined);
 
+  bool value = false;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kRequireEula)) {
+      installer_util::master_preferences::kRequireEula, &value) && value) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user
     // dismisses the dialog.
@@ -225,7 +226,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltFirstRunBubble))
+      installer_util::master_preferences::kAltFirstRunBubble, &value) && value)
     FirstRun::SetOEMFirstRunBubblePref();
 
   FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
@@ -238,7 +239,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     return true;
 
   if (!installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref))
+      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) ||
+      !value)
     return true;
 
   // From here on we won't show first run so we need to do the work to set the
@@ -252,21 +254,26 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     return false;
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage))
+      installer_util::master_preferences::kDistroShowWelcomePage, &value) &&
+      value)
     FirstRun::SetShowWelcomePagePref();
 
   int import_items = 0;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportSearchPref))
+      installer_util::master_preferences::kDistroImportSearchPref, &value) &&
+      value)
     import_items += SEARCH_ENGINES;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref))
+      installer_util::master_preferences::kDistroImportHistoryPref, &value) &&
+      value)
     import_items += HISTORY;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksPref))
+      installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
+      value)
     import_items += FAVORITES;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref))
+      installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
+      value)
     import_items += HOME_PAGE;
 
   if (import_items) {
@@ -281,7 +288,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefaultForUser))
+      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
+      value)
     ShellIntegration::SetAsDefaultBrowser();
 
   return false;

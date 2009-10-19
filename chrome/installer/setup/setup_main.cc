@@ -181,8 +181,9 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
 
 installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
     const installer::Version* installed_version, const DictionaryValue* prefs) {
-  bool system_level = installer_util::GetDistroBooleanPreference(prefs,
-      installer_util::master_preferences::kSystemLevel);
+  bool system_level = false;
+  installer_util::GetDistroBooleanPreference(prefs,
+      installer_util::master_preferences::kSystemLevel, &system_level);
   installer_util::InstallStatus install_status = installer_util::UNKNOWN_STATUS;
   if (!CheckPreInstallConditions(installed_version,
                                  system_level, install_status))
@@ -274,9 +275,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
           }
         }
 
-        bool write_chrome_launch_string =
-            !installer_util::GetDistroBooleanPreference(prefs,
-            installer_util::master_preferences::kDoNotRegisterForUpdateLaunch);
+        bool value = false;
+        installer_util::GetDistroBooleanPreference(prefs,
+            installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
+            &value);
+        bool write_chrome_launch_string = !value;
 
         InstallUtil::WriteInstallerResult(system_level, install_status,
             install_msg_base, write_chrome_launch_string ? &chrome_exe : NULL);
@@ -284,8 +287,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
           // We never want to launch Chrome in system level install mode.
-          if (!system_level && !installer_util::GetDistroBooleanPreference(
-              prefs, installer_util::master_preferences::kDoNotLaunchChrome))
+          bool do_not_launch_chrome = false;
+          installer_util::GetDistroBooleanPreference(prefs,
+              installer_util::master_preferences::kDoNotLaunchChrome,
+              &do_not_launch_chrome);
+          if (!system_level && !do_not_launch_chrome)
             installer::LaunchChrome(system_level);
         } else if (install_status == installer_util::NEW_VERSION_UPDATED) {
           installer_setup::RemoveLegacyRegistryKeys();
@@ -512,12 +518,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   installer::InitInstallerLogging(parsed_command_line);
   scoped_ptr<DictionaryValue> prefs(setup_util::GetInstallPreferences(
       parsed_command_line));
+  bool value = false;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging))
+          installer_util::master_preferences::kVerboseLogging, &value) &&
+      value)
     logging::SetMinLogLevel(logging::LOG_INFO);
 
-  bool system_install = installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel);
+  bool system_install = false;
+  installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSystemLevel, &system_install);
   LOG(INFO) << "system install is " << system_install;
 
   // Check to make sure current system is WinXP or later. If not, log

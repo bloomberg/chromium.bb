@@ -40,23 +40,29 @@ const wchar_t kVerboseLogging[] = L"verbose_logging";
 }
 
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
-                                const std::wstring& name) {
+                                const std::wstring& name,
+                                bool* value) {
+  if (!prefs || !value)
+    return false;
 
-  bool value = false;
   DictionaryValue* distro = NULL;
-  if (prefs && prefs->GetDictionary(kDistroDict, &distro) && distro)
-    distro->GetBoolean(name, &value);
-  return value;
+  if (!prefs->GetDictionary(kDistroDict, &distro) || !distro)
+    return false;
+
+  if (!distro->GetBoolean(name, value))
+    return false;
+
+  return true;
 }
 
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
                                 int* value) {
-  if (!value)
+  if (!prefs || !value)
     return false;
 
   DictionaryValue* distro = NULL;
-  if (!prefs || !prefs->GetDictionary(kDistroDict, &distro) || !distro)
+  if (!prefs->GetDictionary(kDistroDict, &distro) || !distro)
     return false;
 
   if (!distro->GetInteger(name, value))

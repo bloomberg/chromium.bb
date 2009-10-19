@@ -93,22 +93,29 @@ TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
   EXPECT_TRUE(prefs.get() != NULL);
 
   // Check prefs that do not have any equivalent command line option.
+  bool value = false;
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref));
+      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) &&
+      value);
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage));
+      installer_util::master_preferences::kDistroShowWelcomePage, &value));
 
   // Now check that prefs got merged correctly.
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts));
+      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
+      value);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome));
+      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
+      value);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltShortcutText));
+      installer_util::master_preferences::kAltShortcutText, &value) &&
+      value);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel));
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging));
+      installer_util::master_preferences::kSystemLevel, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kVerboseLogging, &value));
+  EXPECT_FALSE(value);
 
   // Delete temporary prefs file.
   EXPECT_TRUE(file_util::Delete(prefs_file, false));
@@ -121,15 +128,18 @@ TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
   prefs.reset(setup_util::GetInstallPreferences(cmd_line));
   EXPECT_TRUE(prefs.get() != NULL);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts));
+      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
+      value);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome));
+      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
+      value);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltShortcutText));
+      installer_util::master_preferences::kAltShortcutText, &value) &&
+      value);
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel));
+      installer_util::master_preferences::kSystemLevel, &value));
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging));
+      installer_util::master_preferences::kVerboseLogging, &value));
 }
 
 // Test that we are parsing Chrome version correctly.

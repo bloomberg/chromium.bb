@@ -65,12 +65,14 @@ extern const wchar_t kVerboseLogging[];
 const wchar_t kDefaultMasterPrefs[] = L"master_preferences";
 
 // Gets the value of given boolean preference |name| from |prefs| dictionary
-// which is assumed to contain a dictionary named "distribution".
+// which is assumed to contain a dictionary named "distribution". Returns
+// true if the value is read successfully, otherwise false.
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
-                                const std::wstring& name);
+                                const std::wstring& name,
+                                bool* value);
 
-// This function gets ping delay (ping_delay in the sample above) from master
-// preferences.
+// This function gets value of an integer preference from master
+// preferences. Returns true if the value is read successfully, otherwise false.
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
                                 int* value);
