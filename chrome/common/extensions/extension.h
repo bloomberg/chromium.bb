@@ -237,7 +237,7 @@ class Extension {
   DictionaryValue* GetThemeDisplayProperties() const {
     return theme_display_properties_.get();
   }
-  bool IsTheme() { return is_theme_; }
+  bool IsTheme() const { return is_theme_; }
 
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).

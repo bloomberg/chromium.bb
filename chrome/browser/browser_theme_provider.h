@@ -336,6 +336,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Frees generated images and clears the image cache.
   void ClearCaches();
 
+  // Remove preference values for themes that are no longer in use.
+  void RemoveUnusedThemes();
+
   // Encode image at image_cache_[id] as PNG and write to disk.
   void WriteImagesToDisk() const;
 

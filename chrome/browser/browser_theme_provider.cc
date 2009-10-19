@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
@@ -299,6 +300,8 @@ BrowserThemeProvider::BrowserThemeProvider()
 
 BrowserThemeProvider::~BrowserThemeProvider() {
   ClearCaches();
+
+  RemoveUnusedThemes();
 }
 
 void BrowserThemeProvider::Init(Profile* profile) {
@@ -507,6 +510,25 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   WriteImagesToDisk();
   NotifyThemeChanged();
   UserMetrics::RecordAction(L"Themes_Installed", profile_);
+}
+
+void BrowserThemeProvider::RemoveUnusedThemes() {
+  if (!profile_)
+    return;
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return;
+  std::string current_theme = GetThemeID();
+  std::vector<std::string> remove_list;
+  const ExtensionList* extensions = service->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    if ((*it)->IsTheme() && (*it)->id() != current_theme) {
+      remove_list.push_back((*it)->id());
+    }
+  }
+  for (size_t i = 0; i < remove_list.size(); ++i)
+    service->UninstallExtension(remove_list[i], false);
 }
 
 void BrowserThemeProvider::UseDefaultTheme() {
@@ -1281,7 +1303,7 @@ void BrowserThemeProvider::SaveCachedImageData() const {
     std::string pref_name = resource_names_.find(it->second)->second;
     pref_images->SetString(UTF8ToWide(pref_name), WideToUTF8(disk_path));
   }
-  profile_->GetPrefs()->SavePersistentPrefs();
+  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 }
 
 void BrowserThemeProvider::SaveThemeID(const std::string& id) {

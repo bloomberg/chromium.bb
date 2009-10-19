@@ -811,6 +811,7 @@ ProfileImpl::~ProfileImpl() {
   if (extensions_service_)
     extensions_service_->ProfileDestroyed();
 
+  // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
 }
 
