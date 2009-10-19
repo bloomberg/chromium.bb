@@ -29,6 +29,11 @@
 #include "installer_util_strings.h"
 #include "registered_dlls.h"
 
+#if defined(CHROME_FRAME_BUILD)
+COMPILE_ASSERT(kNumDllsToRegister > 0,
+               Chrome_Frame_DLL_must_be_built_before_setup);
+#endif
+
 namespace {
 
 std::wstring AppendPath(const std::wstring& parent_path,
