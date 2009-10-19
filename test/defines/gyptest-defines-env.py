@@ -24,15 +24,16 @@ VALUE is 10
 test.run_built_executable('defines', stdout=expect)
 
 
-test.sleep()
-# With the value given in both command line and environment, command line should
-# take precedence.
+# With the value given in both command line and environment,
+# command line should take precedence.
 try:
   os.environ['GYP_DEFINES'] = 'value=20'
   test.run_gyp('defines-env.gyp', '-Dvalue=25')
 finally:
   del os.environ['GYP_DEFINES']
 
+test.sleep()
+test.touch('defines.c')
 test.run_build('defines-env.gyp')
 
 expect = """\
@@ -41,7 +42,6 @@ VALUE is 25
 test.run_built_executable('defines', stdout=expect)
 
 
-test.sleep()
 # With the value only given in environment, it should be ignored if
 # --ignore-environment is specified.
 try:
@@ -50,6 +50,8 @@ try:
 finally:
   del os.environ['GYP_DEFINES']
 
+test.sleep()
+test.touch('defines.c')
 test.run_build('defines-env.gyp')
 
 expect = """\
@@ -58,7 +60,6 @@ VALUE is 5
 test.run_built_executable('defines', stdout=expect)
 
 
-test.sleep()
 # With the value given in both command line and environment, and
 # --ignore-environment also specified, command line should still be used.
 try:
@@ -67,6 +68,8 @@ try:
 finally:
   del os.environ['GYP_DEFINES']
 
+test.sleep()
+test.touch('defines.c')
 test.run_build('defines-env.gyp')
 
 expect = """\

@@ -61,6 +61,11 @@ contents = test.read('relocate/src/program.c')
 contents = contents.replace('again', 'again again')
 test.write('relocate/src/program.c', contents)
 
+# TODO(sgk):  we have to force a rebuild of lib2 so that it weeds out
+# the "moved" module.  This should be done in gyp by adding a dependency
+# on the generated .vcproj file itself.
+test.touch('relocate/src/lib2.c')
+
 test.build_all('library.gyp', chdir='relocate/src')
 
 expect = """\

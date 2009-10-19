@@ -1,14 +1,4 @@
 {
-  'target_defaults': {
-    # TODO:  Necessary definitions for <(INTERMEDIATE_DIR) to work
-    # and to have separate func.obj files for the two targets below.
-    # These should probably be part of GYP itself, or perhaps
-    # moved into the TestGyp.py infrastructure.
-    'msvs_configuration_attributes': {
-      'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
-      'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
-    },
-  },
   'targets': [
     {
       'target_name': 'prog1',

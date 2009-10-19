@@ -698,9 +698,15 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     for a in source_attrs:
       prepared_attrs[a] = source_attrs[a]
     # Add props files.
-    prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
+    if vsprops_dirs:
+      prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
     # Set configuration type.
     prepared_attrs['ConfigurationType'] = config_type
+    if not prepared_attrs.has_key('OutputDirectory'):
+      prepared_attrs['OutputDirectory'] = '$(SolutionDir)$(ConfigurationName)'
+    if not prepared_attrs.has_key('IntermediateDirectory'):
+      intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
+      prepared_attrs['IntermediateDirectory'] = intermediate
 
     # Add in this configuration.
     p.AddConfig('|'.join([config_name,
