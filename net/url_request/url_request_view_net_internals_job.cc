@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sstream>
-
 #include "net/url_request/url_request_view_net_internals_job.h"
+
+#if defined(OS_WIN)
+#include <ws2tcpip.h>
+#else
+#include <netdb.h>
+#endif
+
+#include <sstream>
 
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -219,7 +225,7 @@ class HostResolverCacheSubSection : public SubSection {
     out->append("<table border=1>"
                 "<tr>"
                 "<th>Host</th>"
-                "<th>First address</th>"
+                "<th>Address list</th>"
                 "<th>Time to live (ms)</th>"
                 "</tr>");
 
@@ -243,12 +249,21 @@ class HostResolverCacheSubSection : public SubSection {
           out->append("<tr style='color:blue'>");
         }
 
-        std::string address_str =
-            net::NetAddressToString(entry->addrlist.head());
+        // Stringify all of the addresses in the address list, separated
+        // by newlines (br).
+        std::string address_list_html;
+        const struct addrinfo* current_address = entry->addrlist.head();
+        while (current_address) {
+          if (!address_list_html.empty())
+            address_list_html += "<br>";
+          address_list_html += EscapeForHTML(
+              net::NetAddressToString(current_address));
+          current_address = current_address->ai_next;
+        }
 
         out->append(StringPrintf("<td>%s</td><td>%s</td><td>%d</td></tr>",
                                  EscapeForHTML(host).c_str(),
-                                 EscapeForHTML(address_str).c_str(),
+                                 address_list_html.c_str(),
                                  ttl_ms));
       } else {
         // This was an entry that failed to be resolved.
