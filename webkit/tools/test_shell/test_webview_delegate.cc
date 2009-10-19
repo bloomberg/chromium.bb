@@ -636,12 +636,9 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
     printf("Policy delegate: attempt to load %s with navigation type '%s'",
            GetURLDescription(request.url()).c_str(),
            WebNavigationTypeToString(type));
-    WebNode node = originating_node;
-    if (!node.isNull()) {
-      printf(" originating from %s", node.nodeName().utf8().data());
-      for (node = node.parentNode(); !node.isNull(); node = node.parentNode()) {
-        printf(" > %s", node.nodeName().utf8().data());
-      }
+    if (!originating_node.isNull()) {
+      printf(" originating from %s",
+          GetNodeDescription(originating_node, 0).c_str());
     }
     printf("\n");
     if (policy_delegate_is_permissive_) {
