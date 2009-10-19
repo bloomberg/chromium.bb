@@ -112,6 +112,7 @@ enum {
     ID_TEST_HAS_PROPERTY,
     ID_TEST_HAS_METHOD,
     ID_TEST_THROW_EXCEPTION_METHOD,
+    ID_TEST_FAIL_METHOD,
     NUM_METHOD_IDENTIFIERS
 };
 
@@ -143,7 +144,8 @@ static const NPUTF8 *pluginMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
     "destroyNullStream",
     "testHasProperty",
     "testHasMethod",
-    "testThrowException"
+    "testThrowException",
+    "testFail"
 };
 
 static NPUTF8* createCStringFromNPVariant(const NPVariant* variant)
@@ -286,13 +288,13 @@ static NPIdentifier variantToIdentifier(NPVariant variant)
 static bool testIdentifierToString(PluginObject*, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
     if (argCount != 1)
-        return false;
+        return true;
     NPIdentifier identifier = variantToIdentifier(args[0]);
     if (!identifier)
-        return false;
+        return true;
     NPUTF8* utf8String = browser->utf8fromidentifier(identifier);
     if (!utf8String)
-        return false;
+        return true;
     STRINGZ_TO_NPVARIANT(utf8String, *result);
     return true;
 }
@@ -795,7 +797,8 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
     else if (name == pluginMethodIdentifiers[ID_TEST_THROW_EXCEPTION_METHOD]) {
         browser->setexception(header, "plugin object testThrowException SUCCESS");
         return true;
-    }
+    }// else if (name == pluginMethodIdentifiers[ID_TEST_FAIL_METHOD])
+    //    return browser->invoke(plugin->npp, 0, name, args, argCount, result);
 
     return false;
 }
