@@ -19,21 +19,22 @@ using base::Time;
 // to run in a separate process, so we use a proxy object so we can share the
 // same test between platforms.
 TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
-  std::wstring nss_path;
+  FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
-  file_util::AppendToPath(&nss_path, L"firefox2_nss_mac");
+  nss_path = nss_path.AppendASCII("firefox2_nss_mac");
 #else
-  file_util::AppendToPath(&nss_path, L"firefox2_nss");
+  nss_path = nss_path.AppendASCII("firefox2_nss");
 #endif  // !OS_MACOSX
-  std::wstring db_path;
+  FilePath db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
-  file_util::AppendToPath(&db_path, L"firefox2_profile");
+  db_path = db_path.AppendASCII("firefox2_profile");
 
   FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
+  ASSERT_TRUE(decryptor_proxy.Setup(nss_path.ToWStringHack()));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
+  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
+                                            db_path.ToWStringHack()));
   EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECBJM63MpT9rtBAjMCm7qo/EhlA=="));
   // Test UTF-16 encoding.
@@ -42,21 +43,22 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
 }
 
 TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
-  std::wstring nss_path;
+  FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
-  file_util::AppendToPath(&nss_path, L"firefox3_nss_mac");
+  nss_path = nss_path.AppendASCII("firefox3_nss_mac");
 #else
-  file_util::AppendToPath(&nss_path, L"firefox3_nss");
+  nss_path = nss_path.AppendASCII("firefox3_nss");
 #endif  // !OS_MACOSX
-  std::wstring db_path;
+  FilePath db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
-  file_util::AppendToPath(&db_path, L"firefox3_profile");
+  db_path = db_path.AppendASCII("firefox3_profile");
 
   FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
+  ASSERT_TRUE(decryptor_proxy.Setup(nss_path.ToWStringHack()));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
+  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
+                                            db_path.ToWStringHack()));
   EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECKajtRg4qFSHBAhv9luFkXgDJA=="));
   // Test UTF-16 encoding.

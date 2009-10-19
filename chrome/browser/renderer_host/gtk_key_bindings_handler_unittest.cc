@@ -27,10 +27,10 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
   GtkKeyBindingsHandlerTest()
       : window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
         handler_(NULL) {
-    std::wstring gtkrc;
+    FilePath gtkrc;
     PathService::Get(chrome::DIR_TEST_DATA, &gtkrc);
-    file_util::AppendToPath(&gtkrc, L"gtk_key_bindings_test_gtkrc");
-    gtk_rc_parse(WideToUTF8(gtkrc).c_str());
+    gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
+    gtk_rc_parse(gtkrc.value().c_str());
 
     GtkWidget* fixed = gtk_fixed_new();
     handler_ = new GtkKeyBindingsHandler(fixed);

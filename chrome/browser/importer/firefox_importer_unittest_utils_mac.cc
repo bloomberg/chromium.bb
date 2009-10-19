@@ -123,7 +123,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
     : child_process_(0) {
 }
 
-bool FFUnitTestDecryptorProxy::Setup(std::wstring& nss_path) {
+bool FFUnitTestDecryptorProxy::Setup(const std::wstring& nss_path) {
   // Create a new message loop and spawn the child process.
   message_loop_.reset(new MessageLoopForIO());
 

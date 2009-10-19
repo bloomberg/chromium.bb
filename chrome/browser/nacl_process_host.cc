@@ -116,8 +116,8 @@ bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
 
   // Build command line for nacl.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  std::wstring exe_path =
-      browser_command_line.GetSwitchValue(switches::kBrowserSubprocessPath);
+  FilePath exe_path =
+      browser_command_line.GetSwitchValuePath(switches::kBrowserSubprocessPath);
   if (exe_path.empty() && !PathService::Get(base::FILE_EXE, &exe_path))
     return false;
 
@@ -125,8 +125,8 @@ bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
   if (logging::DialogsAreSuppressed())
     cmd_line.AppendSwitch(switches::kNoErrorDialogs);
 
-  // propagate the following switches to the plugin command line (along with
-  // any associated values) if present in the browser command line
+  // Propagate the following switches to the plugin command line (along with
+  // any associated values) if present in the browser command line.
   // TODO(gregoryd): check which flags of those below can be supported.
   static const char* const switch_names[] = {
     switches::kNoSandbox,

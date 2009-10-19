@@ -34,7 +34,7 @@ class FFUnitTestDecryptorProxy {
 
   // Initialize a decryptor, returns true if the object was
   // constructed successfully.
-  bool Setup(std::wstring& nss_path);
+  bool Setup(const std::wstring& nss_path);
 
   // This match the parallel functions in NSSDecryptor.
   bool DecryptorInit(const std::wstring& dll_path, const std::wstring& db_path);
@@ -67,7 +67,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
 }
 
-bool FFUnitTestDecryptorProxy::Setup(std::wstring& /* nss_path */) {
+bool FFUnitTestDecryptorProxy::Setup(const std::wstring& /* nss_path */) {
   return true;
 }
 

@@ -29,6 +29,15 @@
 
 namespace {
 
+// TODO: don't use wstrings in all this code.  :(
+// But I'm not fixing it right now since this code is reported to be going
+// away.
+void DeprecatedPathServiceGet(int key, std::wstring* str) {
+  FilePath path;
+  PathService::Get(key, &path);
+  *str = path.ToWStringHack();
+}
+
 // Helper to start chrome for a given profile index. The helper takes care of
 // enumerating profiles on the file thread and then it launches Chrome for the
 // appropriate profile on the original thread.
@@ -95,7 +104,7 @@ UserDataManager* UserDataManager::instance_ = NULL;
 UserDataManager* UserDataManager::Create() {
   DCHECK(!instance_);
   std::wstring user_data;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data);
+  DeprecatedPathServiceGet(chrome::DIR_USER_DATA, &user_data);
   instance_ = new UserDataManager(user_data);
   return instance_;
 }
@@ -180,13 +189,13 @@ void UserDataManager::LaunchChromeForProfile(
     const std::wstring& profile_name) const {
   std::wstring user_data_dir = GetUserDataFolderForProfile(profile_name);
   std::wstring command;
-  PathService::Get(base::FILE_EXE, &command);
+  DeprecatedPathServiceGet(base::FILE_EXE, &command);
   CommandLine command_line(command);
   command_line.AppendSwitch(switches::kEnableUserDataDirProfiles);
   command_line.AppendSwitchWithValue(switches::kUserDataDir,
                                      user_data_dir);
   std::wstring local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  DeprecatedPathServiceGet(chrome::FILE_LOCAL_STATE, &local_state_path);
   command_line.AppendSwitchWithValue(switches::kParentProfile,
                                      local_state_path);
   base::LaunchApp(command_line, false, false, NULL);

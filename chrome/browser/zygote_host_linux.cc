@@ -46,7 +46,7 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
 }
 
 ZygoteHost::ZygoteHost() {
-  std::wstring chrome_path;
+  FilePath chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
   CommandLine cmd_line(chrome_path);
 

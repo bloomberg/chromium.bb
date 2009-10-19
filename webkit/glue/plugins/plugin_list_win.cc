@@ -121,10 +121,12 @@ void GetFirefoxDirectory(std::set<FilePath>* plugin_dirs) {
   GetPluginsInRegistryDirectory(
       HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, plugin_dirs);
 
-  std::wstring firefox_app_data_plugin_path;
+  FilePath firefox_app_data_plugin_path;
   if (PathService::Get(base::DIR_APP_DATA, &firefox_app_data_plugin_path)) {
-    firefox_app_data_plugin_path += L"\\Mozilla\\plugins";
-    plugin_dirs->insert(FilePath(firefox_app_data_plugin_path));
+    firefox_app_data_plugin_path =
+        firefox_app_data_plugin_path.AppendASCII("Mozilla")
+                                    .AppendASCII("plugins");
+    plugin_dirs->insert(firefox_app_data_plugin_path);
   }
 }
 

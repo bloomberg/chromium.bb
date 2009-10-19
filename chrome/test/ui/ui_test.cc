@@ -644,10 +644,9 @@ DictionaryValue* UITest::GetLocalState() {
 }
 
 DictionaryValue* UITest::GetDefaultProfilePreferences() {
-  std::wstring path_wstring;
-  PathService::Get(chrome::DIR_USER_DATA, &path_wstring);
-  file_util::AppendToPath(&path_wstring, chrome::kNotSignedInProfile);
-  FilePath path(FilePath::FromWStringHack(path_wstring));
+  FilePath path;
+  PathService::Get(chrome::DIR_USER_DATA, &path);
+  path = path.AppendASCII(WideToASCII(chrome::kNotSignedInProfile));
   return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
 }
 
