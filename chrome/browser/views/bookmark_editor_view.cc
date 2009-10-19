@@ -473,8 +473,8 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
   DCHECK(root_node->GetChildCount() == 2);
-  DCHECK(bb_root_node->GetChild(0)->GetType() == BookmarkNode::BOOKMARK_BAR);
-  DCHECK(bb_root_node->GetChild(1)->GetType() == BookmarkNode::OTHER_NODE);
+  DCHECK(bb_root_node->GetChild(0)->type() == BookmarkNode::BOOKMARK_BAR);
+  DCHECK(bb_root_node->GetChild(1)->type() == BookmarkNode::OTHER_NODE);
   return root_node;
 }
 

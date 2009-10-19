@@ -16,9 +16,9 @@ void BookmarkModelTestUtils::AssertNodesEqual(const BookmarkNode* expected,
   if (check_ids)
     EXPECT_EQ(expected->id(), actual->id());
   EXPECT_EQ(expected->GetTitle(), actual->GetTitle());
-  EXPECT_EQ(expected->GetType(), actual->GetType());
+  EXPECT_EQ(expected->type(), actual->type());
   EXPECT_TRUE(expected->date_added() == actual->date_added());
-  if (expected->GetType() == BookmarkNode::URL) {
+  if (expected->type() == BookmarkNode::URL) {
     EXPECT_EQ(expected->GetURL(), actual->GetURL());
   } else {
     EXPECT_TRUE(expected->date_group_modified() ==

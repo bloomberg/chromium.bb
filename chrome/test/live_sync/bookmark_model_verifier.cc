@@ -82,7 +82,7 @@ void BookmarkModelVerifier::VerifyNoDuplicates(BookmarkModel* model) {
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     std::vector<const BookmarkNode*> nodes;
-    if (node->GetType() != BookmarkNode::URL) { continue; }
+    if (node->type() != BookmarkNode::URL) { continue; }
     // Get nodes with same URL.
     model->GetNodesByURL(node->GetURL(),&nodes);
     EXPECT_TRUE(nodes.size()>=1);

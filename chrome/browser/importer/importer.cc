@@ -119,8 +119,8 @@ void ProfileWriter::AddBookmarkEntry(
 
       for (int index = 0; index < parent->GetChildCount(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
-        if ((node->GetType() == BookmarkNode::BOOKMARK_BAR ||
-             node->GetType() == BookmarkNode::FOLDER) &&
+        if ((node->type() == BookmarkNode::BOOKMARK_BAR ||
+             node->type() == BookmarkNode::FOLDER) &&
             node->GetTitle() == folder_name) {
           child = node;
           break;

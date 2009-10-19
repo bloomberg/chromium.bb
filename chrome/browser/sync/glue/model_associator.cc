@@ -97,9 +97,9 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
   BookmarkNode temp_node(GURL(sync_node.GetURL()));
   temp_node.SetTitle(UTF16ToWide(sync_node.GetTitle()));
   if (sync_node.GetIsFolder())
-    temp_node.SetType(BookmarkNode::FOLDER);
+    temp_node.set_type(BookmarkNode::FOLDER);
   else
-    temp_node.SetType(BookmarkNode::URL);
+    temp_node.set_type(BookmarkNode::URL);
 
   const BookmarkNode* result = NULL;
   BookmarkNodesSet::iterator iter = child_nodes_.find(&temp_node);

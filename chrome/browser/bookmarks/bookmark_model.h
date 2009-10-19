@@ -65,8 +65,8 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
   void set_id(int64 id) { id_ = id; }
 
   // Returns the type of this node.
-  BookmarkNode::Type GetType() const { return type_; }
-  void SetType(BookmarkNode::Type type) { type_ = type; }
+  BookmarkNode::Type type() const { return type_; }
+  void set_type(BookmarkNode::Type type) { type_ = type; }
 
   // Returns the time the bookmark/group was added.
   const base::Time& date_added() const { return date_added_; }

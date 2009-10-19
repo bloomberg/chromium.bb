@@ -316,13 +316,13 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
   ASSERT_EQ(4, model_->GetBookmarkBarNode()->GetChildCount());
   const BookmarkNode* new_node =
       model_->GetBookmarkBarNode()->GetChild(3);
-  EXPECT_EQ(BookmarkNode::FOLDER, new_node->GetType());
+  EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
   EXPECT_EQ(L"new_F", new_node->GetTitle());
   // The node should have one child.
   ASSERT_EQ(1, new_node->GetChildCount());
   const BookmarkNode* new_child = new_node->GetChild(0);
   // Make sure the child url/title match.
-  EXPECT_EQ(BookmarkNode::URL, new_child->GetType());
+  EXPECT_EQ(BookmarkNode::URL, new_child->type());
   EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
   EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
 }
@@ -344,13 +344,13 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
   // Make sure the folder we edited is still there.
   ASSERT_EQ(3, model_->other_node()->GetChildCount());
   const BookmarkNode* new_node = model_->other_node()->GetChild(2);
-  EXPECT_EQ(BookmarkNode::FOLDER, new_node->GetType());
+  EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
   EXPECT_EQ(L"new_F", new_node->GetTitle());
   // The node should have one child.
   ASSERT_EQ(1, new_node->GetChildCount());
   const BookmarkNode* new_child = new_node->GetChild(0);
   // Make sure the child url/title match.
-  EXPECT_EQ(BookmarkNode::URL, new_child->GetType());
+  EXPECT_EQ(BookmarkNode::URL, new_child->type());
   EXPECT_EQ(details.urls[0].second, new_child->GetTitle());
   EXPECT_TRUE(details.urls[0].first == new_child->GetURL());
 }

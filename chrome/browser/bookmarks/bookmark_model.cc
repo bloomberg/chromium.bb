@@ -87,7 +87,7 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
 
   // Returns true if lhs preceeds rhs.
   bool operator() (const BookmarkNode* n1, const BookmarkNode* n2) {
-    if (n1->GetType() == n2->GetType()) {
+    if (n1->type() == n2->type()) {
       // Types are the same, compare the names.
       if (!collator_)
         return n1->GetTitle() < n2->GetTitle();
@@ -299,7 +299,7 @@ const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
                                             GURL());
   new_node->set_date_group_modified(Time::Now());
   new_node->SetTitle(title);
-  new_node->SetType(BookmarkNode::FOLDER);
+  new_node->set_type(BookmarkNode::FOLDER);
 
   return AddNode(AsMutable(parent), index, new_node, false);
 }
@@ -330,7 +330,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), url);
   new_node->SetTitle(title);
   new_node->set_date_added(creation_time);
-  new_node->SetType(BookmarkNode::URL);
+  new_node->set_type(BookmarkNode::URL);
 
   {
     // Only hold the lock for the duration of the insert.
@@ -426,7 +426,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
     return;
   }
 
-  if (node->GetType() == BookmarkNode::URL) {
+  if (node->type() == BookmarkNode::URL) {
     // NOTE: this is called in such a way that url_lock_ is already held. As
     // such, this doesn't explicitly grab the lock.
     NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
@@ -566,7 +566,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 
   index_->Add(node);
 
-  if (node->GetType() == BookmarkNode::URL && !was_bookmarked) {
+  if (node->type() == BookmarkNode::URL && !was_bookmarked) {
     history::URLsStarredDetails details(true);
     details.changed_urls.insert(node->GetURL());
     NotificationService::current()->Notify(
@@ -656,7 +656,7 @@ void BookmarkModel::OnFavIconDataAvailable(
 }
 
 void BookmarkModel::LoadFavIcon(BookmarkNode* node) {
-  if (node->GetType() != BookmarkNode::URL)
+  if (node->type() != BookmarkNode::URL)
     return;
 
   DCHECK(node->GetURL().is_valid());

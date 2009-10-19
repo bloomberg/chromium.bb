@@ -1729,7 +1729,7 @@ void MetricsService::LogChildProcessChange(
 static void CountBookmarks(const BookmarkNode* node,
                            int* bookmarks,
                            int* folders) {
-  if (node->GetType() == BookmarkNode::URL)
+  if (node->type() == BookmarkNode::URL)
     (*bookmarks)++;
   else
     (*folders)++;

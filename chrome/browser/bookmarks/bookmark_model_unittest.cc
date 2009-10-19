@@ -157,12 +157,12 @@ TEST_F(BookmarkModelTest, InitialState) {
   const BookmarkNode* bb_node = model.GetBookmarkBarNode();
   ASSERT_TRUE(bb_node != NULL);
   EXPECT_EQ(0, bb_node->GetChildCount());
-  EXPECT_EQ(BookmarkNode::BOOKMARK_BAR, bb_node->GetType());
+  EXPECT_EQ(BookmarkNode::BOOKMARK_BAR, bb_node->type());
 
   const BookmarkNode* other_node = model.other_node();
   ASSERT_TRUE(other_node != NULL);
   EXPECT_EQ(0, other_node->GetChildCount());
-  EXPECT_EQ(BookmarkNode::OTHER_NODE, other_node->GetType());
+  EXPECT_EQ(BookmarkNode::OTHER_NODE, other_node->type());
 
   EXPECT_TRUE(bb_node->id() != other_node->id());
 }
@@ -179,7 +179,7 @@ TEST_F(BookmarkModelTest, AddURL) {
   ASSERT_EQ(1, root->GetChildCount());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->GetURL());
-  ASSERT_EQ(BookmarkNode::URL, new_node->GetType());
+  ASSERT_EQ(BookmarkNode::URL, new_node->type());
   ASSERT_TRUE(new_node == model.GetMostRecentlyAddedNodeForURL(url));
 
   EXPECT_TRUE(new_node->id() != root->id() &&
@@ -196,7 +196,7 @@ TEST_F(BookmarkModelTest, AddGroup) {
 
   ASSERT_EQ(1, root->GetChildCount());
   ASSERT_EQ(title, new_node->GetTitle());
-  ASSERT_EQ(BookmarkNode::FOLDER, new_node->GetType());
+  ASSERT_EQ(BookmarkNode::FOLDER, new_node->type());
 
   EXPECT_TRUE(new_node->id() != root->id() &&
               new_node->id() != model.other_node()->id());
@@ -582,14 +582,14 @@ class BookmarkModelTestWithProfile : public testing::Test,
       const BookmarkNode* actual_child = actual->GetChild(i);
       ASSERT_EQ(expected_child->GetTitle(), actual_child->GetTitle());
       if (expected_child->value == BookmarkNode::FOLDER) {
-        ASSERT_TRUE(actual_child->GetType() == BookmarkNode::FOLDER);
+        ASSERT_TRUE(actual_child->type() == BookmarkNode::FOLDER);
         // Recurse throught children.
         VerifyModelMatchesNode(expected_child, actual_child);
         if (HasFatalFailure())
           return;
       } else {
         // No need to check the URL, just the title is enough.
-        ASSERT_TRUE(actual_child->GetType() == BookmarkNode::URL);
+        ASSERT_TRUE(actual_child->type() == BookmarkNode::URL);
       }
     }
   }
@@ -724,7 +724,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     ASSERT_EQ(2, bbn->GetChildCount());
 
     const BookmarkNode* child = bbn->GetChild(0);
-    ASSERT_EQ(BookmarkNode::URL, child->GetType());
+    ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(L"Google", child->GetTitle());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com"));
 
@@ -735,7 +735,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
 
     const BookmarkNode* parent = child;
     child = parent->GetChild(0);
-    ASSERT_EQ(BookmarkNode::URL, child->GetType());
+    ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(L"Google Advertising", child->GetTitle());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/intl/en/ads/"));
 
@@ -746,7 +746,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
 
     parent = child;
     child = parent->GetChild(0);
-    ASSERT_EQ(BookmarkNode::URL, child->GetType());
+    ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(L"Google Business Solutions", child->GetTitle());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/services/"));
 
@@ -759,7 +759,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     ASSERT_EQ(0, child->GetChildCount());
 
     child = parent->GetChild(1);
-    ASSERT_EQ(BookmarkNode::URL, child->GetType());
+    ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(L"About Google", child->GetTitle());
     ASSERT_TRUE(child->GetURL() ==
                 GURL("http://www.google.com/intl/en/about.html"));
