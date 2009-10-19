@@ -33,7 +33,7 @@ namespace {
 // properly triaged.
 class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
-  AutomationMessageFilter(AutomationProxy* server) : server_(server) {}
+  explicit AutomationMessageFilter(AutomationProxy* server) : server_(server) {}
 
   // Return true to indicate that the message was handled, or false to let
   // the message be handled in the default way.
@@ -88,6 +88,10 @@ AutomationProxy::AutomationProxy(int command_execution_timeout_ms)
       perform_version_check_(false),
       command_execution_timeout_(
           TimeDelta::FromMilliseconds(command_execution_timeout_ms)) {
+  // base::WaitableEvent::TimedWait() will choke if we give it a negative value.
+  // Zero also seems unreasonable, since we need to wait for IPC, but at
+  // least it is legal... ;-)
+  DCHECK_GE(command_execution_timeout_ms, 0);
   InitializeChannelID();
   InitializeHandleTracker();
   InitializeThread();

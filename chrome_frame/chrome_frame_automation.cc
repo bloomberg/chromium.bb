@@ -29,7 +29,7 @@ int64 kAutomationServerReasonableLaunchDelay = 1000;  // in milliseconds
 int64 kAutomationServerReasonableLaunchDelay = 1000 * 10;
 #endif
 
-int kDefaultSendUMADataInterval = 20000; // in milliseconds.
+int kDefaultSendUMADataInterval = 20000;  // in milliseconds.
 
 static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
 
@@ -419,8 +419,12 @@ bool ChromeFrameAutomationClient::Initialize(
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
   if (IsDebuggerPresent()) {
-    automation_server_launch_timeout = INFINITE;
+    // Don't use INFINITE (which is -1) or even MAXINT since we will convert
+    // from milliseconds to microseconds when stored in a base::TimeDelta,
+    // thus * 1000. An hour should be enough.
+    automation_server_launch_timeout = 60 * 60 * 1000;
   } else {
+    DCHECK_LT(automation_server_launch_timeout, MAXINT / 2000);
     automation_server_launch_timeout *= 2;
   }
 #endif  // NDEBUG
@@ -980,8 +984,8 @@ bool ChromeFrameAutomationClient::Reinitialize(
 
 void ChromeFrameAutomationClient::AttachExternalTab(
     intptr_t external_tab_cookie) {
-  DCHECK(tab_.get() == NULL);
-  DCHECK(tab_handle_ == -1);
+  DCHECK_EQ(static_cast<TabProxy*>(NULL), tab_.get());
+  DCHECK_EQ(-1, tab_handle_);
 
   external_tab_cookie_ = external_tab_cookie;
 }
