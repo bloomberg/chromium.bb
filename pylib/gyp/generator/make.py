@@ -35,7 +35,7 @@ generator_default_variables = {
   'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
   'SHARED_LIB_SUFFIX': '.so',
-  'INTERMEDIATE_DIR': '$(obj)/geni',
+  'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'LIB_DIR': '$(obj)',
@@ -48,6 +48,8 @@ generator_default_variables = {
   'CONFIGURATION_NAME': '$(BUILDTYPE)',
 }
 
+# Make supports multiple toolsets
+generator_supports_multiple_toolsets = True
 
 def ensure_directory_exists(path):
   dir = os.path.dirname(path)
@@ -91,7 +93,18 @@ all_targets :=
 
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
 LINK := $(CXX)
-RANLIB ?= ranlib
+
+CC.target ?= $(CC)
+CXX.target ?= $(CXX)
+LINK.target ?= $(LINK)
+AR.target ?= $(AR)
+RANLIB.target ?= ranlib
+
+CC.host ?= gcc
+CXX.host ?= g++
+LINK.host ?= g++
+AR.host ?= ar
+RANLIB.host ?= ranlib
 
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
@@ -131,14 +144,14 @@ endef
 # - cmd_foo is the actual command to run;
 # - quiet_cmd_foo is the brief-output summary of the command.
 
-quiet_cmd_cc = CC $@
-cmd_cc = $(CC) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_cc = CC($(TOOLSET)) $@
+cmd_cc = $(CC.$(TOOLSET)) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-quiet_cmd_cxx = CXX $@
-cmd_cxx = $(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_cxx = CXX($(TOOLSET)) $@
+cmd_cxx = $(CXX.$(TOOLSET)) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-quiet_cmd_alink = AR+RANLIB $@
-cmd_alink = rm -f $@ && $(AR) rc $@ $(filter %.o,$^) && $(RANLIB) $@
+quiet_cmd_alink = AR+RANLIB($(TOOLSET)) $@
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) rc $@ $(filter %.o,$^) && $(RANLIB.$(TOOLSET)) $@
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
@@ -149,15 +162,15 @@ cmd_copy = ln -f $< $@ || cp -af $< $@
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
-quiet_cmd_link = LINK $@
-cmd_link = $(LINK) $(LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+quiet_cmd_link = LINK($(TOOLSET)) $@
+cmd_link = $(LINK.$(TOOLSET)) $(LDFLAGS) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # Set SONAME to the library filename so our binaries don't reference the local,
 # absolute paths used on the link command-line.
 # TODO: perhaps this can share with the LINK command above?
-quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LINK) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+quiet_cmd_solink = SOLINK($(TOOLSET)) $@
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
@@ -214,29 +227,36 @@ all:
 .PHONY: FORCE_DO_CMD
 FORCE_DO_CMD:
 
+""")
+
+SHARED_HEADER_SUFFIX_RULES = ("""\
 # Suffix rules, putting all outputs into $(obj).
-$(obj)/%.o: $(srcdir)/%.c FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-
-$(obj)/%.o: $(srcdir)/%.s FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
 	@$(call do_cmd,cc)
-
-$(obj)/%.o: $(srcdir)/%.S FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
 	@$(call do_cmd,cc)
-
-$(obj)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
-$(obj)/%.o: $(obj)/%.c FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-$(obj)/%.o: $(obj)/%.cc FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj)/%.o: $(obj)/%.cpp FORCE_DO_CMD
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+
+$(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """)
 
@@ -293,12 +313,6 @@ def QuoteIfNecessary(string):
   return string
 
 
-def Objectify(path):
-  """Convert a path to its output directory form."""
-  if '$(' in path:
-    return path
-  return '$(obj)/' + path
-
 srcdir_prefix = ''
 def Sourceify(path):
   """Convert a path to its source directory form."""
@@ -342,6 +356,7 @@ class MakefileWriter:
     self.path = base_path
     self.target = spec['target_name']
     self.type = spec['type']
+    self.toolset = spec['toolset']
 
     deps, link_deps = self.ComputeDeps(spec)
 
@@ -359,6 +374,8 @@ class MakefileWriter:
       self.alias = os.path.basename(self.output)
     else:
       self.alias = self.output
+
+    self.WriteLn("TOOLSET := " + self.toolset)
 
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
@@ -587,7 +604,7 @@ class MakefileWriter:
       self.WriteList(includes, 'INCS_%s' % configname, prefix='-I')
 
     sources = filter(Compilable, sources)
-    objs = map(Objectify, map(self.Absolutify, map(Target, sources)))
+    objs = map(self.Objectify, map(self.Absolutify, map(Target, sources)))
     self.WriteList(objs, 'OBJS')
 
     self.WriteLn('# Add to the list of files we specially track '
@@ -616,6 +633,7 @@ class MakefileWriter:
       self.WriteLn("""\
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.""")
+      self.WriteLn("$(OBJS): TOOLSET := $(TOOLSET)")
       self.WriteLn("$(OBJS): CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_C_$(BUILDTYPE)) "
                    "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
@@ -648,7 +666,8 @@ class MakefileWriter:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
 
-    path = spec.get('product_dir', os.path.join('$(obj)', self.path))
+    path = spec.get('product_dir', os.path.join('$(obj).' + self.toolset,
+                                                self.path))
     return os.path.join(path, target)
 
 
@@ -789,6 +808,8 @@ class MakefileWriter:
     # TODO(evanm): just make order_only a list of deps instead of these hacks.
     order_insert = '| ' if order_only else ''
     force_append = ' FORCE_DO_CMD' if force else ''
+    if actions:
+      self.WriteLn("%s: TOOLSET := $(TOOLSET)" % outputs[0])
     self.WriteLn('%s: %s%s%s' % (outputs[0], order_insert, ' '.join(inputs),
                                  force_append))
     if actions:
@@ -815,6 +836,13 @@ class MakefileWriter:
   def WriteLn(self, text=''):
     self.fp.write(text + '\n')
 
+
+  def Objectify(self, path):
+    """Convert a path to its output directory form."""
+    if '$(' in path:
+      path = path.replace('$(obj)/', '$(obj).%s/' % self.toolset)
+      return path
+    return '$(obj).%s/%s' % (self.toolset, path)
 
   def Absolutify(self, path):
     """Convert a subdirectory-relative path into a base-relative path.
@@ -850,6 +878,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # away when we add verification that all targets have the
   # necessary configurations.
   default_configuration = None
+  toolsets = set([target_dicts[target]['toolset'] for target in target_list])
   for target in target_list:
     spec = target_dicts[target]
     if spec['default_configuration'] != 'Default':
@@ -872,6 +901,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
   root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
                                             default_configuration))
+  for toolset in toolsets:
+    root_makefile.write('TOOLSET := %s\n' % toolset)
+    root_makefile.write(SHARED_HEADER_SUFFIX_RULES)
 
   # Find the list of targets that derive from the gyp file(s) being built.
   needed_targets = set()
@@ -888,7 +920,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # should work too.
     if qualified_target not in needed_targets:
       continue
-    build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
+    build_file, target, toolset = gyp.common.ParseQualifiedTarget(
+        qualified_target)
     build_files.add(gyp.common.RelativePath(build_file, options.depth))
     included_files = data[build_file]['included_files']
     for included_file in included_files:
@@ -907,7 +940,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # We write the .mk file in the base_path directory.
     output_file = os.path.join(options.depth,
                                base_path,
-                               target + options.suffix + '.mk')
+                               target + '.' + toolset + options.suffix + '.mk')
 
     if options.generator_output:
       output_file = os.path.join(options.generator_output, output_file)

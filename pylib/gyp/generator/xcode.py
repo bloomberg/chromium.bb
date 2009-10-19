@@ -173,7 +173,9 @@ class XcodeProject(object):
 
     for target in self.build_file_dict['targets']:
       target_name = target['target_name']
-      qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name)
+      toolset = target['toolset']
+      qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name,
+                                                    toolset)
       xcode_target = xcode_targets[qualified_target]
       # Make sure that the target being added to the sorted list is already in
       # the unsorted list.
@@ -330,8 +332,9 @@ class XcodeProject(object):
     for bf_tgt in self.build_file_dict['targets']:
       if int(bf_tgt.get('xcode_create_dependents_test_runner', 0)):
         tgt_name = bf_tgt['target_name']
+        toolset = bf_tgt['toolset']
         qualified_target = gyp.common.QualifiedTarget(self.gyp_path,
-                                                      tgt_name)
+                                                      tgt_name, toolset)
         xcode_target = xcode_targets[qualified_target]
         if isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
           # Collect all the test targets.
@@ -570,9 +573,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
   xcode_targets = {}
   xcode_target_to_target_dict = {}
   for qualified_target in target_list:
-    [build_file, target_name] = \
-        gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
+    [build_file, target_name, toolset] = \
+        gyp.common.ParseQualifiedTarget(qualified_target)
+
     spec = target_dicts[qualified_target]
+    if spec['toolset'] != 'target':
+      raise Exception(
+          'Multiple toolsets not supported in xcode build (target %s)' %
+          qualified_target)
     configuration_names = [spec['default_configuration']]
     for configuration_name in sorted(spec['configurations'].keys()):
       if configuration_name not in configuration_names:

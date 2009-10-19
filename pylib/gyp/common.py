@@ -17,32 +17,69 @@ def ExceptionAppend(e, msg):
     e.args = (str(e.args[0]) + ' ' + msg,) + e.args[1:]
 
 
-def BuildFileAndTarget(build_file, target):
-  # NOTE: If you just want to split up target into a build_file and target,
-  # and you know that target already has a build_file that's been produced by
-  # this function, pass '' for build_file.
+def ParseQualifiedTarget(target):
+  # Splits a qualified target into a build file, target name and toolset.
 
   # NOTE: rsplit is used to disambiguate the Windows drive letter separator.
   target_split = target.rsplit(':', 1)
   if len(target_split) == 2:
-    [build_file_rel, target] = target_split
+    [build_file, target] = target_split
+  else:
+    build_file = None
 
-    # If a relative path, build_file_rel is relative to the directory
-    # containing build_file.  If build_file is not in the current directory,
-    # build_file_rel is not a usable path as-is.  Resolve it by interpreting it
-    # as relative to build_file.  If build_file_rel is absolute, it is usable
-    # as a path regardless of the current directory, and os.path.join will
-    # return it as-is.
-    build_file = os.path.normpath(os.path.join(os.path.dirname(build_file),
-                                               build_file_rel))
+  target_split = target.rsplit('#', 1)
+  if len(target_split) == 2:
+    [target, toolset] = target_split
+  else:
+    toolset = None
 
-  return [build_file, target, build_file + ':' + target]
+  return [build_file, target, toolset]
 
 
-def QualifiedTarget(build_file, target):
+def ResolveTarget(build_file, target, toolset):
+  # This function resolves a target into a canonical form:
+  # - a fully defined build file, either absolute or relative to the current
+  # directory
+  # - a target name
+  # - a toolset
+  #
+  # build_file is the file relative to which 'target' is defined.
+  # target is the qualified target.
+  # toolset is the default toolset for that target.
+  [parsed_build_file, target, parsed_toolset] = ParseQualifiedTarget(target)
+
+  if parsed_build_file:
+    if build_file:
+      # If a relative path, parsed_build_file is relative to the directory
+      # containing build_file.  If build_file is not in the current directory,
+      # parsed_build_file is not a usable path as-is.  Resolve it by
+      # interpreting it as relative to build_file.  If parsed_build_file is
+      # absolute, it is usable as a path regardless of the current directory,
+      # and os.path.join will return it as-is.
+      build_file = os.path.normpath(os.path.join(os.path.dirname(build_file),
+                                                 parsed_build_file))
+    else:
+      build_file = parsed_build_file
+
+  if parsed_toolset:
+    toolset = parsed_toolset
+
+  return [build_file, target, toolset]
+
+
+def BuildFile(fully_qualified_target):
+  # Extracts the build file from the fully qualified target.
+  return ParseQualifiedTarget(fully_qualified_target)[0]
+
+
+def QualifiedTarget(build_file, target, toolset):
   # "Qualified" means the file that a target was defined in and the target
-  # name, separated by a colon.
-  return BuildFileAndTarget(build_file, target)[2]
+  # name, separated by a colon, suffixed by a # and the toolset name:
+  # /path/to/file.gyp:target_name#toolset
+  fully_qualified = build_file + ':' + target
+  if toolset:
+    fully_qualified = fully_qualified + '#' + toolset
+  return fully_qualified
 
 
 def RelativePath(path, relative_to):
@@ -199,8 +236,7 @@ def DeepDependencyTargets(target_dicts, roots):
 def BuildFileTargets(target_list, build_file):
   """From a target_list, returns the subset from the specified build_file.
   """
-  return [p for p in target_list if
-          BuildFileAndTarget('', p)[0] == build_file]
+  return [p for p in target_list if BuildFile(p) == build_file]
 
 
 def AllTargets(target_list, target_dicts, build_file):

@@ -931,7 +931,7 @@ def _GatherSolutionFolders(project_objs):
   root = {}
   # Convert into a tree of dicts on path.
   for p in project_objs.keys():
-    gyp_file, target = gyp.common.BuildFileAndTarget('', p)[0:2]
+    gyp_file, target = gyp.common.ParseQualifiedTarget(p)[0:2]
     gyp_dir = os.path.dirname(gyp_file)
     path_dict = _GetPathDict(root, gyp_dir)
     path_dict[target + '.vcproj'] = project_objs[p]
@@ -1018,7 +1018,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Prepare the set of configurations.
   configs = set()
   for qualified_target in target_list:
-    build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
+    build_file = gyp.common.BuildFile(qualified_target)
     spec = target_dicts[qualified_target]
     for config_name, c in spec['configurations'].iteritems():
       configs.add('|'.join([config_name,
@@ -1028,8 +1028,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Generate each project.
   projects = {}
   for qualified_target in target_list:
-    build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
+    build_file = gyp.common.BuildFile(qualified_target)
     spec = target_dicts[qualified_target]
+    if spec['toolset'] != 'target':
+      raise Exception(
+          'Multiple toolsets not supported in msvs build (target %s)' %
+          qualified_target)
     default_config = spec['configurations'][spec['default_configuration']]
     vcproj_filename = default_config.get('msvs_existing_vcproj')
     if not vcproj_filename:

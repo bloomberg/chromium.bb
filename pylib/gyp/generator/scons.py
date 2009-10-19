@@ -902,7 +902,7 @@ def TargetFilename(target, build_file=None, output_suffix=''):
   """Returns the .scons file name for the specified target.
   """
   if build_file is None:
-    build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
+    build_file, target = gyp.common.ParseQualifiedTarget(target)[:2]
   output_file = os.path.join(os.path.dirname(build_file),
                              target + output_suffix + '.scons')
   return output_file
@@ -925,6 +925,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
+    if spec['toolset'] != 'target':
+      raise Exception(
+          'Multiple toolsets not supported in scons build (target %s)' %
+          qualified_target)
     scons_target = SCons.Target(spec)
     if scons_target.is_ignored:
       continue
@@ -936,7 +940,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         spec['default_configuration'] != 'Default'):
       default_configuration = spec['default_configuration']
 
-    build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
+    build_file, target = gyp.common.ParseQualifiedTarget(qualified_target)[:2]
     output_file = TargetFilename(target, build_file, options.suffix)
     if options.generator_output:
       output_file = output_path(output_file)
@@ -981,7 +985,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       scons_target = SCons.Target(target_dicts[t])
       if scons_target.is_ignored:
         continue
-      bf, target = gyp.common.BuildFileAndTarget('', t)[:2]
+      bf, target = gyp.common.ParseQualifiedTarget(t)[:2]
       target_filename = TargetFilename(target, bf, options.suffix)
       tpath = gyp.common.RelativePath(target_filename, output_dir)
       sconscript_files[target] = tpath

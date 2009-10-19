@@ -53,6 +53,9 @@ _generator_identity_variables = [
 generator_default_variables = {
 }
 
+# gypd supports multiple toolsets
+generator_supports_multiple_toolsets = True
+
 # TODO(mark): This always uses <, which isn't right.  The input module should
 # notify the generator to tell it which phase it is operating in, and this
 # module should use < for the early phase and then switch to > for the late
@@ -65,7 +68,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   output_files = {}
   for qualified_target in target_list:
     [input_file, target] = \
-        gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
+        gyp.common.ParseQualifiedTarget(qualified_target)[0:2]
 
     if input_file[-4:] != '.gyp':
       continue

@@ -73,6 +73,8 @@ base_non_configuration_keys = [
   'suppress_wildcard',
   'target_name',
   'test',
+  'toolset',
+  'toolsets',
   'type',
   'variants',
 
@@ -84,6 +86,9 @@ non_configuration_keys = []
 
 # Controls how the generator want the build file paths.
 absolute_build_file_paths = False
+
+# Controls whether or not the generator supports multiple toolsets.
+multiple_toolsets = False
 
 
 def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
@@ -257,6 +262,33 @@ def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data,
       LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data,
                                     variables, check)
 
+# Processes toolsets in all the targets. This recurses into condition entries
+# since they can contain toolsets as well.
+def ProcessToolsetsInDict(data):
+  if 'targets' in data:
+    target_list = data['targets']
+    new_target_list = []
+    for target in target_list:
+      global multiple_toolsets
+      if multiple_toolsets:
+        toolsets = target.get('toolsets', ['target'])
+      else:
+        toolsets = ['target']
+      if len(toolsets) > 0:
+        # Optimization: only do copies if more than one toolset is specified.
+        for build in toolsets[1:]:
+          new_target = copy.deepcopy(target)
+          new_target['toolset'] = build
+          new_target_list.append(new_target)
+        target['toolset'] = toolsets[0]
+        new_target_list.append(target)
+    data['targets'] = new_target_list
+  if 'conditions' in data:
+    for condition in data['conditions']:
+      if isinstance(condition, list):
+        for condition_dict in condition[1:]:
+          ProcessToolsetsInDict(condition_dict)
+
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
@@ -278,9 +310,10 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   if absolute_build_file_paths:
     build_file_path = os.path.abspath(build_file_path)
 
-  if build_file_path in data:
+  if build_file_path in data['target_build_files']:
     # Already loaded.
     return
+  data['target_build_files'].add(build_file_path)
 
   gyp.DebugOutput(gyp.DEBUG_INCLUDES,
                   "Loading Target Build File '%s'" % build_file_path)
@@ -305,6 +338,8 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
         gyp.common.RelativePath(included_file,
                                 os.path.dirname(build_file_path))
     build_file_data['included_files'].append(included_relative)
+
+  ProcessToolsetsInDict(build_file_data)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
   ProcessVariablesAndConditionsInDict(build_file_data, False, variables.copy(),
@@ -347,7 +382,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
         continue
       for dependency in target_dict['dependencies']:
         other_build_file = \
-            gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
+            gyp.common.ResolveTarget(build_file_path, dependency, None)[0]
         try:
           LoadTargetBuildFile(other_build_file, data, aux_data, variables,
                               includes, depth, check)
@@ -885,10 +920,11 @@ def BuildTargetsDict(data):
   """
 
   targets = {}
-  for build_file in data:
+  for build_file in data['target_build_files']:
     for target in data[build_file].get('targets', []):
       target_name = gyp.common.QualifiedTarget(build_file,
-                                               target['target_name'])
+                                               target['target_name'],
+                                               target['toolset'])
       if target_name in targets:
         raise KeyError, 'Duplicate target definitions for ' + target_name
       targets[target_name] = target
@@ -908,12 +944,20 @@ def QualifyDependencies(targets):
   """
 
   for target, target_dict in targets.iteritems():
-    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    target_build_file = gyp.common.BuildFile(target)
+    toolset = target_dict['toolset']
     for dependency_key in dependency_sections:
       dependencies = target_dict.get(dependency_key, [])
       for index in xrange(0, len(dependencies)):
-        dependency = gyp.common.QualifiedTarget(target_build_file,
-                                                dependencies[index])
+        dep_file, dep_target, dep_toolset = gyp.common.ResolveTarget(
+            target_build_file, dependencies[index], toolset)
+        global multiple_toolsets
+        if not multiple_toolsets:
+          # Ignore toolset specification in the dependency if it is specified.
+          dep_toolset = toolset
+        dependency = gyp.common.QualifiedTarget(dep_file,
+                                                dep_target,
+                                                dep_toolset)
         dependencies[index] = dependency
 
         # Make sure anything appearing in a list other than "dependencies" also
@@ -941,7 +985,8 @@ def ExpandWildcardDependencies(targets, data):
   """
 
   for target, target_dict in targets.iteritems():
-    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    toolset = target_dict['toolset']
+    target_build_file = gyp.common.BuildFile(target)
     for dependency_key in dependency_sections:
       dependencies = target_dict.get(dependency_key, [])
 
@@ -949,9 +994,9 @@ def ExpandWildcardDependencies(targets, data):
       # because the dependencies list will be modified within the loop body.
       index = 0
       while index < len(dependencies):
-        (dependency_build_file, dependency_target) = \
-            gyp.common.BuildFileAndTarget('', dependencies[index])[0:2]
-        if dependency_target != '*':
+        (dependency_build_file, dependency_target, dependency_toolset) = \
+            gyp.common.ParseQualifiedTarget(dependencies[index])
+        if dependency_target != '*' and dependency_toolset != '*':
           # Not a wildcard.  Keep it moving.
           index = index + 1
           continue
@@ -976,8 +1021,16 @@ def ExpandWildcardDependencies(targets, data):
           if dependency_target_dict.get('suppress_wildcard', False):
             continue
           dependency_target_name = dependency_target_dict['target_name']
+          if (dependency_target != '*' and
+              dependency_target != dependency_target_name):
+            continue
+          dependency_target_toolset = dependency_target_dict['toolset']
+          if (dependency_toolset != '*' and
+              dependency_toolset != dependency_target_toolset):
+            continue
           dependency = gyp.common.QualifiedTarget(dependency_build_file,
-                                                  dependency_target_name)
+                                                  dependency_target_name,
+                                                  dependency_target_toolset)
           index = index + 1
           dependencies.insert(index, dependency)
 
@@ -1196,7 +1249,7 @@ def BuildDependencyList(targets):
   root_node = DependencyGraphNode(None)
   for target, spec in targets.iteritems():
     target_node = dependency_nodes[target]
-    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    target_build_file = gyp.common.BuildFile(target)
     if not 'dependencies' in spec or len(spec['dependencies']) == 0:
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
@@ -1231,7 +1284,7 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
 
   for target in flat_list:
     target_dict = targets[target]
-    build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    build_file = gyp.common.BuildFile(target)
 
     if key == 'all_dependent_settings':
       dependencies = dependency_nodes[target].DeepDependencies()
@@ -1248,7 +1301,7 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
       dependency_dict = targets[dependency]
       if not key in dependency_dict:
         continue
-      dependency_build_file = gyp.common.BuildFileAndTarget('', dependency)[0]
+      dependency_build_file = gyp.common.BuildFile(dependency)
       MergeDicts(target_dict, dependency_dict[key],
                  build_file, dependency_build_file)
 
@@ -1502,7 +1555,7 @@ def SetUpConfigurations(target, target_dict):
   # should be treated the same as keys without.
   key_suffixes = ['=', '+', '?', '!', '/']
 
-  build_file = gyp.common.BuildFileAndTarget('', target)[0]
+  build_file = gyp.common.BuildFile(target)
 
   # Provide a single configuration by default if none exists.
   # TODO(mark): Signal an error if default_configurations exists but
@@ -1874,6 +1927,10 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
   absolute_build_file_paths = \
       generator_input_info['generator_wants_absolute_build_file_paths']
 
+  global multiple_toolsets
+  multiple_toolsets = generator_input_info[
+      'generator_supports_multiple_toolsets']
+
   # A generator can have other lists (in addition to sources) be processed
   # for rules.
   extra_sources_for_rules = generator_input_info['extra_sources_for_rules']
@@ -1882,7 +1939,10 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
   # the |data| dictionary such that the keys to |data| are build file names,
   # and the values are the entire build file contents after "early" or "pre"
   # processing has been done and includes have been resolved.
-  data = {}
+  # NOTE: data contains both "target" files (.gyp) and "includes" (.gypi), as
+  # well as meta-data (e.g. 'included_files' key). 'target_build_files' keeps
+  # track of the keys corresponding to "target" files.
+  data = {'target_build_files': set()}
   aux_data = {}
   for build_file in build_files:
     # Normalize paths everywhere.  This is important because paths will be
@@ -1926,7 +1986,7 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
     target_dict = targets[target]
-    build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    build_file = gyp.common.BuildFile(target)
     ProcessVariablesAndConditionsInDict(target_dict, True, variables,
                                         build_file)
 
@@ -1946,7 +2006,7 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
   # Also validate actions and run_as elements in targets.
   for target in flat_list:
     target_dict = targets[target]
-    build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    build_file = gyp.common.BuildFile(target)
     ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
     ValidateRunAsInTarget(target, target_dict, build_file)
     ValidateActionsInTarget(target, target_dict, build_file)
