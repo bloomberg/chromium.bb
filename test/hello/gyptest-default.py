@@ -15,4 +15,6 @@ test.build_default('hello.gyp')
 
 test.run_built_executable('hello', stdout="Hello, world!\n")
 
+test.up_to_date('hello.gyp', test.DEFAULT)
+
 test.pass_test()

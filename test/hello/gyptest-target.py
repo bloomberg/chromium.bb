@@ -15,4 +15,6 @@ test.build_target('hello.gyp', 'hello')
 
 test.run_built_executable('hello', stdout="Hello, world!\n")
 
+test.up_to_date('hello.gyp', 'hello')
+
 test.pass_test()

@@ -5,6 +5,7 @@ TestGyp.py:  a testing framework for GYP integration tests.
 """
 
 import os
+import re
 import shutil
 import stat
 import sys
@@ -47,6 +48,9 @@ class TestGypBase(TestCommon.TestCommon):
   _lib = TestCommon.lib_suffix
   dll_ = TestCommon.dll_prefix
   _dll = TestCommon.dll_suffix
+
+  ALL = '__all__'
+  DEFAULT = '__default__'
 
   def __init__(self, gyp=None, *args, **kw):
     self.origin_cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -148,6 +152,23 @@ class TestGypBase(TestCommon.TestCommon):
       self.subdir(destination_dir)
     os.rename(source, destination)
 
+  def report_not_up_to_date(self):
+    """
+    Reports that a build is not up-to-date.
+
+    This provides common reporting for formats that have complicated
+    conditions for checking whether a build is up-to-date.  Formats
+    that expect exact output from the command (make, scons) can
+    just set stdout= when they call the run_build() method.
+    """
+    print "Build is not up-to-date:"
+    print self.banner('STDOUT ')
+    print self.stdout()
+    stderr = self.stderr()
+    if stderr:
+      print self.banner('STDERR ')
+      print stderr
+
   def run_gyp(self, gyp_file, *args, **kw):
     """
     Runs gyp against the specified gyp_file with the specified args.
@@ -180,26 +201,26 @@ class TestGypBase(TestCommon.TestCommon):
   # Abstract methods to be defined by format-specific subclasses.
   #
 
-  def build_all(self, gyp_file):
+  def build_all(self, gyp_file, **kw):
     """
     Runs an "all" build of the configuration generated from the
     specified gyp_file.
     """
-    raise NotImplementeError
+    raise NotImplementedError
 
-  def build_default(self, gyp_file):
+  def build_default(self, gyp_file, **kw):
     """
     Runs the default build of the configuration generated from the
     specified gyp_file.
     """
-    raise NotImplementeError
+    raise NotImplementedError
 
-  def build_target(self, gyp_file, target):
+  def build_target(self, gyp_file, target, **kw):
     """
     Runs a build of the specified target against the configuration
     generated from the specified gyp_file.
     """
-    raise NotImplementeError
+    raise NotImplementedError
 
   def run_built_executable(self, name, *args, **kw):
     """
@@ -209,7 +230,18 @@ class TestGypBase(TestCommon.TestCommon):
     Subclasses should find the output executable in the appropriate
     output build directory, tack on any necessary executable suffix, etc.
     """
-    raise NotImplementeError
+    raise NotImplementedError
+
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified target is up to date.
+
+    The subclass should implement this by calling run_build()
+    (or a reasonable equivalent), checking whatever conditions
+    will tell it the build was an "up to date" null build, and
+    failing if it isn't.
+    """
+    raise NotImplementedError
 
 
 class TestGypGypd(TestGypBase):
@@ -226,6 +258,7 @@ class TestGypMake(TestGypBase):
   """
   format = 'make'
   build_tool_list = ['make']
+  ALL = 'all'
   def build_all(self, gyp_file, **kw):
     """
     Builds the Make 'all' target to build all targets for the Makefiles
@@ -270,6 +303,17 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration or 'Default'
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Make target is up to date.
+    """
+    if target == self.DEFAULT:
+      args = ()
+      target = 'all'
+    else:
+      args = (target,)
+    kw['stdout'] = "make: Nothing to be done for `%s'.\n" % target
+    return self.run_build(gyp_file, *args, **kw)
 
 
 class TestGypMSVS(TestGypBase):
@@ -277,6 +321,9 @@ class TestGypMSVS(TestGypBase):
   Subclass for testing the GYP Visual Studio generator.
   """
   format = 'msvs'
+
+  u = r'=== Build: 0 succeeded, 0 failed, (\d+) up-to-date, 0 skipped ==='
+  up_to_date_re = re.compile(u, re.M)
 
   # Initial None element will indicate to our .initialize_build_tool()
   # method below that 'devenv' was not found on %PATH%.
@@ -350,6 +397,19 @@ class TestGypMSVS(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, '%s.exe' % name)]
     return self.run(program=program, *args, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Visual Studio target is up to date.
+    """
+    args = ()
+    result = self.run_build(gyp_file, *args, **kw)
+    if not result:
+      stdout = self.stdout()
+      m = self.up_to_date_re.search(stdout)
+      if not m or m.group(1) == '0':
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
   def built_lib_must_exist(self, name, *args, **kw):
     configuration = self.configuration or 'Default'
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
@@ -366,6 +426,7 @@ class TestGypSCons(TestGypBase):
   """
   format = 'scons'
   build_tool_list = ['scons', 'scons.py']
+  ALL = 'all'
   def build_all(self, gyp_file, **kw):
     """
     Builds the scons 'all' target to build all targets for the
@@ -386,6 +447,21 @@ class TestGypSCons(TestGypBase):
     the specified gyp_file.
     """
     self.run_build(gyp_file, target, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified SCons target is up to date.
+    """
+    up_to_date_lines = []
+    if target == self.DEFAULT:
+      up_to_date_targets = 'all'
+      args = ('-Q',)
+    else:
+      up_to_date_targets = target
+      args = ('-Q', target)
+    for arg in up_to_date_targets.split():
+      up_to_date_lines.append("scons: `%s' is up to date.\n" % arg)
+    kw['stdout'] = ''.join(up_to_date_lines)
+    return self.run_build(gyp_file, *args, **kw)
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs a scons build using the SCons configuration generated from the
@@ -422,6 +498,16 @@ class TestGypXcode(TestGypBase):
   """
   format = 'xcode'
   build_tool_list = ['xcodebuild']
+
+  phase_script_execution = ("\n"
+                            "PhaseScriptExecution /\\S+/Script-[0-9A-F]+\\.sh\n"
+                            "    cd /\\S+\n"
+                            "    /bin/sh -c /\\S+/Script-[0-9A-F]+\\.sh\n"
+                            "(make: Nothing to be done for `all'\\.\n)?")
+  phase_script_execution_re = re.compile(phase_script_execution,
+                                         re.S)
+  up_to_date_ending = 'Checking Dependencies...\n** BUILD SUCCEEDED **\n'
+
   def build_all(self, gyp_file, **kw):
     """
     Uses the xcodebuild -alltargets option to build all targets for the
@@ -471,6 +557,23 @@ class TestGypXcode(TestGypBase):
     lib_path = self.workpath('build', configuration,
                              self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Xcode target is up to date.
+    """
+    if target == self.DEFAULT:
+      args = ()
+    elif target == self.ALL:
+      args = ('-alltargets',)
+    else:
+      args = ('-target', target)
+    result = self.run_build(gyp_file, *args, **kw)
+    if not result:
+      output = self.phase_script_execution_re.sub('', self.stdout())
+      if not output.endswith(self.up_to_date_ending):
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
 
 
 format_class_list = [
