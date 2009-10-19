@@ -101,8 +101,7 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug131020.html =
 BUG24182 SLOW LINUX DEBUG : LayoutTests/tables/mozilla/other/wa_table_thtd_rowspan.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug113424.html = PASS
 BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
-// This test starts to crash since to r28630
-// BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
+BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/animate-elem-29-b.svg = PASS
 //BUG24852 started failing since webkit 49583
 //BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
@@ -3123,10 +3122,6 @@ BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS
 BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
 
 BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
-
-// WebKit roll 49321:49372
-BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
-BUG_HCLAM MAC SLOW : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
 
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
