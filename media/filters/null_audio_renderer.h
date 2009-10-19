@@ -62,7 +62,7 @@ class NullAudioRenderer : public AudioRendererBase, PlatformThread::Delegate {
   size_t bytes_per_millisecond_;
 
   // A buffer passed to FillBuffer to advance playback.
-  scoped_ptr<uint8> buffer_;
+  scoped_array<uint8> buffer_;
   size_t buffer_size_;
 
   // Separate thread used to throw away data.
