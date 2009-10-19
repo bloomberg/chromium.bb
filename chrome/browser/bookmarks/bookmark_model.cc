@@ -223,6 +223,11 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
   if (node->GetTitle() == title)
     return;
 
+  if (node == bookmark_bar_node_ || node == other_node_) {
+    NOTREACHED();
+    return;
+  }
+
   // The title index doesn't support changing the title, instead we remove then
   // add it back.
   index_->Remove(node);
