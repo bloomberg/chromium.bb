@@ -489,6 +489,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
     if (focused_node.get() &&
         webkit_glue::NodeToHTMLInputElement(focused_node.get())) {
       IntPoint point(event.x, event.y);
+      point = page_->mainFrame()->view()->windowToContents(point);
       HitTestResult result(point);
       result = page_->mainFrame()->eventHandler()->hitTestResultAtPoint(point,
                                                                         false);
@@ -575,9 +576,10 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   if (event.button == WebMouseEvent::ButtonMiddle) {
     Frame* focused = GetFocusedWebCoreFrame();
     IntPoint click_point(last_mouse_down_point_.x, last_mouse_down_point_.y);
+    click_point = page_->mainFrame()->view()->windowToContents(click_point);
     HitTestResult hit_test_result =
-      focused->eventHandler()->hitTestResultAtPoint(click_point, false, false,
-                                                    ShouldHitTestScrollbars);
+        focused->eventHandler()->hitTestResultAtPoint(click_point, false, false,
+                                                      ShouldHitTestScrollbars);
     // We don't want to send a paste when middle clicking a scroll bar or a
     // link (which will navigate later in the code).
     if (!hit_test_result.scrollbar() && !hit_test_result.isLiveLink() &&
