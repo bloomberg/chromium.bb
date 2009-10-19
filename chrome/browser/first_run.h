@@ -71,7 +71,9 @@ class FirstRun {
                                        const FilePath& master_prefs_path,
                                        std::vector<std::wstring>* new_tabs,
                                        int* ping_delay,
-                                       bool* homepage_defined);
+                                       bool* homepage_defined,
+                                       int* do_import_items,
+                                       int* dont_import_items);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going. Returns false if
@@ -157,10 +159,16 @@ class FirstRunBrowserProcess : public BrowserProcessImpl {
 // while the First Run UI is visible.
 // |homepage_defined| true indicates that homepage is defined in master
 // preferences and should not be imported from another browser.
+// |import_items| specifies the items to import, specified in master
+// preferences and will override default behavior of importer.
+// |dont_import_items| specifies the items *not* to import, specified in master
+// preferences and will override default behavior of importer.
 // Returns true if the user clicked "Start", false if the user pressed "Cancel"
 // or closed the dialog.
 bool OpenFirstRunDialog(Profile* profile,
                         bool homepage_defined,
+                        int import_items,
+                        int dont_import_items,
                         ProcessSingleton* process_singleton);
 
 #endif  // CHROME_BROWSER_FIRST_RUN_H_

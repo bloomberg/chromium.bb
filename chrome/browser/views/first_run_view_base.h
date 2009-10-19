@@ -26,7 +26,8 @@ class ImporterHost;
 class FirstRunViewBase : public views::View,
                          public views::DialogDelegate {
  public:
-  explicit FirstRunViewBase(Profile* profile, bool homepage_defined);
+  explicit FirstRunViewBase(Profile* profile, bool homepage_defined,
+                            int import_items, int dont_import_items);
   virtual ~FirstRunViewBase();
 
   // Overridden from views::View.
@@ -42,9 +43,11 @@ class FirstRunViewBase : public views::View,
   std::wstring GetDialogButtonLabel(MessageBoxFlags::DialogButton button) const;
 
  protected:
-  // Returns the items that the first run process is required to import
-  // from other browsers.
-  int GetDefaultImportItems() const;
+  // Returns the items that the first run process should import
+  // from other browsers. If there are any items that should or should not
+  // be imported (read and passed through from master preferences), it will
+  // take those into account.
+  int GetImportItems() const;
 
   // Creates the desktop and quick launch shortcut. Existing shortcut is lost.
   bool CreateDesktopShortcut();
@@ -81,6 +84,8 @@ class FirstRunViewBase : public views::View,
 
  protected:
   bool homepage_defined_;
+  int import_items_;
+  int dont_import_items_;
 
  private:
   // Initializes the controls on the dialog.

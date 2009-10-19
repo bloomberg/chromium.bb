@@ -41,7 +41,9 @@ class FirstRunCustomizeView : public FirstRunViewBase,
                         ImporterHost* importer_host,
                         CustomizeViewObserver* observer,
                         bool default_browser_checked,
-                        bool homepage_defined);
+                        bool homepage_defined,
+                        int import_items,
+                        int dont_import_items);
   virtual ~FirstRunCustomizeView();
 
   // Overridden from views::View.

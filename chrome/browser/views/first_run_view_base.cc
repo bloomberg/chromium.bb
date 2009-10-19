@@ -30,7 +30,8 @@
 #include "views/window/client_view.h"
 #include "views/window/window.h"
 
-FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined)
+FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
+                                   int import_items, int dont_import_items)
     : preferred_width_(0),
       background_image_(NULL),
       separator_1_(NULL),
@@ -38,7 +39,9 @@ FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined)
       separator_2_(NULL),
       importer_host_(NULL),
       profile_(profile),
-      homepage_defined_(homepage_defined) {
+      homepage_defined_(homepage_defined),
+      import_items_(import_items),
+      dont_import_items_(dont_import_items) {
   DCHECK(profile);
   SetupControls();
 }
@@ -160,11 +163,19 @@ std::wstring FirstRunViewBase::GetDialogButtonLabel(
   return std::wstring();
 }
 
-int FirstRunViewBase::GetDefaultImportItems() const {
+int FirstRunViewBase::GetImportItems() const {
   // It is best to avoid importing cookies because there is a bug that make
   // the process take way too much time among other issues. So for the time
   // being we say: TODO(CPU): Bug 1196875
-  int items = HISTORY | FAVORITES | PASSWORDS | SEARCH_ENGINES;
+  int items = import_items_;
+  if (!(dont_import_items_ & HISTORY))
+    items = items | HISTORY;
+  if (!(dont_import_items_ & FAVORITES))
+    items = items | FAVORITES;
+  if (!(dont_import_items_ & PASSWORDS))
+    items = items | PASSWORDS;
+  if (!(dont_import_items_ & SEARCH_ENGINES))
+    items = items | SEARCH_ENGINES;
   if (!homepage_defined_)
     items = items | HOME_PAGE;
   return items;

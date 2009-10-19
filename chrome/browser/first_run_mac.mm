@@ -48,6 +48,8 @@ class FirstRunController : public ImportObserver {
 
 bool OpenFirstRunDialog(Profile* profile,
                         bool homepage_defined,
+                        int import_items,
+                        int dont_import_items,
                         ProcessSingleton* process_singleton) {
   FirstRunController* controller = new FirstRunController;
   return controller->DoFirstRun(profile, process_singleton);
