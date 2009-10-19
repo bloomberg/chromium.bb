@@ -103,12 +103,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       params.expected_pages_count = expected_pages_count;
 
       msg = new ViewHostMsg_ScriptedPrint(params, &print_settings);
-      // TODO(stuartmorgan): This should use SendAndRunNestedMessageLoop, as on
-      // Windows, to prevent getting a "hung renderer" dialog, but if we do we
-      // never actually break out of the nested loop and continue with printing.
-      // Once that's fixed, switch back to SendAndRunNestedMessageLoop.
-      //if (render_view_->SendAndRunNestedMessageLoop(msg)) {
-      if (render_view_->Send(msg)) {
+      if (render_view_->SendAndRunNestedMessageLoop(msg)) {
         msg = NULL;
 
         // If the settings are invalid, early quit.
