@@ -75,7 +75,7 @@
 #endif
 
 static const char kDefaultPluginFinderURL[] =
-    "http://cache.pack.google.com/edgedl/chrome/plugins/plugins2.xml";
+    "https://dl-ssl.google.com/edgedl/chrome/plugins/plugins2.xml";
 
 #if defined(OS_WIN)
 
