@@ -406,6 +406,9 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(0, flags);
 }
 
+// On Linux the underlying pango routines require a max height in order to
+// ellide multiline text. So until that can be resolved, we set all
+// multiline lables to not ellide in Linux only.
 TEST(LabelTest, DrawMultiLineString) {
   Label label;
   label.SetFocusable(false);
@@ -429,7 +432,15 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+#if defined(OS_WIN)
   EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+#else
+  EXPECT_EQ(
+      gfx::Canvas::MULTI_LINE |
+      gfx::Canvas::TEXT_ALIGN_CENTER |
+      gfx::Canvas::NO_ELLIPSIS,
+      flags);
+#endif
   gfx::Rect center_bounds(text_bounds);
 
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
@@ -441,7 +452,15 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+#if defined(OS_WIN)
   EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+#else
+  EXPECT_EQ(
+      gfx::Canvas::MULTI_LINE |
+      gfx::Canvas::TEXT_ALIGN_LEFT |
+      gfx::Canvas::NO_ELLIPSIS,
+      flags);
+#endif
 
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
   paint_text.clear();
@@ -452,7 +471,15 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(0, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+#if defined(OS_WIN)
   EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+#else
+  EXPECT_EQ(
+      gfx::Canvas::MULTI_LINE |
+      gfx::Canvas::TEXT_ALIGN_RIGHT |
+      gfx::Canvas::NO_ELLIPSIS,
+      flags);
+#endif
 
   // Test multiline drawing with a border.
   gfx::Insets border(19, 92, 23, 2);
@@ -470,7 +497,15 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(center_bounds.y() + border.top(), text_bounds.y());
   EXPECT_EQ(center_bounds.width(), text_bounds.width());
   EXPECT_EQ(center_bounds.height(), text_bounds.height());
+#if defined(OS_WIN)
   EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+#else
+  EXPECT_EQ(
+      gfx::Canvas::MULTI_LINE |
+      gfx::Canvas::TEXT_ALIGN_CENTER |
+      gfx::Canvas::NO_ELLIPSIS,
+      flags);
+#endif
 }
 
 }  // namespace views
