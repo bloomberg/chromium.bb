@@ -110,7 +110,7 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
 
   command_buffer_ = NPCreateObject<CommandBuffer>(npp_);
   if (command_buffer_->Initialize(ring_buffer)) {
-    processor_ = new GPUProcessor(npp_, command_buffer_);
+    processor_ = new GPUProcessor(npp_, command_buffer_.Get());
     if (processor_->Initialize(static_cast<HWND>(window_.window))) {
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(processor_.get(),

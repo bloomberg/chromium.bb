@@ -62,7 +62,7 @@ class GPUProcessorTest : public testing::Test {
                                                 async_api_.get());
 
     processor_ = new GPUProcessor(NULL,
-                                  command_buffer_,
+                                  command_buffer_.Get(),
                                   gapi_,
                                   decoder_,
                                   parser_,
@@ -98,7 +98,7 @@ TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseNoError,
+  EXPECT_EQ(command_buffer::parse_error::kParseNoError,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
@@ -115,11 +115,11 @@ TEST_F(GPUProcessorTest, ProcessesOneCommand) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseNoError,
+  EXPECT_EQ(command_buffer::parse_error::kParseNoError,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
@@ -138,10 +138,10 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   processor_->ProcessCommands();
 }
@@ -161,10 +161,10 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(4));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
@@ -176,7 +176,7 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(4));
 
   EXPECT_CALL(*async_api_, DoCommand(9, 0, &buffer_[3]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(4));
 
@@ -195,11 +195,11 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
-        command_buffer::BufferSyncInterface::kParseUnknownCommand));
+        command_buffer::parse_error::kParseUnknownCommand));
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseUnknownCommand,
+  EXPECT_EQ(command_buffer::parse_error::kParseUnknownCommand,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
@@ -219,14 +219,14 @@ TEST_F(GPUProcessorTest,
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
-        command_buffer::BufferSyncInterface::kParseUnknownCommand));
+        command_buffer::parse_error::kParseUnknownCommand));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[1]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+    .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseUnknownCommand,
+  EXPECT_EQ(command_buffer::parse_error::kParseUnknownCommand,
             command_buffer_->ResetParseError());
   EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
@@ -243,11 +243,11 @@ TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
     .WillOnce(Return(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseInvalidSize));
+    .WillOnce(Return(command_buffer::parse_error::kParseInvalidSize));
 
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseInvalidSize,
+  EXPECT_EQ(command_buffer::parse_error::kParseInvalidSize,
             command_buffer_->ResetParseError());
   EXPECT_TRUE(command_buffer_->GetErrorStatus());
 }
@@ -264,12 +264,12 @@ TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterUnrecoverableError) {
     .WillOnce(Return(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
-    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseInvalidSize));
+    .WillOnce(Return(command_buffer::parse_error::kParseInvalidSize));
 
   processor_->ProcessCommands();
   processor_->ProcessCommands();
 
-  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseInvalidSize,
+  EXPECT_EQ(command_buffer::parse_error::kParseInvalidSize,
             command_buffer_->ResetParseError());
   EXPECT_TRUE(command_buffer_->GetErrorStatus());
 }

@@ -71,15 +71,6 @@
           },
       }],
     ],
-    'conditions': [
-      ['o3d_in_chrome == "True"',
-        {
-          'defines': [
-            'O3D_IN_CHROME',
-          ],
-        },
-      ],
-    ],
   },
   'conditions' : [
     ['OS == "win"',
