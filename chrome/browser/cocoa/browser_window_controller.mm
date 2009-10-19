@@ -223,20 +223,6 @@ willPositionSheet:(NSWindow*)sheet
 
     // Create the bridge for the status bubble.
     statusBubble_.reset(new StatusBubbleMac([self window], self));
-
-#if 0
-    // Move all buttons down two pixels for visual balance.
-    // TODO(alcor): remove this if we can't prevent window resize from breaking.
-    NSArray* buttons =
-        [NSArray arrayWithObjects:
-          [[self window] standardWindowButton:NSWindowCloseButton],
-          [[self window] standardWindowButton:NSWindowZoomButton],
-          [[self window] standardWindowButton:NSWindowMiniaturizeButton],
-          nil];
-    for (NSButton* button in buttons) {
-      [button setFrame:NSOffsetRect([button frame], 0, -2.0)];
-    }
-#endif
   }
   return self;
 }
