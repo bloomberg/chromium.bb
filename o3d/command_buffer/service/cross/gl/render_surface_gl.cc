@@ -109,7 +109,7 @@ RenderDepthStencilSurfaceGL* RenderDepthStencilSurfaceGL::Create(
 }
 
 // Copies the data from a texture resource.
-BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
+parse_error::ParseError GAPIGL::CreateRenderSurface(
     ResourceId id,
     unsigned int width,
     unsigned int height,
@@ -118,11 +118,11 @@ BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
     ResourceId texture_id) {
   if (id == current_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   TextureGL *texture = textures_.Get(texture_id);
   if (!texture->render_surfaces_enabled()) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   } else {
     RenderSurfaceGL* render_surface = RenderSurfaceGL::Create(width,
                                                               height,
@@ -130,46 +130,46 @@ BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
                                                               side,
                                                               texture);
     if (render_surface == NULL) {
-      return BufferSyncInterface::kParseInvalidArguments;
+      return parse_error::kParseInvalidArguments;
     }
     render_surfaces_.Assign(id, render_surface);
   }
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyRenderSurface(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroyRenderSurface(ResourceId id) {
   if (id == current_surface_id_) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   return render_surfaces_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateDepthSurface(
+parse_error::ParseError GAPIGL::CreateDepthSurface(
     ResourceId id,
     unsigned int width,
     unsigned int height) {
   if (id == current_depth_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   RenderDepthStencilSurfaceGL* depth_surface =
     RenderDepthStencilSurfaceGL::Create(width, height);
   if (depth_surface == NULL) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   depth_surfaces_.Assign(id, depth_surface);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyDepthSurface(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroyDepthSurface(ResourceId id) {
   if (id == current_depth_surface_id_) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   return depth_surfaces_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 void ResetBoundAttachments() {
@@ -219,12 +219,12 @@ bool BindDepthStencilBuffer(const RenderDepthStencilSurfaceGL* gl_surface) {
   return true;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
+parse_error::ParseError GAPIGL::SetRenderSurface(
     ResourceId render_surface_id,
     ResourceId depth_stencil_id) {
   if (render_surfaces_.Get(render_surface_id) == NULL &&
       depth_surfaces_.Get(depth_stencil_id) == NULL) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
 
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, render_surface_framebuffer_);
@@ -237,7 +237,7 @@ BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
   if (!render_surface->texture()->
           InstallFrameBufferObjects(render_surface) ||
       !BindDepthStencilBuffer(depth_surface)) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
 
   // RenderSurface rendering is performed with an inverted Y, so the front
@@ -247,7 +247,7 @@ BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
 
   current_surface_id_ = render_surface_id;
   current_depth_surface_id_ = depth_stencil_id;
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 void GAPIGL::SetBackSurfaces() {

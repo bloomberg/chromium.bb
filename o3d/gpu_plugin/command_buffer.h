@@ -90,9 +90,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   int32 ResetParseError();
 
   // Allows the reader to set the current parse error.
-  void SetParseError(int32 parse_error) {
-    parse_error_ = parse_error;
-  }
+  void SetParseError(int32 parse_error);
 
   // Returns whether the command buffer is in the error state.
   bool GetErrorStatus() {

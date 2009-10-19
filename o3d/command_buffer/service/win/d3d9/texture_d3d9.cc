@@ -611,16 +611,16 @@ bool TextureCubeD3D9::CreateRenderSurface(
 // GAPID3D9 functions.
 
 // Destroys a texture resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroyTexture(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyTexture(ResourceId id) {
   // Dirty effect, because this texture id may be used
   DirtyEffect();
   return textures_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Creates a 2D texture resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateTexture2D(
+parse_error::ParseError GAPID3D9::CreateTexture2D(
     ResourceId id,
     unsigned int width,
     unsigned int height,
@@ -631,15 +631,15 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTexture2D(
   Texture2DD3D9 *texture = Texture2DD3D9::Create(this, width, height, levels,
                                                  format, flags,
                                                  enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Creates a 3D texture resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateTexture3D(
+parse_error::ParseError GAPID3D9::CreateTexture3D(
     ResourceId id,
     unsigned int width,
     unsigned int height,
@@ -651,15 +651,15 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTexture3D(
   Texture3DD3D9 *texture = Texture3DD3D9::Create(this, width, height, depth,
                                                  levels, format, flags,
                                                  enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Creates a cube map texture resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateTextureCube(
+parse_error::ParseError GAPID3D9::CreateTextureCube(
     ResourceId id,
     unsigned int side,
     unsigned int levels,
@@ -669,15 +669,15 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTextureCube(
   TextureCubeD3D9 *texture = TextureCubeD3D9::Create(this, side, levels,
                                                      format, flags,
                                                      enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Copies the data into a texture resource.
-BufferSyncInterface::ParseError GAPID3D9::SetTextureData(
+parse_error::ParseError GAPID3D9::SetTextureData(
     ResourceId id,
     unsigned int x,
     unsigned int y,
@@ -693,16 +693,16 @@ BufferSyncInterface::ParseError GAPID3D9::SetTextureData(
     const void *data) {
   TextureD3D9 *texture = textures_.Get(id);
   if (!texture)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   Volume volume = {x, y, z, width, height, depth};
   return texture->SetData(this, volume, level, face, row_pitch, slice_pitch,
                           size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data from a texture resource.
-BufferSyncInterface::ParseError GAPID3D9::GetTextureData(
+parse_error::ParseError GAPID3D9::GetTextureData(
     ResourceId id,
     unsigned int x,
     unsigned int y,
@@ -718,12 +718,12 @@ BufferSyncInterface::ParseError GAPID3D9::GetTextureData(
     void *data) {
   TextureD3D9 *texture = textures_.Get(id);
   if (!texture)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   Volume volume = {x, y, z, width, height, depth};
   return texture->GetData(this, volume, level, face, row_pitch, slice_pitch,
                           size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 }  // namespace command_buffer

@@ -50,6 +50,7 @@
       '../../v8/tools/gyp/v8.gyp:v8',
       '../core/core.gyp:o3dCore',
       '../core/core.gyp:o3dCorePlatform',
+      '../gpu_plugin/gpu_plugin.gyp:np_utils',
       '../import/archive.gyp:o3dArchive',
       '../utils/utils.gyp:o3dUtils',
       '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',

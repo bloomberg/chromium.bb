@@ -318,8 +318,6 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
-        '../command_buffer/command_buffer.gyp:command_buffer_client',
-        '../command_buffer/command_buffer.gyp:command_buffer_service',
       ],
       'sources': [
       ],
@@ -396,6 +394,16 @@
         ],
         ['renderer == "cb"',
           {
+            'dependencies': [
+              '../command_buffer/command_buffer.gyp:command_buffer_client',
+              '../command_buffer/command_buffer.gyp:command_buffer_service',
+              '../gpu_plugin/gpu_plugin.gyp:np_utils',
+
+              # These dependencies is only needed for RendererCBLocal. They can
+              # be removed when RendererCBLocal is not needed.
+              '../gpu_plugin/gpu_plugin.gyp:command_buffer',
+              '../gpu_plugin/gpu_plugin.gyp:np_utils',
+            ],
             'sources': [
               'cross/command_buffer/buffer_cb.cc',
               'cross/command_buffer/buffer_cb.h',
@@ -419,14 +427,6 @@
               'cross/command_buffer/stream_bank_cb.h',
               'cross/command_buffer/texture_cb.cc',
               'cross/command_buffer/texture_cb.h',
-            ],
-          },
-        ],
-        ['renderer == "cb" and OS == "win"',
-          {
-            'sources': [
-              'win/command_buffer/win32_cb_server.cc',
-              'win/command_buffer/win32_cb_server.h',
             ],
           },
         ],

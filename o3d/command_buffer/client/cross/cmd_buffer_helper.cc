@@ -33,72 +33,100 @@
 // This file contains the implementation of the command buffer helper class.
 
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "o3d/gpu_plugin/np_utils/np_utils.h"
 
 namespace o3d {
 namespace command_buffer {
 
-CommandBufferHelper::CommandBufferHelper(BufferSyncInterface *interface)
-    : interface_(interface),
+using gpu_plugin::NPBrowser;
+using gpu_plugin::NPInvoke;
+using gpu_plugin::NPObjectPointer;
+
+CommandBufferHelper::CommandBufferHelper(
+    NPP npp,
+    const NPObjectPointer<NPObject>& command_buffer)
+    : npp_(npp),
+      command_buffer_(command_buffer),
       entries_(NULL),
       entry_count_(0),
-      token_(0) {
-  // The interface should be connected already.
-  DCHECK_NE(BufferSyncInterface::kNotConnected, interface_->GetStatus());
+      token_(0),
+      last_token_read_(-1),
+      get_(0),
+      put_(0) {
 }
 
-bool CommandBufferHelper::Init(unsigned int entry_count) {
-  if (entry_count == 0)
-    return false;
-  size_t size = entry_count * sizeof(CommandBufferEntry);  // NOLINT
-  shm_handle_ = CreateShm(size);
-  if (shm_handle_ == kRPCInvalidHandle)
-    return false;
-  void *address = MapShm(shm_handle_, size);
-  if (!address) {
-    DestroyShm(shm_handle_);
-    shm_handle_ = kRPCInvalidHandle;
+bool CommandBufferHelper::Initialize() {
+  // Get the ring buffer from the GPU process.
+  if (!NPInvoke(npp_, command_buffer_, "getRingBuffer", &ring_buffer_) ||
+      !ring_buffer_.Get()) {
     return false;
   }
-  entries_ = static_cast<CommandBufferEntry *>(address);
-  entry_count_ = entry_count;
-  shm_id_ = interface_->RegisterSharedMemory(shm_handle_, size);
-  interface_->SetCommandBuffer(shm_id_, 0, size, 0);
-  get_ = interface_->Get();
-  put_ = get_;
-  last_token_read_ = interface_->GetToken();
+
+  // Map the ring buffer into this process.
+  size_t size_bytes;
+  entries_ = static_cast<CommandBufferEntry*>(
+      NPBrowser::get()->MapMemory(npp_, ring_buffer_.Get(), &size_bytes));
+
+  // Get the command buffer size.
+  if (!NPInvoke(npp_, command_buffer_, "getSize", &entry_count_)) {
+    return false;
+  }
+
+  // Get the initial get offset.
+  if (!NPInvoke(npp_, command_buffer_, "getGetOffset", &get_)) {
+    return false;
+  }
+
+  // Get the initial put offset.
+  if (!NPInvoke(npp_, command_buffer_, "getPutOffset", &put_)) {
+    return false;
+  }
+
+  // Get the last token.
+  if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_)) {
+    return false;
+  }
+
   return true;
 }
 
 CommandBufferHelper::~CommandBufferHelper() {
-  if (entries_) {
-    interface_->UnregisterSharedMemory(shm_id_);
-    UnmapShm(entries_, entry_count_ * sizeof(CommandBufferEntry));  // NOLINT
-    DestroyShm(shm_handle_);
-  }
+}
+
+bool CommandBufferHelper::Flush() {
+  // If this fails it means the command buffer reader has been shutdown.
+  return NPInvoke(npp_, command_buffer_, "syncOffsets", put_, &get_);
 }
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
 // error is set.
-void CommandBufferHelper::Finish() {
-  Flush();
-  while (put_ != get_) {
-    WaitForGetChange();
-  }
+bool CommandBufferHelper::Finish() {
+  do {
+    // Do not loop forever if the flush fails, meaning the command buffer reader
+    // has shutdown).
+    if (!Flush())
+      return false;
+  } while (put_ != get_);
+
+  return true;
 }
 
 // Inserts a new token into the command stream. It uses an increasing value
 // scheme so that we don't lose tokens (a token has passed if the current token
 // value is higher than that token). Calls Finish() if the token value wraps,
 // which will be rare.
-unsigned int CommandBufferHelper::InsertToken() {
-  ++token_;
+int32 CommandBufferHelper::InsertToken() {
+  // Increment token as 31-bit integer. Negative values are used to signal an
+  // error.
+  token_ = (token_ + 1) & 0x7FFFFFFF;
   CommandBufferEntry args;
   args.value_uint32 = token_;
   AddCommand(command_buffer::kSetToken, 1, &args);
   if (token_ == 0) {
     // we wrapped
     Finish();
-    last_token_read_ = interface_->GetToken();
+    if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
+      return -1;
     DCHECK_EQ(token_, last_token_read_);
   }
   return token_;
@@ -106,48 +134,27 @@ unsigned int CommandBufferHelper::InsertToken() {
 
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
-void CommandBufferHelper::WaitForToken(unsigned int token) {
+void CommandBufferHelper::WaitForToken(int32 token) {
+  // Return immediately if corresponding InsertToken failed.
+  if (token < 0)
+    return;
   if (last_token_read_ >= token) return;  // fast path.
   if (token > token_) return;  // we wrapped
   Flush();
-  last_token_read_ = interface_->GetToken();
+  if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
+    return;
   while (last_token_read_ < token) {
     if (get_ == put_) {
       LOG(FATAL) << "Empty command buffer while waiting on a token.";
       return;
     }
-    WaitForGetChange();
-    last_token_read_ = interface_->GetToken();
+    // Do not loop forever if the flush fails, meaning the command buffer reader
+    // has shutdown.
+    if (!Flush())
+      return;
+    if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
+      return;
   }
-}
-
-// Waits for get to change. In case get doesn't change or becomes invalid,
-// check for an error.
-void CommandBufferHelper::WaitForGetChange() {
-  CommandBufferOffset new_get = interface_->WaitGetChanges(get_);
-  if (new_get == get_ || new_get == kInvalidCommandBufferOffset) {
-    // If get_ didn't change or is invalid, it means an error may have
-    // occured. Check that.
-    BufferSyncInterface::ParserStatus status = interface_->GetStatus();
-    if (status != BufferSyncInterface::kParsing) {
-      switch (status) {
-        case BufferSyncInterface::kNotConnected:
-          LOG(FATAL) << "Service disconnected.";
-          return;
-        case BufferSyncInterface::kNoBuffer:
-          LOG(FATAL) << "Service doesn't have a buffer set.";
-          return;
-        case BufferSyncInterface::kParseError: {
-          BufferSyncInterface::ParseError error = interface_->GetParseError();
-          LOG(WARNING) << "Parse error: " << error;
-          return;
-        }
-        case BufferSyncInterface::kParsing:
-          break;
-      }
-    }
-  }
-  get_ = new_get;
 }
 
 // Waits for available entries, basically waiting until get >= put + count + 1.
@@ -155,17 +162,25 @@ void CommandBufferHelper::WaitForGetChange() {
 // around, adding noops. Thus this function may change the value of put_.
 // The function will return early if an error occurs, in which case the
 // available space may not be available.
-void CommandBufferHelper::WaitForAvailableEntries(unsigned int count) {
+void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   CHECK(count < entry_count_);
   if (put_ + count > entry_count_) {
     // There's not enough room between the current put and the end of the
     // buffer, so we need to wrap. We will add noops all the way to the end,
     // but we need to make sure get wraps first, actually that get is 1 or
     // more (since put will wrap to 0 after we add the noops).
-    DCHECK_LE(1U, put_);
+    DCHECK_LE(1, put_);
     Flush();
-    while (get_ > put_ || get_ == 0) WaitForGetChange();
+    while (get_ > put_ || get_ == 0) {
+      // Do not loop forever if the flush fails, meaning the command buffer
+      // reader has shutdown.
+      if (!Flush())
+        return;
+    }
     // Add the noops. By convention, a noop is a command 0 with no args.
+    // TODO(apatrick): A noop can have a size. It would be better to add a
+    //    single noop with a variable size. Watch out for size limit on
+    //    individual commands.
     CommandHeader header;
     header.size = 1;
     header.command = 0;
@@ -178,7 +193,12 @@ void CommandBufferHelper::WaitForAvailableEntries(unsigned int count) {
   if (count <= AvailableEntries()) return;
   // Otherwise flush, and wait until we do have enough room.
   Flush();
-  while (AvailableEntries() < count) WaitForGetChange();
+  while (AvailableEntries() < count) {
+    // Do not loop forever if the flush fails, meaning the command buffer reader
+    // has shutdown.
+    if (!Flush())
+      return;
+  }
 }
 
 CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
@@ -186,6 +206,12 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
   return space;
+}
+
+parse_error::ParseError CommandBufferHelper::GetParseError() {
+  int32 parse_error;
+  DCHECK(NPInvoke(npp_, command_buffer_, "resetParseError", &parse_error));
+  return static_cast<parse_error::ParseError>(parse_error);
 }
 
 }  // namespace command_buffer

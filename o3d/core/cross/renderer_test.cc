@@ -78,6 +78,10 @@ TEST_F(RendererTest, CreateDefaultRenderer) {
 
 
 TEST_F(RendererTest, InitAndDestroyRenderer) {
+// TODO(apatrick): This test will not work as is with command buffers because
+//     it attempts to create a Renderer using the same ring buffer as the
+//     Renderer created in main.
+#if !defined(RENDERER_CB)
   scoped_ptr<Renderer> renderer(
       Renderer::CreateDefaultRenderer(service_locator()));
   EXPECT_TRUE(renderer->Init(*g_display_window, false));
@@ -100,6 +104,7 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   // check that the renderer no longer has a Cg Context.
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
 #endif
+#endif  // RENDERER_CB
 }
 
 // Offscreen is only supported on D3D currently

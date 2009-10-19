@@ -38,9 +38,11 @@
 #include "core/cross/precompile.h"
 #include <vector>
 #include "core/cross/renderer.h"
-#include "command_buffer/common/cross/rpc.h"
+#include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/resource.h"
 #include "command_buffer/client/cross/id_allocator.h"
+#include "gpu_plugin/command_buffer.h"
+#include "gpu_plugin/np_utils/np_object_pointer.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -61,15 +63,7 @@ class RendererCB : public Renderer {
   typedef command_buffer::IdAllocator IdAllocator;
   typedef command_buffer::FencedAllocatorWrapper FencedAllocatorWrapper;
 
-  // Creates a default RendererCB.
-  // The default command buffer is 256K entries.
-  // The default transfer buffer is 16MB.
-  static RendererCB *CreateDefault(ServiceLocator* service_locator);
-  ~RendererCB();
-
-  // Initialises the renderer for use, claiming hardware resources.
-  virtual InitStatus InitPlatformSpecific(const DisplayWindow& display_window,
-                                          bool off_screen);
+  virtual ~RendererCB();
 
   // Handles the plugin resize event.
   virtual void Resize(int width, int height);
@@ -170,13 +164,8 @@ class RendererCB : public Renderer {
   // Gets the command buffer helper.
   command_buffer::CommandBufferHelper *helper() const { return helper_; }
 
-  // Gets the sync interface.
-  command_buffer::BufferSyncInterface *sync_interface() const {
-    return sync_interface_;
-  }
-
   // Gets the registered ID of the transfer shared memory.
-  unsigned int transfer_shm_id() const { return transfer_shm_id_; }
+  int32 transfer_shm_id() const { return transfer_shm_id_; }
 
   // Gets the base address of the transfer shared memory.
   void *transfer_shm_address() const { return transfer_shm_address_; }
@@ -189,10 +178,11 @@ class RendererCB : public Renderer {
   // Overridden from Renderer.
   virtual const int* GetRGBAUByteNSwizzleTable();
 
+  command_buffer::parse_error::ParseError GetParseError();
+
  protected:
   // Protected so that callers are forced to call the factory method.
-  RendererCB(ServiceLocator* service_locator, unsigned int command_buffer_size,
-             unsigned int transfer_memory_size);
+  RendererCB(ServiceLocator* service_locator, int32 transfer_memory_size);
 
   // Overridden from Renderer.
   virtual bool PlatformSpecificBeginDraw();
@@ -254,19 +244,24 @@ class RendererCB : public Renderer {
   // Overridden from Renderer.
   virtual void ApplyDirtyStates();
 
- private:
-  // Performs cross-platform initialization.
-  void InitCommon(unsigned int width, unsigned int height);
+ protected:
+  // Initializes the renderer for use, claiming hardware resources.
+  virtual InitStatus InitPlatformSpecific(const DisplayWindow& display_window,
+                                          bool off_screen);
 
-  unsigned int cmd_buffer_size_;
-  unsigned int transfer_memory_size_;
-  command_buffer::RPCShmHandle transfer_shm_;
-  unsigned int transfer_shm_id_;
+  // Create a shared memory object of the given size.
+  virtual gpu_plugin::NPObjectPointer<NPObject>
+      CreateSharedMemory(int32 size, NPP npp) = 0;
+
+ private:
+  int32 transfer_memory_size_;
+  gpu_plugin::NPObjectPointer<NPObject> transfer_shm_;
+  int32 transfer_shm_id_;
   void *transfer_shm_address_;
-  command_buffer::BufferSyncInterface *sync_interface_;
+  NPP npp_;
+  gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
   command_buffer::CommandBufferHelper *helper_;
   FencedAllocatorWrapper *allocator_;
-  Win32CBServer *cb_server_;
 
   IdAllocator vertex_buffer_ids_;
   IdAllocator index_buffer_ids_;
@@ -277,12 +272,59 @@ class RendererCB : public Renderer {
   IdAllocator sampler_ids_;
   IdAllocator render_surface_ids_;
   IdAllocator depth_surface_ids_;
-  unsigned int frame_token_;
+  int32 frame_token_;
 
   class StateManager;
   scoped_ptr<StateManager> state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererCB);
+};
+
+// This subclass initializes itself with a locally created in-process
+// CommandBuffer and GPUProcessor. This class will eventually go away and the
+// code in RendererCBRemote will be merged into RendererCB.
+class RendererCBLocal : public RendererCB {
+ public:
+  static gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>
+      CreateCommandBuffer(NPP npp, void* hwnd, int32 size);
+
+  // Creates a default RendererCBLocal.
+  static RendererCBLocal *CreateDefault(ServiceLocator* service_locator);
+
+ protected:
+  RendererCBLocal(ServiceLocator* service_locator,
+                  int32 transfer_memory_size);
+  virtual ~RendererCBLocal();
+
+  // Create a shared memory object of the given size using the system services
+  // library directly.
+  virtual gpu_plugin::NPObjectPointer<NPObject>
+      CreateSharedMemory(int32 size, NPP npp);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RendererCBLocal);
+};
+
+// This subclass initializes itself with a remotely created, potentially out-
+// of-process CommandBuffer. It requires that the browser supports the "system
+// service" to create shared memory, which is not available in the mange branch
+// of Chrome. Use RendererCBLocal for now.
+class RendererCBRemote : public RendererCB {
+ public:
+  // Creates a default RendererCBRemote.
+  static RendererCBRemote *CreateDefault(ServiceLocator* service_locator);
+
+ protected:
+  RendererCBRemote(ServiceLocator* service_locator, int32 transfer_memory_size);
+  virtual ~RendererCBRemote();
+
+  // Create a shared memory object using the browser's
+  // chromium.system.createSharedMemory method.
+  virtual gpu_plugin::NPObjectPointer<NPObject>
+      CreateSharedMemory(int32 size, NPP npp);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RendererCBRemote);
 };
 
 }  // namespace o3d

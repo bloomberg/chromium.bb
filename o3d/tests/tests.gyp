@@ -102,6 +102,16 @@
             ],
           },
         ],
+        ['renderer == "cb"',
+          {
+            'dependencies': [
+              '../command_buffer/command_buffer.gyp:command_buffer_client_test',
+              '../command_buffer/command_buffer.gyp:command_buffer_common_test',
+              '../command_buffer/command_buffer.gyp:command_buffer_service_test',
+              '../gpu_plugin/gpu_plugin.gyp:np_utils',
+            ]
+          },
+        ],
         ['OS == "mac"',
           {
             'dependencies': [
@@ -223,15 +233,6 @@
                   '../../<(pdiffdir)/bin/linux/perceptualdiff',
                 ],
               },
-            ],
-          },
-        ],
-        ['cb_service != "none"',
-          {
-            'dependencies' : [
-              '../command_buffer/command_buffer.gyp:command_buffer_client_test',
-              '../command_buffer/command_buffer.gyp:command_buffer_common_test',
-              '../command_buffer/command_buffer.gyp:command_buffer_service_test',
             ],
           },
         ],

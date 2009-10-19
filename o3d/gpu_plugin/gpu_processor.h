@@ -5,6 +5,7 @@
 #ifndef O3D_GPU_PLUGIN_GPU_PROCESSOR_H_
 #define O3D_GPU_PLUGIN_GPU_PROCESSOR_H_
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "o3d/command_buffer/service/cross/cmd_buffer_engine.h"
@@ -22,16 +23,16 @@ namespace gpu_plugin {
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
-class GPUProcessor : public base::RefCountedThreadSafe<GPUProcessor>,
-                     public command_buffer::CommandBufferUpcallInterface {
+class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
+                     public command_buffer::CommandBufferEngine {
  public:
   GPUProcessor(NPP npp,
-               const NPObjectPointer<CommandBuffer>& command_buffer);
+               CommandBuffer* command_buffer);
 
 #if defined(OS_WIN)
   // This constructor is for unit tests.
   GPUProcessor(NPP npp,
-               const NPObjectPointer<CommandBuffer>& command_buffer,
+               CommandBuffer* command_buffer,
                command_buffer::GAPID3D9* gapi,
                command_buffer::GAPIDecoder* decoder,
                command_buffer::CommandParser* parser,
@@ -39,6 +40,8 @@ class GPUProcessor : public base::RefCountedThreadSafe<GPUProcessor>,
 
   bool Initialize(HWND hwnd);
 #endif  // OS_WIN
+
+  virtual ~GPUProcessor();
 
   void Destroy();
 
@@ -48,25 +51,30 @@ class GPUProcessor : public base::RefCountedThreadSafe<GPUProcessor>,
   void SetWindow(HWND handle, int width, int height);
 #endif
 
-  // Implementation of CommandBufferUpcallInterface.
+  // Implementation of CommandBufferEngine.
 
   // Gets the base address of a registered shared memory buffer.
   // Parameters:
   //   shm_id: the identifier for the shared memory buffer.
-  virtual void *GetSharedMemoryAddress(unsigned int shm_id);
+  virtual void *GetSharedMemoryAddress(int32 shm_id);
 
   // Gets the size of a registered shared memory buffer.
   // Parameters:
   //   shm_id: the identifier for the shared memory buffer.
-  virtual size_t GetSharedMemorySize(unsigned int shm_id);
+  virtual size_t GetSharedMemorySize(int32 shm_id);
 
   // Sets the token value.
-  virtual void set_token(unsigned int token);
+  virtual void set_token(int32 token);
 
  private:
   NPP npp_;
-  NPObjectPointer<CommandBuffer> command_buffer_;
-  scoped_ptr<base::SharedMemory> mapped_ring_buffer_;
+
+  // The GPUProcessor holds a weak reference to the CommandBuffer. The
+  // CommandBuffer owns the GPUProcessor and holds a strong reference to it
+  // through the ProcessCommands callback.
+  CommandBuffer* command_buffer_;
+
+  scoped_ptr< ::base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
 #if defined(OS_WIN)
@@ -78,5 +86,28 @@ class GPUProcessor : public base::RefCountedThreadSafe<GPUProcessor>,
 
 }  // namespace gpu_plugin
 }  // namespace o3d
+
+// Callbacks to the GPUProcessor hold a reference count.
+template <typename Method>
+class CallbackStorage<o3d::gpu_plugin::GPUProcessor, Method> {
+ public:
+  CallbackStorage(o3d::gpu_plugin::GPUProcessor* obj, Method method)
+      : obj_(obj),
+        meth_(method) {
+    DCHECK(obj_);
+    obj_->AddRef();
+  }
+
+  ~CallbackStorage() {
+    obj_->Release();
+  }
+
+ protected:
+  o3d::gpu_plugin::GPUProcessor* obj_;
+  Method meth_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CallbackStorage);
+};
 
 #endif  // O3D_GPU_PLUGIN_GPU_PROCESSOR_H_

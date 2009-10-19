@@ -134,24 +134,24 @@ void SamplerD3D9::SetBorderColor(const RGBA &color) {
   d3d_border_color_ = RGBAToD3DCOLOR(color);
 }
 
-BufferSyncInterface::ParseError GAPID3D9::CreateSampler(
+parse_error::ParseError GAPID3D9::CreateSampler(
     ResourceId id) {
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   samplers_.Assign(id, new SamplerD3D9());
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys the Sampler resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroySampler(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroySampler(ResourceId id) {
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   return samplers_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::SetSamplerStates(
+parse_error::ParseError GAPID3D9::SetSamplerStates(
     ResourceId id,
     sampler::AddressingMode addressing_u,
     sampler::AddressingMode addressing_v,
@@ -162,36 +162,36 @@ BufferSyncInterface::ParseError GAPID3D9::SetSamplerStates(
     unsigned int max_anisotropy) {
   SamplerD3D9 *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   sampler->SetStates(addressing_u, addressing_v, addressing_w,
                      mag_filter, min_filter, mip_filter, max_anisotropy);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::SetSamplerBorderColor(
+parse_error::ParseError GAPID3D9::SetSamplerBorderColor(
     ResourceId id,
     const RGBA &color) {
   SamplerD3D9 *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   sampler->SetBorderColor(color);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::SetSamplerTexture(
+parse_error::ParseError GAPID3D9::SetSamplerTexture(
     ResourceId id,
     ResourceId texture_id) {
   SamplerD3D9 *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   sampler->SetTexture(texture_id);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 

@@ -47,119 +47,66 @@
 #include "core/cross/command_buffer/states_cb.h"
 #include "core/cross/command_buffer/stream_bank_cb.h"
 #include "core/cross/command_buffer/texture_cb.h"
+#include "core/cross/command_buffer/display_window_cb.h"
 #include "core/cross/renderer_platform.h"
-
-#ifdef OS_WIN
-#include "core/win/command_buffer/win32_cb_server.h"
-#endif
+#include "gpu_plugin/command_buffer.h"
+#include "gpu_plugin/gpu_processor.h"
+#include "gpu_plugin/np_utils/np_browser.h"
+#include "gpu_plugin/np_utils/np_utils.h"
+#include "gpu_plugin/system_services/shared_memory.h"
 
 namespace o3d {
 using command_buffer::GAPIInterface;
 using command_buffer::CommandBufferHelper;
+using gpu_plugin::CommandBuffer;
+using gpu_plugin::GPUProcessor;
+using gpu_plugin::NPBrowser;
+using gpu_plugin::NPCreateObject;
+using gpu_plugin::NPGetProperty;
+using gpu_plugin::NPInvoke;
+using gpu_plugin::NPInvokeVoid;
+using gpu_plugin::NPObjectPointer;
+using gpu_plugin::SharedMemory;
 
 RendererCB::RendererCB(ServiceLocator* service_locator,
-                       unsigned int command_buffer_size,
-                       unsigned int transfer_memory_size)
+                       int32 transfer_memory_size)
     : Renderer(service_locator),
-      cmd_buffer_size_(command_buffer_size),
       transfer_memory_size_(transfer_memory_size),
-      transfer_shm_(command_buffer::kRPCInvalidHandle),
-      transfer_shm_id_(0),
+      transfer_shm_id_(command_buffer::kInvalidSharedMemoryId),
       transfer_shm_address_(NULL),
-      sync_interface_(NULL),
+      npp_(NULL),
       helper_(NULL),
       allocator_(NULL),
-      cb_server_(NULL),
       frame_token_(0),
       state_manager_(new StateManager) {
-  DCHECK_GT(command_buffer_size, 0U);
-  DCHECK_GT(transfer_memory_size, 0U);
-  transfer_shm_ = command_buffer::CreateShm(transfer_memory_size);
-  transfer_shm_address_ = command_buffer::MapShm(transfer_shm_,
-                                                 transfer_memory_size);
+  DCHECK_GT(transfer_memory_size, 0);
   state_manager_->AddStateHandlers(this);
 }
 
 RendererCB::~RendererCB() {
   Destroy();
-  command_buffer::UnmapShm(transfer_shm_address_, transfer_memory_size_);
-  command_buffer::DestroyShm(transfer_shm_);
-}
-
-static const unsigned int kDefaultCommandBufferSize = 256 << 10;
-// This should be enough to hold the biggest possible buffer
-// (2048x2048xABGR16F texture = 32MB)
-static const unsigned int kDefaultTransferMemorySize = 32 << 20;
-
-RendererCB *RendererCB::CreateDefault(ServiceLocator* service_locator) {
-  return new RendererCB(service_locator, kDefaultCommandBufferSize,
-                        kDefaultTransferMemorySize);
-}
-
-Renderer::InitStatus RendererCB::InitPlatformSpecific(
-    const DisplayWindow& display,
-    bool off_screen) {
-  if (off_screen) {
-    // TODO: Off-screen support ?
-    return UNINITIALIZED;  // equivalent to 0/false
-  }
-
-#ifdef OS_WIN
-  const DisplayWindowWindows &display_platform =
-      static_cast<const DisplayWindowWindows&>(display);
-  // Creates a Win32CBServer based on the HWND, and creates the
-  // command buffer helper, and initializes it. Also, create the
-  // FencedAllocator for the transfer memory.
-  cb_server_ = new Win32CBServer(display_platform.hwnd(), features());
-  sync_interface_ = cb_server_->GetInterface();
-
-  RECT windowRect;
-  ::GetWindowRect(display_platform.hwnd(), &windowRect);
-  int width = windowRect.right - windowRect.left;
-  int height = windowRect.bottom - windowRect.top;
-  InitCommon(width, height);
-  return SUCCESS;
-#else
-  // TODO: Implement Mac/Linux support before shipping
-  // command buffers.
-  return UNINITIALIZED;
-#endif
-}
-
-void RendererCB::InitCommon(unsigned int width, unsigned int height) {
-  sync_interface_->InitConnection();
-  transfer_shm_id_ = sync_interface_->RegisterSharedMemory(
-      transfer_shm_, transfer_memory_size_);
-  helper_ = new CommandBufferHelper(sync_interface_);
-  helper_->Init(cmd_buffer_size_);
-  frame_token_ = helper_->InsertToken();
-  allocator_ = new FencedAllocatorWrapper(transfer_memory_size_,
-                                          helper_,
-                                          transfer_shm_address_);
-  SetClientSize(width, height);
 }
 
 void RendererCB::Destroy() {
+  if (transfer_shm_id_ >= 0) {
+    NPInvokeVoid(npp_, command_buffer_, "unregisterObject", transfer_shm_id_);
+    transfer_shm_id_ = command_buffer::kInvalidSharedMemoryId;
+  }
+
+  transfer_shm_ = NPObjectPointer<NPObject>();
+
   if (allocator_) {
     delete allocator_;
     allocator_ = NULL;
   }
+
   if (helper_) {
     helper_->Finish();
-    if (sync_interface_) {
-      sync_interface_->CloseConnection();
-      sync_interface_->UnregisterSharedMemory(transfer_shm_id_);
-      sync_interface_ = NULL;
-    }
     delete helper_;
     helper_ = NULL;
   }
-#ifdef OS_WIN
-  if (cb_server_) {
-    delete cb_server_;
-    cb_server_ = NULL;
-  }
-#endif
+
+  npp_ = NULL;
 }
 
 void RendererCB::ApplyDirtyStates() {
@@ -314,10 +261,8 @@ const int* RendererCB::GetRGBAUByteNSwizzleTable() {
   return swizzle_table;
 }
 
-// This is a factory function for creating Renderer objects.  Since
-// we're implementing command buffers, we only ever return a CB renderer.
-Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
-  return RendererCB::CreateDefault(service_locator);
+command_buffer::parse_error::ParseError RendererCB::GetParseError() {
+  return helper_->GetParseError();
 }
 
 // Creates and returns a platform specific RenderDepthStencilSurface object.
@@ -330,4 +275,180 @@ RenderDepthStencilSurface::Ref RendererCB::CreateDepthStencilSurface(
                                       height,
                                       this));
 }
+
+Renderer::InitStatus RendererCB::InitPlatformSpecific(
+    const DisplayWindow& display_window,
+    bool off_screen) {
+  if (off_screen) {
+    // TODO: Off-screen support ?
+    return UNINITIALIZED;  // equivalent to 0/false
+  }
+
+  const DisplayWindowCB& display_platform =
+      static_cast<const DisplayWindowCB&>(display_window);
+
+  npp_ = display_platform.npp();
+  command_buffer_ = display_platform.command_buffer();
+  DCHECK(command_buffer_.Get());
+
+  // Create and initialize a CommandBufferHelper.
+  helper_ = new CommandBufferHelper(npp_, command_buffer_);
+  if (!helper_->Initialize()) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+
+  // Create and map a block of memory for the transfer buffer.
+  transfer_shm_ = CreateSharedMemory(transfer_memory_size_, npp_);
+  if (!transfer_shm_.Get()) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+  size_t size_bytes;
+  transfer_shm_address_ = NPBrowser::get()->MapMemory(npp_,
+                                                      transfer_shm_.Get(),
+                                                      &size_bytes);
+  if (!transfer_shm_address_) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+  DCHECK(size_bytes == transfer_memory_size_);
+
+  // Register the transfer buffer so it can be identified with an integer
+  // in future commands.
+  if (!NPInvoke(npp_, command_buffer_, "registerObject", transfer_shm_,
+                &transfer_shm_id_)) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+  DCHECK_GE(transfer_shm_id_, 0);
+
+  // Insert a token.
+  frame_token_ = helper_->InsertToken();
+  if (frame_token_ < 0) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+
+  // Create a fenced allocator.
+  allocator_ = new FencedAllocatorWrapper(transfer_memory_size_,
+                                          helper_,
+                                          transfer_shm_address_);
+
+  SetClientSize(display_platform.width(), display_platform.height());
+
+  return SUCCESS;
+}
+
+static const unsigned int kDefaultCommandBufferSize = 256 << 10;
+
+// This should be enough to hold the biggest possible buffer
+// (2048x2048xABGR16F texture = 32MB)
+static const int32 kDefaultTransferMemorySize = 32 << 20;
+
+RendererCBLocal *RendererCBLocal::CreateDefault(
+    ServiceLocator* service_locator) {
+  return new RendererCBLocal(service_locator,
+                             kDefaultTransferMemorySize);
+}
+
+RendererCBLocal::RendererCBLocal(ServiceLocator* service_locator,
+                                 int32 transfer_memory_size)
+    : RendererCB(service_locator, transfer_memory_size) {
+}
+
+RendererCBLocal::~RendererCBLocal() {
+}
+
+NPObjectPointer<CommandBuffer> RendererCBLocal::CreateCommandBuffer(
+    NPP npp, void* hwnd, int32 size) {
+#if defined(OS_WIN)
+  NPObjectPointer<SharedMemory> ring_buffer =
+      NPCreateObject<SharedMemory>(npp);
+  if (!ring_buffer->Initialize(size))
+    return NPObjectPointer<CommandBuffer>();
+
+  size_t mapped_size;
+  if (!NPBrowser::get()->MapMemory(npp,
+                                   ring_buffer.Get(),
+                                   &mapped_size)) {
+    return NPObjectPointer<CommandBuffer>();
+  }
+
+  DCHECK(mapped_size == size);
+
+  NPObjectPointer<CommandBuffer> command_buffer =
+      NPCreateObject<CommandBuffer>(npp);
+  if (!command_buffer->Initialize(ring_buffer))
+    return NPObjectPointer<CommandBuffer>();
+
+  scoped_refptr<GPUProcessor> gpu_processor(
+      new GPUProcessor(npp, command_buffer.Get()));
+  if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd)))
+    return NPObjectPointer<CommandBuffer>();
+
+  command_buffer->SetPutOffsetChangeCallback(
+      NewCallback(gpu_processor.get(), &GPUProcessor::ProcessCommands));
+
+  return command_buffer;
+
+#else
+  return NPObjectPointer<CommandBuffer>();
+#endif
+}
+
+NPObjectPointer<NPObject> RendererCBLocal::CreateSharedMemory(int32 size,
+                                                              NPP npp) {
+  NPObjectPointer<SharedMemory> shared_memory =
+      NPCreateObject<SharedMemory>(npp);
+
+  if (!shared_memory->Initialize(size))
+    return NPObjectPointer<NPObject>();
+
+  return shared_memory;
+}
+
+RendererCBRemote *RendererCBRemote::CreateDefault(
+    ServiceLocator* service_locator) {
+  return new RendererCBRemote(service_locator,
+                              kDefaultTransferMemorySize);
+}
+
+RendererCBRemote::RendererCBRemote(ServiceLocator* service_locator,
+                                   int32 transfer_memory_size)
+    : RendererCB(service_locator, transfer_memory_size) {
+}
+
+RendererCBRemote::~RendererCBRemote() {
+}
+
+NPObjectPointer<NPObject> RendererCBRemote::CreateSharedMemory(int32 size,
+                                                               NPP npp) {
+  NPObjectPointer<NPObject> shared_memory;
+
+  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
+      NPBrowser::get()->GetWindowNPObject(npp));
+  if (!window.Get())
+    return shared_memory;
+
+  NPObjectPointer<NPObject> chromium;
+  if (!NPGetProperty(npp, window, "chromium", &chromium) || !chromium.Get())
+    return shared_memory;
+
+  NPObjectPointer<NPObject> system;
+  if (!NPGetProperty(npp, chromium, "system", &system) || !system.Get())
+    return shared_memory;
+
+  if (!NPInvoke(npp, system, "createSharedMemory", size,
+                &shared_memory)) {
+    return shared_memory;
+  }
+
+  return shared_memory;
+}
+
+Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
+  return RendererCBLocal::CreateDefault(service_locator);
+}
+
 }  // namespace o3d

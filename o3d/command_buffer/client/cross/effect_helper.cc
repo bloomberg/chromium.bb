@@ -58,8 +58,7 @@ bool EffectHelper::CreateEffectParameters(ResourceId effect_id,
   helper_->Finish();
 
   // We could have failed if the effect_id is invalid.
-  if (helper_->interface()->GetParseError() !=
-      BufferSyncInterface::kParseNoError) {
+  if (helper_->GetParseError() != parse_error::kParseNoError) {
     shm_allocator_->Free(retval);
     return false;
   }
@@ -96,8 +95,7 @@ bool EffectHelper::CreateEffectParameters(ResourceId effect_id,
     }
     // Finish to get the results.
     helper_->Finish();
-    DCHECK_EQ(helper_->interface()->GetParseError(),
-              BufferSyncInterface::kParseNoError);
+    DCHECK_EQ(helper_->GetParseError(), parse_error::kParseNoError);
     for (unsigned int j = 0 ; j < count; ++j) {
       EffectParamDesc *desc = &((*descs)[i + j]);
       Desc *raw_desc = raw_descs + j;
@@ -132,8 +130,7 @@ bool EffectHelper::GetParamStrings(EffectParamDesc *desc) {
   helper_->Finish();
 
   // We could have failed if the param ID is invalid.
-  if (helper_->interface()->GetParseError() !=
-      BufferSyncInterface::kParseNoError) {
+  if (helper_->GetParseError() != parse_error::kParseNoError) {
     shm_allocator_->Free(raw_desc);
     return false;
   }
@@ -156,8 +153,7 @@ bool EffectHelper::GetParamStrings(EffectParamDesc *desc) {
                           shm_allocator_->GetOffset(raw_desc));
     // Finish to get the results.
     helper_->Finish();
-    DCHECK_EQ(helper_->interface()->GetParseError(),
-              BufferSyncInterface::kParseNoError);
+    DCHECK_EQ(helper_->GetParseError(), parse_error::kParseNoError);
     DCHECK_EQ(raw_desc->size, size);
   }
 
@@ -211,8 +207,7 @@ bool EffectHelper::GetEffectStreams(ResourceId effect_id,
   helper_->Finish();
 
   // We could have failed if the effect_id is invalid.
-  if (helper_->interface()->GetParseError() !=
-      BufferSyncInterface::kParseNoError) {
+  if (helper_->GetParseError() != parse_error::kParseNoError) {
     shm_allocator_->Free(retval);
     return false;
   }
@@ -242,8 +237,7 @@ bool EffectHelper::GetEffectStreams(ResourceId effect_id,
     }
     // Finish to get the results.
     helper_->Finish();
-    DCHECK_EQ(helper_->interface()->GetParseError(),
-              BufferSyncInterface::kParseNoError);
+    DCHECK_EQ(helper_->GetParseError(), parse_error::kParseNoError);
     for (unsigned int j = 0 ; j < count; ++j) {
       EffectStreamDesc *desc = &((*descs)[i + j]);
       Desc *raw_desc = raw_descs + j;

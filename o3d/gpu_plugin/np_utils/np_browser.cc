@@ -8,7 +8,10 @@
 #if defined(O3D_IN_CHROME)
 #include "webkit/glue/plugins/nphostapi.h"
 #else
-#include "npupp.h"
+#include "o3d/third_party/npapi/include/npupp.h"
+
+// TODO: Remove this when we figure out what to do about NPN_MapMemory.
+#include "o3d/gpu_plugin/system_services/shared_memory.h"
 #endif
 
 namespace o3d {
@@ -118,7 +121,13 @@ void NPBrowser::PluginThreadAsyncCall(NPP npp,
 void* NPBrowser::MapMemory(NPP npp,
                            NPObject* object,
                            size_t* size) {
+  // NPN_MapMemory is an experiment. It only exists in NPNetscapeFuncs in
+  // a hacked version of Chromium.
+#if defined(O3D_IN_CHROME)
   return netscape_funcs_->mapmemory(npp, object, size);
+#else
+  return NPN_MapMemory(npp, object, size);
+#endif
 }
 
 }  // namespace gpu_plugin

@@ -309,112 +309,112 @@ void VertexStructD3D9::Compile(IDirect3DDevice9 *d3d_device) {
 }
 
 // Creates and assigns a VertexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateVertexBuffer(
+parse_error::ParseError GAPID3D9::CreateVertexBuffer(
     ResourceId id,
     unsigned int size,
     unsigned int flags) {
   VertexBufferD3D9 *vertex_buffer = new VertexBufferD3D9(size, flags);
   vertex_buffer->Create(this);
   vertex_buffers_.Assign(id, vertex_buffer);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys a VertexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroyVertexBuffer(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyVertexBuffer(ResourceId id) {
   return vertex_buffers_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data into the VertexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::SetVertexBufferData(
+parse_error::ParseError GAPID3D9::SetVertexBufferData(
     ResourceId id,
     unsigned int offset,
     unsigned int size,
     const void *data) {
   VertexBufferD3D9 *vertex_buffer = vertex_buffers_.Get(id);
-  if (!vertex_buffer) return BufferSyncInterface::kParseInvalidArguments;
+  if (!vertex_buffer) return parse_error::kParseInvalidArguments;
   return vertex_buffer->SetData(offset, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data from the VertexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::GetVertexBufferData(
+parse_error::ParseError GAPID3D9::GetVertexBufferData(
     ResourceId id,
     unsigned int offset,
     unsigned int size,
     void *data) {
   VertexBufferD3D9 *vertex_buffer = vertex_buffers_.Get(id);
-  if (!vertex_buffer) return BufferSyncInterface::kParseInvalidArguments;
+  if (!vertex_buffer) return parse_error::kParseInvalidArguments;
   return vertex_buffer->GetData(offset, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Creates and assigns an IndexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateIndexBuffer(
+parse_error::ParseError GAPID3D9::CreateIndexBuffer(
     ResourceId id,
     unsigned int size,
     unsigned int flags) {
   IndexBufferD3D9 *index_buffer = new IndexBufferD3D9(size, flags);
   index_buffer->Create(this);
   index_buffers_.Assign(id, index_buffer);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys an IndexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroyIndexBuffer(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyIndexBuffer(ResourceId id) {
   return index_buffers_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data into the IndexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::SetIndexBufferData(
+parse_error::ParseError GAPID3D9::SetIndexBufferData(
     ResourceId id,
     unsigned int offset,
     unsigned int size,
     const void *data) {
   IndexBufferD3D9 *index_buffer = index_buffers_.Get(id);
-  if (!index_buffer) return BufferSyncInterface::kParseInvalidArguments;
+  if (!index_buffer) return parse_error::kParseInvalidArguments;
   return index_buffer->SetData(offset, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data from the IndexBufferD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::GetIndexBufferData(
+parse_error::ParseError GAPID3D9::GetIndexBufferData(
     ResourceId id,
     unsigned int offset,
     unsigned int size,
     void *data) {
   IndexBufferD3D9 *index_buffer = index_buffers_.Get(id);
-  if (!index_buffer) return BufferSyncInterface::kParseInvalidArguments;
+  if (!index_buffer) return parse_error::kParseInvalidArguments;
   return index_buffer->GetData(offset, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Creates and assigns a VertexStructD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::CreateVertexStruct(
+parse_error::ParseError GAPID3D9::CreateVertexStruct(
     ResourceId id, unsigned int input_count) {
   if (id == current_vertex_struct_) validate_streams_ = true;
   VertexStructD3D9 *vertex_struct = new VertexStructD3D9(input_count);
   vertex_structs_.Assign(id, vertex_struct);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys a VertexStructD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroyVertexStruct(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyVertexStruct(ResourceId id) {
   if (id == current_vertex_struct_) validate_streams_ = true;
   return vertex_structs_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Sets an input into a VertexStructD3D9 resource.
-BufferSyncInterface::ParseError GAPID3D9::SetVertexInput(
+parse_error::ParseError GAPID3D9::SetVertexInput(
     ResourceId vertex_struct_id,
     unsigned int input_index,
     ResourceId vertex_buffer_id,
@@ -426,10 +426,10 @@ BufferSyncInterface::ParseError GAPID3D9::SetVertexInput(
   if (vertex_buffer_id == current_vertex_struct_) validate_streams_ = true;
   VertexStructD3D9 *vertex_struct = vertex_structs_.Get(vertex_struct_id);
   if (!vertex_struct || input_index >= vertex_struct->count())
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   vertex_struct->SetInput(input_index, vertex_buffer_id, offset, stride, type,
                           semantic, semantic_index);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 }  // namespace command_buffer

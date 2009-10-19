@@ -706,7 +706,7 @@ EffectParamGL *EffectGL::CreateParamByName(const char *name) {
   return EffectParamGL::Create(this, index);
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceId id,
+parse_error::ParseError GAPIGL::CreateEffect(ResourceId id,
                                                      unsigned int size,
                                                      const void *data) {
   if (id == current_effect_id_) DirtyEffect();
@@ -721,109 +721,109 @@ BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceId id,
                        &vertex_program_entry,
                        &fragment_program_entry,
                        &effect_code)) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   EffectGL * effect = EffectGL::Create(this, effect_code,
                                        vertex_program_entry,
                                        fragment_program_entry);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   effects_.Assign(id, effect);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyEffect(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroyEffect(ResourceId id) {
   if (id == current_effect_id_) DirtyEffect();
   return effects_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetEffect(ResourceId id) {
+parse_error::ParseError GAPIGL::SetEffect(ResourceId id) {
   DirtyEffect();
   current_effect_id_ = id;
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetParamCount(ResourceId id,
+parse_error::ParseError GAPIGL::GetParamCount(ResourceId id,
                                                       unsigned int size,
                                                       void *data) {
   EffectGL *effect = effects_.Get(id);
   if (!effect || size < sizeof(Uint32))  // NOLINT
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   *static_cast<Uint32 *>(data) = effect->GetParamCount();
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateParam(ResourceId param_id,
+parse_error::ParseError GAPIGL::CreateParam(ResourceId param_id,
                                                     ResourceId effect_id,
                                                     unsigned int index) {
   EffectGL *effect = effects_.Get(effect_id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   EffectParamGL *param = effect->CreateParam(index);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   effect_params_.Assign(param_id, param);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateParamByName(ResourceId param_id,
+parse_error::ParseError GAPIGL::CreateParamByName(ResourceId param_id,
                                                           ResourceId effect_id,
                                                           unsigned int size,
                                                           const void *name) {
   EffectGL *effect = effects_.Get(effect_id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   std::string string_name(static_cast<const char *>(name), size);
   EffectParamGL *param = effect->CreateParamByName(string_name.c_str());
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   effect_params_.Assign(param_id, param);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyParam(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroyParam(ResourceId id) {
   return effect_params_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetParamData(ResourceId id,
+parse_error::ParseError GAPIGL::SetParamData(ResourceId id,
                                                      unsigned int size,
                                                      const void *data) {
   EffectParamGL *param = effect_params_.Get(id);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   return param->SetData(this, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetParamDesc(ResourceId id,
+parse_error::ParseError GAPIGL::GetParamDesc(ResourceId id,
                                                      unsigned int size,
                                                      void *data) {
   EffectParamGL *param = effect_params_.Get(id);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   return param->GetDesc(size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetStreamCount(
+parse_error::ParseError GAPIGL::GetStreamCount(
     ResourceId id,
     unsigned int size,
     void *data) {
   EffectGL *effect = effects_.Get(id);
   if (!effect || size < sizeof(Uint32))  // NOLINT
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   *static_cast<Uint32 *>(data) = effect->GetStreamCount();
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetStreamDesc(ResourceId id,
+parse_error::ParseError GAPIGL::GetStreamDesc(ResourceId id,
                                                       unsigned int index,
                                                       unsigned int size,
                                                       void *data) {
   EffectGL *effect = effects_.Get(id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   return effect->GetStreamDesc(index, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // If the current effect is valid, call End on it, and tag for revalidation.

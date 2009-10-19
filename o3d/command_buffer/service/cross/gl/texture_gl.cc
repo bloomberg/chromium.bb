@@ -646,16 +646,16 @@ bool TextureCubeGL::InstallFrameBufferObjects(
 // GAPIGL functions.
 
 // Destroys a texture resource.
-BufferSyncInterface::ParseError GAPIGL::DestroyTexture(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroyTexture(ResourceId id) {
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
   return textures_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Creates a 2D texture resource.
-BufferSyncInterface::ParseError GAPIGL::CreateTexture2D(
+parse_error::ParseError GAPIGL::CreateTexture2D(
     ResourceId id,
     unsigned int width,
     unsigned int height,
@@ -665,15 +665,15 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture2D(
     bool enable_render_surfaces) {
   Texture2DGL *texture = Texture2DGL::Create(
       width, height, levels, format, flags, enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Creates a 3D texture resource.
-BufferSyncInterface::ParseError GAPIGL::CreateTexture3D(
+parse_error::ParseError GAPIGL::CreateTexture3D(
     ResourceId id,
     unsigned int width,
     unsigned int height,
@@ -684,15 +684,15 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture3D(
     bool enable_render_surfaces) {
   Texture3DGL *texture = Texture3DGL::Create(
       width, height, depth, levels, format, flags, enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Creates a cube map texture resource.
-BufferSyncInterface::ParseError GAPIGL::CreateTextureCube(
+parse_error::ParseError GAPIGL::CreateTextureCube(
     ResourceId id,
     unsigned int side,
     unsigned int levels,
@@ -701,15 +701,15 @@ BufferSyncInterface::ParseError GAPIGL::CreateTextureCube(
     bool enable_render_surfaces) {
   TextureCubeGL *texture = TextureCubeGL::Create(
       side, levels, format, flags, enable_render_surfaces);
-  if (!texture) return BufferSyncInterface::kParseInvalidArguments;
+  if (!texture) return parse_error::kParseInvalidArguments;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
   textures_.Assign(id, texture);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Copies the data into a texture resource.
-BufferSyncInterface::ParseError GAPIGL::SetTextureData(
+parse_error::ParseError GAPIGL::SetTextureData(
     ResourceId id,
     unsigned int x,
     unsigned int y,
@@ -725,19 +725,19 @@ BufferSyncInterface::ParseError GAPIGL::SetTextureData(
     const void *data) {
   TextureGL *texture = textures_.Get(id);
   if (!texture)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   Volume volume = {x, y, z, width, height, depth};
   // Dirty effect: SetData may need to call glBindTexture which will mess up the
   // sampler parameters.
   DirtyEffect();
   return texture->SetData(volume, level, face, row_pitch, slice_pitch,
                           size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Copies the data from a texture resource.
-BufferSyncInterface::ParseError GAPIGL::GetTextureData(
+parse_error::ParseError GAPIGL::GetTextureData(
     ResourceId id,
     unsigned int x,
     unsigned int y,
@@ -753,15 +753,15 @@ BufferSyncInterface::ParseError GAPIGL::GetTextureData(
     void *data) {
   TextureGL *texture = textures_.Get(id);
   if (!texture)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   Volume volume = {x, y, z, width, height, depth};
   // Dirty effect: GetData may need to call glBindTexture which will mess up the
   // sampler parameters.
   DirtyEffect();
   return texture->GetData(volume, level, face, row_pitch, slice_pitch,
                           size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 }  // namespace command_buffer

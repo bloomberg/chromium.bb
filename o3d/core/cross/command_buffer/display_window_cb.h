@@ -30,52 +30,61 @@
  */
 
 
-// This file declares the Win32CBServer class, helper class that runs a command
-// buffer server in a separate win32 thread.
+#ifndef O3D_CORE_WIN_DISPLAY_WINDOW_CB_H_
+#define O3D_CORE_WIN_DISPLAY_WINDOW_CB_H_
 
-#ifndef O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
-#define O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
-
-#include "core/cross/precompile.h"
-#include "core/cross/features.h"
-#include "command_buffer/common/cross/rpc_imc.h"
-#include "command_buffer/client/cross/buffer_sync_proxy.h"
-#if defined(CB_SERVICE_D3D9)
-#include "command_buffer/service/win/d3d9/gapi_d3d9.h"
-#elif defined(CB_SERVICE_GL)
-#include "command_buffer/service/cross/gl/gapi_gl.h"
-#endif
-
+#include "core/cross/display_window.h"
+#include "gpu_plugin/np_utils/np_object_pointer.h"
 
 namespace o3d {
 
-// The current Renderer API assumes we connect directly to the window. This
-// class creates a command buffer server in a separate thread, and sets up the
-// communication socket.
-// This code will go away once we fix the API, and provide a separate mechanism
-// to connect to the service.
-class Win32CBServer {
+// DisplayWindow subclass without information needed to connect to and use
+// an out-of-process command buffer renderer.
+class DisplayWindowCB : public DisplayWindow {
  public:
-  explicit Win32CBServer(HWND window, Features* features);
-  ~Win32CBServer();
+  DisplayWindowCB() : npp_(NULL), width_(0), height_(0) {}
+  virtual ~DisplayWindowCB() {}
 
-  // Gets the (client-side) command buffer interface.
-  command_buffer::BufferSyncInterface *GetInterface() { return proxy_.get(); }
+  NPP npp() const {
+    return npp_;
+  }
+
+  void set_npp(NPP npp) {
+    npp_ = npp;
+  }
+
+  gpu_plugin::NPObjectPointer<NPObject> command_buffer() const {
+    return command_buffer_;
+  }
+
+  void set_command_buffer(
+      const gpu_plugin::NPObjectPointer<NPObject> command_buffer) {
+    command_buffer_ = command_buffer;
+  }
+
+  int width() const {
+    return width_;
+  }
+
+  void set_width(int width) {
+    width_ = width;
+  }
+
+  int height() const {
+    return height_;
+  }
+
+  void set_height(int height) {
+    height_ = height;
+  }
 
  private:
-  static DWORD WINAPI ThreadMain(LPVOID param);
-
-#if defined(CB_SERVICE_D3D9)
-  command_buffer::GAPID3D9 gapi_;
-#elif defined(CB_SERVICE_GL)
-  command_buffer::GAPIGL gapi_;
-#endif
-  nacl::HtpHandle socket_pair_[2];
-  scoped_ptr<command_buffer::IMCSender> imc_sender_;
-  scoped_ptr<command_buffer::BufferSyncProxy> proxy_;
-  HANDLE thread_;
+  NPP npp_;
+  gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
+  int width_;
+  int height_;
+  DISALLOW_COPY_AND_ASSIGN(DisplayWindowCB);
 };
+}  // end namespace o3d
 
-}  // namespace o3d
-
-#endif  // O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
+#endif  // O3D_CORE_WIN_DISPLAY_WINDOW_CB_H_

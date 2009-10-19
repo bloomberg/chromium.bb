@@ -10,7 +10,7 @@
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -25,7 +25,7 @@ class SharedMemory : public DefaultNPObject<NPObject> {
 
   virtual int32 GetSize();
 
-  base::SharedMemory* shared_memory() const {
+  ::base::SharedMemory* shared_memory() const {
     return shared_memory_.get();
   }
 
@@ -36,7 +36,7 @@ class SharedMemory : public DefaultNPObject<NPObject> {
 
  private:
   NPP npp_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  scoped_ptr< ::base::SharedMemory> shared_memory_;
   DISALLOW_COPY_AND_ASSIGN(SharedMemory);
 };
 

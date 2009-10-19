@@ -173,24 +173,24 @@ void SamplerGL::SetBorderColor(const RGBA &color) {
   gl_border_color_[3] = color.alpha;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateSampler(
+parse_error::ParseError GAPIGL::CreateSampler(
     ResourceId id) {
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   samplers_.Assign(id, new SamplerGL());
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys the Sampler resource.
-BufferSyncInterface::ParseError GAPIGL::DestroySampler(ResourceId id) {
+parse_error::ParseError GAPIGL::DestroySampler(ResourceId id) {
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   return samplers_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
+parse_error::ParseError GAPIGL::SetSamplerStates(
     ResourceId id,
     sampler::AddressingMode addressing_u,
     sampler::AddressingMode addressing_v,
@@ -201,36 +201,36 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
     unsigned int max_anisotropy) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetStates(addressing_u, addressing_v, addressing_w,
                      mag_filter, min_filter, mip_filter, max_anisotropy);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetSamplerBorderColor(
+parse_error::ParseError GAPIGL::SetSamplerBorderColor(
     ResourceId id,
     const RGBA &color) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetBorderColor(color);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetSamplerTexture(
+parse_error::ParseError GAPIGL::SetSamplerTexture(
     ResourceId id,
     ResourceId texture_id) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetTexture(texture_id);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 

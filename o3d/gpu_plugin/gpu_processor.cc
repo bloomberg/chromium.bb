@@ -7,6 +7,9 @@
 namespace o3d {
 namespace gpu_plugin {
 
+GPUProcessor::~GPUProcessor() {
+}
+
 namespace {
 void InvokeProcessCommands(void* data) {
   static_cast<GPUProcessor*>(data)->ProcessCommands();
@@ -21,16 +24,16 @@ void GPUProcessor::ProcessCommands() {
 
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
-    command_buffer::BufferSyncInterface::ParseError parse_error =
+    command_buffer::parse_error::ParseError parse_error =
         parser_->ProcessCommand();
     switch (parse_error) {
-      case command_buffer::BufferSyncInterface::kParseUnknownCommand:
-      case command_buffer::BufferSyncInterface::kParseInvalidArguments:
+      case command_buffer::parse_error::kParseUnknownCommand:
+      case command_buffer::parse_error::kParseInvalidArguments:
         command_buffer_->SetParseError(parse_error);
         break;
 
-      case command_buffer::BufferSyncInterface::kParseInvalidSize:
-      case command_buffer::BufferSyncInterface::kParseOutOfBounds:
+      case command_buffer::parse_error::kParseInvalidSize:
+      case command_buffer::parse_error::kParseOutOfBounds:
         command_buffer_->SetParseError(parse_error);
         command_buffer_->RaiseErrorStatus();
         return;
@@ -46,9 +49,9 @@ void GPUProcessor::ProcessCommands() {
   }
 }
 
-void *GPUProcessor::GetSharedMemoryAddress(unsigned int shm_id) {
+void *GPUProcessor::GetSharedMemoryAddress(int32 shm_id) {
   NPObjectPointer<NPObject> shared_memory =
-      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id));
+      command_buffer_->GetRegisteredObject(shm_id);
 
   size_t size;
   return NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
@@ -56,9 +59,9 @@ void *GPUProcessor::GetSharedMemoryAddress(unsigned int shm_id) {
 
 // TODO(apatrick): Consolidate this with the above and return both the address
 // and size.
-size_t GPUProcessor::GetSharedMemorySize(unsigned int shm_id) {
+size_t GPUProcessor::GetSharedMemorySize(int32 shm_id) {
   NPObjectPointer<NPObject> shared_memory =
-      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id));
+      command_buffer_->GetRegisteredObject(shm_id);
 
   size_t size;
   NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
@@ -66,8 +69,8 @@ size_t GPUProcessor::GetSharedMemorySize(unsigned int shm_id) {
   return size;
 }
 
-void GPUProcessor::set_token(unsigned int token) {
-  command_buffer_->SetToken(static_cast<int32>(token));
+void GPUProcessor::set_token(int32 token) {
+  command_buffer_->SetToken(token);
 }
 
 }  // namespace gpu_plugin

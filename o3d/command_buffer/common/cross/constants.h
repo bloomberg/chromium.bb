@@ -30,14 +30,44 @@
  */
 
 
-#include "command_buffer/common/cross/buffer_sync_api.h"
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_
+
+#include "base/basictypes.h"
 
 namespace o3d {
 namespace command_buffer {
 
-#ifndef COMPILER_MSVC
-const unsigned int BufferSyncInterface::kInvalidSharedMemoryId;
-#endif
+typedef int32 CommandBufferOffset;
+const CommandBufferOffset kInvalidCommandBufferOffset = -1;
+
+// Status of the command buffer service. It does not process commands
+// (meaning: get will not change) unless in kParsing state.
+namespace parser_status {
+  enum ParserStatus {
+    kNotConnected,  // The service is not connected - initial state.
+    kNoBuffer,      // The service is connected but no buffer was set.
+    kParsing,       // The service is connected, and parsing commands from the
+                    // buffer.
+    kParseError,    // Parsing stopped because a parse error was found.
+  };
+}
+
+namespace parse_error {
+  enum ParseError {
+    kParseNoError,
+    kParseInvalidSize,
+    kParseOutOfBounds,
+    kParseUnknownCommand,
+    kParseInvalidArguments,
+  };
+}
+
+// Invalid shared memory Id, returned by RegisterSharedMemory in case of
+// failure.
+const int32 kInvalidSharedMemoryId = -1;
 
 }  // namespace command_buffer
 }  // namespace o3d
+
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_

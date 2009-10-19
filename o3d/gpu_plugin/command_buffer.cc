@@ -143,5 +143,11 @@ int32 CommandBuffer::ResetParseError() {
   return last_error;
 }
 
+void CommandBuffer::SetParseError(int32 parse_error) {
+  if (parse_error_ == 0) {
+    parse_error_ = parse_error;
+  }
+}
+
 }  // namespace gpu_plugin
 }  // namespace o3d

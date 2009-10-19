@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <build/build_config.h>
 #ifdef OS_WIN
 #include <windows.h>
@@ -40,12 +39,12 @@
 #include <algorithm>
 #include "core/cross/renderer.h"
 #include "core/cross/client_info.h"
+#include "gpu_plugin/np_utils/np_headers.h"
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
 #include "client_glue.h"
 #include "globals_glue.h"
-#include "third_party/nixysa/static_glue/npapi/common.h"
 
 #ifdef OS_MACOSX
 #include "plugin_mac.h"
@@ -659,14 +658,15 @@ void PluginObject::Resize(int width, int height) {
   if (prev_width_ != width || prev_height_ != height) {
     prev_width_ = width;
     prev_height_ = height;
+
     if (renderer_ && !fullscreen_) {
       // Tell the renderer and client that our window has been resized.
       // If we're in fullscreen mode when this happens, we don't want to pass
       // the information through; the renderer will pick it up when we switch
       // back to plugin mode.
-      renderer_->Resize(width, height);
+      renderer_->Resize(prev_width_, prev_height_);
       // This is just so that the client can send an event to the user.
-      client()->SendResizeEvent(width, height, fullscreen_);
+      client()->SendResizeEvent(prev_width_, prev_height_, fullscreen_);
     }
   }
 }
@@ -721,8 +721,8 @@ void PluginObject::RedirectToFile(const char *url) {
   NPObject *global_object;
   NPN_GetValue(npp(), NPNVWindowNPObject, &global_object);
   NPString string;
-  string.utf8characters = full_cmd.get();
-  string.utf8length = strlen(string.utf8characters);
+  string.UTF8Characters = full_cmd.get();
+  string.UTF8Length = strlen(string.UTF8Characters);
   NPVariant result;
   bool temp = NPN_Evaluate(npp(), global_object, &string, &result);
   if (temp) {

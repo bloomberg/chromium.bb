@@ -9,10 +9,19 @@
 // Chrome and O3D NPAPI headers.
 #define utf8characters UTF8Characters
 #define utf8length UTF8Length
+
+#if defined(O3D_IN_CHROME)
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
+#else
+#include "o3d/third_party/npapi/include/npapi.h"
+#include "o3d/third_party/npapi/include/npruntime.h"
+#endif
+
 // Deliberately not including a directory name because Chromium and O3D put
 // these headers in different directories.
-#include "npapi.h"
-#include "npruntime.h"
+//#include "npapi.h"
+//#include "npruntime.h"
 #undef utf8characters
 #undef utf8length
 

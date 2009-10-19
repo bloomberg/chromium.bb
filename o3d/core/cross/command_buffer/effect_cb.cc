@@ -37,18 +37,18 @@
 #include "core/cross/semantic_manager.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/command_buffer/effect_cb.h"
-#include "command_buffer/common/cross/buffer_sync_api.h"
+#include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_format.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
 
 namespace o3d {
 
-using command_buffer::BufferSyncInterface;
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
 using command_buffer::ResourceId;
 namespace effect_param = command_buffer::effect_param;
+namespace parse_error = command_buffer::parse_error;
 namespace vertex_struct = command_buffer::vertex_struct;
 
 EffectCB::EffectCB(ServiceLocator *service_locator, RendererCB *renderer)
@@ -101,8 +101,7 @@ bool EffectCB::LoadFromFXString(const String& source) {
   // NOTE: we're calling Finish to check the command result, to see if
   // the effect has succesfully compiled.
   helper->Finish();
-  if (renderer_->sync_interface()->GetParseError() !=
-      BufferSyncInterface::kParseNoError) {
+  if (renderer_->GetParseError() != parse_error::kParseNoError) {
     O3D_ERROR(service_locator()) << "Effect failed to compile.";
     renderer_->effect_ids().FreeID(resource_id);
     return false;

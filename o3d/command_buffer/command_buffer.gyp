@@ -32,17 +32,13 @@
     {
       'target_name': 'command_buffer_common',
       'type': 'static_library',
-      'dependencies': [
-        '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
-        '../../native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-        '../../native_client/src/shared/platform/platform.gyp:platform',
-        '../../native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '../../native_client/src/trusted/service_runtime/service_runtime.gyp:gio',
-      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },  # 'all_dependent_settings'
       'sources': [
         'common/cross/bitfield_helpers.h',
-        'common/cross/buffer_sync_api.cc',
-        'common/cross/buffer_sync_api.h',
         'common/cross/cmd_buffer_format.h',
         'common/cross/cmd_buffer_format.cc',
         'common/cross/gapi_interface.h',
@@ -50,9 +46,6 @@
         'common/cross/mocks.h',
         'common/cross/resource.cc',
         'common/cross/resource.h',
-        'common/cross/rpc.h',
-        'common/cross/rpc_imc.cc',
-        'common/cross/rpc_imc.h',
         'common/cross/types.h',
       ],
     },
@@ -62,9 +55,6 @@
       'direct_dependent_settings': {
         'sources': [
           'common/cross/bitfield_helpers_test.cc',
-          'client/cross/cmd_buffer_helper_test.cc',
-          'client/cross/fenced_allocator_test.cc',
-          'client/cross/id_allocator_test.cc',
         ],
       },
     },
@@ -73,10 +63,9 @@
       'type': 'static_library',
       'dependencies': [
         'command_buffer_common',
+        '../gpu_plugin/gpu_plugin.gyp:np_utils',
       ],
       'sources': [
-        'client/cross/buffer_sync_proxy.cc',
-        'client/cross/buffer_sync_proxy.h',
         'client/cross/cmd_buffer_helper.cc',
         'client/cross/cmd_buffer_helper.h',
         'client/cross/effect_helper.cc',
@@ -92,7 +81,6 @@
       'type': 'none',
       'direct_dependent_settings': {
         'sources': [
-          'client/cross/buffer_sync_proxy_test.cc',
           'client/cross/cmd_buffer_helper_test.cc',
           'client/cross/fenced_allocator_test.cc',
           'client/cross/id_allocator_test.cc',
@@ -102,13 +90,15 @@
     {
       'target_name': 'command_buffer_service',
       'type': 'static_library',
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },  # 'all_dependent_settings'
       'dependencies': [
         'command_buffer_common',
       ],
       'sources': [
-        'service/cross/buffer_rpc.cc',
-        'service/cross/buffer_rpc.h',
-        'service/cross/cmd_buffer_engine.cc',
         'service/cross/cmd_buffer_engine.h',
         'service/cross/cmd_parser.cc',
         'service/cross/cmd_parser.h',
@@ -155,6 +145,11 @@
             'include_dirs': [
               '$(DXSDK_DIR)/Include',
             ],
+            'all_dependent_settings': {
+              'include_dirs': [
+                '$(DXSDK_DIR)/Include',
+              ],
+            },  # 'all_dependent_settings'
             'sources': [
               'service/win/d3d9/d3d9_utils.h',
               'service/win/d3d9/effect_d3d9.cc',
@@ -171,11 +166,6 @@
               'service/win/d3d9/texture_d3d9.cc',
               'service/win/d3d9/texture_d3d9.h',
             ],  # 'sources'
-            'direct_dependent_settings': {
-              'include_dirs': [
-                '$(DXSDK_DIR)/Include',
-              ],
-            },  # 'direct_dependent_settings'
           },
         ],
         ['cb_service == "gl"',
@@ -200,20 +190,6 @@
             ],  # 'sources'
           },
         ],
-        ['cb_service != "none"',
-          {
-            'target_name': 'command_buffer_service_test',
-            'type': 'none',
-            'direct_dependent_settings': {
-              'sources': [
-                'service/cross/buffer_rpc_test.cc',
-                'service/cross/cmd_buffer_engine_test.cc',
-                'service/cross/cmd_parser_test.cc',
-                'service/cross/resource_test.cc',
-              ],
-            },
-          },
-        ],
         ['OS == "linux"',
           {
             'sources': [
@@ -223,6 +199,16 @@
           },
         ],
       ],  # 'conditions'
+    },
+    {
+      'target_name': 'command_buffer_service_test',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'sources': [
+          'service/cross/cmd_parser_test.cc',
+          'service/cross/resource_test.cc',
+        ],
+      },
     },
   ],  # 'targets'
 }

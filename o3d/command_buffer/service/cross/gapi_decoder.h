@@ -42,13 +42,13 @@ namespace o3d {
 namespace command_buffer {
 
 class GAPIInterface;
-class CommandBufferUpcallInterface;
+class CommandBufferEngine;
 
 // This class implements the AsyncAPIInterface interface, decoding GAPI
 // commands and sending them to a GAPI interface.
 class GAPIDecoder : public AsyncAPIInterface {
  public:
-  typedef BufferSyncInterface::ParseError ParseError;
+  typedef parse_error::ParseError ParseError;
 
   explicit GAPIDecoder(GAPIInterface *gapi) : gapi_(gapi), engine_(NULL) {}
   virtual ~GAPIDecoder() {}
@@ -60,7 +60,7 @@ class GAPIDecoder : public AsyncAPIInterface {
 
   // Sets the engine, to get shared memory buffers from, and to set the token
   // to.
-  void set_engine(CommandBufferUpcallInterface *engine) { engine_ = engine; }
+  void set_engine(CommandBufferEngine *engine) { engine_ = engine; }
  private:
   // Gets the address of shared memory data, given a shared memory ID and an
   // offset. Also checks that the size is consistent with the shared memory
@@ -88,7 +88,7 @@ class GAPIDecoder : public AsyncAPIInterface {
   #undef O3D_COMMAND_BUFFER_CMD_OP
 
   GAPIInterface *gapi_;
-  CommandBufferUpcallInterface *engine_;
+  CommandBufferEngine *engine_;
 };
 
 }  // namespace command_buffer

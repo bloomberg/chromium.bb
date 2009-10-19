@@ -36,8 +36,9 @@
 #define O3D_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
 
 #include "command_buffer/common/cross/logging.h"
-#include "command_buffer/common/cross/buffer_sync_api.h"
+#include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -50,7 +51,7 @@ namespace command_buffer {
 //
 // helper.AddCommand(...);
 // helper.AddCommand(...);
-// unsigned int token = helper.InsertToken();
+// int32 token = helper.InsertToken();
 // helper.AddCommand(...);
 // helper.AddCommand(...);
 // [...]
@@ -59,43 +60,38 @@ namespace command_buffer {
 //                              // commands have been executed.
 class CommandBufferHelper {
  public:
-  // Constructs a CommandBufferHelper object. The helper needs to be
-  // initialized by calling Init() before use.
-  // Parameters:
-  //   interface: the buffer interface the helper sends commands to.
-  explicit CommandBufferHelper(BufferSyncInterface *interface);
+  explicit CommandBufferHelper(
+      NPP npp,
+      const gpu_plugin::NPObjectPointer<NPObject>& command_buffer);
   ~CommandBufferHelper();
 
-  // Initializes the command buffer by allocating shared memory.
-  // Parameters:
-  //   entry_count: the number of entries in the buffer. Note that commands
-  //     sent through the buffer must use at most entry_count-2 arguments
-  //     (entry_count-1 size).
-  // Returns:
-  //   true if successful.
-  bool Init(unsigned int entry_count);
+  bool Initialize();
 
   // Flushes the commands, setting the put pointer to let the buffer interface
-  // know that new commands have been added.
-  void Flush() {
-    interface_->Put(put_);
-  }
+  // know that new commands have been added. After a flush returns, the command
+  // buffer service is aware of all pending commands and it is guaranteed to
+  // have made some progress in processing them. Returns whether the flush was
+  // successful. The flush will fail if the command buffer service has
+  // disconnected.
+  bool Flush();
 
-  // Waits until all the commands have been executed.
-  void Finish();
+  // Waits until all the commands have been executed. Returns whether it
+  // was successful. The function will fail if the command buffer service has
+  // disconnected.
+  bool Finish();
 
   // Waits until a given number of available entries are available.
   // Parameters:
   //   count: number of entries needed. This value must be at most
   //     the size of the buffer minus one.
-  void WaitForAvailableEntries(unsigned int count);
+  void WaitForAvailableEntries(int32 count);
 
   // Adds a command data to the command buffer. This may wait until sufficient
   // space is available.
   // Parameters:
   //   entries: The command entries to add.
   //   count: The number of entries.
-  void AddCommandData(const CommandBufferEntry* entries, unsigned int count) {
+  void AddCommandData(const CommandBufferEntry* entries, int32 count) {
     WaitForAvailableEntries(count);
     for (; count > 0; --count) {
       entries_[put_++] = *entries++;
@@ -118,15 +114,15 @@ class CommandBufferHelper {
   //   arg_count: the number of arguments for the command.
   //   args: the arguments for the command (these are copied before the
   //     function returns).
-  void AddCommand(unsigned int command,
-                  unsigned int arg_count,
+  void AddCommand(int32 command,
+                  int32 arg_count,
                   const CommandBufferEntry *args) {
     CommandHeader header;
     header.size = arg_count + 1;
     header.command = command;
     WaitForAvailableEntries(header.size);
     entries_[put_++].value_header = header;
-    for (unsigned int i = 0; i < arg_count; ++i) {
+    for (int i = 0; i < arg_count; ++i) {
       entries_[put_++] = args[i];
     }
     DCHECK_LE(put_, entry_count_);
@@ -138,18 +134,16 @@ class CommandBufferHelper {
   // inserted tokens with that value have already passed through the command
   // stream.
   // Returns:
-  //   the value of the new token.
-  unsigned int InsertToken();
+  //   the value of the new token or -1 if the command buffer reader has
+  //   shutdown.
+  int32 InsertToken();
 
   // Waits until the token of a particular value has passed through the command
   // stream (i.e. commands inserted before that token have been executed).
   // NOTE: This will call Flush if it needs to block.
   // Parameters:
   //   the value of the token to wait for.
-  void WaitForToken(unsigned int token);
-
-  // Returns the buffer interface used to send synchronous commands.
-  BufferSyncInterface *interface() { return interface_; }
+  void WaitForToken(int32 token);
 
   // Waits for a certain amount of space to be available. Returns address
   // of space.
@@ -173,6 +167,8 @@ class CommandBufferHelper {
     void* data = GetSpace(space_needed);
     return *reinterpret_cast<T*>(data);
   }
+
+  parse_error::ParseError GetParseError();
 
   // ------------------ Individual commands ----------------------
 
@@ -765,20 +761,19 @@ class CommandBufferHelper {
   void WaitForGetChange();
 
   // Returns the number of available entries (they may not be contiguous).
-  unsigned int AvailableEntries() {
-    return static_cast<unsigned int>(
-        (get_ - put_ - 1 + entry_count_) % entry_count_);
+  int32 AvailableEntries() {
+    return (get_ - put_ - 1 + entry_count_) % entry_count_;
   }
 
-  BufferSyncInterface *interface_;
+  NPP npp_;
+  gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
+  gpu_plugin::NPObjectPointer<NPObject> ring_buffer_;
   CommandBufferEntry *entries_;
-  unsigned int entry_count_;
-  unsigned int token_;
-  unsigned int last_token_read_;
-  RPCShmHandle shm_handle_;
-  unsigned int shm_id_;
-  CommandBufferOffset get_;
-  CommandBufferOffset put_;
+  int32 entry_count_;
+  int32 token_;
+  int32 last_token_read_;
+  int32 get_;
+  int32 put_;
 
   friend class CommandBufferHelperTest;
 };

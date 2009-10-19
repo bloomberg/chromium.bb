@@ -279,21 +279,6 @@ if env['TARGET_PLATFORM']=='WINDOWS':
     ]
   )
 
-# add command buffer renderer unit tests only on that renderer platform.
-if 'RENDERER_CB' in env['CPPDEFINES']:
-  tests += [
-      'command_buffer/client/cross/id_allocator_test.cc',
-      'command_buffer/common/cross/bitfield_helpers_test.cc',
-      'command_buffer/service/cross/effect_utils_test.cc',
-      'command_buffer/service/cross/resource_test.cc',
-      'command_buffer/client/cross/cmd_buffer_helper_test.cc',
-      'command_buffer/client/cross/fenced_allocator_test.cc',
-      'command_buffer/client/cross/buffer_sync_proxy_test.cc',
-      'command_buffer/service/cross/buffer_rpc_test.cc',
-      'command_buffer/service/cross/cmd_buffer_engine_test.cc',
-      'command_buffer/service/cross/cmd_parser_test.cc',
-    ]
-
 unit_tests  = env.Program('unit_tests', tests)
 
 # After building the test executable, force the windows executable to output

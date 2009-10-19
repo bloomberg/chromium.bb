@@ -520,7 +520,7 @@ bool EffectParamD3D9::SetData(GAPID3D9 *gapi,
 
 // Calls EffectD3D9::Create, and assign the result to the resource ID.
 // If changing the current effect, dirty it.
-BufferSyncInterface::ParseError GAPID3D9::CreateEffect(
+parse_error::ParseError GAPID3D9::CreateEffect(
     ResourceId id,
     unsigned int size,
     const void *data) {
@@ -536,120 +536,120 @@ BufferSyncInterface::ParseError GAPID3D9::CreateEffect(
                        &vertex_program_entry,
                        &fragment_program_entry,
                        &effect_code)) {
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   }
   EffectD3D9 * effect = EffectD3D9::Create(this, effect_code,
                                            vertex_program_entry,
                                            fragment_program_entry);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   effects_.Assign(id, effect);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Destroys the Effect resource.
 // If destroying the current effect, dirty it.
-BufferSyncInterface::ParseError GAPID3D9::DestroyEffect(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyEffect(ResourceId id) {
   if (id == current_effect_id_) DirtyEffect();
   return effects_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Sets the current effect ID, dirtying the current effect.
-BufferSyncInterface::ParseError GAPID3D9::SetEffect(ResourceId id) {
+parse_error::ParseError GAPID3D9::SetEffect(ResourceId id) {
   DirtyEffect();
   current_effect_id_ = id;
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
 // Gets the param count from the effect and store it in the memory buffer.
-BufferSyncInterface::ParseError GAPID3D9::GetParamCount(
+parse_error::ParseError GAPID3D9::GetParamCount(
     ResourceId id,
     unsigned int size,
     void *data) {
   EffectD3D9 *effect = effects_.Get(id);
   if (!effect || size < sizeof(Uint32))  // NOLINT
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   *static_cast<Uint32 *>(data) = effect->GetParamCount();
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::CreateParam(
+parse_error::ParseError GAPID3D9::CreateParam(
     ResourceId param_id,
     ResourceId effect_id,
     unsigned int index) {
   EffectD3D9 *effect = effects_.Get(effect_id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   EffectParamD3D9 *param = effect->CreateParam(index);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   effect_params_.Assign(param_id, param);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::CreateParamByName(
+parse_error::ParseError GAPID3D9::CreateParamByName(
     ResourceId param_id,
     ResourceId effect_id,
     unsigned int size,
     const void *name) {
   EffectD3D9 *effect = effects_.Get(effect_id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   std::string string_name(static_cast<const char *>(name), size);
   EffectParamD3D9 *param = effect->CreateParamByName(string_name.c_str());
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   effect_params_.Assign(param_id, param);
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::DestroyParam(ResourceId id) {
+parse_error::ParseError GAPID3D9::DestroyParam(ResourceId id) {
   return effect_params_.Destroy(id) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::SetParamData(
+parse_error::ParseError GAPID3D9::SetParamData(
     ResourceId id,
     unsigned int size,
     const void *data) {
   EffectParamD3D9 *param = effect_params_.Get(id);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   return param->SetData(this, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::GetParamDesc(
+parse_error::ParseError GAPID3D9::GetParamDesc(
     ResourceId id,
     unsigned int size,
     void *data) {
   EffectParamD3D9 *param = effect_params_.Get(id);
-  if (!param) return BufferSyncInterface::kParseInvalidArguments;
+  if (!param) return parse_error::kParseInvalidArguments;
   return param->GetDesc(size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 // Gets the stream count from the effect and stores it in the memory buffer.
-BufferSyncInterface::ParseError GAPID3D9::GetStreamCount(
+parse_error::ParseError GAPID3D9::GetStreamCount(
     ResourceId id,
     unsigned int size,
     void *data) {
   EffectD3D9 *effect = effects_.Get(id);
   if (!effect || size < sizeof(Uint32))  // NOLINT
-    return BufferSyncInterface::kParseInvalidArguments;
+    return parse_error::kParseInvalidArguments;
   *static_cast<Uint32 *>(data) = effect->GetStreamCount();
-  return BufferSyncInterface::kParseNoError;
+  return parse_error::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::GetStreamDesc(
+parse_error::ParseError GAPID3D9::GetStreamDesc(
     ResourceId id,
     unsigned int index,
     unsigned int size,
     void *data) {
   EffectD3D9 *effect = effects_.Get(id);
-  if (!effect) return BufferSyncInterface::kParseInvalidArguments;
+  if (!effect) return parse_error::kParseInvalidArguments;
   return effect->GetStreamDesc(index, size, data) ?
-      BufferSyncInterface::kParseNoError :
-      BufferSyncInterface::kParseInvalidArguments;
+      parse_error::kParseNoError :
+      parse_error::kParseInvalidArguments;
 }
 
 

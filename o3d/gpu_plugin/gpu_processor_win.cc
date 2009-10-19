@@ -10,17 +10,18 @@ namespace o3d {
 namespace gpu_plugin {
 
 GPUProcessor::GPUProcessor(NPP npp,
-                           const NPObjectPointer<CommandBuffer>& command_buffer)
+                           CommandBuffer* command_buffer)
     : npp_(npp),
       command_buffer_(command_buffer),
       commands_per_update_(100) {
+  DCHECK(command_buffer);
   gapi_.reset(new command_buffer::GAPID3D9);
   decoder_.reset(new command_buffer::GAPIDecoder(gapi_.get()));
   decoder_->set_engine(this);
 }
 
 GPUProcessor::GPUProcessor(NPP npp,
-                           const NPObjectPointer<CommandBuffer>& command_buffer,
+                           CommandBuffer* command_buffer,
                            command_buffer::GAPID3D9* gapi,
                            command_buffer::GAPIDecoder* decoder,
                            command_buffer::CommandParser* parser,
@@ -28,6 +29,7 @@ GPUProcessor::GPUProcessor(NPP npp,
     : npp_(npp),
       command_buffer_(command_buffer),
       commands_per_update_(commands_per_update) {
+  DCHECK(command_buffer);
   gapi_.reset(gapi);
   decoder_.reset(decoder);
   parser_.reset(parser);
