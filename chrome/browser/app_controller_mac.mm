@@ -271,7 +271,11 @@
 // Called when the number of tabs changes in one of the browser windows. The
 // object is the tab strip controller, but we don't currently care.
 - (void)tabsChanged:(NSNotification*)notify {
-  [self delayedFixCloseMenuItemKeyEquivalents];
+  // We don't need to do this on a delay, as in the method above, because the
+  // window layering isn't changing. As a result, there's no chance that a
+  // different window will sneak in as the key window and cause the problems
+  // we hacked around above by clearing the key equivalents.
+  [self fixCloseMenuItemKeyEquivalents];
 }
 
 // If the auto-update interval is not set, make it 5 hours.
