@@ -280,11 +280,14 @@ class TestGypMSVS(TestGypBase):
 
   # Initial None element will indicate to our .initialize_build_tool()
   # method below that 'devenv' was not found on %PATH%.
-  build_tool_list = [None, 'devenv']
+  #
+  # Note:  we must use devenv.com to be able to capture build output.
+  # Directly executing devenv.exe only sends output to BuildLog.htm.
+  build_tool_list = [None, 'devenv.com']
 
   def build_all(self, gyp_file, **kw):
     """
-    Runs devenv.exe with no target-specific options to get the "all"
+    Runs devenv.com with no target-specific options to get the "all"
     build for the Visual Studio configuration generated from the
     specified gyp_file.
 
@@ -294,14 +297,14 @@ class TestGypMSVS(TestGypBase):
     return self.run_build(gyp_file, **kw)
   def build_default(self, gyp_file, **kw):
     """
-    Runs devenv.exe with no target-specific options to get the default
+    Runs devenv.com with no target-specific options to get the default
     build for the Visual Studio configuration generated from the
     specified gyp_file.
     """
     return self.run_build(gyp_file, **kw)
   def build_target(self, gyp_file, target, **kw):
     """
-    Uses the devenv.exe /Project option to build the specified target with
+    Uses the devenv.com /Project option to build the specified target with
     the Visual Studio configuration generated from the specified gyp_file.
     """
     return self.run_build(gyp_file, '/Project', target, **kw)
@@ -317,12 +320,12 @@ class TestGypMSVS(TestGypBase):
       # and revisit this if it becomes important.
       possible = [
         ('C:\\Program Files',
-         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.exe'),
+         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
 
         # Note:  if you're using this, set GYP_MSVS_VERSION=2008
         # to get the tests to pass.
         ('C:\\Program Files (x86)',
-         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.exe'),
+         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.com'),
       ]
       for build_tool in possible:
         bt = os.path.join(*build_tool)
