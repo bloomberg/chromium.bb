@@ -9,6 +9,7 @@
 
 class DOMUI;
 class GURL;
+class RefCountedMemory;
 class TabContents;
 
 // An opaque identifier used to identify a DOMUI. This can only be compared to
@@ -42,8 +43,7 @@ class DOMUIFactory {
 
   // Gets the data for the favicon for a DOMUI page. Returns false if the DOMUI
   // does not have a favicon.
-  static bool GetFaviconResourceBytes(const GURL& page_url,
-                                      std::vector<unsigned char>* bytes);
+  static RefCountedMemory* GetFaviconResourceBytes(const GURL& page_url);
 
  private:
   // Class is for scoping only.

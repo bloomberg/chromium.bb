@@ -9,11 +9,13 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 
+class RefCountedMemory;
+
 class DownloadsUI : public DOMUI {
  public:
   explicit DownloadsUI(TabContents* contents);
 
-  static bool GetFaviconResourceBytes(std::vector<unsigned char>* bytes);
+  static RefCountedMemory* GetFaviconResourceBytes();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsUI);

@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/lock.h"
+#include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 
@@ -90,14 +91,12 @@ class ResourceBundle {
   // Loads the raw bytes of an image resource into |bytes|,
   // without doing any processing or interpretation of
   // the resource. Returns whether we successfully read the resource.
-  bool LoadImageResourceBytes(int resource_id,
-                              std::vector<unsigned char>* bytes);
+  RefCountedStaticMemory* LoadImageResourceBytes(int resource_id);
 
   // Loads the raw bytes of a data resource into |bytes|,
   // without doing any processing or interpretation of
   // the resource. Returns whether we successfully read the resource.
-  bool LoadDataResourceBytes(int resource_id,
-                             std::vector<unsigned char>* bytes);
+  RefCountedStaticMemory* LoadDataResourceBytes(int resource_id);
 
   // Return the contents of a file in a string given the resource id.
   // This will copy the data from the resource and return it as a string.
@@ -185,12 +184,12 @@ class ResourceBundle {
   // string if no locale data files are found.
   FilePath GetLocaleFilePath(const std::wstring& pref_locale);
 
-  // Loads the raw bytes of a resource from |module| into |bytes|,
-  // without doing any processing or interpretation of
-  // the resource. Returns whether we successfully read the resource.
-  static bool LoadResourceBytes(DataHandle module,
-                                int resource_id,
-                                std::vector<unsigned char>* bytes);
+  // Returns a handle to bytes from the resource |module|, without doing any
+  // processing or interpretation of the resource. Returns whether we
+  // successfully read the resource.  Caller does not own the data returned
+  // through this method and must not modify the data pointed to by |bytes|.
+  static RefCountedStaticMemory* LoadResourceBytes(DataHandle module,
+                                                   int resource_id);
 
   // Creates and returns a new SkBitmap given the data file to look in and the
   // resource id.  It's up to the caller to free the returned bitmap when

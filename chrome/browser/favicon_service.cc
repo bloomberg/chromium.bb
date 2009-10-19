@@ -50,12 +50,24 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   AddRequest(request, consumer);
   FaviconService::Handle handle = request->handle();
   if (page_url.SchemeIs(chrome::kChromeUIScheme)) {
-    std::vector<unsigned char> icon_bytes;
+    // TODO(erg): For now, we're cheating here. DOMUIFactory returns the new
+    // RefCountedMemory superclass, but consumers of favicon information are
+    // still all hardcoded to use RefCountedBytes. For now, just copy the
+    // favicon data in this case because the returned RefCountedMemory class is
+    // the statically allocated memory one; not the vector backed
+    // RefCountedBytes.
     scoped_refptr<RefCountedBytes> icon_data = NULL;
-    bool know_icon = DOMUIFactory::GetFaviconResourceBytes(page_url,
-                                                           &icon_bytes);
-    if (know_icon)
-      icon_data = new RefCountedBytes(icon_bytes);
+    scoped_refptr<RefCountedMemory> static_memory(
+        DOMUIFactory::GetFaviconResourceBytes(page_url));
+    bool know_icon = static_memory.get() != NULL;
+
+    if (know_icon) {
+      std::vector<unsigned char> bytes;
+      bytes.insert(bytes.begin(),
+                   static_memory->front(),
+                   static_memory->front() + static_memory->size());
+      icon_data = RefCountedBytes::TakeVector(&bytes);
+    }
 
     request->ForwardResultAsync(FaviconDataCallback::TupleType(handle,
         know_icon, icon_data, false, GURL()));

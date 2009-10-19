@@ -71,18 +71,16 @@ void ResourceBundle::LoadThemeResources() {
   DCHECK(theme_data_) << "failed to load theme.pak";
 }
 
-/* static */
-bool ResourceBundle::LoadResourceBytes(DataHandle module, int resource_id,
-                                       std::vector<unsigned char>* bytes) {
+// static
+RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
+    DataHandle module, int resource_id) {
   DCHECK(module);
-  base::StringPiece data;
-  if (!module->Get(resource_id, &data))
-    return false;
+  base::StringPiece bytes;
+  if (!module->Get(resource_id, &bytes))
+    return NULL;
 
-  bytes->resize(data.length());
-  memcpy(&(bytes->front()), data.data(), data.length());
-
-  return true;
+  return new RefCountedStaticMemory(
+      reinterpret_cast<const unsigned char*>(bytes.data()), bytes.length());
 }
 
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {

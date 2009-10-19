@@ -30,9 +30,7 @@ class DefaultThemeProvider : public ThemeProvider {
   virtual bool GetDisplayProperty(int id, int* result) const { return false; }
   virtual bool ShouldUseNativeFrame() const;
   virtual bool HasCustomImage(int id) const { return false; }
-  virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data) const {
-    return false;
-  }
+  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultThemeProvider);

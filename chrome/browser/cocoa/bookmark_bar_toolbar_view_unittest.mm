@@ -33,7 +33,7 @@ class MockThemeProvider : public ThemeProvider {
   MOCK_CONST_METHOD2(GetDisplayProperty, bool(int, int*));
   MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());
   MOCK_CONST_METHOD1(HasCustomImage, bool(int));
-  MOCK_CONST_METHOD2(GetRawData, bool(int, std::vector<unsigned char>*));
+  MOCK_CONST_METHOD1(GetRawData,  RefCountedMemory*(int));
 
   // OSX stuff
   MOCK_CONST_METHOD1(GetNSImageNamed, NSImage*(int));

@@ -50,7 +50,7 @@ class URLRequestChromeJob : public URLRequestJob {
 
   // Called by ChromeURLDataManager to notify us that the data blob is ready
   // for us.
-  void DataAvailable(RefCountedBytes* bytes);
+  void DataAvailable(RefCountedMemory* bytes);
 
   void SetMimeType(const std::string& mime_type) {
     mime_type_ = mime_type;
@@ -66,7 +66,7 @@ class URLRequestChromeJob : public URLRequestJob {
   void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
   // The actual data we're serving.  NULL until it's been fetched.
-  scoped_refptr<RefCountedBytes> data_;
+  scoped_refptr<RefCountedMemory> data_;
   // The current offset into the data that we're handing off to our
   // callers via the Read interfaces.
   int data_offset_;
@@ -258,7 +258,7 @@ void ChromeURLDataManager::RemoveRequest(URLRequestChromeJob* job) {
 
 void ChromeURLDataManager::DataAvailable(
     RequestID request_id,
-    scoped_refptr<RefCountedBytes> bytes) {
+    scoped_refptr<RefCountedMemory> bytes) {
   // Forward this data on to the pending URLRequest, if it exists.
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i != pending_requests_.end()) {
@@ -272,11 +272,11 @@ void ChromeURLDataManager::DataAvailable(
 
 void ChromeURLDataManager::DataSource::SendResponse(
     RequestID request_id,
-    RefCountedBytes* bytes) {
+    RefCountedMemory* bytes) {
   ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
       NewRunnableMethod(&chrome_url_data_manager,
                         &ChromeURLDataManager::DataAvailable,
-                        request_id, scoped_refptr<RefCountedBytes>(bytes)));
+                        request_id, scoped_refptr<RefCountedMemory>(bytes)));
 }
 
 MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(
@@ -368,7 +368,7 @@ bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
   return !mime_type_.empty();
 }
 
-void URLRequestChromeJob::DataAvailable(RefCountedBytes* bytes) {
+void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
   if (bytes) {
     // The request completed, and we have all the data.
     // Clear any IO pending status.
@@ -406,11 +406,11 @@ bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
 void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size,
                                        int* bytes_read) {
-  int remaining = static_cast<int>(data_->data.size()) - data_offset_;
+  int remaining = static_cast<int>(data_->size()) - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
   if (buf_size > 0) {
-    memcpy(buf->data(), &data_->data[0] + data_offset_, buf_size);
+    memcpy(buf->data(), data_->front() + data_offset_, buf_size);
     data_offset_ += buf_size;
   }
   *bytes_read = buf_size;

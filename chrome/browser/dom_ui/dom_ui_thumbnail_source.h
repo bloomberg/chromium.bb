@@ -53,7 +53,7 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource,
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
-  scoped_refptr<RefCountedBytes> default_thumbnail_;
+  scoped_refptr<RefCountedMemory> default_thumbnail_;
 
   // Store requests when the ThumbnailStore isn't ready. When a notification is
   // received that it is ready, then serve these requests.

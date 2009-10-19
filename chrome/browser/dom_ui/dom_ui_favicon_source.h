@@ -45,7 +45,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
 
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.
-  scoped_refptr<RefCountedBytes> default_favicon_;
+  scoped_refptr<RefCountedMemory> default_favicon_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMUIFavIconSource);
 };

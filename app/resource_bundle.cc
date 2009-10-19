@@ -69,20 +69,20 @@ void ResourceBundle::FreeImages() {
 
 /* static */
 SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
-  std::vector<unsigned char> raw_data, png_data;
-  bool success = false;
+  std::vector<unsigned char> png_data;
 
-  if (!success)
-    success = LoadResourceBytes(data_handle, resource_id, &raw_data);
-  if (!success)
+  scoped_refptr<RefCountedMemory> memory(
+      LoadResourceBytes(data_handle, resource_id));
+  if (!memory)
     return NULL;
 
   // Decode the PNG.
   int image_width;
   int image_height;
-  if (!gfx::PNGCodec::Decode(&raw_data.front(), raw_data.size(),
-                             gfx::PNGCodec::FORMAT_BGRA,
-                             &png_data, &image_width, &image_height)) {
+  if (!gfx::PNGCodec::Decode(
+          memory->front(), memory->size(),
+          gfx::PNGCodec::FORMAT_BGRA,
+          &png_data, &image_width, &image_height)) {
     NOTREACHED() << "Unable to decode image resource " << resource_id;
     return NULL;
   }
@@ -96,14 +96,14 @@ std::string ResourceBundle::GetDataResource(int resource_id) {
   return GetRawDataResource(resource_id).as_string();
 }
 
-bool ResourceBundle::LoadImageResourceBytes(int resource_id,
-                                            std::vector<unsigned char>* bytes) {
-  return LoadResourceBytes(theme_data_, resource_id, bytes);
+RefCountedStaticMemory* ResourceBundle::LoadImageResourceBytes(
+    int resource_id) {
+  return LoadResourceBytes(theme_data_, resource_id);
 }
 
-bool ResourceBundle::LoadDataResourceBytes(int resource_id,
-                                           std::vector<unsigned char>* bytes) {
-  return LoadResourceBytes(resources_data_, resource_id, bytes);
+RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+    int resource_id) {
+  return LoadResourceBytes(resources_data_, resource_id);
 }
 
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {

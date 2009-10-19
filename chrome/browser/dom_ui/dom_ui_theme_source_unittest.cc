@@ -19,8 +19,8 @@ class MockThemeSource : public DOMUIThemeSource {
         result_data_size_(0) {
   }
 
-  virtual void SendResponse(int request_id, RefCountedBytes* data) {
-    result_data_size_ = data ? data->data.size() : 0;
+  virtual void SendResponse(int request_id, RefCountedMemory* data) {
+    result_data_size_ = data ? data->size() : 0;
     result_request_id_ = request_id;
   }
 

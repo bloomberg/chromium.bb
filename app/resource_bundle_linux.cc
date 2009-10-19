@@ -25,10 +25,10 @@ namespace {
 // Convert the raw image data into a GdkPixbuf.  The GdkPixbuf that is returned
 // has a ref count of 1 so the caller must call g_object_unref to free the
 // memory.
-GdkPixbuf* LoadPixbuf(std::vector<unsigned char>& data, bool rtl_enabled) {
+GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
   ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
   bool ok = gdk_pixbuf_loader_write(loader.get(),
-      static_cast<guint8*>(data.data()), data.size(), NULL);
+      reinterpret_cast<const guint8*>(data->front()), data->size(), NULL);
   if (!ok)
     return NULL;
   // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
@@ -117,18 +117,16 @@ void ResourceBundle::LoadThemeResources() {
   DCHECK(success) << "failed to load theme data";
 }
 
-/* static */
-bool ResourceBundle::LoadResourceBytes(DataHandle module, int resource_id,
-                                       std::vector<unsigned char>* bytes) {
+// static
+RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
+    DataHandle module, int resource_id) {
   DCHECK(module);
-  base::StringPiece data;
-  if (!module->Get(resource_id, &data))
-    return false;
+  base::StringPiece bytes;
+  if (!module->Get(resource_id, &bytes))
+    return NULL;
 
-  bytes->resize(data.length());
-  memcpy(&(bytes->front()), data.data(), data.length());
-
-  return true;
+  return new RefCountedStaticMemory(
+      reinterpret_cast<const unsigned char*>(bytes.data()), bytes.length());
 }
 
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
@@ -176,9 +174,9 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
       return found->second;
   }
 
-  std::vector<unsigned char> data;
-  LoadImageResourceBytes(resource_id, &data);
-  GdkPixbuf* pixbuf = LoadPixbuf(data, rtl_enabled);
+  scoped_refptr<RefCountedStaticMemory> data(
+      LoadImageResourceBytes(resource_id));
+  GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl_enabled);
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {

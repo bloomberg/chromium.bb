@@ -90,7 +90,7 @@ std::string DOMUIThemeSource::GetMimeType(const std::string& path) const {
   return "image/png";
 }
 
-void DOMUIThemeSource::SendResponse(int request_id, RefCountedBytes* data) {
+void DOMUIThemeSource::SendResponse(int request_id, RefCountedMemory* data) {
   ChromeURLDataManager::DataSource::SendResponse(request_id, data);
 }
 
@@ -248,14 +248,8 @@ void DOMUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
-  std::vector<unsigned char> png_bytes;
-  if (tp->GetRawData(resource_id, &png_bytes)) {
-    scoped_refptr<RefCountedBytes> image_data =
-        new RefCountedBytes(png_bytes);
-    SendResponse(request_id, image_data);
-  } else {
-    SendResponse(request_id, NULL);
-  }
+  scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));
+  SendResponse(request_id, image_data);
 }
 
 std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {

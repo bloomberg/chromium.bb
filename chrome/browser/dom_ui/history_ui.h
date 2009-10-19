@@ -95,7 +95,7 @@ class HistoryUI : public DOMUI {
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const std::wstring& text);
 
-  static bool GetFaviconResourceBytes(std::vector<unsigned char>* bytes);
+  static RefCountedMemory* GetFaviconResourceBytes();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryUI);

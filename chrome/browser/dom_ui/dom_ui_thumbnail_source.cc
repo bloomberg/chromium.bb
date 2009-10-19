@@ -64,9 +64,9 @@ void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
   } else {
     // Don't have the thumbnail so return the default thumbnail.
     if (!default_thumbnail_.get()) {
-      default_thumbnail_ = new RefCountedBytes;
-      ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
-          IDR_DEFAULT_THUMBNAIL, &default_thumbnail_->data);
+      default_thumbnail_ =
+          ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
+              IDR_DEFAULT_THUMBNAIL);
     }
     SendResponse(request_id, default_thumbnail_);
   }
@@ -83,9 +83,9 @@ void DOMUIThumbnailSource::OnThumbnailDataAvailable(
     SendResponse(request_id, data);
   } else {
     if (!default_thumbnail_.get()) {
-      default_thumbnail_ = new RefCountedBytes;
-      ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
-          IDR_DEFAULT_THUMBNAIL, &default_thumbnail_->data);
+      default_thumbnail_ =
+          ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
+              IDR_DEFAULT_THUMBNAIL);
     }
 
     SendResponse(request_id, default_thumbnail_);

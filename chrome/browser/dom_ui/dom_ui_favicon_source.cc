@@ -54,9 +54,9 @@ void DOMUIFavIconSource::OnFavIconDataAvailable(
     SendResponse(request_id, data);
   } else {
     if (!default_favicon_.get()) {
-      default_favicon_ = new RefCountedBytes;
-      ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
-          IDR_DEFAULT_FAVICON, &default_favicon_->data);
+      default_favicon_ =
+          ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
+              IDR_DEFAULT_FAVICON);
     }
 
     SendResponse(request_id, default_favicon_);

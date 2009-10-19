@@ -447,9 +447,7 @@ bool BrowserThemeProvider::HasCustomImage(int id) const {
                    UTF8ToWide(names_iter->second), false);
 }
 
-bool BrowserThemeProvider::GetRawData(
-    int id,
-    std::vector<unsigned char>* raw_data) const {
+RefCountedMemory* BrowserThemeProvider::GetRawData(int id) const {
   // Check to see whether we should substitute some images.
   int ntp_alternate;
   GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
@@ -457,17 +455,17 @@ bool BrowserThemeProvider::GetRawData(
     id = IDR_PRODUCT_LOGO_WHITE;
 
   RawDataMap::const_iterator data_iter = raw_data_.find(id);
-  if (data_iter != raw_data_.end()) {
-    *raw_data = data_iter->second;
-    return true;
-  }
+  if (data_iter != raw_data_.end())
+    return data_iter->second;
 
-  if (!ReadThemeFileData(id, raw_data) &&
-      !rb_.LoadImageResourceBytes(id, raw_data))
-    return false;
+  RefCountedMemory* data = ReadThemeFileData(id);
+  if (!data)
+    data = rb_.LoadImageResourceBytes(id);
+  if (!data)
+    return NULL;
 
-  raw_data_[id] = *raw_data;
-  return true;
+  raw_data_[id] = data;
+  return data;
 }
 
 void BrowserThemeProvider::SetTheme(Extension* extension) {
@@ -522,8 +520,7 @@ std::string BrowserThemeProvider::GetThemeID() const {
   return WideToUTF8(id);
 }
 
-bool BrowserThemeProvider::ReadThemeFileData(
-    int id, std::vector<unsigned char>* raw_data) const {
+RefCountedMemory* BrowserThemeProvider::ReadThemeFileData(int id) const {
   ImageMap::const_iterator images_iter = images_.find(id);
   if (images_iter != images_.end()) {
     // First check to see if we have a registered theme extension and whether
@@ -540,16 +537,17 @@ bool BrowserThemeProvider::ReadThemeFileData(
         int64 avail = file.Available();
         if (avail > 0 && avail < INT_MAX) {
           size_t size = static_cast<size_t>(avail);
-          raw_data->resize(size);
-          char* data = reinterpret_cast<char*>(&(raw_data->front()));
+          std::vector<unsigned char> raw_data;
+          raw_data.resize(size);
+          char* data = reinterpret_cast<char*>(&(raw_data.front()));
           if (file.ReadUntilComplete(data, size) == avail)
-            return true;
+            return RefCountedBytes::TakeVector(&raw_data);
         }
       }
     }
   }
 
-  return false;
+  return NULL;
 }
 
 // static
@@ -803,14 +801,30 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) const {
   if (!themeable_images.count(id))
     return NULL;
 
-  // Attempt to find the image in our theme bundle.
-  std::vector<unsigned char> raw_data, png_data;
-  if (ReadThemeFileData(id, &raw_data)) {
+  scoped_refptr<RefCountedMemory> raw_data;
+
+  // We special case images related to the NTP so we first try raw data. Why?
+  // Because the DOMUI stuff uses that interface to return raw PNG data instead
+  // of the normal theme interface which returns SkBitmaps. GetRawData() also
+  // caches the PNG data so it opens new tab pages faster. If we didn't try and
+  // otherwise we would be loading big images twice, once through GetRawData()
+  // and once here. Ouch. So either we prime the GetRawData() cache for when
+  // DOMUIThemeSource requests our image, or we take advantage of the already
+  // loaded data, saving a trip to disk.
+  if (id == IDR_THEME_NTP_BACKGROUND)
+    raw_data = GetRawData(id);
+
+  if (!raw_data)
+    raw_data = ReadThemeFileData(id);
+
+  if (raw_data) {
+    std::vector<unsigned char> png_data;
+
     // Decode the PNG.
     int image_width = 0;
     int image_height = 0;
 
-    if (!gfx::PNGCodec::Decode(&raw_data.front(), raw_data.size(),
+    if (!gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                gfx::PNGCodec::FORMAT_BGRA, &png_data,
                                &image_width, &image_height)) {
       NOTREACHED() << "Unable to decode theme image resource " << id;

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/task.h"
-#include "chrome/common/ref_counted_util.h"
+#include "base/ref_counted_memory.h"
 
 class DictionaryValue;
 class FilePath;
@@ -58,7 +58,7 @@ class ChromeURLDataManager {
     // Report that a request has resulted in the data |bytes|.
     // If the request can't be satisfied, pass NULL for |bytes| to indicate
     // the request is over.
-    void SendResponse(int request_id, RefCountedBytes* bytes);
+    void SendResponse(int request_id, RefCountedMemory* bytes);
 
     // Returns the MessageLoop on which the DataSource wishes to have
     // StartDataRequest called to handle the request for |path|.  If the
@@ -131,7 +131,7 @@ class ChromeURLDataManager {
 
   // Sent by Request::SendResponse.
   void DataAvailable(RequestID request_id,
-                     scoped_refptr<RefCountedBytes> bytes);
+                     scoped_refptr<RefCountedMemory> bytes);
 
   // File sources of data, keyed by source name (e.g. "inspector").
   typedef std::map<std::string, FilePath> FileSourceMap;

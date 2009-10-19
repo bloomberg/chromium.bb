@@ -139,7 +139,7 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
 }
 
 // static
-bool DownloadsUI::GetFaviconResourceBytes(std::vector<unsigned char>* bytes) {
+RefCountedMemory* DownloadsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadImageResourceBytes(IDR_DOWNLOADS_FAVICON, bytes);
+      LoadImageResourceBytes(IDR_DOWNLOADS_FAVICON);
 }

@@ -42,9 +42,10 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                                            int request_id) {
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   if (path_raw == chrome::kSyncThrobberPath) {
-    ResourceBundle::GetSharedInstance().LoadImageResourceBytes(IDR_THROBBER,
-        &html_bytes->data);
-    SendResponse(request_id, html_bytes);
+    scoped_refptr<RefCountedMemory> throbber(
+        ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
+            IDR_THROBBER));
+    SendResponse(request_id, throbber);
     return;
   }
 

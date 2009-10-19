@@ -62,8 +62,6 @@ class RefCountedThreadSafeBase {
   DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafeBase);
 };
 
-
-
 }  // namespace subtle
 
 //

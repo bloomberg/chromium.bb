@@ -23,8 +23,4 @@ class RefCountedVector :
   DISALLOW_COPY_AND_ASSIGN(RefCountedVector<T>);
 };
 
-// RefCountedThreadSafeBytes represent a ref-counted blob of bytes.
-// Useful for passing data between threads without copying.
-typedef RefCountedVector<unsigned char> RefCountedBytes;
-
 #endif  // CHROME_COMMON_REF_COUNTED_UTIL_H__

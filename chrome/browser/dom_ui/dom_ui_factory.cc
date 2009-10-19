@@ -120,16 +120,16 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 }
 
 // static
-bool DOMUIFactory::GetFaviconResourceBytes(const GURL& page_url,
-                                           std::vector<unsigned char>* bytes) {
+RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(
+    const GURL& page_url) {
   if (!HasDOMUIScheme(page_url))
-    return false;
+    return NULL;
 
   if (page_url.host() == chrome::kChromeUIHistoryHost)
-    return HistoryUI::GetFaviconResourceBytes(bytes);
+    return HistoryUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
-    return DownloadsUI::GetFaviconResourceBytes(bytes);
+    return DownloadsUI::GetFaviconResourceBytes();
 
-  return false;
+  return NULL;
 }

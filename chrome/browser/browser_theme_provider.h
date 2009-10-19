@@ -162,7 +162,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual bool GetDisplayProperty(int id, int* result) const;
   virtual bool ShouldUseNativeFrame() const;
   virtual bool HasCustomImage(int id) const;
-  virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data) const;
+  virtual RefCountedMemory* GetRawData(int id) const;
 #if defined(OS_LINUX)
   virtual GdkPixbuf* GetPixbufNamed(int id) const;
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
@@ -188,7 +188,7 @@ class BrowserThemeProvider : public NonThreadSafe,
 
   // Reads the image data from the theme file into the specified vector. Returns
   // true on success.
-  bool ReadThemeFileData(int id, std::vector<unsigned char>* raw_data) const;
+  RefCountedMemory* ReadThemeFileData(int id) const;
 
   // Convert a bitfield alignment into a string like "top left". Public so that
   // it can be used to generate CSS values. Takes a bitfield of AlignmentMasks.
@@ -277,7 +277,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   typedef std::map<const std::string, SkColor> ColorMap;
   typedef std::map<const std::string, color_utils::HSL> TintMap;
   typedef std::map<const std::string, int> DisplayPropertyMap;
-  typedef std::map<const int, std::vector<unsigned char> > RawDataMap;
+  typedef std::map<const int, scoped_refptr<RefCountedMemory> > RawDataMap;
   typedef std::map<const int, std::string> ResourceNameMap;
 
   // Returns the string key for the given tint |id| TINT_* enum value.

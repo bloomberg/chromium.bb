@@ -85,20 +85,17 @@ void ResourceBundle::LoadThemeResources() {
   DCHECK(theme_data_ != NULL) << "unable to load " << theme_data_path.value();
 }
 
-/* static */
-bool ResourceBundle::LoadResourceBytes(
-    DataHandle module,
-    int resource_id,
-    std::vector<unsigned char>* bytes) {
+// static
+RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
+    DataHandle module, int resource_id) {
   void* data_ptr;
   size_t data_size;
   if (base::GetDataResourceFromModule(module, resource_id, &data_ptr,
                                       &data_size)) {
-    bytes->resize(data_size);
-    memcpy(&(bytes->front()), data_ptr, data_size);
-    return true;
+    return new RefCountedStaticMemory(
+        reinterpret_cast<const unsigned char*>(data_ptr), data_size);
   } else {
-    return false;
+    return NULL;
   }
 }
 

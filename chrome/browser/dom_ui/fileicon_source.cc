@@ -39,10 +39,9 @@ void FileIconSource::StartDataRequest(const std::string& path,
   SkBitmap* icon = im->LookupIcon(escaped_filepath, IconLoader::NORMAL);
 
   if (icon) {
-    std::vector<unsigned char> png_bytes;
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &png_bytes);
+    scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes;
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &icon_data->data);
 
-    scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes(png_bytes);
     SendResponse(request_id, icon_data);
   } else {
     // Icon was not in cache, go fetch it slowly.
@@ -62,10 +61,9 @@ void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
   int request_id = cancelable_consumer_.GetClientData(im, handle);
 
   if (icon) {
-    std::vector<unsigned char> png_bytes;
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &png_bytes);
+    scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes;
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &icon_data->data);
 
-    scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes(png_bytes);
     SendResponse(request_id, icon_data);
   } else {
     // TODO(glen): send a dummy icon.
