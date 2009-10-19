@@ -18,21 +18,16 @@ NOTE: NO NEED TO CHECKOUT ANYTHING IN ADVANCE OF USING THIS TOOL."
 Valid parameters:
 
 [Merge from trunk to branch]
-<revision> --merge <branch_num>
-Example: %(app)s 12345 --merge 187
-
-[Merge from trunk to branch, ignoring revision history]
-<revision> --mplus <branch_num>
-Example: %(app)s 12345 --mplus 187
+--merge <revision> --branch <branch_num>
+Example: %(app)s --merge 12345 --branch 187
 
 [Revert from trunk]
-<revision> --revert
-Example: %(app)s 12345 --revert
-
+--revert <revision>
+Example: %(app)s --revert 12345
 
 [Revert from branch]
-<revision> --revert <branch_num>
-Example: %(app)s 12345 --revert 187
+--revert <revision> --branch <branch_num>
+Example: %(app)s --revert 12345 --branch 187
 """
 
 export_map_ = None
@@ -249,7 +244,7 @@ def getFileInfo(url, revision):
                    match.group(3).strip(),match.group(4).strip()])
 
   files_info_ = info
-  return rtn
+  return info
 
 def getBestMergePaths(url, revision):
   """Takes an svn url and gets the associated revision."""
@@ -329,7 +324,7 @@ def getAllFilesInRevision(files_info):
 def prompt(question):
   answer = None
 
-  while not p:
+  while not answer:
     print question + " [y|n]:"
     answer = sys.stdin.readline()
     if answer.lower().startswith('n'):
@@ -346,7 +341,7 @@ def text_prompt(question, default):
     return default
   return answer
 
-def main(argv=None):
+def main(options, args):
   BASE_URL = "svn://chrome-svn/chrome"
   TRUNK_URL = BASE_URL + "/trunk/src"
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
@@ -363,59 +358,49 @@ def main(argv=None):
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN   
 
-  if (len(sys.argv) == 1):
-    print USAGE % {"app": sys.argv[0]}
-    sys.exit(0)
+  revision = options.revert or options.merge
 
-  revision = int(sys.argv[1])
-  if ((len(sys.argv) >= 4) and (sys.argv[2] in ['--revert','-r'])):
-    url = BRANCH_URL.replace("$branch", sys.argv[3]) 
+  if options.revert and options.branch:
+    url = BRANCH_URL.replace("$branch", options.branch) 
   else:
     url = TRUNK_URL
-  action = "Merge"
 
   working = DEFAULT_WORKING
 
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
   os.system(command)
 
-  if not prompt("Is this the correct revision?"):
+  if not (options.revertbot or prompt("Is this the correct revision?")):
     sys.exit(0)
 
   if (os.path.exists(working)):
-    if not (SKIP_CHECK_WORKING or prompt("Working directory: '" + working + "' already exists, clobber?")):
+    if not (options.revertbot or SKIP_CHECK_WORKING or
+        prompt("Working directory: '%s' already exists, clobber?" % working)):
       sys.exit(0)
     deltree(working)
 
   os.makedirs(working)
   os.chdir(working)
 
-  if (len(sys.argv) > 1):
-     if sys.argv[2] in ['--merge','-m']:
-        if (len(sys.argv) != 4):
-          print "Please specify the branch # you want (i.e. 182) after --merge"
-          sys.exit(0)
-
-        branch_url = BRANCH_URL.replace("$branch", sys.argv[3])
-        # Checkout everything but stuff that got added into a new dir
-        checkoutRevision(url, revision, branch_url)
-        # Merge everything that changed
-        mergeRevision(url, revision)
-        # "Export" files that were added from the source and add them to branch
-        exportRevision(url, revision)
-        # Delete directories that were deleted (file deletes are handled in the
-        # merge).
-        deleteRevision(url, revision)
-     elif sys.argv[2] in ['--revert','-r']:
-       if (len(sys.argv) == 4):
-         url = BRANCH_URL.replace("$branch", sys.argv[3])
-       checkoutRevision(url, revision, url, True)
-       revertRevision(url, revision)
-       revertExportRevision(url, revision)
-       action = "Revert"
-     else:
-       print "Unknown parameter " + sys.argv[2]
-       sys.exit(0)
+  if options.merge:
+    action = "Merge"
+    branch_url = BRANCH_URL.replace("$branch", options.branch)
+    # Checkout everything but stuff that got added into a new dir
+    checkoutRevision(url, revision, branch_url)
+    # Merge everything that changed
+    mergeRevision(url, revision)
+    # "Export" files that were added from the source and add them to branch
+    exportRevision(url, revision)
+    # Delete directories that were deleted (file deletes are handled in the
+    # merge).
+    deleteRevision(url, revision)
+  elif options.revert:
+    action = "Revert"
+    if options.branch:
+      url = BRANCH_URL.replace("$branch", options.branch)
+    checkoutRevision(url, revision, url, True)
+    revertRevision(url, revision)
+    revertExportRevision(url, revision)
 
   # Check the base url so we actually find the author who made the change
   author = getAuthor(TRUNK_URL, revision)
@@ -428,28 +413,60 @@ def main(argv=None):
     out.write("TBR=" + author)
   out.close()
 
-  os.system('gcl change ' + str(revision) + " " + filename)
+  change_cmd = 'gcl change ' + str(revision) + " " + filename
+  if options.revertbot:
+    change_cmd += ' --silent'
+  os.system(change_cmd)
   os.unlink(filename)
   print author
   print revision
   print ("gcl upload " + str(revision) +
          " --send_mail --no_try --no_presubmit --reviewers=" + author)
-  print "gcl commit " + str(revision) + " --no_presubmit --force"
-  print "gcl delete " + str(revision)
 
-  if prompt("Would you like to upload?"):
+  if options.revertbot or prompt("Would you like to upload?"):
     if PROMPT_FOR_AUTHOR:
-      author = text_prompt("Enter a new author or press enter to accept default", author)
+      author = text_prompt("Enter new author or press enter to accept default",
+                           author)
+    if options.revertbot and options.revertbot_reviewers:
+      author += ","
+      author += options.revertbot_reviewers
     gclUpload(revision, author)
   else:
     print "Deleting the changelist."
+    print "gcl delete " + str(revision)
     os.system("gcl delete " + str(revision))
     sys.exit(0)
 
-  if prompt("Would you like to commit?"):
+  # We commit if the reverbot is set to commit automatically, or if this is
+  # not the revertbot and the user agrees.
+  if options.revertbot_commit or (not options.revertbot and
+                                  prompt("Would you like to commit?")):
+    print "gcl commit " + str(revision) + " --no_presubmit --force"
     os.system("gcl commit " + str(revision) + " --no_presubmit --force")
   else:
     sys.exit(0)
 
 if __name__ == "__main__":
-  sys.exit(main())
+  option_parser = optparse.OptionParser(usage=USAGE % {"app": sys.argv[0]})
+  option_parser.add_option('-m', '--merge', type="int",
+                           help='Revision to merge from trunk to branch')
+  option_parser.add_option('-b', '--branch',
+                           help='Branch to revert or merge from')
+  option_parser.add_option('-r', '--revert', type="int",
+                           help='Revision to revert')
+  option_parser.add_option('', '--revertbot', action='store_true',
+                           default=False)
+  option_parser.add_option('', '--revertbot-commit', action='store_true',
+                           default=False)
+  option_parser.add_option('', '--revertbot-reviewers')
+  options, args = option_parser.parse_args()
+
+  if not options.merge and not options.revert:
+    option_parser.error("You need at least --merge or --revert")
+    sys.exit(1)
+
+  if options.merge and not options.branch:
+    option_parser.error("--merge requires a --branch")
+    sys.exit(1)
+
+  sys.exit(main(options, args))

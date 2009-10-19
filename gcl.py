@@ -976,8 +976,17 @@ def Commit(change_info, args):
   os.chdir(previous_cwd)
 
 
-def Change(change_info, override_description):
+def Change(change_info, args):
   """Creates/edits a changelist."""
+  silent = FilterFlag(args, "--silent")
+  if (len(args) == 1):
+    filename = args[0]
+    f = open(filename, 'rU')
+    override_description = f.read()
+    f.close()
+  else:
+    override_description = None
+      
   if change_info.issue:
     try:
       description = GetIssueDescription(change_info.issue)
@@ -1022,7 +1031,8 @@ def Change(change_info, override_description):
   os.write(handle, text)
   os.close(handle)
 
-  os.system(GetEditor() + " " + filename)
+  if not silent:
+    os.system(GetEditor() + " " + filename)
 
   result = ReadFile(filename)
   os.remove(filename)
@@ -1216,14 +1226,7 @@ def main(argv=None):
                                   fail_on_not_found, True)
 
   if command == "change":
-    if (len(argv) == 4):
-      filename = argv[3]
-      f = open(filename, 'rU')
-      override_description = f.read()
-      f.close()
-    else:
-      override_description = None
-    Change(change_info, override_description)
+    Change(change_info, argv[3:])
   elif command == "lint":
     Lint(change_info, argv[3:])
   elif command == "upload":
