@@ -91,6 +91,7 @@ const CGFloat kBorderRadius = 3.0;
                                           state:GTMThemeStateActiveWindow];
   // workaround for default theme
   // TODO(alcor) next GTM update return nil for background color if not set;
+  // http://crbug.com/25196
   if ([toolbarColor isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
     toolbarColor = nil;
   if (!toolbarColor)

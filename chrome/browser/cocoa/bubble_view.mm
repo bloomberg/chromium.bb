@@ -91,6 +91,7 @@ const float kWindowEdge = 0.7f;
 
   // workaround for default theme
   // TODO(alcor) next GTM update return nil for background color if not set;
+  // http://crbug.com/25196
   if ([color isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
     color = nil;
   if (!color)
