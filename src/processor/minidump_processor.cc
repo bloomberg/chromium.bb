@@ -169,8 +169,10 @@ ProcessResult MinidumpProcessor::Process(
         // of the thread's own context.  For the crashed thread, the thread's
         // own context is the state inside the exception handler.  Using it
         // would not result in the expected stack trace from the time of the
-        // crash.
-        context = exception->GetContext();
+        // crash. If the exception context is invalid, however, we fall back
+        // on the thread context.
+        MinidumpContext * ctx = exception->GetContext();
+        context = ctx ? ctx : thread->GetContext();
       }
     }
 

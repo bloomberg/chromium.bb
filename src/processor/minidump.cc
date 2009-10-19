@@ -608,8 +608,9 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       }
 
       default: {
-        // Unknown context type
-        BPLOG(ERROR) << "MinidumpContext unknown context type " <<
+        // Unknown context type - Don't log as an error yet. Let the 
+        // caller work that out.
+        BPLOG(INFO) << "MinidumpContext unknown context type " <<
           HexString(cpu_type);
         return false;
         break;
@@ -2713,8 +2714,10 @@ MinidumpContext* MinidumpException::GetContext() {
 
     scoped_ptr<MinidumpContext> context(new MinidumpContext(minidump_));
 
+    // Don't log as an error if we can still fall back on th thread's context
+    // (which must be possible if we got his far.)
     if (!context->Read(exception_.thread_context.data_size)) {
-      BPLOG(ERROR) << "MinidumpException cannot read context";
+      BPLOG(INFO) << "MinidumpException cannot read context";
       return NULL;
     }
 
