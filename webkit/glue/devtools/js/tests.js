@@ -1290,9 +1290,12 @@ TestSuite.prototype.testExpandScope = function() {
  * Returns child tree element for a property with given name.
  * @param {TreeElement} parent Parent tree element.
  * @param {string} childName
+ * @param {string} objectPath Path to the object. Will be printed in the case
+ *     of failure.
  * @return {TreeElement}
  */
-TestSuite.prototype._findChildProperty = function(parent, childName) {
+TestSuite.prototype._findChildProperty = function(
+    parent, childName, objectPath) {
   var children = parent.children;
   for (var i = 0; i < children.length; i++) {
     var treeElement = children[i];
@@ -1301,7 +1304,7 @@ TestSuite.prototype._findChildProperty = function(parent, childName) {
       return treeElement;
     }
   }
-  this.fail('Cannot find ' + childName);
+  this.fail('Cannot find property "' + childName + '" in ' + objectPath);
 };
 
 
@@ -1365,84 +1368,97 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
   }
 
   function examineLocalScope() {
-    var aTreeElement = test._findChildProperty(
-        localScopeSection.propertiesTreeOutline, 'a');
-    test.assertTrue(!!aTreeElement, 'Not found');
+    var scopeExpectations = [
+      'a', 'Object', [
+        'constructor', 'function Child()', [
+          'constructor', 'function Function()', null,
+          'name', 'Child', null,
+          'prototype', 'Object', [
+            'childProtoField', '21', null
+          ]
+        ],
 
-    test._hookGetPropertiesCallback(
-        checkA.bind(null, aTreeElement),
-        function () {
-          aTreeElement.expand();
-        });
+        '__proto__', 'Object', [
+          '__proto__', 'Object', [
+            '__proto__', 'Object', [
+              '__proto__', 'null', null,
+              'constructor', 'function Object()', null,
+            ],
+            'constructor', 'function Parent()', [
+              'name', 'Parent', null,
+              'prototype', 'Object', [
+                'parentProtoField', '11', null,
+              ]
+            ],
+            'parentProtoField', '11', null,
+          ],
+          'constructor', 'function Child()', null,
+          'childProtoField', '21', null,
+        ],
 
+        'parentField', '10', null,
+        'childField', '20', null,
+      ]
+    ];
+
+    checkProperty(
+        localScopeSection.propertiesTreeOutline,
+        '<Local Scope>',
+        scopeExpectations);
   }
 
-  function checkA(aTreeElement) {
-    checkIntrinsicProperties(aTreeElement,
-        [
-          'constructor', 'function Child()',
-          '__proto__', 'Object',
-          'prototype', 'undefined',
-          'parentField', '10',
-          'childField', '20',
-        ]);
-    expandProto(aTreeElement, checkAProto);
-  }
+  var propQueue = [];
+  var index = 0;
+  var expectedFinalIndex = 8;
 
-  function checkAProto(treeElement) {
-    checkIntrinsicProperties(treeElement,
-        [
-          'constructor', 'function Child()',
-          '__proto__', 'Object',
-          'prototype', 'undefined',
-          'childProtoField', '21',
-        ]);
-    expandProto(treeElement, checkAProtoProto);
-  }
-
-  function checkAProtoProto(treeElement) {
-    checkIntrinsicProperties(treeElement,
-        [
-          'constructor', 'function Parent()',
-          '__proto__', 'Object',
-          'prototype', 'undefined',
-          'parentProtoField', '11',
-        ]);
-    expandProto(treeElement, checkAProtoProtoProto);
-  }
-
-  function checkAProtoProtoProto(treeElement) {
-    checkIntrinsicProperties(treeElement,
-        [
-          'constructor', 'function Object()',
-          '__proto__', 'null',
-          'prototype', 'undefined',
-        ]);
-    test.releaseControl();
-  }
-
-  function expandProto(treeElement, callback) {
-    var proto = test._findChildProperty(treeElement, '__proto__');
-    test.assertTrue(proto, '__proro__ not found');
-
-    test._hookGetPropertiesCallback(callback.bind(null, proto),
-        function() {
-          proto.expand();
-        });
-  }
-
-  function checkIntrinsicProperties(treeElement, expectations) {
-    for (var i = 0; i < expectations.length; i += 2) {
-      var name = expectations[i];
-      var value = expectations[i+1];
-
-      var propertyTreeElement = test._findChildProperty(treeElement, name);
-      test.assertTrue(propertyTreeElement,
-                      'Property "' + name + '" not found.');
-      test.assertEquals(value,
-          propertyTreeElement.property.value.description,
-          'Unexpected "' + name + '" value.');
+  function expandAndCheckNextProperty() {
+    if (index == propQueue.length) {
+      test.assertEquals(expectedFinalIndex, index,
+          'Unexpected number of expanded objects.');
+      test.releaseControl();
+      return;
     }
+
+    // Read next property data from the queue.
+    var treeElement = propQueue[index].treeElement;
+    var path = propQueue[index].path;
+    var expectations = propQueue[index].expectations;
+    index++;
+
+    // Expand the property.
+    test._hookGetPropertiesCallback(function() {
+          checkProperty(treeElement, path, expectations);
+        },
+        function() {
+          treeElement.expand();
+        });
+  }
+
+  function checkProperty(treeElement, path, expectations) {
+    for (var i = 0; i < expectations.length; i += 3) {
+      var name = expectations[i];
+      var description = expectations[i+1];
+      var value = expectations[i+2];
+
+      var propertyPath = path + '.' + name;
+      var propertyTreeElement = test._findChildProperty(
+          treeElement, name, path);
+      test.assertTrue(propertyTreeElement,
+          'Property "' + propertyPath + '" not found.');
+      test.assertEquals(description,
+          propertyTreeElement.property.value.description,
+          'Unexpected "' + propertyPath + '" description.');
+      if (value) {
+        // Schedule property content check.
+        propQueue.push({
+          treeElement: propertyTreeElement,
+          path: propertyPath,
+          expectations: value,
+        });
+      }
+    }
+    // Check next property in the queue.
+    expandAndCheckNextProperty();
   }
 
   test.takeControl();

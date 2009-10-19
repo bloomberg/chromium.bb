@@ -1166,10 +1166,9 @@ devtools.DebuggerAgent.formatObjectProperties_ = function(object, result,
 
   result.push(new WebInspector.ObjectPropertyProxy('__proto__',
       devtools.DebuggerAgent.formatObjectProxy_(object.protoObject)));
-  result.push(new WebInspector.ObjectPropertyProxy('prototype',
-      devtools.DebuggerAgent.formatObjectProxy_(object.prototypeObject)));
   result.push(new WebInspector.ObjectPropertyProxy('constructor',
       devtools.DebuggerAgent.formatObjectProxy_(object.constructorFunction)));
+  // Don't add 'prototype' property since it is one of the regualar properties.
 };
 
 
