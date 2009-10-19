@@ -8,39 +8,7 @@
 import os
 import random
 import string
-
-mox = None
-
-def OnTestsLoad():
-  import sys
-  old_path = sys.path
-  global mox
-  try:
-    directory, _file = os.path.split(__file__)
-    sys.path.append(os.path.abspath(os.path.join(directory, 'pymox')))
-    sys.path.append(os.path.abspath(os.path.join(directory, '..')))
-    try:
-      import mox as Mox
-      mox = Mox
-    except ImportError:
-      print "Trying to automatically checkout pymox."
-      import subprocess
-      subprocess.call(['svn', 'co', 'http://pymox.googlecode.com/svn/trunk',
-                       os.path.join(directory, 'pymox')],
-                      shell=sys.platform.startswith('win'))
-      try:
-        import pymox.mox as Mox
-        mox = Mox
-      except ImportError:
-        print >> sys.stderr, ("\nError, failed to load pymox\n")
-        raise
-  finally:
-    # Restore the path
-    sys.path = old_path
-
-
-# Automatically fetch pymox.
-OnTestsLoad()
+from pymox import mox 
 
 
 class SuperMoxTestBase(mox.MoxTestBase):

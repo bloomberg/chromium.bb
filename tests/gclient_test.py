@@ -31,6 +31,17 @@ import super_mox
 from super_mox import mox
 
 
+class IsOneOf(mox.Comparator):
+  def __init__(self, keys):
+    self._keys = keys
+
+  def equals(self, rhs):
+    return rhs in self._keys
+
+  def __repr__(self):
+    return '<sequence or map containing \'%s\'>' % str(self._keys)
+
+
 class BaseTestCase(super_mox.SuperMoxTestBase):
   def setUp(self):
     super_mox.SuperMoxTestBase.setUp(self)
@@ -393,9 +404,14 @@ class GClientClassTestCase(GclientTestCase):
       "} ]\n"
     ) % (solution_name, self.url)
 
-    entries_content = (
+    # pprint.pformat() is non-deterministic in this case!!
+    entries_content1 = (
       "entries = \\\n"
       "{ '%s': '%s'}\n"
+    ) % (solution_name, self.url)
+    entries_content2 = (
+      "entries = \\\n"
+      "{'%s': '%s'}\n"
     ) % (solution_name, self.url)
 
     options = self.Options()
@@ -420,7 +436,7 @@ class GClientClassTestCase(GclientTestCase):
     # After everything is done, an attempt is made to write an entries
     # file.
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-        entries_content)
+        IsOneOf((entries_content1, entries_content2)))
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
