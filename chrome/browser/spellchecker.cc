@@ -536,9 +536,16 @@ void SpellChecker::OnURLFetchComplete(const URLFetcher* source,
                                       const ResponseCookies& cookies,
                                       const std::string& data) {
   DCHECK(source);
-  if (!((response_code / 100) == 2 ||
-      response_code == 401 ||
-      response_code == 407)) {
+  if ((response_code / 100) != 2) {
+    obtaining_dictionary_ = false;
+    return;
+  }
+
+  // Basic sanity check on the dictionary.
+  // There's the small chance that we might see a 200 status code for a body
+  // that represents some form of failure.
+  if (data.size() < 4 || data[0] != 'B' || data[1] != 'D' || data[2] != 'i' ||
+      data[3] != 'c') {
     obtaining_dictionary_ = false;
     return;
   }
