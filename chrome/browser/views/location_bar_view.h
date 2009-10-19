@@ -356,6 +356,7 @@ class LocationBarView : public LocationBar,
 
     // Overridden from LocationBarImageView.
     virtual void ShowInfoBubble();
+    virtual void Paint(gfx::Canvas* canvas);
 
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
@@ -394,6 +395,7 @@ class LocationBarView : public LocationBar,
 
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };
+  friend class PageActionImageView;
 
   // Both Layout and OnChanged call into this. This updates the contents
   // of the 3 views: selected_keyword, keyword_hint and type_search_view. If

@@ -5,6 +5,7 @@
   var clicks = 0;
   chrome.browserAction.onClicked.addListener(function() {
     chrome.browserAction.setIcon({iconIndex:clicks});
+    chrome.browserAction.setBadgeText({text:""+i});
     clicks++;
     // We only have 1 icon, but cycle through 3 icons to test the
     // out-of-bounds index bug.

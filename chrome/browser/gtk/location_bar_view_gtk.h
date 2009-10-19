@@ -120,6 +120,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
    private:
     static gboolean OnButtonPressed(GtkWidget* sender, GdkEventButton* event,
                                     PageActionViewGtk* page_action_view);
+    static gboolean OnExposeEvent(GtkWidget* widget,
+                                  GdkEventExpose* event,
+                                  PageActionViewGtk* page_action_view);
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
@@ -156,6 +159,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
   };
+  friend class PageActionViewGtk;
 
   static gboolean HandleExposeThunk(GtkWidget* widget, GdkEventExpose* event,
                                     gpointer userdata) {
