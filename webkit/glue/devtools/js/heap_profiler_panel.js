@@ -744,6 +744,18 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     buttonClicked: function()
     {
         InspectorController.takeHeapSnapshot();
+    },
+    
+    sidebarTreeElementForProfile: function(profile)
+    {
+        var element = new WebInspector.HeapSnapshotSidebarTreeElement(profile);
+        element.small = false;
+        return element;
+    },
+
+    createView: function(profile)
+    {
+        return new WebInspector.HeapSnapshotView(WebInspector.panels.profiles, profile);
     }
 }
 
