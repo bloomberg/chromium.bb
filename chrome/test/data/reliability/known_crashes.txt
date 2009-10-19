@@ -62,10 +62,6 @@ PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutst
 # 17366
 SUBSTRING : operator=___webcore::frameview::scrolltoanchor___webcore::frameview::maintainscrollpositionatanchor___webcore::frameloader::gotoanchor
 
-# 18700
-SUBSTRING : std::deque<bool,std::allocator<bool> >::_tidy___messageloop::reloadworkqueue
-SUBSTRING : std::deque<treenodeiterator<bookmarknode const >::position<bookmarknode const >,std::allocator<treenodeiterator<bookmarknode const >::position<bookmarknode const > > >::_tidy___messageloop::reloadworkqueue
-
 # 18743
 SUBSTRING : spellchecker::dictionarydownloadcontroller::onurlfetchcomplete
 
