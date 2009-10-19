@@ -171,7 +171,7 @@ ProcessResult MinidumpProcessor::Process(
         // would not result in the expected stack trace from the time of the
         // crash. If the exception context is invalid, however, we fall back
         // on the thread context.
-        MinidumpContext * ctx = exception->GetContext();
+        MinidumpContext *ctx = exception->GetContext();
         context = ctx ? ctx : thread->GetContext();
       }
     }
