@@ -93,7 +93,7 @@ class ImeInput {
   ImeInput();
   ~ImeInput();
 
-  // Retrieves whether or not there is an ongiong composition.
+  // Retrieves whether or not there is an ongoing composition.
   bool is_composing() const { return is_composing_; }
 
   // Retrieves the input language from Windows and update it.

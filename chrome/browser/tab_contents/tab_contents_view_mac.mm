@@ -311,6 +311,9 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 - (void)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
+  if (wkEvent->skip_in_browser)
+    return;
+
   NSEvent* event = wkEvent->os_event;
 
   if ([event type] == NSKeyDown && ([event modifierFlags] & NSCommandKeyMask)) {

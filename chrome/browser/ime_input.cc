@@ -176,7 +176,7 @@ void ImeInput::GetCaret(HIMC imm_context, LPARAM lparam,
   //     (It contains only one hangul character);
   //   * Chinese IMEs: the caret is a blinking line,
   //     (i.e. they do not need to retrieve the target selection);
-  //   * Japanese IMEs: the caret is a selection (or undelined) block,
+  //   * Japanese IMEs: the caret is a selection (or underlined) block,
   //     (which can contain one or more Japanese characters).
   int target_start = -1;
   int target_end = -1;

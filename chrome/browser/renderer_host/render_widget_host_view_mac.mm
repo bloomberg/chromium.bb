@@ -588,8 +588,11 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   // while an input method is composing a text.
   // Gmail checks this code in its onkeydown handler to stop auto-completing
   // e-mail addresses while composing a CJK text.
-  if ([theEvent type] == NSKeyDown && renderWidgetHostView_->im_composing_)
-    event.windowsKeyCode = 0xE5;
+  if ([theEvent type] == NSKeyDown && renderWidgetHostView_->im_composing_) {
+    event.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
+    event.setKeyIdentifierFromWindowsKeyCode();
+    event.skip_in_browser = true;
+  }
 
   // Dispatch this keyboard event to the renderer.
   if (renderWidgetHostView_->render_widget_host_) {

@@ -48,6 +48,12 @@ struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
   MSG os_event;
 #elif defined(OS_MACOSX)
   NSEvent* os_event;
+
+  // True if the browser should ignore this event if it's not handled by the
+  // renderer. This happens for RawKeyDown events that are created while IME is
+  // active and is necessary to prevent backspace from doing "history back" if
+  // it is hit in ime mode.
+  bool skip_in_browser;
 #elif defined(OS_LINUX)
   GdkEventKey* os_event;
 #endif
