@@ -630,6 +630,12 @@ void RenderWidgetHostViewWin::Destroy() {
   // triggering further destructions.  The deletion of this is handled by
   // OnFinalMessage();
   close_on_deactivate_ = false;
+
+  // In case OnFinalMessage() does not get called before DestroyWindow()
+  // returns, make sure we don't try to access |render_widget_host_| later.
+  // http://crbug.com/24248
+  render_widget_host_ = NULL;
+
   DestroyWindow();
 }
 
@@ -1266,7 +1272,8 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 }
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
-  render_widget_host_->ViewDestroyed();
+  if (render_widget_host_)
+    render_widget_host_->ViewDestroyed();
   delete this;
 }
 
