@@ -1754,7 +1754,6 @@ BUG23498 MAC : LayoutTests/http/tests/navigation/post-frames.html = IMAGE
 BUG23498 MAC : LayoutTests/http/tests/navigation/postredirect-frames.html = IMAGE
 BUG23498 MAC : LayoutTests/svg/custom/altglyph.svg = IMAGE
 // BUG23498 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
-// BUG23498 MAC : LayoutTests/svg/custom/missing-xlink.svg = IMAGE
 BUG23498 MAC : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
 BUG23498 MAC : LayoutTests/svg/hixie/links/003-broken.xml = IMAGE
 BUG23498 MAC : LayoutTests/svg/text/kerning.svg = IMAGE
@@ -3126,8 +3125,6 @@ BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = PASS CRASH
 
 // WebKit roll 49473:49502
 BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
-// See also bug 23475:
-BUG24775 : LayoutTests/svg/custom/missing-xlink.svg = FAIL PASS
 
 // WebKit roll 49502:49562
 BUG_DIMICH : LayoutTests/fast/events/add-event-without-document.html = TIMEOUT
