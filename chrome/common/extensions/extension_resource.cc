@@ -69,9 +69,15 @@ FilePath ExtensionResource::CombinePathsSafely(
   if (!net::FileURLToFilePath(file_url, &ret_val))
     return FilePath();
 
+  // Converting the extension_url back to a path removes all .. and . references
+  // that may have been in extension_path that would cause isParent to break.
+  FilePath sanitized_extension_path;
+  if (!net::FileURLToFilePath(extension_url, &sanitized_extension_path))
+    return FilePath();
+
   // Double-check that the path we ended up with is actually inside the
   // extension root.
-  if (!extension_path.IsParent(ret_val))
+  if (!sanitized_extension_path.IsParent(ret_val))
     return FilePath();
 
   return ret_val;
