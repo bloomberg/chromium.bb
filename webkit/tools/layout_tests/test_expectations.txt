@@ -3211,12 +3211,7 @@ BUG_JEREMY WIN : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 BUG_JEREMY WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // WebKit Roll 49684:49761
-BUG_YUTAK : LayoutTests/animations/change-transform-in-end-event.html = FAIL
-BUG_YUTAK : LayoutTests/animations/state-at-end-event-transform.html = FAIL
-BUG_YUTAK : LayoutTests/animations/state-at-end-event.html = FAIL
 BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.html = FAIL
 BUG_YUTAK : LayoutTests/svg/W3C-SVG-1.1/masking-mask-01-b.svg = FAIL
-BUG_YUTAK : LayoutTests/transitions/move-after-transition.html = FAIL
-BUG_YUTAK : LayoutTests/transitions/transition-end-event-rendering.html = FAIL
 BUG_YUTAK MAC : LayoutTests/svg/custom/grayscale-gradient-mask.svg = FAIL
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL
