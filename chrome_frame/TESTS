@@ -1,0 +1,4 @@
+chrome_frame_net_tests.exe
+chrome_frame_perftests.exe
+chrome_frame_tests.exe
+chrome_frame_unittests.exe
