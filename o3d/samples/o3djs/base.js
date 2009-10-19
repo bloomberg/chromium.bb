@@ -793,11 +793,3 @@ o3djs.base.IsMSIE = function() {
   var msie = /msie/.test(ua) && !/opera/.test(ua);
   return msie;
 };
-/**
- * Returns true if the user's browser is Chrome 1.0, that requires a workaround
- * to create the plugin.
- * @return {boolean} true if the user's browser is Chrome 1.0.
- */
-o3djs.base.IsChrome10 = function() {
-  return navigator.userAgent.indexOf('Chrome/1.0') >= 0;
-};

@@ -36,12 +36,12 @@
 #include "core/cross/canvas_utils.h"
 #include "core/cross/client.h"
 
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/effects/SkBlurDrawLooper.h"
+#include "SkCanvas.h"
+#include "SkColor.h"
+#include "SkDrawLooper.h"
+#include "SkPaint.h"
+#include "SkTypeface.h"
+#include "SkBlurDrawLooper.h"
 
 namespace o3d {
 

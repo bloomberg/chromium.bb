@@ -41,8 +41,8 @@
 #include "core/cross/param.h"
 #include "core/cross/texture.h"
 
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "SkBitmap.h"
+#include "SkCanvas.h"
 
 namespace o3d {
 

@@ -94,23 +94,10 @@ function init() {
   }
   g_num_clients = ii;
 
-  var chromeWorkaround = o3djs.base.IsChrome10();
   // wait for the browser to settle down.
   var clearId = window.setInterval(function() {
     var element = document.o3d0
     if (!element.o3d) {
-      if (chromeWorkaround) {
-        if (element.style.width != '60px') {
-          element.style.width = '60px';
-        } else {
-          element.style.width = '1px';
-        }
-      }
-      return;
-    }
-    if (chromeWorkaround && element.style.width != '60px') {
-      // The plugin has loaded but it may not be the right size yet.
-      element.style.width = '60px';
       return;
     }
     window.clearInterval(clearId);

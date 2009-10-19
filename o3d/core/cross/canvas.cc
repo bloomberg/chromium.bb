@@ -39,7 +39,7 @@
 #include "core/cross/error.h"
 #include "core/cross/features.h"
 
-#include "third_party/skia/include/core/SkPath.h"
+#include "SkPath.h"
 
 namespace o3d {
 

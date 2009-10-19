@@ -6,7 +6,6 @@
   'variables': {
     'antlrdir': 'third_party/antlr3',
     'breakpaddir': 'breakpad/src',
-    'cb_service%': 'none',
     'fcolladadir': 'third_party/fcollada/files',
     'glewdir': 'third_party/glew/files',
     'gtestdir': 'testing/gtest/include',
@@ -28,6 +27,7 @@
     'o3d_developer%': '<!(python <(DEPTH)/o3d/build/file_exists.py '
                       '<(DEPTH)/o3d/o3d_assets/samples/convert_assets/teapot.zip)',
     'selenium_screenshots%': 0,
+    'cb_service%': 'none',
     'conditions' : [
       # These have to come first because GYP doesn't like it when
       # they're part of the same conditional as a conditions clause that

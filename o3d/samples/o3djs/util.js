@@ -927,95 +927,76 @@ o3djs.util.makeClients = function(callback,
       }
     }
 
-    // Chrome 1.0 sometimes doesn't create the plugin instance. To work
-    // around this, force a re-layout by changing the plugin size until it
-    // is loaded. We toggle between 1 pixel and 100% until the plugin has
-    // loaded.
-    var chromeWorkaround = o3djs.base.IsChrome10();
-    {
-      // Wait for the browser to initialize the clients.
-      var clearId = window.setInterval(function() {
-        var initStatus = 0;
-        var error = '';
-        var o3d;
+    // Wait for the browser to initialize the clients.
+    var clearId = window.setInterval(function() {
+      var initStatus = 0;
+      var error = '';
+      var o3d;
+      for (var cc = 0; cc < clientElements.length; ++cc) {
+        var element = clientElements[cc];
+        o3d = element.o3d;
+        var ready = o3d &&
+            element.client &&
+            element.client.rendererInitStatus >
+                o3djs.util.rendererInitStatus.UNINITIALIZED;
+        if (!ready) {
+          return;
+        }
+        var status = clientElements[cc].client.rendererInitStatus;
+        // keep the highest status. This is the worst status.
+        if (status > initStatus) {
+          initStatus = status;
+          error = clientElements[cc].client.lastError;
+        }
+      }
+
+      window.clearInterval(clearId);
+
+      // If the plugin could not initialize the graphics delete all of
+      // the plugin objects
+      if (initStatus > 0 && initStatus != o3d.Renderer.SUCCESS) {
         for (var cc = 0; cc < clientElements.length; ++cc) {
-          var element = clientElements[cc];
-          o3d = element.o3d;
-          var ready = o3d &&
-              element.client &&
-              element.client.rendererInitStatus >
-                  o3djs.util.rendererInitStatus.UNINITIALIZED;
-          if (!ready) {
-            if (chromeWorkaround) {
-              if (element.style.width != '100%') {
-                element.style.width = '100%';
-              } else {
-                element.style.width = '1px';
-              }
+          var clientElement = clientElements[cc];
+          clientElement.parentNode.removeChild(clientElement);
+        }
+        opt_failureCallback(initStatus, error, opt_id, opt_tag);
+      } else {
+        o3djs.base.snapshotProvidedNamespaces();
+
+        // TODO: Is this needed with the new event code?
+        for (var cc = 0; cc < clientElements.length; ++cc) {
+          o3djs.base.initV8(clientElements[cc]);
+          o3djs.event.startKeyboardEventSynthesis(clientElements[cc]);
+          o3djs.error.setDefaultErrorHandler(clientElements[cc].client);
+        }
+        o3djs.base.init(clientElements[0]);
+
+        switch (o3djs.util.mainEngine_) {
+          case o3djs.util.Engine.BROWSER:
+            callback(clientElements);
+            break;
+          case o3djs.util.Engine.V8:
+            if (!mainClientElement) {
+              throw 'V8 engine was requested but there is no element with' +
+                  ' the id "o3d"';
             }
-            return;
-          }
-          if (chromeWorkaround && element.style.width != '100%') {
-            // The plugin has loaded but it may not be the right size yet.
-            element.style.width = '100%';
-            return;
-          }
-          var status = clientElements[cc].client.rendererInitStatus;
-          // keep the highest status. This is the worst status.
-          if (status > initStatus) {
-            initStatus = status;
-            error = clientElements[cc].client.lastError;
-          }
+
+            // Retreive the code from the script tags and eval it in V8 to
+            // duplicate the browser environment.
+            var scriptTagText = o3djs.util.getScriptTagText_();
+            mainClientElement.eval(scriptTagText);
+
+            // Invoke the vallback in V8.
+            o3djs.util.callV8(mainClientElement,
+                              callback,
+                              o3djs.global,
+                              [clientElements]);
+            break;
+          default:
+            throw 'Unknown engine ' + o3djs.util.mainEngine_;
         }
-
-        window.clearInterval(clearId);
-
-        // If the plugin could not initialize the graphics delete all of
-        // the plugin objects
-        if (initStatus > 0 && initStatus != o3d.Renderer.SUCCESS) {
-          for (var cc = 0; cc < clientElements.length; ++cc) {
-            var clientElement = clientElements[cc];
-            clientElement.parentNode.removeChild(clientElement);
-          }
-          opt_failureCallback(initStatus, error, opt_id, opt_tag);
-        } else {
-          o3djs.base.snapshotProvidedNamespaces();
-
-          // TODO: Is this needed with the new event code?
-          for (var cc = 0; cc < clientElements.length; ++cc) {
-            o3djs.base.initV8(clientElements[cc]);
-            o3djs.event.startKeyboardEventSynthesis(clientElements[cc]);
-            o3djs.error.setDefaultErrorHandler(clientElements[cc].client);
-          }
-          o3djs.base.init(clientElements[0]);
-
-          switch (o3djs.util.mainEngine_) {
-            case o3djs.util.Engine.BROWSER:
-              callback(clientElements);
-              break;
-            case o3djs.util.Engine.V8:
-              if (!mainClientElement) {
-                throw 'V8 engine was requested but there is no element with' +
-                    ' the id "o3d"';
-              }
-
-              // Retreive the code from the script tags and eval it in V8 to
-              // duplicate the browser environment.
-              var scriptTagText = o3djs.util.getScriptTagText_();
-              mainClientElement.eval(scriptTagText);
-
-              // Invoke the vallback in V8.
-              o3djs.util.callV8(mainClientElement,
-                                callback,
-                                o3djs.global,
-                                [clientElements]);
-              break;
-            default:
-              throw 'Unknown engine ' + o3djs.util.mainEngine_;
-          }
-        }
-      }, 10);
-    }
+      }
+    }, 10);
   }
 };
 
