@@ -234,24 +234,11 @@ void KeywordProvider::FillInURLAndContents(
 int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
                                         bool complete,
                                         bool no_query_text_needed) {
-  if (complete && no_query_text_needed)
+  if (!complete)
+    return (type == AutocompleteInput::URL) ? 700 : 450;
+  if (no_query_text_needed)
     return 1500;
-
-  switch (type) {
-    case AutocompleteInput::UNKNOWN:
-    case AutocompleteInput::REQUESTED_URL:
-      return complete ? 1100 : 450;
-
-    case AutocompleteInput::URL:
-      return complete ? 1100 : 700;
-
-    case AutocompleteInput::QUERY:
-      return complete ? 1400 : 650;
-
-    default:
-      NOTREACHED();
-      return 0;
-  }
+  return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
 }
 
 AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(

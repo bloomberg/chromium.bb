@@ -521,10 +521,11 @@ void SearchProvider::AddNavigationResultsToMatches(
     // TODO(kochi): http://b/1170574  We add only one results for navigational
     // suggestions. If we can get more useful information about the score,
     // consider adding more results.
-    matches_.push_back(
-        NavigationToMatch(navigation_results.front(),
-                          CalculateRelevanceForNavigation(0, is_keyword),
-                          is_keyword));
+    const size_t num_results = is_keyword ?
+        keyword_navigation_results_.size() : default_navigation_results_.size();
+    matches_.push_back(NavigationToMatch(navigation_results.front(),
+        CalculateRelevanceForNavigation(num_results, 0, is_keyword),
+        is_keyword));
   }
 }
 
@@ -547,7 +548,7 @@ void SearchProvider::AddSuggestResultsToMap(
     MatchMap* map) {
   for (size_t i = 0; i < suggest_results.size(); ++i) {
     AddMatchToMap(suggest_results[i],
-                  CalculateRelevanceForSuggestion(suggest_results, i,
+                  CalculateRelevanceForSuggestion(suggest_results.size(), i,
                                                   is_keyword),
                   AutocompleteMatch::SEARCH_SUGGEST,
                   static_cast<int>(i), is_keyword, map);
@@ -555,21 +556,20 @@ void SearchProvider::AddSuggestResultsToMap(
 }
 
 int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
+  if (providers_.valid_keyword_provider())
+    return 250;
+
   switch (input_.type()) {
     case AutocompleteInput::UNKNOWN:
-      return providers_.valid_keyword_provider() ? 250 : 1300;
+    case AutocompleteInput::QUERY:
+    case AutocompleteInput::FORCED_QUERY:
+      return 1300;
 
     case AutocompleteInput::REQUESTED_URL:
-      return providers_.valid_keyword_provider() ? 250 : 1200;
+      return 1150;
 
     case AutocompleteInput::URL:
-      return providers_.valid_keyword_provider() ? 250 : 850;
-
-    case AutocompleteInput::QUERY:
-      return providers_.valid_keyword_provider() ? 250 : 1300;
-
-    case AutocompleteInput::FORCED_QUERY:
-      return providers_.valid_keyword_provider() ? 250 : 1500;
+      return 850;
 
     default:
       NOTREACHED();
@@ -589,73 +589,34 @@ int SearchProvider::CalculateRelevanceForHistory(const Time& time,
   // Don't let scores go below 0.  Negative relevance scores are meaningful in
   // a different way.
   int base_score;
-  bool is_primary = providers_.is_primary_provider(is_keyword);
-  switch (input_.type()) {
-    case AutocompleteInput::UNKNOWN:
-    case AutocompleteInput::REQUESTED_URL:
-      base_score = is_primary ? 1050 : 200;
-      break;
-
-    case AutocompleteInput::URL:
-      base_score = is_primary ? 750 : 200;
-      break;
-
-    case AutocompleteInput::QUERY:
-    case AutocompleteInput::FORCED_QUERY:
-      base_score = is_primary ? 1250 : 200;
-      break;
-
-    default:
-      NOTREACHED();
-      base_score = 0;
-      break;
-  }
+  if (!providers_.is_primary_provider(is_keyword))
+    base_score = 200;
+  else
+    base_score = (input_.type() == AutocompleteInput::URL) ? 750 : 1050;
   return std::max(0, base_score - score_discount);
 }
 
-int SearchProvider::CalculateRelevanceForSuggestion(
-    const SuggestResults& suggest_results,
-    size_t suggestion_number,
-    bool is_keyword) const {
-  DCHECK(suggestion_number < suggest_results.size());
-  bool is_primary = providers_.is_primary_provider(is_keyword);
-  const int suggestion_value =
-      static_cast<int>(suggest_results.size() - 1 - suggestion_number);
-  switch (input_.type()) {
-    case AutocompleteInput::UNKNOWN:
-    case AutocompleteInput::REQUESTED_URL:
-      return suggestion_value + (is_primary ? 600 : 100);
-
-    case AutocompleteInput::URL:
-      return suggestion_value + (is_primary ? 300 : 100);
-
-    case AutocompleteInput::QUERY:
-    case AutocompleteInput::FORCED_QUERY:
-      return suggestion_value + (is_primary ? 800 : 100);
-
-    default:
-      NOTREACHED();
-      return 0;
-  }
+int SearchProvider::CalculateRelevanceForSuggestion(size_t num_results,
+                                                    size_t result_number,
+                                                    bool is_keyword) const {
+  DCHECK(result_number < num_results);
+  int base_score;
+  if (!providers_.is_primary_provider(is_keyword))
+    base_score = 100;
+  else
+    base_score = (input_.type() == AutocompleteInput::URL) ? 300 : 600;
+  return base_score +
+      static_cast<int>(num_results - 1 - result_number);
 }
 
-int SearchProvider::CalculateRelevanceForNavigation(
-    size_t suggestion_number,
-    bool is_keyword) const {
-  DCHECK(
-      (is_keyword && suggestion_number < keyword_navigation_results_.size()) ||
-      (!is_keyword && suggestion_number < default_navigation_results_.size()));
+int SearchProvider::CalculateRelevanceForNavigation(size_t num_results,
+                                                    size_t result_number,
+                                                    bool is_keyword) const {
+  DCHECK(result_number < num_results);
   // TODO(kochi): http://b/784900  Use relevance score from the NavSuggest
   // server if possible.
-  bool is_primary = providers_.is_primary_provider(is_keyword);
-  switch (input_.type()) {
-    case AutocompleteInput::QUERY:
-    case AutocompleteInput::FORCED_QUERY:
-      return static_cast<int>(suggestion_number) + (is_primary ? 1000 : 150);
-
-    default:
-      return static_cast<int>(suggestion_number) + (is_primary ? 800 : 150);
-  }
+  return (providers_.is_primary_provider(is_keyword) ? 800 : 150) +
+      static_cast<int>(num_results - 1 - result_number);
 }
 
 void SearchProvider::AddMatchToMap(const std::wstring& query_string,

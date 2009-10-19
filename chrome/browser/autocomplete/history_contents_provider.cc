@@ -250,31 +250,11 @@ void HistoryContentsProvider::ClassifyDescription(
 int HistoryContentsProvider::CalculateRelevance(
     const history::URLResult& result) {
   const bool in_title = MatchInTitle(result);
-  const bool is_starred =
-      (profile_->GetBookmarkModel() &&
-       profile_->GetBookmarkModel()->IsBookmarked(result.url()));
-
-  switch (input_type_) {
-    case AutocompleteInput::UNKNOWN:
-    case AutocompleteInput::REQUESTED_URL:
-      if (is_starred) {
-        return in_title ?
-            (1000 + star_title_count_++) : (550 + star_contents_count_++);
-      }
-      return in_title ? (700 + title_count_++) : (500 + contents_count_++);
-
-    case AutocompleteInput::QUERY:
-    case AutocompleteInput::FORCED_QUERY:
-      if (is_starred) {
-        return in_title ?
-            (1200 + star_title_count_++) : (750 + star_contents_count_++);
-      }
-      return in_title ? (900 + title_count_++) : (700 + contents_count_++);
-
-    default:
-      NOTREACHED();
-      return 0;
-  }
+  if (!profile_->GetBookmarkModel() ||
+      !profile_->GetBookmarkModel()->IsBookmarked(result.url()))
+    return in_title ? (700 + title_count_++) : (500 + contents_count_++);
+  return in_title ?
+      (1000 + star_title_count_++) : (550 + star_contents_count_++);
 }
 
 void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {

@@ -208,11 +208,11 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://news.google.com/",
     "http://news.google.com/?ned=us&topic=n",
   };
-  RunTest(L"news", std::wstring(), true, expected_combine,
-          arraysize(expected_combine));
+  ASSERT_NO_FATAL_FAILURE(RunTest(L"news", std::wstring(), true,
+      expected_combine, arraysize(expected_combine)));
   // The title should also have gotten set properly on the host for the
   // synthesized one, since it was also in the results.
-  EXPECT_EQ(std::wstring(L"Google News"), matches_[0].description);
+  EXPECT_EQ(std::wstring(L"Google News"), matches_.front().description);
 
   // Test that short URL matching works correctly as the user types more
   // (several tests):
@@ -345,8 +345,9 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   // after "file:", not just after "file://".
   const std::wstring input_1(L"file:");
   const std::string fixup_1[] = {"file:///C:/foo.txt"};
-  RunTest(input_1, std::wstring(), false, fixup_1, arraysize(fixup_1));
-  EXPECT_EQ(input_1.length(), matches_[0].inline_autocomplete_offset);
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_1, std::wstring(), false, fixup_1,
+                                  arraysize(fixup_1)));
+  EXPECT_EQ(input_1.length(), matches_.front().inline_autocomplete_offset);
 
   // Fixing up "http:/" should result in an inline autocomplete offset of just
   // after "http:/", not just after "http:".
@@ -356,8 +357,9 @@ TEST_F(HistoryURLProviderTest, Fixup) {
     "http://bogussite.com/b",
     "http://bogussite.com/c",
   };
-  RunTest(input_2, std::wstring(), false, fixup_2, arraysize(fixup_2));
-  EXPECT_EQ(input_2.length(), matches_[0].inline_autocomplete_offset);
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_2, std::wstring(), false, fixup_2,
+                                  arraysize(fixup_2)));
+  EXPECT_EQ(input_2.length(), matches_.front().inline_autocomplete_offset);
 
   // Adding a TLD to a small number like "56" should result in "www.56.com"
   // rather than "0.0.0.56.com".

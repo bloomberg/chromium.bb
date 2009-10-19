@@ -236,15 +236,16 @@ class SearchProvider : public AutocompleteProvider,
   // if the search is from the keyword provider.
   int CalculateRelevanceForHistory(const base::Time& time,
                                    bool is_keyword) const;
-  // |suggestion_value| is the index of the suggestion in |suggest_results| that
-  // was returned from the server; the best suggestion is suggestion number 0.
-  // |is_keyword| is true if the search is from the keyword provider.
-  int CalculateRelevanceForSuggestion(const SuggestResults& suggest_results,
-                                      size_t suggestion_number,
+  // |result_number| is the index of the suggestion in the result set from the
+  // server; the best suggestion is suggestion number 0.  |is_keyword| is true
+  // if the search is from the keyword provider.
+  int CalculateRelevanceForSuggestion(size_t num_results,
+                                      size_t result_number,
                                       bool is_keyword) const;
-  // |suggestion_value| is same as above. |is_keyword| is true if the navigation
+  // |result_number| is same as above. |is_keyword| is true if the navigation
   // result was suggested by the keyword provider.
-  int CalculateRelevanceForNavigation(size_t suggestion_value,
+  int CalculateRelevanceForNavigation(size_t num_results,
+                                      size_t result_number,
                                       bool is_keyword) const;
 
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with

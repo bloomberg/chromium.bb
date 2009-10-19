@@ -63,8 +63,8 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // HistoryURL (exact or inline autocomplete match)                     | 1400
-// HistoryURL (what you typed)                                         | 1300
-// Search Primary Provider (what you typed)                            | 1200
+// HistoryURL (what you typed)                                         | 1200
+// Search Primary Provider (what you typed)                            | 1150
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history)                     | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
@@ -100,16 +100,18 @@
 // QUERY input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
-// Keyword (substituting, exact match)                                 | 1400
+// Keyword (substituting, exact match)                                 | 1450
+// HistoryURL (exact or inline autocomplete match)                     | 1400
 // Search Primary Provider (what you typed)                            | 1300
-// Search Primary Provider (past query in history)                     | 1250--
-// HistoryContents (any match in title of starred page)                | 1200++
-// Search Primary Provider (navigational suggestion)                   | 1000++
-// HistoryContents (any match in title of nonstarred page)             |  900++
-// Search Primary Provider (suggestion)                                |  800++
-// HistoryContents (any match in body of starred page)                 |  750++
-// HistoryContents (any match in body of nonstarred page)              |  700++
-// Keyword (inexact match)                                             |  650
+// Search Primary Provider (past query in history)                     | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// HistoryURL (inexact match)                                          |  900++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
+// Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--
 // Search Secondary Provider (navigational suggestion)                 |  150++
@@ -117,14 +119,14 @@
 //
 // FORCED_QUERY input type:
 // --------------------------------------------------------------------|-----
-// Search Primary Provider (what you typed)                            | 1500
-// Search Primary Provider (past query in history)                     | 1250--
-// HistoryContents (any match in title of starred page)                | 1200++
-// Search Primary Provider (navigational suggestion)                   | 1000++
-// HistoryContents (any match in title of nonstarred page)             |  900++
-// Search Primary Provider (suggestion)                                |  800++
-// HistoryContents (any match in body of starred page)                 |  750++
-// HistoryContents (any match in body of nonstarred page)              |  700++
+// Search Primary Provider (what you typed)                            | 1300
+// Search Primary Provider (past query in history)                     | 1050--
+// HistoryContents (any match in title of starred page)                | 1000++
+// Search Primary Provider (navigational suggestion)                   |  800++
+// HistoryContents (any match in title of nonstarred page)             |  700++
+// Search Primary Provider (suggestion)                                |  600++
+// HistoryContents (any match in body of starred page)                 |  550++
+// HistoryContents (any match in body of nonstarred page)              |  500++
 //
 // (A search keyword is a keyword with a replacement string; a bookmark keyword
 // is a keyword with no replacement string, that is, a shortcut for a URL.)
@@ -157,6 +159,10 @@ typedef std::vector<AutocompleteProvider*> ACProviders;
 // The user input for an autocomplete query.  Allows copying.
 class AutocompleteInput {
  public:
+  // Note that the type below may be misleading.  For example, "http:/" alone
+  // cannot be opened as a URL, so it is marked as a QUERY; yet the user
+  // probably intends to type more and have it eventually become a URL, so we
+  // need to make sure we still run it through inline autocomplete.
   enum Type {
     INVALID,        // Empty input
     UNKNOWN,        // Valid input whose type cannot be determined
