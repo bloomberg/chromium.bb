@@ -936,7 +936,7 @@ Clipboard* ResourceMessageFilter::GetClipboard() {
 // spellings are correct.
 //
 // Note: This is called in the IO thread.
-void ResourceMessageFilter::OnSpellCheck(const std::wstring& word, int tag,
+void ResourceMessageFilter::OnSpellCheck(const string16& word, int tag,
                                          IPC::Message* reply_msg) {
   int misspell_location = 0;
   int misspell_length = 0;
@@ -964,13 +964,12 @@ void ResourceMessageFilter::OnDocumentWithTagClosed(int tag) {
   SpellCheckerPlatform::CloseDocumentWithTag(tag);
 }
 
-void ResourceMessageFilter::OnGetAutoCorrectWord(const std::wstring& word,
+void ResourceMessageFilter::OnGetAutoCorrectWord(const string16& word,
                                                  int tag,
                                                  IPC::Message* reply_msg) {
-  std::wstring autocorrect_word;
-  if (spellchecker_ != NULL) {
-    spellchecker_->GetAutoCorrectionWord(word, tag, &autocorrect_word);
-  }
+  string16 autocorrect_word;
+  if (spellchecker_ != NULL)
+    autocorrect_word = spellchecker_->GetAutoCorrectionWord(word, tag);
 
   ViewHostMsg_GetAutoCorrectWord::WriteReplyParams(reply_msg,
                                                    autocorrect_word);
@@ -983,7 +982,7 @@ void ResourceMessageFilter::OnShowSpellingPanel(bool show) {
 }
 
 void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
-                                                     const std::wstring& word) {
+    const string16& word) {
   SpellCheckerPlatform::UpdateSpellingPanelWithMisspelledWord(word);
 }
 

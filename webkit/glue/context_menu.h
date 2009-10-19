@@ -56,14 +56,14 @@ struct ContextMenuParams {
 
   // The misspelled word under the cursor, if any. Used to generate the
   // |dictionary_suggestions| list.
-  std::wstring misspelled_word;
+  string16 misspelled_word;
 
   // Suggested replacements for a misspelled word under the cursor.
   // This vector gets populated in the render process host
   // by intercepting ViewHostMsg_ContextMenu in ResourceMessageFilter
   // and populating dictionary_suggestions if the type is EDITABLE
   // and the misspelled_word is not empty.
-  std::vector<std::wstring> dictionary_suggestions;
+  std::vector<string16> dictionary_suggestions;
 
   // If editable, flag for whether spell check is enabled or not.
   bool spellcheck_enabled;
@@ -94,7 +94,7 @@ struct ContextMenuParams {
         frame_url(data.frameURL),
         media_flags(data.mediaFlags),
         selection_text(UTF16ToWideHack(data.selectedText)),
-        misspelled_word(UTF16ToWideHack(data.misspelledWord)),
+        misspelled_word(data.misspelledWord),
         spellcheck_enabled(data.isSpellCheckingEnabled),
         is_editable(data.isEditable),
         edit_flags(data.editFlags),

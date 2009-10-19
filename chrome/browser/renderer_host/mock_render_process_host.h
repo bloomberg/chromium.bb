@@ -41,7 +41,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();
-  virtual void AddWord(const std::wstring& word);
+  virtual void AddWord(const string16& word);
   virtual void AddVisitedLinks(
       const VisitedLinkCommon::Fingerprints& visited_links);
   virtual void ResetVisitedLinks();

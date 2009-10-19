@@ -82,7 +82,6 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     int misspelling_length;
   } kTestCases[] = {
     // Empty strings.
-    {NULL, true, 0, 0},
     {L"", true, 0, 0},
     {L" ", true, 0, 0},
     {L"\xA0", true, 0, 0},
@@ -280,11 +279,12 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     }
     int misspelling_start;
     int misspelling_length;
-    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
-                                                static_cast<int>(input_length),
-                                                0,
-                                                &misspelling_start,
-                                                &misspelling_length, NULL);
+    bool result = spell_checker->SpellCheckWord(
+        WideToUTF16(kTestCases[i].input).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length, NULL);
 
     EXPECT_EQ(kTestCases[i].expected_result, result);
     EXPECT_EQ(kTestCases[i].misspelling_start, misspelling_start);
@@ -618,19 +618,20 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
       hunspell_directory, "en-US", NULL, FilePath()));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    std::vector<std::wstring> suggestions;
+    std::vector<string16> suggestions;
     size_t input_length = 0;
     if (kTestCases[i].input != NULL) {
       input_length = wcslen(kTestCases[i].input);
     }
     int misspelling_start;
     int misspelling_length;
-    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
-                                                static_cast<int>(input_length),
-                                                0,
-                                                &misspelling_start,
-                                                &misspelling_length,
-                                                &suggestions);
+    bool result = spell_checker->SpellCheckWord(
+        WideToUTF16(kTestCases[i].input).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions);
 
     // Check for spelling.
     EXPECT_EQ(kTestCases[i].expected_result, result);
@@ -638,7 +639,8 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     // Check if the suggested words occur.
     bool suggested_word_is_present = false;
     for (int j=0; j < static_cast<int>(suggestions.size()); j++) {
-      if (suggestions.at(j).compare(kTestCases[i].suggested_word) == 0) {
+      if (suggestions.at(j).compare(WideToUTF16(kTestCases[i].suggested_word))
+          == 0) {
         suggested_word_is_present = true;
         break;
       }
@@ -894,11 +896,12 @@ TEST_F(SpellCheckTest, SpellCheckText) {
 
     int misspelling_start = 0;
     int misspelling_length = 0;
-    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
-                                                static_cast<int>(input_length),
-                                                0,
-                                                &misspelling_start,
-                                                &misspelling_length, NULL);
+    bool result = spell_checker->SpellCheckWord(
+        WideToUTF16(kTestCases[i].input).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length, NULL);
 
     EXPECT_EQ(true, result) << kTestCases[i].language;
     EXPECT_EQ(0, misspelling_start);
@@ -926,22 +929,23 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Add the word to spellchecker.
-    spell_checker->AddWord(std::wstring(kTestCases[i].word_to_add));
+    spell_checker->AddWord(WideToUTF16(kTestCases[i].word_to_add));
 
     // Now check whether it is added to Spellchecker.
-    std::vector<std::wstring> suggestions;
+    std::vector<string16> suggestions;
     size_t input_length = 0;
     if (kTestCases[i].word_to_add != NULL) {
       input_length = wcslen(kTestCases[i].word_to_add);
     }
     int misspelling_start;
     int misspelling_length;
-    bool result = spell_checker->SpellCheckWord(kTestCases[i].word_to_add,
-                                                static_cast<int>(input_length),
-                                                0,
-                                                &misspelling_start,
-                                                &misspelling_length,
-                                                &suggestions);
+    bool result = spell_checker->SpellCheckWord(
+        WideToUTF16(kTestCases[i].word_to_add).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions);
 
     // Check for spelling.
     EXPECT_TRUE(result);
@@ -953,7 +957,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Now check whether it is added to Spellchecker.
-    std::vector<std::wstring> suggestions;
+    std::vector<string16> suggestions;
     size_t input_length = 0;
     if (kTestCases[i].word_to_add != NULL) {
       input_length = wcslen(kTestCases[i].word_to_add);
@@ -961,7 +965,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
     int misspelling_start;
     int misspelling_length;
     bool result = spell_checker_new->SpellCheckWord(
-        kTestCases[i].word_to_add,
+        WideToUTF16(kTestCases[i].word_to_add).c_str(),
         static_cast<int>(input_length),
         0,
         &misspelling_start,
@@ -996,7 +1000,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Add the word to spellchecker.
-    spell_checker->AddWord(std::wstring(kTestCases[i].word_to_add));
+    spell_checker->AddWord(WideToUTF16(kTestCases[i].word_to_add));
   }
 
   // Now check to see whether the custom words are suggested for
@@ -1021,19 +1025,20 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCasesToBeTested); ++i) {
-    std::vector<std::wstring> suggestions;
+    std::vector<string16> suggestions;
     size_t input_length = 0;
     if (kTestCasesToBeTested[i].input != NULL) {
       input_length = wcslen(kTestCasesToBeTested[i].input);
     }
     int misspelling_start;
     int misspelling_length;
-    bool result = spell_checker->SpellCheckWord(kTestCasesToBeTested[i].input,
-                                                static_cast<int>(input_length),
-                                                0,
-                                                &misspelling_start,
-                                                &misspelling_length,
-                                                &suggestions);
+    bool result = spell_checker->SpellCheckWord(
+        WideToUTF16(kTestCasesToBeTested[i].input).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions);
 
     // Check for spelling.
     EXPECT_EQ(result, kTestCasesToBeTested[i].expected_result);
@@ -1041,8 +1046,9 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
     // Check if the suggested words occur.
     bool suggested_word_is_present = false;
     for (int j=0; j < static_cast<int>(suggestions.size()); j++) {
-      if (suggestions.at(j).compare(kTestCasesToBeTested[i].suggested_word) ==
-                                    0) {
+      if (suggestions.at(j).compare(
+              WideToUTF16(kTestCasesToBeTested[i].suggested_word)) ==
+              0) {
         suggested_word_is_present = true;
         break;
       }
@@ -1058,17 +1064,17 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
 TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
   static const struct {
     // A misspelled word.
-    const wchar_t* input;
+    const char* input;
 
     // An expected result for this test case.
     // Should be an empty string if there are no suggestions for auto correct.
-    const wchar_t* expected_result;
+    const char* expected_result;
   } kTestCases[] = {
-    {L"teh", L"the"},
-    {L"moer", L"more"},
-    {L"watre", L"water"},
-    {L"noen", L""},
-    {L"what", L""},
+    {"teh", "the"},
+    {"moer", "more"},
+    {"watre", "water"},
+    {"noen", ""},
+    {"what", ""},
   };
 
   FilePath hunspell_directory = GetHunspellDirectory();
@@ -1079,10 +1085,11 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
   spell_checker->EnableAutoSpellCorrect(true);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    std::wstring misspelled_word(kTestCases[i].input);
-    std::wstring expected_autocorrect_word(kTestCases[i].expected_result);
-    std::wstring autocorrect_word;
-    spell_checker->GetAutoCorrectionWord(misspelled_word, 0, &autocorrect_word);
+    string16 misspelled_word(UTF8ToUTF16(kTestCases[i].input));
+    string16 expected_autocorrect_word(
+        UTF8ToUTF16(kTestCases[i].expected_result));
+    string16 autocorrect_word = spell_checker->GetAutoCorrectionWord(
+        misspelled_word, 0);
 
     // Check for spelling.
     EXPECT_EQ(expected_autocorrect_word, autocorrect_word);
@@ -1097,14 +1104,14 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
 TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
   static const struct {
     // A misspelled word.
-    const wchar_t* input;
+    const char* input;
     bool input_result;
-    } kTestCases[] = {
-    {L"teh", false},
-    {L"moer", false},
-    {L"watre", false},
-    {L"noen", false},
-    };
+  } kTestCases[] = {
+    {"teh", false},
+    {"moer", false},
+    {"watre", false},
+    {"noen", false},
+  };
 
   FilePath hunspell_directory = GetHunspellDirectory();
   ASSERT_FALSE(hunspell_directory.empty());
@@ -1113,18 +1120,17 @@ TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
       hunspell_directory, "en-US", NULL, FilePath()));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    std::wstring word(kTestCases[i].input);
-    std::string misspelled_word = base::SysWideToUTF8(word);
-    std::vector<std::wstring> suggestions;
+    string16 word(UTF8ToUTF16(kTestCases[i].input));
+    std::vector<string16> suggestions;
     size_t input_length = 0;
     if (kTestCases[i].input != NULL) {
-      input_length = wcslen(kTestCases[i].input);
+      input_length = word.length();
     }
     int misspelling_start;
     int misspelling_length;
 
     int doc_tag = SpellCheckerPlatform::GetDocumentTag();
-    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
+    bool result = spell_checker->SpellCheckWord(word.c_str(),
                                                 static_cast<int>(input_length),
                                                 doc_tag,
                                                 &misspelling_start,
@@ -1135,10 +1141,10 @@ TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
     EXPECT_EQ(kTestCases[i].input_result, result);
 
     // Ignore the word.
-    SpellCheckerPlatform::IgnoreWord(misspelled_word);
+    SpellCheckerPlatform::IgnoreWord(word);
 
     // Spellcheck again.
-    result = spell_checker->SpellCheckWord(kTestCases[i].input,
+    result = spell_checker->SpellCheckWord(word.c_str(),
                                            static_cast<int>(input_length),
                                            doc_tag,
                                            &misspelling_start,
@@ -1153,7 +1159,7 @@ TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
     SpellCheckerPlatform::CloseDocumentWithTag(doc_tag);
 
     // Spellcheck one more time.
-    result = spell_checker->SpellCheckWord(kTestCases[i].input,
+    result = spell_checker->SpellCheckWord(word.c_str(),
                                            static_cast<int>(input_length),
                                            doc_tag,
                                            &misspelling_start,

@@ -173,7 +173,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
   virtual void ViewCreated() = 0;
 
   // Add a word in the spellchecker.
-  virtual void AddWord(const std::wstring& word) = 0;
+  virtual void AddWord(const string16& word) = 0;
 
   // Notify the renderer that a link was visited.
   virtual void AddVisitedLinks(

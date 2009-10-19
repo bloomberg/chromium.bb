@@ -11,6 +11,7 @@
 #include "base/process.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -334,7 +335,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void ToggleSpellPanel(bool is_currently_visible);
 
   // Makes an IPC call to tell webkit to replace the currently selected word.
-  void ReplaceWord(const std::wstring& word);
+  void Replace(const string16& word);
 
   // Makes an IPC call to tell webkit to advance to the next misspelling.
   void AdvanceToNextMisspelling();

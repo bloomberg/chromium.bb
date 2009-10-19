@@ -210,7 +210,7 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
 #endif
   IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
-  IPC_MESSAGE_ROUTED1(ViewMsg_Replace, std::wstring)
+  IPC_MESSAGE_ROUTED1(ViewMsg_Replace, string16)
   IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
   IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
   IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
@@ -1059,7 +1059,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Requests spellcheck for a word.
   IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
-                             std::wstring /* word to check */,
+                             string16 /* word to check */,
                              int /* document tag*/,
                              int /* misspell location */,
                              int /* misspell length */)
@@ -1081,12 +1081,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Tells the browser to update the spelling panel with the given word.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                      std::wstring /* the word to update the panel with */)
+                      string16 /* the word to update the panel with */)
 
   IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetAutoCorrectWord,
-                             std::wstring /* word to check */,
+                             string16 /* word to check */,
                              int /* tag for the document containg the word */,
-                             std::wstring /* autocorrected word */)
+                             string16 /* autocorrected word */)
 
   // Initiate a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,

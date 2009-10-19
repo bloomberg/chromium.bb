@@ -49,7 +49,7 @@ void MockRenderProcessHost::WidgetHidden() {
 void MockRenderProcessHost::ViewCreated() {
 }
 
-void MockRenderProcessHost::AddWord(const std::wstring& word) {
+void MockRenderProcessHost::AddWord(const string16& word) {
 }
 
 void MockRenderProcessHost::AddVisitedLinks(

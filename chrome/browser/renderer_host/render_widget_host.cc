@@ -894,7 +894,7 @@ void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {
   Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
 }
 
-void RenderWidgetHost::ReplaceWord(const std::wstring& word) {
+void RenderWidgetHost::Replace(const string16& word) {
   Send(new ViewMsg_Replace(routing_id_, word));
 }
 

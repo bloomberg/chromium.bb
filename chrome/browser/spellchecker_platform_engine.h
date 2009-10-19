@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/spellchecker_common.h"
 
 namespace SpellCheckerPlatform {
+
 // Get the languages supported by the platform spellchecker and store them in
 // |spellcheck_languages|. Note that they must be converted to
 // Chromium style codes (en-US not en_US). See spellchecker.cc for a full list.
@@ -33,7 +35,7 @@ void ShowSpellingPanel(bool show);
 
 // Changes the word show in the spelling panel to be |word|. Note that the
 // spelling panel need not be displayed for this to work.
-void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word);
+void UpdateSpellingPanelWithMisspelledWord(const string16& word);
 
 // Do any initialization needed for spellchecker.
 void Init();
@@ -50,19 +52,19 @@ void SetLanguage(const std::string& lang_to_set);
 
 // Checks the spelling of the given string, using the platform-specific
 // spellchecker. Returns true if the word is spelled correctly.
-bool CheckSpelling(const std::string& word_to_check, int tag);
+bool CheckSpelling(const string16& word_to_check, int tag);
 
 // Fills the given vector |optional_suggestions| with a number (up to
 // kMaxSuggestions, which is defined in spellchecker_common.h) of suggestions
 // for the string |wrong_word|.
-void FillSuggestionList(const std::string& wrong_word,
-                        std::vector<std::wstring>* optional_suggestions);
+void FillSuggestionList(const string16& wrong_word,
+                        std::vector<string16>* optional_suggestions);
 
 // Adds the given word to the platform dictionary.
-void AddWord(const std::wstring& word);
+void AddWord(const string16& word);
 
 // Remove a given word from the platform dictionary.
-void RemoveWord(const std::wstring& word);
+void RemoveWord(const string16& word);
 
 // Gets a unique tag to identify a document. Used in ignoring words.
 int GetDocumentTag();
@@ -72,12 +74,13 @@ int GetDocumentTag();
 // the tag for sure is to ask the renderer, which would mean blocking in the
 // browser, so (on the mac, anyway) we remember the most recent tag and use
 // it, since it should always be from the same document.
-void IgnoreWord(const std::string& word);
+void IgnoreWord(const string16& word);
 
 // Tells the platform spellchecker that a document associated with a tag has
 // closed. Generally, this means that any ignored words associated with that
 // document can now be forgotten.
 void CloseDocumentWithTag(int tag);
-}
+
+}  // namespace SpellCheckerPlatform
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_PLATFORM_ENGINE_H_

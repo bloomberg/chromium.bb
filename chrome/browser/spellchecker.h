@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
@@ -72,18 +72,17 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // If the word is spelled correctly, the vector is empty.
   // If optional_suggestions is NULL, suggested words will not be looked up.
   // Note that Doing suggest lookups can be slow.
-  bool SpellCheckWord(const wchar_t* in_word,
+  bool SpellCheckWord(const char16* in_word,
                       int in_word_len,
                       int tag,
                       int* misspelling_start,
                       int* misspelling_len,
-                      std::vector<std::wstring>* optional_suggestions);
+                      std::vector<string16>* optional_suggestions);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or
   // the correct spelling cannot be determined.
-  void GetAutoCorrectionWord(const std::wstring& word, int tag,
-      std::wstring* autocorrect_word);
+  string16 GetAutoCorrectionWord(const string16& word, int tag);
 
   // Turn auto spell correct support ON or OFF.
   // |turn_on| = true means turn ON; false means turn OFF.
@@ -92,7 +91,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // Add custom word to the dictionary, which means:
   //    a) Add it to the current hunspell object for immediate use,
   //    b) Add the word to a file in disk for custom dictionary.
-  void AddWord(const std::wstring& word);
+  void AddWord(const string16& word);
 
   // Get SpellChecker supported languages.
   static void SpellCheckLanguages(std::vector<std::string>* languages);
@@ -129,12 +128,12 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // When called, relays the request to check the spelling to the proper
   // backend, either hunspell or a platform-specific backend.
-  bool CheckSpelling(const std::string& word_to_check, int tag);
+  bool CheckSpelling(const string16& word_to_check, int tag);
 
   // When called, relays the request to fill the list with suggestions to
   // the proper backend, either hunspell or a platform-specific backend.
-  void FillSuggestionList(const std::string& wrong_word,
-                          std::vector<std::wstring>* optional_suggestions);
+  void FillSuggestionList(const string16& wrong_word,
+                          std::vector<string16>* optional_suggestions);
 
   // Initializes the Hunspell Dictionary.
   bool Initialize();

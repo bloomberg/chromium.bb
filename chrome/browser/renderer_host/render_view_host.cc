@@ -530,15 +530,11 @@ void RenderViewHost::Paste() {
   Send(new ViewMsg_Paste(routing_id()));
 }
 
-void RenderViewHost::Replace(const std::wstring& text_to_replace) {
-  Send(new ViewMsg_Replace(routing_id(), text_to_replace));
-}
-
 void RenderViewHost::ToggleSpellCheck() {
   Send(new ViewMsg_ToggleSpellCheck(routing_id()));
 }
 
-void RenderViewHost::AddToDictionary(const std::wstring& word) {
+void RenderViewHost::AddToDictionary(const string16& word) {
   process()->AddWord(word);
 }
 

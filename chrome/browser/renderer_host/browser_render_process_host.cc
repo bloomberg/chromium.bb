@@ -401,7 +401,7 @@ void BrowserRenderProcessHost::WidgetHidden() {
   }
 }
 
-void BrowserRenderProcessHost::AddWord(const std::wstring& word) {
+void BrowserRenderProcessHost::AddWord(const string16& word) {
   base::Thread* io_thread = g_browser_process->io_thread();
   SpellChecker* spellchecker = profile()->GetSpellChecker();
   if (spellchecker) {

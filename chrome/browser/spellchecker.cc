@@ -662,18 +662,17 @@ void SpellChecker::DoDictionaryDownload() {
   }
 }
 
-void SpellChecker::GetAutoCorrectionWord(const std::wstring& word, int tag,
-                                         std::wstring* autocorrect_word) {
-  autocorrect_word->clear();
+string16 SpellChecker::GetAutoCorrectionWord(const string16& word, int tag) {
+  string16 autocorrect_word;
   if (!auto_spell_correct_turned_on_)
-    return;
+    return autocorrect_word;  // Return the empty string.
 
   int word_length = static_cast<int>(word.size());
   if (word_length < 2 || word_length > kMaxAutoCorrectWordSize)
-    return;
+    return autocorrect_word;
 
-  wchar_t misspelled_word[kMaxAutoCorrectWordSize + 1];
-  const wchar_t* word_char = word.c_str();
+  char16 misspelled_word[kMaxAutoCorrectWordSize + 1];
+  const char16* word_char = word.c_str();
   for (int i = 0; i <= kMaxAutoCorrectWordSize; i++) {
     if (i >= word_length)
       misspelled_word[i] = NULL;
@@ -695,17 +694,18 @@ void SpellChecker::GetAutoCorrectionWord(const std::wstring& word, int tag,
     // Make decision: if only one swap produced a valid word, then we want to
     // return it. If we found two or more, we don't do autocorrection.
     if (misspelling_len == 0) {
-      if (autocorrect_word->empty()) {
-        autocorrect_word->assign(misspelled_word);
+      if (autocorrect_word.empty()) {
+        autocorrect_word.assign(misspelled_word);
       } else {
-        autocorrect_word->clear();
-        return;
+        autocorrect_word.clear();
+        break;
       }
     }
 
     // Restore the swapped characters.
     std::swap(misspelled_word[i], misspelled_word[i + 1]);
   }
+  return autocorrect_word;
 }
 
 void SpellChecker::EnableAutoSpellCorrect(bool turn_on) {
@@ -725,19 +725,19 @@ bool SpellChecker::IsValidContraction(const string16& contraction, int tag) {
   int word_start;
   int word_length;
   while (word_iterator.GetNextWord(&word, &word_start, &word_length)) {
-    if (!CheckSpelling(UTF16ToUTF8(word), tag))
+    if (!CheckSpelling(word, tag))
       return false;
   }
   return true;
 }
 
 bool SpellChecker::SpellCheckWord(
-    const wchar_t* in_word,
+    const char16* in_word,
     int in_word_len,
     int tag,
     int* misspelling_start,
     int* misspelling_len,
-    std::vector<std::wstring>* optional_suggestions) {
+    std::vector<string16>* optional_suggestions) {
   DCHECK(in_word_len >= 0);
   DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
 
@@ -764,17 +764,13 @@ bool SpellChecker::SpellCheckWord(
 
   SpellcheckWordIterator word_iterator;
   string16 word;
-  string16 in_word_utf16;
-  WideToUTF16(in_word, in_word_len, &in_word_utf16);
   int word_start;
   int word_length;
-  word_iterator.Initialize(&character_attributes_, in_word_utf16.c_str(),
-                           in_word_len, true);
+  word_iterator.Initialize(&character_attributes_, in_word, in_word_len, true);
   while (word_iterator.GetNextWord(&word, &word_start, &word_length)) {
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
-    std::string encoded_word = UTF16ToUTF8(word);
-    bool word_ok = CheckSpelling(encoded_word, tag);
+    bool word_ok = CheckSpelling(word, tag);
     if (word_ok)
       continue;
 
@@ -787,9 +783,8 @@ bool SpellChecker::SpellCheckWord(
     *misspelling_len = word_length;
 
     // Get the list of suggested words.
-    if (optional_suggestions) {
-      FillSuggestionList(encoded_word, optional_suggestions);
-    }
+    if (optional_suggestions)
+      FillSuggestionList(word, optional_suggestions);
     return false;
   }
 
@@ -801,9 +796,9 @@ bool SpellChecker::SpellCheckWord(
 class AddWordToCustomDictionaryTask : public Task {
  public:
   AddWordToCustomDictionaryTask(const FilePath& file_name,
-                                const std::wstring& word)
+                                const string16& word)
       : file_name_(file_name),
-        word_(WideToUTF8(word)) {
+        word_(UTF16ToUTF8(word)) {
   }
 
  private:
@@ -825,7 +820,7 @@ void AddWordToCustomDictionaryTask::Run() {
   file_util::CloseFile(f);
 }
 
-void SpellChecker::AddWord(const std::wstring& word) {
+void SpellChecker::AddWord(const string16& word) {
   if (is_using_platform_spelling_engine_) {
     SpellCheckerPlatform::AddWord(word);
     return;
@@ -835,7 +830,7 @@ void SpellChecker::AddWord(const std::wstring& word) {
   Initialize();
 
   // Add the word to hunspell.
-  std::string word_to_add = WideToUTF8(word);
+  std::string word_to_add = UTF16ToUTF8(word);
   if (!word_to_add.empty()) {
     // Either add the word to |hunspell_|, or, if |hunspell_| is still loading,
     // defer it till after the load completes.
@@ -856,7 +851,7 @@ void SpellChecker::AddWord(const std::wstring& word) {
   }
 }
 
-bool SpellChecker::CheckSpelling(const std::string& word_to_check, int tag) {
+bool SpellChecker::CheckSpelling(const string16& word_to_check, int tag) {
   bool word_correct = false;
 
   TimeTicks begin_time = TimeTicks::Now();
@@ -865,15 +860,16 @@ bool SpellChecker::CheckSpelling(const std::string& word_to_check, int tag) {
   } else {
     // |hunspell_->spell| returns 0 if the word is spelled correctly and
     // non-zero otherwsie.
-    word_correct = (hunspell_->spell(word_to_check.c_str()) != 0);
+    word_correct = (hunspell_->spell(UTF16ToUTF8(word_to_check).c_str()) != 0);
   }
   DHISTOGRAM_TIMES("Spellcheck.CheckTime", TimeTicks::Now() - begin_time);
 
   return word_correct;
 }
 
-void SpellChecker::FillSuggestionList(const std::string& wrong_word,
-    std::vector<std::wstring>* optional_suggestions) {
+void SpellChecker::FillSuggestionList(
+    const string16& wrong_word,
+    std::vector<string16>* optional_suggestions) {
   if (is_using_platform_spelling_engine_) {
     SpellCheckerPlatform::FillSuggestionList(wrong_word, optional_suggestions);
     return;
@@ -881,14 +877,14 @@ void SpellChecker::FillSuggestionList(const std::string& wrong_word,
   char** suggestions;
   TimeTicks begin_time = TimeTicks::Now();
   int number_of_suggestions = hunspell_->suggest(&suggestions,
-                                                 wrong_word.c_str());
+      UTF16ToUTF8(wrong_word).c_str());
   DHISTOGRAM_TIMES("Spellcheck.SuggestTime",
                    TimeTicks::Now() - begin_time);
 
   // Populate the vector of WideStrings.
   for (int i = 0; i < number_of_suggestions; i++) {
     if (i < kMaxSuggestions)
-      optional_suggestions->push_back(UTF8ToWide(suggestions[i]));
+      optional_suggestions->push_back(UTF8ToUTF16(suggestions[i]));
     free(suggestions[i]);
   }
   if (suggestions != NULL)

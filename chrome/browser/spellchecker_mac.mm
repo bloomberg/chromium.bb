@@ -113,8 +113,8 @@ void ShowSpellingPanel(bool show) {
   }
 }
 
-void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word) {
-  NSString * word_to_display = base::SysWideToNSString(word);
+void UpdateSpellingPanelWithMisspelledWord(const string16& word) {
+  NSString * word_to_display = base::SysUTF16ToNSString(word);
   [[NSSpellChecker sharedSpellChecker]
           updateSpellingPanelWithMisspelledWord:word_to_display];
 }
@@ -142,7 +142,7 @@ void SetLanguage(const std::string& lang_to_set) {
 
 static int last_seen_tag_;
 
-bool CheckSpelling(const std::string& word_to_check, int tag) {
+bool CheckSpelling(const string16& word_to_check, int tag) {
   last_seen_tag_ = tag;
 
   // [[NSSpellChecker sharedSpellChecker] checkSpellingOfString] returns an
@@ -150,7 +150,7 @@ bool CheckSpelling(const std::string& word_to_check, int tag) {
   NSRange spell_range = {0,0};
 
   // Convert the word to an NSString.
-  NSString* NS_word_to_check = base::SysUTF8ToNSString(word_to_check);
+  NSString* NS_word_to_check = base::SysUTF16ToNSString(word_to_check);
   // Check the spelling, starting at the beginning of the word.
   spell_range = [[NSSpellChecker sharedSpellChecker]
                   checkSpellingOfString:NS_word_to_check startingAt:0
@@ -163,9 +163,9 @@ bool CheckSpelling(const std::string& word_to_check, int tag) {
   return word_correct;
 }
 
-void FillSuggestionList(const std::string& wrong_word,
-                              std::vector<std::wstring>* optional_suggestions) {
-  NSString* NS_wrong_word = base::SysUTF8ToNSString(wrong_word);
+void FillSuggestionList(const string16& wrong_word,
+                        std::vector<string16>* optional_suggestions) {
+  NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
   TimeTicks begin_time = TimeTicks::Now();
   // The suggested words for |wrong_word|.
   NSArray* guesses =
@@ -175,19 +175,19 @@ void FillSuggestionList(const std::string& wrong_word,
 
   for (int i = 0; i < static_cast<int>([guesses count]); i++) {
     if (i < kMaxSuggestions) {
-      optional_suggestions->push_back(base::SysNSStringToWide(
+      optional_suggestions->push_back(base::SysNSStringToUTF16(
                                       [guesses objectAtIndex:i]));
     }
   }
 }
 
-void AddWord(const std::wstring& word) {
-   NSString* word_to_add = base::SysWideToNSString(word);
+void AddWord(const string16& word) {
+    NSString* word_to_add = base::SysUTF16ToNSString(word);
   [[NSSpellChecker sharedSpellChecker] learnWord:word_to_add];
 }
 
-void RemoveWord(const std::wstring& word) {
-  NSString *word_to_remove = base::SysWideToNSString(word);
+void RemoveWord(const string16& word) {
+  NSString *word_to_remove = base::SysUTF16ToNSString(word);
   [[NSSpellChecker sharedSpellChecker] unlearnWord:word_to_remove];
 }
 
@@ -196,8 +196,8 @@ int GetDocumentTag() {
   return static_cast<int>(doc_tag);
 }
 
-void IgnoreWord(const std::string& word) {
-  [[NSSpellChecker sharedSpellChecker] ignoreWord:base::SysUTF8ToNSString(word)
+void IgnoreWord(const string16& word) {
+  [[NSSpellChecker sharedSpellChecker] ignoreWord:base::SysUTF16ToNSString(word)
                            inSpellDocumentWithTag:last_seen_tag_];
 }
 
@@ -205,5 +205,6 @@ void CloseDocumentWithTag(int tag) {
   [[NSSpellChecker sharedSpellChecker]
       closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
 }
+
 }  // namespace SpellCheckerPlatform
 

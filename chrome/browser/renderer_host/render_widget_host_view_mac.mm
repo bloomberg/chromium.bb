@@ -795,8 +795,8 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   NSString* newWord = [[sender selectedCell] stringValue];
   if (newWord != nil) {
     RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-    thisHostView->GetRenderWidgetHost()->ReplaceWord(
-        base::SysNSStringToWide(newWord));
+    thisHostView->GetRenderWidgetHost()->Replace(
+        base::SysNSStringToUTF16(newWord));
   }
 }
 
@@ -819,7 +819,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   // SpellCheckerPlatform::IgnoreWord assumes that is the correct tag.
   NSString* wordToIgnore = [sender stringValue];
   if (wordToIgnore != nil) {
-    SpellCheckerPlatform::IgnoreWord(base::SysNSStringToUTF8(wordToIgnore));
+    SpellCheckerPlatform::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
 
     // Strangely, the spellingPanel doesn't send checkSpelling after a word is
     // ignored, so we have to explicitly call AdvanceToNextMisspelling here.

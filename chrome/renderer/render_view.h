@@ -544,7 +544,7 @@ class RenderView : public RenderWidget,
   void OnCopyToFindPboard();
 #endif
   void OnPaste();
-  void OnReplace(const std::wstring& text);
+  void OnReplace(const string16& text);
   void OnAdvanceToNextMisspelling();
   void OnToggleSpellPanel(bool is_currently_visible);
   void OnToggleSpellCheck();

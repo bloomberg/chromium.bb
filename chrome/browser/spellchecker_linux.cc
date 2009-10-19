@@ -5,6 +5,7 @@
 // If linux ever gains a platform specific spellchecker, it will be
 // implemented here.
 
+#include "base/string16.h"
 #include "chrome/browser/spellchecker_common.h"
 
 namespace SpellCheckerPlatform {
@@ -32,29 +33,29 @@ bool SpellingPanelVisible() {
   return false;
 }
 
-void ShowSpellingPanel(bool show) { }
+void ShowSpellingPanel(bool show) {}
 
-void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word) { }
+void UpdateSpellingPanelWithMisspelledWord(const string16& word) {}
 
-void Init() { }
+void Init() {}
 
-void SetLanguage(const std::string& lang_to_set) { }
+void SetLanguage(const std::string& lang_to_set) {}
 
-bool CheckSpelling(const std::string& word_to_check, int tag) {
+bool CheckSpelling(const string16& word_to_check, int tag) {
   return false;
 }
 
-void FillSuggestionList(const std::string& wrong_word,
-                        std::vector<std::wstring>* optional_suggestions) { }
+void FillSuggestionList(const string16& wrong_word,
+                        std::vector<string16>* optional_suggestions) {}
 
-void AddWord(const std::wstring& word) { }
+void AddWord(const string16& word) {}
 
-void RemoveWord(const std::wstring& word) { }
+void RemoveWord(const string16& word) {}
 
 int GetDocumentTag() { return 0; }
 
-void IgnoreWord(const std::string& word) { }
+void IgnoreWord(const std::string& word) {}
 
-void CloseDocumentWithTag(int tag) { }
+void CloseDocumentWithTag(int tag) {}
 
 }  // namespace SpellCheckerPlatform

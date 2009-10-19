@@ -274,9 +274,8 @@ class RenderViewHost : public RenderWidgetHost,
   void Copy();
   void CopyToFindPboard();
   void Paste();
-  void Replace(const std::wstring& text);
   void ToggleSpellCheck();
-  void AddToDictionary(const std::wstring& word);
+  void AddToDictionary(const string16& word);
   void Delete();
   void SelectAll();
   void ToggleSpellPanel(bool is_currently_visible);

@@ -905,11 +905,11 @@ void RenderView::OnPaste() {
   UserMetricsRecordAction(L"Paste");
 }
 
-void RenderView::OnReplace(const std::wstring& text) {
+void RenderView::OnReplace(const string16& text) {
   if (!webview())
     return;
 
-  webview()->focusedFrame()->replaceSelection(WideToUTF16Hack(text));
+  webview()->focusedFrame()->replaceSelection(text);
 }
 
 void RenderView::OnAdvanceToNextMisspelling() {
@@ -1514,23 +1514,23 @@ bool RenderView::handleCurrentKeyboardEvent() {
   return did_execute_command;
 }
 
-void RenderView::spellCheck(
-    const WebString& text, int& misspelled_offset, int& misspelled_length) {
+void RenderView::spellCheck(const WebString& text,
+                            int& misspelled_offset,
+                            int& misspelled_length) {
   EnsureDocumentTag();
-  Send(new ViewHostMsg_SpellCheck(
-      routing_id_, UTF16ToWideHack(text), document_tag_,
-      &misspelled_offset, &misspelled_length));
+  Send(new ViewHostMsg_SpellCheck(routing_id_, text, document_tag_,
+                                  &misspelled_offset, &misspelled_length));
 }
 
 WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
-  std::wstring autocorrect_word;
+  string16 autocorrect_word;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
     Send(new ViewHostMsg_GetAutoCorrectWord(
-        routing_id_, UTF16ToWideHack(word), document_tag_, &autocorrect_word));
+        routing_id_, word, document_tag_, &autocorrect_word));
   }
-  return WideToUTF16Hack(autocorrect_word);
+  return autocorrect_word;
 }
 
 void RenderView::showSpellingUI(bool show) {
@@ -1542,8 +1542,8 @@ bool RenderView::isShowingSpellingUI() {
 }
 
 void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
-  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
-      routing_id_, UTF16ToWideHack(word)));
+  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id_,
+                                                             word));
 }
 
 bool RenderView::runFileChooser(

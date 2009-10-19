@@ -239,7 +239,7 @@ void RenderViewContextMenu::AppendEditableItems() {
        IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
        ++i) {
     AppendMenuItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
-                   WideToUTF16(params_.dictionary_suggestions[i]));
+                   params_.dictionary_suggestions[i]);
   }
   if (params_.dictionary_suggestions.size() > 0)
     AppendSeparator();
@@ -740,7 +740,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
     case IDC_SPELLPANEL_TOGGLE:
       source_tab_contents_->render_view_host()->ToggleSpellPanel(
-                                  SpellCheckerPlatform::SpellingPanelVisible());
+          SpellCheckerPlatform::SpellingPanelVisible());
       break;
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
     default:
