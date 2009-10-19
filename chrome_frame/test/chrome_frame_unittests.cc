@@ -1420,7 +1420,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
   SimpleBrowserTest(IE, kMetaTagPage, L"meta_tag");
 }
 
-const wchar_t kCFProtocolPage[] = L"files/chrome_frame_protocol.html";
+const wchar_t kCFProtocolPage[] = L"files/cf_protocol.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
   SimpleBrowserTest(IE, kCFProtocolPage, L"chrome_frame_protocol");
 }
