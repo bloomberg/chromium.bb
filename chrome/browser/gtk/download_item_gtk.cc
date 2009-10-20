@@ -568,9 +568,12 @@ void DownloadItemGtk::UpdateDangerWarning() {
     std::wstring elided_filename = gfx::ElideFilename(
         get_download()->original_name(),
         gfx::Font(), kTextWidth);
+
     std::string dangerous_warning =
-        l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                  WideToUTF16(elided_filename));
+        DownloadManager::IsExtensionInstall(get_download()) ?
+            l10n_util::GetStringUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION) :
+            l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                      WideToUTF16(elided_filename));
 
     if (theme_provider_->UseGtkTheme()) {
       gtk_image_set_from_stock(GTK_IMAGE(dangerous_image_),
