@@ -300,7 +300,7 @@
    https://bugzilla.mozilla.org/show_bug.cgi?id=518443
    Memcheck:Leak
    fun:calloc
-   fun:PR_Calloc
+   ...
    fun:PORT_ZAlloc_Util
    fun:PORT_NewArena_Util
    fun:PK11_ImportAndReturnPrivateKey
@@ -313,6 +313,16 @@
    fun:sqlite3PagerCommitPhaseOne
    fun:sqlite3BtreeCommitPhaseOne
 }
+{
+   # Valgrind doesn't grok clone quite yet on x64,
+   # see https://bugs.kde.org/show_bug.cgi?id=117564
+   valgrind_bug_117564
+   Memcheck:Param
+   clone(child_tidptr)
+   fun:clone
+   fun:_ZN7testing8internal13ExecDeathTest10AssumeRoleEv
+}
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
