@@ -242,7 +242,12 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       buffer_size_(0),
       plugin_buffer_(0),
       background_canvas_(0) {
+  // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
+  // All Pepper plugins are windowless and transparent.
+  // TODO(sehr): disable resetting these NPPVs by plugins.
+  instance->set_windowless(true);
+  instance->set_transparent(true);
 }
 
 WebPluginDelegatePepper::~WebPluginDelegatePepper() {
