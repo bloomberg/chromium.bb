@@ -1086,3 +1086,5 @@ HB_Bool HB_ArabicShape(HB_ShaperItem *item)
     HB_HeuristicPosition(item);
     return TRUE;
 }
+
+

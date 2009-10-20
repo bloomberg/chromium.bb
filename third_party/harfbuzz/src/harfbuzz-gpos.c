@@ -2059,15 +2059,17 @@ static void  Free_BaseArray( HB_BaseArray*  ba,
   HB_BaseRecord  *br;
   HB_Anchor      *bans;
 
-  HB_UNUSED(num_classes);
-
   if ( ba->BaseRecord )
   {
     br    = ba->BaseRecord;
 
     if ( ba->BaseCount )
     {
+      HB_UShort i, count;
+      count = num_classes * ba->BaseCount;
       bans = br[0].BaseAnchor;
+      for (i = 0; i < count; i++)
+        Free_Anchor (&bans[i]);
       FREE( bans );
     }
 
@@ -2723,7 +2725,7 @@ static HB_Error  Load_Mark2Array( HB_Mark2Array*  m2a,
 {
   HB_Error  error;
 
-  HB_UShort        k, m, n, count;
+  HB_UShort        m, n, count;
   HB_UInt          cur_offset, new_offset, base_offset;
 
   HB_Mark2Record  *m2r;
