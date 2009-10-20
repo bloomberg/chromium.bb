@@ -44,9 +44,6 @@ class SingleThreadedProxyResolver::SetPacScriptTask
 
   // Start the SetPacScript request on the worker thread.
   void Start() {
-    // TODO(eroman): Are these manual AddRef / Release necessary?
-    AddRef();  // balanced in RequestComplete
-
     coordinator_->thread()->message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &SetPacScriptTask::DoRequest,
         coordinator_->resolver_.get()));
@@ -82,8 +79,6 @@ class SingleThreadedProxyResolver::SetPacScriptTask
       coordinator_->RemoveOutstandingSetPacScriptTask(this);
       callback->Run(result_code);
     }
-
-    Release();  // Balances the AddRef in Start.
   }
 
   // Must only be used on the "origin" thread.
@@ -122,7 +117,6 @@ class SingleThreadedProxyResolver::Job
   // Start the resolve proxy request on the worker thread.
   void Start() {
     is_started_ = true;
-    AddRef();  // balanced in QueryComplete
 
     coordinator_->thread()->message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &Job::DoQuery,
@@ -175,9 +169,6 @@ class SingleThreadedProxyResolver::Job
       if (!was_cancelled())
         coordinator_->RemoveFrontOfJobsQueueAndStartNext(this);
     }
-
-    Release();  // Balances the AddRef in Start. We may get deleted after
-                // we return.
   }
 
   // Must only be used on the "origin" thread.
