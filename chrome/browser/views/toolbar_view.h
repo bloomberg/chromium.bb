@@ -97,6 +97,9 @@ class ToolbarView : public views::View,
   // first accessible child, based on the above policy.
   int GetNextAccessibleViewIndex(int view_index, bool nav_left);
 
+  // Initialize the MSAA focus traversal on the toolbar.
+  void InitializeTraversal();
+
   void set_acc_focused_view(views::View* acc_focused_view) {
     acc_focused_view_ = acc_focused_view;
   }
@@ -155,6 +158,7 @@ class ToolbarView : public views::View,
   virtual void RequestFocus();
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
@@ -212,6 +216,7 @@ class ToolbarView : public views::View,
   // Child view currently having MSAA focus (location bar excluded from arrow
   // navigation).
   views::View* acc_focused_view_;
+  int last_focused_view_storage_id_;
 
   // Controls
   views::ImageButton* back_;

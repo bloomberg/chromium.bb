@@ -957,13 +957,7 @@ void BrowserView::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  // Do not restore the button that previously had accessibility focus, if
-  // focus is set by using the toolbar focus keyboard shortcut.
-  toolbar_->set_acc_focused_view(NULL);
-  // HACK: Do not use RequestFocus() here, as the toolbar is not marked as
-  // "focusable".  Instead bypass the sanity check in RequestFocus() and just
-  // force it to focus, which will do the right thing.
-  GetRootView()->FocusView(toolbar_);
+  toolbar_->InitializeTraversal();
 }
 
 void BrowserView::DestroyBrowser() {

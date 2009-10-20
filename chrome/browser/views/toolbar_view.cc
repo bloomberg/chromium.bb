@@ -50,6 +50,8 @@
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/label.h"
 #include "views/drag_utils.h"
+#include "views/focus/view_storage.h"
+#include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -151,6 +153,8 @@ void ZoomMenuModel::Build() {
 ToolbarView::ToolbarView(Browser* browser)
     : model_(browser->toolbar_model()),
       acc_focused_view_(NULL),
+      last_focused_view_storage_id_(
+          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
       back_(NULL),
       forward_(NULL),
       reload_(NULL),
@@ -241,6 +245,23 @@ int ToolbarView::GetNextAccessibleViewIndex(int view_index, bool nav_left) {
   // Returns the next available button index, or if no button is available in
   // the specified direction, remains where it was.
   return view_index;
+}
+
+void ToolbarView::InitializeTraversal() {
+  // If MSAA focus exists, we don't need to traverse, since its already active.
+  if (acc_focused_view_ != NULL)
+    return;
+
+  // Save the last focused view so that when the user presses ESC, it will
+  // return back to the last focus.
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  view_storage->StoreView(last_focused_view_storage_id_,
+                          GetRootView()->GetFocusedView());
+
+  // HACK: Do not use RequestFocus() here, as the toolbar is not marked as
+  // "focusable".  Instead bypass the sanity check in RequestFocus() and just
+  // force it to focus, which will do the right thing.
+  GetRootView()->FocusView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -658,10 +679,13 @@ void ToolbarView::WillLoseFocus() {
   if (GetWidget() && GetWidget()->GetTooltipManager())
     GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
 
-  // Removes the Child MSAA view's focus when toolbar loses focus.
+  // Removes the Child MSAA view's focus and the view from the ViewStorage,
+  // when toolbar loses focus.
   if (acc_focused_view_) {
     acc_focused_view_->SetHotTracked(false);
     acc_focused_view_ = NULL;
+    views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+    view_storage->RemoveView(last_focused_view_storage_id_);
   }
 }
 
@@ -669,14 +693,12 @@ void ToolbarView::RequestFocus() {
   // When the toolbar needs to request focus, the default implementation of
   // View::RequestFocus requires the View to be focusable. Since ToolbarView is
   // not technically focused, we need to temporarily set and remove focus so
-  // that it can focus back to its MSAA focused state.
-  if (acc_focused_view_) {
-    SetFocusable(true);
-    View::RequestFocus();
-    SetFocusable(false);
-  } else {
-    View::RequestFocus();
-  }
+  // that it can focus back to its MSAA focused state. |acc_focused_view_| is
+  // not necessarily set since it can be null if this view has already lost
+  // focus, such as traversing through the context menu.
+  SetFocusable(true);
+  View::RequestFocus();
+  SetFocusable(false);
 }
 
 bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
@@ -760,6 +782,26 @@ bool ToolbarView::OnKeyReleased(const views::KeyEvent& e) {
 
   // Have keys be handled by the views themselves.
   return acc_focused_view_->OnKeyReleased(e);
+}
+
+bool ToolbarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  if (acc_focused_view_ && e.GetKeyCode() == base::VKEY_ESCAPE) {
+    // Retrieve the focused view from the storage so we can request focus back
+    // to it. If |focus_view| is null, we place focus on the location bar.
+    // |acc_focused_view_| doesn't need to be resetted here since it will be
+    // dealt within the WillLoseFocus method.
+    views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+    views::View* focused_view =
+        view_storage->RetrieveView(last_focused_view_storage_id_);
+    if (focused_view) {
+      view_storage->RemoveView(last_focused_view_storage_id_);
+      focused_view->RequestFocus();
+    } else {
+      location_bar_->RequestFocus();
+    }
+    return true;
+  }
+  return false;
 }
 
 bool ToolbarView::GetAccessibleName(std::wstring* name) {
