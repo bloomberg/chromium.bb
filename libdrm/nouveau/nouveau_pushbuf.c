@@ -270,6 +270,7 @@ nouveau_pushbuf_flush(struct nouveau_channel *chan, unsigned min)
 		if (nvpb->base.remaining > 2) /* space() will fixup if not */
 			nvpb->base.remaining -= 2;
 
+restart_cal:
 		req.channel = chan->id;
 		req.handle = nvpb->buffer[nvpb->current]->handle;
 		req.offset = nvpb->current_offset * 4;
@@ -284,12 +285,15 @@ nouveau_pushbuf_flush(struct nouveau_channel *chan, unsigned min)
 		ret = drmCommandWriteRead(nvdev->fd,
 					  DRM_NOUVEAU_GEM_PUSHBUF_CALL,
 					  &req, sizeof(req));
+		if (ret == -EAGAIN)
+			goto restart_cal;
 		nvpb->cal_suffix0 = req.suffix0;
 		nvpb->cal_suffix1 = req.suffix1;
 		assert(ret == 0);
 	} else {
 		struct drm_nouveau_gem_pushbuf req;
 
+restart_push:
 		req.channel = chan->id;
 		req.nr_dwords = nvpb->size - nvpb->base.remaining;
 		req.dwords = (uint64_t)(unsigned long)nvpb->pushbuf;
@@ -299,6 +303,8 @@ nouveau_pushbuf_flush(struct nouveau_channel *chan, unsigned min)
 		req.relocs = (uint64_t)(unsigned long)nvpb->relocs;
 		ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_PUSHBUF,
 				      &req, sizeof(req));
+		if (ret == -EAGAIN)
+			goto restart_push;
 		assert(ret == 0);
 	}
 
