@@ -115,8 +115,8 @@ bool BrowserActionSetBadgeBackgroundColorFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(list->GetInteger(i, &color_array[i]));
   }
 
-  SkColor color = SkColorSetARGB(color_array[0], color_array[1], color_array[2],
-                                 color_array[3]);
+  SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
+                                 color_array[2]);
 
   Extension* extension = dispatcher()->GetExtension();
   if (!extension->browser_action()) {

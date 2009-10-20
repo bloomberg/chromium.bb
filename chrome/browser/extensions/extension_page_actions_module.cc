@@ -212,8 +212,8 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   for (size_t i = 0; i < arraysize(color_array); ++i)
     EXTENSION_FUNCTION_VALIDATE(color_value->GetInteger(i, &color_array[i]));
 
-  SkColor color = SkColorSetARGB(color_array[0], color_array[1], color_array[2],
-                                 color_array[3]);
+  SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
+                                 color_array[2]);
   state_->set_badge_background_color(color);
   contents_->PageActionStateChanged();
   return true;
@@ -236,7 +236,10 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
   for (size_t i = 0; i < arraysize(color_array); ++i)
     EXTENSION_FUNCTION_VALIDATE(color_value->GetInteger(i, &color_array[i]));
 
-  // TODO(mpcomplete): implement text coloring.
+  SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
+                                 color_array[2]);
+  state_->set_badge_text_color(color);
+  contents_->PageActionStateChanged();
   return true;
 }
 

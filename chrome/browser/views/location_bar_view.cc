@@ -1172,6 +1172,19 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
       SECURITY_INFO_BUBBLE_TEXT));
 }
 
+void LocationBarView::PageActionImageView::Paint(gfx::Canvas* canvas) {
+  LocationBarImageView::Paint(canvas);
+
+  TabContents* contents = owner_->delegate_->GetTabContents();
+  if (!contents)
+    return;
+
+  const ExtensionActionState* state =
+      contents->GetPageActionState(page_action_);
+  if (state)
+    state->PaintBadge(canvas, gfx::Rect(width(), height()));
+}
+
 // PageActionImageView----------------------------------------------------------
 
 LocationBarView::PageActionImageView::PageActionImageView(

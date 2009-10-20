@@ -20,7 +20,7 @@ ExtensionAction::~ExtensionAction() {
 }
 
 void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
-                                      const gfx::Rect& bounds) {
+                                      const gfx::Rect& bounds) const {
   const std::string& text = badge_text();
   if (text.empty())
     return;
@@ -49,7 +49,7 @@ void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
   SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
   SkPaint text_paint;
   text_paint.setAntiAlias(true);
-  text_paint.setColor(SK_ColorWHITE);
+  text_paint.setColor(badge_text_color());
   text_paint.setFakeBoldText(true);
   text_paint.setTextAlign(SkPaint::kLeft_Align);
   text_paint.setTextSize(SkIntToScalar(kTextSize));
