@@ -13,10 +13,10 @@ test.run_gyp('lib_only.gyp')
 
 test.build_all('lib_only.gyp')
 
-# Make doesn't put static libs in a common location, like it does with shared
-# libs, so check for an explicit obj/ path.
+# Make doesn't put static libs in a common 'lib' directory, like it does with
+# shared libs, so check in the obj path corresponding to the source path.
 if test.format == 'make':
-  test.must_exist(test.workpath(), 'out/Default/obj/liba.a')
+  test.built_lib_must_exist('a', libdir='obj.target')
 else:
   test.built_lib_must_exist('a')
 
@@ -27,7 +27,7 @@ else:
 if test.format == 'xcode':
   test.built_lib_must_not_exist('b')
 elif test.format == 'make':
-  test.must_exist(test.workpath(), 'out/Default/obj/b/libb.a')
+  test.built_lib_must_exist('b', libdir='obj.target/b')
 else:
   test.built_lib_must_exist('b')
 

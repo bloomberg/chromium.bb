@@ -297,11 +297,25 @@ class TestGypMake(TestGypBase):
     return self.run(program=program, *args, **kw)
   def built_lib_must_exist(self, name, *args, **kw):
     configuration = self.configuration or 'Default'
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    # Make static and shared libs go in different places, so allow tests to pass
+    # in the expected library path.
+    if kw.has_key('libdir'):
+      libdir = kw['libdir']
+    else:
+      libdir = 'lib'
+    lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
+                             self._lib)
     self.must_exist(lib_path)
   def built_lib_must_not_exist(self, name, *args, **kw):
     configuration = self.configuration or 'Default'
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    # Make static and shared libs go in different places, so allow tests to pass
+    # in the expected library path.
+    if kw.has_key('libdir'):
+      libdir = kw['libdir']
+    else:
+      libdir = 'lib'
+    lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
+                             self._lib)
     self.must_not_exist(lib_path)
   def up_to_date(self, gyp_file, target=None, **kw):
     """
