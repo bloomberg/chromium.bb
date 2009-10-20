@@ -3083,7 +3083,7 @@ BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html =
 BUG_JPARENT MAC WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
-BUG_JPARENT WIN LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
+BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124
 BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
@@ -3178,3 +3178,6 @@ BUG_YUTAK MAC RELEASE : LayoutTests/fast/overflow/002.html = CRASH PASS
 // Test expectation for MAC is located above.
 // Please remove CRASH from that line when the fix is in.
 BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
+
+// WebKit Roll 49830:49844
+BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
