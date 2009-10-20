@@ -507,6 +507,16 @@ bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
     bool is_process_startup,
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
+  if (is_process_startup &&
+      command_line_.HasSwitch(switches::kTestingChannelID) &&
+      !command_line_.HasSwitch(switches::kRestoreLastSession) &&
+      browser_defaults::kDefaultSessionStartupType !=
+      SessionStartupPref::DEFAULT) {
+    // When we have non DEFAULT session start type, then we won't open up a
+    // fresh session. But none of the tests are written with this in mind, so
+    // we explicitly ignore it during testing.
+    return false;
+  }
   switch (pref.type) {
     case SessionStartupPref::LAST:
       if (!is_process_startup)
