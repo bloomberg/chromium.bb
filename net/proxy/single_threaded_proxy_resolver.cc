@@ -139,12 +139,13 @@ class SingleThreadedProxyResolver::Job
  private:
   // Runs on the worker thread.
   void DoQuery(ProxyResolver* resolver) {
-    scoped_refptr<LoadLog> worker_log(new LoadLog);
+    LoadLog* worker_log = new LoadLog;
+    worker_log->AddRef();  // Balanced in QueryComplete.
+
     int rv = resolver->GetProxyForURL(url_, &results_buf_, NULL, NULL,
                                       worker_log);
     DCHECK_NE(rv, ERR_IO_PENDING);
 
-    worker_log->AddRef();  // Balanced in QueryComplete.
     origin_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &Job::QueryComplete, rv, worker_log));
   }
