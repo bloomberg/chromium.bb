@@ -71,9 +71,9 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/api/public/WebViewClient.h"
+#include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/image_resource_fetcher.h"
@@ -487,7 +487,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
   if (event.button == WebMouseEvent::ButtonLeft) {
     RefPtr<Node> focused_node = GetFocusedNode();
     if (focused_node.get() &&
-        webkit_glue::NodeToHTMLInputElement(focused_node.get())) {
+        WebKit::nodeToHTMLInputElement(focused_node.get())) {
       IntPoint point(event.x, event.y);
       point = page_->mainFrame()->view()->windowToContents(point);
       HitTestResult result(point);

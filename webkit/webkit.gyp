@@ -165,6 +165,8 @@
         'api/src/ChromiumBridge.cpp',
         'api/src/ChromiumCurrentTime.cpp',
         'api/src/ChromiumThreading.cpp',
+        'api/src/DOMUtilitiesPrivate.cpp',
+        'api/src/DOMUtilitiesPrivate.h',
         'api/src/gtk/WebFontInfo.cpp',
         'api/src/gtk/WebFontInfo.h',
         'api/src/gtk/WebInputEventFactory.cpp',

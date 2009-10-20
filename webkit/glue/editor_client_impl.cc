@@ -29,8 +29,9 @@
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebTextAffinity.h"
 #include "webkit/api/public/WebViewClient.h"
+// Can include api/src since eventually editor_client_impl will be there too.
+#include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/glue/autofill_form.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webview_impl.h"
@@ -659,7 +660,7 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
 
   // Notify any password-listener of the focus change.
   WebCore::HTMLInputElement* input_element =
-      webkit_glue::ElementToHTMLInputElement(element);
+      WebKit::elementToHTMLInputElement(element);
   if (!input_element)
     return;
 
@@ -685,7 +686,7 @@ void EditorClientImpl::textDidChangeInTextField(WebCore::Element* element) {
 
 bool EditorClientImpl::ShowFormAutofillForNode(WebCore::Node* node) {
   WebCore::HTMLInputElement* input_element =
-      webkit_glue::NodeToHTMLInputElement(node);
+      WebKit::nodeToHTMLInputElement(node);
   if (input_element)
     return Autofill(input_element, true, true, false);
   return false;

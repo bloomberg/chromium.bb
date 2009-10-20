@@ -29,6 +29,8 @@ MSVC_POP_WARNING();
 #undef LOG
 
 #include "base/string_util.h"
+// TODO(yaar) Eventually should not depend on api/src.
+#include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"
@@ -252,7 +254,7 @@ static bool FindFormInputElements(WebCore::HTMLFormElement* fe,
     // matching elements it can get at them through the FormElement*.
     // Note: This assignment adds a reference to the InputElement.
     result->input_elements[data.elements[j]] =
-        NodeToHTMLInputElement(temp_elements[0].get());
+        WebKit::nodeToHTMLInputElement(temp_elements[0].get());
     DCHECK(result->input_elements[data.elements[j]].get());
   }
   return true;
@@ -783,17 +785,5 @@ int NumberOfActiveAnimations(WebView* view) {
   return controller->numberOfActiveAnimations();
 }
 
-WebCore::HTMLInputElement* ElementToHTMLInputElement(
-    WebCore::Element* element) {
-  if (!element->hasLocalName(WebCore::HTMLNames::inputTag))
-    return NULL;
-  return static_cast<WebCore::HTMLInputElement*>(element);
-}
-
-WebCore::HTMLInputElement* NodeToHTMLInputElement(WebCore::Node* node) {
-  if (node->nodeType() != WebCore::Node::ELEMENT_NODE)
-    return NULL;
-  return ElementToHTMLInputElement(static_cast<WebCore::Element*>(node));
-}
 
 } // webkit_glue

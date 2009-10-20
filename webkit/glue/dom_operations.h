@@ -12,12 +12,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
-namespace WebCore {
-class Element;
-class HTMLInputElement;
-class Node;
-}
-
 namespace WebKit {
 class WebView;
 }
@@ -131,11 +125,6 @@ bool ElementDoesAutoCompleteForElementWithId(WebKit::WebView* view,
 
 // Returns the number of animations currently running.
 int NumberOfActiveAnimations(WebKit::WebView* view);
-
-// Returns the passed element/node casted to an HTMLInputElement if it is one,
-// NULL if it is not an HTMLInputElement.
-WebCore::HTMLInputElement* ElementToHTMLInputElement(WebCore::Element* element);
-WebCore::HTMLInputElement* NodeToHTMLInputElement(WebCore::Node* node);
 
 }  // namespace webkit_glue
 
