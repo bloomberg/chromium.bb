@@ -380,7 +380,7 @@ void RenderThread::OnGetRendererHistograms(int sequence_number) {
 void RenderThread::OnGetRendererTcmalloc() {
   std::string result;
   char buffer[1024 * 32];
-  int pid = base::GetCurrentProcId();
+  base::ProcessId pid = base::GetCurrentProcId();
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   result.append(buffer);
   Send(new ViewHostMsg_RendererTcmalloc(pid, result));

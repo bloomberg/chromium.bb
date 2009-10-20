@@ -15,7 +15,7 @@
 // Return true if the given child is dead. This will also reap the process.
 // Doesn't block.
 static bool IsChildDead(pid_t child) {
-  const int result = HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
+  const pid_t result = HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
   if (result == -1) {
     NOTREACHED();
   } else if (result > 0) {

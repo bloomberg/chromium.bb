@@ -25,7 +25,7 @@ struct ProcessMemoryInformation {
   }
 
   // The process id.
-  int pid;
+  base::ProcessId pid;
   // The working set information.
   base::WorkingSetKBytes working_set;
   // The committed bytes.

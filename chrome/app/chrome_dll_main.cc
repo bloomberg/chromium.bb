@@ -375,7 +375,7 @@ int ChromeMain(int argc, char** argv) {
   CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 #endif  // OS_POSIX
 
-  int browser_pid;
+  base::ProcessId browser_pid;
   if (process_type.empty()) {
     browser_pid = base::GetCurrentProcId();
   } else {
@@ -383,7 +383,8 @@ int ChromeMain(int argc, char** argv) {
     std::wstring channel_name =
       parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
 
-    browser_pid = StringToInt(WideToASCII(channel_name));
+    browser_pid =
+        static_cast<base::ProcessId>(StringToInt(WideToASCII(channel_name)));
     DCHECK(browser_pid != 0);
 #else
     browser_pid = base::GetCurrentProcId();
@@ -455,8 +456,8 @@ int ChromeMain(int argc, char** argv) {
   // TODO(port): we probably need to shut this down correctly to avoid
   // leaking shared memory regions on posix platforms.
   if (parsed_command_line.HasSwitch(switches::kEnableStatsTable)) {
-    std::string statsfile =
-        StringPrintf("%s-%d", chrome::kStatsFilename, browser_pid);
+    std::string statsfile = StringPrintf("%s-%lld", chrome::kStatsFilename,
+                                         static_cast<int64>(browser_pid));
     StatsTable *stats_table = new StatsTable(statsfile,
         chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
     StatsTable::set_current(stats_table);

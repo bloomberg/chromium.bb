@@ -85,7 +85,7 @@ void MemoryDetails::CollectProcessData(
     return;
   }
   do {
-    int pid = process_entry.th32ProcessID;
+    base::ProcessId pid = process_entry.th32ProcessID;
     ScopedHandle handle(::OpenProcess(
         PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid));
     if (!handle.Get())
