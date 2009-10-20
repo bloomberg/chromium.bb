@@ -730,9 +730,10 @@ void ResourceDispatcherHost::BeginDownload(const GURL& url,
                                               receiver_);
   }
 
-  bool known_proto = URLRequest::IsHandledURL(url);
-  if (!known_proto) {
-    CHECK(false);
+  if (!URLRequest::IsHandledURL(url)) {
+    LOG(INFO) << "Download request for unsupported protocol: " <<
+        url.possibly_invalid_spec();
+    return;
   }
 
   request->set_method("GET");
