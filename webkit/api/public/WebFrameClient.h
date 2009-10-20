@@ -92,15 +92,21 @@ namespace WebKit {
             WebNavigationPolicy defaultPolicy, bool isRedirect) = 0;
 
         // Query if the specified request can be handled.
-        virtual bool canHandleRequest(const WebURLRequest& request) = 0;
+        virtual bool canHandleRequest(
+            WebFrame*, const WebURLRequest& request) = 0;
 
-        // Called if canHandledRequest() returns false.
-        virtual WebURLError cannotShowURLError(
-            const WebURLRequest& request) = 0;
+        // Returns an error corresponding to canHandledRequest() returning false.
+        virtual WebURLError cannotHandleRequestError(
+            WebFrame*, const WebURLRequest& request) = 0;
+
+        // Returns an error corresponding to a user cancellation event.
+        virtual WebURLError cancelledError(
+            WebFrame*, const WebURLRequest& request) = 0;
 
         // Notify that a URL cannot be handled.
         virtual void unableToImplementPolicyWithError(
             WebFrame*, const WebURLError&) = 0;
+
 
         // Navigational notifications ------------------------------------------
 

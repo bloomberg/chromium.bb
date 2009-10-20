@@ -133,4 +133,4 @@ void setNamedColors(const WebColorName* colorNames, const WebColor* colors, size
   // TODO(jeremy): Tell RenderTheme to update colors.
 }
 
-}  // namespace webkit_glue
+} // WebKit

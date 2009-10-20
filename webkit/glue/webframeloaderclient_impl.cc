@@ -25,7 +25,6 @@
 #undef LOG
 
 #include "net/base/mime_util.h"
-#include "net/base/net_errors.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebNode.h"
@@ -1000,14 +999,22 @@ ResourceError WebFrameLoaderClient::blockedError(const WebCore::ResourceRequest&
 
 ResourceError WebFrameLoaderClient::cancelledError(
     const ResourceRequest& request) {
-  return ResourceError(net::kErrorDomain, net::ERR_ABORTED,
-                       request.url().string(), String());
+  if (!webframe_->client())
+    return ResourceError();
+
+  return webkit_glue::WebURLErrorToResourceError(
+      webframe_->client()->cancelledError(
+          webframe_, WrappedResourceRequest(request)));
 }
 
 ResourceError WebFrameLoaderClient::cannotShowURLError(
     const ResourceRequest& request) {
+  if (!webframe_->client())
+    return ResourceError();
+
   return webkit_glue::WebURLErrorToResourceError(
-      webframe_->client()->cannotShowURLError(WrappedResourceRequest(request)));
+      webframe_->client()->cannotHandleRequestError(
+          webframe_, WrappedResourceRequest(request)));
 }
 
 ResourceError WebFrameLoaderClient::interruptForPolicyChangeError(
@@ -1038,12 +1045,15 @@ bool WebFrameLoaderClient::shouldFallBack(const ResourceError& error) {
   // We should let the fallback content load only if this wasn't a cancelled
   // request.
   // Note: The mac version also has a case for "WebKitErrorPluginWillHandleLoad"
-  return error.errorCode() != net::ERR_ABORTED;
+  ResourceError cancelled_error = cancelledError(ResourceRequest());
+  return error.errorCode() != cancelled_error.errorCode() ||
+         error.domain() != cancelled_error.domain();
 }
 
 bool WebFrameLoaderClient::canHandleRequest(
     const ResourceRequest& request) const {
-  return webframe_->client()->canHandleRequest(WrappedResourceRequest(request));
+  return webframe_->client()->canHandleRequest(
+      webframe_, WrappedResourceRequest(request));
 }
 
 bool WebFrameLoaderClient::canShowMIMEType(const String& mime_type) const {

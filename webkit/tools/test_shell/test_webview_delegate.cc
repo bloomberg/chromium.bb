@@ -655,20 +655,30 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
   return result;
 }
 
-bool TestWebViewDelegate::canHandleRequest(const WebURLRequest& request) {
+bool TestWebViewDelegate::canHandleRequest(
+    WebFrame* frame, const WebURLRequest& request) {
   GURL url = request.url();
   // Just reject the scheme used in
   // LayoutTests/http/tests/misc/redirect-to-external-url.html
   return !url.SchemeIs("spaceballs");
 }
 
-WebURLError TestWebViewDelegate::cannotShowURLError(
-    const WebURLRequest& request) {
+WebURLError TestWebViewDelegate::cannotHandleRequestError(
+    WebFrame* frame, const WebURLRequest& request) {
   WebURLError error;
   // A WebKit layout test expects the following values.
   // unableToImplementPolicyWithError() below prints them.
   error.domain = WebString::fromUTF8("WebKitErrorDomain");
   error.reason = 101;
+  error.unreachableURL = request.url();
+  return error;
+}
+
+WebURLError TestWebViewDelegate::cancelledError(
+    WebFrame* frame, const WebURLRequest& request) {
+  WebURLError error;
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.reason = net::ERR_ABORTED;
   error.unreachableURL = request.url();
   return error;
 }

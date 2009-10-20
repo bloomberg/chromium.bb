@@ -31,9 +31,16 @@ class EmptyWebFrameClient : public WebKit::WebFrameClient {
       WebKit::WebNavigationType type, const WebKit::WebNode& originating_node,
       WebKit::WebNavigationPolicy default_policy, bool is_redirect) {
     return default_policy; }
-  virtual bool canHandleRequest(const WebKit::WebURLRequest&) { return true; }
-  virtual WebKit::WebURLError cannotShowURLError(
-      const WebKit::WebURLRequest& request) { return WebKit::WebURLError(); }
+  virtual bool canHandleRequest(
+      WebKit::WebFrame*, const WebKit::WebURLRequest&) { return true; }
+  virtual WebKit::WebURLError cannotHandleRequestError(
+      WebKit::WebFrame*, const WebKit::WebURLRequest& request) {
+    return WebKit::WebURLError();
+  }
+  virtual WebKit::WebURLError cancelledError(
+      WebKit::WebFrame*, const WebKit::WebURLRequest& request) {
+    return WebKit::WebURLError();
+  }
   virtual void unableToImplementPolicyWithError(
       WebKit::WebFrame*, const WebKit::WebURLError&) {}
   virtual void willSubmitForm(WebKit::WebFrame* frame,

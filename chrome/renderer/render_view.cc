@@ -124,6 +124,7 @@ using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebFindOptions;
 using WebKit::WebForm;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
@@ -1913,22 +1914,31 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   return default_policy;
 }
 
-bool RenderView::canHandleRequest(const WebKit::WebURLRequest& request) {
+bool RenderView::canHandleRequest(
+    WebFrame* frame, const WebURLRequest& request) {
+  // We allow WebKit to think that everything can be handled even though
+  // browser-side we limit what we load.
   return true;
 }
 
-WebKit::WebURLError RenderView::cannotShowURLError(
-    const WebKit::WebURLRequest& request) {
-  // No need to set fields of WebURLError.  It is passed to
-  // unableToImplementPolicyWithError() below.
-  return WebKit::WebURLError();
+WebURLError RenderView::cannotHandleRequestError(
+    WebFrame* frame, const WebURLRequest& request) {
+  NOTREACHED();  // Since we said we can handle all requests.
+  return WebURLError();
+}
+
+WebURLError RenderView::cancelledError(
+    WebFrame* frame, const WebURLRequest& request) {
+  WebURLError error;
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.reason = net::ERR_ABORTED;
+  error.unreachableURL = request.url();
+  return error;
 }
 
 void RenderView::unableToImplementPolicyWithError(
-    WebFrame*, const WebKit::WebURLError&) {
-  // We don't need to do anything here.
-  // The implementations of this method in WebKit/mac WebKit/win are
-  // just to log some information of the parameters.
+    WebFrame*, const WebURLError&) {
+  NOTREACHED();  // Since we said we can handle all requests.
 }
 
 void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
@@ -2353,7 +2363,7 @@ void RenderView::didLoadResourceFromMemoryCache(
       response.securityInfo()));
 }
 
-void RenderView::didDisplayInsecureContent(WebKit::WebFrame* frame) {
+void RenderView::didDisplayInsecureContent(WebFrame* frame) {
   Send(new ViewHostMsg_DidDisplayInsecureContent(routing_id_));
 }
 
@@ -2677,9 +2687,8 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
-void RenderView::OnFind(int request_id,
-                        const string16& search_text,
-                        const WebKit::WebFindOptions& options) {
+void RenderView::OnFind(int request_id, const string16& search_text,
+                        const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
   WebFrame* frame_after_main = main_frame->traverseNext(true);
   WebFrame* focused_frame = webview()->focusedFrame();
@@ -2990,7 +2999,7 @@ void RenderView::OnFileChooserResponse(
   if (!file_chooser_completion_)
     return;
 
-  WebKit::WebVector<WebKit::WebString> ws_file_names(file_names.size());
+  WebVector<WebString> ws_file_names(file_names.size());
   for (size_t i = 0; i < file_names.size(); ++i) {
     ws_file_names[i] = webkit_glue::FilePathToWebString(file_names[i]);
   }
