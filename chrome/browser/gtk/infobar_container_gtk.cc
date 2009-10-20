@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -63,15 +64,14 @@ void SumAnimatingBarHeight(GtkWidget* widget, gpointer userdata) {
 
 // InfoBarContainerGtk, public: ------------------------------------------------
 
-InfoBarContainerGtk::InfoBarContainerGtk(BrowserWindow* browser_window)
-    : browser_window_(browser_window),
+InfoBarContainerGtk::InfoBarContainerGtk(Profile* profile)
+    : profile_(profile),
       tab_contents_(NULL),
       container_(gtk_vbox_new(FALSE, 0)) {
   gtk_widget_show(widget());
 }
 
 InfoBarContainerGtk::~InfoBarContainerGtk() {
-  browser_window_ = NULL;
   ChangeTabContents(NULL);
 
   container_.Destroy();
@@ -138,6 +138,7 @@ void InfoBarContainerGtk::UpdateInfoBars() {
 void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   InfoBar* infobar = delegate->CreateInfoBar();
   infobar->set_container(this);
+  infobar->SetThemeProvider(GtkThemeProvider::GetFrom(profile_));
   gtk_box_pack_end(GTK_BOX(widget()), infobar->widget(),
                    FALSE, FALSE, 0);
   if (animate)

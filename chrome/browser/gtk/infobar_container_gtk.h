@@ -9,15 +9,15 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
-class BrowserWindow;
 class InfoBarDelegate;
+class Profile;
 class TabContents;
 
 typedef struct _GtkWidget GtkWidget;
 
 class InfoBarContainerGtk : public NotificationObserver {
  public:
-  explicit InfoBarContainerGtk(BrowserWindow* browser_window);
+  explicit InfoBarContainerGtk(Profile* profile);
   virtual ~InfoBarContainerGtk();
 
   // Get the native widget.
@@ -59,8 +59,8 @@ class InfoBarContainerGtk : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
-  // The BrowserView that hosts this InfoBarContainer.
-  BrowserWindow* browser_window_;
+  // The profile for the browser that hosts this InfoBarContainer.
+  Profile* profile_;
 
   // The TabContents for which we are currently showing InfoBars.
   TabContents* tab_contents_;

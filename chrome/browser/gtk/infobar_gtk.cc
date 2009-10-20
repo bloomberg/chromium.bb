@@ -10,9 +10,11 @@
 #include "base/string_util.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -20,9 +22,6 @@ const double kBackgroundColorTop[3] =
     {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
 const double kBackgroundColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
-
-// Border color (the top pixel of the infobar).
-const GdkColor kBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
 
 // The total height of the info bar.
 const int kInfoBarHeight = 37;
@@ -64,7 +63,8 @@ static gboolean OnBackgroundExpose(GtkWidget* widget, GdkEventExpose* event,
 
 InfoBar::InfoBar(InfoBarDelegate* delegate)
     : container_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      theme_provider_(NULL) {
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
@@ -80,7 +80,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   // The -1 on the kInfoBarHeight is to account for the border.
   gtk_widget_set_size_request(bg_box, -1, kInfoBarHeight - 1);
 
-  border_bin_.Own(gtk_util::CreateGtkBorderBin(bg_box, &kBorderColor,
+  border_bin_.Own(gtk_util::CreateGtkBorderBin(bg_box, NULL,
                                                0, 1, 0, 0));
 
   // Add the icon on the left, if any.
@@ -146,6 +146,29 @@ void InfoBar::RemoveInfoBar() const {
 
 void InfoBar::Closed() {
   Close();
+}
+
+void InfoBar::SetThemeProvider(GtkThemeProvider* theme_provider) {
+  if (theme_provider_) {
+    NOTREACHED();
+    return;
+  }
+
+  theme_provider_ = theme_provider;
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  UpdateBorderColor();
+}
+
+void InfoBar::Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+  UpdateBorderColor();
+}
+
+void InfoBar::UpdateBorderColor() {
+  GdkColor border_color = theme_provider_->GetBorderColor();
+  gtk_widget_modify_bg(border_bin_.get(), GTK_STATE_NORMAL, &border_color);
 }
 
 // static

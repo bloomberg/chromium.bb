@@ -8,13 +8,17 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class CustomDrawButton;
+class GtkThemeProvider;
 class InfoBarContainerGtk;
 class InfoBarDelegate;
 
-class InfoBar : public SlideAnimatorGtk::Delegate {
+class InfoBar : public SlideAnimatorGtk::Delegate,
+                public NotificationObserver {
  public:
   explicit InfoBar(InfoBarDelegate* delegate);
   virtual ~InfoBar();
@@ -46,8 +50,15 @@ class InfoBar : public SlideAnimatorGtk::Delegate {
   // Returns true if the infobar is showing the its open or close animation.
   bool IsAnimating();
 
+  void SetThemeProvider(GtkThemeProvider* theme_provider);
+
   // SlideAnimatorGtk::Delegate implementation.
   virtual void Closed();
+
+  // NotificationOPbserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  protected:
   // Removes our associated InfoBarDelegate from the associated TabContents.
@@ -72,8 +83,15 @@ class InfoBar : public SlideAnimatorGtk::Delegate {
   // The InfoBar's delegate.
   InfoBarDelegate* delegate_;
 
+  // The theme provider, used for getting border colors.
+  GtkThemeProvider* theme_provider_;
+
+  NotificationRegistrar registrar_;
+
  private:
   static void OnCloseButton(GtkWidget* button, InfoBar* info_bar);
+
+  void UpdateBorderColor();
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
