@@ -1124,6 +1124,8 @@
         'browser/cocoa/hung_renderer_controller.mm',
         'browser/cocoa/import_progress_dialog.h',
         'browser/cocoa/import_progress_dialog.mm',
+        'browser/cocoa/importer_lock_dialog.h',
+        'browser/cocoa/importer_lock_dialog.mm',
         'browser/cocoa/infobar.h',
         'browser/cocoa/infobar_container_controller.h',
         'browser/cocoa/infobar_container_controller.mm',

@@ -41,6 +41,8 @@
 #include "views/window/window.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/import_lock_dialog_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/importer_lock_dialog.h"
 #endif
 
 using webkit_glue::PasswordForm;
@@ -469,8 +471,7 @@ void ImporterHost::ShowWarningDialog() {
 #elif defined(OS_LINUX)
     ImportLockDialogGtk::Show(parent_window_, this);
 #else
-    // TODO(port): Need CreateChromeWindow.
-    NOTIMPLEMENTED();
+    ImportLockDialogCocoa(this);
 #endif
   }
 }
