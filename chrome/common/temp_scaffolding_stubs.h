@@ -49,7 +49,7 @@ void InstallJankometer(const CommandLine&);
 #if !defined(OS_MACOSX)
 class ViewMsg_Print_Params;
 
-// Printing is all (obviously) not implemented.
+// Printing is only partially implemented.
 // http://code.google.com/p/chromium/issues/detail?id=9847
 namespace printing {
 
@@ -59,7 +59,6 @@ class PrintViewManager : public RenderViewHostDelegate::Printing {
   void Stop() { NOTIMPLEMENTED(); }
   void Destroy() { }
   bool OnRenderViewGone(RenderViewHost*) {
-    NOTIMPLEMENTED();
     return true;  // Assume for now that all renderer crashes are important.
   }
 
