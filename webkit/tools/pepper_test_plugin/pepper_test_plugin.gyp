@@ -12,13 +12,15 @@
       'include_dirs': [
         '../../..',  # Root of Chrome Checkout
       ],
+      'defines': [
+        'PEPPER_APIS_ENABLED',
+      ],
       'conditions': [
         ['OS=="win"', {
           'product_name': 'pepper_test_plugin',
           'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91A',
-          'msvs_settings': {
-          },
           'sources': [
+            'pepper_test_plugin.def',
             'pepper_test_plugin.rc',
           ],
         }]
