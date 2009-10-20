@@ -4122,8 +4122,6 @@
         'test/automation/automation_proxy_uitest.cc',
         'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/chrome_process_util_uitest.cc',
-        'test/reliability/page_load_test.cc',
-        'test/reliability/page_load_test.h',
         'test/ui/dom_checker_uitest.cc',
         'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/fast_shutdown_uitest.cc',
@@ -4143,8 +4141,6 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
-            # We run this test in the reliability_tests target.
-            'test/reliability/page_load_test.cc',
             # TODO(port)
             'browser/login_prompt_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
@@ -4174,7 +4170,6 @@
             'browser/sessions/session_restore_uitest.cc',
             # puts up modal dialogs.
             'browser/unload_uitest.cc',
-            'test/reliability/page_load_test.cc',
             'test/ui/fast_shutdown_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
             'test/ui/omnibox_uitest.cc',
@@ -4833,6 +4828,46 @@
         ['OS=="win"', {
           'dependencies': [
             '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+        },],
+      ],
+    },
+    {
+      # To run the tests from page_load_test.cc on Linux, we need to:
+      #
+      #   a) Build with Breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
+      #   b) Run with CHROME_HEADLESS=1 to generate crash dumps.
+      #   c) Strip the binary if it's a debug build. (binary may be over 2GB)
+      'target_name': 'reliability_tests',
+      'type': 'executable',
+      'msvs_guid': '8A3E1774-1DE9-445C-982D-3EE37C8A752A',
+      'dependencies': [
+        'browser',
+        'chrome',
+        'test_support_common',
+        'test_support_ui',
+        'theme_resources',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/reliability/page_load_test.cc',
+        'test/reliability/page_load_test.h',
+        'test/reliability/reliability_test_suite.h',
+        'test/reliability/run_all_unittests.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+        },],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
           ],
         },],
       ],
@@ -5798,45 +5833,6 @@
         # TODO(port): enable on mac.
         {
           'includes': ['test/interactive_ui/interactive_ui_tests.gypi']
-        },
-        # TODO(port): enable on mac.
-        # To run the tests from page_load_test.cc on Linux, we need to:
-        #
-        #   a) Build with Breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
-        #   b) Run with CHROME_HEADLESS=1 to generate crash dumps.
-        #   c) Strip the binary if it's a debug build. (binary may be over 2GB)
-        {
-          'target_name': 'reliability_tests',
-          'type': 'executable',
-          'msvs_guid': '8A3E1774-1DE9-445C-982D-3EE37C8A752A',
-          'dependencies': [
-            'test_support_common',
-            'test_support_ui',
-            'theme_resources',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/reliability/page_load_test.cc',
-            'test/reliability/page_load_test.h',
-            'test/reliability/reliability_test_suite.h',
-            'test/reliability/run_all_unittests.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-              ],
-            },],
-            ['OS=="linux"', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            },],
-          ],
         },
       ],
     },],  # OS!="mac"

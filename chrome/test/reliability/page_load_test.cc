@@ -157,7 +157,7 @@ class PageLoadTest : public UITest {
     scoped_ptr<FileVersionInfo> file_info;
 #if defined(OS_WIN)
     file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
     // TODO(fmeawad): the version retrieved here belongs to the test module and
     // not the chrome binary, need to be changed to chrome binary instead.
     file_info.reset(FileVersionInfo::CreateFileVersionInfoForCurrentModule());
@@ -591,8 +591,6 @@ class PageLoadTest : public UITest {
   std::map<FilePath, bool> crash_dumps_;
 };
 
-}  // namespace
-
 TEST_F(PageLoadTest, Reliability) {
   std::ofstream log_file;
 
@@ -620,6 +618,8 @@ TEST_F(PageLoadTest, Reliability) {
 
   log_file.close();
 }
+
+}  // namespace
 
 namespace {
   void ReportHandler(const std::string& str) {
