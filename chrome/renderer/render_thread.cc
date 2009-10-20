@@ -497,6 +497,9 @@ void RenderThread::EnsureWebKitInitialized() {
 
   if (RenderProcess::current()->initialized_media_library())
     WebKit::enableMediaPlayer();
+
+  if (command_line.HasSwitch(switches::kEnableWebSockets))
+    WebKit::enableWebSockets();
 }
 
 void RenderThread::IdleHandler() {

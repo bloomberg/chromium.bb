@@ -40,6 +40,7 @@
 #include "Page.h"
 #include "SecurityOrigin.h"
 #include "TextEncoding.h"
+#include "WebSocket.h"
 #include "WorkerContextExecutionProxy.h"
 #include <wtf/Assertions.h>
 #include <wtf/Threading.h>
@@ -143,6 +144,22 @@ void whiteListAccessFromOrigin(const WebURL& sourceOrigin,
 void resetOriginAccessWhiteLists()
 {
     WebCore::SecurityOrigin::resetOriginAccessWhiteLists();
+}
+
+void enableWebSockets()
+{
+#if ENABLE(WEB_SOCKETS)
+    WebCore::WebSocket::setIsAvailable(true);
+#endif
+}
+
+bool webSocketsEnabled()
+{
+#if ENABLE(WEB_SOCKETS)
+    return WebCore::WebSocket::isAvailable();
+#else
+    return false;
+#endif
 }
 
 } // namespace WebKit

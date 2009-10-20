@@ -83,7 +83,6 @@ namespace WebKit {
         virtual void setOfflineWebApplicationCacheEnabled(bool);
         virtual void setExperimentalWebGLEnabled(bool);
         virtual void setExperimentalNotificationsEnabled(bool);
-        virtual void setExperimentalWebSocketsEnabled(bool);
 
     private:
         WebCore::Settings* m_settings;

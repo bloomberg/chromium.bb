@@ -189,8 +189,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       command_line.HasSwitch(switches::kEnableExperimentalWebGL);
     web_prefs.experimental_notifications_enabled =
       command_line.HasSwitch(switches::kEnableDesktopNotifications);
-    web_prefs.web_sockets_enabled =
-      command_line.HasSwitch(switches::kEnableWebSockets);
   }
 
   web_prefs.uses_universal_detector =

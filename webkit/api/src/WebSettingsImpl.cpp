@@ -254,11 +254,4 @@ void WebSettingsImpl::setExperimentalNotificationsEnabled(bool enabled)
     m_settings->setExperimentalNotificationsEnabled(enabled);
 }
 
-void WebSettingsImpl::setExperimentalWebSocketsEnabled(bool enabled)
-{
-#if ENABLE(WEB_SOCKETS)
-    m_settings->setExperimentalWebSocketsEnabled(enabled);
-#endif
-}
-
 } // namespace WebKit

@@ -83,6 +83,10 @@ namespace WebKit {
         const WebString& destinationHost, bool allowDestinationSubdomains);
     WEBKIT_API void resetOriginAccessWhiteLists();
 
+    // Enables HTML5 Web Sockets support.
+    WEBKIT_API void enableWebSockets();
+    WEBKIT_API bool webSocketsEnabled();
+
 } // namespace WebKit
 
 #endif
