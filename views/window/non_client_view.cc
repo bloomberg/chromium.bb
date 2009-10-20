@@ -276,4 +276,8 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
+bool NonClientFrameView::ShouldPaintAsActive() const {
+  return GetWindow()->IsActive() || paint_as_active_;
+}
+
 }  // namespace views

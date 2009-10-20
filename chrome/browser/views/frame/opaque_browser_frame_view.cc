@@ -584,7 +584,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    if (frame_->GetWindow()->IsActive()) {
+    if (ShouldPaintAsActive()) {
       theme_frame = rb.GetBitmapNamed(IDR_FRAME);
       frame_color = browser_view_->IsOffTheRecord() ?
           ResourceBundle::frame_color_incognito :
@@ -596,7 +596,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
           ResourceBundle::frame_color_inactive;
     }
   } else if (!browser_view_->IsOffTheRecord()) {
-    if (frame_->GetWindow()->IsActive()) {
+    if (ShouldPaintAsActive()) {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME);
       frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME);
     } else {
@@ -604,7 +604,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INACTIVE);
     }
   } else {
-    if (frame_->GetWindow()->IsActive()) {
+    if (ShouldPaintAsActive()) {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO);
       frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INCOGNITO);
     } else {
@@ -637,7 +637,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal()) {
     SkBitmap* theme_overlay;
-    if (frame_->GetWindow()->IsActive())
+    if (ShouldPaintAsActive())
       theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY);
     else
       theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
@@ -694,16 +694,16 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    if (frame_->GetWindow()->IsActive())
+    if (ShouldPaintAsActive())
       theme_frame = rb.GetBitmapNamed(IDR_FRAME);
     else
       theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   } else if (!browser_view_->IsOffTheRecord()) {
-    theme_frame = window->IsActive() ?
+    theme_frame = ShouldPaintAsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
-    theme_frame = window->IsActive() ?
+    theme_frame = ShouldPaintAsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
   }
@@ -714,7 +714,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal()) {
-    SkBitmap* theme_overlay = frame_->GetWindow()->IsActive() ?
+    SkBitmap* theme_overlay = ShouldPaintAsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
     canvas->DrawBitmapInt(*theme_overlay, 0, 0);

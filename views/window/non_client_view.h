@@ -31,6 +31,9 @@ class NonClientFrameView : public View {
   // frame border.
   static const int kClientEdgeThickness;
 
+  // Prevent the frame view from painting its inactive state. Prevents a related
+  // window from causing its owner to appear deactivated. Used for windows like
+  // bubbles.
   void DisableInactiveRendering(bool disable) {
     paint_as_active_ = disable;
     if (!paint_as_active_)
@@ -81,8 +84,10 @@ class NonClientFrameView : public View {
                              int resize_corner_width,
                              bool can_resize);
 
-  // Accessor for paint_as_active_.
-  bool paint_as_active() const { return paint_as_active_; }
+  // Used to determine if the frame should be painted as active. Keyed off the
+  // window's actual active state and the override, see
+  // DisableInactiveRendering() above.
+  bool ShouldPaintAsActive() const;
 
  private:
   // True when the non-client view should always be rendered as if the window
