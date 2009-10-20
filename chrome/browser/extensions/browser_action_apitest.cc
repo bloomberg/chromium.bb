@@ -65,13 +65,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action_no_icon")) << message_;
 
-  // Test that there is a browser action in the toolbar.
+  // Test that there is a browser action in the toolbar and that it has no icon.
   BrowserActionsContainer* browser_actions =
       browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
       browser_actions();
   ASSERT_EQ(1, browser_actions->num_browser_actions());
+  ASSERT_TRUE(browser_actions->GetBrowserActionViewAt(0)->button()->icon()
+                  .empty());
 
-  // Tell the extension to update the browser action state.
+  // Tell the extension to update the icon using setIcon({imageData:...}).
   ResultCatcher catcher;
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   Extension* extension = service->extensions()->at(0);
@@ -80,8 +82,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DynamicBrowserAction) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   // Test that we received the changes.
-  ExtensionActionState* action_state = extension->browser_action_state();
-  ASSERT_TRUE(action_state->icon());
+  ASSERT_FALSE(browser_actions->GetBrowserActionViewAt(0)->button()->icon()
+                   .empty());
+
+  // Tell the extension to update using setIcon({path:...});
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update2.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Test that we received the changes.
+  ASSERT_FALSE(browser_actions->GetBrowserActionViewAt(0)->button()->icon()
+                   .empty());
+
+  // TODO(aa): Would be nice here to actually compare that the pixels change.
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserActionPopup) {

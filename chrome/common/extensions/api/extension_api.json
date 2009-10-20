@@ -999,6 +999,11 @@
                 "minimum": 0,
                 "description": "The zero-based index into the |icons| vector specified in the manifest.",
                 "optional": true
+              },
+              "path": {
+                "type": "string",
+                "description": "Relative path to an image in the extension to show in the browser action.",
+                "optional": true
               }
             }
           }

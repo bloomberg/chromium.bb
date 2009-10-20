@@ -333,6 +333,7 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders);
     }
 
+    var canvas_context;
     function setIconCommon(details, name, parameters) {
       if ("iconIndex" in details) {
         sendRequest(name, [details], parameters);
@@ -350,9 +351,32 @@ var chrome = chrome || {};
               "The imageData property must contain an ImageData object.");
         }
         sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
+      } else if ("path" in details) {
+        if (!canvas_context) {
+          var canvas = document.createElement("canvas");
+          canvas.width = 19;
+          canvas.height = 19;
+          canvas_context = canvas.getContext('2d');
+        }
+
+        var img = new Image();
+        var self = this;
+        img.onerror = function() {
+          console.error("Could not load browser action icon '" + details.path +
+                        "'.");
+        }
+        img.onload = function() {
+          canvas_context.clearRect(0, 0, canvas.width, canvas.height);
+          canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          delete details.path;
+          details.imageData = canvas_context.getImageData(0, 0, canvas.width,
+                                                          canvas.height);
+          sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
+        }
+        img.src = details.path;
       } else {
         throw new Error(
-            "Either the iconIndex or imageData property must be specified.");
+            "Either the path or imageData property must be specified.");
       }
     }
 

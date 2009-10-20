@@ -1,0 +1,10 @@
+<html>
+<body>
+<canvas id="canvas" width="27" height="23">
+<script>
+  // Test that setting an icon using its relative path works.
+  chrome.browserAction.setIcon({path: "icon.png"});
+  chrome.test.notifyPass();
+</script>
+</body>
+</html>
