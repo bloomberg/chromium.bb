@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_window.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 
 
@@ -28,7 +29,7 @@
      alreadyBookmarked:(BOOL)alreadyBookmarked {
   if ((self = [super initWithNibName:@"BookmarkBubble"
                               bundle:mac_util::MainAppBundle()])) {
-    // all these are weak...
+    // All these are weak...
     delegate_ = delegate;
     parentWindow_ = parentWindow;
     topLeftForBubble_ = topLeftForBubble;
@@ -74,11 +75,17 @@
   [self fillInFolderList];
 }
 
-- (IBAction)edit:(id)sender {
+// Shows the bookmark editor sheet for more advanced editing.
+- (void)showEditor {
   [self updateBookmarkNode];
   [self closeWindow];
   [delegate_ editBookmarkNode:node_];
   [delegate_ doneWithBubbleController:self];
+}
+
+- (IBAction)edit:(id)sender {
+  UserMetrics::RecordAction(L"BookmarkBubble_Edit", model_->profile());
+  [self showEditor];
 }
 
 - (IBAction)close:(id)sender {
@@ -90,13 +97,21 @@
   [delegate_ doneWithBubbleController:self];
 }
 
-// By implementing this, ESC causes the window to go away.
+// By implementing this, ESC causes the window to go away. If clicking the
+// star was what prompted this bubble to appear (i.e., not already bookmarked),
+// remove the bookmark.
 - (IBAction)cancel:(id)sender {
-  [self close:sender];
+  if (!alreadyBookmarked_) {
+    // |-remove:| calls |-close| so we don't have to bother.
+    [self remove:sender];
+  } else {
+    [self close:sender];
+  }
 }
 
 - (IBAction)remove:(id)sender {
   model_->SetURLStarred(node_->GetURL(), node_->GetTitle(), false);
+  UserMetrics::RecordAction(L"BookmarkBubble_Unstar", model_->profile());
   node_ = NULL;  // no longer valid
   [self close:self];
 }
@@ -106,7 +121,9 @@
 - (void)comboBoxSelectionDidChange:(NSNotification*)notification {
   NSString* selected = [folderComboBox_ objectValueOfSelectedItem];
   if ([selected isEqual:chooseAnotherFolder_.get()]) {
-    [self edit:self];
+    UserMetrics::RecordAction(L"BookmarkBubble_EditFromCombobox",
+                              model_->profile());
+    [self showEditor];
   }
 }
 
@@ -195,6 +212,8 @@
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
     model_->SetTitle(node_, base::SysNSStringToWide(newTitle));
+    UserMetrics::RecordAction(L"BookmarkBubble_ChangeTitleInBubble",
+                              model_->profile());
   }
   // Then the parent folder.
   NSString* oldParentTitle = base::SysWideToNSString(
@@ -207,6 +226,8 @@
       // newParent should only ever possibly be NULL in a unit test.
       int index = newParent->GetChildCount();
       model_->Move(node_, newParent, index);
+      UserMetrics::RecordAction(L"BookmarkBubble_ChangeParent",
+                                model_->profile());
     }
   }
 }

@@ -209,5 +209,45 @@ TEST_F(BookmarkBubbleControllerTest, ComboSelectionChanged) {
   EXPECT_EQ([delegate_ edits], 1);
 }
 
+// Create a controller that simulates the bookmark just now being created by
+// the user clicking the star, then sending the "cancel" command to represent
+// them pressing escape. The bookmark should not be there.
+TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
+  BookmarkModel* model = GetBookmarkModel();
+  GURL gurl("http://www.google.com");
+  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+                                           0,
+                                           L"Bookie markie title",
+                                           gurl);
+  scoped_nsobject<BookmarkBubbleController> controller(
+      [[BookmarkBubbleController alloc]
+          initWithDelegate:delegate_.get()
+              parentWindow:cocoa_helper_.window()
+          topLeftForBubble:[delegate_ topLeftForBubble]
+                     model:helper_.profile()->GetBookmarkModel()
+                      node:node
+         alreadyBookmarked:NO]);  // The last param is the key difference.
+  EXPECT_TRUE(controller);
+
+  [controller cancel:nil];
+  EXPECT_FALSE(model->IsBookmarked(gurl));
+}
+
+// Create a controller where the bookmark already existed prior to clicking
+// the star and test that sending a cancel command doesn't change the state
+// of the bookmark.
+TEST_F(BookmarkBubbleControllerTest, EscapeDoesntTouchExistingBookmark) {
+  BookmarkModel* model = GetBookmarkModel();
+  GURL gurl("http://www.google.com");
+  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+                                           0,
+                                           L"Bookie markie title",
+                                           gurl);
+  BookmarkBubbleController* controller = ControllerForNode(node);
+  EXPECT_TRUE(controller);
+
+  [(id)controller cancel:nil];
+  EXPECT_TRUE(model->IsBookmarked(gurl));
+}
 
 }  // namespace
