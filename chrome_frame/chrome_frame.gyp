@@ -529,7 +529,7 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile':
-              '..\\chrome\\$(ConfigurationName)\\servers\\$(ProjectName).exe',
+              '$(OutDir)\\servers\\$(ProjectName).exe',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
           # We're going for minimal size, so no standard library (in release
@@ -701,7 +701,7 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'OutputFile':
-                  '..\\chrome\\$(ConfigurationName)\\servers\\$(ProjectName).dll',
+                  '$(OutDir)\\servers\\$(ProjectName).dll',
               'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
               'BaseAddress': '0x33000000',
               # Set /SUBSYSTEM:WINDOWS (for consistency).
