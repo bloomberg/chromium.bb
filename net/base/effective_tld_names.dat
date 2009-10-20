@@ -40,7 +40,7 @@
 // ***** END LICENSE BLOCK *****
 
 // Chromium note: this based on Mozilla's file:
-//  http://mxr.mozilla.org/mozilla/source/netwerk/dns/src/effective_tld_names.dat?raw=1
+//  http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/src/effective_tld_names.dat?raw=1
 
 // ac : http://en.wikipedia.org/wiki/.ac
 ac
@@ -2487,6 +2487,10 @@ gb.net
 se.net
 uk.net
 
+// ZaNiC names : http://www.za.net/
+// Confirmed by registry <hostmaster@nic.za.net> 2009-10-03
+za.net
+
 // nf : http://en.wikipedia.org/wiki/.nf
 nf
 com.nf
@@ -3314,6 +3318,10 @@ org
 // Submitted by registry <gavin.brown@centralnic.com> 2008-06-17
 ae.org
 
+// ZaNiC names : http://www.za.net/
+// Confirmed by registry <hostmaster@nic.za.net> 2009-10-03
+za.org
+
 // pa : http://www.nic.pa/
 // Some additional second level "domains" resolve directly as hostnames, such as
 // pannet.pa, so we add a rule for "pa".
@@ -4133,6 +4141,7 @@ ua
 com.ua
 edu.ua
 gov.ua
+in.ua
 net.ua
 org.ua
 // ua geo-names
@@ -4175,11 +4184,11 @@ sebastopol.ua
 sumy.ua
 te.ua
 ternopil.ua
+uzhgorod.ua
 vinnica.ua
 vn.ua
 zaporizhzhe.ua
 zp.ua
-uzhgorod.ua
 zhitomir.ua
 zt.ua
 
