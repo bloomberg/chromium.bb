@@ -1571,27 +1571,33 @@ drm_intel_gem_bo_disable_reuse(drm_intel_bo *bo)
 	return 0;
 }
 
-/**
- * Clear the flag set by drm_intel_gem_bo_get_aperture_space() so we're ready
- * for the next drm_intel_bufmgr_check_aperture_space() call.
- */
 static int
-drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
+_drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int i;
 
-	if (bo == NULL || target_bo == NULL)
-		return 0;
-
 	for (i = 0; i < bo_gem->reloc_count; i++) {
 		if (bo_gem->reloc_target_bo[i] == target_bo)
 			return 1;
-		if (drm_intel_gem_bo_references(bo_gem->reloc_target_bo[i],
+		if (_drm_intel_gem_bo_references(bo_gem->reloc_target_bo[i],
 						target_bo))
 			return 1;
 	}
 
+	return 0;
+}
+
+/** Return true if target_bo is referenced by bo's relocation tree. */
+static int
+drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
+{
+	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) target_bo;
+
+	if (bo == NULL || target_bo == NULL)
+		return 0;
+	if (target_bo_gem->used_as_reloc_target)
+		return _drm_intel_gem_bo_references(bo, target_bo);
 	return 0;
 }
 
