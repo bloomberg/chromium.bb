@@ -69,11 +69,17 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  // The Gears plugin is Safari-specific, and causes crashes, so don't load it.
+  // Screen out some plugins that we know don't work at all.
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {
-    if (i->mime_type == "application/x-googlegears")
+    // The Gears plugin is Safari-specific. MoveNetworks Quantum Media Player
+    // and Shockwave for Director crash during initialization, and don't work in
+    // Safari on 10.6 either.
+    if (i->mime_type == "application/x-googlegears" ||
+        i->mime_type == "application/x-vnd.movenetworks.qm" ||
+        i->mime_type == "application/x-director") {
       return false;
+    }
   }
 
   // Hierarchy check
