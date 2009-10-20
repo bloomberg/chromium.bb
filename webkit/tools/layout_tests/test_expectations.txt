@@ -3175,7 +3175,6 @@ BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.htm
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
 
 // WebKit Roll 49761:49809
-BUG_JAPHET LINUX WIN : LayoutTests/fast/canvas/arc360.html = FAIL
 BUG_JAPHET LINUX : LayoutTests/fast/css/transition-color-unspecified.html = FAIL
 BUG_JAPHET : LayoutTests/media/media-load-event.html = FAIL
 BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
