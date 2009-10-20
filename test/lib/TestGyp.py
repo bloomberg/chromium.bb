@@ -299,10 +299,7 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration or 'Default'
     # Make static and shared libs go in different places, so allow tests to pass
     # in the expected library path.
-    if kw.has_key('libdir'):
-      libdir = kw['libdir']
-    else:
-      libdir = 'lib'
+    libdir = kw.get('libdir', 'lib')
     lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
                              self._lib)
     self.must_exist(lib_path)
@@ -310,10 +307,7 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration or 'Default'
     # Make static and shared libs go in different places, so allow tests to pass
     # in the expected library path.
-    if kw.has_key('libdir'):
-      libdir = kw['libdir']
-    else:
-      libdir = 'lib'
+    libdir = kw.get('libdir', 'lib')
     lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
                              self._lib)
     self.must_not_exist(lib_path)
