@@ -529,29 +529,6 @@
               'UseOfATL': '1', # 1 = static link to ATL, 2 = dynamic link
             },
           },
-          {
-            'target_name': 'o3d_host_register',
-            'type': 'none',
-            'dependencies': [
-              'o3d_host',
-            ],
-            'actions': [
-              {
-                'action_name': 'register_o3d_host',
-                'inputs': [
-                  '<(PRODUCT_DIR)/o3d_host.dll',
-                ],
-                'outputs': [
-                  'file_that_never_exists_so_this_action_always_runs',
-                ],
-                'action': [
-                  'regsvr32',
-                  '/s',
-                  '<(_inputs)',
-                ],
-              },
-            ],
-          },
         ],
       },
     ],

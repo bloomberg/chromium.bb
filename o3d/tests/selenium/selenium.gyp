@@ -9,7 +9,10 @@
       '--referencedir=<(screenshotsdir)',
       '--product_dir=<(PRODUCT_DIR)',
       '--screencompare=<(PRODUCT_DIR)/perceptualdiff<(EXECUTABLE_SUFFIX)',
+      # We only want to include selenium_ie and register host
+      # if the user is admin.
     ],
+    'is_admin': '<!(python ../../build/is_admin.py)',
   },
   'includes': [
     '../../build/common.gypi',
@@ -212,7 +215,7 @@
         ],
       },
     ],
-    ['OS=="win"',
+    ['OS=="win" and "<(is_admin)"=="True"',
       {
         'targets': [
           {
@@ -223,7 +226,7 @@
               '../tests.gyp:unit_tests',
               '../../plugin/plugin.gyp:npo3dautoplugin',
               '../../plugin/plugin.gyp:o3d_host',
-              '../../plugin/plugin.gyp:o3d_host_register',
+              #'o3d_host_register',
             ],
             'run_as': {
               'action': [
@@ -235,6 +238,29 @@
                 '--screenshotsdir=<(PRODUCT_DIR)/tests/selenium/screenshots_ie',
               ],
             },
+          },
+          {
+            'target_name': 'o3d_host_register',
+            'type': 'none',
+            'dependencies': [
+              '../../plugin/plugin.gyp:o3d_host',
+            ],
+            'actions': [
+              {
+                'action_name': 'register_o3d_host',
+                'inputs': [
+                  '<(PRODUCT_DIR)/o3d_host.dll',
+                ],
+                'outputs': [
+                  'file_that_never_exists_so_this_action_always_runs',
+                ],
+                'action': [
+                  'regsvr32',
+                  '/s',
+                  '<(_inputs)',
+                ],
+              },
+            ],
           },
         ],
       },
