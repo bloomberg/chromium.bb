@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/meta_table_helper.h"
 #include "webkit/glue/password_form.h"
 
@@ -61,10 +62,10 @@ class LoginDatabase {
 
  protected:
   // Returns an encrypted version of plain_text.
-  virtual std::string EncryptedString(const std::wstring& plain_text) const = 0;
+  virtual std::string EncryptedString(const string16& plain_text) const = 0;
 
   // Returns a decrypted version of cipher_text.
-  virtual std::wstring DecryptedString(const std::string& cipher_text)
+  virtual string16 DecryptedString(const std::string& cipher_text)
       const = 0;
 
   bool InitLoginsTable();

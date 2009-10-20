@@ -186,7 +186,7 @@ PasswordForm* AssemblePasswordFormResult(
     WebCore::HTMLInputElement* username,
     WebCore::HTMLInputElement* old_password,
     WebCore::HTMLInputElement* password) {
-  std::wstring empty;
+  string16 empty;
   PasswordForm* result = new PasswordForm();
   // Ignore the query and ref components
   GURL::Replacements rep;
@@ -205,19 +205,19 @@ PasswordForm* AssemblePasswordFormResult(
   result->signon_realm = full_origin.GetOrigin().spec();
   // Note PasswordManager sets ssl_valid by asking the WebContents' SSLManager.
   result->submit_element =
-      submit == NULL ? empty : StringToStdWString(submit->name());
+      submit == NULL ? empty : StringToString16(submit->name());
   result->username_element =
-      username == NULL ? empty : StringToStdWString(username->name());
+      username == NULL ? empty : StringToString16(username->name());
   result->username_value =
-      username == NULL ? empty : StringToStdWString(username->value());
+      username == NULL ? empty : StringToString16(username->value());
   result->password_element =
-      password == NULL ? empty : StringToStdWString(password->name());
+      password == NULL ? empty : StringToString16(password->name());
   result->password_value =
-      password == NULL ? empty : StringToStdWString(password->value());
+      password == NULL ? empty : StringToString16(password->value());
   result->old_password_element =
-      old_password == NULL ? empty : StringToStdWString(old_password->name());
+      old_password == NULL ? empty : StringToString16(old_password->name());
   result->old_password_value =
-      old_password == NULL ? empty : StringToStdWString(old_password->value());
+      old_password == NULL ? empty : StringToString16(old_password->value());
   return result;
 }
 

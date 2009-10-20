@@ -670,7 +670,7 @@ class TabContents : public PageNavigator,
   struct PendingInstall {
     int32 page_id;
     SkBitmap icon;
-    std::wstring title;
+    string16 title;
     GURL url;
     // This object receives the GearsCreateShortcutCallback and routes the
     // message back to the TabContents, if we haven't been deleted.

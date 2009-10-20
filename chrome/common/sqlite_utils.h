@@ -291,6 +291,14 @@ class SQLStatement : public scoped_sqlite3_stmt_ptr {
                      static_cast<int>(value.length()), SQLITE_TRANSIENT);
   }
 
+  int bind_string16(int index, const string16& value) {
+    // don't use c_str so it doesn't have to fix up the null terminator
+    // (sqlite just uses the length)
+    std::string value_utf8(UTF16ToUTF8(value));
+    return bind_text(index, value_utf8.data(),
+                     static_cast<int>(value_utf8.length()), SQLITE_TRANSIENT);
+  }
+
   int bind_wstring(int index, const std::wstring& value) {
     // don't use c_str so it doesn't have to fix up the null terminator
     // (sqlite just uses the length)
@@ -350,6 +358,8 @@ class SQLStatement : public scoped_sqlite3_stmt_ptr {
   bool column_string(int index, std::string* str);
   std::string column_string(int index);
   const char16* column_text16(int index);
+  bool column_string16(int index, string16* str);
+  string16 column_string16(int index);
   bool column_wstring(int index, std::wstring* str);
   std::wstring column_wstring(int index);
 

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "chrome/browser/keychain_mock_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
@@ -123,15 +124,15 @@ static PasswordForm* CreatePasswordFormFromData(
   if (form_data.action)
     form->action = GURL(form_data.action);
   if (form_data.submit_element)
-    form->submit_element = std::wstring(form_data.submit_element);
+    form->submit_element = WideToUTF16(form_data.submit_element);
   if (form_data.username_element)
-    form->username_element = std::wstring(form_data.username_element);
+    form->username_element = WideToUTF16(form_data.username_element);
   if (form_data.password_element)
-    form->password_element = std::wstring(form_data.password_element);
+    form->password_element = WideToUTF16(form_data.password_element);
   if (form_data.username_value) {
-    form->username_value = std::wstring(form_data.username_value);
+    form->username_value = WideToUTF16(form_data.username_value);
     if (form_data.password_value)
-      form->password_value = std::wstring(form_data.password_value);
+      form->password_value = WideToUTF16(form_data.password_value);
   } else {
     form->blacklisted_by_user = true;
   }
@@ -168,16 +169,16 @@ static void CheckFormsAgainstExpectations(
         << test_label;
     EXPECT_EQ(GURL(expectation->origin), form->origin) << test_label;
     EXPECT_EQ(GURL(expectation->action), form->action) << test_label;
-    EXPECT_EQ(std::wstring(expectation->submit_element), form->submit_element)
+    EXPECT_EQ(WideToUTF16(expectation->submit_element), form->submit_element)
         << test_label;
-    EXPECT_EQ(std::wstring(expectation->username_element),
+    EXPECT_EQ(WideToUTF16(expectation->username_element),
               form->username_element) << test_label;
-    EXPECT_EQ(std::wstring(expectation->password_element),
+    EXPECT_EQ(WideToUTF16(expectation->password_element),
               form->password_element) << test_label;
     if (expectation->username_value) {
-      EXPECT_EQ(std::wstring(expectation->username_value),
+      EXPECT_EQ(WideToUTF16(expectation->username_value),
                 form->username_value) << test_label;
-      EXPECT_EQ(std::wstring(expectation->password_value),
+      EXPECT_EQ(WideToUTF16(expectation->password_value),
                 form->password_value) << test_label;
     } else {
       EXPECT_TRUE(form->blacklisted_by_user) << test_label;
@@ -255,9 +256,9 @@ TEST_F(PasswordStoreMacTest, TestKeychainToFormTranslation) {
     EXPECT_EQ(std::string(expected[i].signon_realm), form.signon_realm)
         << "In iteration " << i;
     if (expected[i].username) {
-      EXPECT_EQ(std::wstring(expected[i].username), form.username_value)
+      EXPECT_EQ(WideToUTF16(expected[i].username), form.username_value)
           << "In iteration " << i;
-      EXPECT_EQ(std::wstring(expected[i].password), form.password_value)
+      EXPECT_EQ(WideToUTF16(expected[i].password), form.password_value)
           << "In iteration " << i;
       EXPECT_FALSE(form.blacklisted_by_user) << "In iteration " << i;
     } else {
@@ -423,7 +424,7 @@ TEST_F(PasswordStoreMacTest, TestKeychainExactSearch) {
     std::vector<PasswordForm*> modified_forms;
 
     modified_forms.push_back(new PasswordForm(*base_form));
-    modified_forms.back()->username_value = std::wstring(L"wrong_user");
+    modified_forms.back()->username_value = ASCIIToUTF16("wrong_user");
 
     modified_forms.push_back(new PasswordForm(*base_form));
     SetPasswordFormPath(modified_forms.back(), "elsewhere.html");
@@ -565,15 +566,15 @@ TEST_F(PasswordStoreMacTest, TestFormMatch) {
   PasswordForm base_form;
   base_form.signon_realm = std::string("http://some.domain.com/");
   base_form.origin = GURL("http://some.domain.com/page.html");
-  base_form.username_value = std::wstring(L"joe_user");
+  base_form.username_value = ASCIIToUTF16("joe_user");
 
   {
     // Check that everything unimportant can be changed.
     PasswordForm different_form(base_form);
-    different_form.username_element = std::wstring(L"username");
-    different_form.submit_element = std::wstring(L"submit");
-    different_form.username_element = std::wstring(L"password");
-    different_form.password_value = std::wstring(L"sekrit");
+    different_form.username_element = ASCIIToUTF16("username");
+    different_form.submit_element = ASCIIToUTF16("submit");
+    different_form.username_element = ASCIIToUTF16("password");
+    different_form.password_value = ASCIIToUTF16("sekrit");
     different_form.action = GURL("http://some.domain.com/action.cgi");
     different_form.ssl_valid = true;
     different_form.preferred = true;
@@ -602,7 +603,7 @@ TEST_F(PasswordStoreMacTest, TestFormMatch) {
   }
   {
     PasswordForm different_form(base_form);
-    different_form.username_value = std::wstring(L"john.doe");
+    different_form.username_value = ASCIIToUTF16("john.doe");
     EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
                                                                different_form));
   }
@@ -813,8 +814,8 @@ TEST_F(PasswordStoreMacTest, TestPasswordBulkLookup) {
                                                       &database_forms);
   EXPECT_EQ(2U, database_forms.size());
   ASSERT_EQ(3U, merged_forms.size());
-  EXPECT_EQ(std::wstring(L"sekrit"), merged_forms[0]->password_value);
-  EXPECT_EQ(std::wstring(L"sekrit"), merged_forms[1]->password_value);
+  EXPECT_EQ(ASCIIToUTF16("sekrit"), merged_forms[0]->password_value);
+  EXPECT_EQ(ASCIIToUTF16("sekrit"), merged_forms[1]->password_value);
   EXPECT_EQ(true, merged_forms[2]->blacklisted_by_user);
 
   STLDeleteElements(&database_forms);

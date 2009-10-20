@@ -130,7 +130,7 @@ TEST_F(DomOperationsTests, GetSavableResourceLinksWithPageHasInvalidLinks) {
 // Tests ParseIconSizes with various input.
 TEST_F(DomOperationsTests, ParseIconSizes) {
   struct TestData {
-    const std::wstring input;
+    const char* input;
     const bool expected_result;
     const bool is_any;
     const size_t expected_size_count;
@@ -140,31 +140,31 @@ TEST_F(DomOperationsTests, ParseIconSizes) {
     const int height2;
   } data[] = {
     // Bogus input cases.
-    { L"10",         false, false, 0, 0, 0, 0, 0 },
-    { L"10 10",      false, false, 0, 0, 0, 0, 0 },
-    { L"010",        false, false, 0, 0, 0, 0, 0 },
-    { L" 010 ",      false, false, 0, 0, 0, 0, 0 },
-    { L" 10x ",      false, false, 0, 0, 0, 0, 0 },
-    { L" x10 ",      false, false, 0, 0, 0, 0, 0 },
-    { L"any 10x10",  false, false, 0, 0, 0, 0, 0 },
-    { L"",           false, false, 0, 0, 0, 0, 0 },
-    { L"10ax11",     false, false, 0, 0, 0, 0, 0 },
+    { "10",         false, false, 0, 0, 0, 0, 0 },
+    { "10 10",      false, false, 0, 0, 0, 0, 0 },
+    { "010",        false, false, 0, 0, 0, 0, 0 },
+    { " 010 ",      false, false, 0, 0, 0, 0, 0 },
+    { " 10x ",      false, false, 0, 0, 0, 0, 0 },
+    { " x10 ",      false, false, 0, 0, 0, 0, 0 },
+    { "any 10x10",  false, false, 0, 0, 0, 0, 0 },
+    { "",           false, false, 0, 0, 0, 0, 0 },
+    { "10ax11",     false, false, 0, 0, 0, 0, 0 },
 
     // Any.
-    { L"any",        true, true, 0, 0, 0, 0, 0 },
-    { L" any",       true, true, 0, 0, 0, 0, 0 },
-    { L" any ",      true, true, 0, 0, 0, 0, 0 },
+    { "any",        true, true, 0, 0, 0, 0, 0 },
+    { " any",       true, true, 0, 0, 0, 0, 0 },
+    { " any ",      true, true, 0, 0, 0, 0, 0 },
 
     // Sizes.
-    { L"10x11",      true, false, 1, 10, 11, 0, 0 },
-    { L" 10x11 ",    true, false, 1, 10, 11, 0, 0 },
-    { L" 10x11 1x2", true, false, 2, 10, 11, 1, 2 },
+    { "10x11",      true, false, 1, 10, 11, 0, 0 },
+    { " 10x11 ",    true, false, 1, 10, 11, 0, 0 },
+    { " 10x11 1x2", true, false, 2, 10, 11, 1, 2 },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     bool is_any;
     std::vector<gfx::Size> sizes;
-    const bool result =
-        webkit_glue::ParseIconSizes(data[i].input, &sizes, &is_any);
+    bool result = webkit_glue::ParseIconSizes(
+        ASCIIToUTF16(data[i].input), &sizes, &is_any);
     ASSERT_EQ(result, data[i].expected_result);
     if (result) {
       ASSERT_EQ(data[i].is_any, is_any);

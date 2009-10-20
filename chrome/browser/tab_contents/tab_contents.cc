@@ -802,7 +802,7 @@ void TabContents::CreateShortcut() {
   // effectively cancel the pending install request.
   pending_install_.page_id = entry->page_id();
   pending_install_.icon = GetFavIcon();
-  pending_install_.title = UTF16ToWideHack(GetTitle());
+  pending_install_.title = GetTitle();
   pending_install_.url = GetURL();
   if (pending_install_.callback_functor) {
     pending_install_.callback_functor->Cancel();
@@ -810,7 +810,7 @@ void TabContents::CreateShortcut() {
   }
   DCHECK(!pending_install_.icon.isNull()) << "Menu item should be disabled.";
   if (pending_install_.title.empty())
-    pending_install_.title = UTF8ToWide(GetURL().spec());
+    pending_install_.title = UTF8ToUTF16(GetURL().spec());
 
   // Request the application info. When done OnDidGetApplicationInfo is invoked
   // and we'll create the shortcut.

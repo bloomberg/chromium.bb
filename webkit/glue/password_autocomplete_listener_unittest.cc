@@ -107,10 +107,9 @@ class PasswordManagerAutocompleteTests : public testing::Test {
     password1_ = ASCIIToUTF16("password");
     username2_ = ASCIIToUTF16("bob");
     password2_ = ASCIIToUTF16("bobsyouruncle");
-    data_.basic_data.values.push_back(UTF16ToWideHack(username1_));
-    data_.basic_data.values.push_back(UTF16ToWideHack(password1_));
-    data_.additional_logins[UTF16ToWideHack(username2_)] =
-        UTF16ToWideHack(password2_);
+    data_.basic_data.values.push_back(username1_);
+    data_.basic_data.values.push_back(password1_);
+    data_.additional_logins[username2_] = password2_;
     testing::Test::SetUp();
   }
 

@@ -25,7 +25,7 @@ IPC_MESSAGE_CONTROL1(Msg_Decrypt,
                      std::string /* crypt */)
 // Child->Server: Decrypted String.
 IPC_MESSAGE_CONTROL1(Msg_Decryptor_Response,
-                     std::wstring /* unencrypted_str */)
+                     string16 /* unencrypted_str */)
 
 // Server->Child: Die.
 IPC_MESSAGE_CONTROL0(Msg_Decryptor_Quit)

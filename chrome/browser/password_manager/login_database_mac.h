@@ -19,8 +19,8 @@ class LoginDatabaseMac : public LoginDatabase {
 
  protected:
   // Stub implementations that always return an empty string.
-  virtual std::string EncryptedString(const std::wstring& plain_text) const;
-  virtual std::wstring DecryptedString(const std::string& cipher_text) const;
+  virtual std::string EncryptedString(const string16& plain_text) const;
+  virtual string16 DecryptedString(const std::string& cipher_text) const;
 };
 
 

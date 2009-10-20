@@ -233,17 +233,17 @@ struct RunnableMethodTraits<CreateShortcutCommand> {
 
 void GearsCreateShortcut(
     const webkit_glue::WebApplicationInfo& app_info,
-    const std::wstring& fallback_name,
+    const string16& fallback_name,
     const GURL& fallback_url,
     const SkBitmap& fallback_icon,
     GearsCreateShortcutCallback* callback) {
-  std::wstring name =
+  string16 name =
       !app_info.title.empty() ? app_info.title : fallback_name;
-  std::string orig_name_utf8 = WideToUTF8(name);
+  std::string orig_name_utf8 = UTF16ToUTF8(name);
   EnsureStringValidPathComponent(name);
 
-  std::string name_utf8 = WideToUTF8(name);
-  std::string description_utf8 = WideToUTF8(app_info.description);
+  std::string name_utf8 = UTF16ToUTF8(name);
+  std::string description_utf8 = UTF16ToUTF8(app_info.description);
   const GURL& url =
       !app_info.app_url.is_empty() ? app_info.app_url : fallback_url;
 

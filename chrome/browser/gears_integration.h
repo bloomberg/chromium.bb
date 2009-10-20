@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_GEARS_INTEGRATION_H__
 #define CHROME_BROWSER_GEARS_INTEGRATION_H__
 
-#include <string>
-
 #include "app/gfx/native_widget_types.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/common/gears_api.h"
 
@@ -42,7 +41,7 @@ typedef Callback2<const GearsShortcutData2&, bool>::Type
 
 void GearsCreateShortcut(
     const webkit_glue::WebApplicationInfo& app_info,
-    const std::wstring& fallback_name,
+    const string16& fallback_name,
     const GURL& fallback_url,
     const SkBitmap& fallback_icon,
     GearsCreateShortcutCallback* callback);

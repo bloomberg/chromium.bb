@@ -75,35 +75,35 @@ struct PasswordForm {
   // possible.
   //
   // When parsing an HTML form, this must always be set.
-  std::wstring submit_element;
+  string16 submit_element;
 
   // The name of the username input element. Optional (improves scoring).
   //
   // When parsing an HTML form, this must always be set.
-  std::wstring username_element;
+  string16 username_element;
 
   // The username. Optional.
   //
   // When parsing an HTML form, this is typically empty unless the site
   // has implemented some form of autofill.
-  std::wstring username_value;
+  string16 username_value;
 
   // The name of the password input element, Optional (improves scoring).
   //
   // When parsing an HTML form, this must always be set.
-  std::wstring password_element;
+  string16 password_element;
 
   // The password. Required.
   //
   // When parsing an HTML form, this is typically empty.
-  std::wstring password_value;
+  string16 password_value;
 
   // If the form was a change password form, the name of the
   // 'old password' input element. Optional.
-  std::wstring old_password_element;
+  string16 old_password_element;
 
   // The old password. Optional.
-  std::wstring old_password_value;
+  string16 old_password_value;
 
   // Whether or not this login was saved under an HTTPS session with a valid
   // SSL cert. We will never match or autofill a PasswordForm where
@@ -143,7 +143,7 @@ struct PasswordForm {
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
-typedef std::map<std::wstring, PasswordForm*> PasswordFormMap;
+typedef std::map<string16, PasswordForm*> PasswordFormMap;
 
 }  // namespace webkit_glue
 

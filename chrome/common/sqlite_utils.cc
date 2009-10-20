@@ -475,6 +475,20 @@ const char16* SQLStatement::column_text16(int index) {
   return static_cast<const char16*>(sqlite3_column_text16(stmt_, index));
 }
 
+bool SQLStatement::column_string16(int index, string16* str) {
+  DCHECK(stmt_);
+  DCHECK(str);
+  const char* s = column_text(index);
+  str->assign(s ? UTF8ToUTF16(s) : string16());
+  return (s != NULL);
+}
+
+string16 SQLStatement::column_string16(int index) {
+  string16 str;
+  column_string16(index, &str);
+  return str;
+}
+
 bool SQLStatement::column_wstring(int index, std::wstring* str) {
   DCHECK(stmt_);
   DCHECK(str);

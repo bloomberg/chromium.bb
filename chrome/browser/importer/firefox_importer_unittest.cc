@@ -35,11 +35,13 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
 
   EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
                                             db_path.ToWStringHack()));
-  EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
-      "wFAYIKoZIhvcNAwcECBJM63MpT9rtBAjMCm7qo/EhlA=="));
+  EXPECT_EQ(ASCIIToUTF16("hello"),
+      decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECBJ"
+                              "M63MpT9rtBAjMCm7qo/EhlA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(L"\x4E2D", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
-      "wFAYIKoZIhvcNAwcECN9OQ5ZFmhb8BAiFo1Z+fUvaIQ=="));
+  EXPECT_EQ(WideToUTF16(L"\x4E2D"),
+      decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECN9"
+                              "OQ5ZFmhb8BAiFo1Z+fUvaIQ=="));
 }
 
 TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
@@ -59,11 +61,13 @@ TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
 
   EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
                                             db_path.ToWStringHack()));
-  EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
-      "wFAYIKoZIhvcNAwcECKajtRg4qFSHBAhv9luFkXgDJA=="));
+  EXPECT_EQ(ASCIIToUTF16("hello"),
+      decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECKa"
+                              "jtRg4qFSHBAhv9luFkXgDJA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(L"\x4E2D", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
-      "wFAYIKoZIhvcNAwcECLWqqiccfQHWBAie74hxnULxlw=="));
+  EXPECT_EQ(WideToUTF16(L"\x4E2D"),
+      decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECLW"
+                              "qqiccfQHWBAie74hxnULxlw=="));
 }
 
 TEST(FirefoxImporterTest, Firefox2BookmarkParse) {

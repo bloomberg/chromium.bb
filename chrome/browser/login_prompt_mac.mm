@@ -124,8 +124,8 @@ class LoginHandlerMac : public LoginHandler,
 
     // Tell the password manager the credentials were submitted / accepted.
     if (password_manager_) {
-      password_form_.username_value = username;
-      password_form_.password_value = password;
+      password_form_.username_value = WideToUTF16Hack(username);
+      password_form_.password_value = WideToUTF16Hack(password);
       password_manager_->ProvisionallySavePassword(password_form_);
     }
 

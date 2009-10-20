@@ -74,11 +74,11 @@ struct WebApplicationInfo {
 
   // Title of the application. This is set from the meta tag whose name is
   // 'application-name'.
-  std::wstring title;
+  string16 title;
 
   // Description of the application. This is set from the meta tag whose name
   // is 'description'.
-  std::wstring description;
+  string16 description;
 
   // URL for the app. This is set from the meta tag whose name is
   // 'application-url'.
@@ -94,7 +94,7 @@ struct WebApplicationInfo {
 // the attribute are added to sizes, or is_any is set to true.
 //
 // You shouldn't have a need to invoke this directly, it's public for testing.
-bool ParseIconSizes(const std::wstring& text,
+bool ParseIconSizes(const string16& text,
                     std::vector<gfx::Size>* sizes,
                     bool* is_any);
 

@@ -16,11 +16,11 @@ struct FormData {
   // The action target of the form
   GURL action;
   // A list of element names to be filled
-  std::vector<std::wstring> elements;
+  std::vector<string16> elements;
   // A list of element values to be filled
-  std::vector<std::wstring> values;
+  std::vector<string16> values;
   // The name of the submit button to be used to submit (optional)
-  std::wstring submit;
+  string16 submit;
 };
 
 #endif  // WEBKIT_GLUE_FORM_DATA_H__

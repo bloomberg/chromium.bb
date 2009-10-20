@@ -63,11 +63,11 @@ TEST_F(LoginDatabaseTest, Logins) {
   PasswordForm form;
   form.origin = GURL("http://www.google.com/accounts/LoginAuth");
   form.action = GURL("http://www.google.com/accounts/Login");
-  form.username_element = L"Email";
-  form.username_value = L"test@gmail.com";
-  form.password_element = L"Passwd";
-  form.password_value = L"test";
-  form.submit_element = L"signIn";
+  form.username_element = ASCIIToUTF16("Email");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_element = ASCIIToUTF16("Passwd");
+  form.password_value = ASCIIToUTF16("test");
+  form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.google.com/";
   form.ssl_valid = false;
   form.preferred = false;
@@ -89,7 +89,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // The example site changes...
   PasswordForm form2(form);
   form2.origin = GURL("http://www.google.com/new/accounts/LoginAuth");
-  form2.submit_element = L"reallySignIn";
+  form2.submit_element = ASCIIToUTF16("reallySignIn");
 
   // Match against an inexact copy
   EXPECT_TRUE(db->GetLogins(form2, &result));
@@ -154,7 +154,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // User changes his password.
   PasswordForm form6(form5);
-  form6.password_value = L"test6";
+  form6.password_value = ASCIIToUTF16("test6");
   form6.preferred = true;
 
   // We update, and check to make sure it matches the
@@ -173,7 +173,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Password element was updated.
 #if defined(OS_MACOSX)
   // On the Mac we should never be storing passwords in the database.
-  EXPECT_EQ(L"", result[0]->password_value);
+  EXPECT_EQ(string16(), result[0]->password_value);
 #else
   EXPECT_EQ(form6.password_value, result[0]->password_value);
 #endif
@@ -189,15 +189,15 @@ TEST_F(LoginDatabaseTest, Logins) {
 }
 
 static bool AddTimestampedLogin(LoginDatabase* db, std::string url,
-                                std::wstring unique_string,
+                                const std::string& unique_string,
                                 const base::Time& time) {
   // Example password form.
   PasswordForm form;
   form.origin = GURL(url + std::string("/LoginAuth"));
-  form.username_element = unique_string.c_str();
-  form.username_value = unique_string.c_str();
-  form.password_element = unique_string.c_str();
-  form.submit_element = L"signIn";
+  form.username_element = ASCIIToUTF16(unique_string);
+  form.username_value = ASCIIToUTF16(unique_string);
+  form.password_element = ASCIIToUTF16(unique_string);
+  form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = url;
   form.date_created = time;
   return db->AddLogin(form);
@@ -227,11 +227,11 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(db.get(), "1", L"foo1", base::Time()));
+  EXPECT_TRUE(AddTimestampedLogin(db.get(), "1", "foo1", base::Time()));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(db.get(), "2", L"foo2", now - one_day));
-  EXPECT_TRUE(AddTimestampedLogin(db.get(), "3", L"foo3", now));
-  EXPECT_TRUE(AddTimestampedLogin(db.get(), "4", L"foo4", now + one_day));
+  EXPECT_TRUE(AddTimestampedLogin(db.get(), "2", "foo2", now - one_day));
+  EXPECT_TRUE(AddTimestampedLogin(db.get(), "3", "foo3", now));
+  EXPECT_TRUE(AddTimestampedLogin(db.get(), "4", "foo4", now + one_day));
 
   // Verify inserts worked.
   EXPECT_TRUE(db->GetAutofillableLogins(&result));
@@ -270,9 +270,9 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   PasswordForm form;
   form.origin = GURL("http://www.google.com/accounts/LoginAuth");
   form.action = GURL("http://www.google.com/accounts/Login");
-  form.username_element = L"Email";
-  form.password_element = L"Passwd";
-  form.submit_element = L"signIn";
+  form.username_element = ASCIIToUTF16("Email");
+  form.password_element = ASCIIToUTF16("Passwd");
+  form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.google.com/";
   form.ssl_valid = false;
   form.preferred = true;

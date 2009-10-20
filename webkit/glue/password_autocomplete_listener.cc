@@ -80,14 +80,13 @@ void PasswordAutocompleteListener::OnBlur(WebCore::HTMLInputElement* element,
   DCHECK(data_.basic_data.values.size() == 2);
 
   // Set the password field to match the current username.
-  if (WideToUTF16Hack(data_.basic_data.values[0]) == user_input) {
+  if (data_.basic_data.values[0] == user_input) {
     // Preferred username/login is selected.
-    password_delegate_->SetValue(WideToUTF16Hack(data_.basic_data.values[1]));
-  } else if (data_.additional_logins.find(UTF16ToWideHack(user_input)) !=
+    password_delegate_->SetValue(data_.basic_data.values[1]);
+  } else if (data_.additional_logins.find(user_input) !=
              data_.additional_logins.end()) {
     // One of the extra username/logins is selected.
-    password_delegate_->SetValue(
-        WideToUTF16Hack(data_.additional_logins[UTF16ToWideHack(user_input)]));
+    password_delegate_->SetValue(data_.additional_logins[user_input]);
   }
   password_delegate_->OnFinishedAutocompleting();
 }
@@ -120,8 +119,8 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
   // conversions (see SetValue) on each successful call to
   // OnInlineAutocompleteNeeded.
   if (TryToMatch(user_input,
-                 WideToUTF16Hack(data_.basic_data.values[0]),
-                 WideToUTF16Hack(data_.basic_data.values[1]))) {
+                 data_.basic_data.values[0],
+                 data_.basic_data.values[1])) {
     return;
   }
 
@@ -130,9 +129,7 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
            data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {
-    if (TryToMatch(user_input,
-                   WideToUTF16Hack(it->first),
-                   WideToUTF16Hack(it->second)))
+    if (TryToMatch(user_input, it->first, it->second))
       return;
   }
 }
@@ -154,16 +151,15 @@ bool PasswordAutocompleteListener::TryToMatch(const string16& input,
 
 void PasswordAutocompleteListener::GetSuggestions(
     const string16& input, std::vector<string16>* suggestions) {
-  std::wstring wide_input = UTF16ToWideHack(input);
-  if (StartsWith(data_.basic_data.values[0], wide_input, false))
-    suggestions->push_back(WideToUTF16Hack(data_.basic_data.values[0]));
+  if (StartsWith(data_.basic_data.values[0], input, false))
+    suggestions->push_back(data_.basic_data.values[0]);
 
   for (PasswordFormDomManager::LoginCollection::iterator it =
        data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {
-    if (StartsWith(it->first, wide_input, false))
-      suggestions->push_back(WideToUTF16Hack(it->first));
+    if (StartsWith(it->first, input, false))
+      suggestions->push_back(it->first);
   }
 }
 

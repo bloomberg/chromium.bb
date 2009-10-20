@@ -159,7 +159,7 @@ void PasswordsPageGtk::SetPasswordList(
                                             false, UnescapeRule::NONE,
                                             NULL, NULL);
     std::string site = WideToUTF8(formatted);
-    std::string user = WideToUTF8(result[i]->username_value);
+    std::string user = UTF16ToUTF8(result[i]->username_value);
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(password_list_store_, &iter, (gint) i,
                                       COL_SITE, site.c_str(),
@@ -265,7 +265,7 @@ void PasswordsPageGtk::OnShowPasswordButtonClicked(GtkButton* widget,
   gint index = gtk_tree::GetTreeSortChildRowNumForPath(
       page->password_list_sort_, path);
   gtk_tree_path_free(path);
-  std::string pass = WideToUTF8(page->password_list_[index].password_value);
+  std::string pass = UTF16ToUTF8(page->password_list_[index].password_value);
   gtk_label_set_text(GTK_LABEL(page->password_), pass.c_str());
   gtk_button_set_label(GTK_BUTTON(page->show_password_button_),
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON).c_str());

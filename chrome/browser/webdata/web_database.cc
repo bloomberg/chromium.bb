@@ -596,14 +596,13 @@ bool WebDatabase::AddLogin(const PasswordForm& form) {
   std::string encrypted_password;
   s.BindString(0, form.origin.spec());
   s.BindString(1, form.action.spec());
-  s.BindString(2, WideToUTF8(form.username_element));
-  s.BindString(3, WideToUTF8(form.username_value));
-  s.BindString(4, WideToUTF8(form.password_element));
-  Encryptor::EncryptString16(WideToUTF16Hack(form.password_value),
-                             &encrypted_password);
+  s.BindString(2, UTF16ToUTF8(form.username_element));
+  s.BindString(3, UTF16ToUTF8(form.username_value));
+  s.BindString(4, UTF16ToUTF8(form.password_element));
+  Encryptor::EncryptString16(form.password_value, &encrypted_password);
   s.BindBlob(5, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
-  s.BindString(6, WideToUTF8(form.submit_element));
+  s.BindString(6, UTF16ToUTF8(form.submit_element));
   s.BindString(7, form.signon_realm);
   s.BindInt(8, form.ssl_valid);
   s.BindInt(9, form.preferred);
@@ -636,16 +635,15 @@ bool WebDatabase::UpdateLogin(const PasswordForm& form) {
 
   s.BindString(0, form.action.spec());
   std::string encrypted_password;
-  Encryptor::EncryptString16(WideToUTF16Hack(form.password_value),
-                             &encrypted_password);
+  Encryptor::EncryptString16(form.password_value, &encrypted_password);
   s.BindBlob(1, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
   s.BindInt(2, form.ssl_valid);
   s.BindInt(3, form.preferred);
   s.BindString(4, form.origin.spec());
-  s.BindString(5, WideToUTF8(form.username_element));
-  s.BindString(6, WideToUTF8(form.username_value));
-  s.BindString(7, WideToUTF8(form.password_element));
+  s.BindString(5, UTF16ToUTF8(form.username_element));
+  s.BindString(6, UTF16ToUTF8(form.username_value));
+  s.BindString(7, UTF16ToUTF8(form.password_element));
   s.BindString(8, form.signon_realm);
 
   if (!s.Run()) {
@@ -670,10 +668,10 @@ bool WebDatabase::RemoveLogin(const PasswordForm& form) {
     return false;
   }
   s.BindString(0, form.origin.spec());
-  s.BindString(1, WideToUTF8(form.username_element));
-  s.BindString(2, WideToUTF8(form.username_value));
-  s.BindString(3, WideToUTF8(form.password_element));
-  s.BindString(4, WideToUTF8(form.submit_element));
+  s.BindString(1, UTF16ToUTF8(form.username_element));
+  s.BindString(2, UTF16ToUTF8(form.username_value));
+  s.BindString(3, UTF16ToUTF8(form.password_element));
+  s.BindString(4, UTF16ToUTF8(form.submit_element));
   s.BindString(5, form.signon_realm);
 
   if (!s.Run()) {
@@ -725,9 +723,9 @@ static void InitPasswordFormFromStatement(PasswordForm* form,
   form->origin = GURL(tmp);
   tmp = s->ColumnString(1);
   form->action = GURL(tmp);
-  form->username_element = UTF8ToWide(s->ColumnString(2));
-  form->username_value = UTF8ToWide(s->ColumnString(3));
-  form->password_element = UTF8ToWide(s->ColumnString(4));
+  form->username_element = UTF8ToUTF16(s->ColumnString(2));
+  form->username_value = UTF8ToUTF16(s->ColumnString(3));
+  form->password_element = UTF8ToUTF16(s->ColumnString(4));
 
   int encrypted_password_len = s->ColumnByteLength(5);
   std::string encrypted_password;
@@ -737,8 +735,8 @@ static void InitPasswordFormFromStatement(PasswordForm* form,
     Encryptor::DecryptString16(encrypted_password, &decrypted_password);
   }
 
-  form->password_value = UTF16ToWideHack(decrypted_password);
-  form->submit_element = UTF8ToWide(s->ColumnString(6));
+  form->password_value = decrypted_password;
+  form->submit_element = UTF8ToUTF16(s->ColumnString(6));
   tmp = s->ColumnString(7);
   form->signon_realm = tmp;
   form->ssl_valid = (s->ColumnInt(8) > 0);

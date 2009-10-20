@@ -18,7 +18,7 @@ namespace webkit_glue {
 
 class PasswordFormDomManager {
  public:
-  typedef std::map<std::wstring, std::wstring> LoginCollection;
+  typedef std::map<string16, string16> LoginCollection;
 
   // Structure used for autofilling password forms.
   // basic_data identifies the HTML form on the page and preferred username/

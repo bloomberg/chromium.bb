@@ -4,12 +4,12 @@
 
 #include "chrome/browser/password_manager/login_database_mac.h"
 
-std::string LoginDatabaseMac::EncryptedString(const std::wstring& plain_text)
+std::string LoginDatabaseMac::EncryptedString(const string16& plain_text)
     const {
   return std::string();
 }
 
-std::wstring LoginDatabaseMac::DecryptedString(const std::string& cipher_text)
+string16 LoginDatabaseMac::DecryptedString(const std::string& cipher_text)
     const {
-  return std::wstring();
+  return string16();
 }

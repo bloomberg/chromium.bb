@@ -179,7 +179,7 @@ namespace webkit_glue {
 
 // Map element name to a list of pointers to corresponding elements to simplify
 // form filling.
-typedef std::map<std::wstring, RefPtr<WebCore::HTMLInputElement> >
+typedef std::map<string16, RefPtr<WebCore::HTMLInputElement> >
     FormElementRefMap;
 
 // Utility struct for form lookup and autofill. When we parse the DOM to lookup
@@ -201,7 +201,7 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
   if (!fe->form_element->autoComplete())
     return false;
 
-  std::map<std::wstring, std::wstring> data_map;
+  std::map<string16, string16> data_map;
   for (unsigned int i = 0; i < data.elements.size(); i++) {
     data_map[data.elements[i]] = data.values[i];
   }
@@ -216,7 +216,7 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
     }
     if (!it->second->value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
-    it->second->setValue(StdWStringToString(data_map[it->first]));
+    it->second->setValue(String16ToString(data_map[it->first]));
     it->second->setAutofilled(true);
     it->second->dispatchFormControlChangeEvent();
   }
@@ -238,8 +238,7 @@ static bool FindFormInputElements(WebCore::HTMLFormElement* fe,
   // order to autofill it. If we don't find any one of them, abort
   // processing this form; it can't be the right one.
   for (size_t j = 0; j < data.elements.size(); j++, temp_elements.clear()) {
-    fe->getNamedElements(StdWStringToString(data.elements[j]),
-                                            temp_elements);
+    fe->getNamedElements(String16ToString(data.elements[j]), temp_elements);
     if (temp_elements.isEmpty()) {
       // We didn't find a required element. This is not the right form.
       // Make sure no input elements from a partially matched form
@@ -587,7 +586,7 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
 
 // Sizes a single size (the width or height) from a 'sizes' attribute. A size
 // matches must match the following regex: [1-9][0-9]*.
-static int ParseSingleIconSize(const std::wstring& text) {
+static int ParseSingleIconSize(const string16& text) {
   // Size must not start with 0, and be between 0 and 9.
   if (text.empty() || !(text[0] >= L'1' && text[0] <= L'9'))
     return 0;
@@ -597,7 +596,7 @@ static int ParseSingleIconSize(const std::wstring& text) {
       return 0;
   }
   int output;
-  if (!StringToInt(WideToUTF16Hack(text), &output))
+  if (!StringToInt(text, &output))
     return 0;
   return output;
 }
@@ -605,8 +604,8 @@ static int ParseSingleIconSize(const std::wstring& text) {
 // Parses an icon size. An icon size must match the following regex:
 // [1-9][0-9]*x[1-9][0-9]*.
 // If the input couldn't be parsed, a size with a width/height < 0 is returned.
-static gfx::Size ParseIconSize(const std::wstring& text) {
-  std::vector<std::wstring> sizes;
+static gfx::Size ParseIconSize(const string16& text) {
+  std::vector<string16> sizes;
   SplitStringDontTrim(text, L'x', &sizes);
   if (sizes.size() != 2)
     return gfx::Size();
@@ -615,14 +614,14 @@ static gfx::Size ParseIconSize(const std::wstring& text) {
                    ParseSingleIconSize(sizes[1]));
 }
 
-bool ParseIconSizes(const std::wstring& text,
+bool ParseIconSizes(const string16& text,
                     std::vector<gfx::Size>* sizes,
                     bool* is_any) {
   *is_any = false;
-  std::vector<std::wstring> size_strings;
+  std::vector<string16> size_strings;
   SplitStringAlongWhitespace(text, &size_strings);
   for (size_t i = 0; i < size_strings.size(); ++i) {
-    if (size_strings[i] == L"any") {
+    if (EqualsASCII(size_strings[i], "any")) {
       *is_any = true;
     } else {
       gfx::Size size = ParseIconSize(size_strings[i]);
@@ -654,7 +653,7 @@ static void AddInstallIcon(WebCore::HTMLLinkElement* link,
 
   bool is_any = false;
   std::vector<gfx::Size> icon_sizes;
-  if (!ParseIconSizes(webkit_glue::StringToStdWString(
+  if (!ParseIconSizes(webkit_glue::StringToString16(
       link->getAttribute(sizes_attr)), &icon_sizes, &is_any) || is_any ||
       icon_sizes.size() != 1) {
     return;
@@ -692,10 +691,10 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
               child, WebCore::HTMLNames::metaTag);
       if (meta) {
         if (meta->name() == String("application-name")) {
-          app_info->title = webkit_glue::StringToStdWString(meta->content());
+          app_info->title = webkit_glue::StringToString16(meta->content());
         } else if (meta->name() == String("description")) {
           app_info->description =
-              webkit_glue::StringToStdWString(meta->content());
+              webkit_glue::StringToString16(meta->content());
         } else if (meta->name() == String("application-url")) {
           std::string url = webkit_glue::StringToStdString(meta->content());
           GURL main_url = main_frame->url();
