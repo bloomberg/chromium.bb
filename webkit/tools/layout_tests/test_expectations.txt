@@ -709,7 +709,7 @@ BUG24192 SKIP : chrome/http/mime = PASS
 // These tests all depend on DOM Storage events which are not yet supported.
 BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
-BUG4360 : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
+BUG4360 MAC : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/index-get-and-set.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-markup.html = FAIL
@@ -3175,7 +3175,6 @@ BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.htm
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
 
 // WebKit Roll 49761:49809
-BUG_JAPHET LINUX : LayoutTests/fast/css/transition-color-unspecified.html = FAIL
 BUG_JAPHET : LayoutTests/media/media-load-event.html = FAIL
 BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
 
@@ -3188,4 +3187,4 @@ BUG_YUTAK MAC RELEASE : LayoutTests/fast/overflow/002.html = CRASH PASS
 
 // Test expectation for MAC is located above.
 // Please remove CRASH from that line when the fix is in.
-BUG_YUTAK LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
+BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
