@@ -2939,7 +2939,6 @@
             'browser/bookmarks/bookmark_menu_controller.h',
             'browser/browser_accessibility.cc',
             'browser/browser_accessibility_manager.cc',
-            'browser/dom_ui/html_dialog_contents.cc',
             'browser/external_tab_container.cc',
             'browser/google_update.cc',
             'browser/history/history_indexer.idl',
@@ -4643,8 +4642,6 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
-            # TODO(akalin): Figure out why this unittest fails on linux.
-            'browser/browser_commands_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
