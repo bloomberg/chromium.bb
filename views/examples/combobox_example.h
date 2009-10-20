@@ -13,16 +13,21 @@
 namespace examples {
 
 // ComboboxExample
-class ComboboxExample : protected ExampleBase,
-                        private views::Combobox::Listener {
+class ComboboxExample : public ExampleBase, public views::Combobox::Listener {
  public:
-  ComboboxExample(views::TabbedPane* tabbed_pane, views::Label* message)
-      : ExampleBase(message) {
-    views::Combobox* cb = new views::Combobox(new ComboboxModelExample());
-    cb->set_listener(this);
-    tabbed_pane->AddTab(L"Combo Box", cb);
+  explicit ComboboxExample(ExamplesMain* main) : ExampleBase(main) {
+    combobox_ = new views::Combobox(new ComboboxModelExample());
+    combobox_->set_listener(this);
   }
   virtual ~ComboboxExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Combo Box";
+  }
+
+  virtual views::View* GetExampleView() {
+    return combobox_;
+  }
 
  private:
   // An sample combobox model that generates list of "Item <index>".
@@ -50,6 +55,9 @@ class ComboboxExample : protected ExampleBase,
     PrintStatus(L"Selected: index=%d, label=%ls",
                 new_index, combo_box->model()->GetItemAt(new_index).c_str());
   }
+
+  // This test only control.
+  views::Combobox* combobox_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxExample);
 };

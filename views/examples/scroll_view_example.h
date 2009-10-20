@@ -5,6 +5,7 @@
 #ifndef VIEWS_EXAMPLES_SCROLL_BAR_EXAMPLE_H_
 #define VIEWS_EXAMPLES_SCROLL_BAR_EXAMPLE_H_
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/scroll_view.h"
@@ -14,24 +15,21 @@ namespace examples {
 
 class ScrollViewExample : protected ExampleBase, private views::ButtonListener {
  public:
-  ScrollViewExample(views::TabbedPane* tabbed_pane, views::Label* message)
-      : ExampleBase(message),
-        wide_(new views::TextButton(this, L"Wide")),
-        tall_(new views::TextButton(this, L"Tall")),
-        big_square_(new views::TextButton(this, L"Big Square")),
-        small_square_(new views::TextButton(this, L"Small Square")),
-        scroll_to_(new views::TextButton(this, L"Scroll to")),
-        scrollable_(new ScrollableView()),
-        scroll_view_(new views::ScrollView()) {
+  explicit ScrollViewExample(ExamplesMain* main) : ExampleBase(main) {
+    wide_ = new views::TextButton(this, L"Wide");
+    tall_ = new views::TextButton(this, L"Tall");
+    big_square_ = new views::TextButton(this, L"Big Square");
+    small_square_ = new views::TextButton(this, L"Small Square");
+    scroll_to_ = new views::TextButton(this, L"Scroll to");
+    scrollable_ = new ScrollableView();
+    scroll_view_ = new views::ScrollView();
     scroll_view_->SetContents(scrollable_);
     scrollable_->SetBounds(0, 0, 1000, 100);
     scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
-    views::View* container = new views::View();
-    tabbed_pane->AddTab(L"Scroll View", container);
-
-    views::GridLayout* layout = new views::GridLayout(container);
-    container->SetLayoutManager(layout);
+    container_ = new views::View();
+    views::GridLayout* layout = new views::GridLayout(container_);
+    container_->SetLayoutManager(layout);
 
     // Add scroll view.
     views::ColumnSet* column_set = layout->AddColumnSet(0);
@@ -55,6 +53,14 @@ class ScrollViewExample : protected ExampleBase, private views::ButtonListener {
   }
 
   virtual ~ScrollViewExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Scroll View";
+  }
+
+  virtual views::View* GetExampleView() {
+    return container_;
+  }
 
  private:
   // ScrollView's content, which draws gradient color on background.
@@ -101,6 +107,9 @@ class ScrollViewExample : protected ExampleBase, private views::ButtonListener {
     }
     scroll_view_->Layout();
   }
+
+  // The view containing this test's controls.
+  views::View* container_;
 
   // Control buttons to change the size of scrollable and jump to
   // predefined position.

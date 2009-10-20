@@ -11,26 +11,22 @@
 #include "views/controls/message_box_view.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/example_base.h"
+#include "views/grid_layout.h"
 
 namespace examples {
 
-// A MessageBoxView example. This tests some of checkbox features
-// as well.
+// A MessageBoxView example. This tests some of checkbox features as well.
 class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
  public:
-  MessageBoxExample(views::TabbedPane* tabbed_pane, views::Label* message)
-      : ExampleBase(message),
-        message_box_view_(
-            new MessageBoxView(0, L"Message Box Message", L"Default Prompt")),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            status_(new views::TextButton(this, L"Show Status"))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            toggle_(new views::TextButton(this, L"Toggle Checkbox"))) {
-    views::View* container = new views::View();
-    tabbed_pane->AddTab(L"Message Box View", container);
+  explicit MessageBoxExample(ExamplesMain* main) : ExampleBase(main) {
+    message_box_view_ =
+        new MessageBoxView(0, L"Message Box Message", L"Default Prompt");
+    status_ = new views::TextButton(this, L"Show Status");
+    toggle_ = new views::TextButton(this, L"Toggle Checkbox");
 
-    views::GridLayout* layout = new views::GridLayout(container);
-    container->SetLayoutManager(layout);
+    container_ = new views::View();
+    views::GridLayout* layout = new views::GridLayout(container_);
+    container_->SetLayoutManager(layout);
 
     message_box_view_->SetCheckBoxLabel(L"Check Box");
 
@@ -56,6 +52,14 @@ class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
 
   virtual ~MessageBoxExample() {}
 
+  virtual std::wstring GetExampleTitle() {
+    return L"Message Box View";
+  }
+
+  virtual views::View* GetExampleView() {
+    return container_;
+  }
+
  private:
   // ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
@@ -69,6 +73,9 @@ class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
           !message_box_view_->IsCheckBoxSelected());
     }
   }
+
+  // The view containing this test's controls.
+  views::View* container_;
 
   // The MessageBoxView to be tested.
   MessageBoxView* message_box_view_;

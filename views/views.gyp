@@ -338,51 +338,55 @@
         }],
       ],
     },
-  ],
-  'conditions': [
-    # TODO(oshima): support win
-    ['OS!="win"', {
-      'targets': [
-        {
-          'target_name': 'view_examples',
-          'type': 'executable',
+    {
+      'target_name': 'view_examples',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+        'views',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'examples/button_example.h',
+        'examples/combobox_example.h',
+        'examples/example_base.cc',
+        'examples/example_base.h',
+        'examples/examples_main.cc',
+        'examples/examples_main.h',
+        'examples/message_box_example.h',
+        'examples/radio_button_example.h',
+        'examples/scroll_view_example.h',
+        'examples/tabbed_pane_example.h',
+        'examples/textfield_example.h',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
           'dependencies': [
-            '../base/base.gyp:base',
-            '../skia/skia.gyp:skia',
-            'views',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'examples/button_example.h',
-            'examples/combobox_example.h',
-            'examples/example_base.cc',
-            'examples/example_base.h',
-            'examples/examples_main_base.cc',
-            'examples/examples_main_base.h',
-            'examples/examples_main_gtk.cc',
-            'examples/message_box_example.h',
-            'examples/radio_button_example.h',
-            'examples/tabbed_pane_example.h',
-            'examples/textfield_example.h',
-          ],
-          'conditions': [
-            ['OS=="linux"', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            },
-            ],
-            ['OS=="linux" and toolkit_views==1', {
-              'dependencies': [
-                'views',
-              ],
-            }],
+            '../build/linux/system.gyp:gtk',
           ],
         },
+        ],
+        ['OS=="linux" and toolkit_views==1', {
+          'dependencies': [
+            'views',
+          ],
+        }],
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ]
+          },
+          'include_dirs': [
+            '../chrome/third_party/wtl/include',
+          ],
+        }],
       ],
-    }],
+    },
   ],
 }
 

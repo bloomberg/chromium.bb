@@ -21,20 +21,18 @@ class TextfieldExample : protected ExampleBase,
                          private Textfield::Controller,
                          private views::ButtonListener {
  public:
-  TextfieldExample(views::TabbedPane* tabbed_pane, views::Label* message)
-      : ExampleBase(message),
-        name_(new Textfield()),
-        password_(new Textfield(Textfield::STYLE_PASSWORD)),
-        show_password_(new views::TextButton(this, L"Show password")),
-        clear_all_(new views::TextButton(this, L"Clear All")),
-        append_(new views::TextButton(this, L"Append")) {
+  explicit TextfieldExample(ExamplesMain* main) : ExampleBase(main) {
+    name_ = new Textfield();
+    password_ = new Textfield(Textfield::STYLE_PASSWORD);
+    show_password_ = new views::TextButton(this, L"Show password");
+    clear_all_ = new views::TextButton(this, L"Clear All");
+    append_ = new views::TextButton(this, L"Append");
     name_->SetController(this);
     password_->SetController(this);
 
-    views::View* container = new views::View();
-    tabbed_pane->AddTab(L"Textfield", container);
-    views::GridLayout* layout = new views::GridLayout(container);
-    container->SetLayoutManager(layout);
+    container_ = new views::View();
+    views::GridLayout* layout = new views::GridLayout(container_);
+    container_->SetLayoutManager(layout);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
@@ -56,6 +54,14 @@ class TextfieldExample : protected ExampleBase,
   }
 
   virtual ~TextfieldExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Textfield";
+  }
+
+  virtual views::View* GetExampleView() {
+    return container_;
+  }
 
  private:
   // Textfield::Controller implementations:
@@ -88,6 +94,9 @@ class TextfieldExample : protected ExampleBase,
       name_->AppendText(WideToUTF16(L"[append]"));
     }
   }
+
+  // The view containing this test's controls.
+  views::View* container_;
 
   // Textfields for name and password.
   views::Textfield* name_;

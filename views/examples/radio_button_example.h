@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/example_base.h"
 
 namespace examples {
@@ -17,12 +16,10 @@ namespace examples {
 class RadioButtonExample : protected ExampleBase,
                            private views::ButtonListener {
  public:
-  RadioButtonExample(views::TabbedPane* tabbed_pane, views::Label* message)
-      : ExampleBase(message),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            select_(new views::TextButton(this, L"Select"))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            status_(new views::TextButton(this, L"Show Status"))) {
+  explicit RadioButtonExample(ExamplesMain* main) : ExampleBase(main) {
+    select_ = new views::TextButton(this, L"Select");
+    status_ = new views::TextButton(this, L"Show Status");
+
     int all = arraysize(radio_buttons_);
 
     // divide buttons into 2 groups
@@ -34,11 +31,9 @@ class RadioButtonExample : protected ExampleBase,
           group);
     }
 
-    views::View* container = new views::View();
-    tabbed_pane->AddTab(L"Radio Button", container);
-
-    views::GridLayout* layout = new views::GridLayout(container);
-    container->SetLayoutManager(layout);
+    container_ = new views::View();
+    views::GridLayout* layout = new views::GridLayout(container_);
+    container_->SetLayoutManager(layout);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -54,6 +49,14 @@ class RadioButtonExample : protected ExampleBase,
   }
 
   virtual ~RadioButtonExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Radio Button";
+  }
+
+  virtual views::View* GetExampleView() {
+    return container_;
+  }
 
  private:
   // Override from ButtonListener
@@ -72,6 +75,9 @@ class RadioButtonExample : protected ExampleBase,
                   IntToOnOff(radio_buttons_[5]->checked()));
     }
   }
+
+  // The view containing this test's controls.
+  views::View* container_;
 
   // 6 radio buttons, 0-2 consists 1st group, and 3-5 consists
   // 2nd group.

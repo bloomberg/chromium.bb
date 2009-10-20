@@ -5,10 +5,8 @@
 #ifndef VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 #define VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 
-#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/example_base.h"
 
 namespace examples {
@@ -18,22 +16,16 @@ class TabbedPaneExample : protected ExampleBase,
                           private views::ButtonListener,
                           views::TabbedPane::Listener {
  public:
-  TabbedPaneExample(views::TabbedPane* parent, views::Label* message)
-      : ExampleBase(message),
-        tabbed_pane_(new views::TabbedPane()),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            add_(new views::TextButton(this, L"Add"))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            add_at_(new views::TextButton(this, L"Add At 1"))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            remove_at_(new views::TextButton(this, L"Remove At 1"))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            select_at_(new views::TextButton(this, L"Select At 1"))) {
-    views::View* container = new views::View();
-    parent->AddTab(L"Tabbed Pane", container);
+  explicit TabbedPaneExample(ExamplesMain* main) : ExampleBase(main) {
+    tabbed_pane_ = new views::TabbedPane();
+    add_ = new views::TextButton(this, L"Add");
+    add_at_ = new views::TextButton(this, L"Add At 1");
+    remove_at_ = new views::TextButton(this, L"Remove At 1");
+    select_at_ = new views::TextButton(this, L"Select At 1");
 
-    views::GridLayout* layout = new views::GridLayout(container);
-    container->SetLayoutManager(layout);
+    container_ = new views::View();
+    views::GridLayout* layout = new views::GridLayout(container_);
+    container_->SetLayoutManager(layout);
 
     const int tabbed_pane_column = 0;
     views::ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
@@ -43,8 +35,8 @@ class TabbedPaneExample : protected ExampleBase,
     layout->AddView(tabbed_pane_);
 
     // Create a few tabs with a button first.
-    AddButton(tabbed_pane_, L"Tab 1");
-    AddButton(tabbed_pane_, L"Tab 2");
+    AddButton(L"Tab 1");
+    AddButton(L"Tab 2");
 
     // Add control buttons horizontally.
     const int button_column = 1;
@@ -63,11 +55,19 @@ class TabbedPaneExample : protected ExampleBase,
 
   virtual ~TabbedPaneExample() {}
 
+  virtual std::wstring GetExampleTitle() {
+    return L"Tabbed Pane";
+  }
+
+  virtual views::View* GetExampleView() {
+    return container_;
+  }
+
  private:
   // ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     if (sender == add_) {
-      AddButton(tabbed_pane_, L"Added");
+      AddButton(L"Added");
     } else if (sender == add_at_) {
       const std::wstring label = L"Added at 1";
       tabbed_pane_->AddTabAtIndex(1, label,
@@ -94,6 +94,14 @@ class TabbedPaneExample : protected ExampleBase,
                              tabbed_pane_->GetTabCount(),
                              tabbed_pane_->GetSelectedTabIndex());
   }
+
+  void AddButton(const std::wstring& label) {
+    views::TextButton* button = new views::TextButton(NULL, label);
+    tabbed_pane_->AddTab(label, button);
+  }
+
+  // The view containing this test's controls.
+  views::View* container_;
 
   // The tabbed pane to be tested.
   views::TabbedPane* tabbed_pane_;
