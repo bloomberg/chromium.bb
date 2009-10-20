@@ -134,13 +134,13 @@ void TabOverviewMessageListener::ProcessMessage(
       // Over a mini-window, make sure the controller is showing the contents
       // of the browser the mouse is over.
 #if defined(TOOLKIT_VIEWS)
-      NOTIMPLEMENTED();
-      // TODO(oshima): Figure out how to get BrowserView from XID
-      // in message.param(0).
+      BrowserView* browser_window = GetBrowserViewForGdkWindow(
+          gdk_window_lookup(message.param(0)));
 #else
       BrowserWindowGtk* browser_window =
           BrowserWindowGtk::GetBrowserWindowForNativeWindow(
               BrowserWindowGtk::GetBrowserWindowForXID(message.param(0)));
+#endif
       if (!browser_window)
         return;
 
@@ -154,7 +154,6 @@ void TabOverviewMessageListener::ProcessMessage(
 
       UserMetrics::RecordAction(L"TabOverview_DragOverMiniWindow",
                                 browser_window->browser()->profile());
-#endif
     }
 
     default:

@@ -6,7 +6,13 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/common/x11_util.h"
+#include "chrome/browser/chromeos/browser_extender.h"
+#include "chrome/browser/views/frame/browser_view.h"
+#else
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#endif
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/views/tabs/tab_overview_cell.h"
@@ -157,12 +163,22 @@ void TabOverviewController::ConfigureCell(TabOverviewCell* cell,
 void TabOverviewController::DragStarted() {
   DCHECK(!drag_browser_);
   drag_browser_ = browser_;
+#if defined(TOOLKIT_VIEWS)
+  static_cast<BrowserView*>(browser_->window())->
+      browser_extender()->set_can_close(false);
+#else
   static_cast<BrowserWindowGtk*>(browser_->window())->set_drag_active(true);
+#endif
 }
 
 void TabOverviewController::DragEnded() {
+#if defined(TOOLKIT_VIEWS)
+  static_cast<BrowserView*>(browser_->window())->
+      browser_extender()->set_can_close(true);
+#else
   static_cast<BrowserWindowGtk*>(drag_browser_->window())->
       set_drag_active(false);
+#endif
   if (drag_browser_->tabstrip_model()->count() == 0)
     drag_browser_->tabstrip_model()->delegate()->CloseFrameAfterDragSession();
   drag_browser_ = NULL;
@@ -182,8 +198,7 @@ void TabOverviewController::SelectTab(int index) {
 void TabOverviewController::FocusBrowser() {
   TabOverviewTypes::Message message;
   message.set_type(TabOverviewTypes::Message::WM_FOCUS_WINDOW);
-  GtkWidget* browser_widget = GTK_WIDGET(
-      static_cast<BrowserWindowGtk*>(browser_->window())->GetNativeHandle());
+  GtkWidget* browser_widget = GTK_WIDGET(browser_->window()->GetNativeHandle());
   message.set_param(0, x11_util::GetX11WindowFromGtkWidget(browser_widget));
   TabOverviewTypes::instance()->SendMessage(message);
 }

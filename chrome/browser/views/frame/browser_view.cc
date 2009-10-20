@@ -571,6 +571,12 @@ gfx::Rect BrowserView::GetTabStripBounds() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
+#if defined(OS_CHROMEOS)
+  if (browser_->type() & Browser::TYPE_POPUP) {
+    // Don't show toolbar if the window is a popup.
+    return false;
+  }
+#endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
@@ -644,6 +650,9 @@ bool BrowserView::ActivateAppModalDialog() const {
 void BrowserView::ActivationChanged(bool activated) {
   if (activated)
     BrowserList::SetLastActive(browser_.get());
+#if defined(OS_CHROMEOS)
+  browser_extender_->ActivationChanged();
+#endif
 }
 
 TabContents* BrowserView::GetSelectedTabContents() const {
@@ -720,6 +729,10 @@ void BrowserView::Show() {
   contents_split_->set_divider_offset(split_offset);
 
   frame_->GetWindow()->Show();
+
+#if defined (OS_CHROMEOS)
+  browser_extender_->Show();
+#endif
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -736,6 +749,10 @@ void BrowserView::Close() {
   }
 
   frame_->GetWindow()->Close();
+
+#if defined(OS_CHROMEOS)
+  browser_extender_->Close();
+#endif
 }
 
 void BrowserView::Activate() {
@@ -791,6 +808,9 @@ void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
   if (ShouldShowWindowIcon())
     frame_->GetWindow()->UpdateWindowIcon();
+#if defined(OS_CHROMEOS)
+  browser_extender_->UpdateTitleBar();
+#endif
 }
 
 void BrowserView::ShelfVisibilityChanged() {
@@ -1454,6 +1474,11 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 // BrowserView, views::ClientView overrides:
 
 bool BrowserView::CanClose() const {
+#if defined(OS_CHROMEOS)
+  if (!browser_extender_->can_close())
+    return false;
+#endif
+
   // You cannot close a frame for which there is an active originating drag
   // session.
   if (tabstrip_->IsDragSessionActive())
@@ -1737,10 +1762,7 @@ void BrowserView::Init() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (browser_->type() == Browser::TYPE_NORMAL) {
-    browser_extender_.reset(new BrowserExtender(this));
-    browser_extender_->Init();
-  }
+  browser_extender_.reset(BrowserExtender::Create(this));
 #endif
 }
 

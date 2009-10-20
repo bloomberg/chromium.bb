@@ -2408,6 +2408,12 @@
             'CHROME_V8',
           ],
         }],
+        ['chromeos==1 and toolkit_views==0', {
+          'sources!': [
+            'browser/chromeos/browser_extender.cc',
+            'browser/chromeos/browser_extender.h',
+           ],
+        }],
         ['chromeos==0 and toolkit_views==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],

@@ -10,7 +10,11 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/frame/browser_view.h"
+#else
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#endif
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
@@ -22,6 +26,7 @@
 #include "views/event.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/window.h"
 
 static int close_button_width;
 static int close_button_height;
@@ -69,16 +74,35 @@ static void InitializeResources() {
 
 }  // namespace
 
+#if defined(TOOLKIT_VIEWS)
+PanelController::PanelController(BrowserView* browser_window)
+    :  browser_window_(browser_window),
+       panel_(browser_window->GetNativeHandle()),
+       panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
+       title_window_(NULL),
+       expanded_(true),
+       mouse_down_(false),
+       dragging_(false) {
+  Init(browser_window->bounds());
+}
+#else
 PanelController::PanelController(BrowserWindowGtk* browser_window)
     :  browser_window_(browser_window),
        panel_(browser_window->window()),
        panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
+       title_window_(NULL),
        expanded_(true),
        mouse_down_(false),
        dragging_(false) {
-  title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  Init(browser_window->bounds());
+}
+#endif
+
+void PanelController::Init(const gfx::Rect window_bounds) {
   gfx::Rect title_bounds(
-      0, 0, browser_window->bounds().width(), kTitleHeight);
+      0, 0, window_bounds.width(), kTitleHeight);
+
+  title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   title_window_->Init(NULL, title_bounds);
   title_ = title_window_->GetNativeView();
   title_xid_ = x11_util::GetX11WindowFromGtkWidget(title_);
@@ -105,6 +129,8 @@ PanelController::PanelController(BrowserWindowGtk* browser_window)
 }
 
 void PanelController::UpdateTitleBar() {
+  if (!browser_window_ || !title_window_)
+    return;
   Browser* browser = browser_window_->browser();
   title_content_->title_label()->SetText(
       UTF16ToWideHack(browser->GetWindowTitleForCurrentTab()));
@@ -197,11 +223,13 @@ bool PanelController::OnPanelClientEvent(
 }
 
 void PanelController::OnFocusIn() {
-  title_content_->OnFocusIn();
+  if (title_window_)
+    title_content_->OnFocusIn();
 }
 
 void PanelController::OnFocusOut() {
-  title_content_->OnFocusOut();
+  if (title_window_)
+    title_content_->OnFocusOut();
 }
 
 bool PanelController::PanelClientEvent(GdkEventClient* event) {
@@ -214,13 +242,18 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
 }
 
 void PanelController::Close() {
-  title_window_->Close();
+  // ignore if the title window is already closed.
+  if (title_window_) {
+    title_window_->Close();
+    title_window_ = NULL;
+  }
 }
 
 void PanelController::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == title_content_->close_button()) {
+  if (title_window_ && sender == title_content_->close_button()) {
     browser_window_->Close();
+    Close();
   }
 }
 
@@ -298,4 +331,3 @@ void PanelController::TitleContentView::OnFocusOut() {
   Layout();
   SchedulePaint();
 }
-

@@ -328,6 +328,13 @@ class BrowserView : public BrowserWindow,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
 
+#if defined(OS_CHROMEOS)
+  // Returns BrowserExtender.
+  BrowserExtender* browser_extender() const {
+    return browser_extender_.get();
+  }
+#endif
+
  protected:
   // Overridden from views::View:
   virtual void Layout();
