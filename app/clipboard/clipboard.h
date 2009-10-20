@@ -21,10 +21,6 @@ class FilePath;
 class Clipboard {
  public:
   typedef std::string FormatType;
-#if defined(USE_X11)
-  typedef struct _GtkClipboard GtkClipboard;
-  typedef std::map<FormatType, std::pair<char*, size_t> > TargetMap;
-#endif
 
   // ObjectType designates the type of data to be stored in the clipboard. This
   // designation is shared across all OSes. The system-specific designation
@@ -233,19 +229,26 @@ class Clipboard {
   // True if we can create a window.
   bool create_window_;
 #elif defined(USE_X11)
-  // Data is stored in the |clipboard_data_| map until it is saved to the system
-  // clipboard. The Store* functions save data to the |clipboard_data_| map. The
-  // SetGtkClipboard function replaces whatever is on the system clipboard with
-  // the contents of |clipboard_data_|.
-  // The Write* functions make a deep copy of the data passed to them an store
-  // it in |clipboard_data_|.
+  // The public API is via WriteObjects() which dispatches to multiple
+  // Write*() calls, but on GTK we must write all the clipboard types
+  // in a single GTK call.  To support this we store the current set
+  // of data we intend to put on the clipboard on clipboard_data_ as
+  // WriteObjects is running, and then at the end call SetGtkClipboard
+  // which replaces whatever is on the system clipboard with the
+  // contents of clipboard_data_.
+
+ public:
+  typedef std::map<FormatType, std::pair<char*, size_t> > TargetMap;
+
+ private:
+  typedef struct _GtkClipboard GtkClipboard;
 
   // Write changes to gtk clipboard.
   void SetGtkClipboard();
   // Insert a mapping into clipboard_data_.
   void InsertMapping(const char* key, char* data, size_t data_len);
 
-  // find the gtk clipboard for the passed buffer enum
+  // Find the gtk clipboard for the passed buffer enum.
   GtkClipboard* LookupBackingClipboard(Buffer clipboard) const;
 
   TargetMap* clipboard_data_;

@@ -32,7 +32,7 @@ std::string GdkAtomToString(const GdkAtom& atom) {
 }
 
 GdkAtom StringToGdkAtom(const std::string& str) {
-  return gdk_atom_intern(str.c_str(), false);
+  return gdk_atom_intern(str.c_str(), FALSE);
 }
 
 // GtkClipboardGetFunc callback.
@@ -67,11 +67,13 @@ void GetData(GtkClipboard* clipboard,
 
 // GtkClipboardClearFunc callback.
 // We are guaranteed this will be called exactly once for each call to
-// gtk_clipboard_set_with_data
+// gtk_clipboard_set_with_data.
 void ClearData(GtkClipboard* clipboard,
                gpointer user_data) {
   Clipboard::TargetMap* map =
       reinterpret_cast<Clipboard::TargetMap*>(user_data);
+  // The same data may be inserted under multiple keys, so use a set to
+  // uniq them.
   std::set<char*> ptrs;
 
   for (Clipboard::TargetMap::iterator iter = map->begin();
@@ -135,12 +137,9 @@ void Clipboard::SetGtkClipboard() {
   int i = 0;
   for (Clipboard::TargetMap::iterator iter = clipboard_data_->begin();
        iter != clipboard_data_->end(); ++iter, ++i) {
-    targets[i].target = static_cast<gchar*>(malloc(iter->first.size() + 1));
-    memcpy(targets[i].target, iter->first.data(), iter->first.size());
-    targets[i].target[iter->first.size()] = '\0';
-
+    targets[i].target = const_cast<char*>(iter->first.c_str());
     targets[i].flags = 0;
-    targets[i].info = i;
+    targets[i].info = 0;
   }
 
   gtk_clipboard_set_with_data(clipboard_, targets.get(),
@@ -148,8 +147,8 @@ void Clipboard::SetGtkClipboard() {
                               GetData, ClearData,
                               clipboard_data_);
 
-  for (size_t i = 0; i < clipboard_data_->size(); i++)
-    free(targets[i].target);
+  // clipboard_data_ now owned by the GtkClipboard.
+  clipboard_data_ = NULL;
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -198,9 +197,6 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
 
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
                               const char* url_data, size_t url_len) {
-  // Write as plain text.
-  WriteText(url_data, url_len);
-
   // Write as a URI.
   char* data = new char[url_len + 1];
   memcpy(data, url_data, url_len);
@@ -371,40 +367,21 @@ Clipboard::FormatType Clipboard::GetWebKitSmartPasteFormatType() {
   return std::string(kMimeWebkitSmartPaste);
 }
 
-// Insert the key/value pair in the clipboard_data structure. If
-// the mapping already exists, it frees the associated data. Don't worry
-// about double freeing because if the same key is inserted into the
-// map twice, it must have come from different Write* functions and the
-// data pointer cannot be the same.
 void Clipboard::InsertMapping(const char* key,
                               char* data,
                               size_t data_len) {
-  TargetMap::iterator iter = clipboard_data_->find(key);
-
-  if (iter != clipboard_data_->end()) {
-    if (strcmp(kMimeBmp, key) == 0)
-      g_object_unref(reinterpret_cast<GdkPixbuf*>(iter->second.first));
-    else
-      delete[] iter->second.first;
-  }
-
+  DCHECK(clipboard_data_->find(key) == clipboard_data_->end());
   (*clipboard_data_)[key] = std::make_pair(data, data_len);
 }
 
 GtkClipboard* Clipboard::LookupBackingClipboard(Buffer clipboard) const {
-  GtkClipboard* result;
-
   switch (clipboard) {
     case BUFFER_STANDARD:
-      result = clipboard_;
-      break;
+      return clipboard_;
     case BUFFER_SELECTION:
-      result = primary_selection_;
-      break;
+      return primary_selection_;
     default:
       NOTREACHED();
-      result = NULL;
-      break;
+      return NULL;
   }
-  return result;
 }

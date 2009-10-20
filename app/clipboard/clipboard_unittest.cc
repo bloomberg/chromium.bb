@@ -335,3 +335,22 @@ TEST_F(ClipboardTest, BitmapTest) {
                                           Clipboard::BUFFER_STANDARD));
 }
 #endif  // defined(OS_WIN)
+
+// Test writing all formats we have simultaneously.
+TEST_F(ClipboardTest, WriteEverything) {
+  Clipboard clipboard;
+
+  {
+    ScopedClipboardWriter writer(&clipboard);
+    writer.WriteText(UTF8ToUTF16("foo"));
+    writer.WriteURL(UTF8ToUTF16("foo"));
+    writer.WriteHTML(UTF8ToUTF16("foo"), "bar");
+    writer.WriteBookmark(UTF8ToUTF16("foo"), "bar");
+    writer.WriteHyperlink("foo", "bar");
+    writer.WriteWebSmartPaste();
+    // Left out: WriteFile, WriteFiles, WriteBitmapFromPixels, WritePickledData.
+  }
+
+  // Passes if we don't crash.
+}
+
