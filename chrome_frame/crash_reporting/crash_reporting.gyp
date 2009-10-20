@@ -30,6 +30,20 @@
         }],
       ],
     },
+    {
+      'target_name': 'vectored_handler_tests',
+      'type': 'executable',
+      'sources': [
+        'vectored_handler_unittest.cc',
+      ],
+      'dependencies': [
+        'crash_report',
+        '../../base/base.gyp:base',
+        '../../testing/gmock.gyp:gmock',
+        '../../testing/gtest.gyp:gtest',
+        '../../testing/gtest.gyp:gtestmain',
+      ],
+    },
   ],
 }
 

@@ -697,6 +697,7 @@
             '../google_update/google_update.gyp:google_update',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
+            'crash_reporting/crash_reporting.gyp:vectored_handler_tests',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
