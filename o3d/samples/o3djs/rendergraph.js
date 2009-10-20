@@ -554,8 +554,8 @@ o3djs.rendergraph.DrawPassInfo = function(pack,
 o3djs.rendergraph.DrawPassInfo.prototype.destroy = function() {
   // Remove everything we created from the pack.
   if (this.ownDrawList_) {
-    this.drawList.parent = null;
-    this.pack_.removeObject(this.drawList);
+    this.drawPass.drawList = null;
+    this.pack.removeObject(this.drawList);
   }
   this.drawPass.parent = null;
   this.stateSet.parent = null;
