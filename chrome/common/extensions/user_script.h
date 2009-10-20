@@ -35,16 +35,16 @@ class UserScript {
   // Holds actual script file info.
   class File {
    public:
-    File(const ExtensionResource& resource, const GURL& url):
-         resource_(resource),
-         url_(url) {
+    File(const FilePath& extension_root, const FilePath& relative_path,
+         const GURL& url):
+        extension_root_(extension_root),
+        relative_path_(relative_path),
+        url_(url) {
     }
     File() {}
 
-    const ExtensionResource& resource() const { return resource_; }
-    void set_resource(const ExtensionResource& resource) {
-      resource_ = resource;
-    }
+    const FilePath& extension_root() const { return extension_root_; }
+    const FilePath& relative_path() const { return relative_path_; }
 
     const GURL& url() const { return url_; }
     void set_url(const GURL& url) { url_ = url; }
@@ -64,14 +64,16 @@ class UserScript {
       content_.assign(content.begin(), content.end());
     }
 
-    // Serialization support. The content and resource_ member will not be
+    // Serialization support. The content and FilePath members will not be
     // serialized!
     void Pickle(::Pickle* pickle) const;
     void Unpickle(const ::Pickle& pickle, void** iter);
 
    private:
-    // Where the script file lives on the disk.
-    ExtensionResource resource_;
+    // Where the script file lives on the disk. We keep the path split so that
+    // it can be localized at will.
+    FilePath extension_root_;
+    FilePath relative_path_;
 
     // The url to this scipt file.
     GURL url_;

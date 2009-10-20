@@ -21,66 +21,39 @@ ExtensionResource::ExtensionResource(const FilePath& extension_root,
 }
 
 const FilePath& ExtensionResource::GetFilePath() const {
-  if (extension_root_.empty() || relative_path_.empty())
+  if (extension_root_.empty() || relative_path_.empty()) {
+    DCHECK(full_resource_path_.empty());
     return full_resource_path_;
+  }
 
   // We've already checked, just return last value.
   if (!full_resource_path_.empty())
     return full_resource_path_;
 
-  // Stat l10n file, and return new path if it exists.
-  FilePath l10n_relative_path =
-    extension_l10n_util::GetL10nRelativePath(relative_path_);
-  full_resource_path_ = CombinePathsSafely(extension_root_, l10n_relative_path);
-  if (file_util::PathExists(full_resource_path_)) {
-    return full_resource_path_;
-  }
-
-  // Fall back to root resource.
-  full_resource_path_ = CombinePathsSafely(extension_root_, relative_path_);
+  full_resource_path_ = GetFilePath(extension_root_, relative_path_);
   return full_resource_path_;
 }
 
-FilePath ExtensionResource::CombinePathsSafely(
-    const FilePath& extension_path,
-    const FilePath& relative_resource_path) const {
-  // Build up a file:// URL and convert that back to a FilePath.  This avoids
-  // URL encoding and path separator issues.
+// Static version...
+FilePath ExtensionResource::GetFilePath(const FilePath& extension_root,
+                                        const FilePath& relative_path) {
+  // Stat l10n file, and return new path if it exists.
+  FilePath l10n_relative_path =
+    extension_l10n_util::GetL10nRelativePath(relative_path);
+  FilePath full_path;
+  if (extension_root.AppendAndResolveRelative(l10n_relative_path, &full_path) &&
+      extension_root.IsParent(full_path) &&
+      file_util::PathExists(full_path)) {
+    return full_path;
+  }
 
-  // Convert the extension's root to a file:// URL.
-  GURL extension_url = net::FilePathToFileURL(extension_path);
-  if (!extension_url.is_valid())
-    return FilePath();
+  // Fall back to root resource.
+  if (extension_root.AppendAndResolveRelative(relative_path, &full_path) &&
+      extension_root.IsParent(full_path)) {
+    return full_path;
+  }
 
-  // Append the requested path.
-  std::string relative_path =
-    WideToUTF8(relative_resource_path.ToWStringHack());
-  GURL::Replacements replacements;
-  std::string new_path(extension_url.path());
-  new_path += "/";
-  new_path += relative_path;
-  replacements.SetPathStr(new_path);
-  GURL file_url = extension_url.ReplaceComponents(replacements);
-  if (!file_url.is_valid())
-    return FilePath();
-
-  // Convert the result back to a FilePath.
-  FilePath ret_val;
-  if (!net::FileURLToFilePath(file_url, &ret_val))
-    return FilePath();
-
-  // Converting the extension_url back to a path removes all .. and . references
-  // that may have been in extension_path that would cause isParent to break.
-  FilePath sanitized_extension_path;
-  if (!net::FileURLToFilePath(extension_url, &sanitized_extension_path))
-    return FilePath();
-
-  // Double-check that the path we ended up with is actually inside the
-  // extension root.
-  if (!sanitized_extension_path.IsParent(ret_val))
-    return FilePath();
-
-  return ret_val;
+  return FilePath();
 }
 
 // Unittesting helpers.
@@ -97,6 +70,9 @@ FilePath::StringType ExtensionResource::NormalizeSeperators(
 }
 
 bool ExtensionResource::ComparePathWithDefault(const FilePath& path) const {
+  // Make sure we have a cached value to test against...
+  if (full_resource_path_.empty())
+    GetFilePath();
   if (NormalizeSeperators(path.value()) ==
     NormalizeSeperators(full_resource_path_.value())) {
     return true;

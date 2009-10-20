@@ -184,8 +184,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     const UserScript& script = extension->content_scripts()[i];
 
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const FilePath& path =
-        script.js_scripts()[j].resource().GetFilePath();
+      const UserScript::File& js_script = script.js_scripts()[j];
+      const FilePath& path = ExtensionResource::GetFilePath(
+          js_script.extension_root(), js_script.relative_path());
       if (path.empty()) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());
@@ -194,8 +195,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
 
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const FilePath& path =
-        script.css_scripts()[j].resource().GetFilePath();
+      const UserScript::File& css_script = script.css_scripts()[j];
+      const FilePath& path = ExtensionResource::GetFilePath(
+          css_script.extension_root(), css_script.relative_path());
       if (path.empty()) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());

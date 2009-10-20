@@ -379,7 +379,7 @@ static void CreateScriptFileDetailValue(
     // TODO(cira): this information is not used on extension page yet. We
     // may want to display actual resource that got loaded, not default.
     list->Append(
-        new StringValue(file.resource().relative_path().value()));
+        new StringValue(file.relative_path().value()));
   }
   script_data->Set(key, list);
 }

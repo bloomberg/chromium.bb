@@ -271,7 +271,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       // TODO(georged): Make GetResourceURL accept wstring too
       GURL url = GetResourceURL(WideToUTF8(relative));
       ExtensionResource resource = GetResource(WideToUTF8(relative));
-      result->js_scripts().push_back(UserScript::File(resource, url));
+      result->js_scripts().push_back(UserScript::File(
+          resource.extension_root(), resource.relative_path(), url));
     }
   }
 
@@ -288,7 +289,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       // TODO(georged): Make GetResourceURL accept wstring too
       GURL url = GetResourceURL(WideToUTF8(relative));
       ExtensionResource resource = GetResource(WideToUTF8(relative));
-      result->css_scripts().push_back(UserScript::File(resource, url));
+      result->css_scripts().push_back(UserScript::File(
+          resource.extension_root(), resource.relative_path(), url));
     }
   }
 

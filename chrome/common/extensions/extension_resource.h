@@ -22,6 +22,12 @@ class ExtensionResource {
   // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
   const FilePath& GetFilePath() const;
 
+  // Static version to avoid creating an instance of ExtensionResource
+  // when all we want is the localization code.
+  // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
+  static FilePath GetFilePath(const FilePath& extension_root,
+                              const FilePath& relative_path);
+
   // Getters
   const FilePath& extension_root() const { return extension_root_; }
   const FilePath& relative_path() const { return relative_path_; }
@@ -31,11 +37,6 @@ class ExtensionResource {
   bool ComparePathWithDefault(const FilePath& path) const;
 
  private:
-  // Returns normalized full path to the resource.
-  // Resource doesn't have to exist.
-  FilePath CombinePathsSafely(const FilePath& extension_root,
-                              const FilePath& relative_path) const;
-
   // Extension root.
   FilePath extension_root_;
 
