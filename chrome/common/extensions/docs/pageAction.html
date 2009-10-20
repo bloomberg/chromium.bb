@@ -14,7 +14,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.pageAction</title></head><body>  <div id="container">
+  <title>Page Actions</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -86,7 +86,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>chrome.pageAction</h1>
+        <h1>Page Actions</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -100,7 +100,8 @@
           <li> <a href="devguide.html"><div>Developer's Guide</div></a>
             <ul>
               <li><a href="toolstrip.html">Toolstrips</a></li>
-              <li><a href="pageActions.html">Page Actions</a></li>
+              <li><a href="browserAction.html">Browser Actions</a></li>
+              <li class="leftNavSelected">Page Actions</li>
               <li><a href="background_pages.html">Background Pages</a></li>
               <li><a href="content_scripts.html">Content Scripts</a></li>
               <li><a href="events.html">Events</a></li>
@@ -141,10 +142,24 @@
         <div id="toc">
           <p>Contents</p>
           <ol>
-            <li jsinstance="*0" style="display: none; ">
-              <a>h2Name</a>
+            <li jsinstance="0">
+              <a href="#icons">Icons</a>
               <ol>
-                <li>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li jsinstance="1">
+              <a href="#H2-1">Style Guide</a>
+              <ol>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li jsinstance="*2">
+              <a href="#manifest">Manifest</a>
+              <ol>
+                <li jsinstance="*0" style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
@@ -205,7 +220,90 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-title" class="pageData">Page Actions</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p>Page actions are a simple way to represent actions that can be taken on a page ("Email this page", "Share with Facebook", etc).</p>
+
+<p>
+Page actions are displayed as icons on the right side of the OmniBox.
+The RSS icon in the following screenshot
+represents a page action
+that lets you subscribe to
+the RSS feed for the current page.
+</p>
+
+<img src="images/page-action.png" width="361" height="79">
+
+<h2 id="icons">Icons</h2>
+
+<p>Page action icons can be
+up to 19px square.
+Larger icons will be
+resized to fit,
+but for best results,
+using a 19px icon is recommended.</p>
+
+<p>Icons can be set two ways:
+using a static image
+or using the HTML5 <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">canvas element</a>.
+Using static images is easier
+for simple applications,
+but you can do
+more dynamic UIs
+using the canvas element.
+
+</p><p>Static images can be
+in any format WebKit can display.
+These include: png, bmp, ico, jpg, gif.</p>
+
+<a name="H2-1"></a><h2>Style Guide</h2>
+
+<p>For the best visual impact,
+we recommend observing
+the following guidelines:</p>
+
+<ul>
+  <li><b>Do</b> use page actions
+    for features that only make sense
+    for a few pages.
+  </li><li><b>Don't</b> use page actions
+    for features that make sense
+    for most pages.
+    Use <a href="browserAction.html">browser actions</a> instead.
+  </li><li><b>Do</b> use icons
+    that are slightly lighter-weight
+    than <a href="browserAction.html#icons">browser action icons</a>.
+    Most icons that Chrome displays
+    in the location bar
+    are smaller than 19px.
+    If the edge pixels are used,
+    they are usually only used
+    for a faint shadow.
+  </li><li><b>Don't</b> constantly animate your icon.
+    That's just annoying.
+</li></ul>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>Developers can declare page actions
+  in the manifest
+  using the following syntax:</p>
+
+<pre>"page_action": {
+  "default_title": "Do action",  // Optional, tooltip.
+  "default_icon": "icons/foo.png"  // Optional, icon.
+}</pre>
+
+<p><b>Note:</b> Even if you don't include
+  any of the values,
+  you must include an empty page_action entry
+  in your manifest so that the system knows
+  to reserve space for your action
+  in the omnibox.</p>
+
+<!-- END AUTHORED CONTENT -->
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
@@ -874,7 +972,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.</p>
+                <p>Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the path or the imageData property must be specified.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1026,7 +1124,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The zero-based index into the |icons| vector specified in the manifest.</dd>
+          <dd><b>Deprecated.</b> The zero-based index into the |icons| vector specified in the manifest.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

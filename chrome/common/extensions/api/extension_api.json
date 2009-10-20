@@ -857,7 +857,7 @@
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.",
+        "description": "Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the path or the imageData property must be specified.",
         "parameters": [
           {
             "name": "details",
@@ -872,7 +872,7 @@
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "The zero-based index into the |icons| vector specified in the manifest.",
+                "description": "<b>Deprecated.</b> The zero-based index into the |icons| vector specified in the manifest.",
                 "optional": true
               }
             }
@@ -983,7 +983,7 @@
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets the icon for the browser action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the iconIndex or the imageData property must be specified.",
+        "description": "Sets the icon for the browser action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the path or the imageData property must be specified.",
         "parameters": [
           {
             "name": "details",
@@ -997,7 +997,7 @@
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "The zero-based index into the |icons| vector specified in the manifest.",
+                "description": "<b>Deprecated.</b> The zero-based index into the |icons| vector specified in the manifest.",
                 "optional": true
               },
               "path": {
