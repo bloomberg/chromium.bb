@@ -14,9 +14,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
-void ImportLockDialogCocoa(ImporterHost* importer) {
-  scoped_nsobject<NSAlert> lock_alert;
-  lock_alert.reset([[NSAlert alloc] init]);
+void ImportLockDialogCocoa::ShowWarning(ImporterHost* importer) {
+  scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);
   [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_OK)];
   [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(

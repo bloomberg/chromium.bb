@@ -471,7 +471,7 @@ void ImporterHost::ShowWarningDialog() {
 #elif defined(OS_LINUX)
     ImportLockDialogGtk::Show(parent_window_, this);
 #else
-    ImportLockDialogCocoa(this);
+    ImportLockDialogCocoa::ShowWarning(this);
 #endif
   }
 }

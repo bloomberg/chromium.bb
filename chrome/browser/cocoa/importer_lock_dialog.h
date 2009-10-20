@@ -7,8 +7,14 @@
 
 class ImporterHost;
 
-// Bridge from Importer.cc to ImporterLockDialog.
-void ImportLockDialogCocoa(ImporterHost* importer);
+namespace ImportLockDialogCocoa {
+
+// This function is called by an ImporterHost, and displays the Firefox profile
+// locked warning by creating a modal NSAlert.  On the closing of the alert
+// box, the ImportHost receives a callback with the message either to skip the
+// import, or to try again.
+void ShowWarning(ImporterHost* importer);
+
+}
 
 #endif  // CHROME_BROWSER_COCOA_IMPORTER_LOCK_DIALOG_H_
-
