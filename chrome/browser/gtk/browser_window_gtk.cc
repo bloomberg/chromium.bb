@@ -1131,8 +1131,8 @@ void BrowserWindowGtk::ShowHistoryTooNewDialog() {
       static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
       "%s", message.c_str());
   gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
-  gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
+  g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+  gtk_widget_show_all(dialog);
 }
 
 void BrowserWindowGtk::ShowThemeInstallBubble() {

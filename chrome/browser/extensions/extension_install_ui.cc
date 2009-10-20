@@ -198,8 +198,8 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
 #else
   GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
       GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", error.c_str());
-  gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
+  g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+  gtk_widget_show_all(dialog);
 #endif
 }
 
