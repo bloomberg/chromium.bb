@@ -84,8 +84,7 @@ class ExtensionActionState {
  public:
   ExtensionActionState(std::string title, int icon_index)
     : hidden_(false), title_(title), icon_index_(icon_index),
-      badge_background_color_(SkColorSetARGB(255, 218, 0, 24)),
-      badge_text_color_(SK_ColorWHITE) {
+      badge_background_color_(SkColorSetARGB(255, 218, 0, 24)) {
   }
 
   const std::string& title() const { return title_; }
@@ -103,13 +102,6 @@ class ExtensionActionState {
     badge_background_color_ = badge_background_color;
   }
 
-  SkColor badge_text_color() const {
-    return badge_text_color_;
-  }
-  void set_badge_text_color(SkColor badge_text_color) {
-    badge_text_color_ = badge_text_color;
-  }
-
   int icon_index() const { return icon_index_; }
   void set_icon_index(int icon_index) { icon_index_ = icon_index; }
 
@@ -119,7 +111,7 @@ class ExtensionActionState {
   bool hidden() const { return hidden_; }
   void set_hidden(bool hidden) { hidden_ = hidden; }
 
-  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds) const;
+  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds);
 
  private:
   // True if the action is in the hidden state.
@@ -139,9 +131,6 @@ class ExtensionActionState {
 
   // The background color for the badge.
   SkColor badge_background_color_;
-
-  // The text color for the badge.
-  SkColor badge_text_color_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionState);
 };

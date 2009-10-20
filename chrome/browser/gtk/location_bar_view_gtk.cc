@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gfx/canvas_paint.h"
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -685,8 +684,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
   g_signal_connect(event_box_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressed), this);
-  g_signal_connect_after(event_box_.get(), "expose-event",
-                         G_CALLBACK(OnExposeEvent), this);
 
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
@@ -795,21 +792,4 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       page_action_view->current_url_.spec(),
       event->button);
   return true;
-}
-
-// static
-gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
-    GtkWidget* widget, GdkEventExpose* event, PageActionViewGtk* view) {
-  TabContents* contents = view->owner_->browser_->GetSelectedTabContents();
-  if (!contents)
-    return FALSE;
-  const ExtensionActionState* state =
-      contents->GetPageActionState(view->page_action_);
-  if (!state || state->badge_text().empty())
-    return FALSE;
-
-  gfx::CanvasPaint canvas(event, false);
-  gfx::Rect bounding_rect(widget->allocation);
-  state->PaintBadge(&canvas, bounding_rect);
-  return FALSE;
 }

@@ -14,12 +14,12 @@
       chrome.pageAction.show(info.tabId);
     } else {
       chrome.pageAction.hide(info.tabId);
-      setTimeout(function() { chrome.pageAction.show(info.tabId); }, 200);
+      setTimeout(function() { chrome.pageAction.show(info.tabId); }, 1000);
     }
     chrome.pageAction.setTitle({title: "click:" + clicks, tabId: info.tabId});
     chrome.pageAction.setBadgeTextColor({
       tabId: info.tabId,
-      color: [255, 255, clicks * 50, 255]
+      color: [0, 255, clicks * 50, 255]
     });
     chrome.pageAction.setBadgeBackgroundColor({
       tabId: info.tabId,
@@ -27,7 +27,7 @@
     });
     chrome.pageAction.setBadgeText({
       tabId: info.tabId,
-      text: i + ""
+      text: clicks + ""
     });
 
     // We only have 2 icons, but cycle through 3 icons to test the
