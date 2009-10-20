@@ -9,7 +9,6 @@
 #include <string>
 
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
-#import "chrome/browser/chrome_application_mac.h"
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
