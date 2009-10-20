@@ -3132,7 +3132,6 @@ SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
-BUG24930 LINUX : LayoutTests/editing/selection/editable-html-element.html = FAIL
 BUG24930 MAC DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
 
 // WebKit Roll 49597:49640
