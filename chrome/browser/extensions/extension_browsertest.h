@@ -38,6 +38,8 @@ class ExtensionBrowserTest
     return InstallOrUpdateExtension(id, path, expected_change);
   }
 
+  void ReloadExtension(const std::string& extension_id);
+
   void UnloadExtension(const std::string& extension_id);
 
   void UninstallExtension(const std::string& extension_id);

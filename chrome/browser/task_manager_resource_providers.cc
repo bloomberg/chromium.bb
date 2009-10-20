@@ -493,7 +493,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   base::Process process(extension_host_->render_process_host()->process());
   process_handle_ = process.handle();
   pid_ = process.pid();
-  std::wstring extension_name(UTF8ToWide(extension()->name()));
+  std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
   DCHECK(!extension_name.empty());
   // Since the extension_name will be concatenated with a prefix, we need
   // to explicitly set the extension_name to be LTR format if there is no
@@ -522,7 +522,7 @@ base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
   return process_handle_;
 }
 
-Extension* TaskManagerExtensionProcessResource::extension() const {
+const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
   return extension_host_->extension();
 }
 
@@ -572,6 +572,8 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
+                 NotificationService::AllSources());
 }
 
 void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
@@ -582,6 +584,8 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CREATED,
                     NotificationService::AllSources());
   registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CRASHED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::EXTENSION_HOST_DESTROYED,
                     NotificationService::AllSources());
 
   // Delete all the resources.
@@ -600,6 +604,7 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
       AddToTaskManager(Details<ExtensionHost>(details).ptr());
       break;
     case NotificationType::EXTENSION_PROCESS_CRASHED:
+    case NotificationType::EXTENSION_HOST_DESTROYED:
       RemoveFromTaskManager(Details<ExtensionHost>(details).ptr());
       break;
     default:

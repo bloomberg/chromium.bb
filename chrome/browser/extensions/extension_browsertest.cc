@@ -115,6 +115,18 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(
   return WaitForExtensionHostsToLoad();
 }
 
+void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
+  NotificationRegistrar registrar;
+  registrar.Add(this, NotificationType::EXTENSION_LOADED,
+                NotificationService::AllSources());
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->ReloadExtension(extension_id);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+  ui_test_utils::RunMessageLoop();
+}
+
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->UnloadExtension(extension_id);

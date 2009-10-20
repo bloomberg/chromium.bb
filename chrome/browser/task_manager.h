@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/api/public/WebCache.h"
 
+class Extension;
 class MessageLoop;
 class SkBitmap;
 class TaskManager;
@@ -55,8 +56,12 @@ class TaskManager {
     virtual bool ReportsSqliteMemoryUsed() const { return false; }
     virtual size_t SqliteMemoryUsedBytes() const { return 0; }
 
+  // Return extension associated with the resource, or NULL
+  // if not applicable.
+  virtual const Extension* GetExtension() const { return NULL; }
+
     // A helper function for ActivateFocusedTab.  Returns NULL by default
-    // because not all resources have an assoiciated tab.
+    // because not all resources have an associated tab.
     virtual TabContents* GetTabContents() const { return NULL; }
 
     // Whether this resource does report the network usage accurately.
@@ -217,6 +222,9 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // Returns TabContents of given resource or NULL if not applicable.
   TabContents* GetResourceTabContents(int index) const;
+
+  // Returns Extension of given resource or NULL if not applicable.
+  const Extension* GetResourceExtension(int index) const;
 
   // JobObserver methods:
   void OnJobAdded(URLRequestJob* job);

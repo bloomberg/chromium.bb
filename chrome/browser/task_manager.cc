@@ -337,6 +337,11 @@ TabContents* TaskManagerModel::GetResourceTabContents(int index) const {
   return resources_[index]->GetTabContents();
 }
 
+const Extension* TaskManagerModel::GetResourceExtension(int index) const {
+  DCHECK(index < ResourceCount());
+  return resources_[index]->GetExtension();
+}
+
 int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource)
     const {
   int64 net_usage = GetNetworkUsageForResource(resource);

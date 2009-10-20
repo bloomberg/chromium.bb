@@ -200,13 +200,12 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   base::ProcessHandle GetProcess() const;
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { NOTREACHED(); }
+  const Extension* GetExtension() const;
 
   // Returns the pid of the extension process.
   int process_id() const { return pid_; }
 
  private:
-  Extension* extension() const;
-
   // The icon painted for the extension process.
   static SkBitmap* default_icon_;
 

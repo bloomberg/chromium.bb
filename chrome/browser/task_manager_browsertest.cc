@@ -118,6 +118,39 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   WaitForResourceChange(4);
 }
 
+// Regression test for http://crbug.com/18693.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
+
+  // Wait until we see the loaded extension in the task manager (the three
+  // resources are: the browser process, New Tab Page, and the extension).
+  WaitForResourceChange(3);
+
+  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
+  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
+  ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
+
+  const Extension* extension = model()->GetResourceExtension(2);
+
+  // Reload the extension a few times and make sure our resource count
+  // doesn't increase.
+  ReloadExtension(extension->id());
+  EXPECT_EQ(3, model()->ResourceCount());
+  extension = model()->GetResourceExtension(2);
+
+  ReloadExtension(extension->id());
+  EXPECT_EQ(3, model()->ResourceCount());
+  extension = model()->GetResourceExtension(2);
+
+  ReloadExtension(extension->id());
+  EXPECT_EQ(3, model()->ResourceCount());
+}
+
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {
   EXPECT_EQ(0, model()->ResourceCount());
 
