@@ -707,7 +707,7 @@ BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 BUG24192 SKIP : chrome/http/mime = PASS
 
 // These tests all depend on DOM Storage events which are not yet supported.
-BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT
+BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
 BUG4360 : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
@@ -3171,3 +3171,7 @@ BUG_JAPHET LINUX WIN : LayoutTests/fast/canvas/arc360.html = FAIL
 BUG_JAPHET LINUX : LayoutTests/fast/css/transition-color-unspecified.html = FAIL
 BUG_JAPHET : LayoutTests/media/media-load-event.html = FAIL
 BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
+
+// WebKit Roll 49809:49830
+BUG_YUTAK LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
+BUG_YUTAK MAC : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = FAIL

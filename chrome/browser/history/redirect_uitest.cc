@@ -106,7 +106,7 @@ TEST_F(RedirectTest, ClientEmptyReferer) {
 
 // Tests to make sure a location change when a pending redirect exists isn't
 // flagged as a redirect.
-TEST_F(RedirectTest, ClientCancelled) {
+TEST_F(RedirectTest, DISABLED_ClientCancelled) {
   FilePath first_path(test_data_directory_);
   first_path = first_path.AppendASCII("cancelled_redirect_test.html");
   ASSERT_TRUE(file_util::AbsolutePath(&first_path));
