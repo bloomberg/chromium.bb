@@ -39,7 +39,7 @@ class PrivateKeyInfoCodec {
   static const uint8 kNullTag = 0x05;
   static const uint8 kOctetStringTag = 0x04;
   static const uint8 kSequenceTag = 0x30;
-  
+
   // |big_endian| here specifies the byte-significance of the integer components
   // that will be parsed & serialized (modulus(), etc...) during Import(),
   // Export() and ExportPublicKeyInfo() -- not the ASN.1 DER encoding of the
@@ -56,6 +56,8 @@ class PrivateKeyInfoCodec {
 
   // Parses the ASN.1 DER encoding of the PrivateKeyInfo structure in |input|
   // and populates the integer components with |big_endian_| byte-significance.
+  // IMPORTANT NOTE: This is currently *not* security-approved for importing
+  // keys from unstrusted sources.
   bool Import(const std::vector<uint8>& input);
 
   // Accessors to the contents of the integer components of the PrivateKeyInfo
@@ -74,7 +76,7 @@ class PrivateKeyInfoCodec {
   // value.
   void PrependInteger(const std::vector<uint8>& in, std::list<uint8>* out);
   void PrependInteger(uint8* val, int num_bytes, std::list<uint8>* data);
-  
+
   // Prepends the integer stored in |val| - |val + num_bytes| with |big_endian|
   // byte-significance into |data| as an ASN.1 integer.
   void PrependIntegerImpl(uint8* val,
@@ -94,9 +96,9 @@ class PrivateKeyInfoCodec {
   // |big_endian| byte-significance.
   bool ReadIntegerImpl(uint8** pos,
                        uint8* end,
-                       std::vector<uint8>* out, 
+                       std::vector<uint8>* out,
                        bool big_endian);
-  
+
   // Prepends the integer stored in |val|, starting a index |start|, for
   // |num_bytes| bytes onto |data|.
   void PrependBytes(uint8* val,
