@@ -1,0 +1,84 @@
+<div id="pageData-title" class="pageData">Page Actions</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p>Page actions are a simple way to represent actions that can be taken on a page ("Email this page", "Share with Facebook", etc).</p>
+
+<p>
+Page actions are displayed as icons on the right side of the OmniBox.
+The RSS icon in the following screenshot
+represents a page action
+that lets you subscribe to
+the RSS feed for the current page.
+</p>
+
+<img src="images/page-action.png"
+  width="361" height="79" />
+
+<h2 id="icons">Icons</h2>
+
+<p>Page action icons can be
+up to 19px square.
+Larger icons will be
+resized to fit,
+but for best results,
+using a 19px icon is recommended.</p>
+
+<p>Icons can be set two ways:
+using a static image
+or using the HTML5 <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">canvas element</a>.
+Using static images is easier
+for simple applications,
+but you can do
+more dynamic UIs
+using the canvas element.
+
+<p>Static images can be
+in any format WebKit can display.
+These include: png, bmp, ico, jpg, gif.</p>
+
+<h2>Style Guide</h2>
+
+<p>For the best visual impact,
+we recommend observing
+the following guidelines:</p>
+
+<ul>
+  <li><b>Do</b> use page actions
+    for features that only make sense
+    for a few pages.
+  <li><b>Don't</b> use page actions
+    for features that make sense
+    for most pages.
+    Use <a href="browserAction.html">browser actions</a> instead.
+  <li><b>Do</b> use icons
+    that are slightly lighter-weight
+    than <a href="browserAction.html#icons">browser action icons</a>.
+    Most icons that Chrome displays
+    in the location bar
+    are smaller than 19px.
+    If the edge pixels are used,
+    they are usually only used
+    for a faint shadow.
+  <li><b>Don't</b> constantly animate your icon.
+    That's just annoying.
+</ul>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>Developers can declare page actions
+  in the manifest
+  using the following syntax:</p>
+
+<pre>"page_action": {
+  "default_title": "Do action",  // Optional, tooltip.
+  "default_icon": "icons/foo.png"  // Optional, icon.
+}</pre>
+
+<p><b>Note:</b> Even if you don't include
+  any of the values,
+  you must include an empty page_action entry
+  in your manifest so that the system knows
+  to reserve space for your action
+  in the omnibox.</p>
+
+<!-- END AUTHORED CONTENT -->
