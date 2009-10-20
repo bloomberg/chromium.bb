@@ -412,6 +412,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     if int(action.get('process_outputs_as_sources', 0)):
       fp.write('input_files.extend(_outputs)\n')
     fp.write('prerequisites.extend(_outputs)\n')
+    fp.write('target_files.extend(_outputs)\n')
 
   rules = spec.get('rules', [])
   for rule in rules:
