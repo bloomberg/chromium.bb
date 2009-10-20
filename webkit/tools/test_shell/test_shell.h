@@ -106,6 +106,11 @@ public:
     // Called by the LayoutTestController to signal test completion.
     void TestFinished();
 
+    // Called by LayoutTestController when a test hits the timeout, but does not
+    // cause a hang. We can avoid killing TestShell in this case and still dump
+    // the test results.
+    void TestTimedOut();
+
     // Called to block the calling thread until TestFinished is called.
     void WaitTestFinished();
 

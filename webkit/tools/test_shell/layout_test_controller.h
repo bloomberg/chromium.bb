@@ -74,6 +74,7 @@ class LayoutTestController : public CppBoundClass {
   // to delay the completion of the test until notifyDone is called.
   void waitUntilDone(const CppArgumentList& args, CppVariant* result);
   void notifyDone(const CppArgumentList& args, CppVariant* result);
+  void notifyDoneTimedOut();
 
   // Methods for adding actions to the work queue.  Used in conjunction with
   // waitUntilDone/notifyDone above.
@@ -289,6 +290,12 @@ class LayoutTestController : public CppBoundClass {
   std::wstring CppVariantToWstring(const CppVariant&);
 
   void LogErrorToConsole(const std::string& text);
+
+  void completeNotifyDone(bool is_timeout);
+
+  // Used for test timeouts.
+  // TODO(ojan): Use base::OneShotTimer.
+  ScopedRunnableMethodFactory<LayoutTestController> timeout_factory_;
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;

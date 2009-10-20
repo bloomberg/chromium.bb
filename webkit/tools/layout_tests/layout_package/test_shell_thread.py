@@ -39,7 +39,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
   """
   outlines = []
   failures = []
-  crash_or_timeout = False
+  crash = False
 
   # Some test args, such as the image hash, may be added or changed on a
   # test-by-test basis.
@@ -63,7 +63,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
       if (-1073741510 == proc.returncode or
           -signal.SIGINT == proc.returncode):
         raise KeyboardInterrupt
-      crash_or_timeout = True
+      crash = True
       break
 
     # Don't include #URL lines in our output
@@ -78,7 +78,6 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
       local_test_args.hash = line.rstrip()[5:]
     elif line.startswith("#TEST_TIMED_OUT"):
       # Test timed out, but we still need to read until #EOF.
-      crash_or_timeout = True
       failures.append(test_failures.FailureTimeout())
     else:
       outlines.append(line)
@@ -95,9 +94,10 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
                                            ''.join(outlines),
                                            local_test_args,
                                            target)
-    # Don't add any more failures if we already have a crash or timeout, so
-    # we don't double-report those tests.
-    if not crash_or_timeout:
+    # Don't add any more failures if we already have a crash, so we don't
+    # double-report those tests. We do double-report for timeouts since we still
+    # want to see the text and image output.
+    if not crash:
       failures.extend(new_failures)
     time_for_diffs[test_type.__class__.__name__] = (
         time.time() - start_diff_time)

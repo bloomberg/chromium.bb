@@ -453,6 +453,11 @@ bool TestShell::RemoveWindowFromList(gfx::NativeWindow window) {
   return false;
 }
 
+void TestShell::TestTimedOut() {
+  puts("#TEST_TIMED_OUT\n");
+  TestFinished();
+}
+
 void TestShell::Show(WebNavigationPolicy policy) {
   delegate_->show(policy);
 }

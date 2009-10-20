@@ -34,20 +34,6 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
-#if defined(OS_WIN)
-namespace {
-
-// Stops the test from running and prints a brief warning to stdout.  Called
-// when the timer for loading a layout test expires.
-VOID CALLBACK TestTimeout(HWND hwnd, UINT msg, UINT_PTR timer_id, DWORD ms) {
-  puts("#TEST_TIMED_OUT\n");
-  reinterpret_cast<TestShell*>(timer_id)->TestFinished();
-  // Print a warning to be caught by the layout-test script.
-}
-
-}
-#endif
-
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned
 // off between each test run.
@@ -70,7 +56,8 @@ LayoutTestController::WorkQueue LayoutTestController::work_queue_;
 CppVariant LayoutTestController::globalFlag_;
 CppVariant LayoutTestController::webHistoryItemCount_;
 
-LayoutTestController::LayoutTestController(TestShell* shell) {
+LayoutTestController::LayoutTestController(TestShell* shell) :
+    ALLOW_THIS_IN_INITIALIZER_LIST(timeout_factory_(this)) {
   // Set static shell_ variable since we can't do it in an initializer list.
   // We also need to be careful not to assign shell_ to new windows which are
   // temporary.
@@ -271,30 +258,47 @@ void LayoutTestController::setAcceptsEditing(
 
 void LayoutTestController::waitUntilDone(
     const CppArgumentList& args, CppVariant* result) {
+  bool is_debugger_present = false;
 #if defined(OS_WIN)
-  // Set a timer in case something hangs.  We use a custom timer rather than
-  // the one managed by the message loop so we can kill it when the load
-  // finishes successfully.
-  if (!::IsDebuggerPresent()) {
-    UINT_PTR timer_id = reinterpret_cast<UINT_PTR>(shell_);
-    SetTimer(shell_->mainWnd(), timer_id, shell_->GetLayoutTestTimeout(),
-             &TestTimeout);
-  }
-#else
-  // TODO(port): implement timer here
+  // TODO(ojan): Make cross-platform.
+  is_debugger_present = ::IsDebuggerPresent();
 #endif
+
+  if (!is_debugger_present) {
+    // TODO(ojan): Use base::OneShotTimer. For some reason, using OneShotTimer
+    // seems to cause layout test failures on the try bots.
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        timeout_factory_.NewRunnableMethod(
+            &LayoutTestController::notifyDoneTimedOut),
+        shell_->GetLayoutTestTimeout());
+  }
+
   wait_until_done_ = true;
   result->SetNull();
 }
 
 void LayoutTestController::notifyDone(
     const CppArgumentList& args, CppVariant* result) {
+  // Test didn't timeout. Kill the timeout timer.
+  timeout_factory_.RevokeAll();
+
+  completeNotifyDone(false);
+  result->SetNull();
+}
+
+void LayoutTestController::notifyDoneTimedOut() {
+  completeNotifyDone(true);
+}
+
+void LayoutTestController::completeNotifyDone(bool is_timeout) {
   if (shell_->layout_test_mode() && wait_until_done_ &&
       !shell_->delegate()->top_loading_frame() && work_queue_.empty()) {
-    shell_->TestFinished();
+    if (is_timeout)
+      shell_->TestTimedOut();
+    else
+      shell_->TestFinished();
   }
   wait_until_done_ = false;
-  result->SetNull();
 }
 
 class WorkItemBackForward : public LayoutTestController::WorkItem {
