@@ -19,9 +19,7 @@
 namespace flip {
 
 // This class provides facilities for basic binary value packing and unpacking
-// into Flip frames.  Note: this is similar to Chrome's pickle class, but is
-// simplified to work in both the client and server, and without excess
-// padding.
+// into Flip frames.
 //
 // The FlipFrameBuilder supports appending primitive values (int, string, etc)
 // to a frame instance.  The FlipFrameBuilder grows its internal memory buffer
@@ -86,11 +84,16 @@ class FlipFrameBuilder {
 
   // Write an integer to a particular offset in the data buffer.
   bool WriteUInt32ToOffset(int offset, uint32 value) {
-    if (offset + sizeof(value) > length_)
-      return false;
     value = htonl(value);
+    return WriteBytesToOffset(offset, &value, sizeof(value));
+  }
+
+  // Write to a particular offset in the data buffer.
+  bool WriteBytesToOffset(int offset, const void* data, uint32 data_len) {
+    if (offset + data_len > length_)
+      return false;
     char *ptr = buffer_ + offset;
-    memcpy(ptr, &value, sizeof(value));
+    memcpy(ptr, data, data_len);
     return true;
   }
 

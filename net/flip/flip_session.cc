@@ -267,7 +267,8 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
 
   // Create a SYN_STREAM packet and add to the output queue.
   flip::FlipSynStreamControlFrame* syn_frame =
-      flip_framer_.CreateSynStream(stream_id, priority, false, &headers);
+      flip_framer_.CreateSynStream(stream_id, priority,
+                                   flip::CONTROL_FLAG_NONE, false, &headers);
   int length = sizeof(flip::FlipFrame) + syn_frame->length();
   IOBufferWithSize* buffer =
       new IOBufferWithSize(length);

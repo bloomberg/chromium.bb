@@ -19,22 +19,27 @@ class FlipFramerTest : public PlatformTest {
 
 class TestFlipVisitor : public FlipFramerVisitorInterface  {
  public:
-  explicit TestFlipVisitor(FlipFramer* framer)
-    : framer_(framer),
-      error_count_(0),
+  explicit TestFlipVisitor()
+    : error_count_(0),
       syn_frame_count_(0),
       syn_reply_frame_count_(0),
-      data_frame_count_(0),
-      fin_frame_count_(0) {
+      data_bytes_(0),
+      fin_frame_count_(0),
+      fin_flag_count_(0),
+      zero_length_data_frame_count_(0) {
   }
 
   void OnError(FlipFramer* f) {
     error_count_++;
   }
+
   void OnStreamFrameData(FlipStreamId stream_id,
                          const char* data,
                          size_t len) {
-    data_frame_count_++;
+    if (len == 0)
+      zero_length_data_frame_count_++;
+
+    data_bytes_ += len;
 #ifdef TEST_LOGGING
     std::cerr << "OnStreamFrameData(" << stream_id << ", \"";
     if (len > 0) {
@@ -51,13 +56,13 @@ class TestFlipVisitor : public FlipFramerVisitorInterface  {
     bool parsed_headers = false;
     switch (frame->type()) {
       case SYN_STREAM:
-        parsed_headers = framer_->ParseHeaderBlock(
+        parsed_headers = framer_.ParseHeaderBlock(
             reinterpret_cast<const FlipFrame*>(frame), &headers);
         DCHECK(parsed_headers);
         syn_frame_count_++;
         break;
       case SYN_REPLY:
-        parsed_headers = framer_->ParseHeaderBlock(
+        parsed_headers = framer_.ParseHeaderBlock(
             reinterpret_cast<const FlipFrame*>(frame), &headers);
         DCHECK(parsed_headers);
         syn_reply_frame_count_++;
@@ -68,18 +73,44 @@ class TestFlipVisitor : public FlipFramerVisitorInterface  {
       default:
         DCHECK(false);  // Error!
     }
+    if (frame->flags() & CONTROL_FLAG_FIN)
+      fin_flag_count_++;
   }
 
   void OnLameDuck() {
   }
 
-  FlipFramer* framer_;
+  // Convenience function which runs a framer simulation with particular input.
+  void SimulateInFramer(const unsigned char* input, size_t size) {
+    framer_.set_enable_compression(false);
+    framer_.set_visitor(this);
+    size_t input_remaining = size;
+    const char* input_ptr = reinterpret_cast<const char*>(input);
+    while (input_remaining > 0 &&
+           framer_.error_code() == FlipFramer::FLIP_NO_ERROR) {
+      // To make the tests more interesting, we feed random (amd small) chunks
+      // into the framer.  This simulates getting strange-sized reads from
+      // the socket.
+      const size_t kMaxReadSize = 32;
+      size_t bytes_read =
+          (rand() % std::min(input_remaining, kMaxReadSize)) + 1;
+      size_t bytes_processed = framer_.ProcessInput(input_ptr, bytes_read);
+      input_remaining -= bytes_processed;
+      input_ptr += bytes_processed;
+      if (framer_.state() == FlipFramer::FLIP_DONE)
+        framer_.Reset();
+    }
+  }
+
+  FlipFramer framer_;
   // Counters from the visitor callbacks.
   int error_count_;
   int syn_frame_count_;
   int syn_reply_frame_count_;
-  int data_frame_count_;
-  int fin_frame_count_;
+  int data_bytes_;
+  int fin_frame_count_;  // The count of FIN_STREAM type frames received.
+  int fin_flag_count_;  // The count of frames with the FIN flag set.
+  int zero_length_data_frame_count_;  // The count of zero-length data frames.
 };
 
 // Test our protocol constants
@@ -125,7 +156,7 @@ TEST_F(FlipFramerTest, ControlFrameStructs) {
   FlipHeaderBlock headers;
 
   scoped_array<FlipSynStreamControlFrame> syn_frame(
-      framer.CreateSynStream(123, 2, false, &headers));
+      framer.CreateSynStream(123, 2, CONTROL_FLAG_NONE, false, &headers));
   EXPECT_EQ(kFlipProtocolVersion, syn_frame.get()->version());
   EXPECT_EQ(true, syn_frame.get()->is_control_frame());
   EXPECT_EQ(SYN_STREAM, syn_frame.get()->type());
@@ -134,7 +165,7 @@ TEST_F(FlipFramerTest, ControlFrameStructs) {
   EXPECT_EQ(2, syn_frame.get()->header_block_len());
 
   scoped_array<FlipSynReplyControlFrame> syn_reply(
-      framer.CreateSynReply(123, false, &headers));
+      framer.CreateSynReply(123, CONTROL_FLAG_NONE, false, &headers));
   EXPECT_EQ(kFlipProtocolVersion, syn_reply.get()->version());
   EXPECT_EQ(true, syn_reply.get()->is_control_frame());
   EXPECT_EQ(SYN_REPLY, syn_reply.get()->type());
@@ -161,7 +192,7 @@ TEST_F(FlipFramerTest, HeaderBlock) {
 
   // Encode the header block into a SynStream frame.
   scoped_array<FlipSynStreamControlFrame> frame(
-      framer.CreateSynStream(1, 1, true, &headers));
+      framer.CreateSynStream(1, 1, CONTROL_FLAG_NONE, true, &headers));
   EXPECT_TRUE(frame.get() != NULL);
 
   FlipHeaderBlock new_headers;
@@ -209,9 +240,9 @@ TEST_F(FlipFramerTest, BasicCompression) {
 
   FlipFramer framer;
   scoped_array<FlipSynStreamControlFrame>
-      frame1(framer.CreateSynStream(1, 1, true, &headers));
+      frame1(framer.CreateSynStream(1, 1, CONTROL_FLAG_NONE, true, &headers));
   scoped_array<FlipSynStreamControlFrame>
-      frame2(framer.CreateSynStream(1, 1, true, &headers));
+      frame2(framer.CreateSynStream(1, 1, CONTROL_FLAG_NONE, true, &headers));
 
   // Expect the second frame to be more compact than the first.
   EXPECT_LE(frame2.get()->length(), frame1.get()->length());
@@ -273,25 +304,86 @@ TEST_F(FlipFramerTest, Basic) {
     0x00, 0x00, 0x00, 0x00,
   };
 
-  FlipFramer framer;
-  framer.set_enable_compression(false);
-  TestFlipVisitor visitor(&framer);
-  framer.set_visitor(&visitor);
-  size_t input_remaining = sizeof(input);
-  const char* input_ptr = reinterpret_cast<const char*>(input);
-  while (input_remaining > 0 &&
-         framer.error_code() == FlipFramer::FLIP_NO_ERROR) {
-    size_t bytes_processed = framer.ProcessInput(input_ptr, sizeof(input));
-    input_remaining -= bytes_processed;
-    input_ptr += bytes_processed;
-    if (framer.state() == FlipFramer::FLIP_DONE)
-      framer.Reset();
-  }
+  TestFlipVisitor visitor;
+  visitor.SimulateInFramer(input, sizeof(input));
+
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
-  EXPECT_EQ(4, visitor.data_frame_count_);
+  EXPECT_EQ(24, visitor.data_bytes_);
   EXPECT_EQ(2, visitor.fin_frame_count_);
+  EXPECT_EQ(0, visitor.fin_flag_count_);
+  EXPECT_EQ(0, visitor.zero_length_data_frame_count_);
+}
+
+// Test that the FIN flag on a data frame signifies EOF.
+TEST_F(FlipFramerTest, FinOnDataFrame) {
+  const unsigned char input[] = {
+    0x80, 0x01, 0x00, 0x01,   // SYN Stream #1
+    0x00, 0x00, 0x00, 0x10,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x02, 'h', 'h',
+    0x00, 0x02, 'v', 'v',
+
+    0x80, 0x01, 0x00, 0x02,   // SYN REPLY Stream #1
+    0x00, 0x00, 0x00, 0x10,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x02, 'a', 'a',
+    0x00, 0x02, 'b', 'b',
+
+    0x00, 0x00, 0x00, 0x01,   // DATA on Stream #1
+    0x00, 0x00, 0x00, 0x0c,
+      0xde, 0xad, 0xbe, 0xef,
+      0xde, 0xad, 0xbe, 0xef,
+      0xde, 0xad, 0xbe, 0xef,
+
+    0x00, 0x00, 0x00, 0x01,   // DATA on Stream #1, with EOF
+    0x01, 0x00, 0x00, 0x04,
+      0xde, 0xad, 0xbe, 0xef,
+  };
+
+  TestFlipVisitor visitor;
+  visitor.SimulateInFramer(input, sizeof(input));
+
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1, visitor.syn_frame_count_);
+  EXPECT_EQ(1, visitor.syn_reply_frame_count_);
+  EXPECT_EQ(16, visitor.data_bytes_);
+  EXPECT_EQ(0, visitor.fin_frame_count_);
+  EXPECT_EQ(0, visitor.fin_flag_count_);
+  EXPECT_EQ(1, visitor.zero_length_data_frame_count_);
+}
+
+// Test that the FIN flag on a SYN reply frame signifies EOF.
+TEST_F(FlipFramerTest, FinOnSynReplyFrame) {
+  const unsigned char input[] = {
+    0x80, 0x01, 0x00, 0x01,   // SYN Stream #1
+    0x00, 0x00, 0x00, 0x10,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x02, 'h', 'h',
+    0x00, 0x02, 'v', 'v',
+
+    0x80, 0x01, 0x00, 0x02,   // SYN REPLY Stream #1
+    0x01, 0x00, 0x00, 0x10,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x02, 'a', 'a',
+    0x00, 0x02, 'b', 'b',
+  };
+
+  TestFlipVisitor visitor;
+  visitor.SimulateInFramer(input, sizeof(input));
+
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1, visitor.syn_frame_count_);
+  EXPECT_EQ(1, visitor.syn_reply_frame_count_);
+  EXPECT_EQ(0, visitor.data_bytes_);
+  EXPECT_EQ(0, visitor.fin_frame_count_);
+  EXPECT_EQ(1, visitor.fin_flag_count_);
+  EXPECT_EQ(1, visitor.zero_length_data_frame_count_);
 }
 
 }  // namespace flip

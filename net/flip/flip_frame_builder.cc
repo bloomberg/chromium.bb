@@ -9,7 +9,7 @@
 
 namespace flip {
 
-  // We mark a read only FlipFrameBuilder with a special capacity_.
+// We mark a read only FlipFrameBuilder with a special capacity_.
 static const size_t kCapacityReadOnly = std::numeric_limits<size_t>::max();
 
 FlipFrameBuilder::FlipFrameBuilder()

@@ -89,23 +89,25 @@ const int kFlipProtocolVersion = 1;
 //       accessors provided or call ntohX() functions.
 
 // Types of Flip Control Frames.
-typedef enum {
+enum FlipControlType {
   SYN_STREAM = 1,
   SYN_REPLY,
   FIN_STREAM,
   NOOP
-} FlipControlType;
+};
 
 // Flags on data packets
-typedef enum {
+enum FlipDataFlags {
+  DATA_FLAG_NONE = 0,
   DATA_FLAG_FIN = 1,
   DATA_FLAG_COMPRESSED = 2  // TODO(mbelshe): remove me.
-} FlipDataFlags;
+};
 
 // Flags on control packets
-typedef enum {
+enum FlipControlFlags {
+  CONTROL_FLAG_NONE = 0,
   CONTROL_FLAG_FIN = 1
-} FlipControlFlags;
+};
 
 // A FLIP stream id is a 31 bit entity.
 typedef uint32 FlipStreamId;
@@ -115,10 +117,10 @@ typedef uint32 FlipStreamId;
 #define FLIP_PRIORITY_HIGHEST 0
 
 // A special structure for the 8 bit flags and 24 bit length fields.
-typedef union {
+union FlagsAndLength {
   uint8 flags_[4]; // 8 bits
   uint32 length_;  // 24 bits
-} FlagsLength;
+};
 
 // All Flip Frame types derive from the FlipFrame struct.
 typedef struct {
@@ -146,7 +148,7 @@ typedef struct {
       FlipStreamId stream_id_;
     } data_;
   };
-  FlagsLength flags_length_;
+  FlagsAndLength flags_length_;
 } FlipFrame;
 
 // A Data Frame.

@@ -29,6 +29,7 @@ namespace flip {
 
 class FlipFramer;
 class FlipFramerTest;
+class TestFlipVisitor;
 
 // A datastructure for holding a set of headers from either a
 // SYN_STREAM or SYN_REPLY frame.
@@ -48,6 +49,11 @@ class FlipFramerVisitorInterface {
   virtual void OnControl(const FlipControlFrame* frame) = 0;
 
   // Called when data is received.
+  // |stream_id| The stream receiving data.
+  // |data| A buffer containing the data received.
+  // |len| The length of the data buffer.
+  // When the other side has finished sending data on this stream,
+  // this method will be called with a zero-length buffer.
   virtual void OnStreamFrameData(flip::FlipStreamId stream_id,
                                  const char* data,
                                  size_t len) = 0;
@@ -120,24 +126,44 @@ class FlipFramer {
   // Returns true if successfully parsed, false otherwise.
   bool ParseHeaderBlock(const FlipFrame* frame, FlipHeaderBlock* block);
 
-  // Frame creation utilities
-  // Create a FlipSynStreamControlFrame.  The resulting frame will be
-  // compressed if |compressed| is true.
-  FlipSynStreamControlFrame* CreateSynStream(int stream_id, int priority,
-                                             bool compress,
+  // Create a FlipSynStreamControlFrame.
+  // |stream_id| is the stream for this frame.
+  // |priority| is the priority (0-3) for this frame.
+  // |flags| is the flags to use with the data.
+  //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
+  // |compressed| specifies whether the frame should be compressed.
+  // |headers| is the header block to include in the frame.
+  FlipSynStreamControlFrame* CreateSynStream(FlipStreamId stream_id,
+                                             int priority,
+                                             FlipControlFlags flags,
+                                             bool compressed,
                                              FlipHeaderBlock* headers);
-  static FlipFinStreamControlFrame* CreateFinStream(int stream_id, int status);
 
-  // Create a FlipSynReplyControlFrame.The resulting frame will be
-  // compressed if |compressed| is true.
-  FlipSynReplyControlFrame* CreateSynReply(int stream_id,
-                                           bool compress,
+  static FlipFinStreamControlFrame* CreateFinStream(FlipStreamId stream_id,
+                                                    int status);
+
+  // Create a FlipSynReplyControlFrame.
+  // |stream_id| is the stream for this frame.
+  // |flags| is the flags to use with the data.
+  //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
+  // |compressed| specifies whether the frame should be compressed.
+  // |headers| is the header block to include in the frame.
+  FlipSynReplyControlFrame* CreateSynReply(FlipStreamId stream_id,
+                                           FlipControlFlags flags,
+                                           bool compressed,
                                            FlipHeaderBlock* headers);
 
-  // Create a FlipDataFrame.  The resulting frame will be
-  // compressed if |compressed| is true.
-  FlipDataFrame* CreateDataFrame(int stream_id, const char* data,
-                                 int len, bool compressed);
+  // Create a data frame.
+  // |stream_id| is the stream  for this frame
+  // |data| is the data to be included in the frame.
+  // |len| is the length of the data
+  // |flags| is the flags to use with the data.
+  //    To create a compressed frame, enable DATA_FLAG_COMPRESSED.
+  //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
+  FlipDataFrame* CreateDataFrame(FlipStreamId stream_id, const char* data,
+                                 uint32 len, FlipDataFlags flags);
+
+  static FlipControlFrame* CreateNopFrame();
 
   // NOTES about frame compression.
   // We want flip to compress headers across the entire session.  As long as
@@ -172,9 +198,9 @@ class FlipFramer {
   static const char* ErrorCodeToString(int error_code);
 
  protected:
-  FRIEND_TEST(FlipFramerTest, Basic);
   FRIEND_TEST(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders);
   friend class net::FlipNetworkTransactionTest;
+  friend class flip::TestFlipVisitor;
 
   // For ease of testing we can tweak compression on/off.
   void set_enable_compression(bool value);
