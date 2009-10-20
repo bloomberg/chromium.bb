@@ -60,6 +60,9 @@ const int kHboxBorder = 4;
 // Padding between the elements in the bar.
 static const int kInnerPadding = 4;
 
+// The size of each button on the toolbar.
+static const int kButtonSize = 29;
+
 // TODO(deanm): Eventually this should be painted with the background png
 // image, but for now we get pretty close by just drawing a solid border.
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
@@ -681,6 +684,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       last_icon_skbitmap_(NULL),
       last_icon_pixbuf_(NULL) {
   event_box_.Own(gtk_event_box_new());
+  gtk_widget_set_size_request(event_box_.get(), kButtonSize, kButtonSize);
+
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
   g_signal_connect(event_box_.get(), "button-press-event",

@@ -8,6 +8,7 @@
   
   // Called when the user clicks on the browser action.
   var clicks = 0;
+  var text = "";
   chrome.pageAction.onClicked.addListener(function(_, info) {
     chrome.pageAction.setIcon({iconIndex: clicks, tabId: info.tabId});
     if (clicks % 2) {
@@ -25,9 +26,10 @@
       tabId: info.tabId,
       color: [255, clicks * 50, 0, 255]
     });
+    text += clicks.toString();
     chrome.pageAction.setBadgeText({
       tabId: info.tabId,
-      text: i + ""
+      text: text
     });
 
     // We only have 2 icons, but cycle through 3 icons to test the

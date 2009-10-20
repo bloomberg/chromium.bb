@@ -139,7 +139,7 @@ function animateFlip() {
     rotation = 0;
     drawIconAtRotation();
     chrome.browserAction.setBadgeText({text:unreadCount});
-    chrome.browserAction.setBadgeBackgroundColor({color:[255, 208, 0, 24]});
+    chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
     chrome.browserAction.setTitle({title:unreadCount + " unread emails"});
   }
 }
@@ -154,7 +154,7 @@ function showLoggedOut() {
 
   chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0,
       browserActionWidth,browserActionHeight)});
-  chrome.browserAction.setBadgeBackgroundColor({color:[230, 190, 190, 190]});
+  chrome.browserAction.setBadgeBackgroundColor({color:[190, 190, 190, 230]});
   chrome.browserAction.setBadgeText({text:"?"});
 }
 

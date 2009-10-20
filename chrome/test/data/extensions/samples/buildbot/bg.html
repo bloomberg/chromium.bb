@@ -15,11 +15,11 @@ function updateStatus(text) {
   if (open.exec(status)) {
     //chrome.browserAction.setBadgeText("\u263A");
     chrome.browserAction.setBadgeText({text:"\u2022"});
-    chrome.browserAction.setBadgeBackgroundColor({color:[255,0,255,0]});
+    chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
   } else {
     //chrome.browserAction.setBadgeText("\u2639");
     chrome.browserAction.setBadgeText({text:"\u00D7"});
-    chrome.browserAction.setBadgeBackgroundColor({color:[255,255,0,0]});
+    chrome.browserAction.setBadgeBackgroundColor({color:[255,0,0,255]});
   }
 }
 

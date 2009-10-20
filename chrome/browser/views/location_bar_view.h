@@ -154,7 +154,7 @@ class LocationBarView : public LocationBar,
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Overridden from LocationBarTesting:
-  virtual int PageActionCount() { return page_action_image_views_.size(); }
+  virtual int PageActionCount() { return page_action_views_.size(); }
   virtual int PageActionVisibleCount();
 
   static const int kVertMargin;
@@ -351,6 +351,8 @@ class LocationBarView : public LocationBar,
                         const BubblePositioner* bubble_positioner);
     virtual ~PageActionImageView();
 
+    const ExtensionActionState* GetPageActionState();
+
     // Overridden from view for the mouse hovering.
     virtual bool OnMousePressed(const views::MouseEvent& event);
 
@@ -364,7 +366,7 @@ class LocationBarView : public LocationBar,
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
-    void UpdateVisibility(TabContents* contents, GURL url);
+    void UpdateVisibility(TabContents* contents, const GURL& url);
 
    private:
     // The location bar view that owns us.
@@ -397,6 +399,8 @@ class LocationBarView : public LocationBar,
   };
   friend class PageActionImageView;
 
+  class PageActionWithBadgeView;
+  friend class PageActionWithBadgeView;
   // Both Layout and OnChanged call into this. This updates the contents
   // of the 3 views: selected_keyword, keyword_hint and type_search_view. If
   // force_layout is true, or one of these views has changed in such a way as
@@ -515,7 +519,7 @@ class LocationBarView : public LocationBar,
   SecurityImageView security_image_view_;
 
   // The page action icon views.
-  std::vector<PageActionImageView*> page_action_image_views_;
+  std::vector<PageActionWithBadgeView*> page_action_views_;
 
   // A label displayed after the lock icon to show some extra information.
   views::Label info_label_;

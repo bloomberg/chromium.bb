@@ -59,6 +59,9 @@ static const int kEntryPadding = 3;
 // Padding between the entry and the leading/trailing views.
 static const int kInnerPadding = 3;
 
+// The size (both dimensions) of the buttons for page actions.
+static const int kPageActionButtonSize = 29;
+
 static const SkBitmap* kBackground = NULL;
 
 static const SkBitmap* kPopupBackground = NULL;
@@ -82,6 +85,59 @@ static std::wstring GetKeywordName(Profile* profile,
     return template_url->AdjustedShortNameForLocaleDirection();
   return std::wstring();
 }
+
+
+// PageActionWithBadgeView ----------------------------------------------------
+
+// A container for the PageActionImageView plus its badge.
+class LocationBarView::PageActionWithBadgeView : public views::View {
+ public:
+  PageActionWithBadgeView(PageActionImageView* image_view);
+
+  PageActionImageView* image_view() { return image_view_; }
+
+  virtual gfx::Size GetPreferredSize() {
+    return gfx::Size(kPageActionButtonSize, kPageActionButtonSize);
+  }
+
+  void UpdateVisibility(TabContents* contents, const GURL& url);
+
+ private:
+  virtual void Layout();
+
+  // Override PaintChildren so that we can paint the badge on top of children.
+  virtual void PaintChildren(gfx::Canvas* canvas);
+
+  // The button this view contains.
+  PageActionImageView* image_view_;
+};
+
+LocationBarView::PageActionWithBadgeView::PageActionWithBadgeView(
+    PageActionImageView* image_view) {
+  image_view_ = image_view;
+  AddChildView(image_view_);
+}
+
+void LocationBarView::PageActionWithBadgeView::Layout() {
+  image_view_->SetBounds(0, 0, width(), height());
+}
+
+void LocationBarView::PageActionWithBadgeView::PaintChildren(
+    gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+  const ExtensionActionState* state = image_view_->GetPageActionState();
+  if (state)
+    state->PaintBadge(canvas, gfx::Rect(width(), height()));
+}
+
+void LocationBarView::PageActionWithBadgeView::UpdateVisibility(
+    TabContents* contents, const GURL& url) {
+  image_view_->UpdateVisibility(contents, url);
+  SetVisible(image_view_->IsVisible());
+}
+
+
+// LocationBarView -----------------------------------------------------------
 
 LocationBarView::LocationBarView(Profile* profile,
                                  CommandUpdater* command_updater,
@@ -428,9 +484,9 @@ void LocationBarView::DoLayout(const bool force_layout) {
   int entry_width = width() - (kEntryPadding * 2);
 
   gfx::Size page_action_size;
-  for (size_t i = 0; i < page_action_image_views_.size(); i++) {
-    if (page_action_image_views_[i]->IsVisible()) {
-      page_action_size = page_action_image_views_[i]->GetPreferredSize();
+  for (size_t i = 0; i < page_action_views_.size(); i++) {
+    if (page_action_views_[i]->IsVisible()) {
+      page_action_size = page_action_views_[i]->GetPreferredSize();
       entry_width -= page_action_size.width() + kInnerPadding;
     }
   }
@@ -486,13 +542,13 @@ void LocationBarView::DoLayout(const bool force_layout) {
     offset -= kInnerPadding;
   }
 
-  for (size_t i = 0; i < page_action_image_views_.size(); i++) {
-    if (page_action_image_views_[i]->IsVisible()) {
-      page_action_size = page_action_image_views_[i]->GetPreferredSize();
+  for (size_t i = 0; i < page_action_views_.size(); i++) {
+    if (page_action_views_[i]->IsVisible()) {
+      page_action_size = page_action_views_[i]->GetPreferredSize();
       offset -= page_action_size.width();
-      page_action_image_views_[i]->SetBounds(offset, location_y,
-                                             page_action_size.width(),
-                                             location_height);
+      page_action_views_[i]->SetBounds(offset, location_y,
+                                       page_action_size.width(),
+                                       location_height);
       offset -= kInnerPadding;
     }
   }
@@ -628,12 +684,12 @@ void LocationBarView::SetSecurityIcon(ToolbarModel::Icon icon) {
 }
 
 void LocationBarView::DeletePageActionViews() {
-  if (!page_action_image_views_.empty()) {
-    for (size_t i = 0; i < page_action_image_views_.size(); ++i)
-      RemoveChildView(page_action_image_views_[i]);
-    STLDeleteContainerPointers(page_action_image_views_.begin(),
-                               page_action_image_views_.end());
-    page_action_image_views_.clear();
+  if (!page_action_views_.empty()) {
+    for (size_t i = 0; i < page_action_views_.size(); ++i)
+      RemoveChildView(page_action_views_[i]);
+    STLDeleteContainerPointers(page_action_views_.begin(),
+                               page_action_views_.end());
+    page_action_views_.clear();
   }
 }
 
@@ -644,26 +700,27 @@ void LocationBarView::RefreshPageActionViews() {
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
-  if (page_actions.size() != page_action_image_views_.size()) {
+  if (page_actions.size() != page_action_views_.size()) {
     DeletePageActionViews();  // Delete the old views (if any).
 
-    page_action_image_views_.resize(page_actions.size());
+    page_action_views_.resize(page_actions.size());
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
-      page_action_image_views_[i] = new PageActionImageView(this, profile_,
-          page_actions[i], bubble_positioner_);
-      page_action_image_views_[i]->SetVisible(false);
-      page_action_image_views_[i]->SetParentOwned(false);
-      AddChildView(page_action_image_views_[i]);
+      page_action_views_[i] = new PageActionWithBadgeView(
+          new PageActionImageView(this, profile_,
+                                  page_actions[i], bubble_positioner_));
+      page_action_views_[i]->SetVisible(false);
+      page_action_views_[i]->SetParentOwned(false);
+      AddChildView(page_action_views_[i]);
     }
   }
 
   TabContents* contents = delegate_->GetTabContents();
-  if (!page_action_image_views_.empty() && contents) {
+  if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(model_->GetText()));
 
-    for (size_t i = 0; i < page_action_image_views_.size(); i++)
-      page_action_image_views_[i]->UpdateVisibility(contents, url);
+    for (size_t i = 0; i < page_action_views_.size(); i++)
+      page_action_views_[i]->UpdateVisibility(contents, url);
   }
 }
 
@@ -1239,6 +1296,15 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
   return true;
 }
 
+const ExtensionActionState*
+    LocationBarView::PageActionImageView::GetPageActionState() {
+  TabContents* contents = owner_->delegate_->GetTabContents();
+  if (!contents)
+    return NULL;
+
+  return contents->GetPageActionState(page_action_);
+}
+
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
 }
@@ -1253,7 +1319,7 @@ void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
 }
 
 void LocationBarView::PageActionImageView::UpdateVisibility(
-    TabContents* contents, GURL url) {
+    TabContents* contents, const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
@@ -1333,8 +1399,8 @@ void LocationBarView::Revert() {
 
 int LocationBarView::PageActionVisibleCount() {
   int result = 0;
-  for (size_t i = 0; i < page_action_image_views_.size(); i++) {
-    if (page_action_image_views_[i]->IsVisible())
+  for (size_t i = 0; i < page_action_views_.size(); i++) {
+    if (page_action_views_[i]->IsVisible())
       ++result;
   }
   return result;
