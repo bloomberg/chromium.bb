@@ -178,6 +178,7 @@
             # TODO(evanm): I think this is wrong; it should just use GTK.
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:x11',
           ],
           'conditions': [
             ['toolkit_views==0 and chromeos==0', {
