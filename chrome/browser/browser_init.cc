@@ -634,8 +634,10 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()))));
     } else {
       // This will create a file URL or a regular URL.
-      urls.push_back(GURL(WideToUTF8(
-          URLFixerUpper::FixupRelativeFile(cur_dir_, value))));
+      GURL url = GURL(WideToUTF8(
+          URLFixerUpper::FixupRelativeFile(cur_dir_, value)));
+      if (url.is_valid())
+        urls.push_back(url);
     }
   }
   return urls;
