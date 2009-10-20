@@ -292,6 +292,8 @@ static NaClErrorCode NaClValidateElfHeader(Elf32_Ehdr *hdr,
       return LOAD_BAD_ABI;
     }
   }
+#else
+  UNREFERENCED_PARAMETER(abi_mismatch_option);
 #endif
 
   if (ET_EXEC != hdr->e_type) {
