@@ -166,7 +166,10 @@ gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
     // Store the button press event, used to initiate a drag.
     tab->last_mouse_down_ = gdk_event_copy(reinterpret_cast<GdkEvent*>(event));
   } else if (event->button == 3) {
-    tab->ShowContextMenu();
+    // Only show the context menu if the left mouse button isn't down (i.e.,
+    // the user might want to drag instead).
+    if (!tab->last_mouse_down_)
+      tab->ShowContextMenu();
   }
 
   return TRUE;
@@ -190,6 +193,16 @@ gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
       event->x >= 0 && event->y >= 0 &&
       event->x < widget->allocation.width &&
       event->y < widget->allocation.height) {
+    // If the user is currently holding the left mouse button down but hasn't
+    // moved the mouse yet, a drag hasn't started yet.  In that case, clean up
+    // some state before closing the tab to avoid a crash.  Once the drag has
+    // started, we don't get the middle mouse click here.
+    if (tab->last_mouse_down_) {
+      DCHECK(!tab->drag_widget_);
+      MessageLoopForUI::current()->RemoveObserver(tab);
+      gdk_event_free(tab->last_mouse_down_);
+      tab->last_mouse_down_ = NULL;
+    }
     tab->delegate_->CloseTab(tab);
   }
 
