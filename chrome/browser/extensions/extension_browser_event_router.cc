@@ -129,9 +129,6 @@ void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
 void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   ListValue args;
 
-  registrar_.Remove(this, NotificationType::BROWSER_WINDOW_READY,
-      Source<const Browser>(browser));
-
   DictionaryValue* window_dictionary = ExtensionTabUtil::CreateWindowValue(
       browser, false);
   args.Append(window_dictionary);
@@ -145,6 +142,9 @@ void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
 void ExtensionBrowserEventRouter::OnBrowserRemoving(const Browser* browser) {
   // Stop listening to TabStripModel events for this browser.
   browser->tabstrip_model()->RemoveObserver(this);
+
+  registrar_.Remove(this, NotificationType::BROWSER_WINDOW_READY,
+      Source<const Browser>(browser));
 
   DispatchSimpleBrowserEvent(browser->profile(),
                              ExtensionTabUtil::GetWindowId(browser),
