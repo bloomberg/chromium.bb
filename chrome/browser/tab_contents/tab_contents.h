@@ -61,7 +61,6 @@ class WaitableEvent;
 }
 
 namespace webkit_glue {
-class AutofillForm;
 struct WebApplicationInfo;
 }
 

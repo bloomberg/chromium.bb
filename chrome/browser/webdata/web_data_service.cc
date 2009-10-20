@@ -9,8 +9,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_constants.h"
+#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/glue/autofill_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using base::Time;
-using webkit_glue::AutofillForm;
+using webkit_glue::FormFieldValues;
 using webkit_glue::PasswordForm;
 
 WebDataService::WebDataService() : thread_(NULL),
@@ -114,14 +114,14 @@ void WebDataService::CancelRequest(Handle h) {
   i->second->Cancel();
 }
 
-void WebDataService::AddAutofillFormElements(
-    const std::vector<AutofillForm::Element>& element) {
-  GenericRequest<std::vector<AutofillForm::Element> >* request =
-      new GenericRequest<std::vector<AutofillForm::Element> >(
+void WebDataService::AddFormFieldValues(
+    const std::vector<FormFieldValues::Element>& element) {
+  GenericRequest<std::vector<FormFieldValues::Element> >* request =
+      new GenericRequest<std::vector<FormFieldValues::Element> >(
           this, GetNextRequestHandle(), NULL, element);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddAutofillFormElementsImpl,
+                                 &WebDataService::AddFormFieldValuesImpl,
                                  request));
 }
 
@@ -572,10 +572,10 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::AddAutofillFormElementsImpl(
-    GenericRequest<std::vector<AutofillForm::Element> >* request) {
+void WebDataService::AddFormFieldValuesImpl(
+    GenericRequest<std::vector<FormFieldValues::Element> >* request) {
   if (db_ && !request->IsCancelled()) {
-    if (db_->AddAutofillFormElements(request->GetArgument()))
+    if (db_->AddFormFieldValues(request->GetArgument()))
       ScheduleCommit();
   }
   request->RequestComplete();

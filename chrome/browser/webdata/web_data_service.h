@@ -15,7 +15,7 @@
 #include "base/scoped_vector.h"
 #include "base/thread.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
@@ -93,7 +93,7 @@ class WDTypedResult {
   }
 
  protected:
-  WDTypedResult(WDResultType type) : type_(type) {
+  explicit WDTypedResult(WDResultType type) : type_(type) {
   }
 
  private:
@@ -375,8 +375,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //////////////////////////////////////////////////////////////////////////////
 
   // Schedules a task to add form elements to the web database.
-  void AddAutofillFormElements(
-      const std::vector<webkit_glue::AutofillForm::Element>& elements);
+  void AddFormFieldValues(
+      const std::vector<webkit_glue::FormFieldValues::Element>& elements);
 
   // Initiates the request for a vector of values which have been entered in
   // form input fields named |name|.  The method OnWebDataServiceRequestDone of
@@ -464,8 +464,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // Autofill.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddAutofillFormElementsImpl(
-      GenericRequest<std::vector<webkit_glue::AutofillForm::Element> >*
+  void AddFormFieldValuesImpl(
+      GenericRequest<std::vector<webkit_glue::FormFieldValues::Element> >*
           request);
   void GetFormValuesForElementNameImpl(WebDataRequest* request,
       const string16& name, const string16& prefix, int limit);
@@ -480,9 +480,9 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //
   //////////////////////////////////////////////////////////////////////////////
 
-  void SetWebAppImageImpl(GenericRequest2<GURL,SkBitmap>* request);
+  void SetWebAppImageImpl(GenericRequest2<GURL, SkBitmap>* request);
 
-  void SetWebAppHasAllImagesImpl(GenericRequest2<GURL,bool>* request);
+  void SetWebAppHasAllImagesImpl(GenericRequest2<GURL, bool>* request);
 
   void RemoveWebAppImpl(GenericRequest<GURL>* request);
 

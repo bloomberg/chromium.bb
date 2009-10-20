@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,14 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebForm.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebForm;
 
 namespace webkit_glue {
 
-AutofillForm* AutofillForm::Create(const WebForm& webform) {
+FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   RefPtr<WebCore::HTMLFormElement> form = WebFormToHTMLFormElement(webform);
   DCHECK(form);
 
@@ -36,8 +36,8 @@ AutofillForm* AutofillForm::Create(const WebForm& webform) {
   const WTF::Vector<WebCore::HTMLFormControlElement*>& form_elements =
       form->formElements;
 
-  // Construct a new AutofillForm.
-  AutofillForm* result = new AutofillForm();
+  // Construct a new FormFieldValues.
+  FormFieldValues* result = new FormFieldValues();
 
   size_t form_element_count = form_elements.size();
 
@@ -66,14 +66,14 @@ AutofillForm* AutofillForm::Create(const WebForm& webform) {
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
-    result->elements.push_back(AutofillForm::Element(name, value));
+    result->elements.push_back(FormFieldValues::Element(name, value));
   }
 
   return result;
 }
 
 // static
-string16 AutofillForm::GetNameForInputElement(WebCore::HTMLInputElement*
+string16 FormFieldValues::GetNameForInputElement(WebCore::HTMLInputElement*
     element) {
   string16 name = StringToString16(element->name());
   string16 trimmed_name;

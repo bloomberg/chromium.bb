@@ -17,7 +17,7 @@
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebTextDirection.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -44,7 +44,7 @@ enum LoadState;
 }
 
 namespace webkit_glue {
-class AutofillForm;
+class FormFieldValues;
 struct WebApplicationInfo;
 }
 
@@ -532,7 +532,7 @@ class RenderViewHost : public RenderWidgetHost,
                                 IPC::Message* reply_msg);
   void OnMsgPasswordFormsSeen(
       const std::vector<webkit_glue::PasswordForm>& forms);
-  void OnMsgAutofillFormSubmitted(const webkit_glue::AutofillForm& forms);
+  void OnMsgFormFieldValuesSubmitted(const webkit_glue::FormFieldValues& forms);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);

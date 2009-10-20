@@ -16,7 +16,6 @@
 #include "KeyboardCodes.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "Frame.h"
 #include "KeyboardEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformString.h"
@@ -31,15 +30,15 @@
 #include "webkit/api/public/WebViewClient.h"
 // Can include api/src since eventually editor_client_impl will be there too.
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
-#include "webkit/glue/autofill_form.h"
 #include "webkit/glue/editor_client_impl.h"
+#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebEditingAction;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
-using webkit_glue::AutofillForm;
+using webkit_glue::FormFieldValues;
 
 // Arbitrary depth limit for the undo stack, to keep it from using
 // unbounded memory.  This is the maximum number of distinct undoable
@@ -637,7 +636,8 @@ void EditorClientImpl::handleKeyboardEvent(WebCore::KeyboardEvent* evt) {
     evt->setDefaultHandled();
 }
 
-void EditorClientImpl::handleInputMethodKeydown(WebCore::KeyboardEvent* keyEvent) {
+void EditorClientImpl::handleInputMethodKeydown(
+    WebCore::KeyboardEvent* keyEvent) {
   // We handle IME within chrome.
 }
 
@@ -706,7 +706,7 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
     return false;
   }
 
-  string16 name = AutofillForm::GetNameForInputElement(input_element);
+  string16 name = FormFieldValues::GetNameForInputElement(input_element);
   if (name.empty())  // If the field has no name, then we won't have values.
     return false;
 
@@ -766,7 +766,7 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   }
 
   // Then trigger form autofill.
-  string16 name = AutofillForm::GetNameForInputElement(input_element);
+  string16 name = FormFieldValues::GetNameForInputElement(input_element);
   ASSERT(static_cast<int>(name.length()) > 0);
 
   if (webview_->client()) {
@@ -865,9 +865,8 @@ WebCore::String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(
 }
 
 void EditorClientImpl::checkGrammarOfString(const UChar*, int length,
-                                            WTF::Vector<WebCore::GrammarDetail>&,
-                                            int* badGrammarLocation,
-                                            int* badGrammarLength) {
+    WTF::Vector<WebCore::GrammarDetail>&, int* badGrammarLocation,
+    int* badGrammarLength) {
   NOTIMPLEMENTED();
   if (badGrammarLocation)
     *badGrammarLocation = 0;
@@ -876,7 +875,7 @@ void EditorClientImpl::checkGrammarOfString(const UChar*, int length,
 }
 
 void EditorClientImpl::updateSpellingUIWithGrammarString(const WebCore::String&,
-                                                         const WebCore::GrammarDetail& detail) {
+    const WebCore::GrammarDetail& detail) {
   NOTIMPLEMENTED();
 }
 
@@ -900,7 +899,7 @@ bool EditorClientImpl::spellingUIIsShowing() {
 }
 
 void EditorClientImpl::getGuessesForWord(const WebCore::String&,
-                                         WTF::Vector<WebCore::String>& guesses) {
+    WTF::Vector<WebCore::String>& guesses) {
   NOTIMPLEMENTED();
 }
 

@@ -15,7 +15,6 @@
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutofillForm;
 struct ContextMenuParams;
 class FilePath;
 class GURL;
@@ -50,7 +49,7 @@ class Message;
 }
 
 namespace webkit_glue {
-class AutofillForm;
+class FormFieldValues;
 struct PasswordForm;
 struct WebApplicationInfo;
 }
@@ -344,8 +343,8 @@ class RenderViewHostDelegate {
   class Autofill {
    public:
     // Forms fillable by autofill have been detected in the page.
-    virtual void AutofillFormSubmitted(
-        const webkit_glue::AutofillForm& form) = 0;
+    virtual void FormFieldValuesSubmitted(
+        const webkit_glue::FormFieldValues& form) = 0;
 
     // Called to retrieve a list of suggestions from the web database given
     // the name of the field |field_name| and what the user has already typed

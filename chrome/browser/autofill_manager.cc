@@ -4,12 +4,14 @@
 
 #include "chrome/browser/autofill_manager.h"
 
+#include <vector>
+
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 
 // Limit on the number of suggestions to appear in the pop-up menu under an
 // text input element in a form.
@@ -50,8 +52,8 @@ Profile* AutofillManager::profile() {
   return tab_contents_->profile();
 }
 
-void AutofillManager::AutofillFormSubmitted(
-    const webkit_glue::AutofillForm& form) {
+void AutofillManager::FormFieldValuesSubmitted(
+    const webkit_glue::FormFieldValues& form) {
   StoreFormEntriesInWebDatabase(form);
 }
 
@@ -103,7 +105,7 @@ void AutofillManager::OnWebDataServiceRequestDone(WebDataService::Handle h,
 }
 
 void AutofillManager::StoreFormEntriesInWebDatabase(
-    const webkit_glue::AutofillForm& form) {
+    const webkit_glue::FormFieldValues& form) {
   if (!*form_autofill_enabled_)
     return;
 
@@ -111,7 +113,7 @@ void AutofillManager::StoreFormEntriesInWebDatabase(
     return;
 
   profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->
-      AddAutofillFormElements(form.elements);
+      AddFormFieldValues(form.elements);
 }
 
 void AutofillManager::SendSuggestions(const WDTypedResult* result) {

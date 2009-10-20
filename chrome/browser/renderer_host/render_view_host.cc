@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
@@ -39,7 +40,7 @@
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebFindOptions.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 
 #if defined(OS_WIN)
 // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
@@ -781,8 +782,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
                                     OnMsgShowModalHTMLDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsSeen, OnMsgPasswordFormsSeen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AutofillFormSubmitted,
-                        OnMsgAutofillFormSubmitted)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FormFieldValuesSubmitted,
+                        OnMsgFormFieldValuesSubmitted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -1346,12 +1347,12 @@ void RenderViewHost::OnMsgPasswordFormsSeen(
   delegate_->PasswordFormsSeen(forms);
 }
 
-void RenderViewHost::OnMsgAutofillFormSubmitted(
-    const webkit_glue::AutofillForm& form) {
+void RenderViewHost::OnMsgFormFieldValuesSubmitted(
+    const webkit_glue::FormFieldValues& form) {
   RenderViewHostDelegate::Autofill* autofill_delegate =
       delegate_->GetAutofillDelegate();
   if (autofill_delegate)
-    autofill_delegate->AutofillFormSubmitted(form);
+    autofill_delegate->FormFieldValuesSubmitted(form);
 }
 
 void RenderViewHost::OnMsgStartDragging(

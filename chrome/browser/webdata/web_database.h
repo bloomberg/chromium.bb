@@ -14,7 +14,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "webkit/glue/autofill_form.h"
+#include "webkit/glue/form_field_values.h"
 
 class FilePath;
 
@@ -132,12 +132,12 @@ class WebDatabase {
 
   // Records the form elements in |elements| in the database in the autofill
   // table.
-  bool AddAutofillFormElements(
-      const std::vector<webkit_glue::AutofillForm::Element>& elements);
+  bool AddFormFieldValues(
+      const std::vector<webkit_glue::FormFieldValues::Element>& elements);
 
   // Records a single form element in in the database in the autofill table.
-  bool AddAutofillFormElement(
-      const webkit_glue::AutofillForm::Element& element);
+  bool AddFormFieldValue(
+      const webkit_glue::FormFieldValues::Element& element);
 
   // Retrieves a vector of all values which have been recorded in the autofill
   // table as the value in a form element with name |name| and which start with
@@ -168,7 +168,7 @@ class WebDatabase {
   // Gets the pair_id and count entries from name and value specified in
   // |element|.  Sets *count to 0 if there is no such row in the table.
   bool GetIDAndCountOfFormElement(
-      const webkit_glue::AutofillForm::Element& element,
+      const webkit_glue::FormFieldValues::Element& element,
       int64* pair_id,
       int* count);
 
@@ -181,7 +181,7 @@ class WebDatabase {
   // Adds a new row to the autofill table with name and value given in
   // |element|.  Sets *pair_id to the pair_id of the new row.
   bool InsertFormElement(
-      const webkit_glue::AutofillForm::Element& element,
+      const webkit_glue::FormFieldValues::Element& element,
       int64* pair_id);
 
   // Adds a new row to the autofill_dates table.

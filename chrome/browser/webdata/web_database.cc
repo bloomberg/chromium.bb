@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 #include <vector>
 
 #include "app/gfx/codec/png_codec.h"
@@ -98,7 +99,7 @@ using webkit_glue::PasswordForm;
 ////////////////////////////////////////////////////////////////////////////////
 
 using base::Time;
-using webkit_glue::AutofillForm;
+using webkit_glue::FormFieldValues;
 
 // Current version number.
 static const int kCurrentVersionNumber = 22;
@@ -802,14 +803,14 @@ bool WebDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
   return s.Succeeded();
 }
 
-bool WebDatabase::AddAutofillFormElements(
-    const std::vector<AutofillForm::Element>& elements) {
+bool WebDatabase::AddFormFieldValues(
+    const std::vector<FormFieldValues::Element>& elements) {
   bool result = true;
-  for (std::vector<AutofillForm::Element>::const_iterator
+  for (std::vector<FormFieldValues::Element>::const_iterator
        itr = elements.begin();
        itr != elements.end();
        itr++) {
-    result = result && AddAutofillFormElement(*itr);
+    result = result && AddFormFieldValue(*itr);
   }
   return result;
 }
@@ -837,7 +838,7 @@ bool WebDatabase::ClearAutofillEmptyValueElements() {
 }
 
 bool WebDatabase::GetIDAndCountOfFormElement(
-    const AutofillForm::Element& element,
+    const FormFieldValues::Element& element,
     int64* pair_id,
     int* count) {
   sql::Statement s(db_.GetUniqueStatement(
@@ -878,7 +879,7 @@ bool WebDatabase::GetCountOfFormElement(int64 pair_id, int* count) {
   return false;
 }
 
-bool WebDatabase::InsertFormElement(const AutofillForm::Element& element,
+bool WebDatabase::InsertFormElement(const FormFieldValues::Element& element,
                                     int64* pair_id) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO autofill (name, value, value_lower) VALUES (?,?,?)"));
@@ -939,7 +940,7 @@ bool WebDatabase::SetCountOfFormElement(int64 pair_id, int count) {
   return true;
 }
 
-bool WebDatabase::AddAutofillFormElement(const AutofillForm::Element& element) {
+bool WebDatabase::AddFormFieldValue(const FormFieldValues::Element& element) {
   int count = 0;
   int64 pair_id;
 

@@ -34,9 +34,9 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/glue/autofill_form.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -733,16 +733,14 @@ struct ParamTraits<webkit_glue::PasswordForm> {
   }
 };
 
-// Traits for AutofillForm_Params structure to pack/unpack.
+// Traits for FormFieldValues_Params structure to pack/unpack.
 template <>
-struct ParamTraits<webkit_glue::AutofillForm> {
-  typedef webkit_glue::AutofillForm param_type;
+struct ParamTraits<webkit_glue::FormFieldValues> {
+  typedef webkit_glue::FormFieldValues param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.elements.size());
-    for (std::vector<webkit_glue::AutofillForm::Element>::const_iterator itr =
-        p.elements.begin();
-        itr != p.elements.end();
-        itr++) {
+    std::vector<webkit_glue::FormFieldValues::Element>::const_iterator itr;
+    for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
       WriteParam(m, itr->name);
       WriteParam(m, itr->value);
     }
@@ -759,7 +757,7 @@ struct ParamTraits<webkit_glue::AutofillForm> {
       return result;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<AutofillForm>");
+    l->append(L"<FormFieldValues>");
   }
 };
 

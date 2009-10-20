@@ -12,7 +12,7 @@
 #include "chrome/common/pref_member.h"
 
 namespace webkit_glue {
-class AutofillForm;
+class FormFieldValues;
 }
 
 class Profile;
@@ -29,7 +29,8 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
   Profile* profile();
 
   // RenderViewHostDelegate::Autofill implementation.
-  virtual void AutofillFormSubmitted(const webkit_glue::AutofillForm& form);
+  virtual void FormFieldValuesSubmitted(
+      const webkit_glue::FormFieldValues& form);
   virtual bool GetAutofillSuggestions(int query_id,
                                       const string16& name,
                                       const string16& prefix);
@@ -44,7 +45,7 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
 
  private:
   void CancelPendingQuery();
-  void StoreFormEntriesInWebDatabase(const webkit_glue::AutofillForm& form);
+  void StoreFormEntriesInWebDatabase(const webkit_glue::FormFieldValues& form);
   void SendSuggestions(const WDTypedResult* suggestions);
 
   TabContents* tab_contents_;

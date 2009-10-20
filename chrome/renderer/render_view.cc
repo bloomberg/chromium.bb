@@ -107,7 +107,7 @@
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
-using webkit_glue::AutofillForm;
+using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
@@ -1391,7 +1391,6 @@ void RenderView::didStopLoading() {
       method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo, page_id_,
                                         false),
       kDelayForCaptureMs);
-
 }
 
 bool RenderView::shouldBeginEditing(const WebRange& range) {
@@ -1955,9 +1954,10 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
       PasswordFormDomManager::CreatePasswordForm(form));
 
   if (form.isAutoCompleteEnabled()) {
-    scoped_ptr<AutofillForm> autofill_form(AutofillForm::Create(form));
+    scoped_ptr<FormFieldValues> autofill_form(FormFieldValues::Create(form));
     if (autofill_form.get())
-      Send(new ViewHostMsg_AutofillFormSubmitted(routing_id_, *autofill_form));
+      Send(new ViewHostMsg_FormFieldValuesSubmitted(routing_id_,
+                                                    *autofill_form));
   }
 }
 
@@ -2569,11 +2569,11 @@ bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
 void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
                                   const SkBitmap& image) {
   // Notify requester of image download status.
-   Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_,
-                                           fetcher->id(),
-                                           fetcher->image_url(),
-                                           image.isNull(),
-                                           image));
+  Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_,
+                                          fetcher->id(),
+                                          fetcher->image_url(),
+                                          image.isNull(),
+                                          image));
   // Dispose of the image fetcher.
   DCHECK(image_fetchers_.find(fetcher) != image_fetchers_.end());
   image_fetchers_.erase(fetcher);

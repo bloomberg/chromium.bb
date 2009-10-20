@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_AUTOFILL_FORM_H_
-#define WEBKIT_GLUE_AUTOFILL_FORM_H_
+#ifndef WEBKIT_GLUE_FORM_FIELD_VALUES_H_
+#define WEBKIT_GLUE_FORM_FIELD_VALUES_H_
 
 #include <string>
 #include <vector>
@@ -18,9 +18,9 @@ class WebForm;
 
 namespace webkit_glue {
 
-// The AutofillForm struct represents a single HTML form together with the
+// The FormFieldValues struct represents a single HTML form together with the
 // values entered in the fields.
-class AutofillForm {
+class FormFieldValues {
  public:
   // Struct for storing name/value pairs.
   struct Element {
@@ -33,7 +33,7 @@ class AutofillForm {
     string16 value;
   };
 
-  static AutofillForm* Create(const WebKit::WebForm& form);
+  static FormFieldValues* Create(const WebKit::WebForm& form);
 
   // Returns the name that should be used for the specified |element| when
   // storing autofill data.  This is either the field name or its id, an empty
@@ -47,4 +47,4 @@ class AutofillForm {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_AUTOFILL_FORM_H_
+#endif  // WEBKIT_GLUE_FORM_FIELD_VALUES_H_
