@@ -1439,7 +1439,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   loop_.RunAllPending();
 
   ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, GetErrors().size());
 }
 
 TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {

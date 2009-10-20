@@ -223,6 +223,13 @@ class ExtensionsService
   // Note that this may return NULL if autoupdate is not turned on.
   ExtensionUpdater* updater() { return updater_.get(); }
 
+  // Notify the frontend that there was an error loading an extension.
+  // This method is public because ExtensionsServiceBackend can post to here.
+  void ReportExtensionLoadError(const FilePath& extension_path,
+                                const std::string& error,
+                                NotificationType type,
+                                bool be_noisy);
+
  private:
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
@@ -353,10 +360,6 @@ class ExtensionsServiceBackend
 
   // Notify the frontend that an extension was loaded.
   void ReportExtensionLoaded(Extension* extension);
-
-  // Notify the frontend that there was an error installing an extension.
-  void ReportExtensionInstallError(const FilePath& extension_path,
-                                   const std::string& error);
 
   // Lookup an external extension by |id| by going through all registered
   // external extension providers until we find a provider that contains an

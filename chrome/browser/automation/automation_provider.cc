@@ -32,6 +32,8 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -436,6 +438,10 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ConnectExternalTab, ConnectExternalTab)
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
+                                    InstallExtension)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoadExpandedExtension,
+                                    LoadExpandedExtension)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2103,5 +2109,51 @@ void AutomationProvider::GetBrowserForWindow(int window_handle,
       *success = true;
       return;
     }
+  }
+}
+
+void AutomationProvider::InstallExtension(const FilePath& crx_path,
+                                          IPC::Message* reply_message) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (service) {
+    // The observer will delete itself when done.
+    new ExtensionNotificationObserver(this,
+                                      AutomationMsg_InstallExtension::ID,
+                                      reply_message);
+
+    const FilePath& install_dir = service->install_directory();
+    MessageLoop* io_loop = g_browser_process->file_thread()->message_loop();
+
+    CrxInstaller::Start(crx_path,
+                        install_dir,
+                        Extension::INTERNAL,
+                        "",  // no expected id
+                        false,  // please do not delete crx file
+                        true,  // privilege increase allowed
+                        io_loop,
+                        service,
+                        NULL);  // silent isntall, no UI
+  } else {
+    AutomationMsg_InstallExtension::WriteReplyParams(
+        reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
+    Send(reply_message);
+  }
+}
+
+void AutomationProvider::LoadExpandedExtension(
+    const FilePath& extension_dir,
+    IPC::Message* reply_message) {
+  if (profile_->GetExtensionsService() && profile_->GetUserScriptMaster()) {
+    // The observer will delete itself when done.
+    new ExtensionNotificationObserver(this,
+                                      AutomationMsg_LoadExpandedExtension::ID,
+                                      reply_message);
+
+    profile_->GetExtensionsService()->LoadExtension(extension_dir);
+    profile_->GetUserScriptMaster()->AddWatchedPath(extension_dir);
+  } else {
+    AutomationMsg_LoadExpandedExtension::WriteReplyParams(
+        reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
+    Send(reply_message);
   }
 }

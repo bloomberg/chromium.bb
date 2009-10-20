@@ -285,6 +285,11 @@ void CrxInstaller::ReportOverinstallFromFileThread() {
 void CrxInstaller::ReportOverinstallFromUIThread() {
   DCHECK(MessageLoop::current() == ui_loop_);
 
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::EXTENSION_OVERINSTALL_ERROR,
+                  Source<CrxInstaller>(this),
+                  Details<const FilePath>(&extension_->path()));
+
   if (client_.get())
     client_->OnOverinstallAttempted(extension_.get());
 

@@ -93,6 +93,40 @@ struct ParamTraits<AutomationMsg_NavigationResponseValues> {
 };
 
 template <>
+struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
+  typedef AutomationMsg_ExtensionResponseValues param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<AutomationMsg_ExtensionResponseValues>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring control;
+    switch (p) {
+     case AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED:
+      control = L"AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED";
+      break;
+     case AUTOMATION_MSG_EXTENSION_INSTALL_FAILED:
+      control = L"AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
+      break;
+     case AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED:
+      control = L"AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED";
+      break;
+     default:
+      control = L"UNKNOWN";
+      break;
+    }
+
+    LogParam(control, l);
+  }
+};
+
+template <>
 struct ParamTraits<SecurityStyle> {
   typedef SecurityStyle param_type;
   static void Write(Message* m, const param_type& p) {

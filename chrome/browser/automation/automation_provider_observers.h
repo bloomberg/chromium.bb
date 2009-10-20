@@ -163,6 +163,29 @@ class TabClosedNotificationObserver : public TabStripNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TabClosedNotificationObserver);
 };
 
+class ExtensionNotificationObserver : public NotificationObserver {
+ public:
+  ExtensionNotificationObserver(AutomationProvider* automation,
+                                int id,
+                                IPC::Message* reply_message);
+  virtual ~ExtensionNotificationObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  void SendResponse(AutomationMsg_ExtensionResponseValues response);
+
+  NotificationRegistrar registrar_;
+  scoped_refptr<AutomationProvider> automation_;
+  int id_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionNotificationObserver);
+};
+
 class BrowserOpenedNotificationObserver : public NotificationObserver {
  public:
   BrowserOpenedNotificationObserver(AutomationProvider* automation,

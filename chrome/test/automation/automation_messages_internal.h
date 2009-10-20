@@ -1129,5 +1129,16 @@ IPC_BEGIN_MESSAGES(Automation)
                              int,   // tab handle
                              int)   // numbers of entries (negative or positive)
 
+  // Silently install the extension in the given crx file.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_InstallExtension,
+                             FilePath /* full path to crx file */,
+                             AutomationMsg_ExtensionResponseValues)
+
+  // Silently load the extension in the given directory.  This expects an
+  // extension expanded into the directory, not a crx file.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_LoadExpandedExtension,
+                             FilePath /* root directory of extension */,
+                             AutomationMsg_ExtensionResponseValues)
+
 
 IPC_END_MESSAGES(Automation)

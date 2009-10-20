@@ -302,6 +302,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void OnSetPageFontSize(int tab_handle, int font_size);
 
+  void InstallExtension(const FilePath& crx_path,
+                        IPC::Message* reply_message);
+
+  void LoadExpandedExtension(const FilePath& extension_dir,
+                             IPC::Message* reply_message);
+
   void NavigateInExternalTab(
       int handle, const GURL& url, const GURL& referrer,
       AutomationMsg_NavigationResponseValues* status);

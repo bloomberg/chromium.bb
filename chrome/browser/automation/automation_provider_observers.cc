@@ -277,6 +277,68 @@ void TabClosedNotificationObserver::set_for_browser_command(
   for_browser_command_ = for_browser_command;
 }
 
+ExtensionNotificationObserver::ExtensionNotificationObserver(
+    AutomationProvider* automation, int id, IPC::Message* reply_message)
+    : automation_(automation),
+      id_(id),
+      reply_message_(reply_message) {
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+                 NotificationService::AllSources());
+}
+
+ExtensionNotificationObserver::~ExtensionNotificationObserver() {
+}
+
+void ExtensionNotificationObserver::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_LOADED:
+      SendResponse(AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED);
+      break;
+    case NotificationType::EXTENSION_INSTALL_ERROR:
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
+      SendResponse(AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
+      break;
+    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
+      SendResponse(AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  delete this;
+}
+
+void ExtensionNotificationObserver::SendResponse(
+    AutomationMsg_ExtensionResponseValues response) {
+  if (reply_message_ != NULL) {
+    switch (id_) {
+      case AutomationMsg_InstallExtension::ID:
+        AutomationMsg_InstallExtension::WriteReplyParams(reply_message_,
+                                                         response);
+        break;
+      case AutomationMsg_LoadExpandedExtension::ID:
+        AutomationMsg_LoadExpandedExtension::WriteReplyParams(reply_message_,
+                                                              response);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    automation_->Send(reply_message_);
+    reply_message_ = NULL;
+  }
+}
+
 BrowserOpenedNotificationObserver::BrowserOpenedNotificationObserver(
     AutomationProvider* automation, IPC::Message* reply_message)
     : automation_(automation),

@@ -251,6 +251,11 @@ void ExtensionBrowserTest::Observe(NotificationType type,
       MessageLoopForUI::current()->Quit();
       break;
 
+    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
+      std::cout << "Got EXTENSION_OVERINSTALL_ERROR notification.\n";
+      MessageLoopForUI::current()->Quit();
+      break;
+
     default:
       NOTREACHED();
       break;

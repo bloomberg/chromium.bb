@@ -54,15 +54,6 @@ class InstalledExtensionSet {
   std::set<std::string> extensions_;
 };
 
-static void ReportExtensionLoadError(
-    const FilePath& extension_path, const std::string &error, bool be_noisy) {
-  // TODO(port): note that this isn't guaranteed to work properly on Linux.
-  std::string path_str = WideToASCII(extension_path.ToWStringHack());
-  std::string message = StringPrintf("Could not load extension from '%s'. %s",
-                                     path_str.c_str(), error.c_str());
-  ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
-}
-
 } // namespace
 
 // ExtensionsService.
@@ -309,7 +300,10 @@ void ExtensionsService::LoadInstalledExtension(
   }
 
   if (!extension) {
-    ReportExtensionLoadError(path, error, false);
+    ReportExtensionLoadError(path,
+                             error,
+                             NotificationType::EXTENSION_INSTALL_ERROR,
+                             false);
     return;
   }
 
@@ -528,7 +522,13 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         }
       } else {
         // We already have the extension of the same or older version.
-        LOG(WARNING) << "Duplicate extension load attempt: " << extension->id();
+        std::string error_message("Duplicate extension load attempt: ");
+        error_message += extension->id();
+        LOG(WARNING) << error_message;
+        ReportExtensionLoadError(extension->path(),
+                                 error_message,
+                                 NotificationType::EXTENSION_OVERINSTALL_ERROR,
+                                 false);
         return;
       }
     }
@@ -553,9 +553,14 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         }
         break;
       case Extension::DISABLED:
+        NotificationService::current()->Notify(
+            NotificationType::EXTENSION_UPDATE_DISABLED,
+            Source<ExtensionsService>(this),
+            Details<Extension>(extension));
         disabled_extensions_.push_back(scoped_extension.release());
         break;
       default:
+        NOTREACHED();
         break;
     }
   }
@@ -668,6 +673,23 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
                       NULL);  // no client (silent install)
 }
 
+void ExtensionsService::ReportExtensionLoadError(
+    const FilePath& extension_path,
+    const std::string &error,
+    NotificationType type,
+    bool be_noisy) {
+  NotificationService* service = NotificationService::current();
+  service->Notify(type,
+                  Source<ExtensionsService>(this),
+                  Details<const std::string>(&error));
+
+  // TODO(port): note that this isn't guaranteed to work properly on Linux.
+  std::string path_str = WideToASCII(extension_path.ToWStringHack());
+  std::string message = StringPrintf("Could not load extension from '%s'. %s",
+                                     path_str.c_str(), error.c_str());
+  ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
+}
+
 // ExtensionsServicesBackend
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
@@ -722,7 +744,20 @@ void ExtensionsServiceBackend::LoadSingleExtension(
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
-  ::ReportExtensionLoadError(extension_path, error, alert_on_error_);
+  // In the unit tests, frontend_loop_ may be null.
+  if (frontend_loop_ == NULL) {
+    frontend_->ReportExtensionLoadError(
+        extension_path,
+        error,
+        NotificationType::EXTENSION_INSTALL_ERROR,
+        alert_on_error_);
+    return;
+  }
+
+  frontend_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(frontend_,
+          &ExtensionsService::ReportExtensionLoadError, extension_path,
+          error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
 }
 
 void ExtensionsServiceBackend::ReportExtensionLoaded(Extension* extension) {
