@@ -51,15 +51,13 @@ def SplitArgsIntoSections(args):
 
 def main(args):
   sections = SplitArgsIntoSections(args[1:])
-  assert len(sections) == 3
+  assert len(sections) == 3, sections
   (base, inputs, options) = sections
 
-  assert len(base) == 3
-  input = base[0]
-  cppdir = base[1]
-  hdir = base[2]
+  assert len(base) == 3, base
+  (input, cppdir, hdir) = base
 
-  assert len(inputs) > 1
+  assert len(inputs) > 1, inputs
   generate_bindings = inputs[0]
   perl_modules = inputs[1:]
 
