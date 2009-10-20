@@ -704,15 +704,28 @@ willPositionSheet:(NSWindow*)sheet
     if (!contents)
       return;
 
+    // Convert |view|'s frame (which starts in the source tab strip's coordinate
+    // system) to the coordinate system of the destination tab strip. This needs
+    // to be done before being detached so the window transforms can be
+    // performed.
+    NSRect destinationFrame = [view frame];
+    NSPoint tabOrigin = destinationFrame.origin;
+    tabOrigin = [[dragController tabStripView] convertPoint:tabOrigin
+                                                     toView:nil];
+    tabOrigin = [[view window] convertBaseToScreen:tabOrigin];
+    tabOrigin = [[self window] convertScreenToBase:tabOrigin];
+    tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
+    destinationFrame.origin = tabOrigin;
+
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new
-    // window as this will removes the TabContents' delegate.
+    // window as this will remove the TabContents' delegate.
     [dragController detachTabView:view];
 
     // Deposit it into our model at the appropriate location (it already knows
     // where it should go from tracking the drag). Doing this sets the tab's
     // delegate to be the Browser.
-    [tabStripController_ dropTabContents:contents];
+    [tabStripController_ dropTabContents:contents withFrame:destinationFrame];
   } else {
     // Moving within a window.
     int index = [tabStripController_ indexForTabView:view];

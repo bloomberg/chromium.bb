@@ -58,6 +58,7 @@ class ToolbarModel;
   TabView* placeholderTab_;  // weak. Tab being dragged
   NSRect placeholderFrame_;  // Frame to use
   CGFloat placeholderStretchiness_; // Vertical force shown by streching tab.
+  NSRect droppedTabFrame_;  // Initial frame of a dropped tab, for animation.
   // Frame targets for all the current views.
   // target frames are used because repeated requests to [NSView animator].
   // aren't coalesced, so we store frames to avoid redundant calls.
@@ -110,7 +111,10 @@ class ToolbarModel;
 // Drop a given TabContents at the location of the current placeholder. If there
 // is no placeholder, it will go at the end. Used when dragging from another
 // window when we don't have access to the TabContents as part of our strip.
-- (void)dropTabContents:(TabContents*)contents;
+// |frame| is in the coordinate system of the tab strip view and represents
+// where the user dropped the new tab so it can be animated into its correct
+// location when the tab is added to the model.
+- (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame;
 
 // Given a tab view in the strip, return its index. Returns -1 if not present.
 - (NSInteger)indexForTabView:(NSView*)view;

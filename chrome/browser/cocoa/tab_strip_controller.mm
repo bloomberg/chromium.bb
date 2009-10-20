@@ -96,6 +96,8 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 - (NSInteger)indexForContentsView:(NSView*)view;
 - (void)updateFavIconForContents:(TabContents*)contents
                          atIndex:(NSInteger)index;
+- (void)layoutTabsWithAnimation:(BOOL)animate
+             regenerateSubviews:(BOOL)doUpdate;
 @end
 
 @implementation TabStripController
@@ -336,7 +338,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
   placeholderTab_ = tab;
   placeholderFrame_ = frame;
   placeholderStretchiness_ = yStretchiness;
-  [self layoutTabs];
+  [self layoutTabsWithAnimation:YES regenerateSubviews:NO];
 }
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
@@ -408,7 +410,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 
   float offset = kIndentLeavingSpaceForControls;
   NSUInteger i = 0;
-  NSInteger gap = -1;
+  bool hasPlaceholderGap = false;
   for (TabController* tab in tabArray_.get()) {
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
@@ -443,9 +445,9 @@ static const float kIndentLeavingSpaceForControls = 64.0;
     } else {
       // If our left edge is to the left of the placeholder's left, but our mid
       // is to the right of it we should slide over to make space for it.
-      if (placeholderTab_ && gap < 0 && NSMidX(tabFrame) > minX) {
-        gap = i;
-        offset += NSWidth(tabFrame);
+      if (placeholderTab_ && !hasPlaceholderGap && NSMidX(tabFrame) > minX) {
+        hasPlaceholderGap = true;
+        offset += NSWidth(placeholderFrame_);
         offset -= kTabOverlap;
         tabFrame.origin.x = offset;
       }
@@ -456,9 +458,15 @@ static const float kIndentLeavingSpaceForControls = 64.0;
           [tab selected] ? MAX(baseTabWidth, kMinSelectedTabWidth) :
                            baseTabWidth;
 
-      // Animate a new tab in by putting it below the horizon.
+      // Animate a new tab in by putting it below the horizon unless
+      // told to put it in a specific location (ie, from a drop).
       if (newTab && visible && animate) {
-        [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
+        if (NSEqualRects(droppedTabFrame_, NSZeroRect)) {
+          [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
+        } else {
+          [[tab view] setFrame:droppedTabFrame_];
+          droppedTabFrame_ = NSZeroRect;
+        }
       }
 
       // Check the frame by identifier to avoid redundant calls to animator.
@@ -858,8 +866,15 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 // Drop a given TabContents at the location of the current placeholder. If there
 // is no placeholder, it will go at the end. Used when dragging from another
 // window when we don't have access to the TabContents as part of our strip.
-- (void)dropTabContents:(TabContents*)contents {
+// |frame| is in the coordinate system of the tab strip view and represents
+// where the user dropped the new tab so it can be animated into its correct
+// location when the tab is added to the model.
+- (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame {
   int index = [self indexOfPlaceholder];
+
+  // Mark that the new tab being created should start at |frame|. It will be
+  // reset as soon as the tab has been positioned.
+  droppedTabFrame_ = frame;
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
