@@ -132,6 +132,10 @@ void ExtensionsService::Init() {
   DCHECK(!ready_);
   DCHECK_EQ(extensions_.size(), 0u);
 
+  // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
+  // the first extension, because its members listen for loaded notifications.
+  g_browser_process->resource_dispatcher_host();
+
   // Start up the extension event routers.
   ExtensionBrowserEventRouter::GetInstance()->Init();
 
