@@ -1079,3 +1079,11 @@
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
+{
+   bug_25297
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore12ScriptString*
+}
