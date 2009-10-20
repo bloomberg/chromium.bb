@@ -113,15 +113,15 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   new_layout_test_dir_ = new_layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::CreateDirectory(new_layout_test_dir_));
 
-  // Copies the resource subdirectory.
+  // Copy the resource subdirectory if it exists.
   FilePath layout_test_resource_path(layout_test_dir_);
   layout_test_resource_path =
       layout_test_resource_path.AppendASCII("resources");
   FilePath new_layout_test_resource_path(new_layout_test_dir_);
   new_layout_test_resource_path =
       new_layout_test_resource_path.AppendASCII("resources");
-  ASSERT_TRUE(file_util::CopyDirectory(
-      layout_test_resource_path, new_layout_test_resource_path, true));
+  file_util::CopyDirectory(layout_test_resource_path,
+                           new_layout_test_resource_path, true);
 
   // Copies the parent resource subdirectory. This is needed in order to run
   // http layout tests.

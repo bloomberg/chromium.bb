@@ -2,37 +2,44 @@
 function LayoutTestController() {
   this.dump_as_text_ = false;
   this.wait_until_done_ = false;
+
   this.dumpAsText = function () {
     this.dump_as_text_ = true;
   };
+
   this.waitUntilDone = function () {
     this.wait_until_done_ = true;
   };
+
   this.notifyDone = function () {
-    var cookie = "%COOKIE%=" + encodeURIComponent(document.firstChild.innerText);
-    document.cookie = cookie;
+    // For storage events, it actually takes 2 rounds of yielding for everything
+    // to complete.
+    setTimeout(layoutTestController.DelayedNotifyDone1, 0);
   };
-  this.OnCheckFinishEvent = function () {
-    // Some layout tests do not call waitUntilDone.  If this is true, we should
-    // assume the test is done when it's finished loading.
-    if (!layoutTestController.wait_until_done_)
-      layoutTestController.notifyDone();
+
+  this.DelayedNotifyDone1 = function () {
+    setTimeout(layoutTestController.DelayedNotifyDone2, 0);
   };
-  this.OnTimerEvent = function () {
-    // Some layout tests put the script in the body part which causes it to be
-    // executed after onload being triggered. To handle this, we check first if
-    // dumpAsText() is called.
-    if (layoutTestController.dump_as_text_)
-      layoutTestController.OnCheckFinishEvent();
-    else
-      setTimeout(layoutTestController.OnTimerEvent, 200);
+
+  this.DelayedNotifyDone2 = function () {
+    var token = encodeURIComponent(document.firstChild.innerText);
+    document.cookie = "%COOKIE%=" + token;
   };
-  this.OnLoadEvent = function (event) {
-    // Do a timeout to ensure that we run after all other onload handlers have
-    // finished.
-    setTimeout(layoutTestController.OnTimerEvent, 0);
+
+  this.OnEvent = function () {
+    // HACK: dumpAsText() is always called after waitUntilDone() and all tests
+    //       that are run within the UI test framework either call
+    //       waitUntilDone() or dumpAsText().  So we'll simply keep polling
+    //       until we see one or the other.
+    if (layoutTestController.dump_as_text_) {
+      if (!layoutTestController.wait_until_done_)
+        layoutTestController.notifyDone();
+    } else {
+      setTimeout(layoutTestController.OnEvent, 200);
+    }
   };
 }
+
 window.layoutTestController = new LayoutTestController();
-window.addEventListener('load', layoutTestController.OnLoadEvent, false);
+window.addEventListener('load', layoutTestController.OnEvent, false);
 </script>

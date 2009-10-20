@@ -4,30 +4,49 @@
 
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
-// TODO(jorlow): Enable these tests when we remove them from the
-//               test_exceptions.txt file.
-// static const char* kTopLevelFiles[] = {
-//   "window-attributes-exist.html"
-// };
+// TODO(jorlow): Enable all of these tests, eventually...
+/*
+static const char* kTopLevelFiles[] = {
+  "window-attributes-exist.html",
+  NULL
+};
+*/
 
-// TODO(jorlow): Enable these tests when we remove them from the
-//               test_exceptions.txt file.
-static const char* kSubDirFiles[] = {
-  //"clear.html",
+static const char* kEventsFiles[] = {
+  //"complex-values.html",
+  //"iframe-events.html",
+  //"index-get-and-set.html",
+  //"onstorage-attribute-markup.html",
+  //"onstorage-attribute-setattribute.html",
+  //"onstorage-attribute-setwindow.html",
+  "simple-events.html",
+  //"string-conversion.html",
+  //"window-open.html",
+  NULL
+};
+
+static const char* kNoEventsFiles[] = {
+  "clear.html",
+  //"complex-keys.html",
   "delete-removal.html",
   "enumerate-storage.html",
   "enumerate-with-length-and-key.html",
-  // "iframe-events.html",
-  // "index-get-and-set.html",
-  // "onstorage-attribute-markup.html",
-  // "onstorage-attribute-setattribute.html",
-  // "localstorage/onstorage-attribute-setwindow.html",
-  // "simple-events.html",
+  "remove-item.html",
   "simple-usage.html",
-  // "string-conversion.html",
-  // "window-open.html"
+  NULL
+};
+
+static const char* kLocalStorageFiles[] = {
+  "quota.html",
+  NULL
+};
+
+static const char* kSessionStorageFiles[] = {
+  "no-quota.html",
+  NULL
 };
 
 class DOMStorageTest : public UILayoutTest {
@@ -47,15 +66,46 @@ class DOMStorageTest : public UILayoutTest {
     UILayoutTest::SetUp();
   }
 
+  // We require fast/js/resources and storage/domstorage/script-tests for most
+  // of the DOM Storage layout tests.  Add those to the list to be copied.
+  void AddResources() {
+    // Add other paths our tests require.
+    FilePath js_dir = FilePath().AppendASCII("LayoutTests").
+                      AppendASCII("fast").AppendASCII("js");
+    AddResourceForLayoutTest(js_dir, FilePath().AppendASCII("resources"));
+    AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("script-tests"));
+  }
+
+  // This is somewhat of a hack because we're running a real browser that
+  // actually persists the LocalStorage state vs. DRT and TestShell which don't.
+  // The correct fix is to fix the LayoutTests, but similar patches have been
+  // rejected in the past.
+  void ClearDOMStorage() {
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    ASSERT_TRUE(tab.get());
+
+    GURL url = GetTestUrl(L"layout_tests", L"clear_dom_storage.html");
+    ASSERT_TRUE(tab->NavigateToURL(url));
+
+    WaitUntilCookieNonEmpty(tab.get(), url, "cleared", kTestIntervalMs,
+                            kTestWaitTimeoutMs);
+  }
+
+  // Runs each test in an array of strings until it hits a NULL.
+  void RunTests(const char** files) {
+    while (*files) {
+      ClearDOMStorage();
+      RunLayoutTest(*files, false);
+      ++files;
+    }
+  }
+
   FilePath test_dir_;
 };
 
 TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
-  // TODO(jorlow): Enable these tests when we remove them from the
-  //               test_exceptions.txt file.
-  //InitializeForLayoutTest(test_dir_, FilePath(), false);
-  //for (size_t i=0; i<arraysize(kTopLevelFiles); ++i)
-  //  RunLayoutTest(kTopLevelFiles[i], false, true);
+  InitializeForLayoutTest(test_dir_, FilePath(), false);
+  //RunTests(kTopLevelFiles);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=24145
@@ -69,13 +119,17 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
 TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
-  for (size_t i = 0; i < arraysize(kSubDirFiles); ++i)
-    RunLayoutTest(kSubDirFiles[i], false);
+  AddResources();
+  RunTests(kNoEventsFiles);
+  RunTests(kEventsFiles);
+  RunTests(kLocalStorageFiles);
 }
 
 TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
-  for (size_t i = 0; i < arraysize(kSubDirFiles); ++i)
-    RunLayoutTest(kSubDirFiles[i], false);
+  AddResources();
+  RunTests(kNoEventsFiles);
+  //RunTests(kEventsFiles);
+  RunTests(kSessionStorageFiles);
 }
