@@ -1455,15 +1455,6 @@ BUG10357 : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT
 // Missing expected results
 BUG10358 SKIP MAC LINUX : LayoutTests/animations/animation-drt-api.html = PASS
 
-// MERGE 38625:38653: Expectations changed upstream
-BUG10359 MAC : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-
-// MERGE 38625:38653: New tests
-BUG10360 MAC : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-
-
-// MERGE 38653:38729: New tests
-
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10361 : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
