@@ -223,7 +223,7 @@ each locale. -->
         Downloads
       </message>
       <message name="IDS_EXTENSIONS_TITLE" desc="Title for the extensions tab.">
-        Extensions
+        Installed Extensions
       </message>
       <message name="IDS_SESSIONS_TITLE" desc="Title for the sessions tab.">
         Sessions

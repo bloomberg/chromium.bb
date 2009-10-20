@@ -2,113 +2,135 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title i18n-content="title">About extensions</title>
+<title i18n-content="title"></title>
 <style>
 body {
-  font-size: 84%;
-  font-family: Arial, Helvetica, sans-serif;
-  padding: 0.75em;
+  font-size: 87%;
+  font-family: Arial Narrow, Arial, Helvetica, sans-serif;
   margin: 0;
-  min-width: 45em;
+  min-width: 47em;
+  padding-bottom: 0.75em;
+  padding-left: 1.5em;
+  padding-right: 2em;
+  padding-top: 0.75em;
 }
 
 a {
-  color: black;
+  color: blue;
+  font-size: 100%;
 }
 
 div#header {
-  padding: 0.75em 1em;
-  padding-top: 0.6em;
-  padding-left: 0;
   margin-bottom: 0.75em;
-  position: relative;
   overflow: hidden;
-  background: #5296de;
-  -webkit-background-size: 100%;
-  border: 1px solid #3a75bd;
-  -webkit-border-radius: 6px;
-  color: white;
+  padding-bottom: 1.5em;
+  padding-left: 0;
+  padding-top: 1.5em;
+  position: relative;
 }
 div#header h1 {
-  padding-left: 37px;
-  margin: 0;
+  background: url('extensions_ui_page_logo.png') 0px 60% no-repeat;
   display: inline;
-  background: url('gear.png') 12px 60% no-repeat;
-  color: white;
+  margin: 0;
+  padding-bottom: 35px;
+  padding-left: 75px;
+  padding-top: 35px;
 }
 
 h1 {
-  font-size: 110%;
+  font-size: 150%;
   font-weight: bold;
-  color: #4a8ee6;
   padding: 0;
   margin: 0;
 }
 
-div#outside {
-  margin-left:2px;
-}
-
 div.content {
-  font-size:84%;
+  font-size: 84%;
+  margin-top: 10px;
 }
 
-.sidebar-content {
-  font-size:84%;
-  white-space:nowrap;
-  margin-top:-5px;
-  margin-right:2px;
-}
-
-.sidebar-content button {
-  -webkit-box-sizing:border-box;
-  width:100%;
-}
-
-h2 {
-  font-size: 110%;
+.section-header {
+  background: #ebeff9;
+  border-top: 1px solid #b5c7de;
+  font-size: 97%;
+  font-weight: bold;
   letter-spacing: -1px;
-  font-weight: normal;
-  color: #3a75bd;
-  margin-bottom:2em;
+  padding-bottom: 3px;
+  padding-left: 10px;
+  padding-top: 3px;
+  width: 100%;
 }
 
-.extension-details {
-  margin:1em 25px 4em;
-  line-height:1.5em;
+.vbox-container {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
 
-.extension-name-row {
-  border-top:1px solid #b5c7de;
-  background:#eff7ff;
-  padding:3px 25px;
+.wbox {
+  display: -webkit-box;
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+.wbox-dev-tools {
+  display: none;
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+.developer-tools-image {
+  margin-top: 2px;
+}
+
+.developer-tools-link {
+  font-size: 84%;
+  margin-right: 9px;
+  white-space: nowrap;
+}
+
+.developer-tools {
+  background: #f4f6fc;
+  border-bottom: 1px solid #edeff5;
+  padding-bottom: 0.5em;
+  padding-left: 10px;
+  padding-top: 0.5em;
+  width: 100%;
+}
+
+.extension {
+  border-bottom: 1px solid #edeff5;
+  margin-bottom: 9px;
+  padding-bottom: 10px;
 }
 
 .extension-name {
-  font-weight:bold;
-}
-
-.extension-version {
-  margin-left: 1ex;
+  font-weight: bold;
 }
 
 .extension-description {
-  margin:0.5em 0;
+  color: gray;
+  margin-top: 0.4em;
 }
 
-.extension-views {
-  margin:0 0 0.75em;
-  margin-left:2ex;
-  padding:0;
-  list-style-type:none;
+.extension-details {
+  color: gray;
+  margin-top: 0.5em;
+  display: none;
 }
 
 .extension-actions {
-  margin-top:0.5em;
+  float: right;
+}
+
+.extension-views {
+  margin: 0 0 0;
+  margin-left: 2ex;
+  padding: 0;
+  list-style-type: none;
 }
 
 button {
-  font-size:100%;
+  font-size: 100%;
 }
 
 #dialogBackground, #dialogBackground div {
@@ -123,9 +145,9 @@ button {
 }
 
 #dialog input[type="text"] {
-  width: 220px;
   font-size: 12px;
   font-family: Arial, Helvetica, sans-serif;
+  width: 220px;
 }
 
 #dialogBackground {
@@ -265,6 +287,10 @@ var extensionDataFormat = {
   ]
 };
 
+// Keeps track of whether the developer tools subsection has been made visible
+// (expanded) or not.
+var devToolsExpanded = false;
+
 /**
  * Takes the |extensionsData| input argument which represents data about the
  * currently installed/running extensions and populates the html jstemplate with
@@ -400,6 +426,25 @@ function hidePackDialog() {
   document.getElementById('dialogBackground').style.display="none"
 }
 
+/*
+ * Toggles visibility of the developer tools.
+ */
+function toggleDeveloperTools() {
+  devToolsExpanded = !devToolsExpanded;
+
+  document.getElementById('collapse').style.display =
+      devToolsExpanded ? "inline" : "none";
+  document.getElementById('expand').style.display =
+      devToolsExpanded ? "none" : "inline";
+  document.getElementById('developer_tools').style.display =
+      devToolsExpanded ? "-webkit-box" : "none";
+
+  // Show/hide extra details for the extension.
+  var details = document.getElementsByClassName('extension-details');
+  for (var i = 0; i < details.length; ++i)
+    details[i].style.display = devToolsExpanded ? "block" : "none";
+}
+
 /**
  * Pop up a select dialog to capture the extension path.
  */
@@ -479,85 +524,129 @@ function autoUpdate() {
 
   <div id="body-container" style="display:none;">
 
-    <div id="header"><h1>About extensions</h1></div>
+    <div id="header"><h1>Installed Extensions</h1></div>
 
-    <div id="outside">
+    <div id="extensionTemplate">
 
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td width="100%" valign="top" align="left">
+      <div id="container" class="vbox-container">
+      <div id="top" class="wbox">
 
-            <h2>Installed extensions</h2>
-            <div class="content">
-
-              <div id="extensionTemplate">
-
-                <div class="extension-name" jsdisplay="extensions.length === 0">
-                    No extensions installed</div>
-
-                <div jsdisplay="extensions.length > 0">
-                  <div class="extension" jsselect="extensions">
-                    <div class="extension-name-row">
-                      <span class="extension-name" jscontent="name">Extension Name</span>
-                      <span class="extension-version" jscontent="version">x.x.x.x</span>
-                      <span jsdisplay="!enabled">(Disabled)</span>
-                    </div>
-                    <div class="extension-details">
-                      <div class="extension-id">ID: <span jscontent="id"></div>
-                      <div class="extension-description" jscontent="description"></div>
-                      Active views:
-                      <ul class="extension-views">
-                        <li jsselect="views"><span jscontent="path"></span> -
-                          <a jsvalues=".extensionView:$this" href="#"
-                            onclick="sendInspectMessage(this.extensionView); return false;"
-                              >Inspect</a>
-                      </ul>
-                      <div class="extension-actions">
-                        <button
-                          jsvalues=".extensionId:id"
-                          jsdisplay="enabled"
-                          onclick="handleEnableExtension(this, false)"
-                          >Disable</button>
-                        <button
-                          jsvalues=".extensionId:id"
-                          jsdisplay="!enabled"
-                          onclick="handleEnableExtension(this, true)"
-                          >Enable</button>
-                        <button
-                          jsvalues=".extensionId:id"
-                          jsdisplay="enabled"
-                          onclick="handleReloadExtension(this)"
-                          >Reload</button>
-                        <button
-                          jsvalues=".extensionId:id"
-                          onclick="handleUninstallExtension(this)"
-                          >Uninstall</button>
-                        <button
-                          jsdisplay="options_url"
-                          jsvalues=".extensionId:id"
-                          onclick="handleOptions(this)"
-                          >Options</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <div class="section-header">
+          <table cellpadding="0" cellspacing="0" width="100%">
+          <tr valign="center">
+            <td>
+              Installed Extensions
+              <span jsdisplay="extensions.length > 0">(<span
+                  jscontent="extensions.length"></span>)</span>
+            </td>
+            <td width="14" padding="">
+              <img id="collapse" class="developer-tools-image"
+                   style="display:none" onclick="toggleDeveloperTools();"
+                   src="minus.png" />
+              <img id="expand" class="developer-tools-image"
+                   onclick="toggleDeveloperTools();" src="plus.png" />
+            </td>
+            <td width="50" align="right">
+              <div class="developer-tools-link">
+                <a onclick="toggleDeveloperTools();">Developer tools</a>
               </div>
-            </div>
+            </td>
+          </tr>
+          </table>
+        </div>
 
-          </td>
-          <td style="min-width:20px"></td>
+      </div>
+      <div id="developer_tools" class="wbox-dev-tools">
+        <div class="developer-tools">
+          Developer Tools:
+          <button onclick="loadExtension()">Load unpacked Extensions...</button>
+          <button onclick="showPackDialog()">Pack Extensions...</button>
+          <button onclick="autoUpdate()">Update Extensions now</button>
+        </div>
+      </div>
+      </div>
+
+      <div class="content">
+        <div class="extension-name" jsdisplay="extensions.length === 0">
+            No extensions installed</div>
+
+        <div jsdisplay="extensions.length > 0">
+        <div class="extension" jsselect="extensions">
+          <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+          <td width="62" align="center" valign="top"><img width="48" height="48"
+              src="../../app/theme/infobar_plugin.png" /></td>
           <td valign="top">
-            <h2>Tools</h2>
+            <div>
+              <span class="extension-name"
+                    jscontent="name">Extension Name</span>
+              <span>Version <span jscontent="version">x.x.x.x</span></span>
+              <span jsdisplay="!enabled">(Disabled)</span>
+            </div>
 
-            <div class="sidebar-content">
-              <button onclick="loadExtension()">Load unpacked extension...</button><br />
-              <button onclick="showPackDialog()">Pack extension...</button><br />
-              <button onclick="autoUpdate()">Update extensions now</button>
+            <div class="extension-description" jscontent="description"></div>
+            <div class="extension-details">ID: <span jscontent="id" ></span>
+            </div>
+            <div class="extension-details">
+            <span jsdisplay="views.length > 0">
+              Inspect active views:
+            </span>
+            <ul class="extension-views">
+              <li jsselect="views">
+                <a jsvalues=".extensionView:$this" href="#"
+                 onclick="sendInspectMessage(this.extensionView); return false;"
+                    ><span jscontent="path"></span></a>
+            </ul>
             </div>
           </td>
-        </tr>
-      </table>
-
-    </div> <!-- /outside -->
+          <td width="300">
+            <div align="right">
+              <span class="extension-actions">
+                <a
+                  jsvalues=".extensionId:id"
+                  jsdisplay="enabled"
+                  onclick="handleEnableExtension(this, false)"
+                  href="javascript:void();"
+                  >Disable</a>
+                <a
+                  jsvalues=".extensionId:id"
+                  jsdisplay="!enabled"
+                  onclick="handleEnableExtension(this, true)"
+                  href="javascript:void();"
+                  >Enable</a> -
+                <a
+                  jsvalues=".extensionId:id"
+                  jsdisplay="enabled"
+                  onclick="handleReloadExtension(this)"
+                  href="javascript:void();"
+                  >Reload</a>
+                <span jsdisplay="enabled">-</span>
+                <a
+                  jsvalues=".extensionId:id"
+                  onclick="handleUninstallExtension(this)"
+                  href="javascript:void();"
+                  >Uninstall</a>
+              </span>
+            </div>
+          </td>
+          <td align="right" valign="center" width="90">
+                <button
+                  jsdisplay="options_url"
+                  jsvalues=".extensionId:id"
+                  onclick="handleOptions(this)"
+                  >Options</button>
+                <button
+                  jsdisplay="typeof(options_url) == 'undefined' ||
+                             options_url.length == 0"
+                  disabled="true"
+                  >Options</button>
+          </td>
+          </tr>
+          </table>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
   </body>
 </html>
