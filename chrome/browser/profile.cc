@@ -1079,14 +1079,12 @@ void ProfileImpl::CreatePasswordStore() {
   created_password_store_ = true;
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_LINUX)
-// Temporarily disabled while we figure some stuff out.
-// http://code.google.com/p/chromium/issues/detail?id=12351
-// if (getenv("KDE_FULL_SESSION")) {
-//   ps = new PasswordStoreKWallet();
-// } else {
-//   ps = new PasswordStoreGnome();
-// }
-  NOTIMPLEMENTED();
+  // TODO(evanm): implement "native" password management.
+  // This bug describes the issues.
+  // http://code.google.com/p/chromium/issues/detail?id=12351
+  ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
+  if (!ps->Init())
+    return;
 #elif defined(OS_WIN)
   ps = new PasswordStoreWin(GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
