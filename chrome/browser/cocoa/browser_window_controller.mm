@@ -259,6 +259,14 @@ willPositionSheet:(NSWindow*)sheet
 // semantics of BrowserWindow::Close() and not call the Browser's dtor directly
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
+  // Don't update the window any longer.
+  // TODO(shess,dmaclach): This is a work-around for some cases where
+  // the window's views were living longer than this controller, and
+  // were then being re-displayed.  Better would be to have it live
+  // the appropriate amount of time, at which point we can remove
+  // this.  [And perhaps the funky -autorelease below can be fixed.]
+  [window_ setAutodisplay:NO];
+
   DCHECK(!browser_->tabstrip_model()->count());
 
   // We can't actually use |-autorelease| here because there's an embedded
