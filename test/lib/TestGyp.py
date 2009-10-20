@@ -512,8 +512,17 @@ class TestGypXcode(TestGypBase):
                             "    cd /\\S+\n"
                             "    /bin/sh -c /\\S+/Script-[0-9A-F]+\\.sh\n"
                             "(make: Nothing to be done for `all'\\.\n)?")
-  phase_script_execution_re = re.compile(phase_script_execution,
-                                         re.S)
+
+  strip_up_to_date_expressions = [
+    # Various actions or rules can run even when the overall build target
+    # is up to date.  Strip those phases' GYP-generated output.
+    re.compile(phase_script_execution, re.S),
+
+    # The message from distcc_pump can trail the "BUILD SUCCEEDED"
+    # message, so strip that, too.
+    re.compile('__________Shutting down distcc-pump include server\n', re.S),
+  ]
+
   up_to_date_ending = 'Checking Dependencies...\n** BUILD SUCCEEDED **\n'
 
   def build_all(self, gyp_file, **kw):
@@ -577,7 +586,9 @@ class TestGypXcode(TestGypBase):
       args = ('-target', target)
     result = self.run_build(gyp_file, *args, **kw)
     if not result:
-      output = self.phase_script_execution_re.sub('', self.stdout())
+      output = self.stdout()
+      for expression in self.strip_up_to_date_expressions:
+        output = expression.sub('', output)
       if not output.endswith(self.up_to_date_ending):
         self.report_not_up_to_date()
         self.fail_test()
