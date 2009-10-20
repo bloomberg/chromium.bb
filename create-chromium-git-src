@@ -10,6 +10,7 @@
 #
 
 GITSERVER="${GITSERVER:-git.chromium.org}"
+SVNSERVER="${SVNSERVER:-svn://svn.chromium.org/chrome}"
 TMP=".create_chromium_git_src.$$"
 
 function cleanup {
@@ -45,7 +46,7 @@ function check_dirs {
 # Test git and git --version.
 function test_git {
   echo -n "Trying git... "
-  local GITV="$(git --version 2>&1)" || {
+  local GITV="$(git --version)" || {
     echo "git isn't installed, please install it"
     exit 1
   }
@@ -53,11 +54,10 @@ function test_git {
   GITV="${GITV##* }"          # Only examine last word (i.e. version number)
   local GITD=( ${GITV//./ } ) # Split version number into decimals
   if ((GITD[0] < 1 || (GITD[0] == 1 && GITD[1] < 6) )); then
-    echo FAIL
     echo "git version is ${GITV}, please update to a version later than 1.6"
     exit 1
   fi
-  echo OK
+  echo "found git version ${GITV}"
 }
 
 # Test git svn and git svn --version.
@@ -65,8 +65,7 @@ function test_git_svn {
   echo -n "Trying git-svn... "
   rm -rf "${TMP}"
   git clone git://github.com/git/hello-world.git "${TMP}" &>/dev/null &&
-  local GITV="$(cd "${TMP}" && git svn --version 2>/dev/null)" || {
-    echo FAIL
+  local GITV="$(cd "${TMP}" && git svn --version)" || {
     echo "git-svn isn't installed, please install it"
     exit 1
   }
@@ -75,11 +74,21 @@ function test_git_svn {
   GITV="${GITV% (svn*}"
   local GITD=( ${GITV//./ } ) # Split version number into decimals
   if ((GITD[0] < 1 || (GITD[0] == 1 && GITD[1] < 6) )); then
-    echo FAIL
     echo "git version is ${GITV}, please update to a version later than 1.6"
     exit 1
   fi
-  echo OK
+  echo "found git-svn version ${GITV}"
+
+  echo "Testing git svn init..."
+  (cd "${TMP}" && git svn init --username="${EMAIL}" --prefix=origin/ \
+    -T trunk/src "${SVNSERVER}") &
+  local pid="$!"
+  { sleep 10 && kill "${pid}"; } &>/dev/null &
+  wait "${pid}" &>/dev/null || {
+    echo "Could not initialize repository, is SVN server ${SVNSERVER} correct?"
+    echo "The supplied username and password may be incorrect."
+    exit 1
+  }
 }
 
 # Verify we can reach our main git URL.
@@ -91,18 +100,17 @@ function test_git_url {
    git init &&
    git remote add origin git://"${GITSERVER}"/chromium.git &&
    git remote show origin) &>/dev/null &
-  local pid=$!
+  local pid="$!"
   { sleep 10 && kill "${pid}"; } &>/dev/null &
   wait "${pid}" &>/dev/null || {
-    echo FAIL
-    echo "Timeout accessing Chromium git URL, is ${GITSERVER} correct?"
+    echo "timeout accessing Chromium git URL, is ${GITSERVER} correct?"
     exit 1
   }
   echo OK
 }
 
 # Grab a clone of the Chromium git repository.
-function grab_crgit {
+function cr_git_clone {
   echo "Grabbing Chromium git repository..."
   git clone git://"${GITSERVER}"/chromium.git src || {
     echo "git clone exited with error"
@@ -112,20 +120,18 @@ function grab_crgit {
 }
 
 # Configure the git repository to know about the upstream SVN server.
-function git_svn_init {
-  echo -n "Configuring upstream SVN... "
-  (cd src && git svn init --prefix=origin/ -T trunk/src \
-   svn://svn.chromium.org/chrome) &>/dev/null || {
-    echo FAIL
+function cr_git_svn_init {
+  echo "Configuring upstream SVN..."
+  (cd src && git svn init --username="${EMAIL}" --prefix=origin/ -T trunk/src \
+   "${SVNSERVER}") || {
     echo "'git svn init' exited with error"
     exit 1
   }
-  echo OK
 }
 
 # Initialize the SVN history in the repository, also sanity checks our upstream
 # SVN configuration.
-function git_svn_fetch {
+function cr_git_svn_fetch {
   echo "Fetching SVN history..."
   (cd src && git svn fetch && git pull) || {
     echo "'git svn fetch' exited with error"
@@ -143,7 +149,7 @@ function git_config {
   (cd src && git cl config http://src.chromium.org/svn/)
   echo OK
 
-  echo -n "Configuring email address (git config user.email ${EMAIL})... "
+  echo -n "Configuring email address... "
   (cd src && git config user.email "${EMAIL}")
   echo OK
 
@@ -161,9 +167,9 @@ check_dirs
 test_git
 test_git_svn
 test_git_url
-grab_crgit
-git_svn_init
-git_svn_fetch
+cr_git_clone
+cr_git_svn_init
+cr_git_svn_fetch
 git_config
 
 echo
