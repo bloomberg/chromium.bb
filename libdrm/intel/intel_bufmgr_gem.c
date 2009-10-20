@@ -188,6 +188,8 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t stride);
 
 static void drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo);
+static void drm_intel_gem_bo_unreference_locked_timed(drm_intel_bo *bo,
+						      time_t time);
 
 static void drm_intel_gem_bo_unreference(drm_intel_bo *bo);
 
@@ -708,20 +710,20 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 	}
 }
 
-static void drm_intel_gem_bo_unreference_final(drm_intel_bo *bo)
+static void
+drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_intel_gem_bo_bucket *bucket;
 	uint32_t tiling_mode;
+	int i;
 
-	if (bo_gem->relocs != NULL) {
-		int i;
-
-		/* Unreference all the target buffers */
-		for (i = 0; i < bo_gem->reloc_count; i++)
-			drm_intel_gem_bo_unreference_locked(bo_gem->
-							    reloc_target_bo[i]);
+	/* Unreference all the target buffers */
+	for (i = 0; i < bo_gem->reloc_count; i++) {
+		drm_intel_gem_bo_unreference_locked_timed(bo_gem->
+							  reloc_target_bo[i],
+							  time);
 	}
 
 	DBG("bo_unreference final: %d (%s)\n",
@@ -732,10 +734,7 @@ static void drm_intel_gem_bo_unreference_final(drm_intel_bo *bo)
 	tiling_mode = I915_TILING_NONE;
 	if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
 	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0) {
-		struct timespec time;
-
-		clock_gettime(CLOCK_MONOTONIC, &time);
-		bo_gem->free_time = time.tv_sec;
+		bo_gem->free_time = time;
 
 		bo_gem->name = NULL;
 		bo_gem->validate_index = -1;
@@ -745,7 +744,7 @@ static void drm_intel_gem_bo_unreference_final(drm_intel_bo *bo)
 
 		drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem,
 					 I915_MADV_DONTNEED);
-		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
+		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time);
 	} else {
 		drm_intel_gem_bo_free(bo);
 	}
@@ -756,8 +755,22 @@ static void drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
 	assert(atomic_read(&bo_gem->refcount) > 0);
+	if (atomic_dec_and_test(&bo_gem->refcount)) {
+		struct timespec time;
+
+		clock_gettime(CLOCK_MONOTONIC, &time);
+		drm_intel_gem_bo_unreference_final(bo, time.tv_sec);
+	}
+}
+
+static void drm_intel_gem_bo_unreference_locked_timed(drm_intel_bo *bo,
+						      time_t time)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	assert(atomic_read(&bo_gem->refcount) > 0);
 	if (atomic_dec_and_test(&bo_gem->refcount))
-		drm_intel_gem_bo_unreference_final(bo);
+		drm_intel_gem_bo_unreference_final(bo, time);
 }
 
 static void drm_intel_gem_bo_unreference(drm_intel_bo *bo)
@@ -768,8 +781,12 @@ static void drm_intel_gem_bo_unreference(drm_intel_bo *bo)
 	if (atomic_dec_and_test(&bo_gem->refcount)) {
 		drm_intel_bufmgr_gem *bufmgr_gem =
 		    (drm_intel_bufmgr_gem *) bo->bufmgr;
+		struct timespec time;
+
+		clock_gettime(CLOCK_MONOTONIC, &time);
+
 		pthread_mutex_lock(&bufmgr_gem->lock);
-		drm_intel_gem_bo_unreference_final(bo);
+		drm_intel_gem_bo_unreference_final(bo, time.tv_sec);
 		pthread_mutex_unlock(&bufmgr_gem->lock);
 	}
 }
