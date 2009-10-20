@@ -1019,7 +1019,11 @@ bool UITest::LaunchBrowserHelper(const CommandLine& arguments,
   std::wstring extra_chrome_flags =
       CommandLine::ForCurrentProcess()->GetSwitchValue(kExtraChromeFlagsSwitch);
   if (!extra_chrome_flags.empty()) {
-    command_line.AppendLooseValue(extra_chrome_flags);
+    // Split by spaces and append to command line
+    std::vector<std::wstring> flags;
+    SplitString(extra_chrome_flags, ' ', &flags);
+    for (size_t i = 0; i < flags.size(); ++i)
+      command_line.AppendLooseValue(flags[i]);
   }
 
   // No first-run dialogs, please.
