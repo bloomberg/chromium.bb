@@ -426,7 +426,6 @@
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
-          'MACOSX_DEPLOYMENT_TARGET': '10.4',       # -mmacosx-version-min=10.4
           'PREBINDING': 'NO',                       # No -Wl,-prebind
           'SDKROOT': 'macosx10.5',                  # -isysroot
           'USE_HEADERMAP': 'NO',
@@ -435,6 +434,11 @@
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
+            ['nacl_standalone==1', {
+              # If part of the Chromium build, use the Chromium default.
+              # Otherwise, when building standalone, use this.
+              'MACOSX_DEPLOYMENT_TARGET': '10.4',  # -mmacosx-version-min=10.4
+            }],
           ],
         },
         'conditions': [
