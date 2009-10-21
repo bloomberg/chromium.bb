@@ -23,7 +23,10 @@
 #include "chrome_frame/chrome_frame_histograms.h"
 #include "chrome_frame/plugin_url_request.h"
 
-const unsigned long kCommandExecutionTimeout = 4000;  // NOLINT, 4 seconds
+// By a convoluated route, this timeout also winds up being the sync automation
+// message timeout. See the ChromeFrameAutomationProxyImpl ctor and the
+// AutomationProxy ctor for details.
+const unsigned long kCommandExecutionTimeout = 60000;  // NOLINT, 60 seconds
 
 class ProxyFactory;
 enum AutomationPageFontSize;
