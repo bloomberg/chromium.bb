@@ -312,7 +312,7 @@ int FlipNetworkTransaction::DoInitConnection() {
 // If we want to use multiple connections, grab the flip session
 // up front using the original domain name.
 #undef USE_MULTIPLE_CONNECTIONS
-#define DIVERT_URLS_TO_TEST_SERVER
+#undef DIVERT_URLS_TO_TEST_SERVER
 #if defined(USE_MULTIPLE_CONNECTIONS) || !defined(DIVERT_URLS_TO_TEST_SERVER)
   flip_ = FlipSession::GetFlipSession(resolve_info, session_);
 #endif

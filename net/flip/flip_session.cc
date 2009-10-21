@@ -159,8 +159,8 @@ void CreateFlipHeadersFromHttpRequest(
     (*headers)[name] = it.values();
   }
 
-#define REWRITE_URLS
-#ifdef REWRITE_URLS
+#undef DIVERT_URLS_TO_TEST_SERVER
+#ifdef DIVERT_URLS_TO_TEST_SERVER
   // TODO(mbelshe): Figure out how to remove this.  This is just for hooking
   // up to a test server.
   // For testing content on our test server, we modify the URL.
@@ -184,10 +184,11 @@ void CreateFlipHeadersFromHttpRequest(
     hack_url.replace(pos, 1, "/");
     pos += 1;
   }
+#else
+  std::string hack_url(info->url.PathForRequest());
 #endif  // REWRITE_URLS
 
   (*headers)["method"] = info->method;
-  // (*headers)["url"] = info->url.PathForRequest();
   (*headers)["url"] = hack_url;
   (*headers)["version"] = kHttpProtocolVersion;
   if (info->user_agent.length())
