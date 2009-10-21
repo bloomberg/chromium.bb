@@ -3175,3 +3175,10 @@ BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
+
+// WebKit Roll 49872:49896
+BUG_YUTAK WIN DEBUG : LayoutTests/media/video-empty-source.html = FAIL
+BUG_YUTAK RELEASE : LayoutTests/media/video-empty-source.html = FAIL
+BUG_YUTAK LINUX RELEASE : LayoutTests/fast/overflow/scroll-nested-positioned-layer-in-overflow.html = CRASH
+BUG_YUTAK MAC RELEASE : LayoutTests/fast/frames/frame-base-url.html = CRASH PASS
+BUG_YUTAK MAC DEBUG : LayoutTests/fast/frames/frame-base-url.html = CRASH
