@@ -1304,6 +1304,30 @@ void AutocompleteEditViewWin::OnKeyUp(TCHAR key,
   if (key == VK_CONTROL)
     model_->OnControlKeyChanged(false);
 
+  // On systems with RTL input languages, ctrl+shift toggles the reading order
+  // (depending on which shift key is pressed). But by default the CRichEditCtrl
+  // only changes the current reading order, and as soon as the user deletes all
+  // the text, or we call SetWindowText(), it reverts to the "default" order.
+  // To work around this, if the user hits ctrl+shift, we pass it to
+  // DefWindowProc() while the edit is empty, which toggles the default reading
+  // order; then we restore the user's input.
+  if (((key == VK_CONTROL) && (GetKeyState(VK_SHIFT) < 0)) ||
+      ((key == VK_SHIFT) && (GetKeyState(VK_CONTROL) < 0))) {
+    ScopedFreeze freeze(this, GetTextObjectModel());
+
+    std::wstring saved_text(GetText());
+    CHARRANGE saved_sel;
+    GetSelection(saved_sel);
+
+    SetWindowText(L"");
+
+    DefWindowProc(WM_KEYUP, key, MAKELPARAM(repeat_count, flags));
+
+    SetWindowText(saved_text.c_str());
+    SetSelectionRange(saved_sel);
+    return;
+  }
+
   SetMsgHandled(false);
 }
 
