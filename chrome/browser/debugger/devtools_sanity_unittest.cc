@@ -7,8 +7,11 @@
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -58,6 +61,8 @@ const wchar_t kDebuggerIntrinsicPropertiesPage[] =
     L"files/devtools/debugger_intrinsic_properties.html";
 const wchar_t kCompletionOnPause[] =
     L"files/devtools/completion_on_pause.html";
+const wchar_t kPageWithContentScript[] =
+    L"files/devtools/page_with_content_script.html";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -130,6 +135,61 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   RenderViewHost* inspected_rvh_;
 };
 
+
+// Base class for DevTools tests that test devtools functionality for
+// extensions and content scripts.
+class DevToolsExtensionDebugTest : public DevToolsSanityTest,
+                                   public NotificationObserver {
+ public:
+  DevToolsExtensionDebugTest() : DevToolsSanityTest() {
+    PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
+    test_extensions_dir_ = test_extensions_dir_.AppendASCII("devtools");
+    test_extensions_dir_ = test_extensions_dir_.AppendASCII("extensions");
+  }
+
+ protected:
+  // Load an extention from test\data\devtools\extensions\<extension_name>
+  void LoadExtension(const char* extension_name) {
+    FilePath path = test_extensions_dir_.AppendASCII(extension_name);
+    ASSERT_TRUE(LoadExtensionFromPath(path)) << "Failed to load extension.";
+  }
+
+ private:
+  bool LoadExtensionFromPath(const FilePath& path) {
+    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    size_t num_before = service->extensions()->size();
+    {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::EXTENSION_LOADED,
+                    NotificationService::AllSources());
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, new MessageLoop::QuitTask, 5*1000);
+      service->LoadExtension(path);
+      ui_test_utils::RunMessageLoop();
+    }
+    size_t num_after = service->extensions()->size();
+    return (num_after == (num_before + 1));
+  }
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::EXTENSION_LOADED:
+        std::cout << "Got EXTENSION_LOADED notification.\n";
+        MessageLoopForUI::current()->Quit();
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  FilePath test_extensions_dir_;
+};
+
+
 // WebInspector opens.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
   RunTest("testHostIsPresent", kSimplePage);
@@ -163,6 +223,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 // Tests scripts panel showing.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
+}
+
+// Tests that a content script is in the scripts list.
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
+                       TestContentScriptIsPresent) {
+  LoadExtension("simple_content_script");
+  RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.

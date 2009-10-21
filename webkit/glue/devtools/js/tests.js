@@ -394,6 +394,24 @@ TestSuite.prototype.testShowScriptsTab = function() {
 
 
 /**
+ * Tests that scripts list contains content scripts.
+ */
+TestSuite.prototype.testContentScriptIsPresent = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  test._waitUntilScriptsAreParsed(
+      ['page_with_content_script.html$', 'simple_content_script.js$'],
+      function() {
+        test.releaseControl();
+      });
+
+  // Wait until all scripts are added to the debugger.
+  this.takeControl();
+};
+
+
+/**
  * Tests that scripts are not duplicaed on Scripts tab switch.
  */
 TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function() {
@@ -920,14 +938,6 @@ TestSuite.prototype._executeCodeWhenScriptsAreParsed = function(
     code, expectedScripts) {
   var test = this;
 
-  function waitForAllScripts() {
-    if (test._scriptsAreParsed(expectedScripts)) {
-      executeFunctionInInspectedPage();
-    } else {
-      test.addSniffer(WebInspector, 'parsedScriptSource', waitForAllScripts);
-    }
-  }
-
   function executeFunctionInInspectedPage() {
     // Since breakpoints are ignored in evals' calculate() function is
     // execute after zero-timeout so that the breakpoint is hit.
@@ -937,6 +947,26 @@ TestSuite.prototype._executeCodeWhenScriptsAreParsed = function(
           test.assertTrue(!isNaN(resultText),
                           'Failed to get timer id: ' + resultText);
         });
+  }
+
+  test._waitUntilScriptsAreParsed(
+      expectedScripts, executeFunctionInInspectedPage);
+};
+
+
+/**
+ * Waits until all the scripts are parsed and invokes the callback.
+ */
+TestSuite.prototype._waitUntilScriptsAreParsed = function(
+    expectedScripts, callback) {
+  var test = this;
+
+  function waitForAllScripts() {
+    if (test._scriptsAreParsed(expectedScripts)) {
+      callback();
+    } else {
+      test.addSniffer(WebInspector, 'parsedScriptSource', waitForAllScripts);
+    }
   }
 
   waitForAllScripts();
