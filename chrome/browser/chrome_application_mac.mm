@@ -7,8 +7,47 @@
 #import "base/histogram.h"
 #import "base/logging.h"
 #import "base/scoped_nsobject.h"
+#import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/cocoa/objc_method_swizzle.h"
+#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+
+// The implementation of NSExceptions break various assumptions in the
+// Chrome code.  This category defines a replacement for
+// -initWithName:reason:userInfo: for purposes of forcing a break in
+// the debugger when an exception is raised.  -raise sounds more
+// obvious to intercept, but it doesn't catch the original throw
+// because the objc runtime doesn't use it.
+@interface NSException (NSExceptionSwizzle)
+- (id)chromeInitWithName:(NSString *)aName
+                  reason:(NSString *)aReason
+                userInfo:(NSDictionary *)someUserInfo;
+@end
+
+static IMP gOriginalInitIMP = NULL;
+
+@implementation NSException (NSExceptionSwizzle)
+- (id)chromeInitWithName:(NSString *)aName
+                  reason:(NSString *)aReason
+                userInfo:(NSDictionary *)someUserInfo {
+  // Method only called when swizzled.
+  DCHECK(_cmd == @selector(initWithName:reason:userInfo:));
+
+  // Dear reader: something you just did provoked an NSException.
+  // Please check your backtrace and see if you can't file a bug with
+  // a repro case.  You should be able to safely continue past the
+  // NOTREACHED(), but feel free to comment it out locally if it is
+  // making your job hard.
+  DLOG(ERROR) << "Someone is preparing to raise an exception!  "
+              << base::SysNSStringToUTF8(aName) << " *** "
+              << base::SysNSStringToUTF8(aReason);
+  NOTREACHED();
+
+  // Forward to the original version.
+  return gOriginalInitIMP(self, _cmd, aName, aReason, someUserInfo);
+}
+@end
 
 namespace CrApplicationNSException {
 
@@ -81,9 +120,28 @@ class ScopedCrashKey {
   scoped_nsobject<NSString> crash_key_;
 };
 
+// Do-nothing wrapper so that we can arrange to only swizzle
+// -[NSException raise] when DCHECK() is turned on (as opposed to
+// replicating the preprocess logic which turns DCHECK() on).
+BOOL SwizzleNSExceptionInit() {
+  gOriginalInitIMP = ObjcEvilDoers::SwizzleImplementedInstanceMethods(
+      [NSException class],
+      @selector(initWithName:reason:userInfo:),
+      @selector(chromeInitWithName:reason:userInfo:));
+  return YES;
+}
+
 }  // namespace
 
 @implementation CrApplication
+
+- init {
+  // TODO(shess): Push this somewhere where it can apply to the plugin
+  // and renderer processes, and where it can intercept uncaught
+  // exceptions.
+  DCHECK(SwizzleNSExceptionInit());
+  return [super init];
+}
 
 // -terminate: is the entry point for orderly "quit" operations in Cocoa.
 // This includes the application menu's quit menu item and keyboard
