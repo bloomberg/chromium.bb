@@ -805,24 +805,22 @@ BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
 BUG9798 BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-source-error.html = FAIL PASS
 BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 
+// The media time display isn't appearing.
+BUG13907 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
+
+// The video appears as a white box on Windows.  Fail whole test for now.
+BUG13907 SKIP WIN : LayoutTests/media/video-zoom.html = FAIL
+
 // Every linux debug media test have spurious timeouts and it's annoying.
 // We have no idea why.
 BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
 // These have super subtle pixel differences due to flaky anti-aliasing.
 // Patch is being submitted upstream.
-BUG9798 BUG13907 : LayoutTests/media/audio-controls-rendering.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/controls-after-reload.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/controls-strict.html = PASS FAIL TIMEOUT
 BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/video-controls-rendering.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/video-display-toggle.html = PASS FAIL TIMEOUT
-BUG9798 BUG13907 : LayoutTests/media/video-empty-source.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/video-layer-crash.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/video-zoom-controls.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/video-zoom.html = PASS FAIL
+
 
 // These tests are WONTFIX because they uess codecs chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
