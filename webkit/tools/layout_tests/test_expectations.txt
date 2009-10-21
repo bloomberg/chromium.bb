@@ -3173,3 +3173,4 @@ BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = C
 // Caused by ukai at revision 29626 (WebSockets)
 BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
 BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-get.xhtml = CRASH PASS
+BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-html-response-encoding.html = CRASH PASS
