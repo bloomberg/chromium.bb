@@ -308,7 +308,7 @@ def main(argv):
       if not configure_ie.ConfigureIE():
         logging.error('Failed to configure IE.')
         all_test_passed = False
-      continue
+        continue
 
     # Run selenium tests.
     if RunTest(sel_name) != 0:

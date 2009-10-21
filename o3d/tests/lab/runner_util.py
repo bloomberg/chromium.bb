@@ -141,12 +141,15 @@ def UninstallO3DPlugin():
   if util.IsWindows():
     installer_path = os.path.join(const.PRODUCT_DIR_PATH, 'o3d.msi')
     os.system('msiexec.exe /x "%s" /q' % installer_path)
-    
-  else:
-    for path in const.INSTALL_PATHS:
-      if os.path.exists(path):
+  
+  # Forcibly remove plugins.
+  for path in const.INSTALL_PATHS:
+    if os.path.exists(path):
+      if util.IsWindows():
+        os.remove(path)
+      else:
         os.system('echo g00gl3 | sudo -S rm -rf "%s"' % path)
-    
+  
   return not DoesAnO3DPluginExist()
 
 def DoesAnO3DPluginExist():
