@@ -32,42 +32,30 @@
 /*
  * NaCl Service Runtime.  Secure RNG implementation.
  */
+#include <stdlib.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
-#include <wincrypt.h>
-/* requires advapi32.lib */
+void NaClSecureRngDtor(struct NaClSecureRngIf *vself);
+static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself);
 
-static HCRYPTPROV hProv;
-
-static struct NaClSecureRngVtbl const kNaClSecureRngVtbl;
-
+static struct NaClSecureRngVtbl const kNaClSecureRngVtbl = {
+  NaClSecureRngDtor,
+  NaClSecureRngGenByte,
+  NaClSecureRngDefaultGenUint32,
+  NaClSecureRngDefaultGenBytes,
+  NaClSecureRngDefaultUniform,
+};
 
 void NaClSecureRngModuleInit(void) {
-  /* is PROV_RSA_AES reasonable? */
-  if (!CryptAcquireContext(&hProv,
-                           NULL,
-                           NULL,
-                           PROV_RSA_AES,
-                           CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
-    NaClLog(LOG_FATAL, "CryptAcquireContext failed: error %d\n",
-            GetLastError());
-  }
-}
-
-void NaClSecureRngModuleFini(void) {
-  (void) CryptReleaseContext(hProv, 0);
   return;
 }
 
-#if USE_CRYPTO
-# error "We need to get AES code mapped in before this can be written/enabled"
-#else
+void NaClSecureRngModuleFini(void) {
+  return;
+}
 
 int NaClSecureRngCtor(struct NaClSecureRng *self) {
   self->base.vtbl = &kNaClSecureRngVtbl;
@@ -78,7 +66,6 @@ int NaClSecureRngCtor(struct NaClSecureRng *self) {
 int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
                              uint8_t              *seed_material,
                              size_t               seed_bytes) {
-  /* CryptImportKey does not import unencrypted symmetric keys */
   self->base.vtbl = NULL;
   self->nvalid = 0;
   return 0;
@@ -90,9 +77,17 @@ void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
 }
 
 static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
-  if (!CryptGenRandom(hProv, sizeof self->buf, (BYTE *) self->buf)) {
-    NaClLog(LOG_FATAL, "CryptGenRandom failed, error %d\n",
-            GetLastError());
+  int bytes_filled = 0;
+  int bytes_to_copy = 0;
+  unsigned int random_int;
+  for (bytes_filled = 0;
+       bytes_filled < sizeof self->buf;
+       bytes_filled += bytes_to_copy) {
+    if (rand_s(&random_int)) {
+      NaClLog(LOG_FATAL, "rand_s failed: error %d\n", GetLastError());
+    }
+    bytes_to_copy = min(sizeof(self->buf) - bytes_filled, sizeof(random_int));
+    memcpy(self->buf + bytes_filled, &random_int, bytes_to_copy);
   }
   self->nvalid = sizeof self->buf;
 }
@@ -110,12 +105,3 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
   return self->buf[--self->nvalid];
 }
 
-#endif  /* USE_CRYPTO */
-
-static struct NaClSecureRngVtbl const kNaClSecureRngVtbl = {
-  NaClSecureRngDtor,
-  NaClSecureRngGenByte,
-  NaClSecureRngDefaultGenUint32,
-  NaClSecureRngDefaultGenBytes,
-  NaClSecureRngDefaultUniform,
-};

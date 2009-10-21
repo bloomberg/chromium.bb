@@ -66,6 +66,10 @@ if env.Bit('windows'):
     'win/time_win.cc',
     'win/xlate_system_error.c',
   ]
+  # Needed for rand_s().
+  env.Append(
+        CCFLAGS = ['/D_CRT_RAND_S',],
+  )
 elif env.Bit('linux'):
   platform_inputs += [
     'linux/nacl_semaphore.c',
