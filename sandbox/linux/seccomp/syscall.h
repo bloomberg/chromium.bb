@@ -5,7 +5,11 @@
 extern "C" {
 #endif
 
-void syscallWrapper() asm("playground$syscallWrapper");
+void syscallWrapper() asm("playground$syscallWrapper")
+#if defined(__x86_64__)
+                      __attribute__((visibility("internal")))
+#endif
+;
 
 #ifdef __cplusplus
 }

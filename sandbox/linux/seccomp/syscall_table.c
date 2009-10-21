@@ -115,4 +115,8 @@ const unsigned maxSyscall __attribute__((section(".rodata"))) =
     sizeof(syscallTable)/sizeof(struct SyscallTable);
 
 const int syscall_mutex_[4096/sizeof(int)] asm("playground$syscall_mutex")
-    __attribute__((section(".rodata"),aligned(4096))) = { 0x80000000 };
+    __attribute__((section(".rodata"),aligned(4096)
+#if defined(__x86_64__)
+                   ,visibility("internal")
+#endif
+                   )) = { 0x80000000 };

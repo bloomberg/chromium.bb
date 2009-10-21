@@ -35,11 +35,21 @@ class Library {
       isVDSO_(false),
       asr_offset_(0),
       vsys_offset_(0),
-      maps_(0) {
+      maps_(0),
+      image_(0),
+      image_size_(0) {
   }
 
-  void addMemoryRange(void* start, void* stop, Elf_Addr offset, int prot,
-                      int isVDSO) {
+  ~Library();
+
+  void setLibraryInfo(Maps* maps) {
+    if (!maps_) {
+      maps_ = maps;
+    }
+  }
+
+  void addMemoryRange(void* start, void* stop, Elf_Addr offset,
+                      int prot, int isVDSO) {
     memory_ranges_.insert(std::make_pair(offset, Range(start, stop, prot)));
     isVDSO_ = isVDSO;
   }
@@ -61,13 +71,11 @@ class Library {
   template<class T>T* getOriginal(Elf_Addr offset, T* t) {
     if (!valid_) {
       memset(t, 0, sizeof(T));
-      return false;
+      return NULL;
     }
-    if (maps_) {
-      return reinterpret_cast<T *>(maps_->forwardGetRequest(
-          this, offset, reinterpret_cast<char *>(t), sizeof(T)));
-    }
-    return get(offset, t);
+    return reinterpret_cast<T *>(getOriginal(offset,
+                                             reinterpret_cast<char *>(t),
+                                             sizeof(T)));
   }
 
   template<class T>bool set(void *addr, T* value) {
@@ -98,6 +106,7 @@ class Library {
     return true;
   }
 
+  bool parseElf();
   const Elf_Ehdr* getEhdr();
   const Elf_Shdr* getSection(const std::string& section);
   const int getSectionIndex(const std::string& section);
@@ -108,10 +117,7 @@ class Library {
   bool isVDSO() const { return isVDSO_; }
 
  protected:
-  bool parseElf();
   bool parseSymbols();
-  void recoverOriginalDataParent(Maps* maps);
-  void recoverOriginalDataChild(const std::string& child);
 
  private:
   class GreaterThan : public std::binary_function<Elf_Addr, Elf_Addr, bool> {
@@ -154,6 +160,8 @@ class Library {
   SectionTable    section_table_;
   SymbolTable     symbols_;
   PltTable        plt_entries_;
+  char*           image_;
+  size_t          image_size_;
   static char*    __kernel_vsyscall;
   static char*    __kernel_sigreturn;
   static char*    __kernel_rt_sigreturn;

@@ -64,7 +64,11 @@ class Sandbox {
   // calls playground$sandbox__clone().
   static int sandbox_clone(int flags, void* stack, int* pid, int* ctid,
                            void* tls, void* wrapper_sp)
-                                            asm("playground$sandbox__clone");
+    asm("playground$sandbox__clone")
+  #if defined(__x86_64__)
+    __attribute__((visibility("internal")))
+#endif
+    ;
 #else
 #define STATIC
 #define bool int
@@ -263,7 +267,12 @@ class Sandbox {
 
   // Sends a file handle to another process.
   static bool sendFd(int transport, int fd0, int fd1, const void* buf,
-                     size_t len) asm("playground$sendFd");
+                     size_t len)
+    asm("playground$sendFd")
+  #if defined(__x86_64__)
+    __attribute__((visibility("internal")))
+  #endif
+    ;
 
   // If getFd() fails, it will set the first valid fd slot (e.g. fd0) to
   // -errno.
@@ -559,7 +568,11 @@ class Sandbox {
   static void* defaultSystemCallHandler(int syscallNum, void* arg0,
                                         void* arg1, void* arg2, void* arg3,
                                         void* arg4, void* arg5)
-                                    asm("playground$defaultSystemCallHandler");
+                                    asm("playground$defaultSystemCallHandler")
+  #if defined(__x86_64__)
+                                    __attribute__((visibility("internal")))
+  #endif
+  ;
 
   // Return a secure memory structure that can be used by a newly created
   // thread.

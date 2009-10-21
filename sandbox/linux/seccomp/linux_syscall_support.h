@@ -1722,7 +1722,7 @@ struct kernel_statfs {
           __asm__ __volatile__("movq %5,%%r10; syscall" :                     \
             "=a" (__res) : "0" (__NR_##name),                                 \
             "D" ((long)(arg1)), "S" ((long)(arg2)), "d" ((long)(arg3)),       \
-            "g" ((long)(arg4)) : "r10", "r11", "rcx", "memory");              \
+            "r" ((long)(arg4)) : "r10", "r11", "rcx", "memory");              \
           LSS_RETURN(type, __res);                                            \
       }
     #undef _syscall5
@@ -1734,7 +1734,7 @@ struct kernel_statfs {
           __asm__ __volatile__("movq %5,%%r10; movq %6,%%r8; syscall" :       \
             "=a" (__res) : "0" (__NR_##name),                                 \
             "D" ((long)(arg1)), "S" ((long)(arg2)), "d" ((long)(arg3)),       \
-            "g" ((long)(arg4)), "g" ((long)(arg5)) :                          \
+            "r" ((long)(arg4)), "r" ((long)(arg5)) :                          \
             "r8", "r10", "r11", "rcx", "memory");                             \
           LSS_RETURN(type, __res);                                            \
       }
@@ -1748,7 +1748,7 @@ struct kernel_statfs {
                                "syscall" :                                    \
             "=a" (__res) : "0" (__NR_##name),                                 \
             "D" ((long)(arg1)), "S" ((long)(arg2)), "d" ((long)(arg3)),       \
-            "g" ((long)(arg4)), "g" ((long)(arg5)), "g" ((long)(arg6)) :      \
+            "r" ((long)(arg4)), "r" ((long)(arg5)), "r" ((long)(arg6)) :      \
             "r8", "r9", "r10", "r11", "rcx", "memory");                       \
           LSS_RETURN(type, __res);                                            \
       }

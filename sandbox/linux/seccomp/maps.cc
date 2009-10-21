@@ -19,9 +19,7 @@ Maps::Maps(const std::string& maps_file) :
     maps_file_(maps_file),
     begin_iter_(this, true, false),
     end_iter_(this, false, true),
-    pid_(-1),
     vsyscall_(0) {
-  memset(fds_, -1, sizeof(fds_));
   int fd = open(maps_file.c_str(), O_RDONLY);
   Sandbox::SysCalls sys;
   if (fd >= 0) {
@@ -79,11 +77,12 @@ Maps::Maps(const std::string& maps_file) :
         if ((prot & (PROT_EXEC | PROT_READ)) == 0) {
           goto skip_entry;
         }
-        libs_[id + ' ' + library].addMemoryRange(
-            reinterpret_cast<void *>(start),
-            reinterpret_cast<void *>(stop),
-            Elf_Addr(offset),
-            prot, isVDSO);
+        Library* lib = &libs_[id + ' ' + library];
+        lib->setLibraryInfo(this);
+        lib->addMemoryRange(reinterpret_cast<void *>(start),
+                            reinterpret_cast<void *>(stop),
+                            Elf_Addr(offset),
+                            prot, isVDSO);
       }
    skip_entry:
       for (;;) {
@@ -97,118 +96,7 @@ Maps::Maps(const std::string& maps_file) :
       }
     } while (len || long_line);
     NOINTR_SYS(close(fd));
-
-    // The runtime loader clobbers some of the data that we want to read,
-    // when it relocates objects. As we cannot trust the filename that we
-    // obtained from /proc/self/maps, we instead fork() a child process and
-    // use mremap() to uncover the obscured data.
-    int tmp_fds[4];
-    if (pipe(tmp_fds))
-      abort();
-    if (pipe(tmp_fds + 2))
-      abort();
-    pid_ = fork();
-    if (pid_ >= 0) {
-      // Set up read and write file descriptors for exchanging data
-      // between parent and child.
-      fds_[ !pid_] = tmp_fds[     !pid_];
-      fds_[!!pid_] = tmp_fds[2 + !!pid_];
-      NOINTR_SYS(close(  tmp_fds[    !!pid_]));
-      NOINTR_SYS(close(  tmp_fds[2 +  !pid_]));
-
-      for (LibraryMap::iterator iter = libs_.begin(); iter != libs_.end(); ){
-        Library* lib = &iter->second;
-        if (pid_) {
-          lib->recoverOriginalDataParent(this);
-        } else {
-          lib->recoverOriginalDataChild(strrchr(iter->first.c_str(), ' ') + 1);
-        }
-        if (pid_ && !lib->parseElf()) {
-          libs_.erase(iter++);
-        } else {
-          ++iter;
-        }
-      }
-
-      // Handle requests sent from the parent to the child
-      if (!pid_) {
-        Request req;
-        for (;;) {
-          if (Sandbox::read(sys, fds_[0], &req, sizeof(Request)) !=
-              sizeof(Request)) {
-            _exit(0);
-          }
-          switch (req.type) {
-            case Request::REQ_GET:
-              {
-                char *buf = new char[req.length];
-                if (!req.library->get(req.offset, buf, req.length)) {
-                  req.length = -1;
-                  Sandbox::write(sys, fds_[1], &req.length,sizeof(req.length));
-                } else {
-                  Sandbox::write(sys, fds_[1], &req.length,sizeof(req.length));
-                  Sandbox::write(sys, fds_[1], buf, req.length);
-                }
-                delete[] buf;
-              }
-              break;
-            case Request::REQ_GET_STR:
-              {
-                std::string s = req.library->get(req.offset);
-                req.length = s.length();
-                Sandbox::write(sys, fds_[1], &req.length, sizeof(req.length));
-                Sandbox::write(sys, fds_[1], s.c_str(), req.length);
-              }
-              break;
-          }
-        }
-      }
-    } else {
-      for (int i = 0; i < 4; i++) {
-        NOINTR_SYS(close(tmp_fds[i]));
-      }
-    }
   }
-}
-
-Maps::~Maps() {
-  Sandbox::SysCalls sys;
-  sys.kill(pid_, SIGKILL);
-  sys.waitpid(pid_, NULL, 0);
-}
-
-char *Maps::forwardGetRequest(Library *library, Elf_Addr offset,
-                              char *buf, size_t length) const {
-  Request req(Request::REQ_GET, library, offset, length);
-  Sandbox::SysCalls sys;
-  if (Sandbox::write(sys, fds_[1], &req, sizeof(Request)) != sizeof(Request) ||
-      Sandbox::read(sys, fds_[0], &req.length, sizeof(req.length)) !=
-      sizeof(req.length) ||
-      req.length == -1 ||
-      Sandbox::read(sys, fds_[0], buf, length) != (ssize_t)length) {
-    memset(buf, 0, length);
-    return NULL;
-  }
-  return buf;
-}
-
-std::string Maps::forwardGetRequest(Library *library,
-                                    Elf_Addr offset) const {
-  Request req(Request::REQ_GET_STR, library, offset, -1);
-  Sandbox::SysCalls sys;
-  if (Sandbox::write(sys, fds_[1], &req, sizeof(Request)) != sizeof(Request) ||
-      Sandbox::read(sys, fds_[0], &req.length, sizeof(req.length)) !=
-      sizeof(req.length)) {
-    return "";
-  }
-  char *buf = new char[req.length];
-  if (Sandbox::read(sys, fds_[0], buf, req.length) != (ssize_t)req.length) {
-    delete[] buf;
-    return "";
-  }
-  std::string s(buf, req.length);
-  delete[] buf;
-  return s;
 }
 
 Maps::Iterator::Iterator(Maps* maps, bool at_beginning, bool at_end)

@@ -148,7 +148,7 @@ void Debug::syscall(int sysnum, const char* msg, int call) {
     }
     char unnamed[40] = "Unnamed syscall #";
     if (!sysname) {
-      itoa(const_cast<char*>(strrchr(sysname = unnamed, '\000')), sysnum);
+      itoa(const_cast<char *>(strrchr(sysname = unnamed, '\000')), sysnum);
     }
     #if defined(__NR_socketcall) || defined(__NR_ipc)
     char extra[40];

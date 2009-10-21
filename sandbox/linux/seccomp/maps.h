@@ -20,13 +20,9 @@ class Maps {
   friend class Library;
  public:
   Maps(const std::string& maps_file);
-  ~Maps();
+  ~Maps() { }
 
  protected:
-  char *forwardGetRequest(Library *library, Elf_Addr offset, char *buf,
-                          size_t length) const;
-  std::string forwardGetRequest(Library *library, Elf_Addr offset) const;
-
   // A map with all the libraries currently loaded into the application.
   // The key is a unique combination of device number, inode number, and
   // file name. It should be treated as opaque.
@@ -72,32 +68,13 @@ class Maps {
 
   char* vsyscall() const { return vsyscall_; }
 
- private:
-  struct Request {
-    enum Type { REQ_GET, REQ_GET_STR };
-
-    Request() { }
-
-    Request(enum Type t, Library* i, Elf_Addr o, ssize_t l) :
-        library(i), offset(o), length(l), type(t), padding(0) {
-    }
-
-    Library*   library;
-    Elf_Addr   offset;
-    ssize_t    length;
-    enum Type  type;
-    int        padding; // for valgrind
-  };
-
  protected:
   const std::string maps_file_;
   const Iterator    begin_iter_;
   const Iterator    end_iter_;
 
-  LibraryMap  libs_;
-  pid_t       pid_;
-  int         fds_[2];
-  char*       vsyscall_;
+  LibraryMap        libs_;
+  char*             vsyscall_;
 };
 
 } // namespace

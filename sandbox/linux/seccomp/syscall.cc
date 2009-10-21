@@ -38,6 +38,7 @@ asm(
     // This is the wrapper which is called by the untrusted code, trying to
     // make a system call.
     "playground$syscallWrapper:"
+    ".internal playground$syscallWrapper\n"
     ".globl playground$syscallWrapper\n"
     ".type playground$syscallWrapper, @function\n"
     #if defined(__x86_64__)

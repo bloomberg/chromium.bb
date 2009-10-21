@@ -20,8 +20,17 @@ namespace playground {
                             int threadFd, SecureMemArgs* mem);
   };
   extern const struct SyscallTable syscallTable[]
-                                                asm("playground$syscallTable");
-  extern const unsigned maxSyscall              asm("playground$maxSyscall");
+    asm("playground$syscallTable")
+#if defined(__x86_64__)
+    __attribute__((visibility("internal")))
+#endif
+    ;
+  extern const unsigned maxSyscall
+    asm("playground$maxSyscall")
+#if defined(__x86_64__)
+    __attribute__((visibility("internal")))
+#endif
+    ;
 #ifdef __cplusplus
 } // namespace
 }
