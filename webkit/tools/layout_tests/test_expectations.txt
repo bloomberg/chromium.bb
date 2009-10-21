@@ -808,7 +808,7 @@ BUG13907 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
 BUG13907 SKIP WIN : LayoutTests/media/video-zoom.html = FAIL
 
 // Video appears with a green background.  Probably due to repaint debugging code.
-BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
+BUG13907 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 
 // Every linux debug media test have spurious timeouts and it's annoying.
 // We have no idea why.
@@ -3175,10 +3175,3 @@ BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
-
-// WebKit Roll 49872:49896
-BUG_YUTAK WIN DEBUG : LayoutTests/media/video-empty-source.html = FAIL
-BUG_YUTAK RELEASE : LayoutTests/media/video-empty-source.html = FAIL
-BUG_YUTAK LINUX RELEASE : LayoutTests/fast/overflow/scroll-nested-positioned-layer-in-overflow.html = CRASH
-BUG_YUTAK MAC RELEASE : LayoutTests/fast/frames/frame-base-url.html = CRASH PASS
-BUG_YUTAK MAC DEBUG : LayoutTests/fast/frames/frame-base-url.html = CRASH
