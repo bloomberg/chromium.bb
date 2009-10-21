@@ -305,13 +305,25 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
   // to shrink it again.  Windows does not have this limitation
   // (e.g. can be resized from the top).
   bounds->set_height(std::min(work_area.height(), bounds->height()));
-#endif  // defined(OS_MACOSX)
 
-  // Ensure at least kMinVisibleWidth * kMinVisibleHeight is visible.
+  // On mac, we want to be aggressive about repositioning windows that are
+  // partially offscreen.  If the window is partially offscreen horizontally,
+  // move it to be flush with the left edge of the work area.
+  if (bounds->x() < work_area.x() || bounds->right() > work_area.right())
+    bounds->set_x(work_area.x());
+
+  // If the window is partially offscreen vertically, move it to be flush with
+  // the top of the work area.
+  if (bounds->y() < work_area.y() || bounds->bottom() > work_area.bottom())
+    bounds->set_y(work_area.y());
+#else
+  // On non-Mac platforms, we are less aggressive about repositioning.  Simply
+  // ensure that at least kMinVisibleWidth * kMinVisibleHeight is visible.
   const int min_y = work_area.y() + kMinVisibleHeight - bounds->height();
   const int min_x = work_area.x() + kMinVisibleWidth - bounds->width();
   const int max_y = work_area.bottom() - kMinVisibleHeight;
   const int max_x = work_area.right() - kMinVisibleWidth;
   bounds->set_y(std::max(min_y, std::min(max_y, bounds->y())));
   bounds->set_x(std::max(min_x, std::min(max_x, bounds->x())));
+#endif  // defined(OS_MACOSX)
 }
