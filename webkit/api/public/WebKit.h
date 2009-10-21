@@ -32,9 +32,11 @@
 #define WebKit_h
 
 #include "WebCommon.h"
+#include "WebURL.h"
 
 namespace WebKit {
     class WebKitClient;
+    class WebString;
 
     // Must be called on the thread that will be the main WebKit thread before
     // using any other WebKit APIs.  The provided WebKitClient must be non-null
@@ -54,6 +56,16 @@ namespace WebKit {
     WEBKIT_API void setLayoutTestMode(bool);
     WEBKIT_API bool layoutTestMode();
 
+    // Registers a URL scheme to be treated as a local scheme (i.e., with the
+    // same security rules as those applied to "file" URLs).  This means that
+    // normal pages cannot link to or access URLs of this scheme.
+    WEBKIT_API void registerURLSchemeAsLocal(const WebString&);
+
+    // Registers a URL scheme to be treated as a noAccess scheme.  This means
+    // that pages loaded with this URL scheme cannot access pages loaded with
+    // any other URL scheme.
+    WEBKIT_API void registerURLSchemeAsNoAccess(const WebString&);
+
     // Enables HTML5 media support.
     WEBKIT_API void enableMediaPlayer();
 
@@ -64,6 +76,12 @@ namespace WebKit {
     // Enables HTML5 database support.
     WEBKIT_API void enableDatabases();
     WEBKIT_API bool databasesEnabled();
+
+    // Support for whitelisting access to origins beyond the same-origin policy.
+    WEBKIT_API void whiteListAccessFromOrigin(
+        const WebURL& sourceOrigin, const WebString& destinationProtocol,
+        const WebString& destinationHost, bool allowDestinationSubdomains);
+    WEBKIT_API void resetOriginAccessWhiteLists();
 
     // Enables HTML5 Web Sockets support.
     WEBKIT_API void enableWebSockets();

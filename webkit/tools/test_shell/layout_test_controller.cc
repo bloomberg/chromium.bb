@@ -18,7 +18,6 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptSource.h"
-#include "webkit/api/public/WebSecurityPolicy.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
@@ -33,7 +32,6 @@ using std::wstring;
 
 using WebKit::WebConsoleMessage;
 using WebKit::WebScriptSource;
-using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 
 TestShell* LayoutTestController::shell_ = NULL;
@@ -441,7 +439,7 @@ void LayoutTestController::Reset() {
   webHistoryItemCount_.Set(0);
 
   SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
-  WebSecurityPolicy::resetOriginAccessWhiteLists();
+  WebKit::resetOriginAccessWhiteLists();
 
   setlocale(LC_ALL, "");
 
@@ -971,10 +969,10 @@ void LayoutTestController::whiteListAccessFromOrigin(
   if (!url.isValid())
     return;
 
-  WebSecurityPolicy::whiteListAccessFromOrigin(url,
-      WebString::fromUTF8(args[1].ToString()),
-      WebString::fromUTF8(args[2].ToString()),
-       args[3].ToBoolean());
+  WebKit::whiteListAccessFromOrigin(url,
+                                    WebString::fromUTF8(args[1].ToString()),
+                                    WebString::fromUTF8(args[2].ToString()),
+                                    args[3].ToBoolean());
 }
 
 void LayoutTestController::clearAllDatabases(
