@@ -770,82 +770,63 @@ BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-re
 BUG13907 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
 BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
-
-// Linux debug media tests have spurious timeouts and it's annoying.  We have no idea why.
-BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
-
-// We don't autoload when src is assigned... we rely on load().
-BUG9798 BUG13907 SKIP: LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
-
-// The first load event fires occasionally, ending the test early.
-BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
-
-// We have issues with our implementation of played time ranges.
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-collapse.html = FAIL
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-ranges-1.html = FAIL
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-reset.html = FAIL
-
-// Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
-// The test uses setTimeout() and is flaky.
-BUG13907 SLOW : LayoutTests/media/video-seek-past-end-playing.html = FAIL
-
-// We sometimes emit an error from the same source element twice.
-BUG9798 BUG13907 SLOW : LayoutTests/media/video-source-error.html = FAIL PASS
-
-// The test uses setTimeout() and is flaky.
-BUG9798 BUG13907 : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
-
-// Failing because we sometimes emit additional timeupdate events.
-// Test may need to be rewritten or only log the first timeupdate event.
-BUG13907 : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS FAIL
-
-// Failing because we sometimes emit additional timeupdate events.
-// Test might be WONTFIX because we don't export a step button in the first place.
-BUG13907 BUG25375 SKIP : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
-
-// Will be fixed when https://bugs.webkit.org/show_bug.cgi?id=30435 lands.
+BUG13907 SKIP : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-constructor-src.html = TIMEOUT
+BUG13907 : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS FAIL CRASH
+BUG13907 LINUX WIN RELEASE : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
+BUG13907 LINUX WIN DEBUG SLOW : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
+BUG13907 MAC : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-play-event.html = TIMEOUT
-BUG13907 SKIP : LayoutTests/media/video-no-audio.html = TIMEOUT
-BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
-
-// Needs to use findMediaFile().
 BUG13907 SKIP : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
-
-// Seeks to the end of file, which results in ogg packets with no timestamps.
+BUG13907 RELEASE : LayoutTests/media/controls-styling.html = FAIL
+BUG13907 DEBUG SLOW : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 SKIP : LayoutTests/media/event-attributes.html = TIMEOUT
+BUG13907 MAC : LayoutTests/media/video-canvas-source.html = FAIL
+BUG13907 WIN LINUX RELEASE : LayoutTests/media/video-canvas-source.html = FAIL
+BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-canvas-source.html = FAIL
+BUG13907 : LayoutTests/media/video-controls-transformed.html = FAIL
+BUG9798 BUG13907 SKIP: LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
+BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
+BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-load-networkState.html = TIMEOUT PASS
+BUG13907 SLOW: LayoutTests/media/video-loop.html = FAIL
+BUG13907 SKIP : LayoutTests/media/video-no-audio.html = TIMEOUT
+BUG13907 SLOW : LayoutTests/media/video-played-collapse.html = FAIL
+BUG13907 SLOW : LayoutTests/media/video-played-ranges-1.html = FAIL
+BUG13907 RELEASE : LayoutTests/media/video-played-reset.html = FAIL
+BUG13907 DEBUG SLOW : LayoutTests/media/video-played-reset.html = FAIL
+BUG13907 : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
+BUG13907 RELEASE : LayoutTests/media/video-seek-past-end-playing.html = FAIL
+BUG13907 DEBUG SLOW : LayoutTests/media/video-seek-past-end-playing.html = FAIL
+BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
+BUG9798 BUG13907 WIN LINUX DEBUG SLOW : LayoutTests/media/video-source-error.html = FAIL PASS
+BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 
 // The media time display isn't appearing.
 BUG13907 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
 
-// The video appears as a white box on Windows.
+// The video appears as a white box on Windows.  Fail whole test for now.
 BUG13907 SKIP WIN : LayoutTests/media/video-zoom.html = FAIL
 
-// Video has a green background, probably due to Mac repaint debugging code.
-BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
+// Video appears with a green background.  Probably due to repaint debugging code.
+BUG13907 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 
-// The media time display is getting styled when it shouldn't be.
-BUG13907 : LayoutTests/media/controls-styling.html = FAIL
+// Every linux debug media test have spurious timeouts and it's annoying.
+// We have no idea why.
+BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
-// We currently throw a DOM security exception during the getImageData() call.
-BUG13907 SKIP : LayoutTests/media/video-canvas-source.html = FAIL
+// These have super subtle pixel differences.
+BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = PASS FAIL
+BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = PASS FAIL
 
-// These tests are flaky with subtle pixel differences.
-BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = IMAGE
-BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = IMAGE
-BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = IMAGE
-BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE
 
-// These tests are failing because they use position-dependent mouse clicks.
-BUG13907 BUG25375 : LayoutTests/media/video-controls-transformed.html = FAIL
-
-// These tests are WONTFIX because they use codecs Chromium doesn't support.
+// These tests are WONTFIX because they uess codecs chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-document-types.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/audio-data-url.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-size-intrinsic-scale.html = FAIL TIMEOUT
-
 
 // Function arguments object is copied for each access.
 BUG24194 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
