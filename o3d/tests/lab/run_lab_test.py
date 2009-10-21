@@ -49,7 +49,6 @@ import sys
 import threading
 import time
 
-import browsers
 import configure_ie
 import runner_constants as const
 import runner_util as run_util
@@ -83,10 +82,15 @@ O3D_REFERENCE_IMAGES_PATH = join(const.O3D_PATH, 'o3d', 'o3d_assets', 'tests',
 
 SCREENSHOTS_PATH = join(const.RESULTS_PATH,'screenshots')
 
-SELENIUM_BROWSERS = ['*iexplore', '*firefox', '*googlechrome', '*safari']
-
 # Set total test timeout to 90 minutes.
 TEST_TIMEOUT_SECS = 60 * 90.0
+
+SELENIUM_BROWSER_PREFIXES = {
+  'ie': '*iexplore',
+  'ff': '*firefox',
+  'chr': '*googlechrome',
+  'saf': '*safari',
+}
 
 
 class TestRunningThread(threading.Thread):
@@ -257,21 +261,8 @@ def main(argv):
   else:
     # Use default config file.
     config_path = os.path.join(const.HOME_PATH, 'test_config.txt')
-    
-    # Copy this config file so we can erase entries without destroying the 
-    # defaults.
-    copy_config_path = os.path.join(const.SCRIPTS_PATH, '_test_progress.txt')
-    if os.path.exists(copy_config_path):
-      os.remove(copy_config_path)
-    shutil.copyfile(config_path, copy_config_path)
-    config_path = copy_config_path
-  
-  # Add self to startup.
-  # This is needed because we may restart during browser installation, and we 
-  # need to start again if this happens.
-  util.AddToStartup('run_lab_test', const.PYTHON + ' ' + 
-                    os.path.abspath(__file__) + ' ' + config_path)
-     
+
+  # Uninstall/Install plugin.
   if not run_util.UninstallO3DPlugin():
     logging.error('Could not successfully uninstall O3D. Tests will not be run.')
     return 1
@@ -292,58 +283,41 @@ def main(argv):
         # No more lines in the file, go ahead and break.
         break
       test_browsers += [browser]
-      browsers_in_file = copy.deepcopy(test_browsers) 
+
     config_file.close()
 
+  if len(test_browsers) == 0:
+    logging.warn('No browsers found in config file. No tests will run.')
 
   # Test browsers.
-  test_passed = False
+  all_test_passed = True
   for browser in test_browsers:
-        
-    for profile in browsers.BROWSERS:
-      if profile['name'] == browser:
-        # Install browser.
-        if not browsers.Install(profile):
-          logging.error('Failed to install ' + profile['name'])
-          test_passed = False
-          break
-        
-        # Configure IE.
-        if profile['family'] == 'ie':
-          if not configure_ie.ConfigureIE():
-            logging.error('Failed to configure IE.')
-            test_passed = False
-            break
-        
-        # Run tests.
-        if RunTest(profile['selenium_name']) != 0:
-          logging.info('Selenium tests failed.')
-          test_passed = False
-        elif browser == test_browsers[0]:
-          # Only set test_passed to True if first browser. We want to fail if
-          # just one fails.
-          logging.info('Selenium tests passed.')
-          test_passed = True
-        break
-    else:
-      logging.error('"%s" in given config file "%s" is not a browser name'
-                    % (browser, config_path))
-      test_passed = False
+    # Get the Selenium name of the browser. The config file can contain
+    # a particular browser name like "ie6", a selenium name like "*firefox",
+    # or a selenium name like "*googlechrome C:/Chrome/chrome.exe".
+    sel_name = browser
+    for prefix in SELENIUM_BROWSER_PREFIXES.keys():
+      if browser.startswith(prefix):
+        sel_name = SELENIUM_BROWSER_PREFIXES[prefix]
+
+    # Configure IE.
+    if sel_name.startswith('*iexplore'):
+      if not configure_ie.ConfigureIE():
+        logging.error('Failed to configure IE.')
+        all_test_passed = False
+      continue
+
+    # Run selenium tests.
+    if RunTest(sel_name) != 0:
+      all_test_passed = False
     
-    # Remove browser from test list
-    browsers_in_file.remove(browser)
-    config_file = open(config_path, 'w')
-    for b in browsers_in_file:
-      config_file.write(b + '\n')
-    config_file.close()
-    
-  if test_passed:
+  if all_test_passed:
+    logging.info('All tests passed.')
     return 0
   else:
+    logging.info('Tests failed.')
     return 1
 
 if __name__ == '__main__':
   code = main(sys.argv)
-  # Remove self from startup.
-  util.RemoveFromStartup('run_lab_test')
   sys.exit(code)    
