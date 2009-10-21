@@ -707,7 +707,7 @@
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
 									<string key="NSAction">submenuAction:</string>
-									<int key="NSTag">35500</int>
+									<int key="NSTag">35006</int>
 									<object class="NSMenu" key="NSSubmenu" id="466817936">
 										<string key="NSTitle">^IDS_TEXT_ENCODING_MAC</string>
 										<object class="NSMutableArray" key="NSMenuItems">
