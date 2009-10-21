@@ -38,27 +38,37 @@
 // could disrupt editing.  This code repositions the subview directly,
 // which causes no editing-state changes.
 - (void)resetFieldEditorFrameIfNeeded {
-  AutocompleteTextFieldCell* cell = [self cell];
-  if ([cell fieldEditorNeedsReset]) {
-    // No change to bounds necessary if not editing.
-    NSText* editor = [self currentEditor];
-    if (editor) {
-      // When editing, we should have exactly one subview, which is a
-      // clipview containing the editor (for purposes of scrolling).
-      NSArray* subviews = [self subviews];
-      DCHECK_EQ([subviews count], 1U);
-      DCHECK([editor isDescendantOf:self]);
-      if ([subviews count] > 0) {
-        const NSRect frame([cell drawingRectForBounds:[self bounds]]);
-        [[subviews objectAtIndex:0] setFrame:frame];
-
-        // Make sure the selection remains visible.
-        // TODO(shess) Could this be janky?
-        [editor scrollRangeToVisible:[editor selectedRange]];
-      }
-    }
-    [cell setFieldEditorNeedsReset:NO];
+  // No action if not editing.
+  NSText* editor = [self currentEditor];
+  if (!editor) {
+    return;
   }
+
+  // When editing, we should have exactly one subview, which is a
+  // clipview containing the editor (for purposes of scrolling).
+  NSArray* subviews = [self subviews];
+  DCHECK_EQ([subviews count], 1U);
+  DCHECK([editor isDescendantOf:self]);
+  if ([subviews count] == 0) {
+    return;
+  }
+
+  // If the frame is already right, don't make any visible changes.
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  const NSRect frame([cell drawingRectForBounds:[self bounds]]);
+  NSView* subview = [subviews objectAtIndex:0];
+  if (NSEqualRects(frame, [subview frame])) {
+    return;
+  }
+
+  [subview setFrame:frame];
+
+  // Make sure the selection remains visible.
+  // TODO(shess) This could be janky if it jerks the visible region
+  // around too much.  I believe that text fields only scroll in
+  // response to selection movement (continuing the selection past the
+  // edge, or arrowing the cursor around).
+  [editor scrollRangeToVisible:[editor selectedRange]];
 }
 
 // Reroute events for the decoration area to the field editor.  This

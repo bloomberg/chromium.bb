@@ -64,8 +64,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 
 @implementation AutocompleteTextFieldCell
 
-@synthesize fieldEditorNeedsReset = fieldEditorNeedsReset_;
-
 // @synthesize doesn't seem to compile for this transition.
 - (NSAttributedString*)keywordString {
   return keywordString_.get();
@@ -79,11 +77,7 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
           availableWidth:(CGFloat)width {
   DCHECK(fullString != nil);
 
-  // Overriding |hintString_| always requires a reset.
-  if (hintString_) {
-    hintString_.reset();
-    fieldEditorNeedsReset_ = YES;
-  }
+  hintString_.reset();
 
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
@@ -98,14 +92,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
       s = partialString;
     }
   }
-  scoped_nsobject<NSAttributedString> as(
+  keywordString_.reset(
       [[NSAttributedString alloc] initWithString:s attributes:attributes]);
 
-  // If the value has changed, require a reset.
-  if (![keywordString_ isEqualToAttributedString:as]) {
-    keywordString_.reset([as retain]);
-    fieldEditorNeedsReset_ = YES;
-  }
 }
 
 // Convenience for the attributes used in the right-justified info
@@ -130,14 +119,10 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   DCHECK(anImage != nil);
   DCHECK(suffixString != nil);
 
+  keywordString_.reset();
+
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
-
-  // Overriding |keywordString_| always requires a reset.
-  if (keywordString_) {
-    keywordString_.reset();
-    fieldEditorNeedsReset_ = YES;
-  }
 
   // If |hintString_| is now too wide, clear it so that we don't pass
   // the equality tests.
@@ -178,8 +163,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 
     // If too wide, just show the image.
     hintString_.reset(WidthForHint(as) > width ? [is copy] : [as copy]);
-
-    fieldEditorNeedsReset_ = YES;
   }
 }
 
@@ -190,11 +173,7 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
 
-  // Overriding |keywordString_| always requires a reset.
-  if (keywordString_) {
-    keywordString_.reset();
-    fieldEditorNeedsReset_ = YES;
-  }
+  keywordString_.reset();
 
   // If |hintString_| is now too wide, clear it so that we don't pass
   // the equality tests.
@@ -209,18 +188,12 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 
     // If too wide, don't keep the hint.
     hintString_.reset(WidthForHint(as) > width ? nil : [as copy]);
-
-    fieldEditorNeedsReset_ = YES;
   }
 }
 
 - (void)clearKeywordAndHint {
-  if (keywordString_ || hintString_) {
-    keywordString_.reset();
-    hintString_.reset();
-
-    fieldEditorNeedsReset_ = YES;
-  }
+  keywordString_.reset();
+  hintString_.reset();
 }
 
 - (void)setHintIcon:(NSImage*)icon
@@ -242,18 +215,8 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
                                           attributes:attributes] autorelease];
   }
 
-  // Did the icon change? Is there a label now but there wasn't before,
-  // or vice-versa? Did the label change?
-  if (icon != hintIcon_.get() || (as && !hintIconLabel_.get()) ||
-      (!as && hintIconLabel_.get()) ||
-      (as && ![hintIconLabel_.get() isEqualToAttributedString:as])) {
-    hintIconLabel_.reset([as retain]);
-    hintIcon_.reset([icon retain]);
-    if (!keywordString_ && !hintString_) {
-      // Redraw if the icon is visible.
-      fieldEditorNeedsReset_ = YES;
-    }
-  }
+  hintIconLabel_.reset([as retain]);
+  hintIcon_.reset([icon retain]);
 }
 
 // TODO(shess): This code is manually drawing the cell's border area,

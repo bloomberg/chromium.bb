@@ -258,7 +258,6 @@ TEST_F(AutocompleteTextFieldTest, FrameChanged) {
 // -resetFieldEditorFrameIfNeeded.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
@@ -266,19 +265,18 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
   const NSRect baseEditorFrame(EditorFrame());
 
   // Setting a hint should result in a strictly smaller editor frame.
+  EXPECT_FALSE([cell hintString]);
   [cell setSearchHintString:@"search hint" availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
   EXPECT_TRUE(NSContainsRect(baseEditorFrame, EditorFrame()));
 
   // Clearing hint string and using -resetFieldEditorFrameIfNeeded
   // should result in the same frame as the standard focus machinery.
   [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
@@ -287,25 +285,21 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
 // -resetFieldEditorFrameIfNeeded.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   const NSString* kHintString(@"Type to search");
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
   [cell setSearchHintString:kHintString availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell hintString]);
   cocoa_helper_.makeFirstResponder(field_);
   const NSRect baseEditorFrame(EditorFrame());
 
   // Clearing the hint should result in a strictly larger editor
   // frame.
   [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
   EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
 
@@ -313,9 +307,8 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
   // -resetFieldEditorFrameIfNeeded should result in the same frame as
   // the standard focus machinery.
   [cell setSearchHintString:kHintString availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
@@ -324,7 +317,6 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
 // -resetFieldEditorFrameIfNeeded.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   const NSString* kFullString(@"Search Engine:");
   const NSString* kPartialString(@"Search Eng:");
@@ -334,18 +326,15 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   [cell setKeywordString:kFullString
            partialString:kPartialString
           availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell keywordString]);
   cocoa_helper_.makeFirstResponder(field_);
   const NSRect baseEditorFrame(EditorFrame());
 
   // Clearing the hint should result in a strictly larger editor
   // frame.
   [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell keywordString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
   EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
 
@@ -355,9 +344,8 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   [cell setKeywordString:kFullString
            partialString:kPartialString
           availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell keywordString]);
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
@@ -410,9 +398,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
 
     // No more messages to mockDelegate.
     AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-    EXPECT_FALSE([cell fieldEditorNeedsReset]);
     [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-    EXPECT_TRUE([cell fieldEditorNeedsReset]);
     [field_ resetFieldEditorFrameIfNeeded];
     [mockDelegate verify];
 

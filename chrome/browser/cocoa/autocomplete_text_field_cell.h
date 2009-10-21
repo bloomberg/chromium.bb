@@ -15,14 +15,6 @@
 // on the right-hand side), the keyword hint ("Press [Tab] to search
 // Engine" on the right-hand side), and keyword mode ("Search Engine:"
 // in a button-like token on the left-hand side).
-//
-// The cell arranges the field-editor's placement via the standard
-// -editWithFrame:* and -selectWithFrame:* methods.  When the visible
-// decoration changes, the cell's look may change, and if the cell is
-// currently being edited the field editor will require adjustment.
-// The cell signals this requirement by returning YES for
-// -fieldEditorNeedsReset, which is used by AutocompleteTextField's
-// -resetFieldEditorFrameIfNeeded in testing if re-layout is needed.
 
 @interface AutocompleteTextFieldCell : NSTextFieldCell {
  @private
@@ -34,10 +26,6 @@
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
 
-  // YES if the info cell has been changed in a way which would result
-  // in the cell needing to be laid out again.
-  BOOL fieldEditorNeedsReset_;
-
   // Icon that represents the state of the SSL connection
   scoped_nsobject<NSImage> hintIcon_;
 
@@ -46,12 +34,6 @@
   // hintIcon without an hintIconLabel, but not vice-versa).
   scoped_nsobject<NSAttributedString> hintIconLabel_;
 }
-
-@property BOOL fieldEditorNeedsReset;
-
-// The following setup |keywordString_| or |hintString_| based on the
-// input, and set |fieldEditorNeedsReset_| if the layout of the field
-// changed.
 
 // Chooses |partialString| if |width| won't fit |fullString|.  Strings
 // must be non-nil.

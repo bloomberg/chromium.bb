@@ -73,227 +73,41 @@ TEST_F(AutocompleteTextFieldCellTest, Display) {
   [view_ display];
 }
 
-TEST_F(AutocompleteTextFieldCellTest, SearchHint) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-
-  // At default settings, everything is already good to go.
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Setting a search hint will need a reset.
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing the search hint needs a reset.
-  [cell setSearchHintString:@"Type to find" availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing to an identical string doesn't need a reset.
-  [cell setSearchHintString:@"Type to find" availableWidth:kWidth];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-}
-
-TEST_F(AutocompleteTextFieldCellTest, KeywordHint) {
+// Verify that transitions between states clear other states.
+TEST_F(AutocompleteTextFieldCellTest, StateTransitionsResetOthers) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
 
-  // At default settings, everything is already good to go.
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  // Setting hint leaves keyword empty.
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
+  EXPECT_TRUE([cell hintString]);
+  EXPECT_FALSE([cell keywordString]);
 
-  // Setting a keyword hint will need a reset.
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing the keyword hint needs a reset.
-  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing to identical strings doesn't need a reset.
-  [cell setKeywordHintPrefix:@"Type " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-}
-
-TEST_F(AutocompleteTextFieldCellTest, KeywordString) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-
-  // At default settings, everything is already good to go.
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Setting a keyword string will need a reset.
+  // Setting keyword clears hint.
   [cell setKeywordString:@"Search Engine:"
            partialString:@"Search Eng:"
           availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell hintString]);
+  EXPECT_TRUE([cell keywordString]);
 
-  // Changing the keyword string needs a reset.
-  [cell setKeywordString:@"Search on Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing to an identical string doesn't need a reset.
-  [cell setKeywordString:@"Search on Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-}
-
-TEST_F(AutocompleteTextFieldCellTest, SecurityIcon) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  NSImage* image1 = [NSImage imageNamed:@"NSApplicationIcon"];
-  // Setting a security icon will need a reset.
-  [cell setHintIcon:image1 label:nil color:nil];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing the security icon needs a reset.
-  NSImage* image2 = [NSImage imageNamed:@"NSComputer"];
-  [cell setHintIcon:image2 label:nil color:nil];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing to an identical security icon doesn't need a reset.
-  [cell setHintIcon:image2 label:nil color:nil];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Adding a label without changing the icon needs a reset.
-  NSColor *color = [NSColor blackColor];
-  [cell setHintIcon:image2 label:@"New Label" color:color];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  // Removing the label without changing the icon needs a reset.
-  [cell setHintIcon:image2 label:nil color:nil];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-}
-
-TEST_F(AutocompleteTextFieldCellTest, SecurityIconLabel) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  NSColor *color = [NSColor blackColor];
-
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  // Setting a security icon will need a reset.
-  [cell setHintIcon:image label:@"Hello, world" color:color];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing the label needs a reset.
-  [cell setHintIcon:image label:@"Hello, you" color:color];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-
-  // Changing to an identical label doesn't need a reset
-  [cell setHintIcon:image label:@"Hello, you" color:color];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-}
-
-// Test that transitions between various modes set the reset flag.
-TEST_F(AutocompleteTextFieldCellTest, Transitions) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-
-  // Transitions from hint to keyword string, keyword hint, and
-  // cleared.
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  // Setting hint clears keyword.
   [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
               availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell hintString]);
+  EXPECT_FALSE([cell keywordString]);
 
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  // Clear clears keyword.
   [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell hintString]);
+  EXPECT_FALSE([cell keywordString]);
 
-  // Transitions from keyword hint to keyword string, simple hint, and
-  // cleared.
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  // Clear clears hint.
   [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE([cell hintString]);
   [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  // Transitions from keyword string to either type of hint, or
-  // cleared.
-  [cell setKeywordString:@"Search on Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  [cell setKeywordString:@"Search on Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
-              availableWidth:kWidth];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-
-  [cell setKeywordString:@"Search on Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  [cell setFieldEditorNeedsReset:NO];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  [cell clearKeywordAndHint];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE([cell hintString]);
+  EXPECT_FALSE([cell keywordString]);
 }
 
 TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
