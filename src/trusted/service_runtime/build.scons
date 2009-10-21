@@ -41,22 +41,6 @@ env.Append(CPPPATH=['${TARGET_ROOT}'])
 #  env.FilterOut(CCFLAGS=['-pedantic'])
 #  env.FilterOut(CCFLAGS=['-Wall'])
 
-# TODO(robertm): move those into EXTR_LIB when feature available
-env.Prepend(
-    LIBS = [
-        'sel',
-        'nacl_xdr',
-        'nonnacl_srpc',
-        'nrd_xfer',
-        'nonnacl_util_c',
-        'google_nacl_imc_c',
-        'container',
-        'platform',
-        'platform_qual_lib',
-        'gio',
-        'expiration',
-    ],
-)
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
   env.Append(
@@ -144,6 +128,8 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
                               '${SOURCE} > ${TARGET}'])
 
 # ----------------------------------------------------------
+# TODO(robertm): this library is too big and needs to be split up
+#                for easier unit testing
 ldr_inputs = [
     'dyn_array.c',
     'env_cleanser.c',
@@ -239,7 +225,8 @@ elif env.Bit('linux'):
 
 # ----------------------------------------------------------
 # SDL hacks
-# NOTE: there are some more sdl hacks in ../SConstruct
+# NOTE: there are some more sdl hacks in native_client//SConstruct
+#       and native_client/site_scons/site_tools/sdl.py
 # ----------------------------------------------------------
 sdl_mode = ARGUMENTS.get('sdl', 'hermetic')
 # Require a valid sdl mode.
@@ -250,24 +237,32 @@ if sdl_mode == 'none':
   # NOTE: do not export multimedia syscalls unless we are using sdl
   env.Append(SYSCALL_GEN_FLAGS ='-c -f Video -f Audio -f Multimedia')
 else:
-  # NOTE: explain this
-  env.Tool('sdl')
-  print '=' * 70
-  print 'SDL build (%s) enabled for %s' % (sdl_mode, env['BUILD_TYPE'])
-  print env.subst('Using version in ${SDL_DIR}')
-  print '=' * 70
-
   env.Append(SYSCALL_GEN_FLAGS='-c')
-  env.Append(CPPDEFINES=['HAVE_SDL'])
 
+# Set up the sdl_env
+# NOTE: we try to use sdl_env as litte as possible
+if sdl_mode == 'none':
+  sdl_env = env.Clone()
+else:
+  sdl_env = env.Clone()
+  sdl_env.Append(CPPDEFINES=['HAVE_SDL'])
+
+  sdl_env.Tool('sdl')
+  print '=' * 70
+  print 'SDL build (%s) enabled for %s' % (sdl_mode, sdl_env['BUILD_TYPE'])
+  print sdl_env.subst('Using version in ${SDL_DIR}')
+  print '=' * 70
+
+  # TODO(robertm): this should probably go into "Tool"
   if env.Bit('windows'):
-    if env.Bit('debug'):
-      env.Append(LINKFLAGS = ['/SUBSYSTEM:CONSOLE'])
+    if sdl_env.Bit('debug'):
+      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:CONSOLE'])
     else:
-      env.Append(LINKFLAGS = ['/SUBSYSTEM:WINDOWS'])
+      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:WINDOWS'])
 
   if env.Bit('mac'):
-    env_sdlmain = env.Clone()
+    env_sdlmain = sdl_env.Clone()
+    # TODO(robertm): explain why we need to disable this warning
     env_sdlmain.FilterOut(CCFLAGS=['-Werror'])
     ldr_inputs += [
         env_sdlmain.ComponentObject(
@@ -275,23 +270,36 @@ else:
             '$MAIN_DIR/common/SDLApplication.m'),
     ]
 
-env.ComponentLibrary('sel', ldr_inputs,
-                     EXTRA_LIBS=['platform',
-                                 'nrd_xfer'])
+# NOTE: uses sdl_env
+sdl_env.ComponentLibrary('sel',
+                         ldr_inputs)
 
-env.ComponentLibrary('gio', ['gio.c',
-                             'gio_mem.c',
-                             'gprintf.c',
-                             'gio_mem_snapshot.c'])
+env.ComponentLibrary('gio',
+                     ['gio.c',
+                      'gio_mem.c',
+                      'gprintf.c',
+                      'gio_mem_snapshot.c',
+                      ])
 
-env.ComponentLibrary('container', ['generic_container/container.c'])
 
-env.ComponentLibrary('expiration', ['expiration.c'])
+env.ComponentLibrary('container',
+                     ['generic_container/container.c',
+                      ])
 
-env.ComponentLibrary('nacl_xdr', ['fs/xdr.c', 'fs/obj_proxy.c'])
+
+env.ComponentLibrary('expiration',
+                     ['expiration.c',
+                      ])
+
+
+env.ComponentLibrary('nacl_xdr',
+                     ['fs/xdr.c',
+                      'fs/obj_proxy.c',
+                      ])
 
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary
+# TODO(robertm): see who really needs them and remove
 if env.Bit('windows'):
   env.Append(
       LIBS = [
@@ -309,36 +317,80 @@ if env.Bit('windows'):
 sdl_dll = []
 if sdl_mode != 'none':
   if env.Bit('windows'):
-    sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/SDL.dll')
-    sdl_dll += env.Replicate('.', '$SDL_DIR/lib/SDL.dll')
-    env.AddPluginPrerequisite(['$SDL_DIR/lib/SDL.dll'])
+    sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/SDL.dll')
+    sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/SDL.dll')
+    sdl_env.AddPluginPrerequisite(['$SDL_DIR/lib/SDL.dll'])
   elif env.Bit('mac'):
     # TODO: why do we replicate this THREE times?
-    sdl_dll += env.Replicate('$TARGET_ROOT/Frameworks',
-                             '$SDL_DIR/SDL.framework')
-    sdl_dll += env.Replicate('$OBJ_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
-    sdl_dll += env.Replicate('$OBJ_ROOT/src/trusted/Frameworks',
-                             '$SDL_DIR/SDL.framework')
-    env.AddPluginPrerequisite(['$SDL_DIR/SDL.framework'])
+    sdl_dll += sdl_env.Replicate('$TARGET_ROOT/Frameworks',
+                                 '$SDL_DIR/SDL.framework')
+    sdl_dll += sdl_env.Replicate('$OBJ_ROOT/Frameworks',
+                                 '$SDL_DIR/SDL.framework')
+    sdl_dll += sdl_env.Replicate('$OBJ_ROOT/src/trusted/Frameworks',
+                                 '$SDL_DIR/SDL.framework')
+    sdl_env.AddPluginPrerequisite(['$SDL_DIR/SDL.framework'])
   elif env.Bit('linux'):
     if env['BUILD_SUBARCH'] == '32':
-      sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
-      sdl_dll += env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
-      env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
+      sdl_dll += sdl_env.Replicate('$STAGING_DIR',
+                                   '$SDL_DIR/lib/libSDL-1.2.so.0')
+      sdl_dll += sdl_env.Replicate('.',
+                                   '$SDL_DIR/lib/libSDL-1.2.so.0')
+      sdl_env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
     elif env['BUILD_SUBARCH'] == '64':
-      sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib64/libSDL-1.2.so.0')
-      sdl_dll += env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
+      sdl_dll += sdl_env.Replicate('$STAGING_DIR',
+                                   '$SDL_DIR/lib64/libSDL-1.2.so.0')
+      sdl_dll += sdl_env.Replicate('.',
+                                   '$SDL_DIR/lib64/libSDL-1.2.so.0')
       # add AddPluginPrerequisite if you build a 64-bit plugin
 if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
-  SEL_LDR_NODE = env.ComponentProgram('sel_ldr', 'sel_main.c')
+
+
+  if env['TARGET_ARCHITECTURE'] == 'x86':
+    VALIDATOR_LIBS = ['ncvalidate',]
+  elif env['TARGET_ARCHITECTURE'] == 'arm':
+    VALIDATOR_LIBS = ['ncvalidate_arm', 'arm_inst', 'utils', ]
+  else:
+    VALIDATOR_LIBS = []
+
+  # NOTE: uses sdl_env
+  SEL_LDR_NODE = sdl_env.ComponentProgram('sel_ldr',
+                                          'sel_main.c',
+                                          EXTRA_LIBS=['sel',
+                                                      'nonnacl_srpc',
+                                                      'nrd_xfer',
+                                                      'nonnacl_util_c',
+                                                      'google_nacl_imc_c',
+                                                      'container',
+                                                      'platform',
+                                                      'platform_qual_lib',
+                                                      'gio',
+                                                      'expiration',
+                                                      ] + VALIDATOR_LIBS)
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 
-  env.ComponentProgram('sel_universal', 'sel_universal.c')
+  # NOTE: we need Cocoa because of some GetPluginDir() implementation
+  #       on mac
+  env.ComponentProgram('sel_universal',
+                       'sel_universal.c',
+                       EXTRA_LIBS=['nonnacl_util_c',
+                                   'nonnacl_srpc',
+                                   'nrd_xfer',
+                                   'platform',
+                                   'gio',
+                                   'google_nacl_imc_c',
+                                   ],
+                       FRAMEWORKS=['Cocoa'],
+                       )
   # NOTE: we do not have segments on ARM
   if env['BUILD_ARCHITECTURE'] == 'x86':
-    env.ComponentProgram('nacl_ldt_unittest', 'nacl_ldt_unittest.c')
+    env.ComponentProgram('nacl_ldt_unittest',
+                         'nacl_ldt_unittest.c',
+                         EXTRA_LIBS=['sel',
+                                     'platform',
+                                     'gio',
+                                     ])
   env.Requires(SEL_LDR_NODE, crt)
   env.Requires(SEL_LDR_NODE, sdl_dll)
 
@@ -348,15 +400,16 @@ env.EnsureRequiredBuildWarnings()
 # Unit Tests
 # ----------------------------------------------------------
 
-gtest_env = env.Clone()
+# NOTE: uses sdl and validator
+# TODO(robertm): break this test up in smaller pieces with more managable
+#                dependencies
+gtest_env = sdl_env.Clone()
 
 # This is necessary for unittest_main.c which includes gtest/gtest.h
 # The problem is that gtest.h includes other files expecting the
 # include path to be set.  We do *not*, however, strip out the
 # -pedantic compiler flag for building non-gtest-using source files.
-gtest_env.Prepend(
-    CPPPATH=
-      ['${SOURCE_ROOT}/testing/gtest/include'])
+gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
   # because of: gtest-typed-test.h:236:46: error:
@@ -375,9 +428,17 @@ unittest_inputs = [
 if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
   unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
                                               unittest_inputs,
-                                              EXTRA_LIBS=['gtest'])
+                                              EXTRA_LIBS=['gtest',
+                                                          'sel',
+                                                          'nonnacl_srpc',
+                                                          'nrd_xfer',
+                                                          'nonnacl_util_c',
+                                                          'google_nacl_imc_c',
+                                                          'platform',
+                                                          'gio',
+                                                          ] + VALIDATOR_LIBS)
+  gtest_env.Requires(unit_tests_exe, crt)
   gtest_env.Requires(unit_tests_exe, sdl_dll)
-
 
   node = gtest_env.CommandTestAgainstGoldenOutput(
       'gtest_output.xml.out',
@@ -390,60 +451,81 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
 # TODO(bradnelson): fix this to work on windows under coverage.
 if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
     env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
-  mmap_test_exe = env.ComponentProgram('mmap_test', ['mmap_test.c'])
-  env.Requires(mmap_test_exe, crt)
-  env.Requires(mmap_test_exe, sdl_dll)
+  # NOTE: uses sdl and validator
+  mmap_test_exe = sdl_env.ComponentProgram('mmap_test',
+                                           ['mmap_test.c'],
+                                           EXTRA_LIBS=['sel',
+                                                       'nonnacl_srpc',
+                                                       'nrd_xfer',
+                                                       'nonnacl_util_c',
+                                                       'google_nacl_imc_c',
+                                                       'platform',
+                                                       'gio',
+                                                       ] + VALIDATOR_LIBS)
+  sdl_env.Requires(mmap_test_exe, crt)
+  sdl_env.Requires(mmap_test_exe, sdl_dll)
 
   if env['TARGET_ARCHITECTURE'] == 'x86':
     # TODO(robertm): This test emits lots of messages to stderr
-    node = env.CommandTestAgainstGoldenOutput (
+    node = sdl_env.CommandTestAgainstGoldenOutput (
         "mmap_test.out",
         # NOTE: the "[0]" subscript make this work on windows
         # TODO: maybe move this magic into CommandTestAgainstGoldenOutput()
         command=[mmap_test_exe[0], env.File('testdata/hello_world.nexe')])
-    env.AddNodeToTestSuite(node, ['medium_tests'])
+    sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
 
   # also seems to have issues with windows coverage
-  nacl_sync_cond_test_exe = env.ComponentProgram(
+  # NOTE: uses sdl and validator
+  nacl_sync_cond_test_exe = sdl_env.ComponentProgram(
       'nacl_sync_cond_test',
-      ['nacl_sync_cond_test.c'])
-  env.Requires(nacl_sync_cond_test_exe, crt)
-  env.Requires(nacl_sync_cond_test_exe, sdl_dll)
+      ['nacl_sync_cond_test.c'],
+      EXTRA_LIBS=['sel',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nonnacl_util_c',
+                  'google_nacl_imc_c',
+                  'platform',
+                  'gio',
+                  ] + VALIDATOR_LIBS)
+  sdl_env.Requires(nacl_sync_cond_test_exe, crt)
+  sdl_env.Requires(nacl_sync_cond_test_exe, sdl_dll)
 
-
-  node = env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTestAgainstGoldenOutput(
       'nacl_sync_cond_test.out',
       command=[nacl_sync_cond_test_exe])
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
+  sdl_env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
 
 
 expiration_test_exe = env.ComponentProgram('expiration_test',
-                                           ['expiration_test.c'])
+                                           ['expiration_test.c'],
+                                           EXTRA_LIBS=['expiration'])
 node = env.CommandTestAgainstGoldenOutput(
     'expiration_test.out',
     command=[expiration_test_exe])
 env.Requires(expiration_test_exe, crt)
-env.Requires(expiration_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
-                                             ['env_cleanser_test.c'])
+                                             ['env_cleanser_test.c'],
+                                             EXTRA_LIBS=['sel'])
 node = env.CommandTestAgainstGoldenOutput(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
 env.Requires(env_cleanser_test_exe, crt)
-env.Requires(env_cleanser_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
 check_test_exe = env.ComponentProgram('nacl_check_test',
-                                      ['nacl_check_test.c'])
+                                      ['nacl_check_test.c'],
+                                      EXTRA_LIBS=['sel',
+                                                  'platform',
+                                                  'gio',
+                                                  ])
 node = env.CommandTestAgainstGoldenOutput(
     'check_test.out',
     command=[check_test_exe, '-C'])
 env.Requires(check_test_exe, crt)
-env.Requires(check_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
@@ -546,14 +628,25 @@ if not env.Bit('windows'):
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
+# NOTE: uses sdl and validator
 if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
     env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
   obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
-  obj_proxy_test = env.ComponentProgram('obj_proxy_test',
-                                        obj_proxy_test_inputs)
+  obj_proxy_test = sdl_env.ComponentProgram('obj_proxy_test',
+                                            obj_proxy_test_inputs,
+                                            EXTRA_LIBS=['sel',
+                                                        'nonnacl_srpc',
+                                                        'nrd_xfer',
+                                                        'nonnacl_util_c',
+                                                        'google_nacl_imc_c',
+                                                        'platform',
+                                                        'gio',
+                                                        'nacl_xdr',
+                                                        'container',
+                                                        ] + VALIDATOR_LIBS)
 
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTestAgainstGoldenOutput(
       'obj_proxy_test.out',
       # NOTE: this is run out of obj/ rather than staging/
       [obj_proxy_test, '-n', '2048'],
@@ -562,8 +655,8 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   # is in the RNG, so with this will inherently speed up when the RNG is
   # updated.
 
-  env.Requires(node, sdl_dll)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'obj_proxy_tests')
+  sdl_env.Requires(node, sdl_dll)
+  sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'obj_proxy_tests')
 
 
 # ----------------------------------------------------------
@@ -658,18 +751,28 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 # More Death Tests
 # ----------------------------------------------------------
 if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
-  sel_ldr_thread_death_test_exe = env.ComponentProgram(
+  # NOTE: uses sdl and validator
+  sel_ldr_thread_death_test_exe = sdl_env.ComponentProgram(
       'sel_ldr_thread_death_test',
-      ['sel_ldr_thread_death_test.c'])
+      ['sel_ldr_thread_death_test.c'],
+      EXTRA_LIBS=['sel',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nonnacl_util_c',
+                  'google_nacl_imc_c',
+                  'platform',
+                  'gio',
+                  ] + VALIDATOR_LIBS)
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTestAgainstGoldenOutput(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
       exit_status='segfault')
+  sdl_env.Requires(node, sdl_dll)
 
   # TODO(tuduce): Make it work on windows.
-  if not env.Bit('windows'):
-    env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
+  if not sdl_env.Bit('windows'):
+    sdl_env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
 
 # ------------------------------------------------------------------------
 # Generated files test - verify that the checked in version is up to date.
