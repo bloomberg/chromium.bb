@@ -11,19 +11,21 @@
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
-
+// exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetActiveURL.
 typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 
 void SetActiveURL(const GURL& url) {
-  HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-  if (!exe_module)
-    return;
-
-  MainSetActiveURL set_active_url =
-      reinterpret_cast<MainSetActiveURL>(
-          GetProcAddress(exe_module, "SetActiveURL"));
-  if (!set_active_url)
-    return;
+  static MainSetActiveURL set_active_url = NULL;
+  // note: benign race condition on set_active_url.
+  if (!set_active_url) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_active_url = reinterpret_cast<MainSetActiveURL>(
+        GetProcAddress(exe_module, "SetActiveURL"));
+    if (!set_active_url)
+      return;
+  }
 
   (set_active_url)(UTF8ToWide(url.possibly_invalid_spec()).c_str());
 }
