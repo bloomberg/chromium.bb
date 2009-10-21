@@ -81,6 +81,8 @@ extern const char kHideIcons[];
 extern const char kShowIcons[];
 extern const char kMakeDefaultBrowser[];
 
+extern const char kDisableIPv6[];
+
 extern const char kProxyServer[];
 extern const char kNoProxyServer[];
 extern const char kProxyBypassList[];

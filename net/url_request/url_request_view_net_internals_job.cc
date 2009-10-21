@@ -225,6 +225,7 @@ class HostResolverCacheSubSection : public SubSection {
     out->append("<table border=1>"
                 "<tr>"
                 "<th>Host</th>"
+                "<th>Address family</th>"
                 "<th>Address list</th>"
                 "<th>Time to live (ms)</th>"
                 "</tr>");
@@ -233,8 +234,11 @@ class HostResolverCacheSubSection : public SubSection {
              host_cache->entries().begin();
          it != host_cache->entries().end();
          ++it) {
-      const std::string& host = it->first;
+      const net::HostCache::Key& key = it->first;
       const net::HostCache::Entry* entry = it->second.get();
+
+      std::string address_family_str =
+          AddressFamilyToString(key.address_family);
 
       if (entry->error == net::OK) {
         // Note that ttl_ms may be negative, for the cases where entries have
@@ -261,22 +265,34 @@ class HostResolverCacheSubSection : public SubSection {
           current_address = current_address->ai_next;
         }
 
-        out->append(StringPrintf("<td>%s</td><td>%s</td><td>%d</td></tr>",
-                                 EscapeForHTML(host).c_str(),
+        out->append(StringPrintf("<td>%s</td><td>%s</td><td>%s</td>"
+                                 "<td>%d</td></tr>",
+                                 EscapeForHTML(key.hostname).c_str(),
+                                 EscapeForHTML(address_family_str).c_str(),
                                  address_list_html.c_str(),
                                  ttl_ms));
       } else {
         // This was an entry that failed to be resolved.
         // Color negative entries red.
         out->append(StringPrintf(
-            "<tr style='color:red'><td>%s</td>"
+            "<tr style='color:red'><td>%s</td><td>%s</td>"
             "<td colspan=2>%s</td></tr>",
-            EscapeForHTML(host).c_str(),
+            EscapeForHTML(key.hostname).c_str(),
+            EscapeForHTML(address_family_str).c_str(),
             EscapeForHTML(net::ErrorToString(entry->error)).c_str()));
       }
     }
 
     out->append("</table>");
+  }
+
+  static std::string AddressFamilyToString(net::AddressFamily address_family) {
+    switch (address_family) {
+      case net::ADDRESS_FAMILY_IPV4_ONLY:
+        return "IPV4_ONLY";
+      default:
+        return "UNSPECIFIED";
+    }
   }
 };
 

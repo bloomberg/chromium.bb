@@ -22,7 +22,9 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "net/base/host_resolver.h"
+#include "net/base/host_resolver_impl.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -477,6 +479,9 @@ net::HostResolver* GetGlobalHostResolver() {
   // Called from UI thread.
   if (!global_host_resolver) {
     global_host_resolver = net::CreateSystemHostResolver();
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIPv6))
+      global_host_resolver->DisableIPv6(true);
   }
   return global_host_resolver;
 }
