@@ -3175,3 +3175,7 @@ BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
 
 // WebKit Roll 49830:49844
 BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
+
+// Failures since Chromium 29594
+BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
+BUG25376 MAC DEBUG : LayoutTests/media/video-layer-crash.html = FAIL
