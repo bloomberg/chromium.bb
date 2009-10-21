@@ -69,6 +69,15 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   virtual bool HasFile() const;
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
 
+  // Set the image and cursor offset data for this drag.  Will
+  // increment the ref count of pixbuf.
+  void SetDragImage(GdkPixbuf* pixbuf,
+                    int cursor_offset_x,
+                    int cursor_offset_y);
+  GdkPixbuf* drag_image() const { return drag_image_; }
+  int cursor_offset_x() const { return cursor_offset_x_; }
+  int cursor_offset_y() const { return cursor_offset_y_; }
+
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
 
@@ -98,6 +107,11 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
 
   // PICKLED_DATA contents.
   PickleData pickle_data_;
+
+  // Drag image and offset data.
+  GdkPixbuf* drag_image_;
+  int cursor_offset_x_;
+  int cursor_offset_y_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderGtk);
 };

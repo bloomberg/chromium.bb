@@ -184,10 +184,23 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   GtkTargetList* targets = data_provider.GetTargetList();
   GdkEvent* current_event = gtk_get_current_event();
   DCHECK(current_event);
-  gtk_drag_begin(window_contents_, targets,
-                 static_cast<GdkDragAction>(
-                     DragDropTypes::DragOperationToGdkDragAction(operation)),
-                 1, current_event);
+  const OSExchangeDataProviderGtk& provider(
+      static_cast<const OSExchangeDataProviderGtk&>(data.provider()));
+
+  GdkDragContext* context = gtk_drag_begin(
+      window_contents_,
+      targets,
+      static_cast<GdkDragAction>(
+          DragDropTypes::DragOperationToGdkDragAction(operation)),
+      1,
+      current_event);
+
+  // Set the drag image if one was supplied.
+  if (provider.drag_image())
+    gtk_drag_set_icon_pixbuf(context,
+                             provider.drag_image(),
+                             provider.cursor_offset_x(),
+                             provider.cursor_offset_y());
   gdk_event_free(current_event);
   gtk_target_list_unref(targets);
 

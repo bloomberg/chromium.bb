@@ -248,7 +248,7 @@ void Canvas::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
   restore();
 }
 
-SkBitmap Canvas::ExtractBitmap() {
+SkBitmap Canvas::ExtractBitmap() const {
   const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
 
   // Make a bitmap to return, and a canvas to draw into it. We don't just want

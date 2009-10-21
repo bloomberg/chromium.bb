@@ -16,15 +16,23 @@ OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(
     const std::set<GdkAtom>& known_custom_formats)
     : known_formats_(known_formats),
       known_custom_formats_(known_custom_formats),
-      formats_(0) {
+      formats_(0),
+      drag_image_(NULL),
+      cursor_offset_x_(0),
+      cursor_offset_y_(0) {
 }
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk()
     : known_formats_(0),
-      formats_(0) {
+      formats_(0),
+      drag_image_(NULL),
+      cursor_offset_x_(0),
+      cursor_offset_y_(0) {
 }
 
 OSExchangeDataProviderGtk::~OSExchangeDataProviderGtk() {
+  if (drag_image_)
+    g_object_unref(drag_image_);
 }
 
 bool OSExchangeDataProviderGtk::HasDataForAllFormats(
@@ -216,6 +224,17 @@ bool OSExchangeDataProviderGtk::GetPlainTextURL(GURL* url) const {
   if (url)
     *url = test_url;
   return true;
+}
+
+void OSExchangeDataProviderGtk::SetDragImage(GdkPixbuf* drag_image,
+                                             int cursor_offset_x,
+                                             int cursor_offset_y) {
+  if (drag_image_)
+    g_object_unref(drag_image_);
+  g_object_ref(drag_image);
+  drag_image_ = drag_image;
+  cursor_offset_x_ = cursor_offset_x;
+  cursor_offset_y_ = cursor_offset_y;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

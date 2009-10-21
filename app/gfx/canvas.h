@@ -180,7 +180,7 @@ class Canvas : public skia::PlatformCanvas {
                     int dest_x, int dest_y, int w, int h);
 
   // Extracts a bitmap from the contents of this canvas.
-  SkBitmap ExtractBitmap();
+  SkBitmap ExtractBitmap() const;
 
 #if defined(OS_LINUX)
   // Applies current matrix on the canvas to the cairo context. This should be

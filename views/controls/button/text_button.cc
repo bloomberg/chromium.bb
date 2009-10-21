@@ -277,6 +277,14 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
                                  text_bounds.width(),
                                  text_bounds.height(),
                                  l10n_util::DefaultCanvasTextAlignment());
+#else
+      canvas->DrawStringInt(text_,
+                            font_,
+                            color_,
+                            text_bounds.x(),
+                            text_bounds.y(),
+                            text_bounds.width(),
+                            text_bounds.height());
 #endif
     } else {
       canvas->DrawStringInt(text_,
