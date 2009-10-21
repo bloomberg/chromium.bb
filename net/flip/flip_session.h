@@ -114,6 +114,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
  protected:
   FRIEND_TEST(FlipNetworkTransactionTest, Connect);
   friend class FlipSessionPool;
+  friend class HttpNetworkLayer;  // Temporary for server.
 
   // Provide access to the framer for testing.
   flip::FlipFramer* GetFramer() { return &flip_framer_; }

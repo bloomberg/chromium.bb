@@ -23,6 +23,7 @@ typedef struct z_stream_s z_stream;  // Forward declaration for zlib.
 
 namespace net {
 class FlipNetworkTransactionTest;
+class HttpNetworkLayer;
 }
 
 namespace flip {
@@ -199,8 +200,9 @@ class FlipFramer {
 
  protected:
   FRIEND_TEST(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders);
-  friend class net::FlipNetworkTransactionTest;
   friend class flip::TestFlipVisitor;
+  friend class net::FlipNetworkTransactionTest;
+  friend class net::HttpNetworkLayer;  // This is temporary for the server.
 
   // For ease of testing we can tweak compression on/off.
   void set_enable_compression(bool value);

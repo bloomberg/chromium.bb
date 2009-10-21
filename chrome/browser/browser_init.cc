@@ -822,7 +822,9 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 
   if (command_line.HasSwitch(switches::kUseFlip)) {
-    net::HttpNetworkLayer::EnableFlip(true);
+    std::string flip_mode =
+      WideToASCII(command_line.GetSwitchValue(switches::kUseFlip));
+    net::HttpNetworkLayer::EnableFlip(flip_mode);
   }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
