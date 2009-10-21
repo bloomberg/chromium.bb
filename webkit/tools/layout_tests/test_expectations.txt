@@ -793,6 +793,8 @@ BUG13907 : LayoutTests/media/video-seeking.html = PASS FAIL
 
 // Seems to time out occasionally.
 BUG13907 : LayoutTests/media/progress-event.html = PASS TIMEOUT
+BUG13907 : LayoutTests/media/video-load-networkState.html = PASS TIMEOUT
+BUG13907 : LayoutTests/media/video-source.html = PASS TIMEOUT
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
 // The test uses setTimeout() and is flaky.
