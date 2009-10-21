@@ -10,7 +10,8 @@
 
 TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {
   // Test that an invalid shortcut translates into an invalid command id.
-  ASSERT_EQ(-1, CommandForWindowKeyboardShortcut(false, false, false, 0));
+  ASSERT_EQ(
+      -1, CommandForWindowKeyboardShortcut(false, false, false, false, 0));
 
   // Check that all known keyboard shortcuts return valid results.
   size_t num_shortcuts = 0;
@@ -19,7 +20,8 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {
   ASSERT_GT(num_shortcuts, 0U);
   for (size_t i = 0; i < num_shortcuts; ++i, ++it) {
     int cmd_num = CommandForWindowKeyboardShortcut(
-        it->command_key, it->shift_key, it->cntrl_key, it->vkey_code);
+        it->command_key, it->shift_key, it->cntrl_key, it->opt_key,
+        it->vkey_code);
     ASSERT_EQ(cmd_num, it->chrome_command);
   }
 
@@ -27,14 +29,15 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {
   // would be invoked even if e.g. the omnibox had focus, where they really
   // should have text editing functionality).
   ASSERT_EQ(-1, CommandForWindowKeyboardShortcut(
-      true, false, false, kVK_LeftArrow));
+      true, false, false, false, kVK_LeftArrow));
   ASSERT_EQ(-1, CommandForWindowKeyboardShortcut(
-      false, false, false, kVK_Delete));
+      false, false, false, false, kVK_Delete));
 }
 
 TEST(GlobalKeyboardShortcuts, ShortcutsToBrowserCommand) {
   // Test that an invalid shortcut translates into an invalid command id.
-  ASSERT_EQ(-1, CommandForBrowserKeyboardShortcut(false, false, false, 0));
+  ASSERT_EQ(
+      -1, CommandForBrowserKeyboardShortcut(false, false, false, false, 0));
 
   // Check that all known keyboard shortcuts return valid results.
   size_t num_shortcuts = 0;
@@ -43,7 +46,7 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToBrowserCommand) {
   ASSERT_GT(num_shortcuts, 0U);
   for (size_t i = 0; i < num_shortcuts; ++i, ++it) {
     int cmd_num = CommandForBrowserKeyboardShortcut(
-        it->command_key, it->shift_key, it->cntrl_key, it->vkey_code);
-    ASSERT_EQ(cmd_num, it->chrome_command);
+        it->command_key, it->shift_key, it->cntrl_key, it->opt_key,
+        it->vkey_code);    ASSERT_EQ(cmd_num, it->chrome_command);
   }
 }
