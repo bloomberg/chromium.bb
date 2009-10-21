@@ -267,6 +267,9 @@
             '-E', '<(branded_env)',
           ],
           'conditions': [
+            ['chromeos==1 or toolkit_views==1', {
+              'action': ['-D', 'chromeos'],
+            }],
             ['use_titlecase_in_grd_files==1', {
               'action': ['-D', 'use_titlecase'],
             }],
@@ -1236,6 +1239,8 @@
         'browser/dom_ui/downloads_ui.h',
         'browser/dom_ui/fileicon_source.cc',
         'browser/dom_ui/fileicon_source.h',
+        'browser/dom_ui/filebrowse_ui.cc',
+        'browser/dom_ui/filebrowse_ui.h',
         'browser/dom_ui/history_ui.cc',
         'browser/dom_ui/history_ui.h',
         'browser/dom_ui/html_dialog_ui.cc',

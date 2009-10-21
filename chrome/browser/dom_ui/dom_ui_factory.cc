@@ -7,6 +7,7 @@
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
 #include "chrome/browser/dom_ui/history_ui.h"
+#include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/print_ui.h"
@@ -87,6 +88,11 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewDOMUI<DevToolsUI>;
+
+#if defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUIFileBrowseHost)
+    return &NewDOMUI<FileBrowseUI>;
+#endif
 
   return NULL;
 }

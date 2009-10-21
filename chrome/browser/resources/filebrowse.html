@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title i18n-content="title"></title>
+<style type="text/css">
+</style>
+<link rel="icon" href="../../app/theme/history_favicon.png">
+<script src="local_strings.js"></script>
+<script>
+///////////////////////////////////////////////////////////////////////////////
+// Globals:
+var RESULTS_PER_PAGE = 150;
+var MAX_SEARCH_DEPTH_MONTHS = 18;
+
+// Amount of time between pageviews that we consider a 'break' in browsing,
+// measured in milliseconds.
+var BROWSING_GAP_TIME = 15 * 60 * 1000;
+
+function $(o) {return document.getElementById(o);}
+
+function encodeURIForCSS(uri) {
+  // CSS uris need to have '(' and ')' escaped.
+  return uri.replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+
+var localStrings;
+var pageState;
+var results_;
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+/**
+ * Window onload handler, sets up the page.
+ */
+function load() {
+
+  localStrings = new LocalStrings();
+  try {
+    chrome.send('getRoots', []);
+  } catch (e) {
+    //TODO: Do something smart here.
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Helper functions
+
+var browseFile = function(path) {
+
+  try {
+    chrome.send('getChildren', [path]);
+  } catch (e) {
+    //TODO: Do something smart.
+    alert('uh-oh');
+  }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Chrome callbacks:
+/**
+ * Our callback for when a system is completed.
+ */
+function fileBrowseResult(info, results) {
+   try {
+   var output = "";
+   if (info.call == "getRoots" || info.call == "getChildren") {
+     for (var x=0; x < results.length; x++) {
+        if (results[x].isDirectory) {
+          output += "<a href='javascript:browseFile(\""+results[x].path+"\");'>";
+          output += results[x].title;
+          output += "</a><br/>";
+        } else {
+            output += results[x].title;
+            output += "<br/>";
+        }
+     }
+   }
+   results_ = results;
+   var main = $('main');
+   main.innerHTML = output;
+   } catch (e) {
+      alert(e);
+   }
+}
+</script>
+<link rel="stylesheet" href="dom_ui.css">
+<style>
+
+</style>
+</head>
+<body onload="load();" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="header"></div>
+<div class="main" id="main"></div>
+<div class="footer">
+</div>
+</body>
+</html>
