@@ -50,8 +50,24 @@
     # but that doesn't work as we'd like.
     'msvs_debug_link_incremental%': '2',
 
+    # Doing this in a sub-dict so that it can be referred to below.
     # The architecture that we're building for (x86, arm).
-    'target_arch%': 'ia32',
+    'variables': {
+      # Compute the architecture that we're building for. Default to the
+      # architecture that we're building on.
+      'conditions': [
+        [ 'OS=="linux"', {
+          # This handles the Linux platforms we generally deal with. Anything
+          # else gets passed through, which probably won't work very well; such
+          # hosts should pass an explicit target_arch to gyp.
+          'target_arch%':
+            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/arm.*/arm/")'
+        }, {  # OS!="linux"
+          'target_arch%': 'ia32',
+        }],
+      ],
+    },
+    'target_arch%': '<(target_arch)',
 
     'linux2%': 0,
 
