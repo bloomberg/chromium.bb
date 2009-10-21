@@ -325,14 +325,12 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   // ReadNonExistentResponse -------------------------------------------
-  static const int64 kNoSuchResponseId = 123;
-
   void ReadNonExistentResponse() {
     // 1. Attempt to ReadInfo
     // 2. Attempt to ReadData
 
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), kNoSuchResponseId));
+        GURL(), 123));
 
     // Push tasks in reverse order
     PushNextTask(method_factory_.NewRunnableMethod(
@@ -362,12 +360,12 @@ class AppCacheResponseTest : public testing::Test {
   void LoadResponseInfo_Miss() {
     PushNextTask(method_factory_.NewRunnableMethod(
         &AppCacheResponseTest::LoadResponseInfo_Miss_Verify));
-    service_->storage()->LoadResponseInfo(GURL(), kNoSuchResponseId,
+    service_->storage()->LoadResponseInfo(GURL(), 123,
                                           storage_delegate_.get());
   }
 
   void LoadResponseInfo_Miss_Verify() {
-    EXPECT_EQ(kNoSuchResponseId, storage_delegate_->loaded_info_id_);
+    EXPECT_EQ(123, storage_delegate_->loaded_info_id_);
     EXPECT_TRUE(!storage_delegate_->loaded_info_.get());
     TestFinished();
   }
