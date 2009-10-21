@@ -2544,13 +2544,7 @@ BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS TIMEOUT
 
-// Was flaky. Became a consistent failure.
-BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
-
-BUG9798 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
-BUG9798 WIN : LayoutTests/editing/selection/4776665.html = FAIL PASS
-BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
-BUG9798 WIN DEBUG : LayoutTests/editing/selection/5136696.html = FAIL PASS
+BUG9798 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
@@ -2754,7 +2748,6 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-speed.xhtml = FAIL
 BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
-BUG12341 WIN LINUX MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
@@ -3100,8 +3093,6 @@ BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html = FAIL
 
 // WebKit update: 49190:49206
-BUG_JPARENT MAC WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
-BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
