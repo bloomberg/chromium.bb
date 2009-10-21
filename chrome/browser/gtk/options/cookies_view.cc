@@ -234,6 +234,9 @@ void CookiesView::Init() {
       new gtk_tree::ModelAdapter(this, list_store_,
                                  cookies_table_model_.get()));
   cookies_table_adapter_->OnModelChanged();
+
+  if (cookies_table_model_->RowCount() > 0)
+    gtk_tree::SelectAndFocusRowNum(0, GTK_TREE_VIEW(tree_));
 }
 
 void CookiesView::InitStylesAndShow() {

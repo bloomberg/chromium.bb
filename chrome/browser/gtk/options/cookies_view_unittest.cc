@@ -118,6 +118,9 @@ TEST_F(CookiesViewTest, RemoveAll) {
   monster->SetCookie(GURL("http://foo2"), "B=1");
   CookiesView cookies_view(profile_.get());
 
+  // Reset the selection of the first row.
+  gtk_tree_selection_unselect_all(cookies_view.selection_);
+
   {
     SCOPED_TRACE("Before removing");
     EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
@@ -146,6 +149,10 @@ TEST_F(CookiesViewTest, Remove) {
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
   CookiesView cookies_view(profile_.get());
+
+  // Reset the selection of the first row.
+  gtk_tree_selection_unselect_all(cookies_view.selection_);
+
   GtkTreeIter iter;
   gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 1);
   gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
@@ -213,6 +220,10 @@ TEST_F(CookiesViewTest, RemoveMultiple) {
   monster->SetCookie(GURL("http://foo5"), "G=1");
   monster->SetCookie(GURL("http://foo6"), "X=1");
   CookiesView cookies_view(profile_.get());
+
+  // Reset the selection of the first row.
+  gtk_tree_selection_unselect_all(cookies_view.selection_);
+
   GtkTreeIter iter;
   gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 1);
   gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
@@ -233,6 +244,36 @@ TEST_F(CookiesViewTest, RemoveMultiple) {
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
   EXPECT_EQ(0, gtk_tree_selection_count_selected_rows(cookies_view.selection_));
+}
+
+TEST_F(CookiesViewTest, RemoveDefaultSelection) {
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo1"), "A=1");
+  monster->SetCookie(GURL("http://foo2"), "B=1");
+  monster->SetCookie(GURL("http://foo3"), "C=1");
+  // Now CookiesView select the first row when it is opened.
+  CookiesView cookies_view(profile_.get());
+
+  {
+    SCOPED_TRACE("First selection");
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    CheckDetailsSensitivity(TRUE, cookies_view);
+    EXPECT_EQ(3, gtk_tree_model_iter_n_children(
+        GTK_TREE_MODEL(cookies_view.list_store_), NULL));
+  }
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  {
+    SCOPED_TRACE("First selection removed");
+    EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_view).c_str());
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    CheckDetailsSensitivity(FALSE, cookies_view);
+  }
 }
 
 TEST_F(CookiesViewTest, Filter) {
@@ -385,6 +426,9 @@ TEST_F(CookiesViewTest, SortRemove) {
       GTK_SORT_DESCENDING);
   EXPECT_STREQ("Z,C,B,A", GetDisplayedCookies(cookies_view).c_str());
 
+  // Reset the selection of the first row.
+  gtk_tree_selection_unselect_all(cookies_view.selection_);
+
   GtkTreeIter iter;
   gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 3);
   gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
@@ -429,7 +473,6 @@ TEST_F(CookiesViewTest, SortFilterRemove) {
   EXPECT_STREQ("", GetDisplayedCookies(cookies_view).c_str());
 }
 
-
 TEST_F(CookiesViewTest, SortRemoveMultiple) {
   net::CookieMonster* monster =
       profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
@@ -468,4 +511,31 @@ TEST_F(CookiesViewTest, SortRemoveMultiple) {
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
   EXPECT_EQ(0, gtk_tree_selection_count_selected_rows(cookies_view.selection_));
+}
+
+TEST_F(CookiesViewTest, SortRemoveDefaultSelection) {
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo1"), "Z=1");
+  monster->SetCookie(GURL("http://bar1"), "X=1");
+  monster->SetCookie(GURL("http://foo2"), "W=1");
+  monster->SetCookie(GURL("http://bar2"), "Y=1");
+  CookiesView cookies_view(profile_.get());
+  EXPECT_STREQ("X,Y,Z,W", GetMonsterCookies(monster).c_str());
+  EXPECT_STREQ("X,Y,Z,W", GetDisplayedCookies(cookies_view).c_str());
+
+  gtk_tree_sortable_set_sort_column_id(
+      GTK_TREE_SORTABLE(cookies_view.list_sort_),
+      CookiesView::COL_COOKIE_NAME,
+      GTK_SORT_ASCENDING);
+  EXPECT_STREQ("W,X,Y,Z", GetDisplayedCookies(cookies_view).c_str());
+
+  GtkTreeIter iter;
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 3);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+  EXPECT_STREQ("Y,W", GetMonsterCookies(monster).c_str());
+  EXPECT_STREQ("W,Y", GetDisplayedCookies(cookies_view).c_str());
 }
