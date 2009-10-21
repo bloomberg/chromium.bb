@@ -117,7 +117,7 @@ class TestRunningThread(threading.Thread):
 
     self.has_started_event.set()
     logging.info('Output from running test follows:')
-    
+
     while True:
       line = self.test_process.stdout.readline()
       if line:
@@ -220,7 +220,10 @@ def RunTest(browser):
   # some strange problems/exceptions.
   args = [const.PYTHON, '-u', SELENIUM_TEST_RUNNER_PATH]
 
-  args.append('--browser=' + browser)
+  browser_parts = browser.split(' ', 1)
+  args.append('--browser=' + browser_parts[0])
+  if len(browser_parts) > 1:
+    args.append('--browserpath=' + browser_parts[1])
   
   args.append('--servertimeout=80')
   args.append('--product_dir=' + const.PRODUCT_DIR_PATH)
@@ -305,7 +308,7 @@ def main(argv):
       if not configure_ie.ConfigureIE():
         logging.error('Failed to configure IE.')
         all_test_passed = False
-        continue
+      continue
 
     # Run selenium tests.
     if RunTest(sel_name) != 0:
