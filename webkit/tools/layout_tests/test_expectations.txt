@@ -811,15 +811,18 @@ BUG13907 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
 // The video appears as a white box on Windows.  Fail whole test for now.
 BUG13907 SKIP WIN : LayoutTests/media/video-zoom.html = FAIL
 
+// Video appears with a green background.  Probably due to repaint debugging code.
+BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
+
 // Every linux debug media test have spurious timeouts and it's annoying.
 // We have no idea why.
 BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
-// These have super subtle pixel differences due to flaky anti-aliasing.
-// Patch is being submitted upstream.
+// These have super subtle pixel differences.
 BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = PASS FAIL
+BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = PASS FAIL
 
 
 // These tests are WONTFIX because they uess codecs chromium doesn't support.
@@ -3175,10 +3178,6 @@ BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
 
 // WebKit Roll 49830:49844
 BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
-
-// Failures since Chromium 29594
-BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
-BUG25376 MAC DEBUG : LayoutTests/media/video-layer-crash.html = FAIL
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
