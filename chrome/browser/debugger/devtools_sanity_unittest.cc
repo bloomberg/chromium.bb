@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 
 // Tests that a content script is in the scripts list.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
-                       DISABLED_TestContentScriptIsPresent) {
+                       TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
