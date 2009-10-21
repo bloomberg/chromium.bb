@@ -2730,9 +2730,6 @@ BUG12341 WIN LINUX MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
-// WebKit 44202:44252 introduced new tests
-BUG12881 WIN LINUX : LayoutTests/fast/forms/isindex-placeholder.html = FAIL
-
 // WebKit 44286:44342
 BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
 
