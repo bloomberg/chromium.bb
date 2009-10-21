@@ -61,6 +61,10 @@ namespace URLFixerUpper {
   std::wstring FixupRelativeFile(const std::wstring& base_dir,
                                  const std::wstring& text);
 
+  // For paths like ~, we use $HOME for the current user's home
+  // directory.  For tests, we allow our idea of $HOME to be overriden
+  // by this variable.
+  extern const char* home_directory_override;
 };
 
 #endif  // #ifndef CHROME_BROWSER_NET_URL_FIXER_UPPER_H_

@@ -21,6 +21,8 @@
 using std::string;
 using std::wstring;
 
+const char* URLFixerUpper::home_directory_override = NULL;
+
 namespace {
 
 // TODO(estade): Remove these ugly, ugly functions. They are only used in
@@ -113,6 +115,36 @@ static bool ValidPathForFile(const FilePath::StringType& text,
   return true;
 }
 
+#if defined(OS_POSIX)
+// Given a path that starts with ~, return a path that starts with an
+// expanded-out /user/foobar directory.
+static string FixupHomedir(const string& text) {
+  DCHECK(text.length() > 0 && text[0] == '~');
+
+  if (text.length() == 1 || text[1] == '/') {
+    const char* home = getenv("HOME");
+    if (URLFixerUpper::home_directory_override)
+      home = URLFixerUpper::home_directory_override;
+    // We'll probably break elsewhere if $HOME is undefined, but check here
+    // just in case.
+    if (!home)
+      return text;
+    return home + text.substr(1);
+  }
+
+  // Otherwise, this is a path like ~foobar/baz, where we must expand to
+  // user foobar's home directory.  Officially, we should use getpwent(),
+  // but that is a nasty blocking call.
+
+#if defined(OS_MACOSX)
+  static const char kHome[] = "/Users/";
+#else
+  static const char kHome[] = "/home/";
+#endif
+  return kHome + text.substr(1);
+}
+#endif
+
 // Tries to create a file: URL from |text| if it looks like a filename, even if
 // it doesn't resolve as a valid path or to an existing file.  Returns true
 // with a (possibly invalid) file: URL in |fixed_up_url| for input beginning
@@ -133,6 +165,8 @@ static string FixupPath(const string& text) {
 #elif defined(OS_POSIX)
   FilePath input_path(text);
   PrepareStringForFileOps(input_path, &filename);
+  if (filename.length() > 0 && filename[0] == '~')
+    filename = FixupHomedir(filename);
 #endif
 
   // Here, we know the input looks like a file.
@@ -385,7 +419,7 @@ string URLFixerUpper::SegmentURL(const string& text,
       url_parse::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, false))
     return "file";
 #elif defined(OS_POSIX)
-  if (FilePath::IsSeparator(trimmed.c_str()[0]))
+  if (FilePath::IsSeparator(trimmed.data()[0]) || trimmed.data()[0] == '~')
     return "file";
 #endif
 

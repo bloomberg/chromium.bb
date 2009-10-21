@@ -363,6 +363,13 @@ TEST(URLFixerUpperTest, FixupFile) {
     //   {"file:/\\/server\\folder/file", "", "file://server/folder/file"},
   };
 #elif defined(OS_POSIX)
+
+#if defined(OS_MACOSX)
+#define HOME "/Users/"
+#else
+#define HOME "/home/"
+#endif
+  URLFixerUpper::home_directory_override = "/foo";
   fixup_case file_cases[] = {
     // File URLs go through GURL, which tries to escape intelligently.
     {"/This%20is a non-existent file.txt", "",
@@ -370,6 +377,18 @@ TEST(URLFixerUpperTest, FixupFile) {
     // A plain "/" refers to the root.
     {"/", "",
      "file:///"},
+
+    // These rely on the above home_directory_override.
+    {"~", "",
+     "file:///foo"},
+    {"~/bar", "",
+     "file:///foo/bar"},
+
+    // References to other users' homedirs.
+    {"~foo", "",
+     "file://" HOME "foo"},
+    {"~x/blah", "",
+     "file://" HOME "x/blah"},
   };
 #endif
   for (size_t i = 0; i < arraysize(file_cases); i++) {
