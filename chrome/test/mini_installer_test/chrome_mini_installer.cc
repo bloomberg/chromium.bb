@@ -16,110 +16,93 @@
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Constructor.
-ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type) {
-  install_type_ = install_type;
-  installer_name_ = StringPrintf(L"%ls (%ls)",
-      mini_installer_constants::kChromeBuildType, install_type_.c_str());
-
-  has_diff_installer_ = false;
-  has_full_installer_ = false;
-  has_prev_installer_ = false;
-}
-
-void ChromeMiniInstaller::SetBuildUnderTest(const std::wstring& build) {
-  // Locate the full, diff, and previous installers.
-  const wchar_t * build_prefix;
-  if (LowerCaseEqualsASCII(build, "dev"))
-    build_prefix = mini_installer_constants::kDevChannelBuild;
-  else if (LowerCaseEqualsASCII(build, "stable"))
-    build_prefix = mini_installer_constants::kStableChannelBuild;
-  else if (LowerCaseEqualsASCII(build, "latest"))
-    build_prefix = L"";
-  else
-    build_prefix = build.c_str();
-
-  // Do not fail here if cannot find the installer. Set the bool and allow
-  // to fail in the particular test.
-  has_full_installer_ = MiniInstallerTestUtil::GetInstaller(
-      mini_installer_constants::kFullInstallerPattern,
-      &full_installer_, build_prefix);
-  has_diff_installer_ = MiniInstallerTestUtil::GetInstaller(
-      mini_installer_constants::kDiffInstallerPattern,
-      &diff_installer_, build_prefix);
-
-  if (has_diff_installer_) {
-    has_prev_installer_ = MiniInstallerTestUtil::GetPreviousFullInstaller(
-        diff_installer_, &prev_installer_);
-  }
-
-  // Find the version names. The folder two-levels up from the installer
-  // is named this.
-  if (has_full_installer_) {
-    FilePath folder = FilePath(full_installer_).DirName().DirName();
-    curr_version_ = folder.BaseName().value();
-  }
-  if (has_prev_installer_) {
-    FilePath folder = FilePath(prev_installer_).DirName().DirName();
-    prev_version_ = folder.BaseName().value();
-  }
-}
-
 // Installs Chrome.
 void ChromeMiniInstaller::Install() {
   std::wstring installer_path = MiniInstallerTestUtil::GetFilePath(
       mini_installer_constants::kChromeMiniInstallerExecutable);
-  InstallMiniInstaller(false, installer_path);
+    InstallMiniInstaller(false, installer_path);
 }
 
 // This method will get the previous latest full installer from
 // nightly location, install it and over install with specified install_type.
 void ChromeMiniInstaller::OverInstallOnFullInstaller(
-    const std::wstring& install_type) {
-  ASSERT_TRUE(has_full_installer_ && has_diff_installer_ &&
-    has_prev_installer_);
-
-  InstallMiniInstaller(false, prev_installer_);
-
-  std::wstring got_prev_version;
-  GetChromeVersionFromRegistry(&got_prev_version);
+    const std::wstring& install_type, const wchar_t* channel_type) {
+  std::wstring diff_installer;
+  ASSERT_TRUE(MiniInstallerTestUtil::GetInstaller(
+      mini_installer_constants::kDiffInstallerPattern,
+      &diff_installer, channel_type));
+  std::wstring prev_full_installer;
+  ASSERT_TRUE(MiniInstallerTestUtil::GetPreviousFullInstaller(
+      diff_installer, &prev_full_installer, channel_type));
+  printf("\nPrevious full installer name is %ls\n",
+         prev_full_installer.c_str());
+  InstallMiniInstaller(false, prev_full_installer);
+  std::wstring full_installer_value;
+  GetChromeVersionFromRegistry(&full_installer_value);
   printf("\n\nPreparing to overinstall...\n");
-
   if (install_type == mini_installer_constants::kDiffInstall) {
     printf("\nOver installing with latest differential installer: %ls\n",
-           diff_installer_.c_str());
-    InstallMiniInstaller(true, diff_installer_);
-
+           diff_installer.c_str());
+    InstallMiniInstaller(true, diff_installer);
   } else if (install_type == mini_installer_constants::kFullInstall) {
+    std::wstring latest_full_installer;
+    ASSERT_TRUE(MiniInstallerTestUtil::GetInstaller(
+        mini_installer_constants::kFullInstallerPattern,
+        &latest_full_installer, channel_type));
     printf("\nOver installing with latest full insatller: %ls\n",
-           full_installer_.c_str());
-    InstallMiniInstaller(true, full_installer_);
+           latest_full_installer.c_str());
+    InstallMiniInstaller(true, latest_full_installer);
   }
+  std::wstring diff_installer_value;
+  GetChromeVersionFromRegistry(&diff_installer_value);
+  ASSERT_TRUE(VerifyDifferentialInstall(full_installer_value,
+              diff_installer_value, diff_installer, channel_type));
+}
 
-  std::wstring got_curr_version;
-  GetChromeVersionFromRegistry(&got_curr_version);
-
-  if (got_prev_version == prev_version_ &&
-      got_curr_version == curr_version_) {
-    printf("\n The over install was successful. Here are the values:\n");
+// This method will get the diff installer file name and
+// then derives the previous and latest build numbers.
+bool ChromeMiniInstaller::VerifyDifferentialInstall(
+    const std::wstring& full_installer_value,
+    const std::wstring& diff_installer_value,
+    const std::wstring& diff_path,
+    const wchar_t* channel_type) {
+  std::wstring actual_full_installer_value;
+  std::wstring diff_installer_name = file_util::GetFilenameFromPath(diff_path);
+  MiniInstallerTestUtil::GetPreviousBuildNumber(diff_path,
+      &actual_full_installer_value, channel_type);
+  // This substring will give the full installer build number.
+  std::wstring actual_diff_installer_value;
+  actual_diff_installer_value.assign(channel_type);
+  // This substring will give the diff installer build number.
+  actual_diff_installer_value.append(diff_installer_name.substr(0,
+                                     diff_installer_name.find(L'_')));
+  if ((actual_full_installer_value == full_installer_value) &&
+      (actual_diff_installer_value == diff_installer_value)) {
+    printf("\n The diff installer is successful. Here are the values:\n");
     printf("\n full installer value: %ls and diff installer value is %ls\n",
-           prev_version_.c_str(), curr_version_.c_str());
+           full_installer_value.c_str(), diff_installer_value.c_str());
+    return true;
   } else {
-    printf("\n The over install was not successful. Here are the values:\n");
+    printf("\n The diff installer is not successful. Here are the values:\n");
     printf("\n Expected full installer value: %ls and actual value is %ls\n",
-           prev_version_.c_str(), got_prev_version.c_str());
+           full_installer_value.c_str(), actual_full_installer_value.c_str());
     printf("\n Expected diff installer value: %ls and actual value is %ls\n",
-           curr_version_.c_str(), got_curr_version.c_str());
-    FAIL();
+           diff_installer_value.c_str(), actual_diff_installer_value.c_str());
+    return false;
   }
 }
 
-
 // This method will get the latest full installer from nightly location
 // and installs it.
-void ChromeMiniInstaller::InstallFullInstaller(bool over_install) {
-  ASSERT_TRUE(has_full_installer_);
-  InstallMiniInstaller(over_install, full_installer_);
+void ChromeMiniInstaller::InstallFullInstaller(bool over_install,
+                                               const wchar_t* channel_type) {
+  std::wstring full_installer_file_name;
+  ASSERT_TRUE(MiniInstallerTestUtil::GetInstaller(
+      mini_installer_constants::kFullInstallerPattern,
+      &full_installer_file_name, channel_type));
+  printf("The latest full installer is %ls\n\n",
+         full_installer_file_name.c_str());
+  InstallMiniInstaller(over_install, full_installer_file_name);
 }
 
 // Installs the Chrome mini-installer, checks the registry and shortcuts.
@@ -184,13 +167,13 @@ void ChromeMiniInstaller::InstallMetaInstaller() {
 // If the build type is Google Chrome, then it first installs meta installer
 // and then over installs with mini_installer. It also verifies if Chrome can
 // be launched successfully after overinstall.
-void ChromeMiniInstaller::OverInstall() {
+void ChromeMiniInstaller::OverInstall(const wchar_t* channel_type) {
   InstallMetaInstaller();
   std::wstring reg_key_value_returned;
   // gets the registry key value before overinstall.
   GetChromeVersionFromRegistry(&reg_key_value_returned);
   printf("\n\nPreparing to overinstall...\n");
-  InstallFullInstaller(true);
+  InstallFullInstaller(true, channel_type);
   std::wstring reg_key_value_after_overinstall;
   // Get the registry key value after over install
   GetChromeVersionFromRegistry(&reg_key_value_after_overinstall);
@@ -202,8 +185,9 @@ void ChromeMiniInstaller::OverInstall() {
 // folder based on the passed argument, then tries to launch Chrome.
 // Then installs Chrome again to repair.
 void ChromeMiniInstaller::Repair(
-    ChromeMiniInstaller::RepairChrome repair_type) {
-  InstallFullInstaller(false);
+    ChromeMiniInstaller::RepairChrome repair_type,
+    const wchar_t* channel_type) {
+  InstallFullInstaller(false, channel_type);
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
   if (repair_type == ChromeMiniInstaller::VERSION_FOLDER) {
     DeleteFolder(L"version_folder");
@@ -216,7 +200,7 @@ void ChromeMiniInstaller::Repair(
   ASSERT_TRUE(MiniInstallerTestUtil::ChangeCurrentDirectory(&current_path));
   VerifyChromeLaunch(false);
   printf("\nInstalling Chrome again to see if it can be repaired\n\n");
-  InstallFullInstaller(true);
+  InstallFullInstaller(true, channel_type);
   printf("Chrome repair successful.\n");
   // Set the current directory back to original path.
   ::SetCurrentDirectory(current_path.c_str());

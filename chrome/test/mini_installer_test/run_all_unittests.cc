@@ -8,7 +8,6 @@
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome_mini_installer.h"
 
-
 void BackUpProfile() {
   if (base::GetProcessCount(L"chrome.exe", NULL) > 0) {
     printf("Chrome is currently running and cannot backup the profile."
@@ -47,21 +46,14 @@ int main(int argc, char** argv) {
   } else if (command_line.HasSwitch("backup")) {
     BackUpProfile();
   } else {
-    printf("This test needs command line arguments.\n");
-    printf("Usage: %ls -{clean|backup} [-build <version>] [-force] \n",
-        command_line.program().c_str());
-    printf("-clean arg will uninstall your chrome at all levels"
+    printf("This test needs command line Arguments.\n");
+    printf("Usage: mini_installer_tests.exe -{clean|backup}\n");
+    printf("Note: -clean arg will uninstall your chrome at all levels"
            " and also delete profile.\n"
            "-backup arg will make a copy of User Data before uninstalling"
            " your chrome at all levels. The copy will be named as"
-           " User Data Copy.\n"
-           "-build specifies the build to be tested, e.g., 3.0.195.24."
-           " Specifying 'dev' or 'stable' will use the latest build from that"
-           " channel. 'latest', the default, will use the latest build.\n"
-           "-force allows these tests to be run on the current platform,"
-           " regardless of whether it is supported.\n");
-    return 1;
+           " User Data Copy.\n");
+    exit(1);
   }
-
   return TestSuite(argc, argv).Run();
 }

@@ -60,24 +60,22 @@ class MiniInstallerTestUtil {
   // Returns the directory containing exe_name.
   static std::wstring GetFilePath(const wchar_t* exe_name);
 
-
   // This method will get the list of all folders or files based on the passed
   // 'path' and 'pattern' argument. The 'pattern' argument decides if the
   // requested file is a full or a differential installer.
   static bool GetLatestFile(const wchar_t* path, const wchar_t* pattern,
                             FileInfoList *file_name);
 
-  // This method retrieves the previous build version for the given diff
-  // installer path.
-  static bool GetPreviousBuildNumber(const std::wstring& path,
-      std::wstring *build_number);
+  // This method will get the previous build number
+  static void GetPreviousBuildNumber(const std::wstring& path,
+      std::wstring *build_number, const wchar_t* channel_type);
 
   // This method will get the previous full installer based on 'diff_file'
   // and 'channel_type' arguments. The 'channel_type'
   // parameter decides if the build is stable/dev/beta. The 'diff_file'
   // parameter will hold the latest diff installer name.
   static bool GetPreviousFullInstaller(const std::wstring& diff_file,
-      std::wstring *previous);
+      std::wstring *previous, const wchar_t* channel_type);
 
   // This method will return standalone installer file name.
   static bool GetStandaloneInstallerFileName(FileInfoList *file_name);
