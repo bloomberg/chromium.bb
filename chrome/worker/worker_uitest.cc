@@ -58,12 +58,7 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-// WorkerFastLayoutTests works on the linux try servers.
-#if defined(OS_LINUX)
-#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
-#endif
-
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
