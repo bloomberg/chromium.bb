@@ -32,6 +32,7 @@
       'ENABLE_SVG_FOREIGN_OBJECT=1',
       'ENABLE_SVG_FONTS=1',
       'ENABLE_VIDEO=1',
+      'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WORKERS=1',
     ],
     # TODO: If the need arises, create a mechanism that will intelligently
