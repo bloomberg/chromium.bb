@@ -9,66 +9,6 @@
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";
 
-TEST(UtilTests, AppendSuffixToChannelNameTest) {
-  std::wstring str_base;
-  std::wstring channel_name(kChannelName);
-  std::wstring suffix(kSuffix);
-
-  str_base = L"2.0-dev-bar";
-  EXPECT_TRUE(AppendSuffixToChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-fix-bar", str_base.c_str());
-
-  str_base = L"2.0-dev-fix-bar";
-  EXPECT_FALSE(AppendSuffixToChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-fix-bar", str_base.c_str());
-
-  str_base = L"2.0-dev-bar-dev-bar";
-  EXPECT_TRUE(AppendSuffixToChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-fix-bar-dev-bar", str_base.c_str());
-
-  str_base = L"2.0";
-  EXPECT_FALSE(AppendSuffixToChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0", str_base.c_str());
-
-  str_base = L"2.0-devvvv";
-  EXPECT_TRUE(AppendSuffixToChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-fixvvv", str_base.c_str());
-}
-
-TEST(UtilTests, RemoveSuffixFromStringTest) {
-  std::wstring str_base;
-  std::wstring channel_name(kChannelName);
-  std::wstring suffix(kSuffix);
-
-  str_base = L"2.0-dev-fix";
-  EXPECT_TRUE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev", str_base.c_str());
-
-  str_base = L"2.0-dev-fix-full";
-  EXPECT_TRUE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-full", str_base.c_str());
-
-  str_base = L"2.0";
-  EXPECT_FALSE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0", str_base.c_str());
-
-  str_base = L"2.0-dev";
-  EXPECT_FALSE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev", str_base.c_str());
-
-  str_base = L"2.0-fix";
-  EXPECT_FALSE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-fix", str_base.c_str());
-
-  str_base = L"2.0-full-fix";
-  EXPECT_FALSE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-full-fix", str_base.c_str());
-
-  str_base = L"2.0-dev-dev-fix";
-  EXPECT_TRUE(RemoveSuffixFromChannelName(&str_base, channel_name, suffix));
-  EXPECT_STREQ(L"2.0-dev-dev", str_base.c_str());
-}
-
 TEST(UtilTests, GetModuleVersionTest) {
   HMODULE mod = GetModuleHandle(L"kernel32.dll");
   EXPECT_NE(mod, static_cast<HMODULE>(NULL));

@@ -54,34 +54,6 @@ HRESULT UtilUnRegisterTypeLib(ITypeLib* typelib,
 HRESULT UtilGetXUACompatContentValue(const std::wstring& html_string,
                                      std::wstring* content_value);
 
-
-// Appends |suffix| to the substring |channel_name| of |string| iff
-// the first instance of |channel_name| in |string| is not already followed by
-// |suffix|.
-// Returns true if |string| was modified.
-bool AppendSuffixToChannelName(std::wstring* string,
-                               const std::wstring& channel_name,
-                               const std::wstring& suffix);
-
-// Removes |suffix| from |string| if |string| contains |channel_name| followed
-// by |suffix|.
-// Returns true if |string| was modified.
-bool RemoveSuffixFromChannelName(std::wstring* string,
-                                 const std::wstring& channel_name,
-                                 const std::wstring& suffix);
-
-// Looks for and alters if found the Omaha configuration for Chrome in the
-// registry. This changes the auto-update release channel to prevent installed
-// builds of Chrome that include Chrome Frame from getting replaced by
-// Chrome updates without it.
-// Adds the Chrome Frame suffix if add_cf_suffix is true, removes it
-// otherwise.
-// Returns S_OK if the Chrome Omaha configuration was found and updated.
-// Returns S_FALSE if the configuration was found but didn't need updating.
-// Returns REGDB_E_READREGDB if the Chrome Omaha key could not be read.
-// Returns REGDB_E_WRITEREGDB if the Chrome Omaha key could not be written.
-HRESULT UtilUpdateOmahaConfig(bool add_cf_suffix);
-
 // Returns a string from ChromeFrame's string table by resource. Must be
 // provided with a valid resource id.
 std::wstring GetResourceString(int resource_id);

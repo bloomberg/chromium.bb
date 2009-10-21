@@ -272,12 +272,6 @@ STDAPI DllRegisterServer() {
   // registers object, typelib and all interfaces in typelib
   HRESULT hr = _AtlModule.DllRegisterServer(TRUE);
 
-#ifdef GOOGLE_CHROME_BUILD
-  // Muck with the Omaha configuration so that we don't get updated by non-CF
-  // Google Chrome builds.
-  UtilUpdateOmahaConfig(true);
-#endif
-
   if (SUCCEEDED(hr)) {
     // Best effort attempt to register the BHO. At this point we silently
     // ignore any errors during registration. There are some traces emitted
@@ -293,11 +287,6 @@ STDAPI DllRegisterServer() {
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
   HRESULT hr = _AtlModule.DllUnregisterServer(TRUE);
-
-#ifdef GOOGLE_CHROME_BUILD
-  // Undo any prior mucking with the Omaha config.
-  UtilUpdateOmahaConfig(false);
-#endif
 
   if (SUCCEEDED(hr)) {
     // Best effort attempt to unregister the BHO. At this point we silently
