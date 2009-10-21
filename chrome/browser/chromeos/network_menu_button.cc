@@ -22,12 +22,10 @@ const int NetworkMenuButton::kNumWifiImages = 8;
 const int NetworkMenuButton::kThrobDuration = 1000;
 
 NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
-    : MenuButton(NULL, std::wstring(), this, false),
-      refreshing_menu_(false),
+    : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
       browser_window_(browser_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
-  SetShowHighlighted(false);
   animation_.SetThrobDuration(kThrobDuration);
   animation_.SetTweenType(SlideAnimation::NONE);
   UpdateIcon();
@@ -142,7 +140,7 @@ void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* obj) {
 
 void NetworkMenuButton::UpdateIcon() {
   CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
-  int id = IDR_STATUSBAR_DISCONNECTED;
+  int id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
   if (cros->wifi_connecting()) {
     // Start the connecting animation if not running.
     if (!animation_.IsAnimating())

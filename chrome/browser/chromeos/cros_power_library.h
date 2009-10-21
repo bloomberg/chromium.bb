@@ -38,6 +38,9 @@ class CrosPowerLibrary {
   // The percentage (0-100) of remaining battery.
   double battery_percentage() const;
 
+  // Whether there is a battery present.
+  bool battery_is_present() const;
+
   // The amount of time until battery is empty.
   base::TimeDelta battery_time_to_empty() const;
 

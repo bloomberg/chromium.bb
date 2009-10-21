@@ -15,10 +15,7 @@ class Browser;
 class ClockMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
-
-namespace views {
-class MenuButton;
-}
+class StatusAreaButton;
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
@@ -70,7 +67,7 @@ class StatusAreaView : public views::View,
   ClockMenuButton* clock_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* battery_view_;
-  views::MenuButton* menu_view_;
+  StatusAreaButton* menu_view_;
 
   scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
   scoped_ptr<views::SimpleMenuModel> options_menu_contents_;

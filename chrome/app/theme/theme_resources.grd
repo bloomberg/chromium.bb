@@ -358,8 +358,12 @@
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
  
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_CONTAINER" file="statusbar_container.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_CONTAINER_HOVER" file="statusbar_container_hover.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_CONTAINER_PRESSED" file="statusbar_container_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_UNKNOWN" file="statusbar_battery_unknown.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_MISSING" file="statusbar_battery_missing.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_1" file="statusbar_battery1c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_2" file="statusbar_battery2c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_3" file="statusbar_battery3c.png" type="BINDATA" />
@@ -368,6 +372,14 @@
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_6" file="statusbar_battery6c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_7" file="statusbar_battery7c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_8" file="statusbar_battery8c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_9" file="statusbar_battery9c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_10" file="statusbar_battery10c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_11" file="statusbar_battery11c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_12" file="statusbar_battery12c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_13" file="statusbar_battery13c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_14" file="statusbar_battery14c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_15" file="statusbar_battery15c.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_CHARGING_16" file="statusbar_battery16c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_1" file="statusbar_battery1d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_2" file="statusbar_battery2d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_3" file="statusbar_battery3d.png" type="BINDATA" />
@@ -376,7 +388,15 @@
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_6" file="statusbar_battery6d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_7" file="statusbar_battery7d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_8" file="statusbar_battery8d.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_DISCONNECTED" file="statusbar_disconnected.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_9" file="statusbar_battery9d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_10" file="statusbar_battery10d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_11" file="statusbar_battery11d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_12" file="statusbar_battery12d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_13" file="statusbar_battery13d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_14" file="statusbar_battery14d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_15" file="statusbar_battery15d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_16" file="statusbar_battery16d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIFI_1" file="statusbar_wifi_1.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIFI_2" file="statusbar_wifi_2.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIFI_3" file="statusbar_wifi_3.png" type="BINDATA" />

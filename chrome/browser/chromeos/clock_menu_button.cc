@@ -26,6 +26,7 @@ ClockMenuButton::ClockMenuButton(Browser* browser)
     : MenuButton(NULL, std::wstring(), this, false),
       clock_menu_(this),
       browser_(browser) {
+  set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
   SetEnabledColor(SK_ColorWHITE);

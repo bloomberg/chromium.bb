@@ -990,6 +990,8 @@
         'browser/chromeos/settings_contents_view.h',
         'browser/chromeos/settings_page_view.cc',
         'browser/chromeos/settings_page_view.h',
+        'browser/chromeos/status_area_button.cc',
+        'browser/chromeos/status_area_button.h',
         'browser/chromeos/status_area_view.cc',
         'browser/chromeos/status_area_view.h',
         'browser/chromeos/touchpad.cc',

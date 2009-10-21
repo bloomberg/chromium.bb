@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/clock_menu_button.h"
 #include "chrome/browser/chromeos/network_menu_button.h"
 #include "chrome/browser/chromeos/power_menu_button.h"
+#include "chrome/browser/chromeos/status_area_button.h"
 #if !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #endif
@@ -23,14 +24,17 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/simple_menu_model.h"
 
 namespace {
 
-// Number of pixels to separate adjacent status items.
-const int kStatusItemSeparation = 1;
+// Number of pixels to pad on the left border.
+const int kLeftBorder = 1;
+// Number of pixels to separate the clock from the next item on the right.
+const int kClockSeparation = 4;
+// Number of pixels to adjust the y value of the clock.
+const int kClockYAdjustment = 2;
 
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
@@ -131,52 +135,56 @@ void StatusAreaView::Init() {
   clock_view_ = new ClockMenuButton(browser_);
   AddChildView(clock_view_);
 
-  // Network.
-  network_view_ = new NetworkMenuButton(window_);
-  AddChildView(network_view_);
-
   // Battery.
   battery_view_ = new PowerMenuButton();
   AddChildView(battery_view_);
 
+  // Network.
+  network_view_ = new NetworkMenuButton(window_);
+  AddChildView(network_view_);
+
   // Menu.
-  menu_view_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  menu_view_->SetShowHighlighted(false);
+  menu_view_ = new StatusAreaButton(this);
   menu_view_->SetIcon(*theme->GetBitmapNamed(IDR_STATUSBAR_MENU));
   AddChildView(menu_view_);
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
-  int result_w = kStatusItemSeparation;  // Left border.
+  // Start with padding.
+  int result_w = kLeftBorder + kClockSeparation;
   int result_h = 0;
   for (int i = 0; i < GetChildViewCount(); i++) {
     gfx::Size cur_size = GetChildViewAt(i)->GetPreferredSize();
-    result_w += cur_size.width() + kStatusItemSeparation;
+    // Add each width.
+    result_w += cur_size.width();
+    // Use max height.
     result_h = std::max(result_h, cur_size.height());
   }
-  result_w -= kStatusItemSeparation;  // Don't have space after the last one.
-
-  // TODO(brettw) do we need to use result_h? This is currently hardcoded
-  // becuase the menu button really wants to be larger, but we don't want
-  // the status bar to force the whole tab strip to be larger. Making it
-  // "smaller" just means that we'll expand to the height, which we want.
-  // The height of 24 makes it just big enough to sit on top of the shadow
-  // drawn by the browser window.
-  return gfx::Size(result_w - kStatusItemSeparation, 24);
+  return gfx::Size(result_w, result_h);
 }
 
 void StatusAreaView::Layout() {
-  int cur_x = 0;
+  int cur_x = kLeftBorder;
   for (int i = 0; i < GetChildViewCount(); i++) {
     views::View* cur = GetChildViewAt(i);
     gfx::Size cur_size = cur->GetPreferredSize();
+    int cur_y = (height() - cur_size.height()) / 2;
+
+    // Handle odd number of pixels.
+    cur_y += (height() - cur_size.height()) % 2;
+
+    // Adjustment to make clock line up right.
+    if (cur == clock_view_)
+      cur_y += kClockYAdjustment;
 
     // Put next in row horizontally, and center vertically.
-    // Padding the y position by 1 balances the space above and
-    // below the icons, but still allows the shadow to be drawn.
-    cur->SetBounds(cur_x, (height() - cur_size.height()) / 2 + 1,
-                   cur_size.width(), cur_size.height());
-    cur_x += cur_size.width() + kStatusItemSeparation;
+    cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
+
+    cur_x += cur_size.width();
+
+    // Buttons have built in padding, but clock doesn't.
+    if (cur == clock_view_)
+      cur_x += kClockSeparation;
   }
 }
 

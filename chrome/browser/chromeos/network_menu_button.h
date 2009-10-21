@@ -11,7 +11,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros_network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
-#include "views/controls/button/menu_button.h"
+#include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -22,7 +22,7 @@ class SkBitmap;
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
 // wifi network.
-class NetworkMenuButton : public views::MenuButton,
+class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
                           public views::Menu2Model,
                           public PasswordDialogDelegate,

@@ -56,9 +56,12 @@ bool CrosPowerLibrary::line_power_on() const {
   return status_.line_power_on;
 }
 
+bool CrosPowerLibrary::battery_is_present() const {
+  return status_.battery_is_present;
+}
+
 bool CrosPowerLibrary::battery_fully_charged() const {
-  return status_.line_power_on &&
-      status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
+  return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
 }
 
 double CrosPowerLibrary::battery_percentage() const {

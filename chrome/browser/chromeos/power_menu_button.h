@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_
 
 #include "chrome/browser/chromeos/cros_power_library.h"
-#include "views/controls/button/menu_button.h"
+#include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -15,8 +15,7 @@ class SkBitmap;
 
 // The power menu button in the status area.
 // This class will handle getting the power status and populating the menu.
-// It handles the status icon changing and connecting to another wifi power.
-class PowerMenuButton : public views::MenuButton,
+class PowerMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public views::Menu2Model,
                         public CrosPowerLibrary::Observer {

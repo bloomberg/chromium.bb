@@ -14,12 +14,11 @@
 // PowerMenuButton
 
 // static
-const int PowerMenuButton::kNumPowerImages = 8;
+const int PowerMenuButton::kNumPowerImages = 16;
 
 PowerMenuButton::PowerMenuButton()
-    : MenuButton(NULL, std::wstring(), this, false),
+    : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
-  SetShowHighlighted(false);
   UpdateIcon();
   CrosPowerLibrary::Get()->AddObserver(this);
 }
@@ -102,7 +101,9 @@ void PowerMenuButton::UpdateIcon() {
   CrosPowerLibrary* cros = CrosPowerLibrary::Get();
   int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
   if (CrosPowerLibrary::loaded()) {
-    if (cros->battery_fully_charged()) {
+    if (!cros->battery_is_present()) {
+      id = IDR_STATUSBAR_BATTERY_MISSING;
+    } else if (cros->line_power_on() && cros->battery_fully_charged()) {
       id = IDR_STATUSBAR_BATTERY_CHARGED;
     } else {
       // If fully charged, always show 100% even if percentage is a bit less.
