@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Verifies simple actions when using an explicit build target of 'all'.
+Verifies actions which are not depended on by other targets get executed.
 """
 
 import TestGyp

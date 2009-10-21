@@ -743,9 +743,10 @@ class MakefileWriter:
     else:
       print "WARNING: no output for", self.type, target
 
-    # Add an alias for each target.
-    self.WriteMakeRule([self.target], [self.output],
-                       comment='Add target alias')
+    # Add an alias for each target (if there are any outputs).
+    if self.output:
+      self.WriteMakeRule([self.target], [self.output],
+                         comment='Add target alias')
 
     # Add special-case rules for our installable targets.
     # 1) They need to install to the build dir or "product" dir.
