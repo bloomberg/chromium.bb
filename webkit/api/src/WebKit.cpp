@@ -32,13 +32,10 @@
 #include "WebKit.h"
 
 #include "WebMediaPlayerClientImpl.h"
-#include "WebString.h"
 
 #include "AtomicString.h"
 #include "DOMTimer.h"
-#include "FrameLoader.h"
 #include "Page.h"
-#include "SecurityOrigin.h"
 #include "TextEncoding.h"
 #include "WebSocket.h"
 #include "WorkerContextExecutionProxy.h"
@@ -97,16 +94,6 @@ bool layoutTestMode()
     return s_layoutTestMode;
 }
 
-void registerURLSchemeAsLocal(const WebString& scheme)
-{
-    WebCore::SecurityOrigin::registerURLSchemeAsLocal(scheme);
-}
-
-void registerURLSchemeAsNoAccess(const WebString& scheme)
-{
-    WebCore::SecurityOrigin::registerURLSchemeAsNoAccess(scheme);
-}
-
 void enableMediaPlayer()
 {
 #if ENABLE(VIDEO)
@@ -129,21 +116,6 @@ void enableDatabases()
 bool databasesEnabled()
 {
     return s_databasesEnabled;
-}
-
-void whiteListAccessFromOrigin(const WebURL& sourceOrigin,
-                               const WebString& destinationProtocol,
-                               const WebString& destinationHost,
-                               bool allowDestinationSubdomains)
-{
-    WebCore::SecurityOrigin::whiteListAccessFromOrigin(
-        *WebCore::SecurityOrigin::create(sourceOrigin), destinationProtocol,
-        destinationHost, allowDestinationSubdomains);
-}
-
-void resetOriginAccessWhiteLists()
-{
-    WebCore::SecurityOrigin::resetOriginAccessWhiteLists();
 }
 
 void enableWebSockets()

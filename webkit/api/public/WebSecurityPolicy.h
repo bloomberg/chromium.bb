@@ -28,46 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKit_h
-#define WebKit_h
+#ifndef WebSecurityPolicy_h
+#define WebSecurityPolicy_h
 
 #include "WebCommon.h"
 
 namespace WebKit {
-    class WebKitClient;
+    class WebString;
+    class WebURL;
 
-    // Must be called on the thread that will be the main WebKit thread before
-    // using any other WebKit APIs.  The provided WebKitClient must be non-null
-    // and must remain valid until the current thread calls shutdown.
-    WEBKIT_API void initialize(WebKitClient*);
+    class WebSecurityPolicy {
+    public:
+        // Registers a URL scheme to be treated as a local scheme (i.e., with the
+        // same security rules as those applied to "file" URLs).  This means that
+        // normal pages cannot link to or access URLs of this scheme.
+        WEBKIT_API static void registerURLSchemeAsLocal(const WebString&);
 
-    // Once shutdown, the WebKitClient passed to initialize will no longer be
-    // accessed.  No other WebKit objects should be in use when this function
-    // is called.  Any background threads created by WebKit are promised to be
-    // terminated by the time this function returns.
-    WEBKIT_API void shutdown();
+        // Registers a URL scheme to be treated as a noAccess scheme.  This means
+        // that pages loaded with this URL scheme cannot access pages loaded with
+        // any other URL scheme.
+        WEBKIT_API static void registerURLSchemeAsNoAccess(const WebString&);
 
-    // Returns the WebKitClient instance passed to initialize.
-    WEBKIT_API WebKitClient* webKitClient();
+        // Support for whitelisting access to origins beyond the same-origin policy.
+        WEBKIT_API static void whiteListAccessFromOrigin(
+            const WebURL& sourceOrigin, const WebString& destinationProtocol,
+            const WebString& destinationHost, bool allowDestinationSubdomains);
+        WEBKIT_API static void resetOriginAccessWhiteLists();
 
-    // Alters the rendering of content to conform to a fixed set of rules.
-    WEBKIT_API void setLayoutTestMode(bool);
-    WEBKIT_API bool layoutTestMode();
-
-    // Enables HTML5 media support.
-    WEBKIT_API void enableMediaPlayer();
-
-    // Purge the plugin list cache. If |reloadPages| is true, any pages
-    // containing plugins will be reloaded after refreshing the plugin list.
-    WEBKIT_API void resetPluginCache(bool reloadPages);
-
-    // Enables HTML5 database support.
-    WEBKIT_API void enableDatabases();
-    WEBKIT_API bool databasesEnabled();
-
-    // Enables HTML5 Web Sockets support.
-    WEBKIT_API void enableWebSockets();
-    WEBKIT_API bool webSocketsEnabled();
+    private:
+        WebSecurityPolicy();
+    };
 
 } // namespace WebKit
 
