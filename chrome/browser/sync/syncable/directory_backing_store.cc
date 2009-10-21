@@ -28,10 +28,6 @@
 // infinity seems like the best choice here.
 const int kDirectoryBackingStoreBusyTimeoutMs = std::numeric_limits<int>::max();
 
-// If sizeof(time_t) != sizeof(int32) we need to alter or expand the sqlite
-// datatype.
-COMPILE_ASSERT(sizeof(time_t) == sizeof(int32), time_t_is_not_int32);
-
 using std::string;
 
 namespace syncable {

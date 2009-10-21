@@ -58,10 +58,6 @@ static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 static const int kInvariantCheckMaxMs = 50;
 }  // namespace
 
-// if sizeof(time_t) != sizeof(int32) we need to alter or expand the sqlite
-// datatype.
-COMPILE_ASSERT(sizeof(time_t) == sizeof(int32), time_t_is_not_int32);
-
 using browser_sync::FastDump;
 using browser_sync::SyncerUtil;
 using std::string;

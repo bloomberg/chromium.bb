@@ -530,7 +530,7 @@ void SingleLoginAttempt::HandleConnectionError(
         // Yep, its a "stream:error" with "see-other-host" text, let's parse
         // out the server:port, and then reconnect with that.
         const std::string& redirect = text->BodyText();
-        unsigned int colon = redirect.find(":");
+        size_t colon = redirect.find(":");
         int redirect_port = kDefaultXmppPort;
         std::string redirect_server;
         if (colon == std::string::npos) {

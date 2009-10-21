@@ -16,8 +16,6 @@
 #define INT_TYPES_DEFINED
 #ifdef COMPILER_MSVC
 typedef __int64 int64;
-#else
-typedef long long int64;
 #endif /* COMPILER_MSVC */
 
 #ifdef COMPILER_MSVC
@@ -27,8 +25,6 @@ typedef __int64 int64;
 #define UINT64_C(x) x ## UI64
 #define INT64_F "I64"
 #else
-typedef unsigned long long uint64;
-typedef long long int64;
 #ifndef INT64_C
 #define INT64_C(x) x ## LL
 #endif
