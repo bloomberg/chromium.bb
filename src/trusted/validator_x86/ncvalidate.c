@@ -630,16 +630,14 @@ static void ValidateIndirect5(const struct NCDecoderState *mstate) {
   Stats_UnsafeIndirect(mstate->vstate);
 }
 
+/* NaCl allows at most 1 prefix byte per instruction. */
 /* It appears to me that none of my favorite test programs use more */
-/* than a single prefix byte on an instruction. It would be nice if */
-/* we could make this a requirement.                                */
+/* than a single prefix byte on an instruction. */
 static const size_t kMaxValidPrefixBytes = 1;
 static const size_t kMaxValidInstLength = 11;
 static const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
 void ValidateInst(const struct NCDecoderState *mstate) {
-  /* NaCl allows at most 1 prefix byte per instruction */
-  const int kMaxValPrefixBytes = 1;
   CPUFeatures *cpufeatures;
   int squashme = 0;
 
@@ -653,7 +651,7 @@ void ValidateInst(const struct NCDecoderState *mstate) {
   cpufeatures = &(mstate->vstate->cpufeatures);
   do {
     if (mstate->inst.prefixbytes == 0) break;
-    if (mstate->inst.prefixbytes <= kMaxValPrefixBytes) {
+    if (mstate->inst.prefixbytes <= kMaxValidPrefixBytes) {
       if (mstate->inst.hasopbyte2) {
         if (mstate->inst.prefixmask & kPrefixLOCK) {
           /* For two byte opcodes, check for use of the lock prefix.   */
