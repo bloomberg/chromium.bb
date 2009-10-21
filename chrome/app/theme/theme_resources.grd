@@ -210,7 +210,12 @@
       <include name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_v.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" type="BINDATA" />
+      <if expr="os != 'darwin'">
+        <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" type="BINDATA" />
+      </if>
+      <if expr="os == 'darwin'">
+        <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" type="BINDATA" />
+      </if>
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="tab_drop_up.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" type="BINDATA" />
