@@ -3093,8 +3093,8 @@ BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEO
 BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
 
 // Got slow with V8 update to 1.3.15. Debug logging perhaps?
-BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = PASS
-BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/fast/forms/input-maxlength.html = PASS
+BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = PASS
+BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-maxlength.html = PASS
 
 // Webkit update: 49221:49245
 BUG_HAMAJI WIN LINUX : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
@@ -3175,12 +3175,3 @@ BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
 
 // WebKit Roll 49830:49844
 BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
-
-// Failures since Chromium r29591
-BUG25372 MAC DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL
-BUG25372 MAC DEBUG : LayoutTests/editing/selection/extend-selection.html = TIMEOUT
-BUG25372 MAC DEBUG : LayoutTests/fast/dom/DOMImplementation/createDocument-with-used-doctype.html = TIMEOUT
-BUG25372 MAC DEBUG : LayoutTests/fast/forms/input-implicit-length-limit.html = TIMEOUT
-BUG25372 MAC DEBUG : LayoutTests/fast/forms/input-maxlength.html = TIMEOUT
-BUG25372 MAC DEBUG : LayoutTests/fast/frames/calculate-round.html = TIMEOUT
-
