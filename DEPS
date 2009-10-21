@@ -37,13 +37,13 @@ deps = {
     "http://pywebsocket.googlecode.com/svn/trunk/src@79",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@716",
+    "http://gyp.googlecode.com/svn/trunk@719",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@3093",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@885",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@893",
 
   "src/third_party/skia":
     "http://skia.googlecode.com/svn/trunk@376",
