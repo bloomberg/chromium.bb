@@ -33,8 +33,8 @@ bool GetChromiumVersion(const wchar_t* const exe_path,
 // Get path to DLL specified by dll_name. If dll_path is specified and it
 // exists we assume DLL is in that directory and return that. Else we search
 // for that DLL by calling Windows API.
-std::wstring GetDLLPath(const std::wstring dll_name,
-                        const std::wstring dll_path);
+std::wstring GetDLLPath(const std::wstring& dll_name,
+                        const std::wstring& dll_path);
 
 // Returns the path to the exe (without the file name) that called this
 // function. The buffer should already be allocated (ideally of MAX_PATH size).

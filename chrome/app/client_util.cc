@@ -63,8 +63,8 @@ bool GetChromiumVersion(const wchar_t* const exe_path,
   return ret;
 }
 
-std::wstring GetDLLPath(const std::wstring dll_name,
-                        const std::wstring dll_path) {
+std::wstring GetDLLPath(const std::wstring& dll_name,
+                        const std::wstring& dll_path) {
   if (!dll_path.empty() && FileExists(dll_path.c_str()))
     return dll_path + L"\\" + dll_name;
 
