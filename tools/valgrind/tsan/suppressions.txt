@@ -2,13 +2,6 @@
 # Chromium
 
 {
-  bug_15147
-  ThreadSanitizer:Race
-  ...
-  fun:*URLRequestJobTracker*
-}
-
-{
   bug_21259
   ThreadSanitizer:Race
   ...
