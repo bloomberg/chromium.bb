@@ -506,8 +506,14 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
 }
 
 void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
+  if (size_.IsEmpty())
+    return;  // We have no bounds, don't attempt to show the popup.
+
   if (status_text_ == status_text)
     return;
+
+  if (!IsFrameVisible())
+    return;  // Don't show anything if the parent isn't visible.
 
   Init();
   status_text_ = status_text;
@@ -522,13 +528,17 @@ void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
 }
 
 void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
+  if (size_.IsEmpty())
+    return;  // We have no bounds, don't attempt to show the popup.
+
   Init();
 
   // If we want to clear a displayed URL but there is a status still to
   // display, display that status instead.
   if (url.is_empty() && !status_text_.empty()) {
     url_text_ = std::wstring();
-    view_->SetText(status_text_);
+    if (IsFrameVisible())
+      view_->SetText(status_text_);
     return;
   }
 
@@ -546,7 +556,9 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT &&
       !url_text_.empty())
     l10n_util::WrapStringWithLTRFormatting(&url_text_);
-  view_->SetText(url_text_);
+
+  if (IsFrameVisible())
+    view_->SetText(url_text_);
 }
 
 void StatusBubbleViews::Hide() {
@@ -658,4 +670,12 @@ void StatusBubbleViews::AvoidMouse() {
                                 top_left.y() + position_.y(),
                                 size_.width(), size_.height()));
   }
+}
+
+bool StatusBubbleViews::IsFrameVisible() {
+  if (!frame_->IsVisible())
+    return false;
+
+  views::Window* window = frame_->GetWindow();
+  return !window || !window->IsMinimized();
 }

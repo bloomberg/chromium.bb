@@ -57,6 +57,9 @@ class StatusBubbleViews : public StatusBubble {
   // users to see links in the region normally occupied by the status bubble.
   void AvoidMouse();
 
+  // Returns true if the frame_ is visible and not minimized.
+  bool IsFrameVisible();
+
   // The status text we want to display when there are no URLs to display.
   std::wstring status_text_;
 

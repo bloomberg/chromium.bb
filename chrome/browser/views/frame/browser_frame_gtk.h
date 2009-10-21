@@ -44,6 +44,12 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual views::RootView* CreateRootView();
   virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
 
+  // Overriden from views::WindowGtk:
+  virtual gboolean OnWindowStateEvent(GtkWidget* widget,
+                                      GdkEventWindowState* event);
+  virtual gboolean OnConfigureEvent(GtkWidget* widget,
+                                    GdkEventConfigure* event);
+
  private:
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;

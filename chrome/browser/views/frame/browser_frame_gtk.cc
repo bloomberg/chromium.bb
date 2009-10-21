@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/status_bubble.h"
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
@@ -95,4 +96,22 @@ void BrowserFrameGtk::IsActiveChanged() {
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
                                      views::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);
+}
+
+gboolean BrowserFrameGtk::OnWindowStateEvent(GtkWidget* widget,
+                                             GdkEventWindowState* event) {
+  gboolean result = views::WindowGtk::OnWindowStateEvent(widget, event);
+  if ((!IsVisible() || IsMinimized()) && browser_view_->GetStatusBubble()) {
+    // The window is effectively hidden. We have to hide the status bubble as
+    // unlike windows gtk has no notion of child windows that are hidden along
+    // with the parent.
+    browser_view_->GetStatusBubble()->Hide();
+  }
+  return result;
+}
+
+gboolean BrowserFrameGtk::OnConfigureEvent(GtkWidget* widget,
+                                           GdkEventConfigure* event) {
+  browser_view_->WindowMoved();
+  return views::WindowGtk::OnConfigureEvent(widget, event);
 }
