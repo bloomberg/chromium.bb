@@ -126,11 +126,11 @@
             'Debug': {
               'xcode_settings': {
                 'GCC_DEBUGGING_SYMBOLS': 'full',
-        				'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
               },
             },
           },
           'xcode_settings': {
+            'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
             'OTHER_CFLAGS': [
                '-fno-eliminate-unused-debug-symbols',
                '-mmacosx-version-min=10.4'],
