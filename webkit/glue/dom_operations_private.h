@@ -17,6 +17,11 @@ class QualifiedName;
 class String;
 }
 
+namespace WebKit {
+class WebView;
+}
+
+class GURL;
 class WebFrameImpl;
 
 namespace webkit_glue {

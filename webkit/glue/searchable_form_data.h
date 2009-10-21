@@ -23,31 +23,19 @@ class SearchableFormData {
   // request, a SearchableFormData is created and returned.
   static SearchableFormData* Create(const WebKit::WebForm& form);
 
-  // Returns true if the two SearchableFormData are equal, false otherwise.
-  // Either argument may be NULL. If both elements are NULL, true is returned.
-  static bool Equals(const SearchableFormData* a, const SearchableFormData* b);
-
   // URL for the searchable form request.
   const GURL& url() const { return url_; }
-
-  // Class name of the INPUT element the user input text into.
-  const std::wstring element_name() const { return element_name_; }
-
-  // Value of the text field in the form.
-  const std::wstring element_value() const { return element_value_; }
 
   // Encoding used to encode the form parameters; never empty.
   const std::string& encoding() const { return encoding_; }
 
  private:
-  SearchableFormData(const GURL& url,
-                     const std::wstring& element_name,
-                     const std::wstring& element_value,
-                     const std::string& encoding);
+  SearchableFormData(const GURL& url, const std::string& encoding)
+      : url_(url),
+        encoding_(encoding) {
+  }
 
   const GURL url_;
-  const std::wstring element_name_;
-  const std::wstring element_value_;
   const std::string encoding_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchableFormData);

@@ -53,7 +53,6 @@ void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
   params.redirects = std::vector<GURL>();
   params.should_update_history = true;
   params.searchable_form_url = GURL::EmptyGURL();
-  params.searchable_form_element_name = std::wstring();
   params.searchable_form_encoding = std::string();
   params.password_form = PasswordForm();
   params.security_info = std::string();

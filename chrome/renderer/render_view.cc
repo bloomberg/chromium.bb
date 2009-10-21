@@ -1005,7 +1005,6 @@ void RenderView::UpdateURL(WebFrame* frame) {
       navigation_state->searchable_form_data();
   if (searchable_form_data) {
     params.searchable_form_url = searchable_form_data->url();
-    params.searchable_form_element_name = searchable_form_data->element_name();
     params.searchable_form_encoding = searchable_form_data->encoding();
   }
 

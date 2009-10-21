@@ -137,7 +137,6 @@ struct ViewHostMsg_FrameNavigate_Params {
 
   // See SearchableFormData for a description of these.
   GURL searchable_form_url;
-  std::wstring searchable_form_element_name;
   std::string searchable_form_encoding;
 
   // See password_form.h.
@@ -773,7 +772,6 @@ struct ParamTraits<ViewHostMsg_FrameNavigate_Params> {
     WriteParam(m, p.redirects);
     WriteParam(m, p.should_update_history);
     WriteParam(m, p.searchable_form_url);
-    WriteParam(m, p.searchable_form_element_name);
     WriteParam(m, p.searchable_form_encoding);
     WriteParam(m, p.password_form);
     WriteParam(m, p.security_info);
@@ -792,7 +790,6 @@ struct ParamTraits<ViewHostMsg_FrameNavigate_Params> {
       ReadParam(m, iter, &p->redirects) &&
       ReadParam(m, iter, &p->should_update_history) &&
       ReadParam(m, iter, &p->searchable_form_url) &&
-      ReadParam(m, iter, &p->searchable_form_element_name) &&
       ReadParam(m, iter, &p->searchable_form_encoding) &&
       ReadParam(m, iter, &p->password_form) &&
       ReadParam(m, iter, &p->security_info) &&
@@ -817,8 +814,6 @@ struct ParamTraits<ViewHostMsg_FrameNavigate_Params> {
     LogParam(p.should_update_history, l);
     l->append(L", ");
     LogParam(p.searchable_form_url, l);
-    l->append(L", ");
-    LogParam(p.searchable_form_element_name, l);
     l->append(L", ");
     LogParam(p.searchable_form_encoding, l);
     l->append(L", ");

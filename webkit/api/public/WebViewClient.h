@@ -193,7 +193,7 @@ namespace WebKit {
             WebFrame*, const WebString& message) = 0;
 
         // Shows a context menu with commands relevant to a specific element on
-        // the a given frame. Additional context data is supplied.
+        // the given frame. Additional context data is supplied.
         virtual void showContextMenu(WebFrame*, const WebContextMenuData&) = 0;
 
         // UI ------------------------------------------------------------------
