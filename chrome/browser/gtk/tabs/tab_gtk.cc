@@ -118,7 +118,8 @@ TabGtk::TabGtk(TabDelegate* delegate)
       last_mouse_down_(NULL),
       drag_widget_(NULL),
       title_width_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(drag_end_factory_(this)) {
   event_box_ = gtk_event_box_new();
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
   g_signal_connect(G_OBJECT(event_box_), "button-press-event",
@@ -215,6 +216,19 @@ gboolean TabGtk::OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                               TabGtk* tab) {
   bool canceled = (result == GTK_DRAG_RESULT_USER_CANCELLED);
   tab->EndDrag(canceled);
+  return TRUE;
+}
+
+// static
+gboolean TabGtk::OnDragButtonReleased(GtkWidget* widget, GdkEventButton* button,
+                                      TabGtk* tab) {
+  // We always get this event when gtk is releasing the grab and ending the
+  // drag.  However, if the user ended the drag with space or enter, we don't
+  // get a follow up event to tell us the drag has finished (either a
+  // drag-failed or a drag-end).  So we post a task to manually end the drag.
+  // If GTK+ does send the drag-failed or drag-end event, we cancel the task.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      tab->drag_end_factory_.NewRunnableMethod(&TabGtk::EndDrag, false));
   return TRUE;
 }
 
@@ -319,9 +333,12 @@ void TabGtk::UpdateTooltipState() {
 }
 
 void TabGtk::CreateDragWidget() {
+  DCHECK(!drag_widget_);
   drag_widget_ = gtk_invisible_new();
   g_signal_connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailed), this);
+  g_signal_connect(drag_widget_, "button-release-event",
+                   G_CALLBACK(OnDragButtonReleased), this);
   g_signal_connect_after(drag_widget_, "drag-begin",
                          G_CALLBACK(OnDragBegin), this);
 }
@@ -338,7 +355,7 @@ void TabGtk::StartDragging(gfx::Point drag_offset) {
 
   GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(
       GtkDndUtil::CHROME_TAB);
-  gtk_drag_begin(drag_widget_, list, GDK_ACTION_COPY,
+  gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE,
                  1,  // Drags are always initiated by the left button.
                  last_mouse_down_);
 
@@ -346,6 +363,10 @@ void TabGtk::StartDragging(gfx::Point drag_offset) {
 }
 
 void TabGtk::EndDrag(bool canceled) {
+  // Make sure we only run EndDrag once by canceling any tasks that want
+  // to call EndDrag.
+  drag_end_factory_.RevokeAll();
+
   // We must let gtk clean up after we handle the drag operation, otherwise
   // there will be outstanding references to the drag widget when we try to
   // destroy it.

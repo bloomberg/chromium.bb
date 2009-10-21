@@ -122,6 +122,14 @@ class TabGtk : public TabRendererGtk,
   static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                                GtkDragResult result, TabGtk* tab);
 
+  // When a drag is ending, a fake button release event is passed to the drag
+  // widget to fake letting go of the mouse button.  We need a callback for
+  // this event because it is the only way to catch drag end events when the
+  // user presses space or return.
+  static gboolean OnDragButtonReleased(GtkWidget* widget,
+                                       GdkEventButton* event,
+                                       TabGtk* tab);
+
   // Shows the context menu.
   void ShowContextMenu();
 
@@ -178,6 +186,13 @@ class TabGtk : public TabRendererGtk,
 
   // Used to destroy the drag widget after a return to the message loop.
   ScopedRunnableMethodFactory<TabGtk> destroy_factory_;
+
+  // Due to a bug in GTK+, we need to force the end of a drag when we get a
+  // mouse release event on the the dragged widget, otherwise, we don't know
+  // when the drag has ended when the user presses space or enter.  We queue
+  // a task to end the drag and only run it if GTK+ didn't send us the
+  // drag-failed event.
+  ScopedRunnableMethodFactory<TabGtk> drag_end_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGtk);
 };
