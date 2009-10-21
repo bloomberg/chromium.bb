@@ -8,6 +8,7 @@
 #include "base/time.h"
 
 class BaseDownloadItemModel;
+@class ChromeUILocalizer;
 @class DownloadItemCell;
 class DownloadItem;
 class DownloadItemMac;
@@ -30,10 +31,17 @@ class DownloadShelfContextMenuMac;
   // This is shown instead of progressView_ for dangerous downloads.
   IBOutlet NSView* dangerousDownloadView_;
   IBOutlet NSTextField* dangerousDownloadLabel_;
+  IBOutlet NSButton* dangerousDownloadConfirmButton_;
 
-  // So we can find out how much the tweaker changed sizes to update the
+  // Needed to find out how much the tweaker changed sizes to update the
   // other views.
   IBOutlet GTMWidthBasedTweaker* buttonTweaker_;
+
+  // Because the confirm text and button for dangerous downloads are determined
+  // at runtime, an outlet to the localizer is needed to construct the layout
+  // tweaker in awakeFromNib in order to adjust the UI after all strings are
+  // determined.
+  IBOutlet ChromeUILocalizer* localizer_;
 
   IBOutlet NSImageView* image_;
 

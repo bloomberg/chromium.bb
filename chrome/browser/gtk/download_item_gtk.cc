@@ -314,7 +314,9 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
-        l10n_util::GetStringUTF8(IDS_SAVE_DOWNLOAD).c_str());
+        l10n_util::GetStringUTF8(
+            DownloadManager::IsExtensionInstall(download_model->download()) ?
+                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAccept), this);
     gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_accept, false, 0);
@@ -565,15 +567,18 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
 
 void DownloadItemGtk::UpdateDangerWarning() {
   if (dangerous_prompt_) {
-    std::wstring elided_filename = gfx::ElideFilename(
-        get_download()->original_name(),
-        gfx::Font(), kTextWidth);
+    std::string dangerous_warning;
+    if (DownloadManager::IsExtensionInstall(get_download())) {
+      dangerous_warning =
+          l10n_util::GetStringUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+    } else {
+      std::wstring elided_filename = gfx::ElideFilename(
+          get_download()->original_name(), gfx::Font(), kTextWidth);
 
-    std::string dangerous_warning =
-        DownloadManager::IsExtensionInstall(get_download()) ?
-            l10n_util::GetStringUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION) :
-            l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                      WideToUTF16(elided_filename));
+      dangerous_warning =
+          l10n_util::GetStringFUTF8(
+              IDS_PROMPT_DANGEROUS_DOWNLOAD, WideToUTF16(elided_filename));
+    }
 
     if (theme_provider_->UseGtkTheme()) {
       gtk_image_set_from_stock(GTK_IMAGE(dangerous_image_),

@@ -286,8 +286,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     drop_down_state_ = DANGEROUS;
 
     warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-    save_button_ = new views::NativeButton(
-        this, l10n_util::GetString(IDS_SAVE_DOWNLOAD));
+    save_button_ = new views::NativeButton(this, l10n_util::GetString(
+        DownloadManager::IsExtensionInstall(download) ?
+            IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD));
     save_button_->set_ignore_minimum_size(true);
     discard_button_ = new views::NativeButton(
         this, l10n_util::GetString(IDS_DISCARD_DOWNLOAD));
@@ -320,16 +321,15 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     if (extension.length() > kFileNameMaxLength / 2)
       ElideString(extension, kFileNameMaxLength / 2, &extension);
 
-    ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
-    std::wstring filename = rootname + L"." + extension;
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      l10n_util::WrapStringWithLTRFormatting(&filename);
-
     // The dangerous download label text is different for an extension file.
     if (DownloadManager::IsExtensionInstall(download)) {
       dangerous_download_label_ = new views::Label(
           l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
     } else {
+      ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
+      std::wstring filename = rootname + L"." + extension;
+      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+        l10n_util::WrapStringWithLTRFormatting(&filename);
       dangerous_download_label_ = new views::Label(
           l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
     }

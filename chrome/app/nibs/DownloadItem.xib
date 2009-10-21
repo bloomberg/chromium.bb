@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="66"/>
+			<integer value="80"/>
 			<integer value="24"/>
 			<integer value="13"/>
 		</object>
@@ -138,7 +138,7 @@
 												<object class="NSButtonCell" key="NSCell" id="136006556">
 													<int key="NSCellFlags">67239424</int>
 													<int key="NSCellFlags2">134348800</int>
-													<string key="NSContents">^IDS_SAVE_DOWNLOAD</string>
+													<string key="NSContents">SAVE</string>
 													<reference key="NSSupport" ref="26"/>
 													<reference key="NSControlView" ref="185082033"/>
 													<int key="NSButtonFlags">-2038284033</int>
@@ -374,9 +374,6 @@
 					</object>
 				</object>
 			</object>
-			<object class="NSCustomObject" id="410401106">
-				<string key="NSClassName">GTMUILocalizerAndLayoutTweaker</string>
-			</object>
 			<object class="NSCustomObject" id="857584043">
 				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
@@ -546,19 +543,27 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">uiObject_</string>
-						<reference key="source" ref="410401106"/>
-						<reference key="destination" ref="1005"/>
+						<string key="label">image_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="263710528"/>
 					</object>
-					<int key="connectionID">86</int>
+					<int key="connectionID">94</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dangerousDownloadConfirmButton_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="185082033"/>
+					</object>
+					<int key="connectionID">96</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">localizer_</string>
-						<reference key="source" ref="410401106"/>
+						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="857584043"/>
 					</object>
-					<int key="connectionID">87</int>
+					<int key="connectionID">98</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -566,15 +571,7 @@
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="411206214"/>
 					</object>
-					<int key="connectionID">93</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">image_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="263710528"/>
-					</object>
-					<int key="connectionID">94</int>
+					<int key="connectionID">99</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -794,11 +791,6 @@
 						<reference key="parent" ref="979385092"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">82</int>
-						<reference key="object" ref="410401106"/>
-						<reference key="parent" ref="0"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">83</int>
 						<reference key="object" ref="857584043"/>
 						<reference key="parent" ref="0"/>
@@ -846,7 +838,6 @@
 					<string>72.IBPluginDependency</string>
 					<string>73.IBPluginDependency</string>
 					<string>74.IBPluginDependency</string>
-					<string>82.IBPluginDependency</string>
 					<string>83.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
@@ -891,7 +882,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -910,7 +900,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">94</int>
+			<int key="maxID">99</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -967,9 +957,11 @@
 							<string>buttonTweaker_</string>
 							<string>cell_</string>
 							<string>completeDownloadMenu_</string>
+							<string>dangerousDownloadConfirmButton_</string>
 							<string>dangerousDownloadLabel_</string>
 							<string>dangerousDownloadView_</string>
 							<string>image_</string>
+							<string>localizer_</string>
 							<string>progressView_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -978,9 +970,11 @@
 							<string>GTMWidthBasedTweaker</string>
 							<string>DownloadItemCell</string>
 							<string>NSMenu</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSImageView</string>
+							<string>ChromeUILocalizer</string>
 							<string>NSButton</string>
 						</object>
 					</object>
@@ -1013,29 +1007,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">GTMUILocalizerAndLayoutTweaker</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>localizerOwner_</string>
-							<string>localizer_</string>
-							<string>uiObject_</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>GTMUILocalizer</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="609436413">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">GTMWidthBasedTweaker</string>
 					<string key="superclassName">NSView</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1053,7 +1024,10 @@
 							<string>NSView</string>
 						</object>
 					</object>
-					<reference key="sourceIdentifier" ref="609436413"/>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h</string>
+					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">GradientButtonCell</string>

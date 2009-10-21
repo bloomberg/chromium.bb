@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
@@ -93,6 +94,12 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)awakeFromNib {
+  [self setStateFromDownload:bridge_->download_model()];
+
+  GTMUILocalizerAndLayoutTweaker* localizerAndLayoutTweaker =
+      [[[GTMUILocalizerAndLayoutTweaker alloc] init] autorelease];
+  [localizerAndLayoutTweaker applyLocalizer:localizer_ tweakingUI:[self view]];
+
   // Since the shelf keeps laying out views as more items are added, relying on
   // the WidthBaseTweaker to resize the dangerous download part does not work.
   DCHECK(buttonTweaker_ != nil);
@@ -110,7 +117,6 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DCHECK(alertIcon);
   [image_ setImage:alertIcon];
 
-  [self setStateFromDownload:bridge_->download_model()];
   bridge_->LoadIcon();
 }
 
@@ -121,16 +127,27 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   if (downloadModel->download()->safety_state() == DownloadItem::DANGEROUS) {
     [self setState:kDangerous];
 
-    // Set label.
-    NSFont* font = [dangerousDownloadLabel_ font];
-    gfx::Font fontChr = gfx::Font::CreateFont(
-        base::SysNSStringToWide([font fontName]), [font pointSize]);
-    string16 elidedFilename = WideToUTF16(ElideFilename(
-        downloadModel->download()->original_name(), fontChr, kTextWidth));
-    NSString* dangerousWarning =
-        l10n_util::GetNSStringFWithFixup(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                         elidedFilename);
+    NSString* dangerousWarning;
+    NSString* confirmButtonTitle;
+    // The dangerous download label and button text are different for an
+    // extension file.
+    if (DownloadManager::IsExtensionInstall(downloadModel->download())) {
+      dangerousWarning = l10n_util::GetNSStringWithFixup(
+          IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+      confirmButtonTitle = l10n_util::GetNSStringWithFixup(
+          IDS_CONTINUE_EXTENSION_DOWNLOAD);
+    } else {
+      NSFont* font = [dangerousDownloadLabel_ font];
+      gfx::Font chromeFont = gfx::Font::CreateFont(
+          base::SysNSStringToWide([font fontName]), [font pointSize]);
+      string16 elidedFilename = WideToUTF16(ElideFilename(
+          downloadModel->download()->original_name(), chromeFont, kTextWidth));
+      dangerousWarning = l10n_util::GetNSStringFWithFixup(
+          IDS_PROMPT_DANGEROUS_DOWNLOAD, elidedFilename);
+      confirmButtonTitle = l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
+    }
     [dangerousDownloadLabel_ setStringValue:dangerousWarning];
+    [dangerousDownloadConfirmButton_ setTitle:confirmButtonTitle];
     return;
   }
 

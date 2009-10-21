@@ -1997,6 +1997,10 @@ each locale. -->
                desc="Text for the button used to validate the downloading of a dangerous download.">
         Save
       </message>
+      <message name="IDS_CONTINUE_EXTENSION_DOWNLOAD"
+               desc="Text for the button used to validate the installation of an extension.">
+        Continue
+      </message>
       <message name="IDS_DISCARD_DOWNLOAD"
                desc="Text for the button used to stop a dangerous download.">
         Discard
