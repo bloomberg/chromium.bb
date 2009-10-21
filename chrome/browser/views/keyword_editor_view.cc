@@ -52,6 +52,10 @@ static views::Window* open_window = NULL;
 
 // static
 void KeywordEditorView::Show(Profile* profile) {
+  // If this panel is opened from an Incognito window, closing that window can
+  // leave this with a stale pointer. Use the original profile instead.
+  // See http://crbug.com/23359.
+  profile = profile ->GetOriginalProfile();
   if (!profile->GetTemplateURLModel())
     return;
 

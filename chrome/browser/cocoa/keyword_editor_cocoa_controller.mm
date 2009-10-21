@@ -134,9 +134,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   // opened from an incognito window, which can leave the panel
   // holding onto a stale profile.  Since the same panel is used
   // either way, arrange to use the original profile instead.
-  if (profile->IsOffTheRecord()) {
-    profile = profile->GetOriginalProfile();
-  }
+  profile = profile->GetOriginalProfile();
 
   ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
   DCHECK(map != NULL);
@@ -326,7 +324,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   // Set the favicon and title for the search engine in the name column.
   if ([[tableColumn identifier] isEqualToString:@"name"]) {
     DCHECK([cell isKindOfClass:[NSButtonCell class]]);
-	NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
+    NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
     std::wstring title = controller_->table_model()->GetText(row,
         IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN);
     [buttonCell setTitle:base::SysWideToNSString(title)];
