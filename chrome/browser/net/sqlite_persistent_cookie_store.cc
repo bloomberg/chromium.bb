@@ -14,55 +14,9 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 using base::Time;
-
-namespace {
-
-// The UI thread can shut down the DB thread. Thus when we want to post a task
-// to the DB thread from the IO thread we must first pipe through the UI thread
-// to make sure the DB thread still exists. This class handles that for us. If
-// the DB thread does not still exist, then |callback_task_| will be dropped.
-class UIProxyForDBTask : public Task {
- public:
-  explicit UIProxyForDBTask(Task* callback_task)
-      : callback_task_(callback_task) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  }
-
-  virtual ~UIProxyForDBTask() {
-  }
-
-  void Post() {
-    ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(FROM_HERE, this);
-  }
-
-  void PostDelayed(int delay_ms) {
-    ChromeThread::GetMessageLoop(ChromeThread::UI)->
-        PostDelayedTask(FROM_HERE, this, delay_ms);
-  }
-
-  virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-    base::Thread* db_thread = g_browser_process->db_thread();
-    if (db_thread)  // db_thread has not been torn down yet.
-      db_thread->message_loop()->PostTask(FROM_HERE, callback_task_);
-    else
-      delete callback_task_;
-
-    callback_task_ = NULL;
-  }
-
- private:
-  // The task to be posted on the DB thread.
-  Task* callback_task_;
-};
-
-}  // namespace
 
 // This class is designed to be shared between any calling threads and the
 // database thread.  It batches operations and commits them on a timer.
@@ -71,8 +25,9 @@ class SQLitePersistentCookieStore::Backend
  public:
   // The passed database pointer must be already-initialized. This object will
   // take ownership.
-  explicit Backend(sql::Connection* db)
+  explicit Backend(sql::Connection* db, MessageLoop* loop)
       : db_(db),
+        background_loop_(loop),
         num_pending_(0) {
     DCHECK(db_) << "Database must exist.";
   }
@@ -132,6 +87,7 @@ class SQLitePersistentCookieStore::Backend
   void InternalBackgroundClose();
 
   sql::Connection* db_;
+  MessageLoop* background_loop_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
@@ -165,7 +121,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(MessageLoop::current() != background_loop_);
 
   // We do a full copy of the cookie here, and hopefully just here.
   scoped_ptr<PendingOperation> po(new PendingOperation(op, key, cc));
@@ -178,21 +134,20 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
     num_pending = ++num_pending_;
   }
 
+  // TODO(abarth): What if the DB thread is being destroyed on the UI thread?
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
-    UIProxyForDBTask* proxy =
-        new UIProxyForDBTask(NewRunnableMethod(this, &Backend::Commit));
-    proxy->PostDelayed(kCommitIntervalMs);
+    background_loop_->PostDelayedTask(FROM_HERE,
+        NewRunnableMethod(this, &Backend::Commit), kCommitIntervalMs);
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
-    UIProxyForDBTask* proxy =
-        new UIProxyForDBTask(NewRunnableMethod(this, &Backend::Commit));
-    proxy->Post();
+    background_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &Backend::Commit));
   }
 }
 
 void SQLitePersistentCookieStore::Backend::Commit() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(MessageLoop::current() == background_loop_);
   PendingOperationsList ops;
   {
     AutoLock locked(pending_lock_);
@@ -281,15 +236,15 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(MessageLoop::current() != background_loop_);
   // Must close the backend on the background thread.
-  UIProxyForDBTask* task = new UIProxyForDBTask(
+  // TODO(abarth): What if the DB thread is being destroyed on the UI thread?
+  background_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Backend::InternalBackgroundClose));
-  task->Post();
 }
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(MessageLoop::current() == background_loop_);
   // Commit any pending operations
   Commit();
 
@@ -297,8 +252,12 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   db_ = NULL;
 }
 
-SQLitePersistentCookieStore::SQLitePersistentCookieStore(const FilePath& path)
-    : path_(path) {
+SQLitePersistentCookieStore::SQLitePersistentCookieStore(
+    const FilePath& path,
+    MessageLoop* background_loop)
+    : path_(path),
+      background_loop_(background_loop) {
+  DCHECK(background_loop) << "SQLitePersistentCookieStore needs a MessageLoop";
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
@@ -394,7 +353,7 @@ bool SQLitePersistentCookieStore::Load(
   }
 
   // Create the backend, this will take ownership of the db pointer.
-  backend_ = new Backend(db.release());
+  backend_ = new Backend(db.release(), background_loop_);
   return true;
 }
 

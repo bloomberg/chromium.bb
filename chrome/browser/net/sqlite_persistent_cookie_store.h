@@ -22,7 +22,8 @@ class MessageLoop;
 class SQLitePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
  public:
-  SQLitePersistentCookieStore(const FilePath& path);
+  SQLitePersistentCookieStore(const FilePath& path,
+                              MessageLoop* background_loop);
   ~SQLitePersistentCookieStore();
 
   virtual bool Load(std::vector<net::CookieMonster::KeyedCanonicalCookie>*);
@@ -41,6 +42,9 @@ class SQLitePersistentCookieStore
 
   FilePath path_;
   scoped_refptr<Backend> backend_;
+
+  // Background MessageLoop on which to access the backend_;
+  MessageLoop* background_loop_;
 
   sql::MetaTable meta_table_;
 

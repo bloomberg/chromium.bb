@@ -164,7 +164,9 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
     DCHECK(!cookie_store_path.empty());
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-        new SQLitePersistentCookieStore(cookie_store_path);
+        new SQLitePersistentCookieStore(
+            cookie_store_path,
+            g_browser_process->db_thread()->message_loop());
     context->cookie_store_ = new net::CookieMonster(cookie_db.get());
   }
 
@@ -191,7 +193,9 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
   DCHECK(!cookie_store_path.empty());
 
   scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-      new SQLitePersistentCookieStore(cookie_store_path);
+      new SQLitePersistentCookieStore(
+          cookie_store_path,
+          g_browser_process->db_thread()->message_loop());
   net::CookieMonster* cookie_monster = new net::CookieMonster(cookie_db.get());
 
   // Enable cookies for extension URLs only.
