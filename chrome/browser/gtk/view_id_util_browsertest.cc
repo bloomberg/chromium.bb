@@ -30,6 +30,10 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
     if (i == VIEW_ID_BOOKMARK_MENU)
       continue;
 
+    // Extension shelf is being removed, http://crbug.com/25106.
+    if (i == VIEW_ID_DEV_EXTENSION_SHELF)
+      continue;
+
     CheckViewID(static_cast<ViewID>(i), true);
   }
 

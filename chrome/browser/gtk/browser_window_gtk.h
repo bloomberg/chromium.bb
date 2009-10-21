@@ -31,7 +31,6 @@ class BrowserTitlebar;
 class BrowserToolbarGtk;
 class CustomDrawButton;
 class DownloadShelfGtk;
-class ExtensionShelfGtk;
 class FindBarGtk;
 class InfoBarContainerGtk;
 class LocationBar;
@@ -214,8 +213,7 @@ class BrowserWindowGtk : public BrowserWindow,
   // GtkAlignment that holds the interior components of the chromium window.
   // This is used to draw the custom frame border and content shadow.
   GtkWidget* window_container_;
-  // VBox that holds everything (tabs, toolbar, bookmarks bar, tab contents,
-  // and extension shelf).
+  // VBox that holds everything (tabs, toolbar, bookmarks bar, tab contents).
   GtkWidget* window_vbox_;
   // VBox that holds everything below the toolbar.
   GtkWidget* render_area_vbox_;
@@ -319,7 +317,6 @@ class BrowserWindowGtk : public BrowserWindow,
   bool IsTabStripSupported() const;
   bool IsToolbarSupported() const;
   bool IsBookmarkBarSupported() const;
-  bool IsExtensionShelfSupported() const;
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
@@ -355,9 +352,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // The object that manages the bookmark bar. This will be NULL if the
   // bookmark bar is not supported.
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
-
-  // The object that manages the extension shelf.
-  scoped_ptr<ExtensionShelfGtk> extension_shelf_;
 
   // The status bubble manager.  Always non-NULL.
   scoped_ptr<StatusBubbleGtk> status_bubble_;

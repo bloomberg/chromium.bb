@@ -15,11 +15,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/extension_shelf_gtk.h"
-#else
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_shelf.h"
-#endif  // defined(TOOLKIT_GTK)
+#endif
 
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"

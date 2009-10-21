@@ -45,7 +45,6 @@
 #include "chrome/browser/gtk/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
-#include "chrome/browser/gtk/extension_shelf_gtk.h"
 #include "chrome/browser/gtk/find_bar_gtk.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -1673,12 +1672,6 @@ void BrowserWindowGtk::InitWidgets() {
                      G_CALLBACK(&OnCompactNavSpacerExpose), this);
   }
 #endif
-  if (IsExtensionShelfSupported()) {
-    extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
-                                                 browser_.get()));
-    gtk_box_pack_end(GTK_BOX(window_vbox_), extension_shelf_->widget(),
-                     FALSE, FALSE, 0);
-  }
 
   // This vbox surrounds the render area: find bar, info bars and render view.
   // The reason is that this area as a whole needs to be grouped in its own
@@ -2158,8 +2151,7 @@ void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
   if (!IsToolbarSupported())
     toolbar_->Hide();
 
-  // If the bookmark bar or extension shelf is unsupported, then we never
-  // create them.
+  // If the bookmark bar shelf is unsupported, then we never create it.
 }
 
 bool BrowserWindowGtk::IsTabStripSupported() const {
@@ -2173,10 +2165,6 @@ bool BrowserWindowGtk::IsToolbarSupported() const {
 
 bool BrowserWindowGtk::IsBookmarkBarSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
-}
-
-bool BrowserWindowGtk::IsExtensionShelfSupported() const {
-  return browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF);
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -2247,8 +2235,8 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
 
   if (!is_floating) {
     // Place the bookmark bar at the end of |window_vbox_|; this happens after
-    // we have placed the extension shelf and render area at the end of
-    // |window_vbox_| so we will be above the render area.
+    // we have placed the render area at the end of |window_vbox_| so we will
+    // be above the render area.
     gtk_box_pack_end(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
                      FALSE, FALSE, 0);
   } else {
