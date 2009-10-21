@@ -31,6 +31,7 @@
 // --timeout=millisecond: time out as specified in millisecond during each
 //                        page load.
 // --nopagedown: won't simulate page down key presses after page load.
+// --noclearprofile: do not clear profile dir before firing up each time.
 // --savedebuglog: save Chrome, V8, and test debug log for each page loaded.
 
 #include <fstream>
@@ -79,6 +80,7 @@ const char kEndURLSwitch[] = "endurl";
 const char kLogFileSwitch[] = "logfile";
 const char kTimeoutSwitch[] = "timeout";
 const char kNoPageDownSwitch[] = "nopagedown";
+const char kNoClearProfileSwitch[] = "noclearprofile";
 const char kSaveDebugLogSwitch[] = "savedebuglog";
 
 const char kDefaultServerUrl[] = "http://urllist.com";
@@ -105,6 +107,7 @@ bool g_memory_usage = false;
 bool g_continuous_load = false;
 bool g_browser_existing = false;
 bool g_page_down = true;
+bool g_clear_profile = true;
 std::string g_end_url;
 FilePath g_log_file_path;
 int g_timeout_ms = -1;
@@ -445,6 +448,7 @@ class PageLoadTest : public UITest {
   virtual void SetUp() {
     UITest::SetUp();
     g_browser_existing = true;
+    clear_profile_ = g_clear_profile;
 
     // Initialize crash_dumps_dir_path_.
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
@@ -708,6 +712,9 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kNoPageDownSwitch))
     g_page_down = false;
+
+  if (parsed_command_line.HasSwitch(kNoClearProfileSwitch))
+    g_clear_profile = false;
 
   if (parsed_command_line.HasSwitch(kSaveDebugLogSwitch)) {
     g_save_debug_log = true;
