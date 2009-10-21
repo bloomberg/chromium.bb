@@ -753,6 +753,21 @@
    fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvP11MessageLoopRKSsS4_E6Tuple3IS2_SsSsEE3RunEv
 }
 {
+   bug_19546c
+   Memcheck:Leak
+   ...
+   fun:_ZN19SafeBrowsingService5StartEv
+   fun:_ZN19SafeBrowsingService10InitializeEP11MessageLoop
+   fun:_ZN22ResourceDispatcherHost10InitializeEv
+   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
+   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
+   fun:_ZN17ExtensionsService4InitEv
+   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
+{
    bug_20111
    Memcheck:Leak
    fun:calloc
