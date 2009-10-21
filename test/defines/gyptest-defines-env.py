@@ -16,7 +16,7 @@ try:
 finally:
   del os.environ['GYP_DEFINES']
 
-test.run_build('defines-env.gyp')
+test.build('defines-env.gyp')
 
 expect = """\
 VALUE is 10
@@ -34,7 +34,7 @@ finally:
 
 test.sleep()
 test.touch('defines.c')
-test.run_build('defines-env.gyp')
+test.build('defines-env.gyp')
 
 expect = """\
 VALUE is 25
@@ -52,7 +52,7 @@ finally:
 
 test.sleep()
 test.touch('defines.c')
-test.run_build('defines-env.gyp')
+test.build('defines-env.gyp')
 
 expect = """\
 VALUE is 5
@@ -70,7 +70,7 @@ finally:
 
 test.sleep()
 test.touch('defines.c')
-test.run_build('defines-env.gyp')
+test.build('defines-env.gyp')
 
 expect = """\
 VALUE is 45

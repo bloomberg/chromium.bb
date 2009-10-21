@@ -10,7 +10,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('copies.gyp', chdir='src')
 
-test.build_target('copies.gyp', 'proj2', chdir='src')
+test.build('copies.gyp', 'proj2', chdir='src')
 
 test.run_built_executable('proj1',
                           chdir='src',

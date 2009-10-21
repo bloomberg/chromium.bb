@@ -11,7 +11,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('hello.gyp', '-Gauto_regeneration=0')
 
-test.build_all('hello.gyp')
+test.build('hello.gyp', test.ALL)
 
 test.run_built_executable('hello', stdout="Hello, world!\n")
 
@@ -20,7 +20,7 @@ test.run_built_executable('hello', stdout="Hello, world!\n")
 test.sleep()
 test.write('hello.gyp', test.read('hello2.gyp'))
 
-test.build_all('hello.gyp')
+test.build('hello.gyp', test.ALL)
 
 # Should still be the old executable, as regeneration was disabled.
 test.run_built_executable('hello', stdout="Hello, world!\n")

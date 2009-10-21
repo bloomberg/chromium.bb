@@ -15,7 +15,7 @@ test.run_gyp('assembly.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('assembly.gyp', chdir='relocate/src')
+test.build('assembly.gyp', test.ALL, chdir='relocate/src')
 
 expect = """\
 Hello from program.c

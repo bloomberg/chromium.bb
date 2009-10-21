@@ -11,7 +11,7 @@ test.run_gyp('build/all.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('build/all.gyp', chdir='relocate/src')
+test.build('build/all.gyp', test.ALL, chdir='relocate/src')
 
 chdir = 'relocate/src/build'
 

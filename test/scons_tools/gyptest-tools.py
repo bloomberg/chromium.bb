@@ -11,7 +11,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('tools.gyp')
 
-test.build_all('tools.gyp')
+test.build('tools.gyp', test.ALL)
 
 if test.format == 'scons':
   expect = "Hello, world!\n"

@@ -12,7 +12,7 @@ test.run_gyp('all.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('all.gyp', chdir='relocate/src')
+test.build('all.gyp', test.ALL, chdir='relocate/src')
 
 expect1 = """\
 Hello from prog1.c

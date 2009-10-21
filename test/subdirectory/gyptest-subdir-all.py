@@ -14,7 +14,7 @@ test.run_gyp('prog1.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('prog2.gyp', chdir='relocate/src/subdir')
+test.build('prog2.gyp', test.ALL, chdir='relocate/src/subdir')
 
 test.must_not_exist('relocate/src/prog1'+test._exe)
 

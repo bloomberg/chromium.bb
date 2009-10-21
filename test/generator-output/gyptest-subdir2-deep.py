@@ -19,7 +19,7 @@ test.run_gyp('deeper.gyp',
              '--generator-output=' + test.workpath('gypfiles'),
              chdir='src/subdir2/deeper')
 
-test.build_all('deeper.gyp', chdir='gypfiles')
+test.build('deeper.gyp', test.ALL, chdir='gypfiles')
 
 chdir = 'gypfiles'
 

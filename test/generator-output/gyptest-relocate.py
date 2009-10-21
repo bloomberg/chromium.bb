@@ -27,7 +27,7 @@ test.writable(test.workpath('relocate/src/build'), True)
 test.writable(test.workpath('relocate/src/subdir2/build'), True)
 test.writable(test.workpath('relocate/src/subdir3/build'), True)
 
-test.build_all('prog1.gyp', chdir='relocate/gypfiles')
+test.build('prog1.gyp', test.ALL, chdir='relocate/gypfiles')
 
 chdir = 'relocate/gypfiles'
 

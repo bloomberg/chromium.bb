@@ -12,7 +12,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('module.gyp', chdir='src')
 
-test.build_all('module.gyp', chdir='src')
+test.build('module.gyp', test.ALL, chdir='src')
 
 expect = """\
 Hello from program.c

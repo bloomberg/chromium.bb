@@ -17,7 +17,7 @@ test.run_gyp('library.gyp',
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('library.gyp', chdir='relocate/src')
+test.build('library.gyp', test.ALL, chdir='relocate/src')
 
 expect = """\
 Hello from program.c
@@ -39,7 +39,7 @@ contents = test.read('relocate/src/program.c')
 contents = contents.replace('Hello', 'Hello again')
 test.write('relocate/src/program.c', contents)
 
-test.build_all('library.gyp', chdir='relocate/src')
+test.build('library.gyp', test.ALL, chdir='relocate/src')
 
 expect = """\
 Hello again from program.c
@@ -66,7 +66,7 @@ test.write('relocate/src/program.c', contents)
 # on the generated .vcproj file itself.
 test.touch('relocate/src/lib2.c')
 
-test.build_all('library.gyp', chdir='relocate/src')
+test.build('library.gyp', test.ALL, chdir='relocate/src')
 
 expect = """\
 Hello again again from program.c

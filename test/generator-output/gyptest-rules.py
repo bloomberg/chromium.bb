@@ -26,7 +26,7 @@ test.writable(test.workpath('relocate/rules/subdir1/build'), True)
 test.writable(test.workpath('relocate/rules/subdir2/build'), True)
 test.writable(test.workpath('relocate/rules/subdir2/rules-out'), True)
 
-test.build_all('rules.gyp', chdir='relocate/gypfiles')
+test.build('rules.gyp', test.ALL, chdir='relocate/gypfiles')
 
 expect = """\
 Hello from program.c

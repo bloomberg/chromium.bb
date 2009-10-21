@@ -26,7 +26,7 @@ test.writable(test.workpath('relocate/copies/copies-out'), True)
 test.writable(test.workpath('relocate/copies/subdir/build'), True)
 test.writable(test.workpath('relocate/copies/subdir/copies-out'), True)
 
-test.build_all('copies.gyp', chdir='relocate/gypfiles')
+test.build('copies.gyp', test.ALL, chdir='relocate/gypfiles')
 
 test.must_match(['relocate', 'copies', 'copies-out', 'file1'],
                 "file1 contents\n")

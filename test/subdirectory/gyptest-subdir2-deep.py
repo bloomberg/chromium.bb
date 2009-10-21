@@ -12,7 +12,7 @@ test.run_gyp('prog3.gyp', chdir='src/subdir/subdir2')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('prog3.gyp', chdir='relocate/src/subdir/subdir2')
+test.build('prog3.gyp', test.ALL, chdir='relocate/src/subdir/subdir2')
 
 test.run_built_executable('prog3',
                           chdir='relocate/src/subdir/subdir2',

@@ -10,7 +10,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('bare.gyp', chdir='src')
 test.relocate('src', 'relocate/src')
-test.build_default('bare.gyp', chdir='relocate/src')
+test.build('bare.gyp', chdir='relocate/src')
 
 file_content = 'Hello from bare.py\n'
 

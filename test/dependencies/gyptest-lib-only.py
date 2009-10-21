@@ -11,7 +11,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('lib_only.gyp')
 
-test.build_all('lib_only.gyp')
+test.build('lib_only.gyp', test.ALL)
 
 # Make doesn't put static libs in a common 'lib' directory, like it does with
 # shared libs, so check in the obj path corresponding to the source path.

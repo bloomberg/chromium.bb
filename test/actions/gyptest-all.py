@@ -12,7 +12,7 @@ test.run_gyp('actions.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('actions.gyp', chdir='relocate/src')
+test.build('actions.gyp', test.ALL, chdir='relocate/src')
 
 
 expect = """\

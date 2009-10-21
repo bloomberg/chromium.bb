@@ -12,7 +12,7 @@ test = TestGyp.TestGyp(formats=['make'])
 
 test.run_gyp('hello.gyp')
 
-test.build_all('hello.gyp')
+test.build('hello.gyp', test.ALL)
 
 test.run_built_executable('hello', stdout="Hello, world!\n")
 
@@ -21,7 +21,7 @@ test.run_built_executable('hello', stdout="Hello, world!\n")
 test.sleep()
 test.write('hello.gyp', test.read('hello2.gyp'))
 
-test.build_all('hello.gyp')
+test.build('hello.gyp', test.ALL)
 
 test.run_built_executable('hello', stdout="Hello, two!\n")
 

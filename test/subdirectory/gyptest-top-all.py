@@ -22,7 +22,7 @@ test.run_gyp('prog1.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('prog1.gyp', chdir='relocate/src')
+test.build('prog1.gyp', test.ALL, chdir='relocate/src')
 
 test.run_built_executable('prog1',
                           stdout="Hello from prog1.c\n",

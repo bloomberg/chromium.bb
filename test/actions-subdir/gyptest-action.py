@@ -11,7 +11,7 @@ test = TestGyp.TestGyp(formats=['!xcode'])
 
 test.run_gyp('none.gyp', chdir='src')
 
-test.build_all('none.gyp', chdir='src')
+test.build('none.gyp', test.ALL, chdir='src')
 
 file_content = 'Hello from make-file.py\n'
 subdir_file_content = 'Hello from make-subdir-file.py\n'

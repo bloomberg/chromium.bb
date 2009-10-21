@@ -9,7 +9,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('build/all.gyp', chdir='src')
 
-test.build_all('build/all.gyp', chdir='src')
+test.build('build/all.gyp', test.ALL, chdir='src')
 
 chdir = 'src/build'
 

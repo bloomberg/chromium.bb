@@ -12,6 +12,6 @@ test.run_gyp('extra_targets.gyp')
 
 # This should fail if it tries to build 'c_unused' since 'c/c.c' has a syntax
 # error and won't compile.
-test.build_all('extra_targets.gyp')
+test.build('extra_targets.gyp', test.ALL)
 
 test.pass_test()

@@ -12,7 +12,7 @@ test.run_gyp('includes.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('includes.gyp', chdir='relocate/src')
+test.build('includes.gyp', test.ALL, chdir='relocate/src')
 
 expect = """\
 Hello from includes.c

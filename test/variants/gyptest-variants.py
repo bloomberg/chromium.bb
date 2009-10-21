@@ -18,21 +18,21 @@ test.run_gyp('variants.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.run_build('variants.gyp', chdir='relocate/src')
+test.build('variants.gyp', chdir='relocate/src')
 
 test.run_built_executable('variants',
                           chdir='relocate/src',
                           stdout="Hello, world!\n")
 
 test.sleep()
-test.run_build('variants.gyp', 'VARIANT1=1', chdir='relocate/src')
+test.build('variants.gyp', 'VARIANT1=1', chdir='relocate/src')
 
 test.run_built_executable('variants',
                           chdir='relocate/src',
                           stdout="Hello from VARIANT1\n")
 
 test.sleep()
-test.run_build('variants.gyp', 'VARIANT2=1', chdir='relocate/src')
+test.build('variants.gyp', 'VARIANT2=1', chdir='relocate/src')
 
 test.run_built_executable('variants',
                           chdir='relocate/src',

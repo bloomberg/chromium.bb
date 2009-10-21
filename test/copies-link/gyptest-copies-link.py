@@ -12,6 +12,6 @@ test.run_gyp('copies-link.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_default('copies-link.gyp', chdir='relocate/src')
+test.build('copies-link.gyp', chdir='relocate/src')
 
 test.pass_test()

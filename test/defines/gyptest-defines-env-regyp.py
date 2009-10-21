@@ -22,7 +22,7 @@ finally:
   os.environ['GYP_DEFINES'] = ''
   del os.environ['GYP_DEFINES']
 
-test.run_build('defines.gyp')
+test.build('defines.gyp')
 
 expect = """\
 FOO is defined
@@ -35,7 +35,7 @@ test.run_built_executable('defines', stdout=expect)
 test.sleep()
 test.write('defines.gyp', test.read('defines-env.gyp'))
 
-test.build_all('defines.gyp')
+test.build('defines.gyp', test.ALL)
 
 expect = """\
 VALUE is 50

@@ -10,7 +10,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('defines.gyp')
 
-test.run_build('defines.gyp')
+test.build('defines.gyp')
 
 expect = """\
 FOO is defined

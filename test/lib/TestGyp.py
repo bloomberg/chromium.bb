@@ -201,24 +201,15 @@ class TestGypBase(TestCommon.TestCommon):
   # Abstract methods to be defined by format-specific subclasses.
   #
 
-  def build_all(self, gyp_file, **kw):
-    """
-    Runs an "all" build of the configuration generated from the
-    specified gyp_file.
-    """
-    raise NotImplementedError
-
-  def build_default(self, gyp_file, **kw):
-    """
-    Runs the default build of the configuration generated from the
-    specified gyp_file.
-    """
-    raise NotImplementedError
-
-  def build_target(self, gyp_file, target, **kw):
+  def build(self, gyp_file, target=None, **kw):
     """
     Runs a build of the specified target against the configuration
     generated from the specified gyp_file.
+
+    A 'target' argument of None or the special value TestGyp.DEFAULT
+    specifies the default argument for the underlying build tool.
+    A 'target' argument of TestGyp.ALL specifies the 'all' target
+    (if any) of the underlying build tool.
     """
     raise NotImplementedError
 
@@ -236,7 +227,7 @@ class TestGypBase(TestCommon.TestCommon):
     """
     Verifies that a build of the specified target is up to date.
 
-    The subclass should implement this by calling run_build()
+    The subclass should implement this by calling build()
     (or a reasonable equivalent), checking whatever conditions
     will tell it the build was an "up to date" null build, and
     failing if it isn't.
@@ -259,33 +250,28 @@ class TestGypMake(TestGypBase):
   format = 'make'
   build_tool_list = ['make']
   ALL = 'all'
-  def build_all(self, gyp_file, **kw):
-    """
-    Builds the Make 'all' target to build all targets for the Makefiles
-    generated from the specified gyp_file.
-    """
-    self.run_build(gyp_file, 'all', **kw)
-  def build_default(self, gyp_file, **kw):
-    """
-    Runs Make with no additional command-line arguments to get the
-    default build for the Makefiles generated from the specified gyp_file.
-    """
-    self.run_build(gyp_file, **kw)
-  def build_target(self, gyp_file, target, **kw):
-    """
-    Runs a Make build with the specified target on the command line
-    to build just that target using the Makefile generated from the
-    specified gyp_file.
-    """
-    self.run_build(gyp_file, target, **kw)
-  def run_build(self, gyp_file, *args, **kw):
+  def build(self, gyp_file, target=None, **kw):
     """
     Runs a Make build using the Makefiles generated from the specified
     gyp_file.
     """
+    arguments = kw.get('arguments', [])
     if self.configuration:
-      args += ('BUILDTYPE=' + self.configuration,)
-    return self.run(program=self.build_tool, arguments=args, **kw)
+      arguments.append('BUILDTYPE=' + self.configuration)
+    if target not in (None, self.DEFAULT):
+      arguments.append(target)
+    kw['arguments'] = arguments
+    return self.run(program=self.build_tool, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Make target is up to date.
+    """
+    if target in (None, self.DEFAULT):
+      message_target = 'all'
+    else:
+      message_target = target
+    kw['stdout'] = "make: Nothing to be done for `%s'.\n" % message_target
+    return self.build(gyp_file, target, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Make.
@@ -311,17 +297,6 @@ class TestGypMake(TestGypBase):
     lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
                              self._lib)
     self.must_not_exist(lib_path)
-  def up_to_date(self, gyp_file, target=None, **kw):
-    """
-    Verifies that a build of the specified Make target is up to date.
-    """
-    if target == self.DEFAULT:
-      args = ()
-      target = 'all'
-    else:
-      args = (target,)
-    kw['stdout'] = "make: Nothing to be done for `%s'.\n" % target
-    return self.run_build(gyp_file, *args, **kw)
 
 
 class TestGypMSVS(TestGypBase):
@@ -340,29 +315,6 @@ class TestGypMSVS(TestGypBase):
   # Directly executing devenv.exe only sends output to BuildLog.htm.
   build_tool_list = [None, 'devenv.com']
 
-  def build_all(self, gyp_file, **kw):
-    """
-    Runs devenv.com with no target-specific options to get the "all"
-    build for the Visual Studio configuration generated from the
-    specified gyp_file.
-
-    (NOTE:  This is the same as the default, our generated Visual Studio
-    configuration doesn't create an explicit "all" target.)
-    """
-    return self.run_build(gyp_file, **kw)
-  def build_default(self, gyp_file, **kw):
-    """
-    Runs devenv.com with no target-specific options to get the default
-    build for the Visual Studio configuration generated from the
-    specified gyp_file.
-    """
-    return self.run_build(gyp_file, **kw)
-  def build_target(self, gyp_file, target, **kw):
-    """
-    Uses the devenv.com /Project option to build the specified target with
-    the Visual Studio configuration generated from the specified gyp_file.
-    """
-    return self.run_build(gyp_file, '/Project', target, **kw)
   def initialize_build_tool(self):
     """
     Initializes the Visual Studio .build_tool parameter, searching %PATH%
@@ -387,16 +339,36 @@ class TestGypMSVS(TestGypBase):
         if os.path.exists(bt):
           self.build_tool = bt
           break
-  def run_build(self, gyp_file, *args, **kw):
+  def build(self, gyp_file, target=None, **kw):
     """
     Runs a Visual Studio build using the configuration generated
     from the specified gyp_file.
     """
     configuration = self.configuration or 'Default'
-    args = (gyp_file.replace('.gyp', '.sln'), '/Build', configuration) + args
+    arguments = kw.get('arguments', [])
+    arguments.extend([gyp_file.replace('.gyp', '.sln'),
+                      '/Build',
+                      configuration])
+    # Note:  the Visual Studio generator doesn't add an explicit 'all'
+    # target, so we just treat it the same as the default.
+    if target not in (None, self.ALL, self.DEFAULT):
+      arguments.extend(['/Project', target])
     if self.configuration:
-      args += ('/ProjectConfig', self.configuration,)
-    return self.run(program=self.build_tool, arguments=args, **kw)
+      arguments.extend(['/ProjectConfig', self.configuration])
+    kw['arguments'] = arguments
+    return self.run(program=self.build_tool, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Visual Studio target is up to date.
+    """
+    result = self.build(gyp_file, target, **kw)
+    if not result:
+      stdout = self.stdout()
+      m = self.up_to_date_re.search(stdout)
+      if not m or m.group(1) == '0':
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Visual Studio.
@@ -405,19 +377,6 @@ class TestGypMSVS(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, '%s.exe' % name)]
     return self.run(program=program, *args, **kw)
-  def up_to_date(self, gyp_file, target=None, **kw):
-    """
-    Verifies that a build of the specified Visual Studio target is up to date.
-    """
-    args = ()
-    result = self.run_build(gyp_file, *args, **kw)
-    if not result:
-      stdout = self.stdout()
-      m = self.up_to_date_re.search(stdout)
-      if not m or m.group(1) == '0':
-        self.report_not_up_to_date()
-        self.fail_test()
-    return result
   def built_lib_must_exist(self, name, *args, **kw):
     configuration = self.configuration or 'Default'
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
@@ -435,52 +394,37 @@ class TestGypSCons(TestGypBase):
   format = 'scons'
   build_tool_list = ['scons', 'scons.py']
   ALL = 'all'
-  def build_all(self, gyp_file, **kw):
-    """
-    Builds the scons 'all' target to build all targets for the
-    SCons configuration generated from the specified gyp_file.
-    """
-    self.run_build(gyp_file, 'all', **kw)
-  def build_default(self, gyp_file, **kw):
-    """
-    Runs scons with no additional command-line arguments to get the
-    default build for the SCons configuration generated from the
-    specified gyp_file.
-    """
-    self.run_build(gyp_file, **kw)
-  def build_target(self, gyp_file, target, **kw):
-    """
-    Runs a scons build with the specified target on the command line to
-    build just that target using the SCons configuration generated from
-    the specified gyp_file.
-    """
-    self.run_build(gyp_file, target, **kw)
-  def up_to_date(self, gyp_file, target=None, **kw):
-    """
-    Verifies that a build of the specified SCons target is up to date.
-    """
-    up_to_date_lines = []
-    if target == self.DEFAULT:
-      up_to_date_targets = 'all'
-      args = ('-Q',)
-    else:
-      up_to_date_targets = target
-      args = ('-Q', target)
-    for arg in up_to_date_targets.split():
-      up_to_date_lines.append("scons: `%s' is up to date.\n" % arg)
-    kw['stdout'] = ''.join(up_to_date_lines)
-    return self.run_build(gyp_file, *args, **kw)
-  def run_build(self, gyp_file, *args, **kw):
+  def build(self, gyp_file, target=None, **kw):
     """
     Runs a scons build using the SCons configuration generated from the
     specified gyp_file.
     """
+    arguments = kw.get('arguments', [])
     dirname = os.path.dirname(gyp_file)
     if dirname:
-      args += ('-C', dirname)
+      arguments.extend(['-C', dirname])
     if self.configuration:
-      args += ('--mode=' + self.configuration,)
-    return self.run(program=self.build_tool, arguments=args, **kw)
+      arguments.append('--mode=' + self.configuration)
+    if target not in (None, self.DEFAULT):
+      arguments.append(target)
+    kw['arguments'] = arguments
+    return self.run(program=self.build_tool, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified SCons target is up to date.
+    """
+    if target in (None, self.DEFAULT):
+      up_to_date_targets = 'all'
+    else:
+      up_to_date_targets = target
+    up_to_date_lines = []
+    for arg in up_to_date_targets.split():
+      up_to_date_lines.append("scons: `%s' is up to date.\n" % arg)
+    kw['stdout'] = ''.join(up_to_date_lines)
+    arguments = kw.get('arguments', [])
+    arguments.append('-Q')
+    kw['arguments'] = arguments
+    return self.build(gyp_file, target, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by scons.
@@ -525,36 +469,37 @@ class TestGypXcode(TestGypBase):
 
   up_to_date_ending = 'Checking Dependencies...\n** BUILD SUCCEEDED **\n'
 
-  def build_all(self, gyp_file, **kw):
-    """
-    Uses the xcodebuild -alltargets option to build all targets for the
-    .xcodeproj generated from the specified gyp_file.
-    """
-    return self.run_build(gyp_file, '-alltargets', **kw)
-  def build_default(self, gyp_file, **kw):
-    """
-    Runs xcodebuild with no target-specific options to get the default
-    build for the .xcodeproj generated from the specified gyp_file.
-    """
-    return self.run_build(gyp_file, **kw)
-  def build_target(self, gyp_file, target, **kw):
-    """
-    Uses the xcodebuild -target option to build the specified target
-    with the .xcodeproj generated from the specified gyp_file.
-    """
-    return self.run_build(gyp_file, '-target', target, **kw)
-  def run_build(self, gyp_file, *args, **kw):
+  def build(self, gyp_file, target=None, **kw):
     """
     Runs an xcodebuild using the .xcodeproj generated from the specified
     gyp_file.
     """
-    args = ('-project', gyp_file.replace('.gyp', '.xcodeproj')) + args
+    arguments = kw.get('arguments', [])
+    arguments.extend(['-project', gyp_file.replace('.gyp', '.xcodeproj')])
+    if target == self.ALL:
+      arguments.append('-alltargets',)
+    elif target not in (None, self.DEFAULT):
+      arguments.extend(['-target', target])
     if self.configuration:
-      args += ('-configuration', self.configuration)
+      arguments.extend(['-configuration', self.configuration])
     symroot = kw.get('SYMROOT', '$SRCROOT/build')
     if symroot:
-      args += ('SYMROOT='+symroot,) + args
-    return self.run(program=self.build_tool, arguments=args, **kw)
+      arguments.append('SYMROOT='+symroot)
+    kw['arguments'] = arguments
+    return self.run(program=self.build_tool, **kw)
+  def up_to_date(self, gyp_file, target=None, **kw):
+    """
+    Verifies that a build of the specified Xcode target is up to date.
+    """
+    result = self.build(gyp_file, target, **kw)
+    if not result:
+      output = self.stdout()
+      for expression in self.strip_up_to_date_expressions:
+        output = expression.sub('', output)
+      if not output.endswith(self.up_to_date_ending):
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by xcodebuild.
@@ -574,25 +519,6 @@ class TestGypXcode(TestGypBase):
     lib_path = self.workpath('build', configuration,
                              self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)
-  def up_to_date(self, gyp_file, target=None, **kw):
-    """
-    Verifies that a build of the specified Xcode target is up to date.
-    """
-    if target == self.DEFAULT:
-      args = ()
-    elif target == self.ALL:
-      args = ('-alltargets',)
-    else:
-      args = ('-target', target)
-    result = self.run_build(gyp_file, *args, **kw)
-    if not result:
-      output = self.stdout()
-      for expression in self.strip_up_to_date_expressions:
-        output = expression.sub('', output)
-      if not output.endswith(self.up_to_date_ending):
-        self.report_not_up_to_date()
-        self.fail_test()
-    return result
 
 
 format_class_list = [

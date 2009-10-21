@@ -11,7 +11,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('hello.gyp')
 
-test.build_default('hello.gyp')
+test.build('hello.gyp')
 
 test.run_built_executable('hello', stdout="Hello, world!\n")
 

@@ -33,7 +33,7 @@ test.writable('relocate', False)
 test.writable('relocate/builddir', True)
 
 # Suppress the test infrastructure's setting SYMROOT on the command line.
-test.build_default('prog1.gyp', SYMROOT=None, chdir='relocate/src')
+test.build('prog1.gyp', SYMROOT=None, chdir='relocate/src')
 
 expect1 = """\
 Hello from prog1.c

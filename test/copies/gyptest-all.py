@@ -12,7 +12,7 @@ test.run_gyp('copies.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-test.build_all('copies.gyp', chdir='relocate/src')
+test.build('copies.gyp', test.ALL, chdir='relocate/src')
 
 test.must_match(['relocate', 'src', 'copies-out', 'file1'], "file1 contents\n")
 

@@ -33,7 +33,7 @@ test.writable(test.workpath('relocate/actions/subdir1/actions-out'), True)
 test.writable(test.workpath('relocate/actions/subdir2/build'), True)
 test.writable(test.workpath('relocate/actions/subdir2/actions-out'), True)
 
-test.build_all('actions.gyp', chdir='relocate/gypfiles')
+test.build('actions.gyp', test.ALL, chdir='relocate/gypfiles')
 
 expect = """\
 Hello from program.c

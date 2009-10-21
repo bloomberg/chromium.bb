@@ -20,7 +20,7 @@ test.run_gyp('prog1.gyp', '-Dset_symroot=1', '--depth=.', chdir='src')
 test.relocate('src', 'relocate/src')
 
 # Suppress the test infrastructure's setting SYMROOT on the command line.
-test.build_all('prog1.gyp', SYMROOT=None, chdir='relocate/src')
+test.build('prog1.gyp', test.ALL, SYMROOT=None, chdir='relocate/src')
 
 test.run_built_executable('prog1',
                           stdout="Hello from prog1.c\n",
