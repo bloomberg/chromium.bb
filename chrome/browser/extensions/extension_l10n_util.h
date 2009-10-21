@@ -29,8 +29,8 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
 // If file name starts with . return true (helps testing extensions under svn).
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
+               const std::string& locale_name,
                std::set<std::string>* valid_locales,
-               std::string* locale_name,
                std::string* error);
 
 // Adds valid locales to the extension.
@@ -44,16 +44,17 @@ bool GetValidLocales(const FilePath& locale_path,
                      std::set<std::string>* locales,
                      std::string* error);
 
-// Loads messages file for default locale, and application locale (application
-// locale doesn't have to exist).
-// It creates simplified in-memory representation of name-value pairs, where
-// value part is actual message with placeholders resolved.
+// Loads messages file for default locale, and application locales (application
+// locales doesn't have to exist). Application locale is current locale and its
+// parents.
 // Returns message bundle if it can load default locale messages file, and all
 // messages are valid, else returns NULL and sets error.
-ExtensionMessageBundle* LoadMessageCatalogs(const FilePath& locale_path,
-                                            const std::string& default_locale,
-                                            const std::string& app_locale,
-                                            std::string* error);
+ExtensionMessageBundle* LoadMessageCatalogs(
+    const FilePath& locale_path,
+    const std::string& default_locale,
+    const std::string& app_locale,
+    const std::set<std::string>& valid_locales,
+    std::string* error);
 
 // Returns relative l10n path to the resource.
 FilePath GetL10nRelativePath(const FilePath& relative_resource_path);

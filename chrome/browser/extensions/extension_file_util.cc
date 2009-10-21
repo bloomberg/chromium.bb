@@ -362,6 +362,7 @@ ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
     extension_l10n_util::LoadMessageCatalogs(locale_path,
                                              default_locale,
                                              app_locale,
+                                             locales,
                                              error);
   return message_bundle;
 }

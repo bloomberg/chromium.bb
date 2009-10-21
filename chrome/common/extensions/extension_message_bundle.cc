@@ -5,8 +5,10 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 
 #include <string>
+#include <vector>
 
 #include "base/hash_tables.h"
+#include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -34,52 +36,34 @@ static bool BadKeyMessage(const std::string& name, std::string* error) {
 
 // static
 ExtensionMessageBundle* ExtensionMessageBundle::Create(
-    const DictionaryValue& default_locale_catalog,
-    const DictionaryValue& current_locale_catalog,
+    const CatalogVector& locale_catalogs,
     std::string* error) {
   scoped_ptr<ExtensionMessageBundle> message_bundle(
       new ExtensionMessageBundle);
-  if (!message_bundle->Init(default_locale_catalog,
-                             current_locale_catalog,
-                             error))
+  if (!message_bundle->Init(locale_catalogs, error))
     return NULL;
 
   return message_bundle.release();
 }
 
-bool ExtensionMessageBundle::Init(const DictionaryValue& default_locale_catalog,
-                                  const DictionaryValue& current_locale_catalog,
+bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
                                   std::string* error) {
   dictionary_.clear();
 
-  // Create a single dictionary out of default and current_locale catalogs.
-  // If message is missing from current_locale catalog, we take one from default
-  // catalog.
-  DictionaryValue::key_iterator key_it = current_locale_catalog.begin_keys();
-  for (; key_it != current_locale_catalog.end_keys(); ++key_it) {
-    std::string key(StringToLowerASCII(WideToUTF8(*key_it)));
-    if (!IsValidName(*key_it))
-      return BadKeyMessage(key, error);
-    std::string value;
-    if (!GetMessageValue(*key_it, current_locale_catalog, &value, error))
-      return false;
-    // Keys are not case-sensitive.
-    dictionary_[key] = value;
-  }
-
-  key_it = default_locale_catalog.begin_keys();
-  for (; key_it != default_locale_catalog.end_keys(); ++key_it) {
-    std::string key(StringToLowerASCII(WideToUTF8(*key_it)));
-    if (!IsValidName(*key_it))
-      return BadKeyMessage(key, error);
-    // Add only messages that are not provided by app_catalog.
-    if (dictionary_.find(key) != dictionary_.end())
-      continue;
-    std::string value;
-    if (!GetMessageValue(*key_it, default_locale_catalog, &value, error))
-      return false;
-    // Keys are not case-sensitive.
-    dictionary_[key] = value;
+  CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
+  for (; it != locale_catalogs.rend(); ++it) {
+    DictionaryValue* catalog = (*it).get();
+    DictionaryValue::key_iterator key_it = catalog->begin_keys();
+    for (; key_it != catalog->end_keys(); ++key_it) {
+      std::string key(StringToLowerASCII(WideToUTF8(*key_it)));
+      if (!IsValidName(*key_it))
+        return BadKeyMessage(key, error);
+      std::string value;
+      if (!GetMessageValue(*key_it, *catalog, &value, error))
+        return false;
+      // Keys are not case-sensitive.
+      dictionary_[key] = value;
+    }
   }
 
   return true;

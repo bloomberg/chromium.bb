@@ -5,7 +5,9 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 
 #include <string>
+#include <vector>
 
+#include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -49,11 +51,13 @@ void CreateMessageTree(const std::wstring& name,
   SetDictionary(name, dict, message_tree);
 }
 
-void CreateGoodDictionary(DictionaryValue* dict) {
-  dict->Clear();
+// Caller owns the memory.
+DictionaryValue* CreateGoodDictionary() {
+  DictionaryValue* dict = new DictionaryValue;
   CreateMessageTree(L"n1", "message1 $a$ $b$", true, dict);
   CreateMessageTree(L"n2", "message2 $c$", true, dict);
   CreateMessageTree(L"n3", "message3", false, dict);
+  return dict;
 }
 
 enum BadDictionary {
@@ -67,9 +71,9 @@ enum BadDictionary {
   MESSAGE_PLACEHOLDER_DOESNT_MATCH,
 };
 
-void CreateBadDictionary(DictionaryValue* dict,
-                         enum BadDictionary what_is_bad) {
-  CreateGoodDictionary(dict);
+// Caller owns the memory.
+DictionaryValue* CreateBadDictionary(enum BadDictionary what_is_bad) {
+  DictionaryValue* dict = CreateGoodDictionary();
   // Now remove/break things.
   switch (what_is_bad) {
     case INVALID_NAME:
@@ -104,27 +108,27 @@ void CreateBadDictionary(DictionaryValue* dict,
       CreateContentTree(L"x", "X", value);
       break;
   }
+
+  return dict;
 }
 
 TEST(ExtensionMessageBundle, InitEmptyDictionaries) {
-  DictionaryValue default_dict;
-  DictionaryValue app_dict;
+  std::vector<linked_ptr<DictionaryValue> > catalogs;
   std::string error;
   scoped_ptr<ExtensionMessageBundle> handler(
-      ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+      ExtensionMessageBundle::Create(catalogs, &error));
 
   EXPECT_TRUE(handler.get() != NULL);
   EXPECT_EQ(0U, handler->size());
 }
 
-TEST(ExtensionMessageBundle, InitGoodDefaultDictEmptyAppDict) {
-  DictionaryValue default_dict;
-  DictionaryValue app_dict;
-  std::string error;
+TEST(ExtensionMessageBundle, InitGoodDefaultDict) {
+  std::vector<linked_ptr<DictionaryValue> > catalogs;
+  catalogs.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
-  CreateGoodDictionary(&default_dict);
+  std::string error;
   scoped_ptr<ExtensionMessageBundle> handler(
-      ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+      ExtensionMessageBundle::Create(catalogs, &error));
 
   EXPECT_TRUE(handler.get() != NULL);
   EXPECT_EQ(3U, handler->size());
@@ -135,22 +139,22 @@ TEST(ExtensionMessageBundle, InitGoodDefaultDictEmptyAppDict) {
 }
 
 TEST(ExtensionMessageBundle, InitAppDictConsultedFirst) {
-  DictionaryValue default_dict;
-  DictionaryValue app_dict;
-  std::string error;
+  std::vector<linked_ptr<DictionaryValue> > catalogs;
+  catalogs.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
+  catalogs.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
-  CreateGoodDictionary(&default_dict);
-  CreateGoodDictionary(&app_dict);
+  DictionaryValue* app_dict = catalogs[0].get();
   // Flip placeholders in message of n1 tree.
-  app_dict.SetString(L"n1.message", "message1 $b$ $a$");
+  app_dict->SetString(L"n1.message", "message1 $b$ $a$");
   // Remove one message from app dict.
-  app_dict.Remove(L"n2", NULL);
+  app_dict->Remove(L"n2", NULL);
   // Replace n3 with N3.
-  app_dict.Remove(L"n3", NULL);
-  CreateMessageTree(L"N3", "message3_app_dict", false, &app_dict);
+  app_dict->Remove(L"n3", NULL);
+  CreateMessageTree(L"N3", "message3_app_dict", false, app_dict);
 
+  std::string error;
   scoped_ptr<ExtensionMessageBundle> handler(
-      ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+      ExtensionMessageBundle::Create(catalogs, &error));
 
   EXPECT_TRUE(handler.get() != NULL);
   EXPECT_EQ(3U, handler->size());
@@ -161,50 +165,51 @@ TEST(ExtensionMessageBundle, InitAppDictConsultedFirst) {
 }
 
 TEST(ExtensionMessageBundle, InitBadAppDict) {
-  DictionaryValue default_dict;
-  DictionaryValue app_dict;
-  std::string error;
+  std::vector<linked_ptr<DictionaryValue> > catalogs;
+  catalogs.push_back(
+      linked_ptr<DictionaryValue>(CreateBadDictionary(INVALID_NAME)));
+  catalogs.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
-  CreateBadDictionary(&app_dict, INVALID_NAME);
+  std::string error;
   scoped_ptr<ExtensionMessageBundle> handler(
-      ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+      ExtensionMessageBundle::Create(catalogs, &error));
 
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Name of a key \"n 5\" is invalid. Only ASCII [a-z], "
             "[A-Z], [0-9] and \"_\" are allowed.", error);
 
-  CreateBadDictionary(&app_dict, NAME_NOT_A_TREE);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(NAME_NOT_A_TREE));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Not a valid tree for key n4.", error);
 
-  CreateBadDictionary(&app_dict, EMPTY_NAME_TREE);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(EMPTY_NAME_TREE));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("There is no \"message\" element for key n4.", error);
 
-  CreateBadDictionary(&app_dict, MISSING_MESSAGE);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(MISSING_MESSAGE));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("There is no \"message\" element for key n1.", error);
 
-  CreateBadDictionary(&app_dict, PLACEHOLDER_NOT_A_TREE);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(PLACEHOLDER_NOT_A_TREE));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Not a valid \"placeholders\" element for key n1.", error);
 
-  CreateBadDictionary(&app_dict, EMPTY_PLACEHOLDER_TREE);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(EMPTY_PLACEHOLDER_TREE));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Variable $a$ used but not defined.", error);
 
-  CreateBadDictionary(&app_dict, CONTENT_MISSING);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(CONTENT_MISSING));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Invalid \"content\" element for key n1.", error);
 
-  CreateBadDictionary(&app_dict, MESSAGE_PLACEHOLDER_DOESNT_MATCH);
-  handler.reset(ExtensionMessageBundle::Create(default_dict, app_dict, &error));
+  catalogs[0].reset(CreateBadDictionary(MESSAGE_PLACEHOLDER_DOESNT_MATCH));
+  handler.reset(ExtensionMessageBundle::Create(catalogs, &error));
   EXPECT_TRUE(handler.get() == NULL);
   EXPECT_EQ("Variable $a$ used but not defined.", error);
 }

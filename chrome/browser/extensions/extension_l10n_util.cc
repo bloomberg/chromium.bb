@@ -10,6 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
+#include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
@@ -29,49 +30,85 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
     *error = errors::kInvalidDefaultLocale;
     return "";
   }
-  // Normalize underscores to hyphens.
-  std::replace(default_locale.begin(), default_locale.end(), '_', '-');
+
   return default_locale;
 }
 
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
+               const std::string& locale_name,
                std::set<std::string>* valid_locales,
-               std::string* locale_name,
                std::string* error) {
-  // Normalize underscores to hyphens because that's what our locale files use.
-  std::replace(locale_name->begin(), locale_name->end(), '_', '-');
   // Accept name that starts with a . but don't add it to the list of supported
   // locales.
-  if (locale_name->find(".") == 0)
+  if (locale_name.find(".") == 0)
     return true;
-  if (chrome_locales.find(*locale_name) == chrome_locales.end()) {
+  if (chrome_locales.find(locale_name) == chrome_locales.end()) {
     // Fail if there is an extension locale that's not in the Chrome list.
     *error = StringPrintf("Supplied locale %s is not supported.",
-                          locale_name->c_str());
+                          locale_name.c_str());
     return false;
   }
   // Check if messages file is actually present (but don't check content).
   if (file_util::PathExists(
          locale_folder.AppendASCII(Extension::kMessagesFilename))) {
-    valid_locales->insert(*locale_name);
+    valid_locales->insert(locale_name);
   } else {
     *error = StringPrintf("Catalog file is missing for locale %s.",
-                          locale_name->c_str());
+                          locale_name.c_str());
     return false;
   }
 
   return true;
 }
 
+// Converts all - into _, to be consistent with ICU and file system names.
+static std::string NormalizeLocale(const std::string& locale) {
+  std::string normalized_locale(locale);
+  std::replace(normalized_locale.begin(), normalized_locale.end(), '-', '_');
+
+  return normalized_locale;
+}
+
+// Produce a vector of parent locales for given locale.
+// It includes the current locale in the result.
+// sr_Cyrl_RS generates sr_Cyrl_RS, sr_Cyrl and sr.
+static void GetParentLocales(const std::string& current_locale,
+                             std::vector<std::string>* parent_locales) {
+  std::string locale(NormalizeLocale(current_locale));
+
+  const int kNameCapacity = 256;
+  char parent[kNameCapacity];
+  strncpy(parent, locale.c_str(), kNameCapacity);
+  parent_locales->push_back(parent);
+  UErrorCode err = U_ZERO_ERROR;
+  while (uloc_getParent(parent, parent, kNameCapacity, &err) > 0) {
+    if (err != U_ZERO_ERROR)
+      break;
+    parent_locales->push_back(parent);
+  }
+}
+
+// Extends list of Chrome locales to them and their parents, so we can do
+// proper fallback.
+static void GetAllLocales(std::set<std::string>* all_locales) {
+  const std::vector<std::string>& available_locales =
+      l10n_util::GetAvailableLocales();
+  // Add all parents of the current locale to the available locales set.
+  // I.e. for sr_Cyrl_RS we add sr_Cyrl_RS, sr_Cyrl and sr.
+  for (size_t i = 0; i < available_locales.size(); ++i) {
+    std::vector<std::string> result;
+    GetParentLocales(available_locales[i], &result);
+    all_locales->insert(result.begin(), result.end());
+  }
+}
+
 bool GetValidLocales(const FilePath& locale_path,
                      std::set<std::string>* valid_locales,
                      std::string* error) {
-  // Get available chrome locales as a set.
-  const std::vector<std::string>& available_locales =
-      l10n_util::GetAvailableLocales();
-  static std::set<std::string> chrome_locales(available_locales.begin(),
-                                              available_locales.end());
+  static std::set<std::string> chrome_locales;
+  GetAllLocales(&chrome_locales);
+
   // Enumerate all supplied locales in the extension.
   file_util::FileEnumerator locales(locale_path,
                                     false,
@@ -82,8 +119,8 @@ bool GetValidLocales(const FilePath& locale_path,
         WideToASCII(locale_folder.BaseName().ToWStringHack());
     if (!AddLocale(chrome_locales,
                    locale_folder,
+                   locale_name,
                    valid_locales,
-                   &locale_name,
                    error)) {
       return false;
     }
@@ -103,9 +140,8 @@ bool GetValidLocales(const FilePath& locale_path,
 static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
                                         const std::string& locale,
                                         std::string* error) {
+
   std::string extension_locale = locale;
-  // Normalize hyphens to underscores because that's what our locale files use.
-  std::replace(extension_locale.begin(), extension_locale.end(), '-', '_');
   FilePath file = locale_path.AppendASCII(extension_locale)
       .AppendASCII(Extension::kMessagesFilename);
   JSONFileValueSerializer messages_serializer(file);
@@ -124,24 +160,31 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     const FilePath& locale_path,
     const std::string& default_locale,
     const std::string& application_locale,
+    const std::set<std::string>& valid_locales,
     std::string* error) {
-  scoped_ptr<DictionaryValue> default_catalog(
-      LoadMessageFile(locale_path, default_locale, error));
-  if (!default_catalog.get()) {
-    return false;
+  // Order locales to load as current_locale, first_parent, ..., default_locale.
+  std::vector<std::string> all_fallback_locales;
+  if (!application_locale.empty() && application_locale != default_locale)
+    GetParentLocales(application_locale, &all_fallback_locales);
+  all_fallback_locales.push_back(default_locale);
+
+  std::vector<linked_ptr<DictionaryValue> > catalogs;
+  for (size_t i = 0; i < all_fallback_locales.size(); ++i) {
+    // Skip all parent locales that are not supplied.
+    if (valid_locales.find(all_fallback_locales[i]) == valid_locales.end())
+      continue;
+    linked_ptr<DictionaryValue> catalog(
+      LoadMessageFile(locale_path, all_fallback_locales[i], error));
+    if (!catalog.get()) {
+      // If locale is valid, but messages.json is corrupted or missing, return
+      // an error.
+      return false;
+    } else {
+      catalogs.push_back(catalog);
+    }
   }
 
-  scoped_ptr<DictionaryValue> app_catalog(
-      LoadMessageFile(locale_path, application_locale, error));
-  if (!app_catalog.get()) {
-    // Only default catalog has to be present. This is not an error.
-    app_catalog.reset(new DictionaryValue);
-    error->clear();
-  }
-
-  return ExtensionMessageBundle::Create(*default_catalog,
-                                        *app_catalog,
-                                        error);
+  return ExtensionMessageBundle::Create(catalogs, error);
 }
 
 FilePath GetL10nRelativePath(const FilePath& relative_resource_path) {

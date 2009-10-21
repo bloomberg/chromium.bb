@@ -6,6 +6,9 @@
     "message": "The first extension that I made."
   },
   "color": {
-    "message": "Color"
+    "message": "Colour"
+  },
+  "not_in_US_or_GB": {
+    "message": "Not in the US or GB."
   }
 }

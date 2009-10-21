@@ -7,7 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/linked_ptr.h"
 #include "base/values.h"
 
 // Contains localized extension messages for one locale. Any messages that the
@@ -15,6 +17,7 @@
 class ExtensionMessageBundle {
  public:
   typedef std::map<std::string, std::string> SubstitutionMap;
+  typedef std::vector<linked_ptr<DictionaryValue> > CatalogVector;
 
   // JSON keys of interest for messages file.
   static const wchar_t* kContentKey;
@@ -32,10 +35,10 @@ class ExtensionMessageBundle {
   static const char* kExtensionDescription;
 
   // Creates ExtensionMessageBundle or returns NULL if there was an error.
-  static ExtensionMessageBundle* Create(
-      const DictionaryValue& default_locale_catalog,
-      const DictionaryValue& current_locale_catalog,
-      std::string* error);
+  // Expects locale_catalogs to be sorted from more specific to less specific,
+  // with default catalog at the end.
+  static ExtensionMessageBundle* Create(const CatalogVector& locale_catalogs,
+                                        std::string* error);
 
   // Get message from the catalog with given key.
   // Returned message has all of the internal placeholders resolved to their
@@ -82,13 +85,11 @@ class ExtensionMessageBundle {
   // Use Create to create ExtensionMessageBundle instance.
    ExtensionMessageBundle();
 
-  // Initializes the instance from the contents of two catalogs. If a key is not
-  // present in current_locale_catalog, the value from default_local_catalog is
-  // used instead.
+  // Initializes the instance from the contents of vector of catalogs.
+  // If the key is not present in more specific catalog we fall back to next one
+  // (less specific).
   // Returns false on error.
-  bool Init(const DictionaryValue& default_locale_catalog,
-            const DictionaryValue& current_locale_catalog,
-            std::string* error);
+  bool Init(const CatalogVector& locale_catalogs, std::string* error);
 
   // Helper methods that navigate JSON tree and return simplified message.
   // They replace all $PLACEHOLDERS$ with their value, and return just key/value
