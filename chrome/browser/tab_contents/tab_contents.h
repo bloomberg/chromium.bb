@@ -68,7 +68,7 @@ namespace IPC {
 class Message;
 }
 
-class AutofillManager;
+class FormFieldHistoryManager;
 class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
@@ -1008,8 +1008,8 @@ class TabContents : public PageNavigator,
   // page ID -1 means no page ID was set.
   CancelableRequestConsumerT<int32, -1> cancelable_consumer_;
 
-  // AutofillManager, lazily created.
-  scoped_ptr<AutofillManager> autofill_manager_;
+  // FormFieldHistoryManager, lazily created.
+  scoped_ptr<FormFieldHistoryManager> form_field_history_manager_;
 
   // PasswordManager, lazily created.
   scoped_ptr<PasswordManager> password_manager_;

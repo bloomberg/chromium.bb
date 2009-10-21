@@ -392,7 +392,8 @@ class RenderViewHost : public RenderWidgetHost,
   // notification.
   void PopupNotificationVisibilityChanged(bool visible);
 
-  // Called by the AutofillManager when the list of suggestions is ready.
+  // Called by the FormFieldHistoryManager when the list of suggestions is
+  // ready.
   void FormFieldHistorySuggestionsReturned(
       int query_id,
       const std::vector<string16>& suggestions,

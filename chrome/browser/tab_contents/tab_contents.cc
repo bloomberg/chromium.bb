@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/browser/autofill_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/hung_renderer_dialog.h"
@@ -228,7 +228,7 @@ TabContents::TabContents(Profile* profile,
       ALLOW_THIS_IN_INITIALIZER_LIST(printing_(*this)),
       save_package_(),
       cancelable_consumer_(),
-      autofill_manager_(),
+      form_field_history_manager_(),
       password_manager_(),
       plugin_installer_(),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
@@ -1935,9 +1935,9 @@ RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
 
 RenderViewHostDelegate::FormFieldHistory*
 TabContents::GetFormFieldHistoryDelegate() {
-  if (autofill_manager_.get() == NULL)
-    autofill_manager_.reset(new AutofillManager(this));
-  return autofill_manager_.get();
+  if (form_field_history_manager_.get() == NULL)
+    form_field_history_manager_.reset(new FormFieldHistoryManager(this));
+  return form_field_history_manager_.get();
 }
 
 RendererPreferences TabContents::GetRendererPrefs() const {

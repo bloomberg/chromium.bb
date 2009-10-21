@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_prefs.h"
 
-#include "chrome/browser/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
+#include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
@@ -75,7 +75,7 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   DownloadManager::RegisterUserPrefs(user_prefs);
   SSLManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
-  AutofillManager::RegisterUserPrefs(user_prefs);
+  FormFieldHistoryManager::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionDOMUI::RegisterUserPrefs(user_prefs);
