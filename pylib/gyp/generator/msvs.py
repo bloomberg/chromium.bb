@@ -408,7 +408,8 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       inputs, outputs = _RuleInputsAndOutputs(rule, tf)
       all_inputs.update(set(inputs))
       all_outputs.update(set(outputs))
-      # Only take the first one because make is... limited.
+      # Only use one target from each rule as the dependency for
+      # 'all' so we don't try to build each rule multiple times.
       first_outputs.append(list(outputs)[0])
       # Get the unique output directories for this rule.
       output_dirs = [os.path.split(i)[0] for i in outputs]
@@ -428,8 +429,6 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       inputs, outputs = _RuleInputsAndOutputs(rule, tf)
       inputs = [_Cygwinify(i) for i in inputs]
       outputs = [_Cygwinify(i) for i in outputs]
-      # Only take the first one because make is... limited.
-      outputs = [outputs[0]]
       # Prepare the command line for this rule.
       cmd = [_RuleExpandPath(c, tf) for c in rule['action']]
       cmd = ['"%s"' % i for i in cmd]
