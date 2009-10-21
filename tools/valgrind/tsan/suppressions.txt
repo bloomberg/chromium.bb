@@ -44,7 +44,7 @@
 }
 
 {
-  bug_23245
+  bug_23245, bug_25385
   ThreadSanitizer:Race
   fun:*base*Thread*ThreadMain*
 }
@@ -87,6 +87,13 @@
   fun:*WTF*RefCountedBase*ref*
   ...
   fun:*WebCore*WorkerRunLoop*Task*
+}
+
+{
+  bug_25385
+  ThreadSanitizer:Race
+  ...
+  fun:*base*ThreadD*E*
 }
 
 ############################
