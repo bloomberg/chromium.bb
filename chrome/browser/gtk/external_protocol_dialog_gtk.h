@@ -17,11 +17,15 @@ class ExternalProtocolDialogGtk {
   explicit ExternalProtocolDialogGtk(const GURL& url);
 
  private:
-  static void OnDialogResponse(GtkWidget* widget,
-                               int response,
-                               ExternalProtocolDialogGtk* dialog);
+  static void OnDialogResponseThunk(GtkWidget* widget,
+                                    int response,
+                                    ExternalProtocolDialogGtk* dialog) {
+    dialog->OnDialogResponse(response);
+  }
+  void OnDialogResponse(int response);
 
   GtkWidget* dialog_;
+  GtkWidget* checkbox_;
   GURL url_;
   base::Time creation_time_;
 };
