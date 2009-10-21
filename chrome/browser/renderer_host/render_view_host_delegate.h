@@ -337,30 +337,31 @@ class RenderViewHostDelegate {
                                   const GURL& icon_url) = 0;
   };
 
-  // AutoFill ------------------------------------------------------------------
-  // Interface for autofill-related functions.
+  // FormFieldHistory ----------------------------------------------------------
+  // Interface for FormFieldHistory-related functions.
 
-  class Autofill {
+  class FormFieldHistory {
    public:
-    // Forms fillable by autofill have been detected in the page.
+    // Forms fillable by FormFieldHistory have been detected in the page.
     virtual void FormFieldValuesSubmitted(
         const webkit_glue::FormFieldValues& form) = 0;
 
     // Called to retrieve a list of suggestions from the web database given
     // the name of the field |field_name| and what the user has already typed
     // in the field |user_text|.  Appeals to the database thead to perform the
-    // query. When the database thread is finished, the autofill manager
+    // query. When the database thread is finished, the FormFieldHistory manager
     // retrieves the calling RenderViewHost and then passes the vector of
-    // suggestions to RenderViewHost::AutofillSuggestionsReturned.
-    // Return true to indicate that AutofillSuggestionsReturned will be called.
-    virtual bool GetAutofillSuggestions(int query_id,
-                                        const string16& field_name,
-                                        const string16& user_text) = 0;
+    // suggestions to RenderViewHost::FormFieldHistorySuggestionsReturned.
+    // Return true to indicate that FormFieldHistorySuggestionsReturned will be
+    // called.
+    virtual bool GetFormFieldHistorySuggestions(int query_id,
+                                                const string16& field_name,
+                                                const string16& user_text) = 0;
 
     // Called when the user has indicated that she wants to remove the specified
-    // autofill suggestion from the database.
-    virtual void RemoveAutofillEntry(const string16& field_name,
-                                     const string16& value) = 0;
+    // FormFieldHistory suggestion from the database.
+    virtual void RemoveFormFieldHistoryEntry(const string16& field_name,
+                                             const string16& value) = 0;
   };
 
   // ---------------------------------------------------------------------------
@@ -374,7 +375,7 @@ class RenderViewHostDelegate {
   virtual Save* GetSaveDelegate();
   virtual Printing* GetPrintingDelegate();
   virtual FavIcon* GetFavIconDelegate();
-  virtual Autofill* GetAutofillDelegate();
+  virtual FormFieldHistory* GetFormFieldHistoryDelegate();
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

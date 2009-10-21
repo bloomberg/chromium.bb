@@ -1349,10 +1349,10 @@ void RenderViewHost::OnMsgPasswordFormsSeen(
 
 void RenderViewHost::OnMsgFormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
-  RenderViewHostDelegate::Autofill* autofill_delegate =
-      delegate_->GetAutofillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->FormFieldValuesSubmitted(form);
+  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
+      delegate_->GetFormFieldHistoryDelegate();
+  if (formfield_history_delegate)
+    formfield_history_delegate->FormFieldValuesSubmitted(form);
 }
 
 void RenderViewHost::OnMsgStartDragging(
@@ -1542,26 +1542,26 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
 void RenderViewHost::OnQueryFormFieldAutofill(int query_id,
                                               const string16& field_name,
                                               const string16& user_text) {
-  RenderViewHostDelegate::Autofill* autofill_delegate =
-      delegate_->GetAutofillDelegate();
+  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
+      delegate_->GetFormFieldHistoryDelegate();
   bool ok = false;
-  if (autofill_delegate) {
-    ok = autofill_delegate->GetAutofillSuggestions(
+  if (formfield_history_delegate) {
+    ok = formfield_history_delegate->GetFormFieldHistorySuggestions(
         query_id, field_name, user_text);
   }
   if (!ok)
-    AutofillSuggestionsReturned(query_id, std::vector<string16>(), -1);
+    FormFieldHistorySuggestionsReturned(query_id, std::vector<string16>(), -1);
 }
 
 void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
                                            const string16& value) {
-  RenderViewHostDelegate::Autofill* autofill_delegate =
-      delegate_->GetAutofillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->RemoveAutofillEntry(field_name, value);
+  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
+      delegate_->GetFormFieldHistoryDelegate();
+  if (formfield_history_delegate)
+    formfield_history_delegate->RemoveFormFieldHistoryEntry(field_name, value);
 }
 
-void RenderViewHost::AutofillSuggestionsReturned(
+void RenderViewHost::FormFieldHistorySuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions,
     int default_suggestion_index) {
   Send(new ViewMsg_QueryFormFieldAutofill_ACK(

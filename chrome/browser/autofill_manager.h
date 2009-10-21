@@ -20,7 +20,7 @@ class TabContents;
 
 // Per-tab autofill manager. Handles receiving form data from the renderer and
 // the storing and retrieving of form data through WebDataService.
-class AutofillManager : public RenderViewHostDelegate::Autofill,
+class AutofillManager : public RenderViewHostDelegate::FormFieldHistory,
                         public WebDataServiceConsumer {
  public:
   explicit AutofillManager(TabContents* tab_contents);
@@ -28,14 +28,14 @@ class AutofillManager : public RenderViewHostDelegate::Autofill,
 
   Profile* profile();
 
-  // RenderViewHostDelegate::Autofill implementation.
+  // RenderViewHostDelegate::FormFieldHistory implementation.
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
-  virtual bool GetAutofillSuggestions(int query_id,
-                                      const string16& name,
-                                      const string16& prefix);
-  virtual void RemoveAutofillEntry(const string16& name,
-                                   const string16& value);
+  virtual bool GetFormFieldHistorySuggestions(int query_id,
+                                              const string16& name,
+                                              const string16& prefix);
+  virtual void RemoveFormFieldHistoryEntry(const string16& name,
+                                           const string16& value);
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,

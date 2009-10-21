@@ -57,9 +57,9 @@ void AutofillManager::FormFieldValuesSubmitted(
   StoreFormEntriesInWebDatabase(form);
 }
 
-bool AutofillManager::GetAutofillSuggestions(int query_id,
-                                             const string16& name,
-                                             const string16& prefix) {
+bool AutofillManager::GetFormFieldHistorySuggestions(int query_id,
+                                                     const string16& name,
+                                                     const string16& prefix) {
   if (!*form_autofill_enabled_)
     return false;
 
@@ -79,8 +79,8 @@ bool AutofillManager::GetAutofillSuggestions(int query_id,
   return true;
 }
 
-void AutofillManager::RemoveAutofillEntry(const string16& name,
-                                          const string16& value) {
+void AutofillManager::RemoveFormFieldHistoryEntry(const string16& name,
+                                                  const string16& value) {
   WebDataService* web_data_service =
       profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!web_data_service) {
@@ -124,10 +124,10 @@ void AutofillManager::SendSuggestions(const WDTypedResult* result) {
     DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
     const WDResult<std::vector<string16> >* autofill_result =
         static_cast<const WDResult<std::vector<string16> >*>(result);
-    host->AutofillSuggestionsReturned(
+    host->FormFieldHistorySuggestionsReturned(
         query_id_, autofill_result->GetValue(), -1);
   } else {
-    host->AutofillSuggestionsReturned(
+    host->FormFieldHistorySuggestionsReturned(
         query_id_, std::vector<string16>(), -1);
   }
 }

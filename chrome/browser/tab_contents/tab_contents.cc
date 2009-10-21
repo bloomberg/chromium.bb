@@ -1933,7 +1933,8 @@ RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
   return &fav_icon_helper_;
 }
 
-RenderViewHostDelegate::Autofill* TabContents::GetAutofillDelegate() {
+RenderViewHostDelegate::FormFieldHistory*
+TabContents::GetFormFieldHistoryDelegate() {
   if (autofill_manager_.get() == NULL)
     autofill_manager_.reset(new AutofillManager(this));
   return autofill_manager_.get();

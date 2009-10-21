@@ -853,7 +853,8 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
-  virtual RenderViewHostDelegate::Autofill* GetAutofillDelegate();
+  virtual RenderViewHostDelegate::FormFieldHistory*
+      GetFormFieldHistoryDelegate();
   virtual TabContents* GetAsTabContents();
   virtual void AddBlockedNotice(const GURL& url, const string16& reason);
   virtual ViewType::Type GetRenderViewType() const;

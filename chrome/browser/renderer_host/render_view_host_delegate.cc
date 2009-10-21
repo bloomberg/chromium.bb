@@ -42,8 +42,8 @@ RenderViewHostDelegate::GetFavIconDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::Autofill*
-RenderViewHostDelegate::GetAutofillDelegate() {
+RenderViewHostDelegate::FormFieldHistory*
+RenderViewHostDelegate::GetFormFieldHistoryDelegate() {
   return NULL;
 }
 

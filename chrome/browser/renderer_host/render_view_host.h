@@ -393,9 +393,10 @@ class RenderViewHost : public RenderWidgetHost,
   void PopupNotificationVisibilityChanged(bool visible);
 
   // Called by the AutofillManager when the list of suggestions is ready.
-  void AutofillSuggestionsReturned(int query_id,
-                                   const std::vector<string16>& suggestions,
-                                   int default_suggestion_index);
+  void FormFieldHistorySuggestionsReturned(
+      int query_id,
+      const std::vector<string16>& suggestions,
+      int default_suggestion_index);
 
   // Notifies the Renderer that a move or resize of its containing window has
   // started (this is used to hide the autocomplete popups if any).

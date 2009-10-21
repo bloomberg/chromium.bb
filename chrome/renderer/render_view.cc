@@ -1954,10 +1954,10 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
       PasswordFormDomManager::CreatePasswordForm(form));
 
   if (form.isAutoCompleteEnabled()) {
-    scoped_ptr<FormFieldValues> autofill_form(FormFieldValues::Create(form));
-    if (autofill_form.get())
+    scoped_ptr<FormFieldValues> form_values(FormFieldValues::Create(form));
+    if (form_values.get())
       Send(new ViewHostMsg_FormFieldValuesSubmitted(routing_id_,
-                                                    *autofill_form));
+                                                    *form_values));
   }
 }
 
