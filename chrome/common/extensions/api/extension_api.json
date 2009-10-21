@@ -790,8 +790,8 @@
             "properties": {
               "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to enable the page action."},
               "url": {"type": "string", "description": "The URL of the page you want the page action to apply to. If the URL specified does not match the currently navigated URL (user has navigated to another page) then no action is taken."},
-              "title": {"type": "string", "optional": true, "description": "Specifying |title| allows you to change the tooltip that appears when you hover over the page action icon in the OmniBox. This parameter is optional and if omitted then the page action |name| property declared in the manifest is used."},
-              "iconId": {"type": "integer", "minimum": 0, "optional": true, "description": "A zero-based index into the |icons| vector specified in the manifest. This parameter is optional and if omitted then the first icon in the |icons| vector of the page action is used. This id is useful to represent different page action states. Example: An RSS feed icon could have a 'subscribe now' icon and an 'already subscribed' icon."}
+              "title": {"type": "string", "optional": true, "description": "Specifying <b>title</b> allows you to change the tooltip that appears when you hover over the page action icon in the OmniBox. This parameter is optional and if omitted then the page action <b>name</b> property declared in the manifest is used."},
+              "iconId": {"type": "integer", "minimum": 0, "optional": true, "description": "A zero-based index into the <b>icons</b> vector specified in the manifest. This parameter is optional and if omitted then the first icon in the <b>icons</b> vector of the page action is used. This id is useful to represent different page action states. Example: An RSS feed icon could have a 'subscribe now' icon and an 'already subscribed' icon."}
             },
             "optional": false
           }
@@ -826,7 +826,7 @@
       {
         "name": "show",
         "type": "function",
-        "description": "Show the page action. The page action is shown whenever the tab is selected.",
+        "description": "Shows the page action. The page action is shown whenever the tab is selected.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."}
         ]
@@ -834,7 +834,7 @@
       {
         "name": "hide",
         "type": "function",
-        "description": "Hide the page action.",
+        "description": "Hides the page action.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."}
         ]
@@ -842,7 +842,7 @@
       {
         "name": "setTitle",
         "type": "function",
-        "description": "Set the title of the page action. This is displayed in a tooltip over the page action.",
+        "description": "Sets the title of the page action. This is displayed in a tooltip over the page action.",
         "parameters": [
           {
             "name": "details",
@@ -857,7 +857,7 @@
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets the icon for the page action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the path or the imageData property must be specified.",
+        "description": "Sets the icon for the page action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element. Either the <b>path</b> or the <b>imageData</b> property must be specified.",
         "parameters": [
           {
             "name": "details",
@@ -866,13 +866,13 @@
               "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
               "imageData": {
                 "type": "any",
-                "description": "Pixel data for an image. Must be an ImageData object (eg from a <code>canvas</code> element).",
+                "description": "Pixel data for an image. Must be an ImageData object (for example, from a canvas element).",
                 "optional": true
               },
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "<b>Deprecated.</b> The zero-based index into the |icons| vector specified in the manifest.",
+                "description": "<b>Deprecated.</b> The zero-based index into the <b>icons</b> vector specified in the manifest.",
                 "optional": true
               }
             }
@@ -882,7 +882,7 @@
       {
         "name": "setBadgeText",
         "type": "function",
-        "description": "Sets the badge text for the page action. This is printed on top of the icon.",
+        "description": "Sets the badge text for the page action. The badge is displayed on top of the icon.",
         "parameters": [
           {
             "name": "details",
@@ -931,7 +931,7 @@
               "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
               "color": {
                 "type": "array",
-                "description": "An array of four integers in the range [0,255] that make up the ARGB color for the text of the badge.",
+                "description": "An array of four integers in the range [0,255] that make up the ARGB color of the badge. For example, opaque red is [255, 255, 0, 0].",
                 "items": {
                   "type": "integer",
                   "minimum": 0,
@@ -949,7 +949,7 @@
       {
         "name": "onClicked",
         "type": "function",
-        "description": "Fired when a page action button is clicked.",
+        "description": "Fired when a page action icon is clicked.",
         "parameters": [
           {
             "name": "tab",
@@ -966,7 +966,7 @@
       {
         "name": "setTitle",
         "type": "function",
-        "description": "Sets the title of the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.",
+        "description": "Sets the title of the browser action. This shows up in the tooltip.",
         "parameters": [
           {
             "name": "details",
@@ -983,7 +983,7 @@
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets the icon for the browser action. The icon can be specified either as the index of one of the icons that was pre-specified in the manifest, or as the pixel data from a Canvas element. Either the path or the imageData property must be specified.",
+        "description": "Sets the icon for the browser action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element. Either the <b>path</b> or the <b>imageData</b> property must be specified.",
         "parameters": [
           {
             "name": "details",
@@ -991,13 +991,13 @@
             "properties": {
               "imageData": {
                 "type": "any",
-                "description": "Pixel data for an image. Must be an ImageData object (eg from a <code>canvas</code> element).",
+                "description": "Pixel data for an image. Must be an ImageData object (for example, from a <code>canvas</code> element).",
                 "optional": true
               },
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "<b>Deprecated.</b> The zero-based index into the |icons| vector specified in the manifest.",
+                "description": "<b>Deprecated.</b> The zero-based index into the <b>icons</b> vector specified in the manifest.",
                 "optional": true
               },
               "path": {
@@ -1012,7 +1012,7 @@
       {
         "name": "setBadgeText",
         "type": "function",
-        "description": "Sets the badge text for the browser action. This is printed on top of the icon.",
+        "description": "Sets the badge text for the browser action. The badge is displayed on top of the icon.",
         "parameters": [
           {
             "name": "details",
@@ -1037,7 +1037,7 @@
             "properties": {
               "color": {
                 "type": "array",
-                "description": "An array of four integers in the range [0,255] that make up the ARGB color for the bakground of the badge.",
+                "description": "An array of four integers in the range [0,255] that make up the ARGB color of the badge. For example, opaque red is <code>[255, 255, 0, 0]</code>.",
                 "items": {
                   "type": "integer",
                   "minimum": 0,
@@ -1055,7 +1055,7 @@
       {
         "name": "onClicked",
         "type": "function",
-        "description": "Fired when a page action button is clicked.",
+        "description": "Fired when a browser action icon is clicked.",
         "parameters": [
           {
             "name": "tab",

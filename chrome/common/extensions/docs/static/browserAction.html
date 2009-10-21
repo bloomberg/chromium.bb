@@ -1,93 +1,165 @@
 <div id="pageData-title" class="pageData">Browser Actions</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
-<p>Browser actions are buttons
-  that are displayed in the main Chrome toolbar
-  to the right of the omnibox.</p>
+<p>Use browser actions to put icons
+  in the main Google Chrome toolbar,
+  to the right of the address bar.
+  In addition to its <a href="#icon">icon</a>,
+  a browser action can also have
+  a <a href="#tooltip">tooltip</a>,
+  a <a href="#badge">badge</a>,
+  and a <a href="#popup">popup</a>.
+  </p>
+
+<p>
+In the following figure,
+the multicolored square
+to the right of the address bar
+is the icon for a browser action.
+A popup is below the icon.
+</p>
 
 <img src="images/browser-action.png"
   width="363" height="226" />
 
-<h2 id="icons">Icons</h2>
+<p>
+If you want to create an icon that isn't always visible,
+use a <a href="pageAction.html">page action</a>
+instead of a browser action.
+</p>
 
-<p>Browser action icons can be up to 19px square.
-  Larger icons will be resized to fit, but for best results,
-  using a 19px icon is recommended.</p>
+<p class="comment">
+[PENDING: We should show tooltips and badges, as well.]
+</p>
 
-<p>Icons can be set two ways:
+<h2 id="manifest">Manifest</h2>
+
+<p>
+Register your browser action in the
+<a href="manifest.html">extension manifest</a>
+like this:
+</p>
+
+<pre>"browser_action": {
+  "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
+  "default_icon": "images/icon19.png", <em>// optional</em>
+  "popup": "popup.html"                <em>// optional</em>
+}</pre>
+
+<p><b>Note:</b> Even if you don't include
+  any of the values, you must include an empty
+  <b>browser_action</b> entry in the manifest
+  so that the system reserves space
+  for your browser action in the toolbar.</p>
+
+<h2 id="ui">Parts of the UI</h2>
+
+<p>
+A browser action must have an <a href="#icon">icon</a>.
+It can also have
+a <a href="#tooltip">tooltip</a>,
+a <a href="#badge">badge</a>,
+and a <a href="#popup">popup</a>.
+</p>
+
+<h3 id="icon">Icon</h3>
+
+<p>Browser action icons can be up to 19 pixels wide and high.
+  Larger icons are resized to fit, but for best results,
+  use a 19-pixel square icon.</p>
+
+<p>You can set the icon in two ways:
   using a static image or using the
   HTML5 <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">canvas element</a>.
   Using static images is easier for simple applications,
-  but you can do more dynamic UIs
+  but you can create more dynamic UIs &mdash;
+  such as smooth animation &mdash;
   using the canvas element.
+  </p>
 
-<p>Static images can be in any format WebKit can display.
-  These include: png, bmp, ico, jpg, gif.</p>
+<p>Static images can be in any format WebKit can display,
+  including BMP, GIF, ICO, JPEG, or PNG.
+  </p>
 
-<h2 id="badges">Badges</h2>
+<p>To set the icon,
+use the <b>default_icon</b> field of <b>browser_action</b>
+in the <a href="#manifest">manifest</a>,
+or call the <a href="#method-setIcon">setIcon()</a> method.
 
-<p>Browser actions can optionally display a badge,
-  which is a bit of text that is layered over the icon.
+
+<h3 id="tooltip">Tooltip</h3>
+
+<p>
+To set the tooltip,
+use the <b>default_title</b> field of <b>browser_action</b>
+in the <a href="#manifest">manifest</a>,
+or call the <a href="#method-setTitle">setTitle()</a> method.
+</p>
+
+<h3 id="badge">Badge</h3>
+
+<p>Browser actions can optionally display a <em>badge</em> &mdash;
+  a bit of text that is layered over the icon.
   Badges make it easy to update the browser action
   to display a small amount of information
   about the state of the extension.</p>
 
-<p>The badge APIs allow any length of text,
-  but limiting badges to a max of four characters
-  is recommended.</p>
+<p>Because the badge has limited space,
+   it should have 4 characters or less.
+  </p>
 
-<h2 id="popups">Popups</h2>
+<p>
+Set the text and color of the badge using
+<a href="#method-setBadgeText">setBadgeText()</a> and
+<a href="#method-setBadgeBackgroundColor">setBadgeBackgroundColor()</a>,
+respectively.
+<span class="comment">[PENDING:
+if you have a color but no text, will anything display?]</span>
+</p>
 
-<p>Popups allow browser actions to show additional UI
-  when the user activates them.
-  Popups contents are implemented using HTML
-  and the popup is automatically sized
-  to the content size.</p>
 
-<h2>Style Guide</h2>
+<h3 id="popups">Popup</h3>
+
+<p>If a browser action has a popup,
+  the popup appears when the user clicks the icon.
+  The popup can contain any HTML contents that you like,
+  and it's automatically sized to fit its contents.
+  </p>
+
+<p>
+To add a popup to your browser action,
+create an HTML file with the popup's contents.
+Then specify the HTML file in
+the <a href="#manifest">manifest</a>,
+using the <b>popup</b> field of <b>browser_action</b>.
+</p>
+
+<h2>Tips</h2>
 
 <p>For the best visual impact,
-  we recommend observing
-  the following guidelines:</p>
+  follow these guidelines:</p>
 
 <ul>
   <li><b>Do</b> use browser actions for features
     that make sense on most pages.
   <li><b>Don't</b> use browser actions for features
-    that only make sense for a few pages.
+    that make sense for only a few pages.
     Use <a href="pageAction.html">page actions</a> instead.
-  <li><b>Do</b> use big, colorful icons that fully utilize
-    the 19px square space.
+  <li><b>Do</b> use big, colorful icons that make the most of
+    the 19x19-pixel space.
     Browser action icons should seem a little bigger
     and heavier than page action icons.
   <li><b>Don't</b> attempt to mimic
-    Chrome's monochrome "wrench" and "page" icons.
-    This won't work well with themes, and anyway,
+    Google Chrome's monochrome "wrench" and "page" icons.
+    That doesn't work well with themes, and anyway,
     extensions should stand out a little.
   <li><b>Do</b> use alpha transparency
     to add soft edges to your icon.
-    Remember: many users theme Chrome,
-    so your icon should look nice
+    Because many people use themes,
+    your icon should look nice
     on a variety of background colors.
   <li><b>Don't</b> constantly animate your icon.
     That's just annoying.
 </ul>
-
-<h2 id="manifest">Manifest</h2>
-
-<p>Developers declare their browser action
-  using the following syntax:</p>
-
-<pre>"browser_action": {
-  "default_title": "Google Mail",  // Optional. Shown in tooltip.
-  "default_icon": "images/icon19.png",  // Optional.
-  "popup": "popup.html"  // Optional
-}</pre>
-
-<p><b>Note:</b> Even if you don't include
-  any of the values, you must include an empty
-  browser_action entry in your manifest
-  so that the system knows to reserve space
-  for your browser action in the toolbar.</p>
 
 <!-- END AUTHORED CONTENT -->
