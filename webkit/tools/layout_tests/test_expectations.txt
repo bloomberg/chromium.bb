@@ -3169,3 +3169,7 @@ BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
+
+// Caused by ukai at revision 29626 (WebSockets)
+BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
+BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-get.xhtml = CRASH PASS
