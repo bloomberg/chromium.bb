@@ -150,7 +150,7 @@ void WindowWin::Show(int show_state) {
   // that should activate, because if we're opened from a desktop shortcut while
   // an existing window is already running it doesn't seem to be enough to use
   // one of these flags to activate the window.
-  if (show_state == SW_SHOWNORMAL)
+  if (show_state == SW_SHOWNORMAL || show_state == SW_SHOWMAXIMIZED)
     Activate();
 
   SetInitialFocus();
