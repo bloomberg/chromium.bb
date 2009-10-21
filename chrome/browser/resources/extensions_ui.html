@@ -229,6 +229,7 @@ var extensionDataFormat = {
       "version": "1.0.231",
       "enabled": "true",
       "options_url": "options.html",
+      "icon": "relative-path-to-icon.png",
       "content_scripts": [
         {
           "js": ["script1_file1.js", "script1_file2.js"],
@@ -264,6 +265,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "icon": "",
       "content_scripts": [
         {
           "js": ["script1_file1.js", "script1_file2.js"],
@@ -574,8 +576,17 @@ function autoUpdate() {
         <div class="extension" jsselect="extensions">
           <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
-          <td width="62" align="center" valign="top"><img width="48" height="48"
-              src="../../app/theme/infobar_plugin.png" /></td>
+          <td width="62" align="center" valign="top">
+            <span jsdisplay="icon"
+              ><img
+              jsvalues=".src:'chrome-extension://' + id + '/' + icon"
+              width="48" height="48" />
+            </span>
+            <span jsdisplay="icon == ''"
+              ><img
+              width="48" height="48"
+              src="../../app/theme/infobar_plugin.png" /></span>
+            </td>
           <td valign="top">
             <div>
               <span class="extension-name"

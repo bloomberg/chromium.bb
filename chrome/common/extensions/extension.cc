@@ -1127,8 +1127,7 @@ void Extension::SetBackgroundPageReady() {
 }
 
 ExtensionResource Extension::GetIconPath(Icons icon) {
-  std::map<int, std::string>::const_iterator iter =
-      icons_.find(Extension::EXTENSION_ICON_LARGE);
+  std::map<int, std::string>::const_iterator iter = icons_.find(icon);
   if (iter == icons_.end())
     return ExtensionResource();
   return GetResource(iter->second);

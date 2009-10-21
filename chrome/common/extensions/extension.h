@@ -224,7 +224,7 @@ class Extension {
   bool HasAccessToAllHosts() const;
 
   const GURL& update_url() const { return update_url_; }
-  const std::map<int, std::string>& icons() { return icons_; }
+  const std::map<int, std::string>& icons() const { return icons_; }
 
   // Returns the origin of this extension. This function takes a |registry_path|
   // so that the registry location can be overwritten during testing.

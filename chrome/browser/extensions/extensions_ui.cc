@@ -418,9 +418,19 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
-  if (!extension->options_url().is_empty()) {
+  if (!extension->options_url().is_empty())
     extension_data->SetString(L"options_url", extension->options_url().spec());
-  }
+
+  // Try to fetch the medium sized icon, then (if missing) go for the large one.
+  const std::map<int, std::string>& icons = extension->icons();
+  std::map<int, std::string>::const_iterator iter =
+      icons.find(Extension::EXTENSION_ICON_MEDIUM);
+  if (iter == icons.end())
+    iter = icons.find(Extension::EXTENSION_ICON_LARGE);
+  if (iter != icons.end())
+    extension_data->SetString(L"icon", iter->second);
+  else
+    extension_data->SetString(L"icon", "");
 
   // Add list of content_script detail DictionaryValues
   ListValue *content_script_list = new ListValue();
