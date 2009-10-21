@@ -51,12 +51,13 @@
     'msvs_debug_link_incremental%': '2',
 
     # Doing this in a sub-dict so that it can be referred to below.
-    # The architecture that we're building for (x86, arm).
     'variables': {
+      # By default we assume that we are building as part of Chrome
+      'nacl_standalone%': 0,
       # Compute the architecture that we're building for. Default to the
       # architecture that we're building on.
       'conditions': [
-        [ 'OS=="linux"', {
+        [ 'OS=="linux" and nacl_standalone==0', {
           # This handles the Linux platforms we generally deal with. Anything
           # else gets passed through, which probably won't work very well; such
           # hosts should pass an explicit target_arch to gyp.
@@ -67,12 +68,12 @@
         }],
       ],
     },
+    # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
+    'nacl_standalone%': '<(nacl_standalone)',
 
     'linux2%': 0,
 
-    # By default we assume that we are building as part of Chrome
-    'nacl_standalone%': 0,
   },
   'target_defaults': {
     'include_dirs': [
