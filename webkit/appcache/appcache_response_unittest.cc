@@ -15,6 +15,10 @@ using net::IOBuffer;
 
 namespace appcache {
 
+static const int kNumBlocks = 4;
+static const int kBlockSize = 1024;
+static const int kNoSuchResponseId = 123;
+
 class AppCacheResponseTest : public testing::Test {
  public:
 
@@ -330,7 +334,7 @@ class AppCacheResponseTest : public testing::Test {
     // 2. Attempt to ReadData
 
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), 123));
+        GURL(), kNoSuchResponseId));
 
     // Push tasks in reverse order
     PushNextTask(method_factory_.NewRunnableMethod(
@@ -360,12 +364,12 @@ class AppCacheResponseTest : public testing::Test {
   void LoadResponseInfo_Miss() {
     PushNextTask(method_factory_.NewRunnableMethod(
         &AppCacheResponseTest::LoadResponseInfo_Miss_Verify));
-    service_->storage()->LoadResponseInfo(GURL(), 123,
+    service_->storage()->LoadResponseInfo(GURL(), kNoSuchResponseId,
                                           storage_delegate_.get());
   }
 
   void LoadResponseInfo_Miss_Verify() {
-    EXPECT_EQ(123, storage_delegate_->loaded_info_id_);
+    EXPECT_EQ(kNoSuchResponseId, storage_delegate_->loaded_info_id_);
     EXPECT_TRUE(!storage_delegate_->loaded_info_.get());
     TestFinished();
   }
@@ -402,8 +406,6 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   // WriteThenVariouslyReadResponse -------------------------------------------
-  static const int kNumBlocks = 4;
-  static const int kBlockSize = 1024;
 
   void WriteThenVariouslyReadResponse() {
     // This tests involves multiple async steps.
