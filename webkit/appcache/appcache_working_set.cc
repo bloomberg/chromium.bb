@@ -17,6 +17,7 @@ AppCacheWorkingSet::~AppCacheWorkingSet() {
 }
 
 void AppCacheWorkingSet::AddCache(AppCache* cache) {
+  DCHECK(cache->cache_id() != kNoCacheId);
   int64 cache_id = cache->cache_id();
   DCHECK(caches_.find(cache_id) == caches_.end());
   caches_.insert(CacheMap::value_type(cache_id, cache));
@@ -37,6 +38,7 @@ void AppCacheWorkingSet::RemoveGroup(AppCacheGroup* group) {
 }
 
 void AppCacheWorkingSet::AddResponseInfo(AppCacheResponseInfo* info) {
+  DCHECK(info->response_id() != kNoResponseId);
   int64 response_id = info->response_id();
   DCHECK(response_infos_.find(response_id) == response_infos_.end());
   response_infos_.insert(ResponseInfoMap::value_type(response_id, info));

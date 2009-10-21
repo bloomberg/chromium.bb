@@ -6,7 +6,6 @@
 #define WEBKIT_APPCACHE_APPCACHE_SERVICE_H_
 
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_storage.h"

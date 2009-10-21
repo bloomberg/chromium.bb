@@ -5,7 +5,6 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 #define WEBKIT_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 
-#include "base/logging.h"
 #include "base/hash_tables.h"
 #include "webkit/appcache/appcache_host.h"
 

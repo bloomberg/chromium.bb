@@ -368,6 +368,7 @@
         '../../appcache/appcache_unittest.cc',
         '../../appcache/appcache_group_unittest.cc',
         '../../appcache/appcache_host_unittest.cc',
+        '../../appcache/appcache_response_unittest.cc',
         '../../appcache/appcache_storage_unittest.cc',
         '../../appcache/appcache_update_job_unittest.cc',
         '../../appcache/mock_appcache_service.h',

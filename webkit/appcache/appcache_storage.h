@@ -5,10 +5,14 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_STORAGE_H_
 #define WEBKIT_APPCACHE_APPCACHE_STORAGE_H_
 
+#include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/ref_counted.h"
+#include "net/base/net_errors.h"
+#include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_working_set.h"
 
 class GURL;
@@ -17,9 +21,6 @@ namespace appcache {
 
 class AppCache;
 class AppCacheGroup;
-class AppCacheResponseInfo;
-class AppCacheResponseReader;
-class AppCacheResponseWriter;
 class AppCacheService;
 
 class AppCacheStorage {
@@ -55,11 +56,8 @@ class AppCacheStorage {
         int64 cache_id, const GURL& mainfest_url) {}
   };
 
-  explicit AppCacheStorage(AppCacheService* service)
-      : last_cache_id_(kUnitializedId), last_group_id_(kUnitializedId),
-        last_entry_id_(kUnitializedId), last_response_id_(kUnitializedId),
-        service_(service)  {}
-  virtual ~AppCacheStorage() {}
+  explicit AppCacheStorage(AppCacheService* service);
+  virtual ~AppCacheStorage();
 
   // Schedules a cache to be loaded from storage. Upon load completion
   // the delegate will be called back. If the cache already resides in
@@ -82,7 +80,7 @@ class AppCacheStorage {
   // immediately without returning to the message loop. If the load fails,
   // the delegate will be called back with a NULL pointer.
   virtual void LoadResponseInfo(
-      const GURL& manifest_url, int64 response_id, Delegate* delegate) = 0;
+      const GURL& manifest_url, int64 response_id, Delegate* delegate);
 
   // Schedules a group and its newest complete cache to be initially stored or
   // incrementally updated with new changes. Upon completion the delegate
@@ -115,7 +113,11 @@ class AppCacheStorage {
   // will not be invoked after, however any scheduled operations will still
   // take place. The callbacks for subsequently scheduled operations are
   // unaffected.
-  virtual void CancelDelegateCallbacks(Delegate* delegate) = 0;
+  void CancelDelegateCallbacks(Delegate* delegate) {
+    DelegateReference* delegate_reference = GetDelegateReference(delegate);
+    if (delegate_reference)
+      delegate_reference->CancelReference();
+  }
 
   // Creates a reader to read a response from storage.
   virtual AppCacheResponseReader* CreateResponseReader(
@@ -132,15 +134,12 @@ class AppCacheStorage {
 
   // Generates unique storage ids for different object types.
   int64 NewCacheId() {
-    DCHECK(last_cache_id_ != kUnitializedId);
     return ++last_cache_id_;
   }
   int64 NewGroupId() {
-    DCHECK(last_group_id_ != kUnitializedId);
     return ++last_group_id_;
   }
   int64 NewEntryId() {
-    DCHECK(last_entry_id_ != kUnitializedId);
     return ++last_entry_id_;
   }
 
@@ -151,9 +150,128 @@ class AppCacheStorage {
   AppCacheService* service() { return service_; }
 
  protected:
+  friend class AppCacheResponseTest;
+
+  // Helper to call a collection of delegates.
+  #define FOR_EACH_DELEGATE(delegates, func_and_args)                \
+    do {                                                             \
+      for (DelegateReferenceVector::iterator it = delegates.begin(); \
+           it != delegates.end(); ++it) {                            \
+        if (it->get()->delegate)                                     \
+          it->get()->delegate->func_and_args;                        \
+      }                                                              \
+    } while (0)
+
+  // Helper used to manage multiple references to a 'delegate' and to
+  // allow all pending callbacks to that delegate to be easily cancelled.
+  struct DelegateReference : public base::RefCounted<DelegateReference> {
+    Delegate* delegate;
+    AppCacheStorage* storage;
+
+    DelegateReference(Delegate* delegate, AppCacheStorage* storage)
+        : delegate(delegate), storage(storage) {
+      storage->delegate_references_.insert(
+        DelegateReferenceMap::value_type(delegate, this));
+    }
+
+    ~DelegateReference() {
+      if (delegate)
+        storage->delegate_references_.erase(delegate);
+    }
+
+    void CancelReference() {
+      storage->delegate_references_.erase(delegate);
+      storage = NULL;
+      delegate = NULL;
+    }
+  };
+  typedef std::map<Delegate*, DelegateReference*> DelegateReferenceMap;
+  typedef std::vector<scoped_refptr<DelegateReference> >
+      DelegateReferenceVector;
+
+  // Helper used to manage an async LoadResponseInfo calls on behalf of
+  // multiple callers.
+  // TODO(michaeln): this may be generalizable for other load/store 'tasks'
+  class ResponseInfoLoadTask {
+   public:
+    ResponseInfoLoadTask(const GURL& manifest_url, int64 response_id,
+                         AppCacheStorage* storage) :
+      storage_(storage),
+      manifest_url_(manifest_url),
+      response_id_(response_id),
+      info_buffer_(new HttpResponseInfoIOBuffer),
+      ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
+          this, &ResponseInfoLoadTask::OnReadComplete)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(storage_->pending_info_loads_.insert(
+          PendingResponseInfoLoads::value_type(response_id, this)));
+    }
+
+    int64 response_id() const { return response_id_; }
+    const GURL& manifest_url() const { return manifest_url_; }
+
+    void AddDelegate(DelegateReference* delegate_reference) {
+      delegates_.push_back(delegate_reference);
+    }
+
+    void StartIfNeeded() {
+      if (reader_.get())
+        return;
+      reader_.reset(
+          storage_->CreateResponseReader(manifest_url_, response_id_));
+      reader_->ReadInfo(info_buffer_, &read_callback_);
+    }
+
+   private:
+    void OnReadComplete(int result) {
+      storage_->pending_info_loads_.erase(response_id_);
+      scoped_refptr<AppCacheResponseInfo> info;
+      if (result >= 0) {
+        info = new AppCacheResponseInfo(
+            storage_->service(), reader_->response_id(),
+            info_buffer_->http_info.release());
+      }
+      FOR_EACH_DELEGATE(
+          delegates_, OnResponseInfoLoaded(info.get(), response_id_));
+      delete this;
+    }
+
+    AppCacheStorage* storage_;
+    GURL manifest_url_;
+    int64 response_id_;
+    scoped_ptr<AppCacheResponseReader> reader_;
+    DelegateReferenceVector delegates_;
+    scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
+    net::CompletionCallbackImpl<ResponseInfoLoadTask> read_callback_;
+  };
+
+  typedef std::map<int64, ResponseInfoLoadTask*> PendingResponseInfoLoads;
+
+  DelegateReference* GetDelegateReference(Delegate* delegate) {
+    DelegateReferenceMap::iterator iter =
+        delegate_references_.find(delegate);
+    if (iter != delegate_references_.end())
+      return iter->second;
+    return NULL;
+  }
+
+  DelegateReference* GetOrCreateDelegateReference(Delegate* delegate) {
+    DelegateReference* reference = GetDelegateReference(delegate);
+    if (reference)
+      return reference;
+    return new DelegateReference(delegate, this);
+  }
+
+  ResponseInfoLoadTask* GetOrCreateResponseInfoLoadTask(
+      const GURL& manifest_url, int64 response_id) {
+    PendingResponseInfoLoads::iterator iter =
+        pending_info_loads_.find(response_id);
+    if (iter != pending_info_loads_.end())
+      return iter->second;
+    return new ResponseInfoLoadTask(manifest_url, response_id, this);
+  }
+
   // Should only be called when creating a new response writer.
   int64 NewResponseId() {
-    DCHECK(last_response_id_ != kUnitializedId);
     return ++last_response_id_;
   }
 
@@ -165,11 +283,33 @@ class AppCacheStorage {
 
   AppCacheWorkingSet working_set_;
   AppCacheService* service_;
+  DelegateReferenceMap delegate_references_;
+  PendingResponseInfoLoads pending_info_loads_;
 
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64 kUnitializedId = -1;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
+};
+
+// TODO(michaeln): Maybe?
+class AppCacheStoredItem {
+ public:
+  bool is_doomed() const { return is_doomed_; }
+  bool is_stored() const { return is_stored_; }
+
+ protected:
+  AppCacheStoredItem() : is_doomed_(false), is_stored_(false) {}
+
+ private:
+  friend class AppCacheStorage;
+  friend class MockAppCacheStorage;
+
+  void set_is_doomed(bool b) { is_doomed_ = b; }
+  void set_is_stored(bool b) { is_stored_ = b; }
+
+  bool is_doomed_;
+  bool is_stored_;
 };
 
 }  // namespace appcache
