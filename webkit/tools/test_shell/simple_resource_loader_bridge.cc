@@ -50,6 +50,7 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
 using webkit_glue::ResourceLoaderBridge;
@@ -76,9 +77,11 @@ class IOThread : public base::Thread {
 
   virtual void Init() {
     SimpleAppCacheSystem::InitializeOnIOThread(request_context);
+    SimpleSocketStreamBridge::InitializeOnIOThread(request_context);
   }
 
   virtual void CleanUp() {
+    SimpleSocketStreamBridge::Cleanup();
     if (request_context) {
       request_context->Release();
       request_context = NULL;

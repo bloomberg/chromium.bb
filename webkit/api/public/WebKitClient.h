@@ -50,6 +50,7 @@ namespace WebKit {
     class WebMimeRegistry;
     class WebPluginListBuilder;
     class WebSandboxSupport;
+    class WebSocketStreamHandle;
     class WebStorageNamespace;
     class WebString;
     class WebThemeEngine;
@@ -165,6 +166,9 @@ namespace WebKit {
 
         // Returns a new WebURLLoader instance.
         virtual WebURLLoader* createURLLoader() = 0;
+
+        // Returns a new WebSocketStreamHandle instance.
+        virtual WebSocketStreamHandle* createSocketStreamHandle() = 0;
 
 
         // Plugins -------------------------------------------------------------

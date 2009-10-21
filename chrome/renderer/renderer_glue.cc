@@ -31,6 +31,7 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/websocketstreamhandle_bridge.h"
 
 #if defined(OS_WIN)
 #include <strsafe.h>  // note: per msdn docs, this must *follow* other includes
@@ -241,6 +242,16 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
                                 frame_origin, main_frame_origin, headers,
                                 load_flags, origin_pid, resource_type, 0,
                                 appcache_host_id, routing_id);
+}
+
+
+// static factory function
+WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
+    WebKit::WebSocketStreamHandle* handle,
+    WebSocketStreamHandleDelegate* delegate) {
+  // TODO(ukai): implement dispathcer class.
+  NOTREACHED();
+  return NULL;
 }
 
 void NotifyCacheStats() {

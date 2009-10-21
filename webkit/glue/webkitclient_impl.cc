@@ -34,6 +34,7 @@
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugininfo.h"
+#include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworkerclient_impl.h"
@@ -46,6 +47,7 @@ using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
+using WebKit::WebSocketStreamHandle;
 using WebKit::WebThemeEngine;
 using WebKit::WebURLLoader;
 using WebKit::WebWidgetClient;
@@ -152,6 +154,10 @@ WebThemeEngine* WebKitClientImpl::themeEngine() {
 
 WebURLLoader* WebKitClientImpl::createURLLoader() {
   return new WebURLLoaderImpl();
+}
+
+WebSocketStreamHandle* WebKitClientImpl::createSocketStreamHandle() {
+  return new WebSocketStreamHandleImpl();
 }
 
 void WebKitClientImpl::getPluginList(bool refresh,

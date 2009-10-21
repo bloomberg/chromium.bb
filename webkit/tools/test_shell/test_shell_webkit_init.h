@@ -52,6 +52,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::enableV8SingleThreadMode();
     WebKit::registerExtension(extensions_v8::GearsExtension::Get());
     WebKit::registerExtension(extensions_v8::IntervalExtension::Get());
+    WebKit::enableWebSockets();
 
     // Load libraries for media and enable the media player.
     FilePath module_path;

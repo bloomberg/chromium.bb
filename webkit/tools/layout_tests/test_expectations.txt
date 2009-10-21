@@ -3115,9 +3115,6 @@ BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
 
-// WebKit roll 49473:49502
-BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
-
 // WebKit roll 49502:49562
 BUG_DIMICH : LayoutTests/fast/events/add-event-without-document.html = TIMEOUT
 

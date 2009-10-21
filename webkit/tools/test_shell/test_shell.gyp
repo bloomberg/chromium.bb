@@ -74,6 +74,8 @@
         'simple_database_system.h',
         'simple_resource_loader_bridge.cc',
         'simple_resource_loader_bridge.h',
+        'simple_socket_stream_bridge.cc',
+        'simple_socket_stream_bridge.h',
         'test_navigation_controller.cc',
         'test_navigation_controller.h',
         'test_shell.cc',
