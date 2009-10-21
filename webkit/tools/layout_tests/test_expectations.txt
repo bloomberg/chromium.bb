@@ -3202,3 +3202,6 @@ BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = C
 BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
 BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-get.xhtml = CRASH PASS
 BUG25399 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-html-response-encoding.html = CRASH PASS
+
+// Incorrect baseline removed.
+BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
