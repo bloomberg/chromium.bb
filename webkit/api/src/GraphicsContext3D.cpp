@@ -1299,18 +1299,70 @@ void GraphicsContext3D::generateMipmap(unsigned long target)
     // require a texture readback and re-upload.
 }
 
-bool GraphicsContext3D::getActiveAttrib(CanvasProgram*, unsigned long, ActiveInfo&)
+bool GraphicsContext3D::getActiveAttrib(CanvasProgram* program, unsigned long index, ActiveInfo& info)
 {
-    // FIXME: implement.
-    notImplemented();
-    return false;
+    if (!program)
+        return false;
+    GLint numActiveAttribs = -1;
+    glGetProgramiv(EXTRACT(program), GL_ACTIVE_ATTRIBUTES, &numActiveAttribs);
+    if (numActiveAttribs < 0)
+        return false;
+    if (index >= static_cast<GLuint>(numActiveAttribs))
+        return false;
+    GLint maxNameLength = -1;
+    glGetProgramiv(EXTRACT(program), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength < 0)
+        return false;
+    GLchar* name = NULL;
+    if (!tryFastMalloc(maxNameLength * sizeof(GLchar)).getValue(name))
+        return false;
+    GLsizei length = 0;
+    GLint size = -1;
+    GLenum type = 0;
+    glGetActiveAttrib(EXTRACT(program), index, maxNameLength,
+                      &length, &size, &type, name);
+    if (size < 0) {
+        fastFree(name);
+        return false;
+    }
+    info.name = String(name, length);
+    info.type = type;
+    info.size = size;
+    fastFree(name);
+    return true;
 }
 
-bool GraphicsContext3D::getActiveUniform(CanvasProgram*, unsigned long, ActiveInfo&)
+bool GraphicsContext3D::getActiveUniform(CanvasProgram* program, unsigned long index, ActiveInfo& info)
 {
-    // FIXME: implement.
-    notImplemented();
-    return false;
+    if (!program)
+        return false;
+    GLint numActiveUniforms = -1;
+    glGetProgramiv(EXTRACT(program), GL_ACTIVE_UNIFORMS, &numActiveUniforms);
+    if (numActiveUniforms < 0)
+        return false;
+    if (index >= static_cast<GLuint>(numActiveUniforms))
+        return false;
+    GLint maxNameLength = -1;
+    glGetProgramiv(EXTRACT(program), GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength < 0)
+        return false;
+    GLchar* name = NULL;
+    if (!tryFastMalloc(maxNameLength * sizeof(GLchar)).getValue(name))
+        return false;
+    GLsizei length = 0;
+    GLint size = -1;
+    GLenum type = 0;
+    glGetActiveUniform(EXTRACT(program), index, maxNameLength,
+                       &length, &size, &type, name);
+    if (size < 0) {
+        fastFree(name);
+        return false;
+    }
+    info.name = String(name, length);
+    info.type = type;
+    info.size = size;
+    fastFree(name);
+    return true;
 }
 
 int GraphicsContext3D::getAttribLocation(CanvasProgram* program, const String& name)
@@ -1441,7 +1493,7 @@ String GraphicsContext3D::getProgramInfoLog(CanvasProgram* program)
     GLsizei returnedLogLength;
     glGetProgramInfoLog(programID, logLength, &returnedLogLength, log);
     ASSERT(logLength == returnedLogLength + 1);
-    String res = String::fromUTF8(log, returnedLogLength);
+    String res = String(log, returnedLogLength);
     fastFree(log);
     return res;
 }
@@ -1494,7 +1546,7 @@ String GraphicsContext3D::getShaderInfoLog(CanvasShader* shader)
     GLsizei returnedLogLength;
     glGetShaderInfoLog(shaderID, logLength, &returnedLogLength, log);
     ASSERT(logLength == returnedLogLength + 1);
-    String res = String::fromUTF8(log, returnedLogLength);
+    String res = String(log, returnedLogLength);
     fastFree(log);
     return res;
 }
@@ -1513,7 +1565,7 @@ String GraphicsContext3D::getShaderSource(CanvasShader* shader)
     GLsizei returnedLogLength;
     glGetShaderSource(shaderID, logLength, &returnedLogLength, log);
     ASSERT(logLength == returnedLogLength + 1);
-    String res = String::fromUTF8(log, returnedLogLength);
+    String res = String(log, returnedLogLength);
     fastFree(log);
     return res;
 }
@@ -1521,7 +1573,7 @@ String GraphicsContext3D::getShaderSource(CanvasShader* shader)
 String GraphicsContext3D::getString(unsigned long name)
 {
     makeContextCurrent();
-    return String::fromUTF8(reinterpret_cast<const char*>(glGetString(name)));
+    return String(reinterpret_cast<const char*>(glGetString(name)));
 }
 
 float GraphicsContext3D::getTexParameterf(unsigned long target, unsigned long pname)
@@ -1712,6 +1764,20 @@ void GraphicsContext3D::pixelStorei(unsigned long pname, long param)
 }
 
 GL_SAME_METHOD_2(PolygonOffset, polygonOffset, double, double)
+
+PassRefPtr<CanvasArray> GraphicsContext3D::readPixels(long x, long y,
+                                                      unsigned long width, unsigned long height,
+                                                      unsigned long format, unsigned long type) {
+    // FIXME: support more pixel formats and types.
+    if (!((format == GL_RGBA) && (type == GL_UNSIGNED_BYTE))) {
+        return 0;
+    }
+
+    // FIXME: take into account pack alignment.
+    RefPtr<CanvasUnsignedByteArray> array = CanvasUnsignedByteArray::create(width * height * 4);
+    glReadPixels(x, y, width, height, format, type, array->baseAddress());
+    return array;
+}
 
 void GraphicsContext3D::releaseShaderCompiler()
 {
