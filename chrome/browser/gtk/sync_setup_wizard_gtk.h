@@ -18,6 +18,11 @@ class ProfileSyncService;
 
 class SyncSetupWizard;
 
+// This class is used as a temporary solution to allow login to bookmark sync on
+// Linux.  It will be replaced with the HtmlDialog based solution when
+// window->ShowHtmlDialog() is implemented on Linux.
+// See: http://code.google.com/p/chromium/issues/detail?id=25260
+
 class SyncSetupWizardGtk {
  public:
   // Displays the dialog box to setup sync.

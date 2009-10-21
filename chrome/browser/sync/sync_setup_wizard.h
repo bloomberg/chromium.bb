@@ -54,7 +54,7 @@ class SyncSetupWizard {
   bool IsVisible() const;
 
 #if defined(OS_LINUX)
-  void SetVisible(bool visible) { visible_ = visible; }
+  void set_visible(bool visible) { visible_ = visible; }
 #endif
 
  private:
@@ -72,6 +72,9 @@ class SyncSetupWizard {
 #if defined(OS_LINUX)
   bool visible_;
 #else
+  // The use of ShowHtmlDialog and SyncSetupFlowContainer is disabled on Linux
+  // until BrowserShowHtmlDialog() is implemented.
+  // See: http://code.google.com/p/chromium/issues/detail?id=25260
   SyncSetupFlowContainer* flow_container_;
 #endif
 
@@ -79,4 +82,3 @@ class SyncSetupWizard {
 };
 
 #endif  // CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
-

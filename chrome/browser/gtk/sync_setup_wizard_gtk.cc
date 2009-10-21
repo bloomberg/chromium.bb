@@ -7,13 +7,13 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/views/sync/sync_setup_wizard.h"
+#include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/common/gtk_util.h"
 
+// SyncSetupWizard -------------------------------------------------------------
+
 SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
-    : username_textbox_(NULL),
-      password_textbox_(NULL),
-      service_(service),
+    : service_(service),
       visible_(false) {
 }
 
@@ -40,17 +40,22 @@ bool SyncSetupWizard::IsVisible() const {
   return visible_;
 }
 
+// SyncSetupWizardGtk ----------------------------------------------------------
+
 // static
 void SyncSetupWizardGtk::Show(ProfileSyncService* service,
                               SyncSetupWizard *wizard) {
   Browser* b = BrowserList::GetLastActive();
+  wizard->set_visible(true);
   new SyncSetupWizardGtk(b->window()->GetNativeHandle(), service, wizard);
 }
 
 SyncSetupWizardGtk::SyncSetupWizardGtk(GtkWindow* parent,
                                        ProfileSyncService* service,
                                        SyncSetupWizard *wizard)
-    : service_(service),
+    : username_textbox_(NULL),
+      password_textbox_(NULL),
+      service_(service),
       wizard_(wizard) {
   // TODO(zork): Put in proper localized strings.
   //
@@ -106,7 +111,7 @@ SyncSetupWizardGtk::SyncSetupWizardGtk(GtkWindow* parent,
 }
 
 void SyncSetupWizardGtk::OnDialogResponse(GtkWidget* widget, int response) {
-  wizard_->SetVisible(false);
+  wizard_->set_visible(false);
   if (response == GTK_RESPONSE_ACCEPT) {
     service_->OnUserSubmittedAuth(
         gtk_entry_get_text(GTK_ENTRY(username_textbox_)),
