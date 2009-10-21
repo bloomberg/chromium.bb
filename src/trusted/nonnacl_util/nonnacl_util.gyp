@@ -96,6 +96,13 @@
           'dependencies': [
             'sel_ldr_launcher',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../handle_pass/handle_pass.gyp:browserhandle',
+              ],
+            }],
+          ],
         },
       ],
     }],

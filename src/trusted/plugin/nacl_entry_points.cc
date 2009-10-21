@@ -29,6 +29,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -99,6 +100,8 @@ void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
   if (NULL != launch_func) {
     launch_nacl_process = launch_func;
   }
+
+  NaClHandlePassBrowserInit();
 
   NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
 }

@@ -36,11 +36,18 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_HANDLE_PASS_BROWSER_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_HANDLE_PASS_BROWSER_HANDLE_H_
 
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+
 #include <windows.h>
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 EXTERN_C_BEGIN
+
+// This function needs to be called once in each renderer process.
+// We don't merge it with the Ctor to avoid allocating more memory when it's
+// not necessary.
+int NaClHandlePassBrowserInit();
 
 // Initializes the maps, etc., maintained by the handle passing library.
 extern int NaClHandlePassBrowserCtor();
@@ -61,9 +68,14 @@ extern struct NaClDesc* NaClHandlePassBrowserGetSocketAddress();
 // processes.
 extern void NaClHandlePassBrowserRememberHandle(DWORD pid, HANDLE handle);
 
+// Lookup a handle from the renderer process.
+extern HANDLE NaClHandlePassBrowserLookupHandle(DWORD pid);
+
 // Destroys this instance of the handle passing service.
 extern void NaClHandlePassBrowserDtor();
 
 EXTERN_C_END
+
+#endif  // NACL_WINDOWS && !defined(NACL_STANDALONE)
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_HANDLE_PASS_BROWSER_HANDLE_H_

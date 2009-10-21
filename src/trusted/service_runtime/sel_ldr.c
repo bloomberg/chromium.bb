@@ -34,11 +34,17 @@
  */
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
+
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+
+#include "native_client/src/trusted/handle_pass/ldr_handle.h"
+
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -141,6 +147,10 @@ void NaClAppDtor(struct NaClApp  *nap) {
   int                   i;
   struct NaClDesc       *ndp;
   struct NaClAppThread  *natp;
+
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  NaClHandlePassLdrDtor();
+#endif
 
   NaClLog(2,
           "NaClAppDtor: there are %d threads alive; thread table size %d\n",
@@ -837,6 +847,30 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   return NACL_SRPC_RESULT_OK;
 }
 
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+/*
+ * This RPC is invoked by the plugin as part of the initialization process and
+ * provides the NaCl process with a socket address that can later be used for
+ * pid to process handle mapping queries. This is required to enable IMC handle
+ * passing inside the Chrome sandbox.
+ */
+static NaClSrpcError NaClInitHandlePassingRpc(
+    struct NaClSrpcChannel  *chan,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args) {
+  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
+  NaClSrpcImcDescType handle_passing_socket_address = in_args[0]->u.hval;
+  DWORD renderer_pid = in_args[1]->u.ival;
+  NaClHandle renderer_handle = (NaClHandle)in_args[2]->u.ival;
+  UNREFERENCED_PARAMETER(out_args);
+  if (!NaClHandlePassLdrCtor(handle_passing_socket_address,
+                             renderer_pid,
+                             renderer_handle))
+    return NACL_SRPC_RESULT_APP_ERROR;
+  return NACL_SRPC_RESULT_OK;
+}
+#endif
+
 static NaClSrpcError NaClSecureChannelSetOriginRpc(
     struct NaClSrpcChannel   *chan,
     struct NaClSrpcArg       **in_args,
@@ -912,6 +946,9 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { "set_origin:s:", NaClSecureChannelSetOriginRpc, },
     { "log:is:", NaClSecureChannelLog, },
     { "load_module:h:", NaClLoadModuleRpc, },
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+    { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
+#endif
     /* add additional calls here.  upcall set up?  start module signal? */
     { (char const *) NULL, (NaClSrpcMethod) 0, },
   };

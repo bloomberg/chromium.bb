@@ -40,7 +40,11 @@
 #include <set>
 
 #include "native_client/src/include/portability.h"
+
 #include "native_client/src/shared/npruntime/npmodule.h"
+
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
+
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
@@ -48,9 +52,10 @@
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/srpc/video.h"
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
-#include "native_client/src/trusted/plugin/srpc/video.h"
 
 std::set<const nacl_srpc::ScriptableHandleBase*>*
     nacl_srpc::ScriptableHandleBase::valid_handles = NULL;
@@ -101,6 +106,10 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
   dprintf(("SRPC_Plugin::SRPC_Plugin(%p, %d)\n",
            static_cast<void*>(this), argc));
   InitializeIdentifiers();
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  if (!NaClHandlePassBrowserCtor())
+    return;
+#endif
   // SRPC_Plugin initially gets exclusive ownership of plugin_.
   nacl_srpc::PortableHandleInitializer init_info(this);
   plugin_ = nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::New(&init_info);
@@ -188,6 +197,11 @@ void SRPC_Plugin::set_module(nacl::NPModule* module) {
 
 SRPC_Plugin::~SRPC_Plugin() {
   nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* plugin = plugin_;
+
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  NaClHandlePassBrowserDtor();
+#endif
+
   // TODO(nfullagar): please explain why plugin is needed here.  why
   // does plugin_ need to be set to NULL -- but the object not
   // Unref'd, while holding the video global lock?

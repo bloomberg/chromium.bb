@@ -46,6 +46,7 @@ int SrtSocket::kSetOriginIdent;
 int SrtSocket::kStartModuleIdent;
 int SrtSocket::kLogIdent;
 int SrtSocket::kLoadModule;
+int SrtSocket::kInitHandlePassing;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void SrtSocket::InitializeIdentifiers(
@@ -63,6 +64,9 @@ void SrtSocket::InitializeIdentifiers(
     kLogIdent = PortablePluginInterface::GetStrIdentifierCallback("log");
     kLoadModule =
         PortablePluginInterface::GetStrIdentifierCallback("load_module");
+    kInitHandlePassing =
+        PortablePluginInterface::GetStrIdentifierCallback(
+            "init_handle_passing");
     initialized = true;
   }
 }
@@ -154,6 +158,46 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
                                                &params);
   return rpc_result;
 }
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+bool SrtSocket::InitHandlePassing(NaClSrpcImcDescType desc,
+                                  nacl::Handle sel_ldr_handle) {
+  if (!(connected_socket()->HasMethod(kInitHandlePassing, METHOD_CALL))) {
+    dprintf(("No load_module method was found\n"));
+    return false;
+  }
+  SrpcParams params;
+  bool success;
+  DWORD my_pid = GetCurrentProcessId();
+  nacl::Handle my_handle = GetCurrentProcess();
+  nacl::Handle my_handle_in_selldr;
+
+  if (!DuplicateHandle(GetCurrentProcess(),
+                       my_handle,
+                       sel_ldr_handle,
+                       &my_handle_in_selldr,
+                       PROCESS_DUP_HANDLE,
+                       FALSE,
+                       0)) {
+    return false;
+  }
+
+  success = connected_socket()->InitParams(kInitHandlePassing,
+                                           METHOD_CALL,
+                                           &params);
+  if (!success) {
+    return false;
+  }
+
+  params.Input(0)->u.hval = desc;
+  params.Input(1)->u.ival = my_pid;
+  params.Input(2)->u.ival = reinterpret_cast<int>(my_handle_in_selldr);
+
+  bool rpc_result = connected_socket()->Invoke(kInitHandlePassing,
+                                               METHOD_CALL,
+                                               &params);
+  return rpc_result;
+}
+#endif
 
 // make the start_module rpc
 bool SrtSocket::StartModule(int *load_status) {

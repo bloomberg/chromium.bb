@@ -35,6 +35,7 @@
 
 #include <windows.h>
 #include <map>
+#include "native_client/src/trusted/handle_pass/handle_lookup.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -56,20 +57,40 @@ static std::map<DWORD, HANDLE>* pid_handle_map = NULL;
 // NOTE: we are not closing these descriptors when no instances remain alive.
 static struct NaClDesc* handle_descs[2] = { NULL, NULL };
 
+int NaClHandlePassBrowserInit() {
+  return NaClMutexCtor(&pid_handle_map_mu);
+}
+
 int NaClHandlePassBrowserCtor() {
   int retval = 1;
 
   NaClMutexLock(&pid_handle_map_mu);
-  if (NULL != pid_handle_map) {
+  if (NULL == pid_handle_map) {
     pid_handle_map = new(std::nothrow) std::map<DWORD, HANDLE>;
     if (NULL == pid_handle_map) {
       retval = 0;
     }
+    HANDLE handle = GetCurrentProcess();
+    DWORD pid = GetCurrentProcessId();
+    (*pid_handle_map)[pid] = handle;
+  }
+  NaClMutexUnlock(&pid_handle_map_mu);
+  NaClHandlePassSetLookupMode(HANDLE_PASS_BROKER_PROCESS);
+  return retval;
+}
+
+HANDLE NaClHandlePassBrowserLookupHandle(DWORD pid) {
+  HANDLE retval = NULL;
+  NaClMutexLock(&pid_handle_map_mu);
+  if (pid_handle_map->find(pid) == pid_handle_map->end()) {
+    // IMC compares the result to NULL
+    retval = NULL;
+  } else {
+    retval = (*pid_handle_map)[pid];
   }
   NaClMutexUnlock(&pid_handle_map_mu);
   return retval;
 }
-
 
 static NaClSrpcError Lookup(NaClSrpcChannel* channel,
                             NaClSrpcArg** in_args,
@@ -91,7 +112,8 @@ static NaClSrpcError Lookup(NaClSrpcChannel* channel,
                                0,
                                FALSE,
                                DUPLICATE_SAME_ACCESS)) {
-    out_args[0]->u.ival = reinterpret_cast<int>(kInvalidHandle);
+    // IMC compares the result to NULL
+    out_args[0]->u.ival = NULL;
   } else {
     out_args[0]->u.ival = reinterpret_cast<int>(recipient_handle);
   }
@@ -111,8 +133,10 @@ static void WINAPI HandleServer(void* dummy) {
   struct NaClNrdXferEffector effector;
   struct NaClDescEffector* effp;
   struct NaClDesc* lookup_desc;
-  struct NaClSrpcHandlerDesc handlers[] = { { "lookup:ii:i", Lookup },
-                                            { "shutdown::", Shutdown } };
+  struct NaClSrpcHandlerDesc handlers[] = {
+      { "lookup:ii:i", Lookup },
+      { "shutdown::", Shutdown },
+      { (char const *) NULL, (NaClSrpcMethod) 0, },};
 
   // Create a bound socket for use by the effector.
   if (0 != NaClCommonDescMakeBoundSock(pair)) {

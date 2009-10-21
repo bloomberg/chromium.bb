@@ -156,6 +156,11 @@
             'win/nacl_thread_nice.c',
           ],
         }],
+        ['nacl_standalone==0 and OS=="win"', {
+          'dependencies': [
+            '../handle_pass/handle_pass.gyp:ldrhandle',
+          ],
+        }],
       ],
       'actions': [
         {

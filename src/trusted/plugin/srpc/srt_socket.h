@@ -35,8 +35,8 @@
 
 #include <string>
 
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
-
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
 namespace nacl_srpc {
@@ -51,6 +51,9 @@ class SrtSocket {
   bool SetOrigin(std::string origin);
   bool StartModule(int *load_status);
   bool LoadModule(NaClSrpcImcDescType desc);
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  bool InitHandlePassing(NaClSrpcImcDescType desc, nacl::Handle sel_ldr_handle);
+#endif
   bool Log(int severity, std::string msg);
 
   ConnectedSocket *connected_socket() const {
@@ -64,6 +67,7 @@ class SrtSocket {
   static int kStartModuleIdent;
   static int kLogIdent;
   static int kLoadModule;
+  static int kInitHandlePassing;
  private:
   ScriptableHandle<ConnectedSocket> *connected_socket_;
   PortablePluginInterface *plugin_interface_;

@@ -42,6 +42,14 @@
   ],
   'targets': [
     {
+      'target_name': 'handle_lookup',
+      'type': 'static_library',
+      'sources': [
+        'handle_lookup.cc',
+        'handle_lookup.h',
+      ],
+    },
+    {
       'target_name': 'browserhandle',
       'type': 'static_library',
       'sources': [
@@ -49,6 +57,7 @@
         'browser_handle.h',
       ],
       'dependencies': [
+        'handle_lookup',
         '../../shared/srpc/srpc.gyp:nonnacl_srpc',
         '../../shared/platform/platform.gyp:platform',
       ],
@@ -61,6 +70,7 @@
         'ldr_handle.h',
       ],
       'dependencies': [
+        'handle_lookup',
         '../../shared/srpc/srpc.gyp:nonnacl_srpc',
         '../../shared/platform/platform.gyp:platform',
       ],

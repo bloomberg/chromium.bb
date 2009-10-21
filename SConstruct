@@ -475,7 +475,6 @@ base_env.Append(
     'src/shared/utils/build.scons',
     'src/third_party_mod/gtest/build.scons',
     'src/trusted/desc/build.scons',
-    'src/trusted/handle_pass/build.scons',
     'src/trusted/nonnacl_util/build.scons',
     'src/trusted/plugin/build.scons',
     'src/trusted/platform_qualify/build.scons',

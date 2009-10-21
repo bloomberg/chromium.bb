@@ -35,11 +35,14 @@
 #include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
@@ -161,11 +164,13 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   }
 
   if (buffer != NULL) {
+    // This code is executed only if NaCl is running as a built-in plugin
+    // in Chrome.
     // We now have an open communication channel to the sel_ldr process,
     // so we can send the nexe bits over
-    SharedMemoryInitializer init_info(plugin_interface_, plugin_, size);
+    SharedMemoryInitializer shm_init_info(plugin_interface_, plugin_, size);
     ScriptableHandle<SharedMemory> *shared_memory =
-      ScriptableHandle<SharedMemory>::New(&init_info);
+      ScriptableHandle<SharedMemory>::New(&shm_init_info);
 
     SharedMemory *real_shared_memory =
       static_cast<SharedMemory*>(shared_memory->get_handle());
@@ -182,8 +187,16 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
       subprocess_ = NULL;
       return false;
     }
-
     shared_memory->Unref();
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+    // Establish the communication for handle passing protocol
+    struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
+    if (!runtime_channel_->InitHandlePassing(desc, subprocess_->child())) {
+      delete subprocess_;
+      subprocess_ = NULL;
+      return false;
+    }
+#endif
   }
 
   // start the module.  otherwise we cannot connect for multimedia
@@ -434,7 +447,7 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
   dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
            "-X result descriptor (NaClDesc*) = %p\n",
            static_cast<void *>(descs[0])));
-  {
+  /* SCOPE */ {
     SocketAddressInitializer init_info(plugin_interface_, descs[0], plugin);
     retval = ScriptableHandle<SocketAddress>::New(
         static_cast<PortableHandleInitializer*>(&init_info));

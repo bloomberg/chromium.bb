@@ -45,6 +45,7 @@
 #include <algorithm>
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/handle_pass/handle_lookup.h"
 
 namespace nacl {
 
@@ -257,7 +258,11 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
         header.command != kEchoResponse) {
       return -1;
     }
+#ifdef NACL_STANDALONE  // not in Chrome
     HANDLE target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
+#else
+    HANDLE target = NaClHandlePassLookupHandle(header.pid);
+#endif
     if (target == NULL) {
       return -1;
     }
@@ -273,11 +278,15 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
           WriteAll(handle, &header, sizeof header);
           WriteAll(handle, remote_handles, sizeof(Handle) * i);
         }
+#ifdef NACL_STANDALONE
         CloseHandle(target);
+#endif
         return -1;
       }
     }
+#ifdef NACL_STANDALONE
     CloseHandle(target);
+#endif
   }
   header.command = kMessage;
   header.handle_count = message->handle_count;

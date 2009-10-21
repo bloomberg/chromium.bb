@@ -29,7 +29,7 @@
 #            '../src/trusted/sandbox/sandbox.gyp:*',
           ],
         }],
-        ['OS=="win"', {
+        ['OS=="win" and nacl_standalone==0', {
           'dependencies': [
             '../src/trusted/handle_pass/handle_pass.gyp:*',
           ],
