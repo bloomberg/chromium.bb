@@ -117,7 +117,7 @@ class TestRunningThread(threading.Thread):
 
     self.has_started_event.set()
     logging.info('Output from running test follows:')
-
+    
     while True:
       line = self.test_process.stdout.readline()
       if line:
@@ -305,7 +305,7 @@ def main(argv):
       if not configure_ie.ConfigureIE():
         logging.error('Failed to configure IE.')
         all_test_passed = False
-      continue
+        continue
 
     # Run selenium tests.
     if RunTest(sel_name) != 0:
