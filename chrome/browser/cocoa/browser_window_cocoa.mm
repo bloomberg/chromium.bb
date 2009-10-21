@@ -44,8 +44,8 @@ void BrowserWindowCocoa::Show() {
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   NSRect cocoa_bounds = NSMakeRect(bounds.x(), 0, bounds.width(),
                                    bounds.height());
-  // flip coordinates
-  NSScreen* screen = [window_ screen];
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   cocoa_bounds.origin.y =
       [screen frame].size.height - bounds.height() - bounds.y();
 
@@ -139,8 +139,9 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
 gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   // TODO(pinkerton): not sure if we can get the non-zoomed bounds, or if it
   // really matters. We may want to let Cocoa handle all this for us.
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   NSRect frame = [window_ frame];
-  NSScreen* screen = [window_ screen];
   gfx::Rect bounds(frame.origin.x, 0, frame.size.width, frame.size.height);
   bounds.set_y([screen frame].size.height - frame.origin.y - frame.size.height);
   return bounds;
