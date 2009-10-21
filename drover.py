@@ -172,7 +172,8 @@ def mergeRevision(url, revision):
     if export_map.has_key(path):
       continue
     command = ('svn merge -N -r ' + str(revision-1) + ":" + str(revision) + " ")
-    command = command + url + path + "@" + str(revision) + " ." + path
+    command += " --ignore-ancestry "
+    command += url + path + "@" + str(revision) + " ." + path
 
     print command
     os.system(command)
