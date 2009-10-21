@@ -2602,8 +2602,6 @@ BUG9798 LINUX SLOW : LayoutTests/transitions/transition-timing-function.html = F
 BUG9798 MAC : LayoutTests/fast/forms/search-placeholder-value-changed.html = CRASH PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
 BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = PASS TIMEOUT
-BUG9798 WIN : LayoutTests/media/video-src.html = PASS TIMEOUT
-BUG9798 LINUX : LayoutTests/media/video-buffered.html = PASS TIMEOUT
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
