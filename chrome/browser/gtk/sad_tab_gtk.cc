@@ -117,7 +117,7 @@ gboolean SadTabGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) const {
       0,
       message_y_,
       width_,
-      99999,  // Let the height be large, and we'll clip if needed.
+      height_ - message_y_,
       gfx::Canvas::TEXT_ALIGN_CENTER |
       gfx::Canvas::MULTI_LINE |
       gfx::Canvas::TEXT_VALIGN_TOP);
