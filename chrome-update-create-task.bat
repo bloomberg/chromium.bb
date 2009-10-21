@@ -19,7 +19,7 @@ if not exist "%Trunk%" (
   echo Usage: %~n0 ^<time^> ^<c:\path\to\chrome\trunk^>
   echo ^<time^> is the time in HH:MM:SS format at which to run the task.
   echo Example: %~n0 02:00:00 c:\src\chrome\trunk
-  exit 1
+  goto :EOF
 )
 
 if not exist "%Out%" goto CreateScript
@@ -35,8 +35,7 @@ echo.
 echo Creating %Out%
 
 echo>"%Out%" @echo off
-echo>>"%Out%" call "%~dp0\bootstrap\update.bat"
-echo>>"%Out%" "%~dp0\chrome-update.bat" "%Trunk%" ^> "%Trunk%\chrome-update-results.txt" 
+echo>>"%Out%" "%~dp0chrome-update.bat" "%Trunk%" ^> "%Trunk%\chrome-update-results.txt" 
 
 :CreateTask
 
