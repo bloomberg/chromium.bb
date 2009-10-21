@@ -8,6 +8,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "base/keyboard_codes.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -64,7 +65,10 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, public:
 
-NativeMenuGtk::NativeMenuGtk(Menu2Model* model) : model_(model), menu_(NULL) {
+NativeMenuGtk::NativeMenuGtk(Menu2Model* model)
+    : model_(model),
+      menu_(NULL),
+      menu_shown_(false) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
@@ -79,6 +83,14 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // TODO(beng): value of '1' will not work for context menus!
   gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, MenuPositionFunc, &position, 1,
                  gtk_get_current_event_time());
+
+  DCHECK(!menu_shown_);
+  menu_shown_ = true;
+
+  // Block until menu is no longer shown by running a nested message loop.
+  MessageLoopForUI::current()->Run(NULL);
+
+  menu_shown_ = false;
 }
 
 void NativeMenuGtk::CancelMenu() {
@@ -109,6 +121,17 @@ gfx::NativeMenu NativeMenuGtk::GetNativeMenu() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, private:
+
+// static
+void NativeMenuGtk::OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu) {
+  if (!menu->menu_shown_) {
+    // This indicates we don't have a menu open, and should never happen.
+    NOTREACHED();
+    return;
+  }
+  // Quit the nested message loop we spawned in RunMenuAt.
+  MessageLoop::current()->Quit();
+}
 
 void NativeMenuGtk::AddSeparatorAt(int index) {
   GtkWidget* separator = gtk_separator_menu_item_new();
@@ -200,6 +223,9 @@ void NativeMenuGtk::ResetMenu() {
   if (menu_)
     gtk_widget_destroy(menu_);
   menu_ = gtk_menu_new();
+  // Listen for "hide" signal so that we know when to return from the blocking
+  // RunMenuAt call.
+  g_signal_connect(G_OBJECT(menu_), "hide", G_CALLBACK(OnMenuHidden), this);
 }
 
 // static

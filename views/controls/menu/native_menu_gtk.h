@@ -28,6 +28,8 @@ class NativeMenuGtk : public MenuWrapper {
   virtual gfx::NativeMenu GetNativeMenu() const;
 
  private:
+  static void OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu);
+
   void AddSeparatorAt(int index);
   void AddMenuItemAt(int index, GtkRadioMenuItem** last_radio_item);
 
@@ -48,6 +50,8 @@ class NativeMenuGtk : public MenuWrapper {
   Menu2Model* model_;
 
   GtkWidget* menu_;
+
+  bool menu_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };

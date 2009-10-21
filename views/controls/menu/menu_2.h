@@ -116,9 +116,9 @@ class Menu2 {
     ALIGN_TOPRIGHT
   };
 
-  // Runs the menu at the specified point. This may or may not block, depending
-  // on the platform and type of menu in use. RunContextMenuAt is the same, but
-  // the alignment is the default for a context menu.
+  // Runs the menu at the specified point. This method blocks until done.
+  // RunContextMenuAt is the same, but the alignment is the default for a
+  // context menu.
   void RunMenuAt(const gfx::Point& point, Alignment alignment);
   void RunContextMenuAt(const gfx::Point& point);
 

@@ -20,8 +20,7 @@ class MenuWrapper {
  public:
   virtual ~MenuWrapper() {}
 
-  // Runs the menu at the specified point. This may or may not block depending
-  // on the platform.
+  // Runs the menu at the specified point. This blocks until done.
   virtual void RunMenuAt(const gfx::Point& point, int alignment) = 0;
 
   // Cancels the active menu.
