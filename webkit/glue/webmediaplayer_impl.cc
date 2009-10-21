@@ -489,8 +489,10 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
-  // TODO(hclam): Implement this.
-  return false;
+  // TODO(scherkus): we'll need to do something smarter here if/when we start to
+  // support formats that contain references to external resources (i.e., MP4s
+  // containing links to other MP4s).  See http://crbug.com/25432
+  return true;
 }
 
 WebKit::WebMediaPlayer::MovieLoadType
