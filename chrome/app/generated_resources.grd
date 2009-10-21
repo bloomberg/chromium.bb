@@ -4848,6 +4848,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that launches the application associated with the protocol">
         Launch Application
       </message>
+      <message name="IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT" desc="Button in External Protocol Dialog that cancels the application launch">
+        Do Nothing
+      </message>
       <message name="IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH" desc="Information about the application being launched by the external protocol">
         The following application will be launched if you accept this request:\n\n <ph name="APPLICATION">$1<ex>C:\Program Files\Adobe\Reader 8.0\Reader\AcroRd32.exe /u "%1"</ex></ph>
       </message>

@@ -53,7 +53,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       l10n_util::GetNSStringWithFixup(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT)];
   [allowButton setKeyEquivalent:@""];  // disallow as default
   [alert_ addButtonWithTitle:
-      l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
+      l10n_util::GetNSStringWithFixup(
+        IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT)];
 
   NSString* urlString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
@@ -106,11 +107,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       NOTREACHED();
   }
 
-  // Set the "don't warn me again" info if the protocol was allowed ("cancel"
-  // always means "make this dialog go away with no permanent effect" no matter
-  // what).
-  if ([[alert_ suppressionButton] state] == NSOnState &&
-      blockState == ExternalProtocolHandler::DONT_BLOCK) {
+  // Set the "don't warn me again" info.
+  if ([[alert_ suppressionButton] state] == NSOnState) {
     ExternalProtocolHandler::SetBlockState(UTF8ToWide(url_.scheme()),
                                            blockState);
   }
