@@ -53,7 +53,10 @@
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
       # By default we assume that we are building as part of Chrome
-      'nacl_standalone%': 0,
+      'variables': {
+        'nacl_standalone%': 0,
+      },
+      'nacl_standalone%': '<(nacl_standalone)',
       # Compute the architecture that we're building for. Default to the
       # architecture that we're building on.
       'conditions': [

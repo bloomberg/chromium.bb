@@ -101,7 +101,9 @@ void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
     launch_nacl_process = launch_func;
   }
 
+#if NACL_WINDOWS
   NaClHandlePassBrowserInit();
+#endif
 
   NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
 }
