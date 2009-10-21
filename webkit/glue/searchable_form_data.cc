@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,17 +39,15 @@ void GetFormEncoding(HTMLFormElement* form, TextEncoding* encoding) {
   str.replace(',', ' ');
   Vector<String> charsets;
   str.split(' ', charsets);
-  for (Vector<String>::const_iterator it = charsets.begin();
-       it != charsets.end(); ++it) {
-    *encoding = TextEncoding(*it);
+  for (Vector<String>::const_iterator i(charsets.begin()); i != charsets.end();
+       ++i) {
+    *encoding = TextEncoding(*i);
     if (encoding->isValid())
       return;
   }
-  if (!encoding->isValid()) {
-    Frame* frame = form->document()->frame();
-    *encoding = frame ?
-        TextEncoding(frame->loader()->encoding()) : Latin1Encoding();
-  }
+  const Frame* frame = form->document()->frame();
+  *encoding = frame ?
+      TextEncoding(frame->loader()->encoding()) : Latin1Encoding();
 }
 
 // Returns true if the submit request results in an HTTP URL.
@@ -62,17 +60,16 @@ bool IsHTTPFormSubmit(HTMLFormElement* form) {
 // If the form does not have an activated submit button, the first submit
 // button is returned.
 HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form) {
-  WTF::Vector<HTMLFormControlElement*> form_elements = form->formElements;
   HTMLFormControlElement* first_submit_button = NULL;
-
-  for (unsigned i = 0; i < form_elements.size(); ++i) {
-    HTMLFormControlElement* current = form_elements[i];
-    if (current->isActivatedSubmit()) {
+  for (WTF::Vector<HTMLFormControlElement*>::const_iterator
+       i(form->formElements.begin()); i != form->formElements.end(); ++i) {
+    HTMLFormControlElement* form_element = *i;
+    if (form_element->isActivatedSubmit()) {
       // There's a button that is already activated for submit, return NULL.
       return NULL;
     } else if (first_submit_button == NULL &&
-               current->isSuccessfulSubmitButton()) {
-      first_submit_button = current;
+               form_element->isSuccessfulSubmitButton()) {
+      first_submit_button = form_element;
     }
   }
   return first_submit_button;
@@ -82,42 +79,33 @@ HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form) {
 // selected state.
 bool IsSelectInDefaultState(HTMLSelectElement* select) {
   RefPtr<HTMLOptionsCollection> options = select->options();
-  Node* node = options->firstItem();
-
-  if (!select->multiple() && select->size() <= 1) {
-    // The select is rendered as a combobox (called menulist in WebKit). At
-    // least one item is selected, determine which one.
-    HTMLOptionElement* initial_selected = NULL;
-    while (node) {
-      HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
-      if (option_element) {
-        if (!initial_selected)
-          initial_selected = option_element;
-        if (option_element->defaultSelected()) {
-          // The page specified the option to select.
-          initial_selected = option_element;
-          break;
-        }
-      }
-      node = options->nextItem();
-    }
-    if (initial_selected)
-      return initial_selected->selected();
-  } else {
-    while (node) {
-      HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
+  if (select->multiple() || select->size() > 1) {
+    for (Node* node = options->firstItem(); node; node = options->nextItem()) {
+      const HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
       if (option_element &&
           option_element->selected() != option_element->defaultSelected()) {
         return false;
       }
-      node = options->nextItem();
+    }
+    return true;
+  }
+
+  // The select is rendered as a combobox (called menulist in WebKit). At
+  // least one item is selected, determine which one.
+  const HTMLOptionElement* initial_selected = NULL;
+  for (Node* node = options->firstItem(); node; node = options->nextItem()) {
+    const HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
+    if (!option_element)
+      continue;
+    if (option_element->defaultSelected()) {
+      // The page specified the option to select.
+      initial_selected = option_element;
+      break;
+    } else if (!initial_selected) {
+      initial_selected = option_element;
     }
   }
-  return true;
-}
-
-bool IsCheckBoxOrRadioInDefaultState(HTMLInputElement* element) {
-  return (element->checked() == element->defaultChecked());
+  return initial_selected ? initial_selected->selected() : true;
 }
 
 // Returns true if the form element is in its default state, false otherwise.
@@ -126,11 +114,11 @@ bool IsCheckBoxOrRadioInDefaultState(HTMLInputElement* element) {
 // in its default state if the checked state matches the defaultChecked state.
 bool IsInDefaultState(HTMLFormControlElement* form_element) {
   if (form_element->hasTagName(HTMLNames::inputTag)) {
-    HTMLInputElement* input_element =
-        static_cast<HTMLInputElement*>(form_element);
-    if ((input_element->inputType() == HTMLInputElement::CHECKBOX) ||
-        (input_element->inputType() == HTMLInputElement::RADIO)) {
-      return IsCheckBoxOrRadioInDefaultState(input_element);
+    const HTMLInputElement* input_element =
+        static_cast<const HTMLInputElement*>(form_element);
+    if (input_element->inputType() == HTMLInputElement::CHECKBOX ||
+        input_element->inputType() == HTMLInputElement::RADIO) {
+      return input_element->checked() == input_element->defaultChecked();
     }
   } else if (form_element->hasTagName(HTMLNames::selectTag)) {
     return IsSelectInDefaultState(
@@ -139,13 +127,13 @@ bool IsInDefaultState(HTMLFormControlElement* form_element) {
   return true;
 }
 
-// If form has only one text input element, it is returned. If a valid input
-// element is not found, NULL is returned. Additionally, the form data for all
+// If form has only one text input element, return true. If a valid input
+// element is not found, return false. Additionally, the form data for all
 // elements is added to enc_string and the encoding used is set in
 // encoding_name.
-HTMLInputElement* GetTextElement(HTMLFormElement* form,
-                                 Vector<char>* enc_string,
-                                 std::string* encoding_name) {
+bool HasSuitableTextElement(HTMLFormElement* form,
+                            Vector<char>* enc_string,
+                            std::string* encoding_name) {
   TextEncoding encoding;
   GetFormEncoding(form, &encoding);
   if (!encoding.isValid()) {
@@ -155,86 +143,76 @@ HTMLInputElement* GetTextElement(HTMLFormElement* form,
     return NULL;
   }
   *encoding_name = encoding.name();
+
   HTMLInputElement* text_element = NULL;
-  WTF::Vector<HTMLFormControlElement*> form_elements = form->formElements;
-  for (unsigned i = 0; i < form_elements.size(); ++i) {
-    HTMLFormControlElement* form_element = form_elements[i];
-    if (!form_element->disabled() && !form_element->name().isNull()) {
-      bool is_text_element = false;
-      if (!IsInDefaultState(form_element))
-        return NULL;
-      if (form_element->hasTagName(HTMLNames::inputTag)) {
-        HTMLInputElement* input_element =
-            static_cast<HTMLInputElement*>(form_element);
-        switch (input_element->inputType()) {
-          case HTMLInputElement::TEXT:
-          case HTMLInputElement::ISINDEX:
-            is_text_element = true;
-            break;
-          case HTMLInputElement::PASSWORD:
-            // Don't store passwords! This is most likely an https anyway.
-            // Fall through.
-          case HTMLInputElement::FILE:
-            // Too big, don't try to index this.
-            return NULL;
-            break;
-          default:
-            // All other input types are indexable.
-            break;
-        }
-      } else if (form_element->hasTagName(HTMLNames::textareaTag)) {
-        // Textareas aren't used for search.
-        return NULL;
-      }
-      FormDataList lst(encoding);
-      if (form_element->appendFormData(lst, false)) {
-        if (is_text_element && !lst.list().isEmpty()) {
-          if (text_element != NULL) {
-            // The auto-complete bar only knows how to fill in one value.
-            // This form has multiple fields; don't treat it as searchable.
-            return NULL;
-          }
-          text_element = static_cast<HTMLInputElement*>(form_element);
-        }
-        for (int j = 0, max = static_cast<int>(lst.list().size()); j < max;
-             ++j) {
-          const FormDataList::Item& item = lst.list()[j];
-          // handle ISINDEX / <input name=isindex> special
-          // but only if its the first entry
-          if (enc_string->isEmpty() && item.data() == "isindex") {
-            if (form_element == text_element) {
-              enc_string->append("{searchTerms}", 13);
-            } else {
-              FormDataBuilder::encodeStringAsFormData(
-                  *enc_string, (lst.list()[j + 1].data()));
-            }
-            ++j;
-          } else {
-            if (!enc_string->isEmpty())
-              enc_string->append('&');
-            FormDataBuilder::encodeStringAsFormData(*enc_string, item.data());
-            enc_string->append('=');
-            if (form_element == text_element) {
-              enc_string->append("{searchTerms}", 13);
-            } else {
-              FormDataBuilder::encodeStringAsFormData(
-                  *enc_string, lst.list()[j + 1].data());
-            }
-            ++j;
-          }
-        }
+  for (WTF::Vector<HTMLFormControlElement*>::const_iterator
+       i(form->formElements.begin()); i != form->formElements.end(); ++i) {
+    HTMLFormControlElement* form_element = *i;
+    if (form_element->disabled() || form_element->name().isNull())
+      continue;
+
+    if (!IsInDefaultState(form_element) ||
+        form_element->hasTagName(HTMLNames::textareaTag))
+      return NULL;
+
+    bool is_text_element = false;
+    if (form_element->hasTagName(HTMLNames::inputTag)) {
+      switch (static_cast<const HTMLInputElement*>(form_element)->inputType()) {
+        case HTMLInputElement::TEXT:
+        case HTMLInputElement::ISINDEX:
+          is_text_element = true;
+          break;
+        case HTMLInputElement::PASSWORD:
+          // Don't store passwords! This is most likely an https anyway.
+          // Fall through.
+        case HTMLInputElement::FILE:
+          // Too big, don't try to index this.
+          return NULL;
+        default:
+          // All other input types are indexable.
+          break;
       }
     }
+
+    FormDataList data_list(encoding);
+    if (!form_element->appendFormData(data_list, false))
+      continue;
+
+    const WTF::Vector<FormDataList::Item>& item_list = data_list.list();
+    if (is_text_element && !item_list.isEmpty()) {
+      if (text_element != NULL) {
+        // The auto-complete bar only knows how to fill in one value.
+        // This form has multiple fields; don't treat it as searchable.
+        return false;
+      }
+      text_element = static_cast<HTMLInputElement*>(form_element);
+    }
+    for (WTF::Vector<FormDataList::Item>::const_iterator j(item_list.begin());
+         j != item_list.end(); ++j) {
+      // Handle ISINDEX / <input name=isindex> specially, but only if it's
+      // the first entry.
+      if (!enc_string->isEmpty() || j->data() != "isindex") {
+        if (!enc_string->isEmpty())
+          enc_string->append('&');
+        FormDataBuilder::encodeStringAsFormData(*enc_string, j->data());
+        enc_string->append('=');
+      }
+      ++j;
+      if (form_element == text_element)
+        enc_string->append("{searchTerms}", 13);
+      else
+        FormDataBuilder::encodeStringAsFormData(*enc_string, j->data());
+    }
   }
-  return text_element;
+
+  return text_element != NULL;
 }
 
 } // namespace
 
 SearchableFormData* SearchableFormData::Create(const WebKit::WebForm& webform) {
   RefPtr<HTMLFormElement> form = WebFormToHTMLFormElement(webform);
-
-  Frame* frame = form->document()->frame();
+  const Frame* frame = form->document()->frame();
   if (frame == NULL)
     return NULL;
 
@@ -243,24 +221,19 @@ SearchableFormData* SearchableFormData::Create(const WebKit::WebForm& webform) {
       !IsHTTPFormSubmit(form.get()))
     return NULL;
 
-  Vector<char> enc_string;
   HTMLFormControlElement* first_submit_button = GetButtonToActivate(form.get());
-
   if (first_submit_button) {
     // The form does not have an active submit button, make the first button
     // active. We need to do this, otherwise the URL will not contain the
     // name of the submit button.
     first_submit_button->setActivatedSubmit(true);
   }
-
+  Vector<char> enc_string;
   std::string encoding;
-  HTMLInputElement* text_element =
-      GetTextElement(form.get(), &enc_string, &encoding);
-
+  bool has_element = HasSuitableTextElement(form.get(), &enc_string, &encoding);
   if (first_submit_button)
     first_submit_button->setActivatedSubmit(false);
-
-  if (text_element == NULL) {
+  if (!has_element) {
     // Not a searchable form.
     return NULL;
   }
