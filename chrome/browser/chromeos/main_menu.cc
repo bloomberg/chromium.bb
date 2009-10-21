@@ -134,7 +134,8 @@ MainMenu::MainMenu()
   views::Painter* painter = views::Painter::CreateImagePainter(
       *drop_down_image,
       gfx::Insets(kBackgroundImageTop, kBackgroundImageLeft,
-                  kBackgroundImageBottom, kBackgroundImageRight));
+                  kBackgroundImageBottom, kBackgroundImageRight),
+      false);
   menu_popup->GetRootView()->set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 

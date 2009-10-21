@@ -37,7 +37,8 @@ class Painter {
   // destination size.
   // Ownership is passed to the caller.
   static Painter* CreateImagePainter(const SkBitmap& image,
-                                     const gfx::Insets& insets);
+                                     const gfx::Insets& insets,
+                                     bool paint_center);
 
   virtual ~Painter() {}
 
