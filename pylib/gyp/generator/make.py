@@ -335,7 +335,8 @@ class MakefileWriter:
   Its only real entry point is Write(), and is mostly used for namespacing.
   """
 
-  def Write(self, qualified_target, base_path, output_filename, spec, configs):
+  def Write(self, qualified_target, base_path, output_filename, spec, configs,
+            part_of_all):
     """The main entry point: writes a .mk file for a single target.
 
     Arguments:
@@ -344,6 +345,7 @@ class MakefileWriter:
                  target-relative paths
       output_filename: output .mk file name to write
       spec, configs: gyp info
+      part_of_all: flag indicating this target is part of 'all'
     """
     print 'Generating %s' % output_filename
 
@@ -379,21 +381,22 @@ class MakefileWriter:
 
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
-      self.WriteActions(spec['actions'], extra_sources, extra_outputs)
+      self.WriteActions(spec['actions'], extra_sources, extra_outputs,
+                        part_of_all)
 
     # Rules must be early like actions.
     if 'rules' in spec:
-      self.WriteRules(spec['rules'], extra_sources, extra_outputs)
+      self.WriteRules(spec['rules'], extra_sources, extra_outputs, part_of_all)
 
     if 'copies' in spec:
-      self.WriteCopies(spec['copies'], extra_outputs)
+      self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
 
     if 'sources' in spec or extra_sources:
       self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources,
-                        extra_outputs, extra_link_deps)
+                        extra_outputs, extra_link_deps, part_of_all)
 
     self.WriteTarget(spec, configs, deps,
-                     extra_link_deps + link_deps, extra_outputs)
+                     extra_link_deps + link_deps, extra_outputs, part_of_all)
 
     # Update global list of target outputs, used in dependency tracking.
     target_outputs[qualified_target] = self.alias
@@ -409,7 +412,7 @@ class MakefileWriter:
     self.fp.close()
 
 
-  def WriteActions(self, actions, extra_sources, extra_outputs):
+  def WriteActions(self, actions, extra_sources, extra_outputs, part_of_all):
     """Write Makefile code for any 'actions' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
@@ -417,6 +420,7 @@ class MakefileWriter:
     extra_outputs: a list that will be filled in with any outputs of these
                    actions (used to make other pieces dependent on these
                    actions)
+    part_of_all: flag indicating this target is part of 'all'
     """
     for action in actions:
       name = self.target + '_' + action['action_name']
@@ -463,7 +467,7 @@ class MakefileWriter:
       self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
       self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
       self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
-                      command = name)
+                      part_of_all=part_of_all, command=name)
 
       # Stuff the outputs in a variable so we can refer to them later.
       outputs_variable = 'action_%s_outputs' % name
@@ -474,13 +478,14 @@ class MakefileWriter:
     self.WriteLn()
 
 
-  def WriteRules(self, rules, extra_sources, extra_outputs):
+  def WriteRules(self, rules, extra_sources, extra_outputs, part_of_all):
     """Write Makefile code for any 'rules' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
                    files, if any
     extra_outputs: a list that will be filled in with any outputs of these
                    rules (used to make other pieces dependent on these rules)
+    part_of_all: flag indicating this target is part of 'all'
     """
     for rule in rules:
       name = self.target + '_' + rule['rule_name']
@@ -520,7 +525,8 @@ class MakefileWriter:
         self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
         self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
-        self.WriteLn('all_targets += %s' % ' '.join(outputs))
+        if part_of_all:
+          self.WriteLn('all_targets += %s' % ' '.join(outputs))
 
         action = [self.ExpandInputRoot(ac, rule_source_root)
                   for ac in rule['action']]
@@ -553,11 +559,12 @@ class MakefileWriter:
     self.WriteLn('')
 
 
-  def WriteCopies(self, copies, extra_outputs):
+  def WriteCopies(self, copies, extra_outputs, part_of_all):
     """Write Makefile code for any 'copies' from the gyp input.
 
     extra_outputs: a list that will be filled in with any outputs of this action
                    (used to make other pieces dependent on this action)
+    part_of_all: flag indicating this target is part of 'all'
     """
     self.WriteLn('### Generated for copy rule.')
 
@@ -569,7 +576,7 @@ class MakefileWriter:
         filename = os.path.split(path)[1]
         output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
                                                         filename)))
-        self.WriteDoCmd([output], [path], 'copy')
+        self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
     extra_outputs.append('$(%s)' % variable)
@@ -577,7 +584,8 @@ class MakefileWriter:
 
 
   def WriteSources(self, configs, deps, sources,
-                   extra_outputs, extra_link_deps):
+                   extra_outputs, extra_link_deps,
+                   part_of_all):
     """Write Makefile code for any 'sources' from the gyp input.
     These are source files necessary to build the current target.
 
@@ -586,6 +594,7 @@ class MakefileWriter:
                    used to serialize action/rules before compilation
     extra_link_deps: a list that will be filled in with any outputs of
                      compilation (to be used in link lines)
+    part_of_all: flag indicating this target is part of 'all'
     """
 
     # Write configuration-specific variables for CFLAGS, etc.
@@ -607,10 +616,11 @@ class MakefileWriter:
     objs = map(self.Objectify, map(self.Absolutify, map(Target, sources)))
     self.WriteList(objs, 'OBJS')
 
-    self.WriteLn('# Add to the list of files we specially track '
-                 'dependencies for.')
-    self.WriteLn('all_targets += $(OBJS)')
-    self.WriteLn()
+    if part_of_all:
+      self.WriteLn('# Add to the list of files we specially track '
+                   'dependencies for.')
+      self.WriteLn('all_targets += $(OBJS)')
+      self.WriteLn()
 
     # Make sure our dependencies are built first.
     if deps:
@@ -693,12 +703,14 @@ class MakefileWriter:
     return (gyp.common.uniquer(deps), gyp.common.uniquer(link_deps))
 
 
-  def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs):
+  def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs,
+                  part_of_all):
     """Write Makefile code to produce the final target of the gyp spec.
 
     spec, configs: input from gyp.
     deps, link_deps: dependency lists; see ComputeDeps()
     extra_outputs: any extra outputs that our target should depend on
+    part_of_all: flag indicating this target is part of 'all'
     """
 
     self.WriteLn('### Rules for final target.')
@@ -717,19 +729,23 @@ class MakefileWriter:
       self.WriteLn('%s: LIBS := $(LIBS)' % self.output)
 
     if self.type == 'executable':
-      self.WriteDoCmd([self.output], link_deps, 'link')
+      self.WriteDoCmd([self.output], link_deps, 'link', part_of_all)
     elif self.type == 'static_library':
-      self.WriteDoCmd([self.output], link_deps, 'alink')
+      self.WriteDoCmd([self.output], link_deps, 'alink', part_of_all)
     elif self.type in ('loadable_module', 'shared_library'):
-      self.WriteDoCmd([self.output], link_deps, 'solink')
+      self.WriteDoCmd([self.output], link_deps, 'solink', part_of_all)
     elif self.type == 'none':
       # Write a stamp line.
-      self.WriteDoCmd([self.output], deps, 'touch')
+      self.WriteDoCmd([self.output], deps, 'touch', part_of_all)
     elif self.type == 'settings':
       # Only used for passing flags around.
       pass
     else:
       print "WARNING: no output for", self.type, target
+
+    # Add an alias for each target.
+    self.WriteMakeRule([self.target], [self.output],
+                       comment='Add target alias')
 
     # Add special-case rules for our installable targets.
     # 1) They need to install to the build dir or "product" dir.
@@ -748,7 +764,7 @@ class MakefileWriter:
       if binpath != self.output:
         self.WriteDoCmd([binpath], [self.output], 'copy',
                         comment = 'Copy this to the %s output path.' %
-                        file_desc)
+                        file_desc, part_of_all=part_of_all)
         installable_deps.append(binpath)
       self.WriteMakeRule([self.alias], installable_deps,
                          comment = 'Short alias for building this %s.' %
@@ -772,7 +788,7 @@ class MakefileWriter:
     self.fp.write("\n\n")
 
 
-  def WriteDoCmd(self, outputs, inputs, command, comment=None):
+  def WriteDoCmd(self, outputs, inputs, command, part_of_all, comment=None):
     """Write a Makefile rule that uses do_cmd.
 
     This makes the outputs dependent on the command line that was run,
@@ -782,8 +798,9 @@ class MakefileWriter:
                        actions = ['$(call do_cmd,%s)' % command],
                        comment = comment,
                        force = True)
-    # Add our outputs to the list of targets we read depfiles from.
-    self.WriteLn('all_targets += %s' % ' '.join(outputs))
+    if part_of_all:
+      # Add our outputs to the list of targets we read depfiles from.
+      self.WriteLn('all_targets += %s' % ' '.join(outputs))
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
@@ -913,13 +930,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   build_files = set()
   for qualified_target in target_list:
-    # target_list is all the targets defined in all referenced gyp files, so
-    # weed out the ones that aren't actually needed for this build. We could
-    # generate the .mk even for unneeded targets, as long as we don't
-    # reference them in the top-level Makefile, but skipping them entirely
-    # should work too.
-    if qualified_target not in needed_targets:
-      continue
     build_file, target, toolset = gyp.common.ParseQualifiedTarget(
         qualified_target)
     build_files.add(gyp.common.RelativePath(build_file, options.depth))
@@ -949,7 +959,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     configs = spec['configurations']
 
     writer = MakefileWriter()
-    writer.Write(qualified_target, base_path, output_file, spec, configs)
+    writer.Write(qualified_target, base_path, output_file, spec, configs,
+                 part_of_all=qualified_target in needed_targets)
 
     # Our root_makefile lives at the source root.  Compute the relative path
     # from there to the output_file for including.
