@@ -1098,12 +1098,11 @@ void WebViewImpl::mouseCaptureLost() {
 }
 
 void WebViewImpl::setFocus(bool enable) {
+  page_->focusController()->setFocused(enable);
   if (enable) {
-    // Note that we call setActive and setFocued in opposite order in focus vs
-    // blur. This is done so that setActive does not dispatch any events since
-    // the event will be dispatched in setFocused.
+    // Note that we don't call setActive() when disabled as this cause extra
+    // focus/blur events to be dispatched.
     page_->focusController()->setActive(true);
-    page_->focusController()->setFocused(true);
     ime_accept_events_ = true;
   } else {
     HideAutoCompletePopup();
@@ -1124,8 +1123,6 @@ void WebViewImpl::setFocus(bool enable) {
         editor->confirmComposition();
       ime_accept_events_ = false;
     }
-    page_->focusController()->setFocused(false);
-    page_->focusController()->setActive(false);
   }
 }
 

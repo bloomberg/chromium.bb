@@ -621,16 +621,20 @@ void TestShell::SetFocus(WebWidgetHost* host, bool enable) {
   if (!layout_test_mode_) {
     InteractiveSetFocus(host, enable);
   } else {
+    // Simulate the effects of InteractiveSetFocus(), which includes calling
+    // both setFocus() and setIsActive().
     if (enable) {
       if (m_focusedWidgetHost != host) {
         if (m_focusedWidgetHost)
-            m_focusedWidgetHost->webwidget()->setFocus(false);
+          m_focusedWidgetHost->webwidget()->setFocus(false);
+        webView()->setIsActive(enable);
         host->webwidget()->setFocus(enable);
         m_focusedWidgetHost = host;
       }
     } else {
       if (m_focusedWidgetHost == host) {
         host->webwidget()->setFocus(enable);
+        webView()->setIsActive(enable);
         m_focusedWidgetHost = NULL;
       }
     }
