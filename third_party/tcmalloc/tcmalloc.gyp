@@ -237,6 +237,8 @@
               # Don't let linker rip this symbol out, otherwise the heap&cpu
               # profilers will not initialize properly on startup.
               '-Wl,-uIsHeapProfilerRunning,-uProfilerStart',
+              # Do the same for heap leak checker.
+              '-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi',
             ],
           },
         }],
