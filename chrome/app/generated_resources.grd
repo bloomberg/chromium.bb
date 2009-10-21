@@ -925,7 +925,7 @@ each locale. -->
 
       <!-- App menu -->
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_IMPORT_SETTINGS" desc="The text label for the Import menu item">
+        <message name="IDS_IMPORT_SETTINGS" desc="The text label for the Import menu item. Two consecutive ampersands between 'bookmarks' and 'settings' represent a single ampersand after it's processed and mean 'and' in English. Therefore, it should be translated as such unless it's better to use an ampersand to mean 'and' in the language.">
           &amp;Import bookmarks &amp;&amp; settings...
         </message>
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
@@ -960,7 +960,7 @@ each locale. -->
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_IMPORT_SETTINGS" desc="In Title Case: The text label for the Import menu item">
+        <message name="IDS_IMPORT_SETTINGS" desc="In Title Case: The text label for the Import menu item. Two consecutive ampersands between 'Bookmarks' and 'Settings' represent a single ampersand after it's processed and mean 'and' in English. Therefore, it should be translated as such unless it's better to use an ampersand to mean 'and' in the language.">
           &amp;Import Bookmarks &amp;&amp; Settings...
         </message>
         <message name="IDS_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
