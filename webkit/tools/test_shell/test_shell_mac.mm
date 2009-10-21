@@ -93,10 +93,29 @@ FilePath GetResourcesFilePath() {
 
 // Receives notification that the window is closing so that it can start the
 // tear-down process. Is responsible for deleting itself when done.
-@interface WindowCloseDelegate : NSObject
+@interface WindowDelegate : NSObject {
+ @private
+  TestShellWebView* m_webView;
+}
+- (id)initWithWebView:(TestShellWebView*)view;
 @end
 
-@implementation WindowCloseDelegate
+@implementation WindowDelegate
+
+- (id)initWithWebView:(TestShellWebView*)view {
+  if ((self = [super init])) {
+    m_webView = view;
+  }
+  return self;
+}
+
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  [m_webView setIsActive:YES];
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  [m_webView setIsActive:NO];
+}
 
 // Called when the window is about to close. Perform the self-destruction
 // sequence by getting rid of the shell and removing it and the window from
@@ -105,6 +124,8 @@ FilePath GetResourcesFilePath() {
 // before we go deleting objects. By returning YES, we allow the window to be
 // removed from the screen.
 - (BOOL)windowShouldClose:(id)window {
+  m_webView = nil;
+
   // Try to make the window go away, but it may not when running layout
   // tests due to the quirkyness of autorelease pools and having no main loop.
   [window autorelease];
@@ -248,10 +269,6 @@ bool TestShell::Initialize(const GURL& starting_url) {
   // Add to our map
   window_map_.Get()[m_mainWnd] = this;
 
-  // Create a window delegate to watch for when it's asked to go away. It will
-  // clean itself up so we don't need to hold a reference.
-  [m_mainWnd setDelegate:[[WindowCloseDelegate alloc] init]];
-
   // Rely on the window delegate to clean us up rather than immediately
   // releasing when the window gets closed. We use the delegate to do
   // everything from the autorelease pool so the shell isn't on the stack
@@ -268,6 +285,10 @@ bool TestShell::Initialize(const GURL& starting_url) {
   TestShellWebView* web_view =
       static_cast<TestShellWebView*>(m_webViewHost->view_handle());
   [web_view setShell:this];
+
+  // Create a window delegate to watch for when it's asked to go away. It will
+  // clean itself up so we don't need to hold a reference.
+  [m_mainWnd setDelegate:[[WindowDelegate alloc] initWithWebView:web_view]];
 
   // create buttons
   NSRect button_rect = [[m_mainWnd contentView] bounds];
@@ -426,12 +447,15 @@ void TestShell::WaitTestFinished() {
 }
 
 void TestShell::InteractiveSetFocus(WebWidgetHost* host, bool enable) {
-#if 0
-  if (enable)
-    ::SetFocus(host->view_handle());
-  else if (::GetFocus() == host->view_handle())
-    ::SetFocus(NULL);
-#endif
+  if (enable) {
+    [[host->view_handle() window] makeKeyAndOrderFront:nil];
+  } else {
+    // There is no way to resign key window status in Cocoa.  Fake it by
+    // ordering the window out (transferring key status to another window) and
+    // then ordering the window back in, but without making it key.
+    [[host->view_handle() window] orderOut:nil];
+    [[host->view_handle() window] orderFront:nil];
+  }
 }
 
 // static

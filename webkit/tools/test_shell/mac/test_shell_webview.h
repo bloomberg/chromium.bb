@@ -38,6 +38,7 @@ class TestShell;
 - (void)keyUp:(NSEvent *)theEvent;
 - (BOOL)isOpaque;
 - (void)setFrame:(NSRect)frameRect;
+- (void)setIsActive:(BOOL)active;
 
 @property (nonatomic, assign) TestShell *shell;
 

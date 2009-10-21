@@ -196,6 +196,11 @@
   return NO;
 }
 
+- (void)setIsActive:(BOOL)active {
+  if (shell_ && shell_->webView())
+    shell_->webViewHost()->SetIsActive(active ? true : false);
+}
+
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (shell_ && shell_->webView())

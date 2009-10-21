@@ -44,6 +44,8 @@ class WebViewHost : public WebWidgetHost {
   GtkPluginContainerManager* plugin_container_manager() {
     return &plugin_container_manager_;
   }
+#elif defined(OS_MACOSX)
+  void SetIsActive(bool active);
 #endif
 
  protected:

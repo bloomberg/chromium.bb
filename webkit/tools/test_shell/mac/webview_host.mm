@@ -13,6 +13,7 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebSize;
@@ -47,4 +48,11 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
 
 WebView* WebViewHost::webview() const {
   return static_cast<WebView*>(webwidget_);
+}
+
+void WebViewHost::SetIsActive(bool active) {
+  // Ignore calls in layout test mode so that tests don't mess with each other
+  // when running in parallel.
+  if (!TestShell::layout_test_mode())
+    webview()->setIsActive(active);
 }
