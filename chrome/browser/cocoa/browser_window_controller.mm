@@ -1199,6 +1199,10 @@ willPositionSheet:(NSWindow*)sheet
   gfx::Rect bounds(NSRectToCGRect([[self window] frame]));
   bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
 
+  // We also need to save the current work area, in flipped coordinates.
+  gfx::Rect workArea(NSRectToCGRect([[[self window] screen] visibleFrame]));
+  workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
+
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
       browser_->GetWindowPlacementKey().c_str());
   windowPreferences->SetInteger(L"left", bounds.x());
@@ -1207,6 +1211,10 @@ willPositionSheet:(NSWindow*)sheet
   windowPreferences->SetInteger(L"bottom", bounds.bottom());
   windowPreferences->SetBoolean(L"maximized", false);
   windowPreferences->SetBoolean(L"always_on_top", false);
+  windowPreferences->SetInteger(L"work_area_left", workArea.x());
+  windowPreferences->SetInteger(L"work_area_top", workArea.y());
+  windowPreferences->SetInteger(L"work_area_right", workArea.right());
+  windowPreferences->SetInteger(L"work_area_bottom", workArea.bottom());
 }
 
 - (NSRect)window:(NSWindow*)window
