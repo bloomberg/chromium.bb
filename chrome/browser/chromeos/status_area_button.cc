@@ -34,6 +34,7 @@ void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
       bitmap_id = IDR_STATUSBAR_CONTAINER_PRESSED;
       break;
     default:
+      bitmap_id = IDR_STATUSBAR_CONTAINER;
       NOTREACHED();
   }
   SkBitmap* container =
