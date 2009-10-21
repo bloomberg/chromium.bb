@@ -11,7 +11,6 @@ struct KeyboardShortcutData {
   bool command_key;
   bool shift_key;
   bool cntrl_key;
-  bool opt_key;
   int vkey_code;  // Virtual Key code for the command.
   int chrome_command;  // The chrome command # to execute for this shortcut.
 };
@@ -35,15 +34,13 @@ struct KeyboardShortcutData {
 // opportunity to override the shortcut (with the exception of the tab contents,
 // which first checks if the current web page wants to handle the shortcut).
 int CommandForWindowKeyboardShortcut(
-    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code);
+    bool command_key, bool shift_key, bool cntrl_key, int vkey_code);
 
 // This returns shortcuts that should work only if the tab contents have focus
 // (e.g. cmd-left, which shouldn't do history navigation if e.g. the omnibox has
 // focus).
 int CommandForBrowserKeyboardShortcut(
-    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code);
+    bool command_key, bool shift_key, bool cntrl_key, int vkey_code);
 
 // For testing purposes.
 const KeyboardShortcutData* GetWindowKeyboardShortcutTable(size_t* num_entries);
