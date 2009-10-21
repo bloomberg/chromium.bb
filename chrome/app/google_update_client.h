@@ -73,7 +73,7 @@ class GoogleUpdateClient {
   // The current version of this client registered with GoogleUpdate.
   wchar_t* version_;
   // The location of current chrome.dll.
-  wchar_t dll_path_[MAX_PATH];
+  std::wstring dll_path_;
 };
 
 }  // namespace google_update

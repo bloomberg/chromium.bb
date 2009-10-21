@@ -58,10 +58,9 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   dll_full_path = client.GetDLLFullPath();
   versionned_path = client.GetDLLPath();
 #else
-  wchar_t exe_path[MAX_PATH] = {0};
-  client_util::GetExecutablePath(exe_path);
+  std::wstring exe_path = client_util::GetExecutablePath();
   wchar_t *version;
-  if (client_util::GetChromiumVersion(exe_path, L"Software\\Chromium",
+  if (client_util::GetChromiumVersion(exe_path.c_str(), L"Software\\Chromium",
                                       &version)) {
     versionned_path = exe_path;
     versionned_path.append(version);
@@ -72,7 +71,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 #endif
 
   // If the versionned path exists, we set the current directory to this path.
-  if (client_util::FileExists(versionned_path.c_str())) {
+  if (client_util::FileExists(versionned_path)) {
     ::SetCurrentDirectory(versionned_path.c_str());
   }
 

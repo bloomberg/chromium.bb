@@ -109,7 +109,7 @@ bool GoogleUpdateClient::Launch(HINSTANCE instance,
 
 bool GoogleUpdateClient::Init(const wchar_t* client_guid,
                               const wchar_t* client_dll) {
-  client_util::GetExecutablePath(dll_path_);
+  dll_path_ = client_util::GetExecutablePath();
   guid_.assign(client_guid);
   dll_.assign(client_dll);
   bool ret = false;
@@ -120,13 +120,15 @@ bool GoogleUpdateClient::Init(const wchar_t* client_guid,
     } else {
       std::wstring key(google_update::kRegPathClients);
       key.append(L"\\" + guid_);
-      if (client_util::GetChromiumVersion(dll_path_, key.c_str(), &version_))
+      if (client_util::GetChromiumVersion(dll_path_.c_str(),
+                                          key.c_str(),
+                                          &version_))
         ret = true;
     }
   }
 
   if (version_) {
-    ::StringCchCat(dll_path_, MAX_PATH, version_);
+    dll_path_.append(version_);
   }
   return ret;
 }

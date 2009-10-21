@@ -31,9 +31,10 @@ bool ReadStrValueFromRegistry(const HKEY reg_key,
 }
 
 namespace client_util {
-bool FileExists(const wchar_t* const file_path) {
+bool FileExists(const std::wstring& file_path) {
   WIN32_FILE_ATTRIBUTE_DATA attrs;
-  return ::GetFileAttributesEx(file_path, GetFileExInfoStandard, &attrs) != 0;
+  return ::GetFileAttributesEx(
+      file_path.c_str(), GetFileExInfoStandard, &attrs) != 0;
 }
 
 bool GetChromiumVersion(const wchar_t* const exe_path,
@@ -49,7 +50,7 @@ bool GetChromiumVersion(const wchar_t* const exe_path,
 
   std::wstring new_chrome_exe(exe_path);
   new_chrome_exe.append(installer_util::kChromeNewExe);
-  if (FileExists(new_chrome_exe.c_str()) &&
+  if (FileExists(new_chrome_exe) &&
       ReadStrValueFromRegistry(reg_key, google_update::kRegOldVersionField,
                                version)) {
     ::RegCloseKey(reg_key);
@@ -65,7 +66,7 @@ bool GetChromiumVersion(const wchar_t* const exe_path,
 
 std::wstring GetDLLPath(const std::wstring& dll_name,
                         const std::wstring& dll_path) {
-  if (!dll_path.empty() && FileExists(dll_path.c_str()))
+  if (!dll_path.empty() && FileExists(dll_path))
     return dll_path + L"\\" + dll_name;
 
   // This is not an official build. Find the dll using the default
@@ -80,7 +81,8 @@ std::wstring GetDLLPath(const std::wstring& dll_name,
   return path;
 }
 
-void GetExecutablePath(wchar_t* exe_path) {
+std::wstring GetExecutablePath() {
+  wchar_t exe_path[MAX_PATH];
   DWORD len = ::GetModuleFileName(NULL, exe_path, MAX_PATH);
   wchar_t* tmp = exe_path + len - 1;
   while (tmp >= exe_path && *tmp != L'\\')
@@ -89,6 +91,7 @@ void GetExecutablePath(wchar_t* exe_path) {
     tmp++;
     *tmp = 0;
   }
+  return exe_path;
 }
 
 }  // namespace client_util

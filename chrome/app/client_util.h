@@ -21,7 +21,7 @@ typedef int (*DLL_MAIN)(HINSTANCE instance, sandbox::SandboxInterfaceInfo*,
 extern const wchar_t kProductVersionKey[];
 
 // Returns true if file specified by file_path exists
-bool FileExists(const wchar_t* const file_path);
+bool FileExists(const std::wstring& file_path);
 
 // Returns Chromium version after reading it from reg_key registry key. Uses
 // exe_path to detemine registry root key (HKLM/HKCU). Note it is the
@@ -37,8 +37,8 @@ std::wstring GetDLLPath(const std::wstring& dll_name,
                         const std::wstring& dll_path);
 
 // Returns the path to the exe (without the file name) that called this
-// function. The buffer should already be allocated (ideally of MAX_PATH size).
-void GetExecutablePath(wchar_t* exe_path);
+// function.
+std::wstring GetExecutablePath();
 
 }  // namespace client_util
 
