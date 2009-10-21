@@ -76,6 +76,14 @@ then
   # Make red zone 64 bytes bigger to catch more buffer overruns
   patch -p0 < "${THISDIR}/redzone.patch"
 
+  # Fix/work around https://bugs.kde.org/show_bug.cgi?id=210481
+  # which prevented valgrind from handling v8 on 64 bits
+  patch -p0 < "${THISDIR}/vbug210481.patch"
+
+  # Fix/work around https://bugs.kde.org/show_bug.cgi?id=205541
+  # which prevented valgrind from handling wine
+  patch -p0 < "${THISDIR}/vbug205541.patch"
+
   if [ "${INSTALL_TSAN}" = "yes" ]
   then
     # Add ThreadSanitier to the installation.
