@@ -4904,11 +4904,11 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
-            '../net/net.gyp:net',
+            '../net/net.gyp:net_base',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/sqlite/sqlite.gyp:sqlite',
-            'common',
+            'common_constants',
             'notifier',
             'sync',
             'sync_proto',
@@ -5760,9 +5760,9 @@
             '../app/app.gyp:app_base',
             '../base/base.gyp:base',
             '../webkit/webkit.gyp:glue',
+            'browser',
             'debugger',
             'renderer',
-            'browser'
           ],
           'sources': [
             'tools/pbl_tool/pbl_tool.cc',
@@ -6143,8 +6143,6 @@
               'test/test_notification_tracker.cc',
               'test/test_notification_tracker.h',
               'test/testing_browser_process.h',
-              'test/ui_test_utils.cc',
-              'test/ui_test_utils.h',
               'test/data/resource.h',
               'test/data/resource.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
