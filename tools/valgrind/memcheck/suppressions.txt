@@ -864,12 +864,6 @@
    fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
 }
 {
-   bug_20805
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExj
-}
-{
    bug_20941
    Memcheck:Cond
    fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
