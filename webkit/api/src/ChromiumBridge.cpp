@@ -264,6 +264,15 @@ long long ChromiumBridge::databaseGetFileSize(const String& fileName)
 }
 #endif
 
+// Keygen ---------------------------------------------------------------------
+
+String ChromiumBridge::signedPublicKeyAndChallengeString(
+    unsigned keySizeIndex, const String& challenge, const KURL& url)
+{
+    notImplemented();
+    return String();
+}
+
 // Language -------------------------------------------------------------------
 
 String ChromiumBridge::computedDefaultLanguage()
