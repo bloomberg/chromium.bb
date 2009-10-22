@@ -32,13 +32,14 @@ class BrowserActionButton : public NotificationObserver,
   BrowserActionButton(Browser* browser, Extension* extension)
       : browser_(browser),
         extension_(extension),
-        button_(gtk_chrome_button_new()) {
+        button_(gtk_chrome_button_new()),
+        gdk_icon_(NULL) {
     DCHECK(extension_->browser_action());
 
     gtk_widget_set_size_request(button_.get(), kButtonSize, kButtonSize);
 
     browser_action_icons_.resize(
-        extension->browser_action()->icon_paths().size(), NULL);
+        extension->browser_action()->icon_paths().size());
     tracker_ = new ImageLoadingTracker(this, browser_action_icons_.size());
     for (size_t i = 0; i < extension->browser_action()->icon_paths().size();
          ++i) {
@@ -65,10 +66,8 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   ~BrowserActionButton() {
-    for (size_t i = 0; i < browser_action_icons_.size(); ++i) {
-      if (browser_action_icons_[i])
-        g_object_unref(browser_action_icons_[i]);
-    }
+    if (gdk_icon_)
+      g_object_unref(gdk_icon_);
 
     button_.Destroy();
     tracker_->StopTrackingImageLoad();
@@ -89,9 +88,9 @@ class BrowserActionButton : public NotificationObserver,
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, size_t index) {
-    SkBitmap empty;
-    SkBitmap* bitmap = image ? image : &empty;
-    browser_action_icons_[index] = gfx::GdkPixbufFromSkBitmap(bitmap);
+    DCHECK(index < browser_action_icons_.size());
+    browser_action_icons_[index] = image ? *image : SkBitmap();
+
     OnStateUpdated();
   }
 
@@ -101,14 +100,23 @@ class BrowserActionButton : public NotificationObserver,
     gtk_widget_set_tooltip_text(button_.get(),
         extension_->browser_action_state()->title().c_str());
 
-    if (browser_action_icons_.empty())
-      return;
+    SkBitmap* image = extension_->browser_action_state()->icon();
+    if (!image) {
+      if (static_cast<size_t>(
+          extension_->browser_action_state()->icon_index()) <
+              browser_action_icons_.size()) {
+        image = &browser_action_icons_[
+            extension_->browser_action_state()->icon_index()];
+      }
+    }
 
-    GdkPixbuf* image =
-        browser_action_icons_[extension_->browser_action_state()->icon_index()];
-    if (image) {
+    if (image && !image->empty()) {
+      GdkPixbuf* current_gdk_icon = gdk_icon_;
+      gdk_icon_ = gfx::GdkPixbufFromSkBitmap(image);
       gtk_button_set_image(GTK_BUTTON(button_.get()),
-                           gtk_image_new_from_pixbuf(image));
+                           gtk_image_new_from_pixbuf(gdk_icon_));
+      if (current_gdk_icon)
+        g_object_unref(current_gdk_icon);
     }
   }
 
@@ -154,9 +162,13 @@ class BrowserActionButton : public NotificationObserver,
   // Loads the button's icons for us on the file thread.
   ImageLoadingTracker* tracker_;
 
-  // Icons for all the different states the button can be in. These will be NULL
-  // while they are loading.
-  std::vector<GdkPixbuf*> browser_action_icons_;
+  // Icons for all the different states the button can be in. These will be
+  // empty while they are loading.
+  std::vector<SkBitmap> browser_action_icons_;
+
+  // SkBitmap must be converted to GdkPixbuf before assignment to the button.
+  // This stores the current icon while it is in use.
+  GdkPixbuf* gdk_icon_;
 
   NotificationRegistrar registrar_;
 };
