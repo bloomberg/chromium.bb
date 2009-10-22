@@ -58,16 +58,16 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+#if defined(OS_LINUX)
+#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#endif
+
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-call.html",
-    // Disabled because cloning ports are too slow in Chromium to meet the
-    // thresholds in this test.
-    // http://code.google.com/p/chromium/issues/detail?id=22780
-    // "worker-cloneport.html",
-
+    "worker-cloneport.html",
     "worker-close.html",
     "worker-constructor.html",
     "worker-context-gc.html",
@@ -87,7 +87,9 @@ TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
     "worker-replace-self.html",
     "worker-script-error.html",
     "worker-terminate.html",
-    "worker-timeout.html"
+    // clearInterval() sometimes lets the timer continue to fire
+    // http://code.google.com/p/chromium/issues/detail?id=25548
+    // "worker-timeout.html"
   };
 
   FilePath fast_test_dir;
