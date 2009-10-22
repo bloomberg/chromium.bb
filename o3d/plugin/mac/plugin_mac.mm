@@ -31,6 +31,7 @@
 
 
 
+#include <GL/glew.h>
 #include "plugin_mac.h"
 #include "Breakpad.h"
 #include <Cocoa/Cocoa.h>

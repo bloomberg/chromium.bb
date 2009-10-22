@@ -37,23 +37,25 @@
 #ifndef O3D_PLUGIN_CROSS_MAIN_H_
 #define O3D_PLUGIN_CROSS_MAIN_H_
 
+#include <GL/glew.h>
+#include "core/cross/renderer_platform.h"
+
 #include <npupp.h>
 #include <stdio.h>
 
 #include <fstream>
 #include <iostream>
 
-#if !defined(O3D_INTERNAL_PLUGIN)
-#include "breakpad/win/exception_handler_win32.h"
-#endif  // O3D_INTERNAL_PLUGIN
-
 #include "core/cross/renderer.h"
-#include "core/cross/renderer_platform.h"
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
 #include "third_party/nixysa/static_glue/npapi/common.h"
 #include "third_party/nixysa/static_glue/npapi/npn_api.h"
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+#include "breakpad/win/exception_handler_win32.h"
+#endif  // O3D_INTERNAL_PLUGIN
 
 #if defined(OS_LINUX)
 #define EXPORT_SYMBOL __attribute__((visibility ("default")))
