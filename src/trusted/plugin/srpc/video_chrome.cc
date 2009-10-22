@@ -120,7 +120,9 @@ int VideoMap::GetKeyMod() {
 
 // handle video map specific NPAPI SetWindow
 bool VideoMap::SetWindow(PluginWindow *window) {
-  return false;
+  // TODO(gregoryd): do something with this information
+  // or remove this file.
+  return true;
 }
 
 int16_t VideoMap::HandleEvent(void *param) {
