@@ -2392,7 +2392,6 @@ BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 // Regression from merge 41268:41286
 // We don't render linear gradient on text stroke.
 BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
-BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 // IMAGE+TEXT is flaky
