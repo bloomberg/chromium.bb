@@ -42,15 +42,7 @@ bool GetFirstRunSentinelFilePath(FilePath* path) {
     return false;
 #endif
 
-  // TODO(evanm): remove this old_sentinel business once users are migrated.
-  // http://code.google.com/p/chromium/issues/detail?id=24450
-  FilePath old_sentinel = first_run_sentinel.AppendASCII("First Run Dev");
-  first_run_sentinel = first_run_sentinel.AppendASCII(kSentinelFile);
-
-  if (file_util::PathExists(old_sentinel))
-    file_util::Move(old_sentinel, first_run_sentinel);
-
-  *path = first_run_sentinel;
+  *path = first_run_sentinel.AppendASCII(kSentinelFile);
   return true;
 }
 
