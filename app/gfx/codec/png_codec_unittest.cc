@@ -234,7 +234,8 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
 
   // Decode the encoded string.
   SkBitmap decoded_bitmap;
-  EXPECT_TRUE(PNGCodec::Decode(&encoded, &decoded_bitmap));
+  EXPECT_TRUE(PNGCodec::Decode(&encoded.front(), encoded.size(),
+                               &decoded_bitmap));
 
   // Compare the original bitmap and the output bitmap. We use ColorsClose
   // as SkBitmaps are considered to be pre-multiplied, the unpremultiplication

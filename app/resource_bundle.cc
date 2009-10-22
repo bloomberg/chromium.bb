@@ -69,27 +69,18 @@ void ResourceBundle::FreeImages() {
 
 /* static */
 SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
-  std::vector<unsigned char> png_data;
-
   scoped_refptr<RefCountedMemory> memory(
       LoadResourceBytes(data_handle, resource_id));
   if (!memory)
     return NULL;
 
-  // Decode the PNG.
-  int image_width;
-  int image_height;
-  if (!gfx::PNGCodec::Decode(
-          memory->front(), memory->size(),
-          gfx::PNGCodec::FORMAT_BGRA,
-          &png_data, &image_width, &image_height)) {
-    NOTREACHED() << "Unable to decode image resource " << resource_id;
+  SkBitmap bitmap;
+  if (!gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap)) {
+    NOTREACHED() << "Unable to decode theme image resource " << resource_id;
     return NULL;
   }
 
-  return gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(png_data,
-                                                     image_width,
-                                                     image_height);
+  return new SkBitmap(bitmap);
 }
 
 std::string ResourceBundle::GetDataResource(int resource_id) {

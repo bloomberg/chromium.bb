@@ -69,17 +69,9 @@ void ListStoreFavIconLoader::OnGotFavIcon(
                      favicon_handle_col_, 0,
                      -1);
   if (know_fav_icon && image_data.get() && !image_data->data.empty()) {
-    int width, height;
-    std::vector<unsigned char> decoded_data;
+    SkBitmap icon;
     if (gfx::PNGCodec::Decode(&image_data->data.front(),
-                              image_data->data.size(),
-                              gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
-                              &width, &height)) {
-      SkBitmap icon;
-      icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-      icon.allocPixels();
-      memcpy(icon.getPixels(), &decoded_data.front(),
-             width * height * 4);
+                              image_data->data.size(), &icon)) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
       gtk_list_store_set(list_store_, &iter,
                          favicon_col_, pixbuf,

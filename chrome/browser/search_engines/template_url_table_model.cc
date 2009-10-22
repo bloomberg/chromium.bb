@@ -100,7 +100,7 @@ class ModelEntry {
       GURL icon_url) {
     load_state_ = LOADED;
     if (know_favicon && data.get() &&
-        gfx::PNGCodec::Decode(&data->data, &fav_icon_)) {
+        gfx::PNGCodec::Decode(data->front(), data->size(), &fav_icon_)) {
       model_->FavIconAvailable(this);
     }
   }
@@ -313,7 +313,7 @@ int TemplateURLTableModel::IndexOfTemplateURL(
 
 int TemplateURLTableModel::MoveToMainGroup(int index) {
   if (index < last_search_engine_index_)
-    return index; // Already in the main group.
+    return index;  // Already in the main group.
 
   ModelEntry* current_entry = entries_[index];
   entries_.erase(index + entries_.begin());

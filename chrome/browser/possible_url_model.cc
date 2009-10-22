@@ -176,7 +176,8 @@ void PossibleURLModel::OnFavIconAvailable(
     size_t index = consumer_.GetClientData(favicon_service, h);
     if (fav_icon_available) {
       // The decoder will leave our bitmap empty on error.
-      gfx::PNGCodec::Decode(&data->data, &(fav_icon_map_[index]));
+      gfx::PNGCodec::Decode(data->front(), data->size(),
+                            &(fav_icon_map_[index]));
 
       // Notify the observer.
       if (!fav_icon_map_[index].isNull() && observer_)

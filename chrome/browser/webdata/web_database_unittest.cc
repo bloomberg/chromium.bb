@@ -665,7 +665,7 @@ TEST_F(WebDatabaseTest, WebAppImages) {
   // Set some random pixels so that we can identify the image. We don't use
   // transparent images because of pre-multiplication rounding errors.
   SkColor test_pixel_1 = 0xffccbbaa;
-  SkColor test_pixel_2 = 0x00aabbaa;
+  SkColor test_pixel_2 = 0xffaabbaa;
   SkColor test_pixel_3 = 0xff339966;
   image.getAddr32(0, 1)[0] = test_pixel_1;
   image.getAddr32(0, 1)[1] = test_pixel_2;

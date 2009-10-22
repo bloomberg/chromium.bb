@@ -211,12 +211,11 @@ bool WebDatabase::GetWebAppImages(const GURL& url,
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
   while (s.Step()) {
     SkBitmap image;
-    std::vector<unsigned char> image_data;
     int col_bytes = s.ColumnByteLength(0);
     if (col_bytes > 0) {
-      image_data.resize(col_bytes);
-      memcpy(&image_data[0], s.ColumnBlob(0), col_bytes);
-      if (gfx::PNGCodec::Decode(&image_data, &image)) {
+      if (gfx::PNGCodec::Decode(
+              reinterpret_cast<const unsigned char*>(s.ColumnBlob(0)),
+              col_bytes, &image)) {
         images->push_back(image);
       } else {
         // Should only have valid image data in the db.

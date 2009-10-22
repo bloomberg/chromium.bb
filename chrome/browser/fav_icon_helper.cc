@@ -87,7 +87,7 @@ void FavIconHelper::FavIconDownloadFailed(int download_id) {
 void FavIconHelper::UpdateFavIcon(NavigationEntry* entry,
                                   const std::vector<unsigned char>& data) {
   SkBitmap image;
-  gfx::PNGCodec::Decode(&data, &image);
+  gfx::PNGCodec::Decode(&data.front(), data.size(), &image);
   UpdateFavIcon(entry, image);
 }
 
@@ -187,12 +187,13 @@ void FavIconHelper::OnFavIconDataForInitialURL(
     // favicon or its expired. Continue on to DownloadFavIconOrAskHistory to
     // either download or check history again.
     DownloadFavIconOrAskHistory(entry);
-  } // else we haven't got the icon url. When we get it we'll ask the
-    // renderer to download the icon.
+  }
+  // else we haven't got the icon url. When we get it we'll ask the
+  // renderer to download the icon.
 }
 
 void FavIconHelper::DownloadFavIconOrAskHistory(NavigationEntry* entry) {
-  DCHECK(entry); // We should only get here if entry is valid.
+  DCHECK(entry);  // We should only get here if entry is valid.
   if (fav_icon_expired_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(entry);

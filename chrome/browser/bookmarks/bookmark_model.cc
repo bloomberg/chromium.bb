@@ -649,7 +649,7 @@ void BookmarkModel::OnFavIconDataAvailable(
   DCHECK(node);
   node->set_favicon_load_handle(0);
   if (know_favicon && data.get() &&
-      gfx::PNGCodec::Decode(&data->data, &fav_icon)) {
+      gfx::PNGCodec::Decode(data->front(), data->size(), &fav_icon)) {
     node->set_favicon(fav_icon);
     FavIconLoaded(node);
   }

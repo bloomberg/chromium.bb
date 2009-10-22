@@ -31,7 +31,11 @@ class PNGCodec {
 
     // 4 bytes per pixel, in BGRA order in memory regardless of endianness.
     // This is the default Windows DIB order.
-    FORMAT_BGRA
+    FORMAT_BGRA,
+
+    // 4 bytes per pixel, in pre-multiplied kARGB_8888_Config format. For use
+    // with directly writing to a skia bitmap.
+    FORMAT_SkBitmap
   };
 
   // Encodes the given raw 'input' data, with each pixel being represented as
@@ -75,12 +79,16 @@ class PNGCodec {
                      ColorFormat format, std::vector<unsigned char>* output,
                      int* w, int* h);
 
-  // A convenience function for decoding PNGs as previously encoded by the PNG
-  // encoder. Chrome encodes png in the format PNGCodec::FORMAT_BGRA.
+  // Decodes the PNG data directly into the passed in SkBitmap. This is
+  // significantly faster than the vector<unsigned char> version of Decode()
+  // above when dealing with PNG files that are >500K, which a lot of theme
+  // images are. (There are a lot of themes that have a NTP image of about ~1
+  // megabyte, and those require a 7-10 megabyte side buffer.)
   //
   // Returns true if data is non-null and can be decoded as a png, false
   // otherwise.
-  static bool Decode(const std::vector<unsigned char>* data, SkBitmap* icon);
+  static bool Decode(const unsigned char* input, size_t input_size,
+                     SkBitmap* bitmap);
 
   // Create a SkBitmap from a decoded BGRA DIB. The caller owns the returned
   // SkBitmap.

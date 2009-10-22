@@ -840,22 +840,15 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) const {
     raw_data = ReadThemeFileData(id);
 
   if (raw_data) {
-    std::vector<unsigned char> png_data;
-
     // Decode the PNG.
-    int image_width = 0;
-    int image_height = 0;
-
+    SkBitmap bitmap;
     if (!gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
-                               gfx::PNGCodec::FORMAT_BGRA, &png_data,
-                               &image_width, &image_height)) {
+                               &bitmap)) {
       NOTREACHED() << "Unable to decode theme image resource " << id;
       return NULL;
     }
 
-    return gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(png_data,
-                                                       image_width,
-                                                       image_height);
+    return new SkBitmap(bitmap);
   } else {
     // TODO(glen): File no-longer exists, we're out of date. We should
     // clear the theme (or maybe just the pref that points to this

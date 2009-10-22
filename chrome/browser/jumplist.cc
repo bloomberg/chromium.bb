@@ -497,7 +497,9 @@ void JumpListUpdateTask::Run() {
        item != most_visited_pages_.end(); ++item) {
     SkBitmap icon_bitmap;
     if ((*item)->data().get() &&
-        gfx::PNGCodec::Decode(&(*item)->data()->data, &icon_bitmap)) {
+        gfx::PNGCodec::Decode((*item)->data()->front(),
+                              (*item)->data()->size(),
+                              &icon_bitmap)) {
       std::wstring icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
         (*item)->SetIcon(icon_path, 0, true);
@@ -510,7 +512,9 @@ void JumpListUpdateTask::Run() {
        item != recently_closed_pages_.end(); ++item) {
     SkBitmap icon_bitmap;
     if ((*item)->data().get() &&
-        gfx::PNGCodec::Decode(&(*item)->data()->data, &icon_bitmap)) {
+        gfx::PNGCodec::Decode((*item)->data()->front(),
+                              (*item)->data()->size(),
+                              &icon_bitmap)) {
       std::wstring icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
         (*item)->SetIcon(icon_path, 0, true);
