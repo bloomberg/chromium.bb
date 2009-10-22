@@ -226,15 +226,3 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 }
 #endif
 
-//------------------------------------------------------------------------------
-
-#if defined(TOOLKIT_VIEWS)
-
-ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
-    TabContents* owner,
-    ConstrainedWindowDelegate* delegate) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-#endif

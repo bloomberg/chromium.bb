@@ -14,6 +14,7 @@
 #include "base/gfx/size.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -119,6 +120,29 @@ TabContentsViewGtk::~TabContentsViewGtk() {
   // manually, and synchronously, since subsequent signal handlers may expect
   // to locate this object.
   CloseNow();
+}
+
+void TabContentsViewGtk::AttachConstrainedWindow(
+    ConstrainedWindowGtk* constrained_window) {
+  DCHECK(find(constrained_windows_.begin(), constrained_windows_.end(),
+              constrained_window) == constrained_windows_.end());
+
+  constrained_windows_.push_back(constrained_window);
+  AddChild(constrained_window->widget());
+
+  gfx::Rect bounds;
+  GetContainerBounds(&bounds);
+  SetFloatingPosition(bounds.size());
+}
+
+void TabContentsViewGtk::RemoveConstrainedWindow(
+    ConstrainedWindowGtk* constrained_window) {
+  std::vector<ConstrainedWindowGtk*>::iterator item =
+      find(constrained_windows_.begin(), constrained_windows_.end(),
+           constrained_window);
+  DCHECK(item != constrained_windows_.end());
+  RemoveChild((*item)->widget());
+  constrained_windows_.erase(item);
 }
 
 void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
@@ -378,4 +402,25 @@ void TabContentsViewGtk::WasSized(const gfx::Size& size) {
 
   // TODO(brettw) this function can probably be moved to this class.
   tab_contents()->RepositionSupressedPopupsToFit();
+
+  SetFloatingPosition(size);
 }
+
+void TabContentsViewGtk::SetFloatingPosition(const gfx::Size& size) {
+  // Place each ConstrainedWindow in the center of the view.
+  int half_view_width = size.width() / 2;
+
+  typedef std::vector<ConstrainedWindowGtk*>::iterator iterator;
+
+  for (iterator f = constrained_windows_.begin(),
+                l = constrained_windows_.end(); f != l; ++f) {
+    GtkWidget* widget = (*f)->widget();
+
+    GtkRequisition requisition;
+    gtk_widget_size_request(widget, &requisition);
+
+    int child_x = std::max(half_view_width - (requisition.width / 2), 0);
+    PositionChild(widget, child_x, 0, requisition.width, requisition.height);
+  }
+}
+

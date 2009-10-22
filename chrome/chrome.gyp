@@ -2811,6 +2811,8 @@
                 ['include', '^browser/gtk/cairo_cached_surface.h'],
                 ['include', '^browser/gtk/clear_browsing_data_dialog_gtk.cc'],
                 ['include', '^browser/gtk/clear_browsing_data_dialog_gtk.h'],
+                ['include', '^browser/gtk/constrained_window_gtk.cc'],
+                ['include', '^browser/gtk/constrained_window_gtk.h'],
                 ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/dialogs_gtk.h'],
                 ['include', '^browser/gtk/download_started_animation_gtk.cc'],

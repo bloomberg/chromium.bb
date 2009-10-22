@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
 
+#include <vector>
+
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "views/widget/widget_gtk.h"
 
+class ConstrainedWindowGtk;
+typedef struct _GtkFloatingContainer GtkFloatingContainer;
 class RenderViewContextMenuWin;
 class SadTabView;
 class TabContentsDragSource;
@@ -29,6 +33,11 @@ class TabContentsViewGtk : public TabContentsView,
   // because that's what was easiest when they were split.
   explicit TabContentsViewGtk(TabContents* tab_contents);
   virtual ~TabContentsViewGtk();
+
+  // Unlike Windows, ConstrainedWindows need to collaborate with the
+  // TabContentsViewGtk to position the dialogs.
+  void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
+  void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
   // TabContentsView implementation --------------------------------------------
 
@@ -73,6 +82,11 @@ class TabContentsViewGtk : public TabContentsView,
   // of the change, reposition popups, and the find in page bar.
   void WasSized(const gfx::Size& size);
 
+  // For any floating views (ConstrainedDialogs) this function centers them
+  // within this view. It's called whem a ConstrainedDialog is attached and
+  // when this view is resized.
+  void SetFloatingPosition(const gfx::Size& size);
+
   // ---------------------------------------------------------------------------
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
@@ -100,6 +114,10 @@ class TabContentsViewGtk : public TabContentsView,
 
   // Current size. See comment in WidgetGtk as to why this is cached.
   gfx::Size size_;
+
+  // Each individual UI for constrained dialogs currently displayed. The
+  // objects in this vector are owned by the TabContents, not the view.
+  std::vector<ConstrainedWindowGtk*> constrained_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };
