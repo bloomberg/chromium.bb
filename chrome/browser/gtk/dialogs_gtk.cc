@@ -446,8 +446,10 @@ void SelectFileDialogImpl::RemoveParentForDialog(GtkWidget* dialog) {
   GtkWindow* parent = gtk_window_get_transient_for(GTK_WINDOW(dialog));
   DCHECK(parent);
   std::set<GtkWindow*>::iterator iter = parents_.find(parent);
-  DCHECK(iter != parents_.end());
-  parents_.erase(iter);
+  if (iter != parents_.end())
+    parents_.erase(iter);
+  else
+    NOTREACHED();
 }
 
 // static
@@ -465,25 +467,29 @@ bool SelectFileDialogImpl::IsCancelResponse(gint response_id) {
 void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(
     GtkWidget* dialog, gint response_id,
     SelectFileDialogImpl* dialog_impl) {
-  if (IsCancelResponse(response_id)) {
+  gchar* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
+  if (!filename || IsCancelResponse(response_id)) {
     dialog_impl->FileNotSelected(dialog);
     return;
   }
 
-  gchar* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-  dialog_impl->FileSelected(dialog, FilePath(filename));
+  FilePath path(filename);
+  g_free(filename);
+  dialog_impl->FileSelected(dialog, path);
 }
 
 // static
 void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(
     GtkWidget* dialog, gint response_id,
     SelectFileDialogImpl* dialog_impl) {
-  if (IsCancelResponse(response_id)) {
+  GSList* filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+
+  if (!filenames || IsCancelResponse(response_id)) {
     dialog_impl->FileNotSelected(dialog);
     return;
   }
 
-  GSList* filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
   std::vector<FilePath> filenames_fp;
   for (GSList* iter = filenames; iter != NULL; iter = g_slist_next(iter)) {
     filenames_fp.push_back(FilePath(static_cast<char*>(iter->data)));
