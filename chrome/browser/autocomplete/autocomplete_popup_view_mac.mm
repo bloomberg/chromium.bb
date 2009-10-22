@@ -454,7 +454,7 @@ AutocompletePopupModel* AutocompletePopupViewMac::GetModel() {
   return model_.get();
 }
 
-void AutocompletePopupViewMac::AcceptInput() {
+void AutocompletePopupViewMac::OnClick() {
   const NSInteger selectedRow = [[popup_ contentView] selectedRow];
 
   // -1 means no cells were selected.  This can happen if the user
@@ -463,17 +463,23 @@ void AutocompletePopupViewMac::AcceptInput() {
   if (selectedRow == -1) {
     PaintUpdatesNow();
   } else {
-    model_->SetSelectedLine(selectedRow, false);
-    WindowOpenDisposition disposition =
-        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-    edit_view_->AcceptInput(disposition, false);
+    OpenURLForRow(selectedRow, false);
   }
 }
 
 void AutocompletePopupViewMac::OnMiddleClick() {
-  const NSInteger row = [[popup_ contentView] highlightedRow];
+  OpenURLForRow([[popup_ contentView] highlightedRow], true);
+}
+
+void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   if (row == -1) {
     return;
+  }
+
+  WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
+  if (!force_background) {
+    disposition =
+        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   }
 
   // OpenURL() may close the popup, which will clear the result set
@@ -484,7 +490,7 @@ void AutocompletePopupViewMac::OnMiddleClick() {
   const GURL url(match.destination_url);
   std::wstring keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  edit_view_->OpenURL(url, NEW_BACKGROUND_TAB, match.transition, GURL(), row,
+  edit_view_->OpenURL(url, disposition, match.transition, GURL(), row,
                       is_keyword_hint ? std::wstring() : keyword);
 }
 
@@ -713,7 +719,7 @@ void AutocompletePopupViewMac::OnMiddleClick() {
 
 - (void)select:(id)sender {
   DCHECK(popup_view_);
-  popup_view_->AcceptInput();
+  popup_view_->OnClick();
 }
 
 - (void)middleSelect:(id)sender {

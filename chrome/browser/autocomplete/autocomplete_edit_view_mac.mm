@@ -825,6 +825,11 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     WindowOpenDisposition disposition =
         event_utils::WindowOpenDispositionFromNSEvent(event);
     edit_view_->AcceptInput(disposition, false);
+    // Opening a URL in a background tab should also revert the omnibox contents
+    // to their original state.  We cannot do a blanket revert in OpenURL()
+    // because middle-clicks also open in a new background tab, but those should
+    // not revert the omnibox text.
+    edit_view_->RevertAll();
     return YES;
   }
 

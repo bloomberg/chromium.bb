@@ -69,10 +69,10 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel();
 
-  // Updates model_'s sense of selected line from the UI before
-  // calling edit_view_'s AcceptInput().  Used by internal Objective-C
-  // helper object.
-  void AcceptInput();
+  // Called when the user clicks an item.  Opens the hovered item and
+  // potentially dismisses the popup without formally selecting anything in the
+  // model.
+  void OnClick();
 
   // Called when the user middle-clicks an item.  Opens the hovered
   // item in a background tab.
@@ -108,6 +108,12 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
  private:
   // Create the popup_ instance if needed.
   void CreatePopupIfNeeded();
+
+  // Opens the URL corresponding to the given |row|.  If |force_background| is
+  // true, forces the URL to open in a background tab.  Otherwise, determines
+  // the proper window open disposition from the modifier flags on |[NSApp
+  // currentEvent]|.
+  void OpenURLForRow(int row, bool force_background);
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
