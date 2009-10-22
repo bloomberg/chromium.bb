@@ -3173,17 +3173,12 @@ BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
 
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
-BUG_YUTAK LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL PASS
-BUG_YUTAK MAC : LayoutTests/svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = FAIL PASS
 BUG_YUTAK MAC LINUX : LayoutTests/fast/frames/frame-set-same-src.html = CRASH PASS
 BUG_YUTAK MAC RELEASE : LayoutTests/fast/overflow/002.html = CRASH PASS
 
 // Test expectation for MAC is located above.
 // Please remove CRASH from that line when the fix is in.
 BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
-
-// WebKit Roll 49830:49844
-BUG_YUTAK WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
