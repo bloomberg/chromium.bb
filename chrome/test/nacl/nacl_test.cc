@@ -25,7 +25,6 @@ static const FilePath::CharType kSrpcHwNexeFileName[] =
 NaClTest::NaClTest()
     : UITest() {
   launch_arguments_.AppendSwitch(switches::kInternalNaCl);
-  launch_arguments_.AppendSwitch(switches::kNoSandbox);
 }
 
 NaClTest::~NaClTest() {}
