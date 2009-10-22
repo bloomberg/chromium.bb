@@ -6,75 +6,21 @@
  * @fileoverview Heap profiler panel implementation.
  */
 
-WebInspector.ProfilesPanel.prototype.__oldReset = WebInspector.ProfilesPanel.prototype.reset;
-WebInspector.ProfilesPanel.prototype.reset = function() {
-    if (this._snapshots) {
-        var snapshotsLength = this._snapshots.length;
-        for (var i = 0; i < snapshotsLength; ++i) {
-            var snapshot = this._snapshots[i];
-            delete snapshot._snapshotView;
-        }
-    }
-    this._snapshots = [];
-
-    this.__oldReset();
-}
-
-
 WebInspector.ProfilesPanel.prototype.addSnapshot = function(snapshot) {
-    this._snapshots.push(snapshot);
-    snapshot.list = this._snapshots;
-    snapshot.listIndex = this._snapshots.length - 1;
+    snapshot.title = WebInspector.UIString("Snapshot %d", snapshot.number);
 
-    var snapshotsTreeElement = new WebInspector.HeapSnapshotSidebarTreeElement(snapshot);
-    snapshotsTreeElement.small = false;
-    snapshot._snapshotsTreeElement = snapshotsTreeElement;
+    var snapshots = WebInspector.HeapSnapshotProfileType.snapshots;
+    snapshots.push(snapshot);
 
-    this.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId).treeElement.appendChild(snapshotsTreeElement);
+    snapshot.listIndex = snapshots.length - 1;
+
+    this.addProfileHeader(WebInspector.HeapSnapshotProfileType.TypeId, snapshot);
 
     this.dispatchEventToListeners("snapshot added");
-
-    if (!this.visibleView)
-        this.showSnapshot(snapshot);
 }
 
 
-WebInspector.ProfilesPanel.prototype.showSnapshot = function(snapshot) {
-    if (!snapshot)
-        return;
-
-    if (this.visibleView)
-        this.visibleView.hide();
-    var view = this.snapshotViewForSnapshot(snapshot);
-    view.show(this.profileViews);
-    this.visibleView = view;
-
-    this.profileViewStatusBarItemsContainer.removeChildren();
-    var statusBarItems = view.statusBarItems;
-    for (var i = 0; i < statusBarItems.length; ++i)
-        this.profileViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
-}
-
-
-WebInspector.ProfilesPanel.prototype.__oldShowView = WebInspector.ProfilesPanel.prototype.showView;
-WebInspector.ProfilesPanel.prototype.showView = function(view) {
-    if ('snapshot' in view)
-        this.showSnapshot(view.snapshot);
-    else
-        this.__oldShowView(view);
-}
-
-
-WebInspector.ProfilesPanel.prototype.snapshotViewForSnapshot = function(snapshot) {
-    if (!snapshot)
-        return null;
-    if (!snapshot._snapshotView)
-        snapshot._snapshotView = new WebInspector.HeapSnapshotView(this, snapshot);
-    return snapshot._snapshotView;
-}
-
-
-WebInspector.HeapSnapshotView = function(parent, snapshot)
+WebInspector.HeapSnapshotView = function(parent, profile)
 {
     WebInspector.View.call(this);
 
@@ -90,7 +36,7 @@ WebInspector.HeapSnapshotView = function(parent, snapshot)
 
     this.summaryBar = new WebInspector.SummaryBar(this.categories);
     this.summaryBar.element.id = "heap-snapshot-summary";
-    this.summaryBar.calculator = new WebInspector.HeapSummaryCalculator(snapshot.used);
+    this.summaryBar.calculator = new WebInspector.HeapSummaryCalculator(profile.used);
     this.element.appendChild(this.summaryBar.element);
 
     var columns = { "cons": { title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true },
@@ -104,16 +50,16 @@ WebInspector.HeapSnapshotView = function(parent, snapshot)
     this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
     this.element.appendChild(this.dataGrid.element);
 
-    this.snapshot = snapshot;
+    this.profile = profile;
 
     this.baseSelectElement = document.createElement("select");
     this.baseSelectElement.className = "status-bar-item";
     this.baseSelectElement.addEventListener("change", this._changeBase.bind(this), false);
     this._updateBaseOptions();
-    if (this.snapshot.listIndex > 0)
-        this.baseSelectElement.selectedIndex = this.snapshot.listIndex - 1;
+    if (this.profile.listIndex > 0)
+        this.baseSelectElement.selectedIndex = this.profile.listIndex - 1;
     else
-        this.baseSelectElement.selectedIndex = this.snapshot.listIndex;
+        this.baseSelectElement.selectedIndex = this.profile.listIndex;
     this._resetDataGridList();
 
     this.percentButton = new WebInspector.StatusBarButton("", "percent-time-status-bar-item status-bar-item");
@@ -136,14 +82,14 @@ WebInspector.HeapSnapshotView.prototype = {
         return [this.baseSelectElement, this.percentButton.element];
     },
 
-    get snapshot()
+    get profile()
     {
-        return this._snapshot;
+        return this._profile;
     },
 
-    set snapshot(snapshot)
+    set profile(profile)
     {
-        this._snapshot = snapshot;
+        this._profile = profile;
     },
 
     show: function(parentElement)
@@ -187,7 +133,7 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     _changeBase: function() {
-        if (this.baseSnapshot === this.snapshot.list[this.baseSelectElement.selectedIndex])
+        if (this.baseSnapshot === WebInspector.HeapSnapshotProfileType.snapshots[this.baseSelectElement.selectedIndex])
             return;
 
         this._resetDataGridList();
@@ -199,7 +145,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (this._snapshotDataGridList)
           delete this._snapshotDataGridList;
 
-        this._snapshotDataGridList = new WebInspector.HeapSnapshotDataGridList(this, this.baseSnapshot.entries, this.snapshot.entries);
+        this._snapshotDataGridList = new WebInspector.HeapSnapshotDataGridList(this, this.baseSnapshot.entries, this.profile.entries);
         return this._snapshotDataGridList;
     },
 
@@ -244,7 +190,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _resetDataGridList: function()
     {
-        this.baseSnapshot = this.snapshot.list[this.baseSelectElement.selectedIndex];
+        this.baseSnapshot = WebInspector.HeapSnapshotProfileType.snapshots[this.baseSelectElement.selectedIndex];
         var lastComparator = WebInspector.HeapSnapshotDataGridList.propertyComparator("size", false);
         if (this.snapshotDataGridList) {
             lastComparator = this.snapshotDataGridList.lastComparator;
@@ -272,13 +218,14 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _updateBaseOptions: function()
     {
+        var list = WebInspector.HeapSnapshotProfileType.snapshots;
         // We're assuming that snapshots can only be added.
-        if (this.baseSelectElement.length == this.snapshot.list.length)
+        if (this.baseSelectElement.length == list.length)
             return;
 
-        for (var i = this.baseSelectElement.length, n = this.snapshot.list.length; i < n; ++i) {
+        for (var i = this.baseSelectElement.length, n = list.length; i < n; ++i) {
             var baseOption = document.createElement("option");
-            baseOption.label = WebInspector.UIString("Compared to %s", this.snapshot.list[i].title);
+            baseOption.label = WebInspector.UIString("Compared to %s", list[i].title);
             this.baseSelectElement.appendChild(baseOption);
         }
     },
@@ -297,7 +244,7 @@ WebInspector.HeapSnapshotView.prototype = {
     _updateSummaryGraph: function()
     {
         this.summaryBar.calculator.showAsPercent = this._isShowingAsPercent;
-        this.summaryBar.update(this.snapshot.lowlevels);
+        this.summaryBar.update(this.profile.lowlevels);
     }
 };
 
@@ -345,8 +292,7 @@ WebInspector.HeapSummaryCalculator.prototype = {
 
 WebInspector.HeapSnapshotSidebarTreeElement = function(snapshot)
 {
-    this.snapshot = snapshot;
-    this.snapshot.title = WebInspector.UIString("Snapshot %d", this.snapshot.number);
+    this.profile = snapshot;
 
     WebInspector.SidebarTreeElement.call(this, "heap-snapshot-sidebar-tree-item", "", "", snapshot, false);
 
@@ -354,16 +300,11 @@ WebInspector.HeapSnapshotSidebarTreeElement = function(snapshot)
 };
 
 WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
-    onselect: function()
-    {
-        WebInspector.panels.profiles.showSnapshot(this.snapshot);
-    },
-
     get mainTitle()
     {
         if (this._mainTitle)
             return this._mainTitle;
-        return this.snapshot.title;
+        return this.profile.title;
     },
 
     set mainTitle(x)
@@ -376,7 +317,7 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     {
         if (this._subTitle)
             return this._subTitle;
-        return WebInspector.UIString("Used %s of %s (%.0f%%)", Number.bytesToString(this.snapshot.used, null, false), Number.bytesToString(this.snapshot.capacity, null, false), this.snapshot.used / this.snapshot.capacity * 100.0);
+        return WebInspector.UIString("Used %s of %s (%.0f%%)", Number.bytesToString(this.profile.used, null, false), Number.bytesToString(this.profile.capacity, null, false), this.profile.used / this.profile.capacity * 100.0);
     },
 
     set subtitle(x)
@@ -386,7 +327,7 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     }
 };
 
-WebInspector.HeapSnapshotSidebarTreeElement.prototype.__proto__ = WebInspector.SidebarTreeElement.prototype;
+WebInspector.HeapSnapshotSidebarTreeElement.prototype.__proto__ = WebInspector.ProfileSidebarTreeElement.prototype;
 
 WebInspector.HeapSnapshotDataGridNodeWithRetainers = function(owningTree)
 {
@@ -666,7 +607,7 @@ WebInspector.HeapSnapshotDataGridRetainerNode = function(snapshotView, baseEntry
         snapshotEntry = { cons: baseEntry.cons, count: 0, clusters: {} };
     this.constructorName = snapshotEntry.cons;
     this.count = snapshotEntry.count;
-    this.retainers = this._calculateRetainers(this.snapshotView.snapshot, snapshotEntry.clusters);
+    this.retainers = this._calculateRetainers(this.snapshotView.profile, snapshotEntry.clusters);
 
     if (!baseEntry)
         baseEntry = { count: 0, clusters: {} };
@@ -729,6 +670,8 @@ WebInspector.HeapSnapshotProfileType = function()
 }
 
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
+
+WebInspector.HeapSnapshotProfileType.snapshots = [];
 
 WebInspector.HeapSnapshotProfileType.prototype = {
     get buttonTooltip()
