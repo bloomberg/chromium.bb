@@ -838,9 +838,6 @@ BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 // The media time display is getting styled when it shouldn't be.
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 
-// This test has been fixed but will mark it as flaky until it's had some history of running on the bots.
-BUG13907 : LayoutTests/media/video-canvas-source.html = PASS FAIL
-
 // These tests are flaky with subtle pixel differences.
 BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = IMAGE
 BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = IMAGE
