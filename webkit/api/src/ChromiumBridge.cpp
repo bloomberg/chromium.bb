@@ -57,10 +57,13 @@
 #include "WebFontInfo.h"
 #endif
 
+#if WEBKIT_USING_SKIA
+#include "NativeImageSkia.h"
+#endif
+
 #include "BitmapImage.h"
 #include "GraphicsContext.h"
 #include "KURL.h"
-#include "NativeImageSkia.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "PluginData.h"
@@ -118,17 +121,16 @@ void ChromiumBridge::clipboardWriteURL(const KURL& url, const String& title)
     webKitClient()->clipboard()->writeURL(url, title);
 }
 
-void ChromiumBridge::clipboardWriteImage(const NativeImageSkia* image,
+void ChromiumBridge::clipboardWriteImage(NativeImagePtr image,
                                          const KURL& sourceURL,
                                          const String& title)
 {
 #if WEBKIT_USING_SKIA
-    webKitClient()->clipboard()->writeImage(
-        WebImage(*image), sourceURL, title);
+    WebImage webImage(*image);
 #else
-    // FIXME clipboardWriteImage probably shouldn't take a NativeImageSkia
-    notImplemented();
+    WebImage webImage(image);
 #endif
+    webKitClient()->clipboard()->writeImage(webImage, sourceURL, title);
 }
 
 // Cookies --------------------------------------------------------------------

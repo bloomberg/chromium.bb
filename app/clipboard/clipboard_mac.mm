@@ -7,7 +7,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_path.h"
+#include "base/gfx/size.h"
 #include "base/logging.h"
+#include "base/mac_util.h"
+#include "base/scoped_cftyperef.h"
+#include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 
@@ -117,6 +121,45 @@ void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
   NSPasteboard* pb = GetPasteboard();
   [pb addTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
   [pb setPropertyList:fileList forType:NSFilenamesPboardType];
+}
+
+void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
+  const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
+
+  // Safe because the image goes away before the call returns.
+  scoped_cftyperef<CFDataRef> data(
+      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
+                                  reinterpret_cast<const UInt8*>(pixel_data),
+                                  size->width()*size->height()*4,
+                                  kCFAllocatorNull));
+
+  scoped_cftyperef<CGDataProviderRef> data_provider(
+      CGDataProviderCreateWithCFData(data));
+
+  scoped_cftyperef<CGImageRef> cgimage(
+      CGImageCreate(size->width(),
+                    size->height(),
+                    8,
+                    32,
+                    size->width()*4,
+                    mac_util::GetSRGBColorSpace(),  // TODO(avi): do better
+                    kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+                    data_provider,
+                    NULL,
+                    false,
+                    kCGRenderingIntentDefault));
+
+  scoped_nsobject<NSBitmapImageRep> bitmap(
+      [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
+
+  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+  [image addRepresentation:bitmap];
+
+  // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
+  // For now, spit out the image as a TIFF.
+  NSPasteboard* pb = GetPasteboard();
+  [pb addTypes:[NSArray arrayWithObject:NSTIFFPboardType] owner:nil];
+  [pb setData:[image TIFFRepresentation] forType:NSTIFFPboardType];
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
