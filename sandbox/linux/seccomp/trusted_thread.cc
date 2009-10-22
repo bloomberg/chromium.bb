@@ -586,7 +586,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       :
       : "g"(&args)
       : "rax", "rcx", "rdx", "rdi", "rsi", "r8", "r9", "r10", "r11", "r12",
-        "r13", "r14", "r15"
+        "r13", "r14", "r15", "rsp", "memory"
 #elif defined(__i386__)
   struct user_desc u;
   u.entry_number    = (typeof u.entry_number)-1;
@@ -1197,7 +1197,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       "pop  %%ebx\n"
       :
       : "g"(&args)
-      : "eax", "ecx", "edx", "edi", "esi"
+      : "eax", "ecx", "edx", "edi", "esi", "esp", "memory"
 #else
 #error Unsupported target platform
 #endif

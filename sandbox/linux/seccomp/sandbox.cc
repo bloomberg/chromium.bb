@@ -329,6 +329,13 @@ void (*Sandbox::segv())(int signo) {
       ".popsection\n"
   "999:pop  %0\n"
       : "=g"(fnc)
+      :
+      : "memory"
+#if defined(__x86_64__)
+        , "rsp"
+#elif defined(__i386__)
+        , "esp"
+#endif
   );
   return fnc;
 }

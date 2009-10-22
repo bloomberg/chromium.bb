@@ -1446,7 +1446,7 @@ struct kernel_statfs {
                            "int $0x80\n"                                      \
                            "pop %%ebx"                                        \
                            args                                               \
-                           : "memory");                                       \
+                           : "esp", "memory");                                \
       LSS_RETURN(type,__res)
     #undef  _syscall0
     #define _syscall0(type,name)                                              \
@@ -1503,7 +1503,7 @@ struct kernel_statfs {
                              : "i" (__NR_##name), "ri" ((long)(arg1)),        \
                                "c" ((long)(arg2)), "d" ((long)(arg3)),        \
                                "S" ((long)(arg4)), "D" ((long)(arg5))         \
-                             : "memory");                                     \
+                             : "esp", "memory");                              \
         LSS_RETURN(type,__res);                                               \
       }
     #undef  _syscall6
@@ -1525,7 +1525,7 @@ struct kernel_statfs {
                              : "i" (__NR_##name),  "0" ((long)(&__s)),        \
                                "c" ((long)(arg2)), "d" ((long)(arg3)),        \
                                "S" ((long)(arg4)), "D" ((long)(arg5))         \
-                             : "memory");                                     \
+                             : "esp", "memory");                              \
         LSS_RETURN(type,__res);                                               \
       }
     LSS_INLINE int LSS_NAME(clone)(int (*fn)(void *), void *child_stack,
@@ -1611,7 +1611,7 @@ struct kernel_statfs {
                            : "0"(-EINVAL), "i"(__NR_clone),
                              "m"(fn), "m"(child_stack), "m"(flags), "m"(arg),
                              "m"(parent_tidptr), "m"(newtls), "m"(child_tidptr)
-                           : "memory", "ecx", "edx", "esi", "edi");
+                           : "esp", "memory", "ecx", "edx", "esi", "edi");
       LSS_RETURN(int, __res);
     }
 
@@ -1820,7 +1820,7 @@ struct kernel_statfs {
                              : "0"(-EINVAL), "i"(__NR_clone), "i"(__NR_exit),
                                "r"(fn), "S"(child_stack), "D"(flags), "r"(arg),
                                "d"(parent_tidptr), "r"(__tls), "r"(__ctid)
-                             : "memory", "r11", "rcx");
+                             : "rsp", "memory", "r11", "rcx");
       }
       LSS_RETURN(int, __res);
     }
