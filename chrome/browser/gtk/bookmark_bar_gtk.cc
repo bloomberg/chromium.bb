@@ -1046,6 +1046,8 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 
     case GtkDndUtil::TEXT_PLAIN: {
       guchar* text = gtk_selection_data_get_text(selection_data);
+      if (!text)
+        break;
       GURL url(reinterpret_cast<char*>(text));
       g_free(text);
       // TODO(estade): It would be nice to head this case off at drag motion,
