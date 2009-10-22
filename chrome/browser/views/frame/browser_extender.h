@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_BROWSER_EXTENDER_H_
-#define CHROME_BROWSER_CHROMEOS_BROWSER_EXTENDER_H_
+#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_EXTENDER_H_
+#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_EXTENDER_H_
 
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
@@ -16,17 +16,10 @@ class Window;
 
 
 // BrowserExtender adds chromeos specific features to BrowserView.
-// The factory method |Create(BrowserView*)| returns two different types
-// of extender depending on the type of BrowserView. If the browser_view
-// is normal browser, it returns NormalExtender that adds controls to
-// the title bar as follows:
-//                  ____  __ __
-//      [MainMenu] /    \   \  \     [StatusArea]
-//
-// and adds the system context menu to the remaining arae of the titlebar.
-//
-// If it is popup window, it returns PopupExtender that creates
-// a title window.
+// The factory method |Create(BrowserView*)| creates different types
+// of extender depending on the type of BrowserView and target platform.
+// Please see chromeos_browser_extender.cc for ChromeOS extenders, and
+// standard_extender.cc for Chrome browser.
 class BrowserExtender {
  public:
   // Factory method to create a BrowserExtender for given
@@ -90,3 +83,4 @@ class BrowserExtender {
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_BROWSER_EXTENDER_H_
+

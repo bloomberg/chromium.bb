@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_HEADER_H_
-#define CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_HEADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_HEADER_H_
+#define CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_HEADER_H_
 
 #include <string>
 
@@ -38,4 +38,5 @@ class PanelScrollerHeader : public views::View {
   DISALLOW_COPY_AND_ASSIGN(PanelScrollerHeader);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_HEADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_HEADER_H_
+

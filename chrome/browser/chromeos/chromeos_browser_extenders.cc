@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/browser_extender.h"
-
 #include <algorithm>
 
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/panel_controller.h"
+#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "grit/generated_resources.h"
@@ -24,9 +23,15 @@
 
 namespace {
 
-// NormalExtender adds ChromeOS specific controls and menus to BrowserView
-// created with Browser::TYPE_NORMAL. For Browser::TYPE_POPUP type of
-// BrowserView, see PopupExtender class below.
+// NormalExtender adds ChromeOS specific controls and menus to a BrowserView
+// created with Browser::TYPE_NORMAL. This extender adds controls to
+// the title bar as follows:
+//                  ____  __ __
+//      [MainMenu] /    \   \  \     [StatusArea]
+//
+// and adds the system context menu to the remaining arae of the titlebar.
+//
+// For Browser::TYPE_POPUP type of BrowserView, see PopupExtender class below.
 class NormalExtender : public BrowserExtender,
                        public views::ButtonListener,
                        public views::ContextMenuController {
@@ -216,11 +221,6 @@ class PopupExtender : public BrowserExtender {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserExtender, public:
 
-BrowserExtender::BrowserExtender(BrowserView* browser_view)
-    : browser_view_(browser_view),
-      can_close_(true) {
-}
-
 // static
 BrowserExtender* BrowserExtender::Create(BrowserView* browser_view) {
   BrowserExtender* extender;
@@ -230,11 +230,4 @@ BrowserExtender* BrowserExtender::Create(BrowserView* browser_view) {
     extender = new NormalExtender(browser_view);
   extender->Init();
   return extender;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserExtender, protected:
-
-views::Window* BrowserExtender::GetBrowserWindow() {
-  return browser_view_->frame()->GetWindow();
 }

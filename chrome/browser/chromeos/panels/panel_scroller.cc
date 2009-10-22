@@ -2,15 +2,15 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/browser/views/panels/panel_scroller.h"
+#include "chrome/browser/chromeos/panels/panel_scroller.h"
 
 #include "app/gfx/canvas.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/browser/views/panels/panel_scroller_container.h"
-#include "chrome/browser/views/panels/panel_scroller_header.h"
+#include "chrome/browser/chromeos/panels/panel_scroller_container.h"
+#include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 #include "views/widget/widget_gtk.h"
 
 struct PanelScroller::Panel {
@@ -176,7 +176,7 @@ void PanelScroller::HeaderClicked(PanelScrollerHeader* source) {
 }
 
 void PanelScroller::ScrollToPanel(int index) {
-  int affected_panel_height = 
+  int affected_panel_height =
       panels_[index]->container->GetPreferredSize().height();
 
   // The pixel size we need to reserve for the stuck headers.
@@ -242,7 +242,7 @@ void PanelScroller::AnimationEnded(const Animation* animation) {
 
 void PanelScroller::AnimationProgressed(const Animation* animation) {
   scroll_pos_ = static_cast<int>(
-      static_cast<double>(animated_scroll_end_ - animated_scroll_begin_) * 
+      static_cast<double>(animated_scroll_end_ - animated_scroll_begin_) *
       animation_.GetCurrentValue()) + animated_scroll_begin_;
 
   Layout();

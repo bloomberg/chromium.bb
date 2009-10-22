@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/panel_controller.h"
+#include "chrome/browser/chromeos/panel_controller.h"
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
@@ -331,3 +331,4 @@ void PanelController::TitleContentView::OnFocusOut() {
   Layout();
   SchedulePaint();
 }
+

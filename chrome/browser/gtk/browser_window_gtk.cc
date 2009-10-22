@@ -79,9 +79,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
+#include "chrome/browser/chromeos/panel_controller.h"
 #include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "views/widget/widget_gtk.h"
 #endif

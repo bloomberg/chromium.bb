@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/common/x11_util.h"
-#include "chrome/browser/chromeos/browser_extender.h"
+#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #else
 #include "chrome/browser/gtk/browser_window_gtk.h"

@@ -2,13 +2,13 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/browser/views/panels/panel_scroller_header.h"
+#include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
-#include "chrome/browser/views/panels/panel_scroller.h"
+#include "chrome/browser/chromeos/panels/panel_scroller.h"
 
 PanelScrollerHeader::PanelScrollerHeader(PanelScroller* scroller)
     : views::View(),

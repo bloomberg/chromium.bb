@@ -2,7 +2,7 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "chrome/browser/views/panels/panel_scroller_container.h"
+#include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 
 #include "app/gfx/canvas.h"
 

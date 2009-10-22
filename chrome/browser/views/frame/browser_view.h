@@ -34,6 +34,7 @@
 class BookmarkBarView;
 class Browser;
 class BrowserBubble;
+class BrowserExtender;
 class DownloadShelfView;
 class EncodingMenuModel;
 class ExtensionShelf;
@@ -49,9 +50,6 @@ class TabContentsContainer;
 class TabStripWrapper;
 class ToolbarView;
 class ZoomMenuModel;
-#if defined(OS_CHROMEOS)
-class BrowserExtender;
-#endif
 
 namespace views {
 class ExternalFocusTracker;
@@ -332,12 +330,10 @@ class BrowserView : public BrowserWindow,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
 
-#if defined(OS_CHROMEOS)
   // Returns BrowserExtender.
   BrowserExtender* browser_extender() const {
     return browser_extender_.get();
   }
-#endif
 
  protected:
   // Overridden from views::View:
@@ -529,9 +525,7 @@ class BrowserView : public BrowserWindow,
   // The accessible name of this view.
   std::wstring accessible_name_;
 
-#if defined(OS_CHROMEOS)
   scoped_ptr<BrowserExtender> browser_extender_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

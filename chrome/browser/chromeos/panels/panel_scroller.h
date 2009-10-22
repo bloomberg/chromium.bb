@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_H_
-#define CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_H_
 
 #include <vector>
 
@@ -66,4 +66,5 @@ class PanelScroller : public views::View, public AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(PanelScroller);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_PANELS_PANEL_SCROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_H_
+

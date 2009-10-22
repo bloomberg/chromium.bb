@@ -38,6 +38,7 @@
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/extensions/extension_shelf.h"
+#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
@@ -81,10 +82,6 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/browser_extender.h"
 #endif
 
 using base::TimeDelta;
@@ -650,9 +647,7 @@ bool BrowserView::ActivateAppModalDialog() const {
 void BrowserView::ActivationChanged(bool activated) {
   if (activated)
     BrowserList::SetLastActive(browser_.get());
-#if defined(OS_CHROMEOS)
   browser_extender_->ActivationChanged();
-#endif
 }
 
 TabContents* BrowserView::GetSelectedTabContents() const {
@@ -694,12 +689,8 @@ void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
   gfx::Point tabstrip_point(point);
   View::ConvertPointToView(this, tabstrip()->GetView(), &tabstrip_point);
-#if defined(OS_CHROMEOS)
   return tabstrip()->IsPositionInWindowCaption(tabstrip_point)
       && !browser_extender_->NonClientHitTest(point);
-#else
-  return tabstrip()->IsPositionInWindowCaption(tabstrip_point);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -741,9 +732,7 @@ void BrowserView::Show() {
 
   frame_->GetWindow()->Show();
 
-#if defined (OS_CHROMEOS)
   browser_extender_->Show();
-#endif
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -761,9 +750,7 @@ void BrowserView::Close() {
 
   frame_->GetWindow()->Close();
 
-#if defined(OS_CHROMEOS)
   browser_extender_->Close();
-#endif
 }
 
 void BrowserView::Activate() {
@@ -819,9 +806,7 @@ void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
   if (ShouldShowWindowIcon())
     frame_->GetWindow()->UpdateWindowIcon();
-#if defined(OS_CHROMEOS)
   browser_extender_->UpdateTitleBar();
-#endif
 }
 
 void BrowserView::ShelfVisibilityChanged() {
@@ -1479,10 +1464,8 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 // BrowserView, views::ClientView overrides:
 
 bool BrowserView::CanClose() const {
-#if defined(OS_CHROMEOS)
   if (!browser_extender_->can_close())
     return false;
-#endif
 
   // You cannot close a frame for which there is an active originating drag
   // session.
@@ -1537,11 +1520,12 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
 #endif
   }
 
+  gfx::Point point_in_browser_view_coords(point);
+  View::ConvertPointToView(GetParent(), this, &point_in_browser_view_coords);
+
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.
   if (IsTabStripVisible()) {
-    gfx::Point point_in_view_coords(point);
-    View::ConvertPointToView(GetParent(), this, &point_in_view_coords);
 
     // See if the mouse pointer is within the bounds of the TabStrip.
     gfx::Point point_in_tabstrip_coords(point);
@@ -1557,7 +1541,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     // starved of dragable area, let's give it to window dragging (this also
     // makes sense visually).
     if (!IsMaximized() &&
-        (point_in_view_coords.y() <
+        (point_in_browser_view_coords.y() <
          (tabstrip_->GetView()->y() + kTabShadowSize))) {
       // We return HTNOWHERE as this is a signal to our containing
       // NonClientView that it should figure out what the correct hit-test
@@ -1566,12 +1550,8 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     }
   }
 
-#if defined(OS_CHROMEOS)
-  gfx::Point browser_view_point(point);
-  ConvertPointToView(GetParent(), this, &browser_view_point);
-  if (browser_extender_->NonClientHitTest(browser_view_point))
+  if (browser_extender_->NonClientHitTest(point_in_browser_view_coords))
     return HTCLIENT;
-#endif
 
   // If the point's y coordinate is below the top of the toolbar and otherwise
   // within the bounds of this view, the point is considered to be within the
@@ -1768,9 +1748,7 @@ void BrowserView::Init() {
   }
 #endif
 
-#if defined(OS_CHROMEOS)
   browser_extender_.reset(BrowserExtender::Create(this));
-#endif
 }
 
 #if defined(OS_WIN)
@@ -1800,10 +1778,8 @@ int BrowserView::LayoutTabStrip() {
   ConvertPointToView(GetParent(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
 
-#if defined(OS_CHROMEOS)
-  // Layout chromeos specific components.
+  // Layout extra components.
   tabstrip_bounds = browser_extender_->Layout(tabstrip_bounds);
-#endif
 
   bool visible = IsTabStripVisible();
   int y = visible ? tabstrip_bounds.y() : 0;
