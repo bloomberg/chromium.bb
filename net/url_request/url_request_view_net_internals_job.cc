@@ -323,11 +323,9 @@ class URLRequestLiveSubSection : public SubSection {
       : SubSection(parent, "outstanding", "Outstanding requests") {
   }
 
-  virtual void OutputBody(URLRequestContext* /*context*/, std::string* out) {
-    URLRequest::InstanceTracker* tracker = URLRequest::InstanceTracker::Get();
-
-    // Note that these are the requests across ALL contexts.
-    std::vector<URLRequest*> requests = tracker->GetLiveRequests();
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    std::vector<URLRequest*> requests =
+        context->request_tracker()->GetLiveRequests();
 
     out->append("<ol>");
     for (size_t i = 0; i < requests.size(); ++i) {
@@ -347,12 +345,9 @@ class URLRequestRecentSubSection : public SubSection {
       : SubSection(parent, "recent", "Recently completed requests") {
   }
 
-  virtual void OutputBody(URLRequestContext* /*context*/, std::string* out) {
-    URLRequest::InstanceTracker* tracker = URLRequest::InstanceTracker::Get();
-
-    // Note that these are the recently completed requests across ALL contexts.
-    URLRequest::InstanceTracker::RecentRequestInfoList recent =
-        tracker->GetRecentlyDeceased();
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    URLRequestTracker::RecentRequestInfoList recent =
+        context->request_tracker()->GetRecentlyDeceased();
 
     out->append("<ol>");
     for (size_t i = 0; i < recent.size(); ++i) {
