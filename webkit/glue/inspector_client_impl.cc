@@ -4,21 +4,14 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "DOMWindow.h"
 #include "FloatRect.h"
 #include "InspectorController.h"
 #include "Page.h"
 #include "Settings.h"
 #include <wtf/Vector.h>
-MSVC_POP_WARNING();
-
 #undef LOG
-#include "base/logging.h"
-#include "base/gfx/rect.h"
-#include "base/string_util.h"
+
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
@@ -28,8 +21,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview_impl.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/net_util.h"
 
 using namespace WebCore;
 
@@ -57,12 +48,12 @@ void InspectorClientImpl::inspectorDestroyed() {
 Page* InspectorClientImpl::createPage() {
   // This method should never be called in Chrome as inspector front-end lives
   // in a separate process.
-  NOTREACHED();
+  ASSERT_NOT_REACHED();
   return NULL;
 }
 
 void InspectorClientImpl::showWindow() {
-  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
+  ASSERT(inspected_web_view_->GetWebDevToolsAgentImpl());
   InspectorController* inspector =
       inspected_web_view_->page()->inspectorController();
   inspector->setWindowVisible(true);
@@ -74,7 +65,7 @@ void InspectorClientImpl::closeWindow() {
 }
 
 bool InspectorClientImpl::windowVisible() {
-  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
+  ASSERT(inspected_web_view_->GetWebDevToolsAgentImpl());
   return false;
 }
 
@@ -88,7 +79,7 @@ void InspectorClientImpl::detachWindow() {
 
 void InspectorClientImpl::setAttachedWindowHeight(unsigned int height) {
   // TODO(dglazkov): Implement this
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 static void invalidateNodeBoundingRect(WebViewImpl* web_view) {
@@ -118,7 +109,7 @@ void InspectorClientImpl::inspectedURLChanged(const String& newURL) {
 }
 
 String InspectorClientImpl::localizedStringsURL() {
-  NOTIMPLEMENTED();
+  notImplemented();
   return String();
 }
 
@@ -150,7 +141,7 @@ void InspectorClientImpl::removeSetting(const String& key) {
 }
 
 void InspectorClientImpl::inspectorWindowObjectCleared() {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 void InspectorClientImpl::LoadSettings() {
@@ -224,10 +215,10 @@ void InspectorClientImpl::SaveSettings() {
                                value.booleanValue() ? "true" : "false");
         break;
       case InspectorController::Setting::StringVectorType:
-        NOTIMPLEMENTED();
+        notImplemented();
         break;
       default:
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
         break;
     }
     data.append(entry);

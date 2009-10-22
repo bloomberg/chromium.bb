@@ -5,15 +5,9 @@
 #ifndef WEBKIT_GLUE_WEBVIEW_IMPL_H_
 #define WEBKIT_GLUE_WEBVIEW_IMPL_H_
 
-#include <set>
-#include <string>
-#include <vector>
+#include <wtf/OwnPtr.h>
+#include <wtf/RefCounted.h>
 
-#include "Page.h"
-
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
@@ -26,7 +20,6 @@
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webpreferences.h"
 
 namespace WebCore {
 class ChromiumDataObject;
@@ -59,8 +52,7 @@ class SearchableFormData;
 class WebHistoryItemImpl;
 class WebDevToolsAgentImpl;
 
-class WebViewImpl : public WebKit::WebView,
-                    public base::RefCounted<WebViewImpl> {
+class WebViewImpl : public WebKit::WebView, public RefCounted<WebViewImpl> {
  public:
   // WebWidget methods:
   virtual void close();
@@ -252,7 +244,7 @@ class WebViewImpl : public WebKit::WebView,
 
  protected:
   friend class WebKit::WebView;  // So WebView::Create can call our constructor
-  friend class base::RefCounted<WebViewImpl>;
+  friend class WTF::RefCounted<WebViewImpl>;
 
   WebViewImpl(WebKit::WebViewClient* client);
   ~WebViewImpl();
@@ -273,7 +265,7 @@ class WebViewImpl : public WebKit::WebView,
   WebKit::WebSize size_;
 
   WebKit::WebPoint last_mouse_position_;
-  scoped_ptr<WebCore::Page> page_;
+  OwnPtr<WebCore::Page> page_;
 
   // This flag is set when a new navigation is detected.  It is used to satisfy
   // the corresponding argument to WebFrameClient::didCommitProvisionalLoad.
@@ -284,13 +276,10 @@ class WebViewImpl : public WebKit::WebView,
   const WebCore::DocumentLoader* new_navigation_loader_;
 #endif
 
-  // A copy of the WebPreferences object we receive from the browser.
-  WebPreferences webprefs_;
-
   // An object that can be used to manipulate page_->settings() without linking
   // against WebCore.  This is lazily allocated the first time GetWebSettings()
   // is called.
-  scoped_ptr<WebKit::WebSettingsImpl> web_settings_;
+  OwnPtr<WebKit::WebSettingsImpl> web_settings_;
 
   // A copy of the web drop data object we received from the browser.
   RefPtr<WebCore::ChromiumDataObject> current_drag_data_;
@@ -378,9 +367,9 @@ class WebViewImpl : public WebKit::WebView,
   bool autocomplete_popup_showing_;
 
   // The autocomplete client.
-  scoped_ptr<AutocompletePopupMenuClient> autocomplete_popup_client_;
+  OwnPtr<AutocompletePopupMenuClient> autocomplete_popup_client_;
 
-  scoped_ptr<WebDevToolsAgentImpl> devtools_agent_;
+  OwnPtr<WebDevToolsAgentImpl> devtools_agent_;
 
   // Whether the webview is rendering transparently.
   bool is_transparent_;

@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "build/build_config.h"
 
-#include "base/compiler_specific.h"
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "AXObjectCache.h"
 #include "CSSStyleSelector.h"
 #include "CSSValueKeywords.h"
@@ -44,24 +41,21 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "PluginInfoStore.h"
 #include "PopupMenuChromium.h"
 #include "PopupMenuClient.h"
-#if defined(OS_WIN)
-#include "RenderThemeChromiumWin.h"
-#else
-#include "RenderTheme.h"
-#endif
 #include "RenderView.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "SelectionController.h"
 #include "Settings.h"
 #include "TypingCommand.h"
-MSVC_POP_WARNING();
+#if PLATFORM(WIN_OS)
+#include "KeyboardCodesWin.h"
+#include "RenderThemeChromiumWin.h"
+#else
+#include "KeyboardCodesPosix.h"
+#include "RenderTheme.h"
+#endif
 #undef LOG
 
-#include "base/gfx/rect.h"
-#include "base/keyboard_codes.h"
-#include "base/logging.h"
-#include "base/message_loop.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -76,12 +70,9 @@ MSVC_POP_WARNING();
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
-#include "webkit/glue/webdevtoolsclient.h"
 #include "webkit/glue/webview_impl.h"
 
 // Get rid of WTF's pow define so we can use std::pow.
@@ -171,7 +162,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   void Init(WebCore::HTMLInputElement* text_field,
             const WebVector<WebString>& suggestions,
             int default_suggestion_index) {
-    DCHECK(default_suggestion_index < static_cast<int>(suggestions.size()));
+    ASSERT(default_suggestion_index < static_cast<int>(suggestions.size()));
     text_field_ = text_field;
     selected_index_ = default_suggestion_index;
     SetSuggestions(suggestions);
@@ -186,7 +177,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     font.update(text_field->document()->styleSelector()->fontSelector());
     // The direction of text in popup menu is set the same as the direction of
     // the input element: text_field.
-    style_.reset(new PopupMenuStyle(Color::black, Color::white, font, true,
+    style_.set(new PopupMenuStyle(Color::black, Color::white, font, true,
         Length(WebCore::Fixed), text_field->renderer()->style()->direction()));
   }
 
@@ -198,7 +189,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     text_field_->setValue(suggestions_[listIndex]);
     EditorClientImpl* editor =
         static_cast<EditorClientImpl*>(webview_->page()->editorClient());
-    DCHECK(editor);
+    ASSERT(editor);
     editor->OnAutofillSuggestionAccepted(
         static_cast<WebCore::HTMLInputElement*>(text_field_.get()));
   }
@@ -298,7 +289,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   }
 
   void RemoveItemAtIndex(int index) {
-    DCHECK(index >= 0 && index < static_cast<int>(suggestions_.size()));
+    ASSERT(index >= 0 && index < static_cast<int>(suggestions_.size()));
     suggestions_.remove(index);
   }
 
@@ -322,7 +313,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   Vector<WebCore::String> suggestions_;
   int selected_index_;
   WebViewImpl* webview_;
-  scoped_ptr<PopupMenuStyle> style_;
+  OwnPtr<PopupMenuStyle> style_;
 };
 
 // Note that focusOnShow is false so that the autocomplete popup is shown not
@@ -346,9 +337,7 @@ namespace WebKit {
 
 // static
 WebView* WebView::create(WebViewClient* client) {
-  WebViewImpl* instance = new WebViewImpl(client);
-  instance->AddRef();
-  return instance;
+  return new WebViewImpl(client);
 }
 
 // static
@@ -375,7 +364,7 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
   if (client_) {
     WebDevToolsAgentClient* tools_client = client_->devToolsAgentClient();
     if (tools_client)
-      devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_client));
+      devtools_agent_.set(new WebDevToolsAgentImpl(this, tools_client));
   }
 
   // Restrict the access to the local file system
@@ -420,19 +409,19 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
   last_mouse_position_ = WebPoint(-1, -1);
 
   // the page will take ownership of the various clients
-  page_.reset(new Page(&chrome_client_impl_,
-                       &context_menu_client_impl_,
-                       &editor_client_impl_,
-                       &drag_client_impl_,
-                       &inspector_client_impl_,
-                       NULL));
+  page_.set(new Page(&chrome_client_impl_,
+                     &context_menu_client_impl_,
+                     &editor_client_impl_,
+                     &drag_client_impl_,
+                     &inspector_client_impl_,
+                     NULL));
 
   page_->backForwardList()->setClient(&back_forward_list_client_impl_);
   page_->setGroupName(pageGroupName);
 }
 
 WebViewImpl::~WebViewImpl() {
-  DCHECK(page_ == NULL);
+  ASSERT(page_ == NULL);
 }
 
 RenderTheme* WebViewImpl::theme() const {
@@ -479,7 +468,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-  last_mouse_down_point_ = gfx::Point(event.x, event.y);
+  last_mouse_down_point_ = WebPoint(event.x, event.y);
 
   // If a text field that has focus is clicked again, we should display the
   // autocomplete popup.
@@ -513,13 +502,13 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   // On Windows, we handle it on mouse up, not down.
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   if (event.button == WebMouseEvent::ButtonRight ||
       (event.button == WebMouseEvent::ButtonLeft &&
        event.modifiers & WebMouseEvent::ControlKey)) {
     MouseContextMenu(event);
   }
-#elif defined(OS_LINUX)
+#elif PLATFORM(LINUX)
   if (event.button == WebMouseEvent::ButtonRight)
     MouseContextMenu(event);
 #endif
@@ -541,7 +530,7 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   else
     target_frame = page_->focusController()->focusedOrMainFrame();
 
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
   target_frame->view()->setCursor(pointerCursor());
 #endif
 
@@ -556,7 +545,7 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-#if defined(OS_LINUX)
+#if PLATFORM(LINUX)
   // If the event was a middle click, attempt to copy text into the focused
   // frame. We execute this before we let the page have a go at the event
   // because the page may change what is focused during in its event handler.
@@ -598,7 +587,7 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   main_frame()->frame()->eventHandler()->handleMouseReleaseEvent(
       PlatformMouseEventBuilder(main_frame()->frameview(), event));
 
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   // On Mac/Linux, we handle it on mouse down, not up.
   if (event.button == WebMouseEvent::ButtonRight)
@@ -612,7 +601,7 @@ void WebViewImpl::MouseWheel(const WebMouseWheelEvent& event) {
 }
 
 bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
-  DCHECK((event.type == WebInputEvent::RawKeyDown) ||
+  ASSERT((event.type == WebInputEvent::RawKeyDown) ||
          (event.type == WebInputEvent::KeyDown) ||
          (event.type == WebInputEvent::KeyUp));
 
@@ -636,7 +625,7 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
   if (!handler)
     return KeyEventDefault(event);
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if PLATFORM(WIN_OS) || PLATFORM(LINUX)
   if (((event.modifiers == 0) && (event.windowsKeyCode == VKEY_APPS)) ||
       ((event.modifiers == WebInputEvent::ShiftKey) &&
        (event.windowsKeyCode == VKEY_F10))) {
@@ -715,7 +704,7 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
 }
 
 bool WebViewImpl::CharEvent(const WebKeyboardEvent& event) {
-  DCHECK(event.type == WebInputEvent::Char);
+  ASSERT(event.type == WebInputEvent::Char);
 
   // Please refer to the comments explaining the suppress_next_keypress_event_
   // member.
@@ -764,7 +753,7 @@ bool WebViewImpl::CharEvent(const WebKeyboardEvent& event) {
 * This function is an ugly copy/paste and should be cleaned up when the
 * WebKitWin version is cleaned: https://bugs.webkit.org/show_bug.cgi?id=20438
 */
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if PLATFORM(WIN_OS) || PLATFORM(LINUX)
 // TODO(pinkerton): implement on non-windows
 bool WebViewImpl::SendContextMenuEvent(const WebKeyboardEvent& event) {
   static const int kContextMenuMargin = 1;
@@ -774,7 +763,7 @@ bool WebViewImpl::SendContextMenuEvent(const WebKeyboardEvent& event) {
     return false;
 
   IntPoint coords(-1, -1);
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
   int right_aligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
 #else
   int right_aligned = 0;
@@ -967,12 +956,12 @@ void WebViewImpl::close() {
       main_frame = WebFrameImpl::FromFrame(page_->mainFrame());
       page_->mainFrame()->loader()->frameDetached();
     }
-    page_.reset();
+    page_.clear();
   }
 
   // Should happen after page_.reset().
   if (devtools_agent_.get())
-    devtools_agent_.reset(NULL);
+    devtools_agent_.clear();
 
   // We drop the client after the page has been destroyed to support the
   // WebFrameClient::didDestroyScriptContext method.
@@ -983,7 +972,7 @@ void WebViewImpl::close() {
   // deleted.
   client_ = NULL;
 
-  Release();  // Balances AddRef from WebView::create
+  deref();  // Balances ref() acquired in WebView::create
 }
 
 void WebViewImpl::resize(const WebSize& new_size) {
@@ -1281,8 +1270,8 @@ void WebViewImpl::setTextDirection(WebTextDirection direction) {
 
 WebSettings* WebViewImpl::settings() {
   if (!web_settings_.get())
-    web_settings_.reset(new WebSettingsImpl(page_->settings()));
-  DCHECK(web_settings_.get());
+    web_settings_.set(new WebSettingsImpl(page_->settings()));
+  ASSERT(web_settings_.get());
   return web_settings_.get();
 }
 
@@ -1527,7 +1516,7 @@ WebDragOperation WebViewImpl::dragTargetDragEnter(
     const WebPoint& client_point,
     const WebPoint& screen_point,
     WebDragOperationsMask operations_allowed) {
-  DCHECK(!current_drag_data_.get());
+  ASSERT(!current_drag_data_.get());
 
   current_drag_data_ =
       webkit_glue::WebDragDataToChromiumDataObject(web_drag_data);
@@ -1561,7 +1550,7 @@ WebDragOperation WebViewImpl::dragTargetDragOver(
     const WebPoint& client_point,
     const WebPoint& screen_point,
     WebDragOperationsMask operations_allowed) {
-  DCHECK(current_drag_data_.get());
+  ASSERT(current_drag_data_.get());
 
   operations_allowed_ = operations_allowed;
   DragData drag_data(
@@ -1588,7 +1577,7 @@ WebDragOperation WebViewImpl::dragTargetDragOver(
 }
 
 void WebViewImpl::dragTargetDragLeave() {
-  DCHECK(current_drag_data_.get());
+  ASSERT(current_drag_data_.get());
 
   DragData drag_data(
       current_drag_data_.get(),
@@ -1608,7 +1597,7 @@ void WebViewImpl::dragTargetDragLeave() {
 
 void WebViewImpl::dragTargetDrop(const WebPoint& client_point,
                                  const WebPoint& screen_point) {
-  DCHECK(current_drag_data_.get());
+  ASSERT(current_drag_data_.get());
 
   // If this webview transitions from the "drop accepting" state to the "not
   // accepting" state, then our IPC message reply indicating that may be in-
@@ -1692,7 +1681,7 @@ void WebViewImpl::applyAutofillSuggestions(
     return;
   }
 
-  DCHECK(default_suggestion_index < static_cast<int>(suggestions.size()));
+  ASSERT(default_suggestion_index < static_cast<int>(suggestions.size()));
 
   if (RefPtr<Frame> focused = page_->focusController()->focusedFrame()) {
     RefPtr<Document> document = focused->document();
@@ -1723,7 +1712,7 @@ void WebViewImpl::applyAutofillSuggestions(
     // The first time the autocomplete is shown we'll create the client and the
     // popup.
     if (!autocomplete_popup_client_.get())
-      autocomplete_popup_client_.reset(new AutocompletePopupMenuClient(this));
+      autocomplete_popup_client_.set(new AutocompletePopupMenuClient(this));
     autocomplete_popup_client_->Init(input_elem,
                                      suggestions,
                                      default_suggestion_index);
@@ -1795,7 +1784,7 @@ void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
     *is_new_navigation = observed_new_navigation_;
 
 #ifndef NDEBUG
-  DCHECK(!observed_new_navigation_ ||
+  ASSERT(!observed_new_navigation_ ||
     page_->mainFrame()->loader()->documentLoader() == new_navigation_loader_);
   new_navigation_loader_ = NULL;
 #endif
@@ -1807,15 +1796,15 @@ bool WebViewImpl::NavigationPolicyFromMouseEvent(unsigned short button,
                                                  bool ctrl, bool shift,
                                                  bool alt, bool meta,
                                                  WebNavigationPolicy* policy) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
+#if PLATFORM(WIN_OS) || PLATFORM(LINUX) || PLATFORM(FREEBSD)
   const bool new_tab_modifier = (button == 1) || ctrl;
-#elif defined(OS_MACOSX)
+#elif PLATFORM(DARWIN)
   const bool new_tab_modifier = (button == 1) || meta;
 #endif
   if (!new_tab_modifier && !shift && !alt)
     return false;
 
-  DCHECK(policy);
+  ASSERT(policy);
   if (new_tab_modifier) {
     if (shift) {
       *policy = WebKit::WebNavigationPolicyNewForegroundTab;
@@ -1837,7 +1826,7 @@ void WebViewImpl::StartDragging(const WebPoint& event_pos,
                                 WebDragOperationsMask mask) {
   if (!client_)
     return;
-  DCHECK(!doing_drag_and_drop_);
+  ASSERT(!doing_drag_and_drop_);
   doing_drag_and_drop_ = true;
   client_->startDragging(event_pos, drag_data, mask);
 }
@@ -1869,7 +1858,7 @@ void WebViewImpl::AutoCompletePopupDidHide() {
 }
 
 void WebViewImpl::SetIgnoreInputEvents(bool new_value) {
-  DCHECK(ignore_input_events_ != new_value);
+  ASSERT(ignore_input_events_ != new_value);
   ignore_input_events_ = new_value;
 }
 
@@ -1882,7 +1871,7 @@ WebKit::NotificationPresenterImpl* WebViewImpl::GetNotificationPresenter() {
 #endif
 
 void WebViewImpl::RefreshAutofillPopup() {
-  DCHECK(autocomplete_popup_showing_);
+  ASSERT(autocomplete_popup_showing_);
 
   // Hide the popup if it has become empty.
   if (autocomplete_popup_client_->listSize() == 0) {

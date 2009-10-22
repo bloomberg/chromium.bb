@@ -67,7 +67,7 @@ using WebKit::WrappedResourceRequest;
 using WebKit::WrappedResourceResponse;
 
 // Domain for internal error codes.
-static const char kInternalErrorDomain[] = "webkit_glue";
+static const char kInternalErrorDomain[] = "WebKit";
 
 // An internal error code.  Used to note a policy change error resulting from
 // dispatchDecidePolicyForMIMEType not passing the PolicyUse option.
@@ -1207,7 +1207,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
     const Vector<String>& param_values,
     const String& mime_type,
     bool load_manually) {
-#if defined(OS_POSIX)
+#if !PLATFORM(WIN_OS)
   // WebCore asks us to make a plugin even if we don't have a
   // registered handler, with a comment saying it's so we can display
   // the broken plugin icon.  In Chromium, we normally register a

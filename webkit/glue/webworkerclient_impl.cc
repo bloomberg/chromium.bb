@@ -6,8 +6,6 @@
 
 #if ENABLE(WORKERS)
 
-#include "base/compiler_specific.h"
-
 #include "DedicatedWorkerThread.h"
 #include "ErrorEvent.h"
 #include "Frame.h"

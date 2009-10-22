@@ -4,19 +4,17 @@
 
 #include "config.h"
 
-#include "AXObjectCache.h"
-
-#undef LOG
-
 #include <vector>
 
-#include "base/logging.h"
+#include "AXObjectCache.h"
+#undef LOG
 
+#include "base/logging.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebKit::WebAccessibilityObject;
 using WebKit::WebFrame;

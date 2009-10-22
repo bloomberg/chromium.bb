@@ -22,7 +22,6 @@
 
 #undef LOG
 
-#include "base/logging.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebMessagePortChannel.h"
 #include "webkit/api/public/WebScreenInfo.h"
@@ -118,7 +117,7 @@ void WebWorkerImpl::PostMessageToWorkerContextTask(
     WebWorkerImpl* this_ptr,
     const WebCore::String& message,
     WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
-  DCHECK(context->isWorkerContext());
+  ASSERT(context->isWorkerContext());
   WebCore::DedicatedWorkerContext* worker_context =
       static_cast<WebCore::DedicatedWorkerContext*>(context);
 
@@ -142,7 +141,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   // Create 'shadow page'. This page is never displayed, it is used to proxy the
   // loading requests from the worker context to the rest of WebKit and Chromium
   // infrastructure.
-  DCHECK(!web_view_);
+  ASSERT(!web_view_);
   web_view_ = WebView::create(NULL);
   WebPreferences().Apply(web_view_);
   web_view_->initializeMainFrame(WorkerWebFrameClient::GetSharedInstance());

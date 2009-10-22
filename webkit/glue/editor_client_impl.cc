@@ -33,6 +33,7 @@
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebEditingAction;
@@ -84,7 +85,7 @@ bool EditorClientImpl::isSelectTrailingWhitespaceEnabled() {
   if (webview_->client())
     return webview_->client()->isSelectTrailingWhitespaceEnabled();
 
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
   return true;
 #else
   return false;
@@ -141,7 +142,7 @@ bool EditorClientImpl::isGrammarCheckingEnabled() {
 }
 
 void EditorClientImpl::toggleGrammarChecking() {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 int EditorClientImpl::spellCheckerDocumentTag() {
@@ -346,7 +347,7 @@ static const unsigned CtrlKey = 1 << 0;
 static const unsigned AltKey = 1 << 1;
 static const unsigned ShiftKey = 1 << 2;
 static const unsigned MetaKey = 1 << 3;
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
 static const unsigned OptionKey  = AltKey;
@@ -370,7 +371,7 @@ struct KeyPressEntry {
 static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_LEFT,   0,                  "MoveLeft"                      },
   { WebCore::VKEY_LEFT,   ShiftKey,           "MoveLeftAndModifySelection"    },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_LEFT,   OptionKey,          "MoveWordLeft"                  },
   { WebCore::VKEY_LEFT,   OptionKey | ShiftKey,
         "MoveWordLeftAndModifySelection"                                      },
@@ -380,7 +381,7 @@ static const KeyDownEntry keyDownEntries[] = {
 #endif
   { WebCore::VKEY_RIGHT,  0,                  "MoveRight"                     },
   { WebCore::VKEY_RIGHT,  ShiftKey,           "MoveRightAndModifySelection"   },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_RIGHT,  OptionKey,          "MoveWordRight"                 },
   { WebCore::VKEY_RIGHT,  OptionKey | ShiftKey,
         "MoveWordRightAndModifySelection"                                     },
@@ -400,12 +401,12 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_HOME,   0,                  "MoveToBeginningOfLine"         },
   { WebCore::VKEY_HOME,   ShiftKey,
         "MoveToBeginningOfLineAndModifySelection"                             },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_LEFT,   CommandKey,         "MoveToBeginningOfLine"         },
   { WebCore::VKEY_LEFT,   CommandKey | ShiftKey,
         "MoveToBeginningOfLineAndModifySelection"                             },
 #endif
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_UP,     CommandKey,         "MoveToBeginningOfDocument"     },
   { WebCore::VKEY_UP,     CommandKey | ShiftKey,
         "MoveToBeginningOfDocumentAndModifySelection"                         },
@@ -417,7 +418,7 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_END,    0,                  "MoveToEndOfLine"               },
   { WebCore::VKEY_END,    ShiftKey,
         "MoveToEndOfLineAndModifySelection"                                   },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_DOWN,   CommandKey,         "MoveToEndOfDocument"           },
   { WebCore::VKEY_DOWN,   CommandKey | ShiftKey,
         "MoveToEndOfDocumentAndModifySelection"                               },
@@ -426,7 +427,7 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_END,    CtrlKey | ShiftKey,
         "MoveToEndOfDocumentAndModifySelection"                               },
 #endif
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_RIGHT,  CommandKey,            "MoveToEndOfLine"            },
   { WebCore::VKEY_RIGHT,  CommandKey | ShiftKey,
         "MoveToEndOfLineAndModifySelection"                                   },
@@ -434,7 +435,7 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_BACK,   0,                  "DeleteBackward"                },
   { WebCore::VKEY_BACK,   ShiftKey,           "DeleteBackward"                },
   { WebCore::VKEY_DELETE, 0,                  "DeleteForward"                 },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { WebCore::VKEY_BACK,   OptionKey,          "DeleteWordBackward"            },
   { WebCore::VKEY_DELETE, OptionKey,          "DeleteWordForward"             },
 #else
@@ -456,7 +457,7 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_INSERT, CtrlKey,            "Copy"                          },
   { WebCore::VKEY_INSERT, ShiftKey,           "Paste"                         },
   { WebCore::VKEY_DELETE, ShiftKey,           "Cut"                           },
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
   { 'C',                  CommandKey,         "Copy"                          },
   { 'V',                  CommandKey,         "Paste"                         },
   { 'V',                  CommandKey | ShiftKey,
@@ -598,13 +599,13 @@ bool EditorClientImpl::handleEditingKeyboardEvent(
     // unexpected behaviour
     if (ch < ' ')
       return false;
-#if !defined(OS_WIN)
+#if !PLATFORM(WIN_OS)
     // Don't insert ASCII character if ctrl w/o alt or meta is on.
     // On Mac, we should ignore events when meta is on (Command-<x>).
     if (ch < 0x80) {
       if (evt->keyEvent()->ctrlKey() && !evt->keyEvent()->altKey())
         return false;
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
       if (evt->keyEvent()->metaKey())
         return false;
 #endif
@@ -625,7 +626,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(
 void EditorClientImpl::handleKeyboardEvent(WebCore::KeyboardEvent* evt) {
   if (evt->keyCode() == WebCore::VKEY_DOWN ||
       evt->keyCode() == WebCore::VKEY_UP) {
-    DCHECK(evt->target()->toNode());
+    ASSERT(evt->target()->toNode());
     ShowFormAutofillForNode(evt->target()->toNode());
   }
 
@@ -671,13 +672,11 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
   if (!listener)
     return;
 
-  string16 value =
-      webkit_glue::StringToString16(input_element->value());
-  listener->OnBlur(input_element, value);
+  listener->OnBlur(input_element, input_element->value());
 }
 
 void EditorClientImpl::textDidChangeInTextField(WebCore::Element* element) {
-  DCHECK(element->hasLocalName(WebCore::HTMLNames::inputTag));
+  ASSERT(element->hasLocalName(WebCore::HTMLNames::inputTag));
   // Note that we only show the autofill popup in this case if the caret is at
   // the end.  This matches FireFox and Safari but not IE.
   Autofill(static_cast<WebCore::HTMLInputElement*>(element),
@@ -736,7 +735,7 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   OwnPtr<AutofillArgs> args(autofill_args_.release());
   WebCore::HTMLInputElement* input_element = args->input_element.get();
 
-  string16 value = webkit_glue::StringToString16(input_element->value());
+  const WebCore::String& value = input_element->value();
 
   // Enforce autofill_on_empty_value and caret_at_end.
   bool is_caret_at_end = args->require_caret_at_end ?
@@ -744,7 +743,7 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
       input_element->selectionEnd() == static_cast<int>(value.length()) :
       true;  // When |require_caret_at_end| is false, just pretend we are at
              // the end.
-  if ((!args->autofill_on_empty_value && value.empty()) || !is_caret_at_end) {
+  if ((!args->autofill_on_empty_value && value.isEmpty()) || !is_caret_at_end) {
     webview_->HideAutoCompletePopup();
     return;
   }
@@ -771,7 +770,8 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
 
   if (webview_->client()) {
     webview_->client()->queryAutofillSuggestions(
-        webkit_glue::NodeToWebNode(input_element), name, value);
+        webkit_glue::NodeToWebNode(input_element), name,
+        webkit_glue::StringToWebString(value));
   }
 }
 
@@ -786,11 +786,12 @@ void EditorClientImpl::OnAutofillSuggestionAccepted(
       WebFrameImpl::FromFrame(text_field->document()->frame());
   webkit_glue::PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(text_field);
-  string16 value = webkit_glue::StringToString16(text_field->value());
   // Password listeners need to autocomplete other fields that depend on the
   // input element with autofill suggestions.
-  if (listener)
-    listener->OnInlineAutocompleteNeeded(text_field, value, false, false);
+  if (listener) {
+    listener->OnInlineAutocompleteNeeded(
+        text_field, text_field->value(), false, false);
+  }
 }
 
 bool EditorClientImpl::doTextFieldCommandFromEvent(
@@ -816,11 +817,11 @@ void EditorClientImpl::textDidChangeInTextArea(WebCore::Element*) {
 }
 
 void EditorClientImpl::ignoreWordInSpellDocument(const WebCore::String&) {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 void EditorClientImpl::learnWord(const WebCore::String&) {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
@@ -867,7 +868,7 @@ WebCore::String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(
 void EditorClientImpl::checkGrammarOfString(const UChar*, int length,
     WTF::Vector<WebCore::GrammarDetail>&, int* badGrammarLocation,
     int* badGrammarLength) {
-  NOTIMPLEMENTED();
+  notImplemented();
   if (badGrammarLocation)
     *badGrammarLocation = 0;
   if (badGrammarLength)
@@ -876,7 +877,7 @@ void EditorClientImpl::checkGrammarOfString(const UChar*, int length,
 
 void EditorClientImpl::updateSpellingUIWithGrammarString(const WebCore::String&,
     const WebCore::GrammarDetail& detail) {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 void EditorClientImpl::updateSpellingUIWithMisspelledWord(
@@ -900,7 +901,7 @@ bool EditorClientImpl::spellingUIIsShowing() {
 
 void EditorClientImpl::getGuessesForWord(const WebCore::String&,
     WTF::Vector<WebCore::String>& guesses) {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 
 void EditorClientImpl::setInputMethodState(bool enabled) {

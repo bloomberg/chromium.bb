@@ -4,8 +4,6 @@
 
 #include "webkit/glue/webmediaplayer_impl.h"
 
-#include "base/command_line.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/media_format.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"

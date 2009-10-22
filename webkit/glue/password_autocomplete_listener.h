@@ -51,9 +51,9 @@ class PasswordAutocompleteListener {
   }
 
   virtual void OnBlur(WebCore::HTMLInputElement* element,
-                      const string16& user_input);
+                      const WebCore::String& user_input);
   virtual void OnInlineAutocompleteNeeded(WebCore::HTMLInputElement* element,
-                                          const string16& user_input,
+                                          const WebCore::String& user_input,
                                           bool backspace_or_delete,
                                           bool with_suggestion_popup);
 

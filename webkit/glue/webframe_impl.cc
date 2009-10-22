@@ -66,16 +66,13 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-#include "build/build_config.h"
-
 #include <algorithm>
 #include <string>
 
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "HTMLFormElement.h"  // need this before Document.h
 #include "Chrome.h"
 #include "ChromeClientChromium.h"
+#include "ChromiumBridge.h"
 #include "ClipboardUtilitiesChromium.h"
 #include "Console.h"
 #include "Document.h"
@@ -86,7 +83,6 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "Editor.h"
 #include "EventHandler.h"
 #include "FormState.h"
-#include "Frame.h"
 #include "FrameChromium.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
@@ -101,7 +97,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "HTMLNames.h"
 #include "HistoryItem.h"
 #include "InspectorController.h"
-#if defined(OS_MACOSX)
+#if PLATFORM(DARWIN)
 #include "LocalCurrentGraphicsContext.h"
 #endif
 #include "markup.h"
@@ -109,7 +105,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "PlatformContextSkia.h"
 #include "PrintContext.h"
 #include "RenderFrame.h"
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
 #include "RenderThemeChromiumWin.h"
 #endif
 #include "RenderView.h"
@@ -129,22 +125,10 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "TextIterator.h"
 #include "TextAffinity.h"
 #include "XPathResult.h"
-
-MSVC_POP_WARNING();
-
+#include <wtf/CurrentTime.h>
 #undef LOG
 
-#include "base/base_switches.h"
-#include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/gfx/rect.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stats_counters.h"
-#include "base/string_util.h"
-#include "net/base/net_errors.h"
-#include "skia/ext/bitmap_platform_device.h"
-#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebForm.h"
@@ -162,22 +146,17 @@ MSVC_POP_WARNING();
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
-#if defined(OS_LINUX)
+#if PLATFORM(LINUX)
 #include <gdk/gdk.h>
 #endif
 
-#if USE(JSC)
-#include "bridge/c/c_instance.h"
-#include "bridge/runtime_object.h"
-#endif
-
-using base::Time;
-
 using WebCore::AtomicString;
 using WebCore::ChromeClientChromium;
+using WebCore::ChromiumBridge;
 using WebCore::Color;
 using WebCore::Document;
 using WebCore::DocumentFragment;
@@ -185,6 +164,7 @@ using WebCore::DocumentLoader;
 using WebCore::ExceptionCode;
 using WebCore::GraphicsContext;
 using WebCore::HTMLFrameOwnerElement;
+using WebCore::HTMLInputElement;
 using WebCore::Frame;
 using WebCore::FrameLoader;
 using WebCore::FrameLoadRequest;
@@ -252,7 +232,7 @@ static const size_t kFrameSeparatorLen = arraysize(kFrameSeparator) - 1;
 //
 // The |frame| must be non-NULL.
 static void FrameContentAsPlainText(size_t max_chars, Frame* frame,
-                                    std::wstring* output) {
+                                    Vector<UChar>* output) {
   Document* doc = frame->document();
   if (!doc)
     return;
@@ -276,7 +256,7 @@ static void FrameContentAsPlainText(size_t max_chars, Frame* frame,
     // size and also copy the results directly into a wstring, avoiding the
     // string conversion.
     for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
-      const uint16* chars = reinterpret_cast<const uint16*>(it.characters());
+      const UChar* chars = it.characters();
       if (!chars) {
         if (it.length() != 0) {
           // It appears from crash reports that an iterator can get into a state
@@ -290,7 +270,7 @@ static void FrameContentAsPlainText(size_t max_chars, Frame* frame,
           // currently understand the conditions for this to occur. Ideally, the
           // iterators would never get into the condition so we should fix them
           // if we can.
-          NOTREACHED();
+          ASSERT_NOT_REACHED();
           break;
         }
 
@@ -299,9 +279,7 @@ static void FrameContentAsPlainText(size_t max_chars, Frame* frame,
       }
       size_t to_append = std::min(static_cast<size_t>(it.length()),
                                   max_chars - output->size());
-      std::wstring wstr;
-      UTF16ToWide(reinterpret_cast<const char16*>(chars), to_append, &wstr);
-      output->append(wstr.c_str(), to_append);
+      output->append(chars, to_append);
       if (output->size() >= max_chars)
         return;  // Filled up the buffer.
     }
@@ -334,7 +312,7 @@ class ChromePrintContext : public WebCore::PrintContext {
         printed_page_width_(0) {
   }
   void begin(float width) {
-    DCHECK(!printed_page_width_);
+    ASSERT(!printed_page_width_);
     printed_page_width_ = width;
     WebCore::PrintContext::begin(printed_page_width_);
   }
@@ -567,7 +545,7 @@ WebSecurityOrigin WebFrameImpl::securityOrigin() const {
 }
 
 void WebFrameImpl::grantUniversalAccess() {
-  DCHECK(frame_ && frame_->document());
+  ASSERT(frame_ && frame_->document());
   if (frame_ && frame_->document()) {
     frame_->document()->securityOrigin()->grantUniversalAccess();
   }
@@ -582,27 +560,15 @@ NPObject* WebFrameImpl::windowObject() const {
 
 void WebFrameImpl::bindToWindowObject(const WebString& name,
                                       NPObject* object) {
-  DCHECK(frame_);
+  ASSERT(frame_);
   if (!frame_ || !frame_->script()->isEnabled())
     return;
-
-  // TODO(mbelshe): Move this to the ScriptController and make it JS neutral.
 
   String key = webkit_glue::WebStringToString(name);
 #if USE(V8)
   frame_->script()->bindToWindowObject(frame_, key, object);
-#endif
-
-#if USE(JSC)
-  JSC::JSGlobalObject* window = frame_->script()->globalObject();
-  JSC::ExecState* exec = window->globalExec();
-  JSC::Bindings::RootObject* root = frame_->script()->bindingRootObject();
-  ASSERT(exec);
-  JSC::RuntimeObjectImp* instance(JSC::Bindings::Instance::createRuntimeObject(
-      exec, JSC::Bindings::CInstance::create(object, root)));
-  JSC::Identifier id(exec, key.latin1().data());
-  JSC::PutPropertySlot slot;
-  window->put(exec, id, instance, slot);
+#else
+  notImplemented();
 #endif
 }
 
@@ -662,7 +628,7 @@ void WebFrameImpl::addMessageToConsole(const WebConsoleMessage& message) {
       webcore_message_level = WebCore::ErrorMessageLevel;
       break;
     default:
-      NOTREACHED();
+      ASSERT_NOT_REACHED();
       return;
   }
 
@@ -680,12 +646,13 @@ void WebFrameImpl::collectGarbage() {
   // TODO(mbelshe): Move this to the ScriptController and make it JS neutral.
 #if USE(V8)
   frame_->script()->collectGarbage();
+#else
+  notImplemented();
 #endif
 }
 
 #if USE(V8)
-  // Returns the V8 context for this frame, or an empty handle if there is
-  // none.
+// Returns the V8 context for this frame, or an empty handle if there is none.
 v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const {
   if (!frame_)
     return v8::Local<v8::Context>();
@@ -722,10 +689,10 @@ bool WebFrameImpl::insertStyleText(
     stylesheet->setAttribute(WebCore::HTMLNames::idAttr,
                              webkit_glue::WebStringToString(id));
   stylesheet->setTextContent(webkit_glue::WebStringToString(css), err);
-  DCHECK(!err) << "Failed to set style element content";
+  ASSERT(!err);
   WebCore::Node* first = document_element->firstChild();
   bool success = document_element->insertBefore(stylesheet, first, err);
-  DCHECK(success) << "Failed to insert stylesheet";
+  ASSERT(success);
   return success;
 }
 
@@ -739,7 +706,7 @@ void WebFrameImpl::reload() {
 void WebFrameImpl::loadRequest(const WebURLRequest& request) {
   const ResourceRequest* resource_request =
       webkit_glue::WebURLRequestToResourceRequest(&request);
-  DCHECK(resource_request);
+  ASSERT(resource_request);
 
   if (resource_request->url().protocolIs("javascript")) {
     LoadJavaScriptURL(resource_request->url());
@@ -753,7 +720,7 @@ void WebFrameImpl::loadRequest(const WebURLRequest& request) {
 void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item) {
   RefPtr<HistoryItem> history_item =
       webkit_glue::WebHistoryItemToHistoryItem(item);
-  DCHECK(history_item.get());
+  ASSERT(history_item.get());
 
   stopLoading();  // Make sure existing activity stops.
 
@@ -783,7 +750,7 @@ void WebFrameImpl::loadData(const WebData& data,
       webkit_glue::WebStringToString(mime_type),
       webkit_glue::WebStringToString(text_encoding),
       webkit_glue::WebURLToKURL(unreachable_url));
-  DCHECK(subst_data.isValid());
+  ASSERT(subst_data.isValid());
 
   stopLoading();  // Make sure existing activity stops.
   frame_->loader()->load(ResourceRequest(webkit_glue::WebURLToKURL(base_url)),
@@ -956,20 +923,20 @@ bool WebFrameImpl::executeCommand(const WebString& name) {
 
   // Since we don't have NSControl, we will convert the format of command
   // string and call the function on Editor directly.
-  string16 command = name;
+  String command = webkit_glue::WebStringToString(name);
 
   // Make sure the first letter is upper case.
-  command.replace(0, 1, 1, toupper(command.at(0)));
+  command.replace(0, 1, command.substring(0, 1).upper());
 
   // Remove the trailing ':' if existing.
-  if (command.at(command.length() - 1) == ':')
-    command.erase(command.length() - 1, 1);
+  if (command[command.length() - 1] == UChar(':'))
+    command = command.substring(0, command.length() - 1);
 
   bool rv = true;
 
   // Specially handling commands that Editor::execCommand does not directly
   // support.
-  if (EqualsASCII(command, "DeleteToEndOfParagraph")) {
+  if (command == "DeleteToEndOfParagraph") {
     WebCore::Editor* editor = frame()->editor();
     if (!editor->deleteWithDirection(WebCore::SelectionController::FORWARD,
                                      WebCore::ParagraphBoundary,
@@ -980,22 +947,22 @@ bool WebFrameImpl::executeCommand(const WebString& name) {
                                   true,
                                   false);
     }
-  } else if (EqualsASCII(command, "Indent")) {
+  } else if (command == "Indent") {
     frame()->editor()->indent();
-  } else if (EqualsASCII(command, "Outdent")) {
+  } else if (command == "Outdent") {
     frame()->editor()->outdent();
-  } else if (EqualsASCII(command, "DeleteBackward")) {
+  } else if (command == "DeleteBackward") {
     rv = frame()->editor()->command(AtomicString("BackwardDelete")).execute();
-  } else if (EqualsASCII(command, "DeleteForward")) {
+  } else if (command == "DeleteForward") {
     rv = frame()->editor()->command(AtomicString("ForwardDelete")).execute();
-  } else if (EqualsASCII(command, "AdvanceToNextMisspelling")) {
+  } else if (command == "AdvanceToNextMisspelling") {
     // False must be passed here, or the currently selected word will never be
     // skipped.
     frame()->editor()->advanceToNextMisspelling(false);
-  } else if (EqualsASCII(command, "ToggleSpellPanel")) {
+  } else if (command == "ToggleSpellPanel") {
     frame()->editor()->showSpellingGuessPanel();
   } else {
-    rv = frame()->editor()->command(AtomicString(command.c_str())).execute();
+    rv = frame()->editor()->command(command).execute();
   }
   return rv;
 }
@@ -1053,7 +1020,7 @@ WebString WebFrameImpl::selectionAsText() const {
     return WebString();
 
   String text = range->text();
-#if defined(OS_WIN)
+#if PLATFORM(WIN_OS)
   WebCore::replaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   WebCore::replaceNBSPWithSpace(text);
@@ -1070,9 +1037,9 @@ WebString WebFrameImpl::selectionAsMarkup() const {
 }
 
 int WebFrameImpl::printBegin(const WebSize& page_size) {
-  DCHECK_EQ(frame()->document()->isFrameSet(), false);
+  ASSERT(!frame()->document()->isFrameSet());
 
-  print_context_.reset(new ChromePrintContext(frame()));
+  print_context_.set(new ChromePrintContext(frame()));
   WebCore::FloatRect rect(0, 0,
                           static_cast<float>(page_size.width),
                           static_cast<float>(page_size.height));
@@ -1087,7 +1054,7 @@ int WebFrameImpl::printBegin(const WebSize& page_size) {
 float WebFrameImpl::getPrintPageShrink(int page) {
   // Ensure correct state.
   if (!print_context_.get() || page < 0) {
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
     return 0;
   }
 
@@ -1097,14 +1064,14 @@ float WebFrameImpl::getPrintPageShrink(int page) {
 float WebFrameImpl::printPage(int page, WebCanvas* canvas) {
   // Ensure correct state.
   if (!print_context_.get() || page < 0 || !frame() || !frame()->document()) {
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
     return 0;
   }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
+#if PLATFORM(WIN_OS) || PLATFORM(LINUX) || PLATFORM(FREEBSD)
   PlatformContextSkia context(canvas);
   GraphicsContext spool(&context);
-#elif defined(OS_MACOSX)
+#elif PLATFORM(DARWIN)
   GraphicsContext spool(canvas);
   WebCore::LocalCurrentGraphicsContext localContext(&spool);
 #endif
@@ -1113,10 +1080,10 @@ float WebFrameImpl::printPage(int page, WebCanvas* canvas) {
 }
 
 void WebFrameImpl::printEnd() {
-  DCHECK(print_context_.get());
+  ASSERT(print_context_.get());
   if (print_context_.get())
     print_context_->end();
-  print_context_.reset(NULL);
+  print_context_.clear();
 }
 
 bool WebFrameImpl::find(int request_id,
@@ -1145,7 +1112,7 @@ bool WebFrameImpl::find(int request_id,
     frame()->selection()->setSelection(selection);
   }
 
-  DCHECK(frame() && frame()->view());
+  ASSERT(frame() && frame()->view());
   bool found = frame()->findString(webcore_string, options.forward,
                                    options.matchCase, wrap_within_frame,
                                    start_in_selection);
@@ -1260,6 +1227,7 @@ void WebFrameImpl::scopeStringMatches(int request_id,
     main_frame_impl->frames_scoping_count_++;
 
     // Now, defer scoping until later to allow find operation to finish quickly.
+    // TODO(darin): Replace with a WebCore Timer.
     MessageLoop::current()->PostTask(FROM_HERE,
         scope_matches_factory_.NewRunnableMethod(
             &WebFrameImpl::scopeStringMatches,
@@ -1283,19 +1251,19 @@ void WebFrameImpl::scopeStringMatches(int request_id,
                            ec);
     if (ec != 0 || ec2 != 0) {
       if (ec2 != 0)  // A non-zero |ec| happens when navigating during search.
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
       return;
     }
   }
 
-  // This timeout controls how long we scope (in ms) before releasing control.
-  // This value does not prevent us from running for longer than this, but it
-  // is periodically checked to see if we have exceeded our allocated time.
-  static const int kTimeout = 100;  // ms
+  // This timeout controls how long we scope before releasing control.  This
+  // value does not prevent us from running for longer than this, but it is
+  // periodically checked to see if we have exceeded our allocated time.
+  const double kTimeout = 0.1;  // seconds
 
   int match_count = 0;
   bool timeout = false;
-  Time start_time = Time::Now();
+  double start_time = currentTime();
   do {
     // Find next occurrence of the search string.
     // TODO(finnur): (http://b/1088245) This WebKit operation may run
@@ -1374,7 +1342,7 @@ void WebFrameImpl::scopeStringMatches(int request_id,
     }
 
     resume_scoping_from_range_ = result_range;
-    timeout = (Time::Now() - start_time).InMilliseconds() >= kTimeout;
+    timeout = (currentTime() - start_time) >= kTimeout;
   } while (!timeout);
 
   // Remember what we search for last time, so we can skip searching if more
@@ -1398,6 +1366,7 @@ void WebFrameImpl::scopeStringMatches(int request_id,
       InvalidateIfNecessary();
 
     // Scoping effort ran out of time, lets ask for another time-slice.
+    // TODO(darin): Replace with a WebCore Timer.
     MessageLoop::current()->PostTask(FROM_HERE,
         scope_matches_factory_.NewRunnableMethod(
             &WebFrameImpl::scopeStringMatches,
@@ -1430,7 +1399,7 @@ void WebFrameImpl::cancelPendingScopingEffort() {
 
 void WebFrameImpl::increaseMatchCount(int count, int request_id) {
   // This function should only be called on the mainframe.
-  DCHECK(!parent());
+  ASSERT(!parent());
 
   total_matchcount_ += count;
 
@@ -1469,10 +1438,9 @@ WebString WebFrameImpl::contentAsText(size_t max_chars) const {
   if (!frame_)
     return WebString();
 
-  std::wstring text;
+  Vector<UChar> text;
   FrameContentAsPlainText(max_chars, frame_, &text);
-  // TODO(darin): Too many string copies!!!
-  return WideToUTF16Hack(text);
+  return webkit_glue::StringToWebString(String::adopt(text));
 }
 
 WebString WebFrameImpl::contentAsMarkup() const {
@@ -1500,12 +1468,12 @@ WebFrameImpl::WebFrameImpl(PassRefPtr<ClientHandle> client_handle)
     frames_scoping_count_(-1),
     scoping_complete_(false),
     next_invalidate_after_(0) {
-  StatsCounter(kWebFrameActiveCount).Increment();
+  ChromiumBridge::incrementStatsCounter(kWebFrameActiveCount);
   live_object_count_++;
 }
 
 WebFrameImpl::~WebFrameImpl() {
-  StatsCounter(kWebFrameActiveCount).Decrement();
+  ChromiumBridge::decrementStatsCounter(kWebFrameActiveCount);
   live_object_count_--;
 
   cancelPendingScopingEffort();
@@ -1580,41 +1548,38 @@ void WebFrameImpl::Layout() {
 }
 
 void WebFrameImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
-  static StatsRate rendering("WebFramePaintTime");
-  StatsScope<StatsRate> rendering_scope(rendering);
-
-  if (!rect.isEmpty()) {
-    IntRect dirty_rect(webkit_glue::WebRectToIntRect(rect));
+  if (rect.isEmpty())
+    return;
+  IntRect dirty_rect(webkit_glue::WebRectToIntRect(rect));
 #if WEBKIT_USING_CG
-    GraphicsContext gc(canvas);
-    WebCore::LocalCurrentGraphicsContext localContext(&gc);
+  GraphicsContext gc(canvas);
+  WebCore::LocalCurrentGraphicsContext localContext(&gc);
 #elif WEBKIT_USING_SKIA
-    PlatformContextSkia context(canvas);
+  PlatformContextSkia context(canvas);
 
-    // PlatformGraphicsContext is actually a pointer to PlatformContextSkia
-    GraphicsContext gc(reinterpret_cast<PlatformGraphicsContext*>(&context));
+  // PlatformGraphicsContext is actually a pointer to PlatformContextSkia
+  GraphicsContext gc(reinterpret_cast<PlatformGraphicsContext*>(&context));
 #else
-    NOTIMPLEMENTED();
+  notImplemented();
 #endif
-    gc.save();
-    if (frame_->document() && frameview()) {
-      gc.clip(dirty_rect);
-      frameview()->paint(&gc, dirty_rect);
-      frame_->page()->inspectorController()->drawNodeHighlight(gc);
-    } else {
-      gc.fillRect(dirty_rect, Color::white);
-    }
-    gc.restore();
+  gc.save();
+  if (frame_->document() && frameview()) {
+    gc.clip(dirty_rect);
+    frameview()->paint(&gc, dirty_rect);
+    frame_->page()->inspectorController()->drawNodeHighlight(gc);
+  } else {
+    gc.fillRect(dirty_rect, Color::white);
   }
+  gc.restore();
 }
 
 void WebFrameImpl::CreateFrameView() {
   ASSERT(frame_);  // If frame_ doesn't exist, we probably didn't init properly.
 
   WebCore::Page* page = frame_->page();
-  DCHECK(page);
+  ASSERT(page);
 
-  DCHECK(page->mainFrame() != NULL);
+  ASSERT(page->mainFrame() != NULL);
 
   bool is_main_frame = frame_ == page->mainFrame();
   if (is_main_frame && frame_->view())
@@ -1733,16 +1698,16 @@ void WebFrameImpl::SetAllowsScrolling(bool flag) {
 }
 
 void WebFrameImpl::RegisterPasswordListener(
-    PassRefPtr<WebCore::HTMLInputElement> input_element,
+    PassRefPtr<HTMLInputElement> input_element,
     webkit_glue::PasswordAutocompleteListener* listener) {
-  RefPtr<WebCore::HTMLInputElement> element = input_element;
-  DCHECK(password_listeners_.find(element) == password_listeners_.end());
+  RefPtr<HTMLInputElement> element = input_element;
+  ASSERT(password_listeners_.find(element) == password_listeners_.end());
   password_listeners_.set(element, listener);
 }
 
 webkit_glue::PasswordAutocompleteListener* WebFrameImpl::GetPasswordListener(
-    WebCore::HTMLInputElement* input_element) {
-  return password_listeners_.get(input_element);
+    HTMLInputElement* input_element) {
+  return password_listeners_.get(RefPtr<HTMLInputElement>(input_element));
 }
 
 // WebFrameImpl protected ------------------------------------------------------
@@ -1839,7 +1804,7 @@ bool WebFrameImpl::ShouldScopeMatches(const string16& search_text) {
   if (!frame() || !hasVisibleContent())
     return false;
 
-  DCHECK(frame()->document() && frame()->view());
+  ASSERT(frame()->document() && frame()->view());
 
   // If the frame completed the scoping operation and found 0 matches the last
   // time it was searched, then we don't have to search it again if the user is

@@ -5,17 +5,9 @@
 #ifndef WEBKIT_GLUE_CHROME_CLIENT_IMPL_H_
 #define WEBKIT_GLUE_CHROME_CLIENT_IMPL_H_
 
-#include "base/compiler_specific.h"
-#include "base/logging.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "ChromeClientChromium.h"
-MSVC_POP_WARNING();
 
 class WebViewImpl;
-
-// TODO(darin): remove this typedef once we roll webkit past r48511
-typedef PlatformWidget PlatformPageClient;
 
 namespace WebCore {
 class HTMLParserQuirks;
@@ -113,8 +105,6 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
                       const WebCore::IntRect& clipRect);
   virtual WebCore::IntPoint screenToWindow(const WebCore::IntPoint&) const;
   virtual WebCore::IntRect windowToScreen(const WebCore::IntRect&) const;
-  // TODO(darin): remove platformWindow method once we roll webkit past r48511
-  virtual PlatformWidget platformWindow() const { return NULL; }
   virtual PlatformPageClient platformPageClient() const { return NULL; }
   virtual void contentsSizeChanged(WebCore::Frame*,
                                    const WebCore::IntSize&) const;
@@ -133,7 +123,7 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
                                      const WebCore::String& databaseName);
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-  virtual void reachedMaxAppCacheSize(int64_t spaceNeeded) { NOTREACHED(); }
+  virtual void reachedMaxAppCacheSize(int64_t space_needed);
 #endif
 
   virtual void requestGeolocationPermissionForFrame(WebCore::Frame*, WebCore::Geolocation*) { }

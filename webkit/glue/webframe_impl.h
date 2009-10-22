@@ -26,19 +26,14 @@
 #ifndef WEBKIT_GLUE_WEBFRAME_IMPL_H_
 #define WEBKIT_GLUE_WEBFRAME_IMPL_H_
 
-#include "base/scoped_ptr.h"
-#include "base/task.h"
-#include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/glue/password_autocomplete_listener.h"
-#include "webkit/glue/webframeloaderclient_impl.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
-#include "ResourceHandleClient.h"
 #include "Frame.h"
 #include "PlatformString.h"
+#include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
-MSVC_POP_WARNING();
+
+#include "base/task.h"
+#include "webkit/api/public/WebFrame.h"
+#include "webkit/glue/webframeloaderclient_impl.h"
 
 class ChromePrintContext;
 class WebViewImpl;
@@ -48,8 +43,6 @@ class BitmapPlatformDevice;
 }
 
 namespace WebCore {
-class Frame;
-class FrameView;
 class HistoryItem;
 class KURL;
 class Node;
@@ -62,6 +55,10 @@ namespace WebKit {
 class WebDataSourceImpl;
 class WebFrameClient;
 class WebView;
+}
+
+namespace webkit_glue {
+class PasswordAutocompleteListener;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
@@ -378,15 +375,13 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().
-  scoped_ptr<ChromePrintContext> print_context_;
+  OwnPtr<ChromePrintContext> print_context_;
 
   // The input fields that are interested in edit events and their associated
   // listeners.
   typedef HashMap<RefPtr<WebCore::HTMLInputElement>,
       webkit_glue::PasswordAutocompleteListener*> PasswordListenerMap;
   PasswordListenerMap password_listeners_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebFrameImpl);
 };
 
 #endif  // WEBKIT_GLUE_WEBFRAME_IMPL_H_

@@ -4,6 +4,8 @@
 
 #include "config.h"
 
+#include <set>
+
 #include "base/compiler_specific.h"
 
 MSVC_PUSH_WARNING_LEVEL(0);

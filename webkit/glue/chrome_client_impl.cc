@@ -46,7 +46,6 @@
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -516,6 +515,12 @@ void ChromeClientImpl::exceededDatabaseQuota(WebCore::Frame* frame,
   WebCore::SecurityOrigin* origin = frame->document()->securityOrigin();
   WebCore::DatabaseTracker::tracker().setQuota(origin, 1024 * 1024 * 5);
 }
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+void ChromeClientImpl::reachedMaxAppCacheSize(int64_t space_needed) {
+  ASSERT_NOT_REACHED();
+}
+#endif
 
 void ChromeClientImpl::runOpenPanel(WebCore::Frame* frame,
   PassRefPtr<WebCore::FileChooser> file_chooser) {

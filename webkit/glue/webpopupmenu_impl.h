@@ -13,9 +13,6 @@
 
 #include "FramelessScrollViewClient.h"
 
-// TODO(darin): remove this typedef once we roll webkit past r48511
-typedef PlatformWidget PlatformPageClient;
-
 namespace WebCore {
 class Frame;
 class FramelessScrollView;
@@ -91,8 +88,6 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
                       const WebCore::IntRect& clip_rect);
   virtual WebCore::IntPoint screenToWindow(const WebCore::IntPoint&) const;
   virtual WebCore::IntRect windowToScreen(const WebCore::IntRect&) const;
-  // TODO(darin): remove platformWindow method once we roll webkit past r48511
-  virtual PlatformWidget platformWindow() const { return NULL; }
   virtual PlatformPageClient platformPageClient() const { return NULL; }
   virtual void scrollRectIntoView(const WebCore::IntRect&,
                                   const WebCore::ScrollView*) const;

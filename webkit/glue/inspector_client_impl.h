@@ -9,8 +9,6 @@
 #include "InspectorController.h"
 #include <wtf/OwnPtr.h>
 
-#include "base/ref_counted.h"
-
 class WebNodeHighlight;
 class WebViewImpl;
 
