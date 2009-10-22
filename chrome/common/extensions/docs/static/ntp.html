@@ -1,0 +1,52 @@
+<div id="pageData-title" class="pageData">New Tab Pages</div>
+
+<p>
+The New Tab Page is the page that appears
+when the user creates a new tab or window.
+You can override the default New Tab Page,
+providing an HTML file to be used instead.
+This HTML file usually has CSS and JavaScript code,
+as well as HTML.
+</p>
+
+<p class="comment">
+[PENDING: Show a screenshot here, featuring both the + and the NTP.]
+</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+Register your New Tab Page in the
+<a href="manifest.html">extension manifest</a>
+like this:
+</p>
+
+<pre>
+"chrome_url_overrides": {
+  "newtab": "newtab.html"
+}
+</pre>
+
+
+<h2 id="examples">Examples</h2>
+
+<p>
+For an example of specifying a very simple New Tab Page,
+see the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/override_igoogle/">override_igoogle</a> example.
+That example uses a 3-line file named <code>redirect.html</code>
+to implement the New Tab Page.
+</p>
+
+<div class="comment">
+
+<p class="tbd">
+[PENDING: Could have Tips section with a <b>Do</b>, <b>Do not</b> list
+similar to browser actions.
+</p>
+
+<p class="tbd">
+[PENDING: Maybe have a gallery of NTPs?]
+</p>
+
+</div>

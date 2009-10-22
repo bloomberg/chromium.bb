@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Formats: Manifest Files</title></head><body>  <div id="container">
+  <title>New Tab Pages</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -87,7 +87,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>Formats: Manifest Files</h1>
+        <h1>New Tab Pages</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -140,7 +140,7 @@
             <ul>
               <li> Formats
                 <ul>
-                  <li class="leftNavSelected">Manifest Files</li>
+                  <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
                   <!-- <li>Packages (.crx)</li> -->
                 </ul>
@@ -155,33 +155,18 @@
 
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
-        <div id="toc">
+        <div id="toc" style="display: none; ">
           <p>Contents</p>
           <ol>
-            <li jsinstance="0">
-              <a href="#overview"> Field summary </a>
+            <li>
+              <a>h2Name</a>
               <ol>
-                <li jsinstance="*0" style="display: none; ">
+                <li>
                   <a>h3Name</a>
                 </li>
               </ol>
-            </li><li jsinstance="*1">
-              <a href="#H2-1">Field details</a>
-              <ol>
-                <li jsinstance="0">
-                  <a href="#description">description</a>
-                </li><li jsinstance="1">
-                  <a href="#icon">icon</a>
-                </li><li jsinstance="2">
-                  <a href="#icons">icons</a>
-                </li><li jsinstance="3">
-                  <a href="#name">name</a>
-                </li><li jsinstance="*4">
-                  <a href="#permissions">permissions</a>
-                </li>
-              </ol>
             </li>
-            <div style="display: none; ">
+            <div>
               <li>
                 <a href="#apiReference">API reference</a>
                 <ol>
@@ -225,141 +210,57 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-title" class="pageData">Formats: Manifest Files</div>
-<div id="pageData-showTOC" class="pageData">true</div>
+        <div id="static"><div id="pageData-title" class="pageData">New Tab Pages</div>
 
 <p>
-Every extension has a
-<a href="http://www.json.org">JSON</a>-formatted manifest file,
-named <code>manifest.json</code>,
-that provides important information about the extension.
+The New Tab Page is the page that appears
+when the user creates a new tab or window.
+You can override the default New Tab Page,
+providing an HTML file to be used instead.
+This HTML file usually has CSS and JavaScript code,
+as well as HTML.
 </p>
 
-<h2 id="overview"> Field summary </h2>
+<p class="comment">
+[PENDING: Show a screenshot here, featuring both the + and the NTP.]
+</p>
+
+<h2 id="manifest">Manifest</h2>
 
 <p>
-The following code shows the supported manifest fields,
-with links to the page that discusses each field.
-The only fields that are required for every extension
-are <b>name</b> and <b>version</b>.
+Register your New Tab Page in the
+<a href="manifest.html">extension manifest</a>
+like this:
 </p>
 
-<pre>{
-  <b>"<a href="#name">name</a>"</b>: "<em>My Extension</em>",
-  <b>"<a href="autoupdate.html">version</a>"</b>: "<em>versionString</em>",
-
-  "<a href="#description">description</a>": "<em>A plain text description</em>",
-  "<a href="#icons">icons</a>": { ... },
-  "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
-
-  "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
-  "<a href="browserAction.html">brower_action</a>": {...},
-  "<a href="ntp.html">chrome_url_overrides</a>": {...},
-  "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="pageAction.html">page_action</a>": {...},
-  "<a href="#permissions">permissions</a>": [...],
-  "<a href="npapi.html">plugins</a>": [...],
-  "<a href="themes.html">theme</a>": {...},
-  "<a href="toolstrip.html">toolstrips</a>": [...]
+<pre>"chrome_url_overrides": {
+  "newtab": "newtab.html"
 }
 </pre>
 
 
-<a name="H2-1"></a><h2>Field details</h2>
+<h2 id="examples">Examples</h2>
 
 <p>
-This section covers fields that aren't described in another page.
-For a complete list of fields,
-with links to where they're described in detail,
-see the <a href="#overview">Field summary</a>.
+For an example of specifying a very simple New Tab Page,
+see the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/override_igoogle/">override_igoogle</a> example.
+That example uses a 3-line file named <code>redirect.html</code>
+to implement the New Tab Page.
 </p>
 
-<h3 id="description">description</h3>
+<div class="comment">
 
-<p>
-A plain text string
-(no HTML or other formatting)
-that describes the extension.
-The description should be suitable for both
-the browser's extension management UI
-and the extension gallery.
+<p class="tbd">
+[PENDING: Could have Tips section with a <b>Do</b>, <b>Do not</b> list
+similar to browser actions.
 </p>
 
-<h3 id="icon">icon</h3>
-
-<p>
-An icon that represents the extension.
-As a rule, you should use the <b>icons</b> field instead,
-so that you can specify icons in multiple sizes.
-Here's an example of using this field:
+<p class="tbd">
+[PENDING: Maybe have a gallery of NTPs?]
 </p>
 
-<pre>"icon": "icon.png",
-</pre>
-
-<h3 id="icons">icons</h3>
-
-<p>
-One or more icons that represent the extension.
-We recommend that you provide icons in four sizes —
-16x16, 32x32, 48x48, and 128x128 pixels.
-The icons can be in any format supported by WebKit,
-such as BMP, GIF, ICO, JPEG, or PNG.
-Here's an example of specifying all four icon sizes:
-</p>
-
-<pre>"icons": { "16": "icon16.png",
-           "32": "icon32.png",
-           "48": "icon48.png",
-          "128": "icon128.png" },
-</pre>
-
-
-<h3 id="name">name</h3>
-
-<p>
-A short, plain text string
-that identifies the extension.
-The name is used in the install dialog,
-extension management UI,
-and the extension gallery.
-</p>
-
-<h3 id="permissions">permissions</h3>
-
-<p>
-The capabilities the extension might use.
-A permission can be either one of a list of known strings
-(currently, either "tabs" or "bookmarks")
-or a match pattern,
-which gives access to one or more hosts.
-The idea is not to restrict what you can do,
-but to give advanced users an indication of what your extension
-will be able to do.
-Permissions might also help to limit damage
-if your extension is attacked.
-</p>
-
-<p>
-Here's an example of the permissions part of a manifest file:
-</p>
-
-<pre>"permissions": [
-  "tabs",
-  "bookmarks",
-  "http://www.blogger.com/",
-  "http://*.google.com/"
-],
-</pre>
-
-<p>
-For more information, see
-<a href="xhr.html">Cross-Origin XMLHttpRequest</a>,
-<a href="windows.html">Windows</a>,
-<a href="tabs.html">Tabs</a>, and
-<a href="bookmarks.html">Bookmarks</a>.
-</p>
-
+</div>
 </div>
 
         <!-- API PAGE -->
