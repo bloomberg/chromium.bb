@@ -155,8 +155,13 @@ class Browser : public TabStripModelDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
-  // Opens the a new application ("thin frame") window for the specified url.
+  // Opens a new application ("thin frame") window for the specified url.
   static void OpenApplicationWindow(Profile* profile, const GURL& url);
+
+#if defined(OS_MACOSX)
+  // Open a new window with help (needed on Mac when there are no windows).
+  static void OpenHelpWindow(Profile* profile);
+#endif
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
 

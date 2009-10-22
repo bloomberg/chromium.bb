@@ -502,12 +502,16 @@
       BrowserList::GetLastActive()->
           ExecuteCommandWithDisposition(IDC_OPEN_FILE, CURRENT_TAB);
       break;
-    case IDC_CLEAR_BROWSING_DATA:
+    case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
       scoped_nsobject<ClearBrowsingDataController> controller(
           [[ClearBrowsingDataController alloc]
               initWithProfile:defaultProfile]);
       [controller runModalDialog];
+      break;
+    }
+    case IDC_HELP_PAGE:
+      Browser::OpenHelpWindow(defaultProfile);
       break;
   };
 }
@@ -538,6 +542,7 @@
   menuState_->UpdateCommandEnabled(IDC_OPEN_FILE, true);
   menuState_->UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
   menuState_->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
+  menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   // TODO(pinkerton): ...more to come...
 }
 

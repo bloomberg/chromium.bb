@@ -319,6 +319,15 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
   tab_contents->view()->SetInitialFocus();
 }
 
+#if defined(OS_MACOSX)
+// static
+void Browser::OpenHelpWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->OpenHelpTab();
+  browser->window()->Show();
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
 
