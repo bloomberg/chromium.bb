@@ -23,7 +23,6 @@ MSVC_POP_WARNING();
 
 #undef LOG
 
-#include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/searchable_form_data.h"
 
@@ -61,7 +60,7 @@ bool IsHTTPFormSubmit(HTMLFormElement* form) {
 // button is returned.
 HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form) {
   HTMLFormControlElement* first_submit_button = NULL;
-  for (WTF::Vector<HTMLFormControlElement*>::const_iterator
+  for (Vector<HTMLFormControlElement*>::const_iterator
        i(form->formElements.begin()); i != form->formElements.end(); ++i) {
     HTMLFormControlElement* form_element = *i;
     if (form_element->isActivatedSubmit()) {
@@ -78,14 +77,16 @@ HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form) {
 // Returns true if the selected state of all the options matches the default
 // selected state.
 bool IsSelectInDefaultState(HTMLSelectElement* select) {
-  RefPtr<HTMLOptionsCollection> options = select->options();
+  const Vector<Element*>& list_items = select->listItems();
   if (select->multiple() || select->size() > 1) {
-    for (Node* node = options->firstItem(); node; node = options->nextItem()) {
-      const HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
-      if (option_element &&
-          option_element->selected() != option_element->defaultSelected()) {
+    for (Vector<Element*>::const_iterator i(list_items.begin());
+         i != list_items.end(); ++i) {
+      if (!(*i)->hasLocalName(HTMLNames::optionTag))
+        continue;
+      const HTMLOptionElement* option_element =
+          static_cast<const HTMLOptionElement*>(*i);
+      if (option_element->selected() != option_element->defaultSelected())
         return false;
-      }
     }
     return true;
   }
@@ -93,10 +94,12 @@ bool IsSelectInDefaultState(HTMLSelectElement* select) {
   // The select is rendered as a combobox (called menulist in WebKit). At
   // least one item is selected, determine which one.
   const HTMLOptionElement* initial_selected = NULL;
-  for (Node* node = options->firstItem(); node; node = options->nextItem()) {
-    const HTMLOptionElement* option_element = CastToHTMLOptionElement(node);
-    if (!option_element)
+  for (Vector<Element*>::const_iterator i(list_items.begin());
+       i != list_items.end(); ++i) {
+    if (!(*i)->hasLocalName(HTMLNames::optionTag))
       continue;
+    const HTMLOptionElement* option_element =
+        static_cast<const HTMLOptionElement*>(*i);
     if (option_element->defaultSelected()) {
       // The page specified the option to select.
       initial_selected = option_element;
@@ -145,7 +148,7 @@ bool HasSuitableTextElement(HTMLFormElement* form,
   *encoding_name = encoding.name();
 
   HTMLInputElement* text_element = NULL;
-  for (WTF::Vector<HTMLFormControlElement*>::const_iterator
+  for (Vector<HTMLFormControlElement*>::const_iterator
        i(form->formElements.begin()); i != form->formElements.end(); ++i) {
     HTMLFormControlElement* form_element = *i;
     if (form_element->disabled() || form_element->name().isNull())
@@ -178,7 +181,7 @@ bool HasSuitableTextElement(HTMLFormElement* form,
     if (!form_element->appendFormData(data_list, false))
       continue;
 
-    const WTF::Vector<FormDataList::Item>& item_list = data_list.list();
+    const Vector<FormDataList::Item>& item_list = data_list.list();
     if (is_text_element && !item_list.isEmpty()) {
       if (text_element != NULL) {
         // The auto-complete bar only knows how to fill in one value.
@@ -187,7 +190,7 @@ bool HasSuitableTextElement(HTMLFormElement* form,
       }
       text_element = static_cast<HTMLInputElement*>(form_element);
     }
-    for (WTF::Vector<FormDataList::Item>::const_iterator j(item_list.begin());
+    for (Vector<FormDataList::Item>::const_iterator j(item_list.begin());
          j != item_list.end(); ++j) {
       // Handle ISINDEX / <input name=isindex> specially, but only if it's
       // the first entry.
