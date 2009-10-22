@@ -41,8 +41,8 @@ NaClProcessHost::NaClProcessHost(
 bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
                              const int descriptor,
                              nacl::FileDescriptor* imc_handle,
-                             nacl::FileDescriptor* nacl_process_handle,
-                             int* nacl_process_id) {
+                             base::ProcessHandle* nacl_process_handle,
+                             base::ProcessId* nacl_process_id) {
 #ifdef DISABLE_NACL
   NOTIMPLEMENTED() << "Native Client disabled at build time";
   return false;
@@ -51,7 +51,7 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
   bool success = false;
 
   NATIVE_HANDLE(*imc_handle) = nacl::kInvalidHandle;
-  NATIVE_HANDLE(*nacl_process_handle) = nacl::kInvalidHandle;
+  *nacl_process_handle = nacl::kInvalidHandle;
   *nacl_process_id = 0;
 
   // Create a connected socket
@@ -97,8 +97,9 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
   imc_handle->fd = pair[0];
   imc_handle->auto_close = true;
 
-  // Process handles are used on Windows only
-  NATIVE_HANDLE(*nacl_process_handle) = nacl::kInvalidHandle;
+  // We use pid as process handle on Posix
+  *nacl_process_handle = handle();
+
 #endif
 
   // Get the pid of the NaCl process

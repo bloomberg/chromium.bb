@@ -28,8 +28,8 @@ class NaClProcessHost : public ChildProcessHost {
   bool Launch(ResourceMessageFilter* renderer_msg_filter,
               const int descriptor,
               nacl::FileDescriptor* handle,
-              nacl::FileDescriptor* nacl_process_handle,
-              int* nacl_process_id);
+              base::ProcessHandle* nacl_process_handle,
+              base::ProcessId* nacl_process_id);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
 

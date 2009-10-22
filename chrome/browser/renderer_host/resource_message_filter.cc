@@ -606,8 +606,8 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
 void ResourceMessageFilter::OnLaunchNaCl(const std::wstring& url,
     int channel_descriptor,
     nacl::FileDescriptor* imc_handle,
-    nacl::FileDescriptor* nacl_process_handle,
-    int* nacl_process_id) {
+    base::ProcessHandle* nacl_process_handle,
+    base::ProcessId* nacl_process_id) {
   NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_,
                                                    url);
   nacl_host->Launch(this,

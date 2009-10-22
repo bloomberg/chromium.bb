@@ -142,17 +142,17 @@ bool RenderProcess::LaunchNaClProcess(const char* url,
   // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
   // base::FileDescriptor
   nacl::FileDescriptor imc_descriptor;
-  nacl::FileDescriptor nacl_process_descriptor;
+  base::ProcessHandle nacl_process;
   if (!RenderThread::current()->Send(
     new ViewHostMsg_LaunchNaCl(ASCIIToWide(url),
-                               imc_fd,
-                               &imc_descriptor,
-                               &nacl_process_descriptor,
-                               nacl_process_id))) {
+        imc_fd,
+        &imc_descriptor,
+        &nacl_process,
+        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
     return false;
   }
   *imc_handle = NATIVE_HANDLE(imc_descriptor);
-  *nacl_process_handle = NATIVE_HANDLE(nacl_process_descriptor);
+  *nacl_process_handle = nacl_process;
   return true;
 }
 

@@ -156,8 +156,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     nacl::FileDescriptor* handle,
-                    nacl::FileDescriptor* nacl_process_handle,
-                    int* nacl_process_id);
+                    base::ProcessHandle* nacl_process_handle,
+                    base::ProcessId* nacl_process_id);
   void OnCreateDedicatedWorker(const GURL& url,
                                int render_view_route_id,
                                int* route_id);
