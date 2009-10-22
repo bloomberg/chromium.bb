@@ -2129,6 +2129,11 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
   window()->ShowRepostFormWarningDialog(tab_contents);
 }
 
+bool Browser::ShouldAddNavigationsToHistory() const {
+  // Don't update history if running as app.
+  return !IsApplication();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SelectFileDialog::Listener implementation:
 

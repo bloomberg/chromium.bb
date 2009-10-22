@@ -2069,7 +2069,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
 
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.
-  if (params.should_update_history) {
+  if (params.should_update_history &&
+      (!delegate() || delegate()->ShouldAddNavigationsToHistory())) {
     // Most of the time, the displayURL matches the loaded URL, but for about:
     // URLs, we use a data: URL as the real value.  We actually want to save
     // the about: URL to the history db and keep the data: URL hidden. This is

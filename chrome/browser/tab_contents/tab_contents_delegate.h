@@ -237,6 +237,9 @@ class TabContentsDelegate {
     return true;
   }
 
+  // Returns whether this tab contents should add navigations to history.
+  virtual bool ShouldAddNavigationsToHistory() const { return true; }
+
  protected:
   ~TabContentsDelegate() {}
 };

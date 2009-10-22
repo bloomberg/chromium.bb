@@ -547,6 +547,7 @@ class Browser : public TabStripModelDelegate,
                             bool show_history);
   virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
+  virtual bool ShouldAddNavigationsToHistory() const;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
