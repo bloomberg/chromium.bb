@@ -4707,7 +4707,6 @@
           'sources!': [
             'browser/views/bookmark_context_menu_test.cc',
             'browser/back_forward_menu_model_unittest.cc',
-            'browser/download/download_manager_unittest.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/tab_contents/navigation_controller_unittest.cc',
