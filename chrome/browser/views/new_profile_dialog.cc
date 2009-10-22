@@ -65,12 +65,14 @@ bool NewProfileDialog::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
     std::wstring profile_name = message_box_view_->GetInputText();
-    // TODO(munjal): Refactor the function ReplaceIllegalCharacters in
-    // file_util to something that just checks if there are illegal chars
-    // since that's what we really need. Also, replaceIllegalChars seems to
-    // be expensive since it builds a list of illegal characters for each call.
-    // So at the least fix that.
-    file_util::ReplaceIllegalCharacters(&profile_name, L'_');
+
+#if defined(OS_POSIX)
+    std::string profile_name_narrow = WideToUTF8(profile_name);
+    file_util::ReplaceIllegalCharactersInPath(&profile_name_narrow, '_');
+    profile_name = UTF8ToWide(profile_name_narrow);
+#else
+    file_util::ReplaceIllegalCharactersInPath(&profile_name, '_');
+#endif
     return !profile_name.empty() &&
         profile_name == message_box_view_->GetInputText();
   }

@@ -263,7 +263,13 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   filename += L"_";
   filename += StringPrintf(L"%02d", page.page_number());
   filename += L"_.emf";
-  file_util::ReplaceIllegalCharacters(&filename, '_');
+#if defined(OS_WIN)
+  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+#else
+  std::string narrow_filename = WideToUTF8(filename);
+  file_util::ReplaceIllegalCharactersInPath(&narrow_filename, '_');
+  filename = UTF8ToWide(narrow_filename);
+#endif
   std::wstring path(g_debug_dump_info->debug_dump_path);
   file_util::AppendToPath(&path, filename);
 #if defined(OS_WIN)

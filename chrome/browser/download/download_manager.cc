@@ -1212,11 +1212,10 @@ void DownloadManager::GenerateExtension(
 
 void DownloadManager::GenerateFilename(DownloadCreateInfo* info,
                                        FilePath* generated_name) {
-  *generated_name = FilePath::FromWStringHack(
-      net::GetSuggestedFilename(GURL(info->url),
-                                info->content_disposition,
-                                info->referrer_charset,
-                                L"download"));
+  *generated_name = net::GetSuggestedFilename(GURL(info->url),
+                                              info->content_disposition,
+                                              info->referrer_charset,
+                                              "download");
   DCHECK(!generated_name->empty());
 
   GenerateSafeFilename(info->mime_type, generated_name);

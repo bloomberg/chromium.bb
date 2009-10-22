@@ -403,7 +403,7 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
 std::string GetNameForURL(const GURL& url) {
   if (url.is_valid()) {
     return WideToUTF8(net::GetSuggestedFilename(
-        url, std::string(), std::string(), std::wstring()));
+        url, std::string(), std::string(), "").ToWStringHack());
   } else {
     return l10n_util::GetStringUTF8(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
   }

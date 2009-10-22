@@ -703,15 +703,15 @@ static void CreateValidFileNameFromTitle(const GURL& url,
                                          std::wstring* validated) {
   if (title.empty()) {
     if (url.is_valid()) {
-      *validated = net::GetSuggestedFilename(
-          url, std::string(), std::string(), std::wstring());
+      *validated = net::GetSuggestedFilename(url, std::string(),
+                                             std::string(), "").ToWStringHack();
     } else {
       // Nothing else can be done, just use a default.
       *validated = l10n_util::GetString(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
     }
   } else {
     *validated = title;
-    file_util::ReplaceIllegalCharacters(validated, '-');
+    file_util::ReplaceIllegalCharactersInPath(validated, '-');
   }
   static const wchar_t extension[] = L".url";
   static const size_t max_length = MAX_PATH - arraysize(extension);

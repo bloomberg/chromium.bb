@@ -303,17 +303,15 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 
 FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
-  std::wstring filename_wide =
-      std::wstring(chrome::kBrowserProcessExecutableName) + L"-" +
-      UTF8ToWide(url.spec());
-  file_util::ReplaceIllegalCharacters(&filename_wide, '_');
+  std::string filename =
+      WideToUTF8(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
+  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
 
   FilePath desktop_path;
   if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
     return FilePath();
 
-  FilePath filepath = desktop_path.Append(
-      FilePath::FromWStringHack(filename_wide));
+  FilePath filepath = desktop_path.Append(filename);
   FilePath alternative_filepath(filepath.value() + ".desktop");
   for (size_t i = 1; i < 100; ++i) {
     if (file_util::PathExists(FilePath(alternative_filepath))) {

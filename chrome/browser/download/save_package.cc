@@ -65,7 +65,7 @@ namespace {
 
 // Default name which will be used when we can not get proper name from
 // resource URL.
-const wchar_t kDefaultSaveName[] = L"saved_resource";
+const char kDefaultSaveName[] = "saved_resource";
 
 const FilePath::CharType kDefaultHtmlExtension[] =
 #if defined(OS_WIN)
@@ -336,8 +336,8 @@ bool SavePackage::GenerateFilename(const std::string& disposition,
                                    FilePath::StringType* generated_name) {
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GetSuggestedFilename.
-  FilePath file_path = FilePath::FromWStringHack(
-      net::GetSuggestedFilename(url, disposition, "", kDefaultSaveName));
+  FilePath file_path = net::GetSuggestedFilename(url, disposition, "",
+                                                 kDefaultSaveName);
 
   DCHECK(!file_path.empty());
   FilePath::StringType pure_file_name =
@@ -1033,13 +1033,9 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(const FilePath& name,
   if (can_save_as_complete)
     name_with_proper_ext = EnsureHtmlExtension(name_with_proper_ext);
 
-  std::wstring file_name = name_with_proper_ext.ToWStringHack();
-  // TODO(port): we need a version of ReplaceIllegalCharacters() that takes
-  // FilePaths.
-  file_util::ReplaceIllegalCharacters(&file_name, L' ');
-  TrimWhitespace(file_name, TRIM_ALL, &file_name);
-
-  return FilePath::FromWStringHack(file_name);
+  FilePath::StringType file_name = name_with_proper_ext.value();
+  file_util::ReplaceIllegalCharactersInPath(&file_name, ' ');
+  return FilePath(file_name);
 }
 
 FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {

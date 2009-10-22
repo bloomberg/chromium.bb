@@ -52,8 +52,7 @@ FilePath GetFileNameFromDragData(
 
   if (file_name.empty()) {
     // Retrieve the name from the URL.
-    file_name = FilePath::FromWStringHack(
-        net::GetSuggestedFilename(drop_data.url, "", "", L""));
+    file_name = net::GetSuggestedFilename(drop_data.url, "", "", "");
   }
 
   file_name = file_name.ReplaceExtension([SysUTF16ToNSString(

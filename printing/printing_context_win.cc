@@ -284,7 +284,7 @@ PrintingContext::Result PrintingContext::NewDocument(
     filename += document_name;
     filename += L"_";
     filename += L"buffer.prn";
-    file_util::ReplaceIllegalCharacters(&filename, '_');
+    file_util::ReplaceIllegalCharactersInPath(&filename, '_');
     file_util::AppendToPath(&debug_dump_path, filename);
     di.lpszOutput = debug_dump_path.c_str();
   }

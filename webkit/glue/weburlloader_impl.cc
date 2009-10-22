@@ -167,8 +167,13 @@ void PopulateURLResponse(
   // pass it to GetSuggestedFilename.
   std::string value;
   if (headers->EnumerateHeader(NULL, "content-disposition", &value)) {
-    response->setSuggestedFileName(WideToUTF16Hack(
-        net::GetSuggestedFilename(url, value, "", std::wstring())));
+#if defined(OS_WIN)
+    response->setSuggestedFileName(
+        net::GetSuggestedFilename(url, value, "", "").value());
+#else
+    response->setSuggestedFileName(UTF8ToUTF16(
+        net::GetSuggestedFilename(url, value, "", "").value()));
+#endif
   }
 
   Time time_val;
