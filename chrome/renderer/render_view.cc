@@ -217,6 +217,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       last_page_id_sent_to_browser_(-1),
       last_indexed_page_id_(-1),
       opened_by_user_gesture_(true),
+      opener_suppressed_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       devtools_agent_(NULL),
       devtools_client_(NULL),
@@ -1293,6 +1294,7 @@ WebView* RenderView::createView(WebFrame* creator) {
 
   int32 routing_id = MSG_ROUTING_NONE;
   bool user_gesture = creator->isProcessingUserGesture();
+  bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
 
   render_thread_->Send(
       new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id));
@@ -1307,6 +1309,9 @@ WebView* RenderView::createView(WebFrame* creator) {
                                         shared_popup_counter_,
                                         routing_id);
   view->opened_by_user_gesture_ = user_gesture;
+
+  // Record whether the creator frame is trying to suppress the opener field.
+  view->opener_suppressed_ = opener_suppressed;
 
   // Record the security origin of the creator.
   GURL creator_url(creator->securityOrigin().toString().utf8());
@@ -1886,6 +1891,9 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // The parent page must open a new tab to about:blank, set the new tab's
   // window.opener to null, and then redirect the tab to a cross-site URL using
   // JavaScript.
+  //
+  // TODO(creis): Deprecate this logic once we can rely on rel=noreferrer
+  // (see below).
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
       GURL(frame->url()) == GURL(chrome::kAboutBlankURL) &&
@@ -1903,7 +1911,34 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       // Must be a JavaScript navigation, which appears as "other".
       type == WebKit::WebNavigationTypeOther;
-  if (is_fork) {
+
+  // Recognize if this navigation is from a link with rel=noreferrer and
+  // target=_blank attributes, in which case the opener will be suppressed. If
+  // so, it is safe to load cross-site pages in a separate process, so we
+  // should let the browser handle it.
+  bool is_noreferrer_and_blank_target =
+      // Frame should be top level and not yet navigated.
+      frame->parent() == NULL &&
+      frame->url().isEmpty() &&
+      historyBackListCount() < 1 &&
+      historyForwardListCount() < 1 &&
+      // Links with rel=noreferrer will have no Referer field, and their
+      // resulting frame will have its window.opener suppressed.
+      // TODO(creis): should add a request.httpReferrer() method to help avoid
+      // typos on the unusual spelling of Referer.
+      request.httpHeaderField(WebString::fromUTF8("Referer")).isNull() &&
+      opener_suppressed_ &&
+      frame->opener() == NULL &&
+      // Links with target=_blank will have no name.
+      frame->name().isNull() &&
+      // Another frame (with a non-empty creator) should have initiated the
+      // request, targeted at this frame.
+      !creator_url_.is_empty() &&
+      is_content_initiated &&
+      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      type == WebKit::WebNavigationTypeOther;
+
+  if (is_fork || is_noreferrer_and_blank_target) {
     // Open the URL via the browser, not via WebKit.
     OpenURL(url, GURL(), default_policy);
     return WebKit::WebNavigationPolicyIgnore;

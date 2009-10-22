@@ -880,6 +880,10 @@ bool WebFrameImpl::isProcessingUserGesture() const {
   return frame()->loader()->isProcessingUserGesture();
 }
 
+bool WebFrameImpl::willSuppressOpenerInNewFrame() const {
+  return frame()->loader()->suppressOpenerInNewFrame();
+}
+
 void WebFrameImpl::replaceSelection(const WebString& wtext) {
   String text = webkit_glue::WebStringToString(wtext);
   RefPtr<DocumentFragment> fragment = createFragmentFromText(
