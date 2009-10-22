@@ -117,8 +117,8 @@ class FakeServerChange {
   }
 
   // Pretend that the server told the syncer to add a bookmark object.
-  int64 Add(const string16& title,
-            const string16& url,
+  int64 Add(const std::wstring& title,
+            const std::wstring& url,
             bool is_folder,
             int64 parent_id,
             int64 predecessor_id) {
@@ -136,10 +136,11 @@ class FakeServerChange {
     EXPECT_EQ(node.GetPredecessorId(), predecessor_id);
     EXPECT_EQ(node.GetParentId(), parent_id);
     node.SetIsFolder(is_folder);
-    node.SetTitle(title.c_str());
+    node.SetTitle(WideToUTF16(title).c_str());
     if (!is_folder) {
-      GURL gurl(url);
-      node.SetURL(url.c_str());
+      string16 url16(WideToUTF16(url));
+      GURL gurl(url16);
+      node.SetURL(url16.c_str());
     }
     sync_api::SyncManager::ChangeRecord record;
     record.action = sync_api::SyncManager::ChangeRecord::ACTION_ADD;
@@ -149,15 +150,15 @@ class FakeServerChange {
   }
 
   // Add a bookmark folder.
-  int64 AddFolder(const string16& title,
+  int64 AddFolder(const std::wstring& title,
                   int64 parent_id,
                   int64 predecessor_id) {
-    return Add(title, string16(), true, parent_id, predecessor_id);
+    return Add(title, std::wstring(), true, parent_id, predecessor_id);
   }
 
   // Add a bookmark.
-  int64 AddURL(const string16& title,
-               const string16& url,
+  int64 AddURL(const std::wstring& title,
+               const std::wstring& url,
                int64 parent_id,
                int64 predecessor_id) {
     return Add(title, url, false, parent_id, predecessor_id);
@@ -190,23 +191,23 @@ class FakeServerChange {
   }
 
   // Set a new title value, and return the old value.
-  string16 ModifyTitle(int64 id, const string16& new_title) {
+  std::wstring ModifyTitle(int64 id, const std::wstring& new_title) {
     sync_api::WriteNode node(trans_);
     EXPECT_TRUE(node.InitByIdLookup(id));
-    string16 old_title = node.GetTitle();
-    node.SetTitle(new_title.c_str());
+    std::wstring old_title = UTF16ToWide(node.GetTitle());
+    node.SetTitle(WideToUTF16(new_title).c_str());
     SetModified(id);
     return old_title;
   }
 
   // Set a new URL value, and return the old value.
   // TODO(ncarter): Determine if URL modifications are even legal.
-  string16 ModifyURL(int64 id, const string16& new_url) {
+  std::wstring ModifyURL(int64 id, const std::wstring& new_url) {
     sync_api::WriteNode node(trans_);
     EXPECT_TRUE(node.InitByIdLookup(id));
     EXPECT_FALSE(node.GetIsFolder());
-    string16 old_url = node.GetURL();
-    node.SetURL(new_url.c_str());
+    std::wstring old_url = UTF16ToWide(node.GetURL());
+    node.SetURL(WideToUTF16(new_url).c_str());
     SetModified(id);
     return old_url;
   }
@@ -325,7 +326,7 @@ class ProfileSyncServiceTest : public testing::Test {
     // Non-root node titles and parents must match.
     if (bnode != model_->GetBookmarkBarNode() &&
         bnode != model_->other_node()) {
-      EXPECT_EQ(bnode->GetTitle(), gnode.GetTitle());
+      EXPECT_EQ(bnode->GetTitle(), UTF16ToWide(gnode.GetTitle()));
       EXPECT_EQ(associator()->GetBookmarkNodeFromSyncId(gnode.GetParentId()),
         bnode->GetParent());
     }
@@ -396,14 +397,14 @@ class ProfileSyncServiceTest : public testing::Test {
     EXPECT_EQ(sync_id, sync_api::kInvalidId);
   }
 
-  void ExpectBrowserNodeTitle(int64 sync_id, const string16& title) {
+  void ExpectBrowserNodeTitle(int64 sync_id, const std::wstring& title) {
     const BookmarkNode* bnode =
         associator()->GetBookmarkNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
     EXPECT_EQ(bnode->GetTitle(), title);
   }
 
-  void ExpectBrowserNodeURL(int64 sync_id, const string16& url) {
+  void ExpectBrowserNodeURL(int64 sync_id, const std::string& url) {
     const BookmarkNode* bnode =
         associator()->GetBookmarkNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
@@ -494,11 +495,11 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
   ExpectSyncerNodeMatching(folder2);
   ExpectModelMatch();
   const BookmarkNode* url1 = model_->AddURL(
-      folder, 0, L"Internets #1 Pies Site", GURL(L"http://www.easypie.com/"));
+      folder, 0, L"Internets #1 Pies Site", GURL("http://www.easypie.com/"));
   ExpectSyncerNodeMatching(url1);
   ExpectModelMatch();
   const BookmarkNode* url2 = model_->AddURL(
-      folder, 1, L"Airplanes", GURL(L"http://www.easyjet.com/"));
+      folder, 1, L"Airplanes", GURL("http://www.easyjet.com/"));
   ExpectSyncerNodeMatching(url2);
   ExpectModelMatch();
 
@@ -541,14 +542,14 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   // u3 is a duplicate URL
   int64 u3 = adds.AddURL(L"Nifty2", L"ftp://nifty.andrew.cmu.edu/", f1, u2);
   // u4 is a duplicate title, different URL.
-  int64 u4 = adds.AddURL(L"Some old site", L"http://slog.thestranger.com/",
-                         bookmark_bar_id(), u1);
+  adds.AddURL(L"Some old site", L"http://slog.thestranger.com/",
+              bookmark_bar_id(), u1);
   // u5 tests an empty-string title.
-  string16 javascript_url(L"javascript:(function(){var w=window.open(" \
+  std::wstring javascript_url(L"javascript:(function(){var w=window.open(" \
                          L"'about:blank','gnotesWin','location=0,menubar=0," \
                          L"scrollbars=0,status=0,toolbar=0,width=300," \
                          L"height=300,resizable');});");
-  int64 u5 = adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
+  adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
 
   vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.
@@ -566,12 +567,12 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   FakeServerChange mods(&trans);
   // Mess with u2, and move it into empty folder f2
   // TODO(ncarter): Determine if we allow ModifyURL ops or not.
-  /* string16 u2_old_url = mods.ModifyURL(u2, L"http://www.google.com"); */
-  string16 u2_old_title = mods.ModifyTitle(u2, L"The Google");
+  /* std::wstring u2_old_url = mods.ModifyURL(u2, L"http://www.google.com"); */
+  std::wstring u2_old_title = mods.ModifyTitle(u2, L"The Google");
   int64 u2_old_parent = mods.ModifyPosition(u2, f2, 0);
 
   // Now move f1 after u2.
-  string16 f1_old_title = mods.ModifyTitle(f1, L"Server Folder C");
+  std::wstring f1_old_title = mods.ModifyTitle(f1, L"Server Folder C");
   int64 f1_old_parent = mods.ModifyPosition(f1, f2, u2);
 
   // Then add u3 after f1.
@@ -622,7 +623,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
 
   // Stress the immediate children of other_node because that's where
   // ApplyModelChanges puts a temporary foster parent node.
-  string16 url(L"http://dev.chromium.org/");
+  std::wstring url(L"http://dev.chromium.org/");
   FakeServerChange adds(&trans);
   int64 f0 = other_bookmarks_id();                 // + other_node
   int64 f1 = adds.AddFolder(L"f1",      f0, 0);    //   + f1
@@ -672,7 +673,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
     FakeServerChange adds(&trans);
     std::string url("http://dev.chromium.org");
     EXPECT_NE(GURL(url).spec(), url);
-    int64 u1 = adds.AddURL(L"u1", UTF8ToWide(url), other_bookmarks_id(), 0);
+    adds.AddURL(L"u1", UTF8ToWide(url), other_bookmarks_id(), 0);
 
     adds.ApplyPendingChanges(change_processor());
 
@@ -702,7 +703,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
 
     FakeServerChange adds(&trans);
     EXPECT_FALSE(GURL("x").is_valid());
-    int64 u1 = adds.AddURL(L"u1", L"x", other_bookmarks_id(), 0);
+    adds.AddURL(L"u1", L"x", other_bookmarks_id(), 0);
 
     adds.ApplyPendingChanges(change_processor());
 
@@ -731,7 +732,7 @@ TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
-  char16* names[] = {
+  const wchar_t* names[] = {
       // The empty string.
       L"",
       // Illegal Windows filenames.
@@ -749,13 +750,13 @@ TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
   };
   // Create both folders and bookmarks using each name.
   GURL url("http://www.doublemint.com");
-  for (int i = 0; i < arraysize(names); ++i) {
+  for (size_t i = 0; i < arraysize(names); ++i) {
     model_->AddGroup(model_->other_node(), 0, names[i]);
     model_->AddURL(model_->other_node(), 0, names[i], url);
   }
 
   // Verify that the browser model matches the sync model.
-  EXPECT_EQ(model_->other_node()->GetChildCount(), 2*arraysize(names));
+  EXPECT_TRUE(model_->other_node()->GetChildCount() == 2*arraysize(names));
   ExpectModelMatch();
 }
 
@@ -777,7 +778,7 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    string16 title = string16(L"Pre-insertion ") + IntToWString(i);
+    std::wstring title = std::wstring(L"Pre-insertion ") + IntToWString(i);
     model_->AddGroup(model_->other_node(), 1, title);
     count++;
   }
@@ -785,7 +786,7 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   // Test insertion in second half of range by repeatedly inserting in
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    string16 title = string16(L"Post-insertion ") + IntToWString(i);
+    std::wstring title = std::wstring(L"Post-insertion ") + IntToWString(i);
     model_->AddGroup(model_->other_node(), count - 1, title);
     count++;
   }
@@ -843,8 +844,8 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
 }
 
 struct TestData {
-  const char16* title;
-  const char16* url;
+  const wchar_t* title;
+  const char* url;
 };
 
 // TODO(ncarter): Integrate the existing TestNode/PopulateNodeFromString code
@@ -901,49 +902,49 @@ namespace {
 //         +-- dupu2, http://www.dupu1.com/
 //
 static TestData kBookmarkBarChildren[] = {
-  { L"u2", L"http://www.u2.com/" },
+  { L"u2", "http://www.u2.com/" },
   { L"f1", NULL },
-  { L"u1", L"http://www.u1.com/" },
+  { L"u1", "http://www.u1.com/" },
   { L"f2", NULL },
 };
 static TestData kF1Children[] = {
-  { L"f1u4", L"http://www.f1u4.com/" },
-  { L"f1u2", L"http://www.f1u2.com/" },
-  { L"f1u3", L"http://www.f1u3.com/" },
-  { L"f1u1", L"http://www.f1u1.com/" },
+  { L"f1u4", "http://www.f1u4.com/" },
+  { L"f1u2", "http://www.f1u2.com/" },
+  { L"f1u3", "http://www.f1u3.com/" },
+  { L"f1u1", "http://www.f1u1.com/" },
 };
 static TestData kF2Children[] = {
-  { L"f2u2", L"http://www.f2u2.com/" },
-  { L"f2u4", L"http://www.f2u4.com/" },
-  { L"f2u3", L"http://www.f2u3.com/" },
-  { L"f2u1", L"http://www.f2u1.com/" },
+  { L"f2u2", "http://www.f2u2.com/" },
+  { L"f2u4", "http://www.f2u4.com/" },
+  { L"f2u3", "http://www.f2u3.com/" },
+  { L"f2u1", "http://www.f2u1.com/" },
 };
 
 static TestData kOtherBookmarksChildren[] = {
   { L"f3", NULL },
-  { L"u4", L"http://www.u4.com/" },
-  { L"u3", L"http://www.u3.com/" },
+  { L"u4", "http://www.u4.com/" },
+  { L"u3", "http://www.u3.com/" },
   { L"f4", NULL },
   { L"dup", NULL },
   { L"dup", NULL },
 };
 static TestData kF3Children[] = {
-  { L"f3u4", L"http://www.f3u4.com/" },
-  { L"f3u2", L"http://www.f3u2.com/" },
-  { L"f3u3", L"http://www.f3u3.com/" },
-  { L"f3u1", L"http://www.f3u1.com/" },
+  { L"f3u4", "http://www.f3u4.com/" },
+  { L"f3u2", "http://www.f3u2.com/" },
+  { L"f3u3", "http://www.f3u3.com/" },
+  { L"f3u1", "http://www.f3u1.com/" },
 };
 static TestData kF4Children[] = {
-  { L"f4u1", L"http://www.f4u1.com/" },
-  { L"f4u2", L"http://www.f4u2.com/" },
-  { L"f4u3", L"http://www.f4u3.com/" },
-  { L"f4u4", L"http://www.f4u4.com/" },
+  { L"f4u1", "http://www.f4u1.com/" },
+  { L"f4u2", "http://www.f4u2.com/" },
+  { L"f4u3", "http://www.f4u3.com/" },
+  { L"f4u4", "http://www.f4u4.com/" },
 };
 static TestData kDup1Children[] = {
-  { L"dupu1", L"http://www.dupu1.com/" },
+  { L"dupu1", "http://www.dupu1.com/" },
 };
 static TestData kDup2Children[] = {
-  { L"dupu2", L"http://www.dupu2.com/" },
+  { L"dupu2", "http://www.dupu2.com/" },
 };
 
 }  // anonymous namespace.
