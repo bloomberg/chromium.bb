@@ -84,9 +84,81 @@ class LocationBarViewMac : public AutocompleteEditController,
                             const bool show_search_hint,
                             NSImage* image);
 
+  // Used to display a clickable icon in the location bar.
+  class LocationBarImageView {
+   public:
+    explicit LocationBarImageView() : image_(nil),
+                                      label_(nil),
+                                      visible_(false) {}
+    virtual ~LocationBarImageView() {}
+
+    // Sets the image.
+    void SetImage(NSImage* image);
+
+    // Sets the label text, font, and color. |text| may be nil; |color| and
+    // |font| are ignored if |text| is nil.
+    void SetLabel(NSString* text, NSFont* baseFont, NSColor* color);
+
+    // Sets the visibility. SetImage() should be called with a valid image
+    // before the visibility is set to |true|.
+    void SetVisible(bool visible);
+
+    const NSImage* GetImage() const { return image_; }
+    const NSAttributedString* GetLabel() const { return label_; }
+    bool IsVisible() const { return visible_; }
+
+    virtual bool OnMousePressed() = 0;
+
+   private:
+    scoped_nsobject<NSImage> image_;
+
+    // The label shown next to the icon, or nil if none.
+    scoped_nsobject<NSAttributedString> label_;
+
+    bool visible_;
+
+    DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
+  };
+
+  // SecurityImageView is used to display the lock or warning icon when the
+  // current URL's scheme is https.
+  class SecurityImageView : public LocationBarImageView {
+   public:
+    enum Image {
+      LOCK = 0,
+      WARNING
+    };
+
+    SecurityImageView(Profile* profile, ToolbarModel* model);
+    virtual ~SecurityImageView();
+
+    // Sets the image to the appropriate icon.
+    void SetImageShown(Image image);
+
+    // Shows the page info dialog.
+    virtual bool OnMousePressed();
+
+   private:
+    // The lock icon shown when using HTTPS. Loaded lazily, the first time it's
+    // needed.
+    scoped_nsobject<NSImage> lock_icon_;
+
+    // The warning icon shown when HTTPS is broken. Loaded lazily, the first
+    // time it's needed.
+    scoped_nsobject<NSImage> warning_icon_;
+
+    Profile* profile_;
+    ToolbarModel* model_;
+
+    DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
+  };
+
  private:
-  // Set the SSL icon we should be showing.
+  // Sets the SSL icon we should be showing.
   void SetSecurityIcon(ToolbarModel::Icon icon);
+
+  // Sets the label for the SSL icon.
+  void SetSecurityIconLabel();
 
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
@@ -101,6 +173,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
+
+  // The view that shows the lock/warning when in HTTPS mode.
+  SecurityImageView security_image_view_;
 
   Profile* profile_;
 

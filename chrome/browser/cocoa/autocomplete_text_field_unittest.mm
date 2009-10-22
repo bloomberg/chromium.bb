@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -27,6 +28,14 @@ using ::testing::InSequence;
 @end
 
 namespace {
+// Mock a SecurityImageView.
+class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
+ public:
+  MockSecurityImageView(Profile* profile, ToolbarModel* model)
+  : LocationBarViewMac::SecurityImageView(profile, model) {}
+
+  MOCK_METHOD0(OnMousePressed, bool());
+};
 
 // Mock up an incrementing event number.
 NSUInteger eventNumber = 0;
@@ -568,13 +577,18 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
 
 TEST_F(AutocompleteTextFieldTest, SecurityIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  scoped_nsobject<NSImage> hintIcon(
-      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
-  [cell setHintIcon:hintIcon.get() label:nil color:nil];
-  NSRect iconFrame([cell hintImageFrameForFrame:[field_ bounds]]);
+
+  MockSecurityImageView security_image_view(NULL, NULL);
+  [cell setSecurityImageView:&security_image_view];
+  security_image_view.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view.SetVisible(true);
+
+  NSRect iconFrame([cell securityImageFrameForFrame:[field_ bounds]]);
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
   NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
-  EXPECT_CALL(field_observer_, OnSecurityIconClicked());
+
+  EXPECT_CALL(security_image_view, OnMousePressed());
   [field_ mouseDown:event];
 }
 

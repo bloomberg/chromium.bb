@@ -41,11 +41,11 @@ const NSInteger kKeywordHintImageBaseline = -6;
 // use that.
 const NSInteger kBaselineOffset = 4;
 
-// The amount of padding on either side reserved for drawing the hint icon
-const NSInteger kHintIconHorizontalPad = 3;
+// The amount of padding on either side reserved for drawing an icon.
+const NSInteger kIconHorizontalPad = 3;
 
 // How far to shift bounding box of hint icon label down from top of field.
-const NSInteger kHintIconLabelYOffset = 7;
+const NSInteger kIconLabelYOffset = 7;
 
 // How far the editor insets itself, for purposes of determining if
 // decorations need to be trimmed.
@@ -196,27 +196,12 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   hintString_.reset();
 }
 
-- (void)setHintIcon:(NSImage*)icon
-              label:(NSString*)label
-              color:(NSColor*)color {
-  // Create an attributed string for the label, if a label was given.
-  NSAttributedString* as = nil;
-  if (label) {
-    DCHECK(color);
-    NSFont *baseFont = [self font];
-    NSFont *font = [NSFont fontWithDescriptor:[baseFont fontDescriptor]
-                                         size:[baseFont pointSize] - 2.0];
-    NSDictionary* attributes =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         color, NSForegroundColorAttributeName,
-         font, NSFontAttributeName,
-         NULL];
-    as = [[[NSAttributedString alloc] initWithString:label
-                                          attributes:attributes] autorelease];
-  }
+- (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view {
+  security_image_view_ = view;
+}
 
-  hintIconLabel_.reset([as retain]);
-  hintIcon_.reset([icon retain]);
+- (void)onSecurityIconMousePressed {
+  security_image_view_->OnMousePressed();
 }
 
 // TODO(shess): This code is manually drawing the cell's border area,
@@ -286,11 +271,13 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
       textFrame.origin.x += keywordWidth;
       textFrame.size.width = NSMaxX(cellFrame) - NSMinX(textFrame);
     }
-  } else if (hintIcon_) {
-    CGFloat width = [hintIcon_ size].width;
-    width += kHintIconHorizontalPad * 2;
-    if (hintIconLabel_) {
-      width += ceil([hintIconLabel_ size].width) + kHintXOffset;
+  } else if (security_image_view_ && security_image_view_->IsVisible()) {
+    NSImage* image = security_image_view_->GetImage();
+    CGFloat width = [image size].width;
+    width += kIconHorizontalPad * 2;
+    NSAttributedString* label = security_image_view_->GetLabel();
+    if (label) {
+      width += ceil([label size].width) + kHintXOffset;
     }
     if (width < NSWidth(cellFrame)) {
       textFrame.size.width -= width;
@@ -300,28 +287,24 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return textFrame;
 }
 
-// For NSTextFieldCell this is the area within the borders.  For our
-// purposes, we count the info decorations as being part of the
-// border.
-- (NSRect)drawingRectForBounds:(NSRect)theRect {
-  return [super drawingRectForBounds:[self textFrameForFrame:theRect]];
-}
-
-- (NSRect)hintImageFrameForFrame:(NSRect)cellFrame {
-  // We'll draw the entire image
-  const NSSize imageRect([hintIcon_ size]);
-
+- (NSRect)imageFrameForFrame:(NSRect)cellFrame
+      withImageView:(LocationBarViewMac::LocationBarImageView*)image_view {
+  if (!image_view->IsVisible()) {
+    return NSZeroRect;
+  }
+  const NSSize imageRect = [image_view->GetImage() size];
   CGFloat labelWidth = 0;
-  if (hintIconLabel_) {
-    labelWidth = ceil([hintIconLabel_ size].width) + kHintXOffset;
+  NSAttributedString* label = image_view->GetLabel();
+  if (label) {
+    labelWidth = ceil([label size].width) + kHintXOffset;
   }
 
   // Move the rect that we're drawing into to the far right, minus
-  // enough space for the label (if present)
+  // enough space for the label (if present).
   cellFrame.origin.x += cellFrame.size.width - imageRect.width;
   cellFrame.origin.x -= labelWidth;
   // Add back the padding
-  cellFrame.origin.x -= kHintIconHorizontalPad;
+  cellFrame.origin.x -= kIconHorizontalPad;
 
   // Center the image vertically in the frame
   cellFrame.origin.y +=
@@ -331,6 +314,20 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   cellFrame.size = imageRect;
 
   return cellFrame;
+}
+
+- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame {
+  if (!security_image_view_) {
+    return NSZeroRect;
+  }
+  return [self imageFrameForFrame:cellFrame withImageView:security_image_view_];
+}
+
+// For NSTextFieldCell this is the area within the borders.  For our
+// purposes, we count the info decorations as being part of the
+// border.
+- (NSRect)drawingRectForBounds:(NSRect)theRect {
+  return [super drawingRectForBounds:[self textFrameForFrame:theRect]];
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -374,28 +371,32 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   [keywordString_.get() drawInRect:infoFrame];
 }
 
-- (void)drawHintIconWithFrame:(NSRect)cellFrame
-                       inView:(NSView*)controlView {
+- (void)drawImageView:(LocationBarViewMac::LocationBarImageView*)image_view
+            withFrame:(NSRect)cellFrame
+               inView:(NSView*)controlView {
   // If there's a label, draw it to the right of the icon.
   CGFloat labelWidth = 0;
-  if (hintIconLabel_) {
-    labelWidth = ceil([hintIconLabel_ size].width) + kHintXOffset;
+  NSAttributedString* label = image_view->GetLabel();
+  if (label) {
+    labelWidth = ceil([label size].width) + kHintXOffset;
     NSRect textFrame(NSMakeRect(NSMaxX(cellFrame) - labelWidth,
-                                cellFrame.origin.y + kHintIconLabelYOffset,
+                                cellFrame.origin.y + kIconLabelYOffset,
                                 labelWidth,
-                                cellFrame.size.height - kHintIconLabelYOffset));
-    [hintIconLabel_.get() drawInRect:textFrame];
+                                cellFrame.size.height - kIconLabelYOffset));
+    [label drawInRect:textFrame];
   }
 
-  // We'll draw the entire image
+  // Draw the entire image.
   NSRect imageRect = NSZeroRect;
-  imageRect.size = [hintIcon_ size];
-  const NSRect hintFrame([self hintImageFrameForFrame:cellFrame]);
-  [hintIcon_ setFlipped:[controlView isFlipped]];
-  [hintIcon_ drawInRect:hintFrame
-               fromRect:imageRect
-              operation:NSCompositeSourceOver
-               fraction:1.0];
+  NSImage* image = image_view->GetImage();
+  image.size = [image size];
+  NSRect imageFrame([self imageFrameForFrame:cellFrame
+                               withImageView:image_view]);
+  [image setFlipped:[controlView isFlipped]];
+  [image drawInRect:imageFrame
+           fromRect:imageRect
+          operation:NSCompositeSourceOver
+           fraction:1.0];
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -403,8 +404,10 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
     [self drawHintWithFrame:cellFrame inView:controlView];
   } else if (keywordString_) {
     [self drawKeywordWithFrame:cellFrame inView:controlView];
-  } else if (hintIcon_) {
-    [self drawHintIconWithFrame:cellFrame inView:controlView];
+  } else if (security_image_view_ && security_image_view_->IsVisible()) {
+    [self drawImageView:security_image_view_
+              withFrame:cellFrame
+                 inView:controlView];
   }
 
   [super drawInteriorWithFrame:cellFrame inView:controlView];

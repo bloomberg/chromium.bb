@@ -50,10 +50,6 @@ class AutocompleteTextFieldObserver {
   // search" into |field_|.
   virtual void OnPasteAndGo() = 0;
 
-  // Called when the user clicks the hint icon (i.e. the security icon) in the
-  // location bar.
-  virtual void OnSecurityIconClicked() = 0;
-
   // Called when the field's frame changes.
   virtual void OnFrameChanged() = 0;
 };

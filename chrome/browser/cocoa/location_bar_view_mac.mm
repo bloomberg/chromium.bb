@@ -12,6 +12,7 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
+#include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #include "chrome/browser/cocoa/event_utils.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -81,9 +84,12 @@ LocationBarViewMac::LocationBarViewMac(
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
+      security_image_view_(profile, toolbar_model),
       profile_(profile),
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  [cell setSecurityImageView:&security_image_view_];
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -303,40 +309,120 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
   return tab_button_image_;
 }
 
-void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon security_icon) {
-  std::wstring info_text, info_tooltip;
+void LocationBarViewMac::SetSecurityIconLabel() {
+  std::wstring info_text;
+  std::wstring info_tooltip;
   ToolbarModel::InfoTextType info_text_type =
       toolbar_model_->GetInfoText(&info_text, &info_tooltip);
-  NSColor* color = nil;
-  NSString* icon_label = nil;
   if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
-    icon_label = base::SysWideToNSString(info_text);
-    color =
-      [NSColor colorWithCalibratedRed:kEvTextColorRedComponent
-                                green:kEvTextColorGreenComponent
-                                 blue:kEvTextColorBlueComponent
-                                alpha:1.0];
+    NSString* icon_label = base::SysWideToNSString(info_text);
+    NSColor* color = [NSColor colorWithCalibratedRed:kEvTextColorRedComponent
+                                               green:kEvTextColorGreenComponent
+                                                blue:kEvTextColorBlueComponent
+                                               alpha:1.0];
+    security_image_view_.SetLabel(icon_label, [field_ font], color);
+  } else {
+    security_image_view_.SetLabel(nil, nil, nil);
   }
+}
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  switch (security_icon) {
+void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon icon) {
+  switch (icon) {
     case ToolbarModel::LOCK_ICON:
-      [cell setHintIcon:rb.GetNSImageNamed(IDR_LOCK)
-                  label:icon_label
-                  color:color];
+      security_image_view_.SetImageShown(SecurityImageView::LOCK);
+      security_image_view_.SetVisible(true);
+      SetSecurityIconLabel();
       break;
     case ToolbarModel::WARNING_ICON:
-      [cell setHintIcon:rb.GetNSImageNamed(IDR_WARNING)
-                  label:icon_label
-                  color:color];
+      security_image_view_.SetImageShown(SecurityImageView::WARNING);
+      security_image_view_.SetVisible(true);
+      SetSecurityIconLabel();
       break;
     case ToolbarModel::NO_ICON:
-      [cell setHintIcon:nil label:nil color:nil];
+      security_image_view_.SetVisible(false);
+      break;
+    default:
+      NOTREACHED();
+      security_image_view_.SetVisible(false);
+      break;
+  }
+  [field_ resetFieldEditorFrameIfNeeded];
+}
+
+// LocationBarImageView---------------------------------------------------------
+
+void LocationBarViewMac::LocationBarImageView::SetImage(NSImage* image) {
+  image_.reset([image retain]);
+}
+
+void LocationBarViewMac::LocationBarImageView::SetLabel(NSString* text,
+                                                        NSFont* baseFont,
+                                                        NSColor* color) {
+  // Create an attributed string for the label, if a label was given.
+  label_.reset();
+  if (text) {
+    DCHECK(color);
+    DCHECK(baseFont);
+    NSFont* font = [NSFont fontWithDescriptor:[baseFont fontDescriptor]
+                                         size:[baseFont pointSize] - 2.0];
+    NSDictionary* attributes =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         color, NSForegroundColorAttributeName,
+         font, NSFontAttributeName,
+         NULL];
+    NSAttributedString* attrStr =
+        [[NSAttributedString alloc] initWithString:text attributes:attributes];
+    label_.reset(attrStr);
+  }
+}
+
+void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
+  DCHECK(!visible || image_);
+  visible_ = visible;
+}
+
+// SecurityImageView------------------------------------------------------------
+
+LocationBarViewMac::SecurityImageView::SecurityImageView(
+    Profile* profile,
+    ToolbarModel* model)
+    : lock_icon_(nil),
+      warning_icon_(nil),
+      profile_(profile),
+      model_(model) {}
+
+LocationBarViewMac::SecurityImageView::~SecurityImageView() {}
+
+void LocationBarViewMac::SecurityImageView::SetImageShown(Image image) {
+  switch (image) {
+    case LOCK:
+      if (!lock_icon_.get()) {
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        lock_icon_.reset([rb.GetNSImageNamed(IDR_LOCK) retain]);
+      }
+      SetImage(lock_icon_);
+      break;
+    case WARNING:
+      if (!warning_icon_.get()) {
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        warning_icon_.reset([rb.GetNSImageNamed(IDR_WARNING) retain]);
+      }
+      SetImage(warning_icon_);
       break;
     default:
       NOTREACHED();
       break;
   }
-  [field_ resetFieldEditorFrameIfNeeded];
+}
+
+
+bool LocationBarViewMac::SecurityImageView::OnMousePressed() {
+  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
+  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  if (!nav_entry) {
+    NOTREACHED();
+    return true;
+  }
+  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  return true;
 }

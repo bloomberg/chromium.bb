@@ -39,7 +39,6 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD0(CanPasteAndGo, bool());
   MOCK_METHOD0(GetPasteActionStringId, int());
   MOCK_METHOD0(OnPasteAndGo, void());
-  MOCK_METHOD0(OnSecurityIconClicked, void());
   MOCK_METHOD0(OnFrameChanged, void());
 };
 
