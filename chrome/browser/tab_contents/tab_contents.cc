@@ -992,6 +992,9 @@ void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 }
 
 bool TabContents::ShouldShowBookmarkBar() {
+  if (showing_interstitial_page())
+    return false;
+
   // See GetDOMUIForCurrentState() comment for more info. This case is very
   // similar, but for non-first loads, we want to use the committed entry. This
   // is so the bookmarks bar disappears at the same time the page does.
