@@ -51,6 +51,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
   settings->setDatabasesEnabled(WebKit::databasesEnabled() || databases_enabled);
+  settings->setSessionStorageEnabled(session_storage_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
   settings->setExperimentalNotificationsEnabled(
       experimental_notifications_enabled);

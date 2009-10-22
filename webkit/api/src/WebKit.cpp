@@ -39,7 +39,6 @@
 #include "FrameLoader.h"
 #include "Page.h"
 #include "SecurityOrigin.h"
-#include "Storage.h"
 #include "TextEncoding.h"
 #include "WebSocket.h"
 #include "WorkerContextExecutionProxy.h"
@@ -160,20 +159,6 @@ bool webSocketsEnabled()
     return WebCore::WebSocket::isAvailable();
 #else
     return false;
-#endif
-}
-
-void setLocalStorageEnabled(bool enabled)
-{
-#if ENABLE(DOM_STORAGE)
-    WebCore::Storage::setLocalStorageAvailable(enabled);
-#endif
-}
-
-void setSessionStorageEnabled(bool enabled)
-{
-#if ENABLE(DOM_STORAGE)
-    WebCore::Storage::setSessionStorageAvailable(enabled);
 #endif
 }
 

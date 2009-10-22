@@ -523,8 +523,6 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kEnableDatabases,
     switches::kDisableByteRangeSupport,
     switches::kEnableWebSockets,
-    switches::kEnableLocalStorage,
-    switches::kEnableSessionStorage,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

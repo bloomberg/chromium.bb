@@ -1518,6 +1518,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.xss_auditor_enabled);
     WriteParam(m, p.local_storage_enabled);
     WriteParam(m, p.databases_enabled);
+    WriteParam(m, p.session_storage_enabled);
     WriteParam(m, p.application_cache_enabled);
     WriteParam(m, p.tabs_to_links);
     WriteParam(m, p.user_style_sheet_enabled);
@@ -1557,6 +1558,7 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->xss_auditor_enabled) &&
         ReadParam(m, iter, &p->local_storage_enabled) &&
         ReadParam(m, iter, &p->databases_enabled) &&
+        ReadParam(m, iter, &p->session_storage_enabled) &&
         ReadParam(m, iter, &p->application_cache_enabled) &&
         ReadParam(m, iter, &p->tabs_to_links) &&
         ReadParam(m, iter, &p->user_style_sheet_enabled) &&

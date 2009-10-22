@@ -71,6 +71,7 @@ namespace WebKit {
         virtual void setDownloadableBinaryFontsEnabled(bool) = 0;
         virtual void setXSSAuditorEnabled(bool) = 0;
         virtual void setLocalStorageEnabled(bool) = 0;
+        virtual void setSessionStorageEnabled(bool) = 0;
         virtual void setEditableLinkBehaviorNeverLive() = 0;
         virtual void setFontRenderingModeNormal() = 0;
         virtual void setShouldPaintCustomScrollbars(bool) = 0;
