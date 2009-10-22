@@ -53,6 +53,7 @@
 @property (assign) NSString* displayName;
 @property (assign) NSString* displayURL;
 @property (readonly) BOOL okButtonEnabled;
+- (void)selectTestNodeInBrowser:(const BookmarkNode*)node;
 @end
 
 

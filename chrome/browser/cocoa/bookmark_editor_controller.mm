@@ -10,6 +10,23 @@
 #include "chrome/browser/profile.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 
+@interface BookmarkEditorController (Private)
+
+// Grab the url from the text field and convert.
+- (GURL)GURLFromUrlField;
+
+// Determine and returns the rightmost selected/highlighted element (node)
+// in the bookmark tree view if the tree view is showing, otherwise returns
+// the original parentNode_.  If the tree view is showing but nothing is
+// selected then return the root node.
+- (const BookmarkNode*)selectedParentNode;
+
+// Select/highlight the given node within the browser tree view.  If the
+// node is not found then the selection will not be changed.
+- (void)selectNodeInBrowser:(const BookmarkNode*)node;
+
+@end
+
 // static; implemented for each platform.
 void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
@@ -32,6 +49,39 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   [controller runAsModalSheet];
 }
 
+#pragma mark Bookmark TreeNode Helpers
+
+namespace {
+
+// Find the index'th folder child of a parent, ignoring bookmarks (leafs).
+const BookmarkNode* GetFolderChildForParent(const BookmarkNode* parent_node,
+                                            NSInteger folder_index) {
+  const BookmarkNode* child_node = nil;
+  int i = 0;
+  int child_count = parent_node->GetChildCount();
+  do {
+    child_node = parent_node->GetChild(i);
+    if (child_node->type() != BookmarkNode::URL)
+      --folder_index;
+    ++i;
+  } while (folder_index >= 0 && i < child_count);
+  return child_node;
+}
+
+// Determine the index of a child within its parent ignoring
+// bookmarks (leafs).
+int IndexOfFolderChild(const BookmarkNode* child_node) {
+  const BookmarkNode* node_parent = child_node->GetParent();
+  int child_index = node_parent->IndexOfChild(child_node);
+  for (int i = child_index - 1; i >= 0; --i) {
+    const BookmarkNode* sibling = node_parent->GetChild(i);
+    if (sibling->type() == BookmarkNode::URL)
+      --child_index;
+  }
+  return child_index;
+}
+
+} // namespace
 
 @implementation BookmarkEditorController
 
@@ -77,10 +127,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   [urlField_ setDelegate:self];
   [self controlTextDidChange:nil];
 
-  if (configuration_ == BookmarkEditor::SHOW_TREE) {
-    // build the tree et al
-    NOTIMPLEMENTED();
-  } else {
+  if (configuration_ != BookmarkEditor::SHOW_TREE) {
     // Remember the NSBrowser's height; we will shrink our frame by that
     // much.
     NSRect frame = [[self window] frame];
@@ -92,6 +139,35 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
     [newFolderButton_ removeFromSuperview];
     // Finally, commit the size change.
     [[self window] setFrame:frame display:YES];
+  }
+}
+
+- (void)selectNodeInBrowser:(const BookmarkNode*)node {
+  DCHECK(configuration_ == BookmarkEditor::SHOW_TREE);
+  // Find and select the node in the browser by walking
+  // back to the root node, then selecting forward.
+  std::deque<NSInteger> rowsToSelect;
+  const BookmarkNode* nodeParent = node->GetParent();
+  // There should always be a parent node.
+  DCHECK(nodeParent);
+  while (nodeParent) {
+    int nodeRow = IndexOfFolderChild(node);
+    rowsToSelect.push_front(nodeRow);
+    node = nodeParent;
+    nodeParent = nodeParent->GetParent();
+  }
+  for (std::deque<NSInteger>::size_type column = 0;
+       column < rowsToSelect.size();
+       ++column) {
+    [browser_ selectRow:rowsToSelect[column] inColumn:column];
+  }
+  [self controlTextDidChange:nil];
+}
+
+- (void)windowDidLoad {
+  if (configuration_ == BookmarkEditor::SHOW_TREE) {
+    // Find and select the |parent| bookmark node.
+    [self selectNodeInBrowser:parentNode_];
   }
 }
 
@@ -126,7 +202,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
 
 // If possible, return a valid GURL from the URL text field.
 - (GURL)GURLFromUrlField {
-  NSString *url = [urlField_ stringValue];
+  NSString* url = [urlField_ stringValue];
   GURL newURL = GURL([url UTF8String]);
   if (!newURL.is_valid()) {
     // Mimic observed friendliness from Windows
@@ -135,59 +211,73 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   return newURL;
 }
 
-// When the URL changes we may enable or disable the OK button.
+- (const BookmarkNode*)selectedParentNode {
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  const BookmarkNode* selectedParentNode = NULL;
+  // Determine a new parent node only if the browser is showing.
+  if (configuration_ == BookmarkEditor::SHOW_TREE) {
+    selectedParentNode = model->root_node();
+    NSInteger column = 0;
+    NSInteger selectedRow = [browser_ selectedRowInColumn:column];
+    while (selectedRow >= 0) {
+      selectedParentNode = GetFolderChildForParent(selectedParentNode,
+                                                   selectedRow);
+      ++column;
+      selectedRow = [browser_ selectedRowInColumn:column];
+    }
+  } else {
+    // If the tree is not showing then we use the original parent.
+    selectedParentNode = parentNode_;
+  }
+  return selectedParentNode;
+}
+
+// Enable the OK button if there is a bookmark name and there is a valid URL.
 // We set ourselves as the delegate of urlField_ so this gets called.
 // (Yes, setting ourself as a delegate automatically registers us for
 // the notification.)
-- (void)controlTextDidChange:(NSNotification *)aNotification {
-  GURL newURL = [self GURLFromUrlField];
+- (void)controlTextDidChange:(NSNotification*)aNotification {
+  // Name must not be empty, but it can be whitespace.
   NSString* name = [nameField_ stringValue];
-
-  // if empty or only whitespace, name is not valid.
-  bool name_valid = true;
-  if (([name length] == 0) ||
-      ([[name stringByTrimmingCharactersInSet:[NSCharacterSet
-              whitespaceAndNewlineCharacterSet]] length] == 0)) {
-    name_valid = false;
-  }
-
-  if (node_ && (node_->is_folder() || newURL.is_valid()) && name_valid) {
-    [okButton_ setEnabled:YES];
-  } else {
-    [okButton_ setEnabled:NO];
-  }
+  GURL newURL = [self GURLFromUrlField];
+  [okButton_ setEnabled:([name length] != 0 && newURL.is_valid()) ? YES : NO];
 }
 
-// TODO(jrg): Once the tree is available edits may be more extensive
-// than just name/url.
+// The ok: action is connected to the OK button in the Edit Bookmark window
+// of the BookmarkEditor.xib.  The the bookmark's name and URL are assumed
+// to be valid (otherwise the OK button should not be enabled).  If the
+// bookmark previously existed then it is removed from its old folder.
+// The bookmark is then added to its new folder.  If the folder has not
+// changed then the bookmark stays in its original position (index) otherwise
+// it is added to the end of the new folder.
 - (IBAction)ok:(id)sender {
-  NSString *name = [nameField_ stringValue];
-  NSString *url = [urlField_ stringValue];
-
-  if ((![name isEqual:initialName_]) ||
-      (![url isEqual:initialUrl_])) {
-    std::wstring newTitle = base::SysNSStringToWide(name);
-    GURL newURL = [self GURLFromUrlField];
-    if (!newURL.is_valid()) {
-      // Shouldn't be reached -- OK button disabled if not valid!
-      NOTREACHED();
-      return;
-    }
-    int index = 0;
-    BookmarkModel* model = profile_->GetBookmarkModel();
-    if (node_) {
-      index = parentNode_->IndexOfChild(node_);
-      model->Remove(parentNode_, index);
-    } else {
-      index = parentNode_->GetChildCount();
-    }
-    const BookmarkNode* node = model->AddURL(parentNode_, index,
-                                             newTitle, newURL);
-    // Honor handler semantics: callback on node creation
-    if (handler_.get())
-      handler_->NodeCreated(node);
+  NSString* name = [nameField_ stringValue];
+  std::wstring newTitle = base::SysNSStringToWide(name);
+  GURL newURL = [self GURLFromUrlField];
+  if (!newURL.is_valid()) {
+    // Shouldn't be reached -- OK button disabled if not valid!
+    NOTREACHED();
+    return;
   }
 
+  // Determine where the new/replacement bookmark is to go.
+  const BookmarkNode* newParentNode = [self selectedParentNode];
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  int newIndex = newParentNode->GetChildCount();
+  if (node_ && parentNode_) {
+    // Replace the old bookmark with the updated bookmark.
+    int oldIndex = parentNode_->IndexOfChild(node_);
+    if (oldIndex >= 0)
+      model->Remove(parentNode_, oldIndex);
+    if (parentNode_ == newParentNode)
+      newIndex = oldIndex;
+  }
+  // Add bookmark as new node at the end of the newly selected folder.
+  const BookmarkNode* node = model->AddURL(newParentNode, newIndex,
+                                           newTitle, newURL);
+  // Honor handler semantics: callback on node creation.
+  if (handler_.get())
+    handler_->NodeCreated(node);
   [NSApp endSheet:[self window]];
 }
 
@@ -207,6 +297,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   [self autorelease];
 }
 
+#pragma mark For Unit Test Use Only
 
 - (NSString*)displayName {
   return [nameField_ stringValue];
@@ -228,6 +319,58 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
 
 - (BOOL)okButtonEnabled {
   return [okButton_ isEnabled];
+}
+
+- (void)selectTestNodeInBrowser:(const BookmarkNode*)node {
+  [self selectNodeInBrowser:node];
+}
+
+#pragma mark NSBrowser delegate methods
+
+// Given a column number, determine the parent bookmark folder node for the
+// bookmarks being shown in that column.  This is done by scanning forward
+// from column zero and following the selected row for each column up
+// to the parent of the desired column.
+- (const BookmarkNode*)parentNodeForColumn:(NSInteger)column {
+  DCHECK(column >= 0);
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  const BookmarkNode* node = model->root_node();
+  for (NSInteger i = 0; i < column; ++i) {
+    NSInteger selectedRowInColumn = [browser_ selectedRowInColumn:i];
+    node = node->GetChild(selectedRowInColumn);
+  }
+  return node;
+}
+
+// This implementation returns the number of folders contained in the parent
+// folder node for this column.
+// TOTO(mrossetti): Decide if bookmark (i.e. non-folder) nodes should be
+// shown, perhaps in gray.
+- (NSInteger)browser:(NSBrowser*)sender numberOfRowsInColumn:(NSInteger)col {
+  NSInteger rowCount = 0;
+  const BookmarkNode* parentNode = [self parentNodeForColumn:col];
+  if (parentNode) {
+    int childCount = parentNode->GetChildCount();
+    for (int i = 0; i < childCount; ++i) {
+      const BookmarkNode* childNode = parentNode->GetChild(i);
+      if (childNode->type() != BookmarkNode::URL)
+        ++rowCount;
+    }
+  }
+  return rowCount;
+}
+
+- (void)browser:(NSBrowser*)sender
+    willDisplayCell:(NSBrowserCell*)cell
+              atRow:(NSInteger)row
+            column:(NSInteger)column {
+  DCHECK(row >= 0);  // Trust AppKit, but verify.
+  DCHECK(column >= 0);
+  const BookmarkNode* parentNode = [self parentNodeForColumn:column];
+  const BookmarkNode* childNode = GetFolderChildForParent(parentNode, row);
+  DCHECK(childNode);
+  [cell setTitle:base::SysWideToNSString(childNode->GetTitle())];
+  [cell setLeaf:childNode->GetChildCount() == 0];
 }
 
 @end  // BookmarkEditorController
