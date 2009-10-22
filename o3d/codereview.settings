@@ -7,3 +7,6 @@ TRY_ON_UPLOAD: True
 TRYSERVER_HTTP_HOST: chrome-tryserver.corp.google.com
 TRYSERVER_HTTP_PORT: 8023
 TRYSERVER_PROJECT: o3d
+# Share the nacl tryserver check-in location.
+TRYSERVER_SVN_URL: svn://svn.chromium.org/chrome-try/try-nacl
+
