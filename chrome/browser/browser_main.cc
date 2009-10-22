@@ -408,7 +408,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // sources. This has to be done before uninstall code path and before prefs
   // are registered.
   local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
-  local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
+  local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
+      GoogleUpdateSettings::GetCollectStatsConsent());
 
 #if defined(TOOLKIT_GTK)
   // It is important for this to happen before the first run dialog, as it
@@ -432,8 +433,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     if (GoogleUpdateSettings::GetLanguage(&install_lang))
       local_state->SetString(prefs::kApplicationLocale, install_lang);
 #endif  // defined(OS_WIN)
-    if (GoogleUpdateSettings::GetCollectStatsConsent())
-      local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
   }
 
   // If the local state file for the current profile doesn't exist and the
