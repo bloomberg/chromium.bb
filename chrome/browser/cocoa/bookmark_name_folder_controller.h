@@ -17,6 +17,7 @@
 @interface BookmarkNameFolderController : NSWindowController {
  @private
   IBOutlet NSTextField* nameField_;
+  IBOutlet NSButton* okButton_;
 
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
@@ -33,6 +34,7 @@
 
 @interface BookmarkNameFolderController(TestingAPI)
 - (void)setFolderName:(NSString*)name;
+- (NSButton*)okButton;
 @end
 
 #endif  /* CHROME_BROWSER_COCOA_BOOKMARK_NAME_FOLDER_CONTROLLER_H_ */

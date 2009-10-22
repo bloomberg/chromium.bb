@@ -62,3 +62,25 @@ TEST_F(BookmarkNameFolderControllerTest, AddAndRename) {
   EXPECT_EQ(L"Zobo", parent->GetChild(0)->GetTitle());
 }
 
+TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* node = NULL;
+  EXPECT_EQ(0, parent->GetChildCount());
+
+  scoped_nsobject<BookmarkNameFolderController>
+    controller([[BookmarkNameFolderController alloc]
+                 initWithParentWindow:cocoa_helper_.window()
+                              profile:helper_.profile()
+                                 node:node]);
+  [controller window];  // force nib load
+  EXPECT_FALSE([[controller okButton] isEnabled]);
+
+  [controller setFolderName:@"Bozo"];
+  EXPECT_TRUE([[controller okButton] isEnabled]);
+  [controller setFolderName:@" "];
+  EXPECT_TRUE([[controller okButton] isEnabled]);
+
+  [controller setFolderName:@""];
+  EXPECT_FALSE([[controller okButton] isEnabled]);
+}
