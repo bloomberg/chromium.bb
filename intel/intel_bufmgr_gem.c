@@ -210,11 +210,11 @@ drm_intel_gem_bo_tile_size(drm_intel_bufmgr_gem *bufmgr_gem, unsigned long size,
 		return size;
 
 	/* 965+ just need multiples of page size for tiling */
-	if (IS_I965G(bufmgr_gem))
+	if (!IS_GEN2(bufmgr_gem) && !IS_GEN3(bufmgr_gem))
 		return ROUND_UP_TO(size, 4096);
 
 	/* Older chips need powers of two, of at least 512k or 1M */
-	if (IS_I9XX(bufmgr_gem)) {
+	if (!IS_GEN2(bufmgr_gem)) {
 		min_size = 1024*1024;
 		max_size = 128*1024*1024;
 	} else {
@@ -249,7 +249,7 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 		return ROUND_UP_TO(pitch, tile_width);
 
 	/* 965 is flexible */
-	if (IS_I965G(bufmgr_gem))
+	if (!IS_GEN2(bufmgr_gem) && !IS_GEN3(bufmgr_gem))
 		return ROUND_UP_TO(pitch, tile_width);
 
 	/* Pre-965 needs power of two tile width */
@@ -382,7 +382,8 @@ drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
 	 * aperture. Optimal packing is for wimps.
 	 */
 	size = bo_gem->bo.size;
-	if (!IS_I965G(bufmgr_gem) && bo_gem->tiling_mode != I915_TILING_NONE)
+	if ((IS_GEN2(bufmgr_gem) || IS_GEN3(bufmgr_gem))
+	    && bo_gem->tiling_mode != I915_TILING_NONE)
 		size *= 2;
 
 	bo_gem->reloc_tree_size = size;
@@ -1756,7 +1757,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
 	}
 
-	if (!IS_I965G(bufmgr_gem)) {
+	if (IS_GEN2(bufmgr_gem) || IS_GEN3(bufmgr_gem)) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
 		gp.value = &bufmgr_gem->available_fences;
 		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);

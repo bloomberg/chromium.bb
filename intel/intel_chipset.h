@@ -28,33 +28,61 @@
 #ifndef _INTEL_CHIPSET_H
 #define _INTEL_CHIPSET_H
 
-#define IS_I830(dev) ((dev)->pci_device == 0x3577)
-#define IS_845G(dev) ((dev)->pci_device == 0x2562)
-#define IS_I85X(dev) ((dev)->pci_device == 0x3582)
-#define IS_I855(dev) ((dev)->pci_device == 0x3582)
-#define IS_I865G(dev) ((dev)->pci_device == 0x2572)
+#define IS_830(dev) ((dev)->pci_device == 0x3577)
+#define IS_845(dev) ((dev)->pci_device == 0x2562)
+#define IS_85X(dev) ((dev)->pci_device == 0x3582)
+#define IS_865(dev) ((dev)->pci_device == 0x2572)
 
-#define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 0x258a)
-#define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
-#define IS_I945G(dev) ((dev)->pci_device == 0x2772)
-#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2 ||\
+#define IS_GEN2(dev) (IS_830(dev) ||				\
+		      IS_845(dev) ||				\
+		      IS_85X(dev) ||				\
+		      IS_865(dev))
+
+#define IS_915G(dev) ((dev)->pci_device == 0x2582 ||		\
+		       (dev)->pci_device == 0x258a)
+#define IS_915GM(dev) ((dev)->pci_device == 0x2592)
+#define IS_945G(dev) ((dev)->pci_device == 0x2772)
+#define IS_945GM(dev) ((dev)->pci_device == 0x27A2 ||		\
                         (dev)->pci_device == 0x27AE)
-#define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
-                       (dev)->pci_device == 0x2982 || \
-                       (dev)->pci_device == 0x2992 || \
-                       (dev)->pci_device == 0x29A2 || \
-                       (dev)->pci_device == 0x2A02 || \
-                       (dev)->pci_device == 0x2A12 || \
-                       (dev)->pci_device == 0x2A42 || \
-                       (dev)->pci_device == 0x2E02 || \
-                       (dev)->pci_device == 0x2E12 || \
-                       (dev)->pci_device == 0x2E22 || \
-                       (dev)->pci_device == 0x2E32 || \
-                       (dev)->pci_device == 0x2E42 || \
-                       (dev)->pci_device == 0x0042 || \
-                       (dev)->pci_device == 0x0046)
+
+#define IS_915(dev) (IS_915G(dev) ||				\
+		     IS_915GM(dev))
+
+#define IS_945(dev) (IS_945G(dev) ||				\
+		     IS_945GM(dev) ||				\
+		     IS_G33(dev) ||				\
+		     IS_PINEVIEW(dev))
+
+#define IS_G33(dev)    ((dev)->pci_device == 0x29C2 ||		\
+                        (dev)->pci_device == 0x29B2 ||		\
+                        (dev)->pci_device == 0x29D2)
+
+#define IS_PINEVIEW(dev) ((dev)->pci_device == 0xa001 ||	\
+			  (dev)->pci_device == 0xa011)
+
+#define IS_GEN3(dev) (IS_915(dev) ||				\
+		      IS_945(dev) ||				\
+		      IS_G33(dev) ||				\
+		      IS_PINEVIEW(dev))
 
 #define IS_I965GM(dev) ((dev)->pci_device == 0x2A02)
+
+#define IS_GEN4(dev) ((dev)->pci_device == 0x2972 ||	\
+		      (dev)->pci_device == 0x2982 ||	\
+		      (dev)->pci_device == 0x2992 ||	\
+		      (dev)->pci_device == 0x29A2 ||	\
+		      (dev)->pci_device == 0x2A02 ||	\
+		      (dev)->pci_device == 0x2A12 ||	\
+		      (dev)->pci_device == 0x2A42 ||	\
+		      (dev)->pci_device == 0x2E02 ||	\
+		      (dev)->pci_device == 0x2E12 ||	\
+		      (dev)->pci_device == 0x2E22 ||	\
+		      (dev)->pci_device == 0x2E32 ||	\
+		      (dev)->pci_device == 0x2E42 ||	\
+		      (dev)->pci_device == 0x0042 ||	\
+		      (dev)->pci_device == 0x0046 ||	\
+		      IS_965GM(dev) || \
+		      IS_G4X(dev))
 
 #define IS_GM45(dev) ((dev)->pci_device == 0x2A42)
 
@@ -62,16 +90,12 @@
                      (dev)->pci_device == 0x2E12 || \
                      (dev)->pci_device == 0x2E22 || \
                      (dev)->pci_device == 0x2E32 || \
-                     (dev)->pci_device == 0x2E42)
+                     (dev)->pci_device == 0x2E42 || \
+		     IS_GM45(dev))
 
-#define IS_G33(dev)    ((dev)->pci_device == 0x29C2 ||  \
-                        (dev)->pci_device == 0x29B2 ||  \
-                        (dev)->pci_device == 0x29D2)
-
-#define IS_I9XX(dev) (IS_I915G(dev) || IS_I915GM(dev) || IS_I945G(dev) || \
-                      IS_I945GM(dev) || IS_I965G(dev) || IS_G33(dev))
-
-#define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
-                        IS_I945GM(dev) || IS_I965GM(dev) || IS_GM45(dev))
+#define IS_9XX(dev) (IS_GEN3(dev) ||				\
+		     IS_GEN4(dev) ||				\
+		     IS_GEN5(dev) ||				\
+		     IS_GEN6(dev))
 
 #endif /* _INTEL_CHIPSET_H */
