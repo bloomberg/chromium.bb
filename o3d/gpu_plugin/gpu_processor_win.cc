@@ -36,8 +36,11 @@ GPUProcessor::GPUProcessor(NPP npp,
 }
 
 bool GPUProcessor::Initialize(HWND handle) {
+  DCHECK(handle);
+
   // Cannot reinitialize.
-  DCHECK(gapi_->hwnd() == NULL);
+  if (gapi_->hwnd() != NULL)
+    return false;
 
   // Map the ring buffer and create the parser.
   NPObjectPointer<NPObject> ring_buffer =
@@ -60,12 +63,8 @@ bool GPUProcessor::Initialize(HWND handle) {
   }
 
   // Initialize GAPI immediately if the window handle is valid.
-  if (handle) {
-    gapi_->set_hwnd(handle);
-    return gapi_->Initialize();
-  } else {
-    return true;
-  }
+  gapi_->set_hwnd(handle);
+  return gapi_->Initialize();
 }
 
 void GPUProcessor::Destroy() {
@@ -76,14 +75,13 @@ void GPUProcessor::Destroy() {
   }
 }
 
-void GPUProcessor::SetWindow(HWND handle, int width, int height) {
+bool GPUProcessor::SetWindow(HWND handle, int width, int height) {
   if (handle == NULL) {
     // Destroy GAPI when the window handle becomes invalid.
     Destroy();
+    return true;
   } else {
-    if (handle != gapi_->hwnd()) {
-      Initialize(handle);
-    }
+    return Initialize(handle);
   }
 }
 

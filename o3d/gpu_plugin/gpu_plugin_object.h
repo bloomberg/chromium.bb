@@ -10,6 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "o3d/gpu_plugin/command_buffer.h"
+#include "o3d/gpu_plugin/gpu_processor.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 #include "o3d/gpu_plugin/np_utils/np_headers.h"
@@ -19,13 +20,26 @@
 namespace o3d {
 namespace gpu_plugin {
 
-class GPUProcessor;
-
 // The scriptable object for the GPU plugin.
 class GPUPluginObject : public DefaultNPObject<NPObject>,
                         public PluginObject {
  public:
   static const int32 kCommandBufferSize = 1024 * 1024;
+
+  enum Status {
+    // In the state of waiting for the named function to be called to continue
+    // the initialization sequence.
+    kWaitingForNew,
+    kWaitingForSetWindow,
+    kWaitingForOpenCommandBuffer,
+
+    // Initialization either succeeded or failed.
+    kInitializationSuccessful,
+    kInitializationFailed,
+
+    // Destroy has now been called and the plugin object cannot be used.
+    kDestroyed,
+  };
 
   static const NPUTF8 kPluginType[];
 
@@ -48,22 +62,39 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
 
   virtual NPObject* GetScriptableNPObject();
 
-  // Initializes and returns the command buffer object.
+  // Returns the current initialization status. See Status enum.
+  int32 GetStatus() {
+    return status_;
+  }
+
+  // Initializes and returns the command buffer object. Returns NULL if the
+  // command buffer cannot be initialized, for example if the plugin does not
+  // yet have a window handle.
   NPObjectPointer<NPObject> OpenCommandBuffer();
 
+  // Set the status for testing.
+  void set_status(Status status) {
+    status_ = status;
+  }
+
+  // Replace the default command buffer for testing.
+  void set_command_buffer(
+      const NPObjectPointer<CommandBuffer>& command_buffer) {
+    command_buffer_ = command_buffer;
+  }
+
+  // Replace the default GPU processor for testing.
+  void set_gpu_processor(const scoped_refptr<GPUProcessor>& processor) {
+    processor_ = processor;
+  }
+
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DefaultNPObject<NPObject>)
+    NP_UTILS_DISPATCHER(GetStatus, int32());
     NP_UTILS_DISPATCHER(OpenCommandBuffer, NPObjectPointer<NPObject>())
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
   NPError PlatformSpecificSetWindow(NPWindow* new_window);
-  void UpdateProcessorWindow();
-
-  enum Status {
-    CREATED,
-    INITIALIZED,
-    DESTROYED,
-  };
 
   NPP npp_;
   Status status_;

@@ -38,17 +38,17 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                command_buffer::CommandParser* parser,
                int commands_per_update);
 
-  bool Initialize(HWND hwnd);
+  virtual bool Initialize(HWND hwnd);
 #endif  // OS_WIN
 
   virtual ~GPUProcessor();
 
-  void Destroy();
+  virtual void Destroy();
 
-  void ProcessCommands();
+  virtual void ProcessCommands();
 
 #if defined(OS_WIN)
-  void SetWindow(HWND handle, int width, int height);
+  virtual bool SetWindow(HWND handle, int width, int height);
 #endif
 
   // Implementation of CommandBufferEngine.

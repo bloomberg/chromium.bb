@@ -48,19 +48,16 @@ NPError GPUPluginObject::PlatformSpecificSetWindow(NPWindow* new_window) {
               reinterpret_cast<HANDLE>(original_window_proc));
     ::SetWindowLong(handle, GWL_WNDPROC,
                     reinterpret_cast<LONG>(WindowProc));
-  }
 
-  UpdateProcessorWindow();
+    status_ = kWaitingForOpenCommandBuffer;
+  } else {
+    status_ = kWaitingForSetWindow;
+    if (processor_) {
+      processor_->Destroy();
+    }
+  }
 
   return NPERR_NO_ERROR;
-}
-
-void GPUPluginObject::UpdateProcessorWindow() {
-  if (processor_) {
-    processor_->SetWindow(reinterpret_cast<HWND>(window_.window),
-                          static_cast<int>(window_.width),
-                          static_cast<int>(window_.height));
-  }
 }
 
 }  // namespace gpu_plugin

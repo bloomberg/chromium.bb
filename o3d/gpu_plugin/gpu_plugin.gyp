@@ -108,6 +108,7 @@
         'command_buffer_mock.h',
         'gpu_processor.h',
         'gpu_processor.cc',
+        'gpu_processor_mock.h',
         'gpu_processor_win.cc',
       ],
     },
