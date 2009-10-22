@@ -193,8 +193,7 @@ TEST_F(ProxyScriptFetcherTest, NoCache) {
   }
 
   // Now kill the HTTP server.
-  server->SendQuit();
-  EXPECT_TRUE(server->WaitToFinish(20000));
+  EXPECT_TRUE(server->Stop());  // Verify it shutdown synchronously.
   server = NULL;
 
   // Try to fetch the file again -- if should fail, since the server is not
