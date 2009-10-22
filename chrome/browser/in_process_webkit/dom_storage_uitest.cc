@@ -102,19 +102,23 @@ class DOMStorageTest : public UILayoutTest {
   FilePath test_dir_;
 };
 
-TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
+// http://code.google.com/p/chromium/issues/detail?id=24145
+// Remove build_config.h include when this is removed.
+#if defined(OS_WIN)
+#define MAYBE_LocalStorageLayoutTests FLAKY_LocalStorageLayoutTests
+#define MAYBE_DOMStorageLayoutTests FLAKY_DOMStorageLayoutTests
+#else
+#define MAYBE_LocalStorageLayoutTests LocalStorageLayoutTests
+#define MAYBE_DOMStorageLayoutTests DOMStorageLayoutTests
+#endif  // defined(OS_WIN)
+
+
+TEST_F(DOMStorageTest, MAYBE_DOMStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath(), false);
   AddResources();
   RunTests(kTopLevelFiles);
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=24145
-// Remove build_config.h include when this is removed.
-#if defined(OS_WIN)
-#define MAYBE_LocalStorageLayoutTests FLAKY_LocalStorageLayoutTests
-#else
-#define MAYBE_LocalStorageLayoutTests LocalStorageLayoutTests
-#endif  // defined(OS_WIN)
 
 TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
