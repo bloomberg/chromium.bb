@@ -28,11 +28,27 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 Import('env')
 
+env.Tool('wix')
+
+sdk_image = env.Harvest(
+    'nacl_sdk_image.wxs',
+    '$SOURCE_ROOT/native_client/src/third_party/nacl_sdk/windows')
+
+env.AlwaysBuild( sdk_image )
+env.Alias('sdk_image', sdk_image)
+
 if env['TARGET_PLATFORM'] == 'WINDOWS':
-    env.Tool('wix')
-    env.Append( WIXFLAGS = ['-dSRC_ROOT=' + env['STAGING_DIR'] ] )
-    nacl_plugin_msi = env.Package( 'nacl_plugin.wxs' )
-    nacl_plugin_msi = env.Alias('plugin_msi', nacl_plugin_msi )
+  env.Append(WIXFLAGS = '-dSRC_ROOT=' + env['STAGING_DIR'])
+
+  env.Append(WIXLIBS = ['$WIX_PATH/WixUI.wixlib'])
+  env.Append(WIXLOC = ['$WIX_PATH/WixUI_en-us.wxl'])
+
+  nacl_plugin_msi = env.WixPackage('nacl_plugin.wxs')
+  env.Alias('plugin_msi', nacl_plugin_msi)
+
+  nacl_sdk_msi = env.WixPackage('nacl_sdk.msi', ['nacl_sdk.wxs', sdk_image])
+  env.Alias('sdk_msi', nacl_sdk_msi)
 
