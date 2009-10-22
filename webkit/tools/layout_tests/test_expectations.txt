@@ -92,7 +92,6 @@ BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/local/file-url-sent-as-referer.html = PASS
 BUG24182 SLOW WIN : LayoutTests/svg/carto.net/window.svg = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug149275-2.html = PASS
-BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/storage/domstorage/localstorage/quota.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1818-4.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/fast/xpath/4XPath/Borrowed/cz_20030217.html = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/custom/viewbox-syntax.svg = PASS
@@ -3087,10 +3086,6 @@ BUG24331 LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 // Fails since WebKit merge 49321:49372
 BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 
-// WebKit update: 49142:49190
-// Changed in http://trac.webkit.org/changeset/49155.
-BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html = FAIL
-
 // WebKit update: 49190:49206
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
@@ -3190,3 +3185,6 @@ BUG25399 LINUX MAC : LayoutTests/fast/xmlhttprequest/null-document-xmlhttpreques
 
 // Incorrect baseline removed.
 BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
+
+// Webkit roll 49926:49941
+BUG_JORLOW : LayoutTests/storage/domstorage/complex-values.html = FAIL

@@ -8,13 +8,6 @@
 #include "chrome/test/ui/ui_layout_test.h"
 
 // TODO(jorlow): Enable all of these tests, eventually...
-/*
-static const char* kTopLevelFiles[] = {
-  "window-attributes-exist.html",
-  NULL
-};
-*/
-
 static const char* kEventsFiles[] = {
   //"complex-values.html",
   //"iframe-events.html",
@@ -28,24 +21,30 @@ static const char* kEventsFiles[] = {
   NULL
 };
 
-static const char* kNoEventsFiles[] = {
+static const char* kTopLevelFiles[] = {
   "clear.html",
+  "quota.html",
+  "remove-item.html",
+  //"window-attributes-exist.html",
+  NULL
+};
+
+static const char* kNoEventsFiles[] = {
   //"complex-keys.html",
   "delete-removal.html",
   "enumerate-storage.html",
   "enumerate-with-length-and-key.html",
-  "remove-item.html",
   "simple-usage.html",
   NULL
 };
 
 static const char* kLocalStorageFiles[] = {
-  "quota.html",
+  //  "quota.html",
   NULL
 };
 
 static const char* kSessionStorageFiles[] = {
-  "no-quota.html",
+  //  "no-quota.html",
   NULL
 };
 
@@ -105,7 +104,8 @@ class DOMStorageTest : public UILayoutTest {
 
 TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath(), false);
-  //RunTests(kTopLevelFiles);
+  AddResources();
+  RunTests(kTopLevelFiles);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=24145
