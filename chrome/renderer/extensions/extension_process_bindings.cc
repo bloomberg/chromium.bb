@@ -27,6 +27,7 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebSecurityPolicy.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::ContextInfo;
@@ -37,6 +38,7 @@ using bindings_utils::PendingRequest;
 using bindings_utils::PendingRequestMap;
 using bindings_utils::ExtensionBase;
 using WebKit::WebFrame;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebView;
 
 namespace {
@@ -545,7 +547,7 @@ void ExtensionProcessBindings::SetHostPermissions(
     const GURL& extension_url,
     const std::vector<URLPattern>& permissions) {
   for (size_t i = 0; i < permissions.size(); ++i) {
-    WebKit::whiteListAccessFromOrigin(
+    WebSecurityPolicy::whiteListAccessFromOrigin(
         extension_url,
         WebKit::WebString::fromUTF8(permissions[i].scheme()),
         WebKit::WebString::fromUTF8(permissions[i].host()),

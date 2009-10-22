@@ -14,6 +14,7 @@
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptController.h"
+#include "webkit/api/public/WebSecurityPolicy.h"
 #include "webkit/api/public/WebStorageArea.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebStorageNamespace.h"
@@ -45,9 +46,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
     WebKit::initialize(this);
     WebKit::setLayoutTestMode(layout_test_mode);
-    WebKit::registerURLSchemeAsLocal(
+    WebKit::WebSecurityPolicy::registerURLSchemeAsLocal(
         ASCIIToUTF16(webkit_glue::GetUIResourceProtocol()));
-    WebKit::registerURLSchemeAsNoAccess(
+    WebKit::WebSecurityPolicy::registerURLSchemeAsNoAccess(
         ASCIIToUTF16(webkit_glue::GetUIResourceProtocol()));
     WebKit::enableV8SingleThreadMode();
     WebKit::registerExtension(extensions_v8::GearsExtension::Get());

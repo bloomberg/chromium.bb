@@ -52,6 +52,7 @@
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptController.h"
+#include "webkit/api/public/WebSecurityPolicy.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
@@ -68,6 +69,7 @@
 using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
 using WebKit::WebView;
@@ -446,13 +448,13 @@ void RenderThread::EnsureWebKitInitialized() {
   // also be unable to script anything but themselves (to help limit the damage
   // that a corrupt chrome: page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
-  WebKit::registerURLSchemeAsLocal(chrome_ui_scheme);
-  WebKit::registerURLSchemeAsNoAccess(chrome_ui_scheme);
+  WebSecurityPolicy::registerURLSchemeAsLocal(chrome_ui_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNoAccess(chrome_ui_scheme);
 
   // print: pages should be not accessible by normal context.
   WebString print_ui_scheme(ASCIIToUTF16(chrome::kPrintScheme));
-  WebKit::registerURLSchemeAsLocal(print_ui_scheme);
-  WebKit::registerURLSchemeAsNoAccess(print_ui_scheme);
+  WebSecurityPolicy::registerURLSchemeAsLocal(print_ui_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNoAccess(print_ui_scheme);
 
 #if defined(OS_WIN)
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.

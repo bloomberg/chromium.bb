@@ -41,6 +41,7 @@
 #include "WebKitClient.h"
 #include "WebSocketStreamHandle.h"
 #include "WebSocketStreamHandleClient.h"
+#include "WebURL.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebKit;
