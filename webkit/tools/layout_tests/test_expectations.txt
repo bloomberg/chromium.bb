@@ -3143,8 +3143,6 @@ BUG24930 LINUX DEBUG : LayoutTests/editing/selection/editable-html-element.html 
 BUG24930 MAC DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
 
 // WebKit Roll 49597:49640
-BUG24961 : LayoutTests/fast/events/clientXY-in-zoom-and-scroll.html = FAIL
-BUG24962 WIN LINUX : LayoutTests/fast/events/click-focus-anchor.html = FAIL
 BUG24963 MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL
 BUG24964 MAC : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 BUG24964 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
