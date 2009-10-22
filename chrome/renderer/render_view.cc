@@ -321,9 +321,8 @@ void RenderView::UserMetricsRecordAction(const std::wstring& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(routing_id_, action));
 }
 
-void RenderView::PluginCrashed(base::ProcessId pid,
-                               const FilePath& plugin_path) {
-  Send(new ViewHostMsg_CrashedPlugin(routing_id_, pid, plugin_path));
+void RenderView::PluginCrashed(const FilePath& plugin_path) {
+  Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
 }
 
 void RenderView::Init(gfx::NativeViewId parent_hwnd,

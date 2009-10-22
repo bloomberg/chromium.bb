@@ -835,6 +835,8 @@ void WebPluginImpl::HandleURLRequestInternal(
     int resource_id = GetNextResourceId();
     WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
         resource_id, complete_url, notify, notify_data, NULL);
+    if (!resource_client)
+      return;
 
     // If the RouteToFrame call returned a failure then inform the result
     // back to the plugin asynchronously.

@@ -217,21 +217,27 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     webkit_glue::WebPlugin* plugin,
     bool load_manually) {
   IPC::ChannelHandle channel_handle;
-  WebPluginInfo info;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
           url, mime_type_, webkit_glue::GetWebKitLocale(),
-          &channel_handle, &info))) {
+          &channel_handle, &info_))) {
+    return false;
+  }
+
+  if (channel_handle.name.empty()) {
+    // We got an invalid handle.  Either the plugin couldn't be found (which
+    // shouldn't happen, since if we got here the plugin should exist) or the
+    // plugin crashed on initialization.
+    if (!info_.path.empty()) {
+      render_view_->PluginCrashed(info_.path);
+
+      // Return true so that the plugin widget is created and we can paint the
+      // crashed plugin there.
+      return true;
+    }
     return false;
   }
 
 #if defined(OS_POSIX)
-  if (channel_handle.name.empty()) {
-    // We got an invalid handle. Possibly the plugin process is stale? In any
-    // case, don't try to connect to it, the empty name represents the host
-    // channel, and connecting to it again does bad things.
-    return false;
-  }
-
   // If we received a ChannelHandle, register it now.
   if (channel_handle.socket.fd >= 0)
     IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
@@ -249,7 +255,6 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   if (!result)
     return false;
 
-  info_ = info;
   channel_host_ = channel_host;
   instance_id_ = instance_id;
 
@@ -379,7 +384,7 @@ void WebPluginDelegateProxy::OnChannelError() {
     }
     plugin_->Invalidate();
   }
-  render_view_->PluginCrashed(GetProcessId(), info_.path);
+  render_view_->PluginCrashed(info_.path);
 }
 
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
@@ -517,7 +522,7 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
 
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
-  if (!channel_host_->channel_valid()) {
+  if (!channel_host_ || !channel_host_->channel_valid()) {
     PaintSadPlugin(context, rect);
     return;
   }
@@ -1040,6 +1045,9 @@ webkit_glue::WebPluginResourceClient*
 WebPluginDelegateProxy::CreateResourceClient(
     int resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t npstream) {
+  if (!channel_host_)
+    return NULL;
+
   ResourceClientProxy* proxy = new ResourceClientProxy(channel_host_,
                                                        instance_id_);
   proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);

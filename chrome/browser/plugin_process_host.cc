@@ -523,11 +523,19 @@ void PluginProcessHost::OnChannelError() {
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     ReplyToRenderer(pending_requests_[i].renderer_message_filter_.get(),
                     IPC::ChannelHandle(),
-                    WebPluginInfo(),
+                    info_,
                     pending_requests_[i].reply_msg);
   }
 
   pending_requests_.clear();
+
+  while (!sent_requests_.empty()) {
+    ReplyToRenderer(sent_requests_.front().renderer_message_filter_.get(),
+                    IPC::ChannelHandle(),
+                    info_,
+                    sent_requests_.front().reply_msg);
+    sent_requests_.pop();
+  }
 }
 
 void PluginProcessHost::OpenChannelToPlugin(
@@ -631,7 +639,7 @@ void PluginProcessHost::RequestPluginChannel(
   } else {
     ReplyToRenderer(renderer_message_filter,
                     IPC::ChannelHandle(),
-                    WebPluginInfo(),
+                    info_,
                     reply_msg);
   }
 }

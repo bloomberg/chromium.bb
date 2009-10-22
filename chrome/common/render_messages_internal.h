@@ -1415,8 +1415,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Sent by the renderer process to indicate that a plugin instance has
   // crashed.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_CrashedPlugin,
-                      base::ProcessId /* plugin process id */,
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
                       FilePath /* plugin_path */)
 
   // Displays a JavaScript out-of-memory message in the infobar.
