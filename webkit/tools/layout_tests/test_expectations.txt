@@ -774,8 +774,8 @@ BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 // Linux debug media tests have spurious timeouts and it's annoying.  We have no idea why.
 BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
-// We don't autoload when src is assigned... we rely on load().
-BUG9798 BUG13907 SKIP: LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
+// Test should be passing.  Will remove once confimed it's not flaky.
+BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
 
 // The first load event fires occasionally, ending the test early.
 BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
