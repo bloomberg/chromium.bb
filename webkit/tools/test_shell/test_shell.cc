@@ -425,7 +425,6 @@ void TestShell::ResetWebPreferences() {
         // lose the coverage of dynamic font tests in webkit test.
         web_prefs_->remote_fonts_enabled = true;
         web_prefs_->local_storage_enabled = true;
-        web_prefs_->session_storage_enabled = true;
         web_prefs_->application_cache_enabled = true;
         web_prefs_->databases_enabled = true;
         // LayoutTests were written with Safari Mac in mind which does not allow

@@ -195,11 +195,6 @@ void WebSettingsImpl::setLocalStorageEnabled(bool enabled)
     m_settings->setLocalStorageEnabled(enabled);
 }
 
-void WebSettingsImpl::setSessionStorageEnabled(bool enabled)
-{
-    m_settings->setSessionStorageEnabled(enabled);
-}
-
 void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
 {
     // FIXME: If you ever need more behaviors than this, then we should probably

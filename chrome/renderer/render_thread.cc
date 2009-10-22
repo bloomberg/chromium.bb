@@ -500,6 +500,11 @@ void RenderThread::EnsureWebKitInitialized() {
 
   if (command_line.HasSwitch(switches::kEnableWebSockets))
     WebKit::enableWebSockets();
+
+  WebKit::setLocalStorageEnabled(
+      command_line.HasSwitch(switches::kEnableLocalStorage));
+  WebKit::setSessionStorageEnabled(
+      command_line.HasSwitch(switches::kEnableSessionStorage));
 }
 
 void RenderThread::IdleHandler() {

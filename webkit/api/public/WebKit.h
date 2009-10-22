@@ -87,6 +87,10 @@ namespace WebKit {
     WEBKIT_API void enableWebSockets();
     WEBKIT_API bool webSocketsEnabled();
 
+    // Enables HTML5 DOM Storage support.
+    WEBKIT_API void setLocalStorageEnabled(bool enabled);
+    WEBKIT_API void setSessionStorageEnabled(bool enabled);
+
 } // namespace WebKit
 
 #endif
