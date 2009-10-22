@@ -476,7 +476,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
   if (event.button == WebMouseEvent::ButtonLeft) {
     RefPtr<Node> focused_node = GetFocusedNode();
     if (focused_node.get() &&
-        WebKit::nodeToHTMLInputElement(focused_node.get())) {
+        WebKit::toHTMLInputElement(focused_node.get())) {
       IntPoint point(event.x, event.y);
       point = page_->mainFrame()->view()->windowToContents(point);
       HitTestResult result(point);

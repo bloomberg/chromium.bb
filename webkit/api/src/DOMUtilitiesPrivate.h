@@ -28,22 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMUtilities_h
-#define DOMUtilities_h
+#ifndef DOMUtilitiesPrivate_h
+#define DOMUtilitiesPrivate_h
 
 namespace WebCore {
-class Element;
 class HTMLInputElement;
+class HTMLLinkElement;
+class HTMLMetaElement;
+class HTMLOptionElement;
 class Node;
+class String;
 }
 
 // This file is an aggregate of useful WebCore operations.
 namespace WebKit {
 
-// Returns the passed element/node casted to an HTMLInputElement if it is one,
-// NULL if it is not an HTMLInputElement.
-WebCore::HTMLInputElement* elementToHTMLInputElement(WebCore::Element* element);
-WebCore::HTMLInputElement* nodeToHTMLInputElement(WebCore::Node* node);
+// If node is an HTML node with a tag name of name it is casted and returned.
+// If node is not an HTML node or the tag name is not name NULL is returned.
+WebCore::HTMLInputElement* toHTMLInputElement(WebCore::Node* node);
+WebCore::HTMLLinkElement* toHTMLLinkElement(WebCore::Node* node);
+WebCore::HTMLMetaElement* toHTMLMetaElement(WebCore::Node* node);
+WebCore::HTMLOptionElement* toHTMLOptionElement(WebCore::Node* node);
+
+// Returns the name that should be used for the specified |element| when
+// storing autofill data.  This is either the field name or its id, an empty
+// string if it has no name and no id.
+WebCore::String nameOfInputElement(WebCore::HTMLInputElement* element);
 
 } // namespace WebKit
 

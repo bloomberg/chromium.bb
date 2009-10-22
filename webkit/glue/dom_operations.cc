@@ -165,16 +165,6 @@ void GetAllSavableResourceLinksForFrame(WebFrameImpl* current_frame,
   }
 }
 
-template <class HTMLNodeType>
-HTMLNodeType* CastHTMLElement(WebCore::Node* node,
-                              const WebCore::QualifiedName& name) {
-  if (node->isHTMLElement() &&
-      static_cast<typename WebCore::HTMLElement*>(node)->hasTagName(name)) {
-    return static_cast<HTMLNodeType*>(node);
-  }
-  return NULL;
-}
-
 }  // namespace
 
 namespace webkit_glue {
@@ -255,7 +245,7 @@ static bool FindFormInputElements(WebCore::HTMLFormElement* fe,
     // matching elements it can get at them through the FormElement*.
     // Note: This assignment adds a reference to the InputElement.
     result->input_elements[data.elements[j]] =
-        WebKit::nodeToHTMLInputElement(temp_elements[0].get());
+        WebKit::toHTMLInputElement(temp_elements[0].get());
     DCHECK(result->input_elements[data.elements[j]].get());
   }
   return true;
@@ -366,21 +356,6 @@ void FillPasswordForm(WebView* view,
             new HTMLInputDelegate(password_element),
             data));
   }
-}
-
-WebCore::HTMLLinkElement* CastToHTMLLinkElement(WebCore::Node* node) {
-  return CastHTMLElement<WebCore::HTMLLinkElement>(node,
-      WebCore::HTMLNames::linkTag);
-}
-
-WebCore::HTMLMetaElement* CastToHTMLMetaElement(WebCore::Node* node) {
-  return CastHTMLElement<WebCore::HTMLMetaElement>(node,
-      WebCore::HTMLNames::metaTag);
-}
-
-WebCore::HTMLOptionElement* CastToHTMLOptionElement(WebCore::Node* node) {
-  return CastHTMLElement<WebCore::HTMLOptionElement>(node,
-      WebCore::HTMLNames::optionTag);
 }
 
 WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
@@ -682,15 +657,12 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
   WTF::PassRefPtr<WebCore::HTMLCollection> children = head->children();
   for (unsigned i = 0; i < children->length(); ++i) {
     WebCore::Node* child = children->item(i);
-    WebCore::HTMLLinkElement* link = CastHTMLElement<WebCore::HTMLLinkElement>(
-        child, WebCore::HTMLNames::linkTag);
+    WebCore::HTMLLinkElement* link = WebKit::toHTMLLinkElement(child);
     if (link) {
       if (link->isIcon())
         AddInstallIcon(link, &app_info->icons);
     } else {
-      WebCore::HTMLMetaElement* meta =
-          CastHTMLElement<WebCore::HTMLMetaElement>(
-              child, WebCore::HTMLNames::metaTag);
+      WebCore::HTMLMetaElement* meta = WebKit::toHTMLMetaElement(child);
       if (meta) {
         if (meta->name() == String("application-name")) {
           app_info->title = webkit_glue::StringToString16(meta->content());

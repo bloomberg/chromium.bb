@@ -28,26 +28,68 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "DOMUtilitiesPrivate.h"
 
 #include "Element.h"
 #include "HTMLInputElement.h"
+#include "HTMLLinkElement.h"
+#include "HTMLMetaElement.h"
+#include "HTMLOptionElement.h"
 #include "HTMLNames.h"
 #include "Node.h"
 
-namespace WebKit {
+using namespace WebCore;
 
-WebCore::HTMLInputElement* elementToHTMLInputElement(
-    WebCore::Element* element) {
-  if (!element->hasLocalName(WebCore::HTMLNames::inputTag))
-    return NULL;
-  return static_cast<WebCore::HTMLInputElement*>(element);
+namespace {
+
+template <class HTMLNodeType>
+HTMLNodeType* toHTMLElement(Node* node, const QualifiedName& name)
+{
+    if (node->isHTMLElement()
+        && static_cast<HTMLElement*>(node)->hasTagName(name)) {
+        return static_cast<HTMLNodeType*>(node);
+    }
+    return 0;
 }
 
-WebCore::HTMLInputElement* nodeToHTMLInputElement(WebCore::Node* node) {
-  if (node->nodeType() != WebCore::Node::ELEMENT_NODE)
-    return NULL;
-  return elementToHTMLInputElement(static_cast<WebCore::Element*>(node));
+} // namespace
+
+namespace WebKit {
+
+HTMLInputElement* toHTMLInputElement(Node* node)
+{
+    return toHTMLElement<HTMLInputElement>(node, HTMLNames::inputTag);
+}
+
+HTMLLinkElement* toHTMLLinkElement(Node* node)
+{
+    return toHTMLElement<HTMLLinkElement>(node, HTMLNames::linkTag);
+}
+
+HTMLMetaElement* toHTMLMetaElement(Node* node)
+{
+    return toHTMLElement<HTMLMetaElement>(node, HTMLNames::metaTag);
+}
+
+HTMLOptionElement* toHTMLOptionElement(Node* node)
+{
+    return toHTMLElement<HTMLOptionElement>(node, HTMLNames::optionTag);
+}
+
+String nameOfInputElement(HTMLInputElement* element)
+{
+    String name = element->name();
+    String trimmedName = name.stripWhiteSpace();
+    if (!trimmedName.isEmpty())
+        return trimmedName;
+
+    name = element->getAttribute(HTMLNames::idAttr);
+    trimmedName = name.stripWhiteSpace();
+    if (!trimmedName.isEmpty())
+        return trimmedName;
+
+    return String();
 }
 
 } // namespace WebKit

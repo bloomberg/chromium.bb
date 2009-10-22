@@ -8,10 +8,6 @@
 #include <string>
 #include <vector>
 
-namespace WebCore {
-class HTMLInputElement;
-}
-
 namespace WebKit {
 class WebForm;
 }
@@ -34,12 +30,6 @@ class FormFieldValues {
   };
 
   static FormFieldValues* Create(const WebKit::WebForm& form);
-
-  // Returns the name that should be used for the specified |element| when
-  // storing autofill data.  This is either the field name or its id, an empty
-  // string if it has no name and no id.
-  static string16 GetNameForInputElement(WebCore::HTMLInputElement*
-      element);
 
   // A vector of all the input fields in the form.
   std::vector<Element> elements;

@@ -661,7 +661,7 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
 
   // Notify any password-listener of the focus change.
   WebCore::HTMLInputElement* input_element =
-      WebKit::elementToHTMLInputElement(element);
+      WebKit::toHTMLInputElement(element);
   if (!input_element)
     return;
 
@@ -685,7 +685,7 @@ void EditorClientImpl::textDidChangeInTextField(WebCore::Element* element) {
 
 bool EditorClientImpl::ShowFormAutofillForNode(WebCore::Node* node) {
   WebCore::HTMLInputElement* input_element =
-      WebKit::nodeToHTMLInputElement(node);
+      WebKit::toHTMLInputElement(node);
   if (input_element)
     return Autofill(input_element, true, true, false);
   return false;
@@ -705,7 +705,8 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
     return false;
   }
 
-  string16 name = FormFieldValues::GetNameForInputElement(input_element);
+  string16 name = webkit_glue::StringToString16(
+      WebKit::nameOfInputElement(input_element));
   if (name.empty())  // If the field has no name, then we won't have values.
     return false;
 
@@ -765,7 +766,8 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   }
 
   // Then trigger form autofill.
-  string16 name = FormFieldValues::GetNameForInputElement(input_element);
+  string16 name = webkit_glue::StringToString16(
+      WebKit::nameOfInputElement(input_element));
   ASSERT(static_cast<int>(name.length()) > 0);
 
   if (webview_->client()) {

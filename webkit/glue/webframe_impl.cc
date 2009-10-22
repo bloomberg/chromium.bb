@@ -141,10 +141,9 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/dom_operations.h"
-#include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webframe_impl.h"
@@ -399,7 +398,7 @@ WebURL WebFrameImpl::openSearchDescriptionURL() const {
       for (Node* child = children->firstItem(); child != NULL;
            child = children->nextItem()) {
         WebCore::HTMLLinkElement* link_element =
-            webkit_glue::CastToHTMLLinkElement(child);
+            WebKit::toHTMLLinkElement(child);
         if (link_element && link_element->type() == kOSDType &&
             link_element->rel() == kOSDRel && !link_element->href().isEmpty()) {
           return webkit_glue::KURLToWebURL(link_element->href());

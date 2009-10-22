@@ -15,6 +15,8 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/glue/form_field_values.h"
+// Can include from api/src because this file will eventually be there too.
+#include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebForm;
@@ -62,7 +64,8 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
     if (value.length() == 0)
       continue;
 
-    string16 name = GetNameForInputElement(input_element);
+    string16 name = StringToString16(
+        WebKit::nameOfInputElement(input_element));
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
@@ -70,23 +73,6 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   }
 
   return result;
-}
-
-// static
-string16 FormFieldValues::GetNameForInputElement(WebCore::HTMLInputElement*
-    element) {
-  string16 name = StringToString16(element->name());
-  string16 trimmed_name;
-  TrimWhitespace(name, TRIM_LEADING, &trimmed_name);
-  if (trimmed_name.length() > 0)
-    return trimmed_name;
-
-  name = StringToString16(element->getAttribute(WebCore::HTMLNames::idAttr));
-  TrimWhitespace(name, TRIM_LEADING, &trimmed_name);
-  if (trimmed_name.length() > 0)
-    return trimmed_name;
-
-  return string16();
 }
 
 }  // namespace webkit_glue
