@@ -6,7 +6,7 @@
 <style>
 body {
   font-size: 87%;
-  font-family: Arial Narrow, Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   min-width: 47em;
   padding-bottom: 0.75em;
@@ -52,13 +52,15 @@ div.content {
 .section-header {
   background: #ebeff9;
   border-top: 1px solid #b5c7de;
-  font-size: 97%;
-  font-weight: bold;
-  letter-spacing: -1px;
+  font-size: 95%;
   padding-bottom: 3px;
   padding-left: 10px;
   padding-top: 3px;
   width: 100%;
+}
+
+.section-header-title {
+  font-weight: bold;
 }
 
 .vbox-container {
@@ -83,7 +85,7 @@ div.content {
 }
 
 .developer-tools-link {
-  font-size: 84%;
+  font-size: 100%;
   margin-right: 9px;
   white-space: nowrap;
 }
@@ -91,9 +93,10 @@ div.content {
 .developer-tools {
   background: #f4f6fc;
   border-bottom: 1px solid #edeff5;
-  padding-bottom: 0.5em;
+  font-size: 85%;
+  padding-bottom: 0.8em;
   padding-left: 10px;
-  padding-top: 0.5em;
+  padding-top: 0.8em;
   width: 100%;
 }
 
@@ -537,9 +540,10 @@ function autoUpdate() {
           <table cellpadding="0" cellspacing="0" width="100%">
           <tr valign="center">
             <td>
-              Installed Extensions
-              <span jsdisplay="extensions.length > 0">(<span
-                  jscontent="extensions.length"></span>)</span>
+              <span class="section-header-title">Installed Extensions
+                <span jsdisplay="extensions.length > 0">(<span
+                    jscontent="extensions.length"></span>)</span>
+              </span>
             </td>
             <td width="14" padding="">
               <img id="collapse" class="developer-tools-image"
@@ -561,8 +565,8 @@ function autoUpdate() {
       <div id="developer_tools" class="wbox-dev-tools">
         <div class="developer-tools">
           Developer Tools:
-          <button onclick="loadExtension()">Load unpacked Extensions...</button>
-          <button onclick="showPackDialog()">Pack Extensions...</button>
+          <button onclick="loadExtension()">Load unpacked Extension...</button>
+          <button onclick="showPackDialog()">Pack Extension...</button>
           <button onclick="autoUpdate()">Update Extensions now</button>
         </div>
       </div>
