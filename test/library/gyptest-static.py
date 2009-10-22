@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Verifies simple build of a "Hello, world!" program with static libraries,
 including verifying that libraries are rebuilt correctly when functions

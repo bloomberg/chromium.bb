@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-#
-# XXX Python script template
-#
-# XXX Describe what the script does here.
-#
+
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+__doc__ = """
+gyptest.py -- test runner for GYP tests.
+"""
 
 import os
 import optparse

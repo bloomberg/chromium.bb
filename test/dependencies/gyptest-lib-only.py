@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Verify that a link time only dependency will get pulled into the set of built
 targets, even if no executable uses it.

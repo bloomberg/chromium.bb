@@ -1,3 +1,7 @@
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # This is a simple test file to make sure that variable substitution
 # happens correctly.  Run "run_tests.py" using python to generate the
 # output from this gyp file.

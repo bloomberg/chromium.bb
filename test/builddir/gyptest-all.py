@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2009 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Verify the settings that cause a set of programs to be created in
 a specific build directory, and that no intermediate built files
