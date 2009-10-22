@@ -103,7 +103,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
       return;
     }
 
-    if (data_.substr(0, boundary_.length()) != boundary_) {
+    if (0 != data_.compare(0, boundary_.length(), boundary_)) {
       data_ = boundary_ + "\n" + data_;
     }
   }
@@ -131,7 +131,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     if (boundary_pos > 0) {
       // Send the last data chunk.
       client_->didReceiveData(loader_,
-                              data_.substr(0, boundary_pos).data(),
+                              data_.data(),
                               static_cast<int>(boundary_pos),
                               length_received);
     }
@@ -209,7 +209,7 @@ bool MultipartResponseDelegate::ParseHeaders() {
 
   // Eat headers
   std::string headers("\n");
-  headers.append(data_.substr(0, line_end_pos));
+  headers.append(data_, 0, line_end_pos);
   data_ = data_.substr(line_end_pos);
 
   // Create a WebURLResponse based on the original set of headers + the
