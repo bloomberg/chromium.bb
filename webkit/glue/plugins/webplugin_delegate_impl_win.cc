@@ -267,6 +267,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       int major = static_cast<int>(StringToInt64(version[0]));
       if (major >= 9) {
         quirks_ |= PLUGIN_QUIRK_DIE_AFTER_UNLOAD;
+
+        // 9.2 needs this.
+        quirks_ |= PLUGIN_QUIRK_SETWINDOW_TWICE;
       }
     }
     quirks_ |= PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS;
