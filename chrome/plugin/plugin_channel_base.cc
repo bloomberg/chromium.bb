@@ -159,8 +159,11 @@ void PluginChannelBase::RemoveRoute(int route_id) {
     // If this RemoveRoute call from the NPObject is a result of us calling
     // OnChannelError below, don't call erase() here because that'll corrupt
     // the iterator below.
-    if (!in_remove_route_)
+    if (in_remove_route_) {
+      iter->second = NULL;
+    } else {
       npobject_listeners_.erase(iter);
+    }
 
     return;
   }
@@ -172,7 +175,8 @@ void PluginChannelBase::RemoveRoute(int route_id) {
     ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
     in_remove_route_ = true;
     while (npobj_iter != npobject_listeners_.end()) {
-      npobj_iter->second->OnChannelError();
+      if (npobj_iter->second)
+        npobj_iter->second->OnChannelError();
       npobj_iter++;
     }
     in_remove_route_ = false;
