@@ -177,11 +177,11 @@ struct NaClDesc* NaClHandlePassBrowserGetSocketAddress() {
     if (0 != NaClCommonDescMakeBoundSock(handle_descs)) {
       goto no_cleanup;
     }
-    socket_address = NaClDescRef(handle_descs[1]);
-    // Create the acceptor/server thread.
-    NaClThreadCtor(&thread, HandleServer, NULL, 65536);
-    // And return to the caller.
   }
+  socket_address = NaClDescRef(handle_descs[1]);
+  // Create the acceptor/server thread.
+  NaClThreadCtor(&thread, HandleServer, NULL, 65536);
+  // And return to the caller.
  no_cleanup:
   NaClMutexUnlock(&pid_handle_map_mu);
   return socket_address;
