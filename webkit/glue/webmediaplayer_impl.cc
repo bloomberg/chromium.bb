@@ -289,9 +289,13 @@ void WebMediaPlayerImpl::seek(float seconds) {
     return;
   }
 
+  // Drop our ready state if the media file isn't fully loaded.
+  if (!pipeline_->IsLoaded()) {
+    SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
+  }
+
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
-  SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
   pipeline_->Seek(
       base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds)),
       NewCallback(proxy_.get(),
