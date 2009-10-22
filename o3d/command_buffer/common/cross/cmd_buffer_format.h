@@ -59,12 +59,8 @@
 #ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
 #define O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
 
-#include "base/basictypes.h"
-#include "command_buffer/common/cross/types.h"
-#include "command_buffer/common/cross/logging.h"
+#include "command_buffer/common/cross/cmd_buffer_common.h"
 #include "command_buffer/common/cross/resource.h"
-#include "command_buffer/common/cross/bitfield_helpers.h"
-#include "core/cross/packing.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -77,74 +73,75 @@ namespace command_buffer {
 //
 // NOTE: THE ORDER OF THESE MUST NOT CHANGE (their id is derived by order)
 #define O3D_COMMAND_BUFFER_CMDS(OP) \
-  OP(Noop)                          /*  0 */ \
-  OP(SetToken)                      /*  1 */ \
-  OP(BeginFrame)                    /*  2 */ \
-  OP(EndFrame)                      /*  3 */ \
-  OP(Clear)                         /*  4 */ \
-  OP(CreateVertexBuffer)            /*  5 */ \
-  OP(DestroyVertexBuffer)           /*  6 */ \
-  OP(SetVertexBufferData)           /*  7 */ \
-  OP(SetVertexBufferDataImmediate)  /*  8 */ \
-  OP(GetVertexBufferData)           /*  9 */ \
-  OP(CreateIndexBuffer)             /* 10 */ \
-  OP(DestroyIndexBuffer)            /* 11 */ \
-  OP(SetIndexBufferData)            /* 12 */ \
-  OP(SetIndexBufferDataImmediate)   /* 13 */ \
-  OP(GetIndexBufferData)            /* 14 */ \
-  OP(CreateVertexStruct)            /* 15 */ \
-  OP(DestroyVertexStruct)           /* 16 */ \
-  OP(SetVertexInput)                /* 17 */ \
-  OP(SetVertexStruct)               /* 18 */ \
-  OP(Draw)                          /* 19 */ \
-  OP(DrawIndexed)                   /* 20 */ \
-  OP(CreateEffect)                  /* 21 */ \
-  OP(CreateEffectImmediate)         /* 22 */ \
-  OP(DestroyEffect)                 /* 23 */ \
-  OP(SetEffect)                     /* 24 */ \
-  OP(GetParamCount)                 /* 25 */ \
-  OP(CreateParam)                   /* 26 */ \
-  OP(CreateParamByName)             /* 27 */ \
-  OP(CreateParamByNameImmediate)    /* 28 */ \
-  OP(DestroyParam)                  /* 29 */ \
-  OP(SetParamData)                  /* 30 */ \
-  OP(SetParamDataImmediate)         /* 31 */ \
-  OP(GetParamDesc)                  /* 32 */ \
-  OP(GetStreamCount)                /* 33 */ \
-  OP(GetStreamDesc)                 /* 34 */ \
-  OP(DestroyTexture)                /* 35 */ \
-  OP(CreateTexture2d)               /* 36 */ \
-  OP(CreateTexture3d)               /* 37 */ \
-  OP(CreateTextureCube)             /* 38 */ \
-  OP(SetTextureData)                /* 39 */ \
-  OP(SetTextureDataImmediate)       /* 40 */ \
-  OP(GetTextureData)                /* 41 */ \
-  OP(CreateSampler)                 /* 42 */ \
-  OP(DestroySampler)                /* 43 */ \
-  OP(SetSamplerStates)              /* 44 */ \
-  OP(SetSamplerBorderColor)         /* 45 */ \
-  OP(SetSamplerTexture)             /* 46 */ \
-  OP(SetViewport)                   /* 47 */ \
-  OP(SetScissor)                    /* 48 */ \
-  OP(SetPointLineRaster)            /* 49 */ \
-  OP(SetPolygonRaster)              /* 50 */ \
-  OP(SetPolygonOffset)              /* 51 */ \
-  OP(SetAlphaTest)                  /* 52 */ \
-  OP(SetDepthTest)                  /* 53 */ \
-  OP(SetStencilTest)                /* 54 */ \
-  OP(SetBlending)                   /* 55 */ \
-  OP(SetBlendingColor)              /* 56 */ \
-  OP(SetColorWrite)                 /* 57 */ \
-  OP(CreateRenderSurface)           /* 58 */ \
-  OP(DestroyRenderSurface)          /* 59 */ \
-  OP(CreateDepthSurface)            /* 60 */ \
-  OP(DestroyDepthSurface)           /* 61 */ \
-  OP(SetRenderSurface)              /* 62 */ \
-  OP(SetBackSurfaces)               /* 63 */ \
+  OP(Noop)                          /* 1024 */ \
+  OP(SetToken)                      /* 1025 */ \
+  OP(BeginFrame)                    /* 1026 */ \
+  OP(EndFrame)                      /* 1027 */ \
+  OP(Clear)                         /* 1028 */ \
+  OP(CreateVertexBuffer)            /* 1029 */ \
+  OP(DestroyVertexBuffer)           /* 1030 */ \
+  OP(SetVertexBufferData)           /* 1031 */ \
+  OP(SetVertexBufferDataImmediate)  /* 1032 */ \
+  OP(GetVertexBufferData)           /* 1033 */ \
+  OP(CreateIndexBuffer)             /* 1034 */ \
+  OP(DestroyIndexBuffer)            /* 1035 */ \
+  OP(SetIndexBufferData)            /* 1036 */ \
+  OP(SetIndexBufferDataImmediate)   /* 1037 */ \
+  OP(GetIndexBufferData)            /* 1038 */ \
+  OP(CreateVertexStruct)            /* 1039 */ \
+  OP(DestroyVertexStruct)           /* 1040 */ \
+  OP(SetVertexInput)                /* 1041 */ \
+  OP(SetVertexStruct)               /* 1042 */ \
+  OP(Draw)                          /* 1043 */ \
+  OP(DrawIndexed)                   /* 1044 */ \
+  OP(CreateEffect)                  /* 1045 */ \
+  OP(CreateEffectImmediate)         /* 1046 */ \
+  OP(DestroyEffect)                 /* 1047 */ \
+  OP(SetEffect)                     /* 1048 */ \
+  OP(GetParamCount)                 /* 1049 */ \
+  OP(CreateParam)                   /* 1050 */ \
+  OP(CreateParamByName)             /* 1051 */ \
+  OP(CreateParamByNameImmediate)    /* 1052 */ \
+  OP(DestroyParam)                  /* 1053 */ \
+  OP(SetParamData)                  /* 1054 */ \
+  OP(SetParamDataImmediate)         /* 1055 */ \
+  OP(GetParamDesc)                  /* 1056 */ \
+  OP(GetStreamCount)                /* 1057 */ \
+  OP(GetStreamDesc)                 /* 1058 */ \
+  OP(DestroyTexture)                /* 1059 */ \
+  OP(CreateTexture2d)               /* 1060 */ \
+  OP(CreateTexture3d)               /* 1061 */ \
+  OP(CreateTextureCube)             /* 1062 */ \
+  OP(SetTextureData)                /* 1063 */ \
+  OP(SetTextureDataImmediate)       /* 1064 */ \
+  OP(GetTextureData)                /* 1065 */ \
+  OP(CreateSampler)                 /* 1066 */ \
+  OP(DestroySampler)                /* 1067 */ \
+  OP(SetSamplerStates)              /* 1068 */ \
+  OP(SetSamplerBorderColor)         /* 1069 */ \
+  OP(SetSamplerTexture)             /* 1070 */ \
+  OP(SetViewport)                   /* 1071 */ \
+  OP(SetScissor)                    /* 1072 */ \
+  OP(SetPointLineRaster)            /* 1073 */ \
+  OP(SetPolygonRaster)              /* 1074 */ \
+  OP(SetPolygonOffset)              /* 1075 */ \
+  OP(SetAlphaTest)                  /* 1076 */ \
+  OP(SetDepthTest)                  /* 1077 */ \
+  OP(SetStencilTest)                /* 1078 */ \
+  OP(SetBlending)                   /* 1079 */ \
+  OP(SetBlendingColor)              /* 1080 */ \
+  OP(SetColorWrite)                 /* 1081 */ \
+  OP(CreateRenderSurface)           /* 1082 */ \
+  OP(DestroyRenderSurface)          /* 1083 */ \
+  OP(CreateDepthSurface)            /* 1084 */ \
+  OP(DestroyDepthSurface)           /* 1085 */ \
+  OP(SetRenderSurface)              /* 1086 */ \
+  OP(SetBackSurfaces)               /* 1087 */ \
 
 
 // GAPI commands.
 enum CommandId {
+  kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
   #define O3D_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
   O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
@@ -153,68 +150,6 @@ enum CommandId {
 
   kNumCommands,
 };
-
-const char* GetCommandName(CommandId id);
-
-namespace cmd {
-  enum ArgFlags {
-    kFixed = 0x0,
-    kAtLeastN = 0x1,
-  };
-}  // namespace cmd
-
-// Computes the number of command buffer entries needed for a certain size. In
-// other words it rounds up to a multiple of entries.
-inline uint32 ComputeNumEntries(size_t size_in_bytes) {
-  return static_cast<uint32>(
-      (size_in_bytes + sizeof(uint32) - 1) / sizeof(uint32));  // NOLINT
-}
-
-// Rounds up to a multiple of entries in bytes.
-inline size_t RoundSizeToMultipleOfEntries(size_t size_in_bytes) {
-  return ComputeNumEntries(size_in_bytes) * sizeof(uint32);  // NOLINT
-}
-
-// Struct that defines the command header in the command buffer.
-struct CommandHeader {
-  Uint32 size:8;
-  Uint32 command:24;
-
-  void Init(uint32 _command, uint32 _size) {
-    DCHECK_LT(_size, 256u);
-    DCHECK_LT(_command, static_cast<unsigned int>(kNumCommands));
-    command = _command;
-    size = _size;
-  }
-
-  // Sets the header based on the passed in command. Can not be used for
-  // variable sized commands like immediate commands or Noop.
-  template <typename T>
-  void SetCmd() {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
-    Init(T::kCmdId, ComputeNumEntries(sizeof(T)));  // NOLINT
-  }
-
-  // Sets the header by a size in bytes.
-  template <typename T>
-  void SetCmdBySize(uint32 size_in_bytes) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    Init(T::kCmdId, ComputeNumEntries(sizeof(T) + size_in_bytes));  // NOLINT
-  }
-};
-
-COMPILE_ASSERT(sizeof(CommandHeader) == 4, Sizeof_CommandHeader_is_not_4);
-
-// Union that defines possible command buffer entries.
-union CommandBufferEntry {
-  CommandHeader value_header;
-  Uint32 value_uint32;
-  Int32 value_int32;
-  float value_float;
-};
-
-COMPILE_ASSERT(sizeof(CommandBufferEntry) == 4,
-               Sizeof_CommandBufferEntry_is_not_4);
 
 // Bit definitions for buffers to clear.
 enum ClearBuffer {
@@ -307,57 +242,11 @@ enum BlendFunc {
 
 namespace cmd {
 
+const char* GetCommandName(CommandId id);
+
 // Make sure the compiler does not add extra padding to any of the command
 // structures.
 O3D_PUSH_STRUCTURE_PACKING_1;
-
-// Gets the address of memory just after a structure in a typesafe way. This is
-// used for IMMEDIATE commands to get the address of the place to put the data.
-// Immediate command put their data direclty in the command buffer.
-// Parameters:
-//   cmd: Address of command.
-template <typename T>
-void* ImmediateDataAddress(T* cmd) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-  return reinterpret_cast<char*>(cmd) + sizeof(*cmd);
-}
-
-// Gets the address of the place to put the next command in a typesafe way.
-// This can only be used for fixed sized commands.
-template <typename T>
-// Parameters:
-//   cmd: Address of command.
-void* NextCmdAddress(void* cmd) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
-  return reinterpret_cast<char*>(cmd) + sizeof(T);
-}
-
-// Gets the address of the place to put the next command in a typesafe way.
-// This can only be used for variable sized command like IMMEDIATE commands.
-// Parameters:
-//   cmd: Address of command.
-//   size_of_data_in_bytes: Size of the data for the command.
-template <typename T>
-void* NextImmediateCmdAddress(void* cmd, uint32 size_of_data_in_bytes) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-  return reinterpret_cast<char*>(cmd) + sizeof(T) +   // NOLINT
-      RoundSizeToMultipleOfEntries(size_of_data_in_bytes);
-}
-
-struct SharedMemory {
-  void Init(uint32 _id, uint32 _offset) {
-    id = _id;
-    offset = _offset;
-  }
-
-  uint32 id;
-  uint32 offset;
-};
-
-COMPILE_ASSERT(offsetof(SharedMemory, id) == 0,
-               Offsetof_SharedMemory_id_not_0);
-COMPILE_ASSERT(offsetof(SharedMemory, offset) == 4,
-               Offsetof_SharedMemory_offset_not_4);
 
 struct Noop {
   typedef Noop ValueType;
@@ -3317,8 +3206,7 @@ COMPILE_ASSERT(offsetof(SetBackSurfaces, header) == 0,
 
 O3D_POP_STRUCTURE_PACKING;
 
-}  // namespace cmd
-
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

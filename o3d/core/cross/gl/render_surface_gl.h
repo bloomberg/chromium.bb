@@ -36,6 +36,7 @@
 #ifndef O3D_CORE_CROSS_GL_RENDER_SURFACE_GL_H_
 #define O3D_CORE_CROSS_GL_RENDER_SURFACE_GL_H_
 
+#include "core/cross/gl/gl_headers.h"
 #include "core/cross/render_surface.h"
 #include "core/cross/texture.h"
 

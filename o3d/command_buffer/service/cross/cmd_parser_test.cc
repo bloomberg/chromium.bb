@@ -35,6 +35,7 @@
 #include "tests/common/win/testing_common.h"
 #include "command_buffer/service/cross/cmd_parser.h"
 #include "command_buffer/service/cross/mocks.h"
+#include "base/scoped_ptr.h"
 
 namespace o3d {
 namespace command_buffer {

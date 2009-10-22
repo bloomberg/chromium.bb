@@ -95,7 +95,7 @@
             ],
           },
         ],
-        ['renderer == "gl"',
+        ['renderer == "gl" or cb_service == "gl"',
           {
             'dependencies': [
               '../build/libs.gyp:gl_libs',

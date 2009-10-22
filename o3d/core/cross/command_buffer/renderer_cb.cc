@@ -34,7 +34,7 @@
 
 #include "core/cross/precompile.h"
 
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "core/cross/command_buffer/buffer_cb.h"
@@ -57,7 +57,7 @@
 
 namespace o3d {
 using command_buffer::GAPIInterface;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using gpu_plugin::CommandBuffer;
 using gpu_plugin::GPUProcessor;
 using gpu_plugin::NPBrowser;
@@ -291,8 +291,8 @@ Renderer::InitStatus RendererCB::InitPlatformSpecific(
   command_buffer_ = display_platform.command_buffer();
   DCHECK(command_buffer_.Get());
 
-  // Create and initialize a CommandBufferHelper.
-  helper_ = new CommandBufferHelper(npp_, command_buffer_);
+  // Create and initialize a O3DCmdHelper.
+  helper_ = new O3DCmdHelper(npp_, command_buffer_);
   if (!helper_->Initialize()) {
     Destroy();
     return INITIALIZATION_ERROR;

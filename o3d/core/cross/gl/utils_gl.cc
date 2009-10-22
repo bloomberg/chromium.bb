@@ -33,6 +33,7 @@
 #include "core/cross/stream.h"
 #include "core/cross/types.h"
 #include "core/cross/gl/utils_gl.h"
+#include "core/cross/gl/gl_headers.h"
 
 // Required OpenGL extensions:
 // GL_ARB_vertex_buffer_object

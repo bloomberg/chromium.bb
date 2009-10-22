@@ -59,7 +59,7 @@ class ParamCacheCB : public ParamCache {
                            ParamObject* override);
 
   // Runs all the cached handlers.
-  void RunHandlers(command_buffer::CommandBufferHelper *helper);
+  void RunHandlers(command_buffer::O3DCmdHelper* helper);
 
  protected:
   // Validates platform specific information about the effect.

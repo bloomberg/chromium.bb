@@ -37,7 +37,7 @@
 #ifndef O3D_CORE_CROSS_GL_RENDERER_GL_H_
 #define O3D_CORE_CROSS_GL_RENDERER_GL_H_
 
-#include <Cg/cg.h>
+#include "core/cross/gl/gl_headers.h"
 #include <build/build_config.h>
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"

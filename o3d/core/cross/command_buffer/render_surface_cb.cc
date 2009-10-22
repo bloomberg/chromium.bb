@@ -31,13 +31,13 @@
 
 
 #include "core/cross/command_buffer/render_surface_cb.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
 
 using command_buffer::ResourceId;
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 
 RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
                                  int width,
@@ -57,7 +57,7 @@ RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
 
   ResourceId id = renderer_->render_surface_ids().AllocateID();
   resource_id_ = id;
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->CreateRenderSurface(
       id,
       reinterpret_cast<uint32>(texture->GetTextureHandle()),
@@ -71,7 +71,7 @@ RenderSurfaceCB::~RenderSurfaceCB() {
 void RenderSurfaceCB::Destroy() {
   // This should never be called during rendering.
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyRenderSurface(resource_id_);
     renderer_->render_surface_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
@@ -91,13 +91,13 @@ RenderDepthStencilSurfaceCB::RenderDepthStencilSurfaceCB(
   DCHECK(renderer);
   ResourceId id = renderer_->depth_surface_ids().AllocateID();
   resource_id_ = id;
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->CreateDepthSurface(id, width, height);
 }
 
 void RenderDepthStencilSurfaceCB::Destroy() {
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyDepthSurface(resource_id_);
     renderer_->depth_surface_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;

@@ -33,6 +33,7 @@
 // Contains macintosh-specific code for setting up the Client object
 // used in the unit tests.
 
+#include <GL/glew.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>

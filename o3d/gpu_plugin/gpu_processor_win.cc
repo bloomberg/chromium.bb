@@ -15,14 +15,14 @@ GPUProcessor::GPUProcessor(NPP npp,
       command_buffer_(command_buffer),
       commands_per_update_(100) {
   DCHECK(command_buffer);
-  gapi_.reset(new command_buffer::GAPID3D9);
+  gapi_.reset(new GPUGAPIInterface);
   decoder_.reset(new command_buffer::GAPIDecoder(gapi_.get()));
   decoder_->set_engine(this);
 }
 
 GPUProcessor::GPUProcessor(NPP npp,
                            CommandBuffer* command_buffer,
-                           command_buffer::GAPID3D9* gapi,
+                           GPUGAPIInterface* gapi,
                            command_buffer::GAPIDecoder* decoder,
                            command_buffer::CommandParser* parser,
                            int commands_per_update)

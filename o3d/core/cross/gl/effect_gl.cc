@@ -41,7 +41,6 @@
 #pragma warning(disable : 4311)
 #endif
 
-#include "Cg/cgGL.h"
 #include <sstream>
 #include "base/cross/std_functional.h"
 #include "core/cross/semantic_manager.h"

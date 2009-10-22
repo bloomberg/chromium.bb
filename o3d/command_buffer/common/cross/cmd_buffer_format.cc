@@ -37,6 +37,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace cmd {
 
 const char* GetCommandName(CommandId id) {
   static const char* const names[] = {
@@ -53,6 +54,7 @@ const char* GetCommandName(CommandId id) {
       names[id] : "*unknown-command*";
 }
 
+}  // namespace cmd
 }  // namespace command_buffer
 }  // namespace o3d
 

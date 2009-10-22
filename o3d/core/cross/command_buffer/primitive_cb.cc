@@ -41,14 +41,14 @@
 #include "core/cross/command_buffer/stream_bank_cb.h"
 #include "core/cross/error.h"
 #include "command_buffer/common/cross/gapi_interface.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 // TODO: add unit tests.
 
 namespace o3d {
 
 using command_buffer::ResourceId;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::CommandBufferEntry;
 using command_buffer::GAPIInterface;
 using command_buffer::kInvalidResource;
@@ -128,7 +128,7 @@ void PrimitiveCB::PlatformSpecificRender(Renderer* renderer,
 
   stream_bank_cb->BindStreamsForRendering();
 
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
 
   // Sets current effect.
   // TODO: cache current effect ?

@@ -37,6 +37,9 @@
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
 
 #include <build/build_config.h>
+#include <GL/glew.h>
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/cross/gl/gl_utils.h"
 #include "command_buffer/service/cross/gl/effect_gl.h"
@@ -61,6 +64,10 @@ class GAPIGL : public GAPIInterface {
   void set_window_wrapper(XWindowWrapper *window) { window_ = window; }
 #elif defined(OS_WIN)
   void set_hwnd(HWND hwnd) { hwnd_ = hwnd; }
+
+  HWND hwnd() const {
+    return hwnd_;
+  }
 #endif
 
   // Initializes the graphics context, bound to a window.

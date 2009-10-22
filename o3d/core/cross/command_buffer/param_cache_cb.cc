@@ -40,12 +40,12 @@
 #include "core/cross/command_buffer/param_cache_cb.h"
 #include "core/cross/command_buffer/sampler_cb.h"
 #include "command_buffer/common/cross/cmd_buffer_format.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
 
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::EffectHelper;
 using command_buffer::ResourceId;
 namespace effect_param = command_buffer::effect_param;
@@ -54,7 +54,7 @@ namespace effect_param = command_buffer::effect_param;
 class ParamHandlerCB {
  public:
   virtual ~ParamHandlerCB() {}
-  virtual void SetValue(CommandBufferHelper *helper) = 0;
+  virtual void SetValue(O3DCmdHelper* helper) = 0;
 };
 
 // Template implementation of ParamHandlerCB.
@@ -69,7 +69,7 @@ class TypedParamHandlerCB : public ParamHandlerCB {
   // Sends the param value to the service.
   // This template definition only works for value types (floatn, matrix, int,
   // ..., but not textures or samplers).
-  virtual void SetValue(CommandBufferHelper *helper) {
+  virtual void SetValue(O3DCmdHelper* helper) {
     typename T::DataType value = param_->value();
     helper->SetParamDataImmediate(id_, sizeof(value), &value);
   }
@@ -91,7 +91,7 @@ class MatrixParamHandlerColumnsCB : public ParamHandlerCB {
   }
 
   // Sends the param value to the service.
-  virtual void SetValue(CommandBufferHelper *helper) {
+  virtual void SetValue(O3DCmdHelper* helper) {
     Matrix4 value = transpose(param_->value());
     helper->SetParamDataImmediate(id_, sizeof(value), &value);
   }
@@ -108,7 +108,7 @@ class SamplerParamHandlerCB : public ParamHandlerCB {
   }
 
   // Sends the param value to the service.
-  virtual void SetValue(CommandBufferHelper *helper) {
+  virtual void SetValue(O3DCmdHelper* helper) {
     SamplerCB *sampler = down_cast<SamplerCB *>(param_->value());
     uint32 value;
     if (!sampler) {
@@ -277,7 +277,7 @@ void ParamCacheCB::ClearHandlers() {
   handlers_.clear();
 }
 
-void ParamCacheCB::RunHandlers(CommandBufferHelper *helper) {
+void ParamCacheCB::RunHandlers(O3DCmdHelper* helper) {
   for (unsigned int i = 0; i < handlers_.size(); ++i) {
     handlers_[i]->SetValue(helper);
   }

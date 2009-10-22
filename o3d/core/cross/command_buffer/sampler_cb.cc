@@ -37,12 +37,12 @@
 #include "core/cross/command_buffer/sampler_cb.h"
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "command_buffer/common/cross/cmd_buffer_format.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
 
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::ResourceId;
 namespace sampler = command_buffer::sampler;
 
@@ -94,7 +94,7 @@ SamplerCB::~SamplerCB() {
 }
 
 void SamplerCB::SetTextureAndStates() {
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   sampler::AddressingMode address_mode_u_cb = AddressModeToCB(address_mode_u());
   sampler::AddressingMode address_mode_v_cb = AddressModeToCB(address_mode_v());
   sampler::AddressingMode address_mode_w_cb = AddressModeToCB(address_mode_w());

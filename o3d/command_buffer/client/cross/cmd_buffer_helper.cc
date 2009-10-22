@@ -121,7 +121,8 @@ int32 CommandBufferHelper::InsertToken() {
   token_ = (token_ + 1) & 0x7FFFFFFF;
   CommandBufferEntry args;
   args.value_uint32 = token_;
-  AddCommand(command_buffer::kSetToken, 1, &args);
+  const uint32 kSetToken = 1;  // TODO(gman): add a common set of commands.
+  AddCommand(kSetToken, 1, &args);
   if (token_ == 0) {
     // we wrapped
     Finish();

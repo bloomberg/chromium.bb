@@ -30,21 +30,15 @@
  */
 
 
-// This file contains includes for common headers used by command buffer server
-// files.  It is used for pre-compiled header support.
+// This file contains the implementation of the o3d buffer helper class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
-#include <build/build_config.h>
+namespace o3d {
+namespace command_buffer {
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+// Currently this is a place holder.
 
-#include <assert.h>
-#include <algorithm>
-#include <map>
-#include <vector>
+}  // namespace command_buffer
+}  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_PRECOMPILE_H_

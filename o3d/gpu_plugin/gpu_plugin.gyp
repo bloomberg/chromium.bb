@@ -94,12 +94,45 @@
         '../command_buffer/command_buffer.gyp:command_buffer_service',
         'np_utils',
       ],
-      'include_dirs': [
-        '../..',
+      'conditions': [
+        ['cb_service == "d3d9"',
+          {
+            'include_dirs': [
+              '../..',
+              '$(DXSDK_DIR)/Include',
+            ],
+          }
+        ],
+        ['cb_service == "gl"',
+          {
+            'include_dirs': [
+              '../../<(glewdir)/include',
+              '../../<(cgdir)/include',
+            ],
+          }
+        ],
       ],
       'all_dependent_settings': {
         'include_dirs': [
           '../..',
+        ],
+        'conditions': [
+          ['cb_service == "d3d9"',
+            {
+              'include_dirs': [
+                '../..',
+                '$(DXSDK_DIR)/Include',
+              ],
+            }
+          ],
+          ['cb_service == "gl"',
+            {
+              'include_dirs': [
+                '../../<(glewdir)/include',
+                '../../<(cgdir)/include',
+              ],
+            }
+          ],
         ],
       },  # 'all_dependent_settings'
       'sources': [

@@ -32,7 +32,7 @@
 
 // This file contains the implementation for SamplerGL.
 
-// Precompiled header comes before everything else.
+#include "core/cross/gl/gl_headers.h"
 #include "core/cross/error.h"
 #include "core/cross/gl/renderer_gl.h"
 #include "core/cross/gl/sampler_gl.h"

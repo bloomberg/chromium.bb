@@ -34,12 +34,12 @@
 
 #include "core/cross/precompile.h"
 #include "core/cross/command_buffer/buffer_cb.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
 
 namespace o3d {
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::FencedAllocator;
 
 VertexBufferCB::VertexBufferCB(ServiceLocator* service_locator,
@@ -59,7 +59,7 @@ VertexBufferCB::~VertexBufferCB() {
 // Sends the DestroyVertexBuffer command, and frees the ID from the allocator.
 void VertexBufferCB::ConcreteFree() {
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyVertexBuffer(resource_id_);
     renderer_->vertex_buffer_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
@@ -71,7 +71,7 @@ bool VertexBufferCB::ConcreteAllocate(size_t size_in_bytes) {
   ConcreteFree();
   if (size_in_bytes > 0) {
     resource_id_ = renderer_->vertex_buffer_ids().AllocateID();
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->CreateVertexBuffer(resource_id_, size_in_bytes,
                                command_buffer::vertex_buffer::kNone);
     has_data_ = false;
@@ -89,7 +89,7 @@ bool VertexBufferCB::ConcreteLock(AccessMode access_mode, void **buffer_data) {
   lock_pointer_ = renderer_->allocator()->Alloc(GetSizeInBytes());
   if (!lock_pointer_) return false;
   if (has_data_) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->GetVertexBufferData(
         resource_id_, 0, GetSizeInBytes(),
         renderer_->transfer_shm_id(),
@@ -105,7 +105,7 @@ bool VertexBufferCB::ConcreteLock(AccessMode access_mode, void **buffer_data) {
 bool VertexBufferCB::ConcreteUnlock() {
   if (GetSizeInBytes() == 0 || !lock_pointer_)
     return false;
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->SetVertexBufferData(
       resource_id_, 0, GetSizeInBytes(),
       renderer_->transfer_shm_id(),
@@ -135,7 +135,7 @@ IndexBufferCB::~IndexBufferCB() {
 // Sends the DestroyIndexBuffer command, and frees the ID from the allocator.
 void IndexBufferCB::ConcreteFree() {
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyIndexBuffer(resource_id_);
     renderer_->index_buffer_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
@@ -147,7 +147,7 @@ bool IndexBufferCB::ConcreteAllocate(size_t size_in_bytes) {
   ConcreteFree();
   if (size_in_bytes > 0) {
     resource_id_ = renderer_->index_buffer_ids().AllocateID();
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->CreateIndexBuffer(
         resource_id_, size_in_bytes,
         command_buffer::index_buffer::kIndex32Bit);
@@ -166,7 +166,7 @@ bool IndexBufferCB::ConcreteLock(AccessMode access_mode, void **buffer_data) {
   lock_pointer_ = renderer_->allocator()->Alloc(GetSizeInBytes());
   if (!lock_pointer_) return false;
   if (has_data_) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->GetIndexBufferData(
         resource_id_, 0, GetSizeInBytes(),
         renderer_->transfer_shm_id(),
@@ -182,7 +182,7 @@ bool IndexBufferCB::ConcreteLock(AccessMode access_mode, void **buffer_data) {
 bool IndexBufferCB::ConcreteUnlock() {
   if (GetSizeInBytes() == 0 || !lock_pointer_)
     return false;
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->SetIndexBufferData(
       resource_id_, 0, GetSizeInBytes(),
       renderer_->transfer_shm_id(),

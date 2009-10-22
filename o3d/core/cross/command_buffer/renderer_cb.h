@@ -46,7 +46,7 @@
 
 namespace o3d {
 namespace command_buffer {
-class CommandBufferHelper;
+class O3DCmdHelper;
 class BufferSyncInterface;
 class FencedAllocatorWrapper;
 }  // namespace command_buffer
@@ -162,7 +162,7 @@ class RendererCB : public Renderer {
   IdAllocator &depth_surface_ids() { return depth_surface_ids_; }
 
   // Gets the command buffer helper.
-  command_buffer::CommandBufferHelper *helper() const { return helper_; }
+  command_buffer::O3DCmdHelper *helper() const { return helper_; }
 
   // Gets the registered ID of the transfer shared memory.
   int32 transfer_shm_id() const { return transfer_shm_id_; }
@@ -260,7 +260,7 @@ class RendererCB : public Renderer {
   void *transfer_shm_address_;
   NPP npp_;
   gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
-  command_buffer::CommandBufferHelper *helper_;
+  command_buffer::O3DCmdHelper *helper_;
   FencedAllocatorWrapper *allocator_;
 
   IdAllocator vertex_buffer_ids_;

@@ -40,12 +40,12 @@
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_format.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
 
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::ResourceId;
 namespace effect_param = command_buffer::effect_param;
 namespace parse_error = command_buffer::parse_error;
@@ -91,7 +91,7 @@ bool EffectCB::LoadFromFXString(const String& source) {
 
   ResourceId resource_id = renderer_->effect_ids().AllocateID();
 
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->CreateEffect(
       resource_id, source_size,
       renderer_->transfer_shm_id(),
@@ -136,7 +136,7 @@ void EffectCB::Destroy() {
   set_source("");
   ++generation_;
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyEffect(resource_id_);
     renderer_->effect_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;

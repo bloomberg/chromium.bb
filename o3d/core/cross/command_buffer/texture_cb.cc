@@ -40,13 +40,13 @@
 
 #include "command_buffer/common/cross/cmd_buffer_format.h"
 #include "command_buffer/common/cross/resource.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
 
 namespace o3d {
 
 using command_buffer::CommandBufferEntry;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::FencedAllocatorWrapper;
 using command_buffer::ResourceId;
 namespace texture = command_buffer::texture;
@@ -135,7 +135,7 @@ void SetTextureData(RendererCB *renderer,
                     size_t mip_size,
                     unsigned char* mip_data) {
   FencedAllocatorWrapper *allocator = renderer->allocator();
-  CommandBufferHelper *helper = renderer->helper();
+  O3DCmdHelper* helper = renderer->helper();
   helper->SetTextureData(
       texture_id,
       x, y, z,
@@ -157,7 +157,7 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
                               const Bitmap &bitmap) {
   DCHECK(bitmap.image_data());
   FencedAllocatorWrapper *allocator = renderer->allocator();
-  CommandBufferHelper *helper = renderer->helper();
+  O3DCmdHelper* helper = renderer->helper();
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
   unsigned char *mip_data = bitmap.GetMipData(level);
@@ -192,7 +192,7 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
                               const Bitmap &bitmap) {
   DCHECK(bitmap.image_data());
   FencedAllocatorWrapper *allocator = renderer->allocator();
-  CommandBufferHelper *helper = renderer->helper();
+  O3DCmdHelper* helper = renderer->helper();
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
   size_t mip_size =

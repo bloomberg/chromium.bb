@@ -37,6 +37,7 @@
 
 #include <vector>
 #include "command_buffer/common/cross/resource.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -66,7 +67,7 @@ class EffectHelper {
     unsigned int semantic_index;
   };
 
-  EffectHelper(CommandBufferHelper *helper,
+  EffectHelper(O3DCmdHelper *helper,
                FencedAllocatorWrapper *shm_allocator,
                unsigned int shm_id,
                IdAllocator *param_id_allocator)
@@ -143,7 +144,7 @@ class EffectHelper {
                         std::vector<EffectStreamDesc> *descs);
 
  private:
-  CommandBufferHelper *helper_;
+  O3DCmdHelper *helper_;
   FencedAllocatorWrapper *shm_allocator_;
   unsigned int shm_id_;
   IdAllocator *param_id_allocator_;

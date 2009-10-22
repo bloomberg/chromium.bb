@@ -36,6 +36,10 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
 
+#include <GL/glew.h>
+#if defined(OS_WIN)
+#include <GL/wglew.h>
+#endif
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
 #include <build/build_config.h>

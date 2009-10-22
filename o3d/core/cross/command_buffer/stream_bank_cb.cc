@@ -40,14 +40,14 @@
 #include "core/cross/command_buffer/effect_cb.h"
 #include "core/cross/command_buffer/stream_bank_cb.h"
 #include "command_buffer/common/cross/gapi_interface.h"
-#include "command_buffer/client/cross/cmd_buffer_helper.h"
+#include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 // TODO: add unit tests.
 
 namespace o3d {
 
 using command_buffer::ResourceId;
-using command_buffer::CommandBufferHelper;
+using command_buffer::O3DCmdHelper;
 using command_buffer::CommandBufferEntry;
 using command_buffer::GAPIInterface;
 using command_buffer::kInvalidResource;
@@ -146,7 +146,7 @@ void StreamBankCB::OnUpdateStreams() {
 void StreamBankCB::CreateVertexStruct() {
   DCHECK_EQ(kInvalidResource, vertex_struct_id_);
   vertex_struct_id_ = renderer_->vertex_structs_ids().AllocateID();
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->CreateVertexStruct(vertex_struct_id_, vertex_stream_params_.size());
   for (unsigned int i = 0; i < vertex_stream_params_.size(); ++i) {
     const Stream &stream = vertex_stream_params_[i]->stream();
@@ -181,7 +181,7 @@ void StreamBankCB::CreateVertexStruct() {
 // Destroys the vertex struct resource on the service side.
 void StreamBankCB::DestroyVertexStruct() {
   if (vertex_struct_id_ != kInvalidResource) {
-    CommandBufferHelper *helper = renderer_->helper();
+    O3DCmdHelper* helper = renderer_->helper();
     helper->DestroyVertexStruct(vertex_struct_id_);
     renderer_->vertex_structs_ids().FreeID(vertex_struct_id_);
     vertex_struct_id_ = kInvalidResource;
@@ -191,7 +191,7 @@ void StreamBankCB::DestroyVertexStruct() {
 void StreamBankCB::BindStreamsForRendering() {
   if (vertex_struct_id_ == kInvalidResource)
     CreateVertexStruct();
-  CommandBufferHelper *helper = renderer_->helper();
+  O3DCmdHelper* helper = renderer_->helper();
   helper->SetVertexStruct(vertex_struct_id_);
 }
 

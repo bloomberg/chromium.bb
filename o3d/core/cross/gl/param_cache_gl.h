@@ -36,6 +36,7 @@
 #define O3D_CORE_CROSS_GL_PARAM_CACHE_GL_H_
 
 #include <map>
+#include "core/cross/gl/gl_headers.h"
 #include "core/cross/param_cache.h"
 #include "core/cross/gl/effect_gl.h"
 

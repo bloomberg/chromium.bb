@@ -37,6 +37,7 @@
 #define O3D_CORE_CROSS_GL_BUFFER_GL_H_
 
 #include "core/cross/buffer.h"
+#include "core/cross/gl/gl_headers.h"
 
 namespace o3d {
 

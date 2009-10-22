@@ -39,11 +39,14 @@
 
 #include <build/build_config.h>
 #if defined(OS_MACOSX)
+#include "core/cross/gl/gl_headers.h"
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
 #elif defined(OS_LINUX)
+#include "core/cross/gl/gl_headers.h"
 #include <GL/glx.h>
 #elif defined(OS_WIN) && defined(RENDERER_GL)
+#include "core/cross/gl/gl_headers.h"
 #include <gl/GL.h>
 #endif
 

@@ -37,7 +37,7 @@
 
 #include "core/cross/types.h"
 #include "command_buffer/common/cross/constants.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/cmd_buffer_common.h"
 
 namespace o3d {
 namespace command_buffer {

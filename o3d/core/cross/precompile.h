@@ -40,23 +40,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-
-#if defined(RENDERER_D3D9)
-#include <d3d9.h>
-#include <d3dx9.h>
-#endif
-
 #endif  // defined(OS_WIN)
-
-#if defined(RENDERER_GL)
-#include <GL/glew.h>
-#if defined(OS_WIN)
-#include <GL/wglew.h>
-#endif
-
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
-#endif // defined(RENDERER_GL)
 
 #include <assert.h>
 #include <algorithm>

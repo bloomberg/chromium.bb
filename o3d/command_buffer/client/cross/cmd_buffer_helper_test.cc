@@ -48,7 +48,6 @@ using gpu_plugin::CommandBuffer;
 using gpu_plugin::GPUProcessor;
 using gpu_plugin::NPCreateObject;
 using gpu_plugin::NPObjectPointer;
-using gpu_plugin::SharedMemory;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -72,8 +71,8 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_CALL(*api_mock_, DoCommand(0, 0, _))
         .WillRepeatedly(Return(parse_error::kParseNoError));
 
-    NPObjectPointer<SharedMemory> ring_buffer =
-        NPCreateObject<SharedMemory>(NULL);
+    NPObjectPointer<gpu_plugin::SharedMemory> ring_buffer =
+        NPCreateObject<gpu_plugin::SharedMemory>(NULL);
     ring_buffer->Initialize(kCommandBufferSizeBytes);
 
     size_t size_bytes;

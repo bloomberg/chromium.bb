@@ -14,8 +14,12 @@
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
-#if defined(OS_WIN)
+#if defined(CB_SERVICE_D3D9)
 #include "o3d/command_buffer/service/win/d3d9/gapi_d3d9.h"
+#elif defined(CB_SERVICE_GL)
+#include "o3d/command_buffer/service/cross/gl/gapi_gl.h"
+#else
+#error command buffer service not defined
 #endif
 
 namespace o3d {
@@ -26,20 +30,26 @@ namespace gpu_plugin {
 class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                      public command_buffer::CommandBufferEngine {
  public:
+#if defined(CB_SERVICE_D3D9)
+  typedef command_buffer::GAPID3D9 GPUGAPIInterface;
+#elif defined(CB_SERVICE_GL)
+  typedef command_buffer::GAPIGL GPUGAPIInterface;
+#else
+#error command buffer service not defined
+#endif
+
   GPUProcessor(NPP npp,
                CommandBuffer* command_buffer);
 
-#if defined(OS_WIN)
   // This constructor is for unit tests.
   GPUProcessor(NPP npp,
                CommandBuffer* command_buffer,
-               command_buffer::GAPID3D9* gapi,
+               GPUGAPIInterface* gapi,
                command_buffer::GAPIDecoder* decoder,
                command_buffer::CommandParser* parser,
                int commands_per_update);
 
   virtual bool Initialize(HWND hwnd);
-#endif  // OS_WIN
 
   virtual ~GPUProcessor();
 
@@ -77,11 +87,9 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   scoped_ptr< ::base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
-#if defined(OS_WIN)
-  scoped_ptr<command_buffer::GAPID3D9> gapi_;
+  scoped_ptr<GPUGAPIInterface> gapi_;
   scoped_ptr<command_buffer::GAPIDecoder> decoder_;
   scoped_ptr<command_buffer::CommandParser> parser_;
-#endif
 };
 
 }  // namespace gpu_plugin

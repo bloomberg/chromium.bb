@@ -33,6 +33,7 @@
 // Implementations of the abstract Texture2D and TextureCUBE classes using
 // the OpenGL graphics API.
 
+#include "core/cross/gl/gl_headers.h"
 #include "core/cross/error.h"
 #include "core/cross/types.h"
 #include "core/cross/pointer_utils.h"

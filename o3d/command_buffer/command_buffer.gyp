@@ -39,6 +39,7 @@
       },  # 'all_dependent_settings'
       'sources': [
         'common/cross/bitfield_helpers.h',
+        'common/cross/cmd_buffer_common.h',
         'common/cross/cmd_buffer_format.h',
         'common/cross/cmd_buffer_format.cc',
         'common/cross/gapi_interface.h',
@@ -74,6 +75,8 @@
         'client/cross/fenced_allocator.h',
         'client/cross/id_allocator.cc',
         'client/cross/id_allocator.h',
+        'client/cross/o3d_cmd_helper.cc',
+        'client/cross/o3d_cmd_helper.h',
       ],
     },
     {
@@ -93,6 +96,16 @@
       'all_dependent_settings': {
         'include_dirs': [
           '..',
+        ],
+        'conditions': [
+          ['OS == "win" and (renderer == "gl" or cb_service == "gl")',
+            {
+              'include_dirs': [
+                '../../<(glewdir)/include',
+                '../../<(cgdir)/include',
+              ],
+            },
+          ],
         ],
       },  # 'all_dependent_settings'
       'dependencies': [
@@ -182,6 +195,8 @@
               'service/cross/gl/geometry_gl.cc',
               'service/cross/gl/geometry_gl.h',
               'service/cross/gl/gl_utils.h',
+              'service/cross/gl/render_surface_gl.cc',
+              'service/cross/gl/render_surface_gl.h',
               'service/cross/gl/sampler_gl.cc',
               'service/cross/gl/sampler_gl.h',
               'service/cross/gl/states_gl.cc',

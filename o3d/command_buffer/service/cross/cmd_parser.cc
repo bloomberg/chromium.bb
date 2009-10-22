@@ -33,6 +33,8 @@
 // This file contains the implementation of the command parser.
 
 #include "command_buffer/service/cross/cmd_parser.h"
+// TODO(gman): remove this so we can use this code for different formats.
+#include "command_buffer/common/cross/cmd_buffer_format.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -86,7 +88,7 @@ parse_error::ParseError CommandParser::ProcessCommand() {
   //     get these errors.
   if (result != parse_error::kParseNoError) {
     DLOG(INFO) << "Error: " << result << " for Command "
-               << GetCommandName(static_cast<CommandId>(header.command));
+               << cmd::GetCommandName(static_cast<CommandId>(header.command));
   }
   get_ = (get + header.size) % entry_count_;
   return result;

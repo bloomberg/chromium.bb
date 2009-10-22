@@ -221,6 +221,13 @@
             },
           },
         ],
+        ['OS == "win" and (renderer == "gl" or cb_service == "gl")',
+          {
+            'dependencies': [
+              '../build/libs.gyp:gl_libs',
+            ],
+          },
+        ],
         ['OS == "linux"',
           {
             'sources': [
