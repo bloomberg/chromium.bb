@@ -95,6 +95,9 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
     // rendering AND we're in either the prelight or active state so that we
     // get the button border for the current GTK theme drawn.
     if (paint_state == GTK_STATE_PRELIGHT || paint_state == GTK_STATE_ACTIVE) {
+      // Set the state of button->depressed so we paint pressed even if the
+      // actual state of the button is something else.
+      GTK_BUTTON(widget)->depressed = (paint_state == GTK_STATE_ACTIVE);
       return GTK_WIDGET_CLASS(gtk_chrome_button_parent_class)->expose_event
           (widget, event);
     }
