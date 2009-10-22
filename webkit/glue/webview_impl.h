@@ -13,9 +13,9 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebView.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
+#include "webkit/api/src/WebContextMenuClientImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
 #include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/inspector_client_impl.h"
@@ -37,6 +37,7 @@ class Widget;
 
 namespace WebKit {
 class WebAccessibilityObject;
+class WebContextMenuClientImpl;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -257,7 +258,7 @@ class WebViewImpl : public WebKit::WebView, public RefCounted<WebViewImpl> {
 
   webkit_glue::BackForwardListClientImpl back_forward_list_client_impl_;
   ChromeClientImpl chrome_client_impl_;
-  ContextMenuClientImpl context_menu_client_impl_;
+  WebKit::WebContextMenuClientImpl context_menu_client_impl_;
   DragClientImpl drag_client_impl_;
   EditorClientImpl editor_client_impl_;
   InspectorClientImpl inspector_client_impl_;
