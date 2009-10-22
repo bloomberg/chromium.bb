@@ -770,9 +770,10 @@ class MakefileWriter:
       self.WriteMakeRule([self.alias], installable_deps,
                          comment = 'Short alias for building this %s.' %
                          file_desc, phony = True)
-      self.WriteMakeRule(['all'], [binpath],
-                         comment = 'Add %s to "all" target.' % file_desc,
-                         phony = True)
+      if part_of_all:
+        self.WriteMakeRule(['all'], [binpath],
+                           comment = 'Add %s to "all" target.' % file_desc,
+                           phony = True)
 
 
   def WriteList(self, list, variable=None, prefix=''):
