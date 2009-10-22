@@ -9,6 +9,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 class DictionaryValue;
 class Extension;
@@ -33,6 +34,15 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
                std::set<std::string>* valid_locales,
                std::string* error);
 
+// Converts all - into _, to be consistent with ICU and file system names.
+std::string NormalizeLocale(const std::string& locale);
+
+// Produce a vector of parent locales for given locale.
+// It includes the current locale in the result.
+// sr_Cyrl_RS generates sr_Cyrl_RS, sr_Cyrl and sr.
+void GetParentLocales(const std::string& current_locale,
+                      std::vector<std::string>* parent_locales);
+
 // Adds valid locales to the extension.
 // 1. Do nothing if _locales directory is missing (not an error).
 // 2. Get list of Chrome locales.
@@ -56,8 +66,11 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     const std::set<std::string>& valid_locales,
     std::string* error);
 
-// Returns relative l10n path to the resource.
-FilePath GetL10nRelativePath(const FilePath& relative_resource_path);
+// Returns relative l10n paths to the resource.
+// Returned vector starts with more specific locale path, and ends with the
+// least specific one.
+void GetL10nRelativePaths(const FilePath& relative_resource_path,
+                          std::vector<FilePath>* l10n_paths);
 
 }  // namespace extension_l10n_util
 

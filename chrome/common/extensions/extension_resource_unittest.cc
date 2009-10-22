@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/extensions/extension_l10n_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -42,33 +43,41 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   EXPECT_FALSE(resource.GetFilePath().empty());
 }
 
-TEST(ExtensionResourceTest, CreateWithBothResourcesOnDisk) {
+TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
+  // Create resource in the extension root.
   const char* filename = "res.ico";
   FilePath root_resource = temp.path().AppendASCII(filename);
   std::string data = "some foo";
   ASSERT_TRUE(file_util::WriteFile(root_resource.AppendASCII(filename),
       data.c_str(), data.length()));
 
+  // Create l10n resources (for current locale and its parents).
   FilePath l10n_path = temp.path().AppendASCII(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(l10n_path));
 
-  static std::string current_locale = l10n_util::GetApplicationLocale(L"");
-  std::replace(current_locale.begin(), current_locale.end(), '-', '_');
-  l10n_path = l10n_path.AppendASCII(current_locale);
-  ASSERT_TRUE(file_util::CreateDirectory(l10n_path));
-
-  ASSERT_TRUE(file_util::WriteFile(l10n_path.AppendASCII(filename),
-      data.c_str(), data.length()));
+  std::vector<std::string> locales;
+  extension_l10n_util::GetParentLocales(l10n_util::GetApplicationLocale(L""),
+                                        &locales);
+  for (size_t i = 0; i < locales.size(); i++) {
+    FilePath make_path;
+    make_path = l10n_path.AppendASCII(locales[i]);
+    ASSERT_TRUE(file_util::CreateDirectory(make_path));
+    ASSERT_TRUE(file_util::WriteFile(make_path.AppendASCII(filename),
+        data.c_str(), data.length()));
+  }
 
   FilePath path;
   ExtensionResource resource(temp.path(), FilePath().AppendASCII(filename));
   FilePath resolved_path = resource.GetFilePath();
 
-  EXPECT_EQ(ToLower(l10n_path.AppendASCII(filename).value()),
-            ToLower(resolved_path.value()));
+  ASSERT_FALSE(locales.empty());
+  FilePath expected_path;
+  expected_path = l10n_path.AppendASCII(locales[0]).AppendASCII(filename);
+
+  EXPECT_EQ(ToLower(expected_path.value()), ToLower(resolved_path.value()));
   EXPECT_EQ(ToLower(temp.path().value()),
             ToLower(resource.extension_root().value()));
   EXPECT_EQ(ToLower(FilePath().AppendASCII(filename).value()),

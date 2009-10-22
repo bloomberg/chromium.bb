@@ -62,19 +62,15 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   return true;
 }
 
-// Converts all - into _, to be consistent with ICU and file system names.
-static std::string NormalizeLocale(const std::string& locale) {
+std::string NormalizeLocale(const std::string& locale) {
   std::string normalized_locale(locale);
   std::replace(normalized_locale.begin(), normalized_locale.end(), '-', '_');
 
   return normalized_locale;
 }
 
-// Produce a vector of parent locales for given locale.
-// It includes the current locale in the result.
-// sr_Cyrl_RS generates sr_Cyrl_RS, sr_Cyrl and sr.
-static void GetParentLocales(const std::string& current_locale,
-                             std::vector<std::string>* parent_locales) {
+void GetParentLocales(const std::string& current_locale,
+                      std::vector<std::string>* parent_locales) {
   std::string locale(NormalizeLocale(current_locale));
 
   const int kNameCapacity = 256;
@@ -187,16 +183,22 @@ ExtensionMessageBundle* LoadMessageCatalogs(
   return ExtensionMessageBundle::Create(catalogs, error);
 }
 
-FilePath GetL10nRelativePath(const FilePath& relative_resource_path) {
-  // Get locale relative path.
-  static std::string current_locale = l10n_util::GetApplicationLocale(L"");
-  std::replace(current_locale.begin(), current_locale.end(), '-', '_');
+void GetL10nRelativePaths(const FilePath& relative_resource_path,
+                          std::vector<FilePath>* l10n_paths) {
+  DCHECK(NULL != l10n_paths);
+
+  std::vector<std::string> locales;
+  static const std::string current_locale =
+    l10n_util::GetApplicationLocale(L"");
+  GetParentLocales(current_locale, &locales);
 
   FilePath locale_relative_path;
-  return locale_relative_path
-      .AppendASCII(Extension::kLocaleFolder)
-      .AppendASCII(current_locale)
-      .Append(relative_resource_path);
+  for (size_t i = 0; i < locales.size(); ++i) {
+    l10n_paths->push_back(locale_relative_path
+        .AppendASCII(Extension::kLocaleFolder)
+        .AppendASCII(locales[i])
+        .Append(relative_resource_path));
+  }
 }
 
 }  // namespace extension_l10n_util

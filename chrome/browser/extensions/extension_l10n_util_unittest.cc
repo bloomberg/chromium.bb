@@ -183,6 +183,17 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   EXPECT_TRUE(error.empty());
 }
 
+TEST(ExtensionL10nUtil, GetParentLocales) {
+  std::vector<std::string> locales;
+  const std::string top_locale("sr_Cyrl_RS");
+  extension_l10n_util::GetParentLocales(top_locale, &locales);
+
+  ASSERT_EQ(3U, locales.size());
+  EXPECT_EQ("sr_Cyrl_RS", locales[0]);
+  EXPECT_EQ("sr_Cyrl", locales[1]);
+  EXPECT_EQ("sr", locales[2]);
+}
+
 bool PathsAreEqual(const FilePath& path1, const FilePath& path2) {
   FilePath::StringType path1_str = path1.value();
   std::replace(path1_str.begin(), path1_str.end(), '\\', '/');
@@ -198,19 +209,24 @@ bool PathsAreEqual(const FilePath& path1, const FilePath& path2) {
 }
 
 TEST(ExtensionL10nUtil, GetL10nRelativePath) {
-  static std::string current_locale = l10n_util::GetApplicationLocale(L"");
-  std::replace(current_locale.begin(), current_locale.end(), '-', '_');
+  static std::string current_locale =
+    extension_l10n_util::NormalizeLocale(l10n_util::GetApplicationLocale(L""));
 
-  FilePath locale_path;
-  locale_path = locale_path
-      .AppendASCII(Extension::kLocaleFolder)
-      .AppendASCII(current_locale)
-      .AppendASCII("foo")
-      .AppendASCII("bar.js");
+  std::vector<FilePath> l10n_paths;
+  extension_l10n_util::GetL10nRelativePaths(
+      FilePath(FILE_PATH_LITERAL("foo/bar.js")), &l10n_paths);
+  ASSERT_FALSE(l10n_paths.empty());
 
-  FilePath result = extension_l10n_util::GetL10nRelativePath(
-      FilePath(FILE_PATH_LITERAL("foo/bar.js")));
-  EXPECT_TRUE(PathsAreEqual(locale_path, result));
+  std::vector<std::string> locales;
+  extension_l10n_util::GetParentLocales(current_locale, &locales);
+  ASSERT_EQ(locales.size(), l10n_paths.size());
+
+  for (size_t i = 0; i < locales.size(); ++i) {
+    FilePath tmp;
+    tmp = tmp.AppendASCII(Extension::kLocaleFolder)
+      .AppendASCII(locales[i]).AppendASCII("foo/bar.js");
+    EXPECT_TRUE(PathsAreEqual(tmp, l10n_paths[i]));
+  }
 }
 
 }  // namespace

@@ -37,17 +37,23 @@ const FilePath& ExtensionResource::GetFilePath() const {
 // Static version...
 FilePath ExtensionResource::GetFilePath(const FilePath& extension_root,
                                         const FilePath& relative_path) {
-  // Stat l10n file, and return new path if it exists.
-  FilePath l10n_relative_path =
-    extension_l10n_util::GetL10nRelativePath(relative_path);
-  FilePath full_path;
-  if (extension_root.AppendAndResolveRelative(l10n_relative_path, &full_path) &&
-      extension_root.IsParent(full_path) &&
-      file_util::PathExists(full_path)) {
-    return full_path;
+  std::vector<FilePath> l10n_relative_paths;
+  extension_l10n_util::GetL10nRelativePaths(relative_path,
+                                            &l10n_relative_paths);
+
+  // Stat l10n file(s), and return new path if it exists.
+  for (size_t i = 0; i < l10n_relative_paths.size(); ++i) {
+    FilePath full_path;
+    if (extension_root.AppendAndResolveRelative(l10n_relative_paths[i],
+                                                &full_path) &&
+        extension_root.IsParent(full_path) &&
+        file_util::PathExists(full_path)) {
+      return full_path;
+    }
   }
 
   // Fall back to root resource.
+  FilePath full_path;
   if (extension_root.AppendAndResolveRelative(relative_path, &full_path) &&
       extension_root.IsParent(full_path)) {
     return full_path;
