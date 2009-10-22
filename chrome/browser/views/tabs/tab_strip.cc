@@ -1326,7 +1326,7 @@ void TabStrip::SetBackgroundOffset(gfx::Point offset) {
     GetTabAt(i)->SetBackgroundOffset(offset);
 }
 
-bool TabStrip::PointIsWithinWindowCaption(const gfx::Point& point) {
+bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   views::View* v = GetViewForPoint(point);
 
   // If there is no control at this location, claim the hit was in the title

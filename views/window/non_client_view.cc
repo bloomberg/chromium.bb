@@ -187,7 +187,7 @@ views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
   gfx::Point point_in_child_coords(point);
   View::ConvertPointToView(this, frame_view_.get(), &point_in_child_coords);
   if (frame_view_->HitTest(point_in_child_coords))
-    return frame_view_->GetViewForPoint(point);
+    return frame_view_->GetViewForPoint(point_in_child_coords);
 
   return View::GetViewForPoint(point);
 }

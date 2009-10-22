@@ -691,6 +691,17 @@ void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
     browser_bubbles_.erase(it);
 }
 
+bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
+  gfx::Point tabstrip_point(point);
+  View::ConvertPointToView(this, tabstrip()->GetView(), &tabstrip_point);
+#if defined(OS_CHROMEOS)
+  return tabstrip()->IsPositionInWindowCaption(tabstrip_point)
+      && !browser_extender_->NonClientHitTest(point);
+#else
+  return tabstrip()->IsPositionInWindowCaption(tabstrip_point);
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindow implementation:
 
@@ -1537,7 +1548,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     View::ConvertPointToView(GetParent(), tabstrip_->GetView(),
                              &point_in_tabstrip_coords);
     if (tabstrip_->GetView()->HitTest(point_in_tabstrip_coords)) {
-      if (tabstrip_->PointIsWithinWindowCaption(point_in_tabstrip_coords))
+      if (tabstrip_->IsPositionInWindowCaption(point_in_tabstrip_coords))
         return HTCAPTION;
       return HTCLIENT;
     }
@@ -1556,7 +1567,9 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
   }
 
 #if defined(OS_CHROMEOS)
-  if (browser_extender_->NonClientHitTest(point))
+  gfx::Point browser_view_point(point);
+  ConvertPointToView(GetParent(), this, &browser_view_point);
+  if (browser_extender_->NonClientHitTest(browser_view_point))
     return HTCLIENT;
 #endif
 

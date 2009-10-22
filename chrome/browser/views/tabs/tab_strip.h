@@ -139,7 +139,7 @@ class TabStrip : public views::View,
   virtual int GetPreferredHeight();
   virtual bool IsAnimating() const;
   virtual void SetBackgroundOffset(gfx::Point offset);
-  virtual bool PointIsWithinWindowCaption(const gfx::Point& point);
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
   virtual bool IsDragSessionActive() const;
   virtual bool IsCompatibleWith(TabStripWrapper* other) const;
   virtual void SetDraggedTabBounds(int tab_index,

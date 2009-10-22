@@ -169,6 +169,9 @@ class WidgetGtk
   void ResetDropTarget();
 
  protected:
+  // Returns the view::Event::flags for a GdkEventButton.
+  static int GetFlagsForEventButton(const GdkEventButton& event);
+
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
   virtual void OnDragDataGet(GdkDragContext* context,

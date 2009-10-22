@@ -7,6 +7,7 @@
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "base/gfx/rect.h"
+#include "views/event.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/custom_frame_view.h"
@@ -257,12 +258,21 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
       non_client_view_->NonClientHitTest(gfx::Point(event->x, event->y));
   switch (hittest_code) {
     case HTCAPTION: {
-      gfx::Point screen_point(event->x, event->y);
-      View::ConvertPointToScreen(GetRootView(), &screen_point);
-      gtk_window_begin_move_drag(GetNativeWindow(), event->button,
-                                 screen_point.x(), screen_point.y(),
-                                 event->time);
-      return TRUE;
+      MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, event->x, event->y,
+                               WidgetGtk::GetFlagsForEventButton(*event));
+      // Start dragging only if the mouse event is *not* a right
+      // click. If it is a right click, then pass it through to
+      // WidgetGtk::OnButtonPress so that View class can show
+      // ContextMenu upon a mouse release event.
+      if (!mouse_pressed.IsOnlyRightMouseButton()) {
+        gfx::Point screen_point(event->x, event->y);
+        View::ConvertPointToScreen(GetRootView(), &screen_point);
+        gtk_window_begin_move_drag(GetNativeWindow(), event->button,
+                                   screen_point.x(), screen_point.y(),
+                                   event->time);
+        return TRUE;
+      }
+      break;
     }
     case HTBOTTOM:
     case HTBOTTOMLEFT:

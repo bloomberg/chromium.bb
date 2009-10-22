@@ -203,6 +203,10 @@ class BrowserView : public BrowserWindow,
   void AttachBrowserBubble(BrowserBubble *bubble);
   void DetachBrowserBubble(BrowserBubble *bubble);
 
+  // Returns true if the specified point(BrowserView coordinates) is in
+  // in the window caption area of the browser window.
+  bool IsPositionInWindowCaption(const gfx::Point& point);
+
   // Overridden from BrowserWindow:
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);

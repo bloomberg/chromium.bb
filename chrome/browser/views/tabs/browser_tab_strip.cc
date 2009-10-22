@@ -202,8 +202,7 @@ bool BrowserTabStrip::IsAnimating() const {
 void BrowserTabStrip::SetBackgroundOffset(gfx::Point offset) {
 }
 
-bool BrowserTabStrip::PointIsWithinWindowCaption(
-    const gfx::Point& point) {
+bool BrowserTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   return false;
 }
 

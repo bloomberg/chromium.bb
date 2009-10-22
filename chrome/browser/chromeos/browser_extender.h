@@ -42,9 +42,9 @@ class BrowserExtender {
   // bounds for tabstip to be layed out.
   virtual gfx::Rect Layout(const gfx::Rect& bounds) { return bounds; }
 
-  // Tests if the given |point|, which is given in window coordinates,
+  // Tests if the given |point|, which is given in BrowserView coordinates,
   // hits any of controls.
-  virtual bool NonClientHitTest(const gfx::Point& point) = 0;
+  virtual bool NonClientHitTest(const gfx::Point& browser_view_point) = 0;
 
   // Updates the title bar (if any).
   virtual void UpdateTitleBar() {}

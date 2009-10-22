@@ -137,6 +137,10 @@ class NonClientView : public View {
   explicit NonClientView(Window* frame);
   virtual ~NonClientView();
 
+  // Returns the current NonClientFrameView instance, or NULL if
+  // it does not exist.
+  NonClientFrameView* frame_view() const { return frame_view_.get(); }
+
   // Replaces the current NonClientFrameView (if any) with the specified one.
   void SetFrameView(NonClientFrameView* frame_view);
 

@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
@@ -54,9 +55,16 @@ class NormalExtender : public BrowserExtender,
     browser_view()->AddChildView(status_area_);
     status_area_->Init();
 
-    // TODO(oshima): set the context menu controller to NonClientFrameView.
     InitSystemMenu();
     MainMenu::ScheduleCreation();
+
+    // The ContextMenuController has to be set to a NonClientView but
+    // not to a NonClientFrameView because a TabStrip is not a child of
+    // a NonClientFrameView even though visually a TabStrip is over a
+    // NonClientFrameView.
+    BrowserFrameGtk* gtk_frame =
+        static_cast<BrowserFrameGtk*>(browser_view()->frame());
+    gtk_frame->GetNonClientView()->SetContextMenuController(this);
   }
 
   virtual gfx::Rect Layout(const gfx::Rect& bounds) {
@@ -83,11 +91,11 @@ class NormalExtender : public BrowserExtender,
 
   virtual bool NonClientHitTest(const gfx::Point& point) {
     gfx::Point point_in_main_menu_coords(point);
-    views::View::ConvertPointToView(browser_view()->GetParent(), main_menu_,
+    views::View::ConvertPointToView(browser_view(), main_menu_,
                                     &point_in_main_menu_coords);
 
     gfx::Point point_in_status_area_coords(point);
-    views::View::ConvertPointToView(browser_view()->GetParent(), status_area_,
+    views::View::ConvertPointToView(browser_view(), status_area_,
                                     &point_in_status_area_coords);
 
     return main_menu_->HitTest(point_in_main_menu_coords) ||

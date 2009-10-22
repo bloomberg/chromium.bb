@@ -66,28 +66,6 @@ static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
   *y += window_y;
 }
 
-// Returns the view::Event::flags for a GdkEventButton.
-static int GetFlagsForEventButton(const GdkEventButton& event) {
-  int flags = Event::GetFlagsFromGdkState(event.state);
-  switch (event.button) {
-    case 1:
-      flags |= Event::EF_LEFT_BUTTON_DOWN;
-      break;
-    case 2:
-      flags |= Event::EF_MIDDLE_BUTTON_DOWN;
-      break;
-    case 3:
-      flags |= Event::EF_RIGHT_BUTTON_DOWN;
-      break;
-    default:
-      // We only deal with 1-3.
-      break;
-  }
-  if (event.type == GDK_2BUTTON_PRESS)
-    flags |= MouseEvent::EF_IS_DOUBLE_CLICK;
-  return flags;
-}
-
 // static
 GtkWidget* WidgetGtk::null_parent_ = NULL;
 
@@ -847,6 +825,28 @@ void WidgetGtk::ReleaseGrab() {
     has_capture_ = false;
     gtk_grab_remove(window_contents_);
   }
+}
+
+// static
+int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
+  int flags = Event::GetFlagsFromGdkState(event.state);
+  switch (event.button) {
+    case 1:
+      flags |= Event::EF_LEFT_BUTTON_DOWN;
+      break;
+    case 2:
+      flags |= Event::EF_MIDDLE_BUTTON_DOWN;
+      break;
+    case 3:
+      flags |= Event::EF_RIGHT_BUTTON_DOWN;
+      break;
+    default:
+      // We only deal with 1-3.
+      break;
+  }
+  if (event.type == GDK_2BUTTON_PRESS)
+    flags |= MouseEvent::EF_IS_DOUBLE_CLICK;
+  return flags;
 }
 
 // static

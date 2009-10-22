@@ -32,9 +32,9 @@ class TabStripWrapper {
   // Set the background offset used by inactive tabs to match the frame image.
   virtual void SetBackgroundOffset(gfx::Point offset) = 0;
 
-  // Returns true if the specified point(TabStrip coordinates) should be
-  // considered to be within the window caption area of the browser window.
-  virtual bool PointIsWithinWindowCaption(const gfx::Point& point) = 0;
+  // Returns true if the specified point(TabStrip coordinates) is
+  // in the window caption area of the browser window.
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point) = 0;
 
   // Returns true if a drag session is currently active.
   virtual bool IsDragSessionActive() const = 0;
