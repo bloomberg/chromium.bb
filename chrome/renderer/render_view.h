@@ -813,11 +813,6 @@ class RenderView : public RenderWidget,
   // The alternate error page URL, if one exists.
   GURL alternate_error_page_url_;
 
-  // Whether this RenderView was created by a frame that was suppressing its
-  // opener. If so, we may want to load pages in a separate process.  See
-  // decidePolicyForNavigation for details.
-  bool opener_suppressed_;
-
   ScopedRunnableMethodFactory<RenderView> method_factory_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).

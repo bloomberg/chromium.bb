@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
@@ -25,95 +24,6 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 };
-
-// Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
-// and target=_blank should create a new SiteInstance.  Links with either
-// rel=noreferrer or target=_blank (but not both) should not create a new
-// SiteInstance.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       SwapProcessOnRelNoreferrerWithTargetBlank) {
-  // Start two servers with different sites.
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
-  scoped_refptr<HTTPSTestServer> https_server =
-      HTTPSTestServer::CreateGoodServer(kDocRoot);
-
-  // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/click-noreferrer-links.html"));
-
-  // Get the original SiteInstance for later comparison.
-  scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
-
-  // 1. Test clicking a rel=noreferrer + target=blank link.
-  bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
-  // Opens in new tab.
-  EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
-
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
-
-  // Should have a new SiteInstance.
-  scoped_refptr<SiteInstance> noref_blank_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
-  EXPECT_NE(orig_site_instance, noref_blank_site_instance);
-
-  // Close the tab to try another link.
-  browser()->CloseTab();
-
-  // 2. Test clicking a target=blank link.
-  success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(clickTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
-  // Opens in new tab.
-  EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
-
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
-
-  // Should have the same SiteInstance.
-  scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
-  EXPECT_EQ(orig_site_instance, blank_site_instance);
-
-  // Close the tab to try another link.
-  browser()->CloseTab();
-
-  // 3. Test clicking a rel=noreferrer link.
-  success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(clickNoRefLink());",
-      &success));
-  EXPECT_TRUE(success);
-  // Opens in same tab.
-  EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(0, browser()->selected_index());
-
-  // Wait for the cross-site transition to finish.
-  ui_test_utils::WaitForLoadStop(
-      &(browser()->GetSelectedTabContents()->controller()));
-
-  // Should have the same SiteInstance.
-  scoped_refptr<SiteInstance> noref_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
-  EXPECT_EQ(orig_site_instance, noref_site_instance);
-}
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
