@@ -1463,6 +1463,8 @@
         'browser/gtk/extension_install_prompt_gtk.cc',
         'browser/gtk/extension_view_gtk.cc',
         'browser/gtk/extension_view_gtk.h',
+        'browser/gtk/extension_popup_gtk.cc',
+        'browser/gtk/extension_popup_gtk.h',
         'browser/gtk/external_protocol_dialog_gtk.cc',
         'browser/gtk/external_protocol_dialog_gtk.h',
         'browser/gtk/find_bar_gtk.cc',

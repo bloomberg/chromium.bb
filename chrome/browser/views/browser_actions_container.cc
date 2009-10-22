@@ -225,6 +225,8 @@ BrowserActionsContainer::BrowserActionsContainer(
                  Source<ExtensionsService>(extension_service));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                  Source<ExtensionsService>(extension_service));
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 Source<Profile>(profile_));
 
   RefreshBrowserActionViews();
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
@@ -364,6 +366,11 @@ void BrowserActionsContainer::Observe(NotificationType type,
 
     // All these actions may change visibility of BrowserActions.
     OnBrowserActionVisibilityChanged();
+  } else if (type == NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
+    if (Details<ExtensionHost>(popup_->host()) != details)
+      return;
+
+    HidePopup();
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }

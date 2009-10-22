@@ -354,6 +354,12 @@ gboolean InfoBubbleGtk::HandleButtonPress(GdkEventButton* event) {
     return FALSE;  // Propagate.
   }
 
+  // Our content widget got a click.
+  if (event->window != window_->window &&
+      gdk_window_get_toplevel(event->window) == window_->window) {
+    return FALSE;
+  }
+
   // Otherwise we had a click outside of our window, close ourself.
   Close();
   return TRUE;

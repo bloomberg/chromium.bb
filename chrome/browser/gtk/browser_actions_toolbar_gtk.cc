@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
@@ -117,9 +118,15 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-        action->browser_->profile(), action->extension_->id(),
-        action->browser_);
+    if (action->extension_->browser_action()->is_popup()) {
+      ExtensionPopupGtk::Show(action->extension_->browser_action()->popup_url(),
+                              action->browser_, gfx::Rect(widget->allocation));
+
+    } else {
+      ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+          action->browser_->profile(), action->extension_->id(),
+          action->browser_);
+    }
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,

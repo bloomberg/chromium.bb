@@ -10,7 +10,7 @@
 
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)
-    : is_toolstrip_(true),
+    : is_toolstrip_(false),
       browser_(browser),
       extension_host_(extension_host),
       render_widget_host_view_(NULL) {
@@ -37,7 +37,10 @@ void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
-  gtk_widget_set_size_request(native_view(), new_size.width(), -1);
+  // If we are showing in a shelf, then the shelf sets our height.
+  int height = is_toolstrip() ? -1 : new_size.height();
+
+  gtk_widget_set_size_request(native_view(), new_size.width(), height);
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {

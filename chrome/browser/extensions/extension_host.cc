@@ -341,13 +341,10 @@ void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
 
 void ExtensionHost::Close(RenderViewHost* render_view_host) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
-#if defined(TOOLKIT_VIEWS)
-    // TODO(erikkay) This is a bit of a hack.  By hiding the widget, we trigger
-    // a deactivation which will then bubble into ExtensionPopup and actually
-    // close the popup. Perhaps we should have a more explicit delegate to
-    // ExtensionHost.
-    view_->GetWidget()->Hide();
-#endif
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+        Source<Profile>(profile_),
+        Details<ExtensionHost>(this));
   }
 }
 

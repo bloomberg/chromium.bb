@@ -682,9 +682,14 @@ class NotificationType {
     // an ExtensionHost* and the source is a Profile*.
     EXTENSION_HOST_DESTROYED,
 
-    // Send by an ExtensionHost when it finished its initial page load.
+    // Sent by an ExtensionHost when it finished its initial page load.
     // The details are an ExtensionHost* and the source is a Profile*.
     EXTENSION_HOST_DID_STOP_LOADING,
+
+    // Sent by an ExtensionHost when its render view requests closing through
+    // window.close(). The details are an ExtensionHost* and the source is a
+    // Profile*.
+    EXTENSION_HOST_VIEW_SHOULD_CLOSE,
 
     // Sent after an extension render process is created and fully functional.
     // The details are an ExtensionHost*.
