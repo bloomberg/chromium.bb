@@ -61,7 +61,7 @@ class WebSocketStreamHandleImpl::Context
   WebKit::WebSocketStreamHandleClient* client_;
   // |bridge_| is alive from Connect to DidClose, so Context must be alive
   // in the time period.
-  WebSocketStreamHandleBridge* bridge_;
+  scoped_refptr<WebSocketStreamHandleBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
@@ -97,8 +97,8 @@ void WebSocketStreamHandleImpl::Context::Detach() {
   handle_ = NULL;
   client_ = NULL;
   // If Connect was called, |bridge_| is not NULL, so that this Context closes
-  // the |bridge_| here.  Then |bridge_| will call back DidClose, in which
-  // this Context will delete the |bridge_|.
+  // the |bridge_| here.  Then |bridge_| will call back DidClose, and will
+  // be released by itself.
   // Otherwise, |bridge_| is NULL.
   if (bridge_)
     bridge_->Close();
@@ -133,7 +133,6 @@ void WebSocketStreamHandleImpl::Context::DidReceiveData(
 void WebSocketStreamHandleImpl::Context::DidClose(
     WebKit::WebSocketStreamHandle* web_handle) {
   LOG(INFO) << "DidClose";
-  delete bridge_;
   bridge_ = NULL;
   WebSocketStreamHandleImpl* handle = handle_;
   handle_ = NULL;

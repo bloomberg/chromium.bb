@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 
 class GURL;
 
@@ -19,10 +20,9 @@ namespace webkit_glue {
 
 class WebSocketStreamHandleDelegate;
 
-class WebSocketStreamHandleBridge {
+class WebSocketStreamHandleBridge
+    : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
  public:
-  virtual ~WebSocketStreamHandleBridge() {}
-
   static WebSocketStreamHandleBridge* Create(
       WebKit::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate);
@@ -34,7 +34,9 @@ class WebSocketStreamHandleBridge {
   virtual void Close() = 0;
 
  protected:
+  friend class base::RefCountedThreadSafe<WebSocketStreamHandleBridge>;
   WebSocketStreamHandleBridge() {}
+  virtual ~WebSocketStreamHandleBridge() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamHandleBridge);
