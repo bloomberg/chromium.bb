@@ -65,15 +65,6 @@ assets = [
  {'path': 'io/convert_levels/all_actors.kmz', 'up': y_up},
  {'path': 'io/convert_levels/map1.kmz', 'up': y_up},
  {'path': 'simpleviewer/convert_assets/cube.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/bamboo.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/coconuts.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/driftwood.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/island.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/lazy_bridge.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/palm_leaves.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/palm_trees.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/rocks.9.zip', 'up': y_up},
- {'path': 'waterdemo/convert_assets/rocks.zip', 'up': y_up},
 ]
 
 output_file.write("""# Copyright (c) 2009 The Chromium Authors. All rights reserved.
