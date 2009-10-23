@@ -259,7 +259,6 @@
       <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
       <include name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_FAVICON" file="extensions_favicon.png" type="BINDATA" />
       <include name="IDR_MENU_PAGE_RTL" file="menu_page_rtl.png" type="BINDATA" />
       <include name="IDR_MENU_CHROME_RTL" file="menu_chrome_rtl.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" type="BINDATA" />
