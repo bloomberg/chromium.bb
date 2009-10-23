@@ -17,6 +17,7 @@
 #include "base/process_util.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
@@ -98,10 +99,13 @@ void WebPluginDelegateImpl::PluginDestroyed() {
   delete this;
 }
 
-void WebPluginDelegateImpl::Paint(cairo_t* context,
+void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
-  if (windowless_)
-    WindowlessPaint(context, rect);
+  if (!windowless_)
+    return;
+  cairo_t* context = canvas->beginPlatformPaint();
+  WindowlessPaint(context, rect);
+  canvas->endPlatformPaint();
 }
 
 void WebPluginDelegateImpl::Print(cairo_t* context) {

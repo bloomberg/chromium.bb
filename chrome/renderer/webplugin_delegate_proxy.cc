@@ -514,7 +514,7 @@ static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
 }
 #endif
 
-void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
+void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
                                    const gfx::Rect& damaged_rect) {
   // Limit the damaged rectangle to whatever is contained inside the plugin
   // rectangle, as that's the rectangle that we'll actually draw.
@@ -523,7 +523,7 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
   if (!channel_host_ || !channel_host_->channel_valid()) {
-    PaintSadPlugin(context, rect);
+    PaintSadPlugin(canvas, rect);
     return;
   }
 
@@ -533,9 +533,15 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
 
   // We got a paint before the plugin's coordinates, so there's no buffer to
   // copy from.
-  if (!backing_store_canvas_.get()) {
+  if (!backing_store_canvas_.get())
     return;
-  }
+
+  // We're using the native OS APIs from here on out.
+#if WEBKIT_USING_SKIA
+  gfx::NativeDrawingContext context = canvas->beginPlatformPaint();
+#elif WEBKIT_USING_CG
+  gfx::NativeDrawingContext context = canvas;
+#endif
 
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());
@@ -565,6 +571,10 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
     invalidate_pending_ = false;
     Send(new PluginMsg_DidPaint(instance_id_));
   }
+
+#if WEBKIT_USING_SKIA
+  canvas->endPlatformPaint();
+#endif
 }
 
 bool WebPluginDelegateProxy::BackgroundChanged(
@@ -977,11 +987,19 @@ void WebPluginDelegateProxy::OnGetCPBrowsingContext(uint32* context) {
   *context = render_view_ ? render_view_->GetCPBrowsingContext() : 0;
 }
 
-void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
+void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
                                             const gfx::Rect& rect) {
+  // Lazily load the sad plugin image.
+  if (!sad_plugin_) {
+    sad_plugin_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_SAD_PLUGIN);
+  }
+  if (!sad_plugin_)
+    return;
+
+  // Make a temporary canvas for the background image.
   const int width = plugin_rect_.width();
   const int height = plugin_rect_.height();
-
   gfx::Canvas canvas(width, height, false);
 #if defined(OS_MACOSX)
   // Flip the canvas, since the context expects flipped data.
@@ -994,18 +1012,20 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
   paint.setColor(SK_ColorBLACK);
   canvas.drawRectCoords(0, 0, SkIntToScalar(width), SkIntToScalar(height),
                         paint);
+  canvas.DrawBitmapInt(*sad_plugin_,
+                       std::max(0, (width - sad_plugin_->width())/2),
+                       std::max(0, (height - sad_plugin_->height())/2));
 
-  if (!sad_plugin_) {
-    sad_plugin_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_SAD_PLUGIN);
-  }
-
-  if (sad_plugin_) {
-    canvas.DrawBitmapInt(*sad_plugin_,
-                         std::max(0, (width - sad_plugin_->width())/2),
-                         std::max(0, (height - sad_plugin_->height())/2));
-  }
+  // It's slightly less code to make a big SkBitmap of the sad tab image and
+  // then copy that to the screen than to use the native APIs. The small speed
+  // penalty is not important when drawing crashed plugins.
+#if WEBKIT_USING_SKIA
+  gfx::NativeDrawingContext context = native_context->beginPlatformPaint();
   BlitCanvasToContext(context, plugin_rect_, &canvas, gfx::Point(0, 0));
+  native_context->endPlatformPaint();
+#elif WEBKIT_USING_CG
+  BlitCanvasToContext(native_context, plugin_rect_, &canvas, gfx::Point(0, 0));
+#endif
 }
 
 void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {

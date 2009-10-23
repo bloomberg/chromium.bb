@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,13 @@
 #define WEBKIT_GLUE_WEBPLUGIN_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
+#include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "webkit/api/public/WebCanvas.h"
 
 class FilePath;
 class GURL;
@@ -62,10 +65,9 @@ class WebPluginDelegate {
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect) = 0;
 
-  // Tells the plugin to paint the damaged rect.  |context| is only used for
+  // Tells the plugin to paint the damaged rect.  |canvas| is only used for
   // windowless plugins.
-  virtual void Paint(gfx::NativeDrawingContext context,
-                     const gfx::Rect& rect) = 0;
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) = 0;
 
   // Tells the plugin to print itself.
   virtual void Print(gfx::NativeDrawingContext hdc) = 0;

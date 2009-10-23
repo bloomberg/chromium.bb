@@ -238,18 +238,9 @@ NPObject* WebPluginImpl::scriptableObject() {
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
   if (!delegate_)
     return;
-  // Note that |context| is only used when in windowless mode.
-#if WEBKIT_USING_SKIA
-  gfx::NativeDrawingContext context = canvas->beginPlatformPaint();
-#elif WEBKIT_USING_CG
-  gfx::NativeDrawingContext context = canvas;
-#endif
 
-  delegate_->Paint(context, paint_rect);
-
-#if WEBKIT_USING_SKIA
-  canvas->endPlatformPaint();
-#endif
+  // Note that |canvas| is only used when in windowless mode.
+  delegate_->Paint(canvas, paint_rect);
 }
 
 void WebPluginImpl::updateGeometry(

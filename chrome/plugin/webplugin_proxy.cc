@@ -361,14 +361,11 @@ bool WebPluginProxy::SetDropEffect(struct NPObject* event, int effect) {
 }
 
 void WebPluginProxy::Paint(const gfx::Rect& rect) {
-#if defined(OS_WIN)
-  if (!windowless_hdc_)
+#if defined(OS_WIN) || defined(OS_LINUX)
+  if (!windowless_canvas_.get())
     return;
 #elif defined(OS_MACOSX)
   if (!windowless_context_.get())
-    return;
-#elif defined(OS_LINUX)
-  if (!windowless_canvas_.get())
     return;
 #endif
 
@@ -376,26 +373,43 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   // end up with the old values.
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(delegate_->GetRect().origin());
-#if defined(OS_WIN)
-  if (!background_hdc_) {
-    FillRect(windowless_hdc_, &offset_rect.ToRECT(),
-        static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
-  } else {
-    BitBlt(windowless_hdc_, offset_rect.x(), offset_rect.y(),
-      offset_rect.width(), offset_rect.height(), background_hdc_,
-      rect.x(), rect.y(), SRCCOPY);
-  }
+#if defined(OS_WIN) || defined(OS_LINUX)
+  windowless_canvas_->save();
 
-  RECT clip_rect = rect.ToRECT();
-  HRGN clip_region = CreateRectRgnIndirect(&clip_rect);
-  SelectClipRgn(windowless_hdc_, clip_region);
+  // The given clip rect is in global coordinates, so install it before the
+  // transformation is done for the coordinate system.
+  SkRect sk_rect = { SkIntToScalar(rect.x()),
+                     SkIntToScalar(rect.y()),
+                     SkIntToScalar(rect.right()),
+                     SkIntToScalar(rect.bottom()) };
+  windowless_canvas_->clipRect(sk_rect);
+  windowless_canvas_->translate(SkIntToScalar(-delegate_->GetRect().x()),
+                                SkIntToScalar(-delegate_->GetRect().y()));
+
+  // Setup the background.
+  if (!background_canvas_.get()) {
+    SkPaint black_fill_paint;
+    black_fill_paint.setARGB(0xFF, 0x00, 0x00, 0x00);
+    windowless_canvas_->drawPaint(black_fill_paint);
+  } else {
+    SkIRect src_rect = { rect.x(), rect.y(),
+                         rect.x() + offset_rect.width(),
+                         rect.y() + offset_rect.height() };
+
+    SkRect dest_rect = { SkIntToScalar(offset_rect.x()),
+                         SkIntToScalar(offset_rect.y()),
+                         SkIntToScalar(offset_rect.right()),
+                         SkIntToScalar(offset_rect.bottom()) };
+    const SkBitmap& background_bitmap =
+        background_canvas_->getTopPlatformDevice().accessBitmap(false);
+    windowless_canvas_->drawBitmapRect(background_bitmap, &src_rect, dest_rect);
+  }
 
   // Before we send the invalidate, paint so that renderer uses the updated
   // bitmap.
-  delegate_->Paint(windowless_hdc_, offset_rect);
+  delegate_->Paint(windowless_canvas_.get(), offset_rect);
 
-  SelectClipRgn(windowless_hdc_, NULL);
-  DeleteObject(clip_region);
+  windowless_canvas_->restore();
 #elif defined(OS_MACOSX)
   CGContextSaveGState(windowless_context_);
   if (!background_context_.get()) {
@@ -412,19 +426,6 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
   delegate_->Paint(windowless_context_, rect);
   CGContextRestoreGState(windowless_context_);
-#else
-  if (background_canvas_.get()) {
-    BlitCanvasToCanvas(windowless_canvas_.get(), rect,
-                       background_canvas_.get(), rect.origin());
-  }
-  cairo_t* cairo =
-      windowless_canvas_->getTopPlatformDevice().beginPlatformPaint();
-  cairo_save(cairo);
-  cairo_rectangle(cairo, rect.x(), rect.y(), rect.width(), rect.height());
-  cairo_clip(cairo);
-  cairo_translate(cairo, -delegate_->GetRect().x(), -delegate_->GetRect().y());
-  delegate_->Paint(cairo, offset_rect);
-  cairo_restore(cairo);
 #endif
 }
 
@@ -437,15 +438,11 @@ void WebPluginProxy::UpdateGeometry(
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
 
   delegate_->UpdateGeometry(window_rect, clip_rect);
-  bool moved = old.x() != window_rect.x() || old.y() != window_rect.y();
   if (TransportDIB::is_valid(windowless_buffer)) {
     // The plugin's rect changed, so now we have a new buffer to draw into.
-    SetWindowlessBuffer(windowless_buffer,
-                        background_buffer);
-  } else if (moved) {
-    // The plugin moved, so update our world transform.
-    UpdateTransform();
+    SetWindowlessBuffer(windowless_buffer, background_buffer);
   }
+
   // Send over any pending invalidates which occured when the plugin was
   // off screen.
   if (delegate_->IsWindowless() && !clip_rect.IsEmpty() &&
@@ -458,73 +455,24 @@ void WebPluginProxy::UpdateGeometry(
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
     const TransportDIB::Handle& background_buffer) {
-  // Convert the shared memory handle to a handle that works in our process,
-  // and then use that to create an HDC.
-  ConvertBuffer(windowless_buffer,
-                &windowless_shared_section_,
-                &windowless_bitmap_,
-                &windowless_hdc_);
+  // Create a canvas that will reference the shared bits.
+  windowless_canvas_.reset(new skia::PlatformCanvas(
+      delegate_->GetRect().width(),
+      delegate_->GetRect().height(),
+      true,
+      win_util::GetSectionFromProcess(windowless_buffer,
+                                      channel_->renderer_handle(), false)));
   if (background_buffer) {
-    ConvertBuffer(background_buffer,
-                  &background_shared_section_,
-                  &background_bitmap_,
-                  &background_hdc_);
+    background_canvas_.reset(new skia::PlatformCanvas(
+        delegate_->GetRect().width(),
+        delegate_->GetRect().height(),
+        true,
+        win_util::GetSectionFromProcess(background_buffer,
+                                        channel_->renderer_handle(), false)));
   }
-  UpdateTransform();
 }
 
-void WebPluginProxy::ConvertBuffer(const base::SharedMemoryHandle& buffer,
-                                   ScopedHandle* shared_section,
-                                   ScopedBitmap* bitmap,
-                                   ScopedHDC* hdc) {
-  shared_section->Set(win_util::GetSectionFromProcess(
-      buffer, channel_->renderer_handle(), false));
-  if (shared_section->Get() == NULL) {
-    NOTREACHED();
-    return;
-  }
-
-  void* data = NULL;
-  HDC screen_dc = GetDC(NULL);
-  BITMAPINFOHEADER bitmap_header;
-  gfx::CreateBitmapHeader(delegate_->GetRect().width(),
-                          delegate_->GetRect().height(),
-                          &bitmap_header);
-  bitmap->Set(CreateDIBSection(
-      screen_dc, reinterpret_cast<const BITMAPINFO*>(&bitmap_header),
-      DIB_RGB_COLORS, &data, shared_section->Get(), 0));
-  ReleaseDC(NULL, screen_dc);
-  if (bitmap->Get() == NULL) {
-    NOTREACHED();
-    return;
-  }
-
-  hdc->Set(CreateCompatibleDC(NULL));
-  if (hdc->Get() == NULL) {
-    NOTREACHED();
-    return;
-  }
-
-  skia::PlatformDevice::InitializeDC(hdc->Get());
-  SelectObject(hdc->Get(), bitmap->Get());
-}
-
-void WebPluginProxy::UpdateTransform() {
-  if (!windowless_hdc_)
-    return;
-
-  XFORM xf;
-  xf.eDx = static_cast<FLOAT>(-delegate_->GetRect().x());
-  xf.eDy = static_cast<FLOAT>(-delegate_->GetRect().y());
-  xf.eM11 = 1;
-  xf.eM21 = 0;
-  xf.eM12 = 0;
-  xf.eM22 = 1;
-  SetWorldTransform(windowless_hdc_, &xf);
-}
 #elif defined(OS_MACOSX)
-void WebPluginProxy::UpdateTransform() {
-}
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
@@ -560,9 +508,8 @@ void WebPluginProxy::SetWindowlessBuffer(
   static_cast<WebPluginDelegateImpl*>(delegate_)->UpdateContext(
       windowless_context_);
 }
+
 #elif defined (OS_LINUX)
-void WebPluginProxy::UpdateTransform() {
-}
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
@@ -584,6 +531,7 @@ void WebPluginProxy::SetWindowlessBuffer(
     background_canvas_.reset();
   }
 }
+
 #endif
 
 void WebPluginProxy::CancelDocumentLoad() {

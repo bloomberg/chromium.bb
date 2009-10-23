@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/transport_dib.h"
 #include "skia/ext/platform_canvas.h"
@@ -49,7 +50,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual void PluginDestroyed();
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
-  virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
   virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -122,8 +123,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   size_t buffer_size_;
   TransportDIB* plugin_buffer_;
   static uint32 next_buffer_id;
-  skia::PlatformCanvas* plugin_canvas_;
-  skia::PlatformCanvas* background_canvas_;
+  scoped_ptr<skia::PlatformCanvas> plugin_canvas_;
+  SkBitmap committed_bitmap_;
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;

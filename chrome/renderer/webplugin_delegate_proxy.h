@@ -54,7 +54,7 @@ class WebPluginDelegateProxy :
                           bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
-  virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
   virtual NPObject* GetPluginScriptableObject();
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
@@ -134,7 +134,7 @@ class WebPluginDelegateProxy :
   void OnDeferResourceLoading(int resource_id, bool defer);
 
   // Draw a graphic indicating a crashed plugin.
-  void PaintSadPlugin(gfx::NativeDrawingContext context, const gfx::Rect& rect);
+  void PaintSadPlugin(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
 
   // Returns true if the given rectangle is different in the native drawing
   // context and the current background bitmap.

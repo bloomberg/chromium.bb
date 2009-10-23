@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,6 +146,7 @@ void WebPluginDelegatePepper::UpdateGeometry(
   window_.x = window_rect_.x();
   window_.y = window_rect_.y();
   window_.type = NPWindowTypeDrawable;
+  instance()->NPP_SetWindow(&window_);
 }
 
 NPObject* WebPluginDelegatePepper::GetPluginScriptableObject() {
@@ -240,8 +241,7 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       instance_(instance),
       parent_(containing_view),
       buffer_size_(0),
-      plugin_buffer_(0),
-      background_canvas_(0) {
+      plugin_buffer_(0) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
   // All Pepper plugins are windowless and transparent.
@@ -258,15 +258,17 @@ void WebPluginDelegatePepper::PluginDestroyed() {
   delete this;
 }
 
-void WebPluginDelegatePepper::Paint(gfx::NativeDrawingContext context,
+void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
                                     const gfx::Rect& rect) {
-  static StatsRate plugin_paint("Plugin.Paint");
-  StatsScope<StatsRate> scope(plugin_paint);
+#if defined(OS_WIN)
   // Blit from background_context to context.
-  if (background_canvas_ != NULL) {
+  if (!committed_bitmap_.isNull()) {
     gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
-    gfx::BlitCanvasToContext(context, rect, background_canvas_, origin);
+    canvas->drawBitmap(committed_bitmap_,
+                       SkIntToScalar(window_rect_.origin().x()),
+                       SkIntToScalar(window_rect_.origin().y()));
   }
+#endif
 }
 
 void WebPluginDelegatePepper::Print(gfx::NativeDrawingContext context) {
@@ -404,12 +406,25 @@ NPError WebPluginDelegatePepper::InitializeRenderContext(
     case NPRenderGraphicsRGBA: {
       int width = window_rect_.width();
       int height = window_rect_.height();
-      background_canvas_ = new skia::PlatformCanvas(width, height, false);
-      plugin_canvas_ = plugin_buffer_->GetPlatformCanvas(width, height);
-      if (background_canvas_ == NULL || plugin_canvas_ == NULL) {
+
+      plugin_canvas_.reset(plugin_buffer_->GetPlatformCanvas(width, height));
+      if (!plugin_canvas_.get())
         return NPERR_GENERIC_ERROR;
-      }
-      context->u.graphicsRgba.region = plugin_buffer_->memory();
+
+      // Note that we need to get the address out of the bitmap rather than
+      // using plugin_buffer_->memory(). The memory() is when the bitmap data
+      // has had "Map" called on it. For Windows, this is separate than making a
+      // bitmap using the shared section.
+      const SkBitmap& plugin_bitmap =
+          plugin_canvas_->getTopPlatformDevice().accessBitmap(true);
+      SkAutoLockPixels locker(plugin_bitmap);
+
+      // TODO(brettw) this theoretically shouldn't be necessary. But the
+      // platform device on Windows will fill itself with green to help you
+      // catch areas you didn't paint.
+      plugin_bitmap.eraseARGB(0, 0, 0, 0);
+
+      context->u.graphicsRgba.region = plugin_bitmap.getAddr32(0, 0);
       context->u.graphicsRgba.stride = width * kBytesPerPixel;
       return NPERR_NO_ERROR;
     }
@@ -418,11 +433,13 @@ NPError WebPluginDelegatePepper::InitializeRenderContext(
   }
 }
 
-NPError WebPluginDelegatePepper::FlushRenderContext(
-    NPRenderContext* context) {
-  gfx::BlitCanvasToCanvas(background_canvas_,
-                          window_rect_,
-                          plugin_canvas_,
-                          window_rect_.origin());
+NPError WebPluginDelegatePepper::FlushRenderContext(NPRenderContext* context) {
+  // TODO(brettw): we should have some kind of swapping of the canvases so we
+  // can double buffer while avoiding this deep copy.
+  if (!plugin_canvas_->getTopPlatformDevice().accessBitmap(false).copyTo(
+          &committed_bitmap_, SkBitmap::kARGB_8888_Config))
+    return NPERR_OUT_OF_MEMORY_ERROR;
+
+  committed_bitmap_.setIsOpaque(false);
   return NPERR_NO_ERROR;
 }

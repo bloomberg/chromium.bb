@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_WEBPLUGIN_PROXY_H__
-#define CHROME_PLUGIN_PLUGIN_WEBPLUGIN_PROXY_H__
+#ifndef CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
+#define CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
 
 #include <string>
 
@@ -134,19 +134,6 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void SetWindowlessBuffer(const TransportDIB::Handle& windowless_buffer,
                            const TransportDIB::Handle& background_buffer);
 
-#if defined(OS_WIN)
-  // Converts a shared memory section handle from the renderer process into a
-  // bitmap and hdc that are mapped to this process.
-  void ConvertBuffer(const base::SharedMemoryHandle& buffer,
-                     ScopedHandle* shared_section,
-                     ScopedBitmap* bitmap,
-                     ScopedHDC* hdc);
-#endif
-
-  // Called when a plugin's origin moves, so that we can update the world
-  // transform of the local HDC.
-  void UpdateTransform();
-
   typedef base::hash_map<int, webkit_glue::WebPluginResourceClient*>
       ResourceClientMap;
   ResourceClientMap resource_clients_;
@@ -163,32 +150,25 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 
-#if defined(OS_WIN)
   // Variables used for desynchronized windowless plugin painting.  See note in
   // webplugin_delegate_proxy.h for how this works.
-
-  // These hold the bitmap where the plugin draws.
-  ScopedHandle windowless_shared_section_;
-  ScopedBitmap windowless_bitmap_;
-  ScopedHDC windowless_hdc_;
-
-  // These hold the bitmap of the background image.
-  ScopedHandle background_shared_section_;
-  ScopedBitmap background_bitmap_;
-  ScopedHDC background_hdc_;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;
   scoped_cftyperef<CGContextRef> windowless_context_;
   scoped_cftyperef<CGContextRef> background_context_;
-#elif defined(OS_LINUX)
-  scoped_ptr<TransportDIB> windowless_dib_;
-  scoped_ptr<TransportDIB> background_dib_;
+#else
   scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
   scoped_ptr<skia::PlatformCanvas> background_canvas_;
+
+#if defined(OS_LINUX)
+  scoped_ptr<TransportDIB> windowless_dib_;
+  scoped_ptr<TransportDIB> background_dib_;
+#endif
+
 #endif
 
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
 };
 
-#endif  // CHROME_PLUGIN_PLUGIN_WEBPLUGIN_PROXY_H__
+#endif  // CHROME_PLUGIN_WEBPLUGIN_PROXY_H_

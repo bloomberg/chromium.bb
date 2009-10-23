@@ -16,6 +16,7 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
@@ -397,9 +398,13 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Unpatch();
 }
 
-void WebPluginDelegateImpl::Paint(HDC hdc, const gfx::Rect& rect) {
-  if (windowless_)
+void WebPluginDelegateImpl::Paint(skia::PlatformCanvas* canvas,
+                                  const gfx::Rect& rect) {
+  if (windowless_) {
+    HDC hdc = canvas->beginPlatformPaint();
     WindowlessPaint(hdc, rect);
+    canvas->endPlatformPaint();
+  }
 }
 
 void WebPluginDelegateImpl::Print(HDC hdc) {

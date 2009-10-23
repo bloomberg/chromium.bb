@@ -67,7 +67,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual void PluginDestroyed();
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
-  virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
   virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
