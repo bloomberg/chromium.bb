@@ -97,7 +97,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
   virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
   virtual void OnFindReply(int request_id,
@@ -584,10 +584,12 @@ bool InterstitialPage::InterstitialPageRVHViewDelegate::IsReservedAccelerator(
   return false;
 }
 
-void InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(
+bool InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
-    interstitial_page_->tab()->GetViewDelegate()->HandleKeyboardEvent(event);
+    return interstitial_page_->tab()->GetViewDelegate()->
+        HandleKeyboardEvent(event);
+  return false;
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseEvent() {

@@ -15,6 +15,7 @@
 @interface ChromeEventProcessingWindow : NSWindow {
  @private
   BOOL redispatchingEvent_;
+  BOOL eventHandled_;
 }
 
 // Returns |YES| if |event| has been shortcircuited and should not be processed
@@ -25,7 +26,8 @@
 // short-circuited to the RWHV. This is used to send keyboard events to the menu
 // and the cmd-` handler if a keyboard event comes back unhandled from the
 // renderer.
-- (void)redispatchEvent:(NSEvent*)event;
+// Returns |YES| if |event| has been handled.
+- (BOOL)redispatchEvent:(NSEvent*)event;
 
 // See global_keyboard_shortcuts_mac.h for details on the next two functions.
 

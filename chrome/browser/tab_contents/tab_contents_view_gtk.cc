@@ -320,14 +320,14 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewGtk::HandleKeyboardEvent(
+bool TabContentsViewGtk::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // This may be an accelerator. Try to pass it on to our browser window
   // to handle.
   GtkWindow* window = GetTopLevelNativeWindow();
   if (!window) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   // Filter out pseudo key events created by GtkIMContext signal handlers.
@@ -339,12 +339,12 @@ void TabContentsViewGtk::HandleKeyboardEvent(
   // as an accelerator.
   if (event.type == WebKit::WebInputEvent::Char ||
       event.type == WebKit::WebInputEvent::KeyUp)
-    return;
+    return false;
 
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(window);
   DCHECK(browser_window);
-  browser_window->HandleKeyboardEvent(event.os_event);
+  return browser_window->HandleKeyboardEvent(event.os_event);
 }
 
 void TabContentsViewGtk::Observe(NotificationType type,

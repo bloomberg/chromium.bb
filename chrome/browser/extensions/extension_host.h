@@ -131,7 +131,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
   virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
   virtual void UpdatePreferredSize(const gfx::Size& new_size);

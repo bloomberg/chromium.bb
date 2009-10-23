@@ -307,19 +307,19 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
       reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
 }
 
-void TabContentsViewGtk::HandleKeyboardEvent(
+bool TabContentsViewGtk::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // The renderer returned a keyboard event it did not process. This may be
   // a keyboard shortcut that we have to process.
   if (event.type != WebInputEvent::RawKeyDown)
-    return;
+    return false;
 
   views::FocusManager* focus_manager =
       views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
   // We may not have a focus_manager at this point (if the tab has been switched
   // by the time this message returned).
   if (!focus_manager)
-    return;
+    return false;
 
   bool shift_pressed = (event.modifiers & WebInputEvent::ShiftKey) ==
                        WebInputEvent::ShiftKey;
@@ -328,7 +328,7 @@ void TabContentsViewGtk::HandleKeyboardEvent(
   bool alt_pressed = (event.modifiers & WebInputEvent::AltKey) ==
                      WebInputEvent::AltKey;
 
-  focus_manager->ProcessAccelerator(
+  return focus_manager->ProcessAccelerator(
       views::Accelerator(static_cast<base::KeyboardCode>(event.windowsKeyCode),
                          shift_pressed, ctrl_pressed, alt_pressed));
   // DANGER: |this| could be deleted now!

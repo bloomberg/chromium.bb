@@ -1442,12 +1442,13 @@ bool RenderViewHost::ShouldSendToRenderer(const NativeWebKeyboardEvent& event) {
   return !view->IsReservedAccelerator(event);
 }
 
-void RenderViewHost::UnhandledKeyboardEvent(
+bool RenderViewHost::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view) {
-    view->HandleKeyboardEvent(event);
+    return view->HandleKeyboardEvent(event);
   }
+  return false;
 }
 
 void RenderViewHost::OnUserGesture() {

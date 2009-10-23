@@ -353,14 +353,14 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewWin::HandleKeyboardEvent(
+bool TabContentsViewWin::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // Previous calls to TranslateMessage can generate CHAR events as well as
   // RAW_KEY_DOWN events, even if the latter triggered an accelerator.  In these
   // cases, we discard the CHAR events.
   if (event.type == WebInputEvent::Char && ignore_next_char_event_) {
     ignore_next_char_event_ = false;
-    return;
+    return true;
   }
   ignore_next_char_event_ = false;
 
@@ -388,7 +388,7 @@ void TabContentsViewWin::HandleKeyboardEvent(
       ignore_next_char_event_ = true;
       if (focus_manager->ProcessAccelerator(accelerator)) {
         // DANGER: |this| could be deleted now!
-        return;
+        return true;
       } else {
         // ProcessAccelerator didn't handle the accelerator, so we know both
         // that |this| is still valid, and that we didn't want to set the flag.
@@ -399,15 +399,20 @@ void TabContentsViewWin::HandleKeyboardEvent(
 
   if (tab_contents()->delegate() &&
       tab_contents()->delegate()->HandleKeyboardEvent(event)) {
-    return;
+    return true;
   }
 
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like Alt+F4, etc to work correctly.
-  DefWindowProc(event.os_event.hwnd,
-                event.os_event.message,
-                event.os_event.wParam,
-                event.os_event.lParam);
+  DefWindowProc(event.os_event.hwnd, event.os_event.message,
+                event.os_event.wParam, event.os_event.lParam);
+
+  // DefWindowProc() always returns 0, which means it handled the event.
+  // But actually DefWindowProc() will only handle very few system key strokes,
+  // such as F10, Alt+Tab, Alt+F4, Alt+Esc, etc.
+  // So returning false here is just ok for most cases.
+  // Reference: http://msdn.microsoft.com/en-us/library/ms646267(VS.85).aspx
+  return false;
 }
 
 views::FocusManager* TabContentsViewWin::GetFocusManager() {

@@ -593,7 +593,7 @@ BrowserWindowGtk::~BrowserWindowGtk() {
   }
 }
 
-void BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
+bool BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
   // Handles a key event in following sequence:
   // 1. Our special key accelerators, such as ctrl-tab, etc.
   // 2. Gtk mnemonics and accelerators.
@@ -603,8 +603,9 @@ void BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
   // gtk_window_activate_key() takes care of it automatically.
   if (!HandleCustomAccelerator(event->keyval, GdkModifierType(event->state),
                                browser_.get())) {
-    gtk_window_activate_key(window_, event);
+    return gtk_window_activate_key(window_, event);
   }
+  return true;
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,

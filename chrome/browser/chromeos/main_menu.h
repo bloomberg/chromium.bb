@@ -162,7 +162,9 @@ class MainMenu : public RenderViewHostDelegate,
   virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
     return false;
   }
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+    return false;
+  }
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}

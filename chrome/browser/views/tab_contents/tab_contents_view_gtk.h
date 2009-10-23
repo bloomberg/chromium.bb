@@ -63,7 +63,7 @@ class TabContentsViewGtk : public TabContentsView,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
  private:
   // Signal handlers -----------------------------------------------------------

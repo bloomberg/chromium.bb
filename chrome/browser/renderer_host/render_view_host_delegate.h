@@ -133,7 +133,8 @@ class RenderViewHostDelegate {
     // Callback to inform the browser that the renderer did not process the
     // specified events. This gives an opportunity to the browser to process the
     // event (used for keyboard shortcuts).
-    virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
+    // Returns true if the event was handled.
+    virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
 
     // Notifications about mouse events in this view.  This is useful for
     // implementing global 'on hover' features external to the view.

@@ -46,7 +46,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
-- (void)processKeyboardEvent:(NativeWebKeyboardEvent*)event;
+- (BOOL)processKeyboardEvent:(NativeWebKeyboardEvent*)event;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
@@ -212,10 +212,10 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewMac::HandleKeyboardEvent(
+bool TabContentsViewMac::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  [cocoa_view_.get() processKeyboardEvent:
-      const_cast<NativeWebKeyboardEvent*>(&event)];
+  return [cocoa_view_.get() processKeyboardEvent:
+      const_cast<NativeWebKeyboardEvent*>(&event)] == YES;
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
@@ -310,9 +310,9 @@ void TabContentsViewMac::Observe(NotificationType type,
   return tabContentsView_->tab_contents();
 }
 
-- (void)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
+- (BOOL)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
   if (wkEvent->skip_in_browser)
-    return;
+    return NO;
 
   NSEvent* event = wkEvent->os_event;
 
@@ -320,13 +320,13 @@ void TabContentsViewMac::Observe(NotificationType type,
     // Char events are synthesized and do not contain a real event. We are not
     // interested in them anyway.
     DCHECK(wkEvent->type == WebKit::WebInputEvent::Char);
-    return;
+    return NO;
   }
 
   // If this tab is no longer active, its window will be |nil|. In that case,
   // best ignore the event.
   if (![self window])
-    return;
+    return NO;
   ChromeEventProcessingWindow* window =
       (ChromeEventProcessingWindow*)[self window];
   DCHECK([window isKindOfClass:[ChromeEventProcessingWindow class]]);
@@ -334,9 +334,9 @@ void TabContentsViewMac::Observe(NotificationType type,
   // Do not fire shortcuts on key up.
   if ([event type] == NSKeyDown) {
     if ([window handleExtraBrowserKeyboardShortcut:event])
-      return;
+      return YES;
     if ([window handleExtraWindowKeyboardShortcut:event])
-      return;
+      return YES;
   }
 
   // We need to re-dispatch the event, so that it is sent to the menu or other
@@ -345,8 +345,9 @@ void TabContentsViewMac::Observe(NotificationType type,
       tabContentsView_->GetContentNativeView());
   DCHECK([rwhv isKindOfClass:[RenderWidgetHostViewCocoa class]]);
   [rwhv setIgnoreKeyEvents:YES];
-  [window redispatchEvent:event];
+  BOOL eventHandled = [window redispatchEvent:event];
   [rwhv setIgnoreKeyEvents:NO];
+  return eventHandled;
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {

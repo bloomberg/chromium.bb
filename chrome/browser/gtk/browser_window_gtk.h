@@ -57,7 +57,7 @@ class BrowserWindowGtk : public BrowserWindow,
   Browser* browser() const { return browser_.get(); }
 
   // Process a keyboard event which was not handled by webkit.
-  void HandleKeyboardEvent(GdkEventKey* event);
+  bool HandleKeyboardEvent(GdkEventKey* event);
 
   // Overridden from BrowserWindow
   virtual void Show();

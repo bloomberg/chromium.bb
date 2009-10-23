@@ -434,7 +434,8 @@ bool ExtensionHost::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
   return false;
 }
 
-void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+bool ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  return false;
 }
 
 void ExtensionHost::HandleMouseEvent() {

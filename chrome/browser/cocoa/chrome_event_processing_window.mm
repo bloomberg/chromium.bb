@@ -87,17 +87,25 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
   return [super performKeyEquivalent:event];
 }
 
-- (void)redispatchEvent:(NSEvent*)event {
+- (BOOL)redispatchEvent:(NSEvent*)event {
   DCHECK(event);
   DCHECK([event window] == self);
+  eventHandled_ = YES;
   redispatchingEvent_ = YES;
   [NSApp sendEvent:event];
   redispatchingEvent_ = NO;
+
+  // If the event was not handled by [NSApp sendEvent:], the sendEvent:
+  // method below will be called, and because |redispatchingEvent_| is YES,
+  // |eventHandled_| will be set to NO.
+  return eventHandled_;
 }
 
 - (void)sendEvent:(NSEvent*)event {
   if (!redispatchingEvent_)
     [super sendEvent:event];
+  else
+    eventHandled_ = NO;
 }
 
 @end  // ChromeEventProcessingWindow
