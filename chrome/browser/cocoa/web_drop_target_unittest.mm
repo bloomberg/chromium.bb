@@ -37,12 +37,12 @@ class WebDropTargetTest : public RenderViewHostTestHarness {
 };
 
 // Make sure nothing leaks.
-TEST_F(WebDropTargetTest, Init) {
+TEST_F(WebDropTargetTest, DISABLED_Init) {
   EXPECT_TRUE(drop_target_);
 }
 
 // Test flipping of coordinates given a point in window coordinates.
-TEST_F(WebDropTargetTest, Flip) {
+TEST_F(WebDropTargetTest, DISABLED_Flip) {
   NSPoint windowPoint = NSZeroPoint;
   NSPoint viewPoint =
       [drop_target_ flipWindowPointToView:windowPoint
@@ -58,7 +58,7 @@ TEST_F(WebDropTargetTest, Flip) {
   EXPECT_NE(screenPoint.y, 0);
 }
 
-TEST_F(WebDropTargetTest, URL) {
+TEST_F(WebDropTargetTest, DISABLED_URL) {
   WebDropData data;
 
   // Put a URL on the pasteboard and check it.
@@ -85,7 +85,7 @@ TEST_F(WebDropTargetTest, URL) {
   [pboard releaseGlobally];
 }
 
-TEST_F(WebDropTargetTest, Data) {
+TEST_F(WebDropTargetTest, DISABLED_Data) {
   WebDropData data;
   NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
 
@@ -105,7 +105,7 @@ TEST_F(WebDropTargetTest, Data) {
   [pboard releaseGlobally];
 }
 
-TEST_F(WebDropTargetTest, EnterExitDrop) {
+TEST_F(WebDropTargetTest, DISABLED_EnterExitDrop) {
   // TODO(pinkerton): Call enter/exit/drop and see what happens. This is a bit
   // harder to test.
 }
