@@ -72,4 +72,5 @@ if env.Bit('linux'):
                                  source=['address_set_test_binary'],
                                  action=['${SOURCES[0].abspath}'])
 
-  env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
+  # TODO(cbiffle): get this wrapped in QEMU.
+  #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
