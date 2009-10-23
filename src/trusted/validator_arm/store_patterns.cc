@@ -80,6 +80,8 @@ class RegisterOffsetStorePattern : public ValidatorPattern {
   }
 
   virtual bool IsSafe(const NcDecodeState &state) {
+    UNREFERENCED_PARAMETER(state);
+
     // A tad roundabout, yes.
     return false;
   }

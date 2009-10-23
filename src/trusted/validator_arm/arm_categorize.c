@@ -78,7 +78,7 @@ int FLAGS_patterns = -1;
  * Returns the name for the corresponding bit pattern.
  */
 static const char* GetArmBitKindName(ArmBitKind kind) {
-  if (0 <= kind && kind < ArmBitKindSize) {
+  if (kind < ArmBitKindSize) {
     static const char* kArmBitKindName[ArmBitKindSize] = {
       "u",
       "0",
@@ -103,7 +103,7 @@ ArmBitKind IncrementArmBitKind(ArmBitKind kind) {
  * concrete (or multiple).
  */
 static Bool IsArmBitKindAbstract(ArmBitKind kind) {
-  if (kind < 0 || kind >= ArmBitKindSize) {
+  if (kind >= ArmBitKindSize) {
     /* This shouldn't happen, but be safe. */
     return TRUE;
   } else {

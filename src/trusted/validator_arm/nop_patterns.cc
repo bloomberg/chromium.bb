@@ -35,6 +35,7 @@
  */
 
 #include <set>
+#include <string>
 
 #include "native_client/src/trusted/validator_arm/nop_patterns.h"
 #include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
@@ -52,6 +53,7 @@ class CountedValidatorPattern : public ValidatorPattern {
       : ValidatorPattern(name, length, index) {}
 
   virtual bool IsSafe(const NcDecodeState &state) {
+    UNREFERENCED_PARAMETER(state);
     return !FLAGS_show_counted_instructions;
   }
 };
@@ -82,10 +84,12 @@ class CountPattern : public ValidatorPattern {
   CountPattern() : ValidatorPattern("instructions", 1, 0) {}
 
   virtual bool MayBeUnsafe(const NcDecodeState &state) {
+    UNREFERENCED_PARAMETER(state);
     return true;
   }
 
   virtual bool IsSafe(const NcDecodeState &state) {
+    UNREFERENCED_PARAMETER(state);
     return true;
   }
 };
@@ -194,7 +198,6 @@ class CountBranchPattern : public CountedValidatorPattern {
       default:
         return GetBit(RegisterSets(&(state.CurrentInstruction())), PC_INDEX);
     }
-
   }
 };
 
@@ -206,7 +209,6 @@ class CountIndirectBranchPattern : public CountedValidatorPattern {
 
   virtual bool MayBeUnsafe(const NcDecodeState &state) {
     switch (state.CurrentInstruction().matched_inst->inst_kind) {
-
       case ARM_BRANCH_WITH_LINK_AND_EXCHANGE_2:
       case ARM_BRANCH_AND_EXCHANGE:
       case ARM_BRANCH_AND_EXCHANGE_TO_JAZELLE:
@@ -218,7 +220,6 @@ class CountIndirectBranchPattern : public CountedValidatorPattern {
       default:
         return GetBit(RegisterSets(&(state.CurrentInstruction())), PC_INDEX);
     }
-
   }
 };
 

@@ -52,7 +52,7 @@
 Bool FLAGS_name_cond = FALSE;
 
 const char* GetArmInstTypeName(ArmInstType type) {
-  if (type < 0 || type >= ARM_INST_TYPE_SIZE) {
+  if (type >= ARM_INST_TYPE_SIZE) {
     return "?UNKNOWN_ARM_TYPE_SIZE?";
   } else {
     static const char* kArmInstTypeString[ARM_INST_TYPE_SIZE] = {
@@ -80,7 +80,7 @@ const char* GetArmInstTypeName(ArmInstType type) {
 }
 
 const char* GetArmInstKindName(ArmInstKind kind) {
-  if (kind < 0 || kind >= ARM_INST_KIND_SIZE) {
+  if (kind >= ARM_INST_KIND_SIZE) {
     return "?UNKNOWN_ARM_KIND_SIZE";
   } else {
     static const char* kArmInstKindString[ARM_INST_KIND_SIZE] = {
@@ -255,7 +255,7 @@ const char* GetArmInstKindName(ArmInstKind kind) {
 }
 
 const char* GetArmAddressingModeName(ArmAddressingMode mode) {
-  if (mode < 0 || mode >= ARM_ADDRESSING_SIZE) {
+  if (mode >= ARM_ADDRESSING_SIZE) {
     return "?UNKNOWN_ARM_ADDRESSING_MODE?";
   } else {
     static const char* kArmAddressingModeString[ARM_ADDRESSING_SIZE] = {
@@ -276,7 +276,7 @@ const char* GetArmAddressingModeName(ArmAddressingMode mode) {
 }
 
 const char* GetArmSubaddressingModeName(ArmSubaddressingMode mode) {
-  if (mode < 0 || mode >= ARM_SUBADDRESSING_SIZE) {
+  if (mode >= ARM_SUBADDRESSING_SIZE) {
     return "?UNKNOWN_ARM_SUBADDRESSING_MODE?";
   } else {
     static const char* kArmSubaddressingModeString[ARM_SUBADDRESSING_SIZE] = {
@@ -292,7 +292,7 @@ const char* GetArmSubaddressingModeName(ArmSubaddressingMode mode) {
 }
 
 const char* GetArmIndexingModeName(ArmIndexingMode mode) {
-  if (mode < 0 || mode >= ARM_INDEXING_SIZE) {
+  if (mode >= ARM_INDEXING_SIZE) {
     return "?UNKNOWN_ARM_ADDRESSING_MODE?";
   } else {
     static const char* kArmIndexingModeString[ARM_INDEXING_SIZE] = {
@@ -566,7 +566,7 @@ const ArmAccessMode kArmLscUnindexed = {
 const InstValues kArmDontCareMask = ARM_DONT_CARE_MASK;
 
 const InstValues* GetArmInstMasks(ArmInstType type) {
-  if (type < 0 || type >= ARM_INST_TYPE_SIZE) {
+  if (type >= ARM_INST_TYPE_SIZE) {
     return &kArmDontCareMask;
   } else {
     static const InstValues kArmInstMasks[ARM_INST_TYPE_SIZE] = {

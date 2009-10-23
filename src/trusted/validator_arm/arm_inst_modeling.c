@@ -160,9 +160,9 @@ ModeledOpInfo* CopyOfOpInfo(const ModeledOpInfo* op) {
   return copy;
 }
 
-ModeledArmInstructionSet modeled_arm_instruction_set = {
-  0
-};
+/* NOTE: zero initialized */
+ModeledArmInstructionSet modeled_arm_instruction_set;
+
 
 void AddInstruction(const ModeledOpInfo* instruction) {
   modeled_arm_instruction_set.instructions[modeled_arm_instruction_set.size] =
@@ -332,8 +332,7 @@ static Bool IndexedInstructionDirective(char directive,
                                         size_t* cursor) {
   int index = *((int*) data);
   switch (directive) {
-    case 'v':
-      {
+    case 'v': {
         const ModeledOpInfo* op =
             modeled_arm_instruction_set.instructions[index];
         InstValuesAppend(buffer,
@@ -343,8 +342,7 @@ static Bool IndexedInstructionDirective(char directive,
                          cursor);
         return TRUE;
       }
-    case 'o':
-      {
+    case 'o': {
         const ModeledOpInfo* op =
             modeled_arm_instruction_set.instructions[index];
         ModeledOpInfoAppend(buffer, buffer_size, op, cursor);

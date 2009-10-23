@@ -35,14 +35,19 @@ Import('env')
 if env['TARGET_ARCHITECTURE'] != 'arm':
   Return()
 
-# TODO(cbiffle): eliminate need for the following line
-env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 if env.Bit('linux'):
   # NOTE: we cannot use TARGET_ROOT here because we want to share this file
   #       between different scons invocations
   gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/'
            'ncdecode_instruction.c')
+
+  # NOTE: we like static executables for easy distribution
+  env.Append(LINKFLAGS=['-static'])
+  # TODO(robertm): we always link against 'rt', 'dl', 'pthread', 'ssl', 'crypto'
+  #                but should probably be more selective
+  env.FilterOut(LIBS=['ssl', 'crypto'])
 
   # TODO(cbiffle): get these warnings to pass on platform=arm build.
   #env.Append(
@@ -117,6 +122,7 @@ if env.Bit('linux'):
                  '${SOURCE.abspath} --generate_parser=${TARGET.abspath}'
                  ])
 
+
   arm_dis = env.ComponentProgram('arm-ncdis',
                                  ['ncdis.cc'],
                                  LIBS=['nchelper',
@@ -126,7 +132,8 @@ if env.Bit('linux'):
                                        'seg_parser',
                                        # from ncv/
                                        # TODO: move to top level
-                                       '$OPTIONAL_COVERAGE_LIBS'])
+                                       '$OPTIONAL_COVERAGE_LIBS'],
+                                 )
 
   arm_val = env.ComponentProgram('arm-ncval',
                                  ['ncval.cc'],
@@ -137,7 +144,8 @@ if env.Bit('linux'):
                                              'seg_parser',
                                              # from ncv/
                                              # TODO: move to top level
-                                             '$OPTIONAL_COVERAGE_LIBS'])
+                                             '$OPTIONAL_COVERAGE_LIBS'],
+                                 )
 
   ncdis_input_golden = env.File('ncdis_test.input')
 

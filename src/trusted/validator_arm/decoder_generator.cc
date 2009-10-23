@@ -38,6 +38,7 @@
 #include <set>
 #include <vector>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_arm/decoder_generator.h"
 #include "native_client/src/trusted/validator_arm/arm_inst_modeling.h"
 
@@ -259,6 +260,8 @@ bool DecoderGenerator::GenerateSimpleStateUpdate(
     ArmInstructionTrie* node,
     uint32_t mask,
     StateToCaseMap* state_to_case_map) {
+  UNREFERENCED_PARAMETER(node);
+
   if (state_to_case_map->size() == kMaskStepValues) {
     // true while we can find a common base for each step value
     bool still_good = true;
@@ -307,6 +310,8 @@ bool DecoderGenerator::GenerateNextStepUsingIf(
     ArmInstructionTrie* node,
     uint32_t mask,
     StateToCaseMap* state_to_case_map) {
+  UNREFERENCED_PARAMETER(node);
+
   if (state_to_case_map->size() == 2) {
     ArmInstructionTrie* then_node = NULL;
     ArmInstructionTrie* else_node = NULL;
@@ -339,6 +344,8 @@ void DecoderGenerator::GenerateNextStepUsingSwitch(
     ArmInstructionTrie* node,
     uint32_t mask,
     StateToCaseMap* state_to_case_map) {
+  UNREFERENCED_PARAMETER(node);
+
   // Print out case statement that branches to the corresponding reachable
   // successors, based on the matched bit pattern.
   fprintf(file_, "        switch (%s) {\n", GenerateValueTest(mask).c_str());
@@ -739,10 +746,9 @@ void DecoderGenerator::GenerateInstructions() {
             GetArmInstKindName(op->inst_kind),
             op->inst_access,
             GetArmInstTypeName(op->inst_type),
-            op->arm_safe
-            );
+            op->arm_safe);
     PrintString(op->describe_format);
-    fprintf(file_,", %d, %s, {\n", op->num_bytes, op->check_fcn);
+    fprintf(file_, ", %d, %s, {\n", op->num_bytes, op->check_fcn);
 
     const InstValues* masks = GetArmInstMasks(op->inst_type);
     GenerateInstValue(file_, "cond",

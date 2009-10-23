@@ -57,6 +57,7 @@ class UpdateR9Pattern : public ValidatorPattern {
   }
 
   virtual bool IsSafe(const NcDecodeState &state) {
+    UNREFERENCED_PARAMETER(state);
     return false;
   }
 };

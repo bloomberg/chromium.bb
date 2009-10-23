@@ -33,6 +33,7 @@
  * NaCl testing shell
  */
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +52,7 @@ static int timed_rpc_count;
 static uint32_t timed_rpc_method = 1;
 static int timed_rpc_bytes = 4000;
 
+#if 0
 /*
  * This function works with the rpc services in tests/srpc to test the
  * interfaces.
@@ -228,6 +230,7 @@ static void TestRandomRpcs(NaClSrpcChannel* channel) {
     }
   } while (0);
 }
+#endif
 
 #if defined(HAVE_SDL)
 #include <SDL.h>
@@ -243,23 +246,29 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
   return NaClSrpcInvokeV(channel, rpc_number, ins, outs);
 }
 
+
+/* NOTE: this used to stack allocated inside main which cause
+ * problems on ARM (probably a tool chain bug).
+ * NaClSrpcChannel is pretty big (> 256kB)
+ */
+struct NaClSrpcChannel     command_channel;
+struct NaClSrpcChannel     untrusted_command_channel;
+struct NaClSrpcChannel     channel;
+
 int main(int  argc, char *argv[]) {
   struct NaClSelLdrLauncher* launcher;
   int                        opt;
   static char*               application_name = NULL;
   char*                      nextp;
   int                        i;
+  size_t                     n;
   int                        sel_ldr_argc;
   char**                     tmp_ldr_argv;
   const char**               sel_ldr_argv;
   int                        module_argc;
   const char**               module_argv;
-  struct NaClSrpcChannel     command_channel;
-  struct NaClSrpcChannel     untrusted_command_channel;
-  struct NaClSrpcChannel     channel;
   static const char*         kFixedArgs[] = { "-P", "5", "-X", "5" };
-  static const int           kFixedArgCount = sizeof(kFixedArgs) /
-                                              sizeof(kFixedArgs[1]);
+
 
   /* Descriptor transfer requires the following. */
   NaClNrdAllModulesInit();
@@ -335,13 +344,13 @@ int main(int  argc, char *argv[]) {
    * Prepend the fixed arguments to the command line.
    */
   sel_ldr_argv =
-      (const char**) malloc((sel_ldr_argc + kFixedArgCount) *
+    (const char**) malloc((sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs)) *
                             sizeof(*sel_ldr_argv));
-  for (i = 0; i < kFixedArgCount; ++i) {
-    sel_ldr_argv[i] = kFixedArgs[i];
+  for (n = 0; n < NACL_ARRAY_SIZE(kFixedArgs); ++n) {
+    sel_ldr_argv[n] = kFixedArgs[n];
   }
   for (i = 0; i < sel_ldr_argc; ++i) {
-    sel_ldr_argv[i + kFixedArgCount] = tmp_ldr_argv[i];
+    sel_ldr_argv[i + NACL_ARRAY_SIZE(kFixedArgs)] = tmp_ldr_argv[i];
   }
 
   /*
@@ -349,7 +358,7 @@ int main(int  argc, char *argv[]) {
    */
   launcher = NaClSelLdrStart(application_name,
                              5,
-                             sel_ldr_argc + kFixedArgCount,
+                             sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs),
                              (const char**) sel_ldr_argv,
                              module_argc,
                              (const char**) module_argv);
@@ -371,7 +380,7 @@ int main(int  argc, char *argv[]) {
                         Interpreter,
                         NaClSelLdrGetSockAddr(launcher));
   } else {
-    TestRandomRpcs(&channel);
+    /* TestRandomRpcs(&channel); */
   }
 
   /*
