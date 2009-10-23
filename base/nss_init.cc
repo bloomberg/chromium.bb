@@ -82,11 +82,13 @@ class NSSInitSingleton {
     if (!database_dir.empty()) {
       // Initialize with a persistant database (~/.pki/nssdb).
       // Use "sql:" which can be shared by multiple processes safely.
-      status = NSS_InitReadWrite(
-          StringPrintf("sql:%s", database_dir.c_str()).c_str());
+      std::string nss_config_dir =
+          StringPrintf("sql:%s", database_dir.c_str());
+      status = NSS_InitReadWrite(nss_config_dir.c_str());
       if (status != SECSuccess) {
         LOG(ERROR) << "Error initializing NSS with a persistent "
-                      "databases: NSS error code " << PR_GetError();
+                      "database (" << nss_config_dir
+                   << "): NSS error code " << PR_GetError();
       }
     }
     if (status != SECSuccess) {
