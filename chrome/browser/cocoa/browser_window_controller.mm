@@ -1130,7 +1130,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidResize:(NSNotification*)notification {
   // Resize (and possibly move) the status bubble. Note that we may get called
   // when the status bubble does not exist.
-  if(statusBubble_.get())
+  if (statusBubble_.get())
     statusBubble_->UpdateSizeAndPosition();
 }
 

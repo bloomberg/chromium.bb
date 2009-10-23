@@ -349,7 +349,7 @@ ExtensionShelfMac::Toolstrip* ExtensionShelfMac::ToolstripAtIndex(int index) {
 }
 
 - (void)updateVisibility:(id)sender {
-  if(bridge_.get())
+  if (bridge_.get())
     bridge_->AdjustHeight();
 }
 
