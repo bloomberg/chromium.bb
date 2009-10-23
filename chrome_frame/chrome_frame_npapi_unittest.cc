@@ -83,7 +83,8 @@ class MockAutomationClient: public ChromeFrameAutomationClient {
   MOCK_METHOD6(Initialize, bool(ChromeFrameDelegate*, int, bool,
                                 const std::wstring&, const std::wstring&,
                                 bool));
-  MOCK_METHOD1(SetEnableExtensionAutomation, void(bool));  // NOLINT
+  MOCK_METHOD1(SetEnableExtensionAutomation,
+               void(const std::vector<std::string>&));  // NOLINT
 };
 
 class MockProxyService: public NpProxyService {
@@ -219,7 +220,7 @@ TEST_F(TestNPAPIPrivilegedApi, PrivilegedAllowsArgsAndProfile) {
                      L"-bar=far");  // Extra arguments expected
 
   // With privileged mode we expect automation to be enabled.
-  EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(true))
+  EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(_))
       .Times(1);
 
   char* argn[] = {
@@ -386,7 +387,7 @@ class TestNPAPIPrivilegedProperty: public TestNPAPIPrivilegedApi {
 
     // And we should expect SetEnableExtensionAutomation to be called
     // for privileged tests.
-    EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(true))
+    EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(_))
        .WillRepeatedly(Return());
 
     // Initializes identifiers.

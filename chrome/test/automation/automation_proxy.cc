@@ -220,9 +220,10 @@ bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
   return Send(new AutomationMsg_SavePackageShouldPromptUser(0, should_prompt));
 }
 
-bool AutomationProxy::SetEnableExtensionAutomation(bool enable_automation) {
+bool AutomationProxy::SetEnableExtensionAutomation(
+    const std::vector<std::string>& functions_enabled) {
   return Send(
-      new AutomationMsg_SetEnableExtensionAutomation(0, enable_automation));
+      new AutomationMsg_SetEnableExtensionAutomation(0, functions_enabled));
 }
 
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {

@@ -77,7 +77,7 @@ interface IChromeFrame : IDispatch {
 
 [
   object,
-  uuid(679E292F-DBAB-46b8-8693-03084CEF61BE),
+  uuid(655A11E0-EF63-4fbe-9DF6-C182D2FCD6DC),
   oleautomation,
   nonextensible,
   hidden,
@@ -91,6 +91,9 @@ interface IChromeFramePrivileged: IUnknown {
   HRESULT GetChromeExtraArguments([out] BSTR *args);
   // The profile name we want to use.
   HRESULT GetChromeProfileName([out] BSTR *profile_name);
+  // The comma-separated list of extension API functions you wish to automate.
+  // Return S_FALSE to leave the default, which is to automate all functions.
+  HRESULT GetExtensionApisToAutomate([out] BSTR *extension_apis);
 };
 
 // Expose this service to the ChromeFrame control to trigger privileged

@@ -19,6 +19,7 @@ class ChromeFramePlugin : public ChromeFrameDelegateImpl {
   ChromeFramePlugin()
       : ignore_setfocus_(false),
         is_privileged_(false) {
+    functions_enabled_.push_back("*");
   }
   ~ChromeFramePlugin() {
     Uninitialize();
@@ -78,7 +79,7 @@ END_MSG_MAP()
     // Issue the extension automation request if we're privileged to
     // allow this control to handle extension requests from Chrome.
     if (is_privileged_)
-      automation_client_->SetEnableExtensionAutomation(true);
+      automation_client_->SetEnableExtensionAutomation(functions_enabled_);
   }
 
   virtual bool IsValid() const {
@@ -170,7 +171,7 @@ END_MSG_MAP()
   // modified as well (enable/disable commands, add/remove items).
   // Override in most-derived class if needed.
   bool PreProcessContextMenu(HMENU menu) {
-    // Add an "About" item. 
+    // Add an "About" item.
     // TODO: The string should be localized and menu should
     // be modified in ExternalTabContainer:: once we go public.
     AppendMenu(menu, MF_STRING, IDC_ABOUT_CHROME_FRAME,
@@ -208,6 +209,10 @@ END_MSG_MAP()
   //
   // When privileged, additional interfaces are made available to the user.
   bool is_privileged_;
+
+  // List of functions to enable for automation, or a single entry "*" to enable
+  // all functions for automation.  Ignored unless is_privileged_ is true.
+  std::vector<std::string> functions_enabled_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_PLUGIN_H_

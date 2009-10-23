@@ -27,10 +27,14 @@ class AutomationExtensionFunction : public ExtensionFunction {
 
   static ExtensionFunction* Factory();
 
-  // If enabled, we set an instance of this function as the functor
-  // for all function names in ExtensionFunctionFactoryRegistry.
-  // If disabled, we restore the initial functions.
-  static void SetEnabled(bool enabled);
+  // If the list of enabled functions is non-empty, we enable according to the
+  // list ("*" means enable all, otherwise we enable individual named
+  // functions). If empty, we restore the initial functions.
+  //
+  // Note that all calls to this function, except a call with the empty list,
+  // are additive.  Functions previously enabled will remain enabled until
+  // you clear all function forwarding by specifying the empty list.
+  static void SetEnabled(const std::vector<std::string>& functions_enabled);
 
   // Intercepts messages sent from the external host to check if they
   // are actually responses to extension API calls.  If they are, redirects

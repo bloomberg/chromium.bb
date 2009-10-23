@@ -906,7 +906,10 @@ IPC_BEGIN_MESSAGES(Automation)
   // Used to put the browser into "extension automation mode" for the
   // current profile, or turn off the mode.
   IPC_MESSAGE_ROUTED1(AutomationMsg_SetEnableExtensionAutomation,
-                      bool /* true to enable extension automation */)
+                      std::vector<std::string> /* empty to disable automation,
+                                                  non-empty to enable automation
+                                                  of the specified API
+                                                  functions */)
 
   // This message tells the browser to start using the new proxy configuration
   // represented by the given JSON string. The parameters used in the JSON
@@ -1065,7 +1068,7 @@ IPC_BEGIN_MESSAGES(Automation)
       AutomationMsg_GoForwardBlockUntilNavigationsComplete, int, int,
       AutomationMsg_NavigationResponseValues)
 
-  // This message is used by automaton clients to upload histogram data to the
+  // This message is used by automation clients to upload histogram data to the
   // browser process.
   IPC_MESSAGE_ROUTED1(AutomationMsg_RecordHistograms,
                       std::vector<std::string> /* histogram_list */)

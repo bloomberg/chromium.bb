@@ -738,11 +738,11 @@ void ChromeFrameAutomationClient::CreateExternalTabComplete(HWND chrome_window,
 }
 
 void ChromeFrameAutomationClient::SetEnableExtensionAutomation(
-    bool enable_automation) {
+    const std::vector<std::string>& functions_enabled) {
   if (!is_initialized())
     return;
 
-  automation_server_->SetEnableExtensionAutomation(enable_automation);
+  automation_server_->SetEnableExtensionAutomation(functions_enabled);
 }
 
 // Invoked in launch background thread.

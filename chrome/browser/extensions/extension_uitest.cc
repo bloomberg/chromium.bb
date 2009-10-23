@@ -33,6 +33,10 @@ static const char kTestDirectoryBrowserEvent[] =
 // extension API calls so that behavior can be tested deterministically
 // through code, instead of having to contort the browser into a state
 // suitable for testing.
+//
+// By default, makes Chrome forward all Chrome Extension API function calls
+// via the automation interface. To override this, call set_functions_enabled()
+// with a list of function names that should be forwarded,
 template <class ParentTestType>
 class ExtensionUITest : public ParentTestType {
  public:
@@ -41,15 +45,21 @@ class ExtensionUITest : public ParentTestType {
     filename = filename.AppendASCII(extension_path);
     launch_arguments_.AppendSwitchWithValue(switches::kLoadExtension,
                                             filename.value());
+    functions_enabled_.push_back("*");
+  }
+
+  void set_functions_enabled(
+      const std::vector<std::string>& functions_enabled) {
+    functions_enabled_ = functions_enabled;
   }
 
   void SetUp() {
     ParentTestType::SetUp();
-    automation()->SetEnableExtensionAutomation(true);
+    automation()->SetEnableExtensionAutomation(functions_enabled_);
   }
 
   void TearDown() {
-    automation()->SetEnableExtensionAutomation(false);
+    automation()->SetEnableExtensionAutomation(std::vector<std::string>());
     ParentTestType::TearDown();
   }
 
@@ -84,6 +94,10 @@ class ExtensionUITest : public ParentTestType {
   virtual void DoAdditionalPreNavigateSetup(TabProxy* tab) {
   }
 
+ protected:
+  // Extension API functions that we want to take over.  Defaults to all.
+  std::vector<std::string> functions_enabled_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionUITest);
 };
@@ -101,6 +115,15 @@ class SimpleApiCallExtensionTest : public SingleMessageExtensionUITest {
  public:
   SimpleApiCallExtensionTest()
       : SingleMessageExtensionUITest(kTestDirectorySimpleApiCall) {
+  }
+
+  void SetUp() {
+    // Set just this one function explicitly to be forwarded, as a test of
+    // the selective forwarding.  The next test will leave the default to test
+    // universal forwarding.
+    functions_enabled_.clear();
+    functions_enabled_.push_back("tabs.remove");
+    SingleMessageExtensionUITest::SetUp();
   }
 
  private:

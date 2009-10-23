@@ -337,6 +337,19 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
         chrome_extra_arguments.assign(extra_arguments_arg,
                                       extra_arguments_arg.Length());
 
+      ScopedBstr automated_functions_arg;
+      service_hr = service->GetExtensionApisToAutomate(
+          automated_functions_arg.Receive());
+      if (S_OK == service_hr && automated_functions_arg) {
+        std::string automated_functions(
+            WideToASCII(static_cast<BSTR>(automated_functions_arg)));
+        functions_enabled_.clear();
+        // SplitString writes one empty entry for blank strings, so we need this
+        // to allow specifying zero automation of API functions.
+        if (!automated_functions.empty())
+          SplitString(automated_functions, ',', &functions_enabled_);
+      }
+
       ScopedBstr profile_name_arg;
       service_hr = service->GetChromeProfileName(profile_name_arg.Receive());
       if (S_OK == service_hr && profile_name_arg)

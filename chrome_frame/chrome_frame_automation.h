@@ -41,7 +41,8 @@ struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {
   virtual std::string server_version() = 0;
 
   virtual void SendProxyConfig(const std::string&) = 0;
-  virtual void SetEnableExtensionAutomation(bool enable) = 0;
+  virtual void SetEnableExtensionAutomation(
+      const std::vector<std::string>& functions_enabled) = 0;
  protected:
   ~ChromeFrameAutomationProxy() {}
 };
@@ -72,8 +73,9 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
     AutomationProxy::SendProxyConfig(p);
   }
 
-  virtual void SetEnableExtensionAutomation(bool e) {
-    AutomationProxy::SetEnableExtensionAutomation(e);
+  virtual void SetEnableExtensionAutomation(
+      const std::vector<std::string>& functions_enabled) {
+    AutomationProxy::SetEnableExtensionAutomation(functions_enabled);
   }
 
  protected:
@@ -202,7 +204,8 @@ class ChromeFrameAutomationClient
                                       const std::string& target);
   bool SetProxySettings(const std::string& json_encoded_proxy_settings);
 
-  virtual void SetEnableExtensionAutomation(bool enable_automation);
+  virtual void SetEnableExtensionAutomation(
+      const std::vector<std::string>& functions_enabled);
 
   void FindInPage(const std::wstring& search_string,
                   FindInPageDirection forward,

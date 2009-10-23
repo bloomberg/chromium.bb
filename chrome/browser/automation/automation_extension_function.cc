@@ -51,10 +51,15 @@ ExtensionFunction* AutomationExtensionFunction::Factory() {
   return new AutomationExtensionFunction();
 }
 
-void AutomationExtensionFunction::SetEnabled(bool enabled) {
-  if (enabled) {
+void AutomationExtensionFunction::SetEnabled(
+    const std::vector<std::string>& functions_enabled) {
+  if (functions_enabled.size() > 0) {
     std::vector<std::string> function_names;
-    ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
+    if (functions_enabled.size() == 1 && functions_enabled[0] == "*") {
+      ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
+    } else {
+      function_names = functions_enabled;
+    }
 
     for (std::vector<std::string>::iterator it = function_names.begin();
          it != function_names.end(); it++) {
@@ -64,7 +69,7 @@ void AutomationExtensionFunction::SetEnabled(bool enabled) {
       // current profile is not that.
       bool result = ExtensionFunctionDispatcher::OverrideFunction(
           *it, AutomationExtensionFunction::Factory);
-      DCHECK(result);
+      LOG_IF(WARNING, !result) << "Failed to override API function: " << *it;
     }
   } else {
     ExtensionFunctionDispatcher::ResetFunctions();

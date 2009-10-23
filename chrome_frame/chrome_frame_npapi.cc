@@ -102,6 +102,10 @@ static const char kPluginChromeExtraArguments[] = "chrome_extra_arguments";
 // If privileged mode is enabled, the string value of this argument will
 // be used as the profile name for our chrome.exe instance.
 static const char kPluginChromeProfileName[] = "chrome_profile_name";
+// If privileged mode is enabled, this argument will be taken as a
+// comma-separated list of API function calls to automate.
+static const char kPluginChromeFunctionsAutomatedAttribute[] =
+    "chrome_functions_automated";
 // If chrome network stack is to be used
 static const char kPluginUseChromeNetwork[] = "usechromenetwork";
 
@@ -377,6 +381,13 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
       chrome_extra_arguments_arg = argv[i];
     } else if (LowerCaseEqualsASCII(argn[i], kPluginChromeProfileName)) {
       chrome_profile_name_arg = argv[i];
+    } else if (LowerCaseEqualsASCII(argn[i],
+                                    kPluginChromeFunctionsAutomatedAttribute)) {
+      functions_enabled_.clear();
+      // SplitString writes one empty entry for blank strings, so we need this
+      // to allow specifying zero automation of API functions.
+      if (argv[i][0] != '\0')
+        SplitString(argv[i], ',', &functions_enabled_);
     } else if (LowerCaseEqualsASCII(argn[i], kPluginUseChromeNetwork)) {
       chrome_network_arg_set = true;
       chrome_network_arg = atoi(argv[i]) ? true : false;

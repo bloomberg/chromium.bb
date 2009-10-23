@@ -1901,8 +1901,9 @@ void AutomationProvider::SavePackageShouldPromptUser(bool should_prompt) {
   SavePackage::SetShouldPromptUser(should_prompt);
 }
 
-void AutomationProvider::SetEnableExtensionAutomation(bool automation_enabled) {
-  AutomationExtensionFunction::SetEnabled(automation_enabled);
+void AutomationProvider::SetEnableExtensionAutomation(
+    const std::vector<std::string>& functions_enabled) {
+  AutomationExtensionFunction::SetEnabled(functions_enabled);
 }
 
 void AutomationProvider::GetWindowTitle(int handle, string16* text) {
