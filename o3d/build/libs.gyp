@@ -42,7 +42,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'all_dependent_settings': {
+            'direct_dependent_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
               ],
@@ -100,7 +100,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'all_dependent_settings': {
+            'direct_dependent_settings': {
               'mac_framework_dirs': [
                 "<(PRODUCT_DIR)/Library/Frameworks",
               ],
