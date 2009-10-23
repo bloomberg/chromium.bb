@@ -864,21 +864,6 @@
    fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
 }
 {
-   bug_20941
-   Memcheck:Cond
-   fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
-   fun:_ZN7WebCore12RenderSlider6layoutEv
-   ...
-   fun:_ZN7WebCore10RenderView6layoutEv
-   fun:_ZN7WebCore9FrameView6layoutEb
-   fun:_ZN7WebCore8Document12updateLayoutEv
-}
-{
-   bug_20941
-   Memcheck:Value4
-   fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
-}
-{
    bug_21010a
    Memcheck:Value4
    fun:_ZN2v88internal10PagedSpace10FindObjectEPh
