@@ -26,8 +26,11 @@
 import os
 import os.path
 import sys
+import re
 import subprocess
 import platform
+sys.path.append('build')
+import is_admin
 from optparse import OptionParser
 
 
@@ -100,18 +103,73 @@ class GypBuilder(object):
     else:
       print " ".join(args)
 
+  def CheckVisualStudioVersionVsSolution(self, solution):
+    """Checks the solution matches the cl version."""
+    f = open(solution, "r")
+    line = f.readline()
+    f.close()
+    m = re.search(r'Format Version (\d+)\.', line)
+    if m:
+      solution_version = int(m.group(1))
+    else:
+      print "FAILURE: Unknown solution version in %s" % solution
+      sys.exit(1)
+
+    output = subprocess.Popen(['cl.exe'],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE).communicate()[1]
+    m = re.search(r'Compiler Version (\d+)\.', output)
+    if m:
+      compiler_version = int(m.group(1))
+    else:
+      print "FAILURE: Unknown cl.exe version."
+      sys.exit(1)
+
+    #                        Compiler    Solution
+    # Visual Studio .NET 2005   14          9
+    # Visual Studio .NET 2008   15         10
+    # Visual Studio .NET 2010   ??         ??
+    if (compiler_version - 14) > (solution_version - 9):
+      vs_map = {
+        14: '2005',
+        15: '2008',
+        16: '2010',
+      }
+      sln_map = {
+        9: '2005',
+        10: '2008',
+        11: '2010',
+      }
+      vs_version = vs_map[compiler_version]
+      print ("ERROR: solution (%s) version does not match "
+             "Visual Studio version (%s)" %
+             (sln_map[solution_version], vs_version))
+      print "You should 'set GYP_MSVS_VERSION=auto'"
+      print "and run 'gclient runhooks --force'"
+      sys.exit(1)
+
   def Dobuild(self, targets, options):
     """Builds the specifed targets."""
+
+    # Use "o3d" for chrome only build.
+    name = "o3d_all"
+
     if os.name == 'nt':
+      solution = os.path.abspath('%s.sln' % name)
+      if not is_admin.IsAdmin():
+        print ("WARNING: selenium_ie will not run unless you run as admin "
+               "or turn off UAC.\nAfter switching to admin run "
+               "'gclient runhooks --force'")
+      self.CheckVisualStudioVersionVsSolution(solution)
       self.Execute(['msbuild',
-                    os.path.abspath('o3d_all.sln'),
+                    solution,
                     '/p:Configuration=%s' % options.version])
     elif platform.system() == 'Darwin':
       self.Execute(['xcodebuild',
-                    '-project', 'o3d_all.xcodeproj'])
+                    '-project', '%s.xcodeproj' % name])
     elif platform.system() == 'Linux':
       self.Execute(['hammer',
-                    '-f', 'all_main.scons'])
+                    '-f', '%s_main.scons' % name])
     else:
       print "Error: Unknown platform", os.name
 
