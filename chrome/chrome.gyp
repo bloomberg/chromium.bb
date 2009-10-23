@@ -6507,11 +6507,14 @@
           # If you add new tests here you may need to update the croc configs.
           # E.g. build/{linux|mac}/chrome_linux.croc
           'dependencies': [
+            'automated_ui_tests',
+            '../app/app.gyp:app_unittests',
             '../base/base.gyp:base_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
+            'ui_tests',
             'unit_tests',
           ],
           'actions': [

@@ -36,6 +36,9 @@ Linux:
 --strict: if a test fails, we continue happily.  --strict will cause
   us to die immediately.
 
+--trim=False: by default we trim away tests known to be problematic on
+  specific platforms.  If set to false we do NOT trim out tests.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -135,17 +138,30 @@ class Coverage(object):
         if not test.endswith('.exe') and os.path.exists(test_exe):
           self.tests[ind] = test_exe
 
-    # Temporarily make Windows quick for bringup by filtering
-    # out all except base_unittests.  Easier than a chrome.cyp change.
-    # TODO(jrg): remove this
+  def TrimTests(self):
+    """Trim specific tests for each platform."""
     if self.IsWindows():
-      t2 = []
+      # special case for now to be fast
+      inclusion = ['base_unittests']
+      keep = []
       for test in self.tests:
-        if 'base_unittests' in test:
-          t2.append(test)
-      self.tests = t2
-
-
+        for i in inclusion:
+          if test.endswith(i):
+            keep.append(test)
+      self.tests = keep
+      return
+    if self.IsLinux():
+      return
+    if self.IsMac():
+      exclusion = ['automated_ui_tests']
+      punted = []
+      for test in self.tests:
+        for e in exclusion:
+          if test.endswith(e):
+            punted.append(test)
+      self.tests = filter(lambda t: t not in punted, self.tests)
+      if punted:
+        logging.info('Tests trimmed out: ' + str(punted))
 
   def ConfirmPlatformAndPaths(self):
     """Confirm OS and paths (e.g. lcov)."""
@@ -334,12 +350,19 @@ def main():
                     dest='src_root',
                     default='.',
                     help='Source root (only used on Windows)')
+  parser.add_option('-t',
+                    '--trim',
+                    dest='trim',
+                    default=True,
+                    help='Trim out tests?  Default True.')
   (options, args) = parser.parse_args()
   if not options.directory:
     parser.error('Directory not specified')
   coverage = Coverage(options.directory, options, args)
   coverage.ClearData()
   coverage.FindTests()
+  if options.trim:
+    coverage.TrimTests()
   coverage.BeforeRunTests()
   coverage.RunTests()
   coverage.AfterRunTests()
