@@ -50,9 +50,10 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   virtual ~SimpleDataSourceTest() {
-    if (bridge_.get()) {
+    if (bridge_.get())
       EXPECT_CALL(*bridge_, OnDestroy());
-    }
+    if (bridge_factory_.get())
+      EXPECT_CALL(*bridge_factory_, OnDestroy());
   }
 
   void InitializeDataSource(const char* url) {
@@ -190,9 +191,6 @@ TEST_F(SimpleDataSourceTest, InitializeFile) {
 }
 
 TEST_F(SimpleDataSourceTest, InitializeData) {
-  // Bridge is not used at all.
-  ReleaseBridge();
-
   media::MediaFormat url_format;
   url_format.SetAsString(media::MediaFormat::kMimeType,
                          media::mime_type::kURL);
@@ -216,10 +214,6 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
 }
 
 TEST_F(SimpleDataSourceTest, InitializeInvalid) {
-  // They are not used at all.
-  ReleaseBridge();
-  ReleaseBridgeFactory();
-
   media::MediaFormat url_format;
   url_format.SetAsString(media::MediaFormat::kMimeType,
                          media::mime_type::kURL);
