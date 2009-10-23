@@ -55,6 +55,10 @@ namespace WebKit {
 
         bool isNull() const { return m_private == 0; }
 
+        // Returns a string representation of this SecurityOrigin that can be used as a file.
+        // Should be used in storage APIs only.
+        WEBKIT_API WebString databaseIdentifier();
+
         WEBKIT_API WebString toString() const;
 
 #if WEBKIT_IMPLEMENTATION

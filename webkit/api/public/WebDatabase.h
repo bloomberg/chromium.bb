@@ -28,71 +28,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef WebDatabase_h
+#define WebDatabase_h
+
+#include "WebCommon.h"
 #include "WebSecurityOrigin.h"
 
-#include "SecurityOrigin.h"
-#include "WebString.h"
-#include <wtf/PassRefPtr.h>
-
-using namespace WebCore;
+#if WEBKIT_IMPLEMENTATION
+namespace WebCore { class Database; }
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
 
 namespace WebKit {
+class WebDatabaseObserver;
+class WebDatabasePrivate;
+class WebString;
 
-class WebSecurityOriginPrivate : public SecurityOrigin {
+class WebDatabase {
+public:
+    WebDatabase() : m_private(0) { }
+    WebDatabase(const WebDatabase& d) : m_private(0) { assign(d); }
+    ~WebDatabase() { reset(); }
+
+    WebDatabase& operator=(const WebDatabase& d) { assign(d); return *this; }
+
+    WEBKIT_API void reset();
+    WEBKIT_API void assign(const WebDatabase&);
+    bool isNull() const { return m_private == 0; }
+
+    WEBKIT_API WebString name() const;
+    WEBKIT_API WebString displayName() const;
+    WEBKIT_API unsigned long estimatedSize() const;
+    WEBKIT_API WebSecurityOrigin securityOrigin() const;
+
+    WEBKIT_API static void setObserver(WebDatabaseObserver*);
+    WEBKIT_API static WebDatabaseObserver* observer();
+
+    WEBKIT_API static void updateDatabaseSize(
+        const WebString& originIdentifier, const WebString& databaseName,
+        unsigned long long databaseSize, unsigned long long spaceAvailable);
+
+#if WEBKIT_IMPLEMENTATION
+    WebDatabase(const WTF::PassRefPtr<WebCore::Database>&);
+    WebDatabase& operator=(const WTF::PassRefPtr<WebCore::Database>&);
+    operator WTF::PassRefPtr<WebCore::Database>() const;
+#endif
+
+private:
+    void assign(WebDatabasePrivate*);
+
+    WebDatabasePrivate* m_private;
 };
 
-void WebSecurityOrigin::reset()
-{
-    assign(0);
-}
-
-void WebSecurityOrigin::assign(const WebSecurityOrigin& other)
-{
-    WebSecurityOriginPrivate* p = const_cast<WebSecurityOriginPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
-
-WebString WebSecurityOrigin::databaseIdentifier()
-{
-    if (m_private)
-        return m_private->databaseIdentifier();
-
-    return WebString::fromUTF8("null");
-}
-
-WebString WebSecurityOrigin::toString() const
-{
-    if (m_private)
-        return m_private->toString();
-
-    return WebString::fromUTF8("null");
-}
-
-WebSecurityOrigin::WebSecurityOrigin(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
-    : m_private(static_cast<WebSecurityOriginPrivate*>(origin.releaseRef()))
-{
-}
-
-WebSecurityOrigin& WebSecurityOrigin::operator=(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
-{
-    assign(static_cast<WebSecurityOriginPrivate*>(origin.releaseRef()));
-    return *this;
-}
-
-WebSecurityOrigin::operator WTF::PassRefPtr<WebCore::SecurityOrigin>() const
-{
-    return PassRefPtr<SecurityOrigin>(const_cast<WebSecurityOriginPrivate*>(m_private));
-}
-
-void WebSecurityOrigin::assign(WebSecurityOriginPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
-
 } // namespace WebKit
+
+#endif

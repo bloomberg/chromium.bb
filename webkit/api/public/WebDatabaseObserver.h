@@ -28,71 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebSecurityOrigin.h"
-
-#include "SecurityOrigin.h"
-#include "WebString.h"
-#include <wtf/PassRefPtr.h>
-
-using namespace WebCore;
+#ifndef WebDatabaseObserver_h
+#define WebDatabaseObserver_h
 
 namespace WebKit {
+class WebDatabase;
 
-class WebSecurityOriginPrivate : public SecurityOrigin {
+class WebDatabaseObserver {
+public:
+    virtual void databaseOpened(const WebDatabase&) = 0;
+    virtual void databaseModified(const WebDatabase&) = 0;
+    virtual void databaseClosed(const WebDatabase&) = 0;
+protected:
+    ~WebDatabaseObserver() {}
 };
 
-void WebSecurityOrigin::reset()
-{
-    assign(0);
-}
-
-void WebSecurityOrigin::assign(const WebSecurityOrigin& other)
-{
-    WebSecurityOriginPrivate* p = const_cast<WebSecurityOriginPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
-
-WebString WebSecurityOrigin::databaseIdentifier()
-{
-    if (m_private)
-        return m_private->databaseIdentifier();
-
-    return WebString::fromUTF8("null");
-}
-
-WebString WebSecurityOrigin::toString() const
-{
-    if (m_private)
-        return m_private->toString();
-
-    return WebString::fromUTF8("null");
-}
-
-WebSecurityOrigin::WebSecurityOrigin(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
-    : m_private(static_cast<WebSecurityOriginPrivate*>(origin.releaseRef()))
-{
-}
-
-WebSecurityOrigin& WebSecurityOrigin::operator=(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
-{
-    assign(static_cast<WebSecurityOriginPrivate*>(origin.releaseRef()));
-    return *this;
-}
-
-WebSecurityOrigin::operator WTF::PassRefPtr<WebCore::SecurityOrigin>() const
-{
-    return PassRefPtr<SecurityOrigin>(const_cast<WebSecurityOriginPrivate*>(m_private));
-}
-
-void WebSecurityOrigin::assign(WebSecurityOriginPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
-
 } // namespace WebKit
+
+#endif
