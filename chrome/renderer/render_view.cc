@@ -378,8 +378,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
 void RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
-  child_process_logging::ScopedActiveURLSetter url_setter(
-      main_frame ? main_frame->url() : WebURL());
+  if (main_frame)
+    child_process_logging::SetActiveURL(main_frame->url());
 
   // If this is developer tools renderer intercept tools messages first.
   if (devtools_client_.get() && devtools_client_->OnMessageReceived(message))
@@ -715,7 +715,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (devtools_agent_.get())
     devtools_agent_->OnNavigate();
 
-  child_process_logging::ScopedActiveURLSetter url_setter(params.url);
+  child_process_logging::SetActiveURL(params.url);
 
   AboutHandler::MaybeHandle(params.url);
 
