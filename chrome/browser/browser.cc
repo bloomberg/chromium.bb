@@ -653,7 +653,11 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, show_main_ui);
+#if defined(BROWSER_SYNC)
+  command_updater_.UpdateCommandEnabled(
+      IDC_SYNC_BOOKMARKS,
+      show_main_ui && profile_->GetProfileSyncService() != NULL);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
