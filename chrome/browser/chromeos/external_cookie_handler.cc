@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/pipe_reader.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
@@ -20,7 +21,7 @@ void ExternalCookieHandler::GetCookies(const CommandLine& parsed_command_line,
         WideToASCII(parsed_command_line.GetSwitchValue(switches::kCookiePipe));
     ExternalCookieHandler cookie_handler(new PipeReader(pipe_name));
     cookie_handler.HandleCookies(
-        profile->GetRequestContext()->cookie_store());
+        profile->GetRequestContext()->GetCookieStore());
   }
 }
 
