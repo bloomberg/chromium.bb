@@ -27,6 +27,7 @@
 // http://code.google.com/p/chromium/issues/detail?id=8205 (Linux)
 #include "chrome/browser/password_manager/encryptor.h"
 
+using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,6 @@ using webkit_glue::PasswordForm;
 ////////////////////////////////////////////////////////////////////////////////
 
 using base::Time;
-using webkit_glue::FormFieldValues;
 
 // Current version number.
 static const int kCurrentVersionNumber = 22;
@@ -803,9 +803,9 @@ bool WebDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
 }
 
 bool WebDatabase::AddFormFieldValues(
-    const std::vector<FormFieldValues::Element>& elements) {
+    const std::vector<FormField>& elements) {
   bool result = true;
-  for (std::vector<FormFieldValues::Element>::const_iterator
+  for (std::vector<FormField>::const_iterator
        itr = elements.begin();
        itr != elements.end();
        itr++) {
@@ -837,7 +837,7 @@ bool WebDatabase::ClearAutofillEmptyValueElements() {
 }
 
 bool WebDatabase::GetIDAndCountOfFormElement(
-    const FormFieldValues::Element& element,
+    const FormField& element,
     int64* pair_id,
     int* count) {
   sql::Statement s(db_.GetUniqueStatement(
@@ -848,8 +848,8 @@ bool WebDatabase::GetIDAndCountOfFormElement(
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(element.name));
-  s.BindString(1, UTF16ToUTF8(element.value));
+  s.BindString(0, UTF16ToUTF8(element.name()));
+  s.BindString(1, UTF16ToUTF8(element.value()));
 
   *count = 0;
 
@@ -878,7 +878,7 @@ bool WebDatabase::GetCountOfFormElement(int64 pair_id, int* count) {
   return false;
 }
 
-bool WebDatabase::InsertFormElement(const FormFieldValues::Element& element,
+bool WebDatabase::InsertFormElement(const FormField& element,
                                     int64* pair_id) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO autofill (name, value, value_lower) VALUES (?,?,?)"));
@@ -887,9 +887,9 @@ bool WebDatabase::InsertFormElement(const FormFieldValues::Element& element,
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(element.name));
-  s.BindString(1, UTF16ToUTF8(element.value));
-  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(element.value)));
+  s.BindString(0, UTF16ToUTF8(element.name()));
+  s.BindString(1, UTF16ToUTF8(element.value()));
+  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(element.value())));
 
   if (!s.Run()) {
     NOTREACHED();
@@ -939,7 +939,7 @@ bool WebDatabase::SetCountOfFormElement(int64 pair_id, int count) {
   return true;
 }
 
-bool WebDatabase::AddFormFieldValue(const FormFieldValues::Element& element) {
+bool WebDatabase::AddFormFieldValue(const FormField& element) {
   int count = 0;
   int64 pair_id;
 

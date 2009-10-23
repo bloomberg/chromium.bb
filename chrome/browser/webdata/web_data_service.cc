@@ -9,7 +9,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_constants.h"
-#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using base::Time;
-using webkit_glue::FormFieldValues;
+using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 WebDataService::WebDataService() : thread_(NULL),
@@ -115,9 +114,9 @@ void WebDataService::CancelRequest(Handle h) {
 }
 
 void WebDataService::AddFormFieldValues(
-    const std::vector<FormFieldValues::Element>& element) {
-  GenericRequest<std::vector<FormFieldValues::Element> >* request =
-      new GenericRequest<std::vector<FormFieldValues::Element> >(
+    const std::vector<FormField>& element) {
+  GenericRequest<std::vector<FormField> >* request =
+      new GenericRequest<std::vector<FormField> >(
           this, GetNextRequestHandle(), NULL, element);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this,
@@ -573,7 +572,7 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::AddFormFieldValuesImpl(
-    GenericRequest<std::vector<FormFieldValues::Element> >* request) {
+    GenericRequest<std::vector<FormField> >* request) {
   if (db_ && !request->IsCancelled()) {
     if (db_->AddFormFieldValues(request->GetArgument()))
       ScheduleCommit();

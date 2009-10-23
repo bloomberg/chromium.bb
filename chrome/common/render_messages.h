@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
+#include "base/string16.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
@@ -36,6 +37,7 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -738,10 +740,10 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
   typedef webkit_glue::FormFieldValues param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.elements.size());
-    std::vector<webkit_glue::FormFieldValues::Element>::const_iterator itr;
+    std::vector<webkit_glue::FormField>::const_iterator itr;
     for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
-      WriteParam(m, itr->name);
-      WriteParam(m, itr->value);
+      WriteParam(m, itr->name());
+      WriteParam(m, itr->value());
     }
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -750,8 +752,10 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
       result = result && ReadParam(m, iter, &elements_size);
       p->elements.resize(elements_size);
       for (size_t i = 0; i < elements_size; i++) {
-        result = result && ReadParam(m, iter, &(p->elements[i].name));
-        result = result && ReadParam(m, iter, &(p->elements[i].value));
+        string16 name = p->elements[i].name();
+        string16 value = p->elements[i].value();
+        result = result && ReadParam(m, iter, &name);
+        result = result && ReadParam(m, iter, &value);
       }
       return result;
   }

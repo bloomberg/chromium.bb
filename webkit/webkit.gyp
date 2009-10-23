@@ -574,6 +574,8 @@
         'glue/entity_map.cc',
         'glue/entity_map.h',
         'glue/form_data.h',
+        'glue/form_field.cc',
+        'glue/form_field.h',
         'glue/form_field_values.cc',
         'glue/form_field_values.h',
         'glue/ftp_directory_listing_response_delegate.cc',

@@ -5,8 +5,13 @@
 #ifndef WEBKIT_GLUE_FORM_FIELD_VALUES_H_
 #define WEBKIT_GLUE_FORM_FIELD_VALUES_H_
 
-#include <string>
 #include <vector>
+
+#include "webkit/glue/form_field.h"
+
+namespace WebCore {
+class HTMLInputElement;
+}
 
 namespace WebKit {
 class WebForm;
@@ -18,21 +23,10 @@ namespace webkit_glue {
 // values entered in the fields.
 class FormFieldValues {
  public:
-  // Struct for storing name/value pairs.
-  struct Element {
-    Element() {}
-    Element(const string16& in_name, const string16& in_value) {
-      name = in_name;
-      value = in_value;
-    }
-    string16 name;
-    string16 value;
-  };
-
   static FormFieldValues* Create(const WebKit::WebForm& form);
 
   // A vector of all the input fields in the form.
-  std::vector<Element> elements;
+  std::vector<FormField> elements;
 };
 
 }  // namespace webkit_glue

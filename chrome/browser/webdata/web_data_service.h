@@ -15,7 +15,7 @@
 #include "base/scoped_vector.h"
 #include "base/thread.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/form_field.h"
 
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
@@ -376,7 +376,7 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
 
   // Schedules a task to add form elements to the web database.
   void AddFormFieldValues(
-      const std::vector<webkit_glue::FormFieldValues::Element>& elements);
+      const std::vector<webkit_glue::FormField>& elements);
 
   // Initiates the request for a vector of values which have been entered in
   // form input fields named |name|.  The method OnWebDataServiceRequestDone of
@@ -465,8 +465,7 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddFormFieldValuesImpl(
-      GenericRequest<std::vector<webkit_glue::FormFieldValues::Element> >*
-          request);
+      GenericRequest<std::vector<webkit_glue::FormField> >* request);
   void GetFormValuesForElementNameImpl(WebDataRequest* request,
       const string16& name, const string16& prefix, int limit);
   void RemoveFormElementsAddedBetweenImpl(

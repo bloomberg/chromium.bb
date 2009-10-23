@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/glue/form_field_values.h"
@@ -64,12 +65,11 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
     if (value.length() == 0)
       continue;
 
-    string16 name = StringToString16(
-        WebKit::nameOfInputElement(input_element));
+    string16 name = StringToString16(WebKit::nameOfInputElement(input_element));
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
-    result->elements.push_back(FormFieldValues::Element(name, value));
+    result->elements.push_back(FormField(form_element, name, value));
   }
 
   return result;

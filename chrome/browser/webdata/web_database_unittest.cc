@@ -13,12 +13,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
 using base::Time;
 using base::TimeDelta;
-using webkit_glue::FormFieldValues;
+using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
 class WebDatabaseTest : public testing::Test {
@@ -392,23 +392,27 @@ TEST_F(WebDatabaseTest, Autofill) {
   // Simulate the submission of a handful of entries in a field called "Name",
   // some more often than others.
   EXPECT_TRUE(db.AddFormFieldValue(
-      FormFieldValues::Element(ASCIIToUTF16("Name"),
-                               ASCIIToUTF16("Superman"))));
+      FormField(NULL,
+                ASCIIToUTF16("Name"),
+                ASCIIToUTF16("Superman"))));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
-        FormFieldValues::Element(ASCIIToUTF16("Name"),
-                                 ASCIIToUTF16("Clark Kent"))));
+        FormField(NULL,
+                  ASCIIToUTF16("Name"),
+                  ASCIIToUTF16("Clark Kent"))));
   }
   for (int i = 0; i < 3; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
-        FormFieldValues::Element(ASCIIToUTF16("Name"),
-                                 ASCIIToUTF16("Clark Sutter"))));
+        FormField(NULL,
+                  ASCIIToUTF16("Name"),
+                  ASCIIToUTF16("Clark Sutter"))));
   }
   for (int i = 0; i < 2; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
-        FormFieldValues::Element(ASCIIToUTF16("Favorite Color"),
-                                 ASCIIToUTF16("Green"))));
+        FormField(NULL,
+                  ASCIIToUTF16("Favorite Color"),
+                  ASCIIToUTF16("Green"))));
   }
 
   int count = 0;
@@ -417,8 +421,7 @@ TEST_F(WebDatabaseTest, Autofill) {
   // We have added the name Clark Kent 5 times, so count should be 5 and pair_id
   // should be somthing non-zero.
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
-      FormFieldValues::Element(ASCIIToUTF16("Name"),
-                               ASCIIToUTF16("Clark Kent")),
+      FormField(NULL, ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent")),
       &pair_id, &count));
   EXPECT_EQ(5, count);
   EXPECT_NE(0, pair_id);
@@ -426,14 +429,12 @@ TEST_F(WebDatabaseTest, Autofill) {
   // Storing in the data base should be case sensitive, so there should be no
   // database entry for clark kent lowercase.
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
-      FormFieldValues::Element(ASCIIToUTF16("Name"),
-                               ASCIIToUTF16("clark kent")),
+      FormField(NULL, ASCIIToUTF16("Name"), ASCIIToUTF16("clark kent")),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
-      FormFieldValues::Element(ASCIIToUTF16("Favorite Color"),
-                            ASCIIToUTF16("Green")),
+      FormField(NULL, ASCIIToUTF16("Favorite Color"), ASCIIToUTF16("Green")),
       &pair_id, &count));
   EXPECT_EQ(2, count);
 
@@ -474,8 +475,7 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.RemoveFormElementsAddedBetween(t1, Time()));
 
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
-      FormFieldValues::Element(ASCIIToUTF16("Name"),
-                               ASCIIToUTF16("Clark Kent")),
+      FormField(NULL, ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent")),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
@@ -485,14 +485,18 @@ TEST_F(WebDatabaseTest, Autofill) {
 
   // Now add some values with empty strings.
   const string16 kValue = ASCIIToUTF16("  toto   ");
-  EXPECT_TRUE(db.AddFormFieldValue(
-      FormFieldValues::Element(ASCIIToUTF16("blank"), string16())));
-  EXPECT_TRUE(db.AddFormFieldValue(
-      FormFieldValues::Element(ASCIIToUTF16("blank"), ASCIIToUTF16(" "))));
-  EXPECT_TRUE(db.AddFormFieldValue(
-      FormFieldValues::Element(ASCIIToUTF16("blank"), ASCIIToUTF16("      "))));
-  EXPECT_TRUE(db.AddFormFieldValue(
-      FormFieldValues::Element(ASCIIToUTF16("blank"), kValue)));
+  EXPECT_TRUE(db.AddFormFieldValue(FormField(NULL,
+                                             ASCIIToUTF16("blank"),
+                                             string16())));
+  EXPECT_TRUE(db.AddFormFieldValue(FormField(NULL,
+                                             ASCIIToUTF16("blank"),
+                                             ASCIIToUTF16(" "))));
+  EXPECT_TRUE(db.AddFormFieldValue(FormField(NULL,
+                                             ASCIIToUTF16("blank"),
+                                             ASCIIToUTF16("      "))));
+  EXPECT_TRUE(db.AddFormFieldValue(FormField(NULL,
+                                             ASCIIToUTF16("blank"),
+                                             kValue)));
 
   // They should be stored normally as the DB layer does not check for empty
   // values.

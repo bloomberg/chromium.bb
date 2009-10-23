@@ -18,8 +18,8 @@ class FormFieldValues;
 class Profile;
 class TabContents;
 
-// Per-tab autofill manager. Handles receiving form data from the renderer and
-// the storing and retrieving of form data through WebDataService.
+// Per-tab form field history manager. Handles receiving form data from the
+// renderer and the storing and retrieving of form data through WebDataService.
 class FormFieldHistoryManager : public RenderViewHostDelegate::FormFieldHistory,
                                 public WebDataServiceConsumer {
  public:
