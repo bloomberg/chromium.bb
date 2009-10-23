@@ -49,7 +49,8 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                      bool user_gesture);
   void TabMoved(TabContents* contents, int from_index, int to_index,
                 bool pinned_state_changed);
-  void TabChangedAt(TabContents* contents, int index, bool loading_only);
+  void TabChangedAt(TabContents* contents, int index,
+                    TabChangeType change_type);
   void TabStripEmpty();
 
   // Page Action execute event.

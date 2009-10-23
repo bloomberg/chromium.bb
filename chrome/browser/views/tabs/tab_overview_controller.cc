@@ -279,7 +279,7 @@ void TabOverviewController::TabMoved(TabContents* contents,
 }
 
 void TabOverviewController::TabChangedAt(TabContents* contents, int index,
-                                         bool loading_only) {
+                                         TabChangeType change_type) {
   ConfigureCell(grid_->GetTabOverviewCellAt(index), index);
 }
 

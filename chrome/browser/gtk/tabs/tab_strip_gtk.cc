@@ -990,8 +990,10 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
     GetTabAt(index)->SchedulePaint();
 
     int old_index = model_->GetIndexOfTabContents(old_contents);
-    if (old_index >= 0)
+    if (old_index >= 0) {
       GetTabAt(old_index)->SchedulePaint();
+      GetTabAt(old_index)->StopPinnedTabTitleAnimation();
+    }
   }
 }
 
@@ -1014,11 +1016,17 @@ void TabStripGtk::TabMoved(TabContents* contents,
 }
 
 void TabStripGtk::TabChangedAt(TabContents* contents, int index,
-                               bool loading_only) {
+                               TabChangeType change_type) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
   TabGtk* tab = GetTabAtAdjustForAnimation(index);
-  tab->UpdateData(contents, loading_only);
+  if (change_type == TITLE_NOT_LOADING) {
+    if (tab->is_pinned() && !tab->IsSelected())
+      tab->StartPinnedTabTitleAnimation();
+    // We'll receive another notification of the change asynchronously.
+    return;
+  }
+  tab->UpdateData(contents, change_type == LOADING_ONLY);
   tab->UpdateFromModel();
 }
 

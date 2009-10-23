@@ -28,6 +28,7 @@ class CustomDrawButton;
 class GtkThemeProvider;
 class TabContents;
 class ThemeProvider;
+class ThrobAnimation;
 
 class TabRendererGtk : public AnimationDelegate {
  public:
@@ -185,6 +186,10 @@ class TabRendererGtk : public AnimationDelegate {
 
   GtkWidget* widget() const { return tab_.get(); }
 
+  // Start/stop the pinned tab title animation.
+  void StartPinnedTabTitleAnimation();
+  void StopPinnedTabTitleAnimation();
+
  protected:
   const gfx::Rect& title_bounds() const { return title_bounds_; }
   const gfx::Rect& close_button_bounds() const { return close_button_bounds_; }
@@ -301,6 +306,11 @@ class TabRendererGtk : public AnimationDelegate {
 
   CustomDrawButton* MakeCloseButton();
 
+  // Gets the throb value for the tab. When a tab is not selected the
+  // active background is drawn at |GetThrobValue()|%. This is used for hover
+  // and pinned tab title change effects.
+  double GetThrobValue();
+
   // Handles the clicked signal for the close button.
   static void OnCloseButtonClicked(GtkWidget* widget, TabRendererGtk* tab);
 
@@ -370,6 +380,9 @@ class TabRendererGtk : public AnimationDelegate {
 
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;
+
+  // Animation used when the title of an inactive pinned tab changes.
+  scoped_ptr<ThrobAnimation> pinned_title_animation_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;

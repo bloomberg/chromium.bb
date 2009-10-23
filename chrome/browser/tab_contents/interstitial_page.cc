@@ -242,7 +242,7 @@ void InterstitialPage::Hide() {
   NavigationEntry* entry = tab_->controller().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
     entry->set_title(WideToUTF16Hack(original_tab_title_));
-    tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+    tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
   }
   delete this;
 }
@@ -369,7 +369,7 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
     should_revert_tab_title_ = true;
   }
   entry->set_title(WideToUTF16Hack(title));
-  tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+  tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }
 
 void InterstitialPage::DomOperationResponse(const std::string& json_string,

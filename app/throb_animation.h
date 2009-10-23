@@ -37,6 +37,10 @@ class ThrobAnimation : public SlideAnimation {
   // Overridden to maintain the slide duration.
   virtual void SetSlideDuration(int duration) { slide_duration_ = duration; }
 
+  // The number of cycles remaining until the animation stops.
+  void set_cycles_remaining(int value) { cycles_remaining_ = value; }
+  int cycles_remaining() const { return cycles_remaining_; }
+
  private:
   // Resets state such that we behave like SlideAnimation.
   void ResetForSlide();

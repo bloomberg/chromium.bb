@@ -105,7 +105,7 @@ class TabStripGtk : public TabStripModelObserver,
                         int to_index,
                         bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
-                            bool loading_only);
+                            TabChangeType change_type);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
 
   // TabGtk::TabDelegate implementation:

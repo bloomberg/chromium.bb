@@ -202,11 +202,12 @@ int TabStripModel::GetIndexOfController(
   return kNoTab;
 }
 
-void TabStripModel::UpdateTabContentsStateAt(int index, bool loading_only) {
+void TabStripModel::UpdateTabContentsStateAt(int index,
+    TabStripModelObserver::TabChangeType change_type) {
   DCHECK(ContainsIndex(index));
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabChangedAt(GetContentsAt(index), index, loading_only));
+      TabChangedAt(GetContentsAt(index), index, change_type));
 }
 
 void TabStripModel::CloseAllTabs() {

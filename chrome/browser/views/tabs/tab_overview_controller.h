@@ -93,7 +93,7 @@ class TabOverviewController : public TabStripModelObserver {
                         int to_index,
                         bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
-                            bool loading_only);
+                            TabChangeType change_type);
   virtual void TabStripEmpty();
   // Currently don't care about these as we're not rendering the selection.
   virtual void TabDeselectedAt(TabContents* contents, int index) { }

@@ -104,7 +104,7 @@ class TabContents : public PageNavigator,
   // what has changed. Combine them to update more than one thing.
   enum InvalidateTypes {
     INVALIDATE_URL             = 1 << 0,  // The URL has changed.
-    INVALIDATE_TAB             = 1 << 1,  // The tab (favicon, title, etc.) has
+    INVALIDATE_TAB             = 1 << 1,  // The favicon, or crashed state
                                           // changed.
     INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
     INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
@@ -113,6 +113,7 @@ class TabContents : public PageNavigator,
     INVALIDATE_EXTENSION_SHELF = 1 << 5,  // State of
                                           // IsExtensionShelfAlwaysVisible
                                           // changed.
+    INVALIDATE_TITLE           = 1 << 6,  // The title changed.
   };
 
   // |base_tab_contents| is used if we want to size the new tab contents view

@@ -2129,7 +2129,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
 
   // Broadcast notifications when the UI should be updated.
   if (entry == controller_.GetEntryAtOffset(0))
-    NotifyNavigationStateChanged(INVALIDATE_TAB);
+    NotifyNavigationStateChanged(INVALIDATE_TITLE);
 }
 
 void TabContents::UpdateEncoding(RenderViewHost* render_view_host,

@@ -1076,11 +1076,18 @@ void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
 }
 
 void TabStrip::TabChangedAt(TabContents* contents, int index,
-                            bool loading_only) {
+                            TabChangeType change_type) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
   Tab* tab = GetTabAtAdjustForAnimation(index);
-  tab->UpdateData(contents, loading_only);
+  if (change_type == TITLE_NOT_LOADING) {
+    // TODO(sky): make this work.
+    // if (tab->is_pinned() && !tab->IsSelected())
+    // tab->StartPinnedTabTitleAnimation();
+    // We'll receive another notification of the change asynchronously.
+    return;
+  }
+  tab->UpdateData(contents, change_type == LOADING_ONLY);
   tab->UpdateFromModel();
 }
 

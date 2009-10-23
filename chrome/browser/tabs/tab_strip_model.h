@@ -42,6 +42,18 @@ class TabStripModel;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModelObserver {
  public:
+  // Enumeration of the possible values supplied to TabChangedAt.
+  enum TabChangeType {
+    // Only the loading state changed.
+    LOADING_ONLY,
+
+    // Only the title changed and page isn't loading.
+    TITLE_NOT_LOADING,
+
+    // Change not characterized by LOADING_ONLY or TITLE_NOT_LOADING.
+    ALL
+  };
+
   // A new TabContents was inserted into the TabStripModel at the specified
   // index. |foreground| is whether or not it was opened in the foreground
   // (selected).
@@ -83,16 +95,9 @@ class TabStripModelObserver {
   // be an entirely different object and the old value is no longer available
   // by the time this message is delivered.
   //
-  // If only the loading state was updated, the loading_only flag should be
-  // specified. The tab model will update only the throbber, loading status,
-  // and crashed state.
-  //
-  // If other things change, set this flag to false to update all state,
-  // including the title and favicon. This allows us to start/stop throbbing
-  // without updating the title (which may be an ugly URL if the real title
-  // hasn't come in yet).
+  // See TabChangeType for a description of |change_type|.
   virtual void TabChangedAt(TabContents* contents, int index,
-                            bool loading_only) { }
+                            TabChangeType change_type) {}
 
   // Invoked when the pinned state of a tab changes.
   // NOTE: this is only invoked if the tab doesn't move as a result of its
@@ -351,9 +356,10 @@ class TabStripModel : public NotificationObserver {
   int GetIndexOfController(const NavigationController* controller) const;
 
   // Notify any observers that the TabContents at the specified index has
-  // changed in some way. Loading only specifies whether only the loading state
-  // has changed.
-  void UpdateTabContentsStateAt(int index, bool loading_only);
+  // changed in some way. See TabChangeType for details of |change_type|.
+  void UpdateTabContentsStateAt(
+      int index,
+      TabStripModelObserver::TabChangeType change_type);
 
   // Make sure there is an auto-generated New Tab tab in the TabStripModel.
   // If |force_create| is true, the New Tab will be created even if the

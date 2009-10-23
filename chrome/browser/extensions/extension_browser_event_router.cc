@@ -345,7 +345,7 @@ void ExtensionBrowserEventRouter::Observe(NotificationType type,
 
 void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
                                                int index,
-                                               bool loading_only) {
+                                               TabChangeType change_type) {
   TabUpdated(contents, false);
 }
 

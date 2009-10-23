@@ -2461,10 +2461,21 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // immediately start/stop, which gives a more snappy feel. We want to do
     // this for any tab so they start & stop quickly.
     tabstrip_model_.UpdateTabContentsStateAt(
-        tabstrip_model_.GetIndexOfController(&source->controller()), true);
+        tabstrip_model_.GetIndexOfController(&source->controller()),
+        TabStripModelObserver::LOADING_ONLY);
     // The status bubble needs to be updated during INVALIDATE_LOAD too, but
     // we do that asynchronously by not stripping INVALIDATE_LOAD from
     // changed_flags.
+  }
+
+  if (changed_flags & TabContents::INVALIDATE_TITLE && !source->is_loading()) {
+    // To correctly calculate whether the title changed while not loading
+    // we need to process the update synchronously. This state only matters for
+    // the TabStripModel, so we notify the TabStripModel now and notify others
+    // asynchronously.
+    tabstrip_model_.UpdateTabContentsStateAt(
+        tabstrip_model_.GetIndexOfController(&source->controller()),
+        TabStripModelObserver::TITLE_NOT_LOADING);
   }
 
   if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR ||
@@ -2526,7 +2537,8 @@ void Browser::ProcessPendingUIUpdates() {
       if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
         GetStatusBubble()->SetStatus(contents->GetStatusText());
 
-      if (flags & TabContents::INVALIDATE_TAB) {
+      if (flags & (TabContents::INVALIDATE_TAB |
+                   TabContents::INVALIDATE_TITLE)) {
         command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
             !contents->GetFavIcon().isNull());
         window_->UpdateTitleBar();
@@ -2534,9 +2546,10 @@ void Browser::ProcessPendingUIUpdates() {
     }
 
     // Updates that don't depend upon the selected state go here.
-    if (flags & TabContents::INVALIDATE_TAB) {
+    if (flags & (TabContents::INVALIDATE_TAB | TabContents::INVALIDATE_TITLE)) {
       tabstrip_model_.UpdateTabContentsStateAt(
-          tabstrip_model_.GetIndexOfTabContents(contents), false);
+          tabstrip_model_.GetIndexOfTabContents(contents),
+          TabStripModelObserver::ALL);
     }
 
     // We don't need to process INVALIDATE_STATE, since that's not visible.

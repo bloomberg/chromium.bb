@@ -73,12 +73,17 @@ void TabStripModelObserverBridge::TabMoved(TabContents* contents,
 
 void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
                                                int index,
-                                               bool loading_only) {
+                                               TabChangeType change_type) {
+  if (change_type == TITLE_NOT_LOADING) {
+    // TODO(sky): make this work.
+    // We'll receive another notification of the change asynchronously.
+    return;
+  }
   if ([controller_ respondsToSelector:
           @selector(tabChangedWithContents:atIndex:loadingOnly:)]) {
     [controller_ tabChangedWithContents:contents
                                 atIndex:index
-                            loadingOnly:loading_only ? YES : NO];
+                            loadingOnly:change_type == LOADING_ONLY ? YES : NO];
   }
 }
 

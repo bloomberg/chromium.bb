@@ -12,6 +12,7 @@
 #include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/throb_animation.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
@@ -54,6 +55,12 @@ const int kHoverDurationMs = 90;
 
 // How opaque to make the hover state (out of 1).
 const double kHoverOpacity = 0.33;
+
+// Max opacity for the pinned tab title change animation.
+const double kPinnedThrobOpacity = 0.75;
+
+// Duration for when the title of an inactive pinned tab changes.
+const int kPinnedDuration = 1000;
 
 const SkScalar kTabCapWidth = 15;
 const SkScalar kTabTopCurveWidth = 4;
@@ -376,16 +383,14 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
       favicon_bounds_.x(), favicon_bounds_.y(),
       favicon_bounds_.width(), favicon_bounds_.height());
 
-  // Draw our hover state.
   if (!IsSelected()) {
-    Animation* animation = hover_animation_.get();
-    if (animation->GetCurrentValue() > 0) {
+    double throb_value = GetThrobValue();
+    if (throb_value > 0) {
       SkRect bounds;
       bounds.set(favicon_bounds_.x(), favicon_bounds_.y(),
           favicon_bounds_.right(), favicon_bounds_.bottom());
-      canvas.saveLayerAlpha(&bounds,
-          static_cast<int>(animation->GetCurrentValue() * kHoverOpacity * 0xff),
-              SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas.saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
+                            SkCanvas::kARGB_ClipLayer_SaveFlag);
       canvas.drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       SkBitmap* active_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
       canvas.TileImageInt(*active_bg,
@@ -484,6 +489,28 @@ gfx::Rect TabRendererGtk::GetNonMirroredBounds(GtkWidget* parent) const {
 gfx::Rect TabRendererGtk::GetRequisition() const {
   return gfx::Rect(requisition_.x(), requisition_.y(),
                    requisition_.width(), requisition_.height());
+}
+
+void TabRendererGtk::StartPinnedTabTitleAnimation() {
+  if (!pinned_title_animation_.get()) {
+    pinned_title_animation_.reset(new ThrobAnimation(this));
+    pinned_title_animation_->SetThrobDuration(kPinnedDuration);
+  }
+
+  if (!pinned_title_animation_->IsAnimating()) {
+    pinned_title_animation_->StartThrobbing(2);
+  } else if (pinned_title_animation_->cycles_remaining() <= 2) {
+    // The title changed while we're already animating. Add at most one more
+    // cycle. This is done in an attempt to smooth out pages that continuously
+    // change the title.
+    pinned_title_animation_->set_cycles_remaining(
+        pinned_title_animation_->cycles_remaining() + 2);
+  }
+}
+
+void TabRendererGtk::StopPinnedTabTitleAnimation() {
+  if (pinned_title_animation_.get())
+    pinned_title_animation_->Stop();
 }
 
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
@@ -789,17 +816,14 @@ void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
     // the active representation for the dragged tab.
     PaintActiveTabBackground(canvas);
   } else {
-    // Draw our hover state.
-    Animation* animation = hover_animation_.get();
-
     PaintInactiveTabBackground(canvas);
-    if (animation->GetCurrentValue() > 0) {
+
+    double throb_value = GetThrobValue();
+    if (throb_value > 0) {
       SkRect bounds;
-      bounds.set(0, 0,
-          SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->saveLayerAlpha(&bounds,
-          static_cast<int>(animation->GetCurrentValue() * kHoverOpacity * 0xff),
-              SkCanvas::kARGB_ClipLayer_SaveFlag);
+      bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
+      canvas->saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
+                             SkCanvas::kARGB_ClipLayer_SaveFlag);
       canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
       canvas->restore();
@@ -931,6 +955,13 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
   gtk_fixed_put(GTK_FIXED(tab_.get()), button->widget(), 0, 0);
 
   return button;
+}
+
+double TabRendererGtk::GetThrobValue() {
+  if (pinned_title_animation_.get() && pinned_title_animation_->IsAnimating())
+    return pinned_title_animation_->GetCurrentValue() * kPinnedThrobOpacity;
+  return hover_animation_.get() ?
+      kHoverOpacity * hover_animation_->GetCurrentValue() : 0;
 }
 
 void TabRendererGtk::CloseButtonClicked() {
