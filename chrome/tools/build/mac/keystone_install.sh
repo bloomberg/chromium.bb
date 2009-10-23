@@ -11,7 +11,7 @@
 # 0  Happiness
 # 1  Unknown failure
 # 2  Basic sanity check destination failure (e.g. ticket points to nothing)
-# 3  (currently unused) indicates a problem with the existing installed copy
+# 3  Could not prepare existing installed version to receive update
 # 4  rsync failed (could not assure presence of Versions directory)
 # 5  rsync failed (could not copy new versioned directory to Versions)
 # 6  rsync failed (could not update outer .app bundle)
@@ -69,6 +69,15 @@ OLD_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
                   true)
 OLD_VERSIONED_DIR="${DEST}/Contents/Versions/${OLD_VERSION_APP}"
 
+# See if the timestamp of what's currently on disk is newer than the update's
+# outer .app's timestamp.  rsync will copy the update's timestamp over, but
+# if that timestamp isn't as recent as what's already on disk, the .app will
+# need to be touched.
+NEEDS_TOUCH=
+if [ "${DEST}" -nt "${SRC}" ] ; then
+  NEEDS_TOUCH=1
+fi
+
 # Don't use rsync -a, because -a expands to -rlptgoD.  -g and -o copy owners
 # and groups, respectively, from the source, and that is undesirable in this
 # case.  -D copies devices and special files; copying devices only works
@@ -92,7 +101,14 @@ RSYNC_FLAGS="-clprt"
 # directory, otherwise, this directory would be the only one in the entire
 # update exempt from getting its permissions copied over.  A simple mkdir
 # wouldn't copy mode bits.  This is done even if ${DEST}/Contents/Versions
-# already does exist to ensure that the mode bits come from the udpate.
+# already does exist to ensure that the mode bits come from the update.
+#
+# ${DEST} is guaranteed to exist at this point, but ${DEST}/Contents may not
+# if things are severely broken or if this update is actually an initial
+# installation from a Keystone skeleton bootstrap.  The mkdir creates
+# ${DEST}/Contents if it doesn't exist; its mode bits will be fixed up in a
+# subsequent rsync.
+mkdir -p "${DEST}/Contents" || exit 3
 rsync ${RSYNC_FLAGS} --exclude "*" "${SRC}/Contents/Versions/" \
                                    "${DEST}/Contents/Versions" || exit 4
 
@@ -106,15 +122,6 @@ NEW_VERSIONED_DIR="${DEST}/Contents/Versions/${UPD_VERSION_APP}"
 rsync ${RSYNC_FLAGS} --delete-before \
     "${SRC}/Contents/Versions/${UPD_VERSION_APP}/" \
     "${NEW_VERSIONED_DIR}" || exit 5
-
-# See if the timestamp of what's currently on disk is newer than the update's
-# outer .app's timestamp.  rsync will copy the update's timestamp over, but
-# if that timestamp isn't as recent as what's already on disk, the .app will
-# need to be touched.
-NEEDS_TOUCH=
-if [ "${DEST}" -nt "${SRC}" ] ; then
-  NEEDS_TOUCH=1
-fi
 
 # Copy the unversioned files into place, leaving everything in
 # Contents/Versions alone.  If this step is interrupted, the application will
