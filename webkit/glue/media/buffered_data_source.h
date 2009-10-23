@@ -216,6 +216,10 @@ class BufferedDataSource : public media::DataSource {
         message_loop, bridge_factory);
   }
 
+  // media::FilterFactoryImpl2 implementation.
+  static bool IsMediaFormatSupported(
+      const media::MediaFormat& media_format);
+
   // media::MediaFilter implementation.
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);

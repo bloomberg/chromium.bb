@@ -690,7 +690,10 @@ bool IsDefaultPluginEnabled() {
 }
 
 bool IsProtocolSupportedForMedia(const GURL& url) {
-  if (url.SchemeIsFile() || url.SchemeIs("http") || url.SchemeIs("https"))
+  if (url.SchemeIsFile() ||
+      url.SchemeIs("http") ||
+      url.SchemeIs("https") ||
+      url.SchemeIs("data"))
     return true;
   return false;
 }

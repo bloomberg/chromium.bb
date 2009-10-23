@@ -6,28 +6,40 @@
 #include "base/process_util.h"
 #include "media/base/filter_host.h"
 #include "net/base/load_flags.h"
+#include "net/base/data_url.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace {
 
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
-const char kFtpScheme[] = "ftp";
+const char kDataScheme[] = "data";
 
 // A helper method that accepts only HTTP, HTTPS and FILE protocol.
-bool IsSchemeSupported(const GURL& url) {
-  return url.SchemeIs(kHttpScheme) ||
-         url.SchemeIs(kHttpsScheme) ||
-         url.SchemeIs(kFtpScheme) ||
-         url.SchemeIsFile();
+bool IsDataProtocol(const GURL& url) {
+  return url.SchemeIs(kDataScheme);
 }
 
 }  // namespace
 
 namespace webkit_glue {
+
+bool SimpleDataSource::IsMediaFormatSupported(
+  const media::MediaFormat& media_format) {
+    std::string mime_type;
+    std::string url;
+    if (media_format.GetAsString(media::MediaFormat::kMimeType, &mime_type) &&
+        media_format.GetAsString(media::MediaFormat::kURL, &url)) {
+      GURL gurl(url);
+      if (IsProtocolSupportedForMedia(gurl))
+        return true;
+    }
+    return false;
+}
 
 SimpleDataSource::SimpleDataSource(
     MessageLoop* render_loop,
@@ -63,14 +75,12 @@ void SimpleDataSource::Initialize(const std::string& url,
 
   // Validate the URL.
   SetURL(GURL(url));
-  if (!url_.is_valid() || !IsSchemeSupported(url_)) {
+  if (!url_.is_valid() || !IsProtocolSupportedForMedia(url_)) {
     host()->SetError(media::PIPELINE_ERROR_NETWORK);
     initialize_callback_->Run();
     initialize_callback_.reset();
     return;
   }
-
-  host()->SetLoaded(url_.SchemeIsFile());
 
   // Post a task to the render thread to start loading the resource.
   render_loop_->PostTask(FROM_HERE,
@@ -148,16 +158,7 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
     size_ = data_.length();
   }
 
-  // We're initialized!
-  if (status.is_success()) {
-    state_ = INITIALIZED;
-    host()->SetTotalBytes(size_);
-    host()->SetBufferedBytes(size_);
-  } else {
-    host()->SetError(media::PIPELINE_ERROR_NETWORK);
-  }
-  initialize_callback_->Run();
-  initialize_callback_.reset();
+  DoneInitialization_Locked(status.is_success());
 }
 
 std::string SimpleDataSource::GetURLForDebugging() {
@@ -182,10 +183,20 @@ void SimpleDataSource::StartTask() {
 
   DCHECK_EQ(state_, INITIALIZING);
 
-  // Create our bridge and start loading the resource.
-  bridge_.reset(bridge_factory_->CreateBridge(
-      url_, net::LOAD_BYPASS_CACHE, -1, -1));
-  bridge_->Start(this);
+  if (IsDataProtocol(url_)) {
+    // If this using data protocol, we just need to decode it.
+    std::string mime_type, charset;
+    bool success = net::DataURL::Parse(url_, &mime_type, &charset, &data_);
+
+    // Don't care about the mime-type just proceed if decoding was successful.
+    size_ = data_.length();
+    DoneInitialization_Locked(success);
+  } else {
+    // Create our bridge and start loading the resource.
+    bridge_.reset(bridge_factory_->CreateBridge(
+        url_, net::LOAD_BYPASS_CACHE, -1, -1));
+    bridge_->Start(this);
+  }
 }
 
 void SimpleDataSource::CancelTask() {
@@ -197,6 +208,21 @@ void SimpleDataSource::CancelTask() {
     bridge_->Cancel();
     bridge_.reset();
   }
+}
+
+void SimpleDataSource::DoneInitialization_Locked(bool success) {
+  lock_.AssertAcquired();
+  if (success) {
+    state_ = INITIALIZED;
+    host()->SetTotalBytes(size_);
+    host()->SetBufferedBytes(size_);
+    // If scheme is file or data, say we are loaded.
+    host()->SetLoaded(url_.SchemeIsFile() || IsDataProtocol(url_));
+  } else {
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
+  }
+  initialize_callback_->Run();
+  initialize_callback_.reset();
 }
 
 }  // namespace webkit_glue

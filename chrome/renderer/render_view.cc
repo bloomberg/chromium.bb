@@ -1789,15 +1789,20 @@ WebMediaPlayer* RenderView::createMediaPlayer(
           appcache::kNoHostId,
           routing_id());
 
-  if (!cmd_line->HasSwitch(switches::kSimpleDataSource)) {
-    // Add the chrome specific media data source.
-    factory->AddFactory(
-        webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                                       bridge_factory));
+  // A simple data source that keeps all data in memory.
+  media::FilterFactory* simple_data_source_factory =
+      webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
+                                                   bridge_factory);
+  // A sophisticated data source that does memory caching.
+  media::FilterFactory* buffered_data_source_factory =
+      webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
+                                                     bridge_factory);
+  if (cmd_line->HasSwitch(switches::kSimpleDataSource)) {
+    factory->AddFactory(simple_data_source_factory);
+    factory->AddFactory(buffered_data_source_factory);
   } else {
-    factory->AddFactory(
-        webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                                     bridge_factory));
+    factory->AddFactory(buffered_data_source_factory);
+    factory->AddFactory(simple_data_source_factory);
   }
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }

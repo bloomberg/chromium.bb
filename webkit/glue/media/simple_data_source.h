@@ -34,6 +34,10 @@ class SimpleDataSource : public media::DataSource,
                                                         bridge_factory);
   }
 
+  // media::FilterFactoryImpl2 implementation.
+  static bool IsMediaFormatSupported(
+      const media::MediaFormat& media_format);
+
   // MediaFilter implementation.
   virtual void Stop();
 
@@ -78,6 +82,9 @@ class SimpleDataSource : public media::DataSource,
 
   // Cancels and deletes the resource loading on the render thread.
   void CancelTask();
+
+  // Perform initialization completion tasks under a lock.
+  void DoneInitialization_Locked(bool success);
 
   // Primarily used for asserting the bridge is loading on the render thread.
   MessageLoop* render_loop_;

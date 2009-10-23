@@ -218,6 +218,7 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   // validated accordingly in the media engine.
   if (url.SchemeIsFile() || url.SchemeIs(chrome::kHttpScheme) ||
       url.SchemeIs(chrome::kHttpsScheme) ||
+      url.SchemeIs(chrome::kDataScheme) ||
       url.SchemeIs(chrome::kExtensionScheme))
     return true;
   return false;
