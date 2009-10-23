@@ -1,0 +1,17 @@
+{
+   "background_page": "background.html",
+   "content_scripts": [ {
+      "js": [ "script.js" ],
+      "matches": [ "http://*/*" ]
+   } ],
+   "description": "A page action with incorrect icon specification",
+   "name": "Test extension",
+   "page_actions": [ {
+      "icon": "chrome-16.png",
+      "id": "TestId",
+      "name": "Page action name",
+      "tooltip": "Page action tooltip"
+   } ],
+   "permissions": [ "http://*/*" ],
+   "version": "1.0"
+}

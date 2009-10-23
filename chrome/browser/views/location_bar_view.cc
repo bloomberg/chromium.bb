@@ -92,7 +92,7 @@ static std::wstring GetKeywordName(Profile* profile,
 // A container for the PageActionImageView plus its badge.
 class LocationBarView::PageActionWithBadgeView : public views::View {
  public:
-  PageActionWithBadgeView(PageActionImageView* image_view);
+  explicit PageActionWithBadgeView(PageActionImageView* image_view);
 
   PageActionImageView* image_view() { return image_view_; }
 
@@ -697,6 +697,15 @@ void LocationBarView::RefreshPageActionViews() {
   std::vector<ExtensionAction*> page_actions;
   if (profile_->GetExtensionsService())
     page_actions = profile_->GetExtensionsService()->GetPageActions();
+
+  // Page actions can be created without an icon, so make sure we count only
+  // those that have been given an icon.
+  for (size_t i = 0; i < page_actions.size();) {
+    if (page_actions[i]->icon_paths().empty())
+      page_actions.erase(page_actions.begin() + i);
+    else
+      ++i;
+  }
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.

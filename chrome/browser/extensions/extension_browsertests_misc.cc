@@ -207,6 +207,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 #if defined(OS_WIN) || defined(OS_LINUX)
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+  // This page action will not show an icon, since it doesn't specify one but
+  // is included here to test for a crash (http://crbug.com/25562).
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browsertest")
+                    .AppendASCII("crash_25562")));
+
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("samples")
                     .AppendASCII("subscribe_page_action")));
