@@ -26,6 +26,10 @@
 #
 # NOTE: operands are arranged in NASM / Intel order (e.g. dest, src)
 rcstag = "$Id: gen_x86_insn.py 2193 2009-04-04 23:03:41Z peter $"
+
+import os
+import sys
+
 try:
     scriptname = rcstag.split()[1]
     scriptrev = rcstag.split()[2]
@@ -7333,6 +7337,10 @@ for val, suf in enumerate(["", "z", "y", "yz", "x", "xz", "xy", "xyz"]):
 # Output generation
 #####################################################################
 
-output_groups(file("x86insns.c", "wt"))
-output_gas_insns(file("x86insn_gas.gperf", "wt"))
-output_nasm_insns(file("x86insn_nasm.gperf", "wt"))
+out_dir = ""
+if len(sys.argv) > 1:
+  out_dir = sys.argv[1]
+
+output_groups(file(os.path.join(out_dir, "x86insns.c"), "wt"))
+output_gas_insns(file(os.path.join(out_dir, "x86insn_gas.gperf"), "wt"))
+output_nasm_insns(file(os.path.join(out_dir, "x86insn_nasm.gperf"), "wt"))

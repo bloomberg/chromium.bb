@@ -32,7 +32,6 @@
 
 #include "compat-queue.h"
 
-#define OUTPUT  "module.c"
 #define MAXNAME 128
 #define MAXLINE 1024
 #define MAXMODULES 128
@@ -58,12 +57,14 @@ main(int argc, char *argv[])
     include *inc;
     int isam = 0;
     int linecont = 0;
+    char *outfile;
 
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <module.in> <Makefile[.am]>\n", argv[0]);
+    if (argc != 4) {
+        fprintf(stderr, "Usage: %s <module.in> <Makefile[.am]> <outfile>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
+    outfile = argv[3];
     str = malloc(MAXLINE);
 
     /* Starting with initial input Makefile, look for include <file> or
@@ -167,10 +168,10 @@ keepgoing:
         fclose(in);
     }
 
-    out = fopen(OUTPUT, "wt");
+    out = fopen(outfile, "wt");
 
     if (!out) {
-        fprintf(stderr, "Could not open `%s'.\n", OUTPUT);
+        fprintf(stderr, "Could not open `%s'.\n", outfile);
         return EXIT_FAILURE;
     }
 
@@ -181,7 +182,7 @@ keepgoing:
     if (!in) {
         fprintf(stderr, "Could not open `%s'.\n", argv[1]);
         fclose(out);
-        remove(OUTPUT);
+        remove(outfile);
         return EXIT_FAILURE;
     }
 
