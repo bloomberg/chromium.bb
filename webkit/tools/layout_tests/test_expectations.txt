@@ -796,7 +796,6 @@ BUG13907 : LayoutTests/media/video-seeking.html = PASS FAIL
 // Seems to time out occasionally.
 BUG13907 : LayoutTests/media/progress-event.html = PASS TIMEOUT
 BUG13907 : LayoutTests/media/video-load-networkState.html = PASS TIMEOUT
-BUG13907 : LayoutTests/media/video-source.html = PASS TIMEOUT
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
 // The test uses setTimeout() and is flaky.
@@ -841,9 +840,7 @@ BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 
 // These tests are flaky with subtle pixel differences.
-BUG9798 BUG13907 : LayoutTests/media/audio-no-installed-engines.html = IMAGE
-BUG9798 BUG13907 : LayoutTests/media/video-aspect-ratio.html = IMAGE
-BUG9798 BUG13907 : LayoutTests/media/video-transformed.html = IMAGE
+BUG9798 BUG13907 MAC : LayoutTests/media/video-transformed.html = IMAGE
 BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE
 
 // These tests are failing because they use position-dependent mouse clicks.
