@@ -36,6 +36,8 @@
 namespace WebKit {
     class WebData;
     class WebSocketStreamError;
+    class WebSocketStreamHandle;
+    class WebURL;
 
     class WebSocketStreamHandleClient {
     public:
