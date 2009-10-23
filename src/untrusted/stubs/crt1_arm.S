@@ -100,37 +100,35 @@ _start:
 /* ====================================================================== */
 /* Some runtime code for ARM */
 /* NOTE: this code can only clobber r0 and hence is hand coded */
-/* NOTE: this code assumes the "USE_R9_AS_TLS_REG" #define */
 /* ====================================================================== */
     .section .text
 
-
+/* ====================================================================== */
+/* Access to tls. We also have an unused trampoline version of this */
+/* ====================================================================== */
     .align ARM_BUNDLE_SIZE
     .global __aeabi_read_tp
 
 __aeabi_read_tp:
     mov r0, r9, lsr #NACL_PAGESHIFT
     lsl r0, #NACL_PAGESHIFT
-    /* NOTE: for gcc generated code there is an implicit offset of 8 */
-    /* NOTE: for llvm generated code there is an implicit offset of 16 */
+    /* NOTE: for gcc/llvm generated code there is an implicit offset of 8/16 */
     /* TODO(robertm): find some flags to control/unify this */
-    /* sub r0, r0, #8 */
-    sub r0, r0, #16
-    /* This has to wait until new lib is properly sfi compiled */
-/* TODO(robertm): fix this */
-/*
+
+    sub r0, r0, #16       /* llvm flavor */
+   /* sub r0, r0, #8 */   /* gcc flavor */
+
+
+    .align ARM_BUNDLE_SIZE
     bic lr, lr, #0xF000000F
-*/
     bx lr
 
-
+/* ====================================================================== */
 /* NOTE: this is only here to make c++ programs link */
+/* ====================================================================== */
     .align ARM_BUNDLE_SIZE
     .global __aeabi_unwind_cpp_pr0
 
 __aeabi_unwind_cpp_pr0:
-/* TODO(robertm): fix this */
-/*
     bic lr, lr, #0xF000000F
-*/
     bx lr
