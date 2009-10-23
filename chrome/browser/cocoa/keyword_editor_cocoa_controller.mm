@@ -57,35 +57,54 @@ void KeywordEditorModelObserver::OnEditedKeyword(
 }
 
 void KeywordEditorModelObserver::OnModelChanged() {
-  InvalidateIconCache(0, [iconImages_ count]);
   int count = [controller_ controller]->table_model()->RowCount();
+  [iconImages_ setCount:0];
   [iconImages_ setCount:count];
   [controller_ modelChanged];
 }
 
 void KeywordEditorModelObserver::OnItemsChanged(int start, int length) {
-  InvalidateIconCache(start, length);
+  DCHECK_LE(start + length, static_cast<int>([iconImages_ count]));
+  for (int i = start; i < (start + length); ++i) {
+    [iconImages_ replacePointerAtIndex:i withPointer:NULL];
+  }
+  DCHECK_EQ([controller_ controller]->table_model()->RowCount(),
+            static_cast<int>([iconImages_ count]));
   [controller_ modelChanged];
 }
 
 void KeywordEditorModelObserver::OnItemsAdded(int start, int length) {
   DCHECK_LE(start, static_cast<int>([iconImages_ count]));
-  for (int i = 0; i < length; ++i) {
-    [iconImages_ insertPointer:NULL atIndex:start];  // Values slide down.
+
+  // -[NSPointerArray insertPointer:atIndex:] throws if index == count.
+  // Instead expand the array with NULLs.
+  if (start == static_cast<int>([iconImages_ count])) {
+    [iconImages_ setCount:start + length];
+  } else {
+    for (int i = 0; i < length; ++i) {
+      [iconImages_ insertPointer:NULL atIndex:start];  // Values slide up.
+    }
   }
+  DCHECK_EQ([controller_ controller]->table_model()->RowCount(),
+            static_cast<int>([iconImages_ count]));
   [controller_ modelChanged];
 }
 
 void KeywordEditorModelObserver::OnItemsRemoved(int start, int length) {
   DCHECK_LE(start + length, static_cast<int>([iconImages_ count]));
   for (int i = 0; i < length; ++i) {
-    [iconImages_ removePointerAtIndex:start];  // Values slide up.
+    [iconImages_ removePointerAtIndex:start];  // Values slide down.
   }
+  DCHECK_EQ([controller_ controller]->table_model()->RowCount(),
+            static_cast<int>([iconImages_ count]));
   [controller_ modelChanged];
 }
 
 NSImage* KeywordEditorModelObserver::GetImageForRow(int row) {
-  DCHECK(row >= 0 && row < static_cast<int>([iconImages_ count]));
+  DCHECK_EQ([controller_ controller]->table_model()->RowCount(),
+            static_cast<int>([iconImages_ count]));
+  DCHECK_GE(row, 0);
+  DCHECK_LT(row, static_cast<int>([iconImages_ count]));
   NSImage* image = static_cast<NSImage*>([iconImages_ pointerAtIndex:row]);
   if (!image) {
     const SkBitmap bitmapIcon =
@@ -97,13 +116,6 @@ NSImage* KeywordEditorModelObserver::GetImageForRow(int row) {
     }
   }
   return image;
-}
-
-void KeywordEditorModelObserver::InvalidateIconCache(int start, int length) {
-  DCHECK_LE(start + length, static_cast<int>([iconImages_ count]));
-  for (int i = start; i < (start + length); ++i) {
-    [iconImages_ replacePointerAtIndex:i withPointer:NULL];
-  }
 }
 
 // KeywordEditorCocoaController -----------------------------------------------
@@ -170,6 +182,8 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
 - (void)dealloc {
   controller_->table_model()->SetObserver(NULL);
   controller_->url_model()->RemoveObserver(observer_.get());
+  [tableView_ setTarget:nil];
+  observer_.reset();
   [super dealloc];
 }
 
@@ -221,6 +235,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
 
 - (void)modelChanged {
   [tableView_ reloadData];
+  [self adjustEditingButtons];
 }
 
 - (KeywordEditorController*)controller {

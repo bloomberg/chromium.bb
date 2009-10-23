@@ -44,10 +44,6 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
   // Lazily converts the image at the given row and caches it in |iconImages_|.
   NSImage* GetImageForRow(int row);
 
- protected:
-  // Invalidates a range of the |iconImages_| cache.
-  void InvalidateIconCache(int start, int length);
-
  private:
   KeywordEditorCocoaController* controller_;
 
