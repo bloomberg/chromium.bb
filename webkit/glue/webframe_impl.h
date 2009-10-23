@@ -52,13 +52,10 @@ struct WindowFeatures;
 }
 
 namespace WebKit {
+class PasswordAutocompleteListener;
 class WebDataSourceImpl;
 class WebFrameClient;
 class WebView;
-}
-
-namespace webkit_glue {
-class PasswordAutocompleteListener;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
@@ -230,13 +227,13 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   // The WebFrameImpl becomes the owner of the passed listener.
   void RegisterPasswordListener(
       PassRefPtr<WebCore::HTMLInputElement> user_name_input_element,
-      webkit_glue::PasswordAutocompleteListener* listener);
+      WebKit::PasswordAutocompleteListener* listener);
 
   // Returns the password autocomplete listener associated with the passed
   // user name input element, or NULL if none available.
   // Note that the returned listener is owner by the WebFrameImpl and should not
   // be kept around as it is deleted when the page goes away.
-  webkit_glue::PasswordAutocompleteListener* GetPasswordListener(
+  WebKit::PasswordAutocompleteListener* GetPasswordListener(
       WebCore::HTMLInputElement* user_name_input_element);
 
   WebKit::WebFrameClient* client() const { return client_handle_->client(); }
@@ -380,7 +377,7 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   // The input fields that are interested in edit events and their associated
   // listeners.
   typedef HashMap<RefPtr<WebCore::HTMLInputElement>,
-      webkit_glue::PasswordAutocompleteListener*> PasswordListenerMap;
+      WebKit::PasswordAutocompleteListener*> PasswordListenerMap;
   PasswordListenerMap password_listeners_;
 };
 

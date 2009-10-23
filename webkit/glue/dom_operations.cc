@@ -37,7 +37,7 @@ MSVC_POP_WARNING();
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener.h"
+#include "webkit/glue/password_autocomplete_listener_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -351,7 +351,7 @@ void FillPasswordForm(WebView* view,
     WebFrameImpl* webframe_impl = frame_loader_client->webframe();
     webframe_impl->RegisterPasswordListener(
         username_element,
-        new PasswordAutocompleteListener(
+        new PasswordAutocompleteListenerImpl(
             new HTMLInputDelegate(username_element),
             new HTMLInputDelegate(password_element),
             data));

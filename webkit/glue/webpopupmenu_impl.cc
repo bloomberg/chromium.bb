@@ -15,7 +15,6 @@
 #include "SkiaUtils.h"
 #undef LOG
 
-#include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebRect.h"
@@ -151,7 +150,7 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect) {
     // PlatformGraphicsContext is actually a pointer to PlatformContextSkia.
     GraphicsContext gc(reinterpret_cast<PlatformGraphicsContext*>(&context));
 #else
-    NOTIMPLEMENTED();
+    notImplemented();
 #endif
     widget_->paint(&gc, webkit_glue::WebRectToIntRect(rect));
   }
@@ -254,13 +253,13 @@ void WebPopupMenuImpl::scroll(const WebCore::IntSize& scroll_delta,
 
 WebCore::IntPoint WebPopupMenuImpl::screenToWindow(
     const WebCore::IntPoint& point) const {
-  NOTIMPLEMENTED();
+  notImplemented();
   return WebCore::IntPoint();
 }
 
 WebCore::IntRect WebPopupMenuImpl::windowToScreen(
     const WebCore::IntRect& rect) const {
-  NOTIMPLEMENTED();
+  notImplemented();
   return WebCore::IntRect();
 }
 
@@ -278,7 +277,7 @@ void WebPopupMenuImpl::scrollbarsModeDidChange() const {
 // WebCore::FramelessScrollViewClient
 
 void WebPopupMenuImpl::popupClosed(WebCore::FramelessScrollView* widget) {
-  DCHECK(widget == widget_);
+  ASSERT(widget == widget_);
   if (widget_) {
     widget_->setClient(NULL);
     widget_ = NULL;

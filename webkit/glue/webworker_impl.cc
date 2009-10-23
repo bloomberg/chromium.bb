@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-
 #include "DedicatedWorkerContext.h"
 #include "DedicatedWorkerThread.h"
 #include "GenericWorkerTask.h"

@@ -142,10 +142,10 @@
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
+#include "webkit/api/src/PasswordAutocompleteListener.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -192,6 +192,7 @@ using WebCore::TextIterator;
 using WebCore::VisiblePosition;
 using WebCore::XPathResult;
 
+using WebKit::PasswordAutocompleteListener;
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
 using WebKit::WebData;
@@ -1698,13 +1699,13 @@ void WebFrameImpl::SetAllowsScrolling(bool flag) {
 
 void WebFrameImpl::RegisterPasswordListener(
     PassRefPtr<HTMLInputElement> input_element,
-    webkit_glue::PasswordAutocompleteListener* listener) {
+    PasswordAutocompleteListener* listener) {
   RefPtr<HTMLInputElement> element = input_element;
   ASSERT(password_listeners_.find(element) == password_listeners_.end());
   password_listeners_.set(element, listener);
 }
 
-webkit_glue::PasswordAutocompleteListener* WebFrameImpl::GetPasswordListener(
+PasswordAutocompleteListener* WebFrameImpl::GetPasswordListener(
     HTMLInputElement* input_element) {
   return password_listeners_.get(RefPtr<HTMLInputElement>(input_element));
 }

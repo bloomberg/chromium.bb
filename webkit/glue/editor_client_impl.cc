@@ -30,16 +30,16 @@
 #include "webkit/api/public/WebViewClient.h"
 // Can include api/src since eventually editor_client_impl will be there too.
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
+#include "webkit/api/src/PasswordAutocompleteListener.h"
 #include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webview_impl.h"
 
+using WebKit::PasswordAutocompleteListener;
 using WebKit::WebEditingAction;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
-using webkit_glue::FormFieldValues;
 
 // Arbitrary depth limit for the undo stack, to keep it from using
 // unbounded memory.  This is the maximum number of distinct undoable
@@ -667,12 +667,12 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
 
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(input_element->document()->frame());
-  webkit_glue::PasswordAutocompleteListener* listener =
+  PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(input_element);
   if (!listener)
     return;
 
-  listener->OnBlur(input_element, input_element->value());
+  listener->didBlurInputElement(input_element->value());
 }
 
 void EditorClientImpl::textDidChangeInTextField(WebCore::Element* element) {
@@ -754,14 +754,14 @@ void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
   // a node would be confusing.
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(input_element->document()->frame());
-  webkit_glue::PasswordAutocompleteListener* listener =
+  PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(input_element);
   if (listener) {
     if (args->autofill_form_only)
       return;
 
-    listener->OnInlineAutocompleteNeeded(
-        input_element, value, args->backspace_or_delete_pressed, true);
+    listener->performInlineAutocomplete(
+        value, args->backspace_or_delete_pressed, true);
     return;
   }
 
@@ -786,14 +786,12 @@ void EditorClientImpl::OnAutofillSuggestionAccepted(
     WebCore::HTMLInputElement* text_field) {
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(text_field->document()->frame());
-  webkit_glue::PasswordAutocompleteListener* listener =
+  PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(text_field);
   // Password listeners need to autocomplete other fields that depend on the
   // input element with autofill suggestions.
-  if (listener) {
-    listener->OnInlineAutocompleteNeeded(
-        text_field, text_field->value(), false, false);
-  }
+  if (listener)
+    listener->performInlineAutocomplete(text_field->value(), false, false);
 }
 
 bool EditorClientImpl::doTextFieldCommandFromEvent(

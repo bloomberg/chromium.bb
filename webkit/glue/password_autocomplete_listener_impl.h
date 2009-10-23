@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "webkit/api/src/PasswordAutocompleteListener.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 namespace WebCore {
@@ -25,6 +26,7 @@ class HTMLInputDelegate {
   explicit HTMLInputDelegate(WebCore::HTMLInputElement* element);
   virtual ~HTMLInputDelegate();
 
+  // These are virtual to support unit testing.
   virtual void SetValue(const string16& value);
   virtual void SetSelectionRange(size_t start, size_t end);
   virtual void OnFinishedAutocompleting();
@@ -36,26 +38,26 @@ class HTMLInputDelegate {
   // The underlying DOM element we're wrapping. We reference the underlying
   // HTMLInputElement for its lifetime to ensure it does not get freed by
   // WebCore while in use by the delegate instance.
-  WebCore::HTMLInputElement* element_;
+  RefPtr<WebCore::HTMLInputElement> element_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLInputDelegate);
 };
 
-
-class PasswordAutocompleteListener {
+class PasswordAutocompleteListenerImpl :
+    public WebKit::PasswordAutocompleteListener {
  public:
-  PasswordAutocompleteListener(HTMLInputDelegate* username_delegate,
-                               HTMLInputDelegate* password_delegate,
-                               const PasswordFormDomManager::FillData& data);
-  virtual ~PasswordAutocompleteListener() {
+  PasswordAutocompleteListenerImpl(
+      HTMLInputDelegate* username_delegate,
+      HTMLInputDelegate* password_delegate,
+      const PasswordFormDomManager::FillData& data);
+  ~PasswordAutocompleteListenerImpl() {
   }
 
-  virtual void OnBlur(WebCore::HTMLInputElement* element,
-                      const WebCore::String& user_input);
-  virtual void OnInlineAutocompleteNeeded(WebCore::HTMLInputElement* element,
-                                          const WebCore::String& user_input,
-                                          bool backspace_or_delete,
-                                          bool with_suggestion_popup);
+  // WebKit::PasswordAutocompleteListener methods:
+  virtual void didBlurInputElement(const WebCore::String& user_input);
+  virtual void performInlineAutocomplete(const WebCore::String& user_input,
+                                         bool backspace_or_delete_pressed,
+                                         bool show_suggestions);
 
  private:
   // Check if the input string resembles a potential matching login
@@ -76,7 +78,7 @@ class PasswordAutocompleteListener {
   // Contains the extra logins for matching on delta/blur.
   PasswordFormDomManager::FillData data_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteListener);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteListenerImpl);
 };
 
 }  // webkit_glue

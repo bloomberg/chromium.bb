@@ -14,7 +14,7 @@
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener.h"
+#include "webkit/glue/password_autocomplete_listener_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -22,15 +22,9 @@ namespace webkit_glue {
 
 HTMLInputDelegate::HTMLInputDelegate(WebCore::HTMLInputElement* element)
     : element_(element) {
-  // Reference the element for the lifetime of this delegate.
-  // element is NULL when testing.
-  if (element_)
-    element_->ref();
 }
 
 HTMLInputDelegate::~HTMLInputDelegate() {
-  if (element_)
-    element_->deref();
 }
 
 void HTMLInputDelegate::SetValue(const string16& value) {
@@ -62,7 +56,7 @@ void HTMLInputDelegate::RefreshAutofillPopup(
       webkit_glue::NodeToWebNode(element_), suggestions, 0);
 }
 
-PasswordAutocompleteListener::PasswordAutocompleteListener(
+PasswordAutocompleteListenerImpl::PasswordAutocompleteListenerImpl(
     HTMLInputDelegate* username_delegate,
     HTMLInputDelegate* password_delegate,
     const PasswordFormDomManager::FillData& data)
@@ -71,8 +65,8 @@ PasswordAutocompleteListener::PasswordAutocompleteListener(
       data_(data) {
 }
 
-void PasswordAutocompleteListener::OnBlur(WebCore::HTMLInputElement* element,
-                                          const WebCore::String& user_input) {
+void PasswordAutocompleteListenerImpl::didBlurInputElement(
+    const WebCore::String& user_input) {
   // If this listener exists, its because the password manager had more than
   // one match for the password form, which implies it had at least one
   // [preferred] username/password pair.
@@ -92,11 +86,10 @@ void PasswordAutocompleteListener::OnBlur(WebCore::HTMLInputElement* element,
   password_delegate_->OnFinishedAutocompleting();
 }
 
-void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
-    WebCore::HTMLInputElement* element,
+void PasswordAutocompleteListenerImpl::performInlineAutocomplete(
     const WebCore::String& user_input,
-    bool backspace_or_delete,
-    bool with_suggestion_popup) {
+    bool backspace_or_delete_pressed,
+    bool show_suggestions) {
   // If wait_for_username is true, we only autofill the password when
   // the username field is blurred (i.e not inline) with a matching
   // username string entered.
@@ -105,20 +98,20 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
 
   string16 user_input16 = webkit_glue::StringToString16(user_input);
 
-  if (with_suggestion_popup) {
+  if (show_suggestions) {
     std::vector<string16> suggestions;
     GetSuggestions(user_input16, &suggestions);
     username_delegate_->RefreshAutofillPopup(suggestions, 0);
   }
 
-  if (backspace_or_delete)
+  if (backspace_or_delete_pressed)
     return;  // Don't inline autocomplete when the user deleted something.
 
   // Look for any suitable matches to current field text.
   // TODO(timsteele): The preferred login (in basic_data.values) and
   // additional logins could be bundled into the same data structure
   // (possibly even as WebCore strings) upon construction of the
-  // PasswordAutocompleteListener to simplify lookup and save string
+  // PasswordAutocompleteListenerImpl to simplify lookup and save string
   // conversions (see SetValue) on each successful call to
   // OnInlineAutocompleteNeeded.
   if (TryToMatch(user_input16,
@@ -137,9 +130,9 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
   }
 }
 
-bool PasswordAutocompleteListener::TryToMatch(const string16& input,
-                                              const string16& username,
-                                              const string16& password) {
+bool PasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
+                                                  const string16& username,
+                                                  const string16& password) {
   if (!StartsWith(username, input, false))
     return false;
 
@@ -152,7 +145,7 @@ bool PasswordAutocompleteListener::TryToMatch(const string16& input,
   return true;
 }
 
-void PasswordAutocompleteListener::GetSuggestions(
+void PasswordAutocompleteListenerImpl::GetSuggestions(
     const string16& input, std::vector<string16>* suggestions) {
   if (StartsWith(data_.basic_data.values[0], input, false))
     suggestions->push_back(data_.basic_data.values[0]);

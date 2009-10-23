@@ -27,11 +27,11 @@ MSVC_POP_WARNING();
 
 #include "base/string_util.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener.h"
+#include "webkit/glue/password_autocomplete_listener_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using WebCore::String;
-using webkit_glue::PasswordAutocompleteListener;
+using webkit_glue::PasswordAutocompleteListenerImpl;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::HTMLInputDelegate;
 
@@ -127,23 +127,24 @@ TEST_F(PasswordManagerAutocompleteTests, OnBlur) {
   TestHTMLInputDelegate* username_delegate = new TestHTMLInputDelegate();
   TestHTMLInputDelegate* password_delegate = new TestHTMLInputDelegate();
 
-  scoped_ptr<PasswordAutocompleteListener> listener(
-      new PasswordAutocompleteListener(username_delegate, password_delegate,
-                                       data_));
+  scoped_ptr<PasswordAutocompleteListenerImpl> listener(
+      new PasswordAutocompleteListenerImpl(username_delegate,
+                                           password_delegate,
+                                           data_));
 
   // Clear the password field.
   password_delegate->SetValue(string16());
   // Simulate a blur event on the username field and expect a password autofill.
-  listener->OnBlur(NULL, webkit_glue::String16ToString(username1_));
+  listener->didBlurInputElement(webkit_glue::String16ToString(username1_));
   EXPECT_EQ(password1_, password_delegate->value());
 
   // Now the user goes back and changes the username to something we don't
   // have saved. The password should remain unchanged.
-  listener->OnBlur(NULL, String("blahblahblah"));
+  listener->didBlurInputElement(String("blahblahblah"));
   EXPECT_EQ(password1_, password_delegate->value());
 
   // Now they type in the additional login username.
-  listener->OnBlur(NULL, webkit_glue::String16ToString(username2_));
+  listener->didBlurInputElement(webkit_glue::String16ToString(username2_));
   EXPECT_EQ(password2_, password_delegate->value());
 }
 
@@ -151,13 +152,14 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   TestHTMLInputDelegate* username_delegate = new TestHTMLInputDelegate();
   TestHTMLInputDelegate* password_delegate = new TestHTMLInputDelegate();
 
-  scoped_ptr<PasswordAutocompleteListener> listener(
-      new PasswordAutocompleteListener(username_delegate, password_delegate,
-                                       data_));
+  scoped_ptr<PasswordAutocompleteListenerImpl> listener(
+      new PasswordAutocompleteListenerImpl(username_delegate,
+                                           password_delegate,
+                                           data_));
 
   password_delegate->SetValue(string16());
   // Simulate the user typing in the first letter of 'alice', a stored username.
-  listener->OnInlineAutocompleteNeeded(NULL, String("a"), false, false);
+  listener->performInlineAutocomplete(String("a"), false, false);
   // Both the username and password delegates should reflect selection
   // of the stored login.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -170,7 +172,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_TRUE(password_delegate->did_call_on_finish());
 
   // Now the user types the next letter of the same username, 'l'.
-  listener->OnInlineAutocompleteNeeded(NULL, String("al"), false, false);
+  listener->performInlineAutocomplete(String("al"), false, false);
   // Now the fields should have the same value, but the selection should have a
   // different start value.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -187,10 +189,10 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   // and selection would be set directly by WebCore in practice.
 
   // Reset the delegate's test state so we can determine what, if anything,
-  // was invoked during OnInlineAutocompleteNeeded.
+  // was invoked during performInlineAutocomplete.
   username_delegate->ResetTestState();
   password_delegate->ResetTestState();
-  listener->OnInlineAutocompleteNeeded(NULL, String("alf"), false, false);
+  listener->performInlineAutocomplete(String("alf"), false, false);
   EXPECT_FALSE(username_delegate->did_set_selection());
   EXPECT_FALSE(username_delegate->did_set_value());
   EXPECT_FALSE(username_delegate->did_call_on_finish());
@@ -198,7 +200,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_FALSE(password_delegate->did_call_on_finish());
 
   // Ok, so now the user removes all the text and enters the letter 'b'.
-  listener->OnInlineAutocompleteNeeded(NULL, String("b"), false, false);
+  listener->performInlineAutocomplete(String("b"), false, false);
   // The username and password fields should match the 'bob' entry.
   EXPECT_EQ(username2_, username_delegate->value());
   EXPECT_EQ(password2_, password_delegate->value());
@@ -215,34 +217,35 @@ TEST_F(PasswordManagerAutocompleteTests, TestWaitUsername) {
   // We require an explicit blur on the username field, and that a valid
   // matching username is in the field, before we autofill passwords.
   data_.wait_for_username = true;
-  scoped_ptr<PasswordAutocompleteListener> listener(
-      new PasswordAutocompleteListener(username_delegate, password_delegate,
-                                       data_));
+  scoped_ptr<PasswordAutocompleteListenerImpl> listener(
+      new PasswordAutocompleteListenerImpl(username_delegate,
+                                           password_delegate,
+                                           data_));
 
   string16 empty;
   // In all cases, username_delegate should remain empty because we should
   // never modify it when wait_for_username is true; only the user can by
   // typing into (in real life) the HTMLInputElement.
   password_delegate->SetValue(string16());
-  listener->OnInlineAutocompleteNeeded(NULL, String("a"), false, false);
+  listener->performInlineAutocomplete(String("a"), false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, String("al"), false, false);
+  listener->performInlineAutocomplete(String("al"), false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, String("alice"), false, false);
+  listener->performInlineAutocomplete(String("alice"), false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
 
-  listener->OnBlur(NULL, String("a"));
+  listener->didBlurInputElement(String("a"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnBlur(NULL, String("ali"));
+  listener->didBlurInputElement(String("ali"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
 
   // Blur with 'alice' should allow password autofill.
-  listener->OnBlur(NULL, String("alice"));
+  listener->didBlurInputElement(String("alice"));
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(password1_, password_delegate->value());
 }
