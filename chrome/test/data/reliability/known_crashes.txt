@@ -138,3 +138,6 @@ REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
 # bug 23780
 PREFIX : v8::internal::mayaccessprecheck
+
+# bug 25689
+PREFIX : skia::crashforbitmapallocationfailure___skia::platformcanvas::platformcanvas___webpluginproxy::setwindowlessbuffer___webpluginproxy::updategeometry___webplugindelegatestub
