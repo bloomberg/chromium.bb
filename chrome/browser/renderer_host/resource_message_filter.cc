@@ -46,6 +46,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/worker_messages.h"
+#include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
@@ -381,6 +382,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnCloseIdleConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
 #if defined(USE_TCMALLOC)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
@@ -1108,6 +1110,16 @@ void ResourceMessageFilter::ReplyGetFileSize(int64 result, void* param) {
 
   // Getting file size callback done, decrease the ref count.
   Release();
+}
+
+void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
+                                     const std::string& challenge_string,
+                                     const GURL& url,
+                                     std::string* signed_public_key) {
+  scoped_ptr<net::KeygenHandler> keygen_handler(
+      new net::KeygenHandler(key_size_index,
+                             challenge_string));
+  *signed_public_key = keygen_handler->GenKeyAndSignChallenge();
 }
 
 #if defined(USE_TCMALLOC)

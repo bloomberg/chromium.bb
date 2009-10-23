@@ -147,6 +147,15 @@ namespace WebKit {
         // Returns the size of the given database file
         virtual long long databaseGetFileSize(const WebString& fileName) = 0;
 
+        // Keygen --------------------------------------------------------------
+
+        // Handle the <keygen> tag for generating client certificates
+        // Returns a base64 encoded signed copy of a public key from a newly
+        // generated key pair and the supplied challenge string. keySizeindex
+        // specifies the strength of the key.
+        virtual WebString signedPublicKeyAndChallengeString(unsigned keySizeIndex,
+                                                            const WebKit::WebString& challenge,
+                                                            const WebKit::WebURL& url) = 0;
 
         // Message Ports -------------------------------------------------------
 

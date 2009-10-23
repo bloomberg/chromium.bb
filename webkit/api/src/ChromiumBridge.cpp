@@ -269,8 +269,9 @@ long long ChromiumBridge::databaseGetFileSize(const String& fileName)
 String ChromiumBridge::signedPublicKeyAndChallengeString(
     unsigned keySizeIndex, const String& challenge, const KURL& url)
 {
-    notImplemented();
-    return String();
+    return webKitClient()->signedPublicKeyAndChallengeString(keySizeIndex,
+                                                             WebString(challenge),
+                                                             WebURL(url));
 }
 
 // Language -------------------------------------------------------------------

@@ -1965,6 +1965,8 @@
         'browser/renderer_host/sync_resource_handler.h',
         'browser/renderer_host/web_cache_manager.cc',
         'browser/renderer_host/web_cache_manager.h',
+        'browser/renderer_host/x509_user_cert_resource_handler.cc',
+        'browser/renderer_host/x509_user_cert_resource_handler.h',
         'browser/rlz/rlz.cc',
         'browser/rlz/rlz.h',
         'browser/safe_browsing/bloom_filter.cc',

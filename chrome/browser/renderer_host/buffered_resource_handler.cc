@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -293,6 +294,50 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
   // TODO(paulg): Only download if the context from the renderer allows it.
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request_);
+  std::string mime_type;
+  request_->GetMimeType(&mime_type);
+
+  // Check if this is an X.509 certificate, if yes, let it be handled
+  // by X509UserCertResourceHandler.
+  if (mime_type == "application/x-x509-user-cert") {
+
+    // This is entirely similar to how DownloadThrottlingResourceHandler
+    // works except we are doing it for an X.509 client certificates.
+
+    if (response_->response_head.headers &&  // Can be NULL if FTP.
+        response_->response_head.headers->response_code() / 100 != 2) {
+      // The response code indicates that this is an error page, but we are
+      // expecting an X.509 user certificate. We follow Firefox here and show
+      // our own error page instead of handling the error page as a
+      // certificate.
+      // TODO(abarth): We should abstract the response_code test, but this kind
+      //               of check is scattered throughout our codebase.
+      request_->SimulateError(net::ERR_FILE_NOT_FOUND);
+      return false;
+    }
+
+    scoped_refptr<X509UserCertResourceHandler> x509_cert_handler =
+        new X509UserCertResourceHandler(host_, request_);
+
+    if (bytes_read_) {
+      // A Read has already occured and we need to copy the data into the
+      // EventHandler.
+      net::IOBuffer* buf = NULL;
+      int buf_len = 0;
+      x509_cert_handler->OnWillRead(request_id, &buf, &buf_len, bytes_read_);
+      CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
+      memcpy(buf->data(), read_buffer_->data(), bytes_read_);
+    }
+
+    // Inform the renderer that this will be handled entirely by the browser.
+    real_handler_->OnResponseStarted(info->request_id(), response_);
+    URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
+    real_handler_->OnResponseCompleted(info->request_id(), status,
+                                       std::string());
+
+    // This is handled entirely within the browser, so just reset the handler.
+    real_handler_ = x509_cert_handler;
+  }
 
   if (info->allow_download() && ShouldDownload(NULL)) {
     if (response_->response_head.headers &&  // Can be NULL if FTP.
@@ -310,14 +355,14 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     scoped_refptr<DownloadThrottlingResourceHandler> download_handler =
         new DownloadThrottlingResourceHandler(host_,
-                                             request_,
-                                             request_->url(),
-                                             info->child_id(),
-                                             info->route_id(),
-                                             request_id,
-                                             in_complete);
+                                              request_,
+                                              request_->url(),
+                                              info->child_id(),
+                                              info->route_id(),
+                                              request_id,
+                                              in_complete);
     if (bytes_read_) {
-      // a Read has already occurred and we need to copy the data into the
+      // A Read has already occurred and we need to copy the data into the
       // EventHandler.
       net::IOBuffer* buf = NULL;
       int buf_len = 0;

@@ -23,6 +23,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -313,4 +314,19 @@ long long RendererWebKitClientImpl::databaseGetFileSize(
       FilePath(webkit_glue::WebStringToFilePathString(file_name)),
       message_id),
     message_id, 0LL);
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
+    unsigned key_size_index,
+    const WebKit::WebString& challenge,
+    const WebKit::WebURL& url) {
+  std::string signed_public_key;
+  RenderThread::current()->Send(new ViewHostMsg_Keygen(
+      static_cast<uint32>(key_size_index),
+      webkit_glue::WebStringToStdString(challenge),
+      GURL(url) ,
+      &signed_public_key));
+  return webkit_glue::StdStringToWebString(signed_public_key);
 }

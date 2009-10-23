@@ -52,6 +52,10 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       bool sync_dir);
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
+  virtual WebKit::WebString signedPublicKeyAndChallengeString(
+      unsigned key_size_index,
+      const WebKit::WebString& challenge,
+      const WebKit::WebURL& url);
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);
 

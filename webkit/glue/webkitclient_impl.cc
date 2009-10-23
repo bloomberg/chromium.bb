@@ -332,6 +332,14 @@ long long WebKitClientImpl::databaseGetFileSize(
   return 0;
 }
 
+WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
+    unsigned key_size_index,
+    const WebKit::WebString& challenge,
+    const WebKit::WebURL& url) {
+  NOTREACHED();
+  return WebKit::WebString();
+}
+
 bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
   FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
   return file_util::PathExists(FilePath(file_path));

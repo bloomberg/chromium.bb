@@ -277,7 +277,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
   void ReplyGetFileSize(int64 result, void* param);
-
+  void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
+                const GURL& url, std::string* signed_public_key);
 #if defined(OS_LINUX)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);

@@ -52,6 +52,10 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
 
+  virtual WebKit::WebString signedPublicKeyAndChallengeString(
+      unsigned key_size_index, const WebKit::WebString& challenge,
+      const WebKit::WebURL& url);
+
   virtual bool fileExists(const WebKit::WebString& path);
   virtual bool deleteFile(const WebKit::WebString& path);
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
