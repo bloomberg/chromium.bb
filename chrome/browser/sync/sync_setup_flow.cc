@@ -9,8 +9,8 @@
 #include "app/gfx/font.h"
 #include "app/gfx/font_util.h"
 #include "base/histogram.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -59,7 +59,7 @@ void FlowHandler::RegisterMessages() {
 
 static bool GetUsernameAndPassword(const std::string& json,
     std::string* username, std::string* password) {
-  scoped_ptr<Value> parsed_value(JSONReader::Read(json, false));
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
@@ -96,7 +96,7 @@ void FlowHandler::HandleSubmitMergeAndSync(const Value* value) {
 // Called by SyncSetupFlow::Advance.
 void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
   std::string json;
-  JSONWriter::Write(&args, false, &json);
+  base::JSONWriter::Write(&args, false, &json);
   std::wstring javascript = std::wstring(L"showGaiaLogin") +
       L"(" + UTF8ToWide(json) + L");";
   ExecuteJavascriptInIFrame(kLoginIFrameXPath, javascript);
@@ -120,7 +120,7 @@ void FlowHandler::ShowSetupDone(const std::wstring& user) {
   StringValue synced_to_string(WideToUTF8(l10n_util::GetStringF(
       IDS_SYNC_NTP_SYNCED_TO, user)));
   std::string json;
-  JSONWriter::Write(&synced_to_string, false, &json);
+  base::JSONWriter::Write(&synced_to_string, false, &json);
   std::wstring javascript = std::wstring(L"setSyncedToUser") +
       L"(" + UTF8ToWide(json) + L");";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
@@ -287,7 +287,7 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   if (start == SyncSetupWizard::GAIA_LOGIN)
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   Browser* b = BrowserList::GetLastActive();
   if (!b)

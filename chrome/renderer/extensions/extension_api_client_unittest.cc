@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -59,7 +59,7 @@ class ExtensionAPIClientTest : public RenderViewTest {
     ASSERT_TRUE(params.b.IsType(Value::TYPE_LIST));
     ASSERT_TRUE(static_cast<const ListValue*>(&params.b)->Get(0, &args));
 
-    JSONReader reader;
+    base::JSONReader reader;
     scoped_ptr<Value> arg1_value(reader.JsonToValue(arg1, false, false));
     ASSERT_TRUE(args->Equals(arg1_value.get())) << js;
     render_thread_.sink().ClearMessages();

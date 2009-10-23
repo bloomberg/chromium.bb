@@ -7,8 +7,8 @@
 
 #include "chrome/browser/debugger/debugger_remote_service.h"
 
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -65,7 +65,7 @@ DebuggerRemoteService::~DebuggerRemoteService() {}
 void DebuggerRemoteService::HandleMessage(
     const DevToolsRemoteMessage& message) {
   const std::string destination = message.destination();
-  scoped_ptr<Value> request(JSONReader::Read(message.content(), true));
+  scoped_ptr<Value> request(base::JSONReader::Read(message.content(), true));
   if (request.get() == NULL) {
     // Bad JSON
     NOTREACHED();
@@ -129,7 +129,7 @@ void DebuggerRemoteService::SendResponse(const Value& response,
                                          const std::string& tool,
                                          const std::string& destination) {
   std::string response_content;
-  JSONWriter::Write(&response, false, &response_content);
+  base::JSONWriter::Write(&response, false, &response_content);
   scoped_ptr<DevToolsRemoteMessage> response_message(
       DevToolsRemoteMessageBuilder::instance().Create(tool,
                                                       destination,
@@ -304,7 +304,7 @@ bool DebuggerRemoteService::DispatchDebuggerCommand(int tab_uid,
   std::string v8_command;
   DictionaryValue* v8_command_value;
   content->GetDictionary(kDataWide, &v8_command_value);
-  JSONWriter::Write(v8_command_value, false, &v8_command);
+  base::JSONWriter::Write(v8_command_value, false, &v8_command);
   manager->ForwardToDevToolsAgent(
       client_host, DevToolsAgentMsg_DebuggerCommand(v8_command));
   // Do not send the response right now, as the JSON will be received from

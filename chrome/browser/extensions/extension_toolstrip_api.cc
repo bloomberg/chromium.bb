@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -131,7 +131,7 @@ void ToolstripEventRouter::DispatchEvent(Profile *profile,
                                          const Value& json) {
   if (profile->GetExtensionMessageService()) {
     std::string json_args;
-    JSONWriter::Write(&json, false, &json_args);
+    base::JSONWriter::Write(&json, false, &json_args);
     std::string full_event_name = StringPrintf(event_name, routing_id);
     profile->GetExtensionMessageService()->
         DispatchEventToRenderers(full_event_name, json_args);

@@ -13,11 +13,11 @@ extern "C" {
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/json/string_escape.h"
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/string16.h"
-#include "base/string_escape.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -125,7 +125,7 @@ bool EnableSandbox() {
     // surrounding sandbox syntax.
     string16 home_dir = base::SysNSStringToUTF16(NSHomeDirectory());
     std::string home_dir_escaped;
-    string_escape::JsonDoubleQuote(home_dir, false, &home_dir_escaped);
+    base::JsonDoubleQuote(home_dir, false, &home_dir_escaped);
     NSString* home_dir_escaped_ns = base::SysUTF8ToNSString(home_dir_escaped);
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@"USER_HOMEDIR"

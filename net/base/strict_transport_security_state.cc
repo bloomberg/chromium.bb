@@ -4,8 +4,8 @@
 
 #include "net/base/strict_transport_security_state.h"
 
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/sha2.h"
@@ -228,7 +228,7 @@ bool StrictTransportSecurityState::Serialise(std::string* output) {
     toplevel.Set(HashedDomainToExternalString(i->first), state);
   }
 
-  JSONWriter::Write(&toplevel, true /* pretty print */, output);
+  base::JSONWriter::Write(&toplevel, true /* pretty print */, output);
   return true;
 }
 
@@ -238,7 +238,7 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
   enabled_hosts_.clear();
 
   scoped_ptr<Value> value(
-      JSONReader::Read(input, false /* do not allow trailing commas */));
+      base::JSONReader::Read(input, false /* do not allow trailing commas */));
   if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY))
     return false;
 

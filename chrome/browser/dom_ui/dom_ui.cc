@@ -5,8 +5,7 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 
 #include "app/l10n_util.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -56,7 +55,7 @@ void DOMUI::CallJavascriptFunction(const std::wstring& function_name) {
 void DOMUI::CallJavascriptFunction(const std::wstring& function_name,
                                    const Value& arg) {
   std::string json;
-  JSONWriter::Write(&arg, false, &json);
+  base::JSONWriter::Write(&arg, false, &json);
   std::wstring javascript = function_name + L"(" + UTF8ToWide(json) + L");";
 
   ExecuteJavascript(javascript);
@@ -66,9 +65,9 @@ void DOMUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value& arg1, const Value& arg2) {
   std::string json;
-  JSONWriter::Write(&arg1, false, &json);
+  base::JSONWriter::Write(&arg1, false, &json);
   std::wstring javascript = function_name + L"(" + UTF8ToWide(json);
-  JSONWriter::Write(&arg2, false, &json);
+  base::JSONWriter::Write(&arg2, false, &json);
   javascript += L"," + UTF8ToWide(json) + L");";
 
   ExecuteJavascript(javascript);

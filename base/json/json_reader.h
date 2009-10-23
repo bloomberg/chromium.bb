@@ -28,8 +28,8 @@
 // only a convenience for the common uses with more complex configuration going
 // on the instance.
 
-#ifndef BASE_JSON_READER_H_
-#define BASE_JSON_READER_H_
+#ifndef BASE_JSON_JSON_READER_H_
+#define BASE_JSON_JSON_READER_H_
 
 #include <string>
 
@@ -37,6 +37,8 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Value;
+
+namespace base {
 
 class JSONReader {
  public:
@@ -119,7 +121,7 @@ class JSONReader {
   static std::string FormatErrorMessage(int line, int column,
                                         const char* description);
 
-  DISALLOW_EVIL_CONSTRUCTORS(JSONReader);
+  DISALLOW_COPY_AND_ASSIGN(JSONReader);
 
   FRIEND_TEST(JSONReaderTest, Reading);
   FRIEND_TEST(JSONReaderTest, ErrorMessages);
@@ -183,4 +185,6 @@ class JSONReader {
   std::string error_message_;
 };
 
-#endif  // BASE_JSON_READER_H_
+}  // namespace base
+
+#endif  // BASE_JSON_JSON_READER_H_

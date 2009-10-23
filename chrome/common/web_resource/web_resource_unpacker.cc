@@ -4,7 +4,7 @@
 
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/values.h"
 
 const char* WebResourceUnpacker::kInvalidDataTypeError =
@@ -19,7 +19,7 @@ const char* WebResourceUnpacker::kUnexpectedJSONFormatError =
 bool WebResourceUnpacker::Run() {
   scoped_ptr<Value> value;
   if (!resource_data_.empty()) {
-    value.reset(JSONReader::Read(resource_data_, false));
+    value.reset(base::JSONReader::Read(resource_data_, false));
     if (!value.get()) {
       // Page information not properly read, or corrupted.
       error_message_ = kInvalidDataTypeError;

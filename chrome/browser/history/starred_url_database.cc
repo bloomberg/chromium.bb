@@ -8,7 +8,7 @@
 #include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -620,7 +620,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   scoped_ptr<Value> encoded_bookmarks(
       encoder.Encode(&bookmark_bar_node, &other_node));
   std::string content;
-  JSONWriter::Write(encoded_bookmarks.get(), true, &content);
+  base::JSONWriter::Write(encoded_bookmarks.get(), true, &content);
 
   return (file_util::WriteFile(path, content.c_str(),
                                static_cast<int>(content.length())) != -1);

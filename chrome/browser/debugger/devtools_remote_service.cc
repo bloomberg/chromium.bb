@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -32,7 +32,7 @@ DevToolsRemoteService::~DevToolsRemoteService() {}
 
 void DevToolsRemoteService::HandleMessage(
     const DevToolsRemoteMessage& message) {
-  scoped_ptr<Value> request(JSONReader::Read(message.content(), false));
+  scoped_ptr<Value> request(base::JSONReader::Read(message.content(), false));
   if (request.get() == NULL) {
     // Bad JSON
     NOTREACHED();
@@ -94,7 +94,7 @@ void DevToolsRemoteService::ProcessJson(DictionaryValue* json,
     response.SetInteger(kResultWide, Result::kUnknownCommand);
   }
   std::string response_json;
-  JSONWriter::Write(&response, false, &response_json);
+  base::JSONWriter::Write(&response, false, &response_json);
   scoped_ptr<DevToolsRemoteMessage> response_message(
       DevToolsRemoteMessageBuilder::instance().Create(message.tool(),
                                                       message.destination(),

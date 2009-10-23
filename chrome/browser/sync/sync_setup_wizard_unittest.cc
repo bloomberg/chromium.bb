@@ -5,7 +5,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
@@ -175,7 +175,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   DictionaryValue dialog_args;
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   std::string json_start_args;
-  JSONWriter::Write(&dialog_args, false, &json_start_args);
+  base::JSONWriter::Write(&dialog_args, false, &json_start_args);
   ListValue credentials;
   std::string auth = "{\"user\":\"";
   auth += std::string(kTestUser) + "\",\"pass\":\"";

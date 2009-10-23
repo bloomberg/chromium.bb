@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
@@ -100,7 +100,7 @@ static void DispatchSimpleBrowserEvent(Profile* profile,
   args.Append(Value::CreateIntegerValue(window_id));
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(profile, event_name, json_args);
 }
@@ -134,7 +134,7 @@ void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   args.Append(window_dictionary);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(browser->profile(), events::kOnWindowCreated, json_args);
 }
@@ -164,7 +164,7 @@ void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
   ListValue args;
   args.Append(ExtensionTabUtil::CreateTabValue(contents));
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(contents->profile(), events::kOnTabCreated, json_args);
 
@@ -202,7 +202,7 @@ void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(contents->profile(), events::kOnTabAttached, json_args);
 }
@@ -226,7 +226,7 @@ void ExtensionBrowserEventRouter::TabDetachedAt(TabContents* contents,
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(contents->profile(), events::kOnTabDetached, json_args);
 }
@@ -239,7 +239,7 @@ void ExtensionBrowserEventRouter::TabClosingAt(TabContents* contents,
   args.Append(Value::CreateIntegerValue(tab_id));
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(contents->profile(), events::kOnTabRemoved, json_args);
 
@@ -266,7 +266,7 @@ void ExtensionBrowserEventRouter::TabSelectedAt(TabContents* old_contents,
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(new_contents->profile(), events::kOnTabSelectionChanged,
                 json_args);
@@ -289,7 +289,7 @@ void ExtensionBrowserEventRouter::TabMoved(TabContents* contents,
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   DispatchEvent(contents->profile(), events::kOnTabMoved, json_args);
 }
@@ -315,7 +315,7 @@ void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
     args.Append(changed_properties);
 
     std::string json_args;
-    JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, false, &json_args);
 
     DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
   }
@@ -368,7 +368,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
   args.Append(data);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   std::string event_name = std::string("pageAction/") + extension_id;
   DispatchEvent(profile, event_name.c_str(), json_args);
@@ -384,7 +384,7 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   ListValue args;
   args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
 
   std::string event_name = std::string("browserAction/") + extension_id;
   DispatchEvent(profile, event_name.c_str(), json_args);

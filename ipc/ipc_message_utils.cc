@@ -4,7 +4,7 @@
 
 #include "ipc/ipc_message_utils.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -216,7 +216,7 @@ bool ParamTraits<DictionaryValue>::Read(
 
 void ParamTraits<DictionaryValue>::Log(const param_type& p, std::wstring* l) {
   std::string json;
-  JSONWriter::Write(&p, false, &json);
+  base::JSONWriter::Write(&p, false, &json);
   l->append(UTF8ToWide(json));
 }
 
@@ -235,7 +235,7 @@ bool ParamTraits<ListValue>::Read(
 
 void ParamTraits<ListValue>::Log(const param_type& p, std::wstring* l) {
   std::string json;
-  JSONWriter::Write(&p, false, &json);
+  base::JSONWriter::Write(&p, false, &json);
   l->append(UTF8ToWide(json));
 }
 }  // namespace IPC

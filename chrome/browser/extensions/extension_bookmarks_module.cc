@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -185,7 +185,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeMoved(
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkMoved, json_args);
 }
 
@@ -199,7 +199,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   args.Append(obj);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkCreated, json_args);
 }
 
@@ -216,7 +216,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, json_args);
 }
 
@@ -235,7 +235,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   args.Append(object_args);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkChanged, json_args);
 }
 
@@ -260,7 +260,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
   args.Append(reorder_info);
 
   std::string json_args;
-  JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, false, &json_args);
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkChildrenReordered,
                 json_args);

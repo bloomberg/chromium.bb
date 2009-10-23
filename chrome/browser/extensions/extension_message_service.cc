@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_message_service.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
@@ -322,7 +322,7 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
   if (source_contents) {
     DictionaryValue* tab_value =
         ExtensionTabUtil::CreateTabValue(source_contents);
-    JSONWriter::Write(tab_value, false, &tab_json);
+    base::JSONWriter::Write(tab_value, false, &tab_json);
   }
 
   CHECK(receiver.sender);

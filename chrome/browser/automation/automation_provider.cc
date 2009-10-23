@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/file_version_info.h"
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -1662,7 +1662,7 @@ bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
   // The message is a JSON-encoded array with two elements, both strings. The
   // first is the name of the event to dispatch.  The second is a JSON-encoding
   // of the arguments specific to that event.
-  scoped_ptr<Value> message_value(JSONReader::Read(message, false));
+  scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
   if (!message_value.get() || !message_value->IsType(Value::TYPE_LIST)) {
     LOG(WARNING) << "Invalid browser event specified through automation";
     return false;

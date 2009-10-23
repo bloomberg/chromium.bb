@@ -5,8 +5,8 @@
 #include "chrome/common/json_value_serializer.h"
 
 #include "base/file_util.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 
 JSONStringValueSerializer::~JSONStringValueSerializer() {}
@@ -15,8 +15,7 @@ bool JSONStringValueSerializer::Serialize(const Value& root) {
   if (!json_string_ || initialized_with_const_string_)
     return false;
 
-  JSONWriter::Write(&root, pretty_print_, json_string_);
-
+  base::JSONWriter::Write(&root, pretty_print_, json_string_);
   return true;
 }
 
@@ -24,8 +23,9 @@ Value* JSONStringValueSerializer::Deserialize(std::string* error_message) {
   if (!json_string_)
     return NULL;
 
-  return JSONReader::ReadAndReturnError(*json_string_, allow_trailing_comma_,
-                                        error_message);
+  return base::JSONReader::ReadAndReturnError(*json_string_,
+                                              allow_trailing_comma_,
+                                              error_message);
 }
 
 /******* File Serializer *******/

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -397,7 +397,7 @@ Value* ExecuteJavaScript(RenderViewHost* render_view_host,
   json.insert(0, "[");
   json.append("]");
 
-  scoped_ptr<Value> root_val(JSONReader::Read(json, true));
+  scoped_ptr<Value> root_val(base::JSONReader::Read(json, true));
   if (!root_val->IsType(Value::TYPE_LIST))
     return NULL;
 

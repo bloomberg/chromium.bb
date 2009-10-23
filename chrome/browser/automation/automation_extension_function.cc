@@ -6,8 +6,8 @@
 
 #include "chrome/browser/automation/automation_extension_function.h"
 
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -16,7 +16,7 @@
 bool AutomationExtensionFunction::enabled_ = false;
 
 void AutomationExtensionFunction::SetArgs(const Value* args) {
-  JSONWriter::Write(args, false, &args_);
+  base::JSONWriter::Write(args, false, &args_);
 }
 
 const std::string AutomationExtensionFunction::GetResult() {
@@ -42,7 +42,7 @@ void AutomationExtensionFunction::Run() {
   message_to_host.SetBoolean(keys::kAutomationHasCallbackKey, has_callback_);
 
   std::string message;
-  JSONWriter::Write(&message_to_host, false, &message);
+  base::JSONWriter::Write(&message_to_host, false, &message);
   dispatcher()->render_view_host_->delegate()->ProcessExternalHostMessage(
       message, keys::kAutomationOrigin, keys::kAutomationRequestTarget);
 }
@@ -87,7 +87,7 @@ bool AutomationExtensionFunction::InterceptMessageFromExternalHost(
       target == keys::kAutomationResponseTarget) {
     // This is an extension API response being sent back via postMessage,
     // so redirect it.
-    scoped_ptr<Value> message_value(JSONReader::Read(message, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
     DCHECK(message_value->IsType(Value::TYPE_DICTIONARY));
     if (message_value->IsType(Value::TYPE_DICTIONARY)) {
       DictionaryValue* message_dict =

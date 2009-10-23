@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/gfx/rect.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
@@ -146,7 +146,8 @@ TEST_F(SimpleApiCallExtensionTest, RunTest) {
   EXPECT_TRUE(proxy->origin() == keys::kAutomationOrigin);
   EXPECT_TRUE(proxy->target() == keys::kAutomationRequestTarget);
 
-  scoped_ptr<Value> message_value(JSONReader::Read(proxy->message(), false));
+  scoped_ptr<Value> message_value(base::JSONReader::Read(proxy->message(),
+                                                         false));
   ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
   DictionaryValue* message_dict =
       reinterpret_cast<DictionaryValue*>(message_value.get());
@@ -231,7 +232,7 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
     EXPECT_TRUE(origin_ == keys::kAutomationOrigin);
     EXPECT_TRUE(target_ == keys::kAutomationRequestTarget);
 
-    scoped_ptr<Value> message_value(JSONReader::Read(message_, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(message_, false));
     ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
     DictionaryValue* request_dict =
         static_cast<DictionaryValue*>(message_value.get());
@@ -266,13 +267,13 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
           extension_tabs_module_constants::kUrlKey, "http://www.google.com"));
 
       std::string tab_json;
-      JSONWriter::Write(&tab_dict, false, &tab_json);
+      base::JSONWriter::Write(&tab_dict, false, &tab_json);
 
       EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey,
           tab_json));
 
       std::string response_json;
-      JSONWriter::Write(&response_dict, false, &response_json);
+      base::JSONWriter::Write(&response_dict, false, &response_json);
 
       tab_->HandleMessageFromExternalHost(
           response_json,
@@ -409,7 +410,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
     // This should be a request for the current window.  We don't need to
     // respond, as this is used only as an indication that the extension
     // page is now loaded.
-    scoped_ptr<Value> message_value(JSONReader::Read(message, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
     ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
     DictionaryValue* message_dict =
         reinterpret_cast<DictionaryValue*>(message_value.get());
@@ -441,7 +442,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
     // There is a special message "ACK" which means that the extension
     // received the port connection.  This is not an event response and
     // should happen before all events.
-    scoped_ptr<Value> message_value(JSONReader::Read(message, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
     ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
     DictionaryValue* message_dict =
         reinterpret_cast<DictionaryValue*>(message_value.get());

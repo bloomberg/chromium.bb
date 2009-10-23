@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
+
+namespace base {
 
 TEST(JSONReaderTest, Reading) {
   // some whitespace checking
@@ -514,3 +516,5 @@ TEST(JSONReaderTest, ErrorMessages) {
             error_message);
 
 }
+
+}  // namespace base

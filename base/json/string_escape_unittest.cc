@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "base/string_escape.h"
+#include "base/json/string_escape.h"
 #include "base/string_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 namespace {
 
@@ -24,17 +26,17 @@ TEST(StringEscapeTest, JsonDoubleQuoteNarrow) {
   for (size_t i = 0; i < arraysize(json_narrow_cases); ++i) {
     std::string in = json_narrow_cases[i].to_escape;
     std::string out;
-    string_escape::JsonDoubleQuote(in, false, &out);
+    JsonDoubleQuote(in, false, &out);
     EXPECT_EQ(std::string(json_narrow_cases[i].escaped), out);
   }
 
   std::string in = json_narrow_cases[0].to_escape;
   std::string out;
-  string_escape::JsonDoubleQuote(in, false, &out);
+  JsonDoubleQuote(in, false, &out);
 
   // test quoting
   std::string out_quoted;
-  string_escape::JsonDoubleQuote(in, true, &out_quoted);
+  JsonDoubleQuote(in, true, &out_quoted);
   EXPECT_EQ(out.length() + 2, out_quoted.length());
   EXPECT_EQ(out_quoted.find(out), 1U);
 
@@ -45,7 +47,7 @@ TEST(StringEscapeTest, JsonDoubleQuoteNarrow) {
   std::string expected = "test\\u0000";
   expected += json_narrow_cases[0].escaped;
   out.clear();
-  string_escape::JsonDoubleQuote(in, false, &out);
+  JsonDoubleQuote(in, false, &out);
   EXPECT_EQ(expected, out);
 }
 
@@ -69,17 +71,17 @@ TEST(StringEscapeTest, JsonDoubleQuoteWide) {
   for (size_t i = 0; i < arraysize(json_wide_cases); ++i) {
     std::string out;
     string16 in = WideToUTF16(json_wide_cases[i].to_escape);
-    string_escape::JsonDoubleQuote(in, false, &out);
+    JsonDoubleQuote(in, false, &out);
     EXPECT_EQ(std::string(json_wide_cases[i].escaped), out);
   }
 
   string16 in = WideToUTF16(json_wide_cases[0].to_escape);
   std::string out;
-  string_escape::JsonDoubleQuote(in, false, &out);
+  JsonDoubleQuote(in, false, &out);
 
   // test quoting
   std::string out_quoted;
-  string_escape::JsonDoubleQuote(in, true, &out_quoted);
+  JsonDoubleQuote(in, true, &out_quoted);
   EXPECT_EQ(out.length() + 2, out_quoted.length());
   EXPECT_EQ(out_quoted.find(out), 1U);
 
@@ -90,6 +92,8 @@ TEST(StringEscapeTest, JsonDoubleQuoteWide) {
   std::string expected = "test\\u0000";
   expected += json_wide_cases[0].escaped;
   out.clear();
-  string_escape::JsonDoubleQuote(in, false, &out);
+  JsonDoubleQuote(in, false, &out);
   EXPECT_EQ(expected, out);
 }
+
+}  // namespace base

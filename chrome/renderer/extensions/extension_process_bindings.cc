@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/extensions/extension_process_bindings.h"
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "chrome/renderer/extensions/extension_process_bindings.h"
-
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/singleton.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
@@ -397,7 +397,7 @@ class ExtensionImpl : public ExtensionBase {
   // callback will be dispatched to EventBindings::HandleResponse.
   static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
     std::string str_args = *v8::String::Utf8Value(args[1]);
-    JSONReader reader;
+    base::JSONReader reader;
     Value* value_args = reader.JsonToValue(str_args, false, false);
 
     // Since we do the serialization in the v8 extension, we should always get

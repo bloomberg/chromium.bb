@@ -9,8 +9,8 @@
 
 #include "chrome/browser/debugger/extension_ports_remote_service.h"
 
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -147,7 +147,7 @@ void ExtensionPortsRemoteService::HandleMessage(
     const DevToolsRemoteMessage& message) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   const std::string destinationString = message.destination();
-  scoped_ptr<Value> request(JSONReader::Read(message.content(), true));
+  scoped_ptr<Value> request(base::JSONReader::Read(message.content(), true));
   if (request.get() == NULL) {
     // Bad JSON
     NOTREACHED();
@@ -220,7 +220,7 @@ void ExtensionPortsRemoteService::SendResponse(
     const Value& response, const std::string& tool,
     const std::string& destination) {
   std::string response_content;
-  JSONWriter::Write(&response, false, &response_content);
+  base::JSONWriter::Write(&response, false, &response_content);
   scoped_ptr<DevToolsRemoteMessage> response_message(
       DevToolsRemoteMessageBuilder::instance().Create(
           tool, destination, response_content));
@@ -271,7 +271,7 @@ void ExtensionPortsRemoteService::OnExtensionMessage(
   content.SetString(kCommandWide, kOnMessage);
   content.SetInteger(kResultWide, RESULT_OK);
   // Turn the stringified message body back into JSON.
-  Value* data = JSONReader::Read(message, false);
+  Value* data = base::JSONReader::Read(message, false);
   if (!data) {
     NOTREACHED();
     return;
@@ -374,7 +374,7 @@ void ExtensionPortsRemoteService::PostMessageCommand(
   }
   std::string message;
   // Stringified the JSON message body.
-  JSONWriter::Write(data, false, &message);
+  base::JSONWriter::Write(data, false, &message);
   LOG(INFO) << "postMessage: port " << port_id
             << ", message: <" << message << ">";
   PortIdSet::iterator portEntry = openPortIds_.find(port_id);

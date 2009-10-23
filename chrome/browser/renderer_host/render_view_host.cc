@@ -11,7 +11,7 @@
 #include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
@@ -1220,7 +1220,7 @@ void RenderViewHost::OnMsgDOMUISend(
   const bool kHasCallback = false;
   scoped_ptr<Value> value;
   if (!content.empty()) {
-    value.reset(JSONReader::Read(content, false));
+    value.reset(base::JSONReader::Read(content, false));
     if (!value.get()) {
       // The page sent us something that we didn't understand.
       // This probably indicates a programming error.

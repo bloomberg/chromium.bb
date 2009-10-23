@@ -5,8 +5,8 @@
 #include "chrome/browser/automation/extension_port_container.h"
 
 #include "base/logging.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
@@ -92,7 +92,7 @@ void ExtensionPortContainer::SendConnectionResponse(int connection_id,
   msg_dict->SetInteger(ext::kAutomationPortIdKey, port_id);
 
   std::string msg_json;
-  JSONWriter::Write(msg_dict.get(), false, &msg_json);
+  base::JSONWriter::Write(msg_dict.get(), false, &msg_json);
 
   PostResponseToExternalPort(msg_json);
 }
@@ -141,7 +141,7 @@ void ExtensionPortContainer::OnExtensionHandleMessage(
   msg_dict.SetString(ext::kAutomationMessageDataKey, message);
 
   std::string msg_json;
-  JSONWriter::Write(&msg_dict, false, &msg_json);
+  base::JSONWriter::Write(&msg_dict, false, &msg_json);
 
   PostMessageToExternalPort(msg_json);
 }
@@ -153,7 +153,7 @@ void ExtensionPortContainer::OnExtensionPortDisconnected(int source_port_id) {
   msg_dict.SetInteger(ext::kAutomationPortIdKey, port_id_);
 
   std::string msg_json;
-  JSONWriter::Write(&msg_dict, false, &msg_json);
+  base::JSONWriter::Write(&msg_dict, false, &msg_json);
 
   PostMessageToExternalPort(msg_json);
 }
@@ -170,7 +170,7 @@ bool ExtensionPortContainer::InterceptMessageFromExternalHost(
     LOG(WARNING) << "Wrong origin on automation port message " << origin;
   }
 
-  scoped_ptr<Value> message_value(JSONReader::Read(message, false));
+  scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
   DCHECK(message_value->IsType(Value::TYPE_DICTIONARY));
   if (!message_value->IsType(Value::TYPE_DICTIONARY))
     return true;

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "base/string_escape.h"
 #include "base/utf_string_conversions.h"
+
+namespace base {
 
 #if defined(OS_WIN)
 static const char kPrettyPrintLineEnding[] = "\r\n";
@@ -101,11 +103,9 @@ void JSONWriter::BuildJSONString(const Value* const node,
         bool result = node->GetAsString(&value);
         DCHECK(result);
         if (escape) {
-          string_escape::JsonDoubleQuote(UTF8ToUTF16(value),
-                                         true,
-                                         json_string_);
+          JsonDoubleQuote(UTF8ToUTF16(value), true, json_string_);
         } else {
-          string_escape::JsonDoubleQuote(value, true, json_string_);
+          JsonDoubleQuote(value, true, json_string_);
         }
         break;
       }
@@ -186,9 +186,7 @@ void JSONWriter::BuildJSONString(const Value* const node,
 }
 
 void JSONWriter::AppendQuotedString(const std::wstring& str) {
-  string_escape::JsonDoubleQuote(WideToUTF16Hack(str),
-                                 true,
-                                 json_string_);
+  JsonDoubleQuote(WideToUTF16Hack(str), true, json_string_);
 }
 
 void JSONWriter::IndentLine(int depth) {
@@ -196,3 +194,5 @@ void JSONWriter::IndentLine(int depth) {
   // reallocating.
   json_string_->append(std::string(depth * 3, ' '));
 }
+
+}  // namespace base

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_escape.h"
+#include "base/json/string_escape.h"
 
 #include <string>
 
 #include "base/string_util.h"
 
-namespace string_escape {
+namespace base {
+
+namespace {
 
 // Try to escape |c| as a "SingleEscapeCharacter" (\n, etc).  If successful,
 // returns true and appends the escape sequence to |dst|.  This isn't required
@@ -72,6 +74,8 @@ void JsonDoubleQuoteT(const STR& str,
     dst->push_back('"');
 }
 
+}  // namespace
+
 void JsonDoubleQuote(const std::string& str,
                      bool put_in_quotes,
                      std::string* dst) {
@@ -84,4 +88,4 @@ void JsonDoubleQuote(const string16& str,
   JsonDoubleQuoteT(str, put_in_quotes, dst);
 }
 
-}  // namespace string_escape
+}  // namespace base

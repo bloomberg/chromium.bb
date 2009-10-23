@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/dom_ui_bindings.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
@@ -40,7 +40,7 @@ void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
     for (size_t i = 0; i < strings.size(); ++i) {
       value.Append(Value::CreateStringValue(strings[i]));
     }
-    JSONWriter::Write(&value, /* pretty_print= */ false, &content);
+    base::JSONWriter::Write(&value, /* pretty_print= */ false, &content);
   }
 
   // Send the message up to the browser.

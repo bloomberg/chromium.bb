@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
-#include "base/json_writer.h"
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "base/time.h"

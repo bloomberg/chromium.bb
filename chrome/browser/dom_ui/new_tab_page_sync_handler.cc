@@ -7,7 +7,6 @@
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 
 #include "app/l10n_util.h"
-#include "base/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_url_request_context.h"

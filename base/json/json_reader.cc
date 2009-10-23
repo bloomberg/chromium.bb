@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 
 #include "base/float_util.h"
 #include "base/logging.h"
@@ -10,6 +10,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+
+namespace base {
 
 static const JSONReader::Token kInvalidToken(JSONReader::Token::INVALID_TOKEN,
                                              0, 0);
@@ -636,3 +638,5 @@ void JSONReader::SetErrorMessage(const char* description,
 
   error_message_ = FormatErrorMessage(line_number, column_number, description);
 }
+
+}  // namespace base

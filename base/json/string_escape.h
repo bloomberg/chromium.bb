@@ -4,14 +4,14 @@
 //
 // This file defines utility functions for escaping strings.
 
-#ifndef BASE_STRING_ESCAPE_H__
-#define BASE_STRING_ESCAPE_H__
+#ifndef BASE_JSON_STRING_ESCAPE_H_
+#define BASE_JSON_STRING_ESCAPE_H_
 
 #include <string>
 
 #include "base/string16.h"
 
-namespace string_escape {
+namespace base {
 
 // Escape |str| appropriately for a JSON string litereal, _appending_ the
 // result to |dst|. This will create unicode escape sequences (\uXXXX).
@@ -27,6 +27,6 @@ void JsonDoubleQuote(const string16& str,
                      std::string* dst);
 
 
-}  // namespace string_escape
+}  // namespace base
 
-#endif  // BASE_STRING_ESCAPE_H__
+#endif  // BASE_JSON_STRING_ESCAPE_H_

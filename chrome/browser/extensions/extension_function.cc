@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-#include "base/json_writer.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
@@ -17,7 +17,7 @@ const std::string AsyncExtensionFunction::GetResult() {
   std::string json;
   // Some functions might not need to return any results.
   if (result_.get())
-    JSONWriter::Write(result_.get(), false, &json);
+    base::JSONWriter::Write(result_.get(), false, &json);
   return json;
 }
 

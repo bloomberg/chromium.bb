@@ -7,7 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/json_reader.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -613,7 +613,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 
   EXPECT_TRUE(MatchPattern(GetErrors()[0],
       std::string("Could not load extension from '*'. * ") +
-      JSONReader::kBadRootElementType)) << GetErrors()[0];
+      base::JSONReader::kBadRootElementType)) << GetErrors()[0];
 
   EXPECT_TRUE(MatchPattern(GetErrors()[1],
       std::string("Could not load extension from '*'. ") +

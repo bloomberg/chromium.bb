@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_JSON_WRITER_H_
-#define BASE_JSON_WRITER_H_
+#ifndef BASE_JSON_JSON_WRITER_H_
+#define BASE_JSON_JSON_WRITER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
 class Value;
+
+namespace base {
 
 class JSONWriter {
  public:
@@ -52,4 +54,6 @@ class JSONWriter {
   DISALLOW_COPY_AND_ASSIGN(JSONWriter);
 };
 
-#endif  // BASE_JSON_WRITER_H_
+}  // namespace base
+
+#endif  // BASE_JSON_JSON_WRITER_H_

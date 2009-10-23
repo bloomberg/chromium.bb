@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/json_reader.h"
-#include "base/json_writer.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -106,7 +106,7 @@ TEST(JSONValueSerializerTest, StringEscape) {
   std::string output_js;
   DictionaryValue valueRoot;
   valueRoot.SetString(L"all_chars", all_chars);
-  JSONWriter::Write(&valueRoot, false, &output_js);
+  base::JSONWriter::Write(&valueRoot, false, &output_js);
   ASSERT_EQ(expected_output, output_js);
 
   // Test JSONValueSerializer interface (uses JSONWriter).
@@ -191,7 +191,7 @@ TEST(JSONValueSerializerTest, AllowTrailingComma) {
 namespace {
 
 void ValidateJsonList(const std::string& json) {
-  scoped_ptr<Value> root(JSONReader::Read(json, false));
+  scoped_ptr<Value> root(base::JSONReader::Read(json, false));
   ASSERT_TRUE(root.get() && root->IsType(Value::TYPE_LIST));
   ListValue* list = static_cast<ListValue*>(root.get());
   ASSERT_EQ(1U, list->GetSize());
@@ -215,7 +215,7 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   scoped_ptr<Value> root;
 
   // It's ok to have a comment in a string.
-  root.reset(JSONReader::Read("[\"// ok\\n /* foo */ \"]", false));
+  root.reset(base::JSONReader::Read("[\"// ok\\n /* foo */ \"]", false));
   ASSERT_TRUE(root.get() && root->IsType(Value::TYPE_LIST));
   ListValue* list = static_cast<ListValue*>(root.get());
   ASSERT_EQ(1U, list->GetSize());
@@ -226,11 +226,11 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   ASSERT_EQ(L"// ok\n /* foo */ ", value);
 
   // You can't nest comments.
-  root.reset(JSONReader::Read("/* /* inner */ outer */ [ 1 ]", false));
+  root.reset(base::JSONReader::Read("/* /* inner */ outer */ [ 1 ]", false));
   ASSERT_FALSE(root.get());
 
   // Not a open comment token.
-  root.reset(JSONReader::Read("/ * * / [1]", false));
+  root.reset(base::JSONReader::Read("/ * * / [1]", false));
   ASSERT_FALSE(root.get());
 }
 
