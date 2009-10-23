@@ -55,11 +55,15 @@ const NPUTF8* ChromeFrameNPAPI::plugin_property_identifier_names_[] = {
 const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
   "postMessage",
   "postPrivateMessage",
+  "installExtension",
+  "loadExtension",
 };
 
 ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
   &ChromeFrameNPAPI::postMessage,
   &ChromeFrameNPAPI::postPrivateMessage,
+  &ChromeFrameNPAPI::installExtension,
+  &ChromeFrameNPAPI::loadExtension,
 };
 
 NPIdentifier
@@ -1379,6 +1383,87 @@ bool ChromeFrameNPAPI::postPrivateMessage(NPObject* npobject,
   std::string target(target_str.UTF8Characters, target_str.UTF8Length);
 
   automation_client_->ForwardMessageFromExternalHost(message, origin, target);
+
+  return true;
+}
+
+bool ChromeFrameNPAPI::installExtension(NPObject* npobject,
+                                        const NPVariant* args,
+                                        uint32_t arg_count,
+                                        NPVariant* result) {
+  if (arg_count > 2 || !NPVARIANT_IS_STRING(args[0]) ||
+      (arg_count == 2 && !NPVARIANT_IS_OBJECT(args[1]))) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!is_privileged_) {
+    DLOG(WARNING) << "installExtension invoked in non-privileged mode";
+    return false;
+  }
+
+  if (!automation_client_.get()) {
+    DLOG(WARNING) << "installExtension invoked with no automaton client";
+    NOTREACHED();
+    return false;
+  }
+
+  const NPString& crx_path_str = args[0].value.stringValue;
+  std::string crx_path_a(crx_path_str.UTF8Characters, crx_path_str.UTF8Length);
+  FilePath::StringType crx_path_u(UTF8ToWide(crx_path_a));
+  FilePath crx_path(crx_path_u);
+  NPObject* retained_function = npapi::RetainObject(args[1].value.objectValue);
+
+  automation_client_->InstallExtension(crx_path, retained_function);
+  // The response to this command will be returned in the OnExtensionInstalled
+  // delegate callback function.
+
+  return true;
+}
+
+void ChromeFrameNPAPI::OnExtensionInstalled(
+    const FilePath& path,
+    void* user_data,
+    AutomationMsg_ExtensionResponseValues res) {
+  ScopedNpVariant result;
+  NPVariant param;
+  INT32_TO_NPVARIANT(res, param);
+  NPObject* func = reinterpret_cast<NPObject*>(user_data);
+
+  InvokeDefault(func, param, &result);
+  npapi::ReleaseObject(func);
+}
+
+bool ChromeFrameNPAPI::loadExtension(NPObject* npobject,
+                                     const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* result) {
+  if (arg_count > 2 || !NPVARIANT_IS_STRING(args[0]) ||
+      (arg_count == 2 && !NPVARIANT_IS_OBJECT(args[1]))) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!is_privileged_) {
+    DLOG(WARNING) << "loadExtension invoked in non-privileged mode";
+    return false;
+  }
+
+  if (!automation_client_.get()) {
+    DLOG(WARNING) << "loadExtension invoked with no automaton client";
+    NOTREACHED();
+    return false;
+  }
+
+  const NPString& path_str = args[0].value.stringValue;
+  std::string path_a(path_str.UTF8Characters, path_str.UTF8Length);
+  FilePath::StringType path_u(UTF8ToWide(path_a));
+  FilePath path(path_u);
+  NPObject* retained_function = npapi::RetainObject(args[1].value.objectValue);
+
+  automation_client_->LoadExpandedExtension(path, retained_function);
+  // The response to this command will be returned in the OnExtensionInstalled
+  // delegate callback function.
 
   return true;
 }

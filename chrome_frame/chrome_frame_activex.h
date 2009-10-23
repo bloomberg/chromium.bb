@@ -95,10 +95,15 @@ END_MSG_MAP()
   virtual void ChromeFrameActivex::OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version);
   virtual void OnLoadFailed(int error_code, const std::string& url);
+  virtual void OnExtensionInstalled(const FilePath& path,
+      void* user_data, AutomationMsg_ExtensionResponseValues response);
 
   // Helper function to execute a function on a script IDispatch interface.
   HRESULT InvokeScriptFunction(const VARIANT& script, const std::string& param);
   HRESULT InvokeScriptFunction(const VARIANT& script, VARIANT* param);
+  HRESULT InvokeScriptFunction(const VARIANT& script,
+                               VARIANT* param,
+                               int param_count);
   HRESULT GetContainingDocument(IHTMLDocument2** doc);
   HRESULT GetDocumentWindow(IHTMLWindow2** window);
 

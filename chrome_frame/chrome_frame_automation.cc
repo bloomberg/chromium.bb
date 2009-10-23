@@ -78,6 +78,14 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
         InvokeCallback<Tuple1<AutomationMsg_NavigationResponseValues> >(msg,
               origin);
         break;
+      case AutomationMsg_InstallExtension::ID:
+        InvokeCallback<Tuple1<AutomationMsg_ExtensionResponseValues> >(msg,
+              origin);
+        break;
+      case AutomationMsg_LoadExpandedExtension::ID:
+        InvokeCallback<Tuple1<AutomationMsg_ExtensionResponseValues> >(msg,
+              origin);
+        break;
       default:
         NOTREACHED();
     }
@@ -596,6 +604,85 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
   IPC::SyncMessage* msg =
       new AutomationMsg_Find(0, tab_->handle(), params, NULL, NULL);
   automation_server_->SendAsAsync(msg, NULL, this);
+}
+
+// Class that maintains context during the async load/install extension
+// operation.  When done, InstallExtensionComplete is posted back to the UI
+// thread so that the users of ChromeFrameAutomationClient can be notified.
+class InstallExtensionContext {
+ public:
+  InstallExtensionContext(ChromeFrameAutomationClient* client,
+      const FilePath& crx_path, void* user_data) : client_(client),
+      crx_path_(crx_path), user_data_(user_data) {
+  }
+
+  ~InstallExtensionContext() {
+  }
+
+  void InstallExtensionComplete(AutomationMsg_ExtensionResponseValues res) {
+    client_->PostTask(FROM_HERE, NewRunnableMethod(client_,
+        &ChromeFrameAutomationClient::InstallExtensionComplete, crx_path_,
+        user_data_, res));
+    delete this;
+  }
+
+ private:
+  ChromeFrameAutomationClient* client_;
+  FilePath crx_path_;
+  void* user_data_;
+};
+
+void ChromeFrameAutomationClient::InstallExtension(
+    const FilePath& crx_path,
+    void* user_data) {
+  if (automation_server_ == NULL) {
+    InstallExtensionComplete(crx_path,
+                             user_data,
+                             AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
+    return;
+  }
+
+  InstallExtensionContext* ctx = new InstallExtensionContext(
+      this, crx_path, user_data);
+
+  IPC::SyncMessage* msg =
+      new AutomationMsg_InstallExtension(0, crx_path, NULL);
+
+  // The context will delete itself after it is called.
+  automation_server_->SendAsAsync(msg, NewCallback(ctx,
+      &InstallExtensionContext::InstallExtensionComplete), this);
+}
+
+void ChromeFrameAutomationClient::InstallExtensionComplete(
+    const FilePath& crx_path,
+    void* user_data,
+    AutomationMsg_ExtensionResponseValues res) {
+  DCHECK(PlatformThread::CurrentId() == ui_thread_id_);
+
+  if (chrome_frame_delegate_) {
+    chrome_frame_delegate_->OnExtensionInstalled(crx_path, user_data, res);
+  }
+}
+
+void ChromeFrameAutomationClient::LoadExpandedExtension(
+    const FilePath& path,
+    void* user_data) {
+  if (automation_server_ == NULL) {
+    InstallExtensionComplete(path,
+                             user_data,
+                             AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
+    return;
+  }
+
+  InstallExtensionContext* ctx = new InstallExtensionContext(
+      this, path, user_data);
+
+  IPC::SyncMessage* msg =
+      new AutomationMsg_LoadExpandedExtension(0, path, NULL);
+
+  // The context will delete itself after it is called.
+  automation_server_->SendAsAsync(msg, NewCallback(ctx,
+      &InstallExtensionContext::InstallExtensionComplete), this);
 }
 
 void ChromeFrameAutomationClient::CreateExternalTab() {

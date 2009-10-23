@@ -209,6 +209,15 @@ class ChromeFrameAutomationClient
                   FindInPageCase match_case,
                   bool find_next);
 
+  virtual void InstallExtension(const FilePath& crx_path, void* user_data);
+
+  virtual void LoadExpandedExtension(const FilePath& path, void* user_data);
+
+  virtual void InstallExtensionComplete(
+      const FilePath& path,
+      void* user_data,
+      AutomationMsg_ExtensionResponseValues res);
+
   TabProxy* tab() const { return tab_.get(); }
 
   BEGIN_MSG_MAP(ChromeFrameAutomationClient)

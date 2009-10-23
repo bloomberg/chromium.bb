@@ -11,7 +11,7 @@ import "ocidl.idl";
 
 [
   object,
-  uuid(B9F5EA20-C450-4f46-B70F-BFD3CA9A20C5),
+  uuid(FB243E4B-8AC2-4840-95F2-91B9AF9CFF10),
   dual,
   nonextensible,
   helpstring("IChromeFrame Interface"),
@@ -65,6 +65,14 @@ interface IChromeFrame : IDispatch {
   HRESULT useChromeNetwork([out, retval] VARIANT_BOOL* pVal);
   [propput, id(11)]
   HRESULT useChromeNetwork([in] VARIANT_BOOL newVal);
+
+  [id(12), hidden]
+  // This method is available only when the control is in privileged mode.
+  HRESULT installExtension([in] BSTR crx_path);
+
+  [id(13), hidden]
+  // This method is available only when the control is in privileged mode.
+  HRESULT loadExtension([in] BSTR extension_path);
 };
 
 [
@@ -95,6 +103,7 @@ typedef enum {
   CF_EVENT_DISPID_ONLOADERROR,
   CF_EVENT_DISPID_ONMESSAGE,
   CF_EVENT_DISPID_ONPRIVATEMESSAGE,
+  CF_EVENT_DISPID_ONEXTENSIONREADY,
   CF_EVENT_DISPID_ONREADYSTATECHANGED = DISPID_READYSTATECHANGE,
 } ChromeFrameEventDispId;
 
@@ -106,7 +115,7 @@ typedef enum {
 library ChromeTabLib {
   importlib("stdole2.tlb");
 
-  [uuid(A96B8A02-DD11-4936-8C0F-B2520289FABB)]
+  [uuid(388B5D64-CE67-415b-9B0F-745C56E868E7)]
   dispinterface DIChromeFrameEvents {
    properties:
     // None.
@@ -123,6 +132,10 @@ library ChromeTabLib {
     [id(CF_EVENT_DISPID_ONPRIVATEMESSAGE)]
     // This event is only fired when the control is in privileged mode.
     void onprivatemessage([in] IDispatch* event, [in] BSTR target);
+    [id(CF_EVENT_DISPID_ONEXTENSIONREADY)]
+    // This event is only fired when the control is in privileged mode.
+    // response is one of AutomationMsg_ExtensionResponseValues.
+    void onextensionready([in] BSTR path, [in] long response);
   };
 
   [uuid(BB1176EE-20DD-41DC-9D1E-AC1335C7BBB0)]

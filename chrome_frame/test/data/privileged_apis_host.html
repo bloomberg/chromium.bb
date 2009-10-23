@@ -25,16 +25,15 @@
           onFailure(testName, 1, 'exception in OnChromeFrameMessage');
         }
       }
-      
-      function OnChromeFrameLoaded(url) {
+
+      function tryPrivateMessage() {
         var cf = GetChromeFrame();
-        
+
         try {
           // Any message received by this listener is a failure.
           // This succeeds in FF, but throws an exception in IE.
           cf.addEventListener('onprivatemessage', OnPrivateMessage, false);
         } catch(e) {
-          cf.onprivatemessage = 
           appendStatus('addEventListener onprivatemessage threw exception')
         }
 
@@ -46,11 +45,50 @@
         } catch(e) {
         }
         appendStatus('After postPrivateMessage')
-        // The frame reflects this twice, first to a bogus target 
-        // and again to the default target '*'. We succeed if we 
+      }
+
+      function tryInstallExtension() {
+        var cf = GetChromeFrame();
+
+        try {
+          // Any message received by this listener is a failure.
+          // This succeeds in FF, but throws an exception in IE.
+          cf.installExtension('foo');
+          onFailure(testName, 1, 'installExtension should throw');
+        } catch(e) {
+          appendStatus('installExtension threw exception')
+        }
+
+        appendStatus('After installExtension')
+      }
+
+      function tryLoadExtension() {
+        var cf = GetChromeFrame();
+
+        try {
+          // Any message received by this listener is a failure.
+          // This succeeds in FF, but throws an exception in IE.
+          cf.loadExtension('foo');
+          onFailure(testName, 1, 'loadExtension should throw');
+        } catch(e) {
+          appendStatus('loadExtension threw exception')
+        }
+
+        appendStatus('After loadExtension')
+      }
+
+      function OnChromeFrameLoaded(url) {
+        tryPrivateMessage();
+        tryInstallExtension();
+        tryLoadExtension();
+
+        // The frame reflects this twice, first to a bogus target
+        // and again to the default target '*'. We succeed if we
         // get the reflected message to OnChromeFrameMessage and not to
         // OnPrivateMessage.
+        var cf = GetChromeFrame();
         cf.postMessage('succeed');
+        appendStatus('After cf.postMessage')
       }
 
       function GetChromeFrame() {

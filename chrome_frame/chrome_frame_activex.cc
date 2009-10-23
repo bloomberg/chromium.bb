@@ -43,6 +43,7 @@ ChromeFrameActivex::~ChromeFrameActivex() {
   DCHECK(onloaderror_.size() == 0);
   DCHECK(onload_.size() == 0);
   DCHECK(onreadystatechanged_.size() == 0);
+  DCHECK(onextensionready_.size() == 0);
 }
 
 LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
@@ -147,6 +148,14 @@ void ChromeFrameActivex::OnAutomationServerLaunchFailed(
   }
 }
 
+void ChromeFrameActivex::OnExtensionInstalled(
+    const FilePath& path,
+    void* user_data,
+    AutomationMsg_ExtensionResponseValues response) {
+  ScopedBstr path_str(path.value().c_str());
+  Fire_onextensionready(path_str, response);
+}
+
 HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
                                                  const std::string& param) {
   ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
@@ -155,12 +164,23 @@ HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
 
 HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
                                                  VARIANT* param) {
+  return InvokeScriptFunction(script_object, param, 1);
+}
+
+HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
+                                                 VARIANT* params,
+                                                 int param_count) {
+  DCHECK(param_count >= 0);
+  DCHECK(params);
+
   if (V_VT(&script_object) != VT_DISPATCH) {
     return S_FALSE;
   }
 
   CComPtr<IDispatch> script(script_object.pdispVal);
-  HRESULT hr = script.Invoke1(static_cast<DISPID>(DISPID_VALUE), param);
+  HRESULT hr = script.InvokeN(static_cast<DISPID>(DISPID_VALUE),
+                              params,
+                              param_count);
   // 0x80020101 == SCRIPT_E_REPORTED.
   // When the script we're invoking has an error, we get this error back.
   DLOG_IF(ERROR, FAILED(hr) && hr != 0x80020101) << "Failed to invoke script";
@@ -276,6 +296,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       &onloaderror_,
       &onload_,
       &onreadystatechanged_,
+      &onextensionready_,
     };
 
     for (int i = 0; i < arraysize(handlers); ++i)

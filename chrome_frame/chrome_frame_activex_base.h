@@ -115,6 +115,18 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                          args,
                          arraysize(args));
   }
+
+  void Fire_onextensionready(BSTR path, long response) {
+    // Arguments in reverse order to the function declaration, because
+    // that's what DISPPARAMS requires.
+    VARIANT args[2] = { { VT_I4, }, { VT_BSTR, } };
+    args[0].lVal = response;
+    args[1].bstrVal = path;
+
+    FireMethodWithParams(CF_EVENT_DISPID_ONEXTENSIONREADY,
+                         args,
+                         arraysize(args));
+  }
 };
 
 extern bool g_first_launch_by_process_;
@@ -749,12 +761,53 @@ END_MSG_MAP()
     return S_OK;
   }
 
+  STDMETHOD(installExtension)(BSTR crx_path) {
+    DCHECK(automation_client_.get());
+
+    if (NULL == crx_path) {
+      NOTREACHED();
+      return E_INVALIDARG;
+    }
+
+    if (!is_privileged_) {
+      DLOG(ERROR) << "Attempt to installExtension in non-privileged mode";
+      return E_ACCESSDENIED;
+    }
+
+    FilePath::StringType crx_path_str(crx_path);
+    FilePath crx_file_path(crx_path_str);
+
+    automation_client_->InstallExtension(crx_file_path, NULL);
+    return S_OK;
+  }
+
+  STDMETHOD(loadExtension)(BSTR path) {
+    DCHECK(automation_client_.get());
+
+    if (NULL == path) {
+      NOTREACHED();
+      return E_INVALIDARG;
+    }
+
+    if (!is_privileged_) {
+      DLOG(ERROR) << "Attempt to loadExtension in non-privileged mode";
+      return E_ACCESSDENIED;
+    }
+
+    FilePath::StringType path_str(path);
+    FilePath file_path(path_str);
+
+    automation_client_->LoadExpandedExtension(file_path, NULL);
+    return S_OK;
+  }
+
   // Returns the vector of event handlers for a given event (e.g. "load").
   // If the event type isn't recognized, the function fills in a descriptive
   // error (IErrorInfo) and returns E_INVALIDARG.
   HRESULT GetHandlersForEvent(BSTR event_type, EventHandlers** handlers) {
     DCHECK(handlers != NULL);
 
+    // TODO(tommi): make these if() statements data-driven.
     HRESULT hr = S_OK;
     const wchar_t* event_type_end = event_type + ::SysStringLen(event_type);
     if (LowerCaseEqualsASCII(event_type, event_type_end, "message")) {
@@ -767,13 +820,23 @@ END_MSG_MAP()
                                     "readystatechanged")) {
       *handlers = &onreadystatechanged_;
     } else if (LowerCaseEqualsASCII(event_type, event_type_end,
-                                   "privatemessage")) {
+                                    "privatemessage")) {
       // This event handler is only available in privileged mode.
-      if (!is_privileged_) {
+      if (is_privileged_) {
+        *handlers = &onprivatemessage_;
+      } else {
         Error("Event type 'privatemessage' is privileged");
-        return E_ACCESSDENIED;
+        hr = E_ACCESSDENIED;
       }
-      *handlers = &onprivatemessage_;
+    } else if (LowerCaseEqualsASCII(event_type, event_type_end,
+                                    "extensionready")) {
+      // This event handler is only available in privileged mode.
+      if (is_privileged_) {
+        *handlers = &onextensionready_;
+      } else {
+        Error("Event type 'extensionready' is privileged");
+        hr = E_ACCESSDENIED;
+      }
     } else {
       Error(StringPrintf("Event type '%ls' not found", event_type).c_str());
       hr = E_INVALIDARG;
@@ -896,6 +959,7 @@ END_MSG_MAP()
   EventHandlers onload_;
   EventHandlers onreadystatechanged_;
   EventHandlers onprivatemessage_;
+  EventHandlers onextensionready_;
 
   // The UrlmonUrlRequest instance instantiated for downloading the base URL.
   scoped_refptr<CComObject<UrlmonUrlRequest> > base_url_request_;

@@ -41,9 +41,8 @@ TEST(ChromeLauncher, SanitizeCommandLine) {
   CommandLine sanitized(L"dumbo.exe");
   chrome_launcher::SanitizeCommandLine(bad, &sanitized);
   EXPECT_TRUE(sanitized.HasSwitch(switches::kDisableMetrics));
-  EXPECT_TRUE(sanitized.HasSwitch(switches::kLoadExtension));
+  EXPECT_FALSE(sanitized.HasSwitch(switches::kLoadExtension));
   EXPECT_FALSE(sanitized.HasSwitch("no-such-switch"));
   EXPECT_FALSE(sanitized.HasSwitch(switches::kHomePage));
-
-  EXPECT_EQ(sanitized.GetSwitchValue(switches::kLoadExtension), L"foo");
 }
+

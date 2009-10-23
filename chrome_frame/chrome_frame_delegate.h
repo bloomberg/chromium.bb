@@ -21,6 +21,10 @@ class ChromeFrameDelegate {
   virtual void OnAutomationServerReady() = 0;
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) = 0;
+  virtual void OnExtensionInstalled(
+      const FilePath& path,
+      void* user_data,
+      AutomationMsg_ExtensionResponseValues response) = 0;
   virtual void OnMessageReceived(const IPC::Message& msg) = 0;
 
   // This remains in interface since we call it if Navigate()
@@ -52,8 +56,13 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnAutomationServerReady() {}
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) {}
+  virtual void OnExtensionInstalled(
+      const FilePath& path,
+      void* user_data,
+      AutomationMsg_ExtensionResponseValues response) {}
   virtual void OnLoadFailed(int error_code, const std::string& url) {}
   virtual void OnMessageReceived(const IPC::Message& msg);
+
   static bool IsTabMessage(const IPC::Message& message, int* tab_handle);
 
   virtual bool IsValid() const {
