@@ -447,7 +447,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           // to the console.
           return false;
 #endif  // defined(OS_MACOSX)
-        } else if (errno == ECONNRESET) {
+        } else if (errno == ECONNRESET || errno == EPIPE) {
           return false;
         } else {
           PLOG(ERROR) << "pipe error (" << pipe_ << ")";
@@ -812,6 +812,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         return false;
       }
 #endif  // OS_MACOSX
+      if (errno == EPIPE) {
+        Close();
+        return false;
+      }
       PLOG(ERROR) << "pipe error on " << fd_written;
       return false;
     }
