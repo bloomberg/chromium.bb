@@ -19,23 +19,27 @@ are <b>name</b> and <b>version</b>.
 
 <pre>
 {
-  <b>"<a href="#name">name</a>"</b>: "<em>My Extension</em>",
-  <b>"<a href="autoupdate.html">version</a>"</b>: "<em>versionString</em>",
+  <em>// Required</em>
+  "<a href="#name">name</a>": "<em>My Extension</em>",
+  "<a href="#version">version</a>": "<em>versionString</em>",
 
+  <em>// Recommended</em>
   "<a href="#description">description</a>": "<em>A plain text description</em>",
   "<a href="#icons">icons</a>": { ... },
-  "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
 
-  "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
+  <em>// Pick one (or none)</em>
   "<a href="browserAction.html">brower_action</a>": {...},
+  "<a href="pageAction.html">page_action</a>": {...},
+  "<a href="themes.html">theme</a>": {...},
+
+  <em>// Add any of these that you need</em>
+  "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
   "<a href="ntp.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="pageAction.html">page_action</a>": {...},
-  "<a href="#permissions">permissions</a>": [...],
-  "<a href="npapi.html">plugins</a>": [...],
-  "<a href="themes.html">theme</a>": {...},
-  "<a href="toolstrip.html">toolstrips</a>": [...],
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
+  "<a href="#permissions">permissions</a>": [...],
+  "<a href="npapi.html">plugins</a>": [...]
+  "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
 }
 </pre>
 
@@ -60,18 +64,6 @@ the browser's extension management UI
 and the extension gallery.
 </p>
 
-<h3 id="icon">icon</h3>
-
-<p>
-An icon that represents the extension.
-As a rule, you should use the <b>icons</b> field instead,
-so that you can specify icons in multiple sizes.
-Here's an example of using this field:
-</p>
-
-<pre>
-"icon": "icon.png",
-</pre>
 
 <h3 id="icons">icons</h3>
 
@@ -105,16 +97,23 @@ and the extension gallery.
 <h3 id="permissions">permissions</h3>
 
 <p>
-The capabilities the extension might use.
-A permission can be either one of a list of known strings
-(currently, either "tabs" or "bookmarks")
-or a match pattern,
-which gives access to one or more hosts.
-The idea is not to restrict what you can do,
-but to give advanced users an indication of what your extension
-will be able to do.
+An array of permissions that the extension might use.
+Each permission can be either one of a list of known strings
+(such as "tabs" or "bookmarks")
+or a match pattern
+that gives access to one or more hosts.
+These permissions are displayed to users before installation.
 Permissions might also help to limit damage
 if your extension is attacked.
+</p>
+
+<p>
+If an API requires you to declare a permission in the manifest,
+then its documentation tells you how to do so.
+For example,
+the <a href="tabs.html">Tabs</a> page
+shows you how to
+declare the "tabs" permission.
 </p>
 
 <p>
@@ -138,3 +137,50 @@ For more information, see
 <a href="bookmarks.html">Bookmarks</a>.
 </p>
 
+<h3 id="version">version</h3>
+
+<p>
+One to four dot-separated integers
+identifying the version of this extension.
+Examples:
+</p>
+
+<ul>
+  <li> <code>"version": "1"</code> </li>
+  <li> <code>"version": "1.0"</code> </li>
+  <li> <code>"version": "2.10.2"</code> </li>
+  <li> <code>"version": "3.1.2.4567"</code> </li>
+</ul>
+
+<p>
+The autoupdate system compares versions
+to determine whether an installed extension
+needs to be updated.
+If the published extension has a newer version string
+than the installed extension,
+then the extension is automatically updated.
+</p>
+
+<p>
+The comparison starts with the leftmost integers.
+If those integers are equal,
+the integers to the right are compared,
+and so on.
+For example, 1.2.0 is a newer version than 1.1.9.99999.
+</p>
+
+<p>
+A missing integer is equal to zero.
+For example, 1.1.9.99999 is newer than 1.1.
+</p>
+
+<p>
+For more information, see
+<a href="autoupdate.html">Autoupdating</a>.
+</p>
+
+<p class="comment">
+[PENDING: Once the gallery is published, point to it
+and make a big deal of the fact that autoupdating is free
+if you use the gallery.]
+</p>
