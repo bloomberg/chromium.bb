@@ -773,29 +773,24 @@ BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.h
 BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 
 // Linux debug media tests have spurious timeouts and it's annoying.  We have no idea why.
-BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
+BUG13907 BUG25094 LINUX DEBUG : LayoutTests/media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
+BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-collapse.html = PASS FAIL
+BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-ranges-1.html = PASS FAIL
+BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-reset.html = PASS FAIL
 
 // The first load event fires occasionally, ending the test early.
 BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
-
-// We have issues with our implementation of played time ranges.
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-collapse.html = FAIL
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-ranges-1.html = FAIL
-BUG13907 BUG25380 SLOW : LayoutTests/media/video-played-reset.html = FAIL
 
 // We output an extra playing event and video durations are different.
 BUG13907 SKIP : LayoutTests/media/video-loop.html = FAIL
 
 // We occasionally fail to perform the third seek.
 BUG13907 : LayoutTests/media/video-seeking.html = PASS FAIL
-
-// Seems to time out occasionally.
-BUG13907 : LayoutTests/media/progress-event.html = PASS TIMEOUT
-BUG13907 : LayoutTests/media/video-load-networkState.html = PASS TIMEOUT
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
 // The test uses setTimeout() and is flaky.
@@ -820,9 +815,6 @@ BUG13907 SKIP : LayoutTests/media/audio-constructor-src.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/media/video-source-add-src.html = TIMEOUT
-
-// Needs to use findMediaFile().
-BUG13907 SKIP : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
 
 // Seeks to the end of file, which results in ogg packets with no timestamps.
 BUG13907 SKIP : LayoutTests/media/event-attributes.html = TIMEOUT
