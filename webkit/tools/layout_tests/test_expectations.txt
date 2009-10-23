@@ -3019,7 +3019,6 @@ BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
 
-BUG21859 WIN-VISTA : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/forms/search-styled.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/text/whitespace/026.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/text/basic/006.html = FAIL
