@@ -366,7 +366,16 @@ void CookiesView::RemoveSelectedCookies() {
   }
 }
 
+void CookiesView::OnAnyModelUpdateStart() {
+  g_signal_handlers_block_by_func(
+      G_OBJECT(selection_), reinterpret_cast<gpointer>(OnSelectionChanged),
+      this);
+}
+
 void CookiesView::OnAnyModelUpdate() {
+  g_signal_handlers_unblock_by_func(
+      G_OBJECT(selection_), reinterpret_cast<gpointer>(OnSelectionChanged),
+      this);
   EnableControls();
 }
 

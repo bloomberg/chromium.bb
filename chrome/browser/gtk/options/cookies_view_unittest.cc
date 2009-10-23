@@ -142,6 +142,38 @@ TEST_F(CookiesViewTest, RemoveAll) {
   }
 }
 
+// When removing all items, if multiple items were selected the
+// OnSelectionChanged callback could get called while the gtk list view and the
+// CookiesTableModel were inconsistent.  Test that it doesn't crash.
+TEST_F(CookiesViewTest, RemoveAllWithAllSelected) {
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo"), "A=1");
+  monster->SetCookie(GURL("http://foo2"), "B=1");
+  CookiesView cookies_view(profile_.get());
+
+  gtk_tree_selection_select_all(cookies_view.selection_);
+  {
+    SCOPED_TRACE("Before removing");
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    CheckDetailsSensitivity(FALSE, cookies_view);
+    EXPECT_EQ(2, gtk_tree_model_iter_n_children(
+        GTK_TREE_MODEL(cookies_view.list_store_), NULL));
+  }
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_all_button_));
+  {
+    SCOPED_TRACE("After removing");
+    EXPECT_EQ(0u, monster->GetAllCookies().size());
+    EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    CheckDetailsSensitivity(FALSE, cookies_view);
+    EXPECT_EQ(0, gtk_tree_model_iter_n_children(
+        GTK_TREE_MODEL(cookies_view.list_store_), NULL));
+  }
+}
+
 TEST_F(CookiesViewTest, Remove) {
   net::CookieMonster* monster =
       profile_->GetRequestContext()->cookie_store()->GetCookieMonster();

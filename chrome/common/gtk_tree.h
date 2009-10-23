@@ -36,6 +36,9 @@ class ModelAdapter : public TableModelObserver {
     // Should fill in the column and row.
     virtual void SetColumnValues(int row, GtkTreeIter* iter) = 0;
 
+    // Called before any change to the TableModel.  Overriding optional.
+    virtual void OnAnyModelUpdateStart() {}
+
     // Called after any change to the TableModel.  Overriding optional.
     virtual void OnAnyModelUpdate() {}
 

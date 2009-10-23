@@ -80,6 +80,7 @@ void ModelAdapter::AddNodeToList(int row) {
 }
 
 void ModelAdapter::OnModelChanged() {
+  delegate_->OnAnyModelUpdateStart();
   gtk_list_store_clear(list_store_);
   delegate_->OnModelChanged();
   for (int i = 0; i < table_model_->RowCount(); ++i)
@@ -88,6 +89,7 @@ void ModelAdapter::OnModelChanged() {
 }
 
 void ModelAdapter::OnItemsChanged(int start, int length) {
+  delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;
   bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
                                           NULL, start);
@@ -103,6 +105,7 @@ void ModelAdapter::OnItemsChanged(int start, int length) {
 }
 
 void ModelAdapter::OnItemsAdded(int start, int length) {
+  delegate_->OnAnyModelUpdateStart();
   for (int i = 0; i < length; ++i) {
     AddNodeToList(start + i);
   }
@@ -110,6 +113,7 @@ void ModelAdapter::OnItemsAdded(int start, int length) {
 }
 
 void ModelAdapter::OnItemsRemoved(int start, int length) {
+  delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;
   bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
                                           NULL, start);

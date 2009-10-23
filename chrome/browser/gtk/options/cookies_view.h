@@ -33,6 +33,7 @@ class CookiesView : public gtk_tree::ModelAdapter::Delegate {
   static void Show(Profile* profile);
 
   // gtk_tree::ModelAdapter::Delegate implementation.
+  virtual void OnAnyModelUpdateStart();
   virtual void OnAnyModelUpdate();
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
@@ -140,6 +141,7 @@ class CookiesView : public gtk_tree::ModelAdapter::Delegate {
   friend class CookiesViewTest;
   FRIEND_TEST(CookiesViewTest, Empty);
   FRIEND_TEST(CookiesViewTest, RemoveAll);
+  FRIEND_TEST(CookiesViewTest, RemoveAllWithAllSelected);
   FRIEND_TEST(CookiesViewTest, Remove);
   FRIEND_TEST(CookiesViewTest, RemoveMultiple);
   FRIEND_TEST(CookiesViewTest, RemoveDefaultSelection);
