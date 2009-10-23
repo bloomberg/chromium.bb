@@ -7,6 +7,8 @@
 # Don't instrument code dealing with atomics (base::subtle)
 fun:*base*subtle*NoBarrier_Load*
 fun:*base*subtle*Release_Store*
+fun:*base*subtle*NoBarrier_Store*
+fun:*base*subtle*NoBarrier_CompareAndSwap*
 
 # we ignore the Security libraries for now since
 # their instrumentation is very slow.
