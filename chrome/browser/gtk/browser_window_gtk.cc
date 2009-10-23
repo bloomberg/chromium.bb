@@ -534,13 +534,13 @@ bool BrowserWindowGtk::next_window_should_use_compact_nav_ = false;
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
+       state_(GDK_WINDOW_STATE_WITHDRAWN),
 #if defined(OS_CHROMEOS)
        drag_active_(false),
        panel_controller_(NULL),
        compact_navigation_bar_(NULL),
        status_area_(NULL),
 #endif
-       state_(GDK_WINDOW_STATE_WITHDRAWN),
        frame_cursor_(NULL),
        is_active_(true),
        last_click_time_(0),
