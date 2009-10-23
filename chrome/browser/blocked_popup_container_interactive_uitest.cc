@@ -177,7 +177,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
 
 // Make sure that we refuse to close windows when a constrained popup is
 // displayed.
-TEST_F(BlockedPopupContainerInteractiveTest, WindowOpenWindowClosePopup) {
+TEST_F(BlockedPopupContainerInteractiveTest, FLAKY_WindowOpenWindowClosePopup) {
   NavigateMainTabTo("openclose_main.html");
   SimulateClickInCenterOf(window_);
 
