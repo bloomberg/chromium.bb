@@ -3210,3 +3210,9 @@ BUG_TONY WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.htm
 BUG_TONY : LayoutTests/storage/change-version-handle-reuse.html = FAIL
 BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
 BUG_TONY WIN LINUX : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
+
+// WebKit roll 49992:49997
+// hclam to add expected results.
+BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL
+// scherkus to add expected results.
+BUG_SCHERKUS : LayoutTests/media/video-pause-immediately.html = FAIL
