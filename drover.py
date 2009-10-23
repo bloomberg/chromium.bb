@@ -366,7 +366,7 @@ def main(options, args):
   else:
     url = TRUNK_URL
 
-  working = DEFAULT_WORKING
+  working = options.workdir or DEFAULT_WORKING
 
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
   os.system(command)
@@ -455,6 +455,8 @@ if __name__ == "__main__":
                            help='Branch to revert or merge from')
   option_parser.add_option('-r', '--revert', type="int",
                            help='Revision to revert')
+  option_parser.add_option('-w', '--workdir',
+                           help='subdir to use for the revert')
   option_parser.add_option('', '--revertbot', action='store_true',
                            default=False)
   option_parser.add_option('', '--revertbot-commit', action='store_true',
