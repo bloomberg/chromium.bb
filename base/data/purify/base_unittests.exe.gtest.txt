@@ -29,5 +29,5 @@ ObserverListThreadSafeTest.CrossThreadNotifications
 # see bug 10031
 SignatureVerifierTest.BasicTest
 
-#See issue 24341, this test is hanging in purify.
-FileUtilICUTest.ReplaceIllegalCharactersTest
+# See issue 24341 / 25598, this test is hanging in purify.
+FileUtilICUTest.*
