@@ -24,6 +24,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
+using WebKit::WebScriptController;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
@@ -74,12 +75,12 @@ void RenderViewTest::SetUp() {
   // hacky, but this is the world we live in...
   webkit_glue::SetJavaScriptFlags(L" --expose-gc");
   WebKit::initialize(&webkitclient_);
-  WebKit::registerExtension(BaseJsV8Extension::Get());
-  WebKit::registerExtension(JsonSchemaJsV8Extension::Get());
-  WebKit::registerExtension(EventBindings::Get());
-  WebKit::registerExtension(ExtensionApiTestV8Extension::Get());
-  WebKit::registerExtension(ExtensionProcessBindings::Get());
-  WebKit::registerExtension(RendererExtensionBindings::Get());
+  WebScriptController::registerExtension(BaseJsV8Extension::Get());
+  WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
+  WebScriptController::registerExtension(EventBindings::Get());
+  WebScriptController::registerExtension(ExtensionApiTestV8Extension::Get());
+  WebScriptController::registerExtension(ExtensionProcessBindings::Get());
+  WebScriptController::registerExtension(RendererExtensionBindings::Get());
   EventBindings::SetRenderThread(&render_thread_);
 
   // TODO(aa): Should some of this go to some other inheriting class?

@@ -36,30 +36,33 @@
 #include "V8Binding.h"
 #include "V8Proxy.h"
 
+using namespace WebCore;
+
 namespace WebKit {
 
-void registerExtension(v8::Extension* extension)
+void WebScriptController::registerExtension(v8::Extension* extension)
 {
-    WebCore::V8Proxy::registerExtension(extension, WebString());
+    V8Proxy::registerExtension(extension, WebString());
 }
 
-void registerExtension(v8::Extension* extension,
-                       const WebString& schemeRestriction)
+void WebScriptController::registerExtension(v8::Extension* extension,
+                                            const WebString& schemeRestriction)
 {
-    WebCore::V8Proxy::registerExtension(extension, schemeRestriction);
+    V8Proxy::registerExtension(extension, schemeRestriction);
 }
 
-void registerExtension(v8::Extension* extension, int extensionGroup)
+void WebScriptController::registerExtension(v8::Extension* extension,
+                                            int extensionGroup)
 {
-    WebCore::V8Proxy::registerExtension(extension, extensionGroup);
+    V8Proxy::registerExtension(extension, extensionGroup);
 }
 
-void enableV8SingleThreadMode()
+void WebScriptController::enableV8SingleThreadMode()
 {
-    WebCore::enableStringImplCache();
+    enableStringImplCache();
 }
 
-void flushConsoleMessages()
+void WebScriptController::flushConsoleMessages()
 {
     WebCore::V8Proxy::processConsoleMessages();
 }

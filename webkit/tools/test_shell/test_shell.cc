@@ -54,6 +54,7 @@ using WebKit::WebCanvas;
 using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
+using WebKit::WebScriptController;
 using WebKit::WebSize;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
@@ -195,7 +196,7 @@ void TestShell::Dump(TestShell* shell) {
   if ((shell == NULL) || ((params = shell->test_params()) == NULL))
     return;
 
-  WebKit::flushConsoleMessages();
+  WebScriptController::flushConsoleMessages();
   // Echo the url in the output so we know we're not getting out of sync.
   printf("#URL:%s\n", params->test_url.c_str());
 

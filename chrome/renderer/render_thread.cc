@@ -70,6 +70,7 @@ using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
 using WebKit::WebSecurityPolicy;
+using WebKit::WebScriptController;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
 using WebKit::WebView;
@@ -442,7 +443,7 @@ void RenderThread::EnsureWebKitInitialized() {
   webkit_client_.reset(new RendererWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
 
-  WebKit::enableV8SingleThreadMode();
+  WebScriptController::enableV8SingleThreadMode();
 
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage
@@ -458,43 +459,54 @@ void RenderThread::EnsureWebKitInitialized() {
 
 #if defined(OS_WIN)
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.
-  WebKit::registerExtension(extensions_v8::GearsExtension::Get());
+  WebScriptController::registerExtension(extensions_v8::GearsExtension::Get());
 #endif
-  WebKit::registerExtension(extensions_v8::IntervalExtension::Get());
-  WebKit::registerExtension(extensions_v8::LoadTimesExtension::Get());
-  WebKit::registerExtension(extensions_v8::ExternalExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::IntervalExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::LoadTimesExtension::Get());
+  WebScriptController::registerExtension(
+      extensions_v8::ExternalExtension::Get());
 
   const WebKit::WebString kExtensionScheme =
       WebKit::WebString::fromUTF8(chrome::kExtensionScheme);
 
-  WebKit::registerExtension(ExtensionProcessBindings::Get(), kExtensionScheme);
+  WebScriptController::registerExtension(
+      ExtensionProcessBindings::Get(), kExtensionScheme);
 
-  WebKit::registerExtension(BaseJsV8Extension::Get(),
-                            EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebKit::registerExtension(BaseJsV8Extension::Get(), kExtensionScheme);
-  WebKit::registerExtension(JsonSchemaJsV8Extension::Get(),
-                            EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebKit::registerExtension(JsonSchemaJsV8Extension::Get(), kExtensionScheme);
-  WebKit::registerExtension(EventBindings::Get(),
-                            EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebKit::registerExtension(EventBindings::Get(), kExtensionScheme);
-  WebKit::registerExtension(RendererExtensionBindings::Get(),
-                            EXTENSION_GROUP_CONTENT_SCRIPTS);
-  WebKit::registerExtension(RendererExtensionBindings::Get(), kExtensionScheme);
-  WebKit::registerExtension(ExtensionApiTestV8Extension::Get(),
-                            kExtensionScheme);
-  WebKit::registerExtension(ExtensionApiTestV8Extension::Get(),
-                            EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebScriptController::registerExtension(
+      BaseJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebScriptController::registerExtension(
+      BaseJsV8Extension::Get(), kExtensionScheme);
+  WebScriptController::registerExtension(
+      JsonSchemaJsV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get(),
+                                         kExtensionScheme);
+  WebScriptController::registerExtension(
+      EventBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebScriptController::registerExtension(EventBindings::Get(),
+                                         kExtensionScheme);
+  WebScriptController::registerExtension(
+      RendererExtensionBindings::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebScriptController::registerExtension(
+      RendererExtensionBindings::Get(), kExtensionScheme);
+  WebScriptController::registerExtension(
+      ExtensionApiTestV8Extension::Get(), kExtensionScheme);
+  WebScriptController::registerExtension(
+      ExtensionApiTestV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(switches::kEnableBenchmarking))
-    WebKit::registerExtension(extensions_v8::BenchmarkingExtension::Get());
+  if (command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    WebScriptController::registerExtension(
+        extensions_v8::BenchmarkingExtension::Get());
+  }
 
   if (command_line.HasSwitch(switches::kPlaybackMode) ||
       command_line.HasSwitch(switches::kRecordMode) ||
       command_line.HasSwitch(switches::kNoJsRandomness)) {
-    WebKit::registerExtension(extensions_v8::PlaybackExtension::Get());
+    WebScriptController::registerExtension(
+        extensions_v8::PlaybackExtension::Get());
   }
 
   if (RenderProcess::current()->initialized_media_library())

@@ -40,6 +40,8 @@
 
 static const size_t kPathBufSize = 2048;
 
+using WebKit::WebScriptController;
+
 namespace {
 
 // StatsTable initialization parameters.
@@ -215,10 +217,11 @@ int main(int argc, char* argv[]) {
   js_flags += L" --expose-gc";
   webkit_glue::SetJavaScriptFlags(js_flags);
   // Expose GCController to JavaScript.
-  WebKit::registerExtension(extensions_v8::GCExtension::Get());
+  WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
 
   if (parsed_command_line.HasSwitch(test_shell::kProfiler)) {
-    WebKit::registerExtension(extensions_v8::ProfilerExtension::Get());
+    WebScriptController::registerExtension(
+        extensions_v8::ProfilerExtension::Get());
   }
 
   // Load and initialize the stats table.  Attempt to construct a somewhat
@@ -235,7 +238,8 @@ int main(int argc, char* argv[]) {
   if (TestShell::CreateNewWindow(starting_url, &shell)) {
     if (record_mode || playback_mode) {
       platform.SetWindowPositionForRecording(shell);
-      WebKit::registerExtension(extensions_v8::PlaybackExtension::Get());
+      WebScriptController::registerExtension(
+          extensions_v8::PlaybackExtension::Get());
     }
 
     shell->Show(WebKit::WebNavigationPolicyNewWindow);
