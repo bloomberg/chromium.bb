@@ -3199,3 +3199,6 @@ BUG25611 : LayoutTests/storage/domstorage/quota.html = CRASH PASS
 
 // Webkit roll 49947:49957
 BUG_JOHNNYG WIN LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001.html = CRASH PASS
+
+// Got flaky with Webkit roll 49958:49961
+BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
