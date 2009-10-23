@@ -154,11 +154,7 @@ void Canvas::SizeStringInt(const std::wstring& text,
   std::string utf8 = WideToUTF8(text);
   pango_layout_set_text(layout, utf8.data(), utf8.size());
 
-  int chars_height;
-  pango_layout_get_size(layout, width, &chars_height);
-  *width /= PANGO_SCALE;
-  // Pango returns the height of the characters, not the height of the font.
-  *height = font.height();
+  pango_layout_get_pixel_size(layout, width, height);
 
   g_object_unref(layout);
   cairo_destroy(cr);
@@ -187,9 +183,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   pango_layout_set_text(layout, utf8.data(), utf8.size());
 
   int width, height;
-  pango_layout_get_size(layout, &width, &height);
-  width /= PANGO_SCALE;
-  height /= PANGO_SCALE;
+  pango_layout_get_pixel_size(layout, &width, &height);
 
   if (flags & Canvas::TEXT_VALIGN_TOP) {
     // Cairo should draw from the top left corner already.

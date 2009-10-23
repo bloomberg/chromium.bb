@@ -486,8 +486,13 @@ void AboutChromeView::DrawTextAndPositionUrl(gfx::Canvas* canvas,
     gfx::Size sz = link->GetPreferredSize();
     gfx::Insets insets = link->GetInsets();
     WrapIfWordDoesntFit(sz.width(), font.height(), position, bounds);
-    *rect = gfx::Rect(position->width(), position->height() - insets.top(),
-                      sz.width(), sz.height());
+    int x = position->width();
+    int y = position->height();
+
+    // Links have a border to allow them to be focused.
+    y -= insets.top();
+
+    *rect = gfx::Rect(x, y, sz.width(), sz.height());
 
     // Go from relative pixel coordinates (within the label we are drawing on)
     // to absolute pixel coordinates (relative to the top left corner of the

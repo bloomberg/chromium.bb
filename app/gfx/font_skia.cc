@@ -187,7 +187,6 @@ double Font::avg_width() {
     int text_width = GetStringWidth(
         L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     double dialog_units = (text_width / 26 + 1) / 2;
-
     avg_width_ = std::min(pango_width, dialog_units);
     pango_font_metrics_unref(pango_metrics);
     pango_font_description_free(pango_desc);

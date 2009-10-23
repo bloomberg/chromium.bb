@@ -33,8 +33,6 @@ namespace {
 const int kLeftBorder = 1;
 // Number of pixels to separate the clock from the next item on the right.
 const int kClockSeparation = 4;
-// Number of pixels to adjust the y value of the clock.
-const int kClockYAdjustment = 2;
 
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
@@ -172,10 +170,6 @@ void StatusAreaView::Layout() {
 
     // Handle odd number of pixels.
     cur_y += (height() - cur_size.height()) % 2;
-
-    // Adjustment to make clock line up right.
-    if (cur == clock_view_)
-      cur_y += kClockYAdjustment;
 
     // Put next in row horizontally, and center vertically.
     cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
