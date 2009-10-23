@@ -2816,7 +2816,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reload this page
       </message>
       <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">
-        Open the homepage
+        Open the home page
       </message>
       <message name="IDS_TOOLTIP_STAR" desc="The tooltip for bookmark button">
         Bookmark this page
@@ -3563,7 +3563,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         &lt;a jsvalues="href:reloadUrl"&gt;Reload&lt;/a&gt; this web page later.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
-        Go to the homepage of the site:
+        Go to the home page of the site:
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a web page fails to load, we provide a link to the help center to learn more about the failure.">
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
@@ -4020,17 +4020,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_HOMEPAGE_USE_URL" desc="The title of the 'Use this page' for the home page radio">
         Open this page:
       </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show home button on toolbar' checkbox">
-        Show Home button on the toolbar
-      </message>
+      <!-- Windows and Linux put this checkbox in the "home page" section of the prefs, Mac puts -->
+      <!-- it in a 'toolbar' section, so it does not need to say toolbar. -->
+      <if expr="os != 'darwin'">
+        <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show Home button on the toolbar' checkbox">
+          Show Home button on the toolbar
+        </message>
+      </if>
+      <if expr="os == 'darwin'">
+        <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show Home button' checkbox">
+          Show Home button
+        </message>
+      </if>
       
       <if expr="os == 'darwin'">
         <!-- Mac has a Toolbar group (IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON moved in this group) -->
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
           Toolbar:
         </message>
-        <message name="IDS_OPTIONS_PAGE_OPTION_SHOW_BUTTON" desc="The label of the 'Show Page and Option buttons on toolbar' checkbox">
-          Show Page and Option buttons on the toolbar
+        <message name="IDS_OPTIONS_PAGE_OPTION_SHOW_BUTTON" desc="The label of the 'Show Page and Tools menus on toolbar' checkbox">
+          Show Page and Tools menus
         </message>
       </if>
 
