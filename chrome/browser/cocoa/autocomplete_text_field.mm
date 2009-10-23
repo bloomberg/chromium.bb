@@ -188,4 +188,9 @@
   }
 }
 
+// Due to theming, parts of the field are transparent.
+- (BOOL)isOpaque {
+  return NO;
+}
+
 @end
