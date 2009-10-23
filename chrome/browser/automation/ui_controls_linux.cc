@@ -197,23 +197,24 @@ bool SendKeyPress(gfx::NativeWindow window,
                 (shift ? GDK_SHIFT_MASK : 0) |
                 (alt ? GDK_MOD1_MASK : 0);
 
-  guint gdk_key = base::GdkKeyCodeForWindowsKeyCode(key);
+  guint gdk_key = base::GdkKeyCodeForWindowsKeyCode(key, shift);
   rv = rv && SendKeyEvent(event_window, true, gdk_key, state);
   rv = rv && SendKeyEvent(event_window, false, gdk_key, state);
 
   if (alt) {
     guint state = (control ? GDK_CONTROL_MASK : 0) |
-                  (shift ? GDK_SHIFT_MASK : 0);
+                  (shift ? GDK_SHIFT_MASK : 0) | GDK_MOD1_MASK;
     rv = rv && SendKeyEvent(event_window, false, GDK_Alt_L, state);
   }
 
   if (shift) {
     rv = rv && SendKeyEvent(event_window, false, GDK_Shift_L,
-                            control ? GDK_CONTROL_MASK : 0);
+                            (control ? GDK_CONTROL_MASK : 0) | GDK_SHIFT_MASK);
   }
 
   if (control)
-    rv = rv && SendKeyEvent(event_window, false, GDK_Control_L, 0);
+    rv = rv && SendKeyEvent(event_window, false, GDK_Control_L,
+                            GDK_CONTROL_MASK);
 
   return rv;
 }

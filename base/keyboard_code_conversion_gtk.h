@@ -42,7 +42,7 @@ namespace base {
 
 base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
-int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode);
+int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift);
 
 } // namespace
 

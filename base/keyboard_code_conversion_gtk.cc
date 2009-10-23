@@ -411,7 +411,7 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
 }
 
 // TODO(jcampan): this method might be incomplete.
-int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode) {
+int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift) {
   switch (keycode) {
     case VKEY_NUMPAD0:
       return GDK_KP_0;
@@ -447,7 +447,7 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode) {
     case VKEY_BACK:
       return GDK_BackSpace;
     case VKEY_TAB:
-      return GDK_Tab;
+      return shift ? GDK_ISO_Left_Tab : GDK_Tab;
     case VKEY_CLEAR:
       return GDK_Clear;
     case VKEY_RETURN:
@@ -500,78 +500,54 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode) {
     case VKEY_HELP:
       return GDK_Help;
     case VKEY_0:
-      return GDK_0;
+      return shift ? GDK_parenright : GDK_0;
     case VKEY_1:
-      return GDK_1;
+      return shift ? GDK_exclam : GDK_1;
     case VKEY_2:
-      return GDK_2;
+      return shift ? GDK_at : GDK_2;
     case VKEY_3:
-      return GDK_3;
+      return shift ? GDK_numbersign : GDK_3;
     case VKEY_4:
-      return GDK_4;
+      return shift ? GDK_dollar : GDK_4;
     case VKEY_5:
-      return GDK_5;
+      return shift ? GDK_percent : GDK_5;
     case VKEY_6:
-      return GDK_6;
+      return shift ? GDK_asciicircum : GDK_6;
     case VKEY_7:
-      return GDK_7;
+      return shift ? GDK_ampersand : GDK_7;
     case VKEY_8:
-      return GDK_8;
+      return shift ? GDK_asterisk : GDK_8;
     case VKEY_9:
-      return GDK_9;
+      return shift ? GDK_parenleft : GDK_9;
 
     case VKEY_A:
-      return GDK_a;
     case VKEY_B:
-      return GDK_b;
     case VKEY_C:
-      return GDK_c;
     case VKEY_D:
-      return GDK_d;
     case VKEY_E:
-      return GDK_e;
     case VKEY_F:
-      return GDK_f;
     case VKEY_G:
-      return GDK_g;
     case VKEY_H:
-      return GDK_h;
     case VKEY_I:
-      return GDK_i;
     case VKEY_J:
-      return GDK_j;
     case VKEY_K:
-      return GDK_k;
     case VKEY_L:
-      return GDK_l;
     case VKEY_M:
-      return GDK_m;
     case VKEY_N:
-      return GDK_n;
     case VKEY_O:
-      return GDK_o;
     case VKEY_P:
-      return GDK_p;
     case VKEY_Q:
-      return GDK_q;
     case VKEY_R:
-      return GDK_r;
     case VKEY_S:
-      return GDK_s;
     case VKEY_T:
-      return GDK_t;
     case VKEY_U:
-      return GDK_u;
     case VKEY_V:
-      return GDK_v;
     case VKEY_W:
-      return GDK_w;
     case VKEY_X:
-      return GDK_x;
     case VKEY_Y:
-      return GDK_y;
     case VKEY_Z:
-      return GDK_z;
+      return (shift ? GDK_A : GDK_a) + (keycode - VKEY_A);
+
     case VKEY_LWIN:
       return GDK_Meta_L;
     case VKEY_RWIN:
@@ -584,27 +560,27 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode) {
       return GDK_Scroll_Lock;
 
     case VKEY_OEM_1:
-      return GDK_semicolon;
+      return shift ? GDK_colon : GDK_semicolon;
     case VKEY_OEM_PLUS:
-      return GDK_plus;
+      return shift ? GDK_plus : GDK_equal;
     case VKEY_OEM_COMMA:
-      return GDK_comma;
+      return shift ? GDK_less : GDK_comma;
     case VKEY_OEM_MINUS:
-      return GDK_minus;
+      return shift ? GDK_underscore : GDK_minus;
     case VKEY_OEM_PERIOD:
-      return GDK_period;
+      return shift ? GDK_greater : GDK_period;
     case VKEY_OEM_2:
-      return GDK_slash;
+      return shift ? GDK_question : GDK_slash;
     case VKEY_OEM_3:
-      return GDK_asciitilde;
+      return shift ? GDK_asciitilde : GDK_quoteleft;
     case VKEY_OEM_4:
-      return GDK_bracketleft;
+      return shift ? GDK_braceleft : GDK_bracketleft;
     case VKEY_OEM_5:
-      return GDK_backslash;
+      return shift ? GDK_bar : GDK_backslash;
     case VKEY_OEM_6:
-      return GDK_bracketright;
+      return shift ? GDK_braceright : GDK_bracketright;
     case VKEY_OEM_7:
-      return GDK_quoteright;
+      return shift ? GDK_quotedbl : GDK_quoteright;
 
     case VKEY_F1:
     case VKEY_F2:

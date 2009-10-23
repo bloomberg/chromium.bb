@@ -58,45 +58,12 @@ class BrowserFocusTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  void CheckViewHasFocus(ViewID vid) {
-    BrowserWindow* browser_window = browser()->window();
-    ASSERT_TRUE(browser_window);
-    gfx::NativeWindow window = browser_window->GetNativeHandle();
-    ASSERT_TRUE(window);
-#if defined(OS_WIN)
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(window);
-    ASSERT_TRUE(focus_manager);
-    EXPECT_EQ(vid, focus_manager->GetFocusedView()->GetID()) <<
-        "For view id " << vid;
-#elif defined(OS_LINUX)
-    GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
-    ASSERT_TRUE(widget);
-    EXPECT_TRUE(WidgetInFocusChain(GTK_WIDGET(window), widget)) <<
-        "For view id " << vid;
-#else
-    NOTIMPLEMENTED();
-#endif
+  bool IsViewFocused(ViewID vid) {
+    return ui_test_utils::IsViewFocused(browser(), vid);
   }
 
   void ClickOnView(ViewID vid) {
-    BrowserWindow* browser_window = browser()->window();
-    ASSERT_TRUE(browser_window);
-#if defined(TOOLKIT_VIEWS)
-    views::View* view =
-        reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid);
-#elif defined(OS_LINUX)
-    gfx::NativeWindow window = browser_window->GetNativeHandle();
-    ASSERT_TRUE(window);
-    GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
-#endif
-    ASSERT_TRUE(view);
-    ui_controls::MoveMouseToCenterAndPress(
-        view,
-        ui_controls::LEFT,
-        ui_controls::DOWN | ui_controls::UP,
-        new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    ui_test_utils::ClickOnView(browser(), vid);
   }
 
   static void HideNativeWindow(gfx::NativeWindow window) {
@@ -122,26 +89,6 @@ class BrowserFocusTest : public InProcessBrowserTest {
     NOTIMPLEMENTED();
 #endif
   }
-
- private:
-#if defined(OS_LINUX)
-  // Check if the focused widget for |root| is |target| or a child of |target|.
-  static bool WidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
-    GtkWidget* iter = root;
-
-    while (iter) {
-      if (iter == target)
-        return true;
-
-      if (!GTK_IS_CONTAINER(iter))
-        return false;
-
-      iter = GTK_CONTAINER(iter)->focus_child;
-    }
-
-    return false;
-  }
-#endif
 };
 
 class TestInterstitialPage : public InterstitialPage {
@@ -228,13 +175,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   ui_test_utils::RunMessageLoop();
 #endif
 
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   ClickOnView(VIEW_ID_TAB_CONTAINER);
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   ClickOnView(VIEW_ID_LOCATION_BAR);
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
@@ -247,18 +194,18 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
 
   // The focus should be on the Tab contents.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   // Now hide the window, show it again, the focus should not have changed.
   HideNativeWindow(window);
   ShowNativeWindow(window);
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   browser()->FocusLocationBar();
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   // Hide the window, show it again, the focus should not have changed.
   HideNativeWindow(window);
   ShowNativeWindow(window);
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // The rest of this test does not make sense on Linux because the behavior
   // of Activate() is not well defined and can vary by window manager.
@@ -283,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   // Switch to the 1st browser window, focus should still be on the location
   // bar and the second browser should have nothing focused.
   browser()->window()->Activate();
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   EXPECT_EQ(NULL, focus_manager2->GetFocusedView());
 
   // Switch back to the second browser, focus should still be on the page.
@@ -340,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 
       ViewID vid = kFocusPage[i][j] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
                                       VIEW_ID_LOCATION_BAR;
-      CheckViewHasFocus(vid);
+      ASSERT_TRUE(IsViewFocused(vid));
     }
   }
 }
@@ -357,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
   browser()->Find();
   ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             ASCIIToUTF16("a"), true, false, NULL);
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Focus the location bar.
   browser()->FocusLocationBar();
@@ -367,21 +314,21 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
                            false, NULL);
 
   // Focus should be on the recently opened tab page.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Select 1st tab, focus should still be on the location-bar.
   // (bug http://crbug.com/23296)
   browser()->SelectTabContentsAt(0, true);
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Now open the find box again, switch to another tab and come back, the focus
   // should return to the find box.
   browser()->Find();
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->SelectTabContentsAt(1, true);
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   browser()->SelectTabContentsAt(0, true);
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 
 // Background window does not steal focus.
@@ -447,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   PlatformThread::Sleep(2000);
 
   // Make sure the location bar is still focused.
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 
 // Focus traversal on a regular page.
@@ -476,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   // Test forward focus traversal.
   for (int i = 0; i < 3; ++i) {
     // Location bar should be focused.
-    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+    ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
@@ -510,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 3; ++i) {
     // Location bar should be focused.
-    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+    ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
@@ -551,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus should be on the page.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
@@ -578,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   // Test forward focus traversal.
   for (int i = 0; i < 2; ++i) {
     // Location bar should be focused.
-    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+    ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < 7; ++j) {
@@ -606,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 2; ++i) {
     // Location bar should be focused.
-    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+    ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
@@ -641,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Page should have focus.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   EXPECT_TRUE(browser()->GetSelectedTabContents()->render_view_host()->view()->
       HasFocus());
 
@@ -657,14 +604,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::RunMessageLoop();
 
   // The interstitial should have focus now.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   EXPECT_TRUE(interstitial_page->HasFocus());
 
   // Hide the interstitial.
   interstitial_page->DontProceed();
 
   // Focus should be back on the original page.
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
 // Make sure Find box can request focus, even when it is already open.
@@ -692,21 +639,21 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
       FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
 
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   browser()->FocusLocationBar();
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Now press Ctrl+F again and focus should move to the Find box.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
                                           false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Set focus to the page.
   ClickOnView(VIEW_ID_TAB_CONTAINER);
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Now press Ctrl+F again and focus should move to the Find box.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true, false,
@@ -717,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
-  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 
 // Makes sure the focus is in the right location when opening the different
@@ -725,20 +672,20 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
                            true, -1, false, NULL);
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 
 // Tests that focus goes where expected when using reload.
@@ -750,17 +697,17 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should stay on the location bar.
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open a regular page, focus the location bar, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
   browser()->FocusLocationBar();
-  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
 // Tests that focus goes where expected when using reload on a crashed tab.
@@ -774,5 +721,5 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }

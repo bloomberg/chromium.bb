@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 
@@ -121,6 +122,12 @@ int FindInPage(TabContents* tab,
                bool forward,
                bool case_sensitive,
                int* ordinal);
+
+// Returns true if the View is focused.
+bool IsViewFocused(const Browser* browser, ViewID vid);
+
+// Simulates a mouse click on a View in the browser.
+void ClickOnView(const Browser* browser, ViewID vid);
 
 // Register |observer| for the given |type| and run the message loop until
 // either the observer posts a quit task or we timeout.
