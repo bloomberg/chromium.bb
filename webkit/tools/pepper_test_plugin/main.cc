@@ -93,12 +93,6 @@ void Log(NPP instance, const char* format, ...) {
   browser->releaseobject(window_object);
 }
 
-NPInitializeRenderContextPtr initialize_render_context = NULL;
-NPFlushRenderContextPtr flush_render_context = NULL;
-
-void FlushCallback(NPRenderContext* context, void* user_data) {
-}
-
 }  // namespace
 
 // Plugin entry points
@@ -171,34 +165,12 @@ NPError NPP_New(NPMIMEType pluginType,
                 uint16 mode,
                 int16 argc, char* argn[], char* argv[],
                 NPSavedData* saved) {
-  if (!initialize_render_context) {
-    browser->getvalue(instance, NPNVInitializeRenderContextFunc,
-                      reinterpret_cast<void*>(&initialize_render_context));
-    CHECK(initialize_render_context);
-  }
-  if (!flush_render_context) {
-    browser->getvalue(instance, NPNVFlushRenderContextFunc,
-                      reinterpret_cast<void*>(&flush_render_context));
-    CHECK(flush_render_context);
-  }
-
   if (browser->version >= 14) {
     PluginObject* obj = reinterpret_cast<PluginObject*>(
         browser->createobject(instance, PluginObject::GetPluginClass()));
     instance->pdata = obj;
   }
 
-  // On Windows and Unix, plugins only get events if they are windowless.
-  browser->setvalue(instance, NPPVpluginWindowBool, NULL);
-
-  /* TODO(brettw) fill this out. It needs to be moved somewhere else until after the plugin has been initialized.
-  NPRenderContext context;
-  initialize_render_context(instance, NPRenderGraphicsRGBA, &context);
-  memset(context.u.graphicsRgba.region, 0x80, 1000);
-
-  NPFlushRenderContextCallbackPtr asdf = (NPFlushRenderContextCallbackPtr)&FlushCallback;
-  flush_render_context(instance, &context, asdf, NULL);
-  */
   return NPERR_NO_ERROR;
 }
 
@@ -212,6 +184,9 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
+  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+  if (obj)
+    obj->SetWindow(*window);
   return NPERR_NO_ERROR;
 }
 

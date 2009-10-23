@@ -27,6 +27,7 @@
 #define WEBKIT_TOOLS_PEPPER_TEST_PLUGIN_PLUGIN_OBJECT_H_
 
 #include "base/basictypes.h"
+#include "base/gfx/size.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
 extern NPNetscapeFuncs* browser;
@@ -41,10 +42,14 @@ class PluginObject {
   NPObject* header() { return &header_; }
   NPP npp() const { return npp_; }
 
+  void SetWindow(const NPWindow& window);
+
  private:
   NPObject header_;
   NPP npp_;
   NPObject* test_object_;
+
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };

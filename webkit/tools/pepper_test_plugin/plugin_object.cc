@@ -28,6 +28,9 @@
 #include <string>
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "webkit/tools/pepper_test_plugin/test_object.h"
 
 NPNetscapeFuncs* browser;
@@ -194,13 +197,56 @@ NPClass plugin_class = {
   PluginSetProperty,
 };
 
+// Bitmap painting -------------------------------------------------------------
+
+void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
+  SkRect rect;
+  rect.set(SkIntToScalar(0), SkIntToScalar(0),
+           SkIntToScalar(width), SkIntToScalar(height));
+  SkPath path;
+  path.addOval(rect);
+
+  // Create a gradient shader going from opaque green to transparent.
+  SkPaint paint;
+  paint.setAntiAlias(true);
+
+  SkColor grad_colors[2];
+  grad_colors[0] = SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00);
+  grad_colors[1] = SkColorSetARGB(0x00, 0x00, 0xFF, 0x00);
+  SkPoint grad_points[2];
+  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+  grad_points[1].set(SkIntToScalar(0), SkIntToScalar(height));
+  paint.setShader(SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode))
+      ->safeUnref();
+
+  canvas.drawPath(path, paint);
+}
+
+NPInitializeRenderContextPtr initialize_render_context = NULL;
+NPFlushRenderContextPtr flush_render_context = NULL;
+
+void FlushCallback(NPRenderContext* context, void* user_data) {
+}
+
 }  // namespace
+
 
 // PluginObject ----------------------------------------------------------------
 
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())) {
+  if (!initialize_render_context) {
+    browser->getvalue(npp_, NPNVInitializeRenderContextFunc,
+                      reinterpret_cast<void*>(&initialize_render_context));
+    CHECK(initialize_render_context);
+  }
+  if (!flush_render_context) {
+    browser->getvalue(npp_, NPNVFlushRenderContextFunc,
+                      reinterpret_cast<void*>(&flush_render_context));
+    CHECK(flush_render_context);
+  }
 }
 
 PluginObject::~PluginObject() {
@@ -210,4 +256,25 @@ PluginObject::~PluginObject() {
 // static
 NPClass* PluginObject::GetPluginClass() {
   return &plugin_class;
+}
+
+void PluginObject::SetWindow(const NPWindow& window) {
+  size_.set_width(window.width);
+  size_.set_height(window.height);
+
+  NPRenderContext context;
+  initialize_render_context(npp_, NPRenderGraphicsRGBA, &context);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
+  bitmap.setPixels(context.u.graphicsRgba.region);
+
+  SkCanvas canvas(bitmap);
+  DrawSampleBitmap(canvas, window.width, window.height);
+
+  // TODO(brettw) figure out why this cast is necessary, the functions seem to
+  // match. Could be a calling convention mismatch?
+  NPFlushRenderContextCallbackPtr callback =
+      reinterpret_cast<NPFlushRenderContextCallbackPtr>(&FlushCallback);
+  flush_render_context(npp_, &context, callback, NULL);
 }
