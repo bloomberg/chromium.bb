@@ -5,6 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 // Started failing with r29947. WebKit merge 49961:49992.
-IN_PROC_BROWSER_TEST_F(DISABLED_ExtensionApiTest, Storage) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Storage) {
   ASSERT_TRUE(RunExtensionTest("storage")) << message_;
 }
