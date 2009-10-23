@@ -37,7 +37,6 @@
 #ifndef O3D_PLUGIN_CROSS_MAIN_H_
 #define O3D_PLUGIN_CROSS_MAIN_H_
 
-#include <GL/glew.h>
 #include "core/cross/renderer_platform.h"
 
 #include <npupp.h>

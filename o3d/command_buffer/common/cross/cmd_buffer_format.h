@@ -141,7 +141,7 @@ namespace command_buffer {
 
 // GAPI commands.
 enum CommandId {
-  kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
+//  kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
   #define O3D_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
   O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)

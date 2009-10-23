@@ -15,7 +15,7 @@
     {
       'target_name': 'gl_libs',
       'type': 'none',
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           '../../<(glewdir)/include',
         ],
@@ -23,7 +23,7 @@
       'conditions': [
         [ 'OS=="linux"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'defines': [
                 'GL_GLEXT_PROTOTYPES',
               ],
@@ -42,7 +42,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
               ],
@@ -51,7 +51,7 @@
         ],
         [ 'OS=="win"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'libraries': [
                 '-lOpenGL32.lib',
                 '../../<(glewdir)/lib/glew32.lib',
@@ -65,7 +65,7 @@
       'target_name': 'cg_libs',
       'type': 'none',
       'hard_dependency': 1,
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           '../../<(cgdir)/include',
         ],
@@ -73,7 +73,7 @@
       'conditions': [
         [ 'OS=="linux"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'scons_variable_settings': {
                 'LIBPATH': [
                   '<(PRODUCT_DIR)',
@@ -88,7 +88,7 @@
         ],
         [ 'OS=="win"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'libraries': [
                 "../../<(cgdir)/lib/cg.lib",
                 "../../<(cgdir)/lib/cgD3D9.lib",
@@ -100,7 +100,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'mac_framework_dirs': [
                 "<(PRODUCT_DIR)/Library/Frameworks",
               ],
@@ -156,7 +156,7 @@
           {
             'target_name': 'dx_dll',
             'type': 'none',
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'include_dirs': [
                 '$(DXSDK_DIR)/Include',
               ],

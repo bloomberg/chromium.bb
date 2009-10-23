@@ -33,6 +33,8 @@
 #ifndef O3D_CORE_WIN_DISPLAY_WINDOW_WIN_H_
 #define O3D_CORE_WIN_DISPLAY_WINDOW_WIN_H_
 
+#include <windows.h>
+
 #include "core/cross/display_window.h"
 
 namespace o3d {
