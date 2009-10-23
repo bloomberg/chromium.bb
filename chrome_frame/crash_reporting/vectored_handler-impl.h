@@ -57,7 +57,7 @@ LONG WINAPI VectoredHandlerT<E>::VectoredHandler(
   }
 
   // Ignore custom exception codes.
-  // MSXML likes to raise 0xC0000001 while parsing.
+  // MSXML likes to raise 0xE0000001 while parsing.
   // Note the C++ SEH (0xE06D7363) also fails in that range.
   if (exceptionCode & APPLICATION_ERROR_MASK) {
     return ExceptionContinueSearch;
