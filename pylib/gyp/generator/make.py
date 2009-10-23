@@ -970,7 +970,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     # Our root_makefile lives at the source root.  Compute the relative path
     # from there to the output_file for including.
-    submakefile_path = gyp.common.RelativePath(output_file, options.depth)
+    submakefile_path = gyp.common.RelativePath(output_file,
+                                               os.path.dirname(makefile_path))
     root_makefile.write('include ' + submakefile_path + "\n")
 
   # Write the target to regenerate the Makefile.
