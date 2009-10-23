@@ -83,8 +83,8 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
 
   // The order here is important!
   bridge_->NotifyStarted();
-  if ((services_supported & HOME_PAGE) && !cancelled())
-    ImportHomepage();  // Doesn't have a UI item.
+  // In keeping with import on other platforms (and for other browsers), we
+  // don't import the home page (since it may lead to a useless homepage).
   if ((services_supported & HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(HISTORY);
     ImportHistory();
