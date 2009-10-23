@@ -389,9 +389,9 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
             return;
 
         this.children.sort(comparator);
-        var childCount = this.children.length;           
+        var childCount = this.children.length;
         for (var childIndex = 0; childIndex < childCount; ++childIndex)
-            this.children[childIndex]._recalculateSiblings(childIndex);            
+            this.children[childIndex]._recalculateSiblings(childIndex);
         for (var i = 0; i < this.children.length; ++i) {
             var child = this.children[i];
             if (!force && (!child.expanded || child.lastComparator === comparator))
