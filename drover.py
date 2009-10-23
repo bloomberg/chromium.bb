@@ -343,12 +343,19 @@ def text_prompt(question, default):
   return answer
 
 def main(options, args):
+  revision = options.revert or options.merge
+
+  # Initialize some variables used below. They can be overwritten by
+  # the drover.properties file.
   BASE_URL = "svn://chrome-svn/chrome"
   TRUNK_URL = BASE_URL + "/trunk/src"
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
-  DEFAULT_WORKING = "working"
   SKIP_CHECK_WORKING = True
   PROMPT_FOR_AUTHOR = False
+
+  DEFAULT_WORKING = "drover_" + str(revision)
+  if options.branch:
+    DEFAULT_WORKING += ("_" + options.branch)
 
   # Override the default properties if there is a drover.properties file.
   global file_pattern_
@@ -358,8 +365,6 @@ def main(options, args):
     file.close()
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN   
-
-  revision = options.revert or options.merge
 
   if options.revert and options.branch:
     url = BRANCH_URL.replace("$branch", options.branch) 
