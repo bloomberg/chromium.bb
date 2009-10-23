@@ -333,6 +333,14 @@ void TabContentsViewMac::Observe(NotificationType type,
 
   // Do not fire shortcuts on key up.
   if ([event type] == NSKeyDown) {
+    // Send the event to the menu before sending it to the browser/window
+    // shortcut handling, so that if a user configures cmd-left to mean
+    // "previous tab", it takes precedence over the built-in "history back"
+    // binding. Other than that, the |redispatchEvent| call would take care of
+    // invoking the original menu item shortcut as well.
+    if ([[NSApp mainMenu] performKeyEquivalent:event])
+      return;
+
     if ([window handleExtraBrowserKeyboardShortcut:event])
       return YES;
     if ([window handleExtraWindowKeyboardShortcut:event])
