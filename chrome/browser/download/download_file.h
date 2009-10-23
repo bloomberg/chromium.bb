@@ -51,6 +51,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
+#include "chrome/browser/power_save_blocker.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {
@@ -152,6 +153,9 @@ class DownloadFile {
 
   // Whether the download is still receiving data.
   bool in_progress_;
+
+  // RAII handle to keep the system from sleeping while we're downloading.
+  PowerSaveBlocker dont_sleep_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFile);
 };

@@ -65,7 +65,8 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info)
       request_id_(info->request_id),
       bytes_so_far_(0),
       path_renamed_(false),
-      in_progress_(true) {
+      in_progress_(true),
+      dont_sleep_(true) {
 }
 
 DownloadFile::~DownloadFile() {
