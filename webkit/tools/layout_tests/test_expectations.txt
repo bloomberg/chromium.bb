@@ -2633,7 +2633,6 @@ BUG9798 : LayoutTests/fast/forms/submit-to-url-fragment.html = PASS CRASH
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : LayoutTests/transitions/zero-duration-in-list.html = PASS TEXT
 BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
-BUG9798 WIN LINUX : LayoutTests/fast/dom/defaultView.html = PASS TEXT
 BUG9798 LINUX DEBUG : LayoutTests/svg/custom/animate-path-discrete.svg = PASS IMAGE+TEXT
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-mask-transitions.html = PASS TEXT
 BUG9798 MAC : LayoutTests/http/tests/security/xssAuditor/faux-script1.html = PASS TIMEOUT
@@ -3202,3 +3201,25 @@ BUG_JOHNNYG WIN LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001
 
 // Got flaky with Webkit roll 49958:49961
 BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
+
+// WebKit roll 49961:49992
+// Rebaseline after http://trac.webkit.org/changeset/49985
+BUG_TONY : LayoutTests/editing/execCommand/4641880-2.html = FAIL
+BUG_TONY : LayoutTests/editing/execCommand/4916541.html = FAIL
+BUG_TONY : LayoutTests/editing/execCommand/5138441.html = FAIL
+BUG_TONY : LayoutTests/editing/execCommand/5481523.html = FAIL
+BUG_TONY : LayoutTests/editing/execCommand/indent-selection.html = FAIL
+BUG_TONY : LayoutTests/editing/inserting/5994480-2.html = FAIL
+BUG_TONY WIN LINUX : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
+// Added in http://trac.webkit.org/changeset/49990
+BUG_TONY : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
+// Missing results
+BUG_TONY : LayoutTests/editing/execCommand/indent-paragraphs.html = FAIL
+BUG_TONY WIN LINUX SKIP : LayoutTests/fast/dom/defaultView.html = FAIL
+// Unknown
+BUG_TONY : LayoutTests/fast/dom/delete-contents.html = FAIL
+BUG_TONY : LayoutTests/fast/js/global-function-resolve.html = FAIL
+BUG_TONY WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
+BUG_TONY : LayoutTests/storage/change-version-handle-reuse.html = FAIL
+BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
+BUG_TONY WIN LINUX : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
