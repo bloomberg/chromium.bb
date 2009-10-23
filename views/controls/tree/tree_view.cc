@@ -450,7 +450,8 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
       if (controller_) {
         NMTVKEYDOWN* key_down_message =
             reinterpret_cast<NMTVKEYDOWN*>(l_param);
-        controller_->OnTreeViewKeyDown(key_down_message->wVKey);
+        controller_->OnTreeViewKeyDown(
+            win_util::WinToKeyboardCode(key_down_message->wVKey));
       }
       break;
 

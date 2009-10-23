@@ -36,7 +36,7 @@ class TreeViewController {
   }
 
   // Invoked when a key is pressed on the tree view.
-  virtual void OnTreeViewKeyDown(unsigned short virtual_keycode) {}
+  virtual void OnTreeViewKeyDown(base::KeyboardCode keycode) {}
 };
 
 // TreeView -------------------------------------------------------------------

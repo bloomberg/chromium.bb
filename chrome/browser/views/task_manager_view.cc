@@ -215,7 +215,7 @@ class TaskManagerView : public views::View,
   // views::TableViewObserver implementation.
   virtual void OnSelectionChanged();
   virtual void OnDoubleClick();
-  virtual void OnKeyDown(unsigned short virtual_keycode);
+  virtual void OnKeyDown(base::KeyboardCode keycode);
 
   // views::LinkController implementation.
   virtual void LinkActivated(views::Link* source, int event_flags);
@@ -582,8 +582,8 @@ void TaskManagerView::OnDoubleClick() {
   ActivateFocusedTab();
 }
 
-void TaskManagerView::OnKeyDown(unsigned short virtual_keycode) {
-  if (virtual_keycode == base::VKEY_RETURN)
+void TaskManagerView::OnKeyDown(base::KeyboardCode keycode) {
+  if (keycode == base::VKEY_RETURN)
     ActivateFocusedTab();
 }
 

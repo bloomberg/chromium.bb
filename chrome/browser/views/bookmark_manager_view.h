@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_MANAGER_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_MANAGER_VIEW_H_
 
+#include "base/keyboard_codes.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -112,11 +113,11 @@ class BookmarkManagerView : public views::View,
   virtual void OnDoubleClick();
   virtual void OnMiddleClick();
   virtual void OnTableViewDelete(views::TableView* table);
-  virtual void OnKeyDown(unsigned short virtual_keycode);
+  virtual void OnKeyDown(base::KeyboardCode keycode);
 
   // TreeViewController methods.
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
-  virtual void OnTreeViewKeyDown(unsigned short virtual_keycode);
+  virtual void OnTreeViewKeyDown(base::KeyboardCode keycode);
 
 #if defined(BROWSER_SYNC)
   // views::ButtonListener method.

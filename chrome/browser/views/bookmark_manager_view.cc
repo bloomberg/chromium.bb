@@ -103,31 +103,31 @@ class ImportObserverImpl : public ImportObserver {
 
 // Converts a virtual keycode into the CutCopyPasteType.
 BookmarkManagerView::CutCopyPasteType KeyCodeToCutCopyPaste(
-    unsigned short virtual_keycode) {
-  switch (virtual_keycode) {
-    case VK_INSERT:
+    base::KeyboardCode keycode) {
+  switch (keycode) {
+    case base::VKEY_INSERT:
       if (GetKeyState(VK_CONTROL) < 0)
         return BookmarkManagerView::COPY;
       if (GetKeyState(VK_SHIFT) < 0)
         return BookmarkManagerView::PASTE;
       return BookmarkManagerView::NONE;
 
-    case VK_DELETE:
+    case base::VKEY_DELETE:
       if (GetKeyState(VK_SHIFT) < 0)
         return BookmarkManagerView::CUT;
       return BookmarkManagerView::NONE;
 
-    case 'C':
+    case base::VKEY_C:
       if (GetKeyState(VK_CONTROL) < 0)
         return BookmarkManagerView::COPY;
       return BookmarkManagerView::NONE;
 
-    case 'V':
+    case base::VKEY_V:
       if (GetKeyState(VK_CONTROL) < 0)
         return BookmarkManagerView::PASTE;
       return BookmarkManagerView::NONE;
 
-    case 'X':
+    case base::VKEY_X:
       if (GetKeyState(VK_CONTROL) < 0)
         return BookmarkManagerView::CUT;
       return BookmarkManagerView::NONE;
@@ -436,9 +436,9 @@ void BookmarkManagerView::OnTableViewDelete(views::TableView* table) {
   }
 }
 
-void BookmarkManagerView::OnKeyDown(unsigned short virtual_keycode) {
-  switch (virtual_keycode) {
-    case VK_RETURN: {
+void BookmarkManagerView::OnKeyDown(base::KeyboardCode keycode) {
+  switch (keycode) {
+    case base::VKEY_RETURN: {
       std::vector<const BookmarkNode*> selected_nodes = GetSelectedTableNodes();
       if (selected_nodes.size() == 1 && selected_nodes[0]->is_folder()) {
         SelectInTree(selected_nodes[0]);
@@ -450,7 +450,7 @@ void BookmarkManagerView::OnKeyDown(unsigned short virtual_keycode) {
       break;
     }
 
-    case VK_BACK: {
+    case base::VKEY_BACK: {
       const BookmarkNode* selected_folder = GetSelectedFolder();
       if (selected_folder != NULL &&
           selected_folder->GetParent() != GetBookmarkModel()->root_node()) {
@@ -460,7 +460,7 @@ void BookmarkManagerView::OnKeyDown(unsigned short virtual_keycode) {
     }
 
     default:
-      OnCutCopyPaste(KeyCodeToCutCopyPaste(virtual_keycode), true);
+      OnCutCopyPaste(KeyCodeToCutCopyPaste(keycode), true);
       break;
   }
 }
@@ -503,9 +503,9 @@ void BookmarkManagerView::OnTreeViewSelectionChanged(
   SetTableModel(new_table_model, table_parent_node, is_search);
 }
 
-void BookmarkManagerView::OnTreeViewKeyDown(unsigned short virtual_keycode) {
-  switch (virtual_keycode) {
-    case VK_DELETE: {
+void BookmarkManagerView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
+  switch (keycode) {
+    case base::VKEY_DELETE: {
       const BookmarkNode* node = GetSelectedFolder();
       if (!node || node->GetParent() == GetBookmarkModel()->root_node())
         return;
@@ -516,7 +516,7 @@ void BookmarkManagerView::OnTreeViewKeyDown(unsigned short virtual_keycode) {
     }
 
     default:
-      OnCutCopyPaste(KeyCodeToCutCopyPaste(virtual_keycode), false);
+      OnCutCopyPaste(KeyCodeToCutCopyPaste(keycode), false);
       break;
   }
 }
