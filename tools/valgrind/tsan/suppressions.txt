@@ -89,6 +89,14 @@
   fun:*base*ThreadD*E*
 }
 
+{
+  bug_25645
+  ThreadSanitizer:Race
+  fun:*WTF*RefCountedBase*ref*
+  ...
+  fun:*WebCore*StringImpl*
+}
+
 ############################
 # Data races in tests
 
