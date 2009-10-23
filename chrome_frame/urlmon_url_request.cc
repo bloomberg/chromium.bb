@@ -367,7 +367,7 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   InternetGetCookie(url_for_persistent_cookies.c_str(), NULL, NULL,
                     &cookie_size);
   if (cookie_size) {
-    scoped_ptr<wchar_t> cookies(new wchar_t[cookie_size + 1]);
+    scoped_array<wchar_t> cookies(new wchar_t[cookie_size + 1]);
     if (!InternetGetCookie(url_for_persistent_cookies.c_str(), NULL,
                            cookies.get(), &cookie_size)) {
       NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();

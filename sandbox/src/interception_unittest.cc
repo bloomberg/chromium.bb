@@ -127,7 +127,7 @@ TEST(InterceptionManagerTest, BufferLayout1) {
   ASSERT_EQ(18, interceptions.interceptions_.size());
 
   size_t buffer_size = interceptions.GetBufferSize();
-  scoped_ptr<BYTE> local_buffer(new BYTE[buffer_size]);
+  scoped_array<BYTE> local_buffer(new BYTE[buffer_size]);
 
   ASSERT_TRUE(interceptions.SetupConfigBuffer(local_buffer.get(),
                                               buffer_size));
@@ -179,7 +179,7 @@ TEST(InterceptionManagerTest, BufferLayout2) {
   ASSERT_EQ(5, interceptions.interceptions_.size());
 
   size_t buffer_size = interceptions.GetBufferSize();
-  scoped_ptr<BYTE> local_buffer(new BYTE[buffer_size]);
+  scoped_array<BYTE> local_buffer(new BYTE[buffer_size]);
 
   ASSERT_TRUE(interceptions.SetupConfigBuffer(local_buffer.get(),
                                               buffer_size));

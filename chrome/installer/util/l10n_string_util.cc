@@ -233,7 +233,7 @@ std::wstring GetLocalizedEulaResource() {
   std::wstring url_path =
       StringPrintf(L"res://%ls/#23/%ls", full_exe_path, resource);
   DWORD count = url_path.size() * 3;
-  scoped_ptr<wchar_t> url_canon(new wchar_t[count]);
+  scoped_array<wchar_t> url_canon(new wchar_t[count]);
   HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(),
                                   &count, URL_ESCAPE_UNSAFE);
   if (SUCCEEDED(hr))

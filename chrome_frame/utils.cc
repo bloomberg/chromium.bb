@@ -361,7 +361,7 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
     if (readonly_resource_data && version_resource_size) {
       // Copy data as VerQueryValue tries to modify the data. This causes
       // exceptions and heap corruption errors if debugger is attached.
-      scoped_ptr<char> data(new char[version_resource_size]);
+      scoped_array<char> data(new char[version_resource_size]);
       memcpy(data.get(), readonly_resource_data, version_resource_size);
       if (data.get()) {
         VS_FIXEDFILEINFO* ver_info = NULL;

@@ -85,7 +85,7 @@ NTSTATUS PatchNtdll(const char* function, bool relaxed) {
   // Any pointer will do as an interception_entry_point
   void* function_entry = resolver;
   size_t thunk_size = resolver->GetThunkSize();
-  scoped_ptr<char> thunk(new char[thunk_size]);
+  scoped_array<char> thunk(new char[thunk_size]);
   uint32 used;
 
   NTSTATUS ret = resolver->Setup(ntdll_base, NULL, function, NULL,

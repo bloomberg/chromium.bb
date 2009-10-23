@@ -89,7 +89,7 @@ bool InterceptionManager::InitializeInterceptions() {
     return true;  // Nothing to do here
 
   size_t buffer_bytes = GetBufferSize();
-  scoped_ptr<char> local_buffer(new char[buffer_bytes]);
+  scoped_array<char> local_buffer(new char[buffer_bytes]);
 
   if (!SetupConfigBuffer(local_buffer.get(), buffer_bytes))
     return false;
