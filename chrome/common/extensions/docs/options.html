@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.test</title></head><body>  <div id="container">
+  <title>Options</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -87,7 +87,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>chrome.test</h1>
+        <h1>Options</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -112,7 +112,7 @@
                 <ul>
                   <li><a href="bookmarks.html">Bookmarks</a></li>
                   <li><a href="events.html">Events</a></li>
-                  <li><a href="options.html">Options Page</a></li>
+                  <li class="leftNavSelected">Options Page</li>
                   <li><a href="tabs.html">Tabs</a></li>
                   <li><a href="windows.html">Windows</a></li>
                 </ul>
@@ -160,19 +160,33 @@
         <div id="toc">
           <p>Contents</p>
           <ol>
-            <li jsinstance="*0" style="display: none; ">
-              <a>h2Name</a>
+            <li jsinstance="0">
+              <a href="#H2-0">Step 1: Declare your options page in the manifest</a>
               <ol>
-                <li>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li jsinstance="1">
+              <a href="#H2-1">Step 2: Write your options page</a>
+              <ol>
+                <li jsinstance="*0" style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li jsinstance="*2">
+              <a href="#H2-2">Important Notes</a>
+              <ol>
+                <li jsinstance="*0" style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-            <div>
+            <div style="display: none; ">
               <li>
-                <a href="#apiReference">API reference: chrome.test</a>
+                <a href="#apiReference">API reference</a>
                 <ol>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -183,16 +197,12 @@
                   <li>
                     <a href="#methods">Methods</a>
                     <ol>
-                      <li jsinstance="0">
-                        <a href="#method-log">log</a>
-                      </li><li jsinstance="1">
-                        <a href="#method-notifyFail">notifyFail</a>
-                      </li><li jsinstance="*2">
-                        <a href="#method-notifyPass">notifyPass</a>
+                      <li>
+                        <a href="#method-anchor">methodName</a>
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#events">Events</a>
                     <ol>
                       <li>
@@ -200,7 +210,7 @@
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -216,15 +226,91 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-title" class="pageData">Options</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+<p>To allow users to customize the behavior of your extension, you may wish to provide an options page. If you do, a link to it will be provided from the Extensions Management page at chrome://extensions. Clicking on this link will open a new tab pointing at your options page.
+
+</p><a name="H2-0"></a><h2>Step 1: Declare your options page in the manifest</h2>
+
+<pre>{
+  "name": "Test Extension",
+  "version": "1.0",
+  "description": "This is a test",
+  <b>"options_page": "options.html"</b>
+}
+</pre>
+
+
+<a name="H2-1"></a><h2>Step 2: Write your options page</h2>
+
+Here is an example options page:
+
+<pre>&lt;html&gt;
+&lt;head&gt;&lt;title&gt;My Test Extension Options&lt;/title&gt;&lt;/head&gt;
+&lt;script type="text/javascript"&gt;
+
+// Saves options to localStorage.
+function save_options() {
+  var select = document.getElementById("color");
+  var color = select.children[select.selectedIndex].value;
+  localStorage["favorite_color"] = color;
+
+  // Update status to let user know options were saved.
+  var status = document.getElementById("status");
+  status.innerHTML = "Options Saved.";
+  setTimeout(function() {
+    status.innerHTML = "";
+  }, 750);
+}
+
+// Restores select box state to saved value from localStorage.
+function restore_options() {
+  var favorite = localStorage["favorite_color"];
+  if (!favorite) {
+    return;
+  }
+  var select = document.getElementById("color");
+  for (var i = 0; i &lt; select.children.length; i++) {
+    var child = select.children[i];
+    if (child.value == favorite) {
+      child.selected = "true";
+      break;
+    }
+  }
+}
+
+&lt;/script&gt;
+
+&lt;body onload="restore_options()"&gt;
+
+Favorite Color:
+&lt;select id="color"&gt;
+ &lt;option value="red"&gt;red&lt;/option&gt;
+ &lt;option value="green"&gt;green&lt;/option&gt;
+ &lt;option value="blue"&gt;blue&lt;/option&gt;
+ &lt;option value="yellow"&gt;yellow&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;br&gt;
+&lt;button onclick="save_options()"&gt;Save&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<a name="H2-2"></a><h2>Important Notes</h2>
+<ul>
+<li>This feature is checked in to the trunk and should land in official builds sometime <b>after</b> version 4.0.222.x.</li>
+<li>We plan on providing some default css styles to encourage a consistent look across different extensions' options pages. You can star <a href="http://crbug.com/25317">crbug.com/25317</a> to be notified of updates.</li>
+</ul>
+</div>
 
         <!-- API PAGE -->
-        <div class="apiPage">
+        <div class="apiPage" style="display: none; ">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.test</h2>
+        <h2>API reference: chrome.apiname </h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -247,265 +333,41 @@
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" jsinstance="0">
-              <a name="method-log"></a> <!-- method-anchor -->
-              <h4>log</h4>
+            <div class="apiItem">
+              <a></a> <!-- method-anchor -->
+              <h4>method name</h4>
 
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary"><span>void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.test.log</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>message</span></var></span>)</div>
+                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
+                      <var><span></span></var></span>)</div>
 
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Logs a message during internal unit testing.</p>
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the function goes here.
+                </p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
-                  <div jsinstance="*0">
-                    <div>
-          <dt>
-            <var>message</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div style="display: none; ">
                   <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter,
-                    it should specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
                     <div>
-                      <div>
-                      </div>
                     </div>
-                  </dl>
-                  </div>
-                </div>
-
-              </div> <!-- /description -->
-
-            </div><div class="apiItem" jsinstance="1">
-              <a name="method-notifyFail"></a> <!-- method-anchor -->
-              <h4>notifyFail</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.test.notifyFail</span>(<span jsinstance="*0" class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>message</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Notify the browser process that test code running in the extension failed.  This is only used for internal unit testing.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div jsinstance="*0">
-                    <div>
-          <dt>
-            <var>message</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
                   </div>
                 </dl>
 
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
+                <h4>Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div style="display: none; ">
                   <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter,
-                    it should specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-              </div> <!-- /description -->
-
-            </div><div class="apiItem" jsinstance="*2">
-              <a name="method-notifyPass"></a> <!-- method-anchor -->
-              <h4>notifyPass</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.test.notifyPass</span>(<span jsinstance="*0" class="optional"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>message</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Notify the browser process that test code running in the extension passed.  This is only used for internal unit testing.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div jsinstance="*0">
-                    <div>
-          <dt>
-            <var>message</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
                 </dl>
 
                 <!-- CALLBACK -->
-                <div style="display: none; ">
+                <div>
                   <div>
                   <h4>Callback function</h4>
                   <p>
@@ -531,7 +393,7 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="events"></a>
             <h3 id="events">Events</h3>
 
@@ -567,7 +429,7 @@
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="types.sort(sortByName)"></a>
             <h3 id="types">Types</h3>
 
