@@ -3187,3 +3187,7 @@ BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
 
 // Webkit roll 49926:49941
 BUG_JORLOW : LayoutTests/storage/domstorage/complex-values.html = FAIL
+
+// Webkit roll 49947:49957
+BUG_JOHNNYG LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001.html = CRASH PASS
+
