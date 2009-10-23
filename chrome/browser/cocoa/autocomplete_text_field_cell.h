@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/location_bar_view_mac.h"
 
 // AutocompleteTextFieldCell customizes the look of the Omnibox text
 // field.  The border and focus ring are modified, as is the font
@@ -27,10 +26,13 @@
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
 
-  // View showing the state of the SSL connection. Owned by the location bar.
-  // Display is exclusive WRT the |hintString_| and |keywordString_|.
-  // This may be NULL during testing.
-  LocationBarViewMac::SecurityImageView* security_image_view_;
+  // Icon that represents the state of the SSL connection
+  scoped_nsobject<NSImage> hintIcon_;
+
+  // Optional text that appears to the right of the hint icon which
+  // appears only alongside the icon (i.e., it's possible to display a
+  // hintIcon without an hintIconLabel, but not vice-versa).
+  scoped_nsobject<NSAttributedString> hintIconLabel_;
 }
 
 // Chooses |partialString| if |width| won't fit |fullString|.  Strings
@@ -52,11 +54,9 @@
              availableWidth:(CGFloat)width;
 - (void)clearKeywordAndHint;
 
-- (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
-
-// Called when the security icon is visible and clicked. Passed through to the
-// security_image_view_ to handle the click (i.e., show the page info dialog).
-- (void)onSecurityIconMousePressed;
+// Sets the hint icon and optional icon label. If |icon| is nil, the current
+// icon is cleared. If |label| is provided, |color| must be provided as well.
+- (void)setHintIcon:(NSImage*)icon label:(NSString*)label color:(NSColor*)color;
 
 // Return the portion of the cell to show the text cursor over.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
@@ -65,9 +65,8 @@
 // corresponds to the frame with our added decorations sliced off.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame;
 
-// Return the portion of the cell to use for displaying the security (SSL lock)
-// icon, leaving space for its label if any.
-- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
+// Return the portion of the cell to use for displaing the |hintIcon_|.
+- (NSRect)hintImageFrameForFrame:(NSRect)cellFrame;
 
 @end
 
@@ -76,6 +75,7 @@
 
 @property(readonly) NSAttributedString* keywordString;
 @property(readonly) NSAttributedString* hintString;
+@property(readonly) NSImage* hintIcon;
 @property(readonly) NSAttributedString* hintIconLabel;
 
 @end
