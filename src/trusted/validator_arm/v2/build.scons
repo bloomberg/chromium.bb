@@ -1,0 +1,75 @@
+# -*- python -*-
+# Copyright 2009, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import os
+Import('env')
+
+if env.Bit('linux'):
+
+  env.Append(
+    # TODO(cbiffle): give everyone else these warnings too.
+    CXXFLAGS="-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer"
+  )
+
+  # NOTE: we cannot use TARGET_ROOT here because we want to share this file
+  #       between different scons invocations
+  gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/v2/'
+           'decode.cc')
+
+  env.Command(target=gen_dec,
+              source=['armv7-opt.table',
+                      'generate_decoder.py',
+                      'dgen_core.py',
+                      'dgen_input.py',
+                      'dgen_opt.py',
+                      'dgen_output.py'],
+             action=['${SOURCES[1].abspath} ${SOURCES[0].abspath} '
+                         '${TARGET.abspath}'])
+
+  env.ComponentLibrary('arm_validator_core',
+                       ['address_set.cc',
+                        'inst_classes.cc',
+                        'validator.cc',
+                        gen_dec])
+
+  ncval = env.ComponentProgram('new-arm-ncval',
+                       ['ncval.cc'],
+                       LIBS=['arm_validator_core',
+                             'nchelper'])
+
+  env.ComponentProgram('address_set_test_binary',
+                       ['address_set_test.cc'],
+                       LIBS=['arm_validator_core'])
+
+  address_set_test = env.Command(target='address_set_test.out',
+                                 source=['address_set_test_binary'],
+                                 action=['${SOURCES[0].abspath}'])
+
+  env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')

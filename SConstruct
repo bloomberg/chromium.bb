@@ -490,8 +490,10 @@ base_env.Append(
 
 if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
-      BUILD_SCONSCRIPTS = ['src/trusted/validator_arm/build.scons',]
-      )
+      BUILD_SCONSCRIPTS = [
+        'src/trusted/validator_arm/build.scons',
+        'src/trusted/validator_arm/v2/build.scons',
+      ])
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
   pass
 else:
@@ -797,7 +799,7 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
-                    CCFLAGS=['-march=armv6','-pedantic','-Wall','-Werror'],
+                    CCFLAGS=['-march=armv7a','-pedantic','-Wall','-Werror'],
                     LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
