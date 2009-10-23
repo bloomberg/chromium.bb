@@ -540,6 +540,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        compact_navigation_bar_(NULL),
        status_area_(NULL),
 #endif
+       state_(GDK_WINDOW_STATE_WITHDRAWN),
        frame_cursor_(NULL),
        is_active_(true),
        last_click_time_(0),
