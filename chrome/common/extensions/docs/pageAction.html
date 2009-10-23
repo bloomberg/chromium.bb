@@ -247,12 +247,11 @@ Page actions represent actions
 that can be taken on the current page,
 but that aren't applicable to all pages.
 Some examples:
-"Subscribe to this page's RSS feed",
-"Make a slideshow out of this page's photos".
-<span class="comment">
-[PENDING: check]
-</span>
 </p>
+<ul>
+  <li> Subscribe to this page's RSS feed </li>
+  <li> Make a slideshow out of this page's photos </li>
+</ul>
 
 <p>
 The RSS icon in the following screenshot
@@ -286,15 +285,15 @@ like this:
   any of the values,
   you must include an empty <b>page_action</b> entry
   in your manifest so that the system
-  reserves space for your page action
+  reserves a slot for your page action
   in the address bar.</p>
 
 <h2 id="ui">Parts of the UI</h2>
 
 <p>
-Page actions have the same UI parts as browser actions —
-icon, tooltip, badge, and popup —
-with the addition that page actions can appear and disappear.
+Page actions have an icon and optional tooltip,
+just like browser actions do.
+In addition, page actions can appear and disappear.
 For information about the common UI parts,
 read about the
 <a href="browserAction.html#ui">browser action UI</a>.
@@ -302,8 +301,15 @@ read about the
 
 <p>
 You make a page action appear and disappear using the
-<a href="#method-hide">hide()</a> and
-<a href="#method-show">show()</a> methods, respectively.
+<a href="#method-show">show()</a> and
+<a href="#method-hide">hide()</a> methods, respectively.
+By default, a page action is hidden.
+When you show it, you specify the tab
+in which the icon should appear.
+The icon remains visible
+until the tab is closed
+or starts displaying a different URL
+(because the user clicks a link, for example).
 </p>
 
 <div class="comment">
