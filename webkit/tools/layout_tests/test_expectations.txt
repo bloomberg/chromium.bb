@@ -3064,11 +3064,6 @@ BUG23956 WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG24126 : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
 // WebKit update 48883:48904
-BUG23740 : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html = FAIL
-BUG23740 : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context.html = FAIL
-BUG23740 : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml = FAIL
-BUG23740 : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html = FAIL
-BUG23740 : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context.html = FAIL
 BUG23745 LINUX MAC : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
 
 // WebKit update 48937:48947
