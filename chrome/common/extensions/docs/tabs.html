@@ -205,7 +205,9 @@
                         <a href="#method-move">move</a>
                       </li><li jsinstance="10">
                         <a href="#method-remove">remove</a>
-                      </li><li jsinstance="*11">
+                      </li><li jsinstance="11">
+                        <a href="#method-sendRequest">sendRequest</a>
+                      </li><li jsinstance="*12">
                         <a href="#method-update">update</a>
                       </li>
                     </ol>
@@ -485,7 +487,7 @@ For example:
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Connects to the content script(s) in the specified tab. The <a href="extension.html#event-onConnect">chrome.extensions.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href="content_scripts.html#messaging">Content Script Messaging</a>.</p>
+                <p>Connects to the content script(s) in the specified tab. The <a href="extension.html#event-onConnect">chrome.extension.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href="content_scripts.html#messaging">Content Script Messaging</a>.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2755,7 +2757,188 @@ For example:
 
               </div> <!-- /description -->
 
-            </div><div class="apiItem" jsinstance="*11">
+            </div><div class="apiItem" jsinstance="11">
+              <a name="method-sendRequest"></a> <!-- method-anchor -->
+              <h4>sendRequest</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.tabs.sendRequest</span>(<span jsinstance="0" class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span jsinstance="1" class="null"><span>, </span><span>any</span>
+                      <var><span>request</span></var></span><span jsinstance="*2" class="optional"><span>, </span><span>function</span>
+                      <var><span>responseCallback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Sends a single request to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The <a href="extension.html#event-onRequest">chrome.extension.onRequest</a> event is fired in each content script running in the specified tab for the current extension.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div jsinstance="0">
+                    <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="1">
+                    <div>
+          <dt>
+            <var>request</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>any</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="*2">
+                    <div>
+          <dt>
+            <var>responseCallback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter,
+                    it should specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>null</span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem" jsinstance="*12">
               <a name="method-update"></a> <!-- method-anchor -->
               <h4>update</h4>
 

@@ -294,6 +294,18 @@ var chrome = chrome || {};
       return chromeHidden.Port.createPort(portId, name);
     }
 
+    apiFunctions["tabs.sendRequest"].handleRequest =
+        function(tabId, request, responseCallback) {
+      var port = chrome.tabs.connect(tabId,
+                                     {name: chromeHidden.kRequestChannel});
+      port.postMessage(request);
+      port.onMessage.addListener(function(response) {
+        if (responseCallback)
+          responseCallback(response);
+        port.disconnect();
+      });
+    }
+
     apiFunctions["extension.getViews"].handleRequest = function() {
       return GetExtensionViews(-1, "ALL");
     }

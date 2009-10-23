@@ -55,6 +55,20 @@
         }
       },
       {
+        "name": "sendRequest",
+        "type": "function",
+        "description": "Sends a single request to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single request with an optional response.",
+        "parameters": [
+          {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
+          { "type": "any", "name": "request" },
+          {
+            "type": "function",
+            "name": "responseCallback",
+            "optional": true
+          }
+        ]
+      },
+      {
         "name": "getURL",
         "type": "function",
         "description": "Convert a relative path within an extension install directory to a fully-qualified URL.",
@@ -132,6 +146,24 @@
         "description": "Fired when a connection is made from another extension.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
+        ]
+      },
+      {
+        "name": "onRequest",
+        "type": "function",
+        "description": "Fired when a request is sent from either an extension process or a content script.",
+        "parameters": [
+          { "type": "any", "name": "request" },
+          { "type": "function", "name": "sendResponse", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
+        ]
+      },
+      {
+        "name": "onRequestExternal",
+        "type": "function",
+        "description": "Fired when a request is sent from another extension.",
+        "parameters": [
+          { "type": "any", "name": "request" },
+          { "type": "function", "name": "sendResponse", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
       }
     ]
@@ -367,7 +399,7 @@
       {
         "name": "connect",
         "type": "function",
-        "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extensions.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
+        "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extension.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
         "parameters": [
           {
             "type": "integer",
@@ -387,6 +419,27 @@
           "$ref": "Port",
           "description": "A port that can be used to communicate with the content scripts running in the specified tab."
         }
+      },
+      {
+        "name": "sendRequest",
+        "type": "function",
+        "description": "Sends a single request to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each content script running in the specified tab for the current extension.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0
+          },
+          {
+            "type": "any",
+            "name": "request"
+          },
+          {
+            "type": "function",
+            "name": "responseCallback",
+            "optional": true
+          }
+        ]
       },
       {
         "name": "getSelected",

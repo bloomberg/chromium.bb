@@ -20,8 +20,15 @@ var chrome = chrome || {};
 
   var chromeHidden = GetChromeHidden();
 
+  // The reserved channel name for the sendRequest API.
+  chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
+
   // Map of port IDs to port object.
   var ports = {};
+
+  // Change even to odd and vice versa, to get the other side of a given
+  // channel.
+  function getOppositePortId(portId) { return portId ^ 1; }
 
   // Port object.  Represents a connection to another script context through
   // which messages can be passed.
@@ -59,11 +66,30 @@ var chrome = chrome || {};
     // close both.
     if (targetExtensionId != chromeHidden.extensionId)
       return;  // not for us
+    if (ports[getOppositePortId(portId)])
+      return;  // this channel was opened by us, so ignore it
 
-    // Determine whether this is coming from another extension, and use the
-    // right event.
-    var connectEvent = (sourceExtensionId == chromeHidden.extensionId ?
-        chrome.extension.onConnect : chrome.extension.onConnectExternal);
+    // Determine whether this is coming from another extension, so we can use
+    // the right event.
+    var isExternal = sourceExtensionId != chromeHidden.extensionId;
+
+    // Special case for sendRequest/onRequest.
+    if (channelName == chromeHidden.kRequestChannel) {
+      var requestEvent = (isExternal ?
+          chrome.extension.onRequestExternal : chrome.extension.onRequest);
+      if (requestEvent.hasListeners()) {
+        var port = chromeHidden.Port.createPort(portId, channelName);
+        port.onMessage.addListener(function(request) {
+          requestEvent.dispatch(request, function(response) {
+            port.postMessage(response);
+          });
+        });
+      }
+      return;
+    }
+
+    var connectEvent = (isExternal ?
+        chrome.extension.onConnectExternal : chrome.extension.onConnect);
     if (connectEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       if (tab) {
@@ -72,6 +98,7 @@ var chrome = chrome || {};
       port.sender = {tab: tab, id: sourceExtensionId};
       // TODO(EXTENSIONS_DEPRECATED): port.tab is obsolete.
       port.tab = port.sender.tab;
+
       connectEvent.dispatch(port);
     }
   };
@@ -126,6 +153,8 @@ var chrome = chrome || {};
     // Events for when a message channel is opened to our extension.
     chrome.extension.onConnect = new chrome.Event();
     chrome.extension.onConnectExternal = new chrome.Event();
+    chrome.extension.onRequest = new chrome.Event();
+    chrome.extension.onRequestExternal = new chrome.Event();
 
     // Opens a message channel to the given target extension, or the current one
     // if unspecified.  Returns a Port for message passing.
@@ -142,6 +171,27 @@ var chrome = chrome || {};
       if (portId >= 0)
         return chromeHidden.Port.createPort(portId, name);
       throw new Error("Error connecting to extension '" + targetId + "'");
+    };
+
+    chrome.extension.sendRequest =
+        function(targetId_opt, request, responseCallback_opt) {
+      var targetId = extensionId;
+      var responseCallback = null;
+      var lastArg = arguments.length - 1;
+      if (typeof(arguments[lastArg]) == "function")
+        responseCallback = arguments[lastArg--];
+      request = arguments[lastArg--];
+      if (lastArg >= 0)
+        targetId = arguments[lastArg--];
+
+      var port = chrome.extension.connect(targetId,
+                                          {name: chromeHidden.kRequestChannel});
+      port.postMessage(request);
+      port.onMessage.addListener(function(response) {
+        if (responseCallback)
+          responseCallback(response);
+        port.disconnect();
+      });
     };
 
     // Returns a resource URL that can be used to fetch a resource from this
