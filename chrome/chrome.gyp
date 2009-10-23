@@ -126,7 +126,6 @@
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
     ],
-    'browser_sync%': 1,
     'conditions': [
       ['OS=="win"', {
         'nacl_defines': [
@@ -159,6 +158,12 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
+      ['OS=="win" or OS=="mac"', {
+        # Whether or not browser sync code is built in.
+        'browser_sync%': 1,
+      }, {
+        'browser_sync%': 0,
+      }],  # OS=="win"
       ['target_arch=="ia32"', {
         'nacl_defines': [
           # TODO(gregoryd): consider getting this from NaCl's common.gypi
@@ -2446,8 +2451,6 @@
             '../base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
-            'browser/sync/sync_setup_flow.cc',
-            'browser/sync/sync_setup_wizard.cc',
             'browser/views/extensions/extension_shelf.cc',
             'browser/views/extensions/extension_shelf.h',
             'browser/views/extensions/extension_view.cc',
@@ -2984,12 +2987,6 @@
         ['OS=="win" or toolkit_views==1',{
           'dependencies': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
-        }],
-        ['OS=="linux" and browser_sync==1', {
-          'sources': [
-            'browser/gtk/sync_setup_wizard_gtk.cc',
-            'browser/gtk/sync_setup_wizard_gtk.h',
           ],
         }],
       ],
@@ -4680,7 +4677,6 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
-            'browser/sync/sync_setup_wizard_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
@@ -4817,6 +4813,7 @@
             'browser/rlz/rlz_unittest.cc',
             'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
+            'browser/sync/profile_sync_service_unittest.cc',
             'browser/views/bookmark_editor_view_unittest.cc',
             'browser/views/find_bar_host_unittest.cc',
             'browser/views/keyword_editor_view_unittest.cc',
@@ -6698,9 +6695,6 @@
                 'POSIX',
                 'OS_LINUX',
               ],
-              'dependencies': [
-                '../build/linux/system.gyp:gtk'
-              ],
             }],
           ],
         },
@@ -6721,6 +6715,7 @@
             'browser/sync/syncable/syncable_unittest.cc',
             'browser/sync/util/character_set_converters_unittest.cc',
             'browser/sync/util/crypto_helpers_unittest.cc',
+            'browser/sync/util/data_encryption_unittest.cc',
             'browser/sync/util/event_sys_unittest.cc',
             'browser/sync/util/highres_timer_unittest.cc',
             'browser/sync/util/path_helpers_unittest.cc',
@@ -6754,9 +6749,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'sources' : [
-                'browser/sync/util/data_encryption_unittest.cc',
-              ],
               'dependencies': [
                 '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
               ],
@@ -6775,9 +6767,6 @@
             ['OS=="linux"', {
               'defines': [
                 'POSIX',
-              ],
-              'dependencies': [
-                '../build/linux/system.gyp:gtk'
               ],
             }],
           ],
@@ -6933,9 +6922,6 @@
             ['OS=="linux"', {
               'defines': [
                 'POSIX',
-              ],
-              'dependencies': [
-                '../build/linux/system.gyp:gtk'
               ],
             }],
             ['OS=="mac"', {
