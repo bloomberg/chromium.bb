@@ -10,15 +10,28 @@
 #include "chrome/common/render_messages.h"
 #include "net/base/io_buffer.h"
 
+namespace {
+
 // When reading, we don't know if we are going to get EOF (0 bytes read), so
 // we typically have a buffer that we allocated but did not use.  We keep
 // this buffer around for the next read as a small optimization.
-static SharedIOBuffer* g_spare_read_buffer = NULL;
+SharedIOBuffer* g_spare_read_buffer = NULL;
+
+// The initial size of the shared memory buffer. (32 kilobytes).
+const int kReadBufSize = 32768;
+
+// The maximum size of the shared memory buffer. (512 kilobytes).
+const int kMaxBufSize = 524288;
+
+}  // namespace
 
 // Our version of IOBuffer that uses shared memory.
 class SharedIOBuffer : public net::IOBuffer {
  public:
-  SharedIOBuffer(int buffer_size) : net::IOBuffer(), ok_(false) {
+  SharedIOBuffer(int buffer_size)
+      : net::IOBuffer(),
+        ok_(false),
+        buffer_size_(buffer_size) {
     if (shared_memory_.Create(std::wstring(), false, false, buffer_size) &&
         shared_memory_.Map(buffer_size)) {
       ok_ = true;
@@ -33,10 +46,12 @@ class SharedIOBuffer : public net::IOBuffer {
 
   base::SharedMemory* shared_memory() { return &shared_memory_; }
   bool ok() { return ok_; }
+  int buffer_size() { return buffer_size_; }
 
  private:
   base::SharedMemory shared_memory_;
   bool ok_;
+  int buffer_size_;
 };
 
 AsyncResourceHandler::AsyncResourceHandler(
@@ -50,7 +65,8 @@ AsyncResourceHandler::AsyncResourceHandler(
       process_id_(process_id),
       routing_id_(routing_id),
       process_handle_(process_handle),
-      rdh_(resource_dispatcher_host) {
+      rdh_(resource_dispatcher_host),
+      next_buffer_size_(kReadBufSize) {
 }
 
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
@@ -80,21 +96,29 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
 bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                       int* buf_size, int min_size) {
   DCHECK(min_size == -1);
-  static const int kReadBufSize = 32768;
+
   if (g_spare_read_buffer) {
     DCHECK(!read_buffer_);
     read_buffer_.swap(&g_spare_read_buffer);
     // TODO(willchan): Remove after debugging bug 16371.
     CHECK(read_buffer_->data());
+
+    *buf = read_buffer_.get();
+    *buf_size = read_buffer_.get()->buffer_size();
   } else {
-    read_buffer_ = new SharedIOBuffer(kReadBufSize);
-    if (!read_buffer_->ok())
+    read_buffer_ = new SharedIOBuffer(next_buffer_size_);
+    if (!read_buffer_->ok()) {
+      DLOG(ERROR) << "Couldn't allocate shared io buffer";
       return false;
+    }
     // TODO(willchan): Remove after debugging bug 16371.
     CHECK(read_buffer_->data());
+    *buf = read_buffer_.get();
+    *buf_size = next_buffer_size_;
   }
-  *buf = read_buffer_.get();
-  *buf_size = kReadBufSize;
+
+  next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxBufSize);
+
   return true;
 }
 
