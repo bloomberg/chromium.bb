@@ -338,3 +338,28 @@ TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
                 kTestCompleteCookie, kTestCompleteSuccess,
                 kShortWaitTimeout);
 }
+
+// This test uses a Windows Event to signal to the plugin that it should crash
+// on NP_Initialize.
+#if defined(OS_WIN)
+
+TEST_F(NPAPITester, NoHangIfInitCrashes) {
+  if (UITest::in_process_renderer())
+    return;
+
+  // Only Windows implements the crash service for now.
+#if defined(OS_WIN)
+  expected_crashes_ = 1;
+#endif
+
+  HANDLE crash_event = CreateEvent(NULL, TRUE, FALSE, L"TestPluginCrashOnInit");
+  SetEvent(crash_event);
+  GURL url = GetTestUrl(L"npapi", L"no_hang_if_init_crashes.html");
+  NavigateToURL(url);
+  WaitForFinish("no_hang_if_init_crashes", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
+  CloseHandle(crash_event);
+}
+
+#endif

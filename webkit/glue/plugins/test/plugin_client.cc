@@ -1,6 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #include "base/string_util.h"
 #include "webkit/glue/plugins/test/plugin_client.h"
@@ -62,6 +66,16 @@ NPError PluginClient::Initialize(NPNetscapeFuncs* pFuncs) {
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
   }
 
+#if defined(OS_WIN)
+  // Check if we should crash.
+  HANDLE crash_event = CreateEvent(NULL, TRUE, FALSE, L"TestPluginCrashOnInit");
+  if (WaitForSingleObject(crash_event, 0) == WAIT_OBJECT_0) {
+    int *zero = NULL;
+    *zero = 0;
+  }
+  CloseHandle(crash_event);
+#endif
+
   host_functions_ = pFuncs;
 
   return NPERR_NO_ERROR;
@@ -112,7 +126,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   } else if (test_name == "execute_script_delete_in_paint" ||
              test_name == "execute_script_delete_in_mouse_move" ||
              test_name == "delete_frame_test" ||
-             test_name == "multiple_instances_sync_calls") {
+             test_name == "multiple_instances_sync_calls" ||
+             test_name == "no_hang_if_init_crashes") {
     new_test = new NPAPIClient::WindowlessPluginTest(instance,
       NPAPIClient::PluginClient::HostFunctions(), test_name);
     windowless_plugin = true;
