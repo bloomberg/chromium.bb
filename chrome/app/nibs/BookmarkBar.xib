@@ -634,6 +634,14 @@
 					</object>
 					<int key="connectionID">94</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">controller_</string>
+						<reference key="source" ref="610146462"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">95</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -956,7 +964,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1111, 613}, {600, 144}}</string>
+					<string>{{191, 181}, {600, 144}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1020,7 +1028,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">94</int>
+			<int key="maxID">95</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1118,8 +1126,17 @@
 					<string key="className">BookmarkBarView</string>
 					<string key="superclassName">NSView</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">noItemTextfield_</string>
-						<string key="NS.object.0">NSTextField</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller_</string>
+							<string>noItemTextfield_</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BookmarkBarController</string>
+							<string>NSTextField</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
