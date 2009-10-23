@@ -15,11 +15,11 @@
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "base/timer.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context.h"
 
 namespace browser_sync {
 
@@ -85,7 +85,8 @@ class SyncBackendHost {
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
-  void Initialize(const GURL& service_url, URLRequestContext* baseline_context);
+  void Initialize(const GURL& service_url,
+                  URLRequestContextGetter* baseline_context_getter);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password);

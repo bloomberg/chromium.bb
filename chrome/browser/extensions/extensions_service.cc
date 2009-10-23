@@ -326,12 +326,13 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
   // for the extension may try to load an extension URL with an extension id
   // that the request context doesn't yet know about.
   if (profile_ && !profile_->IsOffTheRecord()) {
-    ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-        profile_->GetRequestContext());
-    if (context) {
+    ChromeURLRequestContextGetter* context_getter =
+        static_cast<ChromeURLRequestContextGetter*>(
+            profile_->GetRequestContext());
+    if (context_getter) {
       g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(context,
-                            &ChromeURLRequestContext::OnNewExtensions,
+          NewRunnableMethod(context_getter,
+                            &ChromeURLRequestContextGetter::OnNewExtensions,
                             extension->id(),
                             extension->path()));
     }
@@ -352,13 +353,15 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
       Details<Extension>(extension));
 
   if (profile_ && !profile_->IsOffTheRecord()) {
-    ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-        profile_->GetRequestContext());
-    if (context) {
+    ChromeURLRequestContextGetter* context_getter =
+        static_cast<ChromeURLRequestContextGetter*>(
+            profile_->GetRequestContext());
+    if (context_getter) {
       g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(context,
-                            &ChromeURLRequestContext::OnUnloadedExtension,
-                            extension->id()));
+          NewRunnableMethod(
+              context_getter,
+              &ChromeURLRequestContextGetter::OnUnloadedExtension,
+              extension->id()));
     }
   }
 }

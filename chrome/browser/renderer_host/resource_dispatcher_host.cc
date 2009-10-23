@@ -402,8 +402,12 @@ void ResourceDispatcherHost::BeginRequest(
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
       receiver_->GetRequestContext(request_id, request_data));
   if (!context) {
-    context = static_cast<ChromeURLRequestContext*>(
-        Profile::GetDefaultRequestContext());
+    URLRequestContextGetter* context_getter =
+        Profile::GetDefaultRequestContext();
+    if (context_getter) {
+      context = static_cast<ChromeURLRequestContext*>(
+          context_getter->GetURLRequestContext());
+    }
   }
 
   if (is_shutdown_ ||

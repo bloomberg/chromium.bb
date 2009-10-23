@@ -11,6 +11,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/cookies_table_model.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,17 +25,32 @@ class TestURLRequestContext : public URLRequestContext {
   }
 };
 
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_;
+  }
+ private:
+  scoped_refptr<URLRequestContext> context_;
+};
+
 class CookieTestingProfile : public TestingProfile {
  public:
-  virtual URLRequestContext* GetRequestContext() {
-    if (!url_request_context_.get())
-      url_request_context_ = new TestURLRequestContext;
-    return url_request_context_.get();
+  virtual URLRequestContextGetter* GetRequestContext() {
+    if (!url_request_context_getter_.get())
+      url_request_context_getter_ = new TestURLRequestContextGetter;
+    return url_request_context_getter_.get();
   }
   virtual ~CookieTestingProfile() {}
 
+  net::CookieMonster* GetCookieMonster() {
+    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
+  }
+
  private:
-  scoped_refptr<TestURLRequestContext> url_request_context_;
+  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
 };
 
 }  // namespace
@@ -112,8 +128,7 @@ TEST_F(CookiesViewTest, Empty) {
 }
 
 TEST_F(CookiesViewTest, RemoveAll) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
   CookiesView cookies_view(profile_.get());
@@ -146,8 +161,7 @@ TEST_F(CookiesViewTest, RemoveAll) {
 // OnSelectionChanged callback could get called while the gtk list view and the
 // CookiesTableModel were inconsistent.  Test that it doesn't crash.
 TEST_F(CookiesViewTest, RemoveAllWithAllSelected) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
   CookiesView cookies_view(profile_.get());
@@ -175,8 +189,7 @@ TEST_F(CookiesViewTest, RemoveAllWithAllSelected) {
 }
 
 TEST_F(CookiesViewTest, Remove) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
@@ -242,8 +255,7 @@ TEST_F(CookiesViewTest, Remove) {
 }
 
 TEST_F(CookiesViewTest, RemoveMultiple) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo0"), "C=1");
   monster->SetCookie(GURL("http://foo1"), "D=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
@@ -279,8 +291,7 @@ TEST_F(CookiesViewTest, RemoveMultiple) {
 }
 
 TEST_F(CookiesViewTest, RemoveDefaultSelection) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
@@ -309,8 +320,7 @@ TEST_F(CookiesViewTest, RemoveDefaultSelection) {
 }
 
 TEST_F(CookiesViewTest, Filter) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://bar1"), "B=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -344,8 +354,7 @@ TEST_F(CookiesViewTest, Filter) {
 }
 
 TEST_F(CookiesViewTest, FilterRemoveAll) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://bar1"), "B=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -370,8 +379,7 @@ TEST_F(CookiesViewTest, FilterRemoveAll) {
 }
 
 TEST_F(CookiesViewTest, FilterRemove) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://bar1"), "B=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -406,8 +414,7 @@ TEST_F(CookiesViewTest, FilterRemove) {
 }
 
 TEST_F(CookiesViewTest, Sort) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "X=1");
   monster->SetCookie(GURL("http://bar1"), "Z=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -442,8 +449,7 @@ TEST_F(CookiesViewTest, Sort) {
 }
 
 TEST_F(CookiesViewTest, SortRemove) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "B=1");
   monster->SetCookie(GURL("http://bar1"), "Z=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -471,8 +477,7 @@ TEST_F(CookiesViewTest, SortRemove) {
 }
 
 TEST_F(CookiesViewTest, SortFilterRemove) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "B=1");
   monster->SetCookie(GURL("http://bar1"), "Z=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
@@ -506,8 +511,7 @@ TEST_F(CookiesViewTest, SortFilterRemove) {
 }
 
 TEST_F(CookiesViewTest, SortRemoveMultiple) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo0"), "C=1");
   monster->SetCookie(GURL("http://foo1"), "D=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
@@ -546,8 +550,7 @@ TEST_F(CookiesViewTest, SortRemoveMultiple) {
 }
 
 TEST_F(CookiesViewTest, SortRemoveDefaultSelection) {
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo1"), "Z=1");
   monster->SetCookie(GURL("http://bar1"), "X=1");
   monster->SetCookie(GURL("http://foo2"), "W=1");

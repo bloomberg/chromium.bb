@@ -20,52 +20,23 @@
 // object, and those URLRequestContexts are refcounted independently of the
 // owning profile.
 //
-// All methods, including the dtor, are expected to be called on the IO thread
-// except for the ctor and the init method which are expected to be called on
-// the UI thread.
+// All methods, including the dtor, are expected to be called on the IO thread.
 class ChromeAppCacheService
-    : public base::RefCountedThreadSafe<ChromeAppCacheService>,
+    : public base::RefCounted<ChromeAppCacheService>,
       public appcache::AppCacheService {
  public:
 
-  explicit ChromeAppCacheService()
-      : is_initialized_(false), was_initialized_with_io_thread_(false) {
-  }
-
-  bool is_initialized() const { return is_initialized_; }
-
-  void InitializeOnUIThread(const FilePath& data_directory,
-                            bool is_incognito) {
-    DCHECK(!is_initialized_);
-    is_initialized_ = true;
-
-    // The I/O thread may be NULL during testing.
-    base::Thread* io_thread = g_browser_process->io_thread();
-    if (io_thread) {
-      was_initialized_with_io_thread_ = true;
-      io_thread->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &ChromeAppCacheService::InitializeOnIOThread,
-              data_directory, is_incognito));
-    }
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<ChromeAppCacheService>;
-
-  virtual ~ChromeAppCacheService() {
-    DCHECK(!was_initialized_with_io_thread_ ||
-           ChromeThread::CurrentlyOn(ChromeThread::IO));
-  }
-
-  void InitializeOnIOThread(const FilePath& data_directory,
-                            bool is_incognito) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeAppCacheService(const FilePath& data_directory,
+                        bool is_incognito) {
     Initialize(is_incognito ? FilePath()
                             : data_directory.Append(chrome::kAppCacheDirname));
   }
+ private:
+  friend class base::RefCounted<ChromeAppCacheService>;
 
-  bool is_initialized_;
-  bool was_initialized_with_io_thread_;
+  virtual ~ChromeAppCacheService() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  }
 };
 
 #endif  // CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_

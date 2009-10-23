@@ -21,6 +21,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/gears_integration.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
@@ -157,7 +158,7 @@ class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
         ToURLRequestContext(cprequest_->context);
     // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
     if (!context)
-      context = Profile::GetDefaultRequestContext();
+      context = Profile::GetDefaultRequestContext()->GetURLRequestContext();
 
     GURL gurl(cprequest_->url);
     request_.reset(new URLRequest(gurl, this));
@@ -389,7 +390,7 @@ CPError STDCALL CPB_GetCookies(CPID id, CPBrowsingContext bcontext,
       ToURLRequestContext(bcontext);
   // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
   if (!context) {
-    context = Profile::GetDefaultRequestContext();
+    context = Profile::GetDefaultRequestContext()->GetURLRequestContext();
     if (!context)
       return CPERR_FAILURE;
   }

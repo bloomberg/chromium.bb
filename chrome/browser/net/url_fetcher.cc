@@ -9,6 +9,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/io_buffer.h"
@@ -71,7 +72,7 @@ class URLFetcher::Core
   std::string data_;                 // Results of the request
   scoped_refptr<net::IOBuffer> buffer_;
                                      // Read buffer
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
   ResponseCookies cookies_;          // Response cookies
   std::string extra_request_headers_;// Extra headers for the request, if any
@@ -138,7 +139,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
 void URLFetcher::Core::Start() {
   DCHECK(delegate_loop_);
   DCHECK(io_loop_);
-  DCHECK(request_context_) << "We need an URLRequestContext!";
+  DCHECK(request_context_getter_) << "We need an URLRequestContextGetter!";
   io_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(
           this, &Core::StartURLRequest),
       protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SEND));
@@ -203,7 +204,7 @@ void URLFetcher::Core::StartURLRequest() {
     flags = flags | net::LOAD_DISABLE_INTERCEPT;
   }
   request_->set_load_flags(flags);
-  request_->set_context(request_context_.get());
+  request_->set_context(request_context_getter_->GetURLRequestContext());
 
   switch (request_type_) {
     case GET:
@@ -247,7 +248,7 @@ void URLFetcher::Core::CancelURLRequest() {
   // references to URLFetcher::Core at this point so it may take a while to
   // delete the object, but we cannot delay the destruction of the request
   // context.
-  request_context_ = NULL;
+  request_context_getter_ = NULL;
 }
 
 void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
@@ -301,8 +302,9 @@ void URLFetcher::set_extra_request_headers(
   core_->extra_request_headers_ = extra_request_headers;
 }
 
-void URLFetcher::set_request_context(URLRequestContext* request_context) {
-  core_->request_context_ = request_context;
+void URLFetcher::set_request_context(
+    URLRequestContextGetter* request_context_getter) {
+  core_->request_context_getter_ = request_context_getter;
 }
 
 net::HttpResponseHeaders* URLFetcher::response_headers() const {

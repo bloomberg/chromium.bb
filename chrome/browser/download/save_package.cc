@@ -20,6 +20,7 @@
 #include "chrome/browser/download/save_file.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/download/save_item.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -295,7 +296,7 @@ bool SavePackage::Init() {
     return false;
   }
 
-  request_context_ = profile->GetRequestContext();
+  request_context_getter_ = profile->GetRequestContext();
 
   // Create the fake DownloadItem and display the view.
   download_ = new DownloadItem(1, saved_main_file_path_, 0, page_url_, GURL(),
@@ -764,7 +765,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            tab_contents_->render_view_host()->routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),
-                           request_context_.get(),
+                           request_context_getter_.get(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
 }

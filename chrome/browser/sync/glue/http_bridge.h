@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/net/url_fetcher.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
@@ -53,7 +54,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // Set the user agent for requests using this context. The default is
     // the browser's UA string.
     void set_user_agent(const std::string& ua) { user_agent_ = ua; }
-    bool is_user_agent_set() const { return !user_agent_.empty(); }
 
     virtual const std::string& GetUserAgent(const GURL& url) const {
       // If the user agent is set explicitly return that, otherwise call the
@@ -73,7 +73,31 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };
 
-  HttpBridge(RequestContext* context, MessageLoop* io_loop);
+  // Lazy-getter for RequestContext objects.
+  class RequestContextGetter : public URLRequestContextGetter {
+   public:
+    explicit RequestContextGetter(
+        URLRequestContextGetter* baseline_context_getter);
+
+    void set_user_agent(const std::string& ua) { user_agent_ = ua; }
+    bool is_user_agent_set() const { return !user_agent_.empty(); }
+
+    // URLRequestContextGetter implementation.
+    virtual URLRequestContext* GetURLRequestContext();
+
+   private:
+    // User agent to apply to the URLRequestContext.
+    std::string user_agent_;
+
+    scoped_refptr<URLRequestContextGetter> baseline_context_getter_;
+
+    // Lazily initialized by GetURLRequestContext().
+    scoped_refptr<RequestContext> context_;
+
+    DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
+  };
+
+  HttpBridge(RequestContextGetter* context, MessageLoop* io_loop);
   virtual ~HttpBridge();
 
   // sync_api::HttpPostProvider implementation.
@@ -98,7 +122,11 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  URLRequestContext* GetRequestContext() const;
+#if defined(UNIT_TEST)
+  URLRequestContextGetter* GetRequestContextGetter() const {
+    return context_getter_for_request_;
+  }
+#endif
 
  protected:
   // Protected virtual so the unit test can override to shunt network requests.
@@ -112,9 +140,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // still have a function to statically pass to PostTask.
   void CallMakeAsynchronousPost() { MakeAsynchronousPost(); }
 
-  // A customized URLRequestContext for bridged requests. See RequestContext
-  // definition for details.
-  RequestContext* context_for_request_;
+  // Gets a customized URLRequestContext for bridged requests. See
+  // RequestContext definition for details.
+  RequestContextGetter* context_getter_for_request_;
 
   // Our hook into the network layer is a URLFetcher. USED ONLY ON THE IO LOOP,
   // so we can block created_on_loop_ while the fetch is in progress.
@@ -165,16 +193,16 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 class HttpBridgeFactory
   : public sync_api::HttpPostProviderFactory {
  public:
-  explicit HttpBridgeFactory(URLRequestContext* baseline_context);
+  explicit HttpBridgeFactory(URLRequestContextGetter* baseline_context_getter);
   virtual ~HttpBridgeFactory();
   virtual sync_api::HttpPostProviderInterface* Create();
   virtual void Destroy(sync_api::HttpPostProviderInterface* http);
  private:
   // This request context is built on top of the baseline context and shares
   // common components.
-  HttpBridge::RequestContext* GetRequestContext();
+  HttpBridge::RequestContextGetter* GetRequestContextGetter();
   // We must Release() this from the IO thread.
-  HttpBridge::RequestContext* request_context_;
+  HttpBridge::RequestContextGetter* request_context_getter_;
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };
 

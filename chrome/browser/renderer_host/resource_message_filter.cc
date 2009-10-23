@@ -163,7 +163,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
       appcache_dispatcher_host_(
-          new AppCacheDispatcherHost(profile->GetAppCacheService())),
+      new AppCacheDispatcherHost(profile->GetRequestContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
@@ -174,10 +174,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
-  DCHECK(request_context_.get());
-  DCHECK(request_context_->cookie_store());
-  DCHECK(media_request_context_.get());
-  DCHECK(media_request_context_->cookie_store());
+  DCHECK(request_context_);
+  DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());
   DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
@@ -439,13 +437,13 @@ bool ResourceMessageFilter::Send(IPC::Message* message) {
 URLRequestContext* ResourceMessageFilter::GetRequestContext(
     uint32 request_id,
     const ViewHostMsg_Resource_Request& request_data) {
-  URLRequestContext* request_context = request_context_;
+  URLRequestContextGetter* request_context = request_context_;
   // If the request has resource type of ResourceType::MEDIA, we use a request
   // context specific to media for handling it because these resources have
   // specific needs for caching.
   if (request_data.resource_type == ResourceType::MEDIA)
     request_context = media_request_context_;
-  return request_context;
+  return request_context->GetURLRequestContext();
 }
 
 MessageLoop* ResourceMessageFilter::ui_loop() {
@@ -469,9 +467,8 @@ void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
 void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const GURL& first_party_for_cookies,
                                         const std::string& cookie) {
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      url.SchemeIs(chrome::kExtensionScheme) ?
-      extensions_request_context_.get() : request_context_.get());
+  ChromeURLRequestContext* context = GetRequestContextForURL(url);
+
   if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies)) {
     if (context->blacklist()) {
       Blacklist::Match* match = context->blacklist()->findMatch(url);
@@ -493,8 +490,7 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
 void ResourceMessageFilter::OnGetCookies(const GURL& url,
                                          const GURL& first_party_for_cookies,
                                          std::string* cookies) {
-  URLRequestContext* context = url.SchemeIs(chrome::kExtensionScheme) ?
-      extensions_request_context_.get() : request_context_.get();
+  URLRequestContext* context = GetRequestContextForURL(url);
   if (context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
     *cookies = context->cookie_store()->GetCookies(url);
 }
@@ -636,11 +632,12 @@ void ResourceMessageFilter::OnForwardToWorker(const IPC::Message& message) {
 void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                           const GURL& url,
                                           const GURL& referrer) {
+  URLRequestContext* context = request_context_->GetURLRequestContext();
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
                                            id(),
                                            message.routing_id(),
-                                           request_context_);
+                                           context);
 }
 
 void ResourceMessageFilter::OnClipboardWriteObjects(
@@ -735,8 +732,8 @@ void ResourceMessageFilter::OnGetPreferredExtensionForMimeType(
 void ResourceMessageFilter::OnGetCPBrowsingContext(uint32* context) {
   // Always allocate a new context when a plugin requests one, since it needs to
   // be unique for that plugin instance.
-  *context =
-      CPBrowsingContextManager::Instance()->Allocate(request_context_.get());
+  *context = CPBrowsingContextManager::Instance()->Allocate(
+      request_context_->GetURLRequestContext());
 }
 
 #if defined(OS_WIN)
@@ -924,6 +921,16 @@ Clipboard* ResourceMessageFilter::GetClipboard() {
   return clipboard;
 }
 
+ChromeURLRequestContext*
+ResourceMessageFilter::GetRequestContextForURL(
+    const GURL& url) {
+  URLRequestContextGetter* context_getter =
+      url.SchemeIs(chrome::kExtensionScheme) ?
+          extensions_request_context_ : request_context_;
+  return static_cast<ChromeURLRequestContext*>(
+      context_getter->GetURLRequestContext());
+}
+
 // Notes about SpellCheck.
 //
 // Spellchecking generally uses a fair amount of RAM.  For this reason, we load
@@ -1060,7 +1067,7 @@ void ResourceMessageFilter::OnCloseIdleConnections() {
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled())
     return;
-  request_context_->
+  request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache()->CloseIdleConnections();
 }
 
@@ -1072,7 +1079,8 @@ void ResourceMessageFilter::OnSetCacheMode(bool enabled) {
 
   net::HttpCache::Mode mode = enabled ?
       net::HttpCache::NORMAL : net::HttpCache::DISABLE;
-  request_context_->http_transaction_factory()->GetCache()->set_mode(mode);
+  request_context_->GetURLRequestContext()->
+      http_transaction_factory()->GetCache()->set_mode(mode);
 }
 
 void ResourceMessageFilter::OnGetFileSize(const FilePath& path,

@@ -10,6 +10,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -106,8 +107,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
   if (remove_mask & REMOVE_COOKIES) {
     UserMetrics::RecordAction(L"ClearBrowsingData_Cookies", profile_);
+    // Since we are running on the UI thread don't call GetURLRequestContext().
     net::CookieMonster* cookie_monster =
-        profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+        profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
   }
@@ -138,6 +140,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
           this,
           &BrowsingDataRemover::ClearCacheOnIOThread,
+          profile_->GetRequestContext(),
           delete_begin_,
           delete_end_,
           MessageLoop::current()));
@@ -218,16 +221,18 @@ void BrowsingDataRemover::ClearedCache() {
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::ClearCacheOnIOThread(base::Time delete_begin,
-                                               base::Time delete_end,
-                                               MessageLoop* ui_loop) {
+void BrowsingDataRemover::ClearCacheOnIOThread(
+    URLRequestContextGetter* context_getter,
+    base::Time delete_begin,
+    base::Time delete_end,
+    MessageLoop* ui_loop) {
   // This function should be called on the IO thread.
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
 
   // Get a pointer to the cache.
   net::HttpTransactionFactory* factory =
-      profile_->GetRequestContext()->http_transaction_factory();
+      context_getter->GetURLRequestContext()->http_transaction_factory();
   disk_cache::Backend* cache = factory->GetCache()->disk_cache();
 
   // |cache| can be null since it is lazily initialized, in this case we do
@@ -240,7 +245,8 @@ void BrowsingDataRemover::ClearCacheOnIOThread(base::Time delete_begin,
   }
 
   // Get a pointer to the media cache.
-  factory = profile_->GetRequestContextForMedia()->http_transaction_factory();
+  factory = profile_->GetRequestContextForMedia()->GetURLRequestContext()->
+      http_transaction_factory();
   cache = factory->GetCache()->disk_cache();
 
   // |cache| can be null since it is lazily initialized, in this case we do

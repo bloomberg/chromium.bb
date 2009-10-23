@@ -124,26 +124,15 @@ bool HasACacheSubdir(const FilePath &dir) {
 
 // A pointer to the request context for the default profile.  See comments on
 // Profile::GetDefaultRequestContext.
-URLRequestContext* Profile::default_request_context_;
+URLRequestContextGetter* Profile::default_request_context_;
 
-static void CleanupRequestContext(ChromeURLRequestContext* context) {
+static void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
   if (context) {
     context->CleanupOnUIThread();
 
     // Clean up request context on IO thread.
     g_browser_process->io_thread()->message_loop()->ReleaseSoon(FROM_HERE,
                                                                 context);
-  }
-}
-
-static void CleanupAppCacheService(ChromeAppCacheService* appcache_service) {
-  if (appcache_service) {
-    // The I/O thread may be NULL during testing.
-    base::Thread* io_thread = g_browser_process->io_thread();
-    if (io_thread)
-      io_thread->message_loop()->ReleaseSoon(FROM_HERE, appcache_service);
-    else
-      appcache_service->Release();
   }
 }
 
@@ -179,7 +168,7 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 }
 
 // static
-URLRequestContext* Profile::GetDefaultRequestContext() {
+URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
 }
 
@@ -209,13 +198,7 @@ class OffTheRecordProfileImpl : public Profile,
       : profile_(real_profile),
         extensions_request_context_(NULL),
         start_time_(Time::Now()) {
-    // Created here but lazily inititialized later, finally released on
-    // on the io thread, see CleanupAppCacheService.
-    appcache_service_ = new ChromeAppCacheService();
-    appcache_service_->AddRef();
-
-    request_context_ = ChromeURLRequestContext::CreateOffTheRecord(
-        this, appcache_service_);
+    request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
     request_context_->AddRef();
 
     // Register for browser close notifications so we can detect when the last
@@ -228,7 +211,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ~OffTheRecordProfileImpl() {
     CleanupRequestContext(request_context_);
     CleanupRequestContext(extensions_request_context_);
-    CleanupAppCacheService(appcache_service_);
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -252,13 +234,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual Profile* GetOriginalProfile() {
     return profile_;
-  }
-
-  virtual ChromeAppCacheService* GetAppCacheService() {
-    DCHECK(request_context_);  // should be created in ctor
-    if (!appcache_service_->is_initialized())
-      appcache_service_->InitializeOnUIThread(GetPath(), true);
-    return appcache_service_;
   }
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
@@ -393,22 +368,20 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetThemeProvider();
   }
 
-  virtual URLRequestContext* GetRequestContext() {
+  virtual URLRequestContextGetter* GetRequestContext() {
     return request_context_;
   }
 
-  virtual URLRequestContext* GetRequestContextForMedia() {
+  virtual URLRequestContextGetter* GetRequestContextForMedia() {
     // In OTR mode, media request context is the same as the original one.
     return request_context_;
   }
 
-  URLRequestContext* GetRequestContextForExtensions() {
+  URLRequestContextGetter* GetRequestContextForExtensions() {
     if (!extensions_request_context_) {
       extensions_request_context_ =
-          ChromeURLRequestContext::CreateOffTheRecordForExtensions(this);
+          ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(this);
       extensions_request_context_->AddRef();
-
-      DCHECK(extensions_request_context_->cookie_store());
     }
 
     return extensions_request_context_;
@@ -547,12 +520,9 @@ class OffTheRecordProfileImpl : public Profile,
   Profile* profile_;
 
   // The context to use for requests made from this OTR session.
-  ChromeURLRequestContext* request_context_;
+  ChromeURLRequestContextGetter* request_context_;
 
-  ChromeURLRequestContext* extensions_request_context_;
-
-  // Use a seperate appcache service for OTR.
-  ChromeAppCacheService* appcache_service_;
+  ChromeURLRequestContextGetter* extensions_request_context_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
@@ -602,11 +572,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       switches::kEnableExtensionTimelineApi)) {
     extension_devtools_manager_ = new ExtensionDevToolsManager(this);
   }
-
-  // Created here but lazily inititialized later, finally released on
-  // on the io thread, see CleanupAppCacheService.
-  appcache_service_ = new ChromeAppCacheService();
-  appcache_service_->AddRef();
 
   extension_process_manager_.reset(new ExtensionProcessManager(this));
   extension_message_service_ = new ExtensionMessageService(this);
@@ -788,7 +753,6 @@ ProfileImpl::~ProfileImpl() {
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
   CleanupRequestContext(extensions_request_context_);
-  CleanupAppCacheService(appcache_service_);
 
   // When the request contexts are gone, the blacklist wont be needed anymore.
   delete blacklist_;
@@ -841,14 +805,6 @@ void ProfileImpl::DestroyOffTheRecordProfile() {
 
 Profile* ProfileImpl::GetOriginalProfile() {
   return this;
-}
-
-ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
-  if (!appcache_service_->is_initialized()) {
-    EnsureRequestContextCreated();
-    appcache_service_->InitializeOnUIThread(GetPath(), false);
-  }
-  return appcache_service_;
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
@@ -939,7 +895,7 @@ FilePath ProfileImpl::GetPrefFilePath() {
   return pref_file_path;
 }
 
-URLRequestContext* ProfileImpl::GetRequestContext() {
+URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   if (!request_context_) {
     FilePath cookie_path = GetPath();
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
@@ -948,8 +904,8 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
     GetCacheParameters(kNormalContext, &cache_path, &max_size);
 
     cache_path = GetCachePath(cache_path);
-    request_context_ = ChromeURLRequestContext::CreateOriginal(
-        this, cookie_path, cache_path, max_size, appcache_service_);
+    request_context_ = ChromeURLRequestContextGetter::CreateOriginal(
+        this, cookie_path, cache_path, max_size);
     request_context_->AddRef();
 
     // The first request context is always a normal (non-OTR) request context.
@@ -957,33 +913,28 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
     // created first.
     if (!default_request_context_) {
       default_request_context_ = request_context_;
+      // TODO(eroman): this isn't terribly useful anymore now that the
+      // URLRequestContext is constructed by the IO thread...
       NotificationService::current()->Notify(
           NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
           NotificationService::AllSources(), NotificationService::NoDetails());
-#if defined(OS_LINUX)
-      // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
-      net::SetURLRequestContextForOCSP(default_request_context_);
-#endif
     }
-
-    DCHECK(request_context_->cookie_store());
   }
 
   return request_context_;
 }
 
-URLRequestContext* ProfileImpl::GetRequestContextForMedia() {
+URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
   if (!media_request_context_) {
     FilePath cache_path = base_cache_path_;
     int max_size;
     GetCacheParameters(kMediaContext, &cache_path, &max_size);
 
     cache_path = GetMediaCachePath(cache_path);
-    media_request_context_ = ChromeURLRequestContext::CreateOriginalForMedia(
-        this, cache_path, max_size, appcache_service_);
+    media_request_context_ =
+        ChromeURLRequestContextGetter::CreateOriginalForMedia(
+            this, cache_path, max_size);
     media_request_context_->AddRef();
-
-    DCHECK(media_request_context_->cookie_store());
   }
 
   return media_request_context_;
@@ -998,16 +949,15 @@ FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
   return favicon_service_.get();
 }
 
-URLRequestContext* ProfileImpl::GetRequestContextForExtensions() {
+URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   if (!extensions_request_context_) {
     FilePath cookie_path = GetPath();
     cookie_path = cookie_path.Append(chrome::kExtensionsCookieFilename);
 
     extensions_request_context_ =
-        ChromeURLRequestContext::CreateOriginalForExtensions(this, cookie_path);
+        ChromeURLRequestContextGetter::CreateOriginalForExtensions(
+            this, cookie_path);
     extensions_request_context_->AddRef();
-
-    DCHECK(extensions_request_context_->cookie_store());
   }
 
   return extensions_request_context_;

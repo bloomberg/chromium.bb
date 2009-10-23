@@ -63,7 +63,7 @@ class MessageLoop;
 class PrefService;
 class Profile;
 class ResourceDispatcherHost;
-class URLRequestContext;
+class URLRequestContextGetter;
 class TabContents;
 
 namespace base {
@@ -585,7 +585,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
   // The current active profile.
   Profile* profile_;
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   // Used for history service request management.
   CancelableRequestConsumerTSimple<Observer*> cancelable_consumer_;

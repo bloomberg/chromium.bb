@@ -34,6 +34,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
@@ -149,7 +150,8 @@ void PluginDownloadUrlHelper::InitiateDownload() {
   download_file_request_ = new URLRequest(GURL(download_url_), this);
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       download_source_child_unique_id_, download_file_request_);
-  download_file_request_->set_context(Profile::GetDefaultRequestContext());
+  download_file_request_->set_context(
+      Profile::GetDefaultRequestContext()->GetURLRequestContext());
   download_file_request_->Start();
 }
 
@@ -563,7 +565,7 @@ void PluginProcessHost::OnGetCookies(uint32 request_context,
         ToURLRequestContext(request_context);
   // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
   if (!context)
-    context = Profile::GetDefaultRequestContext();
+    context = Profile::GetDefaultRequestContext()->GetURLRequestContext();
 
   // Note: We don't have a first_party_for_cookies check because plugins bypass
   // third-party cookie blocking.

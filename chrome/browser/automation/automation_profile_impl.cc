@@ -6,20 +6,24 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/test/automation/automation_messages.h"
 
+namespace {
+
 // A special Request context for automation. Substitute a few things
 // like cookie store, proxy settings etc to handle them differently
 // for automation.
 class AutomationURLRequestContext : public ChromeURLRequestContext {
  public:
-  AutomationURLRequestContext(URLRequestContext* original_context,
+  AutomationURLRequestContext(ChromeURLRequestContext* original_context,
                               net::CookieStore* automation_cookie_store)
-        // All URLRequestContexts in chrome extend from ChromeURLRequestContext
-      : ChromeURLRequestContext(static_cast<ChromeURLRequestContext*>(
-            original_context)) {
+      : ChromeURLRequestContext(original_context),
+        // We must hold a reference to |original_context|, since many
+        // of the dependencies that ChromeURLRequestContext(original_context)
+        // copied are scoped to |original_context|.
+        original_context_(original_context) {
     cookie_store_ = automation_cookie_store;
   }
 
-  ~AutomationURLRequestContext() {
+  virtual ~AutomationURLRequestContext() {
     // Clear out members before calling base class dtor since we don't
     // own any of them.
 
@@ -32,11 +36,11 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
     strict_transport_security_state_ = NULL;
 
     // Clear ChromeURLRequestContext members.
-    prefs_ = NULL;
     blacklist_ = NULL;
   }
 
  private:
+  scoped_refptr<ChromeURLRequestContext> original_context_;
   DISALLOW_COPY_AND_ASSIGN(AutomationURLRequestContext);
 };
 
@@ -56,6 +60,8 @@ class AutomationCookieStore : public net::CookieStore {
   virtual bool SetCookie(const GURL& url, const std::string& cookie_line) {
     bool cookie_set = original_cookie_store_->SetCookie(url, cookie_line);
     if (cookie_set) {
+      // TODO(eroman): Should NOT be accessing the profile from here, as this
+      // is running on the IO thread.
       automation_client_->Send(new AutomationMsg_SetCookieAsync(0,
           profile_->tab_handle(), url, cookie_line));
     }
@@ -107,18 +113,63 @@ class AutomationCookieStore : public net::CookieStore {
   DISALLOW_COPY_AND_ASSIGN(AutomationCookieStore);
 };
 
+class Factory : public ChromeURLRequestContextFactory {
+ public:
+  Factory(ChromeURLRequestContextGetter* original_context_getter,
+          AutomationProfileImpl* profile,
+          IPC::Message::Sender* automation_client)
+      : ChromeURLRequestContextFactory(profile),
+        original_context_getter_(original_context_getter),
+        profile_(profile),
+        automation_client_(automation_client) {
+  }
+
+  virtual ChromeURLRequestContext* Create() {
+    ChromeURLRequestContext* original_context =
+        original_context_getter_->GetIOContext();
+
+    // Create an automation cookie store.
+    scoped_refptr<net::CookieStore> automation_cookie_store =
+        new AutomationCookieStore(profile_,
+                                  original_context->cookie_store(),
+                                  automation_client_);
+
+    return new AutomationURLRequestContext(original_context,
+                                           automation_cookie_store);
+  }
+
+ private:
+  scoped_refptr<ChromeURLRequestContextGetter> original_context_getter_;
+  AutomationProfileImpl* profile_;
+  IPC::Message::Sender* automation_client_;
+};
+
+// TODO(eroman): This duplicates CleanupRequestContext() from profile.cc.
+void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
+  context->CleanupOnUIThread();
+
+  // Clean up request context on IO thread.
+  g_browser_process->io_thread()->message_loop()->ReleaseSoon(FROM_HERE,
+                                                              context);
+}
+
+}  // namespace
+
+AutomationProfileImpl::~AutomationProfileImpl() {
+  CleanupRequestContext(alternate_request_context_);
+}
+
 void AutomationProfileImpl::Initialize(Profile* original_profile,
     IPC::Message::Sender* automation_client) {
   DCHECK(original_profile);
   original_profile_ = original_profile;
 
-  URLRequestContext* original_context = original_profile_->GetRequestContext();
-  scoped_refptr<net::CookieStore> original_cookie_store =
-      original_context->cookie_store();
-  alternate_cookie_store_ = new AutomationCookieStore(this,
-                                                      original_cookie_store,
-                                                      automation_client);
-  alternate_reqeust_context_ = new AutomationURLRequestContext(
-      original_context, alternate_cookie_store_.get());
+  ChromeURLRequestContextGetter* original_context =
+      static_cast<ChromeURLRequestContextGetter*>(
+          original_profile_->GetRequestContext());
+  alternate_request_context_ = new ChromeURLRequestContextGetter(
+      NULL, // Don't register an observer on PrefService.
+      new Factory(original_context, this, automation_client));
+  alternate_request_context_->AddRef();  // Balananced in the destructor.
 }
 

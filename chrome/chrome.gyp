@@ -1744,6 +1744,8 @@
         'browser/net/browser_url_util.h',
         'browser/net/chrome_url_request_context.cc',
         'browser/net/chrome_url_request_context.h',
+        'browser/net/url_request_context_getter.cc',
+        'browser/net/url_request_context_getter.h',
         'browser/net/dns_global.cc',
         'browser/net/dns_global.h',
         'browser/net/dns_host_info.cc',

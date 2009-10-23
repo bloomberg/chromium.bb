@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 
@@ -80,12 +81,13 @@ bool ResolveProxyMsgHelper::GetProxyService(
   }
 
   // If there is no default request context (say during shut down).
-  URLRequestContext* context = Profile::GetDefaultRequestContext();
-  if (!context)
+  URLRequestContextGetter* context_getter =
+      Profile::GetDefaultRequestContext();
+  if (!context_getter)
     return false;
 
   // Otherwise use the browser's global proxy service.
-  *out = context->proxy_service();
+  *out = context_getter->GetURLRequestContext()->proxy_service();
   return true;
 }
 

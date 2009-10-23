@@ -7,6 +7,7 @@
 #include "base/timer.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/net/url_fetcher_protect.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "net/http/http_response_headers.h"
 #include "net/socket/ssl_test_util.h"
@@ -19,6 +20,17 @@ using base::TimeDelta;
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
+
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_;
+  }
+ private:
+  scoped_refptr<URLRequestContext> context_;
+};
 
 class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
  public:
@@ -147,6 +159,23 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
   bool* destructor_called_;
 };
 
+class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  CancelTestURLRequestContextGetter(bool* destructor_called)
+      : destructor_called_(destructor_called) {
+  }
+
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new CancelTestURLRequestContext(destructor_called_);
+    return context_;
+  }
+
+ private:
+  scoped_refptr<URLRequestContext> context_;
+  bool* destructor_called_;
+};
+
 // Wrapper that lets us call CreateFetcher() on a thread of our choice.  We
 // could make URLFetcherTest refcounted and use PostTask(FROM_HERE.. ) to call
 // CreateFetcher() directly, but the ownership of the URLFetcherTest is a bit
@@ -167,7 +196,7 @@ class FetcherWrapperTask : public Task {
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContext());
+  fetcher_->set_request_context(new TestURLRequestContextGetter());
   fetcher_->set_io_loop(&io_loop_);
   fetcher_->Start();
 }
@@ -193,7 +222,7 @@ void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::POST, this);
-  fetcher_->set_request_context(new TestURLRequestContext());
+  fetcher_->set_request_context(new TestURLRequestContextGetter());
   fetcher_->set_io_loop(&io_loop_);
   fetcher_->set_upload_data("application/x-www-form-urlencoded",
                             "bobsyeruncle");
@@ -228,7 +257,7 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContext());
+  fetcher_->set_request_context(new TestURLRequestContextGetter());
   fetcher_->set_io_loop(&io_loop_);
   start_time_ = Time::Now();
   fetcher_->Start();
@@ -300,7 +329,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
   fetcher_->set_request_context(
-      new CancelTestURLRequestContext(&context_released_));
+      new CancelTestURLRequestContextGetter(&context_released_));
   fetcher_->set_io_loop(&io_loop_);
   fetcher_->Start();
   // Make sure we give the IO thread a chance to run.

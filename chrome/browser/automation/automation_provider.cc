@@ -40,6 +40,7 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -975,8 +976,12 @@ void AutomationProvider::GetCookies(const GURL& url, int handle,
   *value_size = -1;
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    *value =
-        tab->profile()->GetRequestContext()->cookie_store()->GetCookies(url);
+
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    net::CookieStore* cookie_store =
+        tab->profile()->GetRequestContext()->GetCookieStore();
+
+    *value = cookie_store->GetCookies(url);
     *value_size = static_cast<int>(value->size());
   }
 }
@@ -989,8 +994,12 @@ void AutomationProvider::SetCookie(const GURL& url,
 
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    URLRequestContext* context = tab->profile()->GetRequestContext();
-    if (context->cookie_store()->SetCookie(url, value))
+
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    scoped_refptr<net::CookieStore> cookie_store =
+        tab->profile()->GetRequestContext()->GetCookieStore();
+
+    if (cookie_store->SetCookie(url, value))
       *response_value = 1;
   }
 }
@@ -1181,9 +1190,9 @@ void AutomationProvider::ReceivedInspectElementResponse(int num_resources) {
 
 class SetProxyConfigTask : public Task {
  public:
-  explicit SetProxyConfigTask(net::ProxyService* proxy_service,
-                              const std::string& new_proxy_config)
-      : proxy_service_(proxy_service), proxy_config_(new_proxy_config) {}
+  SetProxyConfigTask(URLRequestContextGetter* request_context_getter,
+                     const std::string& new_proxy_config)
+      : request_context_getter_(request_context_getter), proxy_config_(new_proxy_config) {}
   virtual void Run() {
     // First, deserialize the JSON string. If this fails, log and bail.
     JSONStringValueSerializer deserializer(proxy_config_);
@@ -1201,10 +1210,12 @@ class SetProxyConfigTask : public Task {
     net::ProxyConfig pc;
     PopulateProxyConfig(*dict.get(), &pc);
 
-    DCHECK(proxy_service_);
+    net::ProxyService* proxy_service =
+        request_context_getter_->GetURLRequestContext()->proxy_service();
+    DCHECK(proxy_service);
     scoped_ptr<net::ProxyConfigService> proxy_config_service(
         new net::ProxyConfigServiceFixed(pc));
-    proxy_service_->ResetConfigService(proxy_config_service.release());
+    proxy_service->ResetConfigService(proxy_config_service.release());
   }
 
   void PopulateProxyConfig(const DictionaryValue& dict, net::ProxyConfig* pc) {
@@ -1233,29 +1244,26 @@ class SetProxyConfigTask : public Task {
   }
 
  private:
-  net::ProxyService* proxy_service_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
   std::string proxy_config_;
 };
 
 
 void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
-  URLRequestContext* context = Profile::GetDefaultRequestContext();
-  if (!context) {
+  URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
+  if (!context_getter) {
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     DCHECK(profile_manager);
     Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
     DCHECK(profile);
-    context = profile->GetRequestContext();
+    context_getter = profile->GetRequestContext();
   }
-  DCHECK(context);
-  // Every URLRequestContext should have a proxy service.
-  net::ProxyService* proxy_service = context->proxy_service();
-  DCHECK(proxy_service);
+  DCHECK(context_getter);
 
   g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      new SetProxyConfigTask(proxy_service, new_proxy_config));
+      new SetProxyConfigTask(context_getter, new_proxy_config));
 }
 
 void AutomationProvider::GetDownloadDirectory(

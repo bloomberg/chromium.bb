@@ -32,6 +32,7 @@
 
 class AppCacheDispatcherHost;
 class AudioRendererHost;
+class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
@@ -39,6 +40,7 @@ class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 class SpellChecker;
+class URLRequestContextGetter;
 struct ViewHostMsg_Audio_CreateStream;
 struct WebPluginInfo;
 
@@ -299,6 +301,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // thread.
   static Clipboard* GetClipboard();
 
+  // Returns either the extension URLRequestContext or regular URLRequestContext
+  // depending on whether |url| is an extension URL.
+  ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
+
   NotificationRegistrar registrar_;
 
   // The channel associated with the renderer connection. This pointer is not
@@ -326,13 +332,13 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   ResolveProxyMsgHelper resolve_proxy_msg_helper_;
 
   // Contextual information to be used for requests created here.
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<URLRequestContextGetter> request_context_;
 
   // A request context specific for media resources.
-  scoped_refptr<URLRequestContext> media_request_context_;
+  scoped_refptr<URLRequestContextGetter> media_request_context_;
 
   // A request context that holds a cookie store for chrome-extension URLs.
-  scoped_refptr<URLRequestContext> extensions_request_context_;
+  scoped_refptr<URLRequestContextGetter> extensions_request_context_;
 
   // Used for routing extension messages.
   scoped_refptr<ExtensionMessageService> extensions_message_service_;

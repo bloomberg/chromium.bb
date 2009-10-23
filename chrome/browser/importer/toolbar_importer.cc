@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/libxml_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
@@ -25,8 +26,8 @@ static const wchar_t kSplitStringToken = L';';
 static const char* kGoogleDomainSecureCookieId = "SID=";
 
 bool toolbar_importer_utils::IsGoogleGAIACookieInstalled() {
-  URLRequestContext* context = Profile::GetDefaultRequestContext();
-  net::CookieStore* store = context->cookie_store();
+  net::CookieStore* store =
+      Profile::GetDefaultRequestContext()->GetCookieStore();
   GURL url(kGoogleDomainUrl);
   net::CookieOptions options;
   options.set_include_httponly();  // The SID cookie might be httponly.

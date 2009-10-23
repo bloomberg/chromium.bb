@@ -26,8 +26,8 @@ class Hunspell;
 class PrefService;
 class Profile;
 class MessageLoop;
-class URLRequestContext;
 class URLFetcher;
+class URLRequestContextGetter;
 
 namespace file_util {
 class MemoryMappedFile;
@@ -56,7 +56,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // testing.
   SpellChecker(const FilePath& dict_dir,
                const std::string& language,
-               URLRequestContext* request_context,
+               URLRequestContextGetter* request_context_getter,
                const FilePath& custom_dictionary_file_name);
 
   // Only delete on the I/O thread (see above).
@@ -210,7 +210,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   MessageLoop* file_loop_;
 
   // Used for requests. MAY BE NULL which means don't try to download.
-  URLRequestContext* url_request_context_;
+  URLRequestContextGetter* request_context_getter_;
 
   // True when we're downloading or saving a dictionary.
   bool obtaining_dictionary_;

@@ -40,8 +40,9 @@ SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
 }
 
-void SyncBackendHost::Initialize(const GURL& sync_service_url,
-                                 URLRequestContext* baseline_context) {
+void SyncBackendHost::Initialize(
+    const GURL& sync_service_url,
+    URLRequestContextGetter* baseline_context_getter) {
   if (!core_thread_.Start())
     return;
   bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
@@ -49,8 +50,8 @@ void SyncBackendHost::Initialize(const GURL& sync_service_url,
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         sync_service_url, bookmark_model_worker_, true,
-                        new HttpBridgeFactory(baseline_context),
-                        new HttpBridgeFactory(baseline_context)));
+                        new HttpBridgeFactory(baseline_context_getter),
+                        new HttpBridgeFactory(baseline_context_getter)));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,

@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_plugin_host.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/test/chrome_plugin/test_chrome_plugin.h"
@@ -22,6 +23,17 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 const char kPluginFilename[] = "test_chrome_plugin.dll";
 const int kResponseBufferSize = 4096;
 
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_;
+  }
+ private:
+  scoped_refptr<URLRequestContext> context_;
+};
+
 class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
  public:
   ChromePluginTest()
@@ -29,7 +41,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
         response_buffer_(new net::IOBuffer(kResponseBufferSize)),
         plugin_(NULL),
         expected_payload_(NULL),
-        request_context_(new TestURLRequestContext()) {
+        request_context_getter_(new TestURLRequestContextGetter()) {
     test_funcs_.test_make_request = NULL;
   }
 
@@ -56,7 +68,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
     // We need to setup a default request context in order to issue HTTP
     // requests.
     DCHECK(!Profile::GetDefaultRequestContext());
-    Profile::set_default_request_context(request_context_.get());
+    Profile::set_default_request_context(request_context_getter_.get());
   }
   virtual void TearDown() {
     UnloadPlugin();
@@ -83,7 +95,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
   ChromePluginLib* plugin_;
   TestFuncParams::PluginFuncs test_funcs_;
   const TestResponsePayload* expected_payload_;
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
 };
 
 static void STDCALL CPT_Complete(CPRequest* request, bool success,

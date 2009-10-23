@@ -10,6 +10,7 @@
 #include "base/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -51,8 +52,9 @@ static const GoogleCookieFilter kGAIACookieFilters[] = {
 
 bool IsGoogleGAIACookieInstalled() {
   for (size_t i = 0; i < arraysize(kGAIACookieFilters); ++i) {
-    URLRequestContext* context = Profile::GetDefaultRequestContext();
-    net::CookieStore* store = context->cookie_store();
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    net::CookieStore* store =
+        Profile::GetDefaultRequestContext()->GetCookieStore();
     GURL url(kGAIACookieFilters[i].url);
     net::CookieOptions options;
     options.set_include_httponly();  // The SID cookie might be httponly.

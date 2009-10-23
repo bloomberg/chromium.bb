@@ -8,6 +8,7 @@
 #include "app/table_model_observer.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -38,9 +39,9 @@ void CookiesTableModel::RemoveCookies(int start_index, int remove_count) {
     NOTREACHED();
     return;
   }
-
+  // Since we are running on the UI thread don't call GetURLRequestContext().
   net::CookieMonster* monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
 
   // We need to update the searched results list, the full cookie list,
   // and the view.  We walk through the search results list (which is what
@@ -158,8 +159,11 @@ static bool ContainsFilterText(
 
 void CookiesTableModel::LoadCookies() {
   // mmargh mmargh mmargh!
+
+  // Since we are running on the UI thread don't call GetURLRequestContext().
   net::CookieMonster* cookie_monster =
-      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
+
   all_cookies_ = cookie_monster->GetAllCookies();
   DoFilter();
 }

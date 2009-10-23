@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -423,11 +424,13 @@ void DownloadFileManager::OnDownloadFinished(int id,
   RemoveDownloadFromUIProgress(id);
 }
 
-void DownloadFileManager::DownloadUrl(const GURL& url,
-                                      const GURL& referrer,
-                                      int render_process_host_id,
-                                      int render_view_id,
-                                      URLRequestContext* request_context) {
+void DownloadFileManager::DownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    int render_process_host_id,
+    int render_view_id,
+    URLRequestContextGetter* request_context_getter) {
   DCHECK(MessageLoop::current() == ui_loop_);
   base::Thread* thread = g_browser_process->io_thread();
   if (thread) {
@@ -436,9 +439,10 @@ void DownloadFileManager::DownloadUrl(const GURL& url,
                           &DownloadFileManager::OnDownloadUrl,
                           url,
                           referrer,
+                          referrer_charset,
                           render_process_host_id,
                           render_view_id,
-                          request_context));
+                          request_context_getter));
   }
 }
 
@@ -517,17 +521,23 @@ void DownloadFileManager::RemoveDownloadManager(DownloadManager* manager) {
 // Notifications from the UI thread and run on the IO thread
 
 // Initiate a request for URL to be downloaded.
-void DownloadFileManager::OnDownloadUrl(const GURL& url,
-                                        const GURL& referrer,
-                                        int render_process_host_id,
-                                        int render_view_id,
-                                        URLRequestContext* request_context) {
+void DownloadFileManager::OnDownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    int render_process_host_id,
+    int render_view_id,
+    URLRequestContextGetter* request_context_getter) {
   DCHECK(MessageLoop::current() == io_loop_);
+
+  URLRequestContext* context = request_context_getter->GetURLRequestContext();
+  context->set_referrer_charset(referrer_charset);
+
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
                                            render_process_host_id,
                                            render_view_id,
-                                           request_context);
+                                           context);
 }
 
 // Actions from the UI thread and run on the download thread

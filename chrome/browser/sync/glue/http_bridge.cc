@@ -21,24 +21,46 @@
 
 namespace browser_sync {
 
+HttpBridge::RequestContextGetter::RequestContextGetter(
+    URLRequestContextGetter* baseline_context_getter)
+    : baseline_context_getter_(baseline_context_getter) {
+}
+
+URLRequestContext* HttpBridge::RequestContextGetter::GetURLRequestContext() {
+  // Lazily create the context.
+  if (!context_) {
+    URLRequestContext* baseline_context =
+        baseline_context_getter_->GetURLRequestContext();
+    context_ = new RequestContext(baseline_context);
+    baseline_context_getter_ = NULL;
+  }
+
+  // Apply the user agent which was set earlier.
+  if (is_user_agent_set())
+    context_->set_user_agent(user_agent_);
+
+  return context_;
+}
+
 HttpBridgeFactory::HttpBridgeFactory(
-    URLRequestContext* baseline_context) {
-  DCHECK(baseline_context != NULL);
-  request_context_ = new HttpBridge::RequestContext(baseline_context);
-  request_context_->AddRef();
+    URLRequestContextGetter* baseline_context_getter) {
+  DCHECK(baseline_context_getter != NULL);
+  request_context_getter_ =
+      new HttpBridge::RequestContextGetter(baseline_context_getter);
+  request_context_getter_->AddRef();
 }
 
 HttpBridgeFactory::~HttpBridgeFactory() {
-  if (request_context_) {
-    // Clean up request context on IO thread.
+  if (request_context_getter_) {
+    // Clean up request context getter on IO thread.
     ChromeThread::GetMessageLoop(ChromeThread::IO)->ReleaseSoon(FROM_HERE,
-        request_context_);
-    request_context_ = NULL;
+        request_context_getter_);
+    request_context_getter_ = NULL;
   }
 }
 
 sync_api::HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  HttpBridge* http = new HttpBridge(request_context_,
+  HttpBridge* http = new HttpBridge(request_context_getter_,
       ChromeThread::GetMessageLoop(ChromeThread::IO));
   http->AddRef();
   return http;
@@ -87,9 +109,9 @@ HttpBridge::RequestContext::~RequestContext() {
   delete http_transaction_factory_;
 }
 
-HttpBridge::HttpBridge(HttpBridge::RequestContext* context,
+HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter,
                        MessageLoop* io_loop)
-    : context_for_request_(context),
+    : context_getter_for_request_(context_getter),
       url_poster_(NULL),
       created_on_loop_(MessageLoop::current()),
       io_loop_(io_loop),
@@ -98,17 +120,17 @@ HttpBridge::HttpBridge(HttpBridge::RequestContext* context,
       http_response_code_(-1),
       http_post_completed_(false, false),
       use_io_loop_for_testing_(false) {
-  context_for_request_->AddRef();
+  context_getter_for_request_->AddRef();
 }
 
 HttpBridge::~HttpBridge() {
-  io_loop_->ReleaseSoon(FROM_HERE, context_for_request_);
+  io_loop_->ReleaseSoon(FROM_HERE, context_getter_for_request_);
 }
 
 void HttpBridge::SetUserAgent(const char* user_agent) {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(!request_completed_);
-  context_for_request_->set_user_agent(user_agent);
+  context_getter_for_request_->set_user_agent(user_agent);
 }
 
 void HttpBridge::SetExtraRequestHeaders(const char * headers) {
@@ -153,7 +175,6 @@ bool HttpBridge::MakeSynchronousPost(int* os_error_code, int* response_code) {
   DCHECK(!request_completed_);
   DCHECK(url_for_request_.is_valid()) << "Invalid URL for request";
   DCHECK(!content_type_.empty()) << "Payload not set";
-  DCHECK(context_for_request_->is_user_agent_set()) << "User agent not set";
 
   io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
                                 &HttpBridge::CallMakeAsynchronousPost));
@@ -172,7 +193,7 @@ void HttpBridge::MakeAsynchronousPost() {
   DCHECK(!request_completed_);
 
   url_poster_ = new URLFetcher(url_for_request_, URLFetcher::POST, this);
-  url_poster_->set_request_context(context_for_request_);
+  url_poster_->set_request_context(context_getter_for_request_);
   url_poster_->set_upload_data(content_type_, request_content_);
   url_poster_->set_extra_request_headers(extra_headers_);
 
@@ -192,10 +213,6 @@ const char* HttpBridge::GetResponseContent() const {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(request_completed_);
   return response_content_.data();
-}
-
-URLRequestContext* HttpBridge::GetRequestContext() const {
-  return context_for_request_;
 }
 
 void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,

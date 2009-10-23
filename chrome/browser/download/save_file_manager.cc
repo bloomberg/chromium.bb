@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/save_file.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -153,7 +154,7 @@ void SaveFileManager::SaveURL(const GURL& url,
                               int render_view_id,
                               SaveFileCreateInfo::SaveFileSource save_source,
                               const FilePath& file_full_path,
-                              URLRequestContext* request_context,
+                              URLRequestContextGetter* request_context_getter,
                               SavePackage* save_package) {
   DCHECK_EQ(MessageLoop::current(), ui_loop_);
   if (!io_loop_) {
@@ -173,7 +174,7 @@ void SaveFileManager::SaveURL(const GURL& url,
                           referrer,
                           render_process_host_id,
                           render_view_id,
-                          request_context));
+                          request_context_getter));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -393,17 +394,19 @@ void SaveFileManager::OnCancelSaveRequest(int render_process_id,
 
 // Notifications sent from the UI thread and run on the IO thread.
 
-void SaveFileManager::OnSaveURL(const GURL& url,
-                                const GURL& referrer,
-                                int render_process_host_id,
-                                int render_view_id,
-                                URLRequestContext* request_context) {
+void SaveFileManager::OnSaveURL(
+    const GURL& url,
+    const GURL& referrer,
+    int render_process_host_id,
+    int render_view_id,
+    URLRequestContextGetter* request_context_getter) {
   DCHECK_EQ(MessageLoop::current(), io_loop_);
+  URLRequestContext* context = request_context_getter->GetURLRequestContext();
   resource_dispatcher_host_->BeginSaveFile(url,
                                            referrer,
                                            render_process_host_id,
                                            render_view_id,
-                                           request_context);
+                                           context);
 }
 
 void SaveFileManager::OnRequireSaveJobFromOtherSource(

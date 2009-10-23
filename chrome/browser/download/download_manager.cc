@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -475,7 +476,7 @@ bool DownloadManager::Init(Profile* profile) {
   shutdown_needed_ = true;
 
   profile_ = profile;
-  request_context_ = profile_->GetRequestContext();
+  request_context_getter_ = profile_->GetRequestContext();
 
   // 'incognito mode' will have access to past downloads, but we won't store
   // information about new downloads while in that mode.
@@ -1119,12 +1120,12 @@ void DownloadManager::DownloadUrl(const GURL& url,
                                   const std::string& referrer_charset,
                                   TabContents* tab_contents) {
   DCHECK(tab_contents);
-  request_context_->set_referrer_charset(referrer_charset);
   file_manager_->DownloadUrl(url,
                              referrer,
+                             referrer_charset,
                              tab_contents->process()->id(),
                              tab_contents->render_view_host()->routing_id(),
-                             request_context_.get());
+                             request_context_getter_);
 }
 
 void DownloadManager::GenerateExtension(

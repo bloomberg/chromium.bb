@@ -12,6 +12,7 @@
 
 class MessageLoop;
 class Profile;
+class URLRequestContextGetter;
 
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
@@ -86,7 +87,8 @@ class BrowsingDataRemover : public NotificationObserver {
   void ClearedCache();
 
   // Invoked on the IO thread to delete from the cache.
-  void ClearCacheOnIOThread(base::Time delete_begin,
+  void ClearCacheOnIOThread(URLRequestContextGetter* context_getter,
+                            base::Time delete_begin,
                             base::Time delete_end,
                             MessageLoop* ui_loop);
 

@@ -42,6 +42,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
@@ -61,7 +62,7 @@ struct DownloadCreateInfo;
 class DownloadManager;
 class MessageLoop;
 class ResourceDispatcherHost;
-class URLRequestContext;
+class URLRequestContextGetter;
 
 // DownloadBuffer --------------------------------------------------------------
 
@@ -193,16 +194,18 @@ class DownloadFileManager
   // ResourceDispatcherHost on the IO thread.
   void DownloadUrl(const GURL& url,
                    const GURL& referrer,
+                   const std::string& referrer_charset,
                    int render_process_host_id,
                    int render_view_id,
-                   URLRequestContext* request_context);
+                   URLRequestContextGetter* request_context_getter);
 
   // Run on the IO thread to initiate the download of a URL.
   void OnDownloadUrl(const GURL& url,
                      const GURL& referrer,
+                     const std::string& referrer_charset,
                      int render_process_host_id,
                      int render_view_id,
-                     URLRequestContext* request_context);
+                     URLRequestContextGetter* request_context_getter);
 
   // Called on the UI thread to remove a download item or manager.
   void RemoveDownloadManager(DownloadManager* manager);

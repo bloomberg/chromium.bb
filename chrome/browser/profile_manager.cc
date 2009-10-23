@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/logging_chrome.h"
@@ -242,14 +243,16 @@ void ProfileManager::SuspendProfile(Profile* profile) {
        i != g_url_request_job_tracker.end(); ++i)
     (*i)->Kill();
 
-  profile->GetRequestContext()->http_transaction_factory()->Suspend(true);
+  profile->GetRequestContext()->GetURLRequestContext()->
+      http_transaction_factory()->Suspend(true);
 }
 
 void ProfileManager::ResumeProfile(Profile* profile) {
   DCHECK(profile);
   DCHECK(MessageLoop::current() ==
     ChromeThread::GetMessageLoop(ChromeThread::IO));
-  profile->GetRequestContext()->http_transaction_factory()->Suspend(false);
+  profile->GetRequestContext()->GetURLRequestContext()->
+      http_transaction_factory()->Suspend(false);
 }
 
 

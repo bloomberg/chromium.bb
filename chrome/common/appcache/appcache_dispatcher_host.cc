@@ -5,12 +5,14 @@
 #include "chrome/common/appcache/appcache_dispatcher_host.h"
 
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+// TODO(eroman): uh oh, depending on stuff outside of common/
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/render_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
-    ChromeAppCacheService* appcache_service)
-        : appcache_service_(appcache_service),
+    URLRequestContextGetter* request_context_getter)
+        : request_context_getter_(request_context_getter),
           process_handle_(0) {
 }
 
@@ -19,6 +21,13 @@ void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
   DCHECK(sender);
   DCHECK(process_handle && !process_handle_);
   process_handle_ = process_handle;
+
+  // Get the AppCacheService (it can only be accessed from IO thread).
+  URLRequestContext* context = request_context_getter_->GetURLRequestContext();
+  appcache_service_ =
+      static_cast<ChromeURLRequestContext*>(context)->appcache_service();
+  request_context_getter_ = NULL;
+
   frontend_proxy_.set_sender(sender);
   if (appcache_service_.get()) {
     backend_impl_.Initialize(

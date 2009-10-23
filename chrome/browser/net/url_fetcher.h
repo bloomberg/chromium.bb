@@ -18,7 +18,7 @@
 class GURL;
 typedef std::vector<std::string> ResponseCookies;
 class URLFetcher;
-class URLRequestContext;
+class URLRequestContextGetter;
 class URLRequestStatus;
 
 namespace net {
@@ -143,7 +143,7 @@ class URLFetcher {
 
   // Set the URLRequestContext on the request.  Must be called before the
   // request is started.
-  void set_request_context(URLRequestContext* request_context);
+  void set_request_context(URLRequestContextGetter* request_context_getter);
 
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.

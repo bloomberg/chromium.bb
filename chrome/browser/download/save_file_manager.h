@@ -75,7 +75,7 @@ class SavePackage;
 class MessageLoop;
 class ResourceDispatcherHost;
 class Task;
-class URLRequestContext;
+class URLRequestContextGetter;
 
 class SaveFileManager
     : public base::RefCountedThreadSafe<SaveFileManager> {
@@ -99,7 +99,7 @@ class SaveFileManager
                int render_view_id,
                SaveFileCreateInfo::SaveFileSource save_source,
                const FilePath& file_full_path,
-               URLRequestContext* request_context,
+               URLRequestContextGetter* request_context_getter,
                SavePackage* save_package);
 
   // Notifications sent from the IO thread and run on the file thread:
@@ -218,7 +218,7 @@ class SaveFileManager
                  const GURL& referrer,
                  int render_process_host_id,
                  int render_view_id,
-                 URLRequestContext* request_context);
+                 URLRequestContextGetter* request_context_getter);
   // Handler for a notification sent to the IO thread for generating save id.
   void OnRequireSaveJobFromOtherSource(SaveFileCreateInfo* info);
   // Call ResourceDispatcherHost's CancelRequest method to execute cancel

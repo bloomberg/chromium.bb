@@ -25,11 +25,11 @@ namespace net {
 class StrictTransportSecurityState;
 class SSLConfigService;
 }
+
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
-class ChromeAppCacheService;
-class ChromeURLRequestContext;
+class ChromeURLRequestContextGetter;
 class DesktopNotificationService;
 class DownloadManager;
 class Extension;
@@ -54,7 +54,7 @@ class TemplateURLFetcher;
 class TemplateURLModel;
 class ThemeProvider;
 class ThumbnailStore;
-class URLRequestContext;
+class URLRequestContextGetter;
 class UserScriptMaster;
 class VisitedLinkMaster;
 class VisitedLinkEventListener;
@@ -110,7 +110,7 @@ class Profile {
   //
   // The returned object is ref'd by the profile.  Callers who AddRef() it (to
   // keep it alive longer than the profile) must Release() it on the I/O thread.
-  static URLRequestContext* GetDefaultRequestContext();
+  static URLRequestContextGetter* GetDefaultRequestContext();
 
   // Returns a unique Id that can be used to identify this profile at runtime.
   // This Id is not persistent and will not survive a restart of the browser.
@@ -133,11 +133,6 @@ class Profile {
   // Return the original "recording" profile. This method returns this if the
   // profile is not off the record.
   virtual Profile* GetOriginalProfile() = 0;
-
-  // Retrieves a pointer to the AppCacheService for this profile.
-  // Chrome request contexts associated with this profile also have
-  // a reference to this instance.
-  virtual ChromeAppCacheService* GetAppCacheService() = 0;
 
   // Retrieves a pointer to the VisitedLinkMaster associated with this
   // profile.  The VisitedLinkMaster is lazily created the first time
@@ -261,15 +256,15 @@ class Profile {
   //
   // The returned object is ref'd by the profile.  Callers who AddRef() it (to
   // keep it alive longer than the profile) must Release() it on the I/O thread.
-  virtual URLRequestContext* GetRequestContext() = 0;
+  virtual URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the request context for media resources asociated with this
   // profile.
-  virtual URLRequestContext* GetRequestContextForMedia() = 0;
+  virtual URLRequestContextGetter* GetRequestContextForMedia() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
-  virtual URLRequestContext* GetRequestContextForExtensions() = 0;
+  virtual URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
@@ -360,7 +355,7 @@ class Profile {
 
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!
-  static void set_default_request_context(URLRequestContext* c) {
+  static void set_default_request_context(URLRequestContextGetter* c) {
     default_request_context_ = c;
   }
 #endif
@@ -374,7 +369,7 @@ class Profile {
   }
 
  protected:
-  static URLRequestContext* default_request_context_;
+  static URLRequestContextGetter* default_request_context_;
 
  private:
   bool restored_last_session_;
@@ -395,7 +390,6 @@ class ProfileImpl : public Profile,
   virtual Profile* GetOffTheRecordProfile();
   virtual void DestroyOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
-  virtual ChromeAppCacheService* GetAppCacheService();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
@@ -421,9 +415,9 @@ class ProfileImpl : public Profile,
   virtual ThemeProvider* GetThemeProvider();
   virtual ThumbnailStore* GetThumbnailStore();
   virtual bool HasCreatedDownloadManager() const;
-  virtual URLRequestContext* GetRequestContext();
-  virtual URLRequestContext* GetRequestContextForMedia();
-  virtual URLRequestContext* GetRequestContextForExtensions();
+  virtual URLRequestContextGetter* GetRequestContext();
+  virtual URLRequestContextGetter* GetRequestContextForMedia();
+  virtual URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual Blacklist* GetBlacklist();
   virtual SessionService* GetSessionService();
@@ -505,13 +499,11 @@ class ProfileImpl : public Profile,
   scoped_ptr<ProfileSyncService> sync_service_;
 #endif
 
-  ChromeAppCacheService* appcache_service_;
+  ChromeURLRequestContextGetter* request_context_;
 
-  ChromeURLRequestContext* request_context_;
+  ChromeURLRequestContextGetter* media_request_context_;
 
-  ChromeURLRequestContext* media_request_context_;
-
-  ChromeURLRequestContext* extensions_request_context_;
+  ChromeURLRequestContextGetter* extensions_request_context_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 

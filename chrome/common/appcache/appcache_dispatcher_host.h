@@ -15,6 +15,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 
 class ChromeAppCacheService;
+class URLRequestContextGetter;
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
@@ -22,7 +23,8 @@ class ChromeAppCacheService;
 // an instance and delegates calls to it.
 class AppCacheDispatcherHost {
  public:
-  explicit AppCacheDispatcherHost(ChromeAppCacheService* appcache_service);
+  explicit AppCacheDispatcherHost(
+      URLRequestContextGetter* request_context_getter);
 
   void Initialize(IPC::Message::Sender* sender, int process_id,
                   base::ProcessHandle process_handle);
@@ -56,7 +58,14 @@ class AppCacheDispatcherHost {
 
   AppCacheFrontendProxy frontend_proxy_;
   appcache::AppCacheBackendImpl backend_impl_;
+
+  // Temporary until Initialize() can be called from the IO thread,
+  // which will extract the AppCacheService from the URLRequestContext.
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+
+  // This is only valid once Initialize() has been called.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+
   scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
   scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
   scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;

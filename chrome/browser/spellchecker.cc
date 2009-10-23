@@ -463,7 +463,7 @@ FilePath SpellChecker::GetVersionedFileName(const std::string& input_language,
 
 SpellChecker::SpellChecker(const FilePath& dict_dir,
                            const std::string& language,
-                           URLRequestContext* request_context,
+                           URLRequestContextGetter* request_context_getter,
                            const FilePath& custom_dictionary_file_name)
     : given_dictionary_directory_(dict_dir),
       custom_dictionary_file_name_(custom_dictionary_file_name),
@@ -472,7 +472,7 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       worker_loop_(NULL),
       tried_to_download_dictionary_file_(false),
       file_loop_(NULL),
-      url_request_context_(request_context),
+      request_context_getter_(request_context_getter),
       obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
       is_using_platform_spelling_engine_(false),
@@ -524,7 +524,7 @@ void SpellChecker::StartDictionaryDownload(const FilePath& file_name) {
   GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
       l10n_util::ToLower(bdic_file_name_.ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-  fetcher_->set_request_context(url_request_context_);
+  fetcher_->set_request_context(request_context_getter_);
   obtaining_dictionary_ = true;
   fetcher_->Start();
 }
@@ -654,7 +654,7 @@ void SpellChecker::HunspellInited(Hunspell* hunspell,
 
 void SpellChecker::DoDictionaryDownload() {
   // Download the dictionary file.
-  if (file_loop_ && url_request_context_) {
+  if (file_loop_ && request_context_getter_) {
     if (!tried_to_download_dictionary_file_) {
       FilePath dictionary_file_name_app = GetVersionedFileName(language_,
           given_dictionary_directory_);

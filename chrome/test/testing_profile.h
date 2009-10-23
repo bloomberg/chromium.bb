@@ -74,7 +74,6 @@ class TestingProfile : public Profile {
   virtual void DestroyOffTheRecordProfile() {}
 
   virtual Profile* GetOriginalProfile() { return this; }
-  virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
   virtual ExtensionsService* GetExtensionsService() { return NULL; }
   virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
@@ -131,9 +130,11 @@ class TestingProfile : public Profile {
     InitThemes();
     return theme_provider_.get();
   }
-  virtual URLRequestContext* GetRequestContext() { return NULL; }
-  virtual URLRequestContext* GetRequestContextForMedia() { return NULL; }
-  virtual URLRequestContext* GetRequestContextForExtensions() { return NULL; }
+  virtual URLRequestContextGetter* GetRequestContext() { return NULL; }
+  virtual URLRequestContextGetter* GetRequestContextForMedia() { return NULL; }
+  virtual URLRequestContextGetter* GetRequestContextForExtensions() {
+      return NULL;
+  }
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual Blacklist* GetBlacklist() { return NULL; }
   void set_session_service(SessionService* session_service) {

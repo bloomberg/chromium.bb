@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_
 
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "net/url_request/url_request_context.h"
 
@@ -18,6 +19,8 @@ class AutomationProfileImpl : public Profile {
   AutomationProfileImpl() : original_profile_(NULL),
                             tab_handle_(0) {
   }
+
+  virtual ~AutomationProfileImpl();
 
   void Initialize(Profile* original_profile,
                   IPC::Message::Sender* automation_client);
@@ -47,9 +50,6 @@ class AutomationProfileImpl : public Profile {
   }
   virtual Profile* GetOriginalProfile() {
     return original_profile_->GetOriginalProfile();
-  }
-  virtual ChromeAppCacheService* GetAppCacheService() {
-    return original_profile_->GetAppCacheService();
   }
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     return original_profile_->GetVisitedLinkMaster();
@@ -126,13 +126,13 @@ class AutomationProfileImpl : public Profile {
   virtual ThumbnailStore* GetThumbnailStore() {
     return original_profile_->GetThumbnailStore();
   }
-  virtual URLRequestContext* GetRequestContext() {
-    return alternate_reqeust_context_;
+  virtual URLRequestContextGetter* GetRequestContext() {
+    return alternate_request_context_;
   }
-  virtual URLRequestContext* GetRequestContextForMedia() {
+  virtual URLRequestContextGetter* GetRequestContextForMedia() {
     return original_profile_->GetRequestContextForMedia();
   }
-  virtual URLRequestContext* GetRequestContextForExtensions() {
+  virtual URLRequestContextGetter* GetRequestContextForExtensions() {
     return original_profile_->GetRequestContextForExtensions();
   }
   virtual net::SSLConfigService* GetSSLConfigService() {
@@ -214,8 +214,7 @@ class AutomationProfileImpl : public Profile {
 
  protected:
   Profile* original_profile_;
-  scoped_refptr<net::CookieStore> alternate_cookie_store_;
-  scoped_refptr<URLRequestContext> alternate_reqeust_context_;
+  ChromeURLRequestContextGetter* alternate_request_context_;
   int tab_handle_;
 
  private:

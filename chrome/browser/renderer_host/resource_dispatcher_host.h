@@ -61,7 +61,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   class Receiver : public IPC::Message::Sender,
                    public ChildProcessInfo {
    public:
-    // Return the URLRequestContext for the given request.
+    // Returns the URLRequestContext for the given request.
     // If NULL is returned, the default context for the profile is used.
     virtual URLRequestContext* GetRequestContext(
         uint32 request_id,
