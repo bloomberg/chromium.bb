@@ -92,6 +92,8 @@ static float kFindBarCloseDuration = 0.15;
 }
 
 - (void)findPboardUpdated:(NSNotification*)notification {
+  if (suppressPboardUpdateActions_)
+    return;
   [self prepopulateText:[[FindPasteboard sharedInstance] findText]
              stopSearch:YES];
 }
@@ -132,7 +134,9 @@ static float kFindBarCloseDuration = 0.15;
     return;
 
   NSString* findText = [findText_ stringValue];
+  suppressPboardUpdateActions_ = YES;
   [[FindPasteboard sharedInstance] setFindText:findText];
+  suppressPboardUpdateActions_ = NO;
 
   if ([findText length] > 0) {
     tab_contents->StartFinding(base::SysNSStringToUTF16(findText), true, false);

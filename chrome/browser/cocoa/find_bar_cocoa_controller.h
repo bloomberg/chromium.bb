@@ -39,6 +39,9 @@ class FindNotificationDetails;
   // running (stopAnimation is currently called before the last tab in a
   // window is removed).
   scoped_nsobject<NSViewAnimation> currentAnimation_;
+
+  // If YES, do nothing as a result of find pasteboard update notifications.
+  BOOL suppressPboardUpdateActions_;
 };
 
 // Initializes a new FindBarCocoaController.
