@@ -2343,7 +2343,13 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
-  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
+
+  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  bool enable_extensions =
+      extensions_service && extensions_service->extensions_enabled();
+  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
+                                        enable_extensions);
+
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_CONTROL_PANEL, true);
 #endif

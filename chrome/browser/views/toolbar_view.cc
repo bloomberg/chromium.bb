@@ -1166,12 +1166,8 @@ void ToolbarView::CreateAppMenu() {
                                           IDS_SHOW_DOWNLOADS);
 
   // Create the manage extensions menu item.
-  ExtensionsService* extensions_service =
-      browser_->profile()->GetExtensionsService();
-  if (extensions_service && extensions_service->extensions_enabled()) {
-    app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
-                                            IDS_SHOW_EXTENSIONS);
-  }
+  app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
+                                          IDS_SHOW_EXTENSIONS);
 
   app_menu_contents_->AddSeparator();
 #if defined(BROWSER_SYNC)

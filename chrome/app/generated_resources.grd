@@ -978,6 +978,9 @@ each locale. -->
         <message name="IDS_SHOW_DOWNLOADS" desc="In Title Case: The show downloads menu in the app menu">
           &amp;Downloads
         </message>
+        <message name="IDS_SHOW_EXTENSIONS" desc="In Title Case: The show extensions menu in the app menu">
+          &amp;Extensions
+        </message>
         <message name="IDS_OPTIONS" desc="In Title Case: The text label of the Options menu item">
           &amp;Options
         </message>
