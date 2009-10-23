@@ -288,10 +288,15 @@ class HostResolverCacheSubSection : public SubSection {
 
   static std::string AddressFamilyToString(net::AddressFamily address_family) {
     switch (address_family) {
-      case net::ADDRESS_FAMILY_IPV4_ONLY:
-        return "IPV4_ONLY";
-      default:
+      case net::ADDRESS_FAMILY_IPV4:
+        return "IPV4";
+      case net::ADDRESS_FAMILY_IPV6:
+        return "IPV6";
+      case net::ADDRESS_FAMILY_UNSPECIFIED:
         return "UNSPECIFIED";
+      default:
+        NOTREACHED();
+        return "???";
     }
   }
 };
