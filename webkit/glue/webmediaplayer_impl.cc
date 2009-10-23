@@ -260,6 +260,7 @@ void WebMediaPlayerImpl::pause() {
 
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
+  paused_time_ = pipeline_->GetCurrentTime();
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {
@@ -398,6 +399,9 @@ float WebMediaPlayerImpl::duration() const {
 float WebMediaPlayerImpl::currentTime() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
+  if (paused_) {
+    return static_cast<float>(paused_time_.InSecondsF());
+  }
   return static_cast<float>(pipeline_->GetCurrentTime().InSecondsF());
 }
 

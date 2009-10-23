@@ -271,8 +271,15 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // single "playback rate" over worrying about paused/stopped etc...  It forces
   // all clients to manage the pause+playback rate externally, but is that
   // really a bad thing?
+  //
+  // TODO(scherkus): since SetPlaybackRate(0) is asynchronous and we don't want
+  // to hang the render thread during pause(), we record the time at the same
+  // time we pause and then return that value in currentTime().  Otherwise our
+  // clock can creep forward a little bit while the asynchronous
+  // SetPlaybackRate(0) is being executed.
   bool paused_;
   float playback_rate_;
+  base::TimeDelta paused_time_;
 
   WebKit::WebMediaPlayerClient* client_;
 
