@@ -339,7 +339,7 @@ void TabContentsViewMac::Observe(NotificationType type,
     // binding. Other than that, the |redispatchEvent| call would take care of
     // invoking the original menu item shortcut as well.
     if ([[NSApp mainMenu] performKeyEquivalent:event])
-      return;
+      return YES;
 
     if ([window handleExtraBrowserKeyboardShortcut:event])
       return YES;
