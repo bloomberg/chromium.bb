@@ -409,15 +409,6 @@ void LocationBarViewGtk::UpdatePageActions() {
   if (profile_->GetExtensionsService())
       page_actions = profile_->GetExtensionsService()->GetPageActions();
 
-  // Page actions can be created without an icon, so make sure we count only
-  // those that have been given an icon.
-  for (size_t i = 0; i < page_actions.size();) {
-    if (page_actions[i]->icon_paths().empty())
-      page_actions.erase(page_actions.begin() + i);
-    else
-      ++i;
-  }
-
   // Initialize on the first call, or re-inialize if more extensions have been
   // loaded or added after startup.
   if (page_actions.size() != page_action_views_.size()) {

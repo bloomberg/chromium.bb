@@ -21,12 +21,12 @@ namespace keys = extension_page_actions_module_constants;
 
 namespace {
 // Errors.
+const char kNoExtensionError[] = "No extension with id: *.";
 const char kNoTabError[] = "No tab with id: *.";
 const char kNoPageActionError[] =
     "This extension has no page action specified.";
 const char kUrlNotActiveError[] = "This url is no longer active: *.";
 const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
-const char kNoIconSpecified[] = "Page action has no icons to show.";
 }
 
 // TODO(EXTENSIONS_DEPRECATED): obsolete API.
@@ -56,19 +56,6 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     }
   }
 
-  const ExtensionAction* page_action =
-      dispatcher()->GetExtension()->page_action();
-  if (!page_action) {
-    error_ = kNoPageActionError;
-    return false;
-  }
-
-  if (icon_id < 0 ||
-      static_cast<size_t>(icon_id) >= page_action->icon_paths().size()) {
-    error_ = (icon_id == 0) ? kNoIconSpecified : kIconIndexOutOfBounds;
-    return false;
-  }
-
   // Find the TabContents that contains this tab id.
   TabContents* contents = NULL;
   ExtensionTabUtil::GetTabById(tab_id, profile(), NULL, NULL, &contents, NULL);
@@ -82,6 +69,22 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   NavigationEntry* entry = contents->controller().GetActiveEntry();
   if (!entry || url != entry->url().spec()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);
+    return false;
+  }
+
+  // Find our extension.
+  Extension* extension = NULL;
+  ExtensionsService* service = profile()->GetExtensionsService();
+  extension = service->GetExtensionById(extension_id());
+  if (!extension) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoExtensionError,
+                                                     extension_id());
+    return false;
+  }
+
+  const ExtensionAction* page_action = extension->page_action();
+  if (!page_action) {
+    error_ = kNoPageActionError;
     return false;
   }
 
