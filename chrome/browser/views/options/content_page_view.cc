@@ -16,6 +16,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
@@ -152,9 +153,10 @@ void ContentPageView::ButtonPressed(
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   if (source == themes_gallery_link_) {
     UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
-    BrowserList::GetLastActive()->OpenURL(
-        GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
-        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    Browser* browser = BrowserList::GetLastActive();
+    browser->OpenURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
+                     GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    browser->window()->Activate();
     return;
   }
 #if defined(BROWSER_SYNC)
