@@ -95,10 +95,10 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   SyncerStatus syncerStatus(event.last_session);
   status.unsynced_count += static_cast<int>(syncerStatus.unsynced_count());
   status.conflicting_count += syncerStatus.conflicting_commits();
-  if (syncerStatus.current_sync_timestamp() ==
-      syncerStatus.servers_latest_timestamp()) {
-    status.conflicting_count += syncerStatus.conflicting_updates();
-  }
+  // The syncer may not be done yet, which could cause conflicting updates.
+  // But this is only used for status, so it is better to have visibility.
+  status.conflicting_count += syncerStatus.conflicting_updates();
+
   status.syncing |= syncerStatus.syncing();
   // Show a syncer as syncing if it's got stalled updates.
   status.syncing = event.last_session->HasMoreToSync() &&
@@ -112,7 +112,7 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   if (syncerStatus.consecutive_transient_error_commits() > 100)
     status.server_broken = true;
 
-  status.updates_available += syncerStatus.servers_latest_timestamp();
+  status.updates_available += syncerStatus.num_server_changes_remaining();
   status.updates_received += syncerStatus.current_sync_timestamp();
   return status;
 }

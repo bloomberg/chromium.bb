@@ -70,12 +70,12 @@ class SyncerStatus {
     sync_process_state_->set_current_sync_timestamp(val);
   }
 
-  int64 servers_latest_timestamp() const {
-    return sync_process_state_->servers_latest_timestamp();
+  int64 num_server_changes_remaining() const {
+    return sync_process_state_->num_server_changes_remaining();
   }
 
-  void set_servers_latest_timestamp(const int64 val) {
-    sync_process_state_->set_servers_latest_timestamp(val);
+  void set_num_server_changes_remaining(const int64 val) {
+    sync_process_state_->set_num_server_changes_remaining(val);
   }
 
   int64 unsynced_count() const {
@@ -226,7 +226,8 @@ class SyncerStatus {
     LOG(INFO) << "over_quota = " << over_quota();
 
     LOG(INFO) << "current_sync_timestamp = " << current_sync_timestamp();
-    LOG(INFO) << "servers_latest_timestamp = " << servers_latest_timestamp();
+    LOG(INFO) << "num_server_changes_remaining = "
+              << num_server_changes_remaining();
     LOG(INFO) << "unsynced_count = " << unsynced_count();
     LOG(INFO) << "conflicting_updates = " << conflicting_updates();
     LOG(INFO) << "conflicting_commits = " << conflicting_commits();

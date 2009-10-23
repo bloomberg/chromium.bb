@@ -193,11 +193,11 @@ class SyncProcessState {
   // During inital sync these two members can be used to measure sync progress.
   int64 current_sync_timestamp() const { return current_sync_timestamp_; }
 
-  int64 servers_latest_timestamp() const { return servers_latest_timestamp_; }
+  int64 num_server_changes_remaining() const { return num_server_changes_remaining_; }
 
   void set_current_sync_timestamp(const int64 val);
 
-  void set_servers_latest_timestamp(const int64 val);
+  void set_num_server_changes_remaining(const int64 val);
 
   bool invalid_store() const { return invalid_store_; }
 
@@ -300,7 +300,7 @@ class SyncProcessState {
         syncer_event_channel_(NULL),
         error_rate_(0),
         current_sync_timestamp_(0),
-        servers_latest_timestamp_(0),
+        num_server_changes_remaining_(0),
         syncing_(false),
         invalid_store_(false),
         syncer_stuck_(false),
@@ -342,7 +342,7 @@ class SyncProcessState {
   static const int ERROR_THRESHOLD = 500;
   int error_rate_;  // A EMA in the range [0,65536)
   int64 current_sync_timestamp_;  // During inital sync these two members
-  int64 servers_latest_timestamp_;  // can be used to measure sync progress.
+  int64 num_server_changes_remaining_;  // Can be used to measure sync progress.
 
   // There remains sync state updating in:
   //   CommitUnsyncedEntries

@@ -48,8 +48,8 @@ int64 ConflictResolutionView::current_sync_timestamp() const {
   return process_state_->current_sync_timestamp();
 }
 
-int64 ConflictResolutionView::servers_latest_timestamp() const {
-  return process_state_->servers_latest_timestamp();
+int64 ConflictResolutionView::num_server_changes_remaining() const {
+  return process_state_->num_server_changes_remaining();
 }
 
 // True iff we're stuck. User should contact support.

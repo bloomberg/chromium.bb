@@ -3807,19 +3807,19 @@ TEST_F(SyncerTest, LongChangelistCreatesFakeOrphanedEntries) {
   // First we an item in a folder in the root. However the folder won't come
   // till much later.
   mock_server_->AddUpdateDirectory(99999, 1, "stuck", 1, 1);
-  mock_server_->SetNewestTimestamp(DEPTH);
+  mock_server_->SetChangesRemaining(DEPTH - 1);
   syncer_->SyncShare(state_.get());
 
   // Very long changelist. We should never be stuck.
   for (int i = 0; i < DEPTH; i++) {
     mock_server_->SetNewTimestamp(i);
-    mock_server_->SetNewestTimestamp(DEPTH);
+    mock_server_->SetChangesRemaining(DEPTH - i);
     syncer_->SyncShare(state_.get());
     EXPECT_FALSE(SyncerStuck(state_.get()));
   }
   // And finally the folder.
   mock_server_->AddUpdateDirectory(1, 0, "folder", 1, 1);
-  mock_server_->SetNewestTimestamp(DEPTH);
+  mock_server_->SetChangesRemaining(0);
   LoopSyncShare(syncer_);
   LoopSyncShare(syncer_);
   // Check that everything's as expected after the commit.

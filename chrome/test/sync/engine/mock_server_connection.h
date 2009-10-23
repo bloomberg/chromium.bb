@@ -107,7 +107,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                      const string& entry_id);
   void SetLastUpdatePosition(int64 position_in_parent);
   void SetNewTimestamp(int64 ts);
-  void SetNewestTimestamp(int64 ts);
+  void SetChangesRemaining(int64 timestamp);
 
   // For AUTHENTICATE responses.
   void SetAuthenticationResponseInfo(const std::string& valid_auth_token,

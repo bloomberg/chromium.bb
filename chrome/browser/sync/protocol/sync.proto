@@ -203,7 +203,7 @@ message AuthenticateMessage {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 20];
+  optional int32 protocol_version = 2 [default = 21];
   enum CONTENTS {
     COMMIT = 1;
     GET_UPDATES = 2;
@@ -270,8 +270,10 @@ message GetUpdatesResponse {
   // GetUpdates request, the client should send another GetUpdates request and
   // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
   optional int64 new_timestamp = 2;
-  // The newest timestamp in the share. Used to give UI feedback on progress.
-  optional int64 newest_timestamp = 3;
+  // DEPRECATED FIELD - server does not set this anymore.
+  optional int64 deprecated_newest_timestamp = 3;
+  // Estimated number of changes remaining - use this for UI feedback.
+  optional int64 changes_remaining = 4;
 };
 
 // A user-identifying struct.  For a given Google account the email and display

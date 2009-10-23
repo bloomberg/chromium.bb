@@ -619,12 +619,14 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
     InputIt begin,
     InputIt end,
     ConflictResolutionView* view) {
-  if (attempt_count < SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT)
+  if (attempt_count < SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT) {
     return false;
+  }
 
   // Don't signal stuck if we're not up to date.
-  if (view->servers_latest_timestamp() != view->current_sync_timestamp())
+  if (view->num_server_changes_remaining() > 0) {
     return false;
+  }
 
   LOG(ERROR) << "[BUG] Conflict set cannot be resolved, has "
              << end - begin << " items:";

@@ -46,7 +46,7 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
       syncer_event_channel_(syncer_event_channel),
       error_rate_(0),
       current_sync_timestamp_(0),
-      servers_latest_timestamp_(0),
+      num_server_changes_remaining_(0),
       syncing_(false),
       invalid_store_(false),
       syncer_stuck_(false),
@@ -80,7 +80,7 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
   silenced_until_ = counts.silenced_until_;
   error_rate_ = counts.error_rate_;
   current_sync_timestamp_ = counts.current_sync_timestamp_;
-  servers_latest_timestamp_ = counts.servers_latest_timestamp_;
+  num_server_changes_remaining_ = counts.num_server_changes_remaining_;
   error_commits_ = counts.error_commits_;
   stalled_commits_ = counts.stalled_commits_;
   conflicting_commits_ = counts.conflicting_commits_;
@@ -176,9 +176,9 @@ void SyncProcessState::set_current_sync_timestamp(const int64 val) {
   current_sync_timestamp_ = val;
 }
 
-void SyncProcessState::set_servers_latest_timestamp(const int64 val) {
-  UpdateDirty(val != servers_latest_timestamp_);
-  servers_latest_timestamp_ = val;
+void SyncProcessState::set_num_server_changes_remaining(const int64 val) {
+  UpdateDirty(val != num_server_changes_remaining_);
+  num_server_changes_remaining_ = val;
 }
 
 void SyncProcessState::set_error_commits(const int val) {

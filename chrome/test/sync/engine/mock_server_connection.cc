@@ -208,8 +208,7 @@ SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
   ent->set_ctime(1);
   ent->set_position_in_parent(GeneratePositionInParent());
   AddDefaultBookmarkData(ent, is_dir);
-  if (sync_ts > updates_.newest_timestamp())
-    updates_.set_newest_timestamp(sync_ts);
+
   return ent;
 }
 
@@ -251,8 +250,8 @@ void MockConnectionManager::SetNewTimestamp(int64 ts) {
   updates_.set_new_timestamp(ts);
 }
 
-void MockConnectionManager::SetNewestTimestamp(int64 ts) {
-  updates_.set_newest_timestamp(ts);
+void MockConnectionManager::SetChangesRemaining(int64 timestamp) {
+  updates_.set_changes_remaining(timestamp);
 }
 
 void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,

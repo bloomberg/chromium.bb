@@ -37,10 +37,10 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
   LOG(INFO) << "Get updates from ts " << dir->last_sync_timestamp() <<
     " returned " << update_count << " updates.";
 
-  if (updates.has_newest_timestamp()) {
-    int64 newest_timestamp = updates.newest_timestamp();
-    LOG(INFO) << "Newest Timestamp:" << newest_timestamp;
-    status.set_servers_latest_timestamp(newest_timestamp);
+  if (updates.has_changes_remaining()) {
+    int64 changes_left = updates.changes_remaining();
+    LOG(INFO) << "Changes remaining:" << changes_left;
+    status.set_num_server_changes_remaining(changes_left);
   }
 
   int64 new_timestamp = 0;
@@ -56,11 +56,6 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
     }
   }
 
-  if (0 == status.servers_latest_timestamp()) {
-    // Hack since new server never gives us the server's latest timestamp. But
-    // if a getupdates returns zero, then we know we are up to date.
-    status.set_servers_latest_timestamp(status.current_sync_timestamp());
-  }
   // If we have updates that are ALL supposed to be skipped, we don't want to
   // get them again.  In fact, the account's final updates are all supposed to
   // be skipped and we DON'T step past them, we will sync forever.

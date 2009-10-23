@@ -65,7 +65,7 @@ class ConflictResolutionView {
 
   int64 current_sync_timestamp() const;
 
-  int64 servers_latest_timestamp() const;
+  int64 num_server_changes_remaining() const;
 
   IdToConflictSetMap::const_iterator IdToConflictSetFind(
       const syncable::Id& the_id) const;
