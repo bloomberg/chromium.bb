@@ -32,7 +32,7 @@ class StartupTest : public UITest {
   void SetUpWithFileURL() {
     FilePath file_url;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file_url));
-    file_url = file_url.AppendASCII("empty.html");
+    file_url = file_url.AppendASCII("simple.html");
     ASSERT_TRUE(file_util::PathExists(file_url));
     launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
 
