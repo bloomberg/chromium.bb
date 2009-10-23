@@ -205,7 +205,8 @@ class TestTypeBase(object):
           wdiff_failed = False
 
       except OSError, e:
-        if e.errno == errno.ENOENT or e.errno == errno.EACCES:
+        if (e.errno == errno.ENOENT or e.errno == errno.EACCES or
+            e.errno == errno.ECHILD):
           _wdiff_available = False
         else:
           raise e
