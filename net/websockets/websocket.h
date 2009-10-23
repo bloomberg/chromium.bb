@@ -139,6 +139,8 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   };
   typedef std::deque< scoped_refptr<IOBufferWithSize> > PendingDataQueue;
 
+  friend class WebSocketTest;
+
   friend class base::RefCountedThreadSafe<WebSocket>;
   virtual ~WebSocket();
 
@@ -171,6 +173,9 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
 
   // Processes frame data in |current_read_buf_|.
   void ProcessFrameData();
+
+  // Adds |len| bytes of |data| to |current_read_buf_|.
+  void AddToReadBuffer(const char* data, int len);
 
   // Skips |len| bytes in |current_read_buf_|.
   void SkipReadBuffer(int len);

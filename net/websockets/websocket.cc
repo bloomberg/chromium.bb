@@ -48,7 +48,7 @@ WebSocket::WebSocket(Request* request, WebSocketDelegate* delegate)
 }
 
 WebSocket::~WebSocket() {
-  DCHECK(!delegate_);
+  DCHECK(ready_state_ == INITIALIZED || !delegate_);
   DCHECK(!socket_stream_);
 }
 
@@ -131,17 +131,7 @@ void WebSocket::OnSentData(SocketStream* socket_stream, int amount_sent) {
 void WebSocket::OnReceivedData(SocketStream* socket_stream,
                                const char* data, int len) {
   DCHECK(socket_stream == socket_stream_);
-  DCHECK(current_read_buf_);
-  // Check if |current_read_buf_| has enough space to store |len| of |data|.
-  if (len >= current_read_buf_->RemainingCapacity()) {
-    current_read_buf_->set_capacity(
-        current_read_buf_->offset() + len);
-  }
-
-  DCHECK(current_read_buf_->RemainingCapacity() >= len);
-  memcpy(current_read_buf_->data(), data, len);
-  current_read_buf_->set_offset(current_read_buf_->offset() + len);
-
+  AddToReadBuffer(data, len);
   origin_loop_->PostTask(FROM_HERE,
                          NewRunnableMethod(this, &WebSocket::DoReceivedData));
 }
@@ -389,6 +379,8 @@ void WebSocket::ProcessFrameData() {
       if (p + length < end) {
         p += length;
         next_frame = p;
+      } else {
+        break;
       }
     } else {
       const char* msg_start = p;
@@ -405,7 +397,23 @@ void WebSocket::ProcessFrameData() {
   SkipReadBuffer(next_frame - start_frame);
 }
 
+void WebSocket::AddToReadBuffer(const char* data, int len) {
+  DCHECK(current_read_buf_);
+  // Check if |current_read_buf_| has enough space to store |len| of |data|.
+  if (len >= current_read_buf_->RemainingCapacity()) {
+    current_read_buf_->set_capacity(
+        current_read_buf_->offset() + len);
+  }
+
+  DCHECK(current_read_buf_->RemainingCapacity() >= len);
+  memcpy(current_read_buf_->data(), data, len);
+  current_read_buf_->set_offset(current_read_buf_->offset() + len);
+}
+
 void WebSocket::SkipReadBuffer(int len) {
+  if (len == 0)
+    return;
+  DCHECK_GT(len, 0);
   read_consumed_len_ += len;
   int remaining = current_read_buf_->offset() - read_consumed_len_;
   DCHECK_GE(remaining, 0);

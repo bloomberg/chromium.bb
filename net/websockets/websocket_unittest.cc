@@ -7,6 +7,7 @@
 
 #include "base/task.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_test_util.h"
@@ -92,41 +93,70 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventRecorder);
 };
 
+namespace net {
+
 class WebSocketTest : public PlatformTest {
+ protected:
+  void InitReadBuf(WebSocket* websocket) {
+    // Set up |current_read_buf_|.
+    websocket->current_read_buf_ = new GrowableIOBuffer();
+  }
+  void SetReadConsumed(WebSocket* websocket, int consumed) {
+    websocket->read_consumed_len_ = consumed;
+  }
+  void AddToReadBuf(WebSocket* websocket, const char* data, int len) {
+    websocket->AddToReadBuffer(data, len);
+  }
+
+  void TestProcessFrameData(WebSocket* websocket,
+                            const char* expected_remaining_data,
+                            int expected_remaining_len) {
+    websocket->ProcessFrameData();
+
+    const char* actual_remaining_data =
+        websocket->current_read_buf_->StartOfBuffer()
+        + websocket->read_consumed_len_;
+    int actual_remaining_len =
+        websocket->current_read_buf_->offset() - websocket->read_consumed_len_;
+
+    EXPECT_EQ(expected_remaining_len, actual_remaining_len);
+    EXPECT_TRUE(!memcmp(expected_remaining_data, actual_remaining_data,
+                        expected_remaining_len));
+  }
 };
 
 TEST_F(WebSocketTest, Connect) {
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead data_reads[] = {
-    net::MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
-                  "Upgrade: WebSocket\r\n"
-                  "Connection: Upgrade\r\n"
-                  "WebSocket-Origin: http://example.com\r\n"
-                  "WebSocket-Location: ws://example.com/demo\r\n"
-                  "WebSocket-Protocol: sample\r\n"
-                  "\r\n"),
+  MockClientSocketFactory mock_socket_factory;
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
+             "Upgrade: WebSocket\r\n"
+             "Connection: Upgrade\r\n"
+             "WebSocket-Origin: http://example.com\r\n"
+             "WebSocket-Location: ws://example.com/demo\r\n"
+             "WebSocket-Protocol: sample\r\n"
+             "\r\n"),
     // Server doesn't close the connection after handshake.
-    net::MockRead(true, net::ERR_IO_PENDING),
+    MockRead(true, ERR_IO_PENDING),
   };
-  net::MockWrite data_writes[] = {
-    net::MockWrite("GET /demo HTTP/1.1\r\n"
-                   "Upgrade: WebSocket\r\n"
-                   "Connection: Upgrade\r\n"
-                   "Host: example.com\r\n"
-                   "Origin: http://example.com\r\n"
-                   "WebSocket-Protocol: sample\r\n"
-                   "\r\n"),
+  MockWrite data_writes[] = {
+    MockWrite("GET /demo HTTP/1.1\r\n"
+              "Upgrade: WebSocket\r\n"
+              "Connection: Upgrade\r\n"
+              "Host: example.com\r\n"
+              "Origin: http://example.com\r\n"
+              "WebSocket-Protocol: sample\r\n"
+              "\r\n"),
   };
-  net::StaticMockSocket data(data_reads, data_writes);
+  StaticMockSocket data(data_reads, data_writes);
   mock_socket_factory.AddMockSocket(&data);
 
-  net::WebSocket::Request* request(
-      new net::WebSocket::Request(GURL("ws://example.com/demo"),
-                                  "sample",
-                                  "http://example.com",
-                                  "ws://example.com/demo",
-                                  new TestURLRequestContext()));
-  request->SetHostResolver(new net::MockHostResolver());
+  WebSocket::Request* request(
+      new WebSocket::Request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             new TestURLRequestContext()));
+  request->SetHostResolver(new MockHostResolver());
   request->SetClientSocketFactory(&mock_socket_factory);
 
   TestCompletionCallback callback;
@@ -136,10 +166,10 @@ TEST_F(WebSocketTest, Connect) {
   delegate->SetOnOpen(NewCallback(delegate.get(),
                                   &WebSocketEventRecorder::DoClose));
 
-  scoped_refptr<net::WebSocket> websocket(
-      new net::WebSocket(request, delegate.get()));
+  scoped_refptr<WebSocket> websocket(
+      new WebSocket(request, delegate.get()));
 
-  EXPECT_EQ(net::WebSocket::INITIALIZED, websocket->ready_state());
+  EXPECT_EQ(WebSocket::INITIALIZED, websocket->ready_state());
   websocket->Connect();
 
   callback.WaitForResult();
@@ -152,41 +182,41 @@ TEST_F(WebSocketTest, Connect) {
 }
 
 TEST_F(WebSocketTest, ServerSentData) {
-  net::MockClientSocketFactory mock_socket_factory;
+  MockClientSocketFactory mock_socket_factory;
   static const char kMessage[] = "Hello";
   static const char kFrame[] = "\x00Hello\xff";
   static const int kFrameLen = sizeof(kFrame) - 1;
-  net::MockRead data_reads[] = {
-    net::MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
                   "Upgrade: WebSocket\r\n"
                   "Connection: Upgrade\r\n"
                   "WebSocket-Origin: http://example.com\r\n"
                   "WebSocket-Location: ws://example.com/demo\r\n"
                   "WebSocket-Protocol: sample\r\n"
                   "\r\n"),
-    net::MockRead(true, kFrame, kFrameLen),
+    MockRead(true, kFrame, kFrameLen),
     // Server doesn't close the connection after handshake.
-    net::MockRead(true, net::ERR_IO_PENDING),
+    MockRead(true, ERR_IO_PENDING),
   };
-  net::MockWrite data_writes[] = {
-    net::MockWrite("GET /demo HTTP/1.1\r\n"
-                   "Upgrade: WebSocket\r\n"
-                   "Connection: Upgrade\r\n"
-                   "Host: example.com\r\n"
-                   "Origin: http://example.com\r\n"
-                   "WebSocket-Protocol: sample\r\n"
-                   "\r\n"),
+  MockWrite data_writes[] = {
+    MockWrite("GET /demo HTTP/1.1\r\n"
+              "Upgrade: WebSocket\r\n"
+              "Connection: Upgrade\r\n"
+              "Host: example.com\r\n"
+              "Origin: http://example.com\r\n"
+              "WebSocket-Protocol: sample\r\n"
+              "\r\n"),
   };
-  net::StaticMockSocket data(data_reads, data_writes);
+  StaticMockSocket data(data_reads, data_writes);
   mock_socket_factory.AddMockSocket(&data);
 
-  net::WebSocket::Request* request(
-      new net::WebSocket::Request(GURL("ws://example.com/demo"),
-                                  "sample",
-                                  "http://example.com",
-                                  "ws://example.com/demo",
-                                  new TestURLRequestContext()));
-  request->SetHostResolver(new net::MockHostResolver());
+  WebSocket::Request* request(
+      new WebSocket::Request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             new TestURLRequestContext()));
+  request->SetHostResolver(new MockHostResolver());
   request->SetClientSocketFactory(&mock_socket_factory);
 
   TestCompletionCallback callback;
@@ -196,10 +226,10 @@ TEST_F(WebSocketTest, ServerSentData) {
   delegate->SetOnMessage(NewCallback(delegate.get(),
                                      &WebSocketEventRecorder::DoClose));
 
-  scoped_refptr<net::WebSocket> websocket(
-      new net::WebSocket(request, delegate.get()));
+  scoped_refptr<WebSocket> websocket(
+      new WebSocket(request, delegate.get()));
 
-  EXPECT_EQ(net::WebSocket::INITIALIZED, websocket->ready_state());
+  EXPECT_EQ(WebSocket::INITIALIZED, websocket->ready_state());
   websocket->Connect();
 
   callback.WaitForResult();
@@ -212,3 +242,84 @@ TEST_F(WebSocketTest, ServerSentData) {
   EXPECT_EQ(kMessage, events[1].msg);
   EXPECT_EQ(WebSocketEvent::EVENT_CLOSE, events[2].event_type);
 }
+
+TEST_F(WebSocketTest, ProcessFrameDataForLengthCalculation) {
+  WebSocket::Request* request(
+      new WebSocket::Request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             new TestURLRequestContext()));
+  TestCompletionCallback callback;
+  scoped_ptr<WebSocketEventRecorder> delegate(
+      new WebSocketEventRecorder(&callback));
+
+  scoped_refptr<WebSocket> websocket(
+      new WebSocket(request, delegate.get()));
+
+  // Frame data: skip length 1 ('x'), and try to skip length 129
+  // (1 * 128 + 1) bytes after second \x81, but buffer is too short to skip.
+  static const char kTestLengthFrame[] =
+      "\x80\x81x\x80\x81\x81\x01\x00unexpected data\xFF";
+  const int kTestLengthFrameLength = sizeof(kTestLengthFrame) - 1;
+  InitReadBuf(websocket.get());
+  AddToReadBuf(websocket.get(), kTestLengthFrame, kTestLengthFrameLength);
+  SetReadConsumed(websocket.get(), 0);
+
+  static const char kExpectedRemainingFrame[] =
+      "\x80\x81\x81\x01\x00unexpected data\xFF";
+  const int kExpectedRemainingLength = sizeof(kExpectedRemainingFrame) - 1;
+  TestProcessFrameData(websocket.get(),
+                       kExpectedRemainingFrame, kExpectedRemainingLength);
+  // No onmessage event expected.
+  const std::vector<WebSocketEvent>& events = delegate->GetSeenEvents();
+  EXPECT_EQ(0U, events.size());
+}
+
+TEST_F(WebSocketTest, ProcessFrameDataForUnterminatedString) {
+  WebSocket::Request* request(
+      new WebSocket::Request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             new TestURLRequestContext()));
+  TestCompletionCallback callback;
+  scoped_ptr<WebSocketEventRecorder> delegate(
+      new WebSocketEventRecorder(&callback));
+
+  scoped_refptr<WebSocket> websocket(
+      new WebSocket(request, delegate.get()));
+
+  static const char kTestUnterminatedFrame[] =
+      "\x00unterminated frame";
+  const int kTestUnterminatedFrameLength = sizeof(kTestUnterminatedFrame) - 1;
+  InitReadBuf(websocket.get());
+  AddToReadBuf(websocket.get(), kTestUnterminatedFrame,
+               kTestUnterminatedFrameLength);
+  SetReadConsumed(websocket.get(), 0);
+  TestProcessFrameData(websocket.get(),
+                       kTestUnterminatedFrame, kTestUnterminatedFrameLength);
+  {
+    // No onmessage event expected.
+    const std::vector<WebSocketEvent>& events = delegate->GetSeenEvents();
+    EXPECT_EQ(0U, events.size());
+  }
+
+  static const char kTestTerminateFrame[] = " is terminated in next read\xff";
+  const int kTestTerminateFrameLength = sizeof(kTestTerminateFrame) - 1;
+  AddToReadBuf(websocket.get(), kTestTerminateFrame,
+               kTestTerminateFrameLength);
+  TestProcessFrameData(websocket.get(), "", 0);
+
+  static const char kExpectedMsg[] =
+      "unterminated frame is terminated in next read";
+  {
+    const std::vector<WebSocketEvent>& events = delegate->GetSeenEvents();
+    EXPECT_EQ(1U, events.size());
+
+    EXPECT_EQ(WebSocketEvent::EVENT_MESSAGE, events[0].event_type);
+    EXPECT_EQ(kExpectedMsg, events[0].msg);
+  }
+}
+
+}  // namespace net
