@@ -1,33 +1,24 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/search_engines/template_url_model.h"
 
-#include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
-#include "grit/locale_settings.h"
 #include "net/base/net_util.h"
-#include "unicode/rbbi.h"
-#include "unicode/uchar.h"
 
 using base::Time;
 

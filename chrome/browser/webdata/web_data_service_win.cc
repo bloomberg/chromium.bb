@@ -4,7 +4,9 @@
 
 #include "chrome/browser/webdata/web_data_service.h"
 
+#include "base/task.h"
 #include "chrome/browser/password_manager/ie7_password.h"
+#include "chrome/browser/webdata/web_database.h"
 
 void WebDataService::AddIE7Login(const IE7PasswordInfo& info) {
   GenericRequest<IE7PasswordInfo>* request =

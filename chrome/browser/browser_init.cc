@@ -1,36 +1,21 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_init.h"
 
-#include <algorithm>
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/event_recorder.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/histogram.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "base/thread.h"
 #include "chrome/browser/automation/automation_provider.h"
-#include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/profile.h"
@@ -48,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -57,11 +41,10 @@
 #include "grit/theme_resources.h"
 #include "net/http/http_network_layer.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "app/win_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)

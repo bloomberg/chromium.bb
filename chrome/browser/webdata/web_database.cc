@@ -4,20 +4,15 @@
 
 #include "chrome/browser/webdata/web_database.h"
 
-#include <algorithm>
 #include <limits>
-#include <set>
-#include <vector>
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
-#include "base/string_util.h"
-#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "webkit/glue/password_form.h"
 
 // Encryptor is the *wrong* way of doing things; we need to turn it into a

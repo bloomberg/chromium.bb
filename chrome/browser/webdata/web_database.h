@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 
-#include <string>
 #include <vector>
 
 #include "app/sql/connection.h"
 #include "app/sql/meta_table.h"
-#include "base/basictypes.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"

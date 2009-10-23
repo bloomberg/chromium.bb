@@ -8,43 +8,26 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "build/build_config.h"
-
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/file_util.h"
-#include "base/keyboard_codes.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/stl_util-inl.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/info_bubble.h"
-#include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "views/focus/focus_manager.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
 #include "chrome/browser/views/first_run_bubble.h"
 #endif
 

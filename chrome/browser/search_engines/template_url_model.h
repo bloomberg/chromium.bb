@@ -1,25 +1,24 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_TEMPLATE_URL_MODEL_H__
 #define CHROME_BROWSER_TEMPLATE_URL_MODEL_H__
 
-#include <map>
-#include <string>
-#include <vector>
+#include <set>
 
 #include "base/observer_list.h"
-#include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/history_types.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_registrar.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
-class GURL;
 class PrefService;
 class Profile;
-class TemplateURL;
-class TemplateURLModelTest;
+
+namespace history {
+struct URLVisitedDetails;
+}
 
 // TemplateURLModel is the backend for keywords. It's used by
 // KeywordAutocomplete.

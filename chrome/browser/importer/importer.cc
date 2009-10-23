@@ -1,38 +1,28 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/importer/importer.h"
 
-#include <map>
-#include <set>
-
 #include "app/gfx/favicon_size.h"
 #include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
-#include "base/file_util.h"
-#include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
-#include "chrome/browser/favicon_service.h"
-#include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/password_form.h"
 
 // TODO(port): Port these files.
 #if defined(OS_WIN)

@@ -1,13 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/webdata/web_data_service.h"
 
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/scoped_ptr.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "base/thread.h"
+#include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
 #include "webkit/glue/password_form.h"
 
@@ -319,8 +317,8 @@ void WebDataService::RemoveLogin(const PasswordForm& form) {
                                  request));
 }
 
-void WebDataService::RemoveLoginsCreatedBetween(const Time delete_begin,
-                                                const Time delete_end) {
+void WebDataService::RemoveLoginsCreatedBetween(const Time& delete_begin,
+                                                const Time& delete_end) {
   GenericRequest2<Time, Time>* request =
     new GenericRequest2<Time, Time>(this,
                                     GetNextRequestHandle(),
@@ -332,7 +330,7 @@ void WebDataService::RemoveLoginsCreatedBetween(const Time delete_begin,
       &WebDataService::RemoveLoginsCreatedBetweenImpl, request));
 }
 
-void WebDataService::RemoveLoginsCreatedAfter(const Time delete_begin) {
+void WebDataService::RemoveLoginsCreatedAfter(const Time& delete_begin) {
   RemoveLoginsCreatedBetween(delete_begin, Time());
 }
 

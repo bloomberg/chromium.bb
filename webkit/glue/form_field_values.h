@@ -7,11 +7,8 @@
 
 #include <vector>
 
+#include "base/string16.h"
 #include "webkit/glue/form_field.h"
-
-namespace WebCore {
-class HTMLInputElement;
-}
 
 namespace WebKit {
 class WebForm;

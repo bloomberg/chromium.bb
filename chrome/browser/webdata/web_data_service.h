@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,22 +8,23 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/lock.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/scoped_vector.h"
-#include "base/thread.h"
-#include "chrome/browser/webdata/web_database.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
 class FilePath;
-class GURL;
-class ShutdownTask;
-class TemplateURL;
+class MessageLoop;
+class Task;
+class WebDatabase;
+
+namespace base {
+class Thread;
+}
 
 namespace webkit_glue {
 struct PasswordForm;
@@ -323,11 +324,11 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   void RemoveLogin(const webkit_glue::PasswordForm& form);
 
   // Removes all logins created in the specified daterange
-  void RemoveLoginsCreatedBetween(const base::Time delete_begin,
-                                  const base::Time delete_end);
+  void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                  const base::Time& delete_end);
 
   // Removes all logins created on or after the date passed in.
-  void RemoveLoginsCreatedAfter(const base::Time delete_begin);
+  void RemoveLoginsCreatedAfter(const base::Time& delete_begin);
 
   // Gets a list of password forms that match |form|.
   // |consumer| will be notified when the request is done. The result is of
@@ -488,8 +489,6 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   void GetWebAppImagesImpl(GenericRequest<GURL>* request);
 
   base::Thread* thread() { return thread_; }
-
- private:
 
   // Schedule a task on our worker thread.
   void ScheduleTask(Task* t);

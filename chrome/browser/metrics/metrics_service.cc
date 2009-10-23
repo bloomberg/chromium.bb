@@ -168,42 +168,32 @@
 #include "third_party/bzip2/bzlib.h"
 #endif
 
-#include "base/file_path.h"
-#include "base/histogram.h"
-#include "base/path_service.h"
-#include "base/platform_thread.h"
-#include "base/rand_util.h"
-#include "base/string_util.h"
-#include "base/task.h"
+#include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/child_process_info.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/histogram_synchronizer.h"
-#include "chrome/common/libxml_utils.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/load_flags.h"
 #include "webkit/glue/plugins/plugin_list.h"
+
+#if !defined(OS_WIN)
+#include "base/rand_util.h"
+#endif
 
 #if defined(OS_POSIX)
 // TODO(port): Move these headers above as they are ported.
 #include "chrome/common/temp_scaffolding_stubs.h"
 #else
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_update_settings.h"
 #endif
 
 using base::Time;
