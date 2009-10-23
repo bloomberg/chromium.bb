@@ -10,15 +10,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class BookmarkBarController;
-
 @interface BookmarkBarView : NSView {
- @private
-  IBOutlet BookmarkBarController* controller_;
   IBOutlet NSTextField* noItemTextfield_;
 }
 
-- (NSTextField*)noItemTextfield;
+-(NSTextField*)noItemTextfield;
 
 @end
   

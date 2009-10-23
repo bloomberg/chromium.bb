@@ -202,22 +202,6 @@
       browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point {
-  // TODO(jrg): Support drops on folders etc
-  // TODO(jrg): Use |point|.
-  DCHECK([urls count] == [titles count]);
-  const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
-
-  for (size_t i = 0; i < [urls count]; ++i) {
-    bookmarkModel_->AddURL(
-        node,
-        node->GetChildCount(),
-        base::SysNSStringToWide([titles objectAtIndex:i]),
-        GURL([[urls objectAtIndex:i] UTF8String]));
-  }
-  return YES;
-}
-
 - (int)currentTabContentsHeight {
   return browser_->GetSelectedTabContents()->view()->GetContainerSize().
       height();
