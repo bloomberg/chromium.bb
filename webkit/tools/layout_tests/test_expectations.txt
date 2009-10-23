@@ -3023,7 +3023,6 @@ BUG21859 WIN-VISTA : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/forms/search-styled.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/text/whitespace/026.html = FAIL
 BUG21859 WIN-VISTA : LayoutTests/fast/text/basic/006.html = FAIL
-BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
 BUG25617 WIN-XP RELEASE : LayoutTests/fast/text/line-breaks.html = FAIL
 BUG25617 WIN-XP DEBUG SLOW : LayoutTests/fast/text/line-breaks.html = FAIL
 BUG25616 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
