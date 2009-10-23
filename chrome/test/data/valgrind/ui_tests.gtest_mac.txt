@@ -25,3 +25,5 @@ DownloadTest.PerWindowShelf
 ErrorPageTest.IFrameDNSError_GoBackAndForward
 # Hangs or fails on mac valgrind bot; http://crbug.com/22608
 WorkerTest.LimitTotal
+# Kills valgrind stack traces: http://crbug.com/25589
+DromaeoReferenceTest.Perf
