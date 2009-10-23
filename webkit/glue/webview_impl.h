@@ -49,7 +49,6 @@ class ImageResourceFetcher;
 }
 
 class AutocompletePopupMenuClient;
-class SearchableFormData;
 class WebHistoryItemImpl;
 class WebDevToolsAgentImpl;
 

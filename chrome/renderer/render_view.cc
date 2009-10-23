@@ -71,6 +71,7 @@
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScriptSource.h"
+#include "webkit/api/public/WebSearchableFormData.h"
 #include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
@@ -91,7 +92,6 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
-#include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
@@ -111,7 +111,6 @@ using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
-using webkit_glue::SearchableFormData;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebColor;
 using WebKit::WebColorName;
@@ -141,6 +140,7 @@ using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
+using WebKit::WebSearchableFormData;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSettings;
 using WebKit::WebSize;
@@ -1000,12 +1000,9 @@ void RenderView::UpdateURL(WebFrame* frame) {
   GetRedirectChain(ds, &params.redirects);
   params.should_update_history = !ds->hasUnreachableURL();
 
-  const SearchableFormData* searchable_form_data =
-      navigation_state->searchable_form_data();
-  if (searchable_form_data) {
-    params.searchable_form_url = searchable_form_data->url();
-    params.searchable_form_encoding = searchable_form_data->encoding();
-  }
+  params.searchable_form_url = navigation_state->searchable_form_url();
+  params.searchable_form_encoding =
+      navigation_state->searchable_form_encoding();
 
   const PasswordForm* password_form_data =
       navigation_state->password_form_data();
@@ -1951,8 +1948,10 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
     navigation_state->set_transition_type(PageTransition::FORM_SUBMIT);
 
   // Save these to be processed when the ensuing navigation is committed.
-  navigation_state->set_searchable_form_data(
-      SearchableFormData::Create(form));
+  WebSearchableFormData web_searchable_form_data(form);
+  navigation_state->set_searchable_form_url(web_searchable_form_data.url());
+  navigation_state->set_searchable_form_encoding(
+      webkit_glue::WebStringToStdString(web_searchable_form_data.encoding()));
   navigation_state->set_password_form_data(
       PasswordFormDomManager::CreatePasswordForm(form));
 

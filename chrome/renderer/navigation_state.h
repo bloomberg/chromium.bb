@@ -11,7 +11,6 @@
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/glue/searchable_form_data.h"
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
@@ -116,11 +115,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   bool is_content_initiated() const { return is_content_initiated_; }
 
-  webkit_glue::SearchableFormData* searchable_form_data() const {
-    return searchable_form_data_.get();
+  const GURL& searchable_form_url() const { return searchable_form_url_; }
+  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
+  const std::string& searchable_form_encoding() const {
+    return searchable_form_encoding_;
   }
-  void set_searchable_form_data(webkit_glue::SearchableFormData* data) {
-    searchable_form_data_.reset(data);
+  void set_searchable_form_encoding(const std::string& encoding) {
+    searchable_form_encoding_ = encoding;
   }
 
   webkit_glue::PasswordForm* password_form_data() const {
@@ -187,7 +188,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool request_committed_;
   bool is_content_initiated_;
   int32 pending_page_id_;
-  scoped_ptr<webkit_glue::SearchableFormData> searchable_form_data_;
+  GURL searchable_form_url_;
+  std::string searchable_form_encoding_;
   scoped_ptr<webkit_glue::PasswordForm> password_form_data_;
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
   std::string security_info_;
