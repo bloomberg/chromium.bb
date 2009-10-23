@@ -32,7 +32,7 @@ __version__ = '1.1.1'
 
 # Constants
 HELP_STRING = "Sorry, Tryserver is not available."
-USAGE = r"""%prog [options]
+USAGE = r"""%prog [change_name] [options]
 
 Client-side script to send a try job to the try server. It communicates to
 the try server by either writting to a svn repository or by directly connecting
@@ -40,6 +40,9 @@ to the server by HTTP.
 
 
 Examples:
+  Try a change against a particular revision:
+    %prog change_name -r 123
+
   A git patch off a web site (git inserts a/ and b/) and fix the base dir:
     %prog --url http://url/to/patch.diff --patchlevel 1 --root src
 
@@ -48,9 +51,9 @@ Examples:
     %prog --email user@example.com
             --svn_repo svn://svn.chromium.org/chrome-try/try --diff foo.diff
 
-  Running only on a 'mac' slave with revision src@123 and clobber first; specify
+  Running only on a 'mac' slave with revision 123 and clobber first; specify
   manually the 3 source files to use for the try job:
-    %prog --bot mac --revision src@123 --clobber -f src/a.cc -f src/a.h
+    %prog --bot mac --revision 123 --clobber -f src/a.cc -f src/a.h
             -f include/b.h
 
 """
