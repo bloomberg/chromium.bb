@@ -56,6 +56,13 @@ LONG WINAPI VectoredHandlerT<E>::VectoredHandler(
     return ExceptionContinueSearch;
   }
 
+  // Ignore custom exception codes.
+  // MSXML likes to raise 0xC0000001 while parsing.
+  // Note the C++ SEH (0xE06D7363) also fails in that range.
+  if (exceptionCode & APPLICATION_ERROR_MASK) {
+    return ExceptionContinueSearch;
+  }
+
   ++VectoredHandlerT<E>::g_exceptions_seen;
 
   // TODO(stoyan): Check whether exception address is inbetween
