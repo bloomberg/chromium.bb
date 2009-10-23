@@ -775,8 +775,9 @@ BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 // Linux debug media tests have spurious timeouts and it's annoying.  We have no idea why.
 BUG13907 BUG25094 SKIP LINUX DEBUG : LayoutTests/media = TIMEOUT
 
-// Test should be passing.  Will remove once confimed it's not flaky.
+// These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = PASS FAIL
 
 // The first load event fires occasionally, ending the test early.
 BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL PASS
@@ -3167,7 +3168,6 @@ BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.htm
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
 
 // WebKit Roll 49761:49809
-BUG_JAPHET : LayoutTests/media/media-load-event.html = FAIL
 BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
 
 // WebKit Roll 49809:49830
