@@ -171,7 +171,10 @@ hb_utf16_script_run_prev(unsigned *num_code_points, HB_ScriptItem *output,
         current_script = script;
         continue;
       } else if (script == HB_Script_Inherited) {
-        current_script = script;
+        // Just assume that whatever follows this combining character is within
+        // the same script.  This is incorrect if you had language1 + combining
+        // char + language 2, but that is rare and this code is suspicious
+        // anyway.
         continue;
       } else {
         *iter = prev_iter;
