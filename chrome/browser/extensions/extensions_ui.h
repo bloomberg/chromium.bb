@@ -151,6 +151,8 @@ class ExtensionsUI : public DOMUI {
  public:
   explicit ExtensionsUI(TabContents* contents);
 
+  static RefCountedMemory* GetFaviconResourceBytes();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUI);
 };

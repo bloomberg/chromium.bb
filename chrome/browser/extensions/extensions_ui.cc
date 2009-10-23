@@ -34,6 +34,7 @@
 
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -508,4 +509,10 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
   g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(&chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource, html_source));
+}
+
+// static
+RefCountedMemory* ExtensionsUI::GetFaviconResourceBytes() {
+  return ResourceBundle::GetSharedInstance().
+      LoadImageResourceBytes(IDR_EXTENSIONS_FAVICON);
 }
