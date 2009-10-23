@@ -114,6 +114,15 @@
 }
 {
    # Invalid read
+   bug_20508a
+   Memcheck:Addr4
+   ...
+   fun:ripc_DrawGlyphs
+   fun:draw_glyphs
+   fun:CGContextShowGlyphsWithAdvances
+}
+{
+   # Invalid read
    bug_20508b
    Memcheck:Addr4
    fun:_eATSFontGetGlyphIDsForGlyphNames
@@ -215,7 +224,6 @@
    fun:CLVVisitValuesForKey
    fun:INIT_ResourceManager
    fun:CurResFile
-   fun:_ZN5NPAPI12_GLOBAL__N_124ScopedBundleResourceFileC1EP10__CFBundle
    ...
    fun:_ZN5NPAPI12_GLOBAL__N_117ReadSTRPluginInfoERK8FilePathP10__CFBundleP13WebPluginInfo
    fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
@@ -305,4 +313,38 @@
    fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameEiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
    fun:_ZN10RenderView13DownloadImageEiRK4GURLi
 }
-
+{
+   bug_25648
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   ...
+   fun:yy_reduce
+   fun:sqlite3Parser
+   ...
+   fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
+}
+{
+   bug_25656
+   Memcheck:Addr4
+   fun:bestBtreeIndex
+   fun:sqlite3WhereBegin
+   fun:sqlite3Select
+   fun:yy_reduce
+   fun:sqlite3Parser
+   ...
+   fun:_ZN7history14HistoryBackend*
+}
+{
+   bug_25661
+   Memcheck:Addr4
+   fun:_ZNK10scoped_ptrI11ChildThreadE3getEv
+   fun:_ZN12ChildProcess11main_threadEv
+   fun:_ZN11ChildThread7currentEv
+   fun:_ZN25WebMessagePortChannelImpl11postMessageERKN6WebKit9WebStringEPNS0_9WebVectorIPNS0_21WebMessagePortChannelEEE
+   fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
+   fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
+   fun:_ZN7WebCore11MessagePort11postMessageEN3WTF10PassRefPtrINS_21SerializedScriptValueEEEPKNS1_6VectorINS1_6RefPtrIS0_EELm1EEERi
+   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
+}
