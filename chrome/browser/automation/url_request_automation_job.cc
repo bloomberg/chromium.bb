@@ -336,7 +336,10 @@ void URLRequestAutomationJob::OnRequestEnd(
   // }
 
   DisconnectFromMessageFilter();
-  NotifyDone(status);
+  // NotifyDone may have been called on the job if the original request was
+  // redirected.
+  if (!is_done())
+    NotifyDone(status);
 
   // Reset any pending reads.
   if (pending_buf_) {
@@ -383,6 +386,17 @@ void URLRequestAutomationJob::StartAsync() {
       net::HttpUtil::StripHeaders(request_->extra_request_headers(),
                                   kFilteredHeaderStrings,
                                   arraysize(kFilteredHeaderStrings)));
+
+  if (request_->context()) {
+    // Only add default Accept-Language and Accept-Charset if the request
+    // didn't have them specified.
+    net::HttpUtil::AppendHeaderIfMissing(
+        "Accept-Language", request_->context()->accept_language(),
+        &new_request_headers);
+    net::HttpUtil::AppendHeaderIfMissing(
+        "Accept-Charset", request_->context()->accept_charset(),
+        &new_request_headers);
+  }
 
   // Ensure that we do not send username and password fields in the referrer.
   GURL referrer(request_->GetSanitizedReferrer());
