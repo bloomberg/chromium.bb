@@ -2,39 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
-#include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/sad_tab_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
 namespace {
 
-class SadTabViewTest : public PlatformTest {
+class SadTabViewTest : public CocoaTest {
  public:
   SadTabViewTest() {
-    NSRect content_frame = [cocoa_helper_.contentView() frame];
-    view_.reset([[SadTabView alloc] initWithFrame:content_frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    NSRect content_frame = [[test_window() contentView] frame];
+    scoped_nsobject<SadTabView> view([[SadTabView alloc]
+                                      initWithFrame:content_frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<SadTabView> view_;
+  SadTabView* view_;  // Weak. Owned by the view hierarchy.
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(SadTabViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(SadTabViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(SadTabViewTest, view_)
 
 }  // namespace
