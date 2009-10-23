@@ -6,6 +6,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/message_loop.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
