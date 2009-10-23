@@ -838,7 +838,8 @@ void SpellChecker::AddWord(const string16& word) {
 
   // Add the word to hunspell.
   std::string word_to_add = UTF16ToUTF8(word);
-  if (!word_to_add.empty()) {
+  // Don't attempt to add an empty word, or one larger than Hunspell can handle
+  if (!word_to_add.empty() && word_to_add.length() < MAXWORDUTF8LEN) {
     // Either add the word to |hunspell_|, or, if |hunspell_| is still loading,
     // defer it till after the load completes.
     if (hunspell_.get())
@@ -865,9 +866,13 @@ bool SpellChecker::CheckSpelling(const string16& word_to_check, int tag) {
   if (is_using_platform_spelling_engine_) {
     word_correct = SpellCheckerPlatform::CheckSpelling(word_to_check, tag);
   } else {
-    // |hunspell_->spell| returns 0 if the word is spelled correctly and
-    // non-zero otherwsie.
-    word_correct = (hunspell_->spell(UTF16ToUTF8(word_to_check).c_str()) != 0);
+    std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
+    // Hunspell shouldn't let us exceed its max, but check just in case
+    if (word_to_check_utf8.length() < MAXWORDUTF8LEN) {
+      // |hunspell_->spell| returns 0 if the word is spelled correctly and
+      // non-zero otherwsie.
+      word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
+    }
   }
   DHISTOGRAM_TIMES("Spellcheck.CheckTime", TimeTicks::Now() - begin_time);
 
