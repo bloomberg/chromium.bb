@@ -33,9 +33,6 @@ static void SwitchToPluginProcess() {
   if (SameProcess(&this_process, &front_process, &matched) != noErr)
     return;
   if (!matched) {
-    // TODO: We may need to keep a stack, or at least check the total window
-    // count, since this won't work if a plugin opens more than one window at
-    // a time.
     g_saved_front_process = front_process;
     SetFrontProcess(&this_process);
   }
@@ -58,6 +55,24 @@ static void SwitchToSavedProcess() {
   if (matched) {
     SetFrontProcess(&g_saved_front_process);
   }
+}
+
+// Checks to see if there are any plugin-opened windows still showing, and if
+// not reactivates the saved process.
+// Should be called after any window has been closed.
+static void MaybeReactivateSavedProcess() {
+  bool window_is_visible = false;
+  WindowRef window = GetWindowList();
+  while (window != NULL) {
+    if (IsWindowVisible(window)) {
+      window_is_visible = true;
+      break;
+    }
+    window = GetNextWindow(window);
+  }
+
+  if (!window_is_visible)
+    SwitchToSavedProcess();
 }
 
 #pragma mark -
@@ -96,14 +111,14 @@ static void ChromePluginShowWindow(WindowRef window) {
 }
 
 static void ChromePluginDisposeWindow(WindowRef window) {
-  SwitchToSavedProcess();
+  MaybeReactivateSavedProcess();
   webkit_glue::NotifyBrowserOfPluginDisposeWindow(HIWindowGetCGWindowID(window),
                                                   CGRectForWindow(window));
   DisposeWindow(window);
 }
 
 static void ChromePluginHideWindow(WindowRef window) {
-  SwitchToSavedProcess();
+  MaybeReactivateSavedProcess();
   webkit_glue::NotifyBrowserOfPluginHideWindow(HIWindowGetCGWindowID(window),
                                                CGRectForWindow(window));
   HideWindow(window);
