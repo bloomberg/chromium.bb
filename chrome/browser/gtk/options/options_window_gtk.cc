@@ -155,8 +155,8 @@ void OptionsWindowGtk::ShowOptionsPage(OptionsPage page,
                                        OptionsGroup highlight_group) {
   // Bring options window to front if it already existed and isn't already
   // in front
-  // TODO(mattm): docs say it's preferable to use gtk_window_present_with_time
-  gtk_window_present(GTK_WINDOW(dialog_));
+  gtk_window_present_with_time(GTK_WINDOW(dialog_),
+                               gtk_get_current_event_time());
 
   if (page == OPTIONS_PAGE_DEFAULT) {
     // Remember the last visited page from local state.
