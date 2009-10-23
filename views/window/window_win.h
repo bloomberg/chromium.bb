@@ -102,6 +102,11 @@ class WindowWin : public WidgetWin,
   // Sizes the window to the default size specified by its ClientView.
   virtual void SizeWindowToDefault();
 
+  // Returns the insets of the client area relative to the non-client area of
+  // the window. Override this function instead of OnNCCalcSize, which is
+  // crazily complicated.
+  virtual gfx::Insets GetClientAreaInsets() const;
+
   // Shows the system menu at the specified screen point.
   void RunSystemMenu(const gfx::Point& point);
 
@@ -119,7 +124,7 @@ class WindowWin : public WidgetWin,
   virtual void OnInitMenu(HMENU menu);
   virtual void OnMouseLeave();
   virtual LRESULT OnNCActivate(BOOL active);
-  virtual LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
+  LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);  // Don't override.
   virtual LRESULT OnNCHitTest(const CPoint& point);
   virtual void OnNCPaint(HRGN rgn);
   virtual void OnNCLButtonDown(UINT ht_component, const CPoint& point);
@@ -136,6 +141,7 @@ class WindowWin : public WidgetWin,
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
   virtual Window* GetWindow() { return this; }
   virtual const Window* GetWindow() const { return this; }
+  virtual gfx::Size GetRootViewSize() const;
 
   // Accessor for disable_inactive_rendering_.
   bool disable_inactive_rendering() const {

@@ -834,6 +834,16 @@ void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   SetMsgHandled(FALSE);
 }
 
+gfx::Size WidgetWin::GetRootViewSize() const {
+  CRect rect;
+  if (use_layered_buffer_)
+    GetWindowRect(&rect);
+  else
+    GetClientRect(&rect);
+
+  return gfx::Size(rect.Width(), rect.Height());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WidgetWin, protected:
 
@@ -950,23 +960,18 @@ void WidgetWin::ProcessMouseExited() {
 }
 
 void WidgetWin::LayoutRootView() {
-  CRect rect;
-  if (SizeRootViewToWindowRect() || use_layered_buffer_) {
-    GetWindowRect(&rect);
-  } else {
-    GetClientRect(&rect);
-  }
+  gfx::Size size(GetRootViewSize());
 
   if (use_layered_buffer_)
-    SizeContents(rect);
+    SizeContents(size);
 
   // Resizing changes the size of the view hierarchy and thus forces a
   // complete relayout.
-  root_view_->SetBounds(0, 0, rect.Width(), rect.Height());
+  root_view_->SetBounds(0, 0, size.width(), size.height());
   root_view_->SchedulePaint();
 
   if (use_layered_buffer_)
-    PaintNow(gfx::Rect(rect));
+    PaintNow(gfx::Rect(0, 0, size.width(), size.height()));
 }
 
 bool WidgetWin::ReleaseCaptureOnMouseReleased() {
@@ -995,9 +1000,9 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
   return NULL;
 }
 
-void WidgetWin::SizeContents(const CRect& window_rect) {
-  contents_.reset(new gfx::Canvas(window_rect.Width(),
-                                  window_rect.Height(),
+void WidgetWin::SizeContents(const gfx::Size& window_size) {
+  contents_.reset(new gfx::Canvas(window_size.width(),
+                                  window_size.height(),
                                   false));
 }
 

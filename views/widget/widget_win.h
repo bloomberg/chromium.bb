@@ -387,12 +387,8 @@ class WidgetWin : public app::WindowImpl,
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
-  // Returns true if the RootView should be sized to the window rect instead of
-  // the client rect when the widget is resized. This is true if the widget's
-  // WM_NCCALCSIZE handler returns a client rect that differs from the window
-  // rect but the painted content of the window should still fill the entire
-  // visible window.
-  virtual bool SizeRootViewToWindowRect() const { return false; }
+  // Returns the size that the RootView should be set to in LayoutRootView().
+  virtual gfx::Size GetRootViewSize() const;
 
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too.
@@ -459,7 +455,7 @@ class WidgetWin : public app::WindowImpl,
 
   // Resize the bitmap used to contain the contents of the layered window. This
   // recreates the entire bitmap.
-  void SizeContents(const CRect& window_rect);
+  void SizeContents(const gfx::Size& window_size);
 
   // Paint into a DIB and then update the layered window with its contents.
   void PaintLayeredWindow();

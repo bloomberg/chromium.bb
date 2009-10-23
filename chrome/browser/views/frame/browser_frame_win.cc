@@ -119,7 +119,18 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, views::WidgetWin overrides:
+// BrowserFrame, views::WindowWin overrides:
+
+gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
+  if (!GetNonClientView()->UseNativeFrame())
+    return WindowWin::GetClientAreaInsets();
+
+  int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+  // We draw our own client edge over part of the default frame.
+  if (!IsMaximized())
+    border_thickness -= kClientEdgeThickness;
+  return gfx::Insets(0, border_thickness, border_thickness, border_thickness);
+}
 
 bool BrowserFrameWin::GetAccelerator(int cmd_id,
                                      views::Accelerator* accelerator) {
@@ -179,78 +190,6 @@ LRESULT BrowserFrameWin::OnNCActivate(BOOL active) {
 
   browser_view_->ActivationChanged(!!active);
   return WindowWin::OnNCActivate(active);
-}
-
-LRESULT BrowserFrameWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  // This class' client rect calculations are specific to the tabbed browser
-  // window. When the glass frame is active, the client area is reported to be
-  // a rectangle that touches the top of the window and is inset from the left,
-  // right and bottom edges. The client rect touches the top because the
-  // tabstrip is painted over the caption at a custom offset.
-  // When the glass frame is not active, the client area is reported to be the
-  // entire window rect, except for the cases noted below.
-  // For non-tabbed browser windows, we use the default handling from the
-  // views system.
-  if (!browser_view_->IsBrowserTypeNormal())
-    return WindowWin::OnNCCalcSize(mode, l_param);
-
-  RECT* client_rect = mode ?
-      &reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0] :
-      reinterpret_cast<RECT*>(l_param);
-  int border_thickness = 0;
-  if (browser_view_->IsMaximized()) {
-    // Make the maximized mode client rect fit the screen exactly, by
-    // subtracting the border Windows automatically adds for maximized mode.
-    border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-    // Find all auto-hide taskbars along the screen edges and adjust in by the
-    // thickness of the auto-hide taskbar on each such edge, so the window isn't
-    // treated as a "fullscreen app", which would cause the taskbars to
-    // disappear.
-    HMONITOR monitor = MonitorFromWindow(GetNativeView(),
-                                         MONITOR_DEFAULTTONULL);
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
-      client_rect->left += win_util::kAutoHideTaskbarThicknessPx;
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
-      client_rect->right -= win_util::kAutoHideTaskbarThicknessPx;
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor)) {
-      client_rect->bottom -= win_util::kAutoHideTaskbarThicknessPx;
-    } else if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
-      // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
-      // WM_NCHITTEST, having any nonclient area atop the window causes the
-      // caption buttons to draw onscreen but not respond to mouse hover/clicks.
-      // So for a taskbar at the screen top, we can't push the client_rect->top
-      // down; instead, we move the bottom up by one pixel, which is the
-      // smallest change we can make and still get a client area less than the
-      // screen size. This is visibly ugly, but there seems to be no better
-      // solution.
-      --client_rect->bottom;
-    }
-  } else if (!browser_view_->IsFullscreen()) {
-    if (GetNonClientView()->UseNativeFrame()) {
-      // We draw our own client edge over part of the default frame.
-      border_thickness =
-          GetSystemMetrics(SM_CXSIZEFRAME) - kClientEdgeThickness;
-    } else {
-      // This is weird, but highly essential. If we don't offset the bottom edge
-      // of the client rect, the window client area and window area will match,
-      // and when returning to glass rendering mode from non-glass, the client
-      // area will not paint black as transparent. This is because (and I don't
-      // know why) the client area goes from matching the window rect to being
-      // something else. If the client area is not the window rect in both
-      // modes, the blackness doesn't occur. Because of this, we need to tell
-      // the RootView to lay out to fit the window rect, rather than the client
-      // rect when using the opaque frame. See SizeRootViewToWindowRect.
-      --client_rect->bottom;
-    }
-  }
-  client_rect->left += border_thickness;
-  client_rect->right -= border_thickness;
-  client_rect->bottom -= border_thickness;
-
-  // We'd like to return WVR_REDRAW in some cases here, but because we almost
-  // always have nonclient area (except in fullscreen mode, where it doesn't
-  // matter), we can't.  See comments in window.cc:OnNCCalcSize() for more info.
-  return 0;
 }
 
 LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
@@ -318,10 +257,6 @@ ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
 
 ThemeProvider* BrowserFrameWin::GetDefaultThemeProvider() const {
   return profile_->GetThemeProvider();
-}
-
-bool BrowserFrameWin::SizeRootViewToWindowRect() const {
-  return !GetNonClientView()->UseNativeFrame();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

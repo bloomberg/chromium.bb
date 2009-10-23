@@ -33,6 +33,9 @@ class Insets {
   // top and bottom insets.
   int height() const { return top_ + bottom_; }
 
+  // Returns true if the insets are empty.
+  bool empty() const { return width() == 0 && height() == 0; }
+
   void Set(int top, int left, int bottom, int right) {
     top_ = top;
     left_ = left;

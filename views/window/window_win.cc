@@ -528,6 +528,33 @@ void WindowWin::SizeWindowToDefault() {
                                 false);
 }
 
+gfx::Insets WindowWin::GetClientAreaInsets() const {
+  // Returning an empty Insets object causes the default handling in
+  // WidgetWin::OnNCCalcSize() to be invoked.
+  if (GetNonClientView()->UseNativeFrame())
+    return gfx::Insets();
+
+  if (IsMaximized()) {
+    // Windows automatically adds a standard width border to all sides when a
+    // window is maximized.
+    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    return gfx::Insets(border_thickness, border_thickness, border_thickness,
+                       border_thickness);
+  }
+  // This is weird, but highly essential. If we don't offset the bottom edge
+  // of the client rect, the window client area and window area will match,
+  // and when returning to glass rendering mode from non-glass, the client
+  // area will not paint black as transparent. This is because (and I don't
+  // know why) the client area goes from matching the window rect to being
+  // something else. If the client area is not the window rect in both
+  // modes, the blackness doesn't occur. Because of this, we need to tell
+  // the RootView to lay out to fit the window rect, rather than the client
+  // rect when using the opaque frame. See GetRootViewSize.
+  // Note: this is only required for non-fullscreen windows. Note that
+  // fullscreen windows are in restored state, not maximized.
+  return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
+}
+
 void WindowWin::RunSystemMenu(const gfx::Point& point) {
   // We need to reset and clean up any currently created system menu objects.
   // We need to call this otherwise there's a small chance that we aren't going
@@ -702,20 +729,20 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  // We only need to adjust the client size/paint handling when we're not using
-  // the native frame.
-  if (non_client_view_->UseNativeFrame())
+  // We only override WM_NCCALCSIZE if we want non-standard non-client edge
+  // width.
+  gfx::Insets insets = GetClientAreaInsets();
+  if (insets.empty())
     return WidgetWin::OnNCCalcSize(mode, l_param);
 
   RECT* client_rect = mode ?
       &reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0] :
       reinterpret_cast<RECT*>(l_param);
+  client_rect->left += insets.left();
+  client_rect->top += insets.top();
+  client_rect->bottom -= insets.bottom();
+  client_rect->right -= insets.right();
   if (IsMaximized()) {
-    // Make the maximized mode client rect fit the screen exactly, by
-    // subtracting the border Windows automatically adds for maximized mode.
-    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-    InflateRect(client_rect, -border_thickness, -border_thickness);
-
     // Find all auto-hide taskbars along the screen edges and adjust in by the
     // thickness of the auto-hide taskbar on each such edge, so the window isn't
     // treated as a "fullscreen app", which would cause the taskbars to
@@ -724,8 +751,22 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
                                          MONITOR_DEFAULTTONULL);
     if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
       client_rect->left += win_util::kAutoHideTaskbarThicknessPx;
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor))
-      client_rect->top += win_util::kAutoHideTaskbarThicknessPx;
+    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
+      if (GetNonClientView()->UseNativeFrame()) {
+        // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
+        // WM_NCHITTEST, having any nonclient area atop the window causes the
+        // caption buttons to draw onscreen but not respond to mouse
+        // hover/clicks.
+        // So for a taskbar at the screen top, we can't push the
+        // client_rect->top down; instead, we move the bottom up by one pixel,
+        // which is the smallest change we can make and still get a client area
+        // less than the screen size. This is visibly ugly, but there seems to
+        // be no better solution.
+        --client_rect->bottom;
+      } else {
+        client_rect->top += win_util::kAutoHideTaskbarThicknessPx;
+      }
+    }
     if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
       client_rect->right -= win_util::kAutoHideTaskbarThicknessPx;
     if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
@@ -741,6 +782,11 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   // Returning WVR_REDRAW avoids an extra paint before that of the old client
   // pixels in the (now wrong) location, and thus makes actions like resizing a
   // window from the left edge look slightly less broken.
+  // We special case when left or top insets are 0, since these conditions
+  // actually require another repaint to correct the layout after glass gets
+  // turned on and off.
+  if (insets.left() == 0 || insets.top() == 0)
+    return 0;
   return mode ? WVR_REDRAW : 0;
 }
 
@@ -1123,6 +1169,20 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   }
 
   WidgetWin::OnWindowPosChanging(window_pos);
+}
+
+gfx::Size WindowWin::GetRootViewSize() const {
+  // The native frame and maximized modes need to supply the client rect as
+  // determined by the relevant WM_NCCALCSIZE handling, so we just use the
+  // default handling which does this.
+  if (GetNonClientView()->UseNativeFrame() || IsMaximized())
+    return WidgetWin::GetRootViewSize();
+
+  // When using an opaque frame, we consider the entire window rect to be client
+  // area visually.
+  CRect rect;
+  GetWindowRect(&rect);
+  return gfx::Size(rect.Width(), rect.Height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

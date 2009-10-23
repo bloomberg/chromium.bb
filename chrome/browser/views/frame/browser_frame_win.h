@@ -47,7 +47,8 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual bool AlwaysUseNativeFrame() const;
 
  protected:
-  // Overridden from views::WidgetWin:
+  // Overridden from views::WindowWin:
+  virtual gfx::Insets GetClientAreaInsets() const;
   virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
   virtual void OnEndSession(BOOL ending, UINT logoff);
   virtual void OnEnterSizeMove();
@@ -59,12 +60,10 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual void OnMove(const CPoint& point);
   virtual void OnMoving(UINT param, LPRECT new_bounds);
   virtual LRESULT OnNCActivate(BOOL active);
-  virtual LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
   virtual ThemeProvider* GetThemeProvider() const;
   virtual ThemeProvider* GetDefaultThemeProvider() const;
-  virtual bool SizeRootViewToWindowRect() const;
 
   // Overridden from views::Window:
   virtual int GetShowState() const;
