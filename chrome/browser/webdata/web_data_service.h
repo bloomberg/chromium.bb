@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -17,7 +18,6 @@
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
 #endif
-class FilePath;
 class MessageLoop;
 class Task;
 class WebDatabase;
@@ -159,6 +159,10 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
 
   // Returns false if Shutdown() has been called.
   bool IsRunning() const;
+
+  // Unloads the database without actually shutting down the service.  This can
+  // be used to temporarily reduce the browser process' memory footprint.
+  void UnloadDatabase();
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -420,8 +424,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;
 
-  // Initialize the database with the provided path.
-  void InitializeDatabase(const FilePath& path);
+  // Initialize the database, if it hasn't already been initialized.
+  void InitializeDatabaseIfNecessary();
 
   // Commit any pending transaction and deletes the database.
   void ShutdownDatabase();
@@ -502,8 +506,15 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // Our worker thread. All requests are processed from that thread.
   base::Thread* thread_;
 
+  // The path with which to initialize the database.
+  FilePath path_;
+
   // Our database.
   WebDatabase* db_;
+
+  // Whether the database failed to initialize.  We use this to avoid
+  // continually trying to reinit.
+  bool failed_init_;
 
   // Whether we should commit the database.
   bool should_commit_;

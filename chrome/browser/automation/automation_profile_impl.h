@@ -87,6 +87,9 @@ class AutomationProfileImpl : public Profile {
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return original_profile_->GetWebDataService(access);
   }
+  virtual WebDataService* GetWebDataServiceWithoutCreating() {
+    return original_profile_->GetWebDataServiceWithoutCreating();
+  }
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return original_profile_->GetPasswordStore(access);
   }

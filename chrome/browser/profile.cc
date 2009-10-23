@@ -310,6 +310,10 @@ class OffTheRecordProfileImpl : public Profile,
     }
   }
 
+  virtual WebDataService* GetWebDataServiceWithoutCreating() {
+    return profile_->GetWebDataServiceWithoutCreating();
+  }
+
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat) {
     if (sat == EXPLICIT_ACCESS) {
       return profile_->GetPasswordStore(sat);
@@ -1006,6 +1010,10 @@ TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {
 WebDataService* ProfileImpl::GetWebDataService(ServiceAccessType sat) {
   if (!created_web_data_service_)
     CreateWebDataService();
+  return web_data_service_.get();
+}
+
+WebDataService* ProfileImpl::GetWebDataServiceWithoutCreating() {
   return web_data_service_.get();
 }
 

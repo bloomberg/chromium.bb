@@ -21,6 +21,7 @@ using webkit_glue::PasswordForm;
 
 WebDataService::WebDataService() : thread_(NULL),
                                    db_(NULL),
+                                   failed_init_(false),
                                    should_commit_(false),
                                    next_request_handle_(1) {
 }
@@ -38,8 +39,9 @@ bool WebDataService::Init(const FilePath& profile_path) {
 }
 
 bool WebDataService::InitWithPath(const FilePath& path) {
-  thread_ = new base::Thread("Chrome_WebDataThread");
+  path_ = path;
 
+  thread_ = new base::Thread("Chrome_WebDataThread");
   if (!thread_->Start()) {
     delete thread_;
     thread_ = NULL;
@@ -47,8 +49,7 @@ bool WebDataService::InitWithPath(const FilePath& path) {
   }
 
   ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::InitializeDatabase,
-                                 path));
+      &WebDataService::InitializeDatabaseIfNecessary));
   return true;
 }
 
@@ -80,6 +81,10 @@ void WebDataService::Shutdown() {
 
 bool WebDataService::IsRunning() const {
   return thread_ != NULL;
+}
+
+void WebDataService::UnloadDatabase() {
+  ScheduleTask(NewRunnableMethod(this, &WebDataService::ShutdownDatabase));
 }
 
 void WebDataService::ScheduleCommit() {
@@ -398,15 +403,18 @@ void WebDataService::Commit() {
   }
 }
 
-void WebDataService::InitializeDatabase(const FilePath& path) {
-  DCHECK(!db_);
+void WebDataService::InitializeDatabaseIfNecessary() {
+  if (db_ || failed_init_ || path_.empty())
+    return;
+
   // In the rare case where the db fails to initialize a dialog may get shown
   // the blocks the caller, yet allows other messages through. For this reason
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
   WebDatabase* db = new WebDatabase();
-  if (!db->Init(path)) {
+  if (!db->Init(path_)) {
     NOTREACHED() << "Cannot initialize the web database";
+    failed_init_ = true;
     delete db;
     return;
   }
@@ -416,6 +424,8 @@ void WebDataService::InitializeDatabase(const FilePath& path) {
 }
 
 void WebDataService::ShutdownDatabase() {
+  should_commit_ = false;
+
   if (db_) {
     db_->CommitTransaction();
     delete db_;
@@ -427,6 +437,7 @@ void WebDataService::ShutdownDatabase() {
 // Keywords.
 //
 void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     db_->AddKeyword(request->GetArgument());
     ScheduleCommit();
@@ -435,7 +446,8 @@ void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
 }
 
 void WebDataService::RemoveKeywordImpl(
-  GenericRequest<TemplateURL::IDType>* request) {
+    GenericRequest<TemplateURL::IDType>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     DCHECK(request->GetArgument());
     db_->RemoveKeyword(request->GetArgument());
@@ -444,8 +456,8 @@ void WebDataService::RemoveKeywordImpl(
   request->RequestComplete();
 }
 
-void WebDataService::UpdateKeywordImpl(
-                     GenericRequest<TemplateURL>* request) {
+void WebDataService::UpdateKeywordImpl(GenericRequest<TemplateURL>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (!db_->UpdateKeyword(request->GetArgument()))
       NOTREACHED();
@@ -455,6 +467,7 @@ void WebDataService::UpdateKeywordImpl(
 }
 
 void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     WDKeywordsResult result;
     db_->GetKeywords(&result.keywords);
@@ -467,7 +480,8 @@ void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
 }
 
 void WebDataService::SetDefaultSearchProviderImpl(
-  GenericRequest<TemplateURL::IDType>* request) {
+    GenericRequest<TemplateURL::IDType>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (!db_->SetDefaultSearchProviderID(request->GetArgument()))
       NOTREACHED();
@@ -478,6 +492,7 @@ void WebDataService::SetDefaultSearchProviderImpl(
 
 void WebDataService::SetBuiltinKeywordVersionImpl(
     GenericRequest<int>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (!db_->SetBuitinKeywordVersion(request->GetArgument()))
       NOTREACHED();
@@ -490,6 +505,7 @@ void WebDataService::SetBuiltinKeywordVersionImpl(
 // Password manager support.
 //
 void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->AddLogin(request->GetArgument()))
       ScheduleCommit();
@@ -498,6 +514,7 @@ void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
 }
 
 void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->UpdateLogin(request->GetArgument()))
       ScheduleCommit();
@@ -506,6 +523,7 @@ void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
 }
 
 void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->RemoveLogin(request->GetArgument()))
       ScheduleCommit();
@@ -515,6 +533,7 @@ void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
 
 void WebDataService::RemoveLoginsCreatedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->RemoveLoginsCreatedBetween(request->GetArgument1(),
                                         request->GetArgument2()))
@@ -524,6 +543,7 @@ void WebDataService::RemoveLoginsCreatedBetweenImpl(
 }
 
 void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> forms;
     db_->GetLogins(request->GetArgument(), &forms);
@@ -534,6 +554,7 @@ void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
 }
 
 void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> forms;
     db_->GetAllLogins(&forms, false);
@@ -544,6 +565,7 @@ void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
 }
 
 void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> all_forms;
     db_->GetAllLogins(&all_forms, true);
@@ -571,6 +593,7 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 
 void WebDataService::AddFormFieldValuesImpl(
     GenericRequest<std::vector<FormField> >* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->AddFormFieldValues(request->GetArgument()))
       ScheduleCommit();
@@ -580,6 +603,7 @@ void WebDataService::AddFormFieldValuesImpl(
 
 void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
     const string16& name, const string16& prefix, int limit) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     std::vector<string16> values;
     db_->GetFormValuesForElementName(name, prefix, &values, limit);
@@ -592,6 +616,7 @@ void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
 
 void WebDataService::RemoveFormElementsAddedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->RemoveFormElementsAddedBetween(request->GetArgument1(),
                                             request->GetArgument2()))
@@ -602,6 +627,7 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
 
 void WebDataService::RemoveFormValueForElementNameImpl(
     GenericRequest2<string16, string16>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     if (db_->RemoveFormElement(request->GetArgument1(),
                                request->GetArgument2()))
@@ -618,6 +644,7 @@ void WebDataService::RemoveFormValueForElementNameImpl(
 
 void WebDataService::SetWebAppImageImpl(
     GenericRequest2<GURL, SkBitmap>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     db_->SetWebAppImage(request->GetArgument1(), request->GetArgument2());
     ScheduleCommit();
@@ -627,6 +654,7 @@ void WebDataService::SetWebAppImageImpl(
 
 void WebDataService::SetWebAppHasAllImagesImpl(
     GenericRequest2<GURL, bool>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     db_->SetWebAppHasAllImages(request->GetArgument1(),
                                request->GetArgument2());
@@ -636,6 +664,7 @@ void WebDataService::SetWebAppHasAllImagesImpl(
 }
 
 void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     db_->RemoveWebApp(request->GetArgument());
     ScheduleCommit();
@@ -644,6 +673,7 @@ void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
 }
 
 void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
+  InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     WDAppImagesResult result;
     result.has_all_images = db_->GetWebAppHasAllImages(request->GetArgument());

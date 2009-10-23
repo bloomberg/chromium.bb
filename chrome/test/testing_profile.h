@@ -101,6 +101,9 @@ class TestingProfile : public Profile {
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return NULL;
   }
+  virtual WebDataService* GetWebDataServiceWithoutCreating() {
+    return NULL;
+  }
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
   }

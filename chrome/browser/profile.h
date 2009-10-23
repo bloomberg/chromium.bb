@@ -209,6 +209,10 @@ class Profile {
   // the ServiceAccessType definition above.
   virtual WebDataService* GetWebDataService(ServiceAccessType access) = 0;
 
+  // Similar to GetWebDataService(), but won't create the web data service if it
+  // doesn't already exist.
+  virtual WebDataService* GetWebDataServiceWithoutCreating() = 0;
+
   // Returns the PasswordStore for this profile. This is owned by the Profile.
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) = 0;
 
@@ -402,6 +406,7 @@ class ProfileImpl : public Profile,
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
+  virtual WebDataService* GetWebDataServiceWithoutCreating();
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
   virtual PrefService* GetPrefs();
   virtual TemplateURLModel* GetTemplateURLModel();
