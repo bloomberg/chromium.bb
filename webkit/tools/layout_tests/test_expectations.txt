@@ -62,7 +62,6 @@ BUG24182 SLOW : LayoutTests/fast/js/regexp-overflow.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/misc/DOMContentLoaded-event.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/navigation/multiple-back-forward-entries.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
-BUG24182 SLOW MAC LINUX : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 BUG24182 SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 BUG24182 SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
@@ -116,6 +115,8 @@ BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
+BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
+
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -507,9 +508,10 @@ BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = FAIL
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
-BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
+BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
-BUG18978 MAC LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
+BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT
+BUG18978 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
@@ -2311,7 +2313,7 @@ BUG20439 WIN LINUX : LayoutTests/fast/forms/search-transformed.html = FAIL
 BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html = FAIL
 
 // Merge 39744:39913? - regressions
-BUG10403 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT PASS
+BUG10403 : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT PASS
 BUG10403 LINUX : LayoutTests/svg/custom/animate-path-morphing.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/svg/custom/circular-marker-reference-1.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
@@ -2540,7 +2542,6 @@ BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS TIMEOUT
-
 BUG9798 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
@@ -2621,6 +2622,22 @@ BUG9798 LINUX SLOW : LayoutTests/transitions/transition-timing-function.html = F
 BUG9798 MAC : LayoutTests/fast/forms/search-placeholder-value-changed.html = CRASH PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
 BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = PASS TIMEOUT
+BUG9798 DEBUG : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = PASS CRASH
+BUG9798 LINUX : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-empty-content-type.html = PASS TIMEOUT
+BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-minmax.html = PASS CRASH
+BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-appearance-default-bkcolor.html = PASS CRASH
+BUG9798 MAC : LayoutTests/fast/forms/select-reset.html = PASS CRASH
+// This test definitely times out (i.e. is not just slow).
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
+BUG9798 : LayoutTests/fast/forms/submit-to-url-fragment.html = PASS CRASH
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
+BUG9798 LINUX DEBUG : LayoutTests/transitions/zero-duration-in-list.html = PASS TEXT
+BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
+BUG9798 WIN LINUX : LayoutTests/fast/dom/defaultView.html = PASS TEXT
+BUG9798 LINUX DEBUG : LayoutTests/svg/custom/animate-path-discrete.svg = PASS IMAGE+TEXT
+BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-mask-transitions.html = PASS TEXT
+BUG9798 MAC : LayoutTests/http/tests/security/xssAuditor/faux-script1.html = PASS TIMEOUT
+BUG9798 : LayoutTests/http/tests/misc/text-refresh.html = PASS TIMEOUT
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -2996,7 +3013,8 @@ BUG23607 : LayoutTests/fast/events/init-events.html = FAIL
 // The linux layout result in build bot shows the changed method does not
 // executed.
 BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
-BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
+BUG21141 LINUX RELEASE : LayoutTests/fast/forms/select-script-onchange.html = FAIL
+BUG21141 LINUX DEBUG : LayoutTests/fast/forms/select-script-onchange.html = FAIL CRASH
 
 BUG24232 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
@@ -3109,8 +3127,6 @@ BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
-
-BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
 
 BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
