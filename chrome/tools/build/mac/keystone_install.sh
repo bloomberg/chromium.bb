@@ -286,7 +286,7 @@ done
 #
 # If this script is running as a user that is not a member of the admin group,
 # this operation will not succeed.  Tolerate that case, because it's better
-# than the alternative, which is to make the applicaiton world-writeable.
+# than the alternative, which is to make the application world-writeable.
 if [ ${EUID} -ne 0 ] && [ "${DEST:0:14}" = "/Applications/" ] ; then
   (chgrp -Rfh admin "${DEST}" && chmod -Rfh g+w "${DEST}") >& /dev/null
 fi
