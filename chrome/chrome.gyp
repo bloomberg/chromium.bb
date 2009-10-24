@@ -113,6 +113,7 @@
       'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_toolstrip_apitest.cc',
       'browser/extensions/isolated_world_apitest.cc',
+      'browser/extensions/page_action_apitest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
