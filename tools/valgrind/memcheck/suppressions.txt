@@ -1035,31 +1035,6 @@
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
-   bug_24345
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIhE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIhSaIhEE11_M_allocateEj
-   fun:_ZNSt6vectorIhSaIhEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPhS1_EEjRKh
-   fun:_ZNSt6vectorIhSaIhEE6insertEN9__gnu_cxx17__normal_iteratorIPhS1_EEjRKh
-   fun:_ZNSt6vectorIhSaIhEE6resizeEjh
-   fun:_ZN4skia105_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_skia_ext_convolver.cc_00000000_5392CFA117CircularRowBufferC1Eiii
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_Ph
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
-   fun:_ZN10RenderView16CaptureThumbnailEP7WebViewiiP8SkBitmapP14ThumbnailScore
-   fun:_ZN10RenderView13SendThumbnailEv
-   fun:_ZN10RenderView15CapturePageInfoEib
-   fun:_Z16DispatchToMethodI10RenderViewMS0_FvibEibEvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN27ScopedRunnableMethodFactoryI10RenderViewE14RunnableMethodIMS0_FvibE6Tuple2IibEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_24503
    Memcheck:Leak
    fun:calloc
