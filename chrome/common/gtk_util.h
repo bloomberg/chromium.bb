@@ -184,6 +184,10 @@ GdkCursor* GetCursor(GdkCursorType type);
 // Stacks a |popup| window directly on top of a |toplevel| window.
 void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
 
+// Get a rectangle corresponding to a widget's allocation relative to its
+// toplevel window's origin.
+gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

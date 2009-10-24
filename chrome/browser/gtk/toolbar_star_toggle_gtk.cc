@@ -14,6 +14,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
 
@@ -67,7 +68,7 @@ void ToolbarStarToggleGtk::ShowStarBubble(const GURL& url,
                                           bool newly_bookmarked) {
   GtkWidget* widget = widget_.get();
   BookmarkBubbleGtk::Show(GTK_WINDOW(gtk_widget_get_toplevel(widget)),
-                          gfx::Rect(widget->allocation),
+                          gtk_util::GetWidgetRectRelativeToToplevel(widget),
                           host_->profile(),
                           url,
                           newly_bookmarked);

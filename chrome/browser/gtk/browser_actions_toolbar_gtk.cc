@@ -18,6 +18,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -127,9 +128,10 @@ class BrowserActionButton : public NotificationObserver,
 
   static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
     if (action->extension_->browser_action()->is_popup()) {
-      ExtensionPopupGtk::Show(action->extension_->browser_action()->popup_url(),
-                              action->browser_, gfx::Rect(widget->allocation));
-
+      ExtensionPopupGtk::Show(
+          action->extension_->browser_action()->popup_url(),
+          action->browser_,
+          gtk_util::GetWidgetRectRelativeToToplevel(widget));
     } else {
       ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
           action->browser_->profile(), action->extension_->id(),
