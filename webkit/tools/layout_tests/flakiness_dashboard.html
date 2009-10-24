@@ -726,20 +726,23 @@
   }
 
   function addTestToAllExpectations(test, expectations) {
-    if (!allExpectations[test])
-      allExpectations[test] = {};
-
-    var testHolder = allExpectations[test];
-
     for (var j = 0; j < expectations.length; j++) {
       var modifiers = expectations[j].modifiers.split(' ');
       addFallbacks(function(platformKey) {
+        // Setting the ALL key overrides any previously seen expectations.
+        if (platformKey == ALL || !allExpectations[test])
+          allExpectations[test] = {};
+
+        var testHolder = allExpectations[test];
         if (!testHolder[platformKey])
           testHolder[platformKey] = {}
 
-        var platformHolder = testHolder[platformKey];
         addFallbacks(function(buildTypeKey) {
-          platformHolder[buildTypeKey] = expectations[j];
+          // Setting the ALL key overrides any previously seen expectations.
+          if (buildTypeKey == ALL || !testHolder[platformKey])
+            testHolder[platformKey] = {}
+
+          testHolder[platformKey][buildTypeKey] = expectations[j];
         }, modifiers, BUILD_TYPES);
       }, modifiers, PLATFORMS);
     }
