@@ -115,8 +115,9 @@ BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
+BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
-
+BUG24182 SLOW MAC : LayoutTests/http/tests/misc/xmltokenizer-do-not-crash.pl = PASS
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -778,7 +779,8 @@ BUG13907 BUG25094 LINUX DEBUG : LayoutTests/media = PASS FAIL TIMEOUT
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = PASS FAIL
-BUG9798 BUG13907 : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
+BUG9798 BUG13907 WIN MAC : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
+BUG9798 BUG13907 LINUX RELEASE : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-collapse.html = PASS FAIL
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-ranges-1.html = PASS FAIL
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-reset.html = PASS FAIL
@@ -790,7 +792,9 @@ BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL P
 BUG13907 SKIP : LayoutTests/media/video-loop.html = FAIL
 
 // We occasionally fail to perform the third seek.
-BUG13907 : LayoutTests/media/video-seeking.html = PASS FAIL
+BUG13907 MAC WIN : LayoutTests/media/video-seeking.html = PASS FAIL
+BUG13907 LINUX RELEASE : LayoutTests/media/video-seeking.html = PASS FAIL
+BUG13907 LINUX DEBUG : LayoutTests/media/video-seeking.html = PASS TIMEOUT
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
 // The test uses setTimeout() and is flaky.
@@ -2387,7 +2391,7 @@ BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 // IMAGE+TEXT is flaky
-BUG10435 WIN DEBUG : LayoutTests/editing/selection/move-by-line-001.html = IMAGE IMAGE+TEXT
+BUG10435 WIN DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS TEXT
 
 // New tests added in the 41420:41447 merge that fail (just needs a new baseline):
 BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
@@ -2454,7 +2458,9 @@ BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
 
 // New failures from merge
-BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
+BUG10463 WIN : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
+BUG10463 RELEASE LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
+BUG10463 DEBUG LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL CRASH
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
@@ -2548,7 +2554,7 @@ BUG9798 DEBUG SLOW : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
 BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
-BUG9798 MAC RELEASE : LayoutTests/fast/js/toString-dontEnum.html = CRASH PASS
+BUG9798 MAC : LayoutTests/fast/js/toString-dontEnum.html = CRASH PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 
 // Was flaky. Became a consistent failure.
@@ -2565,7 +2571,7 @@ BUG9798 MAC DEBUG : LayoutTests/http/tests/navigation/back-to-slow-frame.html = 
 BUG9798 MAC RELEASE : LayoutTests/http/tests/navigation/success200-frames-loadsame.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL PASS
-BUG9798 WIN LINUX RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
+BUG9798 RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = TIMEOUT PASS
@@ -2627,6 +2633,18 @@ BUG9798 LINUX DEBUG : LayoutTests/svg/custom/animate-path-discrete.svg = PASS IM
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-mask-transitions.html = PASS TEXT
 BUG9798 MAC : LayoutTests/http/tests/security/xssAuditor/faux-script1.html = PASS TIMEOUT
 BUG9798 : LayoutTests/http/tests/misc/text-refresh.html = PASS TIMEOUT
+BUG9798 LINUX MAC : LayoutTests/fast/forms/input-maxlength-ime-completed.html = CRASH PASS
+BUG9798 WIN LINUX DEBUG : LayoutTests/svg/custom/class-baseValue.svg = IMAGE+TEXT PASS
+BUG9798 LINUX : LayoutTests/fast/forms/listbox-scroll-after-options-removed.html = CRASH PASS
+BUG9798 MAC : LayoutTests/http/tests/local/stylesheet-and-script-load-order-http.html = PASS TIMEOUT
+BUG9798 MAC : LayoutTests/fast/frames/onload-remove-iframe-crash.html = CRASH PASS
+BUG9798 LINUX DEBUG : LayoutTests/transitions/transition-end-event-nested.html = PASS TEXT
+BUG9798 LINUX DEBUG : LayoutTests/fast/multicol/float-multicol.html = IMAGE PASS
+BUG9798 WIN DEBUG : LayoutTests/fast/forms/button-spacebar-click.html = CRASH PASS
+BUG9798 WIN : LayoutTests/animations/change-transform-in-end-event.html = PASS TIMEOUT
+BUG9798 LINUX MAC : LayoutTests/http/tests/navigation/reload-subframe-iframe.html = PASS TIMEOUT
+BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html = CRASH PASS
+BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -2967,7 +2985,7 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
 // WebKit 47719:47732. New test. Time out on all 3 platforms.
-BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
+BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
@@ -2987,7 +3005,7 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS 
 // started crashing at build 5859 of webkit-dbg-2
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
-BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
+BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = FAIL
 
 // Flakey crashes in js tests. Cause unknown.
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
@@ -3212,10 +3230,11 @@ BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
 BUG_TONY WIN LINUX : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
-BUG_TONY LINUX DEBUG : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH
+BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH
 
 // WebKit roll 49992:49997
 // hclam to add expected results.
 BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL
 // scherkus to add expected results.
 BUG_SCHERKUS : LayoutTests/media/video-pause-immediately.html = FAIL
+
