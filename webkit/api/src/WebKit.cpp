@@ -36,6 +36,7 @@
 #include "AtomicString.h"
 #include "DOMTimer.h"
 #include "Page.h"
+#include "RuntimeEnabledFeatures.h"
 #include "TextEncoding.h"
 #include "WebSocket.h"
 #include "WorkerContextExecutionProxy.h"
@@ -110,6 +111,7 @@ void enableDatabases()
 {
 #if ENABLE(DATABASE)
     s_databasesEnabled = true;
+    WebCore::RuntimeEnabledFeatures::setDatabaseEnabled(true);
 #endif
 }
 

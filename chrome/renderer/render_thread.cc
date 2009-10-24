@@ -514,6 +514,9 @@ void RenderThread::EnsureWebKitInitialized() {
 
   if (command_line.HasSwitch(switches::kEnableWebSockets))
     WebKit::enableWebSockets();
+
+  if (command_line.HasSwitch(switches::kEnableDatabases))
+    WebKit::enableDatabases();
 }
 
 void RenderThread::IdleHandler() {
