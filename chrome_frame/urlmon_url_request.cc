@@ -9,6 +9,8 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
 #include "net/http/http_util.h"
@@ -23,10 +25,11 @@ UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
       status_(URLRequestStatus::FAILED, net::ERR_FAILED),
       thread_(PlatformThread::CurrentId()),
-      is_request_started_(false),
       post_data_len_(0),
       redirect_status_(0),
-      parent_window_(NULL) {
+      parent_window_(NULL),
+      worker_thread_(NULL),
+      task_marshaller_(NULL) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this)
       << " Count: " << ++instance_count_;
 }
@@ -39,6 +42,36 @@ UrlmonUrlRequest::~UrlmonUrlRequest() {
 bool UrlmonUrlRequest::Start() {
   DCHECK_EQ(PlatformThread::CurrentId(), thread_);
 
+  if (!worker_thread_) {
+    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
+    return false;
+  }
+
+  worker_thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StartAsync));
+
+  // Take a self reference to maintain COM lifetime. This will be released
+  // in EndRequest
+  AddRef();
+  request_handler()->AddRequest(this);
+  return true;
+}
+
+void UrlmonUrlRequest::Stop() {
+  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+
+  if (!worker_thread_) {
+    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
+    return;
+  }
+
+  worker_thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StopAsync));
+}
+
+void UrlmonUrlRequest::StartAsync() {
+  DCHECK(worker_thread_ != NULL);
+
   status_.set_status(URLRequestStatus::IO_PENDING);
   HRESULT hr = StartAsyncDownload();
   if (FAILED(hr)) {
@@ -47,21 +80,13 @@ bool UrlmonUrlRequest::Start() {
     status_.set_os_error(HresultToNetError(hr));
     status_.set_status(URLRequestStatus::FAILED);
     DLOG(ERROR) << "StartAsyncDownload failed";
-    OnResponseEnd(status_);
-    return false;
+    EndRequest();
+    return;
   }
-
-  // Take a self reference to maintain COM lifetime. This will be released
-  // in EndRequest. Set a flag indicating that we have an additional
-  // reference here
-  is_request_started_ = true;
-  AddRef();
-  request_handler()->AddRequest(this);
-  return true;
 }
 
-void UrlmonUrlRequest::Stop() {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+void UrlmonUrlRequest::StopAsync() {
+  DCHECK(worker_thread_ != NULL);
 
   if (binding_) {
     binding_->Abort();
@@ -77,15 +102,28 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
 
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this);
 
+  if (!worker_thread_) {
+    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
+    return false;
+  }
+
+  worker_thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::ReadAsync,
+                                   bytes_to_read));
+  return true;
+}
+
+void UrlmonUrlRequest::ReadAsync(int bytes_to_read) {
   // Send cached data if available.
   CComObjectStackEx<SendStream> send_stream;
   send_stream.Initialize(this);
+
   size_t bytes_copied = 0;
   if (cached_data_.is_valid() && cached_data_.Read(&send_stream, bytes_to_read,
                                                    &bytes_copied)) {
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X - bytes read from cache: %d",
                                url().c_str(), this, bytes_copied);
-    return true;
+    return;
   }
 
   // if the request is finished or there's nothing more to read
@@ -94,13 +132,12 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X. Response finished. Status: %d",
                                url().c_str(), this, status_.status());
     EndRequest();
-    return true;
+    return;
   }
 
   pending_read_size_ = bytes_to_read;
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
       "- Read pending for: " << bytes_to_read;
-  return true;
 }
 
 STDMETHODIMP UrlmonUrlRequest::OnStartBinding(
@@ -143,7 +180,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
 }
 
 STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(worker_thread_ != NULL);
+  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
       " - Request stopped, Result: " << std::hex << result <<
@@ -167,7 +205,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
 
 STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     BINDINFO *bind_info) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(worker_thread_ != NULL);
+  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
   if ((bind_info == NULL) || (bind_info->cbSize == 0) || (bind_flags == NULL))
     return E_INVALIDARG;
@@ -224,7 +263,9 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
                                                FORMATETC* formatetc,
                                                STGMEDIUM* storage) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(worker_thread_ != NULL);
+  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
+
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X - Bytes available: %d",
                              url().c_str(), this, size);
 
@@ -285,7 +326,9 @@ STDMETHODIMP UrlmonUrlRequest::OnObjectAvailable(REFIID iid, IUnknown *object) {
 STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     const wchar_t* current_headers, DWORD reserved,
     wchar_t** additional_headers) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(worker_thread_ != NULL);
+  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
+
   if (!additional_headers) {
     NOTREACHED();
     return E_POINTER;
@@ -333,7 +376,8 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(worker_thread_ != NULL);
+  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
   std::string raw_headers = WideToUTF8(response_headers);
 
@@ -552,15 +596,22 @@ void UrlmonUrlRequest::EndRequest() {
       status_.set_os_error(net::ERR_UNSAFE_REDIRECT);
     }
   }
-  request_handler()->RemoveRequest(this);
+
   OnResponseEnd(status_);
 
-  // If the request was started then we must have an additional reference on the
-  // request.
-  if (is_request_started_) {
-    is_request_started_ = false;
-    Release();
-  }
+  DCHECK(task_marshaller_ != NULL);
+
+  // Remove the request mapping and release the outstanding reference to us in
+  // the context of the UI thread.
+  task_marshaller_->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::EndRequestInternal));
+}
+
+void UrlmonUrlRequest::EndRequestInternal() {
+  request_handler()->RemoveRequest(this);
+  // Release the outstanding reference in the context of the UI thread to
+  // ensure that our instance gets deleted in the same thread which created it.
+  Release();
 }
 
 int UrlmonUrlRequest::GetHttpResponseStatus() const {
@@ -677,6 +728,7 @@ bool UrlmonUrlRequest::Cache::Append(IStream* source,
   while (SUCCEEDED(hr)) {
     DWORD chunk_read = 0;  // NOLINT
     hr = source->Read(read_buffer_, sizeof(read_buffer_), &chunk_read);
+
     if (!chunk_read)
       break;
 

@@ -13,8 +13,10 @@
 
 #include "base/lock.h"
 #include "base/platform_thread.h"
+#include "base/thread.h"
 #include "base/scoped_comptr_win.h"
 #include "chrome_frame/plugin_url_request.h"
+#include "chrome_frame/chrome_frame_delegate.h"
 
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
@@ -87,8 +89,32 @@ END_SERVICE_MAP()
     parent_window_ = parent_window;
   }
 
+  // Needed to support PostTask.
+  static bool ImplementsThreadSafeReferenceCounting() {
+    return true;
+  }
+
+  // URL requests are handled on this thread.
+  void set_worker_thread(base::Thread* worker_thread) {
+    worker_thread_ = worker_thread;
+  }
+
+  void set_task_marshaller(TaskMarshaller* task_marshaller) {
+    task_marshaller_ = task_marshaller;
+  }
+
  protected:
+  // The following functions issue and handle Urlmon requests on the dedicated
+  // Urlmon thread.
+  void StartAsync();
+  void StopAsync();
+  void ReadAsync(int bytes_to_read);
+
   static const size_t kCopyChunkSize = 32 * 1024;
+  // URL requests are handled on this thread.
+  base::Thread* worker_thread_;
+
+  TaskMarshaller* task_marshaller_;
 
   // A fake stream class to make it easier to copy received data using
   // IStream::CopyTo instead of allocating temporary buffers and keeping
@@ -203,7 +229,9 @@ END_SERVICE_MAP()
 
   HRESULT StartAsyncDownload();
   void EndRequest();
-
+  // Executes in the context of the UI thread and releases the outstanding
+  // reference to us. It also deletes the request mapping for this instance.
+  void EndRequestInternal();
   int GetHttpResponseStatus() const;
 
   static net::Error HresultToNetError(HRESULT hr);
@@ -221,7 +249,6 @@ END_SERVICE_MAP()
   uint64 post_data_len_;
 
   PlatformThreadId thread_;
-  bool is_request_started_;
   static int instance_count_;
   HWND parent_window_;
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);

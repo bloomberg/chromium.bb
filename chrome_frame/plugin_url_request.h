@@ -13,6 +13,7 @@
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "base/ref_counted.h"
+#include "chrome_frame/chrome_frame_delegate.h"
 
 class PluginUrlRequest;
 
@@ -52,7 +53,7 @@ class PluginUrlRequest : public UrlRequestReference {
   // These cookies are sent when we receive a response for every URL request
   // initiated by Chrome. Ideally we should only send cookies for the top level
   // URL and any subframes. However we don't receive information from Chrome
-  // about the context for a URL, i.e. whether it is a subframe, etc. 
+  // about the context for a URL, i.e. whether it is a subframe, etc.
   // Additionally cookies for a URL should be sent once for the page. This
   // is not done now as it is difficult to track URLs, specifically if they
   // are redirected, etc.

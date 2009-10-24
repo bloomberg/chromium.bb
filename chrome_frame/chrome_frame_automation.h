@@ -144,35 +144,6 @@ class ProxyFactory {
   int uma_send_interval_;
 };
 
-// T is expected to be something CWindowImpl derived, or at least to have
-// PostMessage(UINT, WPARAM) method. Do not forget to CHAIN_MSG_MAP
-template <class T> class TaskMarshallerThroughWindowsMessages {
- public:
-  void PostTask(const tracked_objects::Location& from_here, Task* task) {
-    task->SetBirthPlace(from_here);
-    T* this_ptr = static_cast<T*>(this);
-    if (this_ptr->IsWindow()) {
-      this_ptr->PostMessage(MSG_EXECUTE_TASK, reinterpret_cast<WPARAM>(task));
-    } else {
-      DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
-    }
-  }
-
-  BEGIN_MSG_MAP(PostMessageMarshaller)
-    MESSAGE_HANDLER(MSG_EXECUTE_TASK, ExecuteTask)
-  END_MSG_MAP()
-
- private:
-  enum { MSG_EXECUTE_TASK = WM_APP + 6 };
-  inline LRESULT ExecuteTask(UINT, WPARAM wparam, LPARAM,
-                             BOOL& handled) {  // NOLINT
-    Task* task = reinterpret_cast<Task*>(wparam);
-    task->Run();
-    delete task;
-    return 0;
-  }
-};
-
 // Handles all automation requests initiated from the chrome frame objects.
 // These include the chrome tab/chrome frame activex/chrome frame npapi
 // plugin objects.
@@ -295,6 +266,13 @@ class ChromeFrameAutomationClient
   void AttachExternalTab(intptr_t external_tab_cookie);
 
   void SetPageFontSize(enum AutomationPageFontSize);
+
+  // Dummy reference counting functions to enable us to use the
+  // TaskMarshallerThroughWindowsMessages functionality. At this point we don't
+  // need to ensure that any tasks executed on us grab a reference to ensure
+  // that the instance remains valid.
+  void AddRef() {}
+  void Release() {}
 
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.

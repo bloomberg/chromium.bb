@@ -5,6 +5,9 @@
 #ifndef CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
 #define CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
 
+#include <atlbase.h>
+#include <atlwin.h>
+
 #include "chrome/test/automation/automation_messages.h"
 #include "ipc/ipc_message.h"
 
@@ -12,7 +15,6 @@
 // implementations.
 class ChromeFrameDelegate {
  public:
-
   typedef HWND WindowType;
 
   virtual WindowType GetWindow() const = 0;
@@ -101,6 +103,47 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnAttachExternalTab(int tab_handle, intptr_t cookie,
                                    int disposition) {}
   virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset) {}
+};
+
+// This interface enables tasks to be marshalled to desired threads.
+class TaskMarshaller {
+ public:
+  virtual void PostTask(const tracked_objects::Location& from_here,
+                        Task* task) = 0;
+};
+
+// T is expected to be something CWindowImpl derived, or at least to have
+// PostMessage(UINT, WPARAM) method. Do not forget to CHAIN_MSG_MAP
+template <class T> class TaskMarshallerThroughWindowsMessages
+    : public TaskMarshaller {
+ public:
+  virtual void PostTask(const tracked_objects::Location& from_here,
+                        Task* task) {
+    task->SetBirthPlace(from_here);
+    T* this_ptr = static_cast<T*>(this);
+    if (this_ptr->IsWindow()) {
+      this_ptr->AddRef();
+      this_ptr->PostMessage(MSG_EXECUTE_TASK, reinterpret_cast<WPARAM>(task));
+    } else {
+      DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
+    }
+  }
+
+  BEGIN_MSG_MAP(PostMessageMarshaller)
+    MESSAGE_HANDLER(MSG_EXECUTE_TASK, ExecuteTask)
+  END_MSG_MAP()
+
+ private:
+  enum { MSG_EXECUTE_TASK = WM_APP + 6 };
+  inline LRESULT ExecuteTask(UINT, WPARAM wparam, LPARAM,
+                             BOOL& handled) {  // NOLINT
+    Task* task = reinterpret_cast<Task*>(wparam);
+    task->Run();
+    delete task;
+    T* this_ptr = static_cast<T*>(this);
+    this_ptr->Release();
+    return 0;
+  }
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_DELEGATE_H_

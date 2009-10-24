@@ -1000,8 +1000,8 @@ void ChromeFrameAutomationClient::RemoveRequest(
   PluginUrlRequest* request = LookupRequest(request_id);
   if (request) {
     if (abort) {
+      // The request object will get removed asynchronously.
       request->Stop();
-      DCHECK(request_map_.end() == request_map_.find(request_id));
     } else {
       request_map_.erase(request_id);
     }

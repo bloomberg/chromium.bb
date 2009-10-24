@@ -150,13 +150,19 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :
   public IPropertyNotifySinkCP<T>,
   public CComCoClass<T, &class_id>,
   public CComControl<T>,
-  public ChromeFramePlugin<T> {
+  public ChromeFramePlugin<T>,
+  public TaskMarshallerThroughWindowsMessages<
+            ChromeFrameActivexBase<T, class_id> > {
  protected:
   typedef std::set<ScopedComPtr<IDispatch> > EventHandlers;
+  typedef TaskMarshallerThroughWindowsMessages<
+      ChromeFrameActivexBase<T, class_id> > TaskMarshaller;
+  typedef ChromeFrameActivexBase<T, class_id> Base;
 
  public:
   ChromeFrameActivexBase()
-      : ready_state_(READYSTATE_UNINITIALIZED) {
+      : ready_state_(READYSTATE_UNINITIALIZED),
+        worker_thread_("ChromeFrameWorker_Thread") {
     m_bWindowOnly = TRUE;
   }
 
@@ -197,6 +203,7 @@ BEGIN_MSG_MAP(ChromeFrameActivexBase)
   MESSAGE_HANDLER(WM_CREATE, OnCreate)
   CHAIN_MSG_MAP(ChromeFramePlugin<T>)
   CHAIN_MSG_MAP(CComControl<T>)
+  CHAIN_MSG_MAP(TaskMarshaller)
   DEFAULT_REFLECTION_HANDLER()
 END_MSG_MAP()
 
@@ -231,6 +238,12 @@ END_MSG_MAP()
                                   IE_8,
                                   IE_8 + 1);
     }
+
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_UI;
+    worker_thread_.StartWithOptions(options);
+    worker_thread_.message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStart));
     return S_OK;
   }
 
@@ -302,8 +315,19 @@ END_MSG_MAP()
   // of this template should implement this method based on how
   // it "feels" from a security perspective. If it's hosted in another
   // scriptable document, return true, else false.
-  virtual bool is_frame_busting_enabled() const {
+  bool is_frame_busting_enabled() const {
     return true;
+  }
+
+  // Needed to support PostTask.
+  static bool ImplementsThreadSafeReferenceCounting() {
+    return true;
+  }
+
+  virtual void OnFinalMessage(HWND) {
+    worker_thread_.message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
+    worker_thread_.Stop();
   }
 
  protected:
@@ -419,12 +443,13 @@ END_MSG_MAP()
 
     DCHECK(request.get() != NULL);
 
-    if (request->Initialize(automation_client_.get(), tab_handle, request_id,
-                            request_info.url, request_info.method,
-                            request_info.referrer,
-                            request_info.extra_request_headers,
-                            request_info.upload_data.get(),
-                            static_cast<T*>(this)->is_frame_busting_enabled())) {
+    if (request->Initialize(
+        automation_client_.get(), tab_handle, request_id, request_info.url,
+        request_info.method, request_info.referrer,
+        request_info.extra_request_headers, request_info.upload_data.get(),
+        static_cast<T*>(this)->is_frame_busting_enabled())) {
+      request->set_worker_thread(&worker_thread_);
+      request->set_task_marshaller(this);
       // If Start is successful, it will add a self reference.
       request->Start();
       request->set_parent_window(m_hWnd);
@@ -941,6 +966,16 @@ END_MSG_MAP()
   }
 
  protected:
+   // The following functions are called to initialize and uninitialize the
+   // worker thread.
+   void OnWorkerStart() {
+     CoInitialize(NULL);
+   }
+
+   void OnWorkerStop() {
+     CoUninitialize();
+   }
+
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;
 
@@ -963,6 +998,8 @@ END_MSG_MAP()
 
   // The UrlmonUrlRequest instance instantiated for downloading the base URL.
   scoped_refptr<CComObject<UrlmonUrlRequest> > base_url_request_;
+
+  base::Thread worker_thread_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_BASE_H_
