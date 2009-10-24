@@ -58,7 +58,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "FrameLoader.h"
 #include "Document.h"
 #include "Element.h"
-#include "HTMLCollection.h"
+#include "HTMLAllCollection.h"
 #include "HTMLElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLMetaElement.h"
@@ -543,7 +543,7 @@ void DomSerializer::CollectTargetFrames() {
     // Get current using document.
     WebCore::Document* current_doc = current_frame->frame()->document();
     // Go through sub-frames.
-    RefPtr<WebCore::HTMLCollection> all = current_doc->all();
+    RefPtr<WebCore::HTMLAllCollection> all = current_doc->all();
     for (WebCore::Node* node = all->firstItem(); node != NULL;
          node = all->nextItem()) {
       if (!node->isHTMLElement())

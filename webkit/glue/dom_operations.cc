@@ -16,7 +16,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "Element.h"
 #include "EventListener.h"
 #include "EventNames.h"
-#include "HTMLCollection.h"
+#include "HTMLAllCollection.h"
 #include "HTMLElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"

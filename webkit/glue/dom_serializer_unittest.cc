@@ -12,7 +12,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "Element.h"
 #include "FrameLoader.h"
 #include "FrameView.h"
-#include "HTMLCollection.h"
+#include "HTMLAllCollection.h"
 #include "HTMLHeadElement.h"
 #include "HTMLMetaElement.h"
 #include "HTMLNames.h"
@@ -672,7 +672,7 @@ TEST_F(DomSerializerTests, SerialzeHTMLDOMWithBaseTag) {
   WebCore::Document* doc = web_frame->frame()->document();
   ASSERT_TRUE(doc->isHTMLDocument());
   // Go through all descent nodes.
-  RefPtr<WebCore::HTMLCollection> all = doc->all();
+  RefPtr<WebCore::HTMLAllCollection> all = doc->all();
   int original_base_tag_count = 0;
   for (WebCore::Node* node = all->firstItem(); node != NULL;
        node = all->nextItem()) {
