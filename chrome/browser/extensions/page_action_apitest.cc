@@ -38,9 +38,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
           extension->page_action());
   ASSERT_TRUE(action_state);
   EXPECT_EQ("Modified", action_state->title());
-  EXPECT_EQ("badge", action_state->badge_text());
-  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            action_state->badge_background_color());
 
   {
     // Simulate the page action being clicked.

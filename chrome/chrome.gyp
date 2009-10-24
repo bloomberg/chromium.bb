@@ -73,6 +73,7 @@
       'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_toolstrip_apitest.cc',
       'browser/extensions/isolated_world_apitest.cc',
+      'browser/extensions/page_action_apitest.cc',
       'browser/gtk/bookmark_manager_browsertest.cc',
       'browser/gtk/view_id_util_browsertest.cc',
       'browser/net/ftp_browsertest.cc',
@@ -88,7 +89,6 @@
       'browser/extensions/extension_storage_apitest.cc',
       'browser/extensions/extension_tabs_apitest.cc',
       'browser/extensions/extension_i18n_apitest.cc',
-      'browser/extensions/page_action_apitest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
       'browser/views/find_bar_host_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.

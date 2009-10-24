@@ -6,9 +6,6 @@
   chrome.tabs.getSelected(null, function(tab) {
     chrome.pageAction.show(tab.id);
     chrome.pageAction.setTitle({title: "Modified", tabId: tab.id});
-    chrome.pageAction.setBadgeText({text: "badge", tabId: tab.id});
-    chrome.pageAction.setBadgeBackgroundColor(
-        {color: [255,255,255,255], tabId: tab.id});
 
     chrome.test.notifyPass();
   });
