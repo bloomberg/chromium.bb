@@ -264,12 +264,7 @@ const GURL Label::GetURL() const {
 
 gfx::Size Label::GetTextSize() {
   if (!text_size_valid_) {
-    int w = 0, h = 0;
-    gfx::Canvas cc(0, 0, true);
-    int flags = is_multi_line_ ? ComputeMultiLineFlags() : 0;
-
-    cc.SizeStringInt(text_, font_, &w, &h, flags);
-    text_size_.SetSize(w, h);
+    text_size_.SetSize(font_.GetStringWidth(text_), font_.height());
     if (highlighted_)
       text_size_.Enlarge(1, 1);
     text_size_valid_ = true;
