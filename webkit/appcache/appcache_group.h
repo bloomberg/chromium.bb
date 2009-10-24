@@ -45,20 +45,18 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
-  const GURL& manifest_url() { return manifest_url_; }
+  const GURL& manifest_url() const { return manifest_url_; }
 
-  bool is_obsolete() { return is_obsolete_; }
+  bool is_obsolete() const { return is_obsolete_; }
   void set_obsolete(bool value) { is_obsolete_ = value; }
 
-  AppCache* newest_complete_cache() { return newest_complete_cache_; }
+  AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
   void AddCache(AppCache* complete_cache);
-
   void RemoveCache(AppCache* cache);
+  bool HasCache() const { return newest_complete_cache_ != NULL; }
 
-  bool HasCache() { return newest_complete_cache_ != NULL; }
-
-  UpdateStatus update_status() { return update_status_; }
+  UpdateStatus update_status() const { return update_status_; }
 
   // Starts an update via update() javascript API.
   void StartUpdate() {
@@ -79,13 +77,14 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  private:
   friend class AppCacheUpdateJob;
   friend class AppCacheUpdateJobTest;
+  friend class MockAppCacheStorage;  // for old_caches()
 
   typedef std::vector<AppCache*> Caches;
 
   AppCacheUpdateJob* update_job() { return update_job_; }
   void SetUpdateStatus(UpdateStatus status);
 
-  const Caches& old_caches() { return old_caches_; }
+  const Caches& old_caches() const { return old_caches_; }
 
   GURL manifest_url_;
   UpdateStatus update_status_;

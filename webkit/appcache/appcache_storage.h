@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "net/base/net_errors.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_working_set.h"
 
@@ -20,6 +21,7 @@ class GURL;
 namespace appcache {
 
 class AppCache;
+class AppCacheEntry;
 class AppCacheGroup;
 class AppCacheService;
 
@@ -41,18 +43,18 @@ class AppCacheStorage {
     virtual void OnGroupAndNewestCacheStored(
         AppCacheGroup* group, bool success) {}
 
-    // If the update fails, success will be false.
-    virtual void OnGroupMarkedAsObsolete(GURL& manifest_url, bool success) {}
+    // If the operation fails, success will be false.
+    virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success) {}
 
     // If a load fails the 'response_info' will be NULL.
     virtual void OnResponseInfoLoaded(
         AppCacheResponseInfo* response_info, int64 response_id) {}
 
-    // If no response is found, response_id will be kNoResponseId.
+    // If no response is found, entry.response_id() will be kNoResponseId.
     // If a response is found, the cache id and manifest url of the
     // containing cache and group are also returned.
     virtual void OnMainResponseFound(
-        const GURL& url, int64 response_id, bool is_fallback,
+        const GURL& url, const AppCacheEntry& entry,
         int64 cache_id, const GURL& mainfest_url) {}
   };
 
@@ -106,7 +108,7 @@ class AppCacheStorage {
   // Schedules a task to update persistent storage and doom the group and all
   // related caches and responses for deletion. Upon completion the in-memory
   // instance is marked as obsolete and the delegate callback is called.
-  virtual void MarkGroupAsObsolete(
+  virtual void MakeGroupObsolete(
       AppCacheGroup* group, Delegate* delegate) = 0;
 
   // Cancels all pending callbacks for the delegate. The delegate callbacks
@@ -151,6 +153,7 @@ class AppCacheStorage {
 
  protected:
   friend class AppCacheResponseTest;
+  friend class AppCacheStorageTest;
 
   // Helper to call a collection of delegates.
   #define FOR_EACH_DELEGATE(delegates, func_and_args)                \
@@ -289,27 +292,8 @@ class AppCacheStorage {
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64 kUnitializedId = -1;
 
+  FRIEND_TEST(AppCacheStorageTest, DelegateReferences);
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
-};
-
-// TODO(michaeln): Maybe?
-class AppCacheStoredItem {
- public:
-  bool is_doomed() const { return is_doomed_; }
-  bool is_stored() const { return is_stored_; }
-
- protected:
-  AppCacheStoredItem() : is_doomed_(false), is_stored_(false) {}
-
- private:
-  friend class AppCacheStorage;
-  friend class MockAppCacheStorage;
-
-  void set_is_doomed(bool b) { is_doomed_ = b; }
-  void set_is_stored(bool b) { is_stored_ = b; }
-
-  bool is_doomed_;
-  bool is_stored_;
 };
 
 }  // namespace appcache

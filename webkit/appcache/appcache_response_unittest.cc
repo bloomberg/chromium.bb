@@ -287,46 +287,6 @@ class AppCacheResponseTest : public testing::Test {
   // Most of the individual tests involve multiple async steps. Each test
   // is delineated with a section header.
 
-  // DelegateReferences -------------------------------------------------------
-  // TODO(michaeln): maybe this one belongs in appcache_storage_unittest.cc
-  void DelegateReferences() {
-    typedef scoped_refptr<AppCacheStorage::DelegateReference>
-        ScopedDelegateReference;
-    MockStorageDelegate delegate(this);
-    ScopedDelegateReference delegate_reference1;
-    ScopedDelegateReference delegate_reference2;
-
-    EXPECT_FALSE(service_->storage()->GetDelegateReference(&delegate));
-
-    delegate_reference1 =
-        service_->storage()->GetOrCreateDelegateReference(&delegate);
-    EXPECT_TRUE(delegate_reference1.get());
-    EXPECT_TRUE(delegate_reference1->HasOneRef());
-    EXPECT_TRUE(service_->storage()->GetDelegateReference(&delegate));
-    EXPECT_EQ(&delegate,
-              service_->storage()->GetDelegateReference(&delegate)->delegate);
-    EXPECT_EQ(service_->storage()->GetDelegateReference(&delegate),
-              service_->storage()->GetOrCreateDelegateReference(&delegate));
-    delegate_reference1 = NULL;
-    EXPECT_FALSE(service_->storage()->GetDelegateReference(&delegate));
-
-    delegate_reference1 =
-        service_->storage()->GetOrCreateDelegateReference(&delegate);
-    service_->storage()->CancelDelegateCallbacks(&delegate);
-    EXPECT_TRUE(delegate_reference1.get());
-    EXPECT_TRUE(delegate_reference1->HasOneRef());
-    EXPECT_FALSE(delegate_reference1->delegate);
-    EXPECT_FALSE(service_->storage()->GetDelegateReference(&delegate));
-
-    delegate_reference2 =
-        service_->storage()->GetOrCreateDelegateReference(&delegate);
-    EXPECT_TRUE(delegate_reference2.get());
-    EXPECT_TRUE(delegate_reference2->HasOneRef());
-    EXPECT_EQ(&delegate, delegate_reference2->delegate);
-    EXPECT_NE(delegate_reference1.get(), delegate_reference2.get());
-
-    TestFinished();
-  }
 
   // ReadNonExistentResponse -------------------------------------------
   void ReadNonExistentResponse() {
@@ -679,10 +639,6 @@ class AppCacheResponseTest : public testing::Test {
 
 // static
 scoped_ptr<base::Thread> AppCacheResponseTest::io_thread_;
-
-TEST_F(AppCacheResponseTest, DelegateReferences) {
-  RunTestOnIOThread(&AppCacheResponseTest::DelegateReferences);
-}
 
 TEST_F(AppCacheResponseTest, ReadNonExistentResponse) {
   RunTestOnIOThread(&AppCacheResponseTest::ReadNonExistentResponse);

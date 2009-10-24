@@ -372,6 +372,7 @@
         '../../appcache/appcache_storage_unittest.cc',
         '../../appcache/appcache_update_job_unittest.cc',
         '../../appcache/mock_appcache_service.h',
+        '../../appcache/mock_appcache_storage_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',

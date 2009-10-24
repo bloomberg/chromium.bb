@@ -5,6 +5,8 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_ENTRY_H_
 #define WEBKIT_APPCACHE_APPCACHE_ENTRY_H_
 
+#include "webkit/appcache/appcache_interfaces.h"
+
 namespace appcache {
 
 // A cached entry is identified by a URL and is classified into one
@@ -22,7 +24,13 @@ class AppCacheEntry {
     FALLBACK = 1 << 4,
   };
 
-  explicit AppCacheEntry(int type) : types_(type) {}
+  AppCacheEntry() : types_(0), response_id_(kNoResponseId) {}
+
+  explicit AppCacheEntry(int type)
+    : types_(type), response_id_(kNoResponseId) {}
+
+  AppCacheEntry(int type, int64 response_id)
+    : types_(type), response_id_(response_id) {}
 
   int types() const { return types_; }
   void add_types(int added_types) { types_ |= added_types; }
@@ -32,10 +40,12 @@ class AppCacheEntry {
   bool IsForeign() const { return (types_ & FOREIGN) != 0; }
   bool IsFallback() const { return (types_ & FALLBACK) != 0; }
 
+  int64 response_id() const { return response_id_; }
+  void set_response_id(int64 id) { response_id_ = id; }
+
  private:
   int types_;
-
-  // TODO(jennb): response storage key
+  int64 response_id_;
 };
 
 }  // namespace appcache
