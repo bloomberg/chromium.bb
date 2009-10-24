@@ -27,6 +27,11 @@
 // The size of each button on the toolbar.
 static const int kButtonSize = 29;
 
+// The padding between browser action buttons. Visually, the actual number of
+// "empty" (non-drawing) pixels is this value + 2 when adjacent browser icons
+// use their maximum allowed size.
+static const int kBrowserActionButtonPadding = 3;
+
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer {
  public:
@@ -178,7 +183,7 @@ class BrowserActionButton : public NotificationObserver,
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
-      hbox_(gtk_hbox_new(0, FALSE)) {
+      hbox_(gtk_hbox_new(FALSE, kBrowserActionButtonPadding)) {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  Source<ExtensionsService>(extension_service));

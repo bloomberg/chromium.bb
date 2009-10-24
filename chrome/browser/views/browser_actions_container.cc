@@ -30,6 +30,11 @@ static const int kButtonSize = 29;
 // The padding between the browser actions and the omnibox/page menu.
 static const int kHorizontalPadding = 4;
 
+// The padding between browser action buttons. Visually, the actual number of
+// empty (non-drawing) pixels is this value + 2 when adjacent browser icons
+// use their maximum allowed size.
+static const int kBrowserActionButtonPadding = 3;
+
 // This is the same value from toolbar.cc. We position the browser actions
 // container flush with the edges of the toolbar as a special case so that we
 // can draw the badge outside the visual bounds of the container.
@@ -340,13 +345,16 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
     return gfx::Size(0, 0);
   int width = kHorizontalPadding * 2 +
       browser_action_views_.size() * kButtonSize;
+  if (browser_action_views_.size() > 1)
+    width += (browser_action_views_.size() - 1) * kBrowserActionButtonPadding;
   return gfx::Size(width, kButtonSize);
 }
 
 void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
     BrowserActionView* view = browser_action_views_[i];
-    int x = kHorizontalPadding + i * kButtonSize;
+    int x = kHorizontalPadding +
+        i * (kButtonSize + kBrowserActionButtonPadding);
     if (x + kButtonSize <= width()) {
       view->SetBounds(x, 0, kButtonSize, height());
       view->SetVisible(true);
