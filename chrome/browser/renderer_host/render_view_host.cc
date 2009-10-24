@@ -175,7 +175,9 @@ bool RenderViewHost::CreateRenderView() {
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!process()->Init())
+  bool is_extensions_process =
+      BindingsPolicy::is_extension_enabled(enabled_bindings_);
+  if (!process()->Init(is_extensions_process))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());
@@ -185,7 +187,7 @@ bool RenderViewHost::CreateRenderView() {
         process()->id());
   }
 
-  if (BindingsPolicy::is_extension_enabled(enabled_bindings_)) {
+  if (is_extensions_process) {
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
         process()->id());
   }

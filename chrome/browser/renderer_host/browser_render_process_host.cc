@@ -243,7 +243,7 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
       NotificationService::NoDetails());
 }
 
-bool BrowserRenderProcessHost::Init() {
+bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
@@ -290,6 +290,8 @@ bool BrowserRenderProcessHost::Init() {
   CommandLine cmd_line(renderer_path);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
+  if (is_extensions_process)
+    cmd_line.AppendSwitch(switches::kEnableDatabases);
   bool has_cmd_prefix;
   AppendRendererCommandLine(&cmd_line, &has_cmd_prefix);
 

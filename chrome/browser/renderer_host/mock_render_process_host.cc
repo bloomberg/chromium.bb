@@ -14,7 +14,7 @@ MockRenderProcessHost::~MockRenderProcessHost() {
   delete transport_dib_;
 }
 
-bool MockRenderProcessHost::Init() {
+bool MockRenderProcessHost::Init(bool is_extensions_process) {
   return true;
 }
 
