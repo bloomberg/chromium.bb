@@ -53,9 +53,8 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
   *services_supported = NONE;
 
   // Import features are toggled by the following:
-  // bookmarks import: existance of ~/Library/Safari/Bookmarks.plist file.
-  // history import: existance of ~/Library/Safari/History.plist file.
-  // homepage import: existance of appropriate key in defaults.
+  // bookmarks import: existence of ~/Library/Safari/Bookmarks.plist file.
+  // history import: existence of ~/Library/Safari/History.plist file.
   FilePath safari_dir = library_dir.Append("Safari");
   FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
   FilePath history_path = safari_dir.Append("History.plist");
@@ -65,13 +64,6 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
     *services_supported |= FAVORITES;
   if (PathExists(history_path))
     *services_supported |= HISTORY;
-
-  const scoped_nsobject<NSString> homepage_ns(
-      reinterpret_cast<const NSString*>(
-          CFPreferencesCopyAppValue(CFSTR("HomePage"),
-                                    CFSTR("com.apple.Safari"))));
-  if (homepage_ns.get())
-    *services_supported |= HOME_PAGE;
 
   return *services_supported != NONE;
 }
@@ -84,7 +76,8 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
   // The order here is important!
   bridge_->NotifyStarted();
   // In keeping with import on other platforms (and for other browsers), we
-  // don't import the home page (since it may lead to a useless homepage).
+  // don't import the home page (since it may lead to a useless homepage); see
+  // crbug.com/25603.
   if ((services_supported & HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(HISTORY);
     ImportHistory();
@@ -391,20 +384,5 @@ void SafariImporter::ParseHistoryItems(
     row.set_last_visit(base::Time::FromDoubleT(seconds_since_unix_epoch));
 
     history_items->push_back(row);
-  }
-}
-
-void SafariImporter::ImportHomepage() {
-  const scoped_nsobject<NSString> homepage_ns(
-      reinterpret_cast<const NSString*>(
-          CFPreferencesCopyAppValue(CFSTR("HomePage"),
-                                    CFSTR("com.apple.Safari"))));
-  if (!homepage_ns.get())
-    return;
-
-  string16 hompeage_str = base::SysNSStringToUTF16(homepage_ns.get());
-  GURL homepage(hompeage_str);
-  if (homepage.is_valid()) {
-    bridge_->AddHomePage(homepage);
   }
 }

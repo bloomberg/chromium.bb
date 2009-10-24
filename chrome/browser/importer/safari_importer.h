@@ -54,7 +54,6 @@ class SafariImporter : public Importer {
   void ImportBookmarks();
   void ImportPasswords();
   void ImportHistory();
-  void ImportHomepage();
 
   // Parse Safari's stored bookmarks.
   void ParseBookmarks(std::vector<ProfileWriter::BookmarkEntry>* bookmarks);
