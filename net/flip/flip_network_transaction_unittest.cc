@@ -119,8 +119,6 @@ class FlipNetworkTransactionTest : public PlatformTest {
       return out;
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
-    EXPECT_TRUE(response != NULL);
-
     EXPECT_TRUE(response->headers != NULL);
     out.status_line = response->headers->GetStatusLine();
 
@@ -147,7 +145,7 @@ TEST_F(FlipNetworkTransactionTest, Constructor) {
 }
 
 TEST_F(FlipNetworkTransactionTest, Connect) {
-  unsigned char syn_reply[] = {
+  static const unsigned char syn_reply[] = {
     0x80, 0x01, 0x00, 0x02,                                        // header
     0x00, 0x00, 0x00, 0x45,
     0x00, 0x00, 0x00, 0x01,
@@ -161,12 +159,12 @@ TEST_F(FlipNetworkTransactionTest, Connect) {
     0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
   };
-  unsigned char body_frame[] = {
+  static const unsigned char body_frame[] = {
     0x00, 0x00, 0x00, 0x01,                                        // header
     0x00, 0x00, 0x00, 0x06,
     'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
   };
-  unsigned char fin_frame[] = {
+  static const unsigned char fin_frame[] = {
     0x80, 0x01, 0x00, 0x03,                                        // header
     0x00, 0x00, 0x00, 0x08,
     0x00, 0x00, 0x00, 0x01,
@@ -174,9 +172,10 @@ TEST_F(FlipNetworkTransactionTest, Connect) {
   };
 
   MockRead data_reads[] = {
-    MockRead(true, reinterpret_cast<char*>(syn_reply), sizeof(syn_reply)),
-    MockRead(true, reinterpret_cast<char*>(body_frame), sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<char*>(fin_frame), sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
+    MockRead(true, reinterpret_cast<const char*>(body_frame),
+             sizeof(body_frame)),
+    MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
     MockRead(true, 0, 0),  // EOF
   };
 
@@ -186,6 +185,33 @@ TEST_F(FlipNetworkTransactionTest, Connect) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+}
+
+// Test that the transaction doesn't crash when we don't have a reply.
+TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
+  static const unsigned char body_frame[] = {
+    0x00, 0x00, 0x00, 0x01,                                        // header
+    0x00, 0x00, 0x00, 0x06,
+    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+  };
+  static const unsigned char fin_frame[] = {
+    0x80, 0x01, 0x00, 0x03,                                        // header
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  MockRead data_reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(body_frame),
+             sizeof(body_frame)),
+    MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
+    MockRead(true, 0, 0),  // EOF
+  };
+
+  // We disable SSL for this test.
+  FlipSession::SetSSLMode(false);
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
+  EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
 }  // namespace net

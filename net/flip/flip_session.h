@@ -113,6 +113,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   LoadState GetLoadState() const;
  protected:
   FRIEND_TEST(FlipNetworkTransactionTest, Connect);
+  FRIEND_TEST(FlipNetworkTransactionTest, ResponseWithoutSynReply);
   friend class FlipSessionPool;
   friend class HttpNetworkLayer;  // Temporary for server.
 
@@ -195,6 +196,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   int stream_hi_water_mark_;  // The next stream id to use.
 
+  // TODO(mbelshe): We need to track these stream lists better.
+  //                I suspect it is possible to remove a stream from
+  //                one list, but not the other.
   typedef std::map<int, FlipStreamImpl*> ActiveStreamMap;
   typedef std::list<FlipStreamImpl*> ActiveStreamList;
   ActiveStreamMap active_streams_;
