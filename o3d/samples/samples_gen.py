@@ -112,7 +112,11 @@ for asset in assets:
   output_file.write("          ],\n")
   output_file.write("          'action': [\n")
   if sys.platform[:5] == 'linux':
-    output_file.write("            'LD_LIBRARY_PATH=<(PRODUCT_DIR):<(PRODUCT_DIR)/lib',\n")
+    output_file.write("            'LD_LIBRARY_PATH=<(PRODUCT_DIR):"
+                      ":<(PRODUCT_DIR)/lib"
+                      ":../../<(glewdir)/lib"
+                      ":../../<<(PRODUCT_DIR)/lib"
+                      "',\n")
   output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
   output_file.write("            '--no-condition',\n")
   output_file.write("            '--up-axis=%s',\n" % asset['up'])
