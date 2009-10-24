@@ -22,7 +22,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         bool* homepage_defined,
                                         int* do_import_items,
                                         int* dont_import_items) {
-  NOTIMPLEMENTED();
+  // http://code.google.com/p/chromium/issues/detail?id=11971
   return true;
 }
 
