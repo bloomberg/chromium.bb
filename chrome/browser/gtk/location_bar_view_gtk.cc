@@ -151,8 +151,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_container_set_border_width(GTK_CONTAINER(hbox_.get()), kHboxBorder);
   // We will paint for the alignment, to paint the background and border.
   gtk_widget_set_app_paintable(hbox_.get(), TRUE);
-  // Have GTK double buffer around the expose signal.
-  gtk_widget_set_double_buffered(hbox_.get(), TRUE);
   // Redraw the whole location bar when it changes size (e.g., when toggling
   // the home button on/off.
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);

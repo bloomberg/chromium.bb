@@ -21,13 +21,17 @@ namespace {
 
 // The height of the arrow, and the width will be about twice the height.
 const int kArrowSize = 5;
+
 // Number of pixels to the start of the arrow from the edge of the window.
 const int kArrowX = 13;
+
 // Number of pixels between the tip of the arrow and the region we're
 // pointing to.
 const int kArrowToContentPadding = -6;
+
 // We draw flat diagonal corners, each corner is an NxN square.
 const int kCornerSize = 3;
+
 // Margins around the content.
 const int kTopMargin = kArrowSize + kCornerSize + 6;
 const int kBottomMargin = kCornerSize + 6;
@@ -37,24 +41,145 @@ const int kRightMargin = kCornerSize + 6;
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
-enum FrameType {
-  FRAME_MASK,
-  FRAME_STROKE,
-};
+}  // namespace
 
-// Make the points for our polygon frame, either for fill (the mask), or for
-// when we stroke the border.  NOTE: This seems a bit overcomplicated, but it
-// requires a bunch of careful fudging to get the pixels rasterized exactly
-// where we want them, the arrow to have a 1 pixel point, etc.
+// static
+InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
+                                   const gfx::Rect& rect,
+                                   GtkWidget* content,
+                                   GtkThemeProvider* provider,
+                                   InfoBubbleGtkDelegate* delegate) {
+  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
+  bubble->Init(toplevel_window, rect, content);
+  bubble->set_delegate(delegate);
+  return bubble;
+}
+
+InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
+    : delegate_(NULL),
+      window_(NULL),
+      theme_provider_(provider),
+      accel_group_(gtk_accel_group_new()),
+      toplevel_window_(NULL),
+      mask_region_(NULL),
+      arrow_location_(ARROW_LOCATION_TOP_LEFT) {
+}
+
+InfoBubbleGtk::~InfoBubbleGtk() {
+  g_object_unref(accel_group_);
+  if (mask_region_) {
+    gdk_region_destroy(mask_region_);
+    mask_region_ = NULL;
+  }
+
+  g_signal_handlers_disconnect_by_func(
+      toplevel_window_,
+      reinterpret_cast<gpointer>(HandleToplevelConfigureThunk),
+      this);
+  g_signal_handlers_disconnect_by_func(
+      toplevel_window_,
+      reinterpret_cast<gpointer>(HandleToplevelUnmapThunk),
+      this);
+  toplevel_window_ = NULL;
+}
+
+void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
+                         const gfx::Rect& rect,
+                         GtkWidget* content) {
+  DCHECK(!window_);
+  toplevel_window_ = toplevel_window;
+  rect_ = rect;
+
+  window_ = gtk_window_new(GTK_WINDOW_POPUP);
+  gtk_widget_set_app_paintable(window_, TRUE);
+
+  // Attach our accelerator group to the window with an escape accelerator.
+  gtk_accel_group_connect(accel_group_, GDK_Escape,
+      static_cast<GdkModifierType>(0), static_cast<GtkAccelFlags>(0),
+      g_cclosure_new(G_CALLBACK(&HandleEscapeThunk), this, NULL));
+  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
+
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+                            kTopMargin, kBottomMargin,
+                            kLeftMargin, kRightMargin);
+
+  gtk_container_add(GTK_CONTAINER(alignment), content);
+  gtk_container_add(GTK_CONTAINER(window_), alignment);
+
+  // GtkWidget only exposes the bitmap mask interface.  Use GDK to more
+  // efficently mask a GdkRegion.  Make sure the window is realized during
+  // HandleSizeAllocate, so the mask can be applied to the GdkWindow.
+  gtk_widget_realize(window_);
+
+  // For RTL, we will have to move the window again when it is allocated, but
+  // this should be somewhat close to its final position.
+  MoveWindow();
+  GtkRequisition req;
+  gtk_widget_size_request(window_, &req);
+
+  StackWindow();
+
+  gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK |
+                                 GDK_BUTTON_RELEASE_MASK);
+
+  g_signal_connect(window_, "expose-event",
+                   G_CALLBACK(HandleExposeThunk), this);
+  g_signal_connect(window_, "size-allocate",
+                   G_CALLBACK(HandleSizeAllocateThunk), this);
+  g_signal_connect(window_, "button-press-event",
+                   G_CALLBACK(&HandleButtonPressThunk), this);
+  g_signal_connect(window_, "destroy",
+                   G_CALLBACK(&HandleDestroyThunk), this);
+
+  g_signal_connect(toplevel_window, "configure-event",
+                   G_CALLBACK(&HandleToplevelConfigureThunk), this);
+  g_signal_connect(toplevel_window, "unmap-event",
+                   G_CALLBACK(&HandleToplevelUnmapThunk), this);
+
+  gtk_widget_show_all(window_);
+
+  // We add a GTK (application-level) grab.  This means we will get all
+  // mouse events for our application, even if they were delivered on another
+  // window.  We don't need this to get button presses outside of the bubble's
+  // window so we'll know to close it (the pointer grab takes care of that), but
+  // it prevents other widgets from getting highlighted when the pointer moves
+  // over them.
+  //
+  // (Ideally we wouldn't add the window to a group and it would just get all
+  // the mouse events, but gtk_grab_add() doesn't appear to do anything in that
+  // case.  Adding it to the toplevel window's group first appears to block
+  // enter/leave events for that window and its subwindows, although other
+  // browser windows still receive them).
+  gtk_window_group_add_window(gtk_window_get_group(toplevel_window),
+                              GTK_WINDOW(window_));
+  gtk_grab_add(window_);
+
+  GrabPointerAndKeyboard();
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
+}
+
+// NOTE: This seems a bit overcomplicated, but it requires a bunch of careful
+// fudging to get the pixels rasterized exactly where we want them, the arrow to
+// have a 1 pixel point, etc.
 // TODO(deanm): Windows draws with Skia and uses some PNG images for the
 // corners.  This is a lot more work, but they get anti-aliasing.
-std::vector<GdkPoint> MakeFramePolygonPoints(int width,
-                                             int height,
-                                             FrameType type) {
+// static
+std::vector<GdkPoint> InfoBubbleGtk::MakeFramePolygonPoints(
+    ArrowLocationGtk arrow_location,
+    int width,
+    int height,
+    FrameType type) {
   using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
-  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  // This name isn't completely accurate; the arrow location can differ from its
+  // expected location for LTR/RTL if needed for the bubble to fit onscreen.
+  bool ltr = (arrow_location == ARROW_LOCATION_TOP_LEFT);
+
   // If we have a stroke, we have to offset some of our points by 1 pixel.
   // We have to inset by 1 pixel when we draw horizontal lines that are on the
   // bottom or when we draw vertical lines that are closer to the end (end is
@@ -102,142 +227,55 @@ std::vector<GdkPoint> MakeFramePolygonPoints(int width,
   return points;
 }
 
-gboolean HandleExpose(GtkWidget* widget,
-                      GdkEventExpose* event,
-                      gpointer unused) {
-  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
-  GdkGC* gc = gdk_gc_new(drawable);
-  gdk_gc_set_rgb_fg_color(gc, &kFrameColor);
+InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
+    int arrow_x, int width) {
+  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+  int screen_width = gdk_screen_get_width(gdk_screen_get_default());
 
-  // Stroke the frame border.
-  std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      widget->allocation.width, widget->allocation.height, FRAME_STROKE);
-  gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
+  bool left_is_onscreen = (arrow_x - kArrowX + width < screen_width);
+  bool right_is_onscreen = (arrow_x + kArrowX - width >= 0);
 
-  g_object_unref(gc);
-  return FALSE;  // Propagate so our children paint, etc.
+  // Use the expected location for our LTR/RTL-ness if it fits onscreen, use
+  // whatever fits otherwise, and use the expected location if neither fits.
+  if (left_is_onscreen && (ltr || !right_is_onscreen))
+    return ARROW_LOCATION_TOP_LEFT;
+  if (right_is_onscreen && (!ltr || !left_is_onscreen))
+    return ARROW_LOCATION_TOP_RIGHT;
+  return (ltr ? ARROW_LOCATION_TOP_LEFT : ARROW_LOCATION_TOP_RIGHT);
 }
 
-}  // namespace
+bool InfoBubbleGtk::UpdateArrowLocation() {
+  gint toplevel_x = 0, toplevel_y = 0;
+  gdk_window_get_position(
+      GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
 
-// static
-InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
-                                   const gfx::Rect& rect,
-                                   GtkWidget* content,
-                                   GtkThemeProvider* provider,
-                                   InfoBubbleGtkDelegate* delegate) {
-  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
-  bubble->Init(toplevel_window, rect, content);
-  bubble->set_delegate(delegate);
-  return bubble;
+  ArrowLocationGtk old_location = arrow_location_;
+  arrow_location_ = GetArrowLocation(
+      toplevel_x + rect_.x() + (rect_.width() / 2),  // arrow_x
+      window_->allocation.width);
+
+  if (arrow_location_ != old_location) {
+    UpdateWindowShape();
+    MoveWindow();
+    // We need to redraw the entire window to repaint its border.
+    gtk_widget_queue_draw(window_);
+    return true;
+  }
+  return false;
 }
 
-InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
-    : delegate_(NULL),
-      window_(NULL),
-      theme_provider_(provider),
-      accel_group_(gtk_accel_group_new()),
-      toplevel_window_(NULL),
-      mask_region_(NULL) {
-}
-
-InfoBubbleGtk::~InfoBubbleGtk() {
-  g_object_unref(accel_group_);
+void InfoBubbleGtk::UpdateWindowShape() {
   if (mask_region_) {
     gdk_region_destroy(mask_region_);
     mask_region_ = NULL;
   }
-
-  g_signal_handlers_disconnect_by_func(
-      toplevel_window_,
-      reinterpret_cast<gpointer>(HandleToplevelConfigureThunk),
-      this);
-  g_signal_handlers_disconnect_by_func(
-      toplevel_window_,
-      reinterpret_cast<gpointer>(HandleToplevelUnmapThunk),
-      this);
-  toplevel_window_ = NULL;
-}
-
-void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
-                         const gfx::Rect& rect,
-                         GtkWidget* content) {
-  DCHECK(!window_);
-  toplevel_window_ = toplevel_window;
-  rect_ = rect;
-
-  window_ = gtk_window_new(GTK_WINDOW_POPUP);
-  gtk_widget_set_app_paintable(window_, TRUE);
-  // Have GTK double buffer around the expose signal.
-  gtk_widget_set_double_buffered(window_, TRUE);
-
-  // Attach our accelerator group to the window with an escape accelerator.
-  gtk_accel_group_connect(accel_group_, GDK_Escape,
-      static_cast<GdkModifierType>(0), static_cast<GtkAccelFlags>(0),
-      g_cclosure_new(G_CALLBACK(&HandleEscapeThunk), this, NULL));
-  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
-
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-                            kTopMargin, kBottomMargin,
-                            kLeftMargin, kRightMargin);
-
-  gtk_container_add(GTK_CONTAINER(alignment), content);
-  gtk_container_add(GTK_CONTAINER(window_), alignment);
-
-  // GtkWidget only exposes the bitmap mask interface.  Use GDK to more
-  // efficently mask a GdkRegion.  Make sure the window is realized during
-  // HandleSizeAllocate, so the mask can be applied to the GdkWindow.
-  gtk_widget_realize(window_);
-
-  // For RTL, we will have to move the window again when it is allocated, but
-  // this should be somewhat close to its final position.
-  MoveWindow();
-  GtkRequisition req;
-  gtk_widget_size_request(window_, &req);
-
-  StackWindow();
-
-  gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK |
-                                 GDK_BUTTON_RELEASE_MASK);
-
-  g_signal_connect(window_, "expose-event",
-                   G_CALLBACK(HandleExpose), NULL);
-  g_signal_connect(window_, "size-allocate",
-                   G_CALLBACK(HandleSizeAllocateThunk), this);
-  g_signal_connect(window_, "button-press-event",
-                   G_CALLBACK(&HandleButtonPressThunk), this);
-  g_signal_connect(window_, "destroy",
-                   G_CALLBACK(&HandleDestroyThunk), this);
-
-  g_signal_connect(toplevel_window, "configure-event",
-                   G_CALLBACK(&HandleToplevelConfigureThunk), this);
-  g_signal_connect(toplevel_window, "unmap-event",
-                   G_CALLBACK(&HandleToplevelUnmapThunk), this);
-
-  gtk_widget_show_all(window_);
-
-  // We add a GTK (application-level) grab.  This means we will get all
-  // mouse events for our application, even if they were delivered on another
-  // window.  We don't need this to get button presses outside of the bubble's
-  // window so we'll know to close it (the pointer grab takes care of that), but
-  // it prevents other widgets from getting highlighted when the pointer moves
-  // over them.
-  //
-  // (Ideally we wouldn't add the window to a group and it would just get all
-  // the mouse events, but gtk_grab_add() doesn't appear to do anything in that
-  // case.  Adding it to the toplevel window's group first appears to block
-  // enter/leave events for that window and its subwindows, although other
-  // browser windows still receive them).
-  gtk_window_group_add_window(gtk_window_get_group(toplevel_window),
-                              GTK_WINDOW(window_));
-  gtk_grab_add(window_);
-
-  GrabPointerAndKeyboard();
-
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-  theme_provider_->InitThemesFor(this);
+  std::vector<GdkPoint> points = MakeFramePolygonPoints(
+      arrow_location_, window_->allocation.width, window_->allocation.height,
+      FRAME_MASK);
+  mask_region_ = gdk_region_polygon(&points[0],
+                                    points.size(),
+                                    GDK_EVEN_ODD_RULE);
+  gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
 void InfoBubbleGtk::MoveWindow() {
@@ -246,11 +284,13 @@ void InfoBubbleGtk::MoveWindow() {
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
 
   gint screen_x = 0;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
+    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
+  } else if (arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
     screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) -
                window_->allocation.width + kArrowX;
   } else {
-    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
+    NOTREACHED();
   }
 
   gint screen_y = toplevel_y + rect_.y() + rect_.height() +
@@ -325,23 +365,29 @@ gboolean InfoBubbleGtk::HandleEscape() {
   return TRUE;
 }
 
+gboolean InfoBubbleGtk::HandleExpose() {
+  GdkDrawable* drawable = GDK_DRAWABLE(window_->window);
+  GdkGC* gc = gdk_gc_new(drawable);
+  gdk_gc_set_rgb_fg_color(gc, &kFrameColor);
+
+  // Stroke the frame border.
+  std::vector<GdkPoint> points = MakeFramePolygonPoints(
+      arrow_location_, window_->allocation.width, window_->allocation.height,
+      FRAME_STROKE);
+  gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
+
+  g_object_unref(gc);
+  return FALSE;  // Propagate so our children paint, etc.
+}
+
 // When our size is initially allocated or changed, we need to recompute
 // and apply our shape mask region.
 void InfoBubbleGtk::HandleSizeAllocate() {
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    MoveWindow();
-
-  DCHECK(window_->allocation.x == 0 && window_->allocation.y == 0);
-  if (mask_region_) {
-    gdk_region_destroy(mask_region_);
-    mask_region_ = NULL;
+  if (!UpdateArrowLocation()) {
+    UpdateWindowShape();
+    if (arrow_location_ == ARROW_LOCATION_TOP_RIGHT)
+      MoveWindow();
   }
-  std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      window_->allocation.width, window_->allocation.height, FRAME_MASK);
-  mask_region_ = gdk_region_polygon(&points[0],
-                                    points.size(),
-                                    GDK_EVEN_ODD_RULE);
-  gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
 gboolean InfoBubbleGtk::HandleButtonPress(GdkEventButton* event) {
@@ -374,7 +420,8 @@ gboolean InfoBubbleGtk::HandleDestroy() {
 }
 
 gboolean InfoBubbleGtk::HandleToplevelConfigure(GdkEventConfigure* event) {
-  MoveWindow();
+  if (!UpdateArrowLocation())
+    MoveWindow();
   StackWindow();
   return FALSE;
 }

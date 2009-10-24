@@ -72,6 +72,18 @@ class InfoBubbleGtk : public NotificationObserver {
   void HandlePointerAndKeyboardUngrabbedByContent();
 
  private:
+  // Where should the arrow be placed relative to the bubble?
+  enum ArrowLocationGtk {
+    // TODO(derat): Support placing arrows on the bottoms of the bubbles.
+    ARROW_LOCATION_TOP_LEFT,
+    ARROW_LOCATION_TOP_RIGHT,
+  };
+
+  enum FrameType {
+    FRAME_MASK,
+    FRAME_STROKE,
+  };
+
   explicit InfoBubbleGtk(GtkThemeProvider* provider);
   virtual ~InfoBubbleGtk();
 
@@ -79,6 +91,29 @@ class InfoBubbleGtk : public NotificationObserver {
   void Init(GtkWindow* toplevel_window,
             const gfx::Rect& rect,
             GtkWidget* content);
+
+  // Make the points for our polygon frame, either for fill (the mask), or for
+  // when we stroke the border.
+  static std::vector<GdkPoint> MakeFramePolygonPoints(
+      ArrowLocationGtk arrow_location,
+      int width,
+      int height,
+      FrameType type);
+
+  // Get the location where the arrow should be placed (which is a function of
+  // whether the user's language is LTR/RTL and of the direction that the bubble
+  // should be facing to fit onscreen).  |arrow_x| is the X component in screen
+  // coordinates of the point at which the bubble's arrow should be aimed, and
+  // |width| is the bubble's width.
+  static ArrowLocationGtk GetArrowLocation(int arrow_x, int width);
+
+  // Updates |arrow_location_| based on the toplevel window's current position
+  // and the bubble's size.  If the location changes, moves and reshapes the
+  // window and returns true.
+  bool UpdateArrowLocation();
+
+  // Reshapes the window and updates |mask_region_|.
+  void UpdateWindowShape();
 
   // Calculate the current screen position for the bubble's window (per
   // |toplevel_window_|'s position as of its most-recent ConfigureNotify event
@@ -107,6 +142,13 @@ class InfoBubbleGtk : public NotificationObserver {
     return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleEscape();
   }
   gboolean HandleEscape();
+
+  static gboolean HandleExposeThunk(GtkWidget* widget,
+                                    GdkEventExpose* event,
+                                    gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleExpose();
+  }
+  gboolean HandleExpose();
 
   static void HandleSizeAllocateThunk(GtkWidget* widget,
                                       GtkAllocation* allocation,
@@ -175,6 +217,9 @@ class InfoBubbleGtk : public NotificationObserver {
   // The current shape of |window_| (used to test whether clicks fall in it or
   // not).
   GdkRegion* mask_region_;
+
+  // Where should the arrow be drawn relative to the bubble?
+  ArrowLocationGtk arrow_location_;
 
   NotificationRegistrar registrar_;
 
