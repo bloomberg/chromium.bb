@@ -3251,6 +3251,8 @@
         'renderer/renderer_webstoragearea_impl.h',
         'renderer/renderer_webstoragenamespace_impl.cc',
         'renderer/renderer_webstoragenamespace_impl.h',
+        'renderer/renderer_web_database_observer.cc',
+        'renderer/renderer_web_database_observer.h',
         'renderer/user_script_slave.cc',
         'renderer/user_script_slave.h',
         'renderer/visitedlink_slave.cc',

@@ -43,6 +43,7 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "chrome/renderer/renderer_web_database_observer.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "webkit/api/public/WebCache.h"
@@ -50,6 +51,7 @@
 #include "webkit/api/public/WebCrossOriginPreflightResultCache.h"
 #include "webkit/api/public/WebFontCache.h"
 #include "webkit/api/public/WebColor.h"
+#include "webkit/api/public/WebDatabase.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebSecurityPolicy.h"
@@ -494,6 +496,9 @@ void RenderThread::EnsureWebKitInitialized() {
       ExtensionApiTestV8Extension::Get(), kExtensionScheme);
   WebScriptController::registerExtension(
       ExtensionApiTestV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+
+  renderer_web_database_observer_.reset(new RendererWebDatabaseObserver(this));
+  WebKit::WebDatabase::setObserver(renderer_web_database_observer_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

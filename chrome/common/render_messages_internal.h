@@ -760,6 +760,13 @@ IPC_BEGIN_MESSAGES(View)
                        int32 /* the ID of the message we're replying to */,
                        int64 /* the size of the given DB file */)
 
+  // Notifies the child process of the new database size
+  IPC_MESSAGE_CONTROL4(ViewMsg_DatabaseUpdateSize,
+                       string16 /* the origin */,
+                       string16 /* the database name */,
+                       int64 /* the new database size */,
+                       int64 /* space available to origin */)
+
   // Storage events are broadcast to renderer processes.
   IPC_MESSAGE_CONTROL5(ViewMsg_DOMStorageEvent,
                        string16 /* key */,
@@ -1889,6 +1896,23 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileSize,
                        FilePath /* the name of the file */,
                        int32 /* a unique message ID */)
+
+  // Notifies the browser process that a new database has been opened
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_DatabaseOpened,
+                       string16 /* origin identifier */,
+                       string16 /* database name */,
+                       string16 /* database description */,
+                       int64 /* estimated size */)
+
+  // Notifies the browser process that a database might have been modified
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseModified,
+                       string16 /* origin identifier */,
+                       string16 /* database name */)
+
+  // Notifies the browser process that a database is about to close
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseClosed,
+                       string16 /* origin identifier */,
+                       string16 /* database name */)
 
   //---------------------------------------------------------------------------
   // Socket Stream messages:

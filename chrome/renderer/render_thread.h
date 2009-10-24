@@ -26,6 +26,7 @@ class ListValue;
 class NullableString16;
 class RenderDnsMaster;
 class RendererHistogram;
+class RendererWebDatabaseObserver;
 class RendererWebKitClientImpl;
 class SkBitmap;
 class UserScriptSlave;
@@ -201,7 +202,9 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
+  scoped_ptr<RendererWebDatabaseObserver> renderer_web_database_observer_;
 
+  // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
 
 #if defined(OS_POSIX)
