@@ -12,12 +12,12 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/process.h"
 
 namespace webkit_database {
 
-bool VfsBackend::OpenFileFlagsAreConsistent(
-    const FilePath& file_name, const FilePath& db_dir, int desired_flags) {
+bool VfsBackend::OpenFileFlagsAreConsistent(const FilePath& file_name,
+                                            const FilePath& db_dir,
+                                            int desired_flags) {
   // Is this a request for a temp file?
   // We should be able to delete temp files when they're closed
   // and create them as needed
@@ -34,72 +34,58 @@ bool VfsBackend::OpenFileFlagsAreConsistent(
   const bool is_read_only = (desired_flags & SQLITE_OPEN_READONLY) != 0;
   const bool is_read_write = (desired_flags & SQLITE_OPEN_READWRITE) != 0;
 
-  // All files should be opened either read-write or read-only.
-  if (!(is_read_only ^ is_read_write)) {
+  // All files should be opened either read-write or read-only, but not both.
+  if (is_read_only == is_read_write)
     return false;
-  }
 
-  // If a new file is created, it must also be writtable.
-  if (is_create && !is_read_write) {
+  // If a new file is created, it must also be writable.
+  if (is_create && !is_read_write)
     return false;
-  }
 
-  // We must be able to create a new file, if exclusive access is desired.
-  if (is_exclusive && !is_create) {
+  // If we're accessing an existing file, we cannot give exclusive access, and
+  // we can't delete it.
+  if ((is_exclusive || is_delete) && !is_create)
     return false;
-  }
-
-  // We cannot delete the files that we expect to already exist.
-  if (is_delete && !is_create) {
-    return false;
-  }
 
   // The main DB, main journal and master journal cannot be auto-deleted.
-  if (((file_type == SQLITE_OPEN_MAIN_DB) ||
-       (file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
-       (file_type == SQLITE_OPEN_MASTER_JOURNAL)) &&
-      is_delete) {
+  if (is_delete && ((file_type == SQLITE_OPEN_MAIN_DB) ||
+                    (file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
+                    (file_type == SQLITE_OPEN_MASTER_JOURNAL))) {
     return false;
   }
 
   // Make sure we're opening the DB directory or that a file type is set.
-  if ((file_type != SQLITE_OPEN_MAIN_DB) &&
-      (file_type != SQLITE_OPEN_TEMP_DB) &&
-      (file_type != SQLITE_OPEN_MAIN_JOURNAL) &&
-      (file_type != SQLITE_OPEN_TEMP_JOURNAL) &&
-      (file_type != SQLITE_OPEN_SUBJOURNAL) &&
-      (file_type != SQLITE_OPEN_MASTER_JOURNAL) &&
-      (file_type != SQLITE_OPEN_TRANSIENT_DB)) {
-    return false;
-  }
-
-  return true;
+  return (file_type == SQLITE_OPEN_MAIN_DB) ||
+         (file_type == SQLITE_OPEN_TEMP_DB) ||
+         (file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
+         (file_type == SQLITE_OPEN_TEMP_JOURNAL) ||
+         (file_type == SQLITE_OPEN_SUBJOURNAL) ||
+         (file_type == SQLITE_OPEN_MASTER_JOURNAL) ||
+         (file_type == SQLITE_OPEN_TRANSIENT_DB);
 }
 
-void VfsBackend::OpenFile(
-    const FilePath& file_name, const FilePath& db_dir, int desired_flags,
-    base::ProcessHandle handle, base::PlatformFile* target_handle,
-    base::PlatformFile* target_dir_handle) {
+void VfsBackend::OpenFile(const FilePath& file_name,
+                          const FilePath& db_dir,
+                          int desired_flags,
+                          base::ProcessHandle handle,
+                          base::PlatformFile* target_handle,
+                          base::PlatformFile* target_dir_handle) {
   // Verify the flags for consistency and create the database
   // directory if it doesn't exist.
   if (OpenFileFlagsAreConsistent(file_name, db_dir, desired_flags) &&
       file_util::CreateDirectory(db_dir)) {
     int flags = 0;
     flags |= base::PLATFORM_FILE_READ;
-    if (desired_flags & SQLITE_OPEN_READWRITE) {
+    if (desired_flags & SQLITE_OPEN_READWRITE)
       flags |= base::PLATFORM_FILE_WRITE;
-    }
 
     if (!(desired_flags & SQLITE_OPEN_MAIN_DB)) {
       flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
                base::PLATFORM_FILE_EXCLUSIVE_WRITE;
     }
 
-    if (desired_flags & SQLITE_OPEN_CREATE) {
-      flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
-    } else {
-      flags |= base::PLATFORM_FILE_OPEN;
-    }
+    flags |= ((desired_flags & SQLITE_OPEN_CREATE) ?
+        base::PLATFORM_FILE_OPEN_ALWAYS : base::PLATFORM_FILE_OPEN);
 
     if (desired_flags & SQLITE_OPEN_EXCLUSIVE) {
       flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
@@ -114,16 +100,15 @@ void VfsBackend::OpenFile(
     // If this is a request for a handle to a temp file, get a unique file name
     FilePath db_file_name;
     if (file_name == db_dir) {
-      if (!file_util::CreateTemporaryFileInDir(db_dir, &db_file_name)) {
+      if (!file_util::CreateTemporaryFileInDir(db_dir, &db_file_name))
         db_file_name = FilePath();
-      }
     } else {
       db_file_name = file_name;
     }
 
     // Try to open/create the DB file.
-    base::PlatformFile file_handle =
-        (db_file_name.empty() ? base::kInvalidPlatformFileValue :
+    base::PlatformFile file_handle = (db_file_name.empty() ?
+         base::kInvalidPlatformFileValue :
          base::CreatePlatformFile(db_file_name.ToWStringHack(), flags, NULL));
     if (file_handle != base::kInvalidPlatformFileValue) {
 #if defined(OS_WIN)
@@ -157,14 +142,13 @@ void VfsBackend::OpenFile(
   }
 }
 
-int VfsBackend::DeleteFile(
-    const FilePath& file_name, const FilePath& db_dir, bool sync_dir) {
-  if (!file_util::PathExists(file_name)) {
+int VfsBackend::DeleteFile(const FilePath& file_name,
+                           const FilePath& db_dir,
+                           bool sync_dir) {
+  if (!file_util::PathExists(file_name))
     return SQLITE_OK;
-  }
-  if (!file_util::Delete(file_name, false)) {
+  if (!file_util::Delete(file_name, false))
     return SQLITE_IOERR_DELETE;
-  }
 
   int error_code = SQLITE_OK;
 #if defined(OS_POSIX)
@@ -174,9 +158,8 @@ int VfsBackend::DeleteFile(
     if (dir_fd == base::kInvalidPlatformFileValue) {
       error_code = SQLITE_CANTOPEN;
     } else {
-      if (fsync(dir_fd)) {
+      if (fsync(dir_fd))
         error_code = SQLITE_IOERR_DIR_FSYNC;
-      }
       base::ClosePlatformFile(dir_fd);
     }
   }
@@ -189,15 +172,12 @@ uint32 VfsBackend::GetFileAttributes(const FilePath& file_name) {
   uint32 attributes = ::GetFileAttributes(file_name.value().c_str());
 #elif defined(OS_POSIX)
   uint32 attributes = 0;
-  if (!access(file_name.value().c_str(), R_OK)) {
+  if (!access(file_name.value().c_str(), R_OK))
     attributes |= static_cast<uint32>(R_OK);
-  }
-  if (!access(file_name.value().c_str(), W_OK)) {
+  if (!access(file_name.value().c_str(), W_OK))
     attributes |= static_cast<uint32>(W_OK);
-  }
-  if (!attributes) {
+  if (!attributes)
     attributes = -1;
-  }
 #endif
   return attributes;
 }
@@ -207,4 +187,4 @@ int64 VfsBackend::GetFileSize(const FilePath& file_name) {
   return (file_util::GetFileSize(file_name, &size) ? size : 0);
 }
 
-} // namespace database
+} // namespace webkit_database

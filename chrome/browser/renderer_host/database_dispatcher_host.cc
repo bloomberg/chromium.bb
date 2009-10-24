@@ -14,15 +14,10 @@
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 #endif
 
-#include "base/message_loop.h"
-#include "base/platform_file.h"
-#include "base/process.h"
-#include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
-#include "ipc/ipc_message.h"
 #include "webkit/database/vfs_backend.h"
 
 #if defined(OS_POSIX)
@@ -72,9 +67,8 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
                              ResourceMessageFilter* sender) {
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
   base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
-  VfsBackend::OpenFile(
-      params.file_name, params.db_dir, params.desired_flags,
-      params.handle, &target_handle, &target_dir_handle);
+  VfsBackend::OpenFile(params.file_name, params.db_dir, params.desired_flags,
+                       params.handle, &target_handle, &target_dir_handle);
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
 #if defined(OS_WIN)
@@ -92,12 +86,11 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
 // Deletes the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the error code.
-static void DatabaseDeleteFile(
-    MessageLoop* io_thread_message_loop,
-    const DeleteFileParams& params,
-    int32 message_id,
-    int reschedule_count,
-    ResourceMessageFilter* sender) {
+static void DatabaseDeleteFile(MessageLoop* io_thread_message_loop,
+                               const DeleteFileParams& params,
+                               int32 message_id,
+                               int reschedule_count,
+                               ResourceMessageFilter* sender) {
   // Return an error if the file could not be deleted
   // after kNumDeleteRetries times.
   if (!reschedule_count) {
@@ -108,14 +101,14 @@ static void DatabaseDeleteFile(
     return;
   }
 
-  int error_code = VfsBackend::DeleteFile(
-      params.file_name, params.db_dir, params.sync_dir);
+  int error_code =
+      VfsBackend::DeleteFile(params.file_name, params.db_dir, params.sync_dir);
   if (error_code == SQLITE_IOERR_DELETE) {
     // If the file could not be deleted, try again.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableFunction(DatabaseDeleteFile, io_thread_message_loop,
-            params, message_id, reschedule_count - 1, sender),
-      kDelayDeleteRetryMs);
+                            params, message_id, reschedule_count - 1, sender),
+        kDelayDeleteRetryMs);
     return;
   }
 
@@ -128,11 +121,10 @@ static void DatabaseDeleteFile(
 // Gets the attributes of the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process.
-static void DatabaseGetFileAttributes(
-    MessageLoop* io_thread_message_loop,
-    const FilePath& file_name,
-    int32 message_id,
-    ResourceMessageFilter* sender) {
+static void DatabaseGetFileAttributes(MessageLoop* io_thread_message_loop,
+                                      const FilePath& file_name,
+                                      int32 message_id,
+                                      ResourceMessageFilter* sender) {
   uint32 attributes = VfsBackend::GetFileAttributes(file_name);
   io_thread_message_loop->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
@@ -144,11 +136,10 @@ static void DatabaseGetFileAttributes(
 // Gets the size of the given file, then schedules a task
 // on the IO thread's message loop to send an IPC back to
 // the corresponding renderer process.
-static void DatabaseGetFileSize(
-    MessageLoop* io_thread_message_loop,
-    const FilePath& file_name,
-    int32 message_id,
-    ResourceMessageFilter* sender) {
+static void DatabaseGetFileSize(MessageLoop* io_thread_message_loop,
+                                const FilePath& file_name,
+                                int32 message_id,
+                                ResourceMessageFilter* sender) {
   int64 size = VfsBackend::GetFileSize(file_name);
   io_thread_message_loop->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
@@ -158,16 +149,14 @@ static void DatabaseGetFileSize(
 } // namespace
 
 DatabaseDispatcherHost::DatabaseDispatcherHost(
-  const FilePath& profile_path,
-  ResourceMessageFilter* resource_message_filter)
-  : profile_path_(profile_path),
-    resource_message_filter_(resource_message_filter),
-    file_thread_message_loop_(
+    const FilePath& profile_path,
+    ResourceMessageFilter* resource_message_filter)
+    : profile_path_(profile_path),
+      resource_message_filter_(resource_message_filter),
+      file_thread_message_loop_(
       g_browser_process->file_thread()->message_loop()) {
 }
 
-DatabaseDispatcherHost::~DatabaseDispatcherHost() {
-}
 
 bool DatabaseDispatcherHost::IsDBMessage(const IPC::Message& message) {
   switch (message.type()) {
@@ -176,15 +165,15 @@ bool DatabaseDispatcherHost::IsDBMessage(const IPC::Message& message) {
     case ViewHostMsg_DatabaseGetFileAttributes::ID:
     case ViewHostMsg_DatabaseGetFileSize::ID:
       return true;
+    default:
+      return false;
   }
-  return false;
 }
 
 bool DatabaseDispatcherHost::OnMessageReceived(
   const IPC::Message& message, bool* message_was_ok) {
-  if (!IsDBMessage(message)) {
+  if (!IsDBMessage(message))
     return false;
-  }
   *message_was_ok = true;
 
   bool handled = true;
@@ -215,9 +204,9 @@ FilePath DatabaseDispatcherHost::GetDBFileFullPath(const FilePath& file_name) {
   return GetDBDir().Append(file_name);
 }
 
-void DatabaseDispatcherHost::OnDatabaseOpenFile(
-  const FilePath& file_name, int desired_flags,
-  int32 message_id) {
+void DatabaseDispatcherHost::OnDatabaseOpenFile(const FilePath& file_name,
+                                                int desired_flags,
+                                                int32 message_id) {
   FilePath db_file_name = GetDBFileFullPath(file_name);
 
   if (db_file_name.empty()) {
@@ -243,7 +232,7 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseOpenFile, MessageLoop::current(),
-          params, message_id, resource_message_filter_));
+                          params, message_id, resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseDeleteFile(
@@ -262,7 +251,8 @@ void DatabaseDispatcherHost::OnDatabaseDeleteFile(
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseDeleteFile, MessageLoop::current(),
-          params, message_id, kNumDeleteRetries, resource_message_filter_));
+                          params, message_id, kNumDeleteRetries,
+                          resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
@@ -270,15 +260,14 @@ void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
   FilePath db_file_name = GetDBFileFullPath(file_name);
   if (db_file_name.empty()) {
     resource_message_filter_->Send(
-        new ViewMsg_DatabaseGetFileAttributesResponse(
-            message_id, -1));
+        new ViewMsg_DatabaseGetFileAttributesResponse(message_id, -1));
     return;
   }
 
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseGetFileAttributes, MessageLoop::current(),
-          db_file_name, message_id, resource_message_filter_));
+                          db_file_name, message_id, resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileSize(
@@ -293,5 +282,5 @@ void DatabaseDispatcherHost::OnDatabaseGetFileSize(
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseGetFileSize, MessageLoop::current(),
-         db_file_name, message_id, resource_message_filter_));
+                          db_file_name, message_id, resource_message_filter_));
 }
