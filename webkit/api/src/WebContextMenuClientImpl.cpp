@@ -157,6 +157,7 @@ PlatformMenuDescription WebContextMenuClientImpl::getCustomMenuFromDefaultItems(
     data.linkURL = r.absoluteLinkURL();
 
     data.mediaType = WebContextMenuData::MediaTypeNone;
+    data.mediaFlags = WebContextMenuData::MediaNone;
 
     if (!r.absoluteImageURL().isEmpty()) {
         data.srcURL = r.absoluteImageURL();
