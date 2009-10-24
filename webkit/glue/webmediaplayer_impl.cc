@@ -295,8 +295,17 @@ void WebMediaPlayerImpl::seek(float seconds) {
 
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
+  base::TimeDelta seek_time =
+      base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds));
+
+  // Update our paused time.
+  if (paused_) {
+    paused_time_ = seek_time;
+  }
+
+  // Kick off the asynchronous seek!
   pipeline_->Seek(
-      base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds)),
+      seek_time,
       NewCallback(proxy_.get(),
                   &WebMediaPlayerImpl::Proxy::PipelineSeekCallback));
 }
@@ -558,6 +567,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
 void WebMediaPlayerImpl::OnPipelineSeek() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
+    // Update our paused time.
+    if (paused_) {
+      paused_time_ = pipeline_->GetCurrentTime();
+    }
+
     SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
     GetClient()->timeChanged();
   }
