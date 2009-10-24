@@ -26,6 +26,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extension_shelf_controller.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
@@ -599,8 +600,12 @@ willPositionSheet:(NSWindow*)sheet
   switch (tag) {
     case IDC_FORWARD:
     case IDC_BACK:
-      [self locationBar]->Revert();
-      break;
+      // For this, we need to check the key flags to figure out where to open
+      // the history item. Note that |Revert()| isn't needed, since any
+      // navigation in the current tab will reset the location bar's contents.
+      browser_->ExecuteCommandWithDisposition(tag,
+          event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
+      return;
     case IDC_RELOAD:
       if ([sender isKindOfClass:[NSButton class]]) {
         // We revert the bar when the reload button is pressed, but don't when
