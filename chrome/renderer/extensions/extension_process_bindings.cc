@@ -24,6 +24,7 @@
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebKit.h"
@@ -437,11 +438,11 @@ class ExtensionImpl : public ExtensionBase {
     uint32_t* pixels = bitmap.getAddr32(0, 0);
     for (int t = 0; t < width*height; t++) {
       // |data| is RGBA, pixels is ARGB.
-      pixels[t] =
+      pixels[t] = SkPreMultiplyColor(
           ((data->Get(v8::Integer::New(4*t + 3))->Int32Value() & 0xFF) << 24) |
           ((data->Get(v8::Integer::New(4*t + 0))->Int32Value() & 0xFF) << 16) |
           ((data->Get(v8::Integer::New(4*t + 1))->Int32Value() & 0xFF) << 8) |
-          ((data->Get(v8::Integer::New(4*t + 2))->Int32Value() & 0xFF) << 0);
+          ((data->Get(v8::Integer::New(4*t + 2))->Int32Value() & 0xFF) << 0));
     }
 
     // Construct the Value object.
