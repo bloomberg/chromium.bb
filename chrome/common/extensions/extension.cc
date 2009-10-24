@@ -385,6 +385,95 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   return result.release();
 }
 
+ExtensionAction2* Extension::LoadExtensionAction2Helper(
+    const DictionaryValue* extension_action, std::string* error) {
+  scoped_ptr<ExtensionAction2> result(new ExtensionAction2());
+  result->set_extension_id(id());
+
+  // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
+  ListValue* icons = NULL;
+  if (extension_action->HasKey(keys::kPageActionIcons) &&
+      extension_action->GetList(keys::kPageActionIcons, &icons)) {
+    for (ListValue::const_iterator iter = icons->begin();
+         iter != icons->end(); ++iter) {
+      std::string path;
+      if (!(*iter)->GetAsString(&path) || path.empty()) {
+        *error = errors::kInvalidPageActionIconPath;
+        return NULL;
+      }
+
+      result->icon_paths()->push_back(path);
+      result->SetDefaultIcon(path);
+    }
+  }
+
+  // TODO(EXTENSIONS_DEPRECATED): Read the page action |id| (optional).
+  std::string id;
+  if (extension_action->HasKey(keys::kPageActionId)) {
+    if (!extension_action->GetString(keys::kPageActionId, &id)) {
+      *error = errors::kInvalidPageActionId;
+      return NULL;
+    }
+    result->set_id(id);
+  }
+
+  std::string default_icon;
+  // Read the page action |default_icon| (optional).
+  if (extension_action->HasKey(keys::kPageActionDefaultIcon)) {
+    if (!extension_action->GetString(keys::kPageActionDefaultIcon,
+                                     &default_icon) ||
+        default_icon.empty()) {
+      *error = errors::kInvalidPageActionIconPath;
+      return NULL;
+    }
+    result->SetDefaultIcon(default_icon);
+  }
+
+  // Read the page action |default_title|.
+  std::string title;
+  if (!extension_action->GetString(keys::kName, &title) &&
+      !extension_action->GetString(keys::kPageActionDefaultTitle, &title)) {
+    *error = errors::kInvalidPageActionDefaultTitle;
+    return NULL;
+  }
+  result->SetTitle(ExtensionAction2::kDefaultTabId, title);
+
+  // Read the action's |popup| (optional).
+  DictionaryValue* popup = NULL;
+  std::string url_str;
+  if (extension_action->HasKey(keys::kPageActionPopup) &&
+     !extension_action->GetDictionary(keys::kPageActionPopup, &popup) &&
+     !extension_action->GetString(keys::kPageActionPopup, &url_str)) {
+    *error = errors::kInvalidPageActionPopup;
+    return NULL;
+  }
+  if (popup) {
+    // TODO(EXTENSIONS_DEPRECATED): popup is a string only
+    if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, "<missing>");
+      return NULL;
+    }
+    GURL url = GetResourceURL(url_str);
+    if (!url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, url_str);
+      return NULL;
+    }
+    result->set_popup_url(url);
+  } else if (!url_str.empty()) {
+    GURL url = GetResourceURL(url_str);
+    if (!url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, url_str);
+      return NULL;
+    }
+    result->set_popup_url(url);
+  }
+
+  return result.release();
+}
+
 bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   // Generate a map of allowable keys
   static std::map<std::wstring, bool> theme_keys;
@@ -975,13 +1064,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     browser_action_.reset(
-        LoadExtensionActionHelper(browser_action_value, error,
-                                  ExtensionAction::BROWSER_ACTION));
+        LoadExtensionAction2Helper(browser_action_value, error));
     if (!browser_action_.get())
       return false;  // Failed to parse browser action definition.
-
-    browser_action_state_.reset(
-        new ExtensionActionState(browser_action_->title(), 0));
   }
 
   // Initialize the permissions (optional).
@@ -1103,9 +1188,9 @@ std::set<FilePath> Extension::GetBrowserImages() {
 
   // browser action icons
   if (browser_action_.get()) {
-    const std::vector<std::string>& icon_paths = browser_action_->icon_paths();
-    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
+    std::vector<std::string>* icon_paths = browser_action_->icon_paths();
+    for (std::vector<std::string>::iterator iter = icon_paths->begin();
+         iter != icon_paths->end(); ++iter) {
       image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
     }
   }

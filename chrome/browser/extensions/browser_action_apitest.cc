@@ -13,7 +13,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
@@ -35,20 +35,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   // Test that we received the changes.
-  ExtensionActionState* action_state = extension->browser_action_state();
-  ASSERT_EQ("Modified", action_state->title());
-  ASSERT_EQ("badge", action_state->badge_text());
+  ExtensionAction2* action = extension->browser_action();
+  ASSERT_EQ("Modified", action->GetTitle(ExtensionAction2::kDefaultTabId));
+  ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction2::kDefaultTabId));
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            action_state->badge_background_color());
+            action->GetBadgeBackgroundColor(ExtensionAction2::kDefaultTabId));
 
   // Simulate the browser action being clicked.
   ui_test_utils::NavigateToURL(browser(),
       GURL("http://localhost:1337/files/extensions/test_file.txt"));
 
-  ExtensionAction* browser_action = service->GetBrowserActions(false)[0];
   int window_id = ExtensionTabUtil::GetWindowId(browser());
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-      browser()->profile(), browser_action->extension_id(), browser());
+      browser()->profile(), action->extension_id(), browser());
 
   // Verify the command worked.
   TabContents* tab = browser()->GetSelectedTabContents();
@@ -95,6 +94,50 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DynamicBrowserAction) {
                    .empty());
 
   // TODO(aa): Would be nice here to actually compare that the pixels change.
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabSpecificBrowserActionState) {
+  ASSERT_TRUE(RunExtensionTest("browser_action_tab_specific_state"))
+      << message_;
+
+  // Test that there is a browser action in the toolbar and that it has no icon.
+  BrowserActionsContainer* browser_actions =
+      browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
+      browser_actions();
+  ASSERT_EQ(1, browser_actions->num_browser_actions());
+  ASSERT_FALSE(browser_actions->GetBrowserActionViewAt(0)->button()->icon()
+                   .empty());
+
+  // Execute the action, its title should change
+  std::wstring text;
+  ResultCatcher catcher;
+  browser_actions->TestExecuteBrowserAction(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+  ASSERT_TRUE(
+      browser_actions->GetBrowserActionViewAt(0)->button()->GetTooltipText(
+          0, 0, &text));
+  ASSERT_EQ(L"Showing icon 2", text);
+
+  // open a new tab, the title should go back
+  browser()->NewTab();
+  ASSERT_TRUE(
+      browser_actions->GetBrowserActionViewAt(0)->button()->GetTooltipText(
+          0, 0, &text));
+  ASSERT_EQ(L"hi!", text);
+
+  // go back to first tab, changed title should reappear
+  browser()->SelectTabContentsAt(0, true);
+  ASSERT_TRUE(
+      browser_actions->GetBrowserActionViewAt(0)->button()->GetTooltipText(
+          0, 0, &text));
+  ASSERT_EQ(L"Showing icon 2", text);
+
+  // reload that tab, default title should come back
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(
+      browser_actions->GetBrowserActionViewAt(0)->button()->GetTooltipText(
+          0, 0, &text));
+  ASSERT_EQ(L"hi!", text);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserActionPopup) {

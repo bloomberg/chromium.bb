@@ -17,7 +17,9 @@
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -35,27 +37,29 @@ static const int kBrowserActionButtonPadding = 3;
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer {
  public:
-  BrowserActionButton(Browser* browser, Extension* extension)
-      : browser_(browser),
+  BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
+                      Extension* extension)
+      : toolbar_(toolbar),
         extension_(extension),
         button_(gtk_chrome_button_new()),
-        gdk_icon_(NULL) {
+        tracker_(NULL),
+        tab_specific_icon_(NULL),
+        default_icon_(NULL) {
     DCHECK(extension_->browser_action());
 
     gtk_widget_set_size_request(button_.get(), kButtonSize, kButtonSize);
 
-    browser_action_icons_.resize(
-        extension->browser_action()->icon_paths().size());
-    tracker_ = new ImageLoadingTracker(this, browser_action_icons_.size());
-    for (size_t i = 0; i < extension->browser_action()->icon_paths().size();
-         ++i) {
-      tracker_->PostLoadImageTask(
-          extension->GetResource(extension->browser_action()->icon_paths()[i]),
+    UpdateState();
+
+    // The Browser Action API does not allow the default icon path to be
+    // changed at runtime, so we can load this now and cache it.
+    std::string path = extension_->browser_action()->GetDefaultIconPath();
+    if (!path.empty()) {
+      tracker_ = new ImageLoadingTracker(this, 1);
+      tracker_->PostLoadImageTask(extension_->GetResource(path),
           gfx::Size(Extension::kBrowserActionIconMaxSize,
                     Extension::kBrowserActionIconMaxSize));
     }
-
-    OnStateUpdated();
 
     // We need to hook up extension popups here. http://crbug.com/23897
     g_signal_connect(button_.get(), "clicked",
@@ -64,7 +68,7 @@ class BrowserActionButton : public NotificationObserver,
                            G_CALLBACK(OnExposeEvent), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-                   Source<ExtensionAction>(extension->browser_action()));
+                   Source<ExtensionAction2>(extension->browser_action()));
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                    NotificationService::AllSources());
 
@@ -72,11 +76,16 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   ~BrowserActionButton() {
-    if (gdk_icon_)
-      g_object_unref(gdk_icon_);
+    if (tab_specific_icon_)
+      g_object_unref(tab_specific_icon_);
+
+    if (default_icon_)
+      g_object_unref(default_icon_);
 
     button_.Destroy();
-    tracker_->StopTrackingImageLoad();
+
+    if (tracker_)
+      tracker_->StopTrackingImageLoad();
   }
 
   GtkWidget* widget() { return button_.get(); }
@@ -85,7 +94,7 @@ class BrowserActionButton : public NotificationObserver,
                const NotificationSource& source,
                const NotificationDetails& details) {
     if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED)
-      OnStateUpdated();
+      UpdateState();
     else if (type == NotificationType::BROWSER_THEME_CHANGED)
       OnThemeChanged();
     else
@@ -94,71 +103,79 @@ class BrowserActionButton : public NotificationObserver,
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, size_t index) {
-    DCHECK(index < browser_action_icons_.size());
-    browser_action_icons_[index] = image ? *image : SkBitmap();
+    default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
+    UpdateState();
+  }
 
-    OnStateUpdated();
+  // Updates the button based on the latest state from the associated
+  // browser action.
+  void UpdateState() {
+    int tab_id = toolbar_->GetCurrentTabId();
+    if (tab_id < 0)
+      return;
+
+    gtk_widget_set_tooltip_text(button_.get(),
+        extension_->browser_action()->GetTitle(tab_id).c_str());
+
+    SkBitmap image = extension_->browser_action()->GetIcon(tab_id);
+    if (!image.isNull()) {
+      GdkPixbuf* previous_gdk_icon = tab_specific_icon_;
+      tab_specific_icon_ = gfx::GdkPixbufFromSkBitmap(&image);
+      SetImage(tab_specific_icon_);
+      if (previous_gdk_icon)
+        g_object_unref(previous_gdk_icon);
+    } else if (default_icon_) {
+      SetImage(default_icon_);
+    }
   }
 
  private:
-  // Called when the tooltip has changed or an image has loaded.
-  void OnStateUpdated() {
-    gtk_widget_set_tooltip_text(button_.get(),
-        extension_->browser_action_state()->title().c_str());
-
-    SkBitmap* image = extension_->browser_action_state()->icon();
-    if (!image) {
-      if (static_cast<size_t>(
-          extension_->browser_action_state()->icon_index()) <
-              browser_action_icons_.size()) {
-        image = &browser_action_icons_[
-            extension_->browser_action_state()->icon_index()];
-      }
-    }
-
-    if (image && !image->empty()) {
-      GdkPixbuf* current_gdk_icon = gdk_icon_;
-      gdk_icon_ = gfx::GdkPixbufFromSkBitmap(image);
-      gtk_button_set_image(GTK_BUTTON(button_.get()),
-                           gtk_image_new_from_pixbuf(gdk_icon_));
-      if (current_gdk_icon)
-        g_object_unref(current_gdk_icon);
-    }
+  void SetImage(GdkPixbuf* image) {
+    gtk_button_set_image(GTK_BUTTON(button_.get()),
+        gtk_image_new_from_pixbuf(image));
   }
 
   void OnThemeChanged() {
     gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button_.get()),
-        GtkThemeProvider::GetFrom(browser_->profile())->UseGtkTheme());
+        GtkThemeProvider::GetFrom(
+            toolbar_->browser()->profile())->UseGtkTheme());
   }
 
   static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
-    if (action->extension_->browser_action()->is_popup()) {
-      ExtensionPopupGtk::Show(
-          action->extension_->browser_action()->popup_url(),
-          action->browser_,
-          gtk_util::GetWidgetRectRelativeToToplevel(widget));
-    } else {
-      ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-          action->browser_->profile(), action->extension_->id(),
-          action->browser_);
-    }
+   if (action->extension_->browser_action()->has_popup()) {
+     ExtensionPopupGtk::Show(
+         action->extension_->browser_action()->popup_url(),
+         action->toolbar_->browser(),
+         gtk_util::GetWidgetRectRelativeToToplevel(widget));
+   } else {
+     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+         action->toolbar_->browser()->profile(), action->extension_->id(),
+         action->toolbar_->browser());
+   }
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
                                 GdkEventExpose* event,
-                                BrowserActionButton* action) {
-    if (action->extension_->browser_action_state()->badge_text().empty())
+                                BrowserActionButton* button) {
+    int tab_id = button->toolbar_->GetCurrentTabId();
+    if (tab_id < 0)
+      return FALSE;
+
+    ExtensionAction2* action = button->extension_->browser_action();
+    if (action->GetBadgeText(tab_id).empty())
       return FALSE;
 
     gfx::CanvasPaint canvas(event, false);
     gfx::Rect bounding_rect(widget->allocation);
-    action->extension_->browser_action_state()->PaintBadge(&canvas,
-                                                           bounding_rect);
+    ExtensionActionState::PaintBadge(&canvas, bounding_rect,
+                                     action->GetBadgeText(tab_id),
+                                     action->GetBadgeTextColor(tab_id),
+                                     action->GetBadgeBackgroundColor(tab_id));
     return FALSE;
   }
 
-  // The Browser that executes a command when the button is pressed.
-  Browser* browser_;
+  // The toolbar containing this button.
+  BrowserActionsToolbarGtk* toolbar_;
 
   // The extension that contains this browser action.
   Extension* extension_;
@@ -169,13 +186,11 @@ class BrowserActionButton : public NotificationObserver,
   // Loads the button's icons for us on the file thread.
   ImageLoadingTracker* tracker_;
 
-  // Icons for all the different states the button can be in. These will be
-  // empty while they are loading.
-  std::vector<SkBitmap> browser_action_icons_;
+  // If we are displaying a tab-specific icon, it will be here.
+  GdkPixbuf* tab_specific_icon_;
 
-  // SkBitmap must be converted to GdkPixbuf before assignment to the button.
-  // This stores the current icon while it is in use.
-  GdkPixbuf* gdk_icon_;
+  // If the browser action has a default icon, it will be here.
+  GdkPixbuf* default_icon_;
 
   NotificationRegistrar registrar_;
 };
@@ -199,6 +214,21 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
   hbox_.Destroy();
 }
 
+int BrowserActionsToolbarGtk::GetCurrentTabId() {
+  TabContents* selected_tab = browser_->GetSelectedTabContents();
+  if (!selected_tab)
+    return -1;
+
+  return selected_tab->controller().session_id().id();
+}
+
+void BrowserActionsToolbarGtk::Update() {
+  for (ExtensionButtonMap::iterator iter = extension_button_map_.begin();
+       iter != extension_button_map_.end(); ++iter) {
+    iter->second->UpdateState();
+  }
+}
+
 void BrowserActionsToolbarGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
@@ -219,27 +249,21 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
 
-  // Get all browser actions, including those with popups.
-  std::vector<ExtensionAction*> browser_actions =
-      extension_service->GetBrowserActions(true);
-
-  for (size_t i = 0; i < browser_actions.size(); ++i) {
+  for (size_t i = 0; i < extension_service->extensions()->size(); ++i) {
     Extension* extension = extension_service->GetExtensionById(
-        browser_actions[i]->extension_id());
+        extension_service->extensions()->at(i)->id());
     CreateButtonForExtension(extension);
   }
 }
 
 void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension) {
-  // Only show extensions with browser actions and that have an icon.
-  if (!extension->browser_action() ||
-      extension->browser_action()->icon_paths().empty()) {
+  // Only show extensions with browser actions.
+  if (!extension->browser_action())
     return;
-  }
 
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
-      new BrowserActionButton(browser_, extension));
+      new BrowserActionButton(this, extension));
   gtk_box_pack_end(GTK_BOX(hbox_.get()), button->widget(), FALSE, FALSE, 0);
   gtk_widget_show(button->widget());
   extension_button_map_[extension->id()] = button;

@@ -825,6 +825,9 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
 
   gfx::CanvasPaint canvas(event, false);
   gfx::Rect bounding_rect(widget->allocation);
-  state->PaintBadge(&canvas, bounding_rect);
+  ExtensionActionState::PaintBadge(&canvas, bounding_rect,
+                                   state->badge_text(),
+                                   state->badge_text_color(),
+                                   state->badge_background_color());
   return FALSE;
 }

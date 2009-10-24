@@ -141,12 +141,16 @@ void ExtensionsService::Init() {
 }
 
 std::vector<ExtensionAction*> ExtensionsService::GetPageActions() const {
-  return GetExtensionActions(ExtensionAction::PAGE_ACTION, true);
-}
+  std::vector<ExtensionAction*> result;
 
-std::vector<ExtensionAction*> ExtensionsService::GetBrowserActions(
-    bool include_popups) const {
-  return GetExtensionActions(ExtensionAction::BROWSER_ACTION, include_popups);
+  // TODO(finnur): Sort the icons in some meaningful way.
+  for (ExtensionList::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if ((*iter)->page_action())
+      result.push_back((*iter)->page_action());
+  }
+
+  return result;
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
@@ -364,29 +368,6 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
               extension->id()));
     }
   }
-}
-
-std::vector<ExtensionAction*> ExtensionsService::GetExtensionActions(
-    ExtensionAction::ExtensionActionType action_type,
-    bool include_popups) const {
-  std::vector<ExtensionAction*> result;
-
-  // TODO(finnur): Sort the icons in some meaningful way.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    if (action_type == ExtensionAction::PAGE_ACTION) {
-      ExtensionAction* page_action = (*iter)->page_action();
-      if (page_action && (include_popups || !page_action->is_popup())) {
-        result.push_back(page_action);
-      }
-    } else {
-      ExtensionAction* browser_action = (*iter)->browser_action();
-      if (browser_action && (include_popups || !browser_action->is_popup()))
-        result.push_back(browser_action);
-    }
-  }
-
-  return result;
 }
 
 void ExtensionsService::UpdateExtensionBlacklist(

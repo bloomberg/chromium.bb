@@ -109,8 +109,12 @@ void LocationBarView::PageActionWithBadgeView::PaintChildren(
     gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
   const ExtensionActionState* state = image_view_->GetPageActionState();
-  if (state)
-    state->PaintBadge(canvas, gfx::Rect(width(), height()));
+  if (state) {
+    ExtensionActionState::PaintBadge(canvas, gfx::Rect(width(), height()),
+                                     state->badge_text(),
+                                     state->badge_text_color(),
+                                     state->badge_background_color());
+  }
 }
 
 void LocationBarView::PageActionWithBadgeView::UpdateVisibility(
@@ -1230,8 +1234,12 @@ void LocationBarView::PageActionImageView::Paint(gfx::Canvas* canvas) {
 
   const ExtensionActionState* state =
       contents->GetPageActionState(page_action_);
-  if (state)
-    state->PaintBadge(canvas, gfx::Rect(width(), height()));
+  if (state) {
+    ExtensionActionState::PaintBadge(canvas, gfx::Rect(width(), height()),
+                                     state->badge_text(),
+                                     state->badge_text_color(),
+                                     state->badge_background_color());
+  }
 }
 
 // PageActionImageView----------------------------------------------------------

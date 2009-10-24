@@ -242,11 +242,11 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for browser actions.
-  const ExtensionAction* browser_action = extension->browser_action();
+  ExtensionAction2* browser_action = extension->browser_action();
   if (browser_action) {
-    const std::vector<std::string>& icon_paths = browser_action->icon_paths();
-    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
+    std::vector<std::string>* icon_paths = browser_action->icon_paths();
+    for (std::vector<std::string>::iterator iter = icon_paths->begin();
+         iter != icon_paths->end(); ++iter) {
       if (extension->GetResource(*iter).GetFilePath().empty()) {
         *error = StringPrintf("Could not load icon '%s' for browser action.",
                               iter->c_str());

@@ -29,6 +29,14 @@ class BrowserActionsToolbarGtk : public NotificationObserver {
 
   int button_count() { return extension_button_map_.size(); }
 
+  Browser* browser() { return browser_; }
+
+  // Returns the currently selected tab ID, or -1 if there is none.
+  int GetCurrentTabId();
+
+  // Update the display of all buttons.
+  void Update();
+
   // NotificationObserver implementation.
   void Observe(NotificationType type,
                const NotificationSource& source,
@@ -63,7 +71,9 @@ class BrowserActionsToolbarGtk : public NotificationObserver {
   // Map from extension ID to BrowserActionButton, which is a wrapper for
   // a chrome button and related functionality. There should be one entry
   // for every extension that has a browser action.
-  std::map<std::string, linked_ptr<BrowserActionButton> > extension_button_map_;
+  typedef std::map<std::string, linked_ptr<BrowserActionButton> >
+      ExtensionButtonMap;
+  ExtensionButtonMap extension_button_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsToolbarGtk);
 };

@@ -406,6 +406,9 @@ void BrowserToolbarGtk::SetProfile(Profile* profile) {
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
                                           bool should_restore_state) {
   location_bar_->Update(should_restore_state ? contents : NULL);
+
+  if (actions_toolbar_.get())
+    actions_toolbar_->Update();
 }
 
 gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {

@@ -17,8 +17,7 @@
 
 class BrowserActionsContainer;
 class Extension;
-class ExtensionAction;
-class ExtensionActionState;
+class ExtensionAction2;
 class ExtensionPopup;
 class Profile;
 class ToolbarView;
@@ -27,20 +26,21 @@ class ToolbarView;
 // BrowserActionButton
 
 // The BrowserActionButton is a specialization of the MenuButton class.
-// It acts on a ExtensionAction, in this case a BrowserAction and handles
+// It acts on a ExtensionAction2, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
                             public ImageLoadingTracker::Observer,
                             public NotificationObserver {
  public:
-  BrowserActionButton(ExtensionAction* browser_action,
-                      Extension* extension,
-                      BrowserActionsContainer* panel);
+  BrowserActionButton(Extension* extension, BrowserActionsContainer* panel);
   ~BrowserActionButton();
 
-  const ExtensionAction& browser_action() const { return *browser_action_; }
-  ExtensionActionState* browser_action_state() { return browser_action_state_; }
+  ExtensionAction2* browser_action() const { return browser_action_; }
+  Extension* extension() { return extension_; }
+
+  // Called to update the display to match the browser action's state.
+  void UpdateState();
 
   // Overriden from views::View. Return a 0-inset so the icon can draw all the
   // way to the edge of the view if it wants.
@@ -76,15 +76,15 @@ class BrowserActionButton : public views::MenuButton,
   virtual void PopupDidHide();
 
  private:
-  // Called to update the display to match the browser action's state.
-  void OnStateUpdated();
+  // If the image from the browser action needs to be loaded, load it.
+  void LoadImage();
 
-  // The browser action this view represents. The ExtensionAction is not owned
+  // The browser action this view represents. The ExtensionAction2 is not owned
   // by this class.
-  ExtensionAction* browser_action_;
+  ExtensionAction2* browser_action_;
 
-  // The state of our browser action. Not owned by this class.
-  ExtensionActionState* browser_action_state_;
+  // The extension associated with the browser action we're displaying.
+  Extension* extension_;
 
   // The icons representing different states for the browser action.
   std::vector<SkBitmap> browser_action_icons_;
@@ -110,9 +110,7 @@ class BrowserActionButton : public views::MenuButton,
 
 class BrowserActionView : public views::View {
  public:
-  BrowserActionView(ExtensionAction* browser_action, Extension* extension,
-                    BrowserActionsContainer* panel);
-
+  BrowserActionView(Extension* extension, BrowserActionsContainer* panel);
   BrowserActionButton* button() { return button_; }
 
  private:
@@ -120,6 +118,9 @@ class BrowserActionView : public views::View {
 
   // Override PaintChildren so that we can paint the badge on top of children.
   virtual void PaintChildren(gfx::Canvas* canvas);
+
+  // The container for this view.
+  BrowserActionsContainer* panel_;
 
   // The button this view contains.
   BrowserActionButton* button_;
@@ -142,6 +143,9 @@ class BrowserActionsContainer : public views::View,
 
   // Get the number of browser actions being displayed.
   int num_browser_actions() { return browser_action_views_.size(); }
+
+  // Returns the current tab's ID, or -1 if there is no current tab.
+  int GetCurrentTabId();
 
   // Get a particular browser action view.
   BrowserActionView* GetBrowserActionViewAt(int index) {
@@ -192,6 +196,14 @@ class BrowserActionsContainer : public views::View,
   ExtensionPopup* TestGetPopup() { return popup_; }
 
  private:
+  // Adds a browser action view for the extension if it needs one. DCHECK if
+  // it has already been added.
+  void AddBrowserAction(Extension* extension);
+
+  // Removes the browser action view for an extension if it has one. DCHECK if
+  // no such view.
+  void RemoveBrowserAction(Extension* extension);
+
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<BrowserActionView*> browser_action_views_;
 

@@ -345,7 +345,7 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders);
     }
 
-    var canvas_context;
+    var canvas;
     function setIconCommon(details, name, parameters) {
       if ("iconIndex" in details) {
         sendRequest(name, [details], parameters);
@@ -364,13 +364,13 @@ var chrome = chrome || {};
         }
         sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
       } else if ("path" in details) {
-        if (!canvas_context) {
+        if (!canvas) {
           var canvas = document.createElement("canvas");
           canvas.width = 19;
           canvas.height = 19;
-          canvas_context = canvas.getContext('2d');
         }
 
+        var canvas_context = canvas.getContext('2d');
         var img = new Image();
         var self = this;
         img.onerror = function() {

@@ -17,97 +17,59 @@ const char kIconIndexOutOfBounds[] =
     "Browser action icon index out of bounds.";
 }
 
-bool BrowserActionSetIconFunction::RunImpl() {
+bool BrowserActionFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  details_ = static_cast<DictionaryValue*>(args_);
+
+  if (details_->HasKey(L"tabId"))
+    EXTENSION_FUNCTION_VALIDATE(details_->GetInteger(L"tabId", &tab_id_));
 
   Extension* extension = dispatcher()->GetExtension();
-  if (!extension->browser_action()) {
+  browser_action_ = extension->browser_action();
+  if (!browser_action_) {
     error_ = kNoBrowserActionError;
     return false;
   }
 
-  // setIcon can take a variant argument: either a canvas ImageData, or an
-  // icon index.
-  BinaryValue* binary;
-  int icon_index;
-  if (args->GetBinary(L"imageData", &binary)) {
-    IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
-    void* iter = NULL;
-    scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-    EXTENSION_FUNCTION_VALIDATE(
-        IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));
-    extension->browser_action_state()->set_icon(bitmap.release());
-  } else if (args->GetInteger(L"iconIndex", &icon_index)) {
-    if (icon_index < 0 || static_cast<size_t>(icon_index) >=
-
-            extension->browser_action()->icon_paths().size()) {
-      error_ = kIconIndexOutOfBounds;
-      return false;
-    }
-    extension->browser_action_state()->set_icon_index(icon_index);
-    extension->browser_action_state()->set_icon(NULL);
-  } else {
-    EXTENSION_FUNCTION_VALIDATE(false);
-  }
+  if (!RunBrowserAction())
+    return false;
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction>(extension->browser_action()),
-      Details<ExtensionActionState>(extension->browser_action_state()));
+      Source<ExtensionAction2>(browser_action_),
+      NotificationService::NoDetails());
   return true;
 }
 
-bool BrowserActionSetTitleFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* details = static_cast<DictionaryValue*>(args_);
+bool BrowserActionSetIconFunction::RunBrowserAction() {
+  BinaryValue* binary = NULL;
+  EXTENSION_FUNCTION_VALIDATE(details_->GetBinary(L"imageData", &binary));
+  IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
+  void* iter = NULL;
+  SkBitmap bitmap;
+  EXTENSION_FUNCTION_VALIDATE(
+      IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
+  browser_action_->SetIcon(tab_id_, bitmap);
+  return true;
+}
 
+bool BrowserActionSetTitleFunction::RunBrowserAction() {
   std::string title;
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(L"title", &title));
-
-  Extension* extension = dispatcher()->GetExtension();
-  if (!extension->browser_action()) {
-    error_ = kNoBrowserActionError;
-    return false;
-  }
-
-  extension->browser_action_state()->set_title(title);
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction>(extension->browser_action()),
-      Details<ExtensionActionState>(extension->browser_action_state()));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"title", &title));
+  browser_action_->SetTitle(tab_id_, title);
   return true;
 }
 
-bool BrowserActionSetBadgeTextFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* details = static_cast<DictionaryValue*>(args_);
-
+bool BrowserActionSetBadgeTextFunction::RunBrowserAction() {
   std::string badge_text;
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(L"text", &badge_text));
-
-  Extension* extension = dispatcher()->GetExtension();
-  if (!extension->browser_action()) {
-    error_ = kNoBrowserActionError;
-    return false;
-  }
-
-  extension->browser_action_state()->set_badge_text(badge_text);
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction>(extension->browser_action()),
-      Details<ExtensionActionState>(extension->browser_action_state()));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"text", &badge_text));
+  browser_action_->SetBadgeText(tab_id_, badge_text);
   return true;
 }
 
-bool BrowserActionSetBadgeBackgroundColorFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* details = static_cast<DictionaryValue*>(args_);
-
+bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
   ListValue* list = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details->GetList(L"color", &list));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetList(L"color", &list));
   EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
 
   int color_array[4] = {0};
@@ -117,18 +79,7 @@ bool BrowserActionSetBadgeBackgroundColorFunction::RunImpl() {
 
   SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
                                  color_array[2]);
+  browser_action_->SetBadgeBackgroundColor(tab_id_, color);
 
-  Extension* extension = dispatcher()->GetExtension();
-  if (!extension->browser_action()) {
-    error_ = kNoBrowserActionError;
-    return false;
-  }
-
-  extension->browser_action_state()->set_badge_background_color(color);
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction>(extension->browser_action()),
-      Details<ExtensionActionState>(extension->browser_action_state()));
   return true;
 }

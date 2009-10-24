@@ -20,10 +20,18 @@ ExtensionAction::~ExtensionAction() {
 }
 
 void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
-                                      const gfx::Rect& bounds) const {
-  const std::string& text = badge_text();
+                                      const gfx::Rect& bounds,
+                                      const std::string& text,
+                                      SkColor text_color,
+                                      SkColor background_color) {
   if (text.empty())
     return;
+
+  if (SkColorGetA(text_color) == 0x00)
+    text_color = SK_ColorWHITE;
+
+  if (SkColorGetA(background_color) == 0x00)
+    background_color = SkColorSetARGB(255, 218, 0, 24);  // default badge color
 
   // Different platforms need slightly different constants to look good.
 #if defined(OS_LINUX)
@@ -49,7 +57,7 @@ void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
   SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
   SkPaint text_paint;
   text_paint.setAntiAlias(true);
-  text_paint.setColor(badge_text_color());
+  text_paint.setColor(text_color);
   text_paint.setFakeBoldText(true);
   text_paint.setTextAlign(SkPaint::kLeft_Align);
   text_paint.setTextSize(SkIntToScalar(kTextSize));
@@ -81,7 +89,7 @@ void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
   SkPaint rect_paint;
   rect_paint.setStyle(SkPaint::kFill_Style);
   rect_paint.setAntiAlias(true);
-  rect_paint.setColor(badge_background_color());
+  rect_paint.setColor(background_color);
   canvas->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2), rect_paint);
 
   // Overlay the gradient. It is stretchy, so we do this in three parts.

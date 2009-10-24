@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
@@ -191,10 +192,7 @@ class Extension {
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
-  ExtensionAction* browser_action() const { return browser_action_.get(); }
-  ExtensionActionState* browser_action_state() {
-    return browser_action_state_.get();
-  }
+  ExtensionAction2* browser_action() const { return browser_action_.get(); }
   const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
     return privacy_blacklists_;
   }
@@ -288,6 +286,12 @@ class Extension {
       std::string* error,
       ExtensionAction::ExtensionActionType action_type);
 
+  // Helper method to load an ExtensionAction2 from the page_action or
+  // browser_action entries in the manifest.
+  // TODO(aa): ExtensionAction2 should replace ExtensionAction completely.
+  ExtensionAction2* LoadExtensionAction2Helper(
+      const DictionaryValue* extension_action, std::string* error);
+
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const DictionaryValue& source);
@@ -325,10 +329,7 @@ class Extension {
   scoped_ptr<ExtensionAction> page_action_;
 
   // The extension's browser action, if any.
-  scoped_ptr<ExtensionAction> browser_action_;
-
-  // The state of the browser action. Valid iff browser_action_ is non-NULL.
-  scoped_ptr<ExtensionActionState> browser_action_state_;
+  scoped_ptr<ExtensionAction2> browser_action_;
 
   // Optional list of privacy blacklistrom.
   std::vector<PrivacyBlacklistInfo> privacy_blacklists_;

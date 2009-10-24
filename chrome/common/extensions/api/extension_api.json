@@ -922,6 +922,11 @@
                 "description": "Pixel data for an image. Must be an ImageData object (for example, from a canvas element).",
                 "optional": true
               },
+              "path": {
+                "type": "string",
+                "description": "Relative path to an image in the extension to show in the browser action.",
+                "optional": true
+              },
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
@@ -963,6 +968,11 @@
               "title": {
                 "type": "string",
                 "description": "The string the browser action should display when moused over."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
           }
@@ -982,16 +992,15 @@
                 "description": "Pixel data for an image. Must be an ImageData object (for example, from a <code>canvas</code> element).",
                 "optional": true
               },
-              "iconIndex": {
-                "type": "integer",
-                "minimum": 0,
-                "description": "<b>Deprecated.</b> The zero-based index into the <b>icons</b> vector specified in the manifest.",
-                "optional": true
-              },
               "path": {
                 "type": "string",
                 "description": "Relative path to an image in the extension to show in the browser action.",
                 "optional": true
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
           }
@@ -1009,6 +1018,11 @@
               "text": {
                 "type": "string",
                 "description": "Any number of characters can be passed, but only about four can fit in the space."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
           }
@@ -1033,6 +1047,11 @@
                 },
                 "minItems": 4,
                 "maxItems": 4
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
           }

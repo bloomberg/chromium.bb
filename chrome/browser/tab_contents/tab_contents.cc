@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/gears_integration.h"
@@ -1410,12 +1411,27 @@ void TabContents::DidNavigateMainFramePostCommit(
   fav_icon_helper_.FetchFavIcon(details.entry->url());
 
   // Disable all page actions, unless this is an in-page navigation.
-  if (!page_actions_.empty()) {
-    url_canon::Replacements<char> replacements;
-    replacements.ClearRef();
-    if (params.url.ReplaceComponents(replacements) !=
-        params.referrer.ReplaceComponents(replacements)) {
+  url_canon::Replacements<char> replacements;
+  replacements.ClearRef();
+  if (params.url.ReplaceComponents(replacements) !=
+      params.referrer.ReplaceComponents(replacements)) {
+    if (!page_actions_.empty())
       page_actions_.clear();
+
+    ExtensionsService* service = profile()->GetExtensionsService();
+    if (service) {
+      for (size_t i = 0; i < service->extensions()->size(); ++i) {
+        ExtensionAction2* action =
+            service->extensions()->at(i)->browser_action();
+        if (!action)
+          continue;
+
+        action->ClearAllValuesForTab(controller().session_id().id());
+        NotificationService::current()->Notify(
+            NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+            Source<ExtensionAction2>(action),
+            NotificationService::NoDetails());
+      }
     }
   }
 

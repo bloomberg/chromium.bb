@@ -16,6 +16,7 @@
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/app_resources.h"
@@ -48,34 +49,20 @@ static const int kMinimumNumberOfVisibleBrowserActions = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
 
-BrowserActionButton::BrowserActionButton(
-    ExtensionAction* browser_action, Extension* extension,
-    BrowserActionsContainer* panel)
+BrowserActionButton::BrowserActionButton(Extension* extension,
+                                         BrowserActionsContainer* panel)
     : MenuButton(this, L"", NULL, false),
-      browser_action_(browser_action),
-      browser_action_state_(extension->browser_action_state()),
+      browser_action_(extension->browser_action()),
+      extension_(extension),
       tracker_(NULL),
       panel_(panel) {
   set_alignment(TextButton::ALIGN_CENTER);
 
-  // Load the images this view needs asynchronously on the file thread. We'll
-  // get a call back into OnImageLoaded if the image loads successfully. If not,
-  // the ImageView will have no image and will not appear in the browser chrome.
-  if (!browser_action->icon_paths().empty()) {
-    const std::vector<std::string>& icon_paths = browser_action->icon_paths();
-    browser_action_icons_.resize(icon_paths.size());
-    tracker_ = new ImageLoadingTracker(this, icon_paths.size());
-    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
-      tracker_->PostLoadImageTask(
-          extension->GetResource(*iter),
-          gfx::Size(Extension::kBrowserActionIconMaxSize,
-                    Extension::kBrowserActionIconMaxSize));
-    }
-  }
+  // No UpdateState() here because View heirarchy not setup yet. Our parent
+  // should call UpdateState() after creation.
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-                 Source<ExtensionAction>(browser_action_));
+                 Source<ExtensionAction2>(browser_action_));
 }
 
 BrowserActionButton::~BrowserActionButton() {
@@ -95,29 +82,39 @@ void BrowserActionButton::ButtonPressed(
   panel_->OnBrowserActionExecuted(this);
 }
 
-void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
-  DCHECK(index < browser_action_icons_.size());
-  browser_action_icons_[index] = image ? *image : SkBitmap();
-  if (index == browser_action_icons_.size() - 1) {
-    OnStateUpdated();
-    tracker_ = NULL;  // The tracker object will delete itself when we return.
-  }
+void BrowserActionButton::LoadImage() {
+  // Load the default image from the browser action asynchronously on the file
+  // thread. We'll get a call back into OnImageLoaded if the image loads
+  // successfully.
+  std::string relative_path = browser_action()->GetDefaultIconPath();
+  if (relative_path.empty())
+    return;
+
+  tracker_ = new ImageLoadingTracker(this, 1);
+  tracker_->PostLoadImageTask(
+      extension()->GetResource(relative_path),
+      gfx::Size(Extension::kBrowserActionIconMaxSize,
+                Extension::kBrowserActionIconMaxSize));
 }
 
-void BrowserActionButton::OnStateUpdated() {
-  SkBitmap* image = browser_action_state_->icon();
-  if (!image) {
-    if (static_cast<size_t>(browser_action_state_->icon_index()) <
-        browser_action_icons_.size()) {
-      image = &browser_action_icons_[browser_action_state_->icon_index()];
-    }
-  }
+void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
+  SetIcon(*image);
+  tracker_ = NULL;  // The tracker object will delete itself when we return.
+  GetParent()->SchedulePaint();
+}
 
-  if (image)
-    SetIcon(*image);
+void BrowserActionButton::UpdateState() {
+  int tab_id = panel_->GetCurrentTabId();
+  if (tab_id < 0)
+    return;
 
-  SetTooltipText(ASCIIToWide(browser_action_state_->title()));
-  panel_->OnBrowserActionVisibilityChanged();
+  SkBitmap image = browser_action()->GetIcon(tab_id);
+  if (image.isNull())
+    LoadImage();
+  else
+    SetIcon(image);
+
+  SetTooltipText(ASCIIToWide(browser_action()->GetTitle(tab_id)));
   GetParent()->SchedulePaint();
 }
 
@@ -125,14 +122,14 @@ void BrowserActionButton::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED) {
-    OnStateUpdated();
+    UpdateState();
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
 }
 
 bool BrowserActionButton::IsPopup() {
-  return browser_action_->is_popup();
+  return browser_action_->has_popup();
 }
 
 bool BrowserActionButton::Activate() {
@@ -195,11 +192,12 @@ void BrowserActionButton::PopupDidHide() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
 
-BrowserActionView::BrowserActionView(ExtensionAction* browser_action,
-                                     Extension* extension,
-                                     BrowserActionsContainer* panel) {
-  button_ = new BrowserActionButton(browser_action, extension, panel);
+BrowserActionView::BrowserActionView(Extension* extension,
+                                     BrowserActionsContainer* panel)
+    : panel_(panel) {
+  button_ = new BrowserActionButton(extension, panel);
   AddChildView(button_);
+  button_->UpdateState();
 }
 
 void BrowserActionView::Layout() {
@@ -208,8 +206,16 @@ void BrowserActionView::Layout() {
 
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
-  button_->browser_action_state()->PaintBadge(canvas,
-                                              gfx::Rect(width(), height()));
+  ExtensionAction2* action = button()->browser_action();
+  int tab_id = panel_->GetCurrentTabId();
+  if (tab_id < 0)
+    return;
+
+  ExtensionActionState::PaintBadge(
+    canvas, gfx::Rect(width(), height()),
+    action->GetBadgeText(tab_id),
+    action->GetBadgeTextColor(tab_id),
+    action->GetBadgeBackgroundColor(tab_id));
 }
 
 
@@ -224,6 +230,9 @@ BrowserActionsContainer::BrowserActionsContainer(
       popup_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   ExtensionsService* extension_service = profile->GetExtensionsService();
+  if (!extension_service)  // The |extension_service| can be NULL in Incognito.
+    return;
+
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  Source<ExtensionsService>(extension_service));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -233,7 +242,9 @@ BrowserActionsContainer::BrowserActionsContainer(
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(profile_));
 
-  RefreshBrowserActionViews();
+  for (size_t i = 0; i < extension_service->extensions()->size(); ++i)
+    AddBrowserAction(extension_service->extensions()->at(i));
+
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
@@ -242,26 +253,50 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   DeleteBrowserActionViews();
 }
 
+int BrowserActionsContainer::GetCurrentTabId() {
+  TabContents* tab_contents = toolbar_->browser()->GetSelectedTabContents();
+  if (!tab_contents)
+    return -1;
+
+  return tab_contents->controller().session_id().id();
+}
+
 void BrowserActionsContainer::RefreshBrowserActionViews() {
-  ExtensionsService* extension_service = profile_->GetExtensionsService();
-  if (!extension_service)  // The |extension_service| can be NULL in Incognito.
+  for (size_t i = 0; i < browser_action_views_.size(); ++i)
+    browser_action_views_[i]->button()->UpdateState();
+}
+
+void BrowserActionsContainer::AddBrowserAction(Extension* extension) {
+#if defined(DEBUG)
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    DCHECK(browser_action_views_[i]->button()->extension() != extension) <<
+           "Asked to add a browser action view for an extension that already "
+           "exists.";
+  }
+#endif
+  if (!extension->browser_action())
     return;
 
-  // Get all browser actions, including those with popups.
-  std::vector<ExtensionAction*> browser_actions;
-  browser_actions = extension_service->GetBrowserActions(true);
+  BrowserActionView* view = new BrowserActionView(extension, this);
+  browser_action_views_.push_back(view);
+  AddChildView(view);
+}
 
-  DeleteBrowserActionViews();
-  for (size_t i = 0; i < browser_actions.size(); ++i) {
-    Extension* extension = extension_service->GetExtensionById(
-        browser_actions[i]->extension_id());
-    DCHECK(extension);
+void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
+  if (!extension->browser_action())
+    return;
 
-    BrowserActionView* view =
-        new BrowserActionView(browser_actions[i], extension, this);
-    browser_action_views_.push_back(view);
-    AddChildView(view);
+  for (std::vector<BrowserActionView*>::iterator iter =
+       browser_action_views_.begin(); iter != browser_action_views_.end();
+       ++iter) {
+    if ((*iter)->button()->extension() == extension) {
+      RemoveChildView(*iter);
+      browser_action_views_.erase(iter);
+      return;
+    }
   }
+
+   NOTREACHED() << "Asked to remove a browser action view that doesn't exist.";
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
@@ -306,7 +341,7 @@ void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
     BrowserActionButton* button) {
-  const ExtensionAction& browser_action = button->browser_action();
+  ExtensionAction2* browser_action = button->browser_action();
 
   // Popups just display.  No notification to the extension.
   // TODO(erikkay): should there be?
@@ -326,7 +361,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     gfx::Rect rect = button->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
-    popup_ = ExtensionPopup::Show(browser_action.popup_url(),
+    popup_ = ExtensionPopup::Show(browser_action->popup_url(),
                                   toolbar_->browser(),
                                   rect);
     popup_->set_delegate(this);
@@ -337,7 +372,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
   // Otherwise, we send the action to the extension.
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-      profile_, browser_action.extension_id(), toolbar_->browser());
+      profile_, browser_action->extension_id(), toolbar_->browser());
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
@@ -367,20 +402,26 @@ void BrowserActionsContainer::Layout() {
 void BrowserActionsContainer::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSION_LOADED ||
-      type == NotificationType::EXTENSION_UNLOADED ||
-      type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
-    RefreshBrowserActionViews();
+  switch (type.value) {
+    case NotificationType::EXTENSION_LOADED:
+      AddBrowserAction(Details<Extension>(details).ptr());
+      OnBrowserActionVisibilityChanged();
+      break;
 
-    // All these actions may change visibility of BrowserActions.
-    OnBrowserActionVisibilityChanged();
-  } else if (type == NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    if (Details<ExtensionHost>(popup_->host()) != details)
-      return;
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED:
+      RemoveBrowserAction(Details<Extension>(details).ptr());
+      OnBrowserActionVisibilityChanged();
+      break;
 
-    HidePopup();
-  } else {
-    NOTREACHED() << L"Received unexpected notification";
+    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+      if (Details<ExtensionHost>(popup_->host()) != details)
+        return;
+
+      HidePopup();
+
+    default:
+      NOTREACHED() << L"Unexpected notification";
   }
 }
 

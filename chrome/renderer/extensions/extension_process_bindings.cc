@@ -416,7 +416,6 @@ class ExtensionImpl : public ExtensionBase {
   // before sending the request to the browser.
   static v8::Handle<v8::Value> SetExtensionActionIcon(const v8::Arguments& args) {
     v8::Local<v8::Object> details = args[1]->ToObject();
-    int tab_id = details->Get(v8::String::New("tabId"))->Int32Value();
     v8::Local<v8::Object> image_data =
         details->Get(v8::String::New("imageData"))->ToObject();
     v8::Local<v8::Object> data =
@@ -453,7 +452,11 @@ class ExtensionImpl : public ExtensionBase {
 
     DictionaryValue* dict = new DictionaryValue();
     dict->Set(L"imageData", bitmap_value);
-    dict->SetInteger(L"tabId", tab_id);
+
+    if (details->Has(v8::String::New("tabId"))) {
+      dict->SetInteger(L"tabId",
+                       details->Get(v8::String::New("tabId"))->Int32Value());
+    }
 
     return StartRequestCommon(args, dict);
   }

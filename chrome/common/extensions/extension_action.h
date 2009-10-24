@@ -82,6 +82,10 @@ typedef std::map<std::string, ExtensionAction*> ExtensionActionMap;
 // values of the ExtensionAction.
 class ExtensionActionState {
  public:
+  static void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds,
+                         const std::string& text, SkColor text_color,
+                         SkColor background_color);
+
   ExtensionActionState(std::string title, int icon_index)
     : hidden_(false), title_(title), icon_index_(icon_index),
       badge_background_color_(SkColorSetARGB(255, 218, 0, 24)),
@@ -118,8 +122,6 @@ class ExtensionActionState {
 
   bool hidden() const { return hidden_; }
   void set_hidden(bool hidden) { hidden_ = hidden; }
-
-  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds) const;
 
  private:
   // True if the action is in the hidden state.

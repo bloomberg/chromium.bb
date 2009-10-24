@@ -218,6 +218,9 @@ void ToolbarView::SetProfile(Profile* profile) {
 void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
   if (location_bar_)
     location_bar_->Update(should_restore_state ? tab : NULL);
+
+  if (browser_actions_)
+    browser_actions_->RefreshBrowserActionViews();
 }
 
 int ToolbarView::GetNextAccessibleViewIndex(int view_index, bool nav_left) {
