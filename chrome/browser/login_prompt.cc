@@ -113,7 +113,11 @@ class LoginDialogTask : public Task {
       dialog_form.scheme = PasswordForm::SCHEME_OTHER;
     }
     if (auth_info_->is_proxy) {
-      dialog_form.origin = GURL(WideToASCII(auth_info_->host_and_port));
+      std::string origin = WideToASCII(auth_info_->host_and_port);
+      // We don't expect this to already start with http:// or https://.
+      DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
+      origin = std::string("http://") + origin;
+      dialog_form.origin = GURL(origin);
     } else {
       dialog_form.origin = origin_url;
     }
