@@ -686,7 +686,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
   NSMutableArray* nsurls = [NSMutableArray arrayWithCapacity:0];
   NSMutableArray* nstitles = [NSMutableArray arrayWithCapacity:0];
   for (size_t i = 0; i < arraysize(urls); ++i) {
-    [nsurls addObject:[NSString stringWithCString:urls[i]]];
+    [nsurls addObject:base::SysUTF8ToNSString(urls[i])];
     [nstitles addObject:base::SysWideToNSString(titles[i])];
   }
 
