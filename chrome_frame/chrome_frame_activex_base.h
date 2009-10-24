@@ -325,6 +325,7 @@ END_MSG_MAP()
   }
 
   virtual void OnFinalMessage(HWND) {
+    ChromeFramePlugin<T>::Uninitialize();
     worker_thread_.message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
     worker_thread_.Stop();
