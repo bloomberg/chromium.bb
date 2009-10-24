@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
@@ -668,6 +669,37 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
         [button frame].size.height);
   }
 }
+
+TEST_F(BookmarkBarControllerTest, DropBookmarks) {
+  const char* urls[] = {
+    "http://qwantz.com",
+    "http://xkcd.com",
+    "javascript:alert('lolwut')"
+  };
+  std::wstring titles[] = {
+    std::wstring(L"Philosophoraptor"),
+    std::wstring(L"Can't draw"),
+    std::wstring(L"Inspiration")
+  };
+  EXPECT_EQ(arraysize(urls), arraysize(titles));
+
+  NSMutableArray* nsurls = [NSMutableArray arrayWithCapacity:0];
+  NSMutableArray* nstitles = [NSMutableArray arrayWithCapacity:0];
+  for (size_t i = 0; i < arraysize(urls); ++i) {
+    [nsurls addObject:[NSString stringWithCString:urls[i]]];
+    [nstitles addObject:base::SysWideToNSString(titles[i])];
+  }
+
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  [bar_ addURLs:nsurls withTitles:nstitles at:NSZeroPoint];
+  EXPECT_EQ(3, parent->GetChildCount());
+  for (int i = 0; i < parent->GetChildCount(); ++i) {
+    EXPECT_EQ(parent->GetChild(i)->GetURL(), GURL(urls[i]));
+    EXPECT_EQ(parent->GetChild(i)->GetTitle(), titles[i]);
+  }
+}
+
 
 // Cannot test these methods since they simply call a single static
 // method, BookmarkEditor::Show(), which is impossible to mock.

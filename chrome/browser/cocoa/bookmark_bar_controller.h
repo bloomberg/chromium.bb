@@ -137,6 +137,9 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 // to the user having selected "Always show the bookmark bar")
 - (BOOL)isAlwaysVisible;
 
+// Returns true if at least one bookmark was added.
+- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
+
 // Actions for manipulating bookmarks.
 // From a button, ...
 - (IBAction)openBookmark:(id)sender;

@@ -271,7 +271,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // We can't actually use |-autorelease| here because there's an embedded
   // run loop in the |-performClose:| which contains its own autorelease pool.
-  // Instead we use call it after a zero-length delay, which gets us back
+  // Instead we call it after a zero-length delay, which gets us back
   // to the main event loop.
   [self performSelector:@selector(autorelease)
              withObject:nil
