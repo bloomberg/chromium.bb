@@ -240,6 +240,9 @@ class ChromeFrameAutomationClient
   PluginUrlRequest* LookupRequest(int request_id) const;
   bool IsValidRequest(PluginUrlRequest* request) const;
   void CleanupRequests();
+  // For IE the host network stack requests are issued on a separate thread,
+  // which requires the requests to be cleaned up asynchronously.
+  void CleanupAsyncRequests();
 
   void set_use_chrome_network(bool use_chrome_network) {
     use_chrome_network_ = use_chrome_network;

@@ -1049,6 +1049,21 @@ void ChromeFrameAutomationClient::CleanupRequests() {
   request_map_.clear();
 }
 
+void ChromeFrameAutomationClient::CleanupAsyncRequests() {
+  RequestMap::iterator index = request_map_.begin();
+  while (index != request_map_.end()) {
+    PluginUrlRequest* request = (*index).second;
+    if (request) {
+      int request_id = request->id();
+      request->Stop();
+    }
+    index++;
+  }
+
+  DCHECK(request_map_.empty());
+  request_map_.clear();
+}
+
 bool ChromeFrameAutomationClient::Reinitialize(
     ChromeFrameDelegate* delegate) {
   if (!tab_.get() || !::IsWindow(chrome_window_)) {

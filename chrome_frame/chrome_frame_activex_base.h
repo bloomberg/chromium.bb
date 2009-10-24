@@ -505,11 +505,13 @@ END_MSG_MAP()
 
   LRESULT OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                     BOOL& handled) {  // NO_LINT
-    worker_thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
-    if (automation_client_.get())
-      automation_client_->CleanupRequests();
-    worker_thread_.Stop();
+    if (worker_thread_.message_loop()) {
+      worker_thread_.message_loop()->PostTask(
+          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
+      if (automation_client_.get())
+        automation_client_->CleanupAsyncRequests();
+      worker_thread_.Stop();
+    }
     return 0;
   }
 
