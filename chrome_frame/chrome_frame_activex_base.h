@@ -201,6 +201,7 @@ END_CONNECTION_POINT_MAP()
 
 BEGIN_MSG_MAP(ChromeFrameActivexBase)
   MESSAGE_HANDLER(WM_CREATE, OnCreate)
+  MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
   CHAIN_MSG_MAP(ChromeFramePlugin<T>)
   CHAIN_MSG_MAP(CComControl<T>)
   CHAIN_MSG_MAP(TaskMarshaller)
@@ -238,12 +239,6 @@ END_MSG_MAP()
                                   IE_8,
                                   IE_8 + 1);
     }
-
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_UI;
-    worker_thread_.StartWithOptions(options);
-    worker_thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStart));
     return S_OK;
   }
 
@@ -322,13 +317,6 @@ END_MSG_MAP()
   // Needed to support PostTask.
   static bool ImplementsThreadSafeReferenceCounting() {
     return true;
-  }
-
-  virtual void OnFinalMessage(HWND) {
-    ChromeFramePlugin<T>::Uninitialize();
-    worker_thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
-    worker_thread_.Stop();
   }
 
  protected:
@@ -432,6 +420,16 @@ END_MSG_MAP()
 
   virtual void OnRequestStart(int tab_handle, int request_id,
                               const IPC::AutomationURLRequest& request_info) {
+    // The worker thread may have been stopped. This could happen if the
+    // ActiveX instance was reused.
+    if (!worker_thread_.message_loop()) {
+      base::Thread::Options options;
+      options.message_loop_type = MessageLoop::TYPE_UI;
+      worker_thread_.StartWithOptions(options);
+      worker_thread_.message_loop()->PostTask(
+          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStart));
+    }
+
     scoped_refptr<CComObject<UrlmonUrlRequest> > request;
     if (base_url_request_.get() &&
         GURL(base_url_request_->url()) == GURL(request_info.url)) {
@@ -502,6 +500,16 @@ END_MSG_MAP()
       ready_state_ = READYSTATE_INTERACTIVE;
       FireOnChanged(DISPID_READYSTATE);
     }
+    return 0;
+  }
+
+  LRESULT OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
+                    BOOL& handled) {  // NO_LINT
+    worker_thread_.message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
+    if (automation_client_.get())
+      automation_client_->CleanupRequests();
+    worker_thread_.Stop();
     return 0;
   }
 

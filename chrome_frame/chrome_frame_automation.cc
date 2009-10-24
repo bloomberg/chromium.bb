@@ -1042,7 +1042,6 @@ void ChromeFrameAutomationClient::CleanupRequests() {
     if (request) {
       int request_id = request->id();
       request->Stop();
-      DCHECK(request_map_.end() == request_map_.find(request_id));
     }
   }
 
