@@ -30,6 +30,7 @@
 #ifndef CLIENT_LINUX_HANDLER_LINUX_DUMPER_H_
 #define CLIENT_LINUX_HANDLER_LINUX_DUMPER_H_
 
+#include <sys/types.h>
 #include <elf.h>
 #include <stdint.h>
 #include <sys/user.h>
