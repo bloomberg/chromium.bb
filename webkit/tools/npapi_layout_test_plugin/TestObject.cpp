@@ -87,11 +87,13 @@ static const NPUTF8 *testIdentifierNames[NUM_TEST_IDENTIFIERS] = {
 };
 
 #define ID_THROW_EXCEPTION_METHOD  0
-#define NUM_METHOD_IDENTIFIERS     1
+#define ID_PAGE_TEST_OBJECT_METHOD 1
+#define NUM_METHOD_IDENTIFIERS     2
 
 static NPIdentifier testMethodIdentifiers[NUM_METHOD_IDENTIFIERS];
 static const NPUTF8 *testMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
     "throwException",
+    "pageTestObject",
 };
 
 static void initializeIdentifiers(void)
@@ -104,7 +106,9 @@ static NPObject *testAllocate(NPP npp, NPClass *theClass)
 {
     TestObject *newInstance =
         static_cast<TestObject*>(malloc(sizeof(TestObject)));
+    newInstance->npp = npp;
     newInstance->testObject = NULL;
+    newInstance->testPageObject = NULL;
     ++testObjectCount;
 
     if (!identifiersInitialized) {
@@ -120,6 +124,8 @@ static void testDeallocate(NPObject *obj)
     TestObject *testObject = reinterpret_cast<TestObject*>(obj);
     if (testObject->testObject)
       browser->releaseobject(testObject->testObject);
+    if (testObject->testPageObject)
+      browser->releaseobject(testObject->testPageObject);
     --testObjectCount;
     free(obj);
 }
@@ -138,6 +144,23 @@ static bool testInvoke(NPObject* header, NPIdentifier name, const NPVariant* /*a
     if (name == testMethodIdentifiers[ID_THROW_EXCEPTION_METHOD]) {
         browser->setexception(header, "test object throwException SUCCESS");
         return true;
+    } else if (name == testMethodIdentifiers[ID_PAGE_TEST_OBJECT_METHOD]) {
+        TestObject* testObject = reinterpret_cast<TestObject*>(header);
+        if (testObject->testPageObject == NULL) {
+          NPObject *windowScriptObject;
+          browser->getvalue(testObject->npp, NPNVWindowNPObject, &windowScriptObject);
+
+          NPIdentifier pageMethod = browser->getstringidentifier("dummyMethod");
+
+          NPVariant functionPointer;
+          browser->invoke(testObject->npp, windowScriptObject, pageMethod,
+                          NULL, 0, &functionPointer);
+
+          if (NPVARIANT_IS_OBJECT(functionPointer))
+              testObject->testPageObject = NPVARIANT_TO_OBJECT(functionPointer);
+
+          return true;
+        }
     }
     return false;
 }

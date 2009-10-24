@@ -19,6 +19,8 @@
 #include "base/keyboard_codes.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
@@ -363,3 +365,17 @@ TEST_F(NPAPITester, NoHangIfInitCrashes) {
 }
 
 #endif
+
+TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url = GetTestUrl(L"npapi", L"npobject_released_on_destruction.html");
+  NavigateToURL(url);
+
+  scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
+  window_proxy->AppendTab(GURL(chrome::kAboutBlankURL));
+
+  scoped_refptr<TabProxy> tab_proxy(window_proxy->GetTab(0));
+  tab_proxy->Close(true);
+}

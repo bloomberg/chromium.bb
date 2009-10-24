@@ -29,7 +29,9 @@
 
 typedef struct {
     NPObject header;
+    NPP npp;
     NPObject* testObject;
+    NPObject* testPageObject;
 } TestObject;
 
 NPClass *getTestClass(void);
