@@ -621,7 +621,7 @@ function moveCameraLeftRight(direction) {
   direction *= g_cameraMoveSpeedMultiplier;
   g_camera.eye = g_math.addVector(
       g_camera.eye,
-      g_mathVectorScalar.mul(g_camera.xAxis, direction));
+      g_math.mulVectorScalar(g_camera.xAxis, direction));
   updateCamera();
   stopAnimatedCamera();
 }
