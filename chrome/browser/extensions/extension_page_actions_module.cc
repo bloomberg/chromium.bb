@@ -192,6 +192,8 @@ bool PageActionSetTitleFunction::RunImpl() {
   return true;
 }
 
+// Not currently exposed to extensions. To re-enable, add mapping in
+// extension_function_dispatcher.
 bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
@@ -216,6 +218,8 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   return true;
 }
 
+// Not currently exposed to extensions. To re-enable, add mapping in
+// extension_function_dispatcher.
 bool PageActionSetBadgeTextColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
@@ -240,6 +244,8 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
   return true;
 }
 
+// Not currently exposed to extensions. To re-enable, add mapping in
+// extension_function_dispatcher.
 bool PageActionSetBadgeTextFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
