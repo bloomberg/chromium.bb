@@ -227,3 +227,16 @@ div.leftNavSelected {
 #mainColumn table.imagelayout tr.images td {
   vertical-align:bottom;
 }
+
+#mainColumn .columns {
+        border: none;
+        margin-top:0;
+        margin-bottom:0;
+        margin-left:0;
+        /* margin-right omitted to avoid IE6 bug */
+        }
+
+#mainColumn .columns td{
+        border: none;
+        padding:0 10px 0 0px;
+        }

@@ -100,19 +100,19 @@
           <li> <a href="overview.html">Overview</a></li>
           <li> <a href="devguide.html"><div>Developer's Guide</div></a>
             <ul>
-              <li> UI Surfaces
+              <li> Browser UI
                 <ul>
                   <li class="leftNavSelected">Browser Actions</li>
                   <li><a href="ntp.html">New Tab Pages</a></li>
+                  <li><a href="options.html">Options Pages</a></li>
                   <li><a href="pageAction.html">Page Actions</a></li>
                   <li><a href="themes.html">Themes</a></li>
                 </ul>
               </li>
-              <li> More Interaction
+              <li> Browser Interaction
                 <ul>
                   <li><a href="bookmarks.html">Bookmarks</a></li>
                   <li><a href="events.html">Events</a></li>
-                  <li><a href="options.html">Options Page</a></li>
                   <li><a href="tabs.html">Tabs</a></li>
                   <li><a href="windows.html">Windows</a></li>
                 </ul>
@@ -485,7 +485,7 @@ using the <b>popup</b> field of <b>browser_action</b>.
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div jsinstance="*0">
+              <div jsinstance="0">
                 <div>
           <dt>
             <var>color</var>
@@ -525,6 +525,47 @@ using the <b>popup</b> field of <b>browser_action</b>.
             Undocumented.
           </dd>
           <dd>An array of four integers in the range [0,255] that make up the RGBA color of the badge. For example, opaque red is <code>[255, 0, 0, 255]</code>.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*1">
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -626,7 +667,7 @@ using the <b>popup</b> field of <b>browser_action</b>.
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div jsinstance="*0">
+              <div jsinstance="0">
                 <div>
           <dt>
             <var>text</var>
@@ -656,6 +697,47 @@ using the <b>popup</b> field of <b>browser_action</b>.
             Undocumented.
           </dd>
           <dd>Any number of characters can be passed, but only about four can fit in the space.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*1">
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -801,47 +883,6 @@ using the <b>popup</b> field of <b>browser_action</b>.
               </div><div jsinstance="1">
                 <div>
           <dt>
-            <var>iconIndex</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd><b>Deprecated.</b> The zero-based index into the <b>icons</b> vector specified in the manifest.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div jsinstance="*2">
-                <div>
-          <dt>
             <var>path</var>
               <em>
 
@@ -869,6 +910,47 @@ using the <b>popup</b> field of <b>browser_action</b>.
             Undocumented.
           </dd>
           <dd>Relative path to an image in the extension to show in the browser action.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*2">
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -970,7 +1052,7 @@ using the <b>popup</b> field of <b>browser_action</b>.
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div jsinstance="*0">
+              <div jsinstance="0">
                 <div>
           <dt>
             <var>title</var>
@@ -1000,6 +1082,47 @@ using the <b>popup</b> field of <b>browser_action</b>.
             Undocumented.
           </dd>
           <dd>The string the browser action should display when moused over.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*1">
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
