@@ -2647,6 +2647,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html 
 BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
 BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 WIN LINUX : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = FAIL PASS
+BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -3232,7 +3233,7 @@ BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
 BUG_TONY WIN LINUX : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
-BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH
+BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH FAIL
 
 // WebKit roll 49992:49997
 // hclam to add expected results.
