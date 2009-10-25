@@ -104,6 +104,17 @@ class TreeNode : public TreeModelNode {
     return static_cast<int>(children_->size());
   }
 
+  // Returns the number of all nodes in teh subtree rooted at this node,
+  // including this node.
+  int GetTotalNodeCount() const {
+    int count = 1;  // Start with one to include the node itself.
+    for (size_t i = 0; i < children_->size(); ++i) {
+      TreeNode<NodeType>* child = children_[i];
+      count += child->GetTotalNodeCount();
+    }
+    return count;
+  }
+
   // Returns a child by index.
   NodeType* GetChild(int index) {
     DCHECK(index >= 0 && index < GetChildCount());
