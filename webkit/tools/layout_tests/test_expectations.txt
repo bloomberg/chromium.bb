@@ -2646,6 +2646,7 @@ BUG9798 LINUX MAC : LayoutTests/http/tests/navigation/reload-subframe-iframe.htm
 BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html = CRASH PASS
 BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
 BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = FAIL PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
