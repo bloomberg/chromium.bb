@@ -2645,6 +2645,7 @@ BUG9798 WIN : LayoutTests/animations/change-transform-in-end-event.html = PASS T
 BUG9798 LINUX MAC : LayoutTests/http/tests/navigation/reload-subframe-iframe.html = PASS TIMEOUT
 BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html = CRASH PASS
 BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
+BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -3238,3 +3239,7 @@ BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL
 // scherkus to add expected results.
 BUG_SCHERKUS : LayoutTests/media/video-pause-immediately.html = FAIL
 
+// New flaky crashing tests
+BUG25747 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-invalid-values.html = CRASH PASS
+BUG25747 MAC : LayoutTests/fast/forms/tabbing-input-iframe.html = CRASH PASS
+BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html = CRASH PASS
