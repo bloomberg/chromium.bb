@@ -35,7 +35,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/validator_arm/ncvalidate.h"
+#include "native_client/src/trusted/validator_arm/v2/ncvalidate.h"
 
 static int g_ignore_validator_result = 0;
 void NaClIgnoreValidatorResult() {
@@ -46,7 +46,6 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   uintptr_t               memp;
   uintptr_t               endp;
   size_t                  regionsize;
-  NaClErrorCode           rcode = LOAD_BAD_FILE;
 
   memp = nap->mem_start + NACL_TRAMPOLINE_END;
   regionsize = nap->text_region_bytes;
@@ -56,26 +55,20 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
     return LOAD_NO_MEMORY;
   }
 
-  NCValidateInit();
-
-  NCValidateSegment((uint8_t *)memp, memp, regionsize);
-
-  if (NCValidateFinish() == 0) {
-    rcode = LOAD_OK;
+  if (NCValidateSegment((uint8_t *)memp, memp, regionsize) == 0) {
+    return LOAD_OK;
   } else {
     if (g_ignore_validator_result) {
       NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
-      rcode = LOAD_OK;
+      return LOAD_OK;
     } else {
       NaClLog(LOG_ERROR, "VALIDATION FAILED.\n");
       NaClLog(LOG_ERROR,
               "Run sel_ldr in debug mode to ignore validation failure.\n");
       NaClLog(LOG_ERROR,
               "Run ncval <module-name> for validation error details.\n");
-      rcode = LOAD_VALIDATION_FAILED;
+      return LOAD_VALIDATION_FAILED;
     }
   }
-
-  return rcode;
 }
 

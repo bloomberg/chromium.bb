@@ -59,6 +59,10 @@ if env.Bit('linux'):
                         'validator.cc',
                         gen_dec])
 
+  env.ComponentLibrary('ncvalidate_arm_v2',
+                       ['ncvalidate.cc'],
+                       LIBS=['arm_validator_core'])
+
   ncval = env.ComponentProgram('new-arm-ncval',
                        ['ncval.cc'],
                        LIBS=['arm_validator_core',

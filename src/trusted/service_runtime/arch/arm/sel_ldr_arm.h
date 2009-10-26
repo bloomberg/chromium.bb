@@ -40,7 +40,7 @@
 #define NACL_THREAD_MAX         (1 << NACL_PAGESHIFT)
 
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
-#define NACL_HALT_OPCODE        0xe3a0f000  /* mov pc, #0 */
+#define NACL_HALT_OPCODE        0xe1266676  /* mov pc, #0 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
 
 struct NaClApp;
