@@ -122,8 +122,12 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
 // BrowserFrame, views::WindowWin overrides:
 
 gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
-  if (!GetNonClientView()->UseNativeFrame())
+  // Use the default client insets for an opaque frame or a glass popup/app
+  // frame.
+  if (!GetNonClientView()->UseNativeFrame() ||
+      !browser_view_->IsBrowserTypeNormal()) {
     return WindowWin::GetClientAreaInsets();
+  }
 
   int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
   // We draw our own client edge over part of the default frame.
