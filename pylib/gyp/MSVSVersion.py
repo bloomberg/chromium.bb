@@ -81,7 +81,7 @@ def _CreateVersion(name):
 
 
 def _DetectVisualStudioVersions():
-  """Collect a list of installed visual studio version.
+  """Collect the list of installed visual studio versions.
 
   Returns:
     A list of visual studio versions installed in descending order of
