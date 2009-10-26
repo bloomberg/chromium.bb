@@ -6664,6 +6664,8 @@
             'browser/sync/notifier/communicator/product_info.h',
             'browser/sync/notifier/communicator/single_login_attempt.cc',
             'browser/sync/notifier/communicator/single_login_attempt.h',
+            'browser/sync/notifier/communicator/ssl_socket_adapter.cc',
+            'browser/sync/notifier/communicator/ssl_socket_adapter.h',
             'browser/sync/notifier/communicator/talk_auth_task.cc',
             'browser/sync/notifier/communicator/talk_auth_task.h',
             'browser/sync/notifier/communicator/xmpp_connection_generator.cc',
