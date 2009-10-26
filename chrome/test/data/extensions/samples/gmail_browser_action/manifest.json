@@ -7,8 +7,7 @@
     "tabs", "http://*.google.com/", "https://*.google.com/"
    ],
   "browser_action": {
-      "name": "Gmail",
-      "icons": ["blank.png"]
+      "default_title": ""
   },
   "icons": {
     "128": "icon_128.png"

@@ -3,17 +3,59 @@
 <script>
 var animationFrames = 36;
 var animationSpeed = 10; // ms
-var browserActionWidth = 27;
-var browserActionHeight = 23;
+var canvas;
 var canvasContext;
 var gmail = "http://mail.google.com/";
 var gmailAtomRef = "http://mail.google.com/mail/feed/atom";
 var loggedInImage;
-var loggedOutImage;
 var pollInterval = 1000 * 10;  // 10 seconds
 var requestTimeout = 1000 * 2;  // 5 seconds
 var rotation = 0;
-var unreadCount = 0;
+var unreadCount = -1;
+var loadingAnimation = new LoadingAnimation();
+
+
+// A "loading" animation displayed while we wait for the first response from
+// Gmail. This animates the badge text with a dot that cycles from left to
+// right.
+function LoadingAnimation() {
+  this.timerId_ = 0;
+  this.maxCount_ = 8;  // Total number of states in animation
+  this.current_ = 0;  // Current state
+  this.maxDot_ = 4;  // Max number of dots in animation
+}
+
+LoadingAnimation.prototype.paintFrame = function() {
+  var text = "";
+  for (var i = 0; i < this.maxDot_; i++) {
+    text += (i == this.current_) ? "." : " ";
+  }
+  if (this.current_ >= this.maxDot_)
+    text += "";
+
+  chrome.browserAction.setBadgeText({text:text});
+  this.current_++;
+  if (this.current_ == this.maxCount_)
+    this.current_ = 0;
+}
+
+LoadingAnimation.prototype.start = function() {
+  if (this.timerId_)
+    return;
+
+  var self = this;
+  this.timerId_ = window.setInterval(function() {
+    self.paintFrame();
+  }, 100);
+}
+
+LoadingAnimation.prototype.stop = function() {
+  if (!this.timerId_)
+    return;
+
+  window.clearInterval(this.timerId_);
+  this.timerId_ = 0;
+}
 
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
@@ -25,11 +67,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   }
 });
 
+
 function init() {
-  var canvas = document.getElementById('canvas');
+  canvas = document.getElementById('canvas');
   loggedInImage = document.getElementById('logged_in');
-  loggedOutImage = document.getElementById('logged_out');
   canvasContext = canvas.getContext('2d');
+
+  chrome.browserAction.setIcon({path: "gmail_logged_in.png"});
+  loadingAnimation.start();
+  
   startRequest();
 }
 
@@ -41,10 +87,12 @@ function scheduleRequest() {
 function startRequest() {
   getInboxCount(
     function(count) {
+      loadingAnimation.stop();
       updateUnreadCount(count);
       scheduleRequest();
     },
     function() {
+      loadingAnimation.stop();
       showLoggedOut();
       scheduleRequest();
     }
@@ -140,35 +188,30 @@ function animateFlip() {
     drawIconAtRotation();
     chrome.browserAction.setBadgeText({text:unreadCount});
     chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
-    chrome.browserAction.setTitle({title:unreadCount + " unread emails"});
   }
 }
 
 function showLoggedOut() {
-  canvasContext.save();
-  canvasContext.clearRect(0, 0, browserActionWidth, browserActionHeight);
-  canvasContext.translate(browserActionWidth/2, browserActionHeight/2);
-  canvasContext.drawImage(loggedOutImage, 
-      -loggedOutImage.width/2 - 1, -loggedOutImage.height/2);
-  canvasContext.restore();
-
-  chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0,
-      browserActionWidth,browserActionHeight)});
+  unreadCount = -1;
+  chrome.browserAction.setIcon({path:"gmail_not_logged_in.png"});
   chrome.browserAction.setBadgeBackgroundColor({color:[190, 190, 190, 230]});
   chrome.browserAction.setBadgeText({text:"?"});
 }
 
 function drawIconAtRotation() {
   canvasContext.save();
-  canvasContext.clearRect(0, 0, browserActionWidth, browserActionHeight);
-  canvasContext.translate(browserActionWidth/2, browserActionHeight/2);
+  canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+  canvasContext.translate(
+      Math.ceil(canvas.width/2),
+      Math.ceil(canvas.height/2));
   canvasContext.rotate(2*Math.PI*ease(rotation));
   canvasContext.drawImage(loggedInImage, 
-      -loggedInImage.width/2 - 1, -loggedInImage.height/2);
+      -Math.ceil(canvas.width/2),
+      -Math.ceil(canvas.height/2));
   canvasContext.restore();
 
   chrome.browserAction.setIcon({imageData:canvasContext.getImageData(0, 0,
-      browserActionWidth,browserActionHeight)});
+      canvas.width,canvas.height)});
 }
 
 function goToInbox() {
@@ -184,8 +227,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 </head>
 <body onload="init()">
 <img id="logged_in" src="gmail_logged_in.png">
-<img id="logged_out" src="gmail_not_logged_in.png">
-<canvas id="canvas" width="27" height="23">
+<canvas id="canvas" width="19" height="19">
 </body>
 </html>
 
