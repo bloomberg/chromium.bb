@@ -1175,17 +1175,17 @@ void ToolbarView::CreateAppMenu() {
   app_menu_contents_->AddSeparator();
 #if defined(BROWSER_SYNC)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
-    std::wstring label;
-    std::wstring link;
+    string16 label;
+    string16 link;
     // TODO(timsteele): Need a ui helper method to just get the type without
     // needing labels.
     SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
         browser_->profile()->GetProfileSyncService(), &label, &link);
     label = type == SyncStatusUIHelper::SYNCED ?
-        l10n_util::GetString(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
+        l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
         type == SyncStatusUIHelper::SYNC_ERROR ?
-        l10n_util::GetString(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL) :
-        l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+        l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL) :
+        l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
     app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, label);
     app_menu_contents_->AddSeparator();
   }

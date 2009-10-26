@@ -145,12 +145,12 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   // "Sync error", when we can't authenticate or establish a connection with
   //               the sync server (appropriate information appended to
   //               message).
-  std::wstring status_msg;
-  std::wstring link_text;
+  string16 status_msg;
+  string16 link_text;
   SyncStatusUIHelper::MessageType type =
       SyncStatusUIHelper::GetLabels(sync_service_, &status_msg, &link_text);
   SendSyncMessageToPage(FromSyncStatusMessageType(type),
-                        WideToUTF8(status_msg), WideToUTF8(link_text));
+                        UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
 }
 
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {

@@ -1708,8 +1708,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 bool BookmarkBarView::ShouldShowSyncErrorButton() {
   bool show_sync_error_button(false);
   if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
-    std::wstring status_text;
-    std::wstring link_text;
+    string16 status_text;
+    string16 link_text;
     SyncStatusUIHelper::MessageType sync_status;
     sync_status = SyncStatusUIHelper::GetLabels(
         sync_service_, &status_text, &link_text);
@@ -1737,4 +1737,3 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   return sync_error_button;
 }
 #endif  // defined(BROWSER_SYNC)
-

@@ -24,8 +24,8 @@ class SyncStatusUIHelper {
   // Create status and link labels for the current status labels and link text
   // by querying |service|.
   static MessageType GetLabels(ProfileSyncService* service,
-                               std::wstring* status_label,
-                               std::wstring* link_label);
+                               string16* status_label,
+                               string16* link_label);
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncStatusUIHelper);
 };

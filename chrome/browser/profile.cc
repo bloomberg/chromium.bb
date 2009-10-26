@@ -1355,7 +1355,7 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-#if defined(BROWSER_SYNC)
+#if defined(BROWSER_SYNC) && !defined(OS_POSIX)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     if (!sync_service_.get())
       InitSyncService();

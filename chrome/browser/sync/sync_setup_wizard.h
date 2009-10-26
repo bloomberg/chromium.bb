@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 #else
@@ -53,7 +53,7 @@ class SyncSetupWizard {
   // if various buttons in the UI should be enabled or disabled.
   bool IsVisible() const;
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
   void set_visible(bool visible) { visible_ = visible; }
 #endif
 
@@ -69,7 +69,7 @@ class SyncSetupWizard {
 
   ProfileSyncService* service_;
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
   bool visible_;
 #else
   // The use of ShowHtmlDialog and SyncSetupFlowContainer is disabled on Linux

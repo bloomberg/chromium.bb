@@ -561,7 +561,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (WebResourcesEnabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
 
-#if defined(BROWSER_SYNC)
+#if defined(BROWSER_SYNC) && !defined(OS_POSIX)
     if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }

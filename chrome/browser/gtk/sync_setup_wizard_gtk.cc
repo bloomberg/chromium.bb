@@ -29,6 +29,7 @@ void SyncSetupWizard::Step(State advance_state) {
     case MERGE_AND_SYNC:
     case FATAL_ERROR:
     case DONE:
+    case DONE_FIRST_TIME:
       // TODO(zork): Implement
       break;
     default:
