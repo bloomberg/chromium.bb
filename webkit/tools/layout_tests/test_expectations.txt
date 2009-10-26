@@ -73,7 +73,7 @@ BUG24182 SLOW DEBUG : LayoutTests/fast/js/toString-and-valueOf-override.html = P
 // This tests is normally <1 second, but occasionally takes >20s.
 BUG24182 SLOW WIN : LayoutTests/fast/dom/Window/webkitConvertPoint.html = PASS
 
-BUG24182 WIN SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
+BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
 BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/bug5797.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
@@ -117,7 +117,6 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequest
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
-BUG24182 SLOW MAC : LayoutTests/http/tests/misc/xmltokenizer-do-not-crash.pl = PASS
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -2581,7 +2580,9 @@ BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/post-content-type.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
-BUG9797 BUG9798 MAC WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = PASS
+BUG9797 BUG9798 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = PASS
+// Occasionally times out. Not just slow.
+BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
@@ -2644,6 +2645,10 @@ BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH 
 BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 WIN LINUX : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PASS
+// Occasionally times out. Not just slow.
+BUG9798 MAC : LayoutTests/http/tests/misc/xmltokenizer-do-not-crash.pl = PASS TIMEOUT
+// Occasionally times out. Not just slow.
+BUG9798 WIN DEBUG : LayoutTests/http/tests/loading/redirect-methods.html = TIMEOUT PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -2783,8 +2788,11 @@ BUG14207 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 BUG14673 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 BUG14673 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 
+BUG14752 LINUX RELEASE SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = FAIL PASS
+// Occasionally times out. Not just slow.
+BUG14752 LINUX DEBUG : LayoutTests/http/tests/cache/subresource-expiration.html = TIMEOUT FAIL PASS
+
 // Need investigation: test shell crashers.
-BUG14752 LINUX SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = FAIL PASS
 BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH FAIL PASS
 BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH FAIL PASS
 
