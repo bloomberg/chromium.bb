@@ -3249,3 +3249,4 @@ BUG_TONY : LayoutTests/media/video-dom-src.html = FAIL
 BUG_TONY : LayoutTests/media/video-seek-past-end-paused.html = FAIL
 BUG_TONY : LayoutTests/media/video-src-change.html = FAIL
 BUG_TONY LINUX : LayoutTests/media/video-seekable.html = FAIL
+BUG_TONY MAC : LayoutTests/media/video-error-abort.html = FAIL
