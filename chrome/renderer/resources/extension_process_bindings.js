@@ -364,20 +364,17 @@ var chrome = chrome || {};
         }
         sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
       } else if ("path" in details) {
-        if (!canvas) {
-          var canvas = document.createElement("canvas");
-          canvas.width = 19;
-          canvas.height = 19;
-        }
-
-        var canvas_context = canvas.getContext('2d');
         var img = new Image();
-        var self = this;
         img.onerror = function() {
           console.error("Could not load browser action icon '" + details.path +
                         "'.");
         }
         img.onload = function() {
+          var canvas = document.createElement("canvas");
+          canvas.width = img.width > 19 ? 19 : img.width;
+          canvas.height = img.height > 19 ? 19 : img.height;
+
+          var canvas_context = canvas.getContext('2d');
           canvas_context.clearRect(0, 0, canvas.width, canvas.height);
           canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
           delete details.path;
