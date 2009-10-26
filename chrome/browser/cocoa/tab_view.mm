@@ -552,7 +552,14 @@ static const CGFloat kRapidCloseDist = 2.5;
 - (void)otherMouseUp:(NSEvent*)theEvent {
   // Support middle-click-to-close.
   if ([theEvent buttonNumber] == 2) {
-    [controller_ closeTab:self];
+    // |-hitTest:| takes a location in the superview's coordinates.
+    NSPoint upLocation =
+        [[self superview] convertPoint:[theEvent locationInWindow]
+                              fromView:nil];
+    // If the mouse up occurred in our view or over the close button, then
+    // close.
+    if ([self hitTest:upLocation])
+      [controller_ closeTab:self];
   }
 }
 
