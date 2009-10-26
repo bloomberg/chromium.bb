@@ -86,10 +86,15 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 
   DCHECK(!menu_shown_);
   menu_shown_ = true;
+  // Listen for "hide" signal so that we know when to return from the blocking
+  // RunMenuAt call.
+  gint handle_id =
+      g_signal_connect(G_OBJECT(menu_), "hide", G_CALLBACK(OnMenuHidden), this);
 
   // Block until menu is no longer shown by running a nested message loop.
   MessageLoopForUI::current()->Run(NULL);
 
+  g_signal_handler_disconnect(G_OBJECT(menu_), handle_id);
   menu_shown_ = false;
 }
 
@@ -223,9 +228,6 @@ void NativeMenuGtk::ResetMenu() {
   if (menu_)
     gtk_widget_destroy(menu_);
   menu_ = gtk_menu_new();
-  // Listen for "hide" signal so that we know when to return from the blocking
-  // RunMenuAt call.
-  g_signal_connect(G_OBJECT(menu_), "hide", G_CALLBACK(OnMenuHidden), this);
 }
 
 // static
