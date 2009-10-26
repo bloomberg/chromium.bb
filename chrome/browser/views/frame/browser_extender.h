@@ -18,7 +18,7 @@ class Window;
 // BrowserExtender adds chromeos specific features to BrowserView.
 // The factory method |Create(BrowserView*)| creates different types
 // of extender depending on the type of BrowserView and target platform.
-// Please see chromeos_browser_extender.cc for ChromeOS extenders, and
+// Please see chromeos_browser_extenders.cc for ChromeOS extenders, and
 // standard_extender.cc for Chrome browser.
 class BrowserExtender {
  public:
@@ -33,23 +33,30 @@ class BrowserExtender {
 
   // Layouts controls within the given bounds and returns the remaining
   // bounds for tabstip to be layed out.
-  virtual gfx::Rect Layout(const gfx::Rect& bounds) { return bounds; }
+  virtual gfx::Rect Layout(const gfx::Rect& bounds) = 0;
 
   // Tests if the given |point|, which is given in BrowserView coordinates,
   // hits any of controls.
   virtual bool NonClientHitTest(const gfx::Point& browser_view_point) = 0;
 
   // Updates the title bar (if any).
-  virtual void UpdateTitleBar() {}
+  virtual void UpdateTitleBar() = 0;
 
   // Called when the BrowserView is shown.
   virtual void Show() = 0;
 
   // Called when the BrowserView is closed.
-  virtual void Close() {}
+  virtual void Close() = 0;
 
   // Called when the browser window is either activated or deactivated.
-  virtual void ActivationChanged() {}
+  virtual void ActivationChanged() = 0;
+
+  // Returns true to hide the toolbar for the window, or false
+  // to use the regular logic to decide.
+  virtual bool ShouldForceHideToolbar() = 0;
+
+  // Toggles the visibility of CompactNavigationBar.
+  virtual void ToggleCompactNavigationBar() = 0;
 
   // Tells if the browser can be closed.
   bool can_close() const {
@@ -83,4 +90,3 @@ class BrowserExtender {
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_BROWSER_EXTENDER_H_
-

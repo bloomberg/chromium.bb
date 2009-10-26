@@ -350,6 +350,9 @@ void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
   Update(NULL);
 }
 
+void LocationBarViewGtk::OnKillFocus() {
+}
+
 void LocationBarViewGtk::OnSetFocus() {
 }
 

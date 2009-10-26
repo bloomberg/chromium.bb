@@ -125,6 +125,7 @@ class LocationBarView : public LocationBar,
   virtual void OnInputInProgress(bool in_progress) {
     delegate_->OnInputInProgress(in_progress);
   }
+  virtual void OnKillFocus();
   virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;

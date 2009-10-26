@@ -271,6 +271,9 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAppMenu();
   virtual void ShowPageMenu();
   virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+#if defined(TOOLKIT_VIEWS)
+  virtual void ToggleCompactNavigationBar();
+#endif
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

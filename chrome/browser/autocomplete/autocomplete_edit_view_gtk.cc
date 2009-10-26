@@ -796,6 +796,7 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut() {
   ClosePopup();
   // Tell the model to reset itself.
   model_->OnKillFocus();
+  controller_->OnKillFocus();
   return FALSE;  // Pass the event on to the GtkTextView.
 }
 

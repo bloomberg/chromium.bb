@@ -6,6 +6,7 @@
 
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/chromeos/panel_controller.h"
@@ -54,6 +55,14 @@ class NormalExtender : public BrowserExtender,
     main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
     browser_view()->AddChildView(main_menu_);
 
+    compact_navigation_bar_ =
+        new CompactNavigationBar(browser_view()->browser());
+    browser_view()->AddChildView(compact_navigation_bar_);
+    compact_navigation_bar_->Init();
+    // Disabled by default.
+    // TODO(oshima): Get this info from preference.
+    compact_navigation_bar_->SetVisible(false);
+
     status_area_ = new StatusAreaView(
         browser_view()->browser(),
         browser_view()->GetWindow()->GetNativeWindow());
@@ -87,33 +96,62 @@ class NormalExtender : public BrowserExtender,
     status_area_->SetBounds(bounds.x() + bounds.width() - status_size.width(),
                             bounds.y(), status_size.width(),
                             status_size.height());
+    int curx = bounds.x() + main_menu_size.width();
     int width = bounds.width() - main_menu_size.width() - status_size.width();
-    return gfx::Rect(bounds.x() + main_menu_size.width(),
-                     bounds.y(),
-                     std::max(0, width),  // in case there is no space left.
-                     bounds.height());
+
+    if (compact_navigation_bar_->IsVisible()) {
+      gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
+      compact_navigation_bar_->SetBounds(curx, bounds.y(),
+                                         cnb_bounds.width(), bounds.height());
+      curx += cnb_bounds.width();
+      width -= cnb_bounds.width();
+    }
+    width = std::max(0, width);  // In case there is no space left.
+    return gfx::Rect(curx, bounds.y(), width, bounds.height());
   }
 
   virtual bool NonClientHitTest(const gfx::Point& point) {
     gfx::Point point_in_main_menu_coords(point);
     views::View::ConvertPointToView(browser_view(), main_menu_,
                                     &point_in_main_menu_coords);
+    if (main_menu_->HitTest(point_in_main_menu_coords))
+      return true;
 
     gfx::Point point_in_status_area_coords(point);
     views::View::ConvertPointToView(browser_view(), status_area_,
                                     &point_in_status_area_coords);
+    if (status_area_->HitTest(point_in_status_area_coords))
+      return true;
 
-    return main_menu_->HitTest(point_in_main_menu_coords) ||
-        status_area_->HitTest(point_in_status_area_coords);
+    if (compact_navigation_bar_->IsVisible()) {
+      gfx::Point point_in_cnb_coords(point);
+      views::View::ConvertPointToView(browser_view(),
+                                      compact_navigation_bar_,
+                                      &point_in_cnb_coords);
+      return compact_navigation_bar_->HitTest(point_in_cnb_coords);
+    }
+    return false;
   }
 
+  virtual void UpdateTitleBar() {}
+
   virtual void Show() {
-    // TODO(oshima): PanelController seems to be doing something similar.
-    // Investigate if we need both.
     TabOverviewTypes::instance()->SetWindowType(
         GTK_WIDGET(GetBrowserWindow()->GetNativeWindow()),
         TabOverviewTypes::WINDOW_TYPE_CHROME_TOPLEVEL,
         NULL);
+  }
+
+  virtual void Close() {}
+
+  virtual void ActivationChanged() {}
+
+  virtual bool ShouldForceHideToolbar() {
+    return compact_navigation_bar_->IsVisible();
+  }
+
+  virtual void ToggleCompactNavigationBar() {
+    compact_navigation_bar_->SetVisible(!compact_navigation_bar_->IsVisible());
   }
 
  private:
@@ -152,6 +190,9 @@ class NormalExtender : public BrowserExtender,
   scoped_ptr<views::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
 
+  // CompactNavigationBar view.
+  CompactNavigationBar* compact_navigation_bar_;
+
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
 
@@ -183,6 +224,10 @@ class PopupExtender : public BrowserExtender {
     gtk_window_resize(native_window, bounds.width(), bounds.height());
   }
 
+  virtual gfx::Rect Layout(const gfx::Rect& bounds) {
+    return bounds;
+  }
+
   virtual bool NonClientHitTest(const gfx::Point& point) {
     return false;
   }
@@ -209,6 +254,13 @@ class PopupExtender : public BrowserExtender {
         panel_controller_->OnFocusOut();
     }
   }
+
+  virtual bool ShouldForceHideToolbar() {
+    // Always hide toolbar for popups.
+    return true;
+  }
+
+  virtual void ToggleCompactNavigationBar() {}
 
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<PanelController> panel_controller_;

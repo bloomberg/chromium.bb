@@ -893,6 +893,13 @@ void Browser::ToggleFullscreenMode() {
 #endif
 }
 
+#if defined(TOOLKIT_VIEWS)
+void Browser::ToggleCompactNavigationBar() {
+  UserMetrics::RecordAction(L"ToggleCompactNavigationBar", profile_);
+  window_->ToggleCompactNavigationBar();
+}
+#endif
+
 void Browser::Exit() {
   UserMetrics::RecordAction(L"Exit", profile_);
   BrowserList::CloseAllBrowsersAndExit();
@@ -1360,6 +1367,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser(); break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();        break;
     case IDC_EXIT:                  Exit();                        break;
+#if defined(TOOLKIT_VIEWS)
+    case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();  break;
+#endif
 
     // Page-related commands
     case IDC_SAVE_PAGE:             SavePage();                    break;
@@ -2268,6 +2278,9 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
+#if defined(TOOLKIT_VIEWS)
+  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
+#endif
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_POPUPS, true);

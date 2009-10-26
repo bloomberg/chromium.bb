@@ -333,6 +333,9 @@ class Browser : public TabStripModelDelegate,
   void ConvertPopupToTabbedBrowser();
   void ToggleFullscreenMode();
   void Exit();
+#if defined(TOOLKIT_VIEWS)
+  void ToggleCompactNavigationBar();
+#endif
 
   // Page-related commands
   void BookmarkCurrentPage();

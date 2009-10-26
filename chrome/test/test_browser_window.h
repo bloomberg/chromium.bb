@@ -50,6 +50,10 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowPageMenu() {}
   virtual void ShowAppMenu() {}
   virtual int GetCommandId(const NativeWebKeyboardEvent& event) { return -1; }
+#if defined(TOOLKIT_VIEWS)
+  virtual void ToggleCompactNavigationBar() {}
+#endif
+
   virtual bool IsBookmarkBarVisible() const { return false; }
   virtual gfx::Rect GetRootWindowResizerRect() const { return gfx::Rect(); }
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

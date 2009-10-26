@@ -40,7 +40,8 @@ CompactNavigationBar::CompactNavigationBar(Browser* browser)
 }
 
 CompactNavigationBar::~CompactNavigationBar() {
-  location_entry_view_->Detach();
+  if (location_entry_view_->native_view())
+    location_entry_view_->Detach();
 }
 
 void CompactNavigationBar::Init() {
@@ -100,27 +101,36 @@ void CompactNavigationBar::Layout() {
   if (!initialized_)
     return;
 
-  int curx = 0;
+  // We hide navigation buttons when the entry has focus.  Navigation
+  // buttons' visibility is controlled in OnKillFocus/OnSetFocus methods.
+  if (!back_button_->IsVisible()) {
+    // Fill the view with the entry view while it has focus.
+    location_entry_view_->SetBounds(kURLPadding, 0,
+                                    width() - kHorizPadding, height());
+  } else {
+    // Layout forward/back buttons after entry views as follows:
+    // [Entry View] [Back]|[Forward]
+    int curx = 0;
+    // URL bar.
+    location_entry_view_->SetBounds(curx + kURLPadding, 0,
+                                    kURLWidth + kURLPadding * 2, height());
+    curx += kURLWidth + kHorizPadding + kURLPadding * 2;
 
-  // "Back | Forward" section.
-  gfx::Size button_size = back_button_->GetPreferredSize();
-  button_size.set_width(button_size.width() + kInnerPadding * 2);
-  back_button_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
+    // "Back | Forward" section.
+    gfx::Size button_size = back_button_->GetPreferredSize();
+    button_size.set_width(button_size.width() + kInnerPadding * 2);
+    back_button_->SetBounds(curx, 0, button_size.width(), height());
+    curx += button_size.width() + kHorizPadding;
 
-  button_size = bf_separator_->GetPreferredSize();
-  bf_separator_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
+    button_size = bf_separator_->GetPreferredSize();
+    bf_separator_->SetBounds(curx, 0, button_size.width(), height());
+    curx += button_size.width() + kHorizPadding;
 
-  button_size = forward_button_->GetPreferredSize();
-  button_size.set_width(button_size.width() + kInnerPadding * 2);
-  forward_button_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
-
-  // URL bar.
-  location_entry_view_->SetBounds(curx + kURLPadding, 0,
-                                  kURLWidth + kURLPadding * 2, height());
-  curx += kURLWidth + kHorizPadding + kURLPadding * 2;
+    button_size = forward_button_->GetPreferredSize();
+    button_size.set_width(button_size.width() + kInnerPadding * 2);
+    forward_button_->SetBounds(curx, 0, button_size.width(), height());
+    curx += button_size.width() + kHorizPadding;
+  }
 }
 
 void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
@@ -180,7 +190,20 @@ void CompactNavigationBar::OnChanged() {
 void CompactNavigationBar::OnInputInProgress(bool in_progress) {
 }
 
+void CompactNavigationBar::OnKillFocus() {
+  back_button_->SetVisible(true);
+  bf_separator_->SetVisible(true);
+  forward_button_->SetVisible(true);
+  Layout();
+  SchedulePaint();
+}
+
 void CompactNavigationBar::OnSetFocus() {
+  back_button_->SetVisible(false);
+  bf_separator_->SetVisible(false);
+  forward_button_->SetVisible(false);
+  Layout();
+  SchedulePaint();
 }
 
 SkBitmap CompactNavigationBar::GetFavIcon() const {

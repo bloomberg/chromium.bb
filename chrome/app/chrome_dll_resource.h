@@ -82,6 +82,7 @@
 #define IDC_EXIT                        34031
 #define IDC_MOVE_TAB_NEXT               34032
 #define IDC_MOVE_TAB_PREVIOUS           34033
+#define IDC_COMPACT_NAVBAR              34034
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

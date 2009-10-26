@@ -265,6 +265,9 @@ void LocationBarViewMac::OnInputInProgress(bool in_progress) {
   Update(NULL, false);
 }
 
+void LocationBarViewMac::OnKillFocus() {
+}
+
 void LocationBarViewMac::OnSetFocus() {
 }
 

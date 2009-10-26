@@ -568,12 +568,8 @@ gfx::Rect BrowserView::GetTabStripBounds() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
-#if defined(OS_CHROMEOS)
-  if (browser_->type() & Browser::TYPE_POPUP) {
-    // Don't show toolbar if the window is a popup.
+  if (browser_extender_->ShouldForceHideToolbar())
     return false;
-  }
-#endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
@@ -1198,6 +1194,13 @@ int BrowserView::GetCommandId(const NativeWebKeyboardEvent& event) {
 
   return iter->second;
 }
+
+#if defined(TOOLKIT_VIEWS)
+void BrowserView::ToggleCompactNavigationBar() {
+  browser_extender_->ToggleCompactNavigationBar();
+  Layout();
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:

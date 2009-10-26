@@ -443,6 +443,9 @@ void LocationBarView::OnChanged() {
   DoLayout(false);
 }
 
+void LocationBarView::OnKillFocus() {
+}
+
 void LocationBarView::OnSetFocus() {
   views::FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {

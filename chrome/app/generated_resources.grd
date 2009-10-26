@@ -5765,8 +5765,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
         Battery is charged
       </message>
+      <message name="IDS_COMPACT_NAVBAR" desc="The menu item on the app menu to toggle compact navigation bar">
+        Toggle Compact Navigation Bar
+      </message>
     </if>
-
     </messages>
   </release>
 </grit>

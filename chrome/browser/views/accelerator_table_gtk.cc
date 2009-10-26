@@ -11,6 +11,8 @@
 namespace browser {
 
 const AcceleratorMapping kAcceleratorMap[] = {
+  // Format { keycode, shift_pressed, ctrl_pressed, alt_pressed, command_id }
+
   // Focus.
   { base::VKEY_K, false, true, false, IDC_FOCUS_SEARCH },
   { base::VKEY_E, false, true, false, IDC_FOCUS_SEARCH },
@@ -114,6 +116,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_MANAGER },
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
   { base::VKEY_Q, true, true, false, IDC_EXIT },
+  { base::VKEY_0, true, true, false, IDC_COMPACT_NAVBAR},
 };
 
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);

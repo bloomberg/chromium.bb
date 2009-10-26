@@ -50,9 +50,12 @@ class OptionsMenuModel : public views::SimpleMenuModel,
                             views::SimpleMenuModel::Delegate* delegate)
       : SimpleMenuModel(this),
         browser_(browser) {
+#if defined(TOOLKIT_VIEWS)
+    AddItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
+#else
     AddItem(static_cast<int>(CREATE_NEW_WINDOW),
             ASCIIToUTF16("New window"));
-
+#endif
     AddSeparator();
 
     AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
@@ -79,11 +82,12 @@ class OptionsMenuModel : public views::SimpleMenuModel,
   }
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
-      case CREATE_NEW_WINDOW:
 #if defined(TOOLKIT_VIEWS)
-        // TODO(oshima): Implement accelerator to enable/disable
-        // compact nav bar.
+      case IDC_COMPACT_NAVBAR:
+        browser_->ExecuteCommand(command_id);
+        break;
 #else
+      case CREATE_NEW_WINDOW:
         // Reach into the GTK browser window and enable the flag to create the
         // next window as a compact nav one.
         // TODO(brettw) this is an evil hack, and is here so this can be tested.
@@ -91,8 +95,8 @@ class OptionsMenuModel : public views::SimpleMenuModel,
         static_cast<BrowserWindowGtk*>(browser_->window())->
             set_next_window_should_use_compact_nav();
         browser_->ExecuteCommand(IDC_NEW_WINDOW);
-#endif
         break;
+#endif
       case StatusAreaView::OPEN_TABS_ON_LEFT:
       case StatusAreaView::OPEN_TABS_CLOBBER:
       case StatusAreaView::OPEN_TABS_ON_RIGHT:

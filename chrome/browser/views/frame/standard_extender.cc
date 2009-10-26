@@ -18,11 +18,14 @@ class StandardExtender : public BrowserExtender {
  private:
   // BrowserExtender overrides.
   virtual void Init() {}
+  virtual gfx::Rect Layout(const gfx::Rect& bounds) { return bounds; }
   virtual bool NonClientHitTest(const gfx::Point& point) { return false; }
   virtual void Show() {}
   virtual void Close() {}
   virtual void UpdateTitleBar() {}
   virtual void ActivationChanged() {}
+  virtual bool ShouldForceHideToolbar() { return false; }
+  virtual void ToggleCompactNavigationBar() {}
 
   DISALLOW_COPY_AND_ASSIGN(StandardExtender);
 };
