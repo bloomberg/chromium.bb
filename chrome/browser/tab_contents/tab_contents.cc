@@ -1084,6 +1084,9 @@ void TabContents::StartFinding(string16 find_text,
     find_text = *last_search_prepopulate_text_;
   }
 
+  // Keep track of the previous search.
+  previous_find_text_ = find_text_;
+
   // This is a FindNext operation if we are searching for the same text again,
   // or if the passed in search text is empty (FindNext keyboard shortcut). The
   // exception to this is if the Find was aborted (then we don't want FindNext
@@ -1117,6 +1120,7 @@ void TabContents::StopFinding(bool clear_selection) {
   // by the user, but the UI has not been dismissed.
   if (!clear_selection)
     find_ui_active_ = false;
+  find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
   render_view_host()->StopFinding(clear_selection);

@@ -121,7 +121,10 @@ void FindBarController::Observe(NotificationType type,
       UpdateFindBarForCurrentResult();
       if (tab_contents_->find_result().final_update() &&
           tab_contents_->find_result().number_of_matches() == 0) {
-        find_bar_->AudibleAlert();
+        const string16& last_search = tab_contents_->previous_find_text();
+        const string16& current_search = tab_contents_->find_text();
+        if (last_search.find(current_search) != 0)
+          find_bar_->AudibleAlert();
       }
     }
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {

@@ -530,6 +530,9 @@ class TabContents : public PageNavigator,
   // active searches.
   string16 find_text() const { return find_text_; }
 
+  // Accessor for the previous search we issued.
+  string16 previous_find_text() const { return previous_find_text_; }
+
   // Accessor for last_search_prepopulate_text_. Used to access the last search
   // string entered, whatever tab that search was performed in.
   string16 find_prepopulate_text() const {
@@ -1105,9 +1108,13 @@ class TabContents : public PageNavigator,
   // This variable keeps track of what the most recent request id is.
   int current_find_request_id_;
 
-  // The last string we searched for. This is used to figure out if this is a
-  // Find or a FindNext operation (FindNext should not increase the request id).
+  // The current string we are/just finished searching for. This is used to
+  // figure out if this is a Find or a FindNext operation (FindNext should not
+  // increase the request id).
   string16 find_text_;
+
+  // The string we searched for before |find_text_|.
+  string16 previous_find_text_;
 
   // Whether the last search was case sensitive or not.
   bool last_search_case_sensitive_;
