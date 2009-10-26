@@ -97,9 +97,7 @@ set -x
 # If it crashes on you in the Options menu, you hit bug 19751,
 # comment out the G_DEBUG=fatal_warnings line.
 #
-# --smc-check=all: handle v8's dynamic code generation.
-# (though we can probably remove that now that v8 is annotated).
-# --trace-children to follow into the renderer processes.
+# GTEST_DEATH_TEST_USE_FORK=1: make gtest death tests valgrind-friendly
 #
 # When everyone has the latest valgrind, we might want to add
 #  --show-possible=no
@@ -108,10 +106,10 @@ set -x
 G_SLICE=always-malloc \
 NSS_DISABLE_ARENA_FREE_LIST=1 \
 G_DEBUG=fatal_warnings \
+GTEST_DEATH_TEST_USE_FORK=1 \
 valgrind \
   --tool=$TOOL_NAME \
   --trace-children=yes \
   --suppressions="$SUPPRESSIONS" \
-  --smc-check=all \
   "${DEFAULT_TOOL_FLAGS[@]}" \
   "$@"

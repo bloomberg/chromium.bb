@@ -257,6 +257,8 @@ class ValgrindTool(object):
     logging.info("export G_SLICE=always-malloc");
     os.putenv("NSS_DISABLE_ARENA_FREE_LIST", "1")
     logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1");
+    os.putenv("GTEST_DEATH_TEST_USE_FORK", "1")
+    logging.info("export GTEST_DEATH_TEST_USE_FORK=1");
 
     common.RunSubprocess(proc, self._timeout)
 
