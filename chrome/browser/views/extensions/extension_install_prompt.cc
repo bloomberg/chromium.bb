@@ -19,6 +19,10 @@
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#endif
+
 class Profile;
 
 namespace {
@@ -134,7 +138,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(InstallDialogContent);
 };
 
-} // namespace
+}  // namespace
 
 void ExtensionInstallUI::ShowExtensionInstallPrompt(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
@@ -154,4 +158,15 @@ void ExtensionInstallUI::ShowExtensionInstallPrompt(
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent(delegate, extension, icon,
                                warning_text))->Show();
+}
+
+void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {
+#if defined(OS_WIN)
+  win_util::MessageBox(NULL, UTF8ToWide(error),
+      l10n_util::GetString(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
+      MB_OK | MB_SETFOREGROUND);
+#else
+  // TODO(port): Port this over to OS_*
+  NOTREACHED();
+#endif
 }

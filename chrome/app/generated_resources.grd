@@ -2639,19 +2639,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PACK_DIALOG_FAILURE_TITLE" desc="Message shown on titlebar of window after unsucessful packing of an extension.">
         Extension Packaging Failure
       </message>
-
-      <!-- TODO(aa): Remove these old warning messages when all the platforms are switched to the new ones, above. -->
-      <message name="IDS_EXTENSION_PROMPT_WARNING_1" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
-        Extensions have access to your computer and private data. This means they could forward all your email to your spouse.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_2" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
-        Extensions have access to your computer and private data. They could send tweets or email on your behalf.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_3" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
-        Extensions can access your computer and private data. They could post unflattering pictures to your Wall.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SEVERE" desc="A bolded warning below the humorous warning that reiterates that users should only install extensions they trust">
-        Only install extensions you trust.
+      <message name="IDS_EXTENSION_INSTALL_FAILURE_TITLE" desc="Message shown in titlebar/header of the dialog informing the user that an extension failed to install.">
+        Extension Install Failure
       </message>
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">

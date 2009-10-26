@@ -122,3 +122,12 @@ void ExtensionInstallUI::ShowExtensionInstallPrompt(
   ShowInstallPromptDialog(browser_window->window(), icon, extension, delegate,
       warning_ascii);
 }
+
+void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {
+  GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
+      GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", error.c_str());
+  gtk_window_set_title(GTK_WINDOW(dialog),
+      l10n_util::GetStringUTF8(IDS_EXTENSION_INSTALL_FAILURE_TITLE).c_str());
+  g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+  gtk_widget_show_all(dialog);
+}

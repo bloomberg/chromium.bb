@@ -15,8 +15,10 @@ class Extension;
 class ExtensionsService;
 class MessageLoop;
 class Profile;
+class InfoBarDelegate;
 class SandboxedExtensionUnpacker;
 class SkBitmap;
+class TabContents;
 
 // Displays all the UI around extension installation.
 class ExtensionInstallUI {
@@ -32,12 +34,13 @@ class ExtensionInstallUI {
     virtual void AbortInstall() = 0;
   };
 
-  // NOTE: The implementation of this is platform-specific.
+  // NOTE: The implementations of these functions are platform-specific.
   static void ShowExtensionInstallPrompt(Profile* profile,
                                          Delegate* delegate,
                                          Extension* extension,
                                          SkBitmap* install_icon,
                                          const std::wstring& warning_text);
+  static void ShowExtensionInstallError(const std::string& error);
 
   ExtensionInstallUI(Profile* profile);
 
@@ -60,7 +63,14 @@ class ExtensionInstallUI {
   void OnOverinstallAttempted(Extension* extension);
 
  private:
+  // When a Theme is downloaded it is applied and an info bar is shown to give
+  // the user a choice to keep it or undo the installation.
   void ShowThemeInfoBar(Extension* new_theme);
+
+  // Returns the delegate to control the browser's info bar. This is within its
+  // own function due to its platform-specific nature.
+  InfoBarDelegate* GetNewInfoBarDelegate(Extension* new_theme,
+                                         TabContents* tab_contents);
 
   Profile* profile_;
   MessageLoop* ui_loop_;
