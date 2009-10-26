@@ -80,20 +80,21 @@ def _CreateVersion(name):
     return None
 
 
-def _DetectHighestVisualStudioVersion():
-  """Detects the highest visual studio version installed.
+def _DetectVisualStudioVersions():
+  """Collect a list of installed visual studio version.
 
   Returns:
-    The visual studio version year number of the highest installed installed
-    version, based on the registry and a quick check if devenv.exe exists.
+    A list of visual studio versions installed in descending order of
+    usage preference.
+    Base this on the registry and a quick check if devenv.exe exists.
     Only versions 8-9 are considered.
     Possibilities are:
-      None - No version detected
       2005 - Visual Studio 2005 (8)
       2008 - Visual Studio 2008 (9)
   """
   version_to_year = { '8.0': '2005', '9.0': '2008' }
-  for version in ['9.0', '8.0']:
+  versions = []
+  for version in ['8.0', '9.0']:
     # Get the install dir for this version.
     key = r'HKLM\Software\Microsoft\VisualStudio\%s' % version
     path = _RegistryGetValue(key, 'InstallDir')
@@ -102,9 +103,9 @@ def _DetectHighestVisualStudioVersion():
     # Check if there's anything actually there.
     if not os.path.exists(os.path.join(path, 'devenv.exe')):
       continue
-    # Pick this one.
-    return _CreateVersion(version_to_year[version])
-  return None
+    # Add this one.
+    versions.append(_CreateVersion(version_to_year[version]))
+  return versions
 
 
 def SelectVisualStudioVersion(version='auto'):
@@ -117,13 +118,13 @@ def SelectVisualStudioVersion(version='auto'):
   """
   # In auto mode, check environment variable for override.
   if version == 'auto':
-    version = os.environ.get('GYP_MSVS_VERSION', '2005')
-  # In auto mode, detect highest version present.
+    version = os.environ.get('GYP_MSVS_VERSION', 'auto')
+  # In auto mode, pick the most preferred version present.
   if version == 'auto':
-    version = _DetectHighestVisualStudioVersion()
-    if not version:
+    versions = _DetectVisualStudioVersions()
+    if not versions:
       # Default to 2005.
-      version = _CreateVersion('2005')
-    return version
+      return _CreateVersion('2005')
+    return versions[0]
   # Convert version string into a version object.
   return _CreateVersion(version)
