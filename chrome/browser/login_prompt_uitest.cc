@@ -106,7 +106,8 @@ TEST_F(LoginPromptTest, TestDigestAuth) {
 }
 
 // Test that logging in on 2 tabs at once works.
-TEST_F(LoginPromptTest, TestTwoAuths) {
+// Flaky, http://crbug.com/25794.
+TEST_F(LoginPromptTest, FLAKY_TestTwoAuths) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
