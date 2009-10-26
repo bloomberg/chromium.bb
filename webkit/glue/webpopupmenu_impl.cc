@@ -48,9 +48,7 @@ using WebKit::WebWidgetClient;
 
 // static
 WebPopupMenu* WebPopupMenu::create(WebWidgetClient* client) {
-  WebPopupMenuImpl* instance = new WebPopupMenuImpl(client);
-  instance->AddRef();
-  return instance;
+  return new WebPopupMenuImpl(client);
 }
 
 // WebWidget ------------------------------------------------------------------
@@ -116,7 +114,7 @@ void WebPopupMenuImpl::close() {
 
   client_ = NULL;
 
-  Release();  // Balances AddRef from WebWidget::Create
+  deref();  // Balances ref() from WebWidget::Create
 }
 
 void WebPopupMenuImpl::resize(const WebSize& new_size) {

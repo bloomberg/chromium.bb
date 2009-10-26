@@ -71,7 +71,6 @@
 
 #include "HTMLFormElement.h"  // need this before Document.h
 #include "Chrome.h"
-#include "ChromeClientChromium.h"
 #include "ChromiumBridge.h"
 #include "ClipboardUtilitiesChromium.h"
 #include "Console.h"
@@ -143,7 +142,6 @@
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/PasswordAutocompleteListener.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
-#include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
@@ -153,7 +151,6 @@
 #endif
 
 using WebCore::AtomicString;
-using WebCore::ChromeClientChromium;
 using WebCore::ChromiumBridge;
 using WebCore::Color;
 using WebCore::Document;
@@ -358,7 +355,8 @@ class WebFrameImpl::DeferredScopeStringMatches {
                              const WebString& search_text,
                              const WebFindOptions& options,
                              bool reset)
-      : timer_(this, &DeferredScopeStringMatches::DoTimeout),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
+            timer_(this, &DeferredScopeStringMatches::DoTimeout)),
         webframe_(webframe),
         identifier_(identifier),
         search_text_(search_text),
@@ -1657,16 +1655,10 @@ WebFrameImpl* WebFrameImpl::FromFrame(WebCore::Frame* frame) {
 }
 
 WebViewImpl* WebFrameImpl::GetWebViewImpl() const {
-  if (!frame_ || !frame_->page())
+  if (!frame_)
     return NULL;
 
-  // There are cases where a Frame may outlive its associated Page.  Get the
-  // WebViewImpl by accessing it indirectly through the Frame's Page so that we
-  // don't have to worry about cleaning up the WebFrameImpl -> WebViewImpl
-  // pointer. WebCore already clears the Frame's Page pointer when the Page is
-  // destroyed by the WebViewImpl.
-  return static_cast<ChromeClientImpl*>(
-      frame_->page()->chrome()->client())->webview();
+  return WebViewImpl::FromPage(frame_->page());
 }
 
 WebDataSourceImpl* WebFrameImpl::GetDataSourceImpl() const {

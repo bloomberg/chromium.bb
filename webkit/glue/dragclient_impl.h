@@ -5,13 +5,8 @@
 #ifndef WEBKIT_GLUE_DRAGCLIENT_IMPL_H__
 #define WEBKIT_GLUE_DRAGCLIENT_IMPL_H__
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "DragClient.h"
 #include "DragActions.h"
-MSVC_POP_WARNING();
 
 namespace WebCore {
 class ClipBoard;
@@ -23,7 +18,7 @@ class KURL;
 class WebViewImpl;
 
 class DragClientImpl : public WebCore::DragClient {
-public:
+ public:
   DragClientImpl(WebViewImpl* webview) : webview_(webview) {}
   virtual ~DragClientImpl() {}
 
@@ -47,8 +42,7 @@ public:
 
   virtual void dragControllerDestroyed();
 
-private:
-  DISALLOW_EVIL_CONSTRUCTORS(DragClientImpl);
+ private:
   WebViewImpl* webview_;
 };
 

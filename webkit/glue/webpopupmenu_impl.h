@@ -5,13 +5,12 @@
 #ifndef WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_
 #define WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_
 
-#include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebSize.h"
 
 #include "FramelessScrollViewClient.h"
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 class Frame;
@@ -34,7 +33,7 @@ struct MenuItem;
 
 class WebPopupMenuImpl : public WebKit::WebPopupMenu,
                          public WebCore::FramelessScrollViewClient,
-                         public base::RefCounted<WebPopupMenuImpl> {
+                         public RefCounted<WebPopupMenuImpl> {
  public:
   // WebWidget
   virtual void close();
@@ -73,7 +72,7 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
 
  protected:
   friend class WebKit::WebPopupMenu;  // For WebPopupMenu::create
-  friend class base::RefCounted<WebPopupMenuImpl>;
+  friend class WTF::RefCounted<WebPopupMenuImpl>;
 
   WebPopupMenuImpl(WebKit::WebWidgetClient* client);
   ~WebPopupMenuImpl();
@@ -104,9 +103,6 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
   // This is a non-owning ref.  The popup will notify us via popupClosed()
   // before it is destroyed.
   WebCore::FramelessScrollView* widget_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebPopupMenuImpl);
 };
 
 #endif  // WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_

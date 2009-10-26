@@ -68,7 +68,6 @@
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -942,7 +941,10 @@ Frame* WebViewImpl::GetFocusedWebCoreFrame() {
 
 // static
 WebViewImpl* WebViewImpl::FromPage(WebCore::Page* page) {
-  return WebFrameImpl::FromFrame(page->mainFrame())->GetWebViewImpl();
+  if (!page)
+    return NULL;
+
+  return static_cast<ChromeClientImpl*>(page->chrome()->client())->webview();
 }
 
 // WebWidget ------------------------------------------------------------------
