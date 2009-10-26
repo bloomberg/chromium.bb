@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="34"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -67,10 +67,10 @@
 										<int key="NSCellFlags">70385217</int>
 										<int key="NSCellFlags2">4326400</int>
 										<string key="NSContents">version</string>
-										<object class="NSFont" key="NSSupport" id="26">
-											<string key="NSName">LucidaGrande</string>
+										<object class="NSFont" key="NSSupport">
+											<string key="NSName">LucidaGrande-Bold</string>
 											<double key="NSSize">11</double>
-											<int key="NSfFlags">3100</int>
+											<int key="NSfFlags">16</int>
 										</object>
 										<reference key="NSControlView" ref="171870711"/>
 										<object class="NSColor" key="NSBackgroundColor" id="782671173">
@@ -96,7 +96,7 @@
 								<object class="NSTextField" id="308038257">
 									<reference key="NSNextResponder" ref="4268204"/>
 									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{17, 96}, {230, 29}}</string>
+									<string key="NSFrame">{{17, 96}, {279, 29}}</string>
 									<reference key="NSSuperview" ref="4268204"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="625581420">
@@ -104,7 +104,7 @@
 										<int key="NSCellFlags2">4195328</int>
 										<string key="NSContents">^IDS_PRODUCT_NAME</string>
 										<object class="NSFont" key="NSSupport">
-											<string key="NSName">LucidaGrande</string>
+											<string key="NSName">LucidaGrande-Bold</string>
 											<double key="NSSize">24</double>
 											<int key="NSfFlags">16</int>
 										</object>
@@ -134,7 +134,11 @@
 									<object class="NSImageCell" key="NSCell" id="357051704">
 										<int key="NSCellFlags">67239424</int>
 										<int key="NSCellFlags2">33685504</int>
-										<reference key="NSSupport" ref="26"/>
+										<object class="NSFont" key="NSSupport" id="26">
+											<string key="NSName">LucidaGrande</string>
+											<double key="NSSize">11</double>
+											<int key="NSfFlags">3100</int>
+										</object>
 										<int key="NSAlign">0</int>
 										<int key="NSScale">2</int>
 										<int key="NSStyle">0</int>
@@ -757,9 +761,9 @@
 						<reference key="object" ref="4268204"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="308038257"/>
 							<reference ref="623665386"/>
 							<reference ref="171870711"/>
+							<reference ref="308038257"/>
 						</object>
 						<reference key="parent" ref="498033215"/>
 					</object>
