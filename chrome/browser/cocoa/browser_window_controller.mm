@@ -549,11 +549,11 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 // Called to validate menu and toolbar items when this window is key. All the
-// items we care about have been set with the |commandDispatch:| action and
-// a target of FirstResponder in IB. If it's not one of those, let it
-// continue up the responder chain to be handled elsewhere. We pull out the
-// tag as the cross-platform constant to differentiate and dispatch the
-// various commands.
+// items we care about have been set with the |-commandDispatch:| or
+// |-commandDispatchUsingKeyModifiers:| actions and a target of FirstResponder
+// in IB. If it's not one of those, let it continue up the responder chain to be
+// handled elsewhere. We pull out the tag as the cross-platform constant to
+// differentiate and dispatch the various commands.
 // NOTE: we might have to handle state for app-wide menu items,
 // although we could cheat and directly ask the app controller if our
 // command_updater doesn't support the command. This may or may not be an issue,
@@ -561,7 +561,8 @@ willPositionSheet:(NSWindow*)sheet
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
   BOOL enable = NO;
-  if (action == @selector(commandDispatch:)) {
+  if (action == @selector(commandDispatch:) ||
+      action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
     if (browser_->command_updater()->SupportsCommand(tag)) {
       // Generate return value (enabled state)
@@ -598,14 +599,6 @@ willPositionSheet:(NSWindow*)sheet
 - (void)commandDispatch:(id)sender {
   NSInteger tag = [sender tag];
   switch (tag) {
-    case IDC_FORWARD:
-    case IDC_BACK:
-      // For this, we need to check the key flags to figure out where to open
-      // the history item. Note that |Revert()| isn't needed, since any
-      // navigation in the current tab will reset the location bar's contents.
-      browser_->ExecuteCommandWithDisposition(tag,
-          event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
-      return;
     case IDC_RELOAD:
       if ([sender isKindOfClass:[NSButton class]]) {
         // We revert the bar when the reload button is pressed, but don't when
@@ -618,6 +611,14 @@ willPositionSheet:(NSWindow*)sheet
       break;
   }
   browser_->ExecuteCommand(tag);
+}
+
+// Same as |-commandDispatch:|, but executes commands using a disposition
+// determined by the key flags.
+- (void)commandDispatchUsingKeyModifiers:(id)sender {
+  NSInteger tag = [sender tag];
+  browser_->ExecuteCommandWithDisposition(tag,
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
 }
 
 // Called when another part of the internal codebase needs to execute a
