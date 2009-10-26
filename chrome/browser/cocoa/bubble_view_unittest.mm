@@ -2,48 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bubble_view.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
-class BubbleViewTest : public PlatformTest {
+class BubbleViewTest : public CocoaTest {
  public:
   BubbleViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 50);
-    view_.reset([[BubbleView alloc] initWithFrame:frame
-                                    themeProvider:cocoa_helper_.window()]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<BubbleView> view(
+        [[BubbleView alloc] initWithFrame:frame themeProvider:test_window()]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
     [view_ setContent:@"Hi there, I'm a bubble view"];
   }
 
-  CocoaTestHelper cocoa_helper_;
-  scoped_nsobject<BubbleView> view_;
+  BubbleView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(BubbleViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(BubbleViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(BubbleViewTest, view_);
 
 // Test a nil themeProvider in init.
 TEST_F(BubbleViewTest, NilThemeProvider) {
   NSRect frame = NSMakeRect(0, 0, 50, 50);
-  view_.reset([[BubbleView alloc] initWithFrame:frame
-                                  themeProvider:nil]);
-  [cocoa_helper_.contentView() addSubview:view_.get()];
-  [view_ display];
+  scoped_nsobject<BubbleView> view(
+      [[BubbleView alloc] initWithFrame:frame themeProvider:nil]);
+  [[test_window() contentView] addSubview:view.get()];
+  [view display];
 }
 
 // Make sure things don't go haywire when given invalid or long strings.

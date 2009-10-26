@@ -105,15 +105,15 @@ class CocoaTest : public PlatformTest {
 // displaying the view to make sure it won't crash, as well as removing it
 // from a window. All tests that work with NSView subclasses and/or
 // NSViewController subclasses should use it.
-#define TEST_VIEW(test_fixture, view_member_name) \
+#define TEST_VIEW(test_fixture, test_view) \
   TEST_F(test_fixture, AddRemove##test_fixture) { \
-    scoped_nsobject<NSView> view([view_member_name retain]); \
-    EXPECT_EQ([test_window() contentView], [view_member_name superview]); \
-    [view_member_name removeFromSuperview]; \
-    EXPECT_FALSE([view_member_name superview]); \
+    scoped_nsobject<NSView> view([test_view retain]); \
+    EXPECT_EQ([test_window() contentView], [view superview]); \
+    [view removeFromSuperview]; \
+    EXPECT_FALSE([view superview]); \
   } \
   TEST_F(test_fixture, Display##test_fixture) { \
-    [view_member_name display]; \
+    [test_view display]; \
   }
 
 // The classes below are deprecated and will be removed shortly. Do not write

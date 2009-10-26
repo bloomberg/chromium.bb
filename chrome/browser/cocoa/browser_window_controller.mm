@@ -61,10 +61,6 @@ const int kWindowGradientHeight = 24;
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
 
-- (void)setAutorecalculatesContentBorderThickness:(BOOL)b
-                                          forEdge:(NSRectEdge)e;
-- (void)setContentBorderThickness:(CGFloat)b forEdge:(NSRectEdge)e;
-
 - (void)setBottomCornerRounded:(BOOL)rounded;
 
 - (NSRect)_growBoxRect;
@@ -117,18 +113,14 @@ willPositionSheet:(NSWindow*)sheet
     ownsBrowser_ = ownIt;
     tabObserver_.reset(
         new TabStripModelObserverBridge(browser->tabstrip_model(), self));
-    windowShim_.reset(new BrowserWindowCocoa(browser, self, [self window]));
+    NSWindow* window = [self window];
+    windowShim_.reset(new BrowserWindowCocoa(browser, self, window));
 
-    // The window is now fully realized and |-windowDidLoad:| has been
-    // called. We shouldn't do much in wDL because |windowShim_| won't yet
-    // be initialized (as it's called in response to |[self window]| above).
-    // Retain it per the comment in the header.
-    window_.reset([[self window] retain]);
 
     // Sets the window to not have rounded corners, which prevents
     // the resize control from being inset slightly and looking ugly.
-    if ([window_ respondsToSelector:@selector(setBottomCornerRounded:)])
-      [window_ setBottomCornerRounded:NO];
+    if ([window respondsToSelector:@selector(setBottomCornerRounded:)])
+      [window setBottomCornerRounded:NO];
 
     [self setTheme];
 
@@ -223,7 +215,7 @@ willPositionSheet:(NSWindow*)sheet
     [self layoutSubviews];
 
     // Create the bridge for the status bubble.
-    statusBubble_.reset(new StatusBubbleMac([self window], self));
+    statusBubble_ = new StatusBubbleMac([self window], self);
   }
   return self;
 }
@@ -235,10 +227,6 @@ willPositionSheet:(NSWindow*)sheet
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
     browser_.release();
-  // Since |window_| outlives our obj-c shutdown sequence, clear out the
-  // delegate so nothing tries to call us back in the meantime as part of
-  // window destruction.
-  [window_ setDelegate:nil];
 
   [super dealloc];
 }
@@ -252,7 +240,13 @@ willPositionSheet:(NSWindow*)sheet
   [NSApp removeWindowsItem:[self window]];
 
   // We need the window to go away now.
-  [self autorelease];
+  // We can't actually use |-autorelease| here because there's an embedded
+  // run loop in the |-performClose:| which contains its own autorelease pool.
+  // Instead we use call it after a zero-length delay, which gets us back
+  // to the main event loop.
+  [self performSelector:@selector(autorelease)
+             withObject:nil
+             afterDelay:0];
 }
 
 // Called when the window meets the criteria to be closed (ie,
@@ -260,16 +254,14 @@ willPositionSheet:(NSWindow*)sheet
 // semantics of BrowserWindow::Close() and not call the Browser's dtor directly
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
-  // Don't update the window any longer.
-  // TODO(shess,dmaclach): This is a work-around for some cases where
-  // the window's views were living longer than this controller, and
-  // were then being re-displayed.  Better would be to have it live
-  // the appropriate amount of time, at which point we can remove
-  // this.  [And perhaps the funky -autorelease below can be fixed.]
-  [window_ setAutodisplay:NO];
-
+  DCHECK_EQ([notification object], [self window]);
   DCHECK(!browser_->tabstrip_model()->count());
-
+  [savedRegularWindow_ close];
+  [bookmarkBubbleController_ close];
+  // We delete statusBubble here because we need to kill off the dependency
+  // that its window has on our window before our window goes away.
+  delete statusBubble_;
+  statusBubble_ = NULL;
   // We can't actually use |-autorelease| here because there's an embedded
   // run loop in the |-performClose:| which contains its own autorelease pool.
   // Instead we call it after a zero-length delay, which gets us back
@@ -351,8 +343,7 @@ willPositionSheet:(NSWindow*)sheet
   // message, since it just means that a menu extra (on the "system status bar")
   // was activated; we'll get another |-windowDidResignKey| if we ever really
   // lose key window status.
-  if ([NSApp isActive] &&
-      ([NSApp keyWindow] == static_cast<NSWindow*>(window_)))
+  if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
     return;
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
@@ -423,6 +414,10 @@ willPositionSheet:(NSWindow*)sheet
   frame.size.width = zoomedWidth;
 
   return frame;
+}
+
+- (void)activate {
+  [[self window] makeKeyAndOrderFront:self];
 }
 
 // Determine whether we should let a window zoom/unzoom to the given |newFrame|.
@@ -643,7 +638,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (StatusBubbleMac*)statusBubble {
-  return statusBubble_.get();
+  return statusBubble_;
 }
 
 - (void)updateToolbarWithContents:(TabContents*)tab
@@ -660,13 +655,14 @@ willPositionSheet:(NSWindow*)sheet
 // in the coordinate system of the content area of the currently selected tab.
 // |windowGrowBox| needs to be in the window's coordinate system.
 - (NSRect)selectedTabGrowBoxRect {
-  if (![window_ respondsToSelector:@selector(_growBoxRect)])
+  NSWindow* window = [self window];
+  if (![window respondsToSelector:@selector(_growBoxRect)])
     return NSZeroRect;
 
   // Before we return a rect, we need to convert it from window coordinates
   // to tab content area coordinates and flip the coordinate system.
   NSRect growBoxRect =
-      [[self tabContentArea] convertRect:[window_ _growBoxRect] fromView:nil];
+      [[self tabContentArea] convertRect:[window _growBoxRect] fromView:nil];
   growBoxRect.origin.y =
       [[self tabContentArea] frame].size.height - growBoxRect.size.height -
       growBoxRect.origin.y;
@@ -767,17 +763,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)setIsLoading:(BOOL)isLoading {
   [toolbarController_ setIsLoading:isLoading];
-}
-
-- (void)activate {
-  // TODO(rohitrao): Figure out the proper activation behavior for fullscreen
-  // windows.  When there is only one window open, this code makes sense, but
-  // what should we do if we need to activate a non-fullscreen background window
-  // while a fullscreen window has focus?  http://crbug.com/24893
-  if (fullscreen_)
-    [fullscreen_window_ makeKeyAndOrderFront:self];
-  else
-    [window_ makeKeyAndOrderFront:self];
 }
 
 // Make the location bar the first responder, if possible.
@@ -934,64 +919,48 @@ willPositionSheet:(NSWindow*)sheet
   if (![self supportsFullscreen])
       return;
 
-  fullscreen_ = fullscreen;
+  NSWindow* window = [self window];
+
+  // Retain the contentView while we remove it from its superview.
+  scoped_nsobject<NSView> content([[window contentView] retain]);
+
+  // Disable autoresizing of subviews while we move views around.  This
+  // prevents spurious renderer resizes.
+  [content setAutoresizesSubviews:NO];
+  [content removeFromSuperview];
+
+  NSWindow* dstWindow = nil;
   if (fullscreen) {
-    // Move content to a new fullscreen window
-    NSView* content = [[self window] contentView];
-    // Disable autoresizing of subviews while we move views around.  This
-    // prevents spurious renderer resizes.
-    [content setAutoresizesSubviews:NO];
-    fullscreen_window_.reset([[self fullscreenWindow] retain]);
-    [content removeFromSuperview];
-    [fullscreen_window_ setContentView:content];
-    [self setWindow:fullscreen_window_.get()];
-    [window_ setWindowController:nil];
-    [window_ setDelegate:nil];
-    // Required for proper event dispatch.
-    [fullscreen_window_ setWindowController:self];
-    [fullscreen_window_ setDelegate:self];
-
-    // Minimize our UI.  This call triggers a relayout, so it needs to come
-    // after we move the contentview to the new window.
-    [self adjustUIForFullscreen:fullscreen];
-    // Show one window, hide the other.
-    [fullscreen_window_ makeKeyAndOrderFront:self];
-    [content setAutoresizesSubviews:YES];
-    [content setNeedsDisplay:YES];
-    [window_ orderOut:self];
+    DCHECK(!savedRegularWindow_);
+    savedRegularWindow_ = [window retain];
+    dstWindow = [self fullscreenWindow];
   } else {
-    NSView* content = [fullscreen_window_ contentView];
-    // Disable autoresizing of subviews while we move views around.  This
-    // prevents spurious renderer resizes.
-    [content setAutoresizesSubviews:NO];
-    [content removeFromSuperview];
-    [window_ setContentView:content];
-    [fullscreen_window_ setDelegate:nil];
-    [fullscreen_window_ setWindowController:nil];
-    [window_ setWindowController:self];
-    [window_ setDelegate:self];
-    [self setWindow:window_.get()];
-    // This call triggers a relayout, so it needs to come after we move the
-    // contentview to the new window.
-    [self adjustUIForFullscreen:fullscreen];
-    [content setAutoresizesSubviews:YES];
-    [content setNeedsDisplay:YES];
-
-    // With this call, valgrind yells at me about "Conditional jump or
-    // move depends on uninitialised value(s)".  The error happens in
-    // -[NSThemeFrame drawOverlayRect:].  I'm pretty convinced this is
-    // an Apple bug, but there is no visual impact.  I have been
-    // unable to tickle it away with other window or view manipulation
-    // Cocoa calls.  Stack added to suppressions_mac.txt.
-    [window_ makeKeyAndOrderFront:self];
-
-    [fullscreen_window_ close];
-    fullscreen_window_.reset(nil);
+    DCHECK(savedRegularWindow_);
+    dstWindow = [savedRegularWindow_ autorelease];
+    savedRegularWindow_ = nil;
   }
+
+  // With this call, valgrind yells at me about "Conditional jump or
+  // move depends on uninitialised value(s)".  The error happens in
+  // -[NSThemeFrame drawOverlayRect:].  I'm pretty convinced this is
+  // an Apple bug, but there is no visual impact.  I have been
+  // unable to tickle it away with other window or view manipulation
+  // Cocoa calls.  Stack added to suppressions_mac.txt.
+  [content setAutoresizesSubviews:YES];
+  [dstWindow setContentView:content];
+  [window setWindowController:nil];
+  [window setDelegate:nil];
+  [self setWindow:dstWindow];
+  [dstWindow setWindowController:self];
+  [dstWindow setDelegate:self];
+  [self adjustUIForFullscreen:fullscreen];
+  [dstWindow makeKeyAndOrderFront:self];
+
+  [window orderOut:self];
 }
 
 - (BOOL)isFullscreen {
-  return fullscreen_;
+  return savedRegularWindow_ != nil;
 }
 
 // Called by the bookmark bar to open a URL.
@@ -1094,23 +1063,35 @@ willPositionSheet:(NSWindow*)sheet
 // Show the bookmark bubble (e.g. user just clicked on the STAR).
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyBookmarked {
-  BookmarkModel* model = browser_->profile()->GetBookmarkModel();
-  const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
-
-  // Bring up the bubble.  But clicking on STAR while the bubble is
-  // open should make it go away.
-  if (bookmarkBubbleController_.get()) {
-    [self doneWithBubbleController:bookmarkBubbleController_.get()];
-  } else {
-    bookmarkBubbleController_.reset([[BookmarkBubbleController alloc]
-                                      initWithDelegate:self
-                                          parentWindow:[self window]
-                                      topLeftForBubble:[self topLeftForBubble]
-                                                 model:model
-                                                  node:node
-                                     alreadyBookmarked:alreadyBookmarked]);
-    [bookmarkBubbleController_ showWindow];
+  if (!bookmarkBubbleController_) {
+    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
+    NSPoint topLeft = [self topLeftForBubble];
+    bookmarkBubbleController_ =
+        [[BookmarkBubbleController alloc] initWithDelegate:self
+                                              parentWindow:[self window]
+                                          topLeftForBubble:topLeft
+                                                     model:model
+                                                      node:node
+                                         alreadyBookmarked:alreadyBookmarked];
+    NSWindow* bookmarkBubbleWindow = [bookmarkBubbleController_ window];
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self
+           selector:@selector(bubbleWindowWillClose:)
+               name:NSWindowWillCloseNotification
+             object:bookmarkBubbleWindow];
+    [bookmarkBubbleController_ showWindow:self];
   }
+}
+
+// Notification sent when our bubble window is closed.
+- (void)bubbleWindowWillClose:(NSNotification*)notification {
+  DCHECK([[notification object] windowController] == bookmarkBubbleController_);
+  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+  [nc removeObserver:self
+                name:NSWindowWillCloseNotification
+              object:[bookmarkBubbleController_ window]];
+  bookmarkBubbleController_ = nil;
 }
 
 // Implement BookmarkBubbleControllerDelegate
@@ -1127,17 +1108,14 @@ willPositionSheet:(NSWindow*)sheet
     runAsModalSheet];
 }
 
-// Implement BookmarkBubbleControllerDelegate
-- (void)doneWithBubbleController:(BookmarkBubbleController*)controller {
-  bookmarkBubbleController_.reset(nil);
-}
 
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   // Resize (and possibly move) the status bubble. Note that we may get called
   // when the status bubble does not exist.
-  if (statusBubble_.get())
+  if (statusBubble_) {
     statusBubble_->UpdateSizeAndPosition();
+  }
 }
 
 @end
@@ -1296,25 +1274,27 @@ willPositionSheet:(NSWindow*)sheet
 // the entire content area.  Otherwise, this method places the topmost view
 // directly beneath the tabstrip.
 - (void)layoutSubviews {
-  NSView* contentView = fullscreen_ ? [fullscreen_window_ contentView]
-                                    : [[self window] contentView];
+  NSWindow* window = [self window];
+  NSView* contentView = [window contentView];
   NSRect contentFrame = [contentView frame];
   int maxY = NSMaxY(contentFrame);
   int minY = NSMinY(contentFrame);
-  if (!fullscreen_ && [self isNormalWindow]) {
+  if (![self isFullscreen] && [self isNormalWindow]) {
     maxY = NSMinY([[self tabStripView] frame]);
   }
   DCHECK_GE(maxY, minY);
 
   // Suppress title drawing for normal windows (popups use normal
   // window title bars).
-  [window_ setShouldHideTitle:[self isNormalWindow]];
+  if ([window respondsToSelector:@selector(setShouldHideTitle:)]) {
+    [(id)window setShouldHideTitle:[self isNormalWindow]];
+  }
 
   // Place the toolbar at the top of the reserved area, but only if we're not in
   // fullscreen mode.
   NSView* toolbarView = [toolbarController_ view];
   NSRect toolbarFrame = [toolbarView frame];
-  if (!fullscreen_) {
+  if (![self isFullscreen]) {
     // The toolbar is present in the window, so we make room for it.
     toolbarFrame.origin.x = 0;
     toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);

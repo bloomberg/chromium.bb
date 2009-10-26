@@ -6,6 +6,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -14,7 +15,6 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.
@@ -57,21 +57,23 @@
 }
 @end
 
-class BrowserWindowControllerTest : public testing::Test {
+class BrowserWindowControllerTest : public CocoaTest {
+ public:
   virtual void SetUp() {
-    controller_.reset([[BrowserWindowController alloc]
-                        initWithBrowser:browser_helper_.browser()
-                          takeOwnership:NO]);
+    CocoaTest::SetUp();
+    Browser* browser = browser_helper_.browser();
+    controller_ = [[BrowserWindowController alloc] initWithBrowser:browser
+                                                     takeOwnership:NO];
+  }
+
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
   }
 
  public:
-  // Order is very important here.  We want the controller deleted
-  // before the pool, and want the pool deleted before
-  // BrowserTestHelper.
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
-  base::ScopedNSAutoreleasePool pool_;
-  scoped_nsobject<BrowserWindowController> controller_;
+  BrowserWindowController* controller_;
 };
 
 TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
@@ -89,68 +91,10 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
   EXPECT_TRUE(prefs->GetDictionary(prefs::kBrowserWindowPlacement) != NULL);
 }
 
-@interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
- @private
-  // We release the window ourselves, so we don't have to rely on the unittest
-  // doing it for us.
-  scoped_nsobject<NSWindow> fullscreenWindow_;
-}
-@end
-@implementation BrowserWindowControllerFakeFullscreen
-// Override fullscreenWindow to return a dummy window.  This isn't needed to
-// pass the test, but because the dummy window is only 100x100, it prevents the
-// real fullscreen window from flashing up and taking over the whole screen..
-// We have to return an actual window because layoutSubviews: looks at the
-// window's frame.
-- (NSWindow*)fullscreenWindow {
-  if (fullscreenWindow_.get())
-    return fullscreenWindow_.get();
-
-  fullscreenWindow_.reset(
-      [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,400,400)
-                                   styleMask:NSBorderlessWindowMask
-                                     backing:NSBackingStoreBuffered
-                                       defer:NO]);
-  [fullscreenWindow_ setReleasedWhenClosed:NO];
-  return fullscreenWindow_.get();
-}
-@end
-
-TEST_F(BrowserWindowControllerTest, TestFullscreen) {
-  // Note use of "controller", not "controller_"
-  scoped_nsobject<BrowserWindowController> controller;
-  controller.reset([[BrowserWindowControllerFakeFullscreen alloc]
-                        initWithBrowser:browser_helper_.browser()
-                          takeOwnership:NO]);
-  EXPECT_FALSE([controller isFullscreen]);
-  [controller setFullscreen:YES];
-  EXPECT_TRUE([controller isFullscreen]);
-  [controller setFullscreen:NO];
-  EXPECT_FALSE([controller isFullscreen]);
-
-  // Confirm the real fullscreen command doesn't return nil
+TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
+  // Confirm the fullscreen command doesn't return nil.
+  // See BrowserWindowFullScreenControllerTest for more fullscreen tests.
   EXPECT_TRUE([controller_ fullscreenWindow]);
-}
-
-TEST_F(BrowserWindowControllerTest, TestActivate) {
-  // Note use of "controller", not "controller_"
-  scoped_nsobject<BrowserWindowController> controller;
-  controller.reset([[BrowserWindowControllerFakeFullscreen alloc]
-                        initWithBrowser:browser_helper_.browser()
-                          takeOwnership:NO]);
-  EXPECT_FALSE([controller isFullscreen]);
-
-  [controller activate];
-  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  EXPECT_EQ(frontmostWindow, [controller window]);
-
-  [controller setFullscreen:YES];
-  [controller activate];
-  frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  EXPECT_EQ(frontmostWindow, [controller fullscreenWindow]);
-
-  // We have to cleanup after ourselves by unfullscreening.
-  [controller setFullscreen:NO];
 }
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
@@ -163,18 +107,15 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 
   // And make sure a controller for a pop-up window is not normal.
-  scoped_ptr<Browser> popup_browser(Browser::CreateForPopup(
-                                      browser_helper_.profile()));
-  controller_.reset([[BrowserWindowController alloc]
-                              initWithBrowser:popup_browser.get()
-                                takeOwnership:NO]);
-  EXPECT_FALSE([controller_ isNormalWindow]);
-  EXPECT_FALSE([controller_ isBookmarkBarVisible]);
-
-  // The created BrowserWindowController gets autoreleased, so make
-  // sure we don't also release it.
-  // (Confirmed with valgrind).
-  controller_.release();
+  // popup_browser will be owned by its window.
+  Browser *popup_browser(Browser::CreateForPopup(browser_helper_.profile()));
+  NSWindow *cocoaWindow = popup_browser->window()->GetNativeHandle();
+  BrowserWindowController* controller =
+      static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+  ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
+  EXPECT_FALSE([controller isNormalWindow]);
+  EXPECT_FALSE([controller isBookmarkBarVisible]);
+  [controller close];
 }
 
 @interface GTMTheme (BrowserThemeProviderInitialization)
@@ -470,23 +411,93 @@ TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
 
 TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
   FindBarBridge bridge;
-  [controller_.get() addFindBar:bridge.find_bar_cocoa_controller()];
+  [controller_ addFindBar:bridge.find_bar_cocoa_controller()];
 
   // Test that the Z-order of the find bar is on top of everything.
-  NSArray* subviews = [[[controller_.get() window] contentView] subviews];
+  NSArray* subviews = [[[controller_ window] contentView] subviews];
   NSUInteger findBar_index =
-      [subviews indexOfObject:[controller_.get() findBarView]];
+      [subviews indexOfObject:[controller_ findBarView]];
   EXPECT_NE(NSNotFound, findBar_index);
   NSUInteger toolbar_index =
-      [subviews indexOfObject:[controller_.get() toolbarView]];
+      [subviews indexOfObject:[controller_ toolbarView]];
   EXPECT_NE(NSNotFound, toolbar_index);
   NSUInteger bookmark_index =
-      [subviews indexOfObject:[controller_.get() bookmarkView]];
+      [subviews indexOfObject:[controller_ bookmarkView]];
   EXPECT_NE(NSNotFound, bookmark_index);
 
   EXPECT_GT(findBar_index, toolbar_index);
   EXPECT_GT(findBar_index, bookmark_index);
 }
 
+@interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
+ @private
+  // We release the window ourselves, so we don't have to rely on the unittest
+  // doing it for us.
+  scoped_nsobject<NSWindow> fullscreenWindow_;
+}
+@end
+
+class BrowserWindowFullScreenControllerTest : public CocoaTest {
+ public:
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    Browser* browser = browser_helper_.browser();
+    controller_ =
+        [[BrowserWindowControllerFakeFullscreen alloc] initWithBrowser:browser
+                                                         takeOwnership:NO];
+  }
+
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
+  }
+
+ public:
+  BrowserTestHelper browser_helper_;
+  BrowserWindowController* controller_;
+};
+
+TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+  EXPECT_FALSE([controller_ isFullscreen]);
+  [controller_ setFullscreen:YES];
+  EXPECT_TRUE([controller_ isFullscreen]);
+  [controller_ setFullscreen:NO];
+  EXPECT_FALSE([controller_ isFullscreen]);
+}
+
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+  EXPECT_FALSE([controller_ isFullscreen]);
+
+  [controller_ activate];
+  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_EQ(frontmostWindow, [controller_ window]);
+
+  [controller_ setFullscreen:YES];
+  [controller_ activate];
+  frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  EXPECT_EQ(frontmostWindow, [controller_ fullscreenWindow]);
+
+  // We have to cleanup after ourselves by unfullscreening.
+  [controller_ setFullscreen:NO];
+}
+
+@implementation BrowserWindowControllerFakeFullscreen
+// Override fullscreenWindow to return a dummy window.  This isn't needed to
+// pass the test, but because the dummy window is only 100x100, it prevents the
+// real fullscreen window from flashing up and taking over the whole screen..
+// We have to return an actual window because layoutSubviews: looks at the
+// window's frame.
+- (NSWindow*)fullscreenWindow {
+  if (fullscreenWindow_.get())
+    return fullscreenWindow_.get();
+
+  fullscreenWindow_.reset(
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,400,400)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
+  return fullscreenWindow_.get();
+}
+@end
 
 /* TODO(???): test other methods of BrowserWindowController */

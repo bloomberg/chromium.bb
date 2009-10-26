@@ -5,24 +5,21 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/bookmark_bubble_window.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
-class BookmarkBubbleWindowTest : public PlatformTest {
- public:
-  CocoaTestHelper cocoa_helper_;
+class BookmarkBubbleWindowTest : public CocoaTest {
 };
 
 TEST_F(BookmarkBubbleWindowTest, Basics) {
-  scoped_nsobject<BookmarkBubbleWindow> window_;
-  window_.reset([[BookmarkBubbleWindow alloc]
-                  initWithContentRect:NSMakeRect(0,0,10,10)]);
+  BookmarkBubbleWindow* window =
+      [[BookmarkBubbleWindow alloc] initWithContentRect:NSMakeRect(0, 0, 10, 10)
+                                              styleMask:NSBorderlessWindowMask
+                                                backing:NSBackingStoreBuffered
+                                                  defer:NO];
+  EXPECT_TRUE([window canBecomeKeyWindow]);
+  EXPECT_FALSE([window canBecomeMainWindow]);
 
-  EXPECT_TRUE([window_ canBecomeKeyWindow]);
-  EXPECT_FALSE([window_ canBecomeMainWindow]);
-
-  EXPECT_TRUE([window_ isExcludedFromWindowsMenu]);
-  EXPECT_FALSE([window_ isReleasedWhenClosed]);
+  EXPECT_TRUE([window isExcludedFromWindowsMenu]);
+  [window close];
 }
 
 

@@ -6,12 +6,14 @@
 
 @implementation BookmarkBubbleWindow
 
-- (id)initWithContentRect:(NSRect)contentRect {
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(NSUInteger)aStyle
+                  backing:(NSBackingStoreType)bufferingType
+                    defer:(BOOL)flag {
   if ((self = [super initWithContentRect:contentRect
                                styleMask:NSBorderlessWindowMask
-                                 backing:NSBackingStoreBuffered
-                                   defer:YES])) {
-    [self setReleasedWhenClosed:NO];
+                                 backing:bufferingType
+                                   defer:flag])) {
     [self setBackgroundColor:[NSColor clearColor]];
     [self setExcludedFromWindowsMenu:YES];
     [self setAlphaValue:1.0];

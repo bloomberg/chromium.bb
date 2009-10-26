@@ -20,6 +20,6 @@ class SadTabViewTest : public CocoaTest {
   SadTabView* view_;  // Weak. Owned by the view hierarchy.
 };
 
-TEST_VIEW(SadTabViewTest, view_)
+TEST_VIEW(SadTabViewTest, view_);
 
 }  // namespace

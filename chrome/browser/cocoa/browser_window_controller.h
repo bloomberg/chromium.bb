@@ -50,14 +50,9 @@ class TabStripModelObserverBridge;
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
   // the other objects hold weak references to it or things it owns
-  // (tab/toolbar/bookmark models, profiles, etc). We hold a strong ref to the
-  // window so that it will live after the NSWindowController dealloc has run
-  // (which happens *before* these scoped pointers are torn down). Keeping it
-  // alive ensures that weak view or window pointers remain valid through
-  // their destruction sequence.
+  // (tab/toolbar/bookmark models, profiles, etc).
   scoped_ptr<Browser> browser_;
-  scoped_nsobject<ChromeBrowserWindow> window_;
-  scoped_nsobject<NSWindow> fullscreen_window_;
+  NSWindow* savedRegularWindow_;
   scoped_ptr<TabStripModelObserverBridge> tabObserver_;
   scoped_ptr<BrowserWindowCocoa> windowShim_;
   scoped_nsobject<ToolbarController> toolbarController_;
@@ -65,14 +60,21 @@ class TabStripModelObserverBridge;
   scoped_nsobject<TabStripController> tabStripController_;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
-  scoped_ptr<StatusBubbleMac> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<ExtensionShelfController> extensionShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
-  scoped_nsobject<BookmarkBubbleController> bookmarkBubbleController_;
+
+  // Strong. StatusBubble is a special case of a strong reference that
+  // we don't wrap in a scoped_ptr because it is acting the same
+  // as an NSWindowController in that it wraps a window that must
+  // be shut down before our destructors are called.
+  StatusBubbleMac* statusBubble_;
+
+  // Strong. We don't wrap it in scoped_nsobject because we must close
+  // it appropriately in [windowWillClose:].
+  BookmarkBubbleController* bookmarkBubbleController_;
   scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
-  BOOL fullscreen_;
   CGFloat verticalOffsetForStatusBubble_;
 }
 

@@ -6,6 +6,4 @@
 
 // Window for the bookmark bubble that comes up when you click on "STAR".
 @interface BookmarkBubbleWindow : NSWindow
-- (id)initWithContentRect:(NSRect)contentRect;
 @end
-
