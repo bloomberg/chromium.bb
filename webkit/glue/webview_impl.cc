@@ -199,7 +199,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   }
 
   virtual WebCore::String itemToolTip(unsigned last_index) const {
-    NOTIMPLEMENTED();
+    notImplemented();
     return WebCore::String();
   }
 
@@ -301,9 +301,10 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     WebCore::RenderStyle* style = text_field_->computedStyle();
     if (!style) {
       // It seems we can only have an NULL style in a TextField if the node is
-      // dettached, in which case we the popup shoud not be showing.
-      NOTREACHED() << "Please report this in http://crbug.com/7708 and include "
-                      "the page you were visiting.";
+      // dettached, in which case we the popup shoud not be showing.  Please
+      // report this in http://crbug.com/7708 and include the page you were
+      // visiting.
+      ASSERT_NOT_REACHED();
     }
     return style;
   }
@@ -664,12 +665,12 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
       autocomplete_popup_->selectedIndex() != -1) {
     Node* node = GetFocusedNode();
     if (!node || (node->nodeType() != WebCore::Node::ELEMENT_NODE)) {
-      NOTREACHED();
+      ASSERT_NOT_REACHED();
       return false;
     }
     WebCore::Element* element = static_cast<WebCore::Element*>(node);
     if (!element->hasLocalName(WebCore::HTMLNames::inputTag)) {
-      NOTREACHED();
+      ASSERT_NOT_REACHED();
       return false;
     }
 
@@ -1261,7 +1262,7 @@ void WebViewImpl::setTextDirection(WebTextDirection direction) {
       break;
 
     default:
-      NOTIMPLEMENTED();
+      notImplemented();
       break;
   }
 }
@@ -1702,7 +1703,7 @@ void WebViewImpl::applyAutofillSuggestions(
     }
 
     if (!focused_node->hasTagName(WebCore::HTMLNames::inputTag)) {
-      NOTREACHED();
+      ASSERT_NOT_REACHED();
       return;
     }
 

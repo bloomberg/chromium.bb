@@ -31,7 +31,6 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 
-#include "base/task.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 
@@ -268,10 +267,6 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
 
   WebFrameLoaderClient frame_loader_client_;
 
-  // This is a factory for creating cancelable tasks for this frame that run
-  // asynchronously in order to scope string matches during a find operation.
-  ScopedRunnableMethodFactory<WebFrameImpl> scope_matches_factory_;
-
   RefPtr<ClientHandle> client_handle_;
 
   // This is a weak pointer to our corresponding WebCore frame.  A reference to
@@ -328,6 +323,9 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   int next_invalidate_after_;
 
  private:
+  class DeferredScopeStringMatches;
+  friend class DeferredScopeStringMatches;
+
   // A bit mask specifying area of the frame to invalidate.
   enum AreaToInvalidate {
     INVALIDATE_NOTHING      = 0,
@@ -362,6 +360,17 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   // was searched.
   bool ShouldScopeMatches(const string16& search_text);
 
+  // Queue up a deferred call to scopeStringMatches.
+  void ScopeStringMatchesSoon(
+      int identifier, const WebKit::WebString& search_text,
+      const WebKit::WebFindOptions& options, bool reset);
+
+  // Called by a DeferredScopeStringMatches instance.
+  void CallScopeStringMatches(
+      DeferredScopeStringMatches* deferred,
+      int identifier, const WebKit::WebString& search_text,
+      const WebKit::WebFindOptions& options, bool reset);
+
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
 
@@ -369,6 +378,9 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   void ClearPasswordListeners();
 
   void LoadJavaScriptURL(const WebCore::KURL& url);
+
+  // A list of all of the pending calls to scopeStringMatches.
+  Vector<DeferredScopeStringMatches*> deferred_scoping_work_;
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().

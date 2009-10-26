@@ -451,7 +451,7 @@ void ChromeClientImpl::scroll(
 
 WebCore::IntPoint ChromeClientImpl::screenToWindow(
     const WebCore::IntPoint&) const {
-  NOTIMPLEMENTED();
+  notImplemented();
   return WebCore::IntPoint();
 }
 
@@ -616,7 +616,7 @@ void ChromeClientImpl::GetPopupMenuInfo(PopupContainer* popup_container,
         output_item.type = WebPopupMenuInfo::Item::Separator;
         break;
       default:
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
     }
   }
 

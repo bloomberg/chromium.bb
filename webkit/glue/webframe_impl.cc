@@ -128,7 +128,6 @@
 #include <wtf/CurrentTime.h>
 #undef LOG
 
-#include "base/message_loop.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebForm.h"
@@ -189,6 +188,7 @@ using WebCore::SharedBuffer;
 using WebCore::String;
 using WebCore::SubstituteData;
 using WebCore::TextIterator;
+using WebCore::Timer;
 using WebCore::VisiblePosition;
 using WebCore::XPathResult;
 
@@ -347,6 +347,40 @@ class ChromePrintContext : public WebCore::PrintContext {
 static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
   return loader ? WebDataSourceImpl::fromDocumentLoader(loader) : NULL;
 }
+
+
+// WebFrame -------------------------------------------------------------------
+
+class WebFrameImpl::DeferredScopeStringMatches {
+ public:
+  DeferredScopeStringMatches(WebFrameImpl* webframe,
+                             int identifier,
+                             const WebString& search_text,
+                             const WebFindOptions& options,
+                             bool reset)
+      : timer_(this, &DeferredScopeStringMatches::DoTimeout),
+        webframe_(webframe),
+        identifier_(identifier),
+        search_text_(search_text),
+        options_(options),
+        reset_(reset) {
+    timer_.startOneShot(0.0);
+  }
+
+ private:
+  void DoTimeout(Timer<DeferredScopeStringMatches>*) {
+    webframe_->CallScopeStringMatches(
+        this, identifier_, search_text_, options_, reset_);
+  }
+
+  Timer<DeferredScopeStringMatches> timer_;
+  RefPtr<WebFrameImpl> webframe_;
+  int identifier_;
+  WebString search_text_;
+  WebFindOptions options_;
+  bool reset_;
+};
+
 
 // WebFrame -------------------------------------------------------------------
 
@@ -1227,14 +1261,11 @@ void WebFrameImpl::scopeStringMatches(int request_id,
     main_frame_impl->frames_scoping_count_++;
 
     // Now, defer scoping until later to allow find operation to finish quickly.
-    // TODO(darin): Replace with a WebCore Timer.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        scope_matches_factory_.NewRunnableMethod(
-            &WebFrameImpl::scopeStringMatches,
-            request_id,
-            search_text,
-            options,
-            false));  // false=we just reset, so don't do it again.
+    ScopeStringMatchesSoon(
+        request_id,
+        search_text,
+        options,
+        false);  // false=we just reset, so don't do it again.
     return;
   }
 
@@ -1366,15 +1397,11 @@ void WebFrameImpl::scopeStringMatches(int request_id,
       InvalidateIfNecessary();
 
     // Scoping effort ran out of time, lets ask for another time-slice.
-    // TODO(darin): Replace with a WebCore Timer.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        scope_matches_factory_.NewRunnableMethod(
-            &WebFrameImpl::scopeStringMatches,
-            request_id,
-            search_text,
-            options,
-            false));  // don't reset.
-
+    ScopeStringMatchesSoon(
+        request_id,
+        search_text,
+        options,
+        false);  // don't reset.
     return;  // Done for now, resume work later.
   }
 
@@ -1393,7 +1420,9 @@ void WebFrameImpl::scopeStringMatches(int request_id,
 }
 
 void WebFrameImpl::cancelPendingScopingEffort() {
-  scope_matches_factory_.RevokeAll();
+  deleteAllValues(deferred_scoping_work_);
+  deferred_scoping_work_.clear();
+
   active_match_index_ = -1;
 }
 
@@ -1457,7 +1486,6 @@ PassRefPtr<WebFrameImpl> WebFrameImpl::create(WebFrameClient* client) {
 
 WebFrameImpl::WebFrameImpl(PassRefPtr<ClientHandle> client_handle)
   : ALLOW_THIS_IN_INITIALIZER_LIST(frame_loader_client_(this)),
-    ALLOW_THIS_IN_INITIALIZER_LIST(scope_matches_factory_(this)),
     client_handle_(client_handle),
     active_match_frame_(NULL),
     active_match_index_(-1),
@@ -1821,6 +1849,24 @@ bool WebFrameImpl::ShouldScopeMatches(const string16& search_text) {
   }
 
   return true;
+}
+
+void WebFrameImpl::ScopeStringMatchesSoon(
+    int identifier, const WebString& search_text,
+    const WebFindOptions& options, bool reset) {
+  deferred_scoping_work_.append(new DeferredScopeStringMatches(
+      this, identifier, search_text, options, reset));
+}
+
+void WebFrameImpl::CallScopeStringMatches(
+    DeferredScopeStringMatches* caller, int identifier,
+    const WebString& search_text, const WebFindOptions& options, bool reset) {
+  deferred_scoping_work_.remove(deferred_scoping_work_.find(caller));
+
+  scopeStringMatches(identifier, search_text, options, reset);
+
+  // This needs to happen last since search_text is passed by reference.
+  delete caller;
 }
 
 void WebFrameImpl::InvalidateIfNecessary() {
