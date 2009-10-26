@@ -251,7 +251,6 @@ TEST_F(BlockedPopupContainerInteractiveTest, DontBreakOnBlur) {
   ASSERT_FALSE(automation()->WaitForWindowCountToBecome(1, 1500));
 }
 
-#if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
 // Tests that tab related keyboard accelerators are reserved by the app.
 
 class BrowserInteractiveTest : public UITest {
@@ -280,9 +279,10 @@ TEST_F(BrowserInteractiveTest, ReserveKeyboardAccelerators) {
       base::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
 
+#if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
   ASSERT_TRUE(browser->ActivateTab(1));
   ASSERT_TRUE(window->SimulateOSKeyPress(
       base::VKEY_W, views::Event::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
-}
 #endif
+}
