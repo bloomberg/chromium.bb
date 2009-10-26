@@ -97,7 +97,7 @@ if env.get('TARGET_ARCHITECTURE') == 'x86':
   ncvalidate = 'ncvalidate'
 
 if env.get('TARGET_ARCHITECTURE') == 'arm':
-  ncvalidate = 'ncvalidate_arm'
+  ncvalidate = 'ncvalidate_arm_v2'
 
 nrd_tester = env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
                                   EXTRA_LIBS=['sel',

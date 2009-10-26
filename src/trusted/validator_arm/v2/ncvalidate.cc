@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_arm/v2/validator.h"
 #include "native_client/src/trusted/validator_arm/v2/model.h"
 
@@ -24,7 +25,12 @@ class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
   virtual void report_problem(uint32_t vaddr,
                               nacl_arm_dec::SafetyLevel safety,
                               const std::string &problem_code,
-                              uint32_t ref_vaddr) { }
+                              uint32_t ref_vaddr) {
+    UNREFERENCED_PARAMETER(vaddr);
+    UNREFERENCED_PARAMETER(safety);
+    UNREFERENCED_PARAMETER(problem_code);
+    UNREFERENCED_PARAMETER(ref_vaddr);
+  }
   virtual bool should_continue() {
     return false;
   }
