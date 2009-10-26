@@ -2484,11 +2484,8 @@ BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.ht
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
-// Merge WebKit: 42026:42115 new tests
-BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
 // This test isn't just slow -- sometimes it times out indefinitely.
-BUG10475 WIN LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
-BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html = FAIL
+BUG10475 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
