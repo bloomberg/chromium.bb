@@ -30,7 +30,7 @@ class LogDisabler {
 }  // namespace
 
 TEST(ChromeLauncher, SanitizeCommandLine) {
-  CommandLine bad(L"dummy.exe");
+  CommandLine bad(FilePath(L"dummy.exe"));
   bad.AppendSwitch(switches::kDisableMetrics);  // in whitelist
   bad.AppendSwitchWithValue(switches::kLoadExtension, L"foo");  // in whitelist
   bad.AppendSwitch("no-such-switch");  // does not exist
@@ -38,7 +38,7 @@ TEST(ChromeLauncher, SanitizeCommandLine) {
 
   LogDisabler no_dchecks;
 
-  CommandLine sanitized(L"dumbo.exe");
+  CommandLine sanitized(FilePath(L"dumbo.exe"));
   chrome_launcher::SanitizeCommandLine(bad, &sanitized);
   EXPECT_TRUE(sanitized.HasSwitch(switches::kDisableMetrics));
   EXPECT_FALSE(sanitized.HasSwitch(switches::kLoadExtension));
