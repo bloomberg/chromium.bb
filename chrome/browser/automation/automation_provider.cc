@@ -1144,7 +1144,7 @@ void AutomationProvider::GetFindWindowVisibility(int handle, bool* visible) {
   Browser* browser = browser_tracker_->GetResource(handle);
   if (browser) {
     FindBarTesting* find_bar =
-        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+        browser->find_bar()->find_bar()->GetFindBarTesting();
     find_bar->GetFindBarWindowInfo(NULL, visible);
   }
 }
@@ -1156,7 +1156,7 @@ void AutomationProvider::HandleFindWindowLocationRequest(int handle, int* x,
   if (browser_tracker_->ContainsHandle(handle)) {
      Browser* browser = browser_tracker_->GetResource(handle);
      FindBarTesting* find_bar =
-       browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+       browser->find_bar()->find_bar()->GetFindBarTesting();
      find_bar->GetFindBarWindowInfo(&position, &visible);
   }
 
