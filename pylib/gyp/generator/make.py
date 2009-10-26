@@ -666,22 +666,25 @@ class MakefileWriter:
     """
     output = None
     target = spec['target_name']
+    path = spec.get('product_dir', os.path.join('$(obj).' + self.toolset,
+                                                self.path))
     if self.type == 'static_library':
       target = 'lib%s.a' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
     elif self.type in ('loadable_module', 'shared_library'):
       target = 'lib%s.so' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
+      path = spec.get('product_dir', os.path.join('$(builddir)', 'lib',
+                                                  self.path))
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
       return None
     elif self.type == 'executable':
       target = spec.get('product_name', target)
+      path = spec.get('product_dir', os.path.join('$(builddir)', self.path))
     else:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
 
-    path = spec.get('product_dir', os.path.join('$(obj).' + self.toolset,
-                                                self.path))
     return os.path.join(path, target)
 
 
@@ -748,7 +751,7 @@ class MakefileWriter:
       print "WARNING: no output for", self.type, target
 
     # Add an alias for each target (if there are any outputs).
-    if self.output:
+    if self.output and self.output != self.target:
       self.WriteMakeRule([self.target], [self.output],
                          comment='Add target alias')
 
@@ -771,9 +774,10 @@ class MakefileWriter:
                         comment = 'Copy this to the %s output path.' %
                         file_desc, part_of_all=part_of_all)
         installable_deps.append(binpath)
-      self.WriteMakeRule([self.alias], installable_deps,
-                         comment = 'Short alias for building this %s.' %
-                         file_desc, phony = True)
+      if self.output != self.alias:
+        self.WriteMakeRule([self.alias], installable_deps,
+                           comment = 'Short alias for building this %s.' %
+                           file_desc, phony = True)
       if part_of_all:
         self.WriteMakeRule(['all'], [binpath],
                            comment = 'Add %s to "all" target.' % file_desc,
