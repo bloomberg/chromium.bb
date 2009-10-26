@@ -18,10 +18,10 @@ namespace {
 SharedIOBuffer* g_spare_read_buffer = NULL;
 
 // The initial size of the shared memory buffer. (32 kilobytes).
-const int kReadBufSize = 32768;
+const int kInitialReadBufSize = 32768;
 
 // The maximum size of the shared memory buffer. (512 kilobytes).
-const int kMaxBufSize = 524288;
+const int kMaxReadBufSize = 524288;
 
 }  // namespace
 
@@ -66,7 +66,7 @@ AsyncResourceHandler::AsyncResourceHandler(
       routing_id_(routing_id),
       process_handle_(process_handle),
       rdh_(resource_dispatcher_host),
-      next_buffer_size_(kReadBufSize) {
+      next_buffer_size_(kInitialReadBufSize) {
 }
 
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
@@ -104,7 +104,7 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     CHECK(read_buffer_->data());
 
     *buf = read_buffer_.get();
-    *buf_size = read_buffer_.get()->buffer_size();
+    *buf_size = read_buffer_->buffer_size();
   } else {
     read_buffer_ = new SharedIOBuffer(next_buffer_size_);
     if (!read_buffer_->ok()) {
@@ -117,8 +117,6 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     *buf_size = next_buffer_size_;
   }
 
-  next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxBufSize);
-
   return true;
 }
 
@@ -126,6 +124,13 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   if (!*bytes_read)
     return true;
   DCHECK(read_buffer_.get());
+
+  if (read_buffer_->buffer_size() == *bytes_read) {
+    // The network layer has saturated our buffer. Next time, we should give it
+    // a bigger buffer for it to fill, to minimize the number of round trips we
+    // do with the renderer process.
+    next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
+  }
 
   if (!rdh_->WillSendData(process_id_, request_id)) {
     // We should not send this data now, we have too many pending requests.

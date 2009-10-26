@@ -46,10 +46,11 @@ class AsyncResourceHandler : public ResourceHandler {
   base::ProcessHandle process_handle_;
   ResourceDispatcherHost* rdh_;
 
-  // We exponentially grow the size of the buffer allocated. On the first
-  // OnWillRead() call, we allocate a buffer of 32k and double it on each
-  // subsequent call, up to a maximum size of 512k. |next_buffer_size_| is the
-  // size of the buffer to be allocated on the next OnWillRead() call.
+  // |next_buffer_size_| is the size of the buffer to be allocated on the next
+  // OnWillRead() call.  We exponentially grow the size of the buffer allocated
+  // when our owner fills our buffers. On the first OnWillRead() call, we
+  // allocate a buffer of 32k and double it in OnReadCompleted() if the buffer
+  // was filled, up to a maximum size of 512k.
   int next_buffer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
