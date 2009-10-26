@@ -123,10 +123,6 @@
         ['target_arch!="x64"', {
           'dependencies': [
             'npapi_layout_test_plugin',
-          ],
-        }],
-        ['OS!="win" and target_arch!="x64"', {
-          'dependencies': [
             'npapi_test_plugin',
           ],
         }],
