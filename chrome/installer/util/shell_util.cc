@@ -301,8 +301,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
     RegKey key(reg_root, dist->GetUninstallRegPath().c_str());
     key.ReadValue(installer_util::kUninstallStringField, &exe_path);
-    CommandLine command_line(L"");
-    command_line.ParseFromString(exe_path);
+    CommandLine command_line = CommandLine::FromString(exe_path);
     exe_path = command_line.program();
   }
   if (file_util::PathExists(FilePath::FromWStringHack(exe_path))) {

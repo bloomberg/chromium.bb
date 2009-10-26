@@ -44,7 +44,8 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
   use_existing_browser_ = true;
 
-  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(CommandLine(L"")));
+  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(
+                  CommandLine(CommandLine::ARGUMENTS_ONLY)));
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
 }
@@ -55,9 +56,8 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
   FilePath test_file = test_data_directory_.AppendASCII("empty.html");
 
-  CommandLine command_line(L"");
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
   command_line.AppendLooseValue(test_file.ToWStringHack());
-
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
 
   ASSERT_TRUE(automation()->IsURLDisplayed(net::FilePathToFileURL(test_file)));

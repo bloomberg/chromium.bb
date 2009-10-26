@@ -322,8 +322,7 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
     if (path.empty()) {
       DLOG(ERROR) << "Failed to find executable: " << executable;
     } else {
-      CommandLine cmdline(L"");
-      cmdline.ParseFromString(path);
+      CommandLine cmdline = CommandLine::FromString(path);
       base::LaunchApp(cmdline, false, false, &process);
     }
   } else {

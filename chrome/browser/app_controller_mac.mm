@@ -573,7 +573,7 @@
     browser->window()->Show();
   }
 
-  CommandLine dummy((std::wstring()));
+  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
   BrowserInit::LaunchWithProfile launch(std::wstring(), dummy);
   launch.OpenURLsInBrowser(browser, false, urls);
 }

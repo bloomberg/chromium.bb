@@ -99,8 +99,7 @@ LRESULT ProcessSingletonSubclass::OnCopyData(HWND hwnd, HWND from_hwnd,
     // Get command line.
     std::wstring cmd_line(begin, static_cast<size_t>(end - begin));
 
-    CommandLine parsed_command_line(L"");
-    parsed_command_line.ParseFromString(cmd_line);
+    CommandLine parsed_command_line = CommandLine::FromString(cmd_line);
     std::string channel_id(WideToASCII(parsed_command_line.GetSwitchValue(
         switches::kAutomationClientChannelID)));
     EXPECT_FALSE(channel_id.empty());

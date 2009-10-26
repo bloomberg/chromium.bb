@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   ASSERT_EQ(popup->type(), Browser::TYPE_POPUP);
   ASSERT_EQ(popup, observer.added_browser_);
 
-  CommandLine dummy((std::wstring()));
+  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
   BrowserInit::LaunchWithProfile launch(std::wstring(), dummy);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a NULL or invalid profile, it would crash.

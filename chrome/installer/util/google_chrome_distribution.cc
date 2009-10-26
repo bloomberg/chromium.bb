@@ -105,7 +105,7 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
 // Launches again this same process with a single switch --|flag|=|value|.
 // Does not wait for the process to terminate.
 bool RelaunchSetup(const std::wstring& flag, int value) {
-  CommandLine cmd_line(CommandLine::ForCurrentProcess()->program());
+  CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
   // TODO: make switches into ASCII.
   cmd_line.AppendSwitchWithValue(WideToASCII(flag), IntToWString(value));
   return base::LaunchApp(cmd_line, false, false, NULL);

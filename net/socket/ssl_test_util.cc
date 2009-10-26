@@ -277,14 +277,13 @@ bool TestServerLauncher::Start(Protocol protocol,
 #elif defined(OS_POSIX)
   std::vector<std::string> command_line;
   command_line.push_back("python");
-  command_line.push_back(WideToUTF8(testserver_path.ToWStringHack()));
+  command_line.push_back(testserver_path.value());
   command_line.push_back("--port=" + port_str);
-  command_line.push_back("--data-dir=" +
-                         WideToUTF8(document_root_dir_.ToWStringHack()));
+  command_line.push_back("--data-dir=" + document_root_dir_.value());
   if (protocol == ProtoFTP)
     command_line.push_back("-f");
   if (!cert_path.value().empty())
-    command_line.push_back("--https=" + WideToUTF8(cert_path.ToWStringHack()));
+    command_line.push_back("--https=" + cert_path.value());
   if (forking_)
     command_line.push_back("--forking");
 

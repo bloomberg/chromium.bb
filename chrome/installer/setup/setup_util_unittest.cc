@@ -86,8 +86,7 @@ TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
   cmd_str.append(L" --create-all-shortcuts");
   cmd_str.append(L" --do-not-launch-chrome");
   cmd_str.append(L" --alt-desktop-shortcut");
-  CommandLine cmd_line(L"");
-  cmd_line.ParseFromString(cmd_str);
+  CommandLine cmd_line = CommandLine::FromString(cmd_str);
   scoped_ptr<DictionaryValue> prefs(
       setup_util::GetInstallPreferences(cmd_line));
   EXPECT_TRUE(prefs.get() != NULL);

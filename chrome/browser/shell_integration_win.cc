@@ -111,8 +111,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       if (!key.Valid() || !key.ReadValue(L"", &value))
         return UNKNOWN_DEFAULT_BROWSER;
       // Need to normalize path in case it's been munged.
-      CommandLine command_line(L"");
-      command_line.ParseFromString(value);
+      CommandLine command_line = CommandLine::FromString(value);
       std::wstring short_path;
       GetShortPathName(command_line.program().c_str(),
                        WriteInto(&short_path, MAX_PATH), MAX_PATH);

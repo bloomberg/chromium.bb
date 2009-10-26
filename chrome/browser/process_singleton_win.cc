@@ -231,8 +231,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     const std::wstring cmd_line =
       msg.substr(second_null + 1, third_null - second_null);
 
-    CommandLine parsed_command_line(L"");
-    parsed_command_line.ParseFromString(cmd_line);
+    CommandLine parsed_command_line = CommandLine::FromString(cmd_line);
     PrefService* prefs = g_browser_process->local_state();
     DCHECK(prefs);
 

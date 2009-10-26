@@ -12,7 +12,7 @@ class ImagesTest : public UITest {
   ImagesTest() : UITest() {
     FilePath path(test_data_directory_);
     path = path.AppendASCII("animated-gifs.html");
-    launch_arguments_ = CommandLine(L"");
+    launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
     launch_arguments_.AppendLooseValue(path.ToWStringHack());
   }
 };

@@ -188,8 +188,8 @@ std::wstring UserDataManager::GetUserDataFolderForProfile(
 void UserDataManager::LaunchChromeForProfile(
     const std::wstring& profile_name) const {
   std::wstring user_data_dir = GetUserDataFolderForProfile(profile_name);
-  std::wstring command;
-  DeprecatedPathServiceGet(base::FILE_EXE, &command);
+  FilePath command;
+  PathService::Get(base::FILE_EXE, &command);
   CommandLine command_line(command);
   command_line.AppendSwitch(switches::kEnableUserDataDirProfiles);
   command_line.AppendSwitchWithValue(switches::kUserDataDir,

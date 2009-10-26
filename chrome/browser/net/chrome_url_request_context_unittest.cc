@@ -14,33 +14,34 @@
 #define TEST_DESC(desc) StringPrintf("at line %d <%s>", __LINE__, desc)
 
 TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
   // Build the input command lines here.
-  CommandLine empty(L"foo.exe");
-  CommandLine no_proxy(L"foo.exe");
+  CommandLine empty(unused_path);
+  CommandLine no_proxy(unused_path);
   no_proxy.AppendSwitch(switches::kNoProxyServer);
-  CommandLine no_proxy_extra_params(L"foo.exe");
+  CommandLine no_proxy_extra_params(unused_path);
   no_proxy_extra_params.AppendSwitch(switches::kNoProxyServer);
   no_proxy_extra_params.AppendSwitchWithValue(switches::kProxyServer,
       L"http://proxy:8888");
-  CommandLine single_proxy(L"foo.exe");
+  CommandLine single_proxy(unused_path);
   single_proxy.AppendSwitchWithValue(switches::kProxyServer,
       L"http://proxy:8888");
-  CommandLine per_scheme_proxy(L"foo.exe");
+  CommandLine per_scheme_proxy(unused_path);
   per_scheme_proxy.AppendSwitchWithValue(switches::kProxyServer,
       L"http=httpproxy:8888;ftp=ftpproxy:8889");
-  CommandLine per_scheme_proxy_bypass(L"foo.exe");
+  CommandLine per_scheme_proxy_bypass(unused_path);
   per_scheme_proxy_bypass.AppendSwitchWithValue(switches::kProxyServer,
       L"http=httpproxy:8888;ftp=ftpproxy:8889");
   per_scheme_proxy_bypass.AppendSwitchWithValue(
       switches::kProxyBypassList,
       L".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8");
-  CommandLine with_pac_url(L"foo.exe");
+  CommandLine with_pac_url(unused_path);
   with_pac_url.AppendSwitchWithValue(switches::kProxyPacUrl,
       L"http://wpad/wpad.dat");
   with_pac_url.AppendSwitchWithValue(
       switches::kProxyBypassList,
       L".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8");
-  CommandLine with_auto_detect(L"foo.exe");
+  CommandLine with_auto_detect(unused_path);
   with_auto_detect.AppendSwitch(switches::kProxyAutoDetect);
 
   // Inspired from proxy_config_service_win_unittest.cc.

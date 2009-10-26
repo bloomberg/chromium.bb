@@ -118,7 +118,7 @@ bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
   exe_path = exe_path.Append(installer_util::kInstallerDir);
   exe_path = exe_path.Append(installer_util::kSetupExe);
   base::ProcessHandle ph;
-  CommandLine cl(exe_path.ToWStringHack());
+  CommandLine cl(exe_path);
   cl.AppendSwitchWithValue(param, value);
   if (!base::LaunchApp(cl, false, false, &ph))
     return false;
@@ -563,7 +563,7 @@ bool DecodeImportParams(const std::wstring& encoded,
 bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               int items_to_import, HWND parent_window) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
-  CommandLine import_cmd(cmdline.program());
+  CommandLine import_cmd(cmdline.GetProgram());
   // Propagate user data directory switch.
   if (cmdline.HasSwitch(switches::kUserDataDir)) {
     import_cmd.AppendSwitchWithValue(

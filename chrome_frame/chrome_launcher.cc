@@ -80,8 +80,7 @@ void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized) {
 bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
   std::wstring command_line_with_program(L"dummy.exe ");
   command_line_with_program += command_line;
-  CommandLine original(L"");
-  original.ParseFromString(command_line_with_program);
+  CommandLine original = CommandLine::FromString(command_line_with_program);
   CommandLine sanitized(GetChromeExecutablePath());
   SanitizeCommandLine(original, &sanitized);
 

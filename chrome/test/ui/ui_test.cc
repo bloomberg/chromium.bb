@@ -97,7 +97,7 @@ const char kEnableErrorDialogs[] = "enable-errdialogs";
 
 UITest::UITest()
     : testing::Test(),
-      launch_arguments_(L""),
+      launch_arguments_(CommandLine::ARGUMENTS_ONLY),
       expected_errors_(0),
       expected_crashes_(0),
       homepage_(L"about:blank"),
@@ -257,9 +257,9 @@ static CommandLine* CreatePythonCommandLine() {
       .Append(FILE_PATH_LITERAL("third_party"))
       .Append(FILE_PATH_LITERAL("python_24"))
       .Append(FILE_PATH_LITERAL("python.exe"));
-  return new CommandLine(python_runtime.ToWStringHack());
+  return new CommandLine(python_runtime);
 #elif defined(OS_POSIX)
-  return new CommandLine(L"python");
+  return new CommandLine(FilePath("python"));
 #endif
 }
 
@@ -1010,10 +1010,9 @@ bool UITest::LaunchBrowserHelper(const CommandLine& arguments,
                                  bool use_existing_browser,
                                  bool wait,
                                  base::ProcessHandle* process) {
-  FilePath command = browser_directory_;
-  command = command.Append(FilePath::FromWStringHack(
-      chrome::kBrowserProcessExecutablePath));
-  CommandLine command_line(command.ToWStringHack());
+  FilePath command = browser_directory_.Append(
+      FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath));
+  CommandLine command_line(command);
 
   // Add any explicit command line flags passed to the process.
   std::wstring extra_chrome_flags =

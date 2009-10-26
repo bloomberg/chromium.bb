@@ -726,7 +726,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
       // The command line switch may override the default v8 log path.
       if (parsed_command_line.HasSwitch(switches::kJavaScriptFlags)) {
         CommandLine v8_command_line(
-            parsed_command_line.GetSwitchValue(switches::kJavaScriptFlags));
+            parsed_command_line.GetSwitchValuePath(switches::kJavaScriptFlags));
         if (v8_command_line.HasSwitch(kV8LogFileSwitch)) {
           g_v8_log_path = FilePath::FromWStringHack(
               v8_command_line.GetSwitchValue(kV8LogFileSwitch));
