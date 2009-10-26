@@ -303,6 +303,10 @@ namespace WebKit {
         // Returns true if a user gesture is currently being processed.
         virtual bool isProcessingUserGesture() const = 0;
 
+        // Returns true if this frame is in the process of opening a new frame
+        // with a suppressed opener.
+        virtual bool willSuppressOpenerInNewFrame() const = 0;
+
 
         // Editing -------------------------------------------------------------
 

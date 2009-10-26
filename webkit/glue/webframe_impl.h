@@ -126,6 +126,7 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   virtual void commitDocumentData(const char* data, size_t length);
   virtual unsigned unloadListenerCount() const;
   virtual bool isProcessingUserGesture() const;
+  virtual bool willSuppressOpenerInNewFrame() const;
   virtual void replaceSelection(const WebKit::WebString& text);
   virtual void insertText(const WebKit::WebString& text);
   virtual void setMarkedText(
