@@ -3205,14 +3205,6 @@ BUG_JOHNNYG WIN LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001
 BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
 
 // WebKit roll 49961:49992
-// Rebaseline after http://trac.webkit.org/changeset/49985
-BUG_TONY : LayoutTests/editing/execCommand/4641880-2.html = FAIL
-BUG_TONY : LayoutTests/editing/execCommand/4916541.html = FAIL
-BUG_TONY : LayoutTests/editing/execCommand/5138441.html = FAIL
-BUG_TONY : LayoutTests/editing/execCommand/5481523.html = FAIL
-BUG_TONY : LayoutTests/editing/execCommand/indent-selection.html = FAIL
-BUG_TONY : LayoutTests/editing/inserting/5994480-2.html = FAIL
-BUG_TONY WIN LINUX : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
 // Added in http://trac.webkit.org/changeset/49990
 BUG_TONY : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
 // Missing results
