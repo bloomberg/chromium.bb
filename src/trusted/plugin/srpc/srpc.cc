@@ -174,25 +174,23 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
 }
 
 void SRPC_Plugin::set_module(nacl::NPModule* module) {
-#ifdef NACL_NPAPI_INTERACTION_ENABLED
   dprintf(("Setting module pointer to %p\n", static_cast<void*>(module)));
   module_ = module;
-  // Initialize the NaCl module's NPAPI interface.
-  // This should only be done for the first instance in a given group.
-  module->Initialize();
-  // Create a new instance of that group.
-  const char mime_type[] = "application/nacl-npapi-over-srpc";
-  NPError err = module->New(const_cast<char*>(mime_type),
-                            npp_,
-                            argc(),
-                            argn(),
-                            argv());
-  dprintf(("New result %x\n", err));
-  // Remember the scriptable version of the NaCl instance.
-  nacl_instance_ = module_->GetScriptableInstance(npp_);
-#else
-  UNREFERENCED_PARAMETER(module);
-#endif  // NACL_NPAPI_INTERACTION_ENABLED
+  if (NULL != module) {
+    // Initialize the NaCl module's NPAPI interface.
+    // This should only be done for the first instance in a given group.
+    module->Initialize();
+    // Create a new instance of that group.
+    const char mime_type[] = "application/nacl-npapi-over-srpc";
+    NPError err = module->New(const_cast<char*>(mime_type),
+                              npp_,
+                              argc(),
+                              argn(),
+                              argv());
+    dprintf(("New result %x\n", err));
+    // Remember the scriptable version of the NaCl instance.
+    nacl_instance_ = module_->GetScriptableInstance(npp_);
+  }
 }
 
 SRPC_Plugin::~SRPC_Plugin() {
