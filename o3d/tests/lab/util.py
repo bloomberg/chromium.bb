@@ -292,7 +292,6 @@ def Download(url, prefix_dir):
   
   parsed_url = urlparse.urlparse(url)
   path = parsed_url[2]
-  cut = path.count('/') - 1
   name = path.rsplit('/', 1)[1]
   local_path = os.path.join(prefix_dir, name)
 
@@ -326,7 +325,8 @@ def MountDiskImage(dmg_path):
     dmg_path: path to image that will be mounted.
     
   Returns:
-    Path to mounted disk on success or None on failure.
+    Tuple contaiing device path and mounted path on success, 
+    or None on failure.
   """
   mount_path = None
   logging.info('Mounting %s...' % dmg_path)
@@ -337,9 +337,11 @@ def MountDiskImage(dmg_path):
   if return_code == 0 and output:
     # Attempt to grab the mounted path from the command output.
     # This should be safe regardless of actual output.
-    mount_path = output.strip().split('\n')[-1].split('\t')[-1]
+    new_device = output.strip().split('\n')[-1].split('\t')
+    device = new_device[0].strip()
+    mount_path = new_device[-1]
     
-    logging.info('Disk image mounted at %s' % mount_path)
+    logging.info('Device %s mounted at %s' % (device,mount_path))
 
     # Wait for mounting operation to complete.
     time.sleep(10)
@@ -348,32 +350,22 @@ def MountDiskImage(dmg_path):
     else:
       mount_path = None
           
-  if mount_path is None:
+  if mount_path is None or device is None:
     logging.error('Could not mount properly.')
+    return None
     
-  return mount_path
+  return (device, mount_path)
 
 
-def UnmountDiskImage(mount_path):
+def UnmountDiskImage(device):
   """Unmounts disk image.
 
   Args:
-    mount_path: path to unmount.
+    device: path to device to be detached
 
   Returns:
     True on success.
   """
-  logging.info('Unmounting %s...' % mount_path)
+  logging.info('Unmounting device %s...' % device)
 
-  if not os.path.exists(mount_path):
-    logging.warn('Nothing is mounted at this path.')
-    return True
-
-  Run(['umount', '"' + mount_path + '"'])
-
-  time.sleep(10)
-  if os.path.exists(mount_path):
-    logging.error('Image is still mounted at path:"%s"', mount_path)
-    return False
-  else:
-    return True
+  return Run(['hdiutil detach', '"' + device + '"', '-force']) == 0

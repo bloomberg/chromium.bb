@@ -96,6 +96,6 @@ small   effect-import-test
 # does not currently work with Chrome.
 # Don't run TestStressDrawShapes on ie because selenium/ie is too slow.
 medium  TestStressDrawShapes   except(*googlechrome,*iexplore)
-medium  TestStressMultiWindow  except(*googlechrome)
+medium  TestStressMultiWindow  except(*googlechrome) run_time(180000)
 
 large   TestStressCullingZSort pdiff_threshold(450) screenshots(8)

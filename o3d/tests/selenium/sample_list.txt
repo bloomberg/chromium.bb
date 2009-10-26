@@ -91,8 +91,8 @@ medium  hellocube                         screenshot pdiff_threshold(200)
 medium  hellocube-colors                  screenshot pdiff_threshold(200)
 medium  helloworld                        screenshot pdiff_threshold(200)
 medium  hud-2d-overlay                    screenshot pdiff_threshold(200) pdiff_threshold_win(200)
-medium  instance-override                 screenshot(2) pdiff_threshold(200)
-medium  instancing                        screenshot pdiff_threshold(200)
+medium  instance-override                 screenshot(2) pdiff_threshold(200) run_time(200000)
+medium  instancing                        screenshot pdiff_threshold(200) run_time(200000)
 medium  juggler                           screenshot downsample(1)
 medium  julia                             screenshot
 small   multiple-views                    screenshot pdiff_threshold(200)
@@ -127,12 +127,12 @@ large   GoogleIO-2009/step14ex            screenshot pdiff_threshold(200) timeou
 small   TestSampleErrorTextureSmall       pdiff_threshold(200) screenshots(5)
 small   TestSampleHelloCube_TexturesSmall pdiff_threshold(450) screenshot
 small   TestSampleRefreshPageLoad_Small
-medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200) screenshot
-medium  TestSamplePicking
-medium  TestSampleRenderMode
-medium  TestSampleRotateModel             pdiff_threshold(200) screenshots(2)
+medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200) screenshot run_time(180000)
+medium  TestSamplePicking                 run_time(60000)
+medium  TestSampleRenderMode              run_time(60000)
+medium  TestSampleRotateModel             pdiff_threshold(200) screenshots(2) run_time(100000)
 medium  TestSampleShader_Test             pdiff_threshold(200) pdiff_threshold_win(200) screenshots(13)
-large   TestSampleMultipleClientsLarge
+large   TestSampleMultipleClientsLarge    run_time(180000)
 large   TestSamplePingPongLarge
 # This test currently fails on IE as it considers localhost: to be a trusted
 # domain.
