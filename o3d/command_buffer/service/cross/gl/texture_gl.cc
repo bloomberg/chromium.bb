@@ -37,6 +37,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 namespace {
 
@@ -643,8 +644,6 @@ bool TextureCubeGL::InstallFrameBufferObjects(
 }
 
 
-// GAPIGL functions.
-
 // Destroys a texture resource.
 parse_error::ParseError GAPIGL::DestroyTexture(ResourceId id) {
   // Dirty effect, because this texture id may be used.
@@ -764,5 +763,6 @@ parse_error::ParseError GAPIGL::GetTextureData(
       parse_error::kParseInvalidArguments;
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

@@ -37,13 +37,16 @@
 
 #include "core/cross/types.h"
 #include "command_buffer/service/cross/cmd_parser.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 
 namespace o3d {
 namespace command_buffer {
 
-class GAPIInterface;
 class CommandBufferEngine;
+
+namespace o3d {
+
+class GAPIInterface;
 
 // This class implements the AsyncAPIInterface interface, decoding GAPI
 // commands and sending them to a GAPI interface.
@@ -82,7 +85,7 @@ class GAPIDecoder : public AsyncAPIInterface {
   #define O3D_COMMAND_BUFFER_CMD_OP(name) \
      ParseError Handle ## name(           \
        unsigned int arg_count,            \
-       const cmd::name& args);            \
+       const o3d::name& args);            \
 
   O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
@@ -92,6 +95,7 @@ class GAPIDecoder : public AsyncAPIInterface {
   CommandBufferEngine *engine_;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

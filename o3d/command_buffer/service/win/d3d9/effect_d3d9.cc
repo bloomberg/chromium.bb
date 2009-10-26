@@ -46,6 +46,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // Logs the D3D effect error, from either the buffer, or GetLastError().
 static void LogFXError(LPD3DXBUFFER error_buffer) {
@@ -673,5 +674,6 @@ bool GAPID3D9::ValidateEffect() {
   return current_effect_->Begin();
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

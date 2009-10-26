@@ -56,7 +56,7 @@
 #include "gpu_plugin/system_services/shared_memory.h"
 
 namespace o3d {
-using command_buffer::GAPIInterface;
+using command_buffer::o3d::GAPIInterface;
 using command_buffer::O3DCmdHelper;
 using gpu_plugin::CommandBuffer;
 using gpu_plugin::GPUProcessor;
@@ -131,9 +131,9 @@ void RendererCB::PlatformSpecificClear(const Float4 &color,
                                        bool depth_flag,
                                        int stencil,
                                        bool stencil_flag) {
-  uint32 buffers = (color_flag ? command_buffer::kColor : 0) |
-      (depth_flag ? command_buffer::kDepth : 0) |
-      (stencil_flag ? command_buffer::kStencil : 0);
+  uint32 buffers = (color_flag ? command_buffer::o3d::kColor : 0) |
+                   (depth_flag ? command_buffer::o3d::kDepth : 0) |
+                   (stencil_flag ? command_buffer::o3d::kStencil : 0);
   helper_->Clear(buffers, color[0], color[1], color[2], color[3],
                  depth, stencil);
 }

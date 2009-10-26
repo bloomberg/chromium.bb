@@ -31,9 +31,9 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                      public command_buffer::CommandBufferEngine {
  public:
 #if defined(CB_SERVICE_D3D9)
-  typedef command_buffer::GAPID3D9 GPUGAPIInterface;
+  typedef command_buffer::o3d::GAPID3D9 GPUGAPIInterface;
 #elif defined(CB_SERVICE_GL)
-  typedef command_buffer::GAPIGL GPUGAPIInterface;
+  typedef command_buffer::o3d::GAPIGL GPUGAPIInterface;
 #else
 #error command buffer service not defined
 #endif
@@ -45,7 +45,7 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   GPUProcessor(NPP npp,
                CommandBuffer* command_buffer,
                GPUGAPIInterface* gapi,
-               command_buffer::GAPIDecoder* decoder,
+               command_buffer::o3d::GAPIDecoder* decoder,
                command_buffer::CommandParser* parser,
                int commands_per_update);
 
@@ -88,7 +88,7 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   int commands_per_update_;
 
   scoped_ptr<GPUGAPIInterface> gapi_;
-  scoped_ptr<command_buffer::GAPIDecoder> decoder_;
+  scoped_ptr<command_buffer::o3d::GAPIDecoder> decoder_;
   scoped_ptr<command_buffer::CommandParser> parser_;
 };
 

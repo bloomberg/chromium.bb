@@ -38,6 +38,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 VertexBufferGL::~VertexBufferGL() {
   glDeleteBuffers(1, &gl_buffer_);
@@ -458,30 +459,30 @@ bool GAPIGL::ValidateStreams() {
 
 namespace {
 
-void PrimitiveTypeToGL(command_buffer::PrimitiveType primitive_type,
+void PrimitiveTypeToGL(o3d::PrimitiveType primitive_type,
                        GLenum *gl_mode,
                        unsigned int *count) {
   switch (primitive_type) {
-    case command_buffer::kPoints:
+    case o3d::kPoints:
       *gl_mode = GL_POINTS;
       break;
-    case command_buffer::kLines:
+    case o3d::kLines:
       *gl_mode = GL_LINES;
       *count *= 2;
       break;
-    case command_buffer::kLineStrips:
+    case o3d::kLineStrips:
       *gl_mode = GL_LINE_STRIP;
       ++*count;
       break;
-    case command_buffer::kTriangles:
+    case o3d::kTriangles:
       *gl_mode = GL_TRIANGLES;
       *count *= 3;
       break;
-    case command_buffer::kTriangleStrips:
+    case o3d::kTriangleStrips:
       *gl_mode = GL_TRIANGLE_STRIP;
       *count += 2;
       break;
-    case command_buffer::kTriangleFans:
+    case o3d::kTriangleFans:
       *gl_mode = GL_TRIANGLE_FAN;
       *count += 2;
       break;
@@ -493,9 +494,9 @@ void PrimitiveTypeToGL(command_buffer::PrimitiveType primitive_type,
 
 }  // anonymous namespace
 
-parse_error::ParseError GAPIGL::Draw(PrimitiveType primitive_type,
-                                             unsigned int first,
-                                             unsigned int count) {
+parse_error::ParseError GAPIGL::Draw(o3d::PrimitiveType primitive_type,
+                                     unsigned int first,
+                                     unsigned int count) {
   if (validate_effect_ && !ValidateEffect()) {
     return parse_error::kParseInvalidArguments;
   }
@@ -514,7 +515,7 @@ parse_error::ParseError GAPIGL::Draw(PrimitiveType primitive_type,
 }
 
 parse_error::ParseError GAPIGL::DrawIndexed(
-    PrimitiveType primitive_type,
+    o3d::PrimitiveType primitive_type,
     ResourceId index_buffer_id,
     unsigned int first,
     unsigned int count,
@@ -549,5 +550,6 @@ parse_error::ParseError GAPIGL::DrawIndexed(
   return parse_error::kParseNoError;
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

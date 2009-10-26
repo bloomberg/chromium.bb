@@ -40,6 +40,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 RenderSurfaceD3D9::RenderSurfaceD3D9(int width,
                                      int height,
@@ -225,6 +226,7 @@ void GAPID3D9::SetBackSurfaces() {
   HR(d3d_device()->SetDepthStencilSurface(back_buffer_depth_surface_));
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

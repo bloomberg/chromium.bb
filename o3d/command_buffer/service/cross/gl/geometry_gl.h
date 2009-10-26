@@ -42,6 +42,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPIGL;
 
@@ -138,6 +139,7 @@ class VertexStructGL : public VertexStruct {
 };
 
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

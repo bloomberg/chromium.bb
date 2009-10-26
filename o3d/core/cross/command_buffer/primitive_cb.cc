@@ -50,7 +50,7 @@ namespace o3d {
 using command_buffer::ResourceId;
 using command_buffer::O3DCmdHelper;
 using command_buffer::CommandBufferEntry;
-using command_buffer::GAPIInterface;
+using command_buffer::o3d::GAPIInterface;
 using command_buffer::kInvalidResource;
 namespace vertex_struct = command_buffer::vertex_struct;
 
@@ -63,22 +63,22 @@ PrimitiveCB::~PrimitiveCB() {
 }
 
 // Converts an O3D primitive type to a command-buffer one.
-static command_buffer::PrimitiveType GetCBPrimitiveType(
+static command_buffer::o3d::PrimitiveType GetCBPrimitiveType(
     Primitive::PrimitiveType primitive_type) {
   switch (primitive_type) {
     case Primitive::LINELIST:
-      return command_buffer::kLines;
+      return command_buffer::o3d::kLines;
     case Primitive::LINESTRIP:
-      return command_buffer::kLineStrips;
+      return command_buffer::o3d::kLineStrips;
     case Primitive::TRIANGLELIST:
-      return command_buffer::kTriangles;
+      return command_buffer::o3d::kTriangles;
     case Primitive::TRIANGLESTRIP:
-      return command_buffer::kTriangleStrips;
+      return command_buffer::o3d::kTriangleStrips;
     case Primitive::TRIANGLEFAN:
-      return command_buffer::kTriangleFans;
+      return command_buffer::o3d::kTriangleFans;
     default:
       // Note that POINTLIST falls into this case, for compatibility with D3D.
-      return command_buffer::kMaxPrimitiveType;
+      return command_buffer::o3d::kMaxPrimitiveType;
   }
 }
 
@@ -116,9 +116,9 @@ void PrimitiveCB::PlatformSpecificRender(Renderer* renderer,
     DLOG(INFO) << "Trying to draw with an empty index buffer.";
     return;
   }
-  command_buffer::PrimitiveType cb_primitive_type =
+  command_buffer::o3d::PrimitiveType cb_primitive_type =
       GetCBPrimitiveType(primitive_type_);
-  if (cb_primitive_type == command_buffer::kMaxPrimitiveType) {
+  if (cb_primitive_type == command_buffer::o3d::kMaxPrimitiveType) {
     DLOG(INFO) << "Invalid primitive type (" << primitive_type_ << ").";
     return;
   }

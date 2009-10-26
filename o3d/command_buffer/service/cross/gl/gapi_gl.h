@@ -50,6 +50,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 #if defined(OS_LINUX)
 class XWindowWrapper;
 #endif  // defined(OS_LINUX)
@@ -459,6 +460,7 @@ class GAPIGL : public GAPIInterface {
   ResourceMap<RenderDepthStencilSurfaceGL> depth_surfaces_;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

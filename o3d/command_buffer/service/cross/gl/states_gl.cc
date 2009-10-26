@@ -32,11 +32,12 @@
 
 // This file implements the render state-related GAPI functions on GL.
 
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 namespace {
 
@@ -45,7 +46,7 @@ GLenum kGLPolygonModes[] = {
   GL_LINE,
   GL_FILL,
 };
-COMPILE_ASSERT(command_buffer::kNumPolygonMode == arraysize(kGLPolygonModes),
+COMPILE_ASSERT(o3d::kNumPolygonMode == arraysize(kGLPolygonModes),
                kGLPolygonModes_does_not_match_command_buffer_PolygonMode);
 
 GLenum kGLComparison[] = {
@@ -58,7 +59,7 @@ GLenum kGLComparison[] = {
   GL_GEQUAL,
   GL_ALWAYS,
 };
-COMPILE_ASSERT(command_buffer::kNumComparison == arraysize(kGLComparison),
+COMPILE_ASSERT(o3d::kNumComparison == arraysize(kGLComparison),
                kGLComparison_does_not_match_command_buffer_Comparison);
 
 GLenum kGLBlendFunc[] = {
@@ -76,7 +77,7 @@ GLenum kGLBlendFunc[] = {
   GL_CONSTANT_COLOR,
   GL_ONE_MINUS_CONSTANT_COLOR,
 };
-COMPILE_ASSERT(command_buffer::kNumBlendFunc == arraysize(kGLBlendFunc),
+COMPILE_ASSERT(o3d::kNumBlendFunc == arraysize(kGLBlendFunc),
                kGLBlendFunc_does_not_match_command_buffer_BlendFunc);
 
 GLenum kGLBlendEq[] = {
@@ -86,7 +87,7 @@ GLenum kGLBlendEq[] = {
   GL_MIN,
   GL_MAX,
 };
-COMPILE_ASSERT(command_buffer::kNumBlendEq == arraysize(kGLBlendEq),
+COMPILE_ASSERT(o3d::kNumBlendEq == arraysize(kGLBlendEq),
                kGLBlendEq_does_not_match_command_buffer_BlendEq);
 
 GLenum kGLStencilOp[] = {
@@ -99,18 +100,18 @@ GLenum kGLStencilOp[] = {
   GL_INCR_WRAP,
   GL_DECR_WRAP,
 };
-COMPILE_ASSERT(command_buffer::kNumStencilOp == arraysize(kGLStencilOp),
+COMPILE_ASSERT(o3d::kNumStencilOp == arraysize(kGLStencilOp),
                kGLStencilOp_does_not_match_command_buffer_StencilOp);
 
 // Check that the definition of the counter-clockwise func/ops match the
 // clockwise ones, just shifted by 16 bits, so that we can use
 // DecodeStencilFuncOps on both of them.
 #define CHECK_CCW_MATCHES_CW(FIELD)                                       \
-  COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kLength ==             \
-                 cmd::SetStencilTest::CCW ## FIELD::kLength,              \
+  COMPILE_ASSERT(o3d::SetStencilTest::CW ## FIELD::kLength ==             \
+                 o3d::SetStencilTest::CCW ## FIELD::kLength,              \
                  CCW ## FIELD ## _length_does_not_match_ ## CW ## FIELD); \
-  COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kShift + 16 ==         \
-                 cmd::SetStencilTest::CCW ## FIELD::kShift,               \
+  COMPILE_ASSERT(o3d::SetStencilTest::CW ## FIELD::kShift + 16 ==         \
+                 o3d::SetStencilTest::CCW ## FIELD::kShift,               \
                  CCW ## FIELD ## _shift_does_not_match_ ## CW ## FIELD)
 
 CHECK_CCW_MATCHES_CW(Func);
@@ -128,28 +129,28 @@ void DecodeStencilFuncOps(Uint32 params,
                           GLenum *zfail) {
   // Sanity check. The value has already been tested in
   // GAPIDecoder::DecodeSetStencilTest in gapi_decoder.cc.
-  DCHECK_EQ(cmd::SetStencilTest::Unused1::Get(params), 0);
+  DCHECK_EQ(o3d::SetStencilTest::Unused1::Get(params), 0);
   // Check that the bitmask get cannot generate values outside of the allowed
   // range.
-  COMPILE_ASSERT(cmd::SetStencilTest::CWFunc::kMask <
-                 command_buffer::kNumComparison,
+  COMPILE_ASSERT(o3d::SetStencilTest::CWFunc::kMask <
+                 o3d::kNumComparison,
                  set_stencil_test_CWFunc_may_produce_invalid_values);
-  *func = kGLComparison[cmd::SetStencilTest::CWFunc::Get(params)];
+  *func = kGLComparison[o3d::SetStencilTest::CWFunc::Get(params)];
 
-  COMPILE_ASSERT(cmd::SetStencilTest::CWPassOp::kMask <
-                 command_buffer::kNumStencilOp,
+  COMPILE_ASSERT(o3d::SetStencilTest::CWPassOp::kMask <
+                 o3d::kNumStencilOp,
                  set_stencil_test_CWPassOp_may_produce_invalid_values);
-  *pass = kGLStencilOp[cmd::SetStencilTest::CWPassOp::Get(params)];
+  *pass = kGLStencilOp[o3d::SetStencilTest::CWPassOp::Get(params)];
 
-  COMPILE_ASSERT(cmd::SetStencilTest::CWFailOp::kMask <
-                 command_buffer::kNumStencilOp,
+  COMPILE_ASSERT(o3d::SetStencilTest::CWFailOp::kMask <
+                 o3d::kNumStencilOp,
                  set_stencil_test_CWFailOp_may_produce_invalid_values);
-  *fail = kGLStencilOp[cmd::SetStencilTest::CWFailOp::Get(params)];
+  *fail = kGLStencilOp[o3d::SetStencilTest::CWFailOp::Get(params)];
 
-  COMPILE_ASSERT(cmd::SetStencilTest::CWZFailOp::kMask <
-                 command_buffer::kNumStencilOp,
+  COMPILE_ASSERT(o3d::SetStencilTest::CWZFailOp::kMask <
+                 o3d::kNumStencilOp,
                  set_stencil_test_CWZFailOp_may_produce_invalid_values);
-  *zfail = kGLStencilOp[cmd::SetStencilTest::CWZFailOp::Get(params)];
+  *zfail = kGLStencilOp[o3d::SetStencilTest::CWZFailOp::Get(params)];
 }
 
 }  // anonymous namespace
@@ -207,8 +208,8 @@ void GAPIGL::SetPolygonOffset(float slope_factor, float units) {
   glPolygonOffset(slope_factor, units);
 }
 
-void GAPIGL::SetPolygonRaster(PolygonMode fill_mode,
-                              FaceCullMode cull_mode) {
+void GAPIGL::SetPolygonRaster(o3d::PolygonMode fill_mode,
+                              o3d::FaceCullMode cull_mode) {
   DCHECK_LT(fill_mode, kNumPolygonMode);
   glPolygonMode(GL_FRONT_AND_BACK, kGLPolygonModes[fill_mode]);
   DCHECK_LT(cull_mode, kNumFaceCullMode);
@@ -229,7 +230,7 @@ void GAPIGL::SetPolygonRaster(PolygonMode fill_mode,
 
 void GAPIGL::SetAlphaTest(bool enable,
                           float reference,
-                          Comparison comp) {
+                          o3d::Comparison comp) {
   DCHECK_LT(comp, kNumComparison);
   if (enable) {
     glEnable(GL_ALPHA_TEST);
@@ -241,7 +242,7 @@ void GAPIGL::SetAlphaTest(bool enable,
 
 void GAPIGL::SetDepthTest(bool enable,
                           bool write_enable,
-                          Comparison comp) {
+                          o3d::Comparison comp) {
   DCHECK_LT(comp, kNumComparison);
   if (enable) {
     glEnable(GL_DEPTH_TEST);
@@ -341,5 +342,6 @@ void GAPIGL::SetBlendingColor(const RGBA &color) {
   glBlendColor(color.red, color.green, color.blue, color.alpha);
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

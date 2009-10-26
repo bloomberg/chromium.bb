@@ -46,6 +46,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // This class implements the GAPI interface for D3D9.
 class GAPID3D9 : public GAPIInterface {
@@ -501,6 +502,7 @@ class GAPID3D9 : public GAPIInterface {
   D3DXGetShaderInputSemanticsProc get_shader_input_semantics_;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

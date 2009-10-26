@@ -36,7 +36,7 @@
 #include "core/cross/error.h"
 #include "core/cross/command_buffer/sampler_cb.h"
 #include "core/cross/command_buffer/renderer_cb.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/client/cross/o3d_cmd_helper.h"
 
 namespace o3d {
@@ -104,7 +104,7 @@ void SamplerCB::SetTextureAndStates() {
   if (mag_filter_cb == sampler::kNone) mag_filter_cb = sampler::kPoint;
   if (min_filter_cb == sampler::kNone) min_filter_cb = sampler::kPoint;
   int max_max_anisotropy =
-      command_buffer::cmd::SetSamplerStates::MaxAnisotropy::kMask;
+      command_buffer::o3d::SetSamplerStates::MaxAnisotropy::kMask;
   unsigned int max_anisotropy_cb =
       std::max(1, std::min(max_max_anisotropy, max_anisotropy()));
   if (min_filter() != Sampler::ANISOTROPIC) {

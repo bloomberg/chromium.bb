@@ -89,7 +89,7 @@ inline unsigned int FloatToClampedByte(float value) {
 }
 
 // Converts a RGBA color into a D3DCOLOR
-inline D3DCOLOR RGBAToD3DCOLOR(const RGBA &color) {
+inline D3DCOLOR RGBAToD3DCOLOR(const o3d::RGBA &color) {
   return D3DCOLOR_RGBA(FloatToClampedByte(color.red),
                        FloatToClampedByte(color.green),
                        FloatToClampedByte(color.blue),

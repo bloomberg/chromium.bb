@@ -38,7 +38,7 @@
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
 namespace o3d {
@@ -58,24 +58,24 @@ class O3DCmdHelper : public CommandBufferHelper {
   // ------------------ Individual commands ----------------------
 
   void Noop(uint32 skip_count) {
-    cmd::Noop& cmd = GetImmediateCmdSpace<cmd::Noop>(
+    o3d::Noop& cmd = GetImmediateCmdSpace<o3d::Noop>(
         skip_count * sizeof(CommandBufferEntry));
     cmd.Init(skip_count);
   }
 
   void SetToken(uint32 token) {
-    cmd::SetToken& cmd = GetCmdSpace<cmd::SetToken>();
+    o3d::SetToken& cmd = GetCmdSpace<o3d::SetToken>();
     cmd.Init(token);
   }
 
   void BeginFrame() {
-    cmd::BeginFrame& cmd = GetCmdSpace<cmd::BeginFrame>();
+    o3d::BeginFrame& cmd = GetCmdSpace<o3d::BeginFrame>();
     cmd.Init();
   }
 
 
   void EndFrame() {
-    cmd::EndFrame& cmd = GetCmdSpace<cmd::EndFrame>();
+    o3d::EndFrame& cmd = GetCmdSpace<o3d::EndFrame>();
     cmd.Init();
   }
 
@@ -83,7 +83,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 buffers,
       float red, float green, float blue, float alpha,
       float depth, uint32 stencil) {
-    cmd::Clear& cmd = GetCmdSpace<cmd::Clear>();
+    o3d::Clear& cmd = GetCmdSpace<o3d::Clear>();
     cmd.Init(buffers, red, green, blue, alpha, depth, stencil);
   }
 
@@ -94,34 +94,34 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 height,
       float z_min,
       float z_max) {
-    cmd::SetViewport& cmd = GetCmdSpace<cmd::SetViewport>();
+    o3d::SetViewport& cmd = GetCmdSpace<o3d::SetViewport>();
     cmd.Init(left, top, width, height, z_min, z_max);
   }
 
   void CreateVertexBuffer(
       ResourceId vertex_buffer_id, uint32 size, vertex_buffer::Flags flags) {
-    cmd::CreateVertexBuffer& cmd = GetCmdSpace<cmd::CreateVertexBuffer>();
+    o3d::CreateVertexBuffer& cmd = GetCmdSpace<o3d::CreateVertexBuffer>();
     cmd.Init(vertex_buffer_id, size, flags);
   }
 
   void DestroyVertexBuffer(ResourceId vertex_buffer_id) {
-    cmd::DestroyVertexBuffer& cmd = GetCmdSpace<cmd::DestroyVertexBuffer>();
+    o3d::DestroyVertexBuffer& cmd = GetCmdSpace<o3d::DestroyVertexBuffer>();
     cmd.Init(vertex_buffer_id);
   }
 
   void SetVertexBufferDataImmediate(
       ResourceId vertex_buffer_id, uint32 offset,
       const void* data, uint32 size) {
-    cmd::SetVertexBufferDataImmediate& cmd =
-        GetImmediateCmdSpace<cmd::SetVertexBufferDataImmediate>(size);
+    o3d::SetVertexBufferDataImmediate& cmd =
+        GetImmediateCmdSpace<o3d::SetVertexBufferDataImmediate>(size);
     cmd.Init(vertex_buffer_id, offset, data, size);
   }
 
   void SetVertexBufferData(
       ResourceId vertex_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::SetVertexBufferData& cmd =
-        GetCmdSpace<cmd::SetVertexBufferData>();
+    o3d::SetVertexBufferData& cmd =
+        GetCmdSpace<o3d::SetVertexBufferData>();
     cmd.Init(vertex_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
@@ -129,36 +129,36 @@ class O3DCmdHelper : public CommandBufferHelper {
   void GetVertexBufferData(
       ResourceId vertex_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetVertexBufferData& cmd =
-        GetCmdSpace<cmd::GetVertexBufferData>();
+    o3d::GetVertexBufferData& cmd =
+        GetCmdSpace<o3d::GetVertexBufferData>();
     cmd.Init(vertex_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
 
   void CreateIndexBuffer(
       ResourceId index_buffer_id, uint32 size, index_buffer::Flags flags) {
-    cmd::CreateIndexBuffer& cmd =
-        GetCmdSpace<cmd::CreateIndexBuffer>();
+    o3d::CreateIndexBuffer& cmd =
+        GetCmdSpace<o3d::CreateIndexBuffer>();
     cmd.Init(index_buffer_id, size, flags);
   }
 
   void DestroyIndexBuffer(ResourceId index_buffer_id) {
-    cmd::DestroyIndexBuffer& cmd = GetCmdSpace<cmd::DestroyIndexBuffer>();
+    o3d::DestroyIndexBuffer& cmd = GetCmdSpace<o3d::DestroyIndexBuffer>();
     cmd.Init(index_buffer_id);
   }
 
   void SetIndexBufferDataImmediate(
       ResourceId index_buffer_id, uint32 offset,
       const void* data, uint32 size) {
-    cmd::SetIndexBufferDataImmediate& cmd =
-        GetImmediateCmdSpace<cmd::SetIndexBufferDataImmediate>(size);
+    o3d::SetIndexBufferDataImmediate& cmd =
+        GetImmediateCmdSpace<o3d::SetIndexBufferDataImmediate>(size);
     cmd.Init(index_buffer_id, offset, data, size);
   }
 
   void SetIndexBufferData(
       ResourceId index_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::SetIndexBufferData& cmd = GetCmdSpace<cmd::SetIndexBufferData>();
+    o3d::SetIndexBufferData& cmd = GetCmdSpace<o3d::SetIndexBufferData>();
     cmd.Init(index_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
@@ -166,18 +166,18 @@ class O3DCmdHelper : public CommandBufferHelper {
   void GetIndexBufferData(
       ResourceId index_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetIndexBufferData& cmd = GetCmdSpace<cmd::GetIndexBufferData>();
+    o3d::GetIndexBufferData& cmd = GetCmdSpace<o3d::GetIndexBufferData>();
     cmd.Init(index_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
 
   void CreateVertexStruct(ResourceId vertex_struct_id, uint32 input_count) {
-    cmd::CreateVertexStruct& cmd = GetCmdSpace<cmd::CreateVertexStruct>();
+    o3d::CreateVertexStruct& cmd = GetCmdSpace<o3d::CreateVertexStruct>();
     cmd.Init(vertex_struct_id, input_count);
   }
 
   void DestroyVertexStruct(ResourceId vertex_struct_id) {
-    cmd::DestroyVertexStruct& cmd = GetCmdSpace<cmd::DestroyVertexStruct>();
+    o3d::DestroyVertexStruct& cmd = GetCmdSpace<o3d::DestroyVertexStruct>();
     cmd.Init(vertex_struct_id);
   }
 
@@ -190,7 +190,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 semantic_index,
       vertex_struct::Type type,
       uint32 stride) {
-    cmd::SetVertexInput& cmd = GetCmdSpace<cmd::SetVertexInput>();
+    o3d::SetVertexInput& cmd = GetCmdSpace<o3d::SetVertexInput>();
     cmd.Init(
         vertex_struct_id,
         input_index,
@@ -203,23 +203,23 @@ class O3DCmdHelper : public CommandBufferHelper {
   }
 
   void SetVertexStruct(ResourceId vertex_struct_id) {
-    cmd::SetVertexStruct& cmd = GetCmdSpace<cmd::SetVertexStruct>();
+    o3d::SetVertexStruct& cmd = GetCmdSpace<o3d::SetVertexStruct>();
     cmd.Init(vertex_struct_id);
   }
 
-  void Draw(PrimitiveType primitive_type, uint32 first, uint32 count) {
-    cmd::Draw& cmd = GetCmdSpace<cmd::Draw>();
+  void Draw(o3d::PrimitiveType primitive_type, uint32 first, uint32 count) {
+    o3d::Draw& cmd = GetCmdSpace<o3d::Draw>();
     cmd.Init(primitive_type, first, count);
   }
 
   void DrawIndexed(
-      PrimitiveType primitive_type,
+      o3d::PrimitiveType primitive_type,
       ResourceId index_buffer_id,
       uint32 first,
       uint32 count,
       uint32 min_index,
       uint32 max_index) {
-    cmd::DrawIndexed& cmd = GetCmdSpace<cmd::DrawIndexed>();
+    o3d::DrawIndexed& cmd = GetCmdSpace<o3d::DrawIndexed>();
     cmd.Init(
         primitive_type,
         index_buffer_id,
@@ -232,96 +232,96 @@ class O3DCmdHelper : public CommandBufferHelper {
   void CreateEffect(
       ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::CreateEffect& cmd = GetCmdSpace<cmd::CreateEffect>();
+    o3d::CreateEffect& cmd = GetCmdSpace<o3d::CreateEffect>();
     cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void CreateEffectImmediate(
       ResourceId effect_id, uint32 size, const void* data) {
-    cmd::CreateEffectImmediate& cmd =
-        GetImmediateCmdSpace<cmd::CreateEffectImmediate>(size);
+    o3d::CreateEffectImmediate& cmd =
+        GetImmediateCmdSpace<o3d::CreateEffectImmediate>(size);
     cmd.Init(effect_id, size, data);
   }
 
   void DestroyEffect(ResourceId effect_id) {
-    cmd::DestroyEffect& cmd = GetCmdSpace<cmd::DestroyEffect>();
+    o3d::DestroyEffect& cmd = GetCmdSpace<o3d::DestroyEffect>();
     cmd.Init(effect_id);
   }
 
   void SetEffect(ResourceId effect_id) {
-    cmd::SetEffect& cmd = GetCmdSpace<cmd::SetEffect>();
+    o3d::SetEffect& cmd = GetCmdSpace<o3d::SetEffect>();
     cmd.Init(effect_id);
   }
 
   void GetParamCount(
       ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetParamCount& cmd = GetCmdSpace<cmd::GetParamCount>();
+    o3d::GetParamCount& cmd = GetCmdSpace<o3d::GetParamCount>();
     cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void CreateParam(ResourceId param_id, ResourceId effect_id, uint32 index) {
-    cmd::CreateParam& cmd = GetCmdSpace<cmd::CreateParam>();
+    o3d::CreateParam& cmd = GetCmdSpace<o3d::CreateParam>();
     cmd.Init(param_id, effect_id, index);
   }
 
   void CreateParamByName(
       ResourceId param_id, ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::CreateParamByName& cmd = GetCmdSpace<cmd::CreateParamByName>();
+    o3d::CreateParamByName& cmd = GetCmdSpace<o3d::CreateParamByName>();
     cmd.Init(param_id, effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void CreateParamByNameImmediate(
       ResourceId param_id, ResourceId effect_id,
       uint32 size, const void* data) {
-    cmd::CreateParamByNameImmediate& cmd =
-        GetImmediateCmdSpace<cmd::CreateParamByNameImmediate>(size);
+    o3d::CreateParamByNameImmediate& cmd =
+        GetImmediateCmdSpace<o3d::CreateParamByNameImmediate>(size);
     cmd.Init(param_id, effect_id, size, data);
   }
 
   void DestroyParam(ResourceId param_id) {
-    cmd::DestroyParam& cmd = GetCmdSpace<cmd::DestroyParam>();
+    o3d::DestroyParam& cmd = GetCmdSpace<o3d::DestroyParam>();
     cmd.Init(param_id);
   }
 
   void SetParamData(
       ResourceId param_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::SetParamData& cmd = GetCmdSpace<cmd::SetParamData>();
+    o3d::SetParamData& cmd = GetCmdSpace<o3d::SetParamData>();
     cmd.Init(param_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void SetParamDataImmediate(
       ResourceId param_id, uint32 size, const void* data) {
-    cmd::SetParamDataImmediate& cmd =
-        GetImmediateCmdSpace<cmd::SetParamDataImmediate>(size);
+    o3d::SetParamDataImmediate& cmd =
+        GetImmediateCmdSpace<o3d::SetParamDataImmediate>(size);
     cmd.Init(param_id, size, data);
   }
 
   void GetParamDesc(
       ResourceId param_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetParamDesc& cmd = GetCmdSpace<cmd::GetParamDesc>();
+    o3d::GetParamDesc& cmd = GetCmdSpace<o3d::GetParamDesc>();
     cmd.Init(param_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void GetStreamCount(
       ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetStreamCount& cmd = GetCmdSpace<cmd::GetStreamCount>();
+    o3d::GetStreamCount& cmd = GetCmdSpace<o3d::GetStreamCount>();
     cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void GetStreamDesc(
       ResourceId effect_id, uint32 index, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
-    cmd::GetStreamDesc& cmd = GetCmdSpace<cmd::GetStreamDesc>();
+    o3d::GetStreamDesc& cmd = GetCmdSpace<o3d::GetStreamDesc>();
     cmd.Init(effect_id, index, size, shared_memory_id, shared_memory_offset);
   }
 
   void DestroyTexture(ResourceId texture_id) {
-    cmd::DestroyTexture& cmd = GetCmdSpace<cmd::DestroyTexture>();
+    o3d::DestroyTexture& cmd = GetCmdSpace<o3d::DestroyTexture>();
     cmd.Init(texture_id);
   }
 
@@ -330,7 +330,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 width, uint32 height,
       uint32 levels, texture::Format format,
       bool enable_render_surfaces) {
-    cmd::CreateTexture2d& cmd = GetCmdSpace<cmd::CreateTexture2d>();
+    o3d::CreateTexture2d& cmd = GetCmdSpace<o3d::CreateTexture2d>();
     cmd.Init(texture_id,
              width, height, levels, format,
              enable_render_surfaces);
@@ -341,7 +341,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 width, uint32 height, uint32 depth,
       uint32 levels, texture::Format format,
       bool enable_render_surfaces) {
-    cmd::CreateTexture3d& cmd = GetCmdSpace<cmd::CreateTexture3d>();
+    o3d::CreateTexture3d& cmd = GetCmdSpace<o3d::CreateTexture3d>();
     cmd.Init(texture_id,
              width, height, depth,
              levels, format,
@@ -352,7 +352,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       ResourceId texture_id,
       uint32 edge_length, uint32 levels, texture::Format format,
       bool enable_render_surfaces) {
-    cmd::CreateTextureCube& cmd = GetCmdSpace<cmd::CreateTextureCube>();
+    o3d::CreateTextureCube& cmd = GetCmdSpace<o3d::CreateTextureCube>();
     cmd.Init(texture_id,
              edge_length, levels, format,
              enable_render_surfaces);
@@ -373,7 +373,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 size,
       uint32 shared_memory_id,
       uint32 shared_memory_offset) {
-    cmd::SetTextureData& cmd = GetCmdSpace<cmd::SetTextureData>();
+    o3d::SetTextureData& cmd = GetCmdSpace<o3d::SetTextureData>();
     cmd.Init(
         texture_id,
         x,
@@ -405,8 +405,8 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 slice_pitch,
       uint32 size,
       const void* data) {
-    cmd::SetTextureDataImmediate& cmd =
-        GetImmediateCmdSpace<cmd::SetTextureDataImmediate>(size);
+    o3d::SetTextureDataImmediate& cmd =
+        GetImmediateCmdSpace<o3d::SetTextureDataImmediate>(size);
     cmd.Init(
         texture_id,
         x,
@@ -438,7 +438,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 size,
       uint32 shared_memory_id,
       uint32 shared_memory_offset) {
-    cmd::GetTextureData& cmd = GetCmdSpace<cmd::GetTextureData>();
+    o3d::GetTextureData& cmd = GetCmdSpace<o3d::GetTextureData>();
     cmd.Init(
         texture_id,
         x,
@@ -457,12 +457,12 @@ class O3DCmdHelper : public CommandBufferHelper {
   }
 
   void CreateSampler(ResourceId sampler_id) {
-    cmd::CreateSampler& cmd = GetCmdSpace<cmd::CreateSampler>();
+    o3d::CreateSampler& cmd = GetCmdSpace<o3d::CreateSampler>();
     cmd.Init(sampler_id);
   }
 
   void DestroySampler(ResourceId sampler_id) {
-    cmd::DestroySampler& cmd = GetCmdSpace<cmd::DestroySampler>();
+    o3d::DestroySampler& cmd = GetCmdSpace<o3d::DestroySampler>();
     cmd.Init(sampler_id);
   }
 
@@ -475,7 +475,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       sampler::FilteringMode min_filter_value,
       sampler::FilteringMode mip_filter_value,
       uint8 max_anisotropy) {
-    cmd::SetSamplerStates& cmd = GetCmdSpace<cmd::SetSamplerStates>();
+    o3d::SetSamplerStates& cmd = GetCmdSpace<o3d::SetSamplerStates>();
     cmd.Init(
         sampler_id,
         address_u_value,
@@ -490,13 +490,13 @@ class O3DCmdHelper : public CommandBufferHelper {
   void SetSamplerBorderColor(
       ResourceId sampler_id,
       float red, float green, float blue, float alpha) {
-    cmd::SetSamplerBorderColor& cmd =
-        GetCmdSpace<cmd::SetSamplerBorderColor>();
+    o3d::SetSamplerBorderColor& cmd =
+        GetCmdSpace<o3d::SetSamplerBorderColor>();
     cmd.Init(sampler_id, red, green, blue, alpha);
   }
 
   void SetSamplerTexture(ResourceId sampler_id, ResourceId texture_id) {
-    cmd::SetSamplerTexture& cmd = GetCmdSpace<cmd::SetSamplerTexture>();
+    o3d::SetSamplerTexture& cmd = GetCmdSpace<o3d::SetSamplerTexture>();
     cmd.Init(sampler_id, texture_id);
   }
 
@@ -506,7 +506,7 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint32 width,
       uint32 height,
       bool enable) {
-    cmd::SetScissor& cmd = GetCmdSpace<cmd::SetScissor>();
+    o3d::SetScissor& cmd = GetCmdSpace<o3d::SetScissor>();
     cmd.Init(
         x,
         y,
@@ -516,28 +516,29 @@ class O3DCmdHelper : public CommandBufferHelper {
   }
 
   void SetPolygonOffset(float slope_factor, float units) {
-    cmd::SetPolygonOffset& cmd = GetCmdSpace<cmd::SetPolygonOffset>();
+    o3d::SetPolygonOffset& cmd = GetCmdSpace<o3d::SetPolygonOffset>();
     cmd.Init(slope_factor, units);
   }
 
   void SetPointLineRaster(
       bool line_smooth_enable, bool point_sprite_enable, float point_size) {
-    cmd::SetPointLineRaster& cmd = GetCmdSpace<cmd::SetPointLineRaster>();
+    o3d::SetPointLineRaster& cmd = GetCmdSpace<o3d::SetPointLineRaster>();
     cmd.Init(line_smooth_enable, point_sprite_enable, point_size);
   }
 
-  void SetPolygonRaster(PolygonMode fill_mode, FaceCullMode cull_mode) {
-    cmd::SetPolygonRaster& cmd = GetCmdSpace<cmd::SetPolygonRaster>();
+  void SetPolygonRaster(o3d::PolygonMode fill_mode,
+                        o3d::FaceCullMode cull_mode) {
+    o3d::SetPolygonRaster& cmd = GetCmdSpace<o3d::SetPolygonRaster>();
     cmd.Init(fill_mode, cull_mode);
   }
 
-  void SetAlphaTest(Comparison func, bool enable, float value) {
-    cmd::SetAlphaTest& cmd = GetCmdSpace<cmd::SetAlphaTest>();
+  void SetAlphaTest(o3d::Comparison func, bool enable, float value) {
+    o3d::SetAlphaTest& cmd = GetCmdSpace<o3d::SetAlphaTest>();
     cmd.Init(func, enable, value);
   }
 
-  void SetDepthTest(Comparison func, bool write_enable, bool enable) {
-    cmd::SetDepthTest& cmd = GetCmdSpace<cmd::SetDepthTest>();
+  void SetDepthTest(o3d::Comparison func, bool write_enable, bool enable) {
+    o3d::SetDepthTest& cmd = GetCmdSpace<o3d::SetDepthTest>();
     cmd.Init(func, write_enable, enable);
   }
 
@@ -547,15 +548,15 @@ class O3DCmdHelper : public CommandBufferHelper {
       uint8 reference_value,
       bool separate_ccw,
       bool enable,
-      Comparison cw_func,
-      StencilOp cw_pass_op,
-      StencilOp cw_fail_op,
-      StencilOp cw_z_fail_op,
-      Comparison ccw_func,
-      StencilOp ccw_pass_op,
-      StencilOp ccw_fail_op,
-      StencilOp ccw_z_fail_op) {
-    cmd::SetStencilTest& cmd = GetCmdSpace<cmd::SetStencilTest>();
+      o3d::Comparison cw_func,
+      o3d::StencilOp cw_pass_op,
+      o3d::StencilOp cw_fail_op,
+      o3d::StencilOp cw_z_fail_op,
+      o3d::Comparison ccw_func,
+      o3d::StencilOp ccw_pass_op,
+      o3d::StencilOp ccw_fail_op,
+      o3d::StencilOp ccw_z_fail_op) {
+    o3d::SetStencilTest& cmd = GetCmdSpace<o3d::SetStencilTest>();
     cmd.Init(
         write_mask,
         compare_mask,
@@ -573,20 +574,20 @@ class O3DCmdHelper : public CommandBufferHelper {
   }
 
   void SetColorWrite(uint8 mask, bool dither_enable) {
-    cmd::SetColorWrite& cmd = GetCmdSpace<cmd::SetColorWrite>();
+    o3d::SetColorWrite& cmd = GetCmdSpace<o3d::SetColorWrite>();
     cmd.Init(mask, dither_enable);
   }
 
   void SetBlending(
-      BlendFunc color_src_func,
-      BlendFunc color_dst_func,
-      BlendEq color_eq,
-      BlendFunc alpha_src_func,
-      BlendFunc alpha_dst_func,
-      BlendEq alpha_eq,
+      o3d::BlendFunc color_src_func,
+      o3d::BlendFunc color_dst_func,
+      o3d::BlendEq color_eq,
+      o3d::BlendFunc alpha_src_func,
+      o3d::BlendFunc alpha_dst_func,
+      o3d::BlendEq alpha_eq,
       bool separate_alpha,
       bool enable) {
-    cmd::SetBlending& cmd = GetCmdSpace<cmd::SetBlending>();
+    o3d::SetBlending& cmd = GetCmdSpace<o3d::SetBlending>();
     cmd.Init(
         color_src_func,
         color_dst_func,
@@ -599,7 +600,7 @@ class O3DCmdHelper : public CommandBufferHelper {
   }
 
   void SetBlendingColor(float red, float green, float blue, float alpha) {
-    cmd::SetBlendingColor& cmd = GetCmdSpace<cmd::SetBlendingColor>();
+    o3d::SetBlendingColor& cmd = GetCmdSpace<o3d::SetBlendingColor>();
     cmd.Init(red, green, blue, alpha);
   }
 
@@ -607,35 +608,35 @@ class O3DCmdHelper : public CommandBufferHelper {
       ResourceId render_surface_id, ResourceId texture_id,
       uint32 width, uint32 height,
       uint32 level, uint32 side) {
-    cmd::CreateRenderSurface& cmd = GetCmdSpace<cmd::CreateRenderSurface>();
+    o3d::CreateRenderSurface& cmd = GetCmdSpace<o3d::CreateRenderSurface>();
     cmd.Init(render_surface_id, texture_id, width, height, level, side);
   }
 
   void DestroyRenderSurface(ResourceId render_surface_id) {
-    cmd::DestroyRenderSurface& cmd =
-        GetCmdSpace<cmd::DestroyRenderSurface>();
+    o3d::DestroyRenderSurface& cmd =
+        GetCmdSpace<o3d::DestroyRenderSurface>();
     cmd.Init(render_surface_id);
   }
 
   void CreateDepthSurface(
       ResourceId depth_surface_id, uint32 width, uint32 height) {
-    cmd::CreateDepthSurface& cmd = GetCmdSpace<cmd::CreateDepthSurface>();
+    o3d::CreateDepthSurface& cmd = GetCmdSpace<o3d::CreateDepthSurface>();
     cmd.Init(depth_surface_id, width, height);
   }
 
   void DestroyDepthSurface(ResourceId depth_surface_id) {
-    cmd::DestroyDepthSurface& cmd = GetCmdSpace<cmd::DestroyDepthSurface>();
+    o3d::DestroyDepthSurface& cmd = GetCmdSpace<o3d::DestroyDepthSurface>();
     cmd.Init(depth_surface_id);
   }
 
   void SetRenderSurface(
       ResourceId render_surface_id, ResourceId depth_surface_id) {
-    cmd::SetRenderSurface& cmd = GetCmdSpace<cmd::SetRenderSurface>();
+    o3d::SetRenderSurface& cmd = GetCmdSpace<o3d::SetRenderSurface>();
     cmd.Init(render_surface_id, depth_surface_id);
   }
 
   void SetBackSurfaces() {
-    cmd::SetBackSurfaces& cmd = GetCmdSpace<cmd::SetBackSurfaces>();
+    o3d::SetBackSurfaces& cmd = GetCmdSpace<o3d::SetBackSurfaces>();
     cmd.Init();
   }
 };

@@ -33,11 +33,11 @@
 // This file contains the binary format definition of the command buffer and
 // command buffer commands.
 
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 
 namespace o3d {
 namespace command_buffer {
-namespace cmd {
+namespace o3d {
 
 const char* GetCommandName(CommandId id) {
   static const char* const names[] = {

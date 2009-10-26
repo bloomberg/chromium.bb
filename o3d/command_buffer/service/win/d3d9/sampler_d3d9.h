@@ -42,6 +42,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPID3D9;
 
@@ -79,6 +80,7 @@ class SamplerD3D9 : public Sampler {
   ResourceId texture_id_;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

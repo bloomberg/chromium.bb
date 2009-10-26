@@ -34,7 +34,7 @@
 
 #include "command_buffer/service/cross/cmd_parser.h"
 // TODO(gman): remove this so we can use this code for different formats.
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -87,8 +87,9 @@ parse_error::ParseError CommandParser::ProcessCommand() {
   //     It seems like we need an official way to turn on a debug mode and
   //     get these errors.
   if (result != parse_error::kParseNoError) {
-    DLOG(INFO) << "Error: " << result << " for Command "
-               << cmd::GetCommandName(static_cast<CommandId>(header.command));
+    DLOG(INFO)
+        << "Error: " << result << " for Command "
+        << o3d::GetCommandName(static_cast<o3d::CommandId>(header.command));
   }
   get_ = (get + header.size) % entry_count_;
   return result;

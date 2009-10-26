@@ -49,7 +49,7 @@ namespace o3d {
 using command_buffer::ResourceId;
 using command_buffer::O3DCmdHelper;
 using command_buffer::CommandBufferEntry;
-using command_buffer::GAPIInterface;
+using command_buffer::o3d::GAPIInterface;
 using command_buffer::kInvalidResource;
 namespace vertex_struct = command_buffer::vertex_struct;
 

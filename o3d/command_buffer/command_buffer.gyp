@@ -40,8 +40,8 @@
       'sources': [
         'common/cross/bitfield_helpers.h',
         'common/cross/cmd_buffer_common.h',
-        'common/cross/cmd_buffer_format.h',
-        'common/cross/cmd_buffer_format.cc',
+        'common/cross/o3d_cmd_format.h',
+        'common/cross/o3d_cmd_format.cc',
         'common/cross/gapi_interface.h',
         'common/cross/logging.h',
         'common/cross/mocks.h',

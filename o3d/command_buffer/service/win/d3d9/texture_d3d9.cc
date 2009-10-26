@@ -38,6 +38,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // Converts a texture format to a D3D texture format.
 D3DFORMAT TextureD3D9::D3DFormat(texture::Format format) {
@@ -726,5 +727,6 @@ parse_error::ParseError GAPID3D9::GetTextureData(
       parse_error::kParseInvalidArguments;
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

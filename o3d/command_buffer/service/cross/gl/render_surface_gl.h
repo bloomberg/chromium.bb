@@ -41,6 +41,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class RenderSurfaceGL : public RenderSurface {
  public:
@@ -110,6 +111,7 @@ class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
   DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGL);
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

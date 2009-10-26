@@ -43,6 +43,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class RenderDepthStencilSurfaceGL;
 class RenderSurfaceGL;
@@ -278,6 +279,7 @@ class TextureCubeGL : public TextureGL {
   DISALLOW_COPY_AND_ASSIGN(TextureCubeGL);
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

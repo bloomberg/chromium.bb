@@ -41,6 +41,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 GAPIGL::GAPIGL()
 #ifdef OS_LINUX
@@ -409,5 +410,6 @@ void GAPIGL::Clear(unsigned int buffers,
   CHECK_GL_ERROR();
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

@@ -43,6 +43,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPIGL;
 class EffectGL;
@@ -156,7 +157,7 @@ class EffectGL : public Effect {
   DISALLOW_COPY_AND_ASSIGN(EffectGL);
 };
 
-
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

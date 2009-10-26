@@ -38,6 +38,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 namespace {
 
@@ -194,6 +195,6 @@ parse_error::ParseError GAPID3D9::SetSamplerTexture(
   return parse_error::kParseNoError;
 }
 
-
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

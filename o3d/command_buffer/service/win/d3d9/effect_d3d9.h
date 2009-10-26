@@ -43,6 +43,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPID3D9;
 class EffectD3D9;
@@ -133,6 +134,7 @@ class EffectD3D9 : public Effect {
   DISALLOW_COPY_AND_ASSIGN(EffectD3D9);
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

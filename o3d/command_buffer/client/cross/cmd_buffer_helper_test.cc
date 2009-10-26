@@ -282,7 +282,7 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   CommandBufferOffset command1_put = get_helper_put();
   int32 token = helper_->InsertToken();
 
-  EXPECT_CALL(*api_mock_.get(), DoCommand(kSetToken, 1, _))
+  EXPECT_CALL(*api_mock_.get(), DoCommand(cmd::kSetToken, 1, _))
       .WillOnce(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                       Return(parse_error::kParseNoError)));
   // Add another command.

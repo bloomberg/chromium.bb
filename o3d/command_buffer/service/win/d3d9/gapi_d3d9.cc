@@ -36,6 +36,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 GAPID3D9::GAPID3D9()
     : d3d_module_(NULL),
@@ -309,19 +310,19 @@ bool GAPID3D9::ValidateStreams() {
 
 // Converts a GAPID3D9::PrimitiveType to a D3DPRIMITIVETYPE.
 static D3DPRIMITIVETYPE D3DPrimitive(
-    command_buffer::PrimitiveType primitive_type) {
+    PrimitiveType primitive_type) {
   switch (primitive_type) {
-    case command_buffer::kPoints:
+    case kPoints:
       return D3DPT_POINTLIST;
-    case command_buffer::kLines:
+    case kLines:
       return D3DPT_LINELIST;
-    case command_buffer::kLineStrips:
+    case kLineStrips:
       return D3DPT_LINESTRIP;
-    case command_buffer::kTriangles:
+    case kTriangles:
       return D3DPT_TRIANGLELIST;
-    case command_buffer::kTriangleStrips:
+    case kTriangleStrips:
       return D3DPT_TRIANGLESTRIP;
-    case command_buffer::kTriangleFans:
+    case kTriangleFans:
       return D3DPT_TRIANGLEFAN;
     default:
       LOG(FATAL) << "Invalid primitive type";
@@ -388,5 +389,6 @@ parse_error::ParseError GAPID3D9::DrawIndexed(
   return parse_error::kParseNoError;
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

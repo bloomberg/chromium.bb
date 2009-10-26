@@ -64,6 +64,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // This macro is used to safely and convienently expand the list of commnad
 // buffer commands in to various lists and never have them get out of sync. To
@@ -240,8 +241,6 @@ enum BlendFunc {
   kNumBlendFunc
 };
 
-namespace cmd {
-
 const char* GetCommandName(CommandId id);
 
 // Make sure the compiler does not add extra padding to any of the command
@@ -250,8 +249,8 @@ O3D_PUSH_STRUCTURE_PACKING_1;
 
 struct Noop {
   typedef Noop ValueType;
-  static const CommandId kCmdId = command_buffer::kNoop;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kNoop;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 skip_count) {
     header.Init(kCmdId, skip_count + 1);
@@ -275,8 +274,8 @@ COMPILE_ASSERT(offsetof(Noop, header) == 0, Offsetof_Noop_header_not_0);
 
 struct SetToken {
   typedef SetToken ValueType;
-  static const CommandId kCmdId = command_buffer::kSetToken;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetToken;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -303,8 +302,8 @@ COMPILE_ASSERT(offsetof(SetToken, token) == 4,
 
 struct BeginFrame {
   typedef BeginFrame ValueType;
-  static const CommandId kCmdId = command_buffer::kBeginFrame;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kBeginFrame;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -327,8 +326,8 @@ COMPILE_ASSERT(offsetof(BeginFrame, header) == 0,
 
 struct EndFrame {
   typedef EndFrame ValueType;
-  static const CommandId kCmdId = command_buffer::kEndFrame;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kEndFrame;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -351,8 +350,8 @@ COMPILE_ASSERT(offsetof(EndFrame, header) == 0,
 
 struct Clear {
   typedef Clear ValueType;
-  static const CommandId kCmdId = command_buffer::kClear;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kClear;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -409,8 +408,8 @@ COMPILE_ASSERT(offsetof(Clear, stencil) == 28,
 
 struct SetViewport {
   typedef SetViewport ValueType;
-  static const CommandId kCmdId = command_buffer::kSetViewport;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetViewport;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -476,8 +475,8 @@ COMPILE_ASSERT(offsetof(SetViewport, z_max) == 24,
 
 struct CreateVertexBuffer {
   typedef CreateVertexBuffer ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateVertexBuffer;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateVertexBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -516,8 +515,8 @@ COMPILE_ASSERT(offsetof(CreateVertexBuffer, flags) == 12,
 
 struct DestroyVertexBuffer {
   typedef DestroyVertexBuffer ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyVertexBuffer;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyVertexBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -546,8 +545,8 @@ COMPILE_ASSERT(offsetof(DestroyVertexBuffer, vertex_buffer_id) == 4,
 
 struct SetVertexBufferDataImmediate {
   typedef SetVertexBufferDataImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kSetVertexBufferDataImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kSetVertexBufferDataImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -583,8 +582,8 @@ COMPILE_ASSERT(offsetof(SetVertexBufferDataImmediate, offset) == 8,
 
 struct SetVertexBufferData {
   typedef SetVertexBufferData ValueType;
-  static const CommandId kCmdId = command_buffer::kSetVertexBufferData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetVertexBufferData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -629,8 +628,8 @@ COMPILE_ASSERT(offsetof(SetVertexBufferData, shared_memory) == 16,
 
 struct GetVertexBufferData {
   typedef GetVertexBufferData ValueType;
-  static const CommandId kCmdId = command_buffer::kGetVertexBufferData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetVertexBufferData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -675,8 +674,8 @@ COMPILE_ASSERT(offsetof(GetVertexBufferData, shared_memory) == 16,
 
 struct CreateIndexBuffer {
   typedef CreateIndexBuffer ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateIndexBuffer;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateIndexBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -715,8 +714,8 @@ COMPILE_ASSERT(offsetof(CreateIndexBuffer, flags) == 12,
 
 struct DestroyIndexBuffer {
   typedef DestroyIndexBuffer ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyIndexBuffer;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyIndexBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -745,8 +744,8 @@ COMPILE_ASSERT(offsetof(DestroyIndexBuffer, index_buffer_id) == 4,
 
 struct SetIndexBufferDataImmediate {
   typedef SetIndexBufferDataImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kSetIndexBufferDataImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kSetIndexBufferDataImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -782,8 +781,8 @@ COMPILE_ASSERT(offsetof(SetIndexBufferDataImmediate, offset) == 8,
 
 struct SetIndexBufferData {
   typedef SetIndexBufferData ValueType;
-  static const CommandId kCmdId = command_buffer::kSetIndexBufferData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetIndexBufferData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -828,8 +827,8 @@ COMPILE_ASSERT(offsetof(SetIndexBufferData, shared_memory) == 16,
 
 struct GetIndexBufferData {
   typedef GetIndexBufferData ValueType;
-  static const CommandId kCmdId = command_buffer::kGetIndexBufferData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetIndexBufferData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -874,8 +873,8 @@ COMPILE_ASSERT(offsetof(GetIndexBufferData, shared_memory) == 16,
 
 struct CreateVertexStruct {
   typedef CreateVertexStruct ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateVertexStruct;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateVertexStruct;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -908,8 +907,8 @@ COMPILE_ASSERT(offsetof(CreateVertexStruct, input_count) == 8,
 
 struct DestroyVertexStruct {
   typedef DestroyVertexStruct ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyVertexStruct;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyVertexStruct;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -938,8 +937,8 @@ COMPILE_ASSERT(offsetof(DestroyVertexStruct, vertex_struct_id) == 4,
 
 struct SetVertexInput {
   typedef SetVertexInput ValueType;
-  static const CommandId kCmdId = command_buffer::kSetVertexInput;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetVertexInput;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // type_stride_semantic field.
   typedef BitField<0, 4> SemanticIndex;
@@ -1018,8 +1017,8 @@ COMPILE_ASSERT(offsetof(SetVertexInput, type_stride_semantic) == 20,
 
 struct SetVertexStruct {
   typedef SetVertexStruct ValueType;
-  static const CommandId kCmdId = command_buffer::kSetVertexStruct;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetVertexStruct;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1048,8 +1047,8 @@ COMPILE_ASSERT(offsetof(SetVertexStruct, vertex_struct_id) == 4,
 
 struct Draw {
   typedef Draw ValueType;
-  static const CommandId kCmdId = command_buffer::kDraw;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDraw;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1086,8 +1085,8 @@ COMPILE_ASSERT(offsetof(Draw, count) == 12,
 
 struct DrawIndexed {
   typedef DrawIndexed ValueType;
-  static const CommandId kCmdId = command_buffer::kDrawIndexed;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDrawIndexed;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1153,8 +1152,8 @@ COMPILE_ASSERT(offsetof(DrawIndexed, max_index) == 24,
 
 struct CreateEffect {
   typedef CreateEffect ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateEffect;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateEffect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1193,8 +1192,8 @@ COMPILE_ASSERT(offsetof(CreateEffect, shared_memory) == 12,
 
 struct CreateEffectImmediate {
   typedef CreateEffectImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateEffectImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kCreateEffectImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -1228,8 +1227,8 @@ COMPILE_ASSERT(offsetof(CreateEffectImmediate, size) == 8,
 
 struct DestroyEffect {
   typedef DestroyEffect ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyEffect;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyEffect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1257,8 +1256,8 @@ COMPILE_ASSERT(offsetof(DestroyEffect, effect_id) == 4,
 
 struct SetEffect {
   typedef SetEffect ValueType;
-  static const CommandId kCmdId = command_buffer::kSetEffect;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetEffect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1286,8 +1285,8 @@ COMPILE_ASSERT(offsetof(SetEffect, effect_id) == 4,
 
 struct GetParamCount {
   typedef GetParamCount ValueType;
-  static const CommandId kCmdId = command_buffer::kGetParamCount;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetParamCount;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1326,8 +1325,8 @@ COMPILE_ASSERT(offsetof(GetParamCount, shared_memory) == 12,
 
 struct CreateParam {
   typedef CreateParam ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateParam;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateParam;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1364,8 +1363,8 @@ COMPILE_ASSERT(offsetof(CreateParam, index) == 12,
 
 struct CreateParamByName {
   typedef CreateParamByName ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateParamByName;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateParamByName;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1410,8 +1409,8 @@ COMPILE_ASSERT(offsetof(CreateParamByName, shared_memory) == 16,
 
 struct CreateParamByNameImmediate {
   typedef CreateParamByNameImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateParamByNameImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kCreateParamByNameImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -1451,8 +1450,8 @@ COMPILE_ASSERT(offsetof(CreateParamByNameImmediate, size) == 12,
 
 struct DestroyParam {
   typedef DestroyParam ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyParam;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyParam;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1480,8 +1479,8 @@ COMPILE_ASSERT(offsetof(DestroyParam, param_id) == 4,
 
 struct SetParamData {
   typedef SetParamData ValueType;
-  static const CommandId kCmdId = command_buffer::kSetParamData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetParamData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1520,8 +1519,8 @@ COMPILE_ASSERT(offsetof(SetParamData, shared_memory) == 12,
 
 struct SetParamDataImmediate {
   typedef SetParamDataImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kSetParamDataImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kSetParamDataImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -1556,8 +1555,8 @@ COMPILE_ASSERT(offsetof(SetParamDataImmediate, size) == 8,
 
 struct GetParamDesc {
   typedef GetParamDesc ValueType;
-  static const CommandId kCmdId = command_buffer::kGetParamDesc;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetParamDesc;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1596,8 +1595,8 @@ COMPILE_ASSERT(offsetof(GetParamDesc, shared_memory) == 12,
 
 struct GetStreamCount {
   typedef GetStreamCount ValueType;
-  static const CommandId kCmdId = command_buffer::kGetStreamCount;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetStreamCount;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1637,8 +1636,8 @@ COMPILE_ASSERT(offsetof(GetStreamCount, shared_memory) == 12,
 
 struct GetStreamDesc {
   typedef GetStreamDesc ValueType;
-  static const CommandId kCmdId = command_buffer::kGetStreamDesc;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetStreamDesc;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1681,8 +1680,8 @@ COMPILE_ASSERT(offsetof(GetStreamDesc, shared_memory) == 16,
 
 struct DestroyTexture {
   typedef DestroyTexture ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyTexture;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -1710,8 +1709,8 @@ COMPILE_ASSERT(offsetof(DestroyTexture, texture_id) == 4,
 
 struct CreateTexture2d {
   typedef CreateTexture2d ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateTexture2d;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateTexture2d;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> Width;
@@ -1769,8 +1768,8 @@ COMPILE_ASSERT(offsetof(CreateTexture2d, levels_format_flags) == 12,
 
 struct CreateTexture3d {
   typedef CreateTexture3d ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateTexture3d;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateTexture3d;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> Width;
@@ -1836,8 +1835,8 @@ COMPILE_ASSERT(offsetof(CreateTexture3d, levels_format_flags) == 16,
 
 struct CreateTextureCube {
   typedef CreateTextureCube ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateTextureCube;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateTextureCube;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> Side;
@@ -1893,8 +1892,8 @@ COMPILE_ASSERT(offsetof(CreateTextureCube, levels_format_flags) == 12,
 
 struct SetTextureData {
   typedef SetTextureData ValueType;
-  static const CommandId kCmdId = command_buffer::kSetTextureData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetTextureData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> X;
@@ -2013,8 +2012,8 @@ COMPILE_ASSERT(offsetof(SetTextureData, shared_memory) == 36,
 
 struct SetTextureDataImmediate {
   typedef SetTextureDataImmediate ValueType;
-  static const CommandId kCmdId = command_buffer::kSetTextureDataImmediate;
-  static const ArgFlags kArgFlags = kAtLeastN;
+  static const CommandId kCmdId = kSetTextureDataImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
   // argument 1
   typedef BitField<0, 16> X;
@@ -2127,8 +2126,8 @@ COMPILE_ASSERT(offsetof(SetTextureDataImmediate, size) == 32,
 
 struct GetTextureData {
   typedef GetTextureData ValueType;
-  static const CommandId kCmdId = command_buffer::kGetTextureData;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kGetTextureData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> X;
@@ -2247,8 +2246,8 @@ COMPILE_ASSERT(offsetof(GetTextureData, shared_memory) == 36,
 
 struct CreateSampler {
   typedef CreateSampler ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateSampler;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateSampler;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2276,8 +2275,8 @@ COMPILE_ASSERT(offsetof(CreateSampler, sampler_id) == 4,
 
 struct DestroySampler {
   typedef DestroySampler ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroySampler;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroySampler;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2305,8 +2304,8 @@ COMPILE_ASSERT(offsetof(DestroySampler, sampler_id) == 4,
 
 struct SetSamplerStates {
   typedef SetSamplerStates ValueType;
-  static const CommandId kCmdId = command_buffer::kSetSamplerStates;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetSamplerStates;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 2
   typedef BitField<0, 3> AddressingU;
@@ -2381,8 +2380,8 @@ COMPILE_ASSERT(offsetof(SetSamplerStates, sampler_states) == 8,
 
 struct SetSamplerBorderColor {
   typedef SetSamplerBorderColor ValueType;
-  static const CommandId kCmdId = command_buffer::kSetSamplerBorderColor;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetSamplerBorderColor;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2429,8 +2428,8 @@ COMPILE_ASSERT(offsetof(SetSamplerBorderColor, alpha) == 20,
 
 struct SetSamplerTexture {
   typedef SetSamplerTexture ValueType;
-  static const CommandId kCmdId = command_buffer::kSetSamplerTexture;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetSamplerTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2463,8 +2462,8 @@ COMPILE_ASSERT(offsetof(SetSamplerTexture, texture_id) == 8,
 
 struct SetScissor {
   typedef SetScissor ValueType;
-  static const CommandId kCmdId = command_buffer::kSetScissor;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetScissor;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 15> X;
@@ -2524,8 +2523,8 @@ COMPILE_ASSERT(offsetof(SetScissor, width_height) == 8,
 
 struct SetPolygonOffset {
   typedef SetPolygonOffset ValueType;
-  static const CommandId kCmdId = command_buffer::kSetPolygonOffset;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetPolygonOffset;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2558,8 +2557,8 @@ COMPILE_ASSERT(offsetof(SetPolygonOffset, units) == 8,
 
 struct SetPointLineRaster {
   typedef SetPointLineRaster ValueType;
-  static const CommandId kCmdId = command_buffer::kSetPointLineRaster;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetPointLineRaster;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 1> LineSmoothEnable;
@@ -2603,8 +2602,8 @@ COMPILE_ASSERT(offsetof(SetPointLineRaster, point_size) == 8,
 
 struct SetPolygonRaster {
   typedef SetPolygonRaster ValueType;
-  static const CommandId kCmdId = command_buffer::kSetPolygonRaster;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetPolygonRaster;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 2> FillMode;
@@ -2640,8 +2639,8 @@ COMPILE_ASSERT(offsetof(SetPolygonRaster, fill_cull) == 4,
 
 struct SetAlphaTest {
   typedef SetAlphaTest ValueType;
-  static const CommandId kCmdId = command_buffer::kSetAlphaTest;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetAlphaTest;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 3> Func;
@@ -2679,8 +2678,8 @@ COMPILE_ASSERT(offsetof(SetAlphaTest, value) == 8,
 
 struct SetDepthTest {
   typedef SetDepthTest ValueType;
-  static const CommandId kCmdId = command_buffer::kSetDepthTest;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetDepthTest;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 3> Func;
@@ -2719,8 +2718,8 @@ COMPILE_ASSERT(offsetof(SetDepthTest, func_enable) == 4,
 
 struct SetStencilTest {
   typedef SetStencilTest ValueType;
-  static const CommandId kCmdId = command_buffer::kSetStencilTest;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetStencilTest;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 8> WriteMask;
@@ -2825,8 +2824,8 @@ COMPILE_ASSERT(offsetof(SetStencilTest, stencil_args1) == 8,
 
 struct SetColorWrite {
   typedef SetColorWrite ValueType;
-  static const CommandId kCmdId = command_buffer::kSetColorWrite;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetColorWrite;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 1> RedMask;
@@ -2868,8 +2867,8 @@ COMPILE_ASSERT(offsetof(SetColorWrite, flags) == 4,
 
 struct SetBlending {
   typedef SetBlending ValueType;
-  static const CommandId kCmdId = command_buffer::kSetBlending;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetBlending;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 0
   typedef BitField<0, 4> ColorSrcFunc;
@@ -2943,8 +2942,8 @@ COMPILE_ASSERT(offsetof(SetBlending, blend_settings) == 4,
 
 struct SetBlendingColor {
   typedef SetBlendingColor ValueType;
-  static const CommandId kCmdId = command_buffer::kSetBlendingColor;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetBlendingColor;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2986,8 +2985,8 @@ COMPILE_ASSERT(offsetof(SetBlendingColor, alpha) == 16,
 
 struct CreateRenderSurface {
   typedef CreateRenderSurface ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateRenderSurface;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateRenderSurface;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> Width;
@@ -3045,8 +3044,8 @@ COMPILE_ASSERT(offsetof(CreateRenderSurface, texture_id) == 16,
 
 struct DestroyRenderSurface {
   typedef DestroyRenderSurface ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyRenderSurface;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyRenderSurface;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -3075,8 +3074,8 @@ COMPILE_ASSERT(offsetof(DestroyRenderSurface, render_surface_id) == 4,
 
 struct CreateDepthSurface {
   typedef CreateDepthSurface ValueType;
-  static const CommandId kCmdId = command_buffer::kCreateDepthSurface;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kCreateDepthSurface;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   // argument 1
   typedef BitField<0, 16> Width;
@@ -3115,8 +3114,8 @@ COMPILE_ASSERT(offsetof(CreateDepthSurface, width_height) == 8,
 
 struct DestroyDepthSurface {
   typedef DestroyDepthSurface ValueType;
-  static const CommandId kCmdId = command_buffer::kDestroyDepthSurface;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kDestroyDepthSurface;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -3145,8 +3144,8 @@ COMPILE_ASSERT(offsetof(DestroyDepthSurface, depth_surface_id) == 4,
 
 struct SetRenderSurface {
   typedef SetRenderSurface ValueType;
-  static const CommandId kCmdId = command_buffer::kSetRenderSurface;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetRenderSurface;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -3180,8 +3179,8 @@ COMPILE_ASSERT(offsetof(SetRenderSurface, depth_surface_id) == 8,
 
 struct SetBackSurfaces {
   typedef SetBackSurfaces ValueType;
-  static const CommandId kCmdId = command_buffer::kSetBackSurfaces;
-  static const ArgFlags kArgFlags = kFixed;
+  static const CommandId kCmdId = kSetBackSurfaces;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   void SetHeader() {
     header.SetCmd<ValueType>();

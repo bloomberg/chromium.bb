@@ -39,6 +39,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 RenderSurfaceGL::RenderSurfaceGL(int width,
                                  int height,
@@ -256,6 +257,7 @@ void GAPIGL::SetBackSurfaces() {
   glFrontFace(GL_CCW);
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

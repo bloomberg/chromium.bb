@@ -38,10 +38,11 @@
 
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/resource.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // RBGA color definition.
 struct RGBA {
@@ -827,6 +828,7 @@ class GAPIInterface {
   virtual void SetBackSurfaces() = 0;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

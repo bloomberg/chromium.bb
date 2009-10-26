@@ -42,6 +42,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 EffectParamGL::EffectParamGL(effect_param::DataType data_type,
                              EffectGL *effect,
@@ -846,5 +847,6 @@ bool GAPIGL::ValidateEffect() {
   return current_effect_->Begin(this);
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

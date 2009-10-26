@@ -48,130 +48,130 @@ namespace {
 // Converts values meant to represent a Cull Mode to the corresponding
 // command-buffer value.
 // Default: CULL_NONE.
-command_buffer::FaceCullMode CullModeToCB(int cull) {
+command_buffer::o3d::FaceCullMode CullModeToCB(int cull) {
   switch (cull) {
     default:
     case State::CULL_NONE:
-      return command_buffer::kCullNone;
+      return command_buffer::o3d::kCullNone;
     case State::CULL_CW:
-      return command_buffer::kCullCW;
+      return command_buffer::o3d::kCullCW;
     case State::CULL_CCW:
-      return command_buffer::kCullCCW;
+      return command_buffer::o3d::kCullCCW;
   }
 }
 
 // Converts values meant to represent a Polygon Fill Mode to the corresponding
 // command-buffer value.
 // Default: kPolygonModeFill.
-command_buffer::PolygonMode FillModeToCB(int fill) {
+command_buffer::o3d::PolygonMode FillModeToCB(int fill) {
   switch (fill) {
     case State::POINT:
-      return command_buffer::kPolygonModePoints;
+      return command_buffer::o3d::kPolygonModePoints;
     case State::WIREFRAME:
-      return command_buffer::kPolygonModeLines;
+      return command_buffer::o3d::kPolygonModeLines;
     default:
     case State::SOLID:
-      return command_buffer::kPolygonModeFill;
+      return command_buffer::o3d::kPolygonModeFill;
   }
 }
 
 // Converts values meant to represent a Comparison Function to the corresponding
 // command-buffer value.
 // Default: kAlways.
-command_buffer::Comparison ComparisonToCB(int comparison) {
+command_buffer::o3d::Comparison ComparisonToCB(int comparison) {
   switch (comparison) {
     case State::CMP_NEVER:
-      return command_buffer::kNever;
+      return command_buffer::o3d::kNever;
     case State::CMP_LESS:
-      return command_buffer::kLess;
+      return command_buffer::o3d::kLess;
     case State::CMP_EQUAL:
-      return command_buffer::kEqual;
+      return command_buffer::o3d::kEqual;
     case State::CMP_LEQUAL:
-      return command_buffer::kLEqual;
+      return command_buffer::o3d::kLEqual;
     case State::CMP_GREATER:
-      return command_buffer::kGreater;
+      return command_buffer::o3d::kGreater;
     case State::CMP_NOTEQUAL:
-      return command_buffer::kNotEqual;
+      return command_buffer::o3d::kNotEqual;
     case State::CMP_GEQUAL:
-      return command_buffer::kGEqual;
+      return command_buffer::o3d::kGEqual;
     case State::CMP_ALWAYS:
     default:
-      return command_buffer::kAlways;
+      return command_buffer::o3d::kAlways;
   }
 }
 
 // Converts values meant to represent a Stencil Operation to the corresponding
 // command-buffer value.
 // Default: kKeep.
-command_buffer::StencilOp StencilOpToCB(int op) {
+command_buffer::o3d::StencilOp StencilOpToCB(int op) {
   switch (op) {
     default:
     case State::STENCIL_KEEP:
-      return command_buffer::kKeep;
+      return command_buffer::o3d::kKeep;
     case State::STENCIL_ZERO:
-      return command_buffer::kZero;
+      return command_buffer::o3d::kZero;
     case State::STENCIL_REPLACE:
-      return command_buffer::kReplace;
+      return command_buffer::o3d::kReplace;
     case State::STENCIL_INCREMENT_SATURATE:
-      return command_buffer::kIncNoWrap;
+      return command_buffer::o3d::kIncNoWrap;
     case State::STENCIL_DECREMENT_SATURATE:
-      return command_buffer::kDecNoWrap;
+      return command_buffer::o3d::kDecNoWrap;
     case State::STENCIL_INVERT:
-      return command_buffer::kInvert;
+      return command_buffer::o3d::kInvert;
     case State::STENCIL_INCREMENT:
-      return command_buffer::kIncWrap;
+      return command_buffer::o3d::kIncWrap;
     case State::STENCIL_DECREMENT:
-      return command_buffer::kDecWrap;
+      return command_buffer::o3d::kDecWrap;
   }
 }
 
 // Converts values meant to represent a Blending Function to the corresponding
 // command-buffer value.
 // Default: kBlendFuncOne.
-command_buffer::BlendFunc BlendFuncToCB(int func) {
+command_buffer::o3d::BlendFunc BlendFuncToCB(int func) {
   switch (func) {
     case State::BLENDFUNC_ZERO:
-      return command_buffer::kBlendFuncZero;
+      return command_buffer::o3d::kBlendFuncZero;
     default:
     case State::BLENDFUNC_ONE:
-      return command_buffer::kBlendFuncOne;
+      return command_buffer::o3d::kBlendFuncOne;
     case State::BLENDFUNC_SOURCE_COLOR:
-      return command_buffer::kBlendFuncSrcColor;
+      return command_buffer::o3d::kBlendFuncSrcColor;
     case State::BLENDFUNC_INVERSE_SOURCE_COLOR:
-      return command_buffer::kBlendFuncInvSrcColor;
+      return command_buffer::o3d::kBlendFuncInvSrcColor;
     case State::BLENDFUNC_SOURCE_ALPHA:
-      return command_buffer::kBlendFuncSrcAlpha;
+      return command_buffer::o3d::kBlendFuncSrcAlpha;
     case State::BLENDFUNC_INVERSE_SOURCE_ALPHA:
-      return command_buffer::kBlendFuncInvSrcAlpha;
+      return command_buffer::o3d::kBlendFuncInvSrcAlpha;
     case State::BLENDFUNC_DESTINATION_ALPHA:
-      return command_buffer::kBlendFuncDstAlpha;
+      return command_buffer::o3d::kBlendFuncDstAlpha;
     case State::BLENDFUNC_INVERSE_DESTINATION_ALPHA:
-      return command_buffer::kBlendFuncInvDstAlpha;
+      return command_buffer::o3d::kBlendFuncInvDstAlpha;
     case State::BLENDFUNC_DESTINATION_COLOR:
-      return command_buffer::kBlendFuncDstColor;
+      return command_buffer::o3d::kBlendFuncDstColor;
     case State::BLENDFUNC_INVERSE_DESTINATION_COLOR:
-      return command_buffer::kBlendFuncInvDstColor;
+      return command_buffer::o3d::kBlendFuncInvDstColor;
     case State::BLENDFUNC_SOURCE_ALPHA_SATUTRATE:
-      return command_buffer::kBlendFuncSrcAlphaSaturate;
+      return command_buffer::o3d::kBlendFuncSrcAlphaSaturate;
   }
 }
 
 // Converts values meant to represent a Blending Equation to the corresponding
 // command-buffer value.
 // Default: kBlendEqAdd.
-command_buffer::BlendEq BlendEqToCB(int eq) {
+command_buffer::o3d::BlendEq BlendEqToCB(int eq) {
   switch (eq) {
     default:
     case State::BLEND_ADD:
-      return command_buffer::kBlendEqAdd;
+      return command_buffer::o3d::kBlendEqAdd;
     case State::BLEND_SUBTRACT:
-      return command_buffer::kBlendEqSub;
+      return command_buffer::o3d::kBlendEqSub;
     case State::BLEND_REVERSE_SUBTRACT:
-      return command_buffer::kBlendEqRevSub;
+      return command_buffer::o3d::kBlendEqRevSub;
     case State::BLEND_MIN:
-      return command_buffer::kBlendEqMin;
+      return command_buffer::o3d::kBlendEqMin;
     case State::BLEND_MAX:
-      return command_buffer::kBlendEqMax;
+      return command_buffer::o3d::kBlendEqMax;
   }
 }
 
@@ -264,7 +264,7 @@ class ColorWriteStateHandler : public TypedStateHandler<ParamInteger> {
 
   virtual void SetStateFromTypedParam(RendererCB* renderer,
                                       ParamInteger* param) const {
-    using command_buffer::cmd::SetColorWrite;
+    using command_buffer::o3d::SetColorWrite;
     int mask = param->value();
     SetColorWrite::AllColorsMask::Set(value_, mask);
     renderer->SetWriteMask(mask);
@@ -314,7 +314,7 @@ class CullModeStateHandler : public TypedStateHandler<ParamInteger> {
 
   virtual void SetStateFromTypedParam(RendererCB* renderer,
                                       ParamInteger* param) const {
-    using command_buffer::cmd::SetPolygonRaster;
+    using command_buffer::o3d::SetPolygonRaster;
     SetPolygonRaster::CullMode::Set(value_, CullModeToCB(param->value()));
     *dirty_ = true;
   }
@@ -336,7 +336,7 @@ class FillModeStateHandler : public TypedStateHandler<ParamInteger> {
 
   virtual void SetStateFromTypedParam(RendererCB* renderer,
                                       ParamInteger* param) const {
-    using command_buffer::cmd::SetPolygonRaster;
+    using command_buffer::o3d::SetPolygonRaster;
     SetPolygonRaster::FillMode::Set(value_, FillModeToCB(param->value()));
     *dirty_ = true;
   }
@@ -448,7 +448,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Point/Line raster
   {
     bool *dirty = point_line_helper_.dirty_ptr();
-    using command_buffer::cmd::SetPointLineRaster;
+    using command_buffer::o3d::SetPointLineRaster;
     SetPointLineRaster& cmd = point_line_helper_.command();
     renderer->AddStateHandler(
         State::kLineSmoothEnableParamName,
@@ -466,7 +466,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Polygon Raster
   {
     bool *dirty = poly_raster_helper_.dirty_ptr();
-    using command_buffer::cmd::SetPolygonRaster;
+    using command_buffer::o3d::SetPolygonRaster;
     SetPolygonRaster& cmd = poly_raster_helper_.command();
     renderer->AddStateHandler(State::kCullModeParamName,
                               new CullModeStateHandler(&cmd.fill_cull, dirty));
@@ -477,7 +477,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Polygon Offset
   {
     bool *dirty = poly_offset_helper_.dirty_ptr();
-    command_buffer::cmd::SetPolygonOffset& cmd =
+    command_buffer::o3d::SetPolygonOffset& cmd =
         poly_offset_helper_.command();
     renderer->AddStateHandler(
         State::kPolygonOffset1ParamName,
@@ -489,7 +489,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
 
   // Alpha test
   {
-    using command_buffer::cmd::SetAlphaTest;
+    using command_buffer::o3d::SetAlphaTest;
     SetAlphaTest& cmd = alpha_test_helper_.command();
     bool *dirty = alpha_test_helper_.dirty_ptr();
     renderer->AddStateHandler(
@@ -506,7 +506,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Depth Test
   {
     bool *dirty = depth_test_helper_.dirty_ptr();
-    using command_buffer::cmd::SetDepthTest;
+    using command_buffer::o3d::SetDepthTest;
     SetDepthTest& cmd = depth_test_helper_.command();
     renderer->AddStateHandler(
         State::kZWriteEnableParamName,
@@ -522,7 +522,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Stencil Test
   {
     bool *dirty = stencil_test_helper_.dirty_ptr();
-    using command_buffer::cmd::SetStencilTest;
+    using command_buffer::o3d::SetStencilTest;
     SetStencilTest& cmd = stencil_test_helper_.command();
     renderer->AddStateHandler(
         State::kStencilEnableParamName,
@@ -583,7 +583,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Blending
   {
     bool *dirty = blending_helper_.dirty_ptr();
-    using command_buffer::cmd::SetBlending;
+    using command_buffer::o3d::SetBlending;
     SetBlending& cmd = blending_helper_.command();
     renderer->AddStateHandler(
         State::kAlphaBlendEnableParamName,
@@ -621,7 +621,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
   // Color Write
   {
     bool *dirty = color_write_helper_.dirty_ptr();
-    using command_buffer::cmd::SetColorWrite;
+    using command_buffer::o3d::SetColorWrite;
     SetColorWrite& cmd = color_write_helper_.command();
     renderer->AddStateHandler(
         State::kDitherEnableParamName,

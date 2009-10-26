@@ -41,6 +41,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPIGL;
 
@@ -62,7 +63,7 @@ class SamplerGL : public Sampler {
                  unsigned int max_anisotropy);
 
   // Sets the border color states.
-  void SetBorderColor(const RGBA &color);
+  void SetBorderColor(const o3d::RGBA &color);
 
   // Sets the texture.
   void SetTexture(ResourceId texture) { texture_id_ = texture; }
@@ -81,6 +82,7 @@ class SamplerGL : public Sampler {
   ResourceId texture_id_;
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 

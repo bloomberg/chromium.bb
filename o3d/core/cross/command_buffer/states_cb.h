@@ -37,7 +37,7 @@
 #define O3D_CORE_CROSS_COMMAND_BUFFER_STATES_CB_H_
 
 #include "core/cross/command_buffer/renderer_cb.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
 
 namespace o3d {
@@ -87,15 +87,15 @@ class RendererCB::StateManager {
     DISALLOW_COPY_AND_ASSIGN(StateHelper);
   };
 
-  StateHelper<command_buffer::cmd::SetPointLineRaster> point_line_helper_;
-  StateHelper<command_buffer::cmd::SetPolygonOffset> poly_offset_helper_;
-  StateHelper<command_buffer::cmd::SetPolygonRaster> poly_raster_helper_;
-  StateHelper<command_buffer::cmd::SetAlphaTest> alpha_test_helper_;
-  StateHelper<command_buffer::cmd::SetDepthTest> depth_test_helper_;
-  StateHelper<command_buffer::cmd::SetStencilTest> stencil_test_helper_;
-  StateHelper<command_buffer::cmd::SetColorWrite> color_write_helper_;
-  StateHelper<command_buffer::cmd::SetBlending> blending_helper_;
-  StateHelper<command_buffer::cmd::SetBlendingColor> blending_color_helper_;
+  StateHelper<command_buffer::o3d::SetPointLineRaster> point_line_helper_;
+  StateHelper<command_buffer::o3d::SetPolygonOffset> poly_offset_helper_;
+  StateHelper<command_buffer::o3d::SetPolygonRaster> poly_raster_helper_;
+  StateHelper<command_buffer::o3d::SetAlphaTest> alpha_test_helper_;
+  StateHelper<command_buffer::o3d::SetDepthTest> depth_test_helper_;
+  StateHelper<command_buffer::o3d::SetStencilTest> stencil_test_helper_;
+  StateHelper<command_buffer::o3d::SetColorWrite> color_write_helper_;
+  StateHelper<command_buffer::o3d::SetBlending> blending_helper_;
+  StateHelper<command_buffer::o3d::SetBlendingColor> blending_color_helper_;
   DISALLOW_COPY_AND_ASSIGN(StateManager);
 };
 

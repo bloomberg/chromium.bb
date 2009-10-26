@@ -38,7 +38,7 @@
 #include "core/cross/service_locator.h"
 #include "core/cross/command_buffer/effect_cb.h"
 #include "command_buffer/common/cross/constants.h"
-#include "command_buffer/common/cross/cmd_buffer_format.h"
+#include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/client/cross/fenced_allocator.h"
 #include "command_buffer/client/cross/o3d_cmd_helper.h"
 

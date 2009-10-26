@@ -66,10 +66,10 @@ class BaseFencedAllocatorTest : public testing::Test {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
-    EXPECT_CALL(*api_mock_, DoCommand(kNoop, 0, _))
+    EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, 0, _))
         .WillRepeatedly(Return(parse_error::kParseNoError));
     // Forward the SetToken calls to the engine
-    EXPECT_CALL(*api_mock_.get(), DoCommand(kSetToken, 1, _))
+    EXPECT_CALL(*api_mock_.get(), DoCommand(cmd::kSetToken, 1, _))
         .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                               Return(parse_error::kParseNoError)));
 

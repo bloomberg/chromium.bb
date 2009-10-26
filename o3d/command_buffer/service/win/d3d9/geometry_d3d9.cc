@@ -41,6 +41,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 // Destroys the D3D9 vertex buffer.
 VertexBufferD3D9::~VertexBufferD3D9() {
@@ -432,5 +433,6 @@ parse_error::ParseError GAPID3D9::SetVertexInput(
   return parse_error::kParseNoError;
 }
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d

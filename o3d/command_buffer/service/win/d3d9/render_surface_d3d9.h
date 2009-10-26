@@ -45,6 +45,7 @@
 
 namespace o3d {
 namespace command_buffer {
+namespace o3d {
 
 class GAPID3D9;
 
@@ -154,6 +155,7 @@ class RenderDepthStencilSurfaceD3D9 : public RenderDepthStencilSurface {
   DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceD3D9);
 };
 
+}  // namespace o3d
 }  // namespace command_buffer
 }  // namespace o3d
 
