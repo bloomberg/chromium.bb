@@ -841,6 +841,8 @@ BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE
 // These tests are failing because they use position-dependent mouse clicks.
 BUG13907 BUG25375 : LayoutTests/media/video-controls-transformed.html = FAIL
 
+BUG13907 : LayoutTests/media/progress-event-at-least-one.html = FAIL
+
 // These tests are WONTFIX because they use codecs Chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-document-types.html = FAIL TIMEOUT
@@ -2737,10 +2739,8 @@ BUG11669 LINUX : LayoutTests/fast/layers/remove-only-this-layer-update.html = FA
 // on mac/linux buildbot. See http://crbug.com/11763.
 BUG11763 LINUX : LayoutTests/fast/layers/self-painting-outline.html = FAIL PASS
 
-// This test got moved (and the baselines have been moved accordingly), but now as a result
-// it seems to be failing?!
-BUG11795 WIN LINUX : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL
-BUG11795 MAC : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL CRASH
+// Passes in Chrome, fails in test_shell
+BUG11795 : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL
 
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
@@ -3174,9 +3174,6 @@ BUG_JEREMY WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 // WebKit Roll 49684:49761
 BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.html = FAIL
 BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
-
-// WebKit Roll 49761:49809
-BUG_JAPHET : LayoutTests/media/progress-event-at-least-one.html = FAIL
 
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
