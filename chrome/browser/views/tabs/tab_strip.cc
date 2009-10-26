@@ -1056,6 +1056,10 @@ void TabStrip::TabSelectedAt(TabContents* old_contents,
     } else {
       SchedulePaint();
     }
+
+    int old_index = model_->GetIndexOfTabContents(old_contents);
+    if (old_index >= 0)
+      GetTabAt(old_index)->StopPinnedTabTitleAnimation();
   }
 }
 
@@ -1081,9 +1085,8 @@ void TabStrip::TabChangedAt(TabContents* contents, int index,
   // case we have an animation going.
   Tab* tab = GetTabAtAdjustForAnimation(index);
   if (change_type == TITLE_NOT_LOADING) {
-    // TODO(sky): make this work.
-    // if (tab->is_pinned() && !tab->IsSelected())
-    // tab->StartPinnedTabTitleAnimation();
+    if (tab->pinned() && !tab->IsSelected())
+      tab->StartPinnedTabTitleAnimation();
     // We'll receive another notification of the change asynchronously.
     return;
   }

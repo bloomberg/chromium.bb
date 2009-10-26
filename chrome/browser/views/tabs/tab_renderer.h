@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
 
 #include "app/animation.h"
-#include "app/slide_animation.h"
-#include "app/throb_animation.h"
 #include "base/gfx/point.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 
+class SlideAnimation;
 class TabContents;
+class ThrobAnimation;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,6 +67,10 @@ class TabRenderer : public views::View,
   // Starts/Stops a pulse animation.
   void StartPulse();
   void StopPulse();
+
+  // Start/stop the pinned tab title animation.
+  void StartPinnedTabTitleAnimation();
+  void StopPinnedTabTitleAnimation();
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
@@ -153,6 +158,11 @@ class TabRenderer : public views::View,
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
 
+  // Gets the throb value for the tab. When a tab is not selected the
+  // active background is drawn at |GetThrobValue()|%. This is used for hover,
+  // pinned tab title change and pulsing.
+  double GetThrobValue();
+
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
   gfx::Rect title_bounds_;
@@ -174,6 +184,9 @@ class TabRenderer : public views::View,
 
   // Pulse animation.
   scoped_ptr<ThrobAnimation> pulse_animation_;
+
+  // Animation used when the title of an inactive pinned tab changes.
+  scoped_ptr<ThrobAnimation> pinned_title_animation_;
 
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the

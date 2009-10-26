@@ -8,6 +8,7 @@
 #include <set>
 
 #include "app/animation.h"
+#include "app/slide_animation.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"

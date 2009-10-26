@@ -12,6 +12,8 @@
 #include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
+#include "app/throb_animation.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
@@ -77,6 +79,12 @@ static int waiting_to_loading_frame_count_ratio = 0;
 TabRenderer::TabImage TabRenderer::tab_alpha = {0};
 TabRenderer::TabImage TabRenderer::tab_active = {0};
 TabRenderer::TabImage TabRenderer::tab_inactive = {0};
+
+// Max opacity for the pinned tab title change animation.
+const double kPinnedThrobOpacity = 0.75;
+
+// Duration for when the title of an inactive pinned tab changes.
+const int kPinnedDuration = 1000;
 
 namespace {
 
@@ -361,6 +369,28 @@ void TabRenderer::StopPulse() {
     pulse_animation_->Stop();
 }
 
+void TabRenderer::StartPinnedTabTitleAnimation() {
+  if (!pinned_title_animation_.get()) {
+    pinned_title_animation_.reset(new ThrobAnimation(this));
+    pinned_title_animation_->SetThrobDuration(kPinnedDuration);
+  }
+
+  if (!pinned_title_animation_->IsAnimating()) {
+    pinned_title_animation_->StartThrobbing(2);
+  } else if (pinned_title_animation_->cycles_remaining() <= 2) {
+    // The title changed while we're already animating. Add at most one more
+    // cycle. This is done in an attempt to smooth out pages that continuously
+    // change the title.
+    pinned_title_animation_->set_cycles_remaining(
+        pinned_title_animation_->cycles_remaining() + 2);
+  }
+}
+
+void TabRenderer::StopPinnedTabTitleAnimation() {
+  if (pinned_title_animation_.get())
+    pinned_title_animation_->Stop();
+}
+
 // static
 gfx::Size TabRenderer::GetMinimumUnselectedSize() {
   InitResources();
@@ -610,18 +640,14 @@ void TabRenderer::PaintTabBackground(gfx::Canvas* canvas) {
     // the active representation for the dragged tab.
     PaintActiveTabBackground(canvas);
   } else {
-    // Draw our hover state.
-    Animation* animation = hover_animation_.get();
-    if (pulse_animation_->IsAnimating())
-      animation = pulse_animation_.get();
-
     PaintInactiveTabBackground(canvas);
-    if (animation->GetCurrentValue() > 0) {
+
+    double throb_value = GetThrobValue();
+    if (throb_value > 0) {
       SkRect bounds;
       bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->saveLayerAlpha(&bounds,
-          static_cast<int>(animation->GetCurrentValue() * kHoverOpacity * 0xff),
-              SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
+                             SkCanvas::kARGB_ClipLayer_SaveFlag);
       canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
       canvas->restore();
@@ -796,6 +822,17 @@ bool TabRenderer::ShouldShowIcon() const {
 bool TabRenderer::ShouldShowCloseBox() const {
   // The selected tab never clips close button.
   return !pinned() && (IsSelected() || IconCapacity() >= 3);
+}
+
+double TabRenderer::GetThrobValue() {
+  if (pulse_animation_->IsAnimating())
+    return pulse_animation_->GetCurrentValue() * kHoverOpacity;
+
+  if (pinned_title_animation_.get() && pinned_title_animation_->IsAnimating())
+    return pinned_title_animation_->GetCurrentValue() * kPinnedThrobOpacity;
+
+  return hover_animation_.get() ?
+      kHoverOpacity * hover_animation_->GetCurrentValue() : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
