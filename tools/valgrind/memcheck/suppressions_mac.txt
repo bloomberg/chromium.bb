@@ -327,6 +327,7 @@
 {
    bug_25656
    Memcheck:Addr4
+   ...
    fun:bestBtreeIndex
    fun:sqlite3WhereBegin
    fun:sqlite3Select
