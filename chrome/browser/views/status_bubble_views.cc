@@ -27,6 +27,8 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+using views::Widget;
+
 // The alpha and color of the bubble's shadow.
 static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
 
@@ -462,7 +464,9 @@ StatusBubbleViews::~StatusBubbleViews() {
 
 void StatusBubbleViews::Init() {
   if (!popup_.get()) {
-    popup_.reset(views::Widget::CreateTransparentPopupWidget(false));
+    popup_.reset(Widget::CreatePopupWidget(Widget::Transparent,
+                                           Widget::NotAcceptEvents,
+                                           Widget::NotDeleteOnDestroy));
     if (!view_)
       view_ = new StatusView(this, popup_.get(), frame_->GetThemeProvider());
     popup_->SetOpacity(0x00);

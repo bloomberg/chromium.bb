@@ -137,6 +137,13 @@ void WidgetWin::SetBounds(const gfx::Rect& bounds) {
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
+void WidgetWin::MoveAbove(Widget* other) {
+  gfx::Rect bounds;
+  GetBounds(&bounds, false);
+  SetWindowPos(other->GetNativeView(), bounds.x(), bounds.y(),
+               bounds.width(), bounds.height(), SWP_NOACTIVATE);
+}
+
 void WidgetWin::SetShape(const gfx::Path& shape) {
   SetWindowRgn(shape.CreateHRGN(), TRUE);
 }
@@ -250,6 +257,13 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
 
 void WidgetWin::SetOpacity(unsigned char opacity) {
   layered_alpha_ = static_cast<BYTE>(opacity);
+}
+
+void WidgetWin::SetAlwaysOnTop(bool on_top) {
+  if (on_top)
+    set_window_ex_style(window_ex_style() | WS_EX_TOPMOST);
+  else
+    set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
 }
 
 RootView* WidgetWin::GetRootView() {
@@ -1155,13 +1169,18 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
 // Widget, public:
 
 // static
-Widget* Widget::CreateTransparentPopupWidget(bool delete_on_destroy) {
+Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
+                                  EventsParam accept_events,
+                                  DeleteParam delete_on_destroy) {
   WidgetWin* popup = new WidgetWin;
+  DWORD ex_style = WS_EX_TOOLWINDOW | l10n_util::GetExtendedTooltipStyles();
+  if (transparent == Transparent)
+    ex_style |= WS_EX_LAYERED;
+  if (accept_events != AcceptEvents)
+    ex_style |= WS_EX_TRANSPARENT;
   popup->set_window_style(WS_POPUP);
-  popup->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                             WS_EX_TRANSPARENT |
-                             l10n_util::GetExtendedTooltipStyles());
-  popup->set_delete_on_destroy(delete_on_destroy);
+  popup->set_window_ex_style(ex_style);
+  popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
   return popup;
 }
 

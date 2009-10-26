@@ -43,9 +43,25 @@ class Widget {
  public:
   virtual ~Widget() { }
 
-  // Creates a transparent popup widget specific to the current platform useful
-  // for transient status notifications.
-  static Widget* CreateTransparentPopupWidget(bool delete_on_destroy);
+  enum TransparencyParam {
+    Transparent,
+    NotTransparent
+  };
+
+  enum EventsParam {
+    AcceptEvents,
+    NotAcceptEvents
+  };
+
+  enum DeleteParam {
+    DeleteOnDestroy,
+    NotDeleteOnDestroy
+  };
+
+  // Creates a transient popup widget specific to the current platform.
+  static Widget* CreatePopupWidget(TransparencyParam transparent,
+                                   EventsParam accept_events,
+                                   DeleteParam delete_on_destroy);
 
   // Initialize the Widget with a parent and an initial desired size.
   // |contents_view| is the view that will be the single child of RootView
@@ -57,7 +73,7 @@ class Widget {
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) = 0;
 
   // Sets the specified view as the contents of this Widget. There can only
-  // be one contnets view child of this Widget's RootView. This view is sized to
+  // be one contents view child of this Widget's RootView. This view is sized to
   // fit the entire size of the RootView. The RootView takes ownership of this
   // View, unless it is set as not being parent-owned.
   virtual void SetContentsView(View* view) = 0;
@@ -71,6 +87,9 @@ class Widget {
 
   // Sizes and/or places the widget to the specified bounds, size or position.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
+
+  // Places the widget in front of the specified widget in z-order.
+  virtual void MoveAbove(Widget* widget) = 0;
 
   // Sets a shape on the widget.
   virtual void SetShape(const gfx::Path& shape) = 0;
@@ -98,6 +117,9 @@ class Widget {
   // underlying windowing system. Note that the caller must then schedule a
   // repaint to allow this change to take effect.
   virtual void SetOpacity(unsigned char opacity) = 0;
+
+  // Sets the widget to be on top of all other widgets in the windowing system.
+  virtual void SetAlwaysOnTop(bool on_top) = 0;
 
   // Returns the RootView contained by this Widget.
   virtual RootView* GetRootView() = 0;

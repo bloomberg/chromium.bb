@@ -374,6 +374,10 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
+void WidgetGtk::MoveAbove(Widget* widget) {
+  NOTIMPLEMENTED();
+}
+
 void WidgetGtk::SetShape(const gfx::Path& shape) {
   DCHECK(widget_);
   DCHECK(widget_->window);
@@ -435,6 +439,10 @@ void WidgetGtk::SetOpacity(unsigned char opacity) {
     gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
                            static_cast<gdouble>(255));
   }
+}
+
+void WidgetGtk::SetAlwaysOnTop(bool on_top) {
+  NOTIMPLEMENTED();
 }
 
 RootView* WidgetGtk::GetRootView() {
@@ -1218,10 +1226,13 @@ void WidgetGtk::HandleGrabBroke() {
 // Widget, public:
 
 // static
-Widget* Widget::CreateTransparentPopupWidget(bool delete_on_destroy) {
+Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
+                                  EventsParam /*accept_events*/,
+                                  DeleteParam delete_on_destroy) {
   WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
-  popup->set_delete_on_destroy(delete_on_destroy);
-  popup->MakeTransparent();
+  popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
+  if (transparent == Transparent)
+    popup->MakeTransparent();
   return popup;
 }
 

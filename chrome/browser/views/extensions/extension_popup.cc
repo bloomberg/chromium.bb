@@ -16,8 +16,10 @@
 
 #include "views/widget/root_view.h"
 
+using views::Widget;
+
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
-                               views::Widget* frame,
+                               Widget* frame,
                                const gfx::Rect& relative_to)
     : BrowserBubble(host->view(), frame, gfx::Point()),
       relative_to_(relative_to),
@@ -29,8 +31,9 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
   // We should see if we can unify these classes.
 
-  // |true| here means the widget is set to delete on destroy.
-  border_widget_ = views::Widget::CreateTransparentPopupWidget(true);
+  border_widget_ = Widget::CreatePopupWidget(Widget::Transparent,
+                                             Widget::NotAcceptEvents,
+                                             Widget::DeleteOnDestroy);
   gfx::NativeView native_window = frame->GetNativeView();
   border_widget_->Init(native_window, bounds());
   border_ = new BubbleBorder;

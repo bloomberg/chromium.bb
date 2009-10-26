@@ -117,6 +117,7 @@ class WidgetGtk
   virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
+  virtual void MoveAbove(Widget* other);
   virtual void SetShape(const gfx::Path& shape);
   virtual void Close();
   virtual void CloseNow();
@@ -125,6 +126,7 @@ class WidgetGtk
   virtual gfx::NativeView GetNativeView() const;
   virtual void PaintNow(const gfx::Rect& update_rect);
   virtual void SetOpacity(unsigned char opacity);
+  virtual void SetAlwaysOnTop(bool on_top);
   virtual RootView* GetRootView();
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
