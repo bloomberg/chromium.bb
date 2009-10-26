@@ -141,17 +141,20 @@ const NSString* const kUserClosedAboutNotification =
   KeystoneGlue* keystoneGlue = [KeystoneGlue defaultKeystoneGlue];
   CGFloat updateShift;
   if (keystoneGlue) {
-    NSNotification* recentNotification = [keystoneGlue recentNotification];
-    NSDictionary* recentDictionary = [recentNotification userInfo];
-    AutoupdateStatus recentStatus = static_cast<AutoupdateStatus>(
-        [[recentDictionary objectForKey:kAutoupdateStatusStatus] intValue]);
-    if (recentStatus == kAutoupdateInstallFailed) {
-      // A previous update attempt was unsuccessful, but no About box was
-      // around to report status.  Use the saved notification to set up the
-      // About box with the error message, and to allow another chance to
+    if ([keystoneGlue asyncOperationPending] ||
+        [keystoneGlue recentStatus] == kAutoupdateInstallFailed) {
+      // If an asynchronous update operation is currently pending, such as a
+      // check for updates or an update installation attempt, set the status
+      // up correspondingly without launching a new update check.
+      //
+      // If a previous update attempt was unsuccessful but no About box was
+      // around to report the error, show it now, and allow another chance to
       // install the update.
-      [self updateStatus:recentNotification];
+      [self updateStatus:[keystoneGlue recentNotification]];
     } else {
+      // Launch a new update check, even if one was already completed, because
+      // a new update may be available or a new update may have been installed
+      // in the background since the last time an About box was displayed.
       [self checkForUpdate];
     }
 
@@ -208,25 +211,27 @@ const NSString* const kUserClosedAboutNotification =
 }
 
 - (void)checkForUpdate {
-  [self setUpdateThrobberMessage:
-      l10n_util::GetNSStringWithFixup(IDS_UPGRADE_CHECK_STARTED)];
   [[KeystoneGlue defaultKeystoneGlue] checkForUpdate];
 
+  // Immediately, kAutoupdateStatusNotification will be posted, and
+  // -updateStatus: will be called with status kAutoupdateChecking.
+  //
   // Upon completion, kAutoupdateStatusNotification will be posted, and
-  // -updateStatus: will be called.
+  // -updateStatus: will be called with a status indicating the result of the
+  // check.
 }
 
 - (IBAction)updateNow:(id)sender {
   updateTriggered_ = YES;
 
-  // Don't let someone click "Update Now" twice!
-  [updateNowButton_ setEnabled:NO];
-  [self setUpdateThrobberMessage:
-      l10n_util::GetNSStringWithFixup(IDS_UPGRADE_STARTED)];
   [[KeystoneGlue defaultKeystoneGlue] installUpdate];
 
+  // Immediately, kAutoupdateStatusNotification will be posted, and
+  // -updateStatus: will be called with status kAutoupdateInstalling.
+  //
   // Upon completion, kAutoupdateStatusNotification will be posted, and
-  // -updateStatus: will be called.
+  // -updateStatus: will be called with a status indicating the result of the
+  // installation attempt.
 }
 
 - (void)updateStatus:(NSNotification*)notification {
@@ -237,10 +242,17 @@ const NSString* const kUserClosedAboutNotification =
   // Don't assume |version| is a real string.  It may be nil.
   NSString* version = [dictionary objectForKey:kAutoupdateStatusVersion];
 
-  int imageID;
+  bool throbber = false;
+  int imageID = 0;
   NSString* message;
 
   switch (status) {
+    case kAutoupdateChecking:
+      throbber = true;
+      message = l10n_util::GetNSStringWithFixup(IDS_UPGRADE_CHECK_STARTED);
+
+      break;
+
     case kAutoupdateCurrent:
       imageID = IDR_UPDATE_UPTODATE;
       message = l10n_util::GetNSStringFWithFixup(
@@ -255,6 +267,15 @@ const NSString* const kUserClosedAboutNotification =
       message = l10n_util::GetNSStringFWithFixup(
           IDS_UPGRADE_AVAILABLE, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
       [updateNowButton_ setEnabled:YES];
+
+      break;
+
+    case kAutoupdateInstalling:
+      // Don't let someone click "Update Now" twice.
+      [updateNowButton_ setEnabled:NO];
+
+      throbber = true;
+      message = l10n_util::GetNSStringWithFixup(IDS_UPGRADE_STARTED);
 
       break;
 
@@ -282,6 +303,12 @@ const NSString* const kUserClosedAboutNotification =
       break;
 
     case kAutoupdateInstallFailed:
+      // Since the installation failure will now be displayed in an About box,
+      // the saved state can be cleared.  If the About box is closed and then
+      // reopened, this will let it start out with a clean slate and not be
+      // affected by past failures.
+      [[KeystoneGlue defaultKeystoneGlue] clearRecentNotification];
+
       // Allow another chance.
       [updateNowButton_ setEnabled:YES];
 
@@ -301,12 +328,12 @@ const NSString* const kUserClosedAboutNotification =
       return;
   }
 
-  [self setUpdateImage:imageID message:message];
-
-  // Since the update status is now displayed in an About box, the saved state
-  // can be cleared.  If the About box is closed and then reopened, this will
-  // let it start out with a clean slate and not be affected by past failures.
-  [[KeystoneGlue defaultKeystoneGlue] clearRecentNotification];
+  if (throbber) {
+    [self setUpdateThrobberMessage:message];
+  } else {
+    DCHECK_NE(imageID, 0);
+    [self setUpdateImage:imageID message:message];
+  }
 }
 
 - (BOOL)textView:(NSTextView *)aTextView
@@ -368,10 +395,10 @@ const NSString* const kUserClosedAboutNotification =
   NSRange begin_oss = [license rangeOfString:kBeginLinkOss];
   NSRange end_chr = [license rangeOfString:kEndLinkChr];
   NSRange end_oss = [license rangeOfString:kEndLinkOss];
-  DCHECK(begin_chr.location != NSNotFound);
-  DCHECK(begin_oss.location != NSNotFound);
-  DCHECK(end_chr.location != NSNotFound);
-  DCHECK(end_oss.location != NSNotFound);
+  DCHECK_NE(begin_chr.location, NSNotFound);
+  DCHECK_NE(begin_oss.location, NSNotFound);
+  DCHECK_NE(end_chr.location, NSNotFound);
+  DCHECK_NE(end_oss.location, NSNotFound);
 
   // We don't know which link will come first, so we have to deal with things
   // like this:

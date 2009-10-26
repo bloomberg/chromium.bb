@@ -241,10 +241,14 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 }
 
 - (void)checkForUpdate {
+  DCHECK(![self asyncOperationPending]);
+
   if (!registration_) {
     [self updateStatus:kAutoupdateCheckFailed version:nil];
     return;
   }
+
+  [self updateStatus:kAutoupdateChecking version:nil];
 
   [registration_ checkForUpdate];
 
@@ -271,10 +275,14 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 }
 
 - (void)installUpdate {
+  DCHECK(![self asyncOperationPending]);
+
   if (!registration_) {
     [self updateStatus:kAutoupdateInstallFailed version:nil];
     return;
   }
+
+  [self updateStatus:kAutoupdateInstalling version:nil];
 
   [registration_ startUpdate];
 
@@ -389,6 +397,17 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
 - (void)clearRecentNotification {
   recentNotification_.reset(nil);
+}
+
+- (AutoupdateStatus)recentStatus {
+  NSDictionary* dictionary = [recentNotification_ userInfo];
+  return static_cast<AutoupdateStatus>(
+      [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+}
+
+- (BOOL)asyncOperationPending {
+  AutoupdateStatus status = [self recentStatus];
+  return status == kAutoupdateChecking || status == kAutoupdateInstalling;
 }
 
 @end  // @implementation KeystoneGlue

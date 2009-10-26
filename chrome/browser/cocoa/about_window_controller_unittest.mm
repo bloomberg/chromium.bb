@@ -84,10 +84,6 @@ TEST_F(AboutWindowControllerTest, TestButton) {
   // Make sure the button is hooked up
   ASSERT_EQ([button target], about_window_controller_.get());
   ASSERT_EQ([button action], @selector(updateNow:));
-
-  // Make sure the button is disabled once clicked
-  [about_window_controller_ updateNow:about_window_controller_.get()];
-  ASSERT_FALSE([button isEnabled]);
 }
 
 // Doesn't confirm correctness, but does confirm something happens.

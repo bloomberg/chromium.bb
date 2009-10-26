@@ -11,10 +11,14 @@
 // Possible outcomes of -checkForUpdate and -installUpdate.  A version may
 // accompany some of these, but beware: a version is never required.  For
 // statuses that can be accompanied by a version, the comment indicates what
-// version is referenced.
+// version is referenced.  A notification posted containing an asynchronous
+// status will always be followed by a notification with a terminal status.
 enum AutoupdateStatus {
-  kAutoupdateCurrent = 0,   // version of the running application
+  kAutoupdateNone = 0,      // no version (initial state only)
+  kAutoupdateChecking,      // no version (asynchronous operation in progress)
+  kAutoupdateCurrent,       // version of the running application
   kAutoupdateAvailable,     // version of the update that is available
+  kAutoupdateInstalling,    // no version (asynchronous operation in progress)
   kAutoupdateInstalled,     // version of the update that was installed
   kAutoupdateCheckFailed,   // no version
   kAutoupdateInstallFailed  // no version
@@ -75,7 +79,7 @@ extern const NSString* const kAutoupdateStatusVersion;
 // -checkForUpdate launches a check for updates, and -installUpdate begins
 // installing an available update.  For each, status will be communicated via
 // a kAutoupdateStatusNotification notification, and will also be available
-// through -recentUpdateStatus.
+// through -recentNotification.
 - (void)checkForUpdate;
 - (void)installUpdate;
 
@@ -84,6 +88,14 @@ extern const NSString* const kAutoupdateStatusVersion;
 
 // Clears the saved recentNotification_.
 - (void)clearRecentNotification;
+
+// Accessor for the kAutoupdateStatusStatus field of recentNotification_'s
+// userInfo dictionary.
+- (AutoupdateStatus)recentStatus;
+
+// Returns YES if an asynchronous operation is pending: if an update check or
+// installation attempt is currently in progress.
+- (BOOL)asyncOperationPending;
 
 @end  // @interface KeystoneGlue
 
