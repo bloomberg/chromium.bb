@@ -680,7 +680,7 @@ class MakefileWriter:
       return None
     elif self.type == 'executable':
       target = spec.get('product_name', target)
-      path = spec.get('product_dir', os.path.join('$(builddir)', self.path))
+      path = spec.get('product_dir', os.path.join('$(builddir)'))
     else:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
