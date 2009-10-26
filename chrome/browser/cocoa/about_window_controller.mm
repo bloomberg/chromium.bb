@@ -4,7 +4,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/string_util.h"
@@ -20,22 +19,7 @@
 #include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-NSString* const kUserClosedAboutNotification =
-  @"kUserClosedAboutNotification";
-
-@interface AboutWindowController (Private)
-- (KeystoneGlue*)defaultKeystoneGlue;
-- (void)startProgressMessageID:(uint32_t)messageID;
-- (void)startProgressMessage:(NSString*)message;
-- (void)stopProgressMessage:(NSString*)message imageID:(uint32_t)imageID;
-@end
-
 namespace {
-
-// Keystone doesn't give us error numbers on some results, so we just make
-// our own for reporting in the UI.
-const int kUpdateInstallFailed = 128;
-const int kUpdateInstallFailedToStart = 129;
 
 void AttributedStringAppendString(NSMutableAttributedString* attr_str,
                                   NSString* str) {
@@ -49,7 +33,6 @@ void AttributedStringAppendString(NSMutableAttributedString* attr_str,
 
 void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
                                      NSString* text, NSString* url_str) {
-
   // Figure out the range of the text we're adding and add the text.
   NSRange range = NSMakeRange([attr_str length], [text length]);
   AttributedStringAppendString(attr_str, text);
@@ -71,7 +54,287 @@ void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
 
 }  // namespace
 
-NSAttributedString* BuildAboutWindowLegalTextBlock() {
+@interface AboutWindowController(Private)
+
+// Launches a check for available updates.
+- (void)checkForUpdate;
+
+// Notification callback, called with the status of asynchronous
+// -checkForUpdate and -updateNow: operations.
+- (void)updateStatus:(NSNotification*)notification;
+
+// These methods maintain the image (or throbber) and text displayed regarding
+// update status.  -setUpdateThrobberMessage: starts a progress throbber and
+// sets the text.  -setUpdateImage:message: displays an image and sets the
+// text.
+- (void)setUpdateThrobberMessage:(NSString*)message;
+- (void)setUpdateImage:(int)imageID message:(NSString*)message;
+
+@end  // @interface AboutWindowController(Private)
+
+const NSString* const kUserClosedAboutNotification =
+    @"UserClosedAboutNotification";
+
+@implementation AboutWindowController
+
+- (id)initWithProfile:(Profile*)profile {
+  NSString* nibPath = [mac_util::MainAppBundle() pathForResource:@"About"
+                                                          ofType:@"nib"];
+  if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
+    profile_ = profile;
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(updateStatus:)
+                   name:kAutoupdateStatusNotification
+                 object:nil];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)awakeFromNib {
+  NSBundle* bundle = mac_util::MainAppBundle();
+  NSString* chromeVersion =
+      [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+
+#if defined(GOOGLE_CHROME_BUILD)
+  NSString* version = chromeVersion;
+#else  // GOOGLE_CHROME_BUILD
+  // The format string is not localized, but this is how the displayed version
+  // is built on Windows too.
+  NSString* svnRevision = [bundle objectForInfoDictionaryKey:@"SVNRevision"];
+  NSString* version =
+      [NSString stringWithFormat:@"%@ (%@)", chromeVersion, svnRevision];
+#endif  // GOOGLE_CHROME_BUILD
+
+  [version_ setStringValue:version];
+
+  // Put the two images into the UI.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* backgroundImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND_COLOR);
+  DCHECK(backgroundImage);
+  [backgroundView_ setTileImage:backgroundImage];
+  NSImage* logoImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND);
+  DCHECK(logoImage);
+  [logoView_ setImage:logoImage];
+
+  [[legalText_ textStorage] setAttributedString:[[self class] legalTextBlock]];
+
+  // Resize our text view now so that the |updateShift| below is set
+  // correctly. The About box has its controls manually positioned, so we need
+  // to calculate how much larger (or smaller) our text box is and store that
+  // difference in |legalShift|. We do something similar with |updateShift|
+  // below, which is either 0, or the amount of space to offset the window size
+  // because the view that contains the update button has been removed because
+  // this build doesn't have KeyStone.
+  NSRect oldLegalRect = [legalBlock_ frame];
+  [legalText_ sizeToFit];
+  NSRect newRect = oldLegalRect;
+  newRect.size.height = [legalText_ frame].size.height;
+  [legalBlock_ setFrame:newRect];
+  CGFloat legalShift = newRect.size.height - oldLegalRect.size.height;
+
+  KeystoneGlue* keystoneGlue = [KeystoneGlue defaultKeystoneGlue];
+  CGFloat updateShift;
+  if (keystoneGlue) {
+    NSNotification* recentNotification = [keystoneGlue recentNotification];
+    NSDictionary* recentDictionary = [recentNotification userInfo];
+    AutoupdateStatus recentStatus = static_cast<AutoupdateStatus>(
+        [[recentDictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+    if (recentStatus == kAutoupdateInstallFailed) {
+      // A previous update attempt was unsuccessful, but no About box was
+      // around to report status.  Use the saved notification to set up the
+      // About box with the error message, and to allow another chance to
+      // install the update.
+      [self updateStatus:recentNotification];
+    } else {
+      [self checkForUpdate];
+    }
+
+    updateShift = 0.0;
+  } else {
+    // Hide all the update UI
+    [updateBlock_ setHidden:YES];
+
+    // Figure out the amount being removed by taking out the update block
+    // and its spacing.
+    updateShift = NSMinY([legalBlock_ frame]) - NSMinY([updateBlock_ frame]);
+
+    NSRect legalFrame = [legalBlock_ frame];
+    legalFrame.origin.y -= updateShift;
+    [legalBlock_ setFrame:legalFrame];
+  }
+
+  NSRect backgroundFrame = [backgroundView_ frame];
+  backgroundFrame.origin.y += legalShift - updateShift;
+  [backgroundView_ setFrame:backgroundFrame];
+
+  NSSize windowDelta = NSMakeSize(0.0, legalShift - updateShift);
+
+  [GTMUILocalizerAndLayoutTweaker
+      resizeWindowWithoutAutoResizingSubViews:[self window]
+                                        delta:windowDelta];
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:kUserClosedAboutNotification object:self];
+}
+
+- (void)setUpdateThrobberMessage:(NSString*)message {
+  [updateStatusIndicator_ setHidden:YES];
+
+  [spinner_ setHidden:NO];
+  [spinner_ startAnimation:self];
+
+  [updateText_ setStringValue:message];
+}
+
+- (void)setUpdateImage:(int)imageID message:(NSString*)message {
+  [spinner_ stopAnimation:self];
+  [spinner_ setHidden:YES];
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* statusImage = rb.GetNSImageNamed(imageID);
+  DCHECK(statusImage);
+  [updateStatusIndicator_ setImage:statusImage];
+  [updateStatusIndicator_ setHidden:NO];
+
+  [updateText_ setStringValue:message];
+}
+
+- (void)checkForUpdate {
+  [self setUpdateThrobberMessage:
+      l10n_util::GetNSStringWithFixup(IDS_UPGRADE_CHECK_STARTED)];
+  [[KeystoneGlue defaultKeystoneGlue] checkForUpdate];
+
+  // Upon completion, kAutoupdateStatusNotification will be posted, and
+  // -updateStatus: will be called.
+}
+
+- (IBAction)updateNow:(id)sender {
+  updateTriggered_ = YES;
+
+  // Don't let someone click "Update Now" twice!
+  [updateNowButton_ setEnabled:NO];
+  [self setUpdateThrobberMessage:
+      l10n_util::GetNSStringWithFixup(IDS_UPGRADE_STARTED)];
+  [[KeystoneGlue defaultKeystoneGlue] installUpdate];
+
+  // Upon completion, kAutoupdateStatusNotification will be posted, and
+  // -updateStatus: will be called.
+}
+
+- (void)updateStatus:(NSNotification*)notification {
+  NSDictionary* dictionary = [notification userInfo];
+  AutoupdateStatus status = static_cast<AutoupdateStatus>(
+      [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+
+  // Don't assume |version| is a real string.  It may be nil.
+  NSString* version = [dictionary objectForKey:kAutoupdateStatusVersion];
+
+  int imageID;
+  NSString* message;
+
+  switch (status) {
+    case kAutoupdateCurrent:
+      imageID = IDR_UPDATE_UPTODATE;
+      message = l10n_util::GetNSStringFWithFixup(
+          IDS_UPGRADE_ALREADY_UP_TO_DATE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          base::SysNSStringToUTF16(version));
+
+      break;
+
+    case kAutoupdateAvailable:
+      imageID = IDR_UPDATE_AVAILABLE;
+      message = l10n_util::GetNSStringFWithFixup(
+          IDS_UPGRADE_AVAILABLE, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+      [updateNowButton_ setEnabled:YES];
+
+      break;
+
+    case kAutoupdateInstalled:
+      {
+        imageID = IDR_UPDATE_UPTODATE;
+        string16 productName = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+        if (version) {
+          message = l10n_util::GetNSStringFWithFixup(
+              IDS_UPGRADE_SUCCESSFUL,
+              productName,
+              base::SysNSStringToUTF16(version));
+        } else {
+          message = l10n_util::GetNSStringFWithFixup(
+              IDS_UPGRADE_SUCCESSFUL_NOVERSION, productName);
+        }
+
+        // TODO(mark): Turn the button in the dialog into a restart button
+        // instead of springing this sheet or dialog.
+        NSWindow* window = [self window];
+        NSWindow* restartDialogParent = [window isVisible] ? window : nil;
+        restart_browser::RequestRestart(restartDialogParent);
+      }
+
+      break;
+
+    case kAutoupdateInstallFailed:
+      // Allow another chance.
+      [updateNowButton_ setEnabled:YES];
+
+      // Fall through.
+
+    case kAutoupdateCheckFailed:
+      // TODO(mark): Keystone doesn't currently indicate when a check for
+      // updates failed.  Fix that.
+      imageID = IDR_UPDATE_FAIL;
+      message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
+                                                 IntToString16(status));
+
+      break;
+
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  [self setUpdateImage:imageID message:message];
+
+  // Since the update status is now displayed in an About box, the saved state
+  // can be cleared.  If the About box is closed and then reopened, this will
+  // let it start out with a clean slate and not be affected by past failures.
+  [[KeystoneGlue defaultKeystoneGlue] clearRecentNotification];
+}
+
+- (BOOL)textView:(NSTextView *)aTextView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
+  // We always create a new window, so there's no need to try to re-use
+  // an existing one just to pass in the NEW_WINDOW disposition.
+  Browser* browser = Browser::Create(profile_);
+  if (browser) {
+    browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
+                     PageTransition::LINK);
+  }
+  return YES;
+}
+
+- (NSTextView*)legalText {
+  return legalText_;
+}
+
+- (NSButton*)updateButton {
+  return updateNowButton_;
+}
+
+- (NSTextField*)updateText {
+  return updateText_;
+}
+
++ (NSAttributedString*)legalTextBlock {
   // Windows builds this up in a very complex way, we're just trying to model
   // it the best we can to get all the information in (they actually do it
   // but created Labels and Links that they carefully place to make it appear
@@ -82,7 +345,8 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
       [[[NSMutableAttributedString alloc] init] autorelease];
   [legal_block beginEditing];
 
-  NSString* copyright = l10n_util::GetNSString(IDS_ABOUT_VERSION_COPYRIGHT);
+  NSString* copyright =
+      l10n_util::GetNSStringWithFixup(IDS_ABOUT_VERSION_COPYRIGHT);
   AttributedStringAppendString(legal_block, copyright);
 
   // These are the markers directly in IDS_ABOUT_VERSION_LICENSE
@@ -97,7 +361,8 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
 
   // Now fetch the license string and deal with the markers
 
-  NSString* license = l10n_util::GetNSString(IDS_ABOUT_VERSION_LICENSE);
+  NSString* license =
+      l10n_util::GetNSStringWithFixup(IDS_ABOUT_VERSION_LICENSE);
 
   NSRange begin_chr = [license rangeOfString:kBeginLinkChr];
   NSRange begin_oss = [license rangeOfString:kBeginLinkOss];
@@ -166,7 +431,8 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
                                                      &url_offsets);
   DCHECK_EQ(url_offsets.size(), 1U);
   NSString* about_terms = base::SysWideToNSString(w_about_terms);
-  NSString* terms_link_text = l10n_util::GetNSString(IDS_TERMS_OF_SERVICE);
+  NSString* terms_link_text =
+      l10n_util::GetNSStringWithFixup(IDS_TERMS_OF_SERVICE);
 
   AttributedStringAppendString(legal_block, @"\n\n");
   sub_str = [about_terms substringToIndex:url_offsets[0]];
@@ -174,7 +440,7 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
   AttributedStringAppendHyperlink(legal_block, terms_link_text, kTOS);
   sub_str = [about_terms substringFromIndex:url_offsets[0]];
   AttributedStringAppendString(legal_block, sub_str);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // GOOGLE_CHROME_BUILD
 
   // We need to explicitly select Lucida Grande because once we click on
   // the NSTextView, it changes to Helvetica 12 otherwise.
@@ -187,246 +453,4 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
   return legal_block;
 }
 
-@implementation AboutWindowController
-
-- (id)initWithProfile:(Profile*)profile {
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"About"
-                                                          ofType:@"nib"];
-  self = [super initWithWindowNibPath:nibpath owner:self];
-  if (self) {
-    profile_ = profile;
-  }
-  return self;
-}
-
-- (void)awakeFromNib {
-  // Set our current version.
-  scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  std::wstring version(version_info->product_version());
-#if !defined(GOOGLE_CHROME_BUILD)
-  // Yes, Windows does this raw since it is only in Chromium builds
-  // src/chrome/browser/views/about_chrome_view.cc AboutChromeView::Init()
-  version += L" (";
-  version += version_info->last_change();
-  version += L")";
-#endif
-  NSString* nsversion = base::SysWideToNSString(version);
-  [version_ setStringValue:nsversion];
-
-  // Put the two images into the ui
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* backgroundImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND_COLOR);
-  DCHECK(backgroundImage);
-  [backgroundView_ setTileImage:backgroundImage];
-  NSImage* logoImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND);
-  DCHECK(logoImage);
-  [logoView_ setImage:logoImage];
-
-  [[legalText_ textStorage]
-    setAttributedString:BuildAboutWindowLegalTextBlock()];
-
-  // Resize our text view now so that the |updateShift| below is set
-  // correctly. The about box has its controls manually positioned, so we need
-  // to calculate how much larger (or smaller) our text box is and store that
-  // difference in |legalShift|. We do something similar with |updateShift|
-  // below, which is either 0, or the amount of space to offset the window size
-  // because the view that contains the update button has been removed because
-  // this build doesn't have KeyStone.
-  NSRect oldLegalRect = [legalBlock_ frame];
-  [legalText_ sizeToFit];
-  NSRect newRect = oldLegalRect;
-  newRect.size.height = [legalText_ frame].size.height;
-  [legalBlock_ setFrame:newRect];
-  CGFloat legalShift = newRect.size.height - oldLegalRect.size.height;
-
-  KeystoneGlue* keystone = [self defaultKeystoneGlue];
-  CGFloat updateShift = 0.0;
-  if (keystone) {
-    // Initiate an update check.
-    if ([keystone checkForUpdate:self]) {
-      [self startProgressMessageID:IDS_UPGRADE_CHECK_STARTED];
-    }
-  } else {
-    // Hide all the update UI
-    [updateBlock_ setHidden:YES];
-    // Figure out the amount we're removing by taking about the update block
-    // (and it's spacing).
-    updateShift = NSMinY([legalBlock_ frame]) - NSMinY([updateBlock_ frame]);
-  }
-
-  // Adjust the sizes/locations.
-  NSRect rect = [legalBlock_ frame];
-  rect.origin.y -= updateShift;
-  [legalBlock_ setFrame:rect];
-
-  rect = [backgroundView_ frame];
-  rect.origin.y = rect.origin.y - updateShift + legalShift;
-  [backgroundView_ setFrame:rect];
-
-  NSSize windowDelta = NSMakeSize(0, (legalShift - updateShift));
-  [GTMUILocalizerAndLayoutTweaker
-      resizeWindowWithoutAutoResizingSubViews:[self window]
-                                        delta:windowDelta];
-}
-
-- (KeystoneGlue*)defaultKeystoneGlue {
-  return [KeystoneGlue defaultKeystoneGlue];
-}
-
-- (void)startProgressMessageID:(uint32_t)messageID {
-  NSString* message = l10n_util::GetNSStringWithFixup(messageID);
-  [self startProgressMessage:message];
-}
-
-- (void)startProgressMessage:(NSString*)message {
-  [updateStatusIndicator_ setHidden:YES];
-  [spinner_ setHidden:NO];
-  [spinner_ startAnimation:self];
-
-  [updateText_ setStringValue:message];
-}
-
-- (void)stopProgressMessage:(NSString*)message imageID:(uint32_t)imageID {
-  [spinner_ stopAnimation:self];
-  [spinner_ setHidden:YES];
-  if (imageID) {
-    [updateStatusIndicator_ setHidden:NO];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    NSImage* statusImage = rb.GetNSImageNamed(imageID);
-    DCHECK(statusImage);
-    [updateStatusIndicator_ setImage:statusImage];
-  }
-
-  [updateText_ setStringValue:message];
-}
-
-// Callback from KeystoneGlue; implementation of KeystoneGlueCallbacks protocol.
-// Warning: latest version may be nil if not set in server config.
-- (void)upToDateCheckCompleted:(BOOL)updatesAvailable
-                 latestVersion:(NSString*)latestVersion {
-  uint32_t imageID;
-  NSString* message;
-  if (updatesAvailable) {
-    newVersionAvailable_.reset([latestVersion copy]);
-
-    // Window UI doesn't put the version number in the string.
-    imageID = IDR_UPDATE_AVAILABLE;
-    message =
-        l10n_util::GetNSStringF(IDS_UPGRADE_AVAILABLE,
-                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    [updateNowButton_ setEnabled:YES];
-  } else {
-    // NOTE: This is can be a lie, Keystone does not provide us with an error if
-    // it was not able to reach the server.  So we can't completely map to the
-    // Windows UI.
-
-    // Keystone does not provide the version number when we are up to date so to
-    // maintain the UI, we just go fetch our version and call it good.
-    scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-    std::wstring version(version_info->product_version());
-
-    // TODO: We really should check to see if what is on disk is newer then what
-    // is running and report it as such.  (Windows has some messages that can
-    // help with this.)  http://crbug.com/13165
-
-    imageID = IDR_UPDATE_UPTODATE;
-    message =
-        l10n_util::GetNSStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
-                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                WideToUTF16(version));
-  }
-  [self stopProgressMessage:message imageID:imageID];
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
-  // If an update has ever been triggered, we force reuse of the same About Box.
-  // This gives us 2 things:
-  // 1. If an update is ongoing and the window was closed we would have
-  // no way of getting status.
-  // 2. If we have a "Please restart" message we want it to stay there.
-  if (updateTriggered_)
-    return;
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kUserClosedAboutNotification
-                    object:self];
-}
-
-// Callback from KeystoneGlue; implementation of KeystoneGlueCallbacks protocol.
-- (void)updateCompleted:(BOOL)successful installs:(int)installs {
-  uint32_t imageID;
-  NSString* message;
-  if (successful && installs) {
-    imageID = IDR_UPDATE_UPTODATE;
-    if ([newVersionAvailable_.get() length]) {
-      message =
-          l10n_util::GetNSStringF(IDS_UPGRADE_SUCCESSFUL,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                  base::SysNSStringToUTF16(
-                                                  newVersionAvailable_.get()));
-    } else {
-      message =
-          l10n_util::GetNSStringF(IDS_UPGRADE_SUCCESSFUL_NOVERSION,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    }
-
-    // Tell the user to restart their browser.
-    restart_browser::RequestRestart(nil);
-
-  } else {
-    imageID = IDR_UPDATE_FAIL;
-    message =
-        l10n_util::GetNSStringF(IDS_UPGRADE_ERROR,
-                                IntToString16(kUpdateInstallFailed));
-
-    // Allow a second chance.
-    [updateNowButton_ setEnabled:YES];
-  }
-
-  [self stopProgressMessage:message imageID:imageID];
-}
-
-- (IBAction)updateNow:(id)sender {
-  updateTriggered_ = YES;
-
-  // Don't let someone click "Update Now" twice!
-  [updateNowButton_ setEnabled:NO];
-  if ([[self defaultKeystoneGlue] startUpdate:self]) {
-    // Clear any previous error message from the throbber area.
-    [self startProgressMessageID:IDS_UPGRADE_STARTED];
-  } else {
-    NSString* message =
-        l10n_util::GetNSStringF(IDS_UPGRADE_ERROR,
-                                IntToString16(kUpdateInstallFailedToStart));
-    [self stopProgressMessage:message imageID:IDR_UPDATE_FAIL];
-  }
-}
-
-- (BOOL)textView:(NSTextView *)aTextView
-   clickedOnLink:(id)link
-         atIndex:(NSUInteger)charIndex {
-  // We always create a new window, so there's no need to try to re-use
-  // an existing one just to pass in the NEW_WINDOW disposition.
-  Browser* browser = Browser::Create(profile_);
-  if (browser)
-    browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
-                     PageTransition::LINK);
-  return YES;
-}
-
-- (NSTextView*)legalText {
-  return legalText_;
-}
-
-- (NSButton*)updateButton {
-  return updateNowButton_;
-}
-
-- (NSTextField*)updateText {
-  return updateText_;
-}
-
-@end
-
+@end  // @implementation AboutWindowController

@@ -53,7 +53,7 @@ void RequestRestart(NSWindow* parent) {
   RestartHelper* helper = [[RestartHelper alloc] init];
 
   NSAlert* alert = [helper alert];
-  [alert setAlertStyle:NSCriticalAlertStyle];
+  [alert setAlertStyle:NSInformationalAlertStyle];
   [alert setMessageText:title];
   [alert setInformativeText:text];
   [alert addButtonWithTitle:okBtn];

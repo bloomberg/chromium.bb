@@ -14,18 +14,38 @@
 
 
 @implementation FakeGlueRegistration
-- (void)checkForUpdate { }
-- (void)startUpdate { }
+
+// Send the notifications that a real KeystoneGlue object would send.
+
+- (void)checkForUpdate {
+  NSNumber* yesNumber = [NSNumber numberWithBool:YES];
+  NSString* statusKey = @"Status";
+  NSDictionary* dictionary = [NSDictionary dictionaryWithObject:yesNumber
+                                                         forKey:statusKey];
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:@"KSRegistrationCheckForUpdateNotification"
+                        object:nil
+                      userInfo:dictionary];
+}
+
+- (void)startUpdate {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:@"KSRegistrationStartUpdateNotification"
+                        object:nil];
+}
+
 @end
 
 
-@interface FakeKeystoneGlue : KeystoneGlue<KeystoneGlueCallbacks> {
+@interface FakeKeystoneGlue : KeystoneGlue {
  @public
   BOOL upToDate_;
   NSString *latestVersion_;
   BOOL successful_;
   int installs_;
 }
+
+- (void)fakeAboutWindowCallback:(NSNotification*)notification;
 @end
 
 
@@ -38,8 +58,21 @@
     latestVersion_ = @"foo bar";
     successful_ = YES;
     installs_ = 1010101010;
+
+    // Set up an observer that takes the notification that the About window
+    // listens for.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(fakeAboutWindowCallback:)
+                   name:kAutoupdateStatusNotification
+                 object:nil];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 // For mocking
@@ -69,19 +102,22 @@
   return timer_ ? YES : NO;
 }
 
-- (void)upToDateCheckCompleted:(BOOL)upToDate
-                 latestVersion:(NSString*)latestVersion {
-  upToDate_ = upToDate;
-  latestVersion_ = latestVersion;
-}
-
-- (void)updateCompleted:(BOOL)successful installs:(int)installs {
-  successful_ = successful;
-  installs_ = installs;
-}
-
 - (void)addFakeRegistration {
   registration_ = [[FakeGlueRegistration alloc] init];
+}
+
+- (void)fakeAboutWindowCallback:(NSNotification*)notification {
+  NSDictionary* dictionary = [notification userInfo];
+  AutoupdateStatus status = static_cast<AutoupdateStatus>(
+      [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+
+  if (status == kAutoupdateAvailable) {
+    upToDate_ = NO;
+    latestVersion_ = [dictionary objectForKey:kAutoupdateStatusVersion];
+  } else if (status == kAutoupdateInstallFailed) {
+    successful_ = NO;
+    installs_ = 0;
+  }
 }
 
 // Confirm we look like callbacks with nil NSNotifications
@@ -114,12 +150,16 @@ TEST_F(KeystoneGlueTest, BasicGlobalCreate) {
   Method loadMethod_ = class_getInstanceMethod([KeystoneGlue class], lks);
   method_setImplementation(loadMethod_, newLoadImp_);
 
+  // Dump any existing KeystoneGlue shared instance so that a new one can be
+  // created with the mocked methods.
+  [KeystoneGlue releaseDefaultKeystoneGlue];
   KeystoneGlue *glue = [KeystoneGlue defaultKeystoneGlue];
   ASSERT_TRUE(glue);
 
   // Fix back up the class to the way we found it.
   method_setImplementation(infoMethod_, oldInfoImp_);
   method_setImplementation(loadMethod_, oldLoadImp_);
+  [KeystoneGlue releaseDefaultKeystoneGlue];
 }
 
 TEST_F(KeystoneGlueTest, BasicUse) {
@@ -136,14 +176,10 @@ TEST_F(KeystoneGlueTest, BasicUse) {
   ASSERT_TRUE([glue hasATimer]);
   [glue stopTimer];
 
-  ASSERT_TRUE(![glue checkForUpdate:glue] && ![glue startUpdate:glue]);
-
   // Brief exercise of callbacks
   [glue addFakeRegistration];
-  ASSERT_TRUE([glue checkForUpdate:glue]);
-  [glue checkComplete:nil];
-  ASSERT_TRUE([glue startUpdate:glue]);
-  [glue startUpdateComplete:nil];
+  [glue checkForUpdate];
+  [glue installUpdate];
   ASSERT_TRUE([glue confirmCallbacks]);
 }
 

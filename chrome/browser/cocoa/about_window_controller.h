@@ -5,22 +5,17 @@
 #ifndef CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
 
-#import <Cocoa/Cocoa.h>
-#include "base/scoped_nsobject.h"
-#import "chrome/app/keystone_glue.h"
+#import <AppKit/AppKit.h>
 
 @class BackgroundTileView;
 class Profile;
 
-// Returns an NSAttributedString that contains the locale specific legal text.
-NSAttributedString* BuildAboutWindowLegalTextBlock();
+// kUserClosedAboutNotification is the name of the notification posted when
+// the About window is closed.
+extern const NSString* const kUserClosedAboutNotification;
 
-// A window controller that handles the branded (Chrome.app) about
-// window.  The branded about window has a few features beyond the
-// standard Cocoa about panel.  For example, opening the about window
-// will check to see if this version is current and tell the user.
-// There is also an "update me now" button with a progress spinner.
-@interface AboutWindowController : NSWindowController<KeystoneGlueCallbacks> {
+// A window controller that handles the About box.
+@interface AboutWindowController : NSWindowController {
  @private
   IBOutlet NSTextField* version_;
   IBOutlet BackgroundTileView* backgroundView_;
@@ -35,9 +30,6 @@ NSAttributedString* BuildAboutWindowLegalTextBlock();
 
   BOOL updateTriggered_;  // Has an update ever been triggered?
   Profile* profile_;  // Weak, probably the default profile.
-
-  // The version we got told about by Keystone
-  scoped_nsobject<NSString> newVersionAvailable_;
 }
 
 // Initialize the controller with the given profile, but does not show it.
@@ -47,17 +39,17 @@ NSAttributedString* BuildAboutWindowLegalTextBlock();
 // Trigger an update right now, as initiated by a button.
 - (IBAction)updateNow:(id)sender;
 
-@end
+@end  // @interface AboutWindowController
 
+@interface AboutWindowController(JustForTesting)
 
-@interface AboutWindowController (JustForTesting)
 - (NSTextView*)legalText;
 - (NSButton*)updateButton;
 - (NSTextField*)updateText;
-@end
 
+// Returns an NSAttributedString that contains locale-specific legal text.
++ (NSAttributedString*)legalTextBlock;
 
-// NSNotification sent when the about window is closed.
-extern NSString* const kUserClosedAboutNotification;
+@end  // @interface AboutWindowController(JustForTesting)
 
 #endif  // CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_

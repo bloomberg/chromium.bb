@@ -665,26 +665,17 @@
 // window controller.
 - (void)aboutWindowClosed:(NSNotification*)notify {
   [[NSNotificationCenter defaultCenter]
-    removeObserver:self
-              name:kUserClosedAboutNotification
-            object:aboutController_.get()];
-  aboutController_.reset(NULL);
+      removeObserver:self
+                name:kUserClosedAboutNotification
+              object:aboutController_.get()];
+  aboutController_.reset(nil);
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
-  // Otherwise bring up our special dialog (e.g. with an auto-update button).
   if (!aboutController_) {
     aboutController_.reset([[AboutWindowController alloc]
-                             initWithProfile:[self defaultProfile]]);
-    if (!aboutController_) {
-      // If we get here something is wacky.  I managed to do it when
-      // testing by explicitly forcing an auto-update to an older
-      // version then trying to open the about box again (missing
-      // nib).  This shouldn't be possible in general but let's try
-      // hard to not do nothing.
-      [NSApp orderFrontStandardAboutPanel:sender];
-      return;
-    }
+                            initWithProfile:[self defaultProfile]]);
+
     // Watch for a notification of when it goes away so that we can destroy
     // the controller.
     [[NSNotificationCenter defaultCenter]
@@ -693,8 +684,10 @@
                name:kUserClosedAboutNotification
              object:aboutController_.get()];
   }
+
   if (![[aboutController_ window] isVisible])
     [[aboutController_ window] center];
+
   [aboutController_ showWindow:self];
 }
 

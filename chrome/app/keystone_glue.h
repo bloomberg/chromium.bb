@@ -6,27 +6,30 @@
 #define CHROME_APP_KEYSTONE_GLUE_H_
 
 #import <Foundation/Foundation.h>
+#import <base/scoped_nsobject.h>
 
-// Objects which request callbacks from KeystoneGlue (e.g. information
-// on update availability) should implement this protocol.  All callbacks
-// require the caller to be spinning in the runloop to happen.
-@protocol KeystoneGlueCallbacks
+// Possible outcomes of -checkForUpdate and -installUpdate.  A version may
+// accompany some of these, but beware: a version is never required.  For
+// statuses that can be accompanied by a version, the comment indicates what
+// version is referenced.
+enum AutoupdateStatus {
+  kAutoupdateCurrent = 0,   // version of the running application
+  kAutoupdateAvailable,     // version of the update that is available
+  kAutoupdateInstalled,     // version of the update that was installed
+  kAutoupdateCheckFailed,   // no version
+  kAutoupdateInstallFailed  // no version
+};
 
-// Callback when a checkForUpdate completes.
-// |latestVersion| may be nil if not returned from the server.
-// |latestVersion| is not a localizable string.
-- (void)upToDateCheckCompleted:(BOOL)upToDate
-                 latestVersion:(NSString*)latestVersion;
-
-// Callback when a startUpdate completes.
-// |successful| tells if the *check* was successful.  This does not
-//   necessarily mean updates installed successfully.
-// |installs| tells the number of updates that installed successfully
-//   (typically 0 or 1).
-- (void)updateCompleted:(BOOL)successful installs:(int)installs;
-
-@end  // protocol KeystoneGlueCallbacks
-
+// kAutoupdateStatusNotification is the name of the notification posted when
+// -checkForUpdate and -installUpdate complete.  This notification will be
+// sent with with its sender object set to the KeystoneGlue instance sending
+// the notification.  Its userInfo dictionary will contain an AutoupdateStatus
+// value as an intValue at key kAutoupdateStatusStatus.  If a version is
+// available (see AutoupdateStatus), it will be present at key
+// kAutoupdateStatusVersion.
+extern const NSString* const kAutoupdateStatusNotification;
+extern const NSString* const kAutoupdateStatusStatus;
+extern const NSString* const kAutoupdateStatusVersion;
 
 // KeystoneGlue is an adapter around the KSRegistration class, allowing it to
 // be used without linking directly against its containing KeystoneRegistration
@@ -55,10 +58,11 @@
   KSRegistration* registration_;  // strong
   NSTimer* timer_;  // strong
 
-  // Data for callbacks, all strong.  Deallocated (if needed) in a
-  // NSNotificationCenter callback.
-  NSObject<KeystoneGlueCallbacks>* startTarget_;
-  NSObject<KeystoneGlueCallbacks>* checkTarget_;
+  // The most recent kAutoupdateStatusNotification notification posted.
+  scoped_nsobject<NSNotification> recentNotification_;
+
+  // YES if an update was ever successfully installed by -installUpdate.
+  BOOL updateSuccessfullyInstalled_;
 }
 
 // Return the default Keystone Glue object.
@@ -68,21 +72,27 @@
 // with Keystone, and set up periodic activity pings.
 - (void)registerWithKeystone;
 
-// Check if updates are available.
-// upToDateCheckCompleted:: called on target when done.
-// Return NO if we could not start the check.
-- (BOOL)checkForUpdate:(NSObject<KeystoneGlueCallbacks>*)target;
+// -checkForUpdate launches a check for updates, and -installUpdate begins
+// installing an available update.  For each, status will be communicated via
+// a kAutoupdateStatusNotification notification, and will also be available
+// through -recentUpdateStatus.
+- (void)checkForUpdate;
+- (void)installUpdate;
 
-// Start an update.
-// updateCompleted:: called on target when done.
-// This cannot be cancelled.
-// Return NO if we could not start the check.
-- (BOOL)startUpdate:(NSObject<KeystoneGlueCallbacks>*)target;
+// Accessor for recentNotification_.  Returns an autoreleased NSNotification.
+- (NSNotification*)recentNotification;
 
-@end  // KeystoneGlue
+// Clears the saved recentNotification_.
+- (void)clearRecentNotification;
 
+@end  // @interface KeystoneGlue
 
-@interface KeystoneGlue (ExposedForTesting)
+@interface KeystoneGlue(ExposedForTesting)
+
+// Release the shared instance.  Use this in tests to reset the shared
+// instance in case strange things are done to it for testing purposes.  Never
+// call this from non-test code.
++ (void)releaseDefaultKeystoneGlue;
 
 // Load any params we need for configuring Keystone.
 - (void)loadParameters;
@@ -94,11 +104,11 @@
 - (void)stopTimer;
 
 // Called when a checkForUpdate: notification completes.
-- (void)checkComplete:(NSNotification *)notification;
+- (void)checkForUpdateComplete:(NSNotification*)notification;
 
-// Called when a startUpdate: notification completes.
-- (void)startUpdateComplete:(NSNotification *)notification;
+// Called when an installUpdate: notification completes.
+- (void)installUpdateComplete:(NSNotification*)notification;
 
-@end  // KeystoneGlue (ExposedForTesting)
+@end  // @interface KeystoneGlue(ExposedForTesting)
 
 #endif  // CHROME_APP_KEYSTONE_GLUE_H_

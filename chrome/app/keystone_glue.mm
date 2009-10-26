@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac_util.h"
 #import "chrome/app/keystone_glue.h"
 
-@interface KeystoneGlue(Private)
-
-// Called periodically to announce activity by pinging the Keystone server.
-- (void)markActive:(NSTimer*)timer;
-
-@end
-
+#include "base/logging.h"
+#include "base/mac_util.h"
+#import "base/worker_pool_mac.h"
+#include "chrome/common/chrome_constants.h"
 
 // Provide declarations of the Keystone registration bits needed here.  From
 // KSRegistration.h.
@@ -31,7 +27,9 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 #define KSRegistrationPreserveExistingTag nil
 
 @interface KSRegistration : NSObject
+
 + (id)registrationWithProductID:(NSString*)productID;
+
 // Older API
 - (BOOL)registerWithVersion:(NSString*)version
        existenceCheckerType:(KSExistenceCheckerType)xctype
@@ -43,20 +41,65 @@ NSString *KSRegistrationRemoveExistingTag = @"";
      existenceCheckerString:(NSString*)xc
             serverURLString:(NSString*)serverURLString
             preserveTTToken:(BOOL)preserveToken
-                        tag:(NSString *)tag;
+                        tag:(NSString*)tag;
+
 - (void)setActive;
 - (void)checkForUpdate;
 - (void)startUpdate;
-@end
 
+@end  // @interface KSRegistration
+
+@interface KeystoneGlue(Private)
+
+// Called periodically to announce activity by pinging the Keystone server.
+- (void)markActive:(NSTimer*)timer;
+
+// Called when an update check or update installation is complete.  Posts the
+// kAutoupdateStatusNotification notification to the default notification
+// center.
+- (void)updateStatus:(AutoupdateStatus)status version:(NSString*)version;
+
+// These three methods are used to determine the version of the application
+// currently installed on disk, compare that to the currently-running version,
+// decide whether any updates have been installed, and call
+// -updateStatus:version:.
+//
+// In order to check the version on disk, the installed application's
+// Info.plist dictionary must be read; in order to see changes as updates are
+// applied, the dictionary must be read each time, bypassing any caches such
+// as the one that NSBundle might be maintaining.  Reading files can be a
+// blocking operation, and blocking operations are to be avoided on the main
+// thread.  I'm not quite sure what jank means, but I bet that a blocked main
+// thread would cause some of it.
+//
+// -determineUpdateStatusAsync is called on the main thread to initiate the
+// operation.  It performs initial set-up work that must be done on the main
+// thread and arranges for -determineUpdateStatusAtPath: to be called on a
+// work queue thread managed by NSOperationQueue.
+// -determineUpdateStatusAtPath: then reads the Info.plist, gets the version
+// from the CFBundleShortVersionString key, and performs
+// -determineUpdateStatusForVersion: on the main thread.
+// -determineUpdateStatusForVersion: does the actual comparison of the version
+// on disk with the running version and calls -updateStatus:version: with the
+// results of its analysis.
+- (void)determineUpdateStatusAsync;
+- (void)determineUpdateStatusAtPath:(NSString*)appPath;
+- (void)determineUpdateStatusForVersion:(NSString*)version;
+
+@end  // @interface KeystoneGlue(Private)
+
+const NSString* const kAutoupdateStatusNotification =
+    @"AutoupdateStatusNotification";
+const NSString* const kAutoupdateStatusStatus = @"status";
+const NSString* const kAutoupdateStatusVersion = @"version";
 
 @implementation KeystoneGlue
 
-+ (id)defaultKeystoneGlue {
-  // TODO(jrg): use base::SingletonObjC<KeystoneGlue>
-  static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
+// TODO(jrg): use base::SingletonObjC<KeystoneGlue>
+static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
-  if (sDefaultKeystoneGlue == nil) {
++ (id)defaultKeystoneGlue {
+  if (!sDefaultKeystoneGlue) {
     sDefaultKeystoneGlue = [[KeystoneGlue alloc] init];
     [sDefaultKeystoneGlue loadParameters];
     if (![sDefaultKeystoneGlue loadKeystoneRegistration]) {
@@ -65,6 +108,29 @@ NSString *KSRegistrationRemoveExistingTag = @"";
     }
   }
   return sDefaultKeystoneGlue;
+}
+
++ (void)releaseDefaultKeystoneGlue {
+  [sDefaultKeystoneGlue release];
+  sDefaultKeystoneGlue = nil;
+}
+
+- (id)init {
+  if ((self = [super init])) {
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+
+    [center addObserver:self
+               selector:@selector(checkForUpdateComplete:)
+                   name:KSRegistrationCheckForUpdateNotification
+                 object:nil];
+
+    [center addObserver:self
+               selector:@selector(installUpdateComplete:)
+                   name:KSRegistrationStartUpdateNotification
+                 object:nil];
+  }
+
+  return self;
 }
 
 - (void)dealloc {
@@ -174,64 +240,155 @@ NSString *KSRegistrationRemoveExistingTag = @"";
   [ksr setActive];
 }
 
-- (void)checkComplete:(NSNotification *)notification {
-  NSDictionary *userInfo = [notification userInfo];
-  BOOL updatesAvailable = [[userInfo objectForKey:KSRegistrationStatusKey]
-                            boolValue];
-  NSString *latestVersion = [userInfo objectForKey:KSRegistrationVersionKey];
+- (void)checkForUpdate {
+  if (!registration_) {
+    [self updateStatus:kAutoupdateCheckFailed version:nil];
+    return;
+  }
 
-  [checkTarget_ upToDateCheckCompleted:updatesAvailable
-                         latestVersion:latestVersion];
-  [checkTarget_ release];
-  checkTarget_ = nil;
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:KSRegistrationCheckForUpdateNotification
-                  object:nil];
-}
-
-- (BOOL)checkForUpdate:(NSObject<KeystoneGlueCallbacks>*)target {
-  if (registration_ == nil)
-    return NO;
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(checkComplete:)
-                 name:KSRegistrationCheckForUpdateNotification
-               object:nil];
-  checkTarget_ = [target retain];
   [registration_ checkForUpdate];
-  return YES;
+
+  // Upon completion, KSRegistrationCheckForUpdateNotification will be posted,
+  // and -checkForUpdateComplete: will be called.
 }
 
-- (void)startUpdateComplete:(NSNotification *)notification {
-  NSDictionary *userInfo = [notification userInfo];
-  BOOL checkSuccessful = [[userInfo objectForKey:KSUpdateCheckSuccessfulKey]
-                           boolValue];
-  int installs = [[userInfo objectForKey:KSUpdateCheckSuccessfullyInstalledKey]
-                   intValue];
+- (void)checkForUpdateComplete:(NSNotification*)notification {
+  NSDictionary* userInfo = [notification userInfo];
+  BOOL updatesAvailable =
+      [[userInfo objectForKey:KSRegistrationStatusKey] boolValue];
 
-  [startTarget_ updateCompleted:checkSuccessful installs:installs];
-  [startTarget_ release];
-  startTarget_ = nil;
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:KSRegistrationStartUpdateNotification
-                  object:nil];
+  if (updatesAvailable) {
+    // If an update is known to be available, go straight to
+    // -updateStatus:version:.  It doesn't matter what's currently on disk.
+    NSString* version = [userInfo objectForKey:KSRegistrationVersionKey];
+    [self updateStatus:kAutoupdateAvailable version:version];
+  } else {
+    // If no updates are available, check what's on disk, because an update
+    // may have already been installed.  This check happens on another thread,
+    // and -updateStatus:version: will be called on the main thread when done.
+    [self determineUpdateStatusAsync];
+  }
 }
 
-- (BOOL)startUpdate:(NSObject<KeystoneGlueCallbacks>*)target {
-  if (registration_ == nil)
-    return NO;
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(startUpdateComplete:)
-                 name:KSRegistrationStartUpdateNotification
-               object:nil];
-  startTarget_ = [target retain];
+- (void)installUpdate {
+  if (!registration_) {
+    [self updateStatus:kAutoupdateInstallFailed version:nil];
+    return;
+  }
+
   [registration_ startUpdate];
-  return YES;
+
+  // Upon completion, KSRegistrationStartUpdateNotification will be posted,
+  // and -installUpdateComplete: will be called.
 }
 
-@end
+- (void)installUpdateComplete:(NSNotification*)notification {
+  NSDictionary* userInfo = [notification userInfo];
+  BOOL checkSuccessful =
+      [[userInfo objectForKey:KSUpdateCheckSuccessfulKey] boolValue];
+  int installs =
+      [[userInfo objectForKey:KSUpdateCheckSuccessfullyInstalledKey] intValue];
+
+  if (!checkSuccessful || !installs) {
+    [self updateStatus:kAutoupdateInstallFailed version:nil];
+  } else {
+    updateSuccessfullyInstalled_ = YES;
+
+    // Nothing in the notification dictionary reports the version that was
+    // installed.  Figure it out based on what's on disk.
+    [self determineUpdateStatusAsync];
+  }
+}
+
+// Runs on the main thread.
+- (void)determineUpdateStatusAsync {
+  // NSBundle is not documented as being thread-safe.  Do NSBundle operations
+  // on the main thread before jumping over to a NSOperationQueue-managed
+  // thread to do blocking file input.
+  DCHECK([NSThread isMainThread]);
+
+  SEL selector = @selector(determineUpdateStatusAtPath:);
+  NSString* appPath = [[NSBundle mainBundle] bundlePath];
+  NSInvocationOperation* operation =
+      [[[NSInvocationOperation alloc] initWithTarget:self
+                                            selector:selector
+                                              object:appPath] autorelease];
+
+  NSOperationQueue* operationQueue = [WorkerPoolObjC sharedOperationQueue];
+  [operationQueue addOperation:operation];
+}
+
+// Runs on a thread managed by NSOperationQueue.
+- (void)determineUpdateStatusAtPath:(NSString*)appPath {
+  DCHECK(![NSThread isMainThread]);
+
+  NSString* appInfoPlistPath =
+      [[appPath stringByAppendingPathComponent:@"Contents"]
+          stringByAppendingPathComponent:@"Info.plist"];
+  NSDictionary* infoPlist =
+      [NSDictionary dictionaryWithContentsOfFile:appInfoPlistPath];
+  NSString* version = [infoPlist objectForKey:@"CFBundleShortVersionString"];
+
+  [self performSelectorOnMainThread:@selector(determineUpdateStatusForVersion:)
+                         withObject:version
+                      waitUntilDone:NO];
+}
+
+// Runs on the main thread.
+- (void)determineUpdateStatusForVersion:(NSString*)version {
+  DCHECK([NSThread isMainThread]);
+
+  AutoupdateStatus status;
+  if (updateSuccessfullyInstalled_) {
+    // If an update was successfully installed and this object saw it happen,
+    // then don't even bother comparing versions.
+    status = kAutoupdateInstalled;
+  } else {
+    NSString* currentVersion =
+        [NSString stringWithUTF8String:chrome::kChromeVersion];
+    if (!version) {
+      // If the version on disk could not be determined, assume that
+      // whatever's running is current.
+      version = currentVersion;
+      status = kAutoupdateCurrent;
+    } else if ([version isEqualToString:currentVersion]) {
+      status = kAutoupdateCurrent;
+    } else {
+      // If the version on disk doesn't match what's currently running, an
+      // update must have been applied in the background, without this app's
+      // direct participation.  Leave updateSuccessfullyInstalled_ alone
+      // because there's no direct knowledge of what actually happened.
+      status = kAutoupdateInstalled;
+    }
+  }
+
+  [self updateStatus:status version:version];
+}
+
+- (void)updateStatus:(AutoupdateStatus)status version:(NSString*)version {
+  NSNumber* statusNumber = [NSNumber numberWithInt:status];
+  NSMutableDictionary* dictionary =
+      [NSMutableDictionary dictionaryWithObject:statusNumber
+                                         forKey:kAutoupdateStatusStatus];
+  if (version) {
+    [dictionary setObject:version forKey:kAutoupdateStatusVersion];
+  }
+
+  NSNotification* notification =
+      [NSNotification notificationWithName:kAutoupdateStatusNotification
+                                    object:self
+                                  userInfo:dictionary];
+  recentNotification_.reset([notification retain]);
+
+  [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (NSNotification*)recentNotification {
+  return [[recentNotification_ retain] autorelease];
+}
+
+- (void)clearRecentNotification {
+  recentNotification_.reset(nil);
+}
+
+@end  // @implementation KeystoneGlue
