@@ -107,9 +107,11 @@ class DOMStorageTest : public UILayoutTest {
 #if defined(OS_WIN)
 #define MAYBE_LocalStorageLayoutTests FLAKY_LocalStorageLayoutTests
 #define MAYBE_DOMStorageLayoutTests FLAKY_DOMStorageLayoutTests
+#define MAYBE_SessionStorageLayoutTests FLAKY_SessionStorageLayoutTests
 #else
 #define MAYBE_LocalStorageLayoutTests LocalStorageLayoutTests
 #define MAYBE_DOMStorageLayoutTests DOMStorageLayoutTests
+#define MAYBE_SessionStorageLayoutTests SessionStorageLayoutTests
 #endif  // defined(OS_WIN)
 
 
@@ -129,7 +131,7 @@ TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   RunTests(kLocalStorageFiles);
 }
 
-TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
+TEST_F(DOMStorageTest, MAYBE_SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
   AddResources();
