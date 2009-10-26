@@ -193,4 +193,19 @@
   return NO;
 }
 
+- (void)setAttributedStringValue:(NSAttributedString*)aString {
+  NSTextView* editor = static_cast<NSTextView*>([self currentEditor]);
+  if (!editor) {
+    [super setAttributedStringValue:aString];
+  } else {
+    // -currentEditor is defined to return NSText*, make sure our
+    // assumptions still hold, here.
+    DCHECK([editor isKindOfClass:[NSTextView class]]);
+
+    NSTextStorage* textStorage = [editor textStorage];
+    DCHECK(textStorage);
+    [textStorage setAttributedString:aString];
+  }
+}
+
 @end

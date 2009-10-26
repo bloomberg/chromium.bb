@@ -77,6 +77,11 @@ class AutocompleteTextFieldObserver {
 // enough to scroll.
 - (CGFloat)availableDecorationWidth;
 
+// Superclass aborts editing before changing the string, which causes
+// problems for undo.  This version modifies the field editor's
+// contents if the control is already being edited.
+- (void)setAttributedStringValue:(NSAttributedString*)aString;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

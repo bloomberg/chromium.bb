@@ -578,4 +578,85 @@ TEST_F(AutocompleteTextFieldTest, SecurityIconMouseDown) {
   [field_ mouseDown:event];
 }
 
+// Verify that -setAttributedStringValue: works as expected when
+// focussed or when not focussed.  Our code mostly depends on about
+// whether -stringValue works right.
+TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
+  EXPECT_EQ(nil, [field_ currentEditor]);
+
+  // So that we can set rich text.
+  [field_ setAllowsEditingTextAttributes:YES];
+
+  // Set an attribute different from the field's default so we can
+  // tell we got the same string out as we put in.
+  NSFont* font = [NSFont fontWithDescriptor:[[field_ font] fontDescriptor]
+                                       size:[[field_ font] pointSize] + 2];
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:font
+                                  forKey:NSFontAttributeName];
+  static const NSString* kString = @"This is a test";
+  scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc] initWithString:kString
+                                      attributes:attributes]);
+
+  // Check that what we get back looks like what we put in.
+  EXPECT_FALSE([[field_ stringValue] isEqualToString:kString]);
+  [field_ setAttributedStringValue:attributedString];
+  EXPECT_TRUE([[field_ attributedStringValue]
+                isEqualToAttributedString:attributedString]);
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:kString]);
+
+  // Try that again with focus.
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_TRUE([field_ currentEditor]);
+
+  // Check that what we get back looks like what we put in.
+  [field_ setStringValue:@""];
+  EXPECT_FALSE([[field_ stringValue] isEqualToString:kString]);
+  [field_ setAttributedStringValue:attributedString];
+  EXPECT_TRUE([[field_ attributedStringValue]
+                isEqualToAttributedString:attributedString]);
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:kString]);
+}
+
+// -setAttributedStringValue: shouldn't reset the undo state if things
+// are being editted.
+TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
+  NSColor* redColor = [NSColor redColor];
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:redColor
+                                  forKey:NSForegroundColorAttributeName];
+  static const NSString* kString = @"This is a test";
+  scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc] initWithString:kString
+                                      attributes:attributes]);
+
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_TRUE([field_ currentEditor]);
+  NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+  NSUndoManager* undoManager = [editor undoManager];
+  EXPECT_TRUE(undoManager);
+
+  // Nothing to undo, yet.
+  EXPECT_FALSE([undoManager canUndo]);
+
+  // Starting an editing action creates an undoable item.
+  [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+  [editor didChangeText];
+  EXPECT_TRUE([undoManager canUndo]);
+
+  // -setStringValue: resets the editor's undo chain.
+  [field_ setStringValue:kString];
+  EXPECT_FALSE([undoManager canUndo]);
+
+  // Verify that -setAttributedStringValue: does not reset the
+  // editor's undo chain.
+  [field_ setStringValue:@""];
+  [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+  [editor didChangeText];
+  EXPECT_TRUE([undoManager canUndo]);
+  [field_ setAttributedStringValue:attributedString];
+  EXPECT_TRUE([undoManager canUndo]);
+}
+
 }  // namespace

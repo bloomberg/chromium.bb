@@ -430,7 +430,7 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
                range:ComponentToNSRange(parts.scheme)];
   }
 
-  [field_ setObjectValue:as];
+  [field_ setAttributedStringValue:as];
 
   // TODO(shess): This may be an appropriate place to call:
   //   controller_->OnChanged();
