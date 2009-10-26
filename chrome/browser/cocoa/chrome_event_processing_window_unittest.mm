@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -10,8 +9,6 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace {
@@ -29,22 +26,28 @@ NSEvent* KeyEvent(const NSUInteger flags, const NSUInteger keyCode) {
                           keyCode:keyCode];
 }
 
-class ChromeEventProcessingWindowTest : public PlatformTest {
+class ChromeEventProcessingWindowTest : public CocoaTest {
  public:
-  ChromeEventProcessingWindowTest() {
+  virtual void SetUp() {
+    CocoaTest::SetUp();
     // Create a window.
     const NSUInteger mask = NSTitledWindowMask | NSClosableWindowMask |
         NSMiniaturizableWindowMask | NSResizableWindowMask;
-    window_.reset([[ChromeEventProcessingWindow alloc]
-                    initWithContentRect:NSMakeRect(0, 0, 800, 600)
-                              styleMask:mask
-                                backing:NSBackingStoreBuffered
-                                  defer:NO]);
+    window_ = [[ChromeEventProcessingWindow alloc]
+               initWithContentRect:NSMakeRect(0, 0, 800, 600)
+                         styleMask:mask
+                           backing:NSBackingStoreBuffered
+                             defer:NO];
     if (DebugUtil::BeingDebugged()) {
       [window_ orderFront:nil];
     } else {
       [window_ orderBack:nil];
     }
+  }
+
+  virtual void TearDown() {
+    [window_ close];
+    CocoaTest::TearDown();
   }
 
   // Returns a canonical snapshot of the window.
@@ -60,8 +63,7 @@ class ChromeEventProcessingWindowTest : public PlatformTest {
     return [image TIFFRepresentation];
   }
 
-  CocoaNoWindowTestHelper cocoa_helper_;
-  scoped_nsobject<ChromeEventProcessingWindow> window_;
+  ChromeEventProcessingWindow* window_;
 };
 
 // Verify that the window intercepts a particular key event and
@@ -106,6 +108,5 @@ TEST_F(ChromeEventProcessingWindowTest, PerformKeyEquivalentNoForward) {
   [window_ setDelegate:nil];
   [delegate verify];
 }
-
 
 }  // namespace
