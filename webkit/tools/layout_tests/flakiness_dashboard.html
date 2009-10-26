@@ -514,7 +514,10 @@
 
     var separator = stringContains(currentState.tests, ' ') ? ' ' : ',';
     var testList = currentState.tests.split(separator);
-    var tests = [];
+
+    // Put the tests into an object first and then move them into an array
+    // as a way of deduping.
+    var tests = {};
     for (var i = 0; i < testList.length; i++) {
       var path = testList[i];
 
@@ -523,13 +526,26 @@
         continue;
 
       var allTests = getAllTests();
+      var hasAnyMatches = false;
       for (var test in allTests) {
         if (caseInsensitiveContains(test, path)) {
-          tests.push(test);
+          tests[test] = 1;
+          hasAnyMatches = true;
         }
       }
+
+      // If a path doesn't match any tests, then assume it's a full path
+      // to a test that passes on all builders.
+      if (!hasAnyMatches) {
+        tests[path] = 1;
+      }
     }
-    return tests;
+
+    var testsArray = [];
+    for (var test in tests) {
+      testsArray.push(test);
+    }
+    return testsArray;
   }
 
   function getAllTestsWithIncorrectExpectations() {
