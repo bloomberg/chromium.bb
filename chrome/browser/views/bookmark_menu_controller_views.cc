@@ -7,16 +7,21 @@
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
+#include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/common/page_transition_types.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/button/menu_button.h"
+
+using views::MenuItemView;
 
 BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                Profile* profile,
@@ -30,28 +35,45 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       page_navigator_(navigator),
       parent_(parent),
       node_(node),
+      menu_(NULL),
       observer_(NULL),
       for_drop_(false),
-      show_other_folder_(show_other_folder) {
-  menu_.reset(new views::MenuItemView(this));
-  int next_menu_id = 1;
-  menu_id_to_node_map_[menu_->GetCommand()] = node;
-  menu_->set_has_icons(true);
-  BuildMenu(node, start_child_index, menu_.get(), &next_menu_id);
-  if (show_other_folder)
-    BuildOtherFolderMenu(&next_menu_id);
+      show_other_folder_(show_other_folder),
+      bookmark_bar_(NULL),
+      next_menu_id_(1) {
+  menu_ = CreateMenu(node, start_child_index);
+}
+
+void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
+                                       bool for_drop) {
+  bookmark_bar_ = bookmark_bar;
+  views::MenuButton* menu_button = bookmark_bar_->GetMenuButtonForNode(node_);
+  DCHECK(menu_button);
+  MenuItemView::AnchorPosition anchor;
+  int start_index;
+  bookmark_bar_->GetAnchorPositionAndStartIndexForButton(
+      menu_button, &anchor, &start_index);
+  RunMenuAt(menu_button, anchor, for_drop);
 }
 
 void BookmarkMenuController::RunMenuAt(
-    const gfx::Rect& bounds,
-    views::MenuItemView::AnchorPosition position,
+    views::MenuButton* button,
+    MenuItemView::AnchorPosition position,
     bool for_drop) {
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(button, &screen_loc);
+  // Subtract 1 from the height to make the popup flush with the button border.
+  gfx::Rect bounds(screen_loc.x(), screen_loc.y(), button->width(),
+                   button->height() - 1);
   for_drop_ = for_drop;
   profile_->GetBookmarkModel()->AddObserver(this);
+  // The constructor creates the initial menu and that is all we should have
+  // at this point.
+  DCHECK(node_to_menu_map_.size() == 1);
   if (for_drop) {
     menu_->RunMenuForDropAt(parent_, bounds, position);
   } else {
-    menu_->RunMenuAt(parent_, bounds, position, false);
+    menu_->RunMenuAt(parent_, button, bounds, position, false);
     delete this;
   }
 }
@@ -74,7 +96,7 @@ void BookmarkMenuController::ExecuteCommand(int id, int mouse_event_flags) {
 }
 
 bool BookmarkMenuController::GetDropFormats(
-      views::MenuItemView* menu,
+      MenuItemView* menu,
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) {
   *formats = OSExchangeData::URL;
@@ -82,11 +104,11 @@ bool BookmarkMenuController::GetDropFormats(
   return true;
 }
 
-bool BookmarkMenuController::AreDropTypesRequired(views::MenuItemView* menu) {
+bool BookmarkMenuController::AreDropTypesRequired(MenuItemView* menu) {
   return true;
 }
 
-bool BookmarkMenuController::CanDrop(views::MenuItemView* menu,
+bool BookmarkMenuController::CanDrop(MenuItemView* menu,
                                      const OSExchangeData& data) {
   // Only accept drops of 1 node, which is the case for all data dragged from
   // bookmark bar and menus.
@@ -113,7 +135,7 @@ bool BookmarkMenuController::CanDrop(views::MenuItemView* menu,
 }
 
 int BookmarkMenuController::GetDropOperation(
-    views::MenuItemView* item,
+    MenuItemView* item,
     const views::DropTargetEvent& event,
     DropPosition* position) {
   // Should only get here if we have drop data.
@@ -138,7 +160,7 @@ int BookmarkMenuController::GetDropOperation(
       profile_, event, drop_data_, drop_parent, index_to_drop_at);
 }
 
-int BookmarkMenuController::OnPerformDrop(views::MenuItemView* menu,
+int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
                                           DropPosition position,
                                           const views::DropTargetEvent& event) {
   const BookmarkNode* drop_node = menu_id_to_node_map_[menu->GetCommand()];
@@ -163,7 +185,7 @@ int BookmarkMenuController::OnPerformDrop(views::MenuItemView* menu,
   return result;
 }
 
-bool BookmarkMenuController::ShowContextMenu(views::MenuItemView* source,
+bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
                                              int id,
                                              int x,
                                              int y,
@@ -183,17 +205,17 @@ bool BookmarkMenuController::ShowContextMenu(views::MenuItemView* source,
   return true;
 }
 
-void BookmarkMenuController::DropMenuClosed(views::MenuItemView* menu) {
+void BookmarkMenuController::DropMenuClosed(MenuItemView* menu) {
   delete this;
 }
 
-bool BookmarkMenuController::CanDrag(views::MenuItemView* menu) {
+bool BookmarkMenuController::CanDrag(MenuItemView* menu) {
   const BookmarkNode* node = menu_id_to_node_map_[menu->GetCommand()];
   // Don't let users drag the other folder.
   return node->GetParent() != profile_->GetBookmarkModel()->root_node();
 }
 
-void BookmarkMenuController::WriteDragData(views::MenuItemView* sender,
+void BookmarkMenuController::WriteDragData(MenuItemView* sender,
                                            OSExchangeData* data) {
   DCHECK(sender && data);
 
@@ -203,9 +225,39 @@ void BookmarkMenuController::WriteDragData(views::MenuItemView* sender,
   drag_data.Write(profile_, data);
 }
 
-int BookmarkMenuController::GetDragOperations(views::MenuItemView* sender) {
+int BookmarkMenuController::GetDragOperations(MenuItemView* sender) {
   return bookmark_utils::BookmarkDragOperation(
       menu_id_to_node_map_[sender->GetCommand()]);
+}
+
+views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
+    views::MenuItemView* menu,
+    const gfx::Point& screen_point,
+    views::MenuItemView::AnchorPosition* anchor,
+    bool* has_mnemonics,
+    views::MenuButton** button) {
+  if (show_other_folder_ || !bookmark_bar_ || for_drop_)
+    return NULL;
+  gfx::Point bookmark_bar_loc(screen_point);
+  views::View::ConvertPointToView(NULL, bookmark_bar_, &bookmark_bar_loc);
+  int start_index;
+  const BookmarkNode* node =
+      bookmark_bar_->GetNodeForButtonAt(bookmark_bar_loc, &start_index);
+  if (!node || !node->is_folder())
+    return NULL;
+
+  MenuItemView* alt_menu = node_to_menu_map_[node];
+  if (!alt_menu)
+    alt_menu = CreateMenu(node, start_index);
+
+  if (alt_menu)
+    menu_ = alt_menu;
+
+  *button = bookmark_bar_->GetMenuButtonForNode(node);
+  bookmark_bar_->GetAnchorPositionAndStartIndexForButton(
+      *button, anchor, &start_index);
+  *has_mnemonics = false;
+  return alt_menu;
 }
 
 void BookmarkMenuController::BookmarkModelChanged() {
@@ -218,13 +270,27 @@ void BookmarkMenuController::BookmarkNodeFavIconLoaded(
     menu_->SetIcon(model->GetFavIcon(node), node_to_menu_id_map_[node]);
 }
 
-void BookmarkMenuController::BuildOtherFolderMenu(int* next_menu_id) {
+MenuItemView* BookmarkMenuController::CreateMenu(const BookmarkNode* parent,
+                                                 int start_child_index) {
+  MenuItemView* menu = new MenuItemView(this);
+  menu->SetCommand(next_menu_id_++);
+  menu_id_to_node_map_[menu->GetCommand()] = parent;
+  menu->set_has_icons(true);
+  BuildMenu(parent, start_child_index, menu, &next_menu_id_);
+  if (show_other_folder_)
+    BuildOtherFolderMenu(menu, &next_menu_id_);
+  node_to_menu_map_[parent] = menu;
+  return menu;
+}
+
+void BookmarkMenuController::BuildOtherFolderMenu(
+  MenuItemView* menu, int* next_menu_id) {
   const BookmarkNode* other_folder = profile_->GetBookmarkModel()->other_node();
   int id = *next_menu_id;
   (*next_menu_id)++;
   SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
-  views::MenuItemView* submenu = menu_->AppendSubMenuWithIcon(
+  MenuItemView* submenu = menu->AppendSubMenuWithIcon(
       id, l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_BOOKMARKED), *folder_icon);
   BuildMenu(other_folder, 0, submenu, next_menu_id);
   menu_id_to_node_map_[id] = other_folder;
@@ -232,7 +298,7 @@ void BookmarkMenuController::BuildOtherFolderMenu(int* next_menu_id) {
 
 void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                                        int start_child_index,
-                                       views::MenuItemView* menu,
+                                       MenuItemView* menu,
                                        int* next_menu_id) {
   DCHECK(!parent->GetChildCount() ||
          start_child_index < parent->GetChildCount());
@@ -252,7 +318,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     } else if (node->is_folder()) {
       SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
           GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
-      views::MenuItemView* submenu =
+      MenuItemView* submenu =
           menu->AppendSubMenuWithIcon(id, node->GetTitle(), *folder_icon);
       BuildMenu(node, 0, submenu, next_menu_id);
     } else {
@@ -266,4 +332,5 @@ BookmarkMenuController::~BookmarkMenuController() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
   if (observer_)
     observer_->BookmarkMenuDeleted(this);
+  STLDeleteValues(&node_to_menu_map_);
 }

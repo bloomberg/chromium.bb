@@ -133,15 +133,11 @@ void BookmarkMenuButton::RunMenu(views::View* source,
   views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPRIGHT;
   if (UILayoutIsRightToLeft())
     anchor = views::MenuItemView::TOPLEFT;
-  gfx::Point button_origin;
-  ConvertPointToScreen(this, &button_origin);
-  gfx::Rect menu_bounds(button_origin.x(), button_origin.y(), width(),
-                        height());
   if (for_drop) {
     bookmark_drop_menu_ = menu;
     bookmark_drop_menu_->set_observer(this);
   }
-  menu->RunMenuAt(menu_bounds, views::MenuItemView::TOPRIGHT, for_drop);
+  menu->RunMenuAt(this, views::MenuItemView::TOPRIGHT, for_drop);
 }
 
 BookmarkModel* BookmarkMenuButton::GetBookmarkModel() {

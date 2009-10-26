@@ -22,6 +22,7 @@ class OSExchangeData;
 namespace views {
 
 class DropTargetEvent;
+class MenuButton;
 class MenuHostRootView;
 class MouseEvent;
 class SubmenuView;
@@ -44,6 +45,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // block, the selected item is returned. If the menu does not block this
   // returns NULL immediately.
   MenuItemView* Run(gfx::NativeWindow parent,
+                    MenuButton* button,
                     MenuItemView* root,
                     const gfx::Rect& bounds,
                     MenuItemView::AnchorPosition position,
@@ -182,9 +184,14 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   ~MenuController();
 
+  void UpdateInitialLocation(const gfx::Rect& bounds,
+                             MenuItemView::AnchorPosition position);
+
   // Invoked when the user accepts the selected item. This is only used
   // when blocking. This schedules the loop to quit.
   void Accept(MenuItemView* item, int mouse_event_flags);
+
+  bool ShowSiblingMenu(SubmenuView* source, const MouseEvent& e);
 
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();
@@ -330,7 +337,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   MenuItemView* result_;
 
   // The mouse event flags when the user clicked on a menu. Is 0 if the
-  // user did not use the mousee to select the menu.
+  // user did not use the mouse to select the menu.
   int result_mouse_event_flags_;
 
   // If not empty, it means we're nested. When Run is invoked from within
@@ -375,6 +382,8 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Task for scrolling the menu. If non-null indicates a scroll is currently
   // underway.
   scoped_ptr<MenuScrollTask> scroll_task_;
+
+  MenuButton* menu_button_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

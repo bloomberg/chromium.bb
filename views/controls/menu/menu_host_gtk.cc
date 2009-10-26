@@ -19,14 +19,13 @@ MenuHost::MenuHost(SubmenuView* submenu)
       closed_(false),
       submenu_(submenu),
       did_pointer_grab_(false) {
-  GdkModifierType current_event_mod;
-  if (gtk_get_current_event_state(&current_event_mod)) {
-    set_mouse_down(
-        (current_event_mod & GDK_BUTTON1_MASK) ||
-        (current_event_mod & GDK_BUTTON2_MASK) ||
-        (current_event_mod & GDK_BUTTON3_MASK) ||
-        (current_event_mod & GDK_BUTTON4_MASK) ||
-        (current_event_mod & GDK_BUTTON5_MASK));
+  GdkEvent* event = gtk_get_current_event();
+  if (event) {
+    if (event->type == GDK_BUTTON_PRESS || event->type == GDK_2BUTTON_PRESS ||
+        event->type == GDK_3BUTTON_PRESS) {
+      set_mouse_down(true);
+    }
+    gdk_event_free(event);
   }
 }
 
@@ -36,33 +35,9 @@ void MenuHost::Init(gfx::NativeWindow parent,
                     bool do_capture) {
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);
   SetContentsView(contents_view);
-  // TODO(sky): see if there is some way to show without changing focus.
   Show();
-  if (do_capture) {
-    // Release the current grab.
-    GtkWidget* current_grab_window = gtk_grab_get_current();
-    if (current_grab_window)
-      gtk_grab_remove(current_grab_window);
-
-    // Make sure all app mouse events are targetted at us only.
-    DoGrab();
-
-    // And do a grab.
-    // NOTE: we do this to ensure we get mouse events from other apps, a grab
-    // done with gtk_grab_add doesn't get events from other apps.
-    GdkGrabStatus grab_status =
-        gdk_pointer_grab(window_contents()->window, FALSE,
-                         static_cast<GdkEventMask>(
-                             GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                             GDK_POINTER_MOTION_MASK),
-                         NULL, NULL, GDK_CURRENT_TIME);
-    did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
-    DCHECK(did_pointer_grab_);
-    // need keyboard grab.
-#ifdef DEBUG_MENU
-    DLOG(INFO) << "Doing capture";
-#endif
-  }
+  if (do_capture)
+    DoCapture();
 }
 
 gfx::NativeWindow MenuHost::GetNativeWindow() {
@@ -93,6 +68,32 @@ void MenuHost::HideWindow() {
   // Make sure we release capture before hiding.
   ReleaseGrab();
   WidgetGtk::Hide();
+}
+
+void MenuHost::DoCapture() {
+  // Release the current grab.
+  GtkWidget* current_grab_window = gtk_grab_get_current();
+  if (current_grab_window)
+    gtk_grab_remove(current_grab_window);
+
+  // Make sure all app mouse events are targetted at us only.
+  DoGrab();
+
+  // And do a grab.
+  // NOTE: we do this to ensure we get mouse events from other apps, a grab
+  // done with gtk_grab_add doesn't get events from other apps.
+  GdkGrabStatus grab_status =
+      gdk_pointer_grab(window_contents()->window, FALSE,
+                       static_cast<GdkEventMask>(
+                           GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                           GDK_POINTER_MOTION_MASK),
+                       NULL, NULL, GDK_CURRENT_TIME);
+  did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
+  DCHECK(did_pointer_grab_);
+  // need keyboard grab.
+#ifdef DEBUG_MENU
+  DLOG(INFO) << "Doing capture";
+#endif
 }
 
 void MenuHost::ReleaseCapture() {

@@ -38,6 +38,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/label.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/drag_utils.h"
 #include "views/view_constants.h"
@@ -797,6 +799,71 @@ views::MenuItemView* BookmarkBarView::GetDropMenu() {
   return bookmark_drop_menu_ ? bookmark_drop_menu_->menu() : NULL;
 }
 
+const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
+                                                        int* start_index) {
+  *start_index = 0;
+
+  if (loc.x() < 0 || loc.x() >= width() || loc.y() < 0 || loc.y() >= height())
+    return NULL;
+
+  // Check the buttons first.
+  for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+    views::View* child = GetChildViewAt(i);
+    if (!child->IsVisible())
+      break;
+    if (child->bounds().Contains(loc))
+      return model_->GetBookmarkBarNode()->GetChild(i);
+  }
+
+  // Then the overflow button.
+  if (overflow_button_->IsVisible() &&
+      overflow_button_->bounds().Contains(loc)) {
+    *start_index = GetFirstHiddenNodeIndex();
+    return model_->GetBookmarkBarNode();
+  }
+
+  // And finally the other folder.
+  if (other_bookmarked_button_->bounds().Contains(loc))
+    return model_->other_node();
+
+  return NULL;
+}
+
+views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
+    const BookmarkNode* node) {
+  if (node == model_->other_node())
+    return other_bookmarked_button_;
+  if (node == model_->GetBookmarkBarNode())
+    return overflow_button_;
+  int index = model_->GetBookmarkBarNode()->IndexOfChild(node);
+  if (index == -1 || !node->is_folder())
+    return NULL;
+  return static_cast<views::MenuButton*>(GetChildViewAt(index));
+}
+
+void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
+    views::MenuButton* button,
+    MenuItemView::AnchorPosition* anchor,
+    int* start_index) {
+  if (button == other_bookmarked_button_ || button == overflow_button_)
+    *anchor = MenuItemView::TOPRIGHT;
+  else
+    *anchor = MenuItemView::TOPLEFT;
+
+  // Invert orientation if right to left.
+  if (UILayoutIsRightToLeft()) {
+    if (*anchor == MenuItemView::TOPRIGHT)
+      *anchor = MenuItemView::TOPLEFT;
+    else
+      *anchor = MenuItemView::TOPRIGHT;
+  }
+
+  if (button == overflow_button_)
+    *start_index = GetFirstHiddenNodeIndex();
+  else
+    *start_index = 0;
+}
+
 void BookmarkBarView::Init() {
   // Note that at this point we're not in a hierarchy so GetThemeProvider() will
   // return NULL.  When we're inserted into a hierarchy, we'll call
@@ -1072,55 +1139,24 @@ int BookmarkBarView::GetDragOperations(View* sender, int x, int y) {
 
 void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
   const BookmarkNode* node;
-  MenuItemView::AnchorPosition anchor_point = MenuItemView::TOPLEFT;
-
-  // When we set the menu's position, we must take into account the mirrored
-  // position of the View relative to its parent. This can be easily done by
-  // passing the right flag to View::x().
-  int x = view->GetX(APPLY_MIRRORING_TRANSFORMATION);
-  int bar_height = height() - kMenuOffset;
-
-  if (IsDetached())
-    bar_height -= kNewtabVerticalPadding;
 
   int start_index = 0;
   if (view == other_bookmarked_button_) {
-    UserMetrics::RecordAction(L"BookmarkBar_ShowOtherBookmarks", profile_);
-
     node = model_->other_node();
-    if (UILayoutIsRightToLeft())
-      anchor_point = MenuItemView::TOPLEFT;
-    else
-      anchor_point = MenuItemView::TOPRIGHT;
   } else if (view == overflow_button_) {
     node = model_->GetBookmarkBarNode();
     start_index = GetFirstHiddenNodeIndex();
-    if (UILayoutIsRightToLeft())
-      anchor_point = MenuItemView::TOPLEFT;
-    else
-      anchor_point = MenuItemView::TOPRIGHT;
   } else {
     int button_index = GetChildIndex(view);
     DCHECK_NE(-1, button_index);
     node = model_->GetBookmarkBarNode()->GetChild(button_index);
-
-    // When the UI layout is RTL, the bookmarks are laid out from right to left
-    // and therefore when we display the menu we want it to be aligned with the
-    // bottom right corner of the bookmark item.
-    if (UILayoutIsRightToLeft())
-      anchor_point = MenuItemView::TOPRIGHT;
-    else
-      anchor_point = MenuItemView::TOPLEFT;
   }
-  gfx::Point screen_loc(x, 0);
-  View::ConvertPointToScreen(this, &screen_loc);
+
   bookmark_menu_ = new BookmarkMenuController(
       browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
       node, start_index, false);
   bookmark_menu_->set_observer(this);
-  bookmark_menu_->RunMenuAt(gfx::Rect(screen_loc.x(), screen_loc.y(),
-                            view->width(), bar_height),
-                            anchor_point, false);
+  bookmark_menu_->RunMenuAt(this, false);
 }
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
@@ -1298,54 +1334,20 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     bookmark_drop_menu_->Cancel();
   }
 
-  int start_index = 0;
-  View* view_to_position_menu_from;
+  views::MenuButton* menu_button = GetMenuButtonForNode(node);
+  if (!menu_button)
+    return;
 
-  // Note that both the anchor position and the position of the menu itself
-  // change depending on the locale. Also note that we must apply the
-  // mirroring transformation when querying for the child View bounds
-  // (View::x(), specifically) so that we end up with the correct screen
-  // coordinates if the View in question is mirrored.
-  MenuItemView::AnchorPosition anchor = MenuItemView::TOPLEFT;
-  if (node == model_->other_node()) {
-    view_to_position_menu_from = other_bookmarked_button_;
-    if (!UILayoutIsRightToLeft())
-      anchor = MenuItemView::TOPRIGHT;
-  } else if (node == model_->GetBookmarkBarNode()) {
-    DCHECK(overflow_button_->IsVisible());
-    view_to_position_menu_from = overflow_button_;
+  int start_index = 0;
+  if (node == model_->GetBookmarkBarNode())
     start_index = GetFirstHiddenNodeIndex();
-    if (!UILayoutIsRightToLeft())
-      anchor = MenuItemView::TOPRIGHT;
-  } else {
-    // Make sure node is still valid.
-    int index = -1;
-    const BookmarkNode* bb_node = model_->GetBookmarkBarNode();
-    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      if (bb_node->GetChild(i) == node) {
-        index = i;
-        break;
-      }
-    }
-    if (index == -1)
-      return;
-    view_to_position_menu_from = GetBookmarkButton(index);
-    if (UILayoutIsRightToLeft())
-      anchor = MenuItemView::TOPRIGHT;
-  }
 
   drop_info_->is_menu_showing = true;
   bookmark_drop_menu_ = new BookmarkMenuController(
       browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
       node, start_index, false);
   bookmark_drop_menu_->set_observer(this);
-  gfx::Point screen_loc;
-  View::ConvertPointToScreen(view_to_position_menu_from, &screen_loc);
-  bookmark_drop_menu_->RunMenuAt(
-      gfx::Rect(screen_loc.x(), screen_loc.y(),
-                view_to_position_menu_from->width(),
-                view_to_position_menu_from->height()),
-      anchor, true);
+  bookmark_drop_menu_->RunMenuAt(this, true);
 }
 
 void BookmarkBarView::StopShowFolderDropMenuTimer() {

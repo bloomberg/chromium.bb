@@ -9,6 +9,7 @@
 #include "app/os_exchange_data.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/drag_utils.h"
@@ -143,6 +144,7 @@ static int nested_depth = 0;
 #endif
 
 MenuItemView* MenuController::Run(gfx::NativeWindow parent,
+                                  MenuButton* button,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
@@ -168,19 +170,9 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   // Reset current state.
   pending_state_ = State();
   state_ = State();
-  pending_state_.initial_bounds = bounds;
-  if (bounds.height() > 1) {
-    // Inset the bounds slightly, otherwise drag coordinates don't line up
-    // nicely and menus close prematurely.
-    pending_state_.initial_bounds.Inset(0, 1);
-  }
-  pending_state_.anchor = position;
-  owner_ = parent;
+  UpdateInitialLocation(bounds, position);
 
-  // Calculate the bounds of the monitor we'll show menus on. Do this once to
-  // avoid repeated system queries for the info.
-  pending_state_.monitor_bounds = Screen::GetMonitorAreaNearestPoint(
-      bounds.origin());
+  owner_ = parent;
 
   // Set the selection, which opens the initial menu.
   SetSelection(root, true, true);
@@ -190,6 +182,8 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
     // notification when the drag has finished.
     StartCancelAllTimer();
     return NULL;
+  } else if (button) {
+    menu_button_ = button;
   }
 
 #ifdef DEBUG_MENU
@@ -243,6 +237,11 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
     // Set exit_all_ to true, which makes sure all nested loops exit
     // immediately.
     exit_all_ = true;
+  }
+
+  if (menu_button_) {
+    menu_button_->SetState(CustomButton::BS_NORMAL);
+    menu_button_->SchedulePaint();
   }
 
   return result;
@@ -316,8 +315,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
   if (!blocking_run_)
     return;
 
-  MenuPart part =
-      GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
   if (part.is_scroll())
     return;  // Ignore presses on scroll buttons.
 
@@ -362,8 +360,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
 #ifdef DEBUG_MENU
   DLOG(INFO) << "OnMouseDragged source=" << source;
 #endif
-  MenuPart part =
-      GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
   UpdateScrolling(part);
 
   if (!blocking_run_)
@@ -409,6 +406,8 @@ void MenuController::OnMouseDragged(SubmenuView* source,
     if (!part.menu)
       part.menu = source->GetMenuItem();
     SetSelection(part.menu ? part.menu : state_.item, true, false);
+  } else if (part.type == MenuPart::NONE) {
+    ShowSiblingMenu(source, event);
   }
 }
 
@@ -423,8 +422,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   DCHECK(state_.item);
   possible_drag_ = false;
   DCHECK(blocking_run_);
-  MenuPart part =
-      GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
   if (event.IsRightMouseButton() && (part.type == MenuPart::MENU_ITEM &&
                                      part.menu)) {
     // Set the selection immediately, making sure the submenu is only open
@@ -460,12 +458,14 @@ void MenuController::OnMouseMoved(SubmenuView* source,
   if (showing_submenu_)
     return;
 
-  MenuPart part =
-      GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
 
   UpdateScrolling(part);
 
   if (!blocking_run_)
+    return;
+
+  if (part.type == MenuPart::NONE && ShowSiblingMenu(source, event))
     return;
 
   if (part.type == MenuPart::MENU_ITEM && part.menu) {
@@ -803,7 +803,8 @@ MenuController::MenuController(bool blocking)
       owner_(NULL),
       possible_drag_(false),
       valid_drop_coordinates_(false),
-      showing_submenu_(false) {
+      showing_submenu_(false),
+      menu_button_(NULL) {
 #ifdef DEBUG_MENU
   instance_count++;
   DLOG(INFO) << "created MC, count=" << instance_count;
@@ -820,11 +821,85 @@ MenuController::~MenuController() {
 #endif
 }
 
+void MenuController::UpdateInitialLocation(
+    const gfx::Rect& bounds,
+    MenuItemView::AnchorPosition position) {
+  pending_state_.initial_bounds = bounds;
+  if (bounds.height() > 1) {
+    // Inset the bounds slightly, otherwise drag coordinates don't line up
+    // nicely and menus close prematurely.
+    pending_state_.initial_bounds.Inset(0, 1);
+  }
+  pending_state_.anchor = position;
+
+  // Calculate the bounds of the monitor we'll show menus on. Do this once to
+  // avoid repeated system queries for the info.
+  pending_state_.monitor_bounds = Screen::GetMonitorAreaNearestPoint(
+      bounds.origin());
+}
+
 void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
   DCHECK(IsBlockingRun());
   result_ = item;
   exit_all_ = true;
   result_mouse_event_flags_ = mouse_event_flags;
+}
+
+bool MenuController::ShowSiblingMenu(SubmenuView* source, const MouseEvent& e) {
+  if (!menu_stack_.empty() || !menu_button_)
+    return false;
+
+  View* source_view = source->GetScrollViewContainer();
+  if (e.x() >= 0 && e.x() < source_view->width() && e.y() >= 0 &&
+      e.y() < source_view->height()) {
+    // The mouse is over the menu, no need to continue.
+    return false;
+  }
+
+  gfx::NativeWindow window_under_mouse = Screen::GetWindowAtCursorScreenPoint();
+  if (window_under_mouse != owner_)
+    return false;
+
+  // The user moved the mouse outside the menu and over the owning window. See
+  // if there is a sibling menu we should show.
+  gfx::Point screen_point(e.location());
+  View::ConvertPointToScreen(source_view, &screen_point);
+  MenuItemView::AnchorPosition anchor;
+  bool has_mnemonics;
+  MenuButton* button = NULL;
+  MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->
+      GetSiblingMenu(source->GetMenuItem()->GetRootMenuItem(),
+                     screen_point, &anchor, &has_mnemonics, &button);
+  if (!alt_menu || alt_menu == state_.item)
+    return false;
+
+  if (!button) {
+    // If the delegate returns a menu, they must also return a button.
+    NOTREACHED();
+    return false;
+  }
+
+  // There is a sibling menu, update the button state, hide the current menu
+  // and show the new one.
+  menu_button_->SetState(CustomButton::BS_NORMAL);
+  menu_button_->SchedulePaint();
+  menu_button_ = button;
+  menu_button_->SetState(CustomButton::BS_PUSHED);
+  menu_button_->SchedulePaint();
+
+  // Need to reset capture when we show the menu again, otherwise we aren't
+  // going to get any events.
+  did_capture_ = false;
+  gfx::Point screen_menu_loc;
+  View::ConvertPointToScreen(button, &screen_menu_loc);
+  // Subtract 1 from the height to make the popup flush with the button border.
+  UpdateInitialLocation(gfx::Rect(screen_menu_loc.x(), screen_menu_loc.y(),
+                                  button->width(), button->height() - 1),
+                        anchor);
+  alt_menu->PrepareForRun(has_mnemonics);
+  alt_menu->controller_ = this;
+  SetSelection(alt_menu, true, true);
+  return true;
 }
 
 void MenuController::CloseAllNestedMenus() {

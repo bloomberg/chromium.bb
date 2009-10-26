@@ -10,6 +10,7 @@
 
 namespace views {
 
+class MenuButton;
 class MenuController;
 class MenuDelegate;
 class SubmenuView;
@@ -82,6 +83,7 @@ class MenuItemView : public View {
   // whether the items have mnemonics. Mnemonics are identified by way of the
   // character following the '&'.
   void RunMenuAt(gfx::NativeWindow parent,
+                 MenuButton* button,
                  const gfx::Rect& bounds,
                  AnchorPosition anchor,
                  bool has_mnemonics);

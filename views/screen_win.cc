@@ -46,5 +46,10 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return gfx::Rect(mi.rcMonitor);
 }
 
+gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
+  POINT location;
+  return GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
+}
+
 }  // namespace
 

@@ -37,14 +37,8 @@ void MenuHost::Init(HWND parent,
   WidgetWin::Init(parent, bounds);
   SetContentsView(contents_view);
   Show();
-  owns_capture_ = do_capture;
-  if (do_capture) {
-    SetCapture();
-    has_capture_ = true;
-#ifdef DEBUG_MENU
-    DLOG(INFO) << "Doing capture";
-#endif
-  }
+  if (do_capture)
+    DoCapture();
 }
 
 void MenuHost::Show() {
@@ -79,6 +73,15 @@ void MenuHost::OnCaptureChanged(HWND hwnd) {
   owns_capture_ = false;
 #ifdef DEBUG_MENU
   DLOG(INFO) << "Capture changed";
+#endif
+}
+
+void MenuHost::DoCapture() {
+  owns_capture_ = true;
+  SetCapture();
+  has_capture_ = true;
+#ifdef DEBUG_MENU
+  DLOG(INFO) << "Doing capture";
 #endif
 }
 

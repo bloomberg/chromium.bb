@@ -221,6 +221,8 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
                          bool do_capture) {
   if (host_) {
     host_->Show();
+    if (do_capture)
+      host_->DoCapture();
     return;
   }
 

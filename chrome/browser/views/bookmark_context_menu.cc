@@ -37,7 +37,7 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   views::MenuItemView::AnchorPosition anchor =
       (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
       views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;
-  menu_->RunMenuAt(parent_window_, gfx::Rect(point.x(), point.y(), 0, 0),
+  menu_->RunMenuAt(parent_window_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
                    anchor, true);
 }
 

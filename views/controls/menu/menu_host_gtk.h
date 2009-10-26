@@ -27,6 +27,7 @@ class MenuHost : public WidgetGtk {
   void Show();
   virtual void Hide();
   virtual void HideWindow();
+  void DoCapture();
   void ReleaseCapture();
 
  protected:

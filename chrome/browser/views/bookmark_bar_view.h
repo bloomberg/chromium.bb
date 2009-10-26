@@ -13,18 +13,19 @@
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/common/notification_registrar.h"
-#include "views/controls/button/menu_button.h"
-#include "views/controls/label.h"
+#include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/view.h"
-#include "third_party/skia/include/core/SkRect.h"
 
 class Browser;
 class PageNavigator;
 class PrefService;
 
 namespace views {
+class CustomButton;
+class Label;
+class MenuButton;
 class MenuItemView;
+class TextButton;
 }
 
 // BookmarkBarView renders the BookmarkModel.  Each starred entry on the
@@ -173,7 +174,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Returns the button responsible for showing bookmarks in the other bookmark
   // folder.
-  views::TextButton* other_bookmarked_button() const {
+  views::MenuButton* other_bookmarked_button() const {
     return other_bookmarked_button_;
   }
 
@@ -187,7 +188,25 @@ class BookmarkBarView : public DetachableToolbarView,
   views::MenuItemView* GetContextMenu();
 
   // Returns the button used when not all the items on the bookmark bar fit.
-  views::TextButton* overflow_button() const { return overflow_button_; }
+  views::MenuButton* overflow_button() const { return overflow_button_; }
+
+  // If |loc| is over a bookmark button the node is returned corresponding
+  // to the button and |start_index| is set to 0. If a overflow button is
+  // showing and |loc| is over the overflow button, the bookmark bar node is
+  // returned and |start_index| is set to the index of the first node
+  // contained in the overflow menu.
+  const BookmarkNode* GetNodeForButtonAt(const gfx::Point& loc,
+                                         int* start_index);
+
+  // Returns the MenuButton for node.
+  views::MenuButton* GetMenuButtonForNode(const BookmarkNode* node);
+
+  // Returns the position to anchor the menu for |button| at, the index of the
+  // first child of the node to build the menu from.
+  void GetAnchorPositionAndStartIndexForButton(
+      views::MenuButton* button,
+      views::MenuItemView::AnchorPosition* anchor,
+      int* start_index);
 
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
@@ -317,12 +336,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // Returns the drag operations for the specified button.
   virtual int GetDragOperations(views::View* sender, int x, int y);
 
-  // ViewMenuDelegate method. 3 types of menus may be shown:
-  // . the menu allowing the user to choose when the bookmark bar is visible.
-  // . most recently bookmarked menu
-  // . menu for star groups.
-  // The latter two are handled by a MenuRunner, which builds the appropriate
-  // menu.
+  // ViewMenuDelegate method. Ends up creating a BookmarkMenuController to
+  // show the menu.
   virtual void RunMenu(views::View* view, const gfx::Point& pt);
 
   // Invoked when a star entry corresponding to a URL on the bookmark bar is

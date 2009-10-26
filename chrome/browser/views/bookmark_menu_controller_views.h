@@ -16,8 +16,13 @@
 
 namespace gfx {
 class Rect;
-}
+}  // namespace gfx
 
+namespace views {
+class MenuButton;
+}  // namespace views
+
+class BookmarkBarView;
 class BookmarkContextMenu;
 class BookmarkNode;
 class Browser;
@@ -48,8 +53,10 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                          int start_child_index,
                          bool show_other_folder);
 
+  void RunMenuAt(BookmarkBarView* bookmark_bar, bool for_drop);
+
   // Shows the menu.
-  void RunMenuAt(const gfx::Rect& bounds,
+  void RunMenuAt(views::MenuButton* button,
                  views::MenuItemView::AnchorPosition position,
                  bool for_drop);
 
@@ -60,7 +67,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   const BookmarkNode* node() const { return node_; }
 
   // Returns the menu.
-  views::MenuItemView* menu() const { return menu_.get(); }
+  views::MenuItemView* menu() const { return menu_; }
 
   // Returns the context menu, or NULL if the context menu isn't showing.
   views::MenuItemView* context_menu() const {
@@ -93,7 +100,14 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual bool CanDrag(views::MenuItemView* menu);
   virtual void WriteDragData(views::MenuItemView* sender, OSExchangeData* data);
   virtual int GetDragOperations(views::MenuItemView* sender);
+  virtual views::MenuItemView* GetSiblingMenu(
+      views::MenuItemView* menu,
+      const gfx::Point& screen_point,
+      views::MenuItemView::AnchorPosition* anchor,
+      bool* has_mnemonics,
+      views::MenuButton** button);
 
+  // BookmarkModelObserver methods.
   virtual void BookmarkModelChanged();
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
@@ -102,9 +116,14 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // BookmarkMenuController deletes itself as necessary.
   ~BookmarkMenuController();
 
+  // Creates a menu and adds it to node_to_menu_id_map_. This uses
+  // BuildMenu to recursively populate the menu.
+  views::MenuItemView* CreateMenu(const BookmarkNode* parent,
+                                  int start_child_index);
+
   // Builds the menu for the other bookmarks folder. This is added as the last
   // item to menu_.
-  void BuildOtherFolderMenu(int* next_menu_id);
+  void BuildOtherFolderMenu(views::MenuItemView* menu, int* next_menu_id);
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.
@@ -132,8 +151,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // URL.
   std::map<const BookmarkNode*, int> node_to_menu_id_map_;
 
-  // The menu.
-  scoped_ptr<views::MenuItemView> menu_;
+  // Current menu.
+  views::MenuItemView* menu_;
 
   // Data for the drop.
   BookmarkDragData drop_data_;
@@ -149,6 +168,16 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // Should the other folder be shown?
   bool show_other_folder_;
+
+  // The bookmark bar. This is only non-null if we're showing a menu item
+  // for a folder on the bookmark bar and not for drop.
+  BookmarkBarView* bookmark_bar_;
+
+  typedef std::map<const BookmarkNode*, views::MenuItemView*> NodeToMenuMap;
+  NodeToMenuMap node_to_menu_map_;
+
+  // ID of the next menu item.
+  int next_menu_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);
 };

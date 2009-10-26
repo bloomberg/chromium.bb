@@ -28,6 +28,7 @@ class MenuHost : public WidgetWin {
   virtual void Hide();
   virtual void HideWindow();
   virtual void OnCaptureChanged(HWND hwnd);
+  void DoCapture();
   void ReleaseCapture();
 
  protected:

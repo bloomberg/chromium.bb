@@ -58,5 +58,19 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return gfx::Rect(bounds);
 }
 
+gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
+  GdkWindow* window = gdk_window_at_pointer(NULL, NULL);
+  if (!window)
+    return NULL;
+
+  gpointer data = NULL;
+  gdk_window_get_user_data(window, &data);
+  GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
+  if (!widget)
+    return NULL;
+  widget = gtk_widget_get_toplevel(widget);
+  return GTK_IS_WINDOW(widget) ? GTK_WINDOW(widget) : NULL;
+}
+
 }  // namespace
 

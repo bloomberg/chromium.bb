@@ -795,8 +795,8 @@ void BookmarkManagerView::ShowToolsMenu(int x, int y) {
   views::MenuItemView::AnchorPosition anchor =
       UILayoutIsRightToLeft() ? views::MenuItemView::TOPRIGHT :
                                 views::MenuItemView::TOPLEFT;
-  menu.RunMenuAt(GetWidget()->GetNativeView(), gfx::Rect(x, y, 0, 0), anchor,
-                 true);
+  menu.RunMenuAt(GetWidget()->GetNativeView(), NULL, gfx::Rect(x, y, 0, 0),
+                 anchor, true);
 }
 
 void BookmarkManagerView::ShowImportBookmarksFileChooser() {

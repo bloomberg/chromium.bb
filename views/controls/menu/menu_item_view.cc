@@ -66,23 +66,15 @@ MenuItemView::MenuItemView(MenuDelegate* delegate) {
 }
 
 MenuItemView::~MenuItemView() {
-  if (controller_) {
-    // We're currently showing.
-
-    // We can't delete ourselves while we're blocking.
-    DCHECK(!controller_->IsBlockingRun());
-
-    // Invoking Cancel is going to call us back and notify the delegate.
-    // Notifying the delegate from the destructor can be problematic. To avoid
-    // this the delegate is set to NULL.
-    delegate_ = NULL;
-
-    controller_->Cancel(true);
-  }
+  // TODO(sky): ownership is bit wrong now. In particular if a nested message
+  // loop is running deletion can't be done, otherwise the stack gets
+  // thoroughly screwed. The destructor should be made private, and
+  // MenuController should be the only place handling deletion of the menu.
   delete submenu_;
 }
 
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
+                             MenuButton* button,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
                              bool has_mnemonics) {
@@ -115,7 +107,7 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
 
   // Run the loop.
   MenuItemView* result =
-      controller->Run(parent, this, bounds, anchor, &mouse_event_flags);
+      controller->Run(parent, button, this, bounds, anchor, &mouse_event_flags);
 
   RemoveEmptyMenus();
 
@@ -151,7 +143,7 @@ void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
   // Set the instance, that way it can be canceled by another menu.
   MenuController::SetActiveInstance(controller_);
 
-  controller_->Run(parent, this, bounds, anchor, NULL);
+  controller_->Run(parent, NULL, this, bounds, anchor, NULL);
 }
 
 void MenuItemView::Cancel() {
@@ -336,9 +328,6 @@ void MenuItemView::DropMenuClosed(bool notify_delegate) {
 void MenuItemView::PrepareForRun(bool has_mnemonics) {
   // Currently we only support showing the root.
   DCHECK(!parent_menu_item_);
-
-  // Don't invoke run from within run on the same menu.
-  DCHECK(!controller_);
 
   // Force us to have a submenu.
   CreateSubmenu();

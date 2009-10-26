@@ -14,6 +14,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -279,7 +280,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
   virtual void DoTestOnMessageLoop() {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
-    views::TextButton* button = bb_view_->other_bookmarked_button();
+    views::MenuButton* button = bb_view_->other_bookmarked_button();
     ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest3::Step2));

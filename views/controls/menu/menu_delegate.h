@@ -12,12 +12,13 @@
 #include "app/os_exchange_data.h"
 #include "base/logging.h"
 #include "views/controls/menu/controller.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/event.h"
 
 namespace views {
 
 class DropTargetEvent;
-class MenuItemView;
+class MenuButton;
 
 // MenuDelegate --------------------------------------------------------------
 
@@ -179,6 +180,19 @@ class MenuDelegate : Controller {
 
   // Notification that the user has highlighted the specified item.
   virtual void SelectionChanged(MenuItemView* menu) {
+  }
+
+  // If the user drags the mouse outside the bounds of the menu the delegate
+  // is queried for a sibling menu to show. If this returns non-null the
+  // current menu is hidden, and the menu returned from this method is shown.
+  //
+  // The delegate owns the returned menu, not the controller.
+  virtual MenuItemView* GetSiblingMenu(MenuItemView* menu,
+                                       const gfx::Point& screen_point,
+                                       MenuItemView::AnchorPosition* anchor,
+                                       bool* has_mnemonics,
+                                       MenuButton** button) {
+      return NULL;
   }
 };
 
