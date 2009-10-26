@@ -36,10 +36,10 @@ const size_t kMaxMRUFolders = 5;
 std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
                                                      const GURL& url,
                                                      GtkWidget* folder_combo) {
-  const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
-  const BookmarkNode* parent = node->GetParent();
   const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
   const BookmarkNode* other = model->other_node();
+  const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
+  const BookmarkNode* parent = node ? node->GetParent() : NULL;
 
   // Use + 2 to account for bookmark bar and other node.
   std::vector<const BookmarkNode*> recent_nodes =
@@ -47,7 +47,7 @@ std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
 
   std::vector<const BookmarkNode*> nodes;
   // Make the parent the first item, unless it's the bookmark bar or other node.
-  if (parent != bookmark_bar && parent != other)
+  if (parent && parent != bookmark_bar && parent != other)
     nodes.push_back(parent);
 
   for (size_t i = 0; i < recent_nodes.size(); ++i) {
@@ -75,8 +75,11 @@ std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
       l10n_util::GetStringUTF8(
           IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER).c_str());
 
-  int parent_index = static_cast<int>(
-      std::find(nodes.begin(), nodes.end(), parent) - nodes.begin());
+  gint parent_index = 0;
+  if (parent) {
+    parent_index = static_cast<gint>(
+        std::find(nodes.begin(), nodes.end(), parent) - nodes.begin());
+  }
   gtk_combo_box_set_active(GTK_COMBO_BOX(folder_combo), parent_index);
 
   return nodes;
