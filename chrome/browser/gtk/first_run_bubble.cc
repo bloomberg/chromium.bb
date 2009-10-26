@@ -143,9 +143,14 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   // We want the focus to start on the keep entry, not on the change button.
   gtk_widget_grab_focus(keep_button);
 
+  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
+      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = InfoBubbleGtk::Show(parent_,
                                 rect,
                                 content_,
+                                arrow_location,
                                 theme_provider_,
                                 this);  // delegate
   if (!bubble_) {

@@ -39,16 +39,24 @@ class InfoBubbleGtkDelegate {
 
 class InfoBubbleGtk : public NotificationObserver {
  public:
+  // Where should the arrow be placed relative to the bubble?
+  enum ArrowLocationGtk {
+    // TODO(derat): Support placing arrows on the bottoms of the bubbles.
+    ARROW_LOCATION_TOP_LEFT,
+    ARROW_LOCATION_TOP_RIGHT,
+  };
+
   // Show an InfoBubble, pointing at the area |rect| (in coordinates relative to
   // |toplevel_window|'s origin).  An info bubble will try to fit on the screen,
   // so it can point to any edge of |rect|.  The bubble will host the |content|
-  // widget.  The |delegate| will be notified when the bubble is closed.  The
-  // bubble will perform an X grab of the pointer and keyboard, and will close
-  // itself if a click is received outside of the bubble.
-  // TODO(derat): This implementation doesn't try to position itself onscreen.
+  // widget.  Its arrow will be drawn at |arrow_location| if possible.  The
+  // |delegate| will be notified when the bubble is closed.  The bubble will
+  // perform an X grab of the pointer and keyboard, and will close itself if a
+  // click is received outside of the bubble.
   static InfoBubbleGtk* Show(GtkWindow* toplevel_window,
                              const gfx::Rect& rect,
                              GtkWidget* content,
+                             ArrowLocationGtk arrow_location,
                              GtkThemeProvider* provider,
                              InfoBubbleGtkDelegate* delegate);
 
@@ -72,13 +80,6 @@ class InfoBubbleGtk : public NotificationObserver {
   void HandlePointerAndKeyboardUngrabbedByContent();
 
  private:
-  // Where should the arrow be placed relative to the bubble?
-  enum ArrowLocationGtk {
-    // TODO(derat): Support placing arrows on the bottoms of the bubbles.
-    ARROW_LOCATION_TOP_LEFT,
-    ARROW_LOCATION_TOP_RIGHT,
-  };
-
   enum FrameType {
     FRAME_MASK,
     FRAME_STROKE,
@@ -90,7 +91,8 @@ class InfoBubbleGtk : public NotificationObserver {
   // Creates the InfoBubble.
   void Init(GtkWindow* toplevel_window,
             const gfx::Rect& rect,
-            GtkWidget* content);
+            GtkWidget* content,
+            ArrowLocationGtk arrow_location);
 
   // Make the points for our polygon frame, either for fill (the mask), or for
   // when we stroke the border.
@@ -101,16 +103,17 @@ class InfoBubbleGtk : public NotificationObserver {
       FrameType type);
 
   // Get the location where the arrow should be placed (which is a function of
-  // whether the user's language is LTR/RTL and of the direction that the bubble
-  // should be facing to fit onscreen).  |arrow_x| is the X component in screen
+  // the preferred location and of the direction that the bubble should be
+  // facing to fit onscreen).  |arrow_x| is the X component in screen
   // coordinates of the point at which the bubble's arrow should be aimed, and
   // |width| is the bubble's width.
-  static ArrowLocationGtk GetArrowLocation(int arrow_x, int width);
+  static ArrowLocationGtk GetArrowLocation(
+      ArrowLocationGtk preferred_location, int arrow_x, int width);
 
   // Updates |arrow_location_| based on the toplevel window's current position
-  // and the bubble's size.  If the location changes, moves and reshapes the
-  // window and returns true.
-  bool UpdateArrowLocation();
+  // and the bubble's size.  If the |force_move_and_reshape| is true or the
+  // location changes, moves and reshapes the window and returns true.
+  bool UpdateArrowLocation(bool force_move_and_reshape);
 
   // Reshapes the window and updates |mask_region_|.
   void UpdateWindowShape();
@@ -218,8 +221,10 @@ class InfoBubbleGtk : public NotificationObserver {
   // not).
   GdkRegion* mask_region_;
 
-  // Where should the arrow be drawn relative to the bubble?
-  ArrowLocationGtk arrow_location_;
+  // Where would we prefer for the arrow be drawn relative to the bubble, and
+  // where is it currently drawn?
+  ArrowLocationGtk preferred_arrow_location_;
+  ArrowLocationGtk current_arrow_location_;
 
   NotificationRegistrar registrar_;
 

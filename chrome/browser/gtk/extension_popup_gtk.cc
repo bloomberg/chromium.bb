@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
@@ -60,8 +61,17 @@ void ExtensionPopupGtk::ShowPopup() {
     return;
   }
 
+  // We'll be in the upper-right corner of the window for LTR languages, so we
+  // want to put the arrow at the upper-right corner of the bubble to match the
+  // page and app menus.
+  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
   bubble_ = InfoBubbleGtk::Show(browser_->window()->GetNativeHandle(),
-                                relative_to_, host_->view()->native_view(),
+                                relative_to_,
+                                host_->view()->native_view(),
+                                arrow_location,
                                 GtkThemeProvider::GetFrom(browser_->profile()),
                                 this);
 }

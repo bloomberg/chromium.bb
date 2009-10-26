@@ -47,10 +47,11 @@ const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
                                    const gfx::Rect& rect,
                                    GtkWidget* content,
+                                   ArrowLocationGtk arrow_location,
                                    GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
   InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
-  bubble->Init(toplevel_window, rect, content);
+  bubble->Init(toplevel_window, rect, content, arrow_location);
   bubble->set_delegate(delegate);
   return bubble;
 }
@@ -62,7 +63,8 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
       accel_group_(gtk_accel_group_new()),
       toplevel_window_(NULL),
       mask_region_(NULL),
-      arrow_location_(ARROW_LOCATION_TOP_LEFT) {
+      preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
+      current_arrow_location_(ARROW_LOCATION_TOP_LEFT) {
 }
 
 InfoBubbleGtk::~InfoBubbleGtk() {
@@ -85,10 +87,12 @@ InfoBubbleGtk::~InfoBubbleGtk() {
 
 void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                          const gfx::Rect& rect,
-                         GtkWidget* content) {
+                         GtkWidget* content,
+                         ArrowLocationGtk arrow_location) {
   DCHECK(!window_);
   toplevel_window_ = toplevel_window;
   rect_ = rect;
+  preferred_arrow_location_ = arrow_location;
 
   window_ = gtk_window_new(GTK_WINDOW_POPUP);
   gtk_widget_set_app_paintable(window_, TRUE);
@@ -112,12 +116,7 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
   // HandleSizeAllocate, so the mask can be applied to the GdkWindow.
   gtk_widget_realize(window_);
 
-  // For RTL, we will have to move the window again when it is allocated, but
-  // this should be somewhat close to its final position.
-  MoveWindow();
-  GtkRequisition req;
-  gtk_widget_size_request(window_, &req);
-
+  UpdateArrowLocation(true);  // Force move and reshape.
   StackWindow();
 
   gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK |
@@ -176,85 +175,84 @@ std::vector<GdkPoint> InfoBubbleGtk::MakeFramePolygonPoints(
   using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
-  // This name isn't completely accurate; the arrow location can differ from its
-  // expected location for LTR/RTL if needed for the bubble to fit onscreen.
-  bool ltr = (arrow_location == ARROW_LOCATION_TOP_LEFT);
+  bool on_left = (arrow_location == ARROW_LOCATION_TOP_LEFT);
 
-  // If we have a stroke, we have to offset some of our points by 1 pixel.
-  // We have to inset by 1 pixel when we draw horizontal lines that are on the
-  // bottom or when we draw vertical lines that are closer to the end (end is
-  // right for ltr).
+  // If we're stroking the frame, we need to offset some of our points by 1
+  // pixel.  We do this when we draw horizontal lines that are on the bottom or
+  // when we draw vertical lines that are closer to the end (where "end" is the
+  // right side for ARROW_LOCATION_TOP_LEFT).
   int y_off = (type == FRAME_MASK) ? 0 : -1;
-  // We use this one for LTR.
-  int x_off_l = ltr ? y_off : 0;
+  // We use this one for arrows located on the left.
+  int x_off_l = on_left ? y_off : 0;
   // We use this one for RTL.
-  int x_off_r = !ltr ? -y_off : 0;
+  int x_off_r = !on_left ? -y_off : 0;
 
   // Top left corner.
   points.push_back(MakeBidiGdkPoint(
-      x_off_r, kArrowSize + kCornerSize - 1, width, ltr));
+      x_off_r, kArrowSize + kCornerSize - 1, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize + x_off_r - 1, kArrowSize, width, ltr));
+      kCornerSize + x_off_r - 1, kArrowSize, width, on_left));
 
   // The arrow.
   points.push_back(MakeBidiGdkPoint(
-      kArrowX - kArrowSize + x_off_r, kArrowSize, width, ltr));
+      kArrowX - kArrowSize + x_off_r, kArrowSize, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      kArrowX + x_off_r, 0, width, ltr));
+      kArrowX + x_off_r, 0, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      kArrowX + 1 + x_off_l, 0, width, ltr));
+      kArrowX + 1 + x_off_l, 0, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      kArrowX + kArrowSize + 1 + x_off_l, kArrowSize, width, ltr));
+      kArrowX + kArrowSize + 1 + x_off_l, kArrowSize, width, on_left));
 
   // Top right corner.
   points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + 1 + x_off_l, kArrowSize, width, ltr));
+      width - kCornerSize + 1 + x_off_l, kArrowSize, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, kArrowSize + kCornerSize - 1, width, ltr));
+      width + x_off_l, kArrowSize + kCornerSize - 1, width, on_left));
 
   // Bottom right corner.
   points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, height - kCornerSize, width, ltr));
+      width + x_off_l, height - kCornerSize, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + x_off_r, height + y_off, width, ltr));
+      width - kCornerSize + x_off_r, height + y_off, width, on_left));
 
   // Bottom left corner.
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize + x_off_l, height + y_off, width, ltr));
+      kCornerSize + x_off_l, height + y_off, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      x_off_r, height - kCornerSize, width, ltr));
+      x_off_r, height - kCornerSize, width, on_left));
 
   return points;
 }
 
 InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
-    int arrow_x, int width) {
-  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+    ArrowLocationGtk preferred_location, int arrow_x, int width) {
+  bool wants_left = (preferred_location == ARROW_LOCATION_TOP_LEFT);
   int screen_width = gdk_screen_get_width(gdk_screen_get_default());
 
   bool left_is_onscreen = (arrow_x - kArrowX + width < screen_width);
   bool right_is_onscreen = (arrow_x + kArrowX - width >= 0);
 
-  // Use the expected location for our LTR/RTL-ness if it fits onscreen, use
-  // whatever fits otherwise, and use the expected location if neither fits.
-  if (left_is_onscreen && (ltr || !right_is_onscreen))
+  // Use the requested location if it fits onscreen, use whatever fits
+  // otherwise, and use the requested location if neither fits.
+  if (left_is_onscreen && (wants_left || !right_is_onscreen))
     return ARROW_LOCATION_TOP_LEFT;
-  if (right_is_onscreen && (!ltr || !left_is_onscreen))
+  if (right_is_onscreen && (!wants_left || !left_is_onscreen))
     return ARROW_LOCATION_TOP_RIGHT;
-  return (ltr ? ARROW_LOCATION_TOP_LEFT : ARROW_LOCATION_TOP_RIGHT);
+  return (wants_left ? ARROW_LOCATION_TOP_LEFT : ARROW_LOCATION_TOP_RIGHT);
 }
 
-bool InfoBubbleGtk::UpdateArrowLocation() {
+bool InfoBubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
   gint toplevel_x = 0, toplevel_y = 0;
   gdk_window_get_position(
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
 
-  ArrowLocationGtk old_location = arrow_location_;
-  arrow_location_ = GetArrowLocation(
+  ArrowLocationGtk old_location = current_arrow_location_;
+  current_arrow_location_ = GetArrowLocation(
+      preferred_arrow_location_,
       toplevel_x + rect_.x() + (rect_.width() / 2),  // arrow_x
       window_->allocation.width);
 
-  if (arrow_location_ != old_location) {
+  if (force_move_and_reshape || current_arrow_location_ != old_location) {
     UpdateWindowShape();
     MoveWindow();
     // We need to redraw the entire window to repaint its border.
@@ -270,7 +268,8 @@ void InfoBubbleGtk::UpdateWindowShape() {
     mask_region_ = NULL;
   }
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      arrow_location_, window_->allocation.width, window_->allocation.height,
+      current_arrow_location_,
+      window_->allocation.width, window_->allocation.height,
       FRAME_MASK);
   mask_region_ = gdk_region_polygon(&points[0],
                                     points.size(),
@@ -284,9 +283,9 @@ void InfoBubbleGtk::MoveWindow() {
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
 
   gint screen_x = 0;
-  if (arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
+  if (current_arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
     screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
-  } else if (arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
+  } else if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
     screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) -
                window_->allocation.width + kArrowX;
   } else {
@@ -372,7 +371,8 @@ gboolean InfoBubbleGtk::HandleExpose() {
 
   // Stroke the frame border.
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      arrow_location_, window_->allocation.width, window_->allocation.height,
+      current_arrow_location_,
+      window_->allocation.width, window_->allocation.height,
       FRAME_STROKE);
   gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
 
@@ -383,9 +383,9 @@ gboolean InfoBubbleGtk::HandleExpose() {
 // When our size is initially allocated or changed, we need to recompute
 // and apply our shape mask region.
 void InfoBubbleGtk::HandleSizeAllocate() {
-  if (!UpdateArrowLocation()) {
+  if (!UpdateArrowLocation(false)) {
     UpdateWindowShape();
-    if (arrow_location_ == ARROW_LOCATION_TOP_RIGHT)
+    if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT)
       MoveWindow();
   }
 }
@@ -420,7 +420,7 @@ gboolean InfoBubbleGtk::HandleDestroy() {
 }
 
 gboolean InfoBubbleGtk::HandleToplevelConfigure(GdkEventConfigure* event) {
-  if (!UpdateArrowLocation())
+  if (!UpdateArrowLocation(false))
     MoveWindow();
   StackWindow();
   return FALSE;

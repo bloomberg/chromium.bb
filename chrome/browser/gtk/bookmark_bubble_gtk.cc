@@ -213,9 +213,14 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   // We want the focus to start on the entry, not on the remove button.
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
+  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
+      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = InfoBubbleGtk::Show(toplevel_window_,
                                 rect,
                                 content,
+                                arrow_location,
                                 theme_provider_,
                                 this);  // delegate
   if (!bubble_) {
