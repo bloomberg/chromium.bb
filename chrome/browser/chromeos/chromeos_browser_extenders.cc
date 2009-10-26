@@ -39,7 +39,12 @@ class NormalExtender : public BrowserExtender,
  public:
   explicit NormalExtender(BrowserView* browser_view)
       : BrowserExtender(browser_view),
-        main_menu_(NULL) {
+        main_menu_(NULL),
+        status_area_(NULL),
+        compact_navigation_bar_(NULL),
+        // CompactNavigationBar is disabled by default.
+        // TODO(oshima): Get this info from preference.
+        compact_navigation_bar_enabled_(false) {
   }
   virtual ~NormalExtender() {}
 
@@ -59,10 +64,6 @@ class NormalExtender : public BrowserExtender,
         new CompactNavigationBar(browser_view()->browser());
     browser_view()->AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
-    // Disabled by default.
-    // TODO(oshima): Get this info from preference.
-    compact_navigation_bar_->SetVisible(false);
-
     status_area_ = new StatusAreaView(
         browser_view()->browser(),
         browser_view()->GetWindow()->GetNativeWindow());
@@ -82,9 +83,18 @@ class NormalExtender : public BrowserExtender,
   }
 
   virtual gfx::Rect Layout(const gfx::Rect& bounds) {
-    // skip if there is no space to layout.
-    if (bounds.IsEmpty())
+    // Skip if there is no space to layout, or if the browser is in
+    // fullscreen mode.
+    if (bounds.IsEmpty() || browser_view()->IsFullscreen()) {
+      main_menu_->SetVisible(false);
+      compact_navigation_bar_->SetVisible(false);
+      status_area_->SetVisible(false);
       return bounds;
+    } else {
+      main_menu_->SetVisible(true);
+      compact_navigation_bar_->SetVisible(compact_navigation_bar_enabled_);
+      status_area_->SetVisible(true);
+    }
 
     // Layout main menu before tab strip.
     gfx::Size main_menu_size = main_menu_->GetPreferredSize();
@@ -147,11 +157,11 @@ class NormalExtender : public BrowserExtender,
   virtual void ActivationChanged() {}
 
   virtual bool ShouldForceHideToolbar() {
-    return compact_navigation_bar_->IsVisible();
+    return compact_navigation_bar_enabled_;
   }
 
   virtual void ToggleCompactNavigationBar() {
-    compact_navigation_bar_->SetVisible(!compact_navigation_bar_->IsVisible());
+    compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
   }
 
  private:
@@ -192,6 +202,9 @@ class NormalExtender : public BrowserExtender,
 
   // CompactNavigationBar view.
   CompactNavigationBar* compact_navigation_bar_;
+
+  // A toggle flag to show/hide the compact navigation bar.
+  bool compact_navigation_bar_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
