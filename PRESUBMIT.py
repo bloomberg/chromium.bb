@@ -94,16 +94,26 @@ def CheckTreeIsOpen(input_api, output_api, url, url_text):
   return [output_api.PresubmitPromptWarning(
       "The tree status can't be checked.")]
 
+def CheckEolStyle(input_api, output_api, affected_files):
+  """Verifies the svn:eol-style is set to LF.
+  Canned checks implementation can be found in depot_tools.
+  """
+  sources = lambda x: affected_files
+  res = input_api.canned_checks.CheckChangeSvnEolStyle(
+      input_api, output_api, sources)
+  return res
 
 def CheckChangeOnUpload(input_api, output_api):
   report = []
-  for filename in input_api.AffectedFiles(include_deletes=False):
+  affected_files = input_api.AffectedFiles(include_deletes=False)
+  for filename in affected_files:
     filename = filename.AbsoluteLocalPath()
     errors, warnings = code_hygiene.CheckFile(filename, False)
     for e in errors:
       report.append(output_api.PresubmitError(e, items=errors[e]))
     for w in warnings:
       report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
+  report.extend(CheckEolStyle(input_api, output_api, affected_files))
   return report
 
 
