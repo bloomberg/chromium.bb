@@ -170,7 +170,7 @@
             '../../../breakpad/breakpad.gyp:breakpad_handler',
             '../../default_plugin/default_plugin.gyp:default_plugin',
           ],
-          # TODO(bradnelson):  
+          # TODO(bradnelson):
           # This should really be done in the 'npapi_layout_test_plugin'
           # target, but the current VS generator handles 'copies'
           # settings as AdditionalDependencies, which means that
@@ -570,9 +570,11 @@
             '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
             '../../glue/plugins/test/plugin_npobject_lifetime_test.h',
             '../../glue/plugins/test/plugin_npobject_proxy_test.cc',
+            '../../glue/plugins/test/plugin_npobject_proxy_test.h',
+            '../../glue/plugins/test/plugin_schedule_timer_test.cc',
+            '../../glue/plugins/test/plugin_schedule_timer_test.h',
             '../../glue/plugins/test/plugin_windowed_test.cc',
             '../../glue/plugins/test/plugin_windowed_test.h',
-            '../../glue/plugins/test/plugin_npobject_proxy_test.h',
             '../../glue/plugins/test/plugin_private_test.cc',
             '../../glue/plugins/test/plugin_private_test.h',
             '../../glue/plugins/test/plugin_test.cc',
@@ -659,7 +661,7 @@
    ['OS=="win"', {
       'targets': [
         {
-          # Helper application that disables ClearType during the 
+          # Helper application that disables ClearType during the
           # running of the layout tests
           'target_name': 'layout_test_helper',
           'type': 'executable',

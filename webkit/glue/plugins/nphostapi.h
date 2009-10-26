@@ -206,6 +206,12 @@ typedef NPError      (*NPN_GetAuthenticationInfoPtr)(NPP npp,
                          uint32_t *ulen,
                          char **password,
                          uint32_t *plen);
+typedef uint32       (*NPN_ScheduleTimerPtr)(NPP npp,
+                         uint32 interval,
+                         NPBool repeat,
+                         void (*timerFunc)(NPP npp, uint32 timerID));
+typedef void         (*NPN_UnscheduleTimerPtr)(NPP npp,
+                         uint32 timerID);
 
 //
 // NPAPI Function table of NPP functions (functions provided by plugin to host)
@@ -284,6 +290,8 @@ typedef struct _NPNetscapeFuncs {
     NPN_GetValueForURLPtr getvalueforurl;
     NPN_SetValueForURLPtr setvalueforurl;
     NPN_GetAuthenticationInfoPtr getauthenticationinfo;
+    NPN_ScheduleTimerPtr scheduletimer;
+    NPN_UnscheduleTimerPtr unscheduletimer;
 } NPNetscapeFuncs;
 
 //

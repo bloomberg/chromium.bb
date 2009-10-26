@@ -38,7 +38,8 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
 #endif
       message_loop_(MessageLoop::current()),
       load_manually_(false),
-      in_close_streams_(false) {
+      in_close_streams_(false),
+      next_timer_id_(1) {
   npp_ = new NPP_t();
   npp_->ndata = 0;
   npp_->pdata = 0;
@@ -156,7 +157,7 @@ NPError PluginInstance::NPP_New(unsigned short mode,
 
 void PluginInstance::NPP_Destroy() {
   DCHECK(npp_functions_ != 0);
-  DCHECK(npp_functions_->newp != 0);
+  DCHECK(npp_functions_->destroy != 0);
 
   if (npp_functions_->destroy != 0) {
     NPSavedData *savedData = 0;
@@ -175,6 +176,9 @@ void PluginInstance::NPP_Destroy() {
        file_index++) {
     file_util::Delete(files_created_[file_index], false);
   }
+
+  // Ensure that no timer callbacks are invoked after NPP_Destroy.
+  timers_.clear();
 }
 
 NPError PluginInstance::NPP_SetWindow(NPWindow *window) {
@@ -361,19 +365,74 @@ void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
 
 void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
                                              void *user_data) {
-#if defined(OS_WIN)
-    // We are invoking an arbitrary callback provided by a third
-  // party plugin. It's better to wrap this into an exception
-  // block to protect us from crashes.
-  __try {
-    func(user_data);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
-    // Maybe we can disable a crashing plugin.
-    // But for now, just continue.
-  }
-#else
   func(user_data);
-#endif
+}
+
+uint32 PluginInstance::ScheduleTimer(uint32 interval,
+                                     NPBool repeat,
+                                     void (*func)(NPP id, uint32 timer_id)) {
+  // Use next timer id.
+  uint32 timer_id;
+  timer_id = next_timer_id_;
+  ++next_timer_id_;
+  DCHECK(next_timer_id_ != 0);
+
+  // Record timer interval and repeat.
+  TimerInfo info;
+  info.interval = interval;
+  info.repeat = repeat;
+  timers_[timer_id] = info;
+
+  // Schedule the callback.
+  message_loop_->PostDelayedTask(FROM_HERE,
+                                 NewRunnableMethod(this,
+                                                   &PluginInstance::OnTimerCall,
+                                                   func,
+                                                   npp_,
+                                                   timer_id),
+                                 interval);
+  return timer_id;
+}
+
+void PluginInstance::UnscheduleTimer(uint32 timer_id) {
+  // Remove info about the timer.
+  TimerMap::iterator it = timers_.find(timer_id);
+  if (it != timers_.end())
+    timers_.erase(it);
+}
+
+void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
+                                 NPP id,
+                                 uint32 timer_id) {
+  // Do not invoke callback if the timer has been unscheduled.
+  TimerMap::iterator it = timers_.find(timer_id);
+  if (it == timers_.end())
+    return;
+
+  // Get all information about the timer before invoking the callback. The
+  // callback might unschedule the timer.
+  TimerInfo info = it->second;
+
+  func(id, timer_id);
+
+  // If the timer was unscheduled by the callback, just free up the timer id.
+  if (timers_.find(timer_id) == timers_.end())
+    return;
+
+  // Reschedule repeating timers after invoking the callback so callback is not
+  // re-entered if it pumps the messager loop.
+  if (info.repeat) {
+    message_loop_->PostDelayedTask(FROM_HERE,
+                                   NewRunnableMethod(
+                                       this,
+                                       &PluginInstance::OnTimerCall,
+                                       func,
+                                       npp_,
+                                       timer_id),
+                                   info.interval);
+  } else {
+    timers_.erase(it);
+  }
 }
 
 void PluginInstance::PushPopupsEnabledState(bool enabled) {

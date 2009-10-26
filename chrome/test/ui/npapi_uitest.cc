@@ -293,6 +293,13 @@ TEST_F(NPAPITester, PrivateDisabled) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+TEST_F(NPAPITester, ScheduleTimer) {
+  GURL url = GetTestUrl(L"npapi", L"schedule_timer.html");
+  NavigateToURL(url);
+  WaitForFinish("schedule_timer", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}
+
 // Test checking the privacy mode is on.
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   if (UITest::in_process_renderer())

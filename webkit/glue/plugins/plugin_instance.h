@@ -8,9 +8,11 @@
 #ifndef WEBKIT_GLUE_PLUGIN_PLUGIN_INSTANCE_H__
 #define WEBKIT_GLUE_PLUGIN_PLUGIN_INSTANCE_H__
 
+#include <map>
+#include <set>
+#include <stack>
 #include <string>
 #include <vector>
-#include <stack>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
@@ -150,6 +152,12 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void PluginThreadAsyncCall(void (*func)(void *),
                              void *userData);
 
+  uint32 ScheduleTimer(uint32 interval,
+                       NPBool repeat,
+                       void (*func)(NPP id, uint32 timer_id));
+
+  void UnscheduleTimer(uint32 timer_id);
+
   //
   // NPAPI methods for calling the Plugin Instance
   //
@@ -193,6 +201,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
  private:
   void OnPluginThreadAsyncCall(void (*func)(void *),
                                void *userData);
+  void OnTimerCall(void (*func)(NPP id, uint32 timer_id),
+                   NPP id,
+                   uint32 timer_id);
+
   bool IsValidStream(const NPStream* stream);
 
   // This is a hack to get the real player plugin to work with chrome
@@ -250,6 +262,17 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // List of files created for the current plugin instance. File names are
   // added to the list every time the NPP_StreamAsFile function is called.
   std::vector<FilePath> files_created_;
+
+  // Next unusued timer id.
+  uint32 next_timer_id_;
+
+  // Map of timer id to settings for timer.
+  struct TimerInfo {
+    uint32 interval;
+    bool repeat;
+  };
+  typedef std::map<uint32, TimerInfo> TimerMap;
+  TimerMap timers_;
 
   DISALLOW_EVIL_CONSTRUCTORS(PluginInstance);
 };

@@ -108,6 +108,8 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.getvalueforurl = NPN_GetValueForURL;
   host_funcs_.setvalueforurl = NPN_SetValueForURL;
   host_funcs_.getauthenticationinfo = NPN_GetAuthenticationInfo;
+  host_funcs_.scheduletimer = NPN_ScheduleTimer;
+  host_funcs_.unscheduletimer = NPN_UnscheduleTimer;
 }
 
 void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
@@ -1090,4 +1092,20 @@ NPError NPN_GetAuthenticationInfo(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+uint32 NPN_ScheduleTimer(NPP id,
+                         uint32 interval,
+                         NPBool repeat,
+                         void (*func)(NPP id, uint32 timer_id)) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (!plugin)
+    return 0;
+
+  return plugin->ScheduleTimer(interval, repeat, func);
+}
+
+void NPN_UnscheduleTimer(NPP id, uint32 timer_id) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin)
+    plugin->UnscheduleTimer(timer_id);
+}
 } // extern "C"

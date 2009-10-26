@@ -16,6 +16,7 @@
 #include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
 #include "webkit/glue/plugins/test/plugin_new_fails_test.h"
 #include "webkit/glue/plugins/test/plugin_private_test.h"
+#include "webkit/glue/plugins/test/plugin_schedule_timer_test.h"
 #include "webkit/glue/plugins/test/plugin_npobject_lifetime_test.h"
 #include "webkit/glue/plugins/test/plugin_npobject_proxy_test.h"
 #include "webkit/glue/plugins/test/plugin_window_size_test.h"
@@ -171,6 +172,9 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   } else if (test_name == "private") {
     new_test = new NPAPIClient::PrivateTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
+  } else if (test_name == "schedule_timer") {
+    new_test = new NPAPIClient::ScheduleTimerTest(
+        instance, NPAPIClient::PluginClient::HostFunctions());
 #if defined(OS_WIN)
   // TODO(port): plugin_windowed_test.*.
   } else if (test_name == "hidden_plugin" ||

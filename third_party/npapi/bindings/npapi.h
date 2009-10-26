@@ -139,7 +139,7 @@
 
 #define NP_VERSION_MAJOR 0
 // BEGIN GOOGLE MODIFICATIONS
-#define NP_VERSION_MINOR 22 // maximum version currently supported by Chromium
+#define NP_VERSION_MINOR 23 // maximum version currently supported by Chromium
 // END GOOGLE MODIFICATIONS
 
 
