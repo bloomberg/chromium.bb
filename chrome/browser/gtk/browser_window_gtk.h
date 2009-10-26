@@ -394,6 +394,12 @@ class BrowserWindowGtk : public BrowserWindow,
   CompactNavigationBar* compact_navigation_bar_;
   StatusAreaView* status_area_;
 
+  // The MainMenu button.
+  CustomDrawButton* main_menu_button_;
+
+  // A hbox container for the compact navigation bar.
+  GtkWidget* compact_navbar_hbox_;
+
   static bool next_window_should_use_compact_nav_;
 #endif
 

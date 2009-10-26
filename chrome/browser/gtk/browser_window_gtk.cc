@@ -540,6 +540,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        panel_controller_(NULL),
        compact_navigation_bar_(NULL),
        status_area_(NULL),
+       main_menu_button_(NULL),
+       compact_navbar_hbox_(NULL),
 #endif
        frame_cursor_(NULL),
        is_active_(true),
@@ -1413,6 +1415,14 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
         bookmark_bar_->EnterFullscreen();
+#if defined(OS_CHROMEOS)
+      if (main_menu_button_)
+        gtk_widget_hide(main_menu_button_->widget());
+      if (compact_navbar_hbox_)
+        gtk_widget_hide(compact_navbar_hbox_);
+      if (status_area_)
+        status_area_->GetWidget()->Hide();
+#endif
     } else {
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
@@ -1611,7 +1621,6 @@ void BrowserWindowGtk::InitWidgets() {
 
 #if defined(OS_CHROMEOS)
   GtkWidget* titlebar_hbox = NULL;
-  GtkWidget* navbar_hbox = NULL;
   GtkWidget* status_container = NULL;
   bool has_compact_nav_bar = next_window_should_use_compact_nav_;
   if (browser_->type() == Browser::TYPE_NORMAL) {
@@ -1622,22 +1631,23 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_widget_show(titlebar_hbox);
 
     // Main menu button.
-    CustomDrawButton* main_menu_button =
+    main_menu_button_ =
         new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
                              IDR_MAIN_MENU_BUTTON, 0);
-    gtk_widget_show(main_menu_button->widget());
-    g_signal_connect(G_OBJECT(main_menu_button->widget()), "clicked",
+    gtk_widget_show(main_menu_button_->widget());
+    g_signal_connect(G_OBJECT(main_menu_button_->widget()), "clicked",
                      G_CALLBACK(OnMainMenuButtonClicked), this);
-    GTK_WIDGET_UNSET_FLAGS(main_menu_button->widget(), GTK_CAN_FOCUS);
-    gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button->widget(),
+    GTK_WIDGET_UNSET_FLAGS(main_menu_button_->widget(), GTK_CAN_FOCUS);
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button_->widget(),
                        FALSE, FALSE, 0);
 
     MainMenu::ScheduleCreation();
 
     if (has_compact_nav_bar) {
-      navbar_hbox = gtk_hbox_new(FALSE, 0);
-      gtk_widget_show(navbar_hbox);
-      gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
+      compact_navbar_hbox_ = gtk_hbox_new(FALSE, 0);
+      gtk_widget_show(compact_navbar_hbox_);
+      gtk_box_pack_start(GTK_BOX(titlebar_hbox), compact_navbar_hbox_,
+                         FALSE, FALSE, 0);
 
       // Reset the compact nav bit now that we're creating the next toplevel
       // window. Code below will use our local has_compact_nav_bar variable.
@@ -1761,7 +1771,7 @@ void BrowserWindowGtk::InitWidgets() {
       // parent is also a WidgetGtk. Then we can parent the native widget
       // afterwards.
       clb_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-      gtk_widget_reparent(clb_widget->GetNativeView(), navbar_hbox);
+      gtk_widget_reparent(clb_widget->GetNativeView(), compact_navbar_hbox_);
 
       compact_navigation_bar_ = new CompactNavigationBar(browser_.get());
 
@@ -2144,6 +2154,17 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
 
   if (IsBookmarkBarSupported())
     MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
+
+#if defined(OS_CHROMEOS)
+  if (main_menu_button_)
+    gtk_widget_show(main_menu_button_->widget());
+
+  if (compact_navbar_hbox_)
+    gtk_widget_show(compact_navbar_hbox_);
+
+  if (status_area_)
+    status_area_->GetWidget()->Show();
+#endif
 }
 
 void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
