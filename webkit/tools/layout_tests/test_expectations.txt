@@ -3252,3 +3252,9 @@ BUG_TONY : LayoutTests/media/video-seek-past-end-paused.html = FAIL
 BUG_TONY : LayoutTests/media/video-src-change.html = FAIL
 BUG_TONY LINUX : LayoutTests/media/video-seekable.html = FAIL
 BUG_TONY MAC : LayoutTests/media/video-error-abort.html = FAIL
+
+// WebKit roll 50073:50101
+// jorlow to add expected results.
+BUG_JORLOW : LayoutTests/storage/domstorage/documentURI.html = FAIL
+// Test added by Ryosuke: http://trac.webkit.org/changeset/50090
+BUG_TONY : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
