@@ -35,13 +35,16 @@ fun:fwrite
 fun:fflush
 
 # 32-bit version of std::string
-# There is something very strange inside this function.
+# There is something very strange inside these functions.
 # Looks like they write zero to a global variable which
 # value is already zero. I.e. the race is benign.
 # Global var is _ZNSs4_Rep20_S_empty_rep_storageE
 fun:*_M_mutateE*
-# A similar report on another std::string member.
 fun:*_M_set_length_and_sharable*
+fun:*_M_is_leaked*
+fun:*_M_is_shared*
+fun:*_M_set_leaked*
+fun:*_M_set_sharable*
 
 # Don't instrument intercepts
 src:*ts_valgrind_intercepts.c
