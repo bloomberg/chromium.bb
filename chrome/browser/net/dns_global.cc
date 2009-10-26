@@ -480,8 +480,10 @@ net::HostResolver* GetGlobalHostResolver() {
   if (!global_host_resolver) {
     global_host_resolver = net::CreateSystemHostResolver();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIPv6))
-      global_host_resolver->DisableIPv6(true);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIPv6)) {
+      global_host_resolver->SetDefaultAddressFamily(
+          net::ADDRESS_FAMILY_IPV4);
+    }
   }
   return global_host_resolver;
 }

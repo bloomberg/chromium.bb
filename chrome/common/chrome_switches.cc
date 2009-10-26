@@ -237,7 +237,9 @@ const char kShowIcons[]                     = "show-icons";
 // Make Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Don't resolve hostnames to IPv6 addresses.
+// Don't resolve hostnames to IPv6 addresses. This can be used when debugging
+// issues relating to IPv6, but shouldn't otherwise be needed. Be sure to
+// file bugs if something isn't working properly in the presence of IPv6.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
 // Use a specified proxy server, overrides system settings. This switch only
