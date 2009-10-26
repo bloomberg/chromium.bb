@@ -42,13 +42,13 @@ CommandLine* CreateLaunchCommandLine() {
     FilePath current_dir = module_path.DirName();
     FilePath same_dir_path = current_dir.Append(kLauncherExeBaseName);
     if (file_util::PathExists(same_dir_path)) {
-      return new CommandLine(same_dir_path.ToWStringHack());
+      return new CommandLine(same_dir_path);
     } else {
       FilePath servers_path =
           current_dir.Append(L"servers").Append(kLauncherExeBaseName);
       DCHECK(file_util::PathExists(servers_path)) <<
           "What module is this? It's not in 'servers' or main output dir.";
-      return new CommandLine(servers_path.ToWStringHack());
+      return new CommandLine(servers_path);
     }
   } else {
     NOTREACHED();
