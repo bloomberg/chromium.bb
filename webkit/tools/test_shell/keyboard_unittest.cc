@@ -106,23 +106,33 @@ TEST_F(KeyboardTest, TestOSModifierZ) {
 }
 
 TEST_F(KeyboardTest, TestOSModifierY) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("Redo", InterpretOSModifierKeyPress('Y'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierA) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("SelectAll", InterpretOSModifierKeyPress('A'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierX) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("Cut", InterpretOSModifierKeyPress('X'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierC) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("Copy", InterpretOSModifierKeyPress('C'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierV) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("Paste", InterpretOSModifierKeyPress('V'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestEscape) {
