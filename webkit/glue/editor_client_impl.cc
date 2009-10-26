@@ -458,15 +458,16 @@ static const KeyDownEntry keyDownEntries[] = {
   { WebCore::VKEY_INSERT, ShiftKey,           "Paste"                         },
   { WebCore::VKEY_DELETE, ShiftKey,           "Cut"                           },
 #if PLATFORM(DARWIN)
-  // TODO(thakis): Remove -- crbug.com/25205
+  { 'C',                  CommandKey,         "Copy"                          },
+  { 'V',                  CommandKey,         "Paste"                         },
   { 'V',                  CommandKey | ShiftKey,
         "PasteAndMatchStyle"                                                  },
-
-  // TODO(port): Remove once undo and redo are hooked up correctly in the menu
-  // and are validated correctly.
+  { 'X',                  CommandKey,         "Cut"                           },
+  { 'A',                  CommandKey,         "SelectAll"                     },
   { 'Z',                  CommandKey,         "Undo"                          },
   { 'Z',                  CommandKey | ShiftKey,
         "Redo"                                                                },
+  { 'Y',                  CommandKey,         "Redo"                          },
 #else
   { 'C',                  CtrlKey,            "Copy"                          },
   { 'V',                  CtrlKey,            "Paste"                         },
