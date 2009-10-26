@@ -1225,10 +1225,24 @@ willPositionSheet:(NSWindow*)sheet
 - (NSRect)window:(NSWindow*)window
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect {
-  // Any sheet should come from right above the visible content area.
+  // Any sheet should come from right above the apparent content area, or
+  // equivalently right below the apparent toolbar.
   NSRect toolbarFrame = [[toolbarController_ view] frame];
-  NSRect infobarFrame = [[infoBarContainerController_ view] frame];
-  defaultSheetRect.origin.y = toolbarFrame.origin.y - infobarFrame.size.height;
+  defaultSheetRect.origin.y = toolbarFrame.origin.y;
+
+  // Position as follows:
+  //  - On a normal (non-NTP) page, position the sheet under the bookmark bar if
+  //    it's visible. Else put it immediately below the normal toolbar.
+  //  - On the NTP, if the bookmark bar is enabled ("always visible"), then it
+  //    looks like a normal bookmark bar, so position the sheet under it; if it
+  //    isn't enabled, the bookmark bar will look as if it's a part of the
+  //    content area, so just put it immediately below the toolbar.
+  if ([bookmarkBarController_ isVisible] &&
+      (![bookmarkBarController_ isNewTabPage] ||
+        [bookmarkBarController_ isAlwaysVisible])) {
+    NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
+    defaultSheetRect.origin.y -= bookmarkBarFrame.size.height;
+  }
 
   return defaultSheetRect;
 }
