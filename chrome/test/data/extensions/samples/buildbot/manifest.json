@@ -10,8 +10,8 @@
     "http://chrome-buildbot.corp.google.com/"
   ],
   "browser_action": {
-      "name": "Buildbot status",
-      "icons": ["chromium.png"],
-      "popup": "popup.html"
+    "default_title": "",
+    "default_icon": "chromium.png",
+    "popup": "popup.html"
   }
 }
