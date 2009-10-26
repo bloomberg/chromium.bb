@@ -1314,7 +1314,8 @@ void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
   DCHECK(index < page_action_icons_.size());
   if (index == page_action_icons_.size() - 1)
     tracker_ = NULL;  // The tracker object will delete itself when we return.
-  page_action_icons_[index] = *image;
+  if (image)
+    page_action_icons_[index] = *image;
   owner_->UpdatePageActions();
 }
 
