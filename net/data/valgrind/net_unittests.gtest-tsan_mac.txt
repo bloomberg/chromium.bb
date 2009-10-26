@@ -18,10 +18,8 @@ URLRequestTestHTTP.*
 URLRequestTestFTP.*
 SSLClientSocketTest.*
 DiskCacheTest.*
-DiskCacheEntryTest.*Async*
-DiskCacheEntryTest.CancelSparseIO
-DiskCacheEntryTest.DoomSparseEntry
-FlipNetworkTransactionTest.Connect
+DiskCacheEntryTest.*
+FlipNetworkTransactionTest.*
 
 # WebSocketTest tests are extraordinary slow under ThreadSanitizer,
 # (see http://crbug.com/25392)
