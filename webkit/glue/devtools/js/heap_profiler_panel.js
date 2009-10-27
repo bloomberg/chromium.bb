@@ -34,6 +34,12 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.showCountDeltaAsPercent = true;
     this.showSizeDeltaAsPercent = true;
 
+    this.categories = {
+        code: new WebInspector.ResourceCategory("code", WebInspector.UIString("Code"), "rgb(255,121,0)"),
+        data: new WebInspector.ResourceCategory("data", WebInspector.UIString("Objects and Data"), "rgb(47,102,236)"),
+        other: new WebInspector.ResourceCategory("other", WebInspector.UIString("Other"), "rgb(186,186,186)")
+    };
+
     this.summaryBar = new WebInspector.SummaryBar(this.categories);
     this.summaryBar.element.id = "heap-snapshot-summary";
     this.summaryBar.calculator = new WebInspector.HeapSummaryCalculator(profile.used);
@@ -71,11 +77,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 };
 
 WebInspector.HeapSnapshotView.prototype = {
-
-    get categories()
-    {
-        return {code: {title: WebInspector.UIString("Code"), color: {r: 255, g: 121, b: 0}}, data: {title: WebInspector.UIString("Objects and Data"), color: {r: 47, g: 102, b: 236}}, other: {title: WebInspector.UIString("Other"), color: {r: 186, g: 186, b: 186}}};
-    },
 
     get statusBarItems()
     {
