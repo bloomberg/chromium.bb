@@ -2,30 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/extensions/extension_action.h"
+
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
-ExtensionAction::ExtensionAction()
-  : type_(PAGE_ACTION) {
+const int ExtensionAction::kDefaultTabId = -1;
+
+void ExtensionAction::ClearAllValuesForTab(int tab_id) {
+  title_.erase(tab_id);
+  icon_.erase(tab_id);
+  icon_index_.erase(tab_id);
+  badge_text_.erase(tab_id);
+  badge_text_color_.erase(tab_id);
+  badge_background_color_.erase(tab_id);
+  visible_.erase(tab_id);
 }
 
-ExtensionAction::~ExtensionAction() {
-}
-
-void ExtensionActionState::PaintBadge(gfx::Canvas* canvas,
-                                      const gfx::Rect& bounds,
-                                      const std::string& text,
-                                      SkColor text_color,
-                                      SkColor background_color) {
+void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
+                                  const gfx::Rect& bounds,
+                                  int tab_id) {
+  std::string text = GetBadgeText(tab_id);
   if (text.empty())
     return;
+
+  SkColor text_color = GetBadgeTextColor(tab_id);
+  SkColor background_color = GetBadgeBackgroundColor(tab_id);
 
   if (SkColorGetA(text_color) == 0x00)
     text_color = SK_ColorWHITE;

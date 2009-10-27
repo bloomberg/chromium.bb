@@ -109,7 +109,7 @@ void LocationBarView::PageActionWithBadgeView::PaintChildren(
     gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
 
-  ExtensionAction2* action = image_view_->page_action();
+  ExtensionAction* action = image_view_->page_action();
   int tab_id = image_view_->current_tab_id();
   if (tab_id < 0)
     return;
@@ -684,7 +684,7 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<ExtensionAction2*> page_actions;
+  std::vector<ExtensionAction*> page_actions;
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)
     return;
@@ -1230,7 +1230,7 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    ExtensionAction2* page_action,
+    ExtensionAction* page_action,
     const BubblePositioner* bubble_positioner)
     : LocationBarImageView(bubble_positioner),
       owner_(owner),

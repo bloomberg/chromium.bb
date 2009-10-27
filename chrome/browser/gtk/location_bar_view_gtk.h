@@ -28,7 +28,7 @@ class AutocompleteEditViewGtk;
 class BubblePositioner;
 class Browser;
 class CommandUpdater;
-class ExtensionAction2;
+class ExtensionAction;
 class GtkThemeProvider;
 class Profile;
 class SkBitmap;
@@ -106,7 +106,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
    public:
     PageActionViewGtk(
         LocationBarViewGtk* owner, Profile* profile,
-        ExtensionAction2* page_action);
+        ExtensionAction* page_action);
     virtual ~PageActionViewGtk();
 
     GtkWidget* widget() { return event_box_.get(); }
@@ -134,7 +134,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
-    ExtensionAction2* page_action_;
+    ExtensionAction* page_action_;
 
     // A cache of all the different icon paths associated with this page action.
     typedef std::map<std::string, GdkPixbuf*> PixbufMap;

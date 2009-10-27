@@ -60,7 +60,7 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
   // should call UpdateState() after creation.
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-                 Source<ExtensionAction2>(browser_action_));
+                 Source<ExtensionAction>(browser_action_));
 }
 
 BrowserActionButton::~BrowserActionButton() {
@@ -205,7 +205,7 @@ void BrowserActionView::Layout() {
 
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
-  ExtensionAction2* action = button()->browser_action();
+  ExtensionAction* action = button()->browser_action();
   int tab_id = panel_->GetCurrentTabId();
   if (tab_id < 0)
     return;
@@ -336,7 +336,7 @@ void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
     BrowserActionButton* button) {
-  ExtensionAction2* browser_action = button->browser_action();
+  ExtensionAction* browser_action = button->browser_action();
 
   // Popups just display.  No notification to the extension.
   // TODO(erikkay): should there be?

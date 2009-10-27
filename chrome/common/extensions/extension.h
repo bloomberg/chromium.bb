@@ -16,7 +16,6 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
@@ -191,8 +190,8 @@ class Extension {
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  ExtensionAction2* page_action() const { return page_action_.get(); }
-  ExtensionAction2* browser_action() const { return browser_action_.get(); }
+  ExtensionAction* page_action() const { return page_action_.get(); }
+  ExtensionAction* browser_action() const { return browser_action_.get(); }
   const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
     return privacy_blacklists_;
   }
@@ -279,17 +278,9 @@ class Extension {
                             std::string* error,
                             UserScript* result);
 
-  // Helper method that loads a ExtensionAction object from a
-  // dictionary in the page_action or browser_action section of the manifest.
-  ExtensionAction2* LoadExtensionActionHelper(
-      const DictionaryValue* contextual_action,
-      std::string* error,
-      ExtensionAction::ExtensionActionType action_type);
-
-  // Helper method to load an ExtensionAction2 from the page_action or
+  // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
-  // TODO(aa): ExtensionAction2 should replace ExtensionAction completely.
-  ExtensionAction2* LoadExtensionAction2Helper(
+  ExtensionAction* LoadExtensionActionHelper(
       const DictionaryValue* extension_action, std::string* error);
 
   // Figures out if a source contains keys not associated with themes - we
@@ -326,10 +317,10 @@ class Extension {
   UserScriptList content_scripts_;
 
   // The extension's page action, if any.
-  scoped_ptr<ExtensionAction2> page_action_;
+  scoped_ptr<ExtensionAction> page_action_;
 
   // The extension's browser action, if any.
-  scoped_ptr<ExtensionAction2> browser_action_;
+  scoped_ptr<ExtensionAction> browser_action_;
 
   // Optional list of privacy blacklistrom.
   std::vector<PrivacyBlacklistInfo> privacy_blacklists_;

@@ -13,7 +13,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
@@ -35,11 +35,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserAction) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   // Test that we received the changes.
-  ExtensionAction2* action = extension->browser_action();
-  ASSERT_EQ("Modified", action->GetTitle(ExtensionAction2::kDefaultTabId));
-  ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction2::kDefaultTabId));
+  ExtensionAction* action = extension->browser_action();
+  ASSERT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction::kDefaultTabId));
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
-            action->GetBadgeBackgroundColor(ExtensionAction2::kDefaultTabId));
+            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
   // Simulate the browser action being clicked.
   ui_test_utils::NavigateToURL(browser(),

@@ -55,7 +55,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -1393,17 +1393,17 @@ void TabContents::DidNavigateMainFramePostCommit(
     ExtensionsService* service = profile()->GetExtensionsService();
     if (service) {
       for (size_t i = 0; i < service->extensions()->size(); ++i) {
-        ExtensionAction2* browser_action =
+        ExtensionAction* browser_action =
             service->extensions()->at(i)->browser_action();
         if (browser_action) {
           browser_action->ClearAllValuesForTab(controller().session_id().id());
           NotificationService::current()->Notify(
               NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-              Source<ExtensionAction2>(browser_action),
+              Source<ExtensionAction>(browser_action),
               NotificationService::NoDetails());
         }
 
-        ExtensionAction2* page_action =
+        ExtensionAction* page_action =
             service->extensions()->at(i)->page_action();
         if (page_action) {
           page_action->ClearAllValuesForTab(controller().session_id().id());

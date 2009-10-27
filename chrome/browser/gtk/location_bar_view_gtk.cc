@@ -405,7 +405,7 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ExtensionAction2*> page_actions;
+  std::vector<ExtensionAction*> page_actions;
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)
     return;
@@ -687,7 +687,7 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
 
 LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     LocationBarViewGtk* owner, Profile* profile,
-    ExtensionAction2* page_action)
+    ExtensionAction* page_action)
     : owner_(owner),
       profile_(profile),
       page_action_(page_action),

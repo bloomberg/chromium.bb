@@ -12,7 +12,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   // Test that we received the changes.
   int tab_id =
       browser()->GetSelectedTabContents()->controller().session_id().id();
-  ExtensionAction2* action = extension->page_action();
+  ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Modified", action->GetTitle(tab_id));
 

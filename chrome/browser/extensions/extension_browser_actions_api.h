@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSER_ACTIONS_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 
 class ExtensionAction;
 class ExtensionActionState;
 
 class BrowserActionFunction : public SyncExtensionFunction {
  protected:
-  BrowserActionFunction() : tab_id_(ExtensionAction2::kDefaultTabId) {}
+  BrowserActionFunction() : tab_id_(ExtensionAction::kDefaultTabId) {}
   virtual bool RunImpl();
   virtual bool RunBrowserAction() = 0;
 
@@ -26,7 +26,7 @@ class BrowserActionFunction : public SyncExtensionFunction {
   int tab_id_;
 
   // The browser action for the current extension.
-  ExtensionAction2* browser_action_;
+  ExtensionAction* browser_action_;
 };
 
 class BrowserActionSetIconFunction : public BrowserActionFunction {

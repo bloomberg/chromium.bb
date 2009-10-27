@@ -297,17 +297,17 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 #endif
   Extension extension(path);
   std::string error_msg;
-  scoped_ptr<ExtensionAction2> action;
+  scoped_ptr<ExtensionAction> action;
   DictionaryValue input;
 
   // First try with an empty dictionary. We should get nothing back.
-  ASSERT_TRUE(extension.LoadExtensionAction2Helper(
+  ASSERT_TRUE(extension.LoadExtensionActionHelper(
       &input, &error_msg) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 
   // Now try the same, but as a browser action. Ensure same results.
-  ASSERT_TRUE(extension.LoadExtensionAction2Helper(
+  ASSERT_TRUE(extension.LoadExtensionActionHelper(
       &input, &error_msg) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
@@ -327,7 +327,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   input.Set(keys::kPageActionIcons, icons);
 
   // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       &input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
@@ -339,7 +339,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Explicitly set the same type and parse again.
   input.SetString(keys::kType, values::kPageActionTypeTab);
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       &input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
@@ -351,7 +351,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // First remove id key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionId, NULL);
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
@@ -360,7 +360,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Then remove the name key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       copy.get(), &error_msg));
   ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
@@ -370,7 +370,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
   error_msg = "";
@@ -387,7 +387,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   input.SetString(keys::kPageActionDefaultIcon, kIcon);
 
   // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionAction2Helper(
+  action.reset(extension.LoadExtensionActionHelper(
       &input, &error_msg));
   ASSERT_TRUE(action.get());
   ASSERT_STREQ("", error_msg.c_str());

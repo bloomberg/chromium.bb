@@ -228,7 +228,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for page actions.
-  ExtensionAction2* page_action = extension->page_action();
+  ExtensionAction* page_action = extension->page_action();
   if (page_action) {
     std::vector<std::string> icon_paths(*page_action->icon_paths());
     if (!page_action->default_icon_path().empty())
@@ -245,7 +245,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
 
   // Validate icon location for browser actions.
   // Note: browser actions don't use the icon_paths().
-  ExtensionAction2* browser_action = extension->browser_action();
+  ExtensionAction* browser_action = extension->browser_action();
   if (browser_action) {
     std::string default_icon_path = browser_action->default_icon_path();
     if (!default_icon_path.empty()) {

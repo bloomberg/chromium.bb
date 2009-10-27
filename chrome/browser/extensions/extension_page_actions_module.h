@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class TabContents;
-class ExtensionAction2;
+class ExtensionAction;
 
 class PageActionFunction : public SyncExtensionFunction {
  protected:
@@ -17,7 +17,7 @@ class PageActionFunction : public SyncExtensionFunction {
   bool InitCommon(int tab_id);
   bool SetVisible(bool visible);
 
-  ExtensionAction2* page_action_;
+  ExtensionAction* page_action_;
   TabContents* contents_;
 };
 

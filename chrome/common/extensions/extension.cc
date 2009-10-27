@@ -297,14 +297,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
   return true;
 }
 
-ExtensionAction2* Extension::LoadExtensionAction2Helper(
+ExtensionAction* Extension::LoadExtensionActionHelper(
     const DictionaryValue* extension_action, std::string* error) {
-  scoped_ptr<ExtensionAction2> result(new ExtensionAction2());
+  scoped_ptr<ExtensionAction> result(new ExtensionAction());
   result->set_extension_id(id());
 
   // Page actions are hidden by default, and browser actions ignore
   // visibility.
-  result->SetIsVisible(ExtensionAction2::kDefaultTabId, false);
+  result->SetIsVisible(ExtensionAction::kDefaultTabId, false);
 
   // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
   ListValue* icons = NULL;
@@ -351,7 +351,7 @@ ExtensionAction2* Extension::LoadExtensionAction2Helper(
     *error = errors::kInvalidPageActionDefaultTitle;
     return NULL;
   }
-  result->SetTitle(ExtensionAction2::kDefaultTabId, title);
+  result->SetTitle(ExtensionAction::kDefaultTabId, title);
 
   // Read the action's |popup| (optional).
   DictionaryValue* popup = NULL;
@@ -946,7 +946,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     page_action_.reset(
-        LoadExtensionAction2Helper(page_action_value, error));
+        LoadExtensionActionHelper(page_action_value, error));
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
   } else if (source.HasKey(keys::kPageAction)) {
@@ -957,7 +957,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     page_action_.reset(
-        LoadExtensionAction2Helper(page_action_value, error));
+        LoadExtensionActionHelper(page_action_value, error));
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
   }
@@ -977,7 +977,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     browser_action_.reset(
-        LoadExtensionAction2Helper(browser_action_value, error));
+        LoadExtensionActionHelper(browser_action_value, error));
     if (!browser_action_.get())
       return false;  // Failed to parse browser action definition.
   }

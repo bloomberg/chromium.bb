@@ -30,7 +30,7 @@
 
 class BubblePositioner;
 class CommandUpdater;
-class ExtensionAction2;
+class ExtensionAction;
 class GURL;
 class Profile;
 
@@ -349,11 +349,11 @@ class LocationBarView : public LocationBar,
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
-                        ExtensionAction2* page_action,
+                        ExtensionAction* page_action,
                         const BubblePositioner* bubble_positioner);
     virtual ~PageActionImageView();
 
-    ExtensionAction2* page_action() { return page_action_; }
+    ExtensionAction* page_action() { return page_action_; }
 
     int current_tab_id() { return current_tab_id_; }
 
@@ -380,7 +380,7 @@ class LocationBarView : public LocationBar,
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
-    ExtensionAction2* page_action_;
+    ExtensionAction* page_action_;
 
     // A cache of bitmaps the page actions might need to show, mapped by path.
     typedef std::map<std::string, SkBitmap> PageActionMap;

@@ -56,7 +56,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     }
   }
 
-  ExtensionAction2* page_action = dispatcher()->GetExtension()->page_action();
+  ExtensionAction* page_action = dispatcher()->GetExtension()->page_action();
   if (!page_action) {
     error_ = kNoPageActionError;
     return false;

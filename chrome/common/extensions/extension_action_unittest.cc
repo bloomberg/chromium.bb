@@ -2,7 +2,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -39,18 +39,18 @@ static bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   return 0 == memcmp(addr1, addr2, bitmap1.getSize());
 }
 
-TEST(ExtensionAction2Test, TabSpecificState) {
-  ExtensionAction2 action;
+TEST(ExtensionActionTest, TabSpecificState) {
+  ExtensionAction action;
 
   // title
   ASSERT_EQ("", action.GetTitle(1));
-  action.SetTitle(ExtensionAction2::kDefaultTabId, "foo");
+  action.SetTitle(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("foo", action.GetTitle(1));
   ASSERT_EQ("foo", action.GetTitle(100));
   action.SetTitle(100, "bar");
   ASSERT_EQ("foo", action.GetTitle(1));
   ASSERT_EQ("bar", action.GetTitle(100));
-  action.SetTitle(ExtensionAction2::kDefaultTabId, "baz");
+  action.SetTitle(ExtensionAction::kDefaultTabId, "baz");
   ASSERT_EQ("baz", action.GetTitle(1));
   action.ClearAllValuesForTab(100);
   ASSERT_EQ("baz", action.GetTitle(100));
@@ -59,7 +59,7 @@ TEST(ExtensionAction2Test, TabSpecificState) {
   SkBitmap icon1 = LoadIcon("icon1.png");
   SkBitmap icon2 = LoadIcon("icon2.png");
   ASSERT_TRUE(action.GetIcon(1).isNull());
-  action.SetIcon(ExtensionAction2::kDefaultTabId, icon1);
+  action.SetIcon(ExtensionAction::kDefaultTabId, icon1);
   ASSERT_TRUE(BitmapsAreEqual(icon1, action.GetIcon(100)));
   action.SetIcon(100, icon2);
   ASSERT_TRUE(BitmapsAreEqual(icon1, action.GetIcon(1)));
@@ -69,7 +69,7 @@ TEST(ExtensionAction2Test, TabSpecificState) {
   ASSERT_EQ(-1, action.GetIconIndex(1));
   action.icon_paths()->push_back("foo.png");
   action.icon_paths()->push_back("bar.png");
-  action.SetIconIndex(ExtensionAction2::kDefaultTabId, 1);
+  action.SetIconIndex(ExtensionAction::kDefaultTabId, 1);
   ASSERT_EQ(1, action.GetIconIndex(1));
   ASSERT_EQ(1, action.GetIconIndex(100));
   action.SetIconIndex(100, 0);
@@ -81,10 +81,10 @@ TEST(ExtensionAction2Test, TabSpecificState) {
 
   // visibility
   ASSERT_EQ(false, action.GetIsVisible(1));
-  action.SetIsVisible(ExtensionAction2::kDefaultTabId, true);
+  action.SetIsVisible(ExtensionAction::kDefaultTabId, true);
   ASSERT_EQ(true, action.GetIsVisible(1));
   ASSERT_EQ(true, action.GetIsVisible(100));
-  action.SetIsVisible(ExtensionAction2::kDefaultTabId, false);
+  action.SetIsVisible(ExtensionAction::kDefaultTabId, false);
   ASSERT_EQ(false, action.GetIsVisible(1));
   ASSERT_EQ(false, action.GetIsVisible(100));
   action.SetIsVisible(100, true);
@@ -96,40 +96,40 @@ TEST(ExtensionAction2Test, TabSpecificState) {
 
   // badge text
   ASSERT_EQ("", action.GetBadgeText(1));
-  action.SetBadgeText(ExtensionAction2::kDefaultTabId, "foo");
+  action.SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("foo", action.GetBadgeText(1));
   ASSERT_EQ("foo", action.GetBadgeText(100));
   action.SetBadgeText(100, "bar");
   ASSERT_EQ("foo", action.GetBadgeText(1));
   ASSERT_EQ("bar", action.GetBadgeText(100));
-  action.SetBadgeText(ExtensionAction2::kDefaultTabId, "baz");
+  action.SetBadgeText(ExtensionAction::kDefaultTabId, "baz");
   ASSERT_EQ("baz", action.GetBadgeText(1));
   action.ClearAllValuesForTab(100);
   ASSERT_EQ("baz", action.GetBadgeText(100));
 
   // badge text color
   ASSERT_EQ(0x00000000u, action.GetBadgeTextColor(1));
-  action.SetBadgeTextColor(ExtensionAction2::kDefaultTabId, 0xFFFF0000u);
+  action.SetBadgeTextColor(ExtensionAction::kDefaultTabId, 0xFFFF0000u);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeTextColor(1));
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeTextColor(100));
   action.SetBadgeTextColor(100, 0xFF00FF00);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeTextColor(1));
   ASSERT_EQ(0xFF00FF00u, action.GetBadgeTextColor(100));
-  action.SetBadgeTextColor(ExtensionAction2::kDefaultTabId, 0xFF0000FFu);
+  action.SetBadgeTextColor(ExtensionAction::kDefaultTabId, 0xFF0000FFu);
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeTextColor(1));
   action.ClearAllValuesForTab(100);
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeTextColor(100));
 
   // badge background color
   ASSERT_EQ(0x00000000u, action.GetBadgeBackgroundColor(1));
-  action.SetBadgeBackgroundColor(ExtensionAction2::kDefaultTabId,
+  action.SetBadgeBackgroundColor(ExtensionAction::kDefaultTabId,
                                  0xFFFF0000u);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeBackgroundColor(1));
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeBackgroundColor(100));
   action.SetBadgeBackgroundColor(100, 0xFF00FF00);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeBackgroundColor(1));
   ASSERT_EQ(0xFF00FF00u, action.GetBadgeBackgroundColor(100));
-  action.SetBadgeBackgroundColor(ExtensionAction2::kDefaultTabId,
+  action.SetBadgeBackgroundColor(ExtensionAction::kDefaultTabId,
                                  0xFF0000FFu);
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeBackgroundColor(1));
   action.ClearAllValuesForTab(100);

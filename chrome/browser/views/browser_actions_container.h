@@ -17,7 +17,7 @@
 
 class BrowserActionsContainer;
 class Extension;
-class ExtensionAction2;
+class ExtensionAction;
 class ExtensionPopup;
 class Profile;
 class ToolbarView;
@@ -26,7 +26,7 @@ class ToolbarView;
 // BrowserActionButton
 
 // The BrowserActionButton is a specialization of the MenuButton class.
-// It acts on a ExtensionAction2, in this case a BrowserAction and handles
+// It acts on a ExtensionAction, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
@@ -36,7 +36,7 @@ class BrowserActionButton : public views::MenuButton,
   BrowserActionButton(Extension* extension, BrowserActionsContainer* panel);
   ~BrowserActionButton();
 
-  ExtensionAction2* browser_action() const { return browser_action_; }
+  ExtensionAction* browser_action() const { return browser_action_; }
   Extension* extension() { return extension_; }
 
   // Called to update the display to match the browser action's state.
@@ -79,9 +79,9 @@ class BrowserActionButton : public views::MenuButton,
   // If the image from the browser action needs to be loaded, load it.
   void LoadImage();
 
-  // The browser action this view represents. The ExtensionAction2 is not owned
+  // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
-  ExtensionAction2* browser_action_;
+  ExtensionAction* browser_action_;
 
   // The extension associated with the browser action we're displaying.
   Extension* extension_;

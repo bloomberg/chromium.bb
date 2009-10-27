@@ -19,7 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_action2.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -68,7 +68,7 @@ class BrowserActionButton : public NotificationObserver,
                            G_CALLBACK(OnExposeEvent), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-                   Source<ExtensionAction2>(extension->browser_action()));
+                   Source<ExtensionAction>(extension->browser_action()));
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                    NotificationService::AllSources());
 
@@ -162,7 +162,7 @@ class BrowserActionButton : public NotificationObserver,
     if (tab_id < 0)
       return FALSE;
 
-    ExtensionAction2* action = button->extension_->browser_action();
+    ExtensionAction* action = button->extension_->browser_action();
     if (action->GetBadgeText(tab_id).empty())
       return FALSE;
 

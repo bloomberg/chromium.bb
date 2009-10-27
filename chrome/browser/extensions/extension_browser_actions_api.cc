@@ -36,7 +36,7 @@ bool BrowserActionFunction::RunImpl() {
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction2>(browser_action_),
+      Source<ExtensionAction>(browser_action_),
       NotificationService::NoDetails());
   return true;
 }
