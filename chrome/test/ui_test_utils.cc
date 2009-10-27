@@ -83,7 +83,7 @@ class DOMOperationObserver : public NotificationObserver {
   explicit DOMOperationObserver(RenderViewHost* render_view_host) {
     registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                    Source<RenderViewHost>(render_view_host));
-    RunMessageLoop();
+    ui_test_utils::RunMessageLoop();
   }
 
   virtual void Observe(NotificationType type,

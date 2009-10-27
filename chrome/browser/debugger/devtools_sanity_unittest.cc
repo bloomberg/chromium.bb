@@ -136,6 +136,31 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 };
 
 
+class CancelableQuitTask : public Task {
+ public:
+  CancelableQuitTask(const std::string& timeout_message)
+      : timeout_message_(timeout_message),
+        cancelled_(false) {
+  }
+
+  void cancel() {
+    cancelled_ = true;
+  }
+
+  virtual void Run() {
+    if (cancelled_) {
+      return;
+    }
+    FAIL() << timeout_message_;
+    MessageLoop::current()->Quit();
+  }
+
+ private:
+  std::string timeout_message_;
+  bool cancelled_;
+};
+
+
 // Base class for DevTools tests that test devtools functionality for
 // extensions and content scripts.
 class DevToolsExtensionDebugTest : public DevToolsSanityTest,
@@ -162,13 +187,46 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
       NotificationRegistrar registrar;
       registrar.Add(this, NotificationType::EXTENSION_LOADED,
                     NotificationService::AllSources());
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, new MessageLoop::QuitTask, 5*1000);
+      CancelableQuitTask* delayed_quit =
+          new CancelableQuitTask("Extension load timed out.");
+      MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
+          4*1000);
       service->LoadExtension(path);
       ui_test_utils::RunMessageLoop();
+      delayed_quit->cancel();
     }
     size_t num_after = service->extensions()->size();
-    return (num_after == (num_before + 1));
+    if (num_after != (num_before + 1))
+      return false;
+
+    return WaitForExtensionHostsToLoad();
+  }
+
+  bool WaitForExtensionHostsToLoad() {
+    // Wait for all the extension hosts that exist to finish loading.
+    // NOTE: This assumes that the extension host list is not changing while
+    // this method is running.
+
+    NotificationRegistrar registrar;
+    registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                  NotificationService::AllSources());
+    CancelableQuitTask* delayed_quit =
+        new CancelableQuitTask("Extension host load timed out.");
+    MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
+        4*1000);
+
+    ExtensionProcessManager* manager =
+          browser()->profile()->GetExtensionProcessManager();
+    for (ExtensionProcessManager::const_iterator iter = manager->begin();
+         iter != manager->end();) {
+      if ((*iter)->did_stop_loading())
+        ++iter;
+      else
+        ui_test_utils::RunMessageLoop();
+    }
+
+    delayed_quit->cancel();
+    return true;
   }
 
   void Observe(NotificationType type,
@@ -176,10 +234,9 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
                const NotificationDetails& details) {
     switch (type.value) {
       case NotificationType::EXTENSION_LOADED:
-        std::cout << "Got EXTENSION_LOADED notification.\n";
+      case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
         MessageLoopForUI::current()->Quit();
         break;
-
       default:
         NOTREACHED();
         break;
@@ -227,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 
 // Tests that a content script is in the scripts list.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
-                       DISABLED_TestContentScriptIsPresent) {
+                       TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
