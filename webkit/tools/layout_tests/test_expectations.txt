@@ -3085,7 +3085,6 @@ BUG23956 WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG24126 : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
 // WebKit update 48883:48904
-BUG23745 LINUX MAC : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
 
 // WebKit update 48937:48947
 BUG23751 WIN LINUX DEBUG : LayoutTests/fast/inline/relative-positioned-overflow.html = CRASH

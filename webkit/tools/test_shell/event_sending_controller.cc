@@ -147,9 +147,7 @@ void ApplyKeyModifier(const std::wstring& arg, WebKeyboardEvent* event) {
     event->modifiers |= WebInputEvent::ShiftKey;
   } else if (!wcscmp(arg_string, L"altKey")) {
     event->modifiers |= WebInputEvent::AltKey;
-#if defined(OS_WIN)
     event->isSystemKey = true;
-#endif
   } else if (!wcscmp(arg_string, L"metaKey")) {
     event->modifiers |= WebInputEvent::MetaKey;
   }
@@ -486,12 +484,8 @@ void EventSendingController::keyDown(
     // On Windows, we might also need to generate a char event to mimic the
     // Windows event flow; on other platforms we create a merged event and test
     // the event flow that that platform provides.
-    WebKeyboardEvent event_down, event_up;
-#if defined(OS_WIN)
+    WebKeyboardEvent event_down, event_char, event_up;
     event_down.type = WebInputEvent::RawKeyDown;
-#else
-    event_down.type = WebInputEvent::KeyDown;
-#endif
     event_down.modifiers = 0;
     event_down.windowsKeyCode = code;
     if (generate_char) {
@@ -506,22 +500,30 @@ void EventSendingController::keyDown(
     if (needs_shift_key_modifier)
       event_down.modifiers |= WebInputEvent::ShiftKey;
 
-    event_up = event_down;
+    event_char = event_up = event_down;
     event_up.type = WebInputEvent::KeyUp;
     // EventSendingController.m forces a layout here, with at least one
     // test (fast\forms\focus-control-to-page.html) relying on this.
     webview()->layout();
 
+#if defined(OS_MACOSX)
+    // On Mac OS, some layout tests (such as "delete-by-word-001.html") sends
+    // an option-key (or alt-key) event to test it is mapped to an appropriate
+    // editor command (such as "DeleteWordBackward").
+    // On the other hand, EditorClientImpl::handleEditingKeyboardEvent()
+    // ignores the key event whose isSystemKey value is true and cannot map
+    // an editor command to an option-key event.
+    // As a workaround for this problem, we set isSystemKey of RawKeyDown
+    // events to false.
+    event_down.isSystemKey = false;
+#endif
     webview()->handleInputEvent(event_down);
 
-#if defined(OS_WIN)
     if (generate_char) {
-      WebKeyboardEvent event_char = event_down;
       event_char.type = WebInputEvent::Char;
       event_char.keyIdentifier[0] = '\0';
       webview()->handleInputEvent(event_char);
     }
-#endif
 
     webview()->handleInputEvent(event_up);
   }
