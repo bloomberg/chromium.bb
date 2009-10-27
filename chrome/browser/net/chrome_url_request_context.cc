@@ -440,7 +440,9 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
       : ChromeURLRequestContextFactory(profile),
         main_context_getter_(
             static_cast<ChromeURLRequestContextGetter*>(
-                profile->GetRequestContext())) {
+                profile->GetRequestContext())),
+        disk_cache_path_(disk_cache_path),
+        cache_size_(cache_size) {
     is_media_ = true;
     is_off_the_record_ = off_the_record;
   }
