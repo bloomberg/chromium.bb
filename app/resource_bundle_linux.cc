@@ -132,8 +132,13 @@ RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
   DCHECK(resources_data_);
   base::StringPiece data;
-  if (!resources_data_->Get(resource_id, &data))
-    return base::StringPiece();
+
+  if (!resources_data_->Get(resource_id, &data)) {
+    if (!locale_resources_data_->Get(resource_id, &data)) {
+      return base::StringPiece();
+    }
+  }
+
   return data;
 }
 
