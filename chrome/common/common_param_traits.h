@@ -282,7 +282,7 @@ struct ParamTraits<scoped_refptr<net::UploadData> > {
     std::vector<net::UploadData::Element> elements;
     if (!ReadParam(m, iter, &elements))
       return false;
-    int identifier;
+    int64 identifier;
     if (!ReadParam(m, iter, &identifier))
       return false;
     *r = new net::UploadData;
