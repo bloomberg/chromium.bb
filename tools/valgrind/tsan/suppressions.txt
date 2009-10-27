@@ -108,9 +108,15 @@
 }
 
 {
-  bug_25913 (libjingle)
+  bug_25913 (libjingle) (1)
   ThreadSanitizer:Race
   fun:*talk_base*MessageQueue*Stop*
+}
+
+{
+  bug_25913 (libjingle) (2)
+  ThreadSanitizer:Race
+  fun:*talk_base*MessageQueue*Get*
 }
 
 ############################
