@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #ifndef CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
 #define CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
 
@@ -81,5 +79,3 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
 };
 
 #endif  // CHROME_TEST_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
-
-#endif  // defined(BROWSER_SYNC)

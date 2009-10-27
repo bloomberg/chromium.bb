@@ -33,9 +33,7 @@ class TabstripOriginProvider;
 struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
-#if defined(BROWSER_SYNC)
                        public ProfileSyncServiceObserver,
-#endif
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public NotificationObserver {
@@ -264,7 +262,6 @@ class BookmarkBarGtk : public AnimationDelegate,
                                    GtkAllocation* allocation,
                                    BookmarkBarGtk* bar);
 
-#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
@@ -274,7 +271,6 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // Creates the sync error button and adds it as a child view.
   GtkWidget* CreateSyncErrorButton();
-#endif
 
   Profile* profile_;
 
@@ -320,14 +316,12 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
 
-#if defined(BROWSER_SYNC)
   // The sync re-login indicator which appears when the user needs to re-enter
   // credentials in order to continue syncing.
   GtkWidget* sync_error_button_;
 
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;
-#endif
 
   // The BookmarkNode from the model being dragged. NULL when we aren't
   // dragging.

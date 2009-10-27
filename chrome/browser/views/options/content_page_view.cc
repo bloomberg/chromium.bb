@@ -36,14 +36,13 @@ namespace {
 const int kPasswordSavingRadioGroup = 1;
 const int kFormAutofillRadioGroup = 2;
 
-#if defined(BROWSER_SYNC)
 // Background color for the status label when it's showing an error.
 static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
 
 static views::Background* CreateErrorBackground() {
   return views::Background::CreateSolidBackground(kSyncLabelErrorBgColor);
 }
-#endif
+
 }  // namespace
 
 ContentPageView::ContentPageView(Profile* profile)
@@ -60,27 +59,21 @@ ContentPageView::ContentPageView(Profile* profile)
       browsing_data_group_(NULL),
       import_button_(NULL),
       clear_data_button_(NULL),
-#if defined(BROWSER_SYNC)
       sync_group_(NULL),
       sync_status_label_(NULL),
       sync_action_link_(NULL),
       sync_start_stop_button_(NULL),
       sync_service_(NULL),
-#endif
       OptionsPageView(profile) {
-#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
-#endif
   }
 }
 
 ContentPageView::~ContentPageView() {
-#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -126,7 +119,6 @@ void ContentPageView::ButtonPressed(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
       new ClearBrowsingDataView(profile()))->Show();
-#if defined(BROWSER_SYNC)
   } else if (sender == sync_start_stop_button_) {
     DCHECK(sync_service_);
 
@@ -146,7 +138,6 @@ void ContentPageView::ButtonPressed(
       sync_service_->EnableForUser();
       ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
-#endif
   }
 }
 
@@ -159,11 +150,9 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
     browser->window()->Activate();
     return;
   }
-#if defined(BROWSER_SYNC)
   DCHECK_EQ(source, sync_action_link_);
   DCHECK(sync_service_);
   sync_service_->ShowLoginDialog();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,14 +171,12 @@ void ContentPageView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-#if defined(BROWSER_SYNC)
   if (sync_service_) {
     layout->StartRow(0, single_column_view_set_id);
     InitSyncGroup();
     layout->AddView(sync_group_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
-#endif
 
   layout->StartRow(0, single_column_view_set_id);
   InitPasswordSavingGroup();
@@ -245,10 +232,8 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
 // ContentsPageView, views::View overrides:
 
 void ContentPageView::Layout() {
-#if defined(BROWSER_SYNC)
   if (is_initialized())
     UpdateSyncControls();
-#endif
   // We need to Layout twice - once to get the width of the contents box...
   View::Layout();
   passwords_asktosave_radio_->SetBounds(
@@ -257,12 +242,10 @@ void ContentPageView::Layout() {
       0, 0, passwords_group_->GetContentsWidth(), 0);
   browsing_data_label_->SetBounds(
       0, 0, browsing_data_group_->GetContentsWidth(), 0);
-#if defined(BROWSER_SYNC)
   if (is_initialized()) {
     sync_status_label_->SetBounds(
         0, 0, sync_group_->GetContentsWidth(), 0);
   }
-#endif
   // ... and twice to get the height of multi-line items correct.
   View::Layout();
 }
@@ -270,7 +253,7 @@ void ContentPageView::Layout() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentsPageView, ProfileSyncServiceObserver implementation:
-#if defined(BROWSER_SYNC)
+
 void ContentPageView::OnStateChanged() {
   // If the UI controls are not yet initialized, then don't do anything. This
   // can happen if the Options dialog is up, but the Content tab is not yet
@@ -278,7 +261,6 @@ void ContentPageView::OnStateChanged() {
   if (is_initialized())
     Layout();
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageView, private:
@@ -439,7 +421,6 @@ void ContentPageView::OnConfirmMessageAccept() {
   ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
 }
 
-#if defined(BROWSER_SYNC)
 void ContentPageView::InitSyncGroup() {
   sync_status_label_ = new views::Label;
   sync_status_label_->SetMultiLine(true);
@@ -503,5 +484,3 @@ void ContentPageView::UpdateSyncControls() {
     sync_action_link_->set_background(NULL);
   }
 }
-
-#endif  // defined(BROWSER_SYNC)

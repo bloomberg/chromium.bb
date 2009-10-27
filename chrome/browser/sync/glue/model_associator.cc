@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "chrome/browser/sync/glue/model_associator.h"
 
 #include <stack>
@@ -509,5 +507,3 @@ bool ModelAssociator::LoadAssociations() {
 }
 
 }  // namespace browser_sync
-
-#endif  // defined(BROWSER_SYNC)

@@ -5,8 +5,6 @@
 #ifndef CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
 #define CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
 
-#if defined(BROWSER_SYNC)
-
 #include "chrome/browser/sync/engine/syncapi.h"
 
 namespace browser_sync {
@@ -64,6 +62,4 @@ class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {
 
 }  // namespace browser_sync
 
-
-#endif  // defined(BROWSER_SYNC)
 #endif  // CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_

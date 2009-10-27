@@ -202,17 +202,12 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 }
 
 void TestingProfile::CreateProfileSyncService() {
-#if defined(BROWSER_SYNC)
   if (!profile_sync_service_.get()) {
     profile_sync_service_.reset(new ProfileSyncService(this));
     profile_sync_service_->Initialize();
   }
-#endif
 }
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
-#if defined(BROWSER_SYNC)
   return profile_sync_service_.get();
-#endif
-  return NULL;
 }

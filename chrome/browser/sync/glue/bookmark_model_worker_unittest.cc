@@ -1,7 +1,6 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#if defined(BROWSER_SYNC)
 
 #include "base/thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -220,5 +219,3 @@ TEST_F(BookmarkModelWorkerTest, HypotheticalManualPumpFlooding) {
   EXPECT_FALSE(syncer_thread()->IsRunning());
   core_thread()->Stop();
 }
-
-#endif  // defined(BROWSER_SYNC)

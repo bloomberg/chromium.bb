@@ -209,9 +209,7 @@ class TestingProfile : public Profile {
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
-#if defined(BROWSER_SYNC)
   scoped_ptr<ProfileSyncService> profile_sync_service_;
-#endif
 
   // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;

@@ -165,10 +165,8 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
     : profile_(profile->GetOriginalProfile()),
       table_view_(NULL),
       tree_view_(NULL),
-#if defined(BROWSER_SYNC)
       sync_status_button_(NULL),
       sync_service_(NULL),
-#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(search_factory_(this)) {
   search_tf_ = new views::Textfield();
   search_tf_->set_default_width_in_chars(30);
@@ -207,10 +205,8 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
-#if defined(BROWSER_SYNC)
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
-#endif
   column_set->AddPaddingColumn(1, kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
@@ -226,10 +222,8 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   layout->StartRow(0, top_id);
   layout->AddView(organize_menu_button);
   layout->AddView(tools_menu_button);
-#if defined(BROWSER_SYNC)
   sync_status_button_ = new views::TextButton(this, std::wstring());
   layout->AddView(sync_status_button_);
-#endif
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_SEARCH_TITLE)));
   layout->AddView(search_tf_);
@@ -246,13 +240,11 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   if (!bookmark_model->IsLoaded())
     bookmark_model->AddObserver(this);
 
-#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile_->GetProfileSyncService();
     sync_service_->AddObserver(this);
     UpdateSyncStatus();
   }
-#endif
 }
 
 BookmarkManagerView::~BookmarkManagerView() {
@@ -271,10 +263,8 @@ BookmarkManagerView::~BookmarkManagerView() {
   manager = NULL;
   open_window = NULL;
 
-#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-#endif
 }
 
 // static
@@ -383,11 +373,9 @@ void BookmarkManagerView::WindowClosing() {
       prefs::kBookmarkManagerSplitLocation, split_view_->divider_offset());
 }
 
-#if defined(BROWSER_SYNC)
 void BookmarkManagerView::OnStateChanged() {
   UpdateSyncStatus();
 }
-#endif
 
 bool BookmarkManagerView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
@@ -521,7 +509,6 @@ void BookmarkManagerView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
   }
 }
 
-#if defined(BROWSER_SYNC)
 void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
@@ -529,7 +516,6 @@ void BookmarkManagerView::ButtonPressed(views::Button* sender,
     OpenSyncMyBookmarksDialog();
   }
 }
-#endif
 
 void BookmarkManagerView::Loaded(BookmarkModel* model) {
   model->RemoveObserver(this);
@@ -832,7 +818,6 @@ void BookmarkManagerView::ShowExportBookmarksFileChooser() {
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
 }
 
-#if defined(BROWSER_SYNC)
 void BookmarkManagerView::UpdateSyncStatus() {
   DCHECK(sync_service_);
   std::wstring status_label;
@@ -862,4 +847,3 @@ void BookmarkManagerView::OpenSyncMyBookmarksDialog() {
         ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
   }
 }
-#endif  // defined(BROWSER_SYNC)

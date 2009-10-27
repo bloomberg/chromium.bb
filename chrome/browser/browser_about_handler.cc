@@ -61,9 +61,7 @@
 #include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 #endif
 
-#if defined(BROWSER_SYNC)
 using sync_api::SyncManager;
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -469,7 +467,6 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   return output;
 }
 
-#if defined(BROWSER_SYNC)
 static void AddBoolSyncDetail(ListValue* details, const std::wstring& stat_name,
                               bool stat_value) {
   DictionaryValue* val = new DictionaryValue;
@@ -560,7 +557,6 @@ std::string AboutSync() {
   return jstemplate_builder::GetTemplateHtml(
       sync_html, &strings , "t" /* template root node id */);
 }
-#endif  // defined(BROWSER_SYNC)
 
 // AboutSource -----------------------------------------------------------------
 
@@ -624,9 +620,7 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kTermsPath) {
     response = AboutTerms();
   } else if (path == kSyncPath) {
-#if defined(BROWSER_SYNC)
     response = AboutSync();
-#endif
   }
 
   FinishDataRequest(response, request_id);

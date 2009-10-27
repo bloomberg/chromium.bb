@@ -1,8 +1,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/json/json_writer.h"
@@ -372,5 +370,3 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 }
-
-#endif  // defined(BROWSER_SYNC)

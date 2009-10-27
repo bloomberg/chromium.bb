@@ -653,11 +653,9 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
-#if defined(BROWSER_SYNC)
   command_updater_.UpdateCommandEnabled(
       IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->GetProfileSyncService() != NULL);
-#endif
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1202,7 +1200,6 @@ void Browser::OpenImportSettingsDialog() {
   window_->ShowImportDialog();
 }
 
-#if defined(BROWSER_SYNC)
 void Browser::OpenSyncMyBookmarksDialog() {
   ProfileSyncService* service = profile_->GetProfileSyncService();
   // TODO(timsteele): Incognito has no sync service for the time being,
@@ -1216,7 +1213,6 @@ void Browser::OpenSyncMyBookmarksDialog() {
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_WRENCH);
   }
 }
-#endif  // defined(BROWSER_SYNC)
 
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(L"AboutChrome", profile_);
@@ -1462,9 +1458,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                 break;
     case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                break;
-#if defined(BROWSER_SYNC)
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
-#endif
     case IDC_OPTIONS:               OpenOptionsDialog();           break;
     case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();           break;
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();         break;

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include <stack>
 #include <vector>
 
@@ -1282,5 +1280,3 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
   ExpectBookmarkModelMatchesTestData();
   ExpectModelMatch();
 }
-
-#endif  // defined(BROWSER_SYNC)

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
 #include "chrome/browser/sync/profile_sync_service.h"
 
 #include <stack>
@@ -212,7 +211,7 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
   change_processor_->Stop();
-  
+
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -427,5 +426,3 @@ bool ProfileSyncService::ShouldPushChanges() {
   // consistent with one another, and no unrecoverable error has transpired.
   return change_processor_->IsRunning();
 }
-
-#endif  // defined(BROWSER_SYNC)

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "chrome/browser/sync/sync_setup_wizard.h"
 
 #include "app/resource_bundle.h"
@@ -196,5 +194,3 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
       "Invalid start state for discrete run: " << start_state;
   return result;
 }
-
-#endif  // defined(BROWSER_SYNC)

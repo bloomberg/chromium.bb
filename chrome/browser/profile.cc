@@ -727,9 +727,7 @@ ProfileImpl::~ProfileImpl() {
   prefs->RemovePrefObserver(prefs::kEnableSpellCheck, this);
   prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
-#if defined(BROWSER_SYNC)
   sync_service_.reset();
-#endif
 
   // Both HistoryService and WebDataService maintain threads for background
   // processing. Its possible each thread still has tasks on it that have
@@ -1355,7 +1353,7 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-#if defined(BROWSER_SYNC) && !defined(OS_POSIX)
+#if !defined(OS_POSIX)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     if (!sync_service_.get())
       InitSyncService();
@@ -1366,8 +1364,6 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 }
 
 void ProfileImpl::InitSyncService() {
-#if defined(BROWSER_SYNC)
   sync_service_.reset(new ProfileSyncService(this));
   sync_service_->Initialize();
-#endif
 }

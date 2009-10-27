@@ -118,10 +118,8 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       model_(NULL),
       instructions_label_(NULL),
       instructions_(NULL),
-#if defined(BROWSER_SYNC)
       sync_error_button_(NULL),
       sync_service_(NULL),
-#endif
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
@@ -130,14 +128,12 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       floating_(false),
       last_allocation_width_(-1),
       event_box_paint_factory_(this) {
-#if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
     sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
   }
-#endif
 
   Init(profile);
   SetProfile(profile);
@@ -157,10 +153,8 @@ BookmarkBarGtk::~BookmarkBarGtk() {
   bookmark_toolbar_.Destroy();
   event_box_.Destroy();
 
-#if defined(BROWSER_SYNC)
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-#endif
 }
 
 void BookmarkBarGtk::SetProfile(Profile* profile) {
@@ -267,12 +261,10 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(vseparator, "expose-event",
                    G_CALLBACK(OnSeparatorExpose), this);
 
-#if defined(BROWSER_SYNC)
   sync_error_button_ = theme_provider_->BuildChromeButton();
   ConnectFolderButtonEvents(sync_error_button_);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
                      FALSE, FALSE, 0);
-#endif
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
@@ -337,11 +329,9 @@ void BookmarkBarGtk::Hide(bool animate) {
   }
 }
 
-#if defined(BROWSER_SYNC)
 void BookmarkBarGtk::OnStateChanged() {
   // TODO(zork): TODO
 }
-#endif
 
 void BookmarkBarGtk::EnterFullscreen() {
   if (ShouldBeFloating())

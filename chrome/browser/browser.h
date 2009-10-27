@@ -401,9 +401,7 @@ class Browser : public TabStripModelDelegate,
   void OpenOptionsDialog();
   void OpenKeywordEditor();
   void OpenPasswordManager();
-#if defined(BROWSER_SYNC)
   void OpenSyncMyBookmarksDialog();
-#endif
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
   void OpenHelpTab();

@@ -1,7 +1,6 @@
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#if defined(BROWSER_SYNC)
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
@@ -249,5 +248,3 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   }
   return service_->sync_initialized();
 }
-
-#endif  // defined(BROWSER_SYNC)

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 
 #include <vector>
@@ -251,5 +249,3 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
       BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url, NULL);
   return result;
 }
-
-#endif  // defined(BROWSER_SYNC)

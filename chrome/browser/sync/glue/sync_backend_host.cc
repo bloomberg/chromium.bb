@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "build/build_config.h"
 #include "base/file_version_info.h"
 #include "base/file_util.h"
@@ -313,5 +311,3 @@ void SyncBackendHost::Core::SaveChanges() {
 }
 
 }  // namespace browser_sync
-
-#endif  // defined(BROWSER_SYNC)

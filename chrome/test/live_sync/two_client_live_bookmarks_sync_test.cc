@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include <stdlib.h>
 
 #include "base/string16.h"
@@ -2483,6 +2481,3 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   Cleanup();
 }
-
-
-#endif  // defined(BROWSER_SYNC)

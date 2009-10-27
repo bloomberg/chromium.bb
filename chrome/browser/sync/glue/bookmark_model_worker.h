@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 
@@ -130,5 +128,3 @@ class BookmarkModelWorker
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
-
-#endif  // defined(BROWSER_SYNC)

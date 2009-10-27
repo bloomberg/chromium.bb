@@ -1173,7 +1173,6 @@ void ToolbarView::CreateAppMenu() {
                                           IDS_SHOW_EXTENSIONS);
 
   app_menu_contents_->AddSeparator();
-#if defined(BROWSER_SYNC)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     string16 label;
     string16 link;
@@ -1189,7 +1188,6 @@ void ToolbarView::CreateAppMenu() {
     app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, label);
     app_menu_contents_->AddSeparator();
   }
-#endif
   app_menu_contents_->AddItem(IDC_OPTIONS,
                               l10n_util::GetStringFUTF16(
                                   IDS_OPTIONS,

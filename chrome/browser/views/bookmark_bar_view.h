@@ -36,9 +36,7 @@ class TextButton;
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
 class BookmarkBarView : public DetachableToolbarView,
-#if defined(BROWSER_SYNC)
                         public ProfileSyncServiceObserver,
-#endif
                         public BookmarkModelObserver,
                         public views::ViewMenuDelegate,
                         public views::ButtonListener,
@@ -118,10 +116,8 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
 
-#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
-#endif
 
   // Called when fullscreen mode toggles on or off; this affects our layout.
   void OnFullscreenToggled(bool fullscreen);
@@ -418,14 +414,13 @@ class BookmarkBarView : public DetachableToolbarView,
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
 
-#if defined(BROWSER_SYNC)
   // Determines whether the sync error button should appear on the bookmarks
   // bar.
   bool ShouldShowSyncErrorButton();
 
   // Creates the sync error button and adds it as a child view.
   views::TextButton* CreateSyncErrorButton();
-#endif
+
   NotificationRegistrar registrar_;
 
   Profile* profile_;
@@ -458,14 +453,12 @@ class BookmarkBarView : public DetachableToolbarView,
   // Used to track drops on the bookmark bar view.
   scoped_ptr<DropInfo> drop_info_;
 
-#if defined(BROWSER_SYNC)
   // The sync re-login indicator which appears when the user needs to re-enter
   // credentials in order to continue syncing.
   views::TextButton* sync_error_button_;
 
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;
-#endif
 
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;

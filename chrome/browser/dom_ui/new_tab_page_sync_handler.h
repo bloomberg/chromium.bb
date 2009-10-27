@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #ifndef CHROME_BROWSER_DOM_UI_NEW_TAB_PAGE_SYNC_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_NEW_TAB_PAGE_SYNC_HANDLER_H_
 
@@ -68,4 +66,3 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_NEW_TAB_PAGE_SYNC_HANDLER_H_
-#endif  // defined(BROWSER_SYNC)

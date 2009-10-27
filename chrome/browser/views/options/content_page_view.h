@@ -27,10 +27,8 @@ class PrefService;
 // ContentPageView
 
 class ContentPageView : public OptionsPageView,
-#if defined(BROWSER_SYNC)
                         public views::LinkController,
                         public ProfileSyncServiceObserver,
-#endif
                         public views::ButtonListener,
                         public ConfirmMessageBoxObserver {
  public:
@@ -46,10 +44,8 @@ class ContentPageView : public OptionsPageView,
   // ConfirmMessageBoxObserver implementation.
   virtual void OnConfirmMessageAccept();
 
-#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
-#endif
 
  protected:
   // OptionsPageView implementation:
@@ -60,7 +56,6 @@ class ContentPageView : public OptionsPageView,
   virtual void Layout();
 
  private:
-#if defined(BROWSER_SYNC)
   // Updates various sync controls based on the current sync state.
   void UpdateSyncControls();
 
@@ -71,16 +66,13 @@ class ContentPageView : public OptionsPageView,
     // are already initialized or not.
     return sync_group_ != NULL;
   }
-#endif
 
   // Init all the dialog controls.
   void InitPasswordSavingGroup();
   void InitFormAutofillGroup();
   void InitBrowsingDataGroup();
   void InitThemesGroup();
-#if defined(BROWSER_SYNC)
   void InitSyncGroup();
-#endif
 
   // Controls for the Password Saving group
   views::NativeButton* passwords_exceptions_button_;
@@ -104,23 +96,19 @@ class ContentPageView : public OptionsPageView,
   views::NativeButton* import_button_;
   views::NativeButton* clear_data_button_;
 
-#if defined(BROWSER_SYNC)
   // Controls for the Sync group.
   OptionsGroupView* sync_group_;
   views::Label* sync_status_label_;
   views::Link* sync_action_link_;
   views::NativeButton* sync_start_stop_button_;
-#endif
 
   BooleanPrefMember ask_to_save_passwords_;
   BooleanPrefMember ask_to_save_form_autofill_;
   StringPrefMember is_using_default_theme_;
 
-#if defined(BROWSER_SYNC)
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date
   // and NULL-ed out on destruction.
   ProfileSyncService* sync_service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageView);
 };

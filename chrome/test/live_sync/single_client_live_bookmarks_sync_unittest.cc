@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "base/command_line.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
@@ -152,5 +150,3 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, DISABLED_GetUpdates) {
   EXPECT_EQ(status.summary, ProfileSyncService::Status::READY);
   EXPECT_EQ(status.unsynced_count, 0);
 }
-
-#endif  // defined(BROWSER_SYNC)

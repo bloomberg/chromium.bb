@@ -44,10 +44,8 @@ class BookmarkManagerView : public views::View,
                             public views::TreeViewController,
                             public views::ViewMenuDelegate,
                             public views::WindowDelegate,
-#if defined(BROWSER_SYNC)
                             public views::ButtonListener,
                             public ProfileSyncServiceObserver,
-#endif
                             public BookmarkModelObserver,
                             public SelectFileDialog::Listener {
  public:
@@ -95,10 +93,8 @@ class BookmarkManagerView : public views::View,
   //virtual bool ShouldShowWindowIcon() const { return true; }
   virtual void WindowClosing();
 
-#if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
-#endif
 
   Profile* profile() const { return profile_; }
 
@@ -119,10 +115,8 @@ class BookmarkManagerView : public views::View,
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
   virtual void OnTreeViewKeyDown(base::KeyboardCode keycode);
 
-#if defined(BROWSER_SYNC)
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-#endif
 
   // BookmarkModelObserver. We're only installed as an observer until the
   // bookmarks are loaded.
@@ -214,10 +208,8 @@ class BookmarkManagerView : public views::View,
   void ShowImportBookmarksFileChooser();
   void ShowExportBookmarksFileChooser();
 
-#if defined(BROWSER_SYNC)
   void UpdateSyncStatus();
   void OpenSyncMyBookmarksDialog();
-#endif
 
   Profile* profile_;
   BookmarkTableView* table_view_;
@@ -230,14 +222,12 @@ class BookmarkManagerView : public views::View,
   // Import/export file dialog.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
-#if defined(BROWSER_SYNC)
   // The sync status button that notifies the user about the current status of
   // bookmarks synchronization.
   views::TextButton* sync_status_button_;
 
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;
-#endif
 
   // Factory used for delaying search.
   ScopedRunnableMethodFactory<BookmarkManagerView> search_factory_;

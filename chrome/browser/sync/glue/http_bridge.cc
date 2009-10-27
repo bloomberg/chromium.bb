@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(BROWSER_SYNC)
-
 #include "chrome/browser/sync/glue/http_bridge.h"
 
 #include "base/message_loop.h"
@@ -238,5 +236,3 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
 }
 
 }  // namespace browser_sync
-
-#endif  // defined(BROWSER_SYNC)

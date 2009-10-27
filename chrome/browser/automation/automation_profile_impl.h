@@ -174,13 +174,9 @@ class AutomationProfileImpl : public Profile {
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     return original_profile_->GetDesktopNotificationService();
   }
-
-#if defined(BROWSER_SYNC)
   virtual ProfileSyncService* GetProfileSyncService() {
     return original_profile_->GetProfileSyncService();
   }
-#endif
-
   virtual bool IsSameProfile(Profile* profile) {
     return original_profile_->IsSameProfile(profile);
   }
