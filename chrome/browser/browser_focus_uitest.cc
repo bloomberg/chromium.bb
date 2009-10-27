@@ -332,6 +332,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
 }
 
 // Background window does not steal focus.
+#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -379,6 +380,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   // Close the 2nd browser to avoid a DCHECK().
   browser2->window()->Close();
 }
+#endif
 
 // Page cannot steal focus when focus is on location bar.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
