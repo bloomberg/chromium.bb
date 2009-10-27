@@ -6767,7 +6767,6 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             'syncapi',
-            'sync_proto',
             'test_support_unit',
           ],
           'conditions': [
