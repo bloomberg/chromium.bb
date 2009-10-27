@@ -47,6 +47,17 @@
 }
 
 - (void)dealloc {
+  // Since the tab can be closed from JavaScript it is possible for
+  // |contextMenu_| to remain visible after the tab has closed, or for
+  // |closeButton_| to be tracking the mouse.  Make sure neither sends
+  // us an action after -dealloc.
+  [closeButton_ setTarget:nil];
+  [contextMenu_ setAutoenablesItems:NO];
+  for (NSMenuItem* item in [contextMenu_ itemArray]) {
+    [item setTarget:nil];
+    [item setEnabled:NO];
+  }
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
