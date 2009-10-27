@@ -185,7 +185,7 @@ void SpellcheckWordIterator::Initialize(
 bool SpellcheckWordIterator::GetNextWord(string16* word_string,
                                          int* word_start,
                                          int* word_length) {
-  word_string->empty();
+  word_string->clear();
   *word_start = 0;
   *word_length = 0;
   while (position_ < length_) {
