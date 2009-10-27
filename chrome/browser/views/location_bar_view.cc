@@ -43,7 +43,7 @@ static const int kEntryPadding = 3;
 static const int kInnerPadding = 3;
 
 // The size (both dimensions) of the buttons for page actions.
-static const int kPageActionButtonSize = 29;
+static const int kPageActionButtonSize = 19;
 
 static const SkBitmap* kBackground = NULL;
 
@@ -102,7 +102,13 @@ LocationBarView::PageActionWithBadgeView::PageActionWithBadgeView(
 }
 
 void LocationBarView::PageActionWithBadgeView::Layout() {
-  image_view_->SetBounds(0, 0, width(), height());
+  // We have 25 pixels of vertical space in the Omnibox to play with, so even
+  // sized icons (such as 16x16) have either a 5 or a 4 pixel whitespace
+  // (padding) above and below. It looks better to have the extra pixel above
+  // the icon than below it, so we add a pixel. http://crbug.com/25708.
+  const SkBitmap& image = image_view()->GetImage();
+  int y = (image.height() + 1) % 2;  // Even numbers: 1px padding. Odd: 0px.
+  image_view_->SetBounds(0, y, width(), height());
 }
 
 void LocationBarView::PageActionWithBadgeView::PaintChildren(
