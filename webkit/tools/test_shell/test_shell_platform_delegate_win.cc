@@ -52,10 +52,11 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
   // default to XP metrics, override if on Vista
   int requiredVScrollSize = 17;
   int requiredFontSize = -11; // 8 pt
-  const WCHAR *requiredFont = L"Tahoma";
+  const wchar_t* requiredFont = L"Tahoma";
+  // Consider Windows 7 as Vista.
   bool isVista = false;
   if (osvi.dwMajorVersion == 6
-      && osvi.dwMinorVersion == 0
+      && (osvi.dwMinorVersion == 0 || osvi.dwMinorVersion == 1)
       && osvi.wProductType == VER_NT_WORKSTATION) {
     requiredFont = L"Segoe UI";
     requiredFontSize = -12; // 9 pt
