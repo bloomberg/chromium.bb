@@ -167,6 +167,29 @@ TEST_F(GPUPluginObjectTest, CanSetWindow) {
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }
 
+TEST_F(GPUPluginObjectTest, CanGetWindowSize) {
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
+                                                0,
+                                                NULL,
+                                                NULL,
+                                                NULL));
+
+  NPWindow window = {0};
+  window.window = &window;
+  window.x = 10;
+  window.y = 10;
+  window.width = 100;
+  window.height = 200;
+
+  EXPECT_EQ(0, plugin_object_->GetWidth());
+  EXPECT_EQ(0, plugin_object_->GetHeight());
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->SetWindow(&window));
+  EXPECT_EQ(100, plugin_object_->GetWidth());
+  EXPECT_EQ(200, plugin_object_->GetHeight());
+
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
+}
+
 TEST_F(GPUPluginObjectTest, SetWindowFailsIfNotInitialized) {
   NPWindow window = {0};
   EXPECT_EQ(NPERR_GENERIC_ERROR, plugin_object_->SetWindow(&window));
@@ -317,6 +340,46 @@ TEST_F(GPUPluginObjectTest,
 
   EXPECT_EQ(GPUPluginObject::kWaitingForOpenCommandBuffer,
             plugin_object_->GetStatus());
+
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
+}
+
+class MockEventSync : public DefaultNPObject<NPObject> {
+ public:
+  explicit MockEventSync(NPP npp) {
+  }
+
+  MOCK_METHOD2(Resize, void(int32 width, int32 height));
+
+  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockEventSync, DefaultNPObject<NPObject>)
+    NP_UTILS_DISPATCHER(Resize, void(int32 width, int32 height))
+  NP_UTILS_END_DISPATCHER_CHAIN
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEventSync);
+};
+
+TEST_F(GPUPluginObjectTest, SendsResizeEventOnSetWindow) {
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
+                                                0,
+                                                NULL,
+                                                NULL,
+                                                NULL));
+
+  NPObjectPointer<MockEventSync> event_sync =
+      NPCreateObject<MockEventSync>(NULL);
+  plugin_object_->SetEventSync(event_sync);
+
+  EXPECT_CALL(*event_sync.Get(), Resize(100, 200));
+
+  NPWindow window = {0};
+  window.window = &window;
+  window.x = 10;
+  window.y = 10;
+  window.width = 100;
+  window.height = 200;
+
+  plugin_object_->SetWindow(&window);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }

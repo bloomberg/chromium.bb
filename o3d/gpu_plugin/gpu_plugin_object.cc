@@ -44,6 +44,14 @@ NPError GPUPluginObject::SetWindow(NPWindow* new_window) {
   NPError error = PlatformSpecificSetWindow(new_window);
   if (error == NPERR_NO_ERROR) {
     window_ = *new_window;
+
+    if (event_sync_.Get()) {
+      NPInvokeVoid(npp_,
+                   event_sync_,
+                   "resize",
+                   static_cast<int32>(window_.width),
+                   static_cast<int32>(window_.height));
+    }
   } else {
     memset(&window_, 0, sizeof(window_));
   }

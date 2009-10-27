@@ -67,6 +67,26 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
     return status_;
   }
 
+  // Get the width of the plugin window.
+  int32 GetWidth() {
+    return window_.width;
+  }
+
+  // Get the height of the plugin window.
+  int32 GetHeight() {
+    return window_.height;
+  }
+
+  // Set the object that receives notifications of GPU plugin object events
+  // such as resize and keyboard and mouse input.
+  void SetEventSync(NPObjectPointer<NPObject> event_sync) {
+    event_sync_ = event_sync;
+  }
+
+  NPObjectPointer<NPObject> GetEventSync() {
+    return event_sync_;
+  }
+
   // Initializes and returns the command buffer object. Returns NULL if the
   // command buffer cannot be initialized, for example if the plugin does not
   // yet have a window handle.
@@ -90,6 +110,10 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(GetStatus, int32());
+    NP_UTILS_DISPATCHER(GetWidth, int32());
+    NP_UTILS_DISPATCHER(GetHeight, int32());
+    NP_UTILS_DISPATCHER(SetEventSync, void(NPObjectPointer<NPObject> sync));
+    NP_UTILS_DISPATCHER(GetEventSync, NPObjectPointer<NPObject>());
     NP_UTILS_DISPATCHER(OpenCommandBuffer, NPObjectPointer<NPObject>())
   NP_UTILS_END_DISPATCHER_CHAIN
 
@@ -101,6 +125,7 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
   NPWindow window_;
   NPObjectPointer<CommandBuffer> command_buffer_;
   scoped_refptr<GPUProcessor> processor_;
+  NPObjectPointer<NPObject> event_sync_;
 };
 
 }  // namespace gpu_plugin
