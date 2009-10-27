@@ -74,7 +74,9 @@ TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
                               profile:helper_.profile()
                                  node:node]);
   [controller window];  // force nib load
-  EXPECT_FALSE([[controller okButton] isEnabled]);
+
+  // We start enabled since the default "New Folder" is added for us.
+  EXPECT_TRUE([[controller okButton] isEnabled]);
 
   [controller setFolderName:@"Bozo"];
   EXPECT_TRUE([[controller okButton] isEnabled]);

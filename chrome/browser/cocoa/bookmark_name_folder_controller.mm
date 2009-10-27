@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profile.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
+#include "grit/generated_resources.h"
 
 @implementation BookmarkNameFolderController
 
@@ -19,23 +21,15 @@
     parentWindow_ = window;
     profile_ = profile;
     node_ = node;
-    if (node_) {
-      initialName_.reset([base::SysWideToNSString(node_->GetTitle()) retain]);
-    } else {
-      initialName_.reset([@"" retain]);
-    }
+    std::wstring newFolderString =
+      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+    initialName_.reset([base::SysWideToNSString(newFolderString) retain]);
   }
   return self;
 }
 
 - (void)awakeFromNib {
   [nameField_ setStringValue:initialName_.get()];
-  if (node_) {
-    // TODO(jrg)?: on Windows the dialog is named either New Folder or
-    // Edit Folder Name.  However, since we're a sheet on the Mac, the
-    // title is never seen.  If we switch from a sheet, correct the
-    // title right here.
-  }
   [self controlTextDidChange:nil];
 }
 
