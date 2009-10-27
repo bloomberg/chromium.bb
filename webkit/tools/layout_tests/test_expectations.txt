@@ -3030,7 +3030,7 @@ BUG21141 LINUX DEBUG : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 BUG24232 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Flaky, not clear as of when.
-BUG21411 DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG21411 : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
