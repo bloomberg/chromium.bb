@@ -1,0 +1,2 @@
+# This test hangs under ThreadSanitizer, see http://crbug.com/25917
+WorkerTest.LimitTotal
