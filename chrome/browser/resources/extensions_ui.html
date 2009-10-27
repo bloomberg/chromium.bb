@@ -74,8 +74,27 @@ div.content {
   -webkit-box-flex: 1;
 }
 
+.showInDevMode {
+  overflow: hidden;
+}
+
+body.hideDevModeInitial .showInDevMode {
+  height: 0 !important;
+  opacity: 0;
+}
+
+body.hideDevMode .showInDevMode {
+  height: 0 !important;
+  opacity: 0;
+  -webkit-transition: all .5s ease-out;
+}
+
+body.showDevMode .showInDevMode {
+  opacity: 1;
+  -webkit-transition: all .5s ease-in;
+}
+
 .wbox-dev-tools {
-  display: none;
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
 }
@@ -111,14 +130,11 @@ div.content {
 }
 
 .extension-description {
-  color: gray;
   margin-top: 0.4em;
 }
 
 .extension-details {
-  color: gray;
   margin-top: 0.5em;
-  display: none;
 }
 
 .extension-actions {
@@ -224,6 +240,7 @@ button {
  * expects to correctly populate the page.
  */
 var extensionDataFormat = {
+  "developerMode": false,
   "extensions": [
     {
       "id": "0000000000000000000000000000000000000000",
@@ -297,6 +314,15 @@ var extensionDataFormat = {
 var devToolsExpanded = false;
 
 /**
+ * Toggles the devToolsExpanded, and notifies the c++ dom_ui to toggle the 
+ * extensions.ui.developer_mode which saved in the preferences.
+ */
+function toggleDevToolsExpanded() {
+  devToolsExpanded = !devToolsExpanded;
+  chrome.send('toggleDeveloperMode', []);
+}
+
+/**
  * Takes the |extensionsData| input argument which represents data about the
  * currently installed/running extensions and populates the html jstemplate with
  * that data. It expects an object structure like the above.
@@ -331,12 +357,31 @@ window.domui_responded_ = false;
 
 function returnExtensionsData(extensionsData) {
   window.domui_responded_ = true;
+
+  devToolsExpanded = extensionsData.developerMode;
+
   showExtensionsData(extensionsData);
 
   // We are currently hiding the body because the first call to jstProcess() to
   // insert localized strings happens prior to this call which runs during the
   // body.onload event, causes a flickering.
   document.getElementById('body-container').style.display = "inline";
+  
+  // Explicitly set the height for each element that wants to be "slid" in and
+  // out when the devToolsExpanded is toggled.
+  var slidables = document.getElementsByClassName('showInDevMode');
+  for (var i = 0; i < slidables.length; i++) {
+    slidables[i].style.height = slidables[i].offsetHeight + "px";
+  }
+
+  // If not in developer mode, hide the developer mode elements without the 
+  // slide/fade transition.
+  if (!devToolsExpanded) {
+    document.getElementsByTagName('body')[0].className = "hideDevModeInitial";
+  } else {
+    document.getElementById('collapse').style.display = "inline";
+    document.getElementById('expand').style.display = "none";
+  }
 }
 
 /**
@@ -435,19 +480,15 @@ function hidePackDialog() {
  * Toggles visibility of the developer tools.
  */
 function toggleDeveloperTools() {
-  devToolsExpanded = !devToolsExpanded;
+  toggleDevToolsExpanded();
 
   document.getElementById('collapse').style.display =
       devToolsExpanded ? "inline" : "none";
   document.getElementById('expand').style.display =
       devToolsExpanded ? "none" : "inline";
-  document.getElementById('developer_tools').style.display =
-      devToolsExpanded ? "-webkit-box" : "none";
 
-  // Show/hide extra details for the extension.
-  var details = document.getElementsByClassName('extension-details');
-  for (var i = 0; i < details.length; ++i)
-    details[i].style.display = devToolsExpanded ? "block" : "none";
+  document.getElementsByTagName('body')[0].className =
+      devToolsExpanded ? "showDevMode" : "hideDevMode";
 }
 
 /**
@@ -534,7 +575,7 @@ function autoUpdate() {
     <div id="extensionTemplate">
 
       <div id="container" class="vbox-container">
-      <div id="top" class="wbox">
+      <div id="top" class="wbox" style="padding-right: 10px">
 
         <div class="section-header">
           <table cellpadding="0" cellspacing="0" width="100%">
@@ -562,7 +603,7 @@ function autoUpdate() {
         </div>
 
       </div>
-      <div id="developer_tools" class="wbox-dev-tools">
+      <div id="developer_tools" class="wbox-dev-tools showInDevMode">
         <div class="developer-tools">
           Developer Tools:
           <button onclick="loadExtension()">Load unpacked Extension...</button>
@@ -600,18 +641,22 @@ function autoUpdate() {
             </div>
 
             <div class="extension-description" jscontent="description"></div>
-            <div class="extension-details">ID: <span jscontent="id" ></span>
-            </div>
-            <div class="extension-details">
-            <span jsdisplay="views.length > 0">
-              Inspect active views:
-            </span>
-            <ul class="extension-views">
-              <li jsselect="views">
-                <a jsvalues=".extensionView:$this" href="#"
-                 onclick="sendInspectMessage(this.extensionView); return false;"
-                    ><span jscontent="path"></span></a>
-            </ul>
+            <div class="showInDevMode">
+              <div class="extension-details">ID: <span jscontent="id"></span>
+              </div>
+              <div class="extension-details">
+                <span jsdisplay="views.length > 0">
+                  Inspect active views:
+                </span>
+                <ul class="extension-views">
+                  <li jsselect="views">
+                    <a jsvalues=".extensionView:$this" href="#"
+                       onclick="sendInspectMessage(this.extensionView); return false;">
+                       <span jscontent="path"></span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </td>
           <td width="300">

@@ -20,6 +20,7 @@ class DictionaryValue;
 class Extension;
 class ExtensionsService;
 class FilePath;
+class PrefService;
 class UserScript;
 class Value;
 
@@ -82,6 +83,9 @@ class ExtensionsDOMHandler
  private:
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const Value* value);
+
+  // Callback for "toggleDeveloperMode" message.
+  void HandleToggleDeveloperMode(const Value* value);
 
   // Callback for "inspect" message.
   void HandleInspectMessage(const Value* value);
@@ -152,6 +156,8 @@ class ExtensionsUI : public DOMUI {
   explicit ExtensionsUI(TabContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
+
+  static void RegisterUserPrefs(PrefService* prefs);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUI);

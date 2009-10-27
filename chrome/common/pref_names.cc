@@ -267,6 +267,10 @@ const wchar_t kCurrentThemeTints[] = L"extensions.theme.tints";
 const wchar_t kCurrentThemeDisplayProperties[] =
     L"extensions.theme.properties";
 
+// Boolean pref which persists whether the extensions_ui is in developer mode
+// (showing developer packing tools and extensions details)
+const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const wchar_t kCheckDefaultBrowser[] = L"browser.check_default_browser";

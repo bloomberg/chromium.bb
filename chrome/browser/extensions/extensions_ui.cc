@@ -28,6 +28,8 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 
@@ -88,6 +90,8 @@ ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionsService* extension_service)
 void ExtensionsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("requestExtensionsData",
       NewCallback(this, &ExtensionsDOMHandler::HandleRequestExtensionsData));
+  dom_ui_->RegisterMessageCallback("toggleDeveloperMode",
+      NewCallback(this, &ExtensionsDOMHandler::HandleToggleDeveloperMode));
   dom_ui_->RegisterMessageCallback("inspect",
       NewCallback(this, &ExtensionsDOMHandler::HandleInspectMessage));
   dom_ui_->RegisterMessageCallback("reload",
@@ -133,6 +137,10 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   }
   results.Set(L"extensions", extensions_list);
 
+  bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
+      ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  results.SetBoolean(L"developerMode", developer_mode);
+
   dom_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
 
   // Register for notifications that we need to reload the page.
@@ -145,6 +153,13 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
       NotificationService::AllSources());
+}
+
+void ExtensionsDOMHandler::HandleToggleDeveloperMode(const Value* value) {
+  bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
+      ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, !developer_mode);
 }
 
 void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
@@ -513,4 +528,9 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
 RefCountedMemory* ExtensionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadImageResourceBytes(IDR_PLUGIN);
+}
+
+// static
+void ExtensionsUI::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode, false);
 }
