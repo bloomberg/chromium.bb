@@ -271,25 +271,38 @@ for versioned_dir in "${DEST}/Contents/Versions/"* ; do
   fi
 done
 
-# If this script is not running as root (indicating an update driven by user
-# Keystone) and the application is installed somewhere under /Applications,
-# try to make it writeable by all admin users.  This will allow other admin
-# users to update the application from their own user Keystone instances.
+# If this script is not running as root (indicating an update driven by a user
+# Keystone ticket) and the application is installed somewhere under
+# /Applications, try to make it writeable by all admin users.  This will allow
+# other admin users to update the application from their own user Keystone
+# instances.
 #
-# If this script is running as root, it's driven by system Keystone, and
-# future updates can be expected to be applied the same way, so
-# admin-writeability is not a concern.
+# If the script is not running as root and the application is not installed
+# under /Applications, it might not be in a system-wide location, and it
+# probably won't be something that other users on the system are running, so
+# err on the side of safety and don't make it group-writeable.
 #
-# If the application is not installed under /Applications, it might not be in
-# a system-wide location, and it probably won't be something that other users
-# are running, so err on the side of safety and don't make it group-writeable.
+# If this script is running as root, it's driven by a system Keystone ticket,
+# and future updates can be expected to be applied the same way, so
+# admin-writeability is not a concern.  Set the entire thing to be owned by
+# root in that case, regardless of where it's installed, and drop any group
+# and other write permission.
 #
 # If this script is running as a user that is not a member of the admin group,
-# this operation will not succeed.  Tolerate that case, because it's better
-# than the alternative, which is to make the application world-writeable.
-if [ ${EUID} -ne 0 ] && [ "${DEST:0:14}" = "/Applications/" ] ; then
-  (chgrp -Rfh admin "${DEST}" && chmod -Rf g+w "${DEST}") >& /dev/null
+# the chgrp operation will not succeed.  Tolerate that case, because it's
+# better than the alternative, which is to make the application
+# world-writeable.
+CHMOD_MODE="a+rX,u+w,go-w"
+if [ ${EUID} -ne 0 ] ; then
+  if [ "${DEST:0:14}" = "/Applications/" ] &&
+     chgrp -Rh admin "${DEST}" >& /dev/null ; then
+    CHMOD_MODE="a+rX,ug+w,o-w"
+  fi
+else
+  chown -Rh root:wheel "${DEST}" >& /dev/null
 fi
+
+chmod -R "${CHMOD_MODE}" "${DEST}" >& /dev/null
 
 # Great success!
 exit 0
