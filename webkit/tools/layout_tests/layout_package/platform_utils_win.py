@@ -137,4 +137,7 @@ def _FindBinary(target, binary):
   try:
     return path_utils.PathFromBase('webkit', target, binary)
   except path_utils.PathNotFound:
-    return path_utils.PathFromBase('chrome', target, binary)
+    try:
+      return path_utils.PathFromBase('chrome', target, binary)
+    except path_utils.PathNotFound:
+      return path_utils.PathFromBase('build', target, binary)
