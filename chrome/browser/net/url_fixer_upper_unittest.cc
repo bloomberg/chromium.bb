@@ -196,12 +196,8 @@ static bool IsMatchingFileURL(const std::string& url,
   FilePath derived_path;
   net::FileURLToFilePath(GURL(url), &derived_path);
 
-  FilePath::StringType derived_path_str = derived_path.value();
-  return (derived_path_str.length() == full_file_path.value().length()) &&
-      std::equal(derived_path_str.begin(),
-                 derived_path_str.end(),
-                 full_file_path.value().begin(),
-                 CaseInsensitiveCompare<FilePath::CharType>());
+  return FilePath::CompareEqualIgnoreCase(derived_path.value(),
+                                          full_file_path.value());
 }
 
 struct fixup_case {
