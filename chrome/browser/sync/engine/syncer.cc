@@ -5,6 +5,8 @@
 #include "chrome/browser/sync/engine/syncer.h"
 
 #include "base/format_macros.h"
+#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
@@ -66,12 +68,24 @@ Syncer::Syncer(
   syncer_event_channel_.reset(new SyncerEventChannel(shutdown));
   shutdown_channel_.reset(new ShutdownChannel(this));
 
+  extensions_monitor_ = new ExtensionsActivityMonitor(
+      ChromeThread::GetMessageLoop(ChromeThread::UI));
+
   ScopedDirLookup dir(dirman_, account_name_);
   // The directory must be good here.
   CHECK(dir.good());
 }
 
-Syncer::~Syncer() {}
+Syncer::~Syncer() {
+  MessageLoop* ui_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
+  if (ui_loop) {
+    ui_loop->DeleteSoon(FROM_HERE, extensions_monitor_);
+  } else {
+    NOTREACHED();
+    delete extensions_monitor_;
+  }
+  extensions_monitor_ = NULL;
+}
 
 void Syncer::RequestNudge(int milliseconds) {
   SyncerEvent event;
@@ -92,6 +106,17 @@ bool Syncer::SyncShare(SyncProcessState* process_state) {
   SyncerSession session(&cycle_state, process_state);
   session.set_source(TestAndSetUpdatesSource());
   session.set_notifications_enabled(notifications_enabled());
+  // This isn't perfect, as we can end up bundling extensions activity
+  // intended for the next session into the current one.  We could do a
+  // test-and-reset as with the source, but note that also falls short if
+  // the commit request fails (due to lost connection, for example), as we will
+  // fall all the way back to the syncer thread main loop in that case, and
+  // wind up creating a new session when a connection is established, losing
+  // the records set here on the original attempt.  This should provide us
+  // with the right data "most of the time", and we're only using this for
+  // analysis purposes, so Law of Large Numbers FTW.
+  extensions_monitor_->GetAndClearRecords(
+      session.mutable_extensions_activity());
   SyncShare(&session, SYNCER_BEGIN, SYNCER_END);
   return session.HasMoreToSync();
 }
@@ -205,7 +230,8 @@ void Syncer::SyncShare(SyncerSession* session,
       }
       case PROCESS_COMMIT_RESPONSE: {
         LOG(INFO) << "Processing the commit response";
-        ProcessCommitResponseCommand process_response_command;
+        ProcessCommitResponseCommand process_response_command(
+            extensions_monitor_);
         process_response_command.Execute(session);
         next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
         break;
