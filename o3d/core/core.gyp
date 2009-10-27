@@ -8,6 +8,9 @@
   },
   'target_defaults': {
     'include_dirs': [
+      # The internal dir is first so that headers in internal can replace those
+      # in external
+      '../../<(internaldir)',
       '..',
       '../..',
       '../../<(gtestdir)',

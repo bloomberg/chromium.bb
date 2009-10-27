@@ -9,6 +9,7 @@
     'fcolladadir': 'third_party/fcollada/files',
     'glewdir': 'third_party/glew/files',
     'gtestdir': 'testing/gtest/include',
+    'internaldir':'o3d-internal',
     'jpegdir': 'third_party/libjpeg',
     'nacldir': 'third_party/native_client/googleclient',
     'nixysadir': 'o3d/third_party/nixysa',
