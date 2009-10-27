@@ -1060,7 +1060,6 @@ void ChromeFrameAutomationClient::CleanupAsyncRequests() {
     index++;
   }
 
-  DCHECK(request_map_.empty());
   request_map_.clear();
 }
 

@@ -168,6 +168,17 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       // Fetch the redirect status as they aren't all equal (307 in particular
       // retains the HTTP request verb).
       redirect_status_ = GetHttpResponseStatus();
+      // NOTE: Even though RFC 2616 says to preserve the request method when
+      // following a 302 redirect, normal browsers don't do that. Instead they
+      // all convert a POST into a GET in response to a 302 and so shall we.
+      // For 307 redirects, browsers preserve the method.  The RFC says to
+      // prompt the user to confirm the generation of a new POST request, but
+      // IE omits this prompt and so shall we.
+      if (redirect_status_ != 307 &&
+          LowerCaseEqualsASCII(method(), "post")) {
+        set_method("get");
+        post_data_len_ = 0;
+      }
       break;
 
     default:

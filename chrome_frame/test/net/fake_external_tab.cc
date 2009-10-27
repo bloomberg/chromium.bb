@@ -19,7 +19,6 @@
 #include "base/scoped_variant_win.h"
 
 #include "chrome/browser/browser_prefs.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -145,6 +144,9 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
   pss_subclass_.reset(new ProcessSingletonSubclass(this));
   EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_.user_data()));
   StartChromeFrameInHostBrowser();
+  // Register the main thread by instantiating it, but don't call any methods.
+  main_thread_.reset(new ChromeThread());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 CFUrlRequestUnittestRunner::~CFUrlRequestUnittestRunner() {
@@ -277,11 +279,6 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
 void CFUrlRequestUnittestRunner::RunMainUIThread() {
   DCHECK(MessageLoop::current());
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-
-  // Register the main thread by instantiating it, but don't call any methods.
-  ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
   MessageLoop::current()->Run();
 }
 

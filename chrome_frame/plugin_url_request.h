@@ -76,6 +76,11 @@ class PluginUrlRequest : public UrlRequestReference {
   const std::string& method() const {
     return method_;
   }
+
+  void set_method(const std::string& new_method) {
+    method_ = new_method;
+  }
+
   const std::string& referrer() const {
     return referrer_;
   }
