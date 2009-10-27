@@ -18,8 +18,6 @@ URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     URLFetcher::Delegate* d) {
   TestURLFetcher* fetcher = new TestURLFetcher(url, request_type, d);
   fetchers_[id] = fetcher;
-  // URLFetcher's destructor requires the message loop.
-  fetcher->set_io_loop(MessageLoop::current());
   return fetcher;
 }
 

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/render_messages.h"
@@ -144,7 +145,9 @@ class ResourceDispatcherHostTest : public testing::Test,
                                    public ResourceDispatcherHost::Receiver {
  public:
   ResourceDispatcherHostTest()
-      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1), host_(NULL),
+      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
+        io_thread_(ChromeThread::IO, &message_loop_),
+        host_(NULL),
         old_factory_(NULL) {
     set_handle(base::GetCurrentProcessHandle());
   }
@@ -241,6 +244,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
+  ChromeThread io_thread_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;

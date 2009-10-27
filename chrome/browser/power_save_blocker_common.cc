@@ -35,9 +35,8 @@ void PowerSaveBlocker::Disable() {
 
 
 void PowerSaveBlocker::PostAdjustBlockCount(int delta) {
-  MessageLoop *ml = ChromeThread::GetMessageLoop(ChromeThread::UI);
-
-  ml->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableFunction(&PowerSaveBlocker::AdjustBlockCount, delta));
 }
 

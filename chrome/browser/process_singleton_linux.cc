@@ -466,8 +466,7 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
-  DCHECK(ChromeThread::GetMessageLoop(ChromeThread::IO) ==
-         MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Watch for client connections on this socket.
   MessageLoopForIO* ml = MessageLoopForIO::current();
   ml->AddDestructionObserver(this);

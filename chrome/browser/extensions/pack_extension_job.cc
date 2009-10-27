@@ -7,16 +7,17 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_creator.h"
 
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
-                                   const FilePath& key_file,
-                                   MessageLoop* file_loop)
-    : ui_loop_(MessageLoop::current()), file_loop_(file_loop), client_(client),
+                                   const FilePath& key_file)
+    : ui_loop_(MessageLoop::current()), client_(client),
       root_directory_(root_directory), key_file_(key_file) {
-  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &PackExtensionJob::RunOnFileThread));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &PackExtensionJob::RunOnFileThread));
 }
 
 void PackExtensionJob::ClearClient() {

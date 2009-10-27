@@ -5,6 +5,7 @@
 #if defined(BROWSER_SYNC)
 
 #include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@ class HttpBridgeTest : public testing::Test {
  public:
   HttpBridgeTest()
       : fake_default_request_context_getter_(NULL),
-        io_thread_("HttpBridgeTest IO thread") {
+        io_thread_(ChromeThread::IO) {
   }
 
   virtual void SetUp() {
@@ -55,9 +56,7 @@ class HttpBridgeTest : public testing::Test {
     }
     HttpBridge* bridge = new HttpBridge(
         new HttpBridge::RequestContextGetter(
-            fake_default_request_context_getter_),
-        io_thread_loop());
-    bridge->use_io_loop_for_testing_ = true;
+            fake_default_request_context_getter_));
     return bridge;
   }
 
@@ -74,7 +73,8 @@ class HttpBridgeTest : public testing::Test {
   TestURLRequestContextGetter* fake_default_request_context_getter_;
 
   // Separate thread for IO used by the HttpBridge.
-  base::Thread io_thread_;
+  ChromeThread io_thread_;
+
 };
 
 // An HttpBridge that doesn't actually make network requests and just calls
@@ -82,10 +82,10 @@ class HttpBridgeTest : public testing::Test {
 class ShuntedHttpBridge : public HttpBridge {
  public:
   ShuntedHttpBridge(URLRequestContextGetter* baseline_context_getter,
-                    MessageLoop* io_loop, HttpBridgeTest* test)
+                    HttpBridgeTest* test)
       : HttpBridge(new HttpBridge::RequestContextGetter(
-                       baseline_context_getter),
-                   io_loop), test_(test) { }
+                       baseline_context_getter)),
+                   test_(test) { }
  protected:
   virtual void MakeAsynchronousPost() {
     ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
@@ -124,7 +124,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
-      ctx_getter, io_thread_loop(), this));
+      ctx_getter, this));
   http_bridge->SetUserAgent("bob");
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");

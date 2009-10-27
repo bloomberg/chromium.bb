@@ -14,13 +14,15 @@ WebKitContext::WebKitContext(const FilePath& data_path, bool is_incognito)
 }
 
 WebKitContext::~WebKitContext() {
-  // If the WebKit thread was ever spun up, delete the object there.  If we're
-  // on the IO thread, this is safe because the WebKit thread goes away after
-  // the IO.  If we're on the UI thread, we're safe because the UI thread kills
-  // the WebKit thread.
-  MessageLoop* webkit_loop = ChromeThread::GetMessageLoop(ChromeThread::WEBKIT);
-  if (webkit_loop)
-    webkit_loop->DeleteSoon(FROM_HERE, dom_storage_context_.release());
+  // If the WebKit thread was ever spun up, delete the object there.  The task
+  // will just get deleted if the WebKit thread isn't created.
+  DOMStorageContext* dom_storage_context = dom_storage_context_.release();
+  if (!ChromeThread::DeleteSoon(
+          ChromeThread::WEBKIT, FROM_HERE, dom_storage_context)) {
+    // The WebKit thread wasn't created, and the task got deleted without
+    // freeing the DOMStorageContext, so delete it manually.
+    delete dom_storage_context;
+  }
 }
 
 void WebKitContext::PurgeMemory() {
@@ -28,18 +30,15 @@ void WebKitContext::PurgeMemory() {
   // thread.
   //
   // Note that if there is no WebKit thread, then there's nothing in
-  // LocalStorage and it's OK to no-op here.  Further note that in a unittest,
-  // there may be no threads at all, in which case MessageLoop::current() will
-  // also be NULL and we'll go ahead and call PurgeMemory() directly, which is
-  // probably what the test wants.
-  MessageLoop* webkit_loop = ChromeThread::GetMessageLoop(ChromeThread::WEBKIT);
-  if (MessageLoop::current() == webkit_loop) {
+  // LocalStorage and it's OK to no-op here.
+  if (ChromeThread::CurrentlyOn(ChromeThread::WEBKIT)) {
     dom_storage_context_->PurgeMemory();
-  } else if (webkit_loop) {
+  } else {
     // Since we're not on the WebKit thread, proxy the call over to it.  We
     // can't post a task to call DOMStorageContext::PurgeMemory() directly
     // because that class is not refcounted.
-    webkit_loop->PostTask(FROM_HERE,
-                          NewRunnableMethod(this, &WebKitContext::PurgeMemory));
+    ChromeThread::PostTask(
+        ChromeThread::WEBKIT, FROM_HERE,
+        NewRunnableMethod(this, &WebKitContext::PurgeMemory));
   }
 }

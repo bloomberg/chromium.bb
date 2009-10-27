@@ -21,8 +21,8 @@ void FileSystemAccessor::RequestFileSize(const FilePath& path,
                                          FileSizeCallback* callback) {
   // Getting file size could take long time if it lives on a network share,
   // so run it on FILE thread.
-  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(
-      FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(new FileSystemAccessor(param, callback),
                         &FileSystemAccessor::GetFileSize, path));
 }

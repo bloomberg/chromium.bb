@@ -200,8 +200,8 @@ void SaveDictionaryTask::Run() {
   }  // Unsuccessful save is taken care of in SpellChecker::Initialize().
 
   // Set Flag that dictionary is not downloading anymore.
-  MessageLoop* ui_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
-  ui_loop->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       new UIProxyForIOTask(on_dictionary_save_complete_callback_task_, NULL));
 }
 
@@ -268,12 +268,13 @@ class ReadDictionaryTask : public Task {
     Task* task = NewRunnableMethod(spellchecker_, &SpellChecker::HunspellInited,
                                    hunspell_, bdict_file_, file_existed);
     if (spellchecker_->file_loop_) {
-      MessageLoop* ui_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
       // We were called on the file loop. Post back to the IO loop.
       // If this never gets posted to the IO loop, then we will leak |hunspell_|
       // and |bdict_file_|. But that can only happen during shutdown, so it's
       // not worth caring about.
-      ui_loop->PostTask(FROM_HERE, new UIProxyForIOTask(task, spellchecker_));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          new UIProxyForIOTask(task, spellchecker_));
     } else {
       // We were called directly (e.g., during testing). Run the task directly.
       task->Run();

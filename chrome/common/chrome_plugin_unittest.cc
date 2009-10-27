@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_plugin_host.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_plugin_lib.h"
@@ -37,7 +38,8 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
  public:
   ChromePluginTest()
-      : request_(NULL),
+      : io_thread_(ChromeThread::IO, &message_loop_),
+        request_(NULL),
         response_buffer_(new net::IOBuffer(kResponseBufferSize)),
         plugin_(NULL),
         expected_payload_(NULL),
@@ -85,6 +87,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
   }
  protected:
   MessageLoopForIO message_loop_;
+  ChromeThread io_thread_;
 
   // Note: we use URLRequest (instead of URLFetcher) because this allows the
   // request to be intercepted.

@@ -227,8 +227,7 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
     base::Time delete_end,
     MessageLoop* ui_loop) {
   // This function should be called on the IO thread.
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Get a pointer to the cache.
   net::HttpTransactionFactory* factory =

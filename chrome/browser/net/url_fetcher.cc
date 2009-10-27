@@ -65,7 +65,6 @@ class URLFetcher::Core
   RequestType request_type_;         // What type of request is this?
   URLFetcher::Delegate* delegate_;   // Object to notify on completion
   MessageLoop* delegate_loop_;       // Message loop of the creating thread
-  MessageLoop* io_loop_;             // Message loop of the IO thread
   URLRequest* request_;              // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
@@ -126,7 +125,6 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       request_type_(request_type),
       delegate_(d),
       delegate_loop_(MessageLoop::current()),
-      io_loop_(ChromeThread::GetMessageLoop(ChromeThread::IO)),
       request_(NULL),
       load_flags_(net::LOAD_NORMAL),
       response_code_(-1),
@@ -138,23 +136,24 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
 
 void URLFetcher::Core::Start() {
   DCHECK(delegate_loop_);
-  DCHECK(io_loop_);
-  DCHECK(request_context_getter_) << "We need an URLRequestContextGetter!";
-  io_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-          this, &Core::StartURLRequest),
-      protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SEND));
+  DCHECK(request_context_getter_) << "We need an URLRequestContext!";
+  ChromeThread::PostDelayedTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &Core::StartURLRequest),
+          protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SEND));
 }
 
 void URLFetcher::Core::Stop() {
   DCHECK_EQ(MessageLoop::current(), delegate_loop_);
   delegate_ = NULL;
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &Core::CancelURLRequest));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &Core::CancelURLRequest));
 }
 
 void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
   DCHECK(request == request_);
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_->status().is_success()) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
@@ -172,7 +171,7 @@ void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
 
 void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
   DCHECK(request == request_);
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   url_ = request->url();
 
@@ -195,7 +194,7 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
 }
 
 void URLFetcher::Core::StartURLRequest() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(!request_);
 
   request_ = new URLRequest(original_url_, this);
@@ -238,7 +237,7 @@ void URLFetcher::Core::StartURLRequest() {
 }
 
 void URLFetcher::Core::CancelURLRequest() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_) {
     request_->Cancel();
     delete request_;
@@ -264,8 +263,9 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
     // Restarts the request if we still need to notify the delegate.
     if (delegate_) {
       if (num_retries_ <= protect_entry_->max_retries()) {
-        io_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-            this, &Core::StartURLRequest), wait);
+        ChromeThread::PostDelayedTask(
+            ChromeThread::IO, FROM_HERE,
+            NewRunnableMethod(this, &Core::StartURLRequest), wait);
       } else {
         delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,
                                       cookies_, data_);
@@ -277,10 +277,6 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
       delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,
                                     cookies_, data_);
   }
-}
-
-void URLFetcher::set_io_loop(MessageLoop* io_loop) {
-  core_->io_loop_ = io_loop;
 }
 
 void URLFetcher::set_upload_data(const std::string& upload_content_type,

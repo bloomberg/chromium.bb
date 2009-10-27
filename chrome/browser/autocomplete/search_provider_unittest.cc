@@ -6,6 +6,7 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -31,7 +32,10 @@ class SearchProviderTest : public testing::Test,
         term1_(L"term1"),
         keyword_t_url_(NULL),
         keyword_term_(L"keyword"),
-        quit_when_done_(false) {}
+        io_thread_(ChromeThread::IO),
+        quit_when_done_(false) {
+    io_thread_.Start();
+  }
 
   // See description above class for what this registers.
   virtual void SetUp();
@@ -62,10 +66,11 @@ class SearchProviderTest : public testing::Test,
   const std::wstring keyword_term_;
   GURL keyword_url_;
 
+  MessageLoopForUI message_loop_;
+  ChromeThread io_thread_;
+
   // URLFetcher::Factory implementation registered.
   TestURLFetcherFactory test_factory_;
-
-  MessageLoopForUI message_loop_;
 
   // Profile we use.
   TestingProfile profile_;

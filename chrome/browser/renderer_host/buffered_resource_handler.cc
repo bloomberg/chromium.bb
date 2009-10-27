@@ -402,7 +402,8 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   // file thread.  This breaks assumptions in other message handlers (i.e. when
   // unregistering with NotificationService in the destructor).
   AddRef();
-  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(&BufferedResourceHandler::LoadPlugins,
           this, host_->ui_loop()));
   return true;

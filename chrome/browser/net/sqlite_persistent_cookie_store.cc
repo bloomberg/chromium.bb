@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 using base::Time;
@@ -25,9 +26,8 @@ class SQLitePersistentCookieStore::Backend
  public:
   // The passed database pointer must be already-initialized. This object will
   // take ownership.
-  explicit Backend(sql::Connection* db, MessageLoop* loop)
+  explicit Backend(sql::Connection* db)
       : db_(db),
-        background_loop_(loop),
         num_pending_(0) {
     DCHECK(db_) << "Database must exist.";
   }
@@ -87,7 +87,6 @@ class SQLitePersistentCookieStore::Backend
   void InternalBackgroundClose();
 
   sql::Connection* db_;
-  MessageLoop* background_loop_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
@@ -121,7 +120,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
-  DCHECK(MessageLoop::current() != background_loop_);
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
 
   // We do a full copy of the cookie here, and hopefully just here.
   scoped_ptr<PendingOperation> po(new PendingOperation(op, key, cc));
@@ -134,20 +133,20 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
     num_pending = ++num_pending_;
   }
 
-  // TODO(abarth): What if the DB thread is being destroyed on the UI thread?
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
-    background_loop_->PostDelayedTask(FROM_HERE,
+    ChromeThread::PostDelayedTask(
+        ChromeThread::DB, FROM_HERE,
         NewRunnableMethod(this, &Backend::Commit), kCommitIntervalMs);
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
-    background_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &Backend::Commit));
+    ChromeThread::PostTask(
+        ChromeThread::DB, FROM_HERE, NewRunnableMethod(this, &Backend::Commit));
   }
 }
 
 void SQLitePersistentCookieStore::Backend::Commit() {
-  DCHECK(MessageLoop::current() == background_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   PendingOperationsList ops;
   {
     AutoLock locked(pending_lock_);
@@ -236,15 +235,15 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
-  DCHECK(MessageLoop::current() != background_loop_);
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
   // Must close the backend on the background thread.
-  // TODO(abarth): What if the DB thread is being destroyed on the UI thread?
-  background_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::DB, FROM_HERE,
       NewRunnableMethod(this, &Backend::InternalBackgroundClose));
 }
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
-  DCHECK(MessageLoop::current() == background_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // Commit any pending operations
   Commit();
 
@@ -252,12 +251,8 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   db_ = NULL;
 }
 
-SQLitePersistentCookieStore::SQLitePersistentCookieStore(
-    const FilePath& path,
-    MessageLoop* background_loop)
-    : path_(path),
-      background_loop_(background_loop) {
-  DCHECK(background_loop) << "SQLitePersistentCookieStore needs a MessageLoop";
+SQLitePersistentCookieStore::SQLitePersistentCookieStore(const FilePath& path)
+    : path_(path) {
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
@@ -353,7 +348,7 @@ bool SQLitePersistentCookieStore::Load(
   }
 
   // Create the backend, this will take ownership of the db pointer.
-  backend_ = new Backend(db.release(), background_loop_);
+  backend_ = new Backend(db.release());
   return true;
 }
 

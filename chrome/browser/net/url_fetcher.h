@@ -48,10 +48,6 @@ class HttpResponseHeaders;
 // You may create the URLFetcher instance on any thread; OnURLFetchComplete()
 // will be called back on the same thread you use to create the instance.
 //
-// NOTE: Take extra care when using URLFetcher in services that live on the
-//       BrowserProcess; all URLFetcher instances need to be destroyed before
-//       the IO thread goes away, since the URLFetcher destructor requests an
-//       InvokeLater operation on that thread.
 //
 // NOTE: By default URLFetcher requests are NOT intercepted, except when
 // interception is explicitly enabled in tests.
@@ -116,13 +112,6 @@ class URLFetcher {
   static URLFetcher* Create(int id, const GURL& url, RequestType request_type,
                             Delegate* d);
 
-  // This should only be used by unittests, where g_browser_process->io_thread()
-  // does not exist and we must specify an alternate loop.  Unfortunately, we
-  // can't put it under #ifdef UNIT_TEST since some callers (which themselves
-  // should only be reached in unit tests) use this.  See
-  // chrome/browser/feeds/feed_manager.cc.
-  void set_io_loop(MessageLoop* io_loop);
-
   // Sets data only needed by POSTs.  All callers making POST requests should
   // call this before the request is started.  |upload_content_type| is the MIME
   // type of the content, while |upload_content| is the data to be sent (the
@@ -161,14 +150,6 @@ class URLFetcher {
   Delegate* delegate() const;
 
  private:
-  // This class is the real guts of URLFetcher.
-  //
-  // When created, delegate_loop_ is set to the message loop of the current
-  // thread, while io_loop_ is set to the message loop of the IO thread.  These
-  // are used to ensure that all handling of URLRequests happens on the IO
-  // thread (since that class is not currently threadsafe and relies on
-  // underlying Microsoft APIs that we don't know to be threadsafe), while
-  // keeping the delegate callback on the delegate's thread.
   class Core;
 
   scoped_refptr<Core> core_;

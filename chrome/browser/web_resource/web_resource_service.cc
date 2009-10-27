@@ -115,7 +115,8 @@ class WebResourceService::UnpackerClient
 #endif
 
     if (use_utility_process) {
-      ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
                             web_resource_service_->resource_dispatcher_host_,
                             MessageLoop::current()));

@@ -550,7 +550,8 @@ void ResourceMessageFilter::OnGetPlugins(bool refresh,
   // file thread.  We need this object to be destructed on the IO thread, so do
   // the refcounting manually.
   AddRef();
-  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(&ResourceMessageFilter::OnGetPluginsOnFileThread,
           this, refresh, reply_msg));
 }
@@ -561,20 +562,9 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
     IPC::Message* reply_msg) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
-
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  // Note, we want to get to the IO thread now, but the file thread outlives it
-  // so we can't post a task to it directly as it might be in the middle of
-  // destruction.  So hop through the main thread, where the destruction of the
-  // IO thread happens and hence no race conditions exist.
-  filter->ui_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&ResourceMessageFilter::OnNotifyPluginsLoaded,
-          filter, reply_msg));
-}
-
-void ResourceMessageFilter::OnNotifyPluginsLoaded(ResourceMessageFilter* filter,
-                                                  IPC::Message* reply_msg) {
-  ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(filter, &ResourceMessageFilter::OnPluginsLoaded,
           reply_msg));
 }

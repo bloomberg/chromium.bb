@@ -49,8 +49,7 @@ void MemoryDetails::StartFetch() {
 }
 
 void MemoryDetails::CollectChildInfoOnIOThread() {
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   std::vector<ProcessMemoryInformation> child_info;
 
@@ -67,7 +66,8 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   }
 
   // Now go do expensive memory lookups from the file thread.
-  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectProcessData, child_info));
 }
 

@@ -735,13 +735,10 @@ CPError STDCALL CPB_SendSyncMessage(CPID id, const void *data, uint32 data_len,
 CPError STDCALL CPB_PluginThreadAsyncCall(CPID id,
                                           void (*func)(void *),
                                           void *user_data) {
-  MessageLoop *message_loop = ChromeThread::GetMessageLoop(ChromeThread::IO);
-  if (!message_loop) {
-    return CPERR_FAILURE;
-  }
-  message_loop->PostTask(FROM_HERE, NewRunnableFunction(func, user_data));
-
-  return CPERR_SUCCESS;
+  bool posted = ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(func, user_data));
+  return posted ? CPERR_SUCCESS : CPERR_FAILURE;
 }
 
 CPError STDCALL CPB_OpenFileDialog(CPID id,

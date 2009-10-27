@@ -73,8 +73,10 @@ void SandboxedExtensionUnpacker::Start() {
 #endif
 
   if (use_utility_process) {
-    ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this,
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,
             temp_crx_path));
   } else {

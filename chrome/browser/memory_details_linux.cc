@@ -187,8 +187,7 @@ static void GetAllChildren(const std::vector<Process>& processes,
 
 void MemoryDetails::CollectProcessData(
     std::vector<ProcessMemoryInformation> child_info) {
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::FILE));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   std::vector<Process> processes;
   GetProcesses(&processes);

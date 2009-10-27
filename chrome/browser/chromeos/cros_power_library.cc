@@ -86,10 +86,9 @@ void CrosPowerLibrary::Init() {
 void CrosPowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
-    if (loop)
-      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CrosPowerLibrary::UpdatePowerStatus, status));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &CrosPowerLibrary::UpdatePowerStatus, status));
     return;
   }
 

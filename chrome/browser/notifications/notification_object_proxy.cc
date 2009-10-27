@@ -51,11 +51,9 @@ void NotificationObjectProxy::Close(bool by_user) {
 
 void NotificationObjectProxy::DeliverMessage(IPC::Message* message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  MessageLoop* io_loop = ChromeThread::GetMessageLoop(ChromeThread::IO);
-  if (io_loop) {
-    io_loop->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &NotificationObjectProxy::Send, message));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &NotificationObjectProxy::Send, message));
 }
 
 // Deferred method which runs on the IO thread and sends a message to the

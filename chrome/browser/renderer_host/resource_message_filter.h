@@ -143,8 +143,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   static void OnGetPluginsOnFileThread(ResourceMessageFilter* filter,
                                        bool refresh,
                                        IPC::Message* reply_msg);
-  static void OnNotifyPluginsLoaded(ResourceMessageFilter* filter,
-                                    IPC::Message* reply_msg);
   void OnPluginsLoaded(IPC::Message* reply_msg);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,

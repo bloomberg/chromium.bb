@@ -137,11 +137,11 @@ void CrosNetworkLibrary::UpdateNetworkStatus(
     const WifiNetworkVector& networks, bool ethernet_connected) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
-    if (loop)
-      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CrosNetworkLibrary::UpdateNetworkStatus, networks,
-          ethernet_connected));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &CrosNetworkLibrary::UpdateNetworkStatus, networks,
+            ethernet_connected));
     return;
   }
 

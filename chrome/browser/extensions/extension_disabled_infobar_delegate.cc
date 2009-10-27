@@ -33,7 +33,8 @@ class ExtensionDisabledDialogDelegate
     install_icon_resource_ =
         extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
 
-    ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &ExtensionDisabledDialogDelegate::Start));
   }
 

@@ -10,39 +10,24 @@
 #include "webkit/api/public/WebKit.h"
 
 // This happens on the UI thread before the IO thread has been shut down.
-WebKitThread::WebKitThread()
-    : io_message_loop_(ChromeThread::GetMessageLoop(ChromeThread::IO)) {
+WebKitThread::WebKitThread() {
   // The thread is started lazily by InitializeThread() on the IO thread.
 }
 
 // This happens on the UI thread after the IO thread has been shut down.
 WebKitThread::~WebKitThread() {
-  // There's no good way to see if we're on the UI thread.
+  // We can't just check CurrentlyOn(ChromeThread::UI) because in unit tests,
+  // MessageLoop::Current is sometimes NULL and other times valid and there's
+  // no ChromeThread object.  Can't check that CurrentlyOn is not IO since
+  // some unit tests set that ChromeThread for other checks.
   DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(!io_message_loop_);
 }
 
-void WebKitThread::Shutdown() {
+void WebKitThread::EnsureInitialized() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(io_message_loop_);
-
-  AutoLock lock(io_message_loop_lock_);
-  io_message_loop_ = NULL;
-}
-
-bool WebKitThread::PostIOThreadTask(
-    const tracked_objects::Location& from_here, Task* task) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  {
-    AutoLock lock(io_message_loop_lock_);
-    if (io_message_loop_) {
-      io_message_loop_->PostTask(from_here, task);
-      return true;
-    }
-  }
-  delete task;
-  return false;
+  if (webkit_thread_.get())
+    return;
+  InitializeThread();
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
@@ -69,7 +54,6 @@ MessageLoop* WebKitThread::InitializeThread() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return NULL;
 
-  DCHECK(io_message_loop_);
   DCHECK(!webkit_thread_.get());
   webkit_thread_.reset(new InternalWebKitThread);
   bool started = webkit_thread_->Start();

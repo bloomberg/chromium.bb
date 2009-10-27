@@ -7,12 +7,14 @@
 
 #include "base/process.h"
 #include "base/ref_counted.h"
+#include "base/tracked.h"
 #include "chrome/browser/in_process_webkit/storage_area.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_type.h"
 #include "ipc/ipc_message.h"
 
 class DOMStorageContext;
+class Task;
 class WebKitThread;
 
 // This class handles the logistics of DOM Storage within the browser process.
@@ -69,9 +71,12 @@ class DOMStorageDispatcherHost :
 
   // A shortcut for accessing our context.
   DOMStorageContext* Context() {
-    DCHECK(!shutdown_);
     return webkit_context_->dom_storage_context();
   }
+
+  // Posts a task to the WebKit thread, initializing it if necessary.
+  void PostTaskToWebKitThread(
+      const tracked_objects::Location& from_here, Task* task);
 
   // Use whenever there's a chance OnStorageEvent will be called.
   class AutoSetCurrentDispatcherHost {
@@ -95,16 +100,6 @@ class DOMStorageDispatcherHost :
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.
   base::ProcessHandle process_handle_;
-
-  // Has this dispatcher ever handled a message.  If not, then we can skip
-  // the entire shutdown procedure.  This is only set to true on the IO thread
-  // and must be true if we're reading it on the WebKit thread.
-  bool ever_used_;
-
-  // This is set once the Shutdown routine runs on the WebKit thread.  Once
-  // set, we should not process any more messages because storage_area_map_
-  // and storage_namespace_map_ contain pointers to deleted objects.
-  bool shutdown_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageDispatcherHost);
 };

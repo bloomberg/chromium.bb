@@ -10,13 +10,7 @@
 #include "chrome/common/notification_service.h"
 
 CPBrowsingContextManager* CPBrowsingContextManager::Instance() {
-#ifndef NDEBUG
-  // IO loop is NULL in unit tests.
-  if (ChromeThread::GetMessageLoop(ChromeThread::IO)) {
-    DCHECK(MessageLoop::current() ==
-           ChromeThread::GetMessageLoop(ChromeThread::IO));
-  }
-#endif
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   return Singleton<CPBrowsingContextManager>::get();
 }
 

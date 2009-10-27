@@ -27,8 +27,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
 
   PackExtensionJob(Client* client,
                    const FilePath& root_directory,
-                   const FilePath& key_file,
-                   MessageLoop* file_loop);
+                   const FilePath& key_file);
 
   // The client should call this when it is destroyed to prevent
   // PackExtensionJob from attempting to access it.
@@ -40,7 +39,6 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ReportFailureOnUIThread(const std::string& error);
 
   MessageLoop* ui_loop_;
-  MessageLoop* file_loop_;
   Client* client_;
   FilePath root_directory_;
   FilePath key_file_;

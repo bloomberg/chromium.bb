@@ -474,8 +474,7 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
 
 // Helper for SetIPCLoggingEnabled.
 void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   ChildProcessHost::Iterator i;  // default constr references a singleton
   while (!i.Done()) {

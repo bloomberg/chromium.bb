@@ -164,11 +164,10 @@ void SIGTERMHandler(int signal) {
   DCHECK_EQ(signal, SIGTERM);
   LOG(WARNING) << "Addressing SIGTERM on " << PlatformThread::CurrentId();
 
-  MessageLoop* main_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
-  if (main_loop) {
-    // Post the exit task to the main thread.
-    main_loop->PostTask(
-        FROM_HERE, NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
+  bool posted = ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
+  if (posted) {
     LOG(WARNING) << "Posted task to UI thread; resetting SIGTERM handler";
   }
 
@@ -178,7 +177,7 @@ void SIGTERMHandler(int signal) {
   term_action.sa_handler = SIG_DFL;
   CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
 
-  if (!main_loop) {
+  if (!posted) {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up
     // and cause an ungraceful exit.
@@ -331,7 +330,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   main_message_loop.set_thread_name(thread_name);
 
   // Register the main thread by instantiating it, but don't call any methods.
-  ChromeThread main_thread;
+  ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
 
   FilePath user_data_dir;
 #if defined(OS_WIN)
@@ -410,6 +409,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
+
+  // Start the database thread (the order of when this happens in this function
+  // doesn't matter, all we need is to kick it off).
+  browser_process->db_thread();
 
 #if defined(TOOLKIT_GTK)
   // It is important for this to happen before the first run dialog, as it

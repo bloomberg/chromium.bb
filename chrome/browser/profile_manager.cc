@@ -236,8 +236,7 @@ void ProfileManager::OnResume() {
 
 void ProfileManager::SuspendProfile(Profile* profile) {
   DCHECK(profile);
-  DCHECK(MessageLoop::current() ==
-    ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
        i != g_url_request_job_tracker.end(); ++i)
@@ -249,13 +248,10 @@ void ProfileManager::SuspendProfile(Profile* profile) {
 
 void ProfileManager::ResumeProfile(Profile* profile) {
   DCHECK(profile);
-  DCHECK(MessageLoop::current() ==
-    ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   profile->GetRequestContext()->GetURLRequestContext()->
       http_transaction_factory()->Suspend(false);
 }
-
-
 
 // static
 bool ProfileManager::IsProfile(const FilePath& path) {

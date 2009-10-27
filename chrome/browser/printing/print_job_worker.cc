@@ -77,10 +77,11 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
 
   if (ask_user_for_settings) {
 #if defined(OS_MACOSX)
-    ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
-                                     parent_window, document_page_count,
-                                     has_selection));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
+                          parent_window, document_page_count,
+                          has_selection));
 #else
     PrintingContext::Result result = printing_context_.AskUserForSettings(
         parent_window, document_page_count, has_selection);
@@ -111,8 +112,7 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
 void PrintJobWorker::GetSettingsWithUI(gfx::NativeWindow parent_window,
                                        int document_page_count,
                                        bool has_selection) {
-  DCHECK_EQ(ChromeThread::GetMessageLoop(ChromeThread::UI),
-            MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   PrintingContext::Result result = printing_context_.AskUserForSettings(
       parent_window, document_page_count, has_selection);

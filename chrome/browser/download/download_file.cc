@@ -254,8 +254,10 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
     // about this download so we have to clean up 'info'. We need to get back
     // to the IO thread to cancel the network request and CancelDownloadRequest
     // on the UI thread is the safe way to do that.
-    ui_loop_->PostTask(FROM_HERE,
-        NewRunnableFunction(&DownloadManager::CancelDownloadRequest,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+                            resource_dispatcher_host_,
                             info->child_id,
                             info->request_id));
     delete info;
@@ -385,7 +387,12 @@ void DownloadFileManager::OnStartDownload(DownloadCreateInfo* info) {
   DownloadManager* manager = DownloadManagerFromRenderIds(info->child_id,
                                                           info->render_view_id);
   if (!manager) {
-    DownloadManager::CancelDownloadRequest(info->child_id, info->request_id);
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+                            resource_dispatcher_host_,
+                            info->child_id,
+                            info->request_id));
     delete info;
     return;
   }
@@ -607,8 +614,10 @@ void DownloadFileManager::OnFinalDownloadName(int id,
                             &DownloadManager::DownloadCancelled,
                             id));
     } else {
-      ui_loop_->PostTask(FROM_HERE,
-          NewRunnableFunction(&DownloadManager::CancelDownloadRequest,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+                              resource_dispatcher_host_,
                               download->child_id(),
                               download->request_id()));
     }

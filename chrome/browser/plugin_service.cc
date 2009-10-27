@@ -104,8 +104,7 @@ const std::wstring& PluginService::GetUILocale() {
 
 PluginProcessHost* PluginService::FindPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   if (plugin_path.value().empty()) {
     NOTREACHED() << "should only be called if we have a plugin to load";
@@ -124,8 +123,7 @@ PluginProcessHost* PluginService::FindPluginProcess(
 
 PluginProcessHost* PluginService::FindOrStartPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   PluginProcessHost *plugin_host = FindPluginProcess(plugin_path);
   if (plugin_host)
@@ -155,8 +153,7 @@ void PluginService::OpenChannelToPlugin(
     const std::string& mime_type,
     const std::wstring& locale,
     IPC::Message* reply_msg) {
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // We don't need a policy URL here because that was already checked by a
   // previous call to GetPluginPath.
   GURL policy_url;

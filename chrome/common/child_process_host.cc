@@ -242,8 +242,7 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
 
 ChildProcessHost::Iterator::Iterator()
     : all_(true), type_(UNKNOWN_PROCESS) {
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::IO)) <<
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
 }
@@ -251,9 +250,8 @@ ChildProcessHost::Iterator::Iterator()
 ChildProcessHost::Iterator::Iterator(ProcessType type)
     : all_(false), type_(type) {
   // IO loop can be NULL in unit tests.
-  DCHECK(!ChromeThread::GetMessageLoop(ChromeThread::IO) ||
-         MessageLoop::current() ==
-             ChromeThread::GetMessageLoop(ChromeThread::IO)) <<
+  DCHECK(!MessageLoop::current() ||
+         ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
   if (!Done() && (*iterator_)->type() != type_)

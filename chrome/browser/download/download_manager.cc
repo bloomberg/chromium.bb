@@ -931,26 +931,10 @@ void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
 }
 
 // static
-// We have to tell the ResourceDispatcherHost to cancel the download from this
-// thread, since we can't forward tasks from the file thread to the IO thread
-// reliably (crash on shutdown race condition).
-void DownloadManager::CancelDownloadRequest(int render_process_id,
-                                            int request_id) {
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (!io_thread || !rdh)
-    return;
-  io_thread->message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
-                          rdh,
-                          render_process_id,
-                          request_id));
-}
-
-// static
 void DownloadManager::OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
                                               int render_process_id,
                                               int request_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   rdh->CancelRequest(render_process_id, request_id, false);
 }
 
@@ -975,8 +959,13 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
 void DownloadManager::DownloadCancelledInternal(int download_id,
                                                 int render_process_id,
                                                 int request_id) {
-  // Cancel the network request.
-  CancelDownloadRequest(render_process_id, request_id);
+  // Cancel the network request.  RDH is guaranteed to outlive the IO thread.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+                          g_browser_process->resource_dispatcher_host(),
+                          render_process_id,
+                          request_id));
 
   // Tell the file manager to cancel the download.
   file_manager_->RemoveDownload(download_id, this);  // On the UI thread
@@ -988,24 +977,21 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
 
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   DownloadMap::iterator it = in_progress_.find(download_id);
-  if (it != in_progress_.end()) {
-    DownloadItem* download = it->second;
-    if (pause == download->is_paused())
-      return;
+  if (it == in_progress_.end())
+    return;
 
-    // Inform the ResourceDispatcherHost of the new pause state.
-    base::Thread* io_thread = g_browser_process->io_thread();
-    ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-    if (!io_thread || !rdh)
-      return;
+  DownloadItem* download = it->second;
+  if (pause == download->is_paused())
+    return;
 
-    io_thread->message_loop()->PostTask(FROM_HERE,
-        NewRunnableFunction(&DownloadManager::OnPauseDownloadRequest,
-                            rdh,
-                            download->render_process_id(),
-                            download->request_id(),
-                            pause));
-  }
+  // Inform the ResourceDispatcherHost of the new pause state.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&DownloadManager::OnPauseDownloadRequest,
+                          g_browser_process->resource_dispatcher_host(),
+                          download->render_process_id(),
+                          download->request_id(),
+                          pause));
 }
 
 // static

@@ -210,8 +210,7 @@ void UserDataManager::LaunchChromeForProfile(int index) const {
 
 void UserDataManager::GetProfiles(std::vector<std::wstring>* profiles) const {
   // This function should be called on the file thread.
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::FILE));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   file_util::FileEnumerator file_enum(
       FilePath::FromWStringHack(user_data_root_),
       false, file_util::FileEnumerator::DIRECTORIES);
@@ -281,9 +280,8 @@ void GetProfilesHelper::GetProfiles(MessageLoop* target_loop) {
     message_loop_ = MessageLoop::current();
   }
   DCHECK(message_loop_);
-  MessageLoop* file_loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
-  file_loop->PostTask(
-      FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &GetProfilesHelper::GetProfilesFromManager));
 }
 
@@ -294,8 +292,7 @@ void GetProfilesHelper::OnDelegateDeleted() {
 
 void GetProfilesHelper::GetProfilesFromManager() {
   // This function should be called on the file thread.
-  DCHECK(MessageLoop::current() ==
-      ChromeThread::GetMessageLoop(ChromeThread::FILE));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   // If the delegate is gone by now, no need to do any work.
   if (!delegate_)

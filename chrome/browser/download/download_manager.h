@@ -349,11 +349,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void UpdateDownload(int32 download_id, int64 size);
   void DownloadFinished(int32 download_id, int64 size);
 
-  // Helper method for cancelling the network request associated with a
-  // download.
-  static void CancelDownloadRequest(int render_process_id, int request_id);
-
-  // Called from a view when a user clicks a UI button or link.
+ // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
   void PauseDownload(int32 download_id, bool pause);
   void RemoveDownload(int64 download_handle);
@@ -461,6 +457,11 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   static bool IsExtensionInstall(const DownloadItem* item);
   static bool IsExtensionInstall(const DownloadCreateInfo* info);
 
+  // Runs the network cancel.  Must be called on the IO thread.
+  static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
+                                      int render_process_id,
+                                      int request_id);
+
  private:
   // Opens a download via the Windows shell.
   void OpenDownloadInShell(const DownloadItem* download,
@@ -509,11 +510,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void DownloadCancelledInternal(int download_id,
                                  int render_process_id,
                                  int request_id);
-
-  // Runs the network cancel on the IO thread.
-  static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
-                                      int render_process_id,
-                                      int request_id);
 
   // Runs the pause on the IO thread.
   static void OnPauseDownloadRequest(ResourceDispatcherHost* rdh,

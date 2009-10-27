@@ -10,7 +10,6 @@
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -265,8 +264,7 @@ void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
     return;
   }
 
-  pack_job_ = new PackExtensionJob(this, root_directory, key_file,
-      ChromeThread::GetMessageLoop(ChromeThread::FILE));
+  pack_job_ = new PackExtensionJob(this, root_directory, key_file);
 }
 
 void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,

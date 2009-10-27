@@ -7,6 +7,7 @@
 
 #include "base/message_loop.h"
 #include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_paths.h"
@@ -41,9 +42,9 @@ class MockUserScriptMaster : public UserScriptMaster {
   }
 };
 
-class MockIOThread : public base::Thread {
+class MockIOThread : public ChromeThread {
  public:
-  MockIOThread() : base::Thread("IO") {}
+  MockIOThread() : ChromeThread(ChromeThread::IO) {}
   virtual ~MockIOThread() { Stop(); }
 
  private:

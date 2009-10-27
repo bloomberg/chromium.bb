@@ -18,31 +18,16 @@ class BrowserWebKitClientImpl;
 // process.  It should be instantiated and destroyed on the UI thread
 // before/after the IO thread is created/destroyed.  All other usage should be
 // on the IO thread.  If the browser is being run in --single-process mode, a
-// thread will never be spun up, and GetMessageLoop() will always return NULL.
+// thread will never be spun up.
 class WebKitThread {
  public:
   // Called from the UI thread.
   WebKitThread();
   ~WebKitThread();
 
-  // Returns the message loop for the WebKit thread unless we're in
-  // --single-processuntil mode, in which case it'll return NULL.  Only call
+  // Creates the WebKit thread if it hasn't been already created.  Only call
   // from the IO thread.  Only do fast-path work here.
-  MessageLoop* GetMessageLoop() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-    if (!webkit_thread_.get())
-      return InitializeThread();
-    return webkit_thread_->message_loop();
-  }
-
-  // Called from the IO thread.  Notifies us that it's no longer safe to post
-  // tasks to the IO thread.
-  void Shutdown();
-
-  // Post a task to the IO thread if we haven't yet been told to shut down.
-  // Only call from the WebKit thread.
-  bool PostIOThreadTask(const tracked_objects::Location& from_here,
-                        Task* task);
+  void EnsureInitialized();
 
  private:
   // Must be private so that we can carefully control its lifetime.
@@ -67,11 +52,6 @@ class WebKitThread {
   // Pointer to the actual WebKitThread.  NULL if not yet started.  Only modify
   // from the IO thread while the WebKit thread is not running.
   scoped_ptr<InternalWebKitThread> webkit_thread_;
-
-  // A pointer to the IO message loop.  This is nulled out when Shutdown() is
-  // called.  Only access under the io_message_loop_lock_.
-  MessageLoop* io_message_loop_;
-  Lock io_message_loop_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitThread);
 };

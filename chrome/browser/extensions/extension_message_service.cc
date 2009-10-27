@@ -198,8 +198,7 @@ int ExtensionMessageService::OpenChannelToExtension(
     int routing_id, const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name, ResourceMessageFilter* source) {
-  DCHECK_EQ(MessageLoop::current(),
-            ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Create a channel ID for both sides of the channel.
   int port1_id = -1;
@@ -222,8 +221,7 @@ int ExtensionMessageService::OpenChannelToTab(int routing_id,
                                               const std::string& extension_id,
                                               const std::string& channel_name,
                                               ResourceMessageFilter* source) {
-  DCHECK_EQ(MessageLoop::current(),
-            ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Create a channel ID for both sides of the channel.
   int port1_id = -1;

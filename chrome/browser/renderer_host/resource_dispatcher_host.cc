@@ -322,9 +322,6 @@ void ResourceDispatcherHost::OnShutdown() {
   // runs if the timer is still running the Task is deleted twice (once by
   // the MessageLoop and the second time by RepeatingTimer).
   update_load_states_timer_.Stop();
-  // Let the WebKit thread know the IO thread is going away soon and that it
-  // should prepare for its own shutdown soon after.
-  webkit_thread_->Shutdown();
 }
 
 bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,

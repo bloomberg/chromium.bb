@@ -97,7 +97,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
   };
 
-  HttpBridge(RequestContextGetter* context, MessageLoop* io_loop);
+  HttpBridge(RequestContextGetter* context);
   virtual ~HttpBridge();
 
   // sync_api::HttpPostProvider implementation.
@@ -135,7 +135,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
  private:
   friend class ::HttpBridgeTest;
 
-  // Called on the io_loop_ to issue the network request. The extra level
+  // Called on the IO loop to issue the network request. The extra level
   // of indirection is so that the unit test can override this behavior but we
   // still have a function to statically pass to PostTask.
   void CallMakeAsynchronousPost() { MakeAsynchronousPost(); }
@@ -148,7 +148,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // so we can block created_on_loop_ while the fetch is in progress.
   // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the same
   // thread that created it, which isn't the same thread |this| gets deleted on.
-  // We must manually delete url_poster_ on the io_loop_.
+  // We must manually delete url_poster_ on the IO loop.
   URLFetcher* url_poster_;
 
   // The message loop of the thread we were created on. This is the thread that
@@ -157,10 +157,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // This should be the main syncer thread (SyncerThread) which is what blocks
   // on network IO through curl_easy_perform.
   MessageLoop* const created_on_loop_;
-
-  // Member variable for the IO loop instead of asking ChromeThread directly,
-  // done this way for testability.
-  MessageLoop* const io_loop_;
 
   // The URL to POST to.
   GURL url_for_request_;
@@ -178,14 +174,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   std::string response_content_;
 
   // A waitable event we use to provide blocking semantics to
-  // MakeSynchronousPost. We block created_on_loop_ while the io_loop_ fetches
+  // MakeSynchronousPost. We block created_on_loop_ while the IO loop fetches
   // network request.
   base::WaitableEvent http_post_completed_;
-
-  // This is here so that the unit test subclass can force our URLFetcher to
-  // use the io_loop_ passed on construction for network requests, rather than
-  // ChromeThread::IO's message loop (which won't exist in testing).
-  bool use_io_loop_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };

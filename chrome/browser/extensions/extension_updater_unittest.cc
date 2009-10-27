@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
@@ -234,9 +235,12 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_extensions(tmp);
 
     // Setup and start the updater.
+    MessageLoop message_loop;
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
+
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
-    MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
@@ -277,9 +281,12 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForManifestTests service;
 
     // Setup and start the updater.
+    MessageLoop message_loop;
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
+
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
-    MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
@@ -349,15 +356,16 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   static void TestMultipleManifestDownloading() {
+    MessageLoop ui_loop;
+    ChromeThread file_thread(ChromeThread::FILE);
+    file_thread.Start();
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
+
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
-    MessageLoop ui_loop;
-    base::Thread file_thread("File Thread");
-    ASSERT_TRUE(file_thread.Start());
-    base::Thread io_thread("IO Thread");
-    ASSERT_TRUE(io_thread.Start());
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
@@ -410,8 +418,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestSingleExtensionDownloading() {
     MessageLoop ui_loop;
-    base::Thread file_thread("File Thread");
-    ASSERT_TRUE(file_thread.Start());
+    ChromeThread file_thread(ChromeThread::FILE);
+    file_thread.Start();
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
@@ -457,6 +467,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestBlacklistDownloading() {
     MessageLoop message_loop;
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
+
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
@@ -501,6 +514,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleExtensionDownloading() {
     MessageLoopForUI message_loop;
+    ChromeThread io_thread(ChromeThread::IO);
+    io_thread.Start();
+
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);

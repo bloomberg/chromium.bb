@@ -338,11 +338,11 @@ PluginProcessHost::~PluginProcessHost() {
   for (window_index = plugin_fullscreen_windows_set_.begin();
        window_index != plugin_fullscreen_windows_set_.end();
        window_index++) {
-    if (MessageLoop::current() ==
-        ChromeThread::GetMessageLoop(ChromeThread::UI)) {
+    if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
       mac_util::ReleaseFullScreen();
     } else {
-      ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
           NewRunnableFunction(mac_util::ReleaseFullScreen));
     }
   }
@@ -670,8 +670,7 @@ void PluginProcessHost::OnGetPluginFinderUrl(std::string* plugin_finder_url) {
 
 void PluginProcessHost::OnPluginMessage(
     const std::vector<uint8>& data) {
-  DCHECK(MessageLoop::current() ==
-         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   ChromePluginLib *chrome_plugin = ChromePluginLib::Find(info_.path);
   if (chrome_plugin) {

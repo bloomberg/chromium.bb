@@ -18,7 +18,6 @@ class FileSystemAccessorTest : public testing::Test {
 
     // Create FILE thread which is used to do file access.
     file_thread_.reset(new ChromeThread(ChromeThread::FILE));
-    EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
 
     // Start FILE thread and verify FILE message loop exists.
     file_thread_->Start();
@@ -27,7 +26,6 @@ class FileSystemAccessorTest : public testing::Test {
 
   virtual void TearDown() {
     file_thread_->Stop();
-    EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
   }
 
   void TestGetFileSize(const FilePath& path,

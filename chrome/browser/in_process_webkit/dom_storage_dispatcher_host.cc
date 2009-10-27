@@ -36,16 +36,13 @@ DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     : webkit_context_(webkit_context),
       webkit_thread_(webkit_thread),
       message_sender_(message_sender),
-      process_handle_(0),
-      ever_used_(false),
-      shutdown_(false) {
+      process_handle_(0) {
   DCHECK(webkit_context_.get());
   DCHECK(webkit_thread_);
   DCHECK(message_sender_);
 }
 
 DOMStorageDispatcherHost::~DOMStorageDispatcherHost() {
-  DCHECK(shutdown_);
 }
 
 void DOMStorageDispatcherHost::Init(base::ProcessHandle process_handle) {
@@ -62,23 +59,16 @@ void DOMStorageDispatcherHost::Shutdown() {
     if (process_handle_)  // Init() was called
       Context()->UnregisterDispatcherHost(this);
     message_sender_ = NULL;
-    if (!ever_used_) {
-      // No need to (possibly) spin up the WebKit thread for a no-op.
-      shutdown_ = true;
-      return;
-    }
 
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::Shutdown));
+    // The task will only execute if the WebKit thread is already running.
+    ChromeThread::PostTask(
+        ChromeThread::WEBKIT, FROM_HERE,
+        NewRunnableMethod(this, &DOMStorageDispatcherHost::Shutdown));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(ever_used_);
   DCHECK(!message_sender_);
-  DCHECK(!shutdown_);
-  shutdown_ = true;
 
   // TODO(jorlow): Do stuff that needs to be run on the WebKit thread.  Locks
   //               and others will likely need this, so let's not delete this
@@ -91,15 +81,16 @@ void DOMStorageDispatcherHost::DispatchStorageEvent(const string16& key,
     const string16& origin, bool is_local_storage) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DCHECK(current_);
-  current_->webkit_thread_->PostIOThreadTask(FROM_HERE, NewRunnableMethod(
-        current_, &DOMStorageDispatcherHost::OnStorageEvent, key, old_value,
-        new_value, origin, is_local_storage));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          current_, &DOMStorageDispatcherHost::OnStorageEvent, key, old_value,
+          new_value, origin, is_local_storage));
 }
 
 bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                  bool *msg_is_ok) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(!shutdown_);
   DCHECK(process_handle_);
 
   bool handled = true;
@@ -118,13 +109,10 @@ bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageClear, OnClear)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  if (handled)
-    ever_used_ = true;
   return handled;
 }
 
 void DOMStorageDispatcherHost::Send(IPC::Message* message) {
-  DCHECK(!shutdown_);
   if (!message_sender_) {
     delete message;
     return;
@@ -137,16 +125,15 @@ void DOMStorageDispatcherHost::Send(IPC::Message* message) {
 
   // The IO thread can't go away while the WebKit thread is still running.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  webkit_thread_->PostIOThreadTask(FROM_HERE, NewRunnableMethod(this,
-      &DOMStorageDispatcherHost::Send, message));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &DOMStorageDispatcherHost::Send, message));
 }
 
 void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
                                              IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnNamespaceId,
         storage_type, reply_msg));
     return;
@@ -165,10 +152,8 @@ void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
 
 void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
                                                   IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnCloneNamespaceId,
         namespace_id, reply_msg));
     return;
@@ -192,10 +177,8 @@ void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
                                                const string16& origin,
                                                IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnStorageAreaId,
         namespace_id, origin, reply_msg));
     return;
@@ -218,10 +201,8 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
 
 void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
                                         IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnLength, storage_area_id, reply_msg));
     return;
   }
@@ -241,10 +222,8 @@ void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
 
 void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
                                      IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnKey, storage_area_id, index, reply_msg));
     return;
   }
@@ -265,10 +244,8 @@ void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
 void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
                                          const string16& key,
                                          IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnGetItem,
         storage_area_id, key, reply_msg));
     return;
@@ -289,10 +266,8 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
 
 void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
     const string16& key, const string16& value, IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value,
         reply_msg));
     return;
@@ -315,10 +290,8 @@ void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
 
 void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
                                             const string16& key) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key));
     return;
   }
@@ -336,10 +309,8 @@ void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
 }
 
 void DOMStorageDispatcherHost::OnClear(int64 storage_area_id) {
-  DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnClear, storage_area_id));
     return;
   }
@@ -371,4 +342,10 @@ void DOMStorageDispatcherHost::OnStorageEvent(const string16& key,
                                              dom_storage_type));
     ++cur;
   }
+}
+
+void DOMStorageDispatcherHost::PostTaskToWebKitThread(
+    const tracked_objects::Location& from_here, Task* task) {
+  webkit_thread_->EnsureInitialized();
+  ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, task);
 }

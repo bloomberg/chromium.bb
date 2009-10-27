@@ -30,7 +30,8 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
     plugin_fullscreen_windows_set_.insert(window_id);
     // If the plugin has just shown a window that's the same dimensions as
     // the main display, hide the menubar so that it has the whole screen.
-    ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(mac_util::RequestFullScreen));
   }
 }
@@ -41,7 +42,8 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
   if (plugin_fullscreen_windows_set_.find(window_id) !=
       plugin_fullscreen_windows_set_.end()) {
     plugin_fullscreen_windows_set_.erase(window_id);
-    ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(mac_util::ReleaseFullScreen));
   }
 }

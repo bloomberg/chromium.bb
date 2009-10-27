@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/chrome_thread.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
@@ -53,15 +54,15 @@ HttpBridgeFactory::HttpBridgeFactory(
 HttpBridgeFactory::~HttpBridgeFactory() {
   if (request_context_getter_) {
     // Clean up request context getter on IO thread.
-    ChromeThread::GetMessageLoop(ChromeThread::IO)->ReleaseSoon(FROM_HERE,
-        request_context_getter_);
+    bool posted = ChromeThread::ReleaseSoon(
+        ChromeThread::IO, FROM_HERE, request_context_getter_);
+    DCHECK(posted);
     request_context_getter_ = NULL;
   }
 }
 
 sync_api::HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  HttpBridge* http = new HttpBridge(request_context_getter_,
-      ChromeThread::GetMessageLoop(ChromeThread::IO));
+  HttpBridge* http = new HttpBridge(request_context_getter_);
   http->AddRef();
   return http;
 }
@@ -109,22 +110,21 @@ HttpBridge::RequestContext::~RequestContext() {
   delete http_transaction_factory_;
 }
 
-HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter,
-                       MessageLoop* io_loop)
+HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)
     : context_getter_for_request_(context_getter),
       url_poster_(NULL),
       created_on_loop_(MessageLoop::current()),
-      io_loop_(io_loop),
       request_completed_(false),
       request_succeeded_(false),
       http_response_code_(-1),
-      http_post_completed_(false, false),
-      use_io_loop_for_testing_(false) {
+      http_post_completed_(false, false) {
   context_getter_for_request_->AddRef();
 }
 
 HttpBridge::~HttpBridge() {
-  io_loop_->ReleaseSoon(FROM_HERE, context_getter_for_request_);
+  bool posted = ChromeThread::ReleaseSoon(
+      ChromeThread::IO, FROM_HERE, context_getter_for_request_);
+  DCHECK(posted);
 }
 
 void HttpBridge::SetUserAgent(const char* user_agent) {
@@ -176,8 +176,9 @@ bool HttpBridge::MakeSynchronousPost(int* os_error_code, int* response_code) {
   DCHECK(url_for_request_.is_valid()) << "Invalid URL for request";
   DCHECK(!content_type_.empty()) << "Payload not set";
 
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-                                &HttpBridge::CallMakeAsynchronousPost));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &HttpBridge::CallMakeAsynchronousPost));
 
   if (!http_post_completed_.Wait())  // Block until network request completes.
     NOTREACHED();                    // See OnURLFetchComplete.
@@ -189,17 +190,13 @@ bool HttpBridge::MakeSynchronousPost(int* os_error_code, int* response_code) {
 }
 
 void HttpBridge::MakeAsynchronousPost() {
-  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(!request_completed_);
 
   url_poster_ = new URLFetcher(url_for_request_, URLFetcher::POST, this);
   url_poster_->set_request_context(context_getter_for_request_);
   url_poster_->set_upload_data(content_type_, request_content_);
   url_poster_->set_extra_request_headers(extra_headers_);
-
-  if (use_io_loop_for_testing_)
-    url_poster_->set_io_loop(io_loop_);
-
   url_poster_->Start();
 }
 
@@ -220,7 +217,7 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
                                     int response_code,
                                     const ResponseCookies &cookies,
                                     const std::string &data) {
-  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   request_completed_ = true;
   request_succeeded_ = (URLRequestStatus::SUCCESS == status.status());
@@ -229,10 +226,10 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
 
   response_content_ = data;
 
-  // End of the line for url_poster_. It lives only on the io_loop.
+  // End of the line for url_poster_. It lives only on the IO loop.
   // We defer deletion because we're inside a callback from a component of the
   // URLFetcher, so it seems most natural / "polite" to let the stack unwind.
-  io_loop_->DeleteSoon(FROM_HERE, url_poster_);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, url_poster_);
   url_poster_ = NULL;
 
   // Wake the blocked syncer thread in MakeSynchronousPost.
