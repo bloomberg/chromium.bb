@@ -110,11 +110,6 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
   return sDefaultKeystoneGlue;
 }
 
-+ (void)releaseDefaultKeystoneGlue {
-  [sDefaultKeystoneGlue release];
-  sDefaultKeystoneGlue = nil;
-}
-
 - (id)init {
   if ((self = [super init])) {
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -393,10 +388,6 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
 - (NSNotification*)recentNotification {
   return [[recentNotification_ retain] autorelease];
-}
-
-- (void)clearRecentNotification {
-  recentNotification_.reset(nil);
 }
 
 - (AutoupdateStatus)recentStatus {

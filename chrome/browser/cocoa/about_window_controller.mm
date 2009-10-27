@@ -96,6 +96,15 @@ const NSString* const kUserClosedAboutNotification =
   [super dealloc];
 }
 
+// YES when an About box is currently showing the kAutoupdateInstallFailed
+// status, or if no About box is visible, if the most recent About box to be
+// closed was closed while showing this status.  When an About box opens, if
+// the recent status is kAutoupdateInstallFailed and
+// recentShownInstallFailedStatus is NO, the failure needs to be shown instead
+// of launching a new update check.  recentShownInstallFailedStatus is
+// maintained by -updateStatus:.
+static BOOL recentShownInstallFailedStatus = NO;
+
 - (void)awakeFromNib {
   NSBundle* bundle = mac_util::MainAppBundle();
   NSString* chromeVersion =
@@ -142,7 +151,8 @@ const NSString* const kUserClosedAboutNotification =
   CGFloat updateShift;
   if (keystoneGlue) {
     if ([keystoneGlue asyncOperationPending] ||
-        [keystoneGlue recentStatus] == kAutoupdateInstallFailed) {
+        ([keystoneGlue recentStatus] == kAutoupdateInstallFailed &&
+         !recentShownInstallFailedStatus)) {
       // If an asynchronous update operation is currently pending, such as a
       // check for updates or an update installation attempt, set the status
       // up correspondingly without launching a new update check.
@@ -235,6 +245,8 @@ const NSString* const kUserClosedAboutNotification =
 }
 
 - (void)updateStatus:(NSNotification*)notification {
+  recentShownInstallFailedStatus = NO;
+
   NSDictionary* dictionary = [notification userInfo];
   AutoupdateStatus status = static_cast<AutoupdateStatus>(
       [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
@@ -271,7 +283,7 @@ const NSString* const kUserClosedAboutNotification =
       break;
 
     case kAutoupdateInstalling:
-      // Don't let someone click "Update Now" twice.
+      // Don't let anyone click "Update Now" twice.
       [updateNowButton_ setEnabled:NO];
 
       throbber = true;
@@ -303,11 +315,7 @@ const NSString* const kUserClosedAboutNotification =
       break;
 
     case kAutoupdateInstallFailed:
-      // Since the installation failure will now be displayed in an About box,
-      // the saved state can be cleared.  If the About box is closed and then
-      // reopened, this will let it start out with a clean slate and not be
-      // affected by past failures.
-      [[KeystoneGlue defaultKeystoneGlue] clearRecentNotification];
+      recentShownInstallFailedStatus = YES;
 
       // Allow another chance.
       [updateNowButton_ setEnabled:YES];

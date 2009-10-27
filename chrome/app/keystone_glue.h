@@ -86,9 +86,6 @@ extern const NSString* const kAutoupdateStatusVersion;
 // Accessor for recentNotification_.  Returns an autoreleased NSNotification.
 - (NSNotification*)recentNotification;
 
-// Clears the saved recentNotification_.
-- (void)clearRecentNotification;
-
 // Accessor for the kAutoupdateStatusStatus field of recentNotification_'s
 // userInfo dictionary.
 - (AutoupdateStatus)recentStatus;
@@ -100,11 +97,6 @@ extern const NSString* const kAutoupdateStatusVersion;
 @end  // @interface KeystoneGlue
 
 @interface KeystoneGlue(ExposedForTesting)
-
-// Release the shared instance.  Use this in tests to reset the shared
-// instance in case strange things are done to it for testing purposes.  Never
-// call this from non-test code.
-+ (void)releaseDefaultKeystoneGlue;
 
 // Load any params we need for configuring Keystone.
 - (void)loadParameters;

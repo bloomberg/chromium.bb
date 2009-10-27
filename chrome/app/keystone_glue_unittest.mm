@@ -150,16 +150,12 @@ TEST_F(KeystoneGlueTest, BasicGlobalCreate) {
   Method loadMethod_ = class_getInstanceMethod([KeystoneGlue class], lks);
   method_setImplementation(loadMethod_, newLoadImp_);
 
-  // Dump any existing KeystoneGlue shared instance so that a new one can be
-  // created with the mocked methods.
-  [KeystoneGlue releaseDefaultKeystoneGlue];
   KeystoneGlue *glue = [KeystoneGlue defaultKeystoneGlue];
   ASSERT_TRUE(glue);
 
   // Fix back up the class to the way we found it.
   method_setImplementation(infoMethod_, oldInfoImp_);
   method_setImplementation(loadMethod_, oldLoadImp_);
-  [KeystoneGlue releaseDefaultKeystoneGlue];
 }
 
 TEST_F(KeystoneGlueTest, BasicUse) {
