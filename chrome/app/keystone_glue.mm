@@ -9,6 +9,8 @@
 #import "base/worker_pool_mac.h"
 #include "chrome/common/chrome_constants.h"
 
+namespace {
+
 // Provide declarations of the Keystone registration bits needed here.  From
 // KSRegistration.h.
 typedef enum { kKSPathExistenceChecker } KSExistenceCheckerType;
@@ -17,6 +19,7 @@ NSString *KSRegistrationCheckForUpdateNotification =
     @"KSRegistrationCheckForUpdateNotification";
 NSString *KSRegistrationStatusKey = @"Status";
 NSString *KSRegistrationVersionKey = @"Version";
+NSString *KSRegistrationUpdateCheckErrorKey = @"Error";
 
 NSString *KSRegistrationStartUpdateNotification =
     @"KSRegistrationStartUpdateNotification";
@@ -25,6 +28,8 @@ NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
 
 NSString *KSRegistrationRemoveExistingTag = @"";
 #define KSRegistrationPreserveExistingTag nil
+
+}  // namespace
 
 @interface KSRegistration : NSObject
 
@@ -253,10 +258,10 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
 - (void)checkForUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  BOOL updatesAvailable =
-      [[userInfo objectForKey:KSRegistrationStatusKey] boolValue];
 
-  if (updatesAvailable) {
+  if ([[userInfo objectForKey:KSRegistrationUpdateCheckErrorKey] boolValue]) {
+    [self updateStatus:kAutoupdateCheckFailed version:nil];
+  } else if ([[userInfo objectForKey:KSRegistrationStatusKey] boolValue]) {
     // If an update is known to be available, go straight to
     // -updateStatus:version:.  It doesn't matter what's currently on disk.
     NSString* version = [userInfo objectForKey:KSRegistrationVersionKey];
@@ -287,12 +292,10 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
 
 - (void)installUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  BOOL checkSuccessful =
-      [[userInfo objectForKey:KSUpdateCheckSuccessfulKey] boolValue];
-  int installs =
-      [[userInfo objectForKey:KSUpdateCheckSuccessfullyInstalledKey] intValue];
 
-  if (!checkSuccessful || !installs) {
+  if (![[userInfo objectForKey:KSUpdateCheckSuccessfulKey] boolValue] ||
+      ![[userInfo objectForKey:KSUpdateCheckSuccessfullyInstalledKey]
+          intValue]) {
     [self updateStatus:kAutoupdateInstallFailed version:nil];
   } else {
     updateSuccessfullyInstalled_ = YES;

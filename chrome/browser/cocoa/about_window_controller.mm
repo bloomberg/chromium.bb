@@ -323,8 +323,6 @@ static BOOL recentShownInstallFailedStatus = NO;
       // Fall through.
 
     case kAutoupdateCheckFailed:
-      // TODO(mark): Keystone doesn't currently indicate when a check for
-      // updates failed.  Fix that.
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
                                                  IntToString16(status));
