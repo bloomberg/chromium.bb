@@ -40,9 +40,17 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   // If all the thumbnails load, there should be no div's with 'filler'.
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   int filler_thumbnails_count = -1;
-  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
-      L"window.domAutomationController.send("
-      L"document.getElementsByClassName('filler').length)",
-      &filler_thumbnails_count));
+  const int kWaitDuration = 100;
+  int wait_time = action_max_timeout_ms();
+  while (wait_time > 0) {
+    ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
+        L"window.domAutomationController.send("
+        L"document.getElementsByClassName('filler').length)",
+        &filler_thumbnails_count));
+    if (filler_thumbnails_count == 0)
+      break;
+    PlatformThread::Sleep(kWaitDuration);
+    wait_time -= kWaitDuration;
+  }
   EXPECT_EQ(0, filler_thumbnails_count);
 }
