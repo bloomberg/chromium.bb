@@ -24,11 +24,12 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "chrome_frame/test/helper_gmock.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
+#include "testing/gmock_mutant.h"
+using testing::CreateFunctor;
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 const int kLongWaitTimeout = 60 * 1000;
