@@ -536,6 +536,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)supportsFullscreen {
+  // Fullscreen mode disabled for Mstone-4 / ReleaseBlock-Beta.
+  return NO;
+
   // TODO(avi, thakis): GTMWindowSheetController has no api to move
   // tabsheets between windows. Until then, we have to prevent having to
   // move a tabsheet between windows, e.g. no fullscreen toggling

@@ -457,7 +457,17 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
   BrowserWindowController* controller_;
 };
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+@interface BrowserWindowController (PrivateAPI)
+- (BOOL)supportsFullscreen;
+@end
+
+// Fullscreen mode disabled for Mstone-4 / ReleaseBlock-Beta.
+// Confirm we don't accidentally turn it back on.
+TEST_F(BrowserWindowFullScreenControllerTest, ConfirmFullscreenDisabled) {
+  EXPECT_FALSE([controller_ supportsFullscreen]);
+}
+
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ setFullscreen:YES];
   EXPECT_TRUE([controller_ isFullscreen]);
@@ -465,7 +475,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
