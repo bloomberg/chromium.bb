@@ -68,6 +68,12 @@
   fun:*base*ThreadD*E*
 }
 
+{
+  bug_25915
+  ThreadSanitizer:Race
+  fun:*browser_sync*BookmarkModelWorker*
+}
+
 ############################
 # Real races in third_party
 {
