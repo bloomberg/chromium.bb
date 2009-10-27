@@ -100,9 +100,6 @@ REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwit
 # 20793
 PREFIX : webpluginproxy::setwindowlessbuffer___child_process_logging::setactiveurl
 
-# 20825
-PREFIX : v8::internal::compiler::compile___v8::script::new___v8::script::compile___webcore::v8proxy::compilescript
-
 # 20915
 REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
 PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
@@ -138,9 +135,6 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
-
-# bug 23780
-PREFIX : v8::internal::mayaccessprecheck
 
 # bug 25689
 PREFIX : skia::crashforbitmapallocationfailure___skia::platformcanvas::platformcanvas___webpluginproxy::setwindowlessbuffer___webpluginproxy::updategeometry___webplugindelegatestub
