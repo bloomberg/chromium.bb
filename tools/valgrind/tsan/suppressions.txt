@@ -54,11 +54,19 @@
 }
 
 {
-  bug_24715
+  bug_24715 (1)
   ThreadSanitizer:Race
   fun:*base*internal*WeakReference*
   ...
   fun:*AppCacheUpdateJobTest*
+}
+
+{
+  bug_24715 (2)
+  ThreadSanitizer:Race
+  fun:*base*internal*WeakReference*
+  ...
+  fun:*AppCacheResponseTest*
 }
 
 {
