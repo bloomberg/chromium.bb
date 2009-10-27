@@ -279,7 +279,7 @@ void CFUrlRequestUnittestRunner::RunMainUIThread() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
 
   // Register the main thread by instantiating it, but don't call any methods.
-  ChromeThread main_thread;
+  ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   MessageLoop::current()->Run();
