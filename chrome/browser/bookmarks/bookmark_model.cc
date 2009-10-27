@@ -648,7 +648,7 @@ void BookmarkModel::OnFavIconDataAvailable(
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
-  if (know_favicon && data.get() &&
+  if (know_favicon && data.get() && data->size() &&
       gfx::PNGCodec::Decode(data->front(), data->size(), &fav_icon)) {
     node->set_favicon(fav_icon);
     FavIconLoaded(node);
