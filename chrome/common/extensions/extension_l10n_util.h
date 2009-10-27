@@ -4,8 +4,8 @@
 //
 // This file declares extension specific l10n utils.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_L10N_UTIL_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_L10N_UTIL_H_
+#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
+#define CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
 
 #include <set>
 #include <string>
@@ -17,6 +17,11 @@ class ExtensionMessageBundle;
 class FilePath;
 
 namespace extension_l10n_util {
+
+// Set the locale for this process to a fixed value, rather than using the
+// normal file-based lookup mechanisms. This is used to set the locale inside
+// the sandboxed utility process, where file reading is not allowed.
+void SetProcessLocale(const std::string& locale);
 
 // Returns default locale in form "en-US" or "sr" or empty string if
 // "default_locale" section was not defined in the manifest.json file.
@@ -74,4 +79,4 @@ void GetL10nRelativePaths(const FilePath& relative_resource_path,
 
 }  // namespace extension_l10n_util
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_L10N_UTIL_H_
+#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_

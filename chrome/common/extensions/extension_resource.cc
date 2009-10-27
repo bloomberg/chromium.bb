@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 

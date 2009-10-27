@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 
 #include <set>
 #include <string>
@@ -21,7 +21,16 @@
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
+static std::string* GetProcessLocale() {
+  static std::string locale;
+  return &locale;
+}
+
 namespace extension_l10n_util {
+
+void SetProcessLocale(const std::string& locale) {
+  *(GetProcessLocale()) = locale;
+}
 
 std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
                                          std::string* error) {
@@ -75,7 +84,7 @@ void GetParentLocales(const std::string& current_locale,
 
   const int kNameCapacity = 256;
   char parent[kNameCapacity];
-  strncpy(parent, locale.c_str(), kNameCapacity);
+  base::strlcpy(parent, locale.c_str(), kNameCapacity);
   parent_locales->push_back(parent);
   UErrorCode err = U_ZERO_ERROR;
   while (uloc_getParent(parent, parent, kNameCapacity, &err) > 0) {
@@ -187,10 +196,12 @@ void GetL10nRelativePaths(const FilePath& relative_resource_path,
                           std::vector<FilePath>* l10n_paths) {
   DCHECK(NULL != l10n_paths);
 
+  std::string* current_locale = GetProcessLocale();
+  if (current_locale->empty())
+    *current_locale = l10n_util::GetApplicationLocale(L"");
+
   std::vector<std::string> locales;
-  static const std::string current_locale =
-    l10n_util::GetApplicationLocale(L"");
-  GetParentLocales(current_locale, &locales);
+  GetParentLocales(*current_locale, &locales);
 
   FilePath locale_relative_path;
   for (size_t i = 0; i < locales.size(); ++i) {

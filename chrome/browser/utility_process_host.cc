@@ -4,6 +4,8 @@
 
 #include "chrome/browser/utility_process_host.h"
 
+#include "app/app_switches.h"
+#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -89,6 +91,10 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
                                  switches::kUtilityProcess);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id()));
+  // Pass on the browser locale.
+  std::string locale = l10n_util::GetApplicationLocale(L"");
+  cmd_line.AppendSwitchWithValue(switches::kLang, ASCIIToWide(locale));
+
   SetCrashReporterCommandLine(&cmd_line);
 
   base::ProcessHandle process;

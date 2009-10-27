@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_l10n_util.h"
-
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -14,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

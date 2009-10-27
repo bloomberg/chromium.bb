@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -9,6 +10,7 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/utility/utility_thread.h"
@@ -38,6 +40,11 @@ int UtilityMain(const MainFunctionParams& parameters) {
 
   target_services->LowerToken();
 #endif
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::string lang = command_line->GetSwitchValueASCII(switches::kLang);
+  if (!lang.empty())
+    extension_l10n_util::SetProcessLocale(lang);
 
   MessageLoop::current()->Run();
 
