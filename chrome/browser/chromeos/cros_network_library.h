@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/platform_thread.h"
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "third_party/cros/chromeos_network.h"
@@ -19,7 +20,8 @@ struct WifiNetwork {
         encryption(chromeos::NONE),
         strength(0),
         connecting(false),
-        connected(false) {}
+        connected(false),
+        destroyed(false) {}
   WifiNetwork(const std::string& ssid, bool encrypted,
               chromeos::EncryptionType encryption, int strength,
               bool connecting, bool connected)
@@ -28,7 +30,8 @@ struct WifiNetwork {
         encryption(encryption),
         strength(strength),
         connecting(connecting),
-        connected(connected) {}
+        connected(connected),
+        destroyed(false) {}
 
   // WifiNetworks are sorted by ssids.
   bool operator< (const WifiNetwork& other) const {
@@ -41,6 +44,7 @@ struct WifiNetwork {
   int strength;
   bool connecting;
   bool connected;
+  bool destroyed;
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 
@@ -93,8 +97,7 @@ class CrosNetworkLibrary {
 
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
-  // It should be called on a background thread.
-  void InitOnBackgroundThread();
+  void Init();
 
   // Update the network with the a list of wifi networks and ethernet status.
   // This will notify all the Observers.

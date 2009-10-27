@@ -21,18 +21,12 @@ struct RunnableMethodTraits<CrosNetworkLibrary> {
 
 CrosNetworkLibrary::CrosNetworkLibrary() {
   if (CrosLibrary::loaded()) {
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
-    if (loop) {
-      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CrosNetworkLibrary::InitOnBackgroundThread));
-    }
+    Init();
   }
 }
 
 CrosNetworkLibrary::~CrosNetworkLibrary() {
   if (CrosLibrary::loaded()) {
-    // FILE thread is already gone by the time we get to this destructor.
-    // So it's ok to just make the disconnect call on the main thread.
     chromeos::DisconnectNetworkStatus(network_status_connection_);
   }
 }
@@ -72,13 +66,12 @@ static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
 void CrosNetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
                                               const string16& password) {
   if (CrosLibrary::loaded()) {
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
-    if (loop)
-      loop->PostTask(FROM_HERE, NewRunnableFunction(
-          &chromeos::ConnectToWifiNetwork,
-          network.ssid.c_str(),
-          password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-          GetEncryptionString(network.encryption)));
+    // This call kicks off a request to connect to this network, the results of
+    // which we'll hear about through the monitoring we've set up in Init();
+    chromeos::ConnectToWifiNetwork(
+        network.ssid.c_str(),
+        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
+        GetEncryptionString(network.encryption));
   }
 }
 
@@ -122,15 +115,20 @@ void CrosNetworkLibrary::ParseNetworks(
   }
 }
 
-void CrosNetworkLibrary::InitOnBackgroundThread() {
+void CrosNetworkLibrary::Init() {
+  // First, get the currently available networks.  This data is cached
+  // on the connman side, so the call should be quick.
   chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
   if (service_status) {
+    LOG(INFO) << "Getting initial CrOS network info.";
     WifiNetworkVector networks;
     bool ethernet_connected;
     ParseNetworks(*service_status, &networks, &ethernet_connected);
     UpdateNetworkStatus(networks, ethernet_connected);
     chromeos::FreeServiceStatus(service_status);
   }
+  LOG(INFO) << "Registering for network status updates.";
+  // Now, register to receive updates on network status.
   network_status_connection_ = chromeos::MonitorNetworkStatus(
       &NetworkStatusChangedHandler, this);
 }

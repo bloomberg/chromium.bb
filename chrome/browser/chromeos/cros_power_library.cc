@@ -19,17 +19,12 @@ struct RunnableMethodTraits<CrosPowerLibrary> {
 
 CrosPowerLibrary::CrosPowerLibrary() : status_(chromeos::PowerStatus()) {
   if (CrosLibrary::loaded()) {
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
-    if (loop)
-      loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CrosPowerLibrary::InitOnBackgroundThread));
+    Init();
   }
 }
 
 CrosPowerLibrary::~CrosPowerLibrary() {
   if (CrosLibrary::loaded()) {
-    // FILE thread is already gone by the time we get to this destructor.
-    // So it's ok to just make the disconnect call on the main thread.
     chromeos::DisconnectPowerStatus(power_status_connection_);
   }
 }
@@ -83,7 +78,7 @@ void CrosPowerLibrary::PowerStatusChangedHandler(void* object,
   power->UpdatePowerStatus(status);
 }
 
-void CrosPowerLibrary::InitOnBackgroundThread() {
+void CrosPowerLibrary::Init() {
   power_status_connection_ = chromeos::MonitorPowerStatus(
       &PowerStatusChangedHandler, this);
 }

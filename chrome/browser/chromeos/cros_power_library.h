@@ -59,8 +59,7 @@ class CrosPowerLibrary {
                                         const chromeos::PowerStatus& status);
 
   // This methods starts the monitoring of power changes.
-  // It should be called on a background thread.
-  void InitOnBackgroundThread();
+  void Init();
 
   // Called by the handler to update the power status.
   // This will notify all the Observers.
