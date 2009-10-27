@@ -99,6 +99,7 @@ struct nouveau_bo_priv {
 	/* Tracking */
 	struct drm_nouveau_gem_pushbuf_bo *pending;
 	struct nouveau_channel *pending_channel;
+	int pending_refcnt;
 	int write_marker;
 
 	/* Userspace object */

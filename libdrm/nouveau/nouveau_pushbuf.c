@@ -60,6 +60,7 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 			   uint32_t flags, uint32_t vor, uint32_t tor)
 {
 	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
+	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	struct drm_nouveau_gem_pushbuf_reloc *r;
 	struct drm_nouveau_gem_pushbuf_bo *pbbo;
 	uint32_t domains = 0;
@@ -70,7 +71,7 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 		return -ENOMEM;
 	}
 
-	if (nouveau_bo(bo)->user && (flags & NOUVEAU_BO_WR)) {
+	if (nvbo->user && (flags & NOUVEAU_BO_WR)) {
 		fprintf(stderr, "write to user buffer!!\n");
 		return -EINVAL;
 	}
@@ -81,6 +82,8 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 		assert(0);
 		return -ENOMEM;
 	}
+
+	nvbo->pending_refcnt++;
 
 	if (flags & NOUVEAU_BO_VRAM)
 		domains |= NOUVEAU_GEM_DOMAIN_VRAM;
@@ -95,7 +98,7 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 	}
 	if (flags & NOUVEAU_BO_WR) {
 		pbbo->write_domains |= domains;
-		nouveau_bo(bo)->write_marker = 1;
+		nvbo->write_marker = 1;
 	}
 
 	r = nvpb->relocs + nvpb->nr_relocs++;
@@ -322,18 +325,25 @@ restart_push:
 	/* Update presumed offset/domain for any buffers that moved.
 	 * Dereference all buffers on validate list
 	 */
-	for (i = 0; i < nvpb->nr_buffers; i++) {
-		struct drm_nouveau_gem_pushbuf_bo *pbbo = &nvpb->buffers[i];
+	for (i = 0; i < nvpb->nr_relocs; i++) {
+		struct drm_nouveau_gem_pushbuf_reloc *r = &nvpb->relocs[i];
+		struct drm_nouveau_gem_pushbuf_bo *pbbo =
+			&nvpb->buffers[r->bo_index];
 		struct nouveau_bo *bo = (void *)(unsigned long)pbbo->user_priv;
+		struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
+
+		if (--nvbo->pending_refcnt)
+			continue;
 
 		if (pbbo->presumed_ok == 0) {
-			nouveau_bo(bo)->domain = pbbo->presumed_domain;
-			nouveau_bo(bo)->offset = pbbo->presumed_offset;
+			nvbo->domain = pbbo->presumed_domain;
+			nvbo->offset = pbbo->presumed_offset;
 		}
 
-		nouveau_bo(bo)->pending = NULL;
+		nvbo->pending = NULL;
 		nouveau_bo_ref(NULL, &bo);
 	}
+
 	nvpb->nr_buffers = 0;
 	nvpb->nr_relocs = 0;
 

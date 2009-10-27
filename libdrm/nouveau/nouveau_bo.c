@@ -607,6 +607,7 @@ nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 	pbbo = nvpb->buffers + nvpb->nr_buffers++;
 	nvbo->pending = pbbo;
 	nvbo->pending_channel = chan;
+	nvbo->pending_refcnt = 0;
 
 	nouveau_bo_ref(bo, &ref);
 	pbbo->user_priv = (uint64_t)(unsigned long)ref;
