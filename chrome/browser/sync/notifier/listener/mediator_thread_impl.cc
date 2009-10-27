@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/listener/mediator_thread_impl.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/notifier/base/async_dns_lookup.h"
@@ -41,6 +42,8 @@ void MediatorThreadImpl::Run() {
   PlatformThread::SetName("SyncEngine_MediatorThread");
   // For win32, this sets up the win32socketserver. Note that it needs to
   // dispatch windows messages since that is what the win32 socket server uses.
+
+  MessageLoop message_loop;
 #if defined(OS_WIN)
   scoped_ptr<talk_base::SocketServer> socket_server(
       new talk_base::Win32SocketServer(this));
@@ -57,10 +60,14 @@ void MediatorThreadImpl::Run() {
     if (IsStopping()) {
       break;
     }
+    MessageLoop::current()->RunAllPending();
   }
 #endif
 
-  ProcessMessages(talk_base::kForever);
+  do {
+    ProcessMessages(100);
+    MessageLoop::current()->RunAllPending();
+  } while (!IsStopping());
 
 #if defined(OS_WIN)
   set_socketserver(old_socket_server);
