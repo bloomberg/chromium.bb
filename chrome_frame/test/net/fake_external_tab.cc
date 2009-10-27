@@ -145,7 +145,7 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
   EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_.user_data()));
   StartChromeFrameInHostBrowser();
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new ChromeThread());
+  main_thread_.reset(new ChromeThread(ChromeThread::UI));
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
