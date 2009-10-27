@@ -33,7 +33,7 @@ var ApuAgentDispatcher = { enabled : false };
  * @param {string} method name of the dispatch method.
  **/
 ApuAgentDispatcher.dispatchToApu = function(method, args) {
-  if (method != 'addItemToTimeline' &&
+  if (method != 'addRecordToTimeline' &&
       method != 'updateResource' &&
       method != 'addResource') {
     return;
