@@ -2249,8 +2249,10 @@ BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
 
 // Failing on the bots but not locally; need investigation
 BUG23560 MAC : LayoutTests/fast/images/animated-svg-as-image.html = FAIL PASS
-BUG23560 MAC : LayoutTests/fast/overflow/003.xml = IMAGE
 BUG23560 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
+
+// This begin crashing some of the time after Webkit merge to r49997
+BUG23560 MAC : LayoutTests/fast/overflow/003.xml = IMAGE
 
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
@@ -2552,7 +2554,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL
 
 // Was flaky. Became a consistent failure.
 BUG9798 WIN SLOW : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
-BUG9798 MAC RELEASE : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
+BUG9798 MAC WIN : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
@@ -3083,8 +3085,6 @@ BUG23956 WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FAI
 BUG23956 WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG24126 : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
-// WebKit update 48883:48904
-
 // WebKit update 48937:48947
 BUG23751 WIN LINUX DEBUG : LayoutTests/fast/inline/relative-positioned-overflow.html = CRASH
 
@@ -3250,8 +3250,9 @@ BUG25880 WIN LINUX : LayoutTests/editing/style/remove-nested-inline-styles.html 
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
 
 // WebKit roll 50101:50158
-BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = FAIL
+BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL CRASH
+BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL CRASH
 BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 
 // More fallout from the above roll.
@@ -3305,5 +3306,5 @@ BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
 
 // The following should be uncommented when the next line is no longer needed.
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
-BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH PASS
+BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH FAIL PASS
 
