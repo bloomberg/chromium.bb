@@ -37,7 +37,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
-  const std::string name() const { return name_; }
+  const std::string name() { return name_; }
 
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const Value* args) = 0;

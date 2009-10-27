@@ -114,14 +114,7 @@ void BookmarksFunction::Run() {
   ExtensionBookmarkEventRouter* event_router =
       ExtensionBookmarkEventRouter::GetSingleton();
   event_router->Observe(model);
-  bool success = RunImpl();
-  if (success) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_BOOKMARKS_API_INVOKED,
-        Source<const Extension>(GetExtension()),
-        Details<const BookmarksFunction>(this));
-  }
-  SendResponse(success);
+  SendResponse(RunImpl());
 }
 
 bool BookmarksFunction::GetBookmarkIdAsInt64(

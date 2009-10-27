@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
@@ -180,10 +179,6 @@ class Syncer {
   // guaranteed to be safe for model modifications. This is created and owned
   // by the SyncerThread that created us.
   ModelSafeWorker* model_safe_worker_;
-
-  // We use this to stuff extensions activity into CommitMessages so the server
-  // can correlate commit traffic with extension-related bookmark mutations.
-  ExtensionsActivityMonitor* extensions_monitor_;
 
   // The source of the last nudge.
   sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE updates_source_;

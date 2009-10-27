@@ -23,7 +23,7 @@ namespace browser_sync {
 class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
  public:
 
-  explicit ProcessCommitResponseCommand(ExtensionsActivityMonitor* monitor);
+  ProcessCommitResponseCommand();
   virtual ~ProcessCommitResponseCommand();
 
   virtual void ModelChangingExecuteImpl(SyncerSession* session);
@@ -36,9 +36,6 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       std::set<syncable::Id>* deleted_folders,
       SyncerSession* const session);
 
-  // Actually does the work of execute.
-  void ProcessCommitResponse(SyncerSession* session);
-
   void ProcessSuccessfulCommitResponse(syncable::WriteTransaction* trans,
       const CommitResponse_EntryResponse& server_entry,
       const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
@@ -49,10 +46,6 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       syncable::WriteTransaction* trans,
       const CommitResponse_EntryResponse& server_entry,
       syncable::MutableEntry* local_entry);
-
-  // We may need to update this with records from a commit attempt if the
-  // attempt failed.
-  ExtensionsActivityMonitor* extensions_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };

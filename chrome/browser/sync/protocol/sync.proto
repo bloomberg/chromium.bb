@@ -172,22 +172,6 @@ message CommitMessage {
   // A GUID that identifies the committing sync client.  This value will be
   // returned as originator_cache_guid for any new items.
   optional string cache_guid = 2;
-
-  // This message contains diagnostic information used to correlate
-  // commit-related traffic with extensions-related mutations to the
-  // data models in chromium.  It plays no functional role in
-  // processing this CommitMessage.
-  message ChromiumExtensionsActivity {
-    // The human-readable ID identifying the extension responsible
-    // for the traffic reported in this ChromiumExtensionsActivity.
-    optional string extension_id = 1;
-    
-    // How many times the extension successfully invoked a write
-    // operation through the bookmarks API since the last CommitMessage.
-    optional uint32 bookmark_writes_since_last_commit = 2;
-  }
-
-  repeated ChromiumExtensionsActivity extensions_activity = 3;
 };
 
 message GetUpdatesCallerInfo {
@@ -219,7 +203,7 @@ message AuthenticateMessage {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 22];
+  optional int32 protocol_version = 2 [default = 21];
   enum CONTENTS {
     COMMIT = 1;
     GET_UPDATES = 2;
@@ -259,7 +243,8 @@ message CommitResponse {
     optional string parent_id_string = 4;
 
     // This value is the same as the position_in_parent value returned within
-    // the SyncEntity message in GetUpdatesResponse.
+    // the SyncEntity message in GetUpdatesResponse.  It is returned if the
+    // item was assigned a new position.
     optional int64 position_in_parent = 5;
 
     // The item's current version.

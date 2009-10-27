@@ -69,7 +69,7 @@ class BookmarksFunction : public AsyncExtensionFunction,
 
  protected:
   // Helper to get the bookmark id as int64 from the given string id.
-  // Sets error_ to an error string if the given id string can't be parsed
+  // Sets error_ to an errro string if the given id string can't be parsed
   // as an int64. In case of error, doesn't change id and returns false.
   bool GetBookmarkIdAsInt64(const std::string& id_string, int64* id);
 

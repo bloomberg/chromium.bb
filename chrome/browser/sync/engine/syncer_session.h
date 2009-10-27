@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
@@ -308,14 +307,6 @@ class SyncerSession {
     source_ = source;
   }
 
-  const ExtensionsActivityMonitor::Records& extensions_activity() const {
-    return extensions_activity_;
-  }
-
-  ExtensionsActivityMonitor::Records* mutable_extensions_activity() {
-    return &extensions_activity_;
-  }
-
   bool notifications_enabled() const {
     return notifications_enabled_;
   }
@@ -363,9 +354,6 @@ class SyncerSession {
 
   // The source for initiating this syncer session.
   sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE source_;
-
-  // Information about extensions activity since the last successful commit.
-  ExtensionsActivityMonitor::Records extensions_activity_;
 
   // True if notifications are enabled when this session was created.
   bool notifications_enabled_;

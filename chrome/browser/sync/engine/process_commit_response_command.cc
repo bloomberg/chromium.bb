@@ -52,18 +52,10 @@ void ResetErrorCounters(SyncerStatus status) {
   status.zero_consecutive_errors();
 }
 
-ProcessCommitResponseCommand::ProcessCommitResponseCommand(
-    ExtensionsActivityMonitor* monitor) : extensions_monitor_(monitor) {}
+ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
 void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
-    SyncerSession* session) {
-  ProcessCommitResponse(session);
-  if (!session->HadSuccessfulCommits())
-    extensions_monitor_->PutRecords(session->extensions_activity());
-}
-
-void ProcessCommitResponseCommand::ProcessCommitResponse(
     SyncerSession* session) {
   // TODO(sync): This function returns if it sees problems. We probably want
   // to flag the need for an update or similar.
