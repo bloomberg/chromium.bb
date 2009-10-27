@@ -82,20 +82,23 @@ void BookmarkModelVerifier::VerifyNoDuplicates(BookmarkModel* model) {
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     std::vector<const BookmarkNode*> nodes;
-    if (node->type() != BookmarkNode::URL) { continue; }
+    if (node->type() != BookmarkNode::URL)
+      continue;
     // Get nodes with same URL.
-    model->GetNodesByURL(node->GetURL(),&nodes);
-    EXPECT_TRUE(nodes.size()>=1);
-    for(std::vector<const BookmarkNode*>::const_iterator i=nodes.begin(), e=nodes.end(); i!=e; i++) {
+    model->GetNodesByURL(node->GetURL(), &nodes);
+    EXPECT_TRUE(nodes.size() >= 1);
+    for (std::vector<const BookmarkNode*>::const_iterator i = nodes.begin(),
+         e = nodes.end(); i != e; i++) {
       // Skip if it's same node.
       int64 id = node->id();
-      if ( id == (*i)->id()) { continue; }
-      else {
+      if (id == (*i)->id()) {
+        continue;
+      } else {
         // Make sure title are not same.
-        EXPECT_NE(node->GetTitle(),(*i)->GetTitle());
+        EXPECT_NE(node->GetTitle(), (*i)->GetTitle());
       }
     }
-  } // end of while
+  }  // end of while
 }
 
 void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
@@ -130,10 +133,12 @@ const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
   FindNodeInVerifier(model, parent, &v_parent);
   const BookmarkNode* result = model->AddGroup(parent, index, title);
   EXPECT_TRUE(result);
-  if (!result) return NULL;
+  if (!result)
+    return NULL;
   const BookmarkNode* v_node = verifier_->AddGroup(v_parent, index, title);
   EXPECT_TRUE(v_node);
-  if (!v_node) return NULL;
+  if (!v_node)
+    return NULL;
   ExpectBookmarkInfoMatch(v_node, result);
   return result;
 }
@@ -143,7 +148,8 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
     const string16& title, int children_count) {
   const BookmarkNode* bm_folder = AddGroup(model, parent, index, title);
   EXPECT_TRUE(bm_folder);
-  if (!bm_folder) return NULL;
+  if (!bm_folder)
+    return NULL;
   for (int child_index = 0; child_index < children_count; child_index++) {
     int random_int = base::RandInt(1, 100);
     // To create randomness in order, 60% of time add bookmarks
@@ -177,10 +183,12 @@ const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
   FindNodeInVerifier(model, parent, &v_parent);
   const BookmarkNode* result = model->AddURL(parent, index, title, url);
   EXPECT_TRUE(result);
-  if (!result) return NULL;
+  if (!result)
+    return NULL;
   const BookmarkNode* v_node = verifier_->AddURL(v_parent, index, title, url);
   EXPECT_TRUE(v_node);
-  if (!v_node) return NULL;
+  if (!v_node)
+    return NULL;
   ExpectBookmarkInfoMatch(v_node, result);
   return result;
 }
@@ -225,10 +233,10 @@ void BookmarkModelVerifier::SortChildren(BookmarkModel* model,
 void BookmarkModelVerifier::ReverseChildOrder(BookmarkModel* model,
                                          const BookmarkNode* parent) {
   int child_count = parent->GetChildCount();
-  if (child_count <= 0) return;
-  for (int index = 0; index < child_count; index++) {
+  if (child_count <= 0)
+    return;
+  for (int index = 0; index < child_count; index++)
     Move(model, parent->GetChild(index), parent, child_count-index);
-  }
 }
 
 const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
