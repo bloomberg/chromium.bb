@@ -3305,5 +3305,5 @@ BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
 
 // The following should be uncommented when the next line is no longer needed.
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
-BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL PASS
+BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH PASS
 
