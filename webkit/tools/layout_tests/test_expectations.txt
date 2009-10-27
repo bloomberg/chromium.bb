@@ -3249,3 +3249,9 @@ BUG_JORLOW : LayoutTests/storage/domstorage/documentURI.html = FAIL
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
 BUG25880 WIN LINUX : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
+
+// WebKit roll 50101:50158
+BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
+
