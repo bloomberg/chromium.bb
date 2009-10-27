@@ -62,7 +62,12 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
 
   canvas->save();
 
+#if defined(OS_MACOSX)
+  SkTypeface* typeface =
+      SkTypeface::CreateFromName("Helvetica", SkTypeface::kBold);
+#else
   SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
+#endif
   SkPaint text_paint;
   text_paint.setAntiAlias(true);
   text_paint.setColor(text_color);
