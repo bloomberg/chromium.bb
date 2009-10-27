@@ -30,13 +30,6 @@
 }
 
 {
-  bug_23244
-  ThreadSanitizer:Race
-  fun:event_*
-  fun:event_*
-}
-
-{
   bug_23245, bug_25385
   ThreadSanitizer:Race
   fun:*base*Thread*ThreadMain*
@@ -69,7 +62,23 @@
 }
 
 {
-  bug_24724
+  bug_25385
+  ThreadSanitizer:Race
+  ...
+  fun:*base*ThreadD*E*
+}
+
+############################
+# Real races in third_party
+{
+  bug_23244 (libevent)
+  ThreadSanitizer:Race
+  fun:event_*
+  fun:event_*
+}
+
+{
+  bug_24724 (WebKit)
   ThreadSanitizer:Race
   fun:*WTF*RefCountedBase*ref*
   ...
@@ -77,18 +86,17 @@
 }
 
 {
-  bug_25385
-  ThreadSanitizer:Race
-  ...
-  fun:*base*ThreadD*E*
-}
-
-{
-  bug_25645
+  bug_25645 (WebKit)
   ThreadSanitizer:Race
   fun:*WTF*RefCountedBase*ref*
   ...
   fun:*WebCore*StringImpl*
+}
+
+{
+  bug_25913 (libjingle)
+  ThreadSanitizer:Race
+  fun:*talk_base*MessageQueue*Stop*
 }
 
 ############################
