@@ -3047,8 +3047,6 @@ BUG21841 MAC RELEASE : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
-BUG25617 WIN-XP RELEASE : LayoutTests/fast/text/line-breaks.html = FAIL
-BUG25617 WIN-XP DEBUG SLOW : LayoutTests/fast/text/line-breaks.html = FAIL
 BUG25616 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
 
 // WK roll 48388:48399 (brettw)
