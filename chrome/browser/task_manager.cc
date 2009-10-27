@@ -124,32 +124,23 @@ std::wstring TaskManagerModel::GetResourceCPUUsage(int index) const {
 }
 
 std::wstring TaskManagerModel::GetResourcePrivateMemory(int index) const {
-  DCHECK(index < ResourceCount());
-  // We report committed (working set + paged) private usage. This is NOT
-  // going to match what Windows Task Manager shows (which is working set).
-  MetricsMap::const_iterator iter =
-      metrics_map_.find(resources_[index]->GetProcess());
-  DCHECK(iter != metrics_map_.end());
-  base::ProcessMetrics* process_metrics = iter->second;
-  return GetMemCellText(GetPrivateMemory(process_metrics));
+  size_t private_mem;
+  if (!GetPrivateMemory(index, &private_mem))
+    return L"N/A";
+  return GetMemCellText(private_mem);
 }
 
 std::wstring TaskManagerModel::GetResourceSharedMemory(int index) const {
-  DCHECK(index < ResourceCount());
-  MetricsMap::const_iterator iter =
-      metrics_map_.find(resources_[index]->GetProcess());
-  DCHECK(iter != metrics_map_.end());
-  base::ProcessMetrics* process_metrics = iter->second;
-  return GetMemCellText(GetSharedMemory(process_metrics));
+  size_t shared_mem;
+  if (!GetSharedMemory(index, &shared_mem))
+      return L"N/A";
+  return GetMemCellText(shared_mem);
 }
 
 std::wstring TaskManagerModel::GetResourcePhysicalMemory(int index) const {
-  DCHECK(index < ResourceCount());
-  MetricsMap::const_iterator iter =
-      metrics_map_.find(resources_[index]->GetProcess());
-  DCHECK(iter != metrics_map_.end());
-  base::ProcessMetrics* process_metrics = iter->second;
-  return GetMemCellText(GetPhysicalMemory(process_metrics));
+  size_t phys_mem;
+  GetPhysicalMemory(index, &phys_mem);
+  return GetMemCellText(phys_mem);
 }
 
 std::wstring TaskManagerModel::GetResourceProcessId(int index) const {
@@ -280,21 +271,29 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       return ValueCompare<int>(GetCPUUsage(resources_[row1]),
                                GetCPUUsage(resources_[row2]));
 
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN: {
-      base::ProcessMetrics* pm1;
-      base::ProcessMetrics* pm2;
-      if (!GetProcessMetricsForRows(row1, row2, &pm1, &pm2))
+    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN: {
+      size_t value1;
+      size_t value2;
+      if (!GetPrivateMemory(row1, &value1) || !GetPrivateMemory(row2, &value2))
         return 0;
-      if (col_id == IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) {
-        return ValueCompare<size_t>(GetPrivateMemory(pm1),
-                                    GetPrivateMemory(pm2));
-      }
-      if (col_id == IDS_TASK_MANAGER_SHARED_MEM_COLUMN)
-        return ValueCompare<size_t>(GetSharedMemory(pm1), GetSharedMemory(pm2));
-      return ValueCompare<size_t>(GetPhysicalMemory(pm1),
-                                  GetPhysicalMemory(pm2));
+      return ValueCompare<size_t>(value1, value2);
+    }
+
+    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN: {
+      size_t value1;
+      size_t value2;
+      if (!GetSharedMemory(row1, &value1) || !GetSharedMemory(row2, &value2))
+        return 0;
+      return ValueCompare<size_t>(value1, value2);
+    }
+
+    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN: {
+      size_t value1;
+      size_t value2;
+      if (!GetPhysicalMemory(row1, &value1) ||
+          !GetPhysicalMemory(row2, &value2))
+        return 0;
+      return ValueCompare<size_t>(value1, value2);
     }
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN: {
@@ -358,27 +357,46 @@ int TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
   return iter->second;
 }
 
-size_t TaskManagerModel::GetPrivateMemory(
-    const base::ProcessMetrics* process_metrics) const {
-  return process_metrics->GetPrivateBytes() / 1024;
+bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
+  *result = 0;
+  base::ProcessMetrics* process_metrics;
+  if (!GetProcessMetricsForRow(index, &process_metrics))
+    return false;
+  *result = process_metrics->GetPrivateBytes() / 1024;
+  // On Linux (so far) and win XP, this is not supported and returns 0.
+  // Remove with crbug.com/23258
+  if (*result == 0)
+    return false;
+  return true;
 }
 
-size_t TaskManagerModel::GetSharedMemory(
-    const base::ProcessMetrics* process_metrics) const {
+bool TaskManagerModel::GetSharedMemory(int index, size_t* result) const {
+  *result = 0;
+  base::ProcessMetrics* process_metrics;
+  if (!GetProcessMetricsForRow(index, &process_metrics))
+    return false;
   base::WorkingSetKBytes ws_usage;
-  process_metrics->GetWorkingSetKBytes(&ws_usage);
-  return ws_usage.shared;
+  if (!process_metrics->GetWorkingSetKBytes(&ws_usage))
+    return false;
+  *result = ws_usage.shared;
+  return true;
 }
 
-size_t TaskManagerModel::GetPhysicalMemory(
-    const base::ProcessMetrics* process_metrics) const {
+bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
+  *result = 0;
+  base::ProcessMetrics* process_metrics;
+  if (!GetProcessMetricsForRow(index, &process_metrics))
+    return false;
+  base::WorkingSetKBytes ws_usage;
+  if (!process_metrics->GetWorkingSetKBytes(&ws_usage))
+    return false;
+
   // Memory = working_set.private + working_set.shareable.
   // We exclude the shared memory.
   size_t total_kbytes = process_metrics->GetWorkingSetSize() / 1024;
-  base::WorkingSetKBytes ws_usage;
-  process_metrics->GetWorkingSetKBytes(&ws_usage);
   total_kbytes -= ws_usage.shared;
-  return total_kbytes;
+  *result = total_kbytes;
+  return true;
 }
 
 int TaskManagerModel::GetStatsValue(const TaskManager::Resource* resource,
@@ -753,25 +771,16 @@ void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {
                                         routing_id, byte_count)));
 }
 
-bool TaskManagerModel::GetProcessMetricsForRows(
-    int row1, int row2,
-    base::ProcessMetrics** proc_metrics1,
-    base::ProcessMetrics** proc_metrics2) const {
-  DCHECK(row1 < ResourceCount() && row2 < ResourceCount());
-  *proc_metrics1 = NULL;
-  *proc_metrics2 = NULL;
+bool TaskManagerModel::GetProcessMetricsForRow(
+    int row, base::ProcessMetrics** proc_metrics) const {
+  DCHECK(row < ResourceCount());
+  *proc_metrics = NULL;
 
   MetricsMap::const_iterator iter =
-      metrics_map_.find(resources_[row1]->GetProcess());
+      metrics_map_.find(resources_[row]->GetProcess());
   if (iter == metrics_map_.end())
     return false;
-  *proc_metrics1 = iter->second;
-
-  iter = metrics_map_.find(resources_[row2]->GetProcess());
-  if (iter == metrics_map_.end())
-    return false;
-  *proc_metrics2 = iter->second;
-
+  *proc_metrics = iter->second;
   return true;
 }
 

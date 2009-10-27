@@ -313,28 +313,26 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // |resource|.
   int GetCPUUsage(TaskManager::Resource* resource) const;
 
-  // Retrieves the private memory (in KB) that should be displayed from the
-  // passed |process_metrics|.
-  size_t GetPrivateMemory(const base::ProcessMetrics* process_metrics) const;
+  // Gets the private memory (in KB) that should be displayed for the passed
+  // resource index.
+  bool GetPrivateMemory(int index, size_t* result) const;
 
-  // Returns the shared memory (in KB) that should be displayed from the passed
-  // |process_metrics|.
-  size_t GetSharedMemory(const base::ProcessMetrics* process_metrics) const;
+  // Gets the shared memory (in KB) that should be displayed for the passed
+  // resource index.
+  bool GetSharedMemory(int index, size_t* result) const;
 
-  // Returns the pysical memory (in KB) that should be displayed from the passed
-  // |process_metrics|.
-  size_t GetPhysicalMemory(const base::ProcessMetrics* process_metrics) const;
+  // Gets the physical memory (in KB) that should be displayed for the passed
+  // resource index.
+  bool GetPhysicalMemory(int index, size_t* result) const;
 
   // Returns the stat value at the column |col_id| that should be displayed from
   // the passed |process_metrics|.
   int GetStatsValue(const TaskManager::Resource* resource, int col_id) const;
 
-  // Retrieves the ProcessMetrics for the resources at the specified rows.
-  // Returns true if there was a ProcessMetrics available for both rows.
-  bool GetProcessMetricsForRows(int row1,
-                                int row2,
-                                base::ProcessMetrics** proc_metrics1,
-                                base::ProcessMetrics** proc_metrics2) const;
+  // Retrieves the ProcessMetrics for the resources at the specified row.
+  // Returns true if there was a ProcessMetrics available.
+  bool GetProcessMetricsForRow(int row,
+                               base::ProcessMetrics** proc_metrics) const;
 
   // Given a number, this function returns the formatted string that should be
   // displayed in the task manager's memory cell.
