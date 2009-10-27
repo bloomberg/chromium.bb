@@ -1032,14 +1032,12 @@ void TabStrip::TabInsertedAt(TabContents* contents,
 }
 
 void TabStrip::TabDetachedAt(TabContents* contents, int index) {
-  if (CanUpdateDisplay()) {
-    GenerateIdealBounds();
-    StartRemoveTabAnimation(index, contents);
-    // Have to do this _after_ calling StartRemoveTabAnimation, so that any
-    // previous remove is completed fully and index is valid in sync with the
-    // model index.
-    GetTabAt(index)->set_closing(true);
-  }
+  GenerateIdealBounds();
+  StartRemoveTabAnimation(index, contents);
+  // Have to do this _after_ calling StartRemoveTabAnimation, so that any
+  // previous remove is completed fully and index is valid in sync with the
+  // model index.
+  GetTabAt(index)->set_closing(true);
 }
 
 void TabStrip::TabSelectedAt(TabContents* old_contents,
@@ -1047,20 +1045,18 @@ void TabStrip::TabSelectedAt(TabContents* old_contents,
                              int index,
                              bool user_gesture) {
   DCHECK(index >= 0 && index < GetTabCount());
-  if (CanUpdateDisplay()) {
-    // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
-    // a different size to the selected ones.
-    bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-    if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs)) {
-      Layout();
-    } else {
-      SchedulePaint();
-    }
-
-    int old_index = model_->GetIndexOfTabContents(old_contents);
-    if (old_index >= 0)
-      GetTabAt(old_index)->StopPinnedTabTitleAnimation();
+  // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
+  // a different size to the selected ones.
+  bool tiny_tabs = current_unselected_width_ != current_selected_width_;
+  if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs)) {
+    Layout();
+  } else {
+    SchedulePaint();
   }
+
+  int old_index = model_->GetIndexOfTabContents(old_contents);
+  if (old_index >= 0)
+    GetTabAt(old_index)->StopPinnedTabTitleAnimation();
 }
 
 void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
@@ -1208,6 +1204,7 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
     // This records some extra information in hopes of tracking down why.
     // The string contains the following, in order:
     // . If a drag is already in progress, a 'D'.
+    // . If the model is closing all, an 'A'.
     // . Index of tab the user is dragging.
     // . Number of tabs.
     // . Size of the model.
@@ -1216,6 +1213,8 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
     std::string tmp;
     if (drag_controller_.get())
       tmp += "D";
+    if (model_->closing_all())
+      tmp += " A";
     tmp += " " + IntToString(index);
     tmp += " " + IntToString(GetTabCount());
     tmp += " " + IntToString(model_->count());
@@ -1904,17 +1903,6 @@ void TabStrip::StartPinAndMoveTabAnimation(int from_index,
   active_animation_.reset(
       new PinAndMoveAnimation(this, from_index, to_index, start_bounds));
   active_animation_->Start();
-}
-
-bool TabStrip::CanUpdateDisplay() {
-  // Don't bother laying out/painting when we're closing all tabs.
-  if (model_->closing_all()) {
-    // Make sure any active animation is ended, too.
-    if (active_animation_.get())
-      active_animation_->Stop();
-    return false;
-  }
-  return true;
 }
 
 void TabStrip::FinishAnimation(TabStrip::TabAnimation* animation,
