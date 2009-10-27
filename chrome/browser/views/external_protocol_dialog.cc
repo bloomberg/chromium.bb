@@ -60,9 +60,8 @@ std::wstring ExternalProtocolDialog::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
     return l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
-
-  // Set the button to have a default name.
-  return L"";
+  else
+    return l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT);
 }
 
 std::wstring ExternalProtocolDialog::GetWindowTitle() const {
@@ -73,12 +72,31 @@ void ExternalProtocolDialog::DeleteDelegate() {
   delete this;
 }
 
+bool ExternalProtocolDialog::Cancel() {
+  // We also get called back here if the user closes the dialog or presses
+  // escape. In these cases it would be preferable to ignore the state of the
+  // check box but MessageBox doesn't distinguish this from pressing the cancel
+  // button.
+  if (message_box_view_->IsCheckBoxSelected()) {
+    ExternalProtocolHandler::SetBlockState(
+        UTF8ToWide(url_.scheme()), ExternalProtocolHandler::BLOCK);
+  }
+
+  // Returning true closes the dialog.
+  return true;
+}
+
 bool ExternalProtocolDialog::Accept() {
   // We record how long it takes the user to accept an external protocol.  If
   // users start accepting these dialogs too quickly, we should worry about
   // clickjacking.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::Time::Now() - creation_time_);
+
+  if (message_box_view_->IsCheckBoxSelected()) {
+    ExternalProtocolHandler::SetBlockState(
+        UTF8ToWide(url_.scheme()), ExternalProtocolHandler::DONT_BLOCK);
+  }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);
   // Returning true closes the dialog.
@@ -112,6 +130,9 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                                          message_text,
                                          L"",
                                          kMessageWidth);
+  message_box_view_->SetCheckBoxLabel(
+      l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
+
   HWND root_hwnd;
   if (tab_contents_) {
     root_hwnd = GetAncestor(tab_contents_->GetContentNativeView(), GA_ROOT);

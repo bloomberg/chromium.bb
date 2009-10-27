@@ -31,6 +31,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
       MessageBoxFlags::DialogButton button) const;
   virtual std::wstring GetWindowTitle() const;
   virtual void DeleteDelegate();
+  virtual bool Cancel();
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
