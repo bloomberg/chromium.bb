@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #include "talk/base/natsocketfactory.h"
 
 namespace talk_base {

@@ -34,6 +34,7 @@
 #include "talk/p2p/base/relayport.h"
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #ifdef OSX
 #include <errno.h>
 #endif

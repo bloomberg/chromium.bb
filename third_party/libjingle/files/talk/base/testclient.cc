@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 #ifdef POSIX
 extern "C" {

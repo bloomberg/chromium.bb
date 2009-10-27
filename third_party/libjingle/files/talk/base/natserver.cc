@@ -26,6 +26,7 @@
  */
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 
 #ifdef POSIX

@@ -15,7 +15,7 @@
 #include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
-class buzz::XmlElement;
+class XmlElement;
 class Jid;
 }
 

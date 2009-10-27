@@ -815,8 +815,8 @@ syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
       // If |candidate| is after |update_entry| according to the server
       // ordering, then we're done.  ID is the tiebreaker.
       if ((candidate.Get(SERVER_POSITION_IN_PARENT) > position_in_parent) ||
-          (candidate.Get(SERVER_POSITION_IN_PARENT) == position_in_parent) &&
-           (candidate.Get(ID) > update_item->Get(ID))) {
+          ((candidate.Get(SERVER_POSITION_IN_PARENT) == position_in_parent) &&
+           (candidate.Get(ID) > update_item->Get(ID)))) {
           return closest_sibling;
       }
     }

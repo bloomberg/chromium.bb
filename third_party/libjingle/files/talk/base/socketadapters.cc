@@ -41,6 +41,8 @@
 #include <security.h>
 #endif
 
+#include <cstring>
+
 #include "talk/base/basicdefs.h"
 #include "talk/base/bytebuffer.h"
 #include "talk/base/common.h"

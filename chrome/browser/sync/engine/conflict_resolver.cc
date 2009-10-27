@@ -531,11 +531,12 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
     id = parent.Get(syncable::PARENT_ID);
   }
   // If we find we've been looping we re-root the hierarchy.
-  if (loop_detection < 0)
+  if (loop_detection < 0) {
     if (id == entry.Get(syncable::ID))
       reroot_id = entry.Get(syncable::PARENT_ID);
     else
       reroot_id = id;
+  }
   // Now we fix things up by undeleting all the folders in the item's path.
   id = parent_id;
   while (!id.IsRoot() && id != reroot_id) {

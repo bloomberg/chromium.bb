@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef WIN32
 #include <wchar.h>
 #endif  // WIN32

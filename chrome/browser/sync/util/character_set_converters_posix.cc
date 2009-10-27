@@ -38,24 +38,26 @@ void TrimPathStringToValidCharacter(PathString* string) {
     PathChar c = string->at(string->length() - 1 - partial_enc_bytes);
     if ((c & 0x0c0) == 0x080)  // utf continuation char;
       continue;
-    if ((c & 0x0e0) == 0x0e0)  // 2-byte encoded char.
+    if ((c & 0x0e0) == 0x0e0) {  // 2-byte encoded char.
       if (1 == partial_enc_bytes)
         return;
       else
         break;
-    if ((c & 0x0f0) == 0xc0)  // 3-byte encoded char.
+    }
+    if ((c & 0x0f0) == 0xc0) {  // 3-byte encoded char.
       if (2 == partial_enc_bytes)
         return;
       else
         break;
-    if ((c & 0x0f8) == 0x0f0)  // 4-byte encoded char.
+    }
+    if ((c & 0x0f8) == 0x0f0) {  // 4-byte encoded char.
       if (3 == partial_enc_bytes)
         return;
       else
         break;
+    }
   }
   string->resize(string->length() - 1 - partial_enc_bytes);
 }
 
 }  // namespace browser_sync
-

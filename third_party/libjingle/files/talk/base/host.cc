@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
 #include <errno.h>
 
 #ifdef POSIX

@@ -32,6 +32,7 @@
 #include <alloca.h>
 #define _alloca alloca
 #endif  // POSIX
+#include <stdlib.h>
 
 #include "talk/base/basictypes.h"
 #include "talk/base/common.h"

@@ -33,11 +33,11 @@ class TaskPump;
 }  // namespace notifier
 
 namespace buzz {
-class buzz::XmppClient;
+class XmppClient;
 }  // namespace buzz
 
 namespace talk_base {
-class talk_base::SocketServer;
+class SocketServer;
 }  // namespace talk_base
 
 namespace browser_sync {

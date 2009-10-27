@@ -1628,6 +1628,7 @@ MutableExtendedAttribute::MutableExtendedAttribute(
   ScopedKernelLock lock(trans->directory());
   if (!Init(trans, kernel, &lock, key)) {
     ExtendedAttributeValue val;
+    val.is_deleted = false;
     val.dirty = true;
     i_ = kernel->extended_attributes->insert(std::make_pair(key, val)).first;
     good_ = true;

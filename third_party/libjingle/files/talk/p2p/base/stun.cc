@@ -29,6 +29,7 @@
 #include "talk/p2p/base/stun.h"
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 #if defined(_MSC_VER) && _MSC_VER < 1300
 namespace std {
