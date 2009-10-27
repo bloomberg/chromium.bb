@@ -121,12 +121,13 @@ class SymbolContext {
           kMaxNameLength * sizeof(wchar_t) +
           sizeof(ULONG64) - 1) /
         sizeof(ULONG64)];
+      memset(buffer, 0, sizeof(buffer));
 
       // Initialize symbol information retrieval structures.
       DWORD64 sym_displacement = 0;
       PSYMBOL_INFO symbol = reinterpret_cast<PSYMBOL_INFO>(&buffer[0]);
       symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-      symbol->MaxNameLen = kMaxNameLength;
+      symbol->MaxNameLen = kMaxNameLength - 1;
       BOOL has_symbol = SymFromAddr(GetCurrentProcess(), frame,
                                     &sym_displacement, symbol);
 
