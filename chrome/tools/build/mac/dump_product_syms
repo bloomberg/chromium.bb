@@ -19,7 +19,7 @@
 # CONFIGURATION=Release \
 #     SRCROOT=$(pwd) \
 #     BUILT_PRODUCTS_DIR=$(pwd)/../xcodebuild/Release \
-#     ../build/mac/dump_app_syms Chromium
+#     tools/build/mac/dump_app_syms Chromium
 
 # Make sure we got the header to write into passed to us
 if [ $# -ne 1 ]; then

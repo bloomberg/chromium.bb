@@ -19,7 +19,7 @@ fi
 set -e
 
 TOP="${SRCROOT}/.."
-PKG_DMG="${TOP}/build/mac/pkg-dmg"
+PKG_DMG="${SRCROOT}/tools/build/mac/pkg-dmg"
 BRAND_SCRIPT="${TOP}/build/branding_value.sh"
 
 BUILD_BRANDING=$1

@@ -145,6 +145,7 @@
       },],
       ['OS=="mac"', {
         'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
+        'symlink_lprojs_path': 'tools/build/mac/symlink_lprojs',
         'nacl_defines': [
           'NACL_WINDOWS=0',
           'NACL_LINUX=0',
@@ -2567,7 +2568,7 @@
               # files and generate table for the ui localizer from it.
               'variables': {
                 'xib_localizer_tool_path':
-                    '<(DEPTH)/build/mac/generate_localizer',
+                    'tools/build/mac/generate_localizer',
                 'xib_files_to_scan': [
                   # The xibs that need localization
                   'app/nibs/About.xib',
@@ -3535,7 +3536,11 @@
                   'postbuilds': [
                     {
                       'postbuild_name': 'Dump Symbols',
-                      'action': ['<(DEPTH)/build/mac/dump_app_syms',
+                      'variables': {
+                        'dump_product_syms_path':
+                            'tools/build/mac/dump_product_syms',
+                      },
+                      'action': ['<(dump_product_syms_path)',
                                  '<(branding)'],
                     },
                   ],
@@ -3681,8 +3686,8 @@
                          '<(mac_bundle_id)'],
             },
             {
-              'postbuild_name': 'Tweak Mac lproj folders',
-              'action': ['app/tweak_mac_lproj_folders'],
+              'postbuild_name': 'Make .lproj links',
+              'action': ['<(symlink_lprojs_path)'],
             },
             {
               'postbuild_name': 'Clean up old versions',
@@ -5399,8 +5404,8 @@
                              '<(mac_bundle_id)'],
                 },
                 {
-                  'postbuild_name': 'Tweak Mac lproj folders',
-                  'action': ['app/tweak_mac_lproj_folders'],
+                  'postbuild_name': 'Make .lproj links',
+                  'action': ['<(symlink_lprojs_path)'],
                 },
                 {
                   'postbuild_name': 'Symlink Libraries',
@@ -5624,8 +5629,8 @@
                          '<(mac_bundle_id)'],
             },
             {
-              'postbuild_name': 'Tweak Mac lproj folders',
-              'action': ['app/tweak_mac_lproj_folders'],
+              'postbuild_name': 'Make .lproj links',
+              'action': ['<(symlink_lprojs_path)'],
             },
           ],
           'conditions': [
@@ -5648,7 +5653,7 @@
             'chrome',
           ],
           'variables': {
-            'build_app_dmg_script_path': '<(DEPTH)/build/mac/build_app_dmg',
+            'build_app_dmg_script_path': 'tools/build/mac/build_app_dmg',
           },
           'actions': [
             {
