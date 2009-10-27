@@ -3308,3 +3308,5 @@ BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH FAIL PASS
 
+// WebKit 50158:10171
+BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
