@@ -3001,7 +3001,6 @@ BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
 
 // Mac LayoutTest/http errors after removing blanket exception.
 BUG20748 MAC : LayoutTests/http/tests/plugins/npapi-response-headers.html = TIMEOUT
-BUG20748 MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html = TIMEOUT
 BUG20748 MAC : LayoutTests/http/tests/plugins/get-url.html = TIMEOUT
 BUG20748 MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TIMEOUT
 
@@ -3303,6 +3302,7 @@ BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = TIMEOUT
 BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = TIMEOUT
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
+BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS FAIL
 
 // The following should be uncommented when the next line is no longer needed.
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
