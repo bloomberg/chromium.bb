@@ -67,11 +67,11 @@
 #include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/WebInputEventConversion.h"
+#include "webkit/api/src/WebPopupMenuImpl.h"
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webpopupmenu_impl.h"
 #include "webkit/glue/webview_impl.h"
 
 // Get rid of WTF's pow define so we can use std::pow.
@@ -80,6 +80,7 @@
 
 using namespace WebCore;
 
+using WebKit::ChromeClientImpl;
 using WebKit::PlatformKeyboardEventBuilder;
 using WebKit::PlatformMouseEventBuilder;
 using WebKit::PlatformWheelEventBuilder;
@@ -105,6 +106,7 @@ using WebKit::WebMouseWheelEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNode;
 using WebKit::WebPoint;
+using WebKit::WebPopupMenuImpl;
 using WebKit::WebRect;
 using WebKit::WebSettings;
 using WebKit::WebSettingsImpl;

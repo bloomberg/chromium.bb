@@ -800,7 +800,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     const WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
     if (ds) {
       KURL url = webkit_glue::WebURLToKURL(ds->request().url());
-      if (url.protocolIs(webkit_glue::kBackForwardNavigationScheme)) {
+      if (url.protocolIs(WebKit::backForwardNavigationScheme)) {
         HandleBackForwardNavigation(url);
         navigation_policy = WebKit::WebNavigationPolicyIgnore;
       } else {
@@ -1317,7 +1317,7 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
 }
 
 void WebFrameLoaderClient::HandleBackForwardNavigation(const KURL& url) {
-  ASSERT(url.protocolIs(webkit_glue::kBackForwardNavigationScheme));
+  ASSERT(url.protocolIs(WebKit::backForwardNavigationScheme));
 
   bool ok;
   int offset = url.lastPathComponent().toIntStrict(&ok);

@@ -12,13 +12,13 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebView.h"
+#include "webkit/api/src/BackForwardListClientImpl.h"
+#include "webkit/api/src/ChromeClientImpl.h"
 #include "webkit/api/src/ContextMenuClientImpl.h"
+#include "webkit/api/src/DragClientImpl.h"
+#include "webkit/api/src/InspectorClientImpl.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
-#include "webkit/glue/back_forward_list_client_impl.h"
-#include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/editor_client_impl.h"
-#include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
 
 namespace WebCore {
@@ -255,12 +255,12 @@ class WebViewImpl : public WebKit::WebView, public RefCounted<WebViewImpl> {
 
   WebKit::WebViewClient* client_;
 
-  webkit_glue::BackForwardListClientImpl back_forward_list_client_impl_;
-  ChromeClientImpl chrome_client_impl_;
+  WebKit::BackForwardListClientImpl back_forward_list_client_impl_;
+  WebKit::ChromeClientImpl chrome_client_impl_;
   WebKit::ContextMenuClientImpl context_menu_client_impl_;
-  DragClientImpl drag_client_impl_;
+  WebKit::DragClientImpl drag_client_impl_;
   EditorClientImpl editor_client_impl_;
-  InspectorClientImpl inspector_client_impl_;
+  WebKit::InspectorClientImpl inspector_client_impl_;
 
   WebKit::WebSize size_;
 

@@ -29,7 +29,7 @@
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebViewClient.h"
-#include "webkit/glue/chrome_client_impl.h"
+#include "webkit/api/src/ChromeClientImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
@@ -39,6 +39,7 @@
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworkerclient_impl.h"
 
+using WebKit::ChromeClientImpl;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCursorInfo;
@@ -416,7 +417,7 @@ void WebKitClientImpl::setCursorForPlugin(
   // A windowless plugin can change the cursor in response to the WM_MOUSEMOVE
   // event. We need to reflect the changed cursor in the frame view as the
   // mouse is moved in the boundaries of the windowless plugin.
-  chrome_client->SetCursorForPlugin(cursor_info);
+  chrome_client->setCursorForPlugin(cursor_info);
 }
 
 void WebKitClientImpl::notifyJSOutOfMemory(WebCore::Frame* frame) {
@@ -484,7 +485,7 @@ void WebKitClientImpl::widgetSetCursor(WebCore::Widget* widget,
                                        const WebCore::Cursor& cursor) {
   ChromeClientImpl* chrome_client = ToChromeClient(widget);
   if (chrome_client)
-    chrome_client->SetCursor(CursorToWebCursorInfo(cursor));
+    chrome_client->setCursor(CursorToWebCursorInfo(cursor));
 }
 
 void WebKitClientImpl::widgetSetFocus(WebCore::Widget* widget) {
