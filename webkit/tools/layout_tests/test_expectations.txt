@@ -3206,9 +3206,10 @@ BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS
 
 // WebKit roll 49961:49992
 // Added in http://trac.webkit.org/changeset/49990
-BUG_TONY : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
-// Missing results
+BUG25884 WIN LINUX : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
+// Needs to show image placeholder for http://
 BUG_TONY : LayoutTests/editing/execCommand/indent-paragraphs.html = FAIL
+// Missing results.
 BUG_TONY WIN LINUX SKIP : LayoutTests/fast/dom/defaultView.html = FAIL
 // Unknown
 BUG_TONY : LayoutTests/fast/dom/delete-contents.html = FAIL
@@ -3249,4 +3250,5 @@ BUG_TONY MAC : LayoutTests/media/video-error-abort.html = FAIL
 // jorlow to add expected results.
 BUG_JORLOW : LayoutTests/storage/domstorage/documentURI.html = FAIL
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
-BUG_TONY : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
+BUG25880 WIN LINUX : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
+BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
