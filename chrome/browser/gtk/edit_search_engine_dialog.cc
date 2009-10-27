@@ -79,7 +79,10 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
       NULL);
 
   ok_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
-                                     GTK_STOCK_OK, GTK_RESPONSE_OK);
+                                     controller_->template_url() ?
+                                     GTK_STOCK_SAVE :
+                                     GTK_STOCK_ADD,
+                                     GTK_RESPONSE_OK);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
 
   // The dialog layout hierarchy looks like this:
