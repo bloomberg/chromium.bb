@@ -73,7 +73,6 @@
         'npbridge.cc',
         'npbridge.h',
         'npcapability.h',
-        'npn_gate.cc',
         'npmodule.cc',
         'npmodule.h',
         'npobject_proxy.cc',
