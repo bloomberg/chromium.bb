@@ -158,16 +158,6 @@
 
 # TODO(timurrrr): bug item
 {
-  Data race on vfptr in ipc/ipc_sync_channel_unittest
-  ThreadSanitizer:Race
-  ...
-  fun:*STLDeleteContainerPointers*Worker*
-  ...
-  fun:*IPCSyncChannelTest*
-}
-
-# TODO(timurrrr): bug item
-{
   Data race on bool in chrome/browser/net/url_fetcher_unittest (1)
   ThreadSanitizer:Race
   fun:*URLFetcherCancelTest*TestContextReleased*
