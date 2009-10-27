@@ -81,6 +81,7 @@
 using namespace WebCore;
 
 using WebKit::ChromeClientImpl;
+using WebKit::EditorClientImpl;
 using WebKit::PlatformKeyboardEventBuilder;
 using WebKit::PlatformMouseEventBuilder;
 using WebKit::PlatformWheelEventBuilder;
@@ -191,7 +192,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     EditorClientImpl* editor =
         static_cast<EditorClientImpl*>(webview_->page()->editorClient());
     ASSERT(editor);
-    editor->OnAutofillSuggestionAccepted(
+    editor->onAutofillSuggestionAccepted(
         static_cast<WebCore::HTMLInputElement*>(text_field_.get()));
   }
 
@@ -499,7 +500,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
   if (clicked_node.get() && clicked_node == GetFocusedNode()) {
     // Focus has not changed, show the autocomplete popup.
     static_cast<EditorClientImpl*>(page_->editorClient())->
-        ShowFormAutofillForNode(clicked_node.get());
+        showFormAutofillForNode(clicked_node.get());
   }
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.

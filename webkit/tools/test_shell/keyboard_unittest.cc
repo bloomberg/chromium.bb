@@ -15,14 +15,15 @@ MSVC_POP_WARNING();
 #undef LOG
 
 #include "base/string_util.h"
-#include "webkit/glue/editor_client_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/src/EditorClientImpl.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 
 using WebCore::PlatformKeyboardEvent;
 using WebCore::KeyboardEvent;
 
+using WebKit::EditorClientImpl;
 using WebKit::PlatformKeyboardEventBuilder;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
