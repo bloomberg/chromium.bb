@@ -36,11 +36,9 @@ void SynapticsLibrary::SetParameter(SynapticsParameter param, int value) {
   if (CrosLibrary::loaded()) {
     // This calls SetSynapticsParameter in the cros library which is
     // potentially time consuming. So we run this on the FILE thread.
-    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::FILE);
-    if (loop) {
-      loop->PostTask(FROM_HERE, NewRunnableFunction(
-          &SetSynapticsParameter, param, value));
-    }
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableFunction(&SetSynapticsParameter, param, value));
   }
 }
 

@@ -174,9 +174,9 @@ RenderCrashHandlerHostLinux::RenderCrashHandlerHostLinux()
   renderer_socket_ = fds[0];
   browser_socket_ = fds[1];
 
-  MessageLoop* ml = ChromeThread::GetMessageLoop(ChromeThread::IO);
-  ml->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RenderCrashHandlerHostLinux::Init));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &RenderCrashHandlerHostLinux::Init));
 }
 
 RenderCrashHandlerHostLinux::~RenderCrashHandlerHostLinux() {
