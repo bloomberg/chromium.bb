@@ -95,7 +95,7 @@ deps = {
     Var("webkit_revision"),
 
   "src/chrome/tools/test/reference_build":
-    "/trunk/deps/reference_builds@25513",
+    "/trunk/deps/reference_builds@30141",
 }
 
 
