@@ -128,7 +128,8 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       show_instructions_(true),
       menu_bar_helper_(this),
       floating_(false),
-      last_allocation_width_(-1) {
+      last_allocation_width_(-1),
+      event_box_paint_factory_(this) {
 #if defined(BROWSER_SYNC)
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
@@ -227,7 +228,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  g_signal_connect(G_OBJECT(event_box_.get()), "expose-event",
+  g_signal_connect(event_box_.get(), "expose-event",
                    G_CALLBACK(&OnEventBoxExpose), this);
   UpdateEventBoxPaintability();
 
@@ -615,8 +616,19 @@ void BookmarkBarGtk::UpdateFloatingState() {
 
   UpdateEventBoxPaintability();
   // |window_| can be NULL during testing.
-  if (window_)
+  if (window_) {
     window_->BookmarkBarIsFloating(floating_);
+    // Listen for parent size allocations.
+    if (floating_ && widget()->parent) {
+      // Only connect once.
+      if (g_signal_handler_find(widget()->parent, G_SIGNAL_MATCH_FUNC,
+          0, NULL, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocate),
+          NULL) == 0) {
+        g_signal_connect(widget()->parent, "size-allocate",
+                         G_CALLBACK(OnParentSizeAllocate), this);
+      }
+    }
+  }
 }
 
 void BookmarkBarGtk::UpdateEventBoxPaintability() {
@@ -627,6 +639,34 @@ void BookmarkBarGtk::UpdateEventBoxPaintability() {
   // themes, we want to let the background show through the toolbar.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
                                    theme_provider_->UseGtkTheme());
+}
+
+void BookmarkBarGtk::PaintEventBox() {
+  gfx::Size tab_contents_size;
+  if (GetTabContentsSize(&tab_contents_size) &&
+      tab_contents_size != last_tab_contents_size_) {
+    last_tab_contents_size_ = tab_contents_size;
+    gtk_widget_queue_draw(event_box_.get());
+  }
+}
+
+bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
+  Browser* browser = browser_;
+  if (!browser) {
+    NOTREACHED();
+    return false;
+  }
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents) {
+    NOTREACHED();
+    return false;
+  }
+  if (!tab_contents->view()) {
+    NOTREACHED();
+    return false;
+  }
+  *size = tab_contents->view()->GetContainerSize();
+  return true;
 }
 
 bool BookmarkBarGtk::IsAlwaysShown() {
@@ -1100,27 +1140,30 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     cairo_destroy(cr);
   } else {
     gfx::Size tab_contents_size;
-    Browser* browser = bar->browser_;
-    if (!browser) {
-      NOTREACHED();
+    if (!bar->GetTabContentsSize(&tab_contents_size))
       return FALSE;
-    }
-    TabContents* tab_contents = browser->GetSelectedTabContents();
-    if (!tab_contents) {
-      NOTREACHED();
-      return FALSE;
-    }
-    if (!tab_contents->view()) {
-      NOTREACHED();
-      return FALSE;
-    }
-    tab_contents_size = tab_contents->view()->GetContainerSize();
     gfx::CanvasPaint canvas(event, true);
     NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
         gfx::Rect(widget->allocation), tab_contents_size.height());
   }
 
   return FALSE;  // Propagate expose to children.
+}
+
+// static
+void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
+                                          GtkAllocation* allocation,
+                                          BookmarkBarGtk* bar) {
+  // In floating mode, our layout depends on the size of the tab contents.
+  // We get the size-allocate signal before the tab contents does, hence we
+  // need to post a delayed task so we will paint correctly. Note that
+  // gtk_widget_queue_draw by itself does not work, despite that it claims to
+  // be asynchronous.
+  if (bar->floating_) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        bar->event_box_paint_factory_.NewRunnableMethod(
+            &BookmarkBarGtk::PaintEventBox));
+  }
 }
 
 // static

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app/slide_animation.h"
+#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
@@ -150,6 +151,13 @@ class BookmarkBarGtk : public AnimationDelegate,
   // state.
   void UpdateEventBoxPaintability();
 
+  // Queue a paint on the event box.
+  void PaintEventBox();
+
+  // Finds the size of the current tab contents. If the size cannot be found,
+  // DCHECKs and returns false. Otherwise, sets |size| to the correct value.
+  bool GetTabContentsSize(gfx::Size* size);
+
   // Overridden from BookmarkModelObserver:
 
   // Invoked when the bookmark model has finished loading. Creates a button
@@ -245,11 +253,16 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // GtkEventBox callbacks.
   static gboolean OnEventBoxExpose(GtkWidget* widget, GdkEventExpose* event,
-                                   BookmarkBarGtk* window);
+                                   BookmarkBarGtk* bar);
 
   // GtkVSeparator callbacks.
   static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,
-                                    BookmarkBarGtk* window);
+                                    BookmarkBarGtk* bar);
+
+  // Callbacks on our parent widget.
+  static void OnParentSizeAllocate(GtkWidget* widget,
+                                   GtkAllocation* allocation,
+                                   BookmarkBarGtk* bar);
 
 #if defined(BROWSER_SYNC)
   // ProfileSyncServiceObserver method.
@@ -320,7 +333,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   // dragging.
   const BookmarkNode* dragged_node_;
 
-  // We create a GtkToolbarItem from |dragged_node_| for display.
+  // We create a GtkToolbarItem from |dragged_node_| ;or display.
   GtkToolItem* toolbar_drop_item_;
 
   // Theme provider for building buttons.
@@ -351,6 +364,13 @@ class BookmarkBarGtk : public AnimationDelegate,
   int last_allocation_width_;
 
   NotificationRegistrar registrar_;
+
+  // The size of the tab contents last time we forced a paint. We keep track
+  // of this so we don't force too many paints.
+  gfx::Size last_tab_contents_size_;
+
+  // We post delayed paints using this factory.
+  ScopedRunnableMethodFactory<BookmarkBarGtk> event_box_paint_factory_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_BAR_GTK_H_
