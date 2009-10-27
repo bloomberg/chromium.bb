@@ -5,6 +5,7 @@
 #include "app/gfx/font.h"
 
 #include <gdk/gdk.h>
+#include <map>
 #include <pango/pango.h>
 
 #include "app/gfx/canvas.h"
@@ -42,6 +43,35 @@ static double GetPangoScaleFactor() {
   return scale_factor;
 }
 
+// Retrieves the pango metrics for a pango font description. Caches the metrics
+// and never frees them. The metrics objects are relatively small and
+// very expensive to look up.
+static PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
+  static std::map<int, PangoFontMetrics*>* desc_to_metrics = NULL;
+  static PangoContext* context = NULL;
+
+  if (!context) {
+    context = gdk_pango_context_get_for_screen(gdk_screen_get_default());
+    pango_context_set_language(context, pango_language_get_default());
+  }
+
+  if (!desc_to_metrics) {
+    desc_to_metrics = new std::map<int, PangoFontMetrics*>();
+  }
+
+  int desc_hash = pango_font_description_hash(desc);
+  std::map<int, PangoFontMetrics*>::iterator i =
+      desc_to_metrics->find(desc_hash);
+
+  if (i == desc_to_metrics->end()) {
+    PangoFontMetrics* metrics = pango_context_get_metrics(context, desc, NULL);
+    (*desc_to_metrics)[desc_hash] = metrics;
+    return metrics;
+  } else {
+    return i->second;
+  }
+}
+
 }  // namespace
 
 namespace gfx {
@@ -61,7 +91,11 @@ Font::Font(SkTypeface* tf, const std::wstring& font_family, int font_size,
       typeface_(tf),
       font_family_(font_family),
       font_size_(font_size),
-      style_(style) {
+      style_(style),
+      pango_metrics_inited_(false),
+      avg_width_(0.0),
+      underline_position_(0.0),
+      underline_thickness_(0.0) {
   tf->ref();
   calculateMetrics();
 }
@@ -74,8 +108,6 @@ void Font::calculateMetrics() {
 
   ascent_ = SkScalarCeil(-metrics.fAscent);
   height_ = ascent_ + SkScalarCeil(metrics.fDescent);
-  // avg_width_ is calculated lazily, as it's expensive and not used often.
-  avg_width_ = -1.0;
 
 }
 
@@ -88,7 +120,10 @@ void Font::CopyFont(const Font& other) {
   style_ = other.style_;
   height_ = other.height_;
   ascent_ = other.ascent_;
+  pango_metrics_inited_ = other.pango_metrics_inited_;
   avg_width_ = other.avg_width_;
+  underline_position_ = other.underline_position_;
+  underline_thickness_ = other.underline_thickness_;
 }
 
 int Font::height() const {
@@ -100,7 +135,7 @@ int Font::baseline() const {
 }
 
 int Font::ave_char_width() const {
-  return SkScalarRound(const_cast<Font*>(this)->avg_width());
+  return SkScalarRound(avg_width());
 }
 
 Font Font::CreateFont(const std::wstring& font_family, int font_size) {
@@ -148,7 +183,7 @@ Font Font::DeriveFont(int size_delta, int style) const {
       static_cast<SkTypeface::Style>(skstyle));
   SkAutoUnref tf_helper(tf);
 
-  return Font(tf, font_family_, font_size_ + size_delta, skstyle);
+  return Font(tf, font_family_, font_size_ + size_delta, style);
 }
 
 void Font::PaintSetup(SkPaint* paint) const {
@@ -168,16 +203,26 @@ int Font::GetStringWidth(const std::wstring& text) const {
   return width;
 }
 
-double Font::avg_width() {
-  if (avg_width_ < 0) {
-    // First get the pango based width
+void Font::InitPangoMetrics() {
+  if (!pango_metrics_inited_) {
+    pango_metrics_inited_ = true;
     PangoFontDescription* pango_desc = PangoFontFromGfxFont(*this);
-    PangoContext* context =
-        gdk_pango_context_get_for_screen(gdk_screen_get_default());
-    PangoFontMetrics* pango_metrics =
-        pango_context_get_metrics(context,
-                                  pango_desc,
-                                  pango_language_get_default());
+    PangoFontMetrics* pango_metrics = GetPangoFontMetrics(pango_desc);
+
+    underline_position_ =
+        pango_font_metrics_get_underline_position(pango_metrics);
+    underline_position_ /= PANGO_SCALE;
+
+    // todo(davemoore) Come up with a better solution.
+    // This is a hack, but without doing this the underlines
+    // we get end up fuzzy. So we align to the midpoint of a pixel.
+    underline_position_ /= 2;
+
+    underline_thickness_ =
+        pango_font_metrics_get_underline_thickness(pango_metrics);
+    underline_thickness_ /= PANGO_SCALE;
+
+    // First get the pango based width
     double pango_width =
         pango_font_metrics_get_approximate_char_width(pango_metrics);
     pango_width /= PANGO_SCALE;
@@ -188,10 +233,23 @@ double Font::avg_width() {
         L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     double dialog_units = (text_width / 26 + 1) / 2;
     avg_width_ = std::min(pango_width, dialog_units);
-    pango_font_metrics_unref(pango_metrics);
     pango_font_description_free(pango_desc);
   }
+}
+
+double Font::avg_width() const {
+  const_cast<Font*>(this)->InitPangoMetrics();
   return avg_width_;
+}
+
+double Font::underline_position() const {
+  const_cast<Font*>(this)->InitPangoMetrics();
+  return underline_position_;
+}
+
+double Font::underline_thickness() const {
+  const_cast<Font*>(this)->InitPangoMetrics();
+  return underline_thickness_;
 }
 
 int Font::GetExpectedTextWidth(int length) const {

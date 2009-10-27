@@ -560,7 +560,8 @@ void AboutChromeView::DrawTextStartingFrom(gfx::Canvas* canvas,
     int y = position->height() + bounds.y();
 
     // Draw the text on the screen (mirrored, if RTL run).
-    canvas->DrawStringInt(word, font, text_color, x, y, w, h, flags);
+    canvas->DrawStringInt(
+        word, font, text_color, x, y, w, font.height(), flags);
 
     if (word.size() > 0 && word[word.size() - 1] == L'\x0a') {
       // When we come across '\n', we move to the beginning of the next line.

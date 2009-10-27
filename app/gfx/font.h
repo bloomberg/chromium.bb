@@ -136,6 +136,13 @@ class Font {
   // Converts |gfx_font| to a new pango font. Free the returned font with
   // pango_font_description_free().
   static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
+
+  // Position as an offset from the height of the drawn text, used to draw
+  // an underline. This is a negative number, so the underline would be
+  // drawn at y + height + underline_position;
+  double underline_position() const;
+  // The thickness to draw the underline.
+  double underline_thickness() const;
 #endif
 
  private:
@@ -207,7 +214,10 @@ class Font {
   static Font* default_font_;
 
   // The average width of a character, initialized and cached if needed.
-  double avg_width();
+  double avg_width() const;
+
+  // Potentially slow call to get pango metrics (avg width, underline info).
+  void InitPangoMetrics();
 
   // These two both point to the same SkTypeface. We use the SkAutoUnref to
   // handle the reference counting, but without @typeface_ we would have to
@@ -224,7 +234,13 @@ class Font {
   // Cached metrics, generated at construction
   int height_;
   int ascent_;
+
+  // The pango metrics are much more expensive so we wait until we need them
+  // to compute them.
+  bool pango_metrics_inited_;
   double avg_width_;
+  double underline_position_;
+  double underline_thickness_;
 #elif defined(OS_MACOSX)
   explicit Font(const std::wstring& font_name, int font_size, int style);
 

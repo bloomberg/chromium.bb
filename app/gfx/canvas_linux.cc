@@ -185,6 +185,9 @@ void Canvas::DrawStringInt(const std::wstring& text,
   int width, height;
   pango_layout_get_pixel_size(layout, &width, &height);
 
+  cairo_rectangle(cr, x, y, width, height);
+  cairo_clip(cr);
+
   if (flags & Canvas::TEXT_VALIGN_TOP) {
     // Cairo should draw from the top left corner already.
   } else if (flags & Canvas::TEXT_VALIGN_BOTTOM) {
@@ -194,11 +197,16 @@ void Canvas::DrawStringInt(const std::wstring& text,
     y += ((h - height) / 2);
   }
 
-  cairo_rectangle(cr, x, y, w, h);
-  cairo_clip(cr);
-
   cairo_move_to(cr, x, y);
   pango_cairo_show_layout(cr, layout);
+  if (font.style() & gfx::Font::UNDERLINED) {
+    double underline_y =
+        static_cast<double>(y) + height + font.underline_position();
+    cairo_set_line_width(cr, font.underline_thickness());
+    cairo_move_to(cr, x, underline_y);
+    cairo_line_to(cr, x + width, underline_y);
+    cairo_stroke(cr);
+  }
   cairo_restore(cr);
 
   g_object_unref(layout);
