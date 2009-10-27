@@ -240,11 +240,9 @@ int main(int  ac,
   extern char                   **environ;
 
   char                          *log_file = NULL;
-  int                           log_desc = -1;
+  struct GioFile                *log_gio;
+  int                           log_desc;
   int                           debug_mode = 0;
-  FILE                          *log_stream;
-  char                          *env_verbosity;
-  struct GioFile                log_gio;
 
   struct NaClEnvCleanser        filtered_env;
 
@@ -272,16 +270,8 @@ int main(int  ac,
 
   NaClAllModulesInit();
 
-  log_file = getenv("NACLLOG");
+  verbosity = NaClLogGetVerbosity();
 
-  if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
-    int v = strtol(env_verbosity, (char **) 0, 0);
-
-    if (v >= 0) {
-      verbosity = v;
-      NaClLogSetVerbosity(v);
-    }
-  }
   fflush((FILE *) NULL);
 
   if (!GioFileRefCtor(&gout, stdout)) {
@@ -395,21 +385,22 @@ int main(int  ac,
    * shouldn't happen -- won't show up.
    */
   if (NULL != log_file) {
-
-    log_desc = open(log_file, O_WRONLY | O_APPEND | O_CREAT, 0777);
-    if (-1 == log_desc) {
-      fprintf(stderr, "Could not create log file\n");
-      return 1;
-    }
-
-    log_stream = FDOPEN(log_desc, "a");
-    if (NULL == log_stream) {
-      fprintf(stderr, "Could not fdopen log stream\n");
-      return 1;
-    }
-    GioFileRefCtor(&log_gio, log_stream);
-    NaClLogSetGio((struct Gio *) &log_gio);
+    NaClLogSetFile(log_file);
   }
+
+  /*
+   * NB: the following cast is okay since we only ever permit GioFile
+   * objects to be used -- NaClLogModuleInit and NaClLogSetFile both
+   * can only assign the log output to a file.  If neither were
+   * called, logging goes to stderr.
+   */
+  log_gio = (struct GioFile *) NaClLogGetGio();
+  /*
+   * By default, the logging module logs to stderr, or descriptor 2.
+   * If NaClLogSetFile was performed above, then log_desc will have
+   * the non-default value.
+   */
+  log_desc = fileno(log_gio->iop);
 
   if (!nacl_file && optind < ac) {
     nacl_file = av[optind];
@@ -477,11 +468,23 @@ int main(int  ac,
     /*
      * Finish setting up the NaCl App.  This includes dup'ing
      * descriptors 0-2 and making them available to the NaCl App.
+     *
+     * If a log file were specified at the command-line and the
+     * logging module was set to use a log file instead of standard
+     * error, then we redirect standard output of the NaCl module to
+     * that log file too.  Standard input is inherited, and could
+     * result in a NaCl module competing for input from the terminal;
+     * for graphical / browser plugin environments, this never is
+     * allowed to happen, and having this is useful for debugging, and
+     * for potential standalone text-mode applications of NaCl.
+     *
+     * TODO(bsy): consider whether inheriting stdin should occur only
+     * in debug mode.
      */
     errcode = NaClAppPrepareToLaunch(nap,
                                      0,
-                                     (-1 == log_desc) ? 1 : log_desc,
-                                     (-1 == log_desc) ? 2 : log_desc);
+                                     (2 == log_desc) ? 1 : log_desc,
+                                     log_desc);
     if (LOAD_OK != errcode) {
       nap->module_load_status = errcode;
       fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);

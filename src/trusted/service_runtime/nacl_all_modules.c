@@ -32,6 +32,7 @@
 /*
  * Gather ye all module initializations and finalizations here.
  */
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
@@ -50,6 +51,7 @@ void  NaClAllModulesInit(void) {
 #endif
   NaClSyscallTableInit();
   NaClThreadNiceInit();
+  NaClTimeInit();
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassLdrInit();
 #endif
@@ -57,6 +59,7 @@ void  NaClAllModulesInit(void) {
 
 
 void NaClAllModulesFini(void) {
+  NaClTimeFini();
 #if defined(HAVE_SDL)
   NaClMultimediaModuleFini();
 #endif

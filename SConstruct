@@ -876,10 +876,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/imc_shm_mmap/nacl.scons',
           'tests/mandel/nacl.scons',
           'tests/mmap/nacl.scons',
-          # TODO(bsy): after the SDK is built, check that this test works
-          # on windows, and verify that it continues to work on osx and
-          # linux.  (naclsdk_mode=local appears to be broken on windows.)
-          # 'tests/nanosleep/nacl.scons',
+          'tests/nanosleep/nacl.scons',
           'tests/native_worker/nacl.scons',
           'tests/noop/nacl.scons',
           'tests/npapi_bridge/nacl.scons',
@@ -895,6 +892,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/sysbasic/nacl.scons',
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
+          'tests/time/nacl.scons',
           'tests/vim/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
           ],

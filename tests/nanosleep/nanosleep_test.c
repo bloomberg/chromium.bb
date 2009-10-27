@@ -31,6 +31,7 @@
  * gettimeofday resolution may cause a false failure report.
  */
 int TestNanoSleep(struct timespec *t_suspend) {
+  struct timespec t_remain;
   struct timeval  t_start;
   int             rv;
   struct timeval  t_end;
@@ -40,16 +41,25 @@ int TestNanoSleep(struct timespec *t_suspend) {
          "Requesting nanosleep duration",
          t_suspend->tv_sec,
          t_suspend->tv_nsec);
-  if (-1 == gettimeofday(&t_start, (struct timezone *) NULL)) {
+  t_remain = *t_suspend;
+  /*
+   * BUG: ntp or other time adjustments can mess up timing.
+   * BUG: time-of-day clock resolution may be not be fine enough to
+   * measure nanosleep duration.
+   */
+  if (-1 == gettimeofday(&t_start, NULL)) {
+    printf("gettimeofday for start time failed\n");
     return 1;
   }
-  while (-1 == (rv = nanosleep(t_suspend, (struct timespec *) NULL)) &&
+  while (-1 == (rv = nanosleep(&t_remain, &t_remain)) &&
          EINTR == errno) {
   }
   if (-1 == rv) {
+    printf("nanosleep failed, errno = %d\n", errno);
     return 1;
   }
-  if (-1 == gettimeofday(&t_end, (struct timezone *) NULL)) {
+  if (-1 == gettimeofday(&t_end, NULL)) {
+    printf("gettimeofday for end time failed\n");
     return 1;
   }
 
@@ -76,29 +86,31 @@ int TestNanoSleep(struct timespec *t_suspend) {
   }
 }
 
+#define NANOS_PER_MICRO   (1000)
+#define MICROS_PER_MILLI  (1000)
+#define NANOS_PER_MILLI   (NANOS_PER_MICRO * MICROS_PER_MILLI)
+
 int main(void) {
-  struct timespec t_suspend;
-  int             num_errors = 0;
+  int                     num_errors = 0;
+  int                     ix;
 
-  /* 1ms */
-  t_suspend.tv_sec = 0;
-  t_suspend.tv_nsec = 1000000;
-  num_errors += TestNanoSleep(&t_suspend);
+  static struct timespec  t_suspend[] = {
+    { 0,   1 * NANOS_PER_MILLI, },
+    { 0,   2 * NANOS_PER_MILLI, },
+    { 0,   5 * NANOS_PER_MILLI, },
+    { 0,  10 * NANOS_PER_MILLI, },
+    { 0,  25 * NANOS_PER_MILLI, },
+    { 0,  50 * NANOS_PER_MILLI, },
+    { 0, 100 * NANOS_PER_MILLI, },
+    { 0, 250 * NANOS_PER_MILLI, },
+    { 0, 500 * NANOS_PER_MILLI, },
+    { 1,   0 * NANOS_PER_MILLI, },
+    { 1, 500 * NANOS_PER_MILLI, },
+  };
 
-  /* 10ms*/
-  t_suspend.tv_sec = 0;
-  t_suspend.tv_nsec = 10000000;
-  num_errors += TestNanoSleep(&t_suspend);
-
-  /* 100ms*/
-  t_suspend.tv_sec = 0;
-  t_suspend.tv_nsec = 100000000;
-  num_errors += TestNanoSleep(&t_suspend);
-
-  /* 1s*/
-  t_suspend.tv_sec = 1;
-  t_suspend.tv_nsec = 0;
-  num_errors += TestNanoSleep(&t_suspend);
+  for (ix = 0; ix < sizeof t_suspend/sizeof t_suspend[0]; ++ix) {
+    num_errors += TestNanoSleep(&t_suspend[ix]);
+  }
 
   if (0 != num_errors) {
     printf("FAILED\n");

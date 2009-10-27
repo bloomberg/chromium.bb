@@ -337,12 +337,11 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
                          struct nacl_abi_timespec *req,
                          struct nacl_abi_timespec *rem) {
   uintptr_t                 sys_req;
+  uintptr_t                 sys_rem;
   struct nacl_abi_timespec  t_sleep;
+  struct nacl_abi_timespec  t_rem;
+  struct nacl_abi_timespec  *remptr;
   int                       retval = -NACL_ABI_EINVAL;
-  struct timespec           host_req;
-  struct timespec           host_rem;
-
-  UNREFERENCED_PARAMETER(rem);
 
   NaClLog(4, "NaClSysNanosleep(%08"PRIxPTR"x)\n", (uintptr_t) req);
 
@@ -353,36 +352,45 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
+  if (NULL == rem) {
+    sys_rem = 0;
+  } else {
+    sys_rem = NaClUserToSysAddrRange(natp->nap, (uintptr_t) rem, sizeof *rem);
+    if (kNaClBadAddress == sys_rem) {
+      retval = -NACL_ABI_EFAULT;
+      goto cleanup;
+    }
+  }
+  /*
+   * post-condition: if sys_rem is non-NULL, it's safe to write to
+   * (modulo thread races) and the user code wants the remaining time
+   * written there.
+   */
 
   NaClLog(4, " copying timespec from %08"PRIxPTR"x\n", sys_req);
   /* copy once */
   t_sleep = *(struct nacl_abi_timespec *) sys_req;
 
-  /* definitely different types, and shape may actually differ too. */
-  host_req.tv_sec = t_sleep.tv_sec;
-  host_req.tv_nsec = t_sleep.tv_nsec;
+  remptr = (0 == sys_rem) ? NULL : &t_rem;
+  /* NULL != remptr \equiv NULL != rem */
+
   /*
    * We assume that we do not need to normalize the time request values.
    *
    * If bogus values can cause the underlying OS to get into trouble,
    * then we need more checking here.
    */
+  retval = NaClNanosleep(&t_sleep, remptr);
+  NaClLog(4, "NaClSysNanosleep(time = %"PRId64".%09"PRId64" S)\n",
+          (int64_t) t_sleep.tv_sec, (int64_t) t_sleep.tv_nsec);
 
-  NaClLog(4, "NaClSysNanosleep(time = %ld.%09ld S)\n",
-          (long) host_req.tv_sec, (long) host_req.tv_nsec);
+  if (-EINTR == retval && NULL != rem) {
+    /* definitely different types, and shape may actually differ too. */
+    rem = (struct nacl_abi_timespec *) sys_rem;
+    rem->tv_sec = remptr->tv_sec;
+    rem->tv_nsec = remptr->tv_nsec;
+  }
 
-  NaClLog(4, "About to call host-OS nanosleep\n");
-  /*
-   * We don't need to worry about signal handlers, since we don't use
-   * signals.  Hence, nanosleep shouldn't actually return with EINTR,
-   * but having this code is defensive.
-   */
-  while (-1 == (retval = nanosleep(&host_req, &host_rem)) && EINTR == errno) {
-    host_req = host_rem;
-  }
-  if (-1 == retval) {
-    retval = -NaClXlateErrno(errno);
-  }
 cleanup:
   NaClLog(4, "nanosleep done.\n");
   NaClSysCommonThreadSyscallLeave(natp);

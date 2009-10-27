@@ -42,7 +42,31 @@
 
 EXTERN_C_BEGIN
 
+void NaClTimeInit(void);
+
+void NaClTimeFini(void);
+
+uint64_t NaClTimerResolutionNanoseconds(void);
+
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv);
+
+int NaClNanosleep(struct nacl_abi_timespec const  *req,
+                  struct nacl_abi_timespec        *rem);
+
+/* internal / testing APIs */
+struct NaClTimeState;  /* defined in platform-specific directory */
+
+void NaClTimeInternalInit(struct NaClTimeState *);
+void NaClTimeInternalFini(struct NaClTimeState *);
+uint64_t NaClTimerResolutionNsInternal(struct NaClTimeState *);
+
+/* readability defines */
+#define NACL_NANOS_PER_MICRO          1000
+#define NACL_100_NANOS_PER_MILLI      (10 * 1000)
+#define NACL_NANOS_PER_MILLI          (1000 * 1000)
+#define NACL_MICROS_PER_UNIT          (1000 * 1000)
+#define NACL_MILLIS_PER_UNIT          1000
+#define NACL_UNIT_CONVERT_ROUND(v, m) (((v) + (m) - 1)/(m))
 
 EXTERN_C_END
 

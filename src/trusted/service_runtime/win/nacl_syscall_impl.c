@@ -377,7 +377,6 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
   uintptr_t                 sys_req;
   int                       retval = -NACL_ABI_EINVAL;
   struct nacl_abi_timespec  host_req;
-  DWORD                     sleep_ms;
 
   UNREFERENCED_PARAMETER(rem);
 
@@ -403,11 +402,7 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
   NaClLog(4, "NaClSysNanosleep(time = %d.%09ld S)\n",
           host_req.tv_sec, host_req.tv_nsec);
 
-  /* round up from ns resolution to ms resolution */
-  sleep_ms = host_req.tv_sec * 1000 + (host_req.tv_nsec + 999999) / 1000000;
-
-  Sleep(sleep_ms);
-  retval = 0;
+  retval = NaClNanosleep(&host_req, NULL);
 
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);

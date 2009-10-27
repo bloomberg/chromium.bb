@@ -43,11 +43,27 @@
 
 EXTERN_C_BEGIN
 
+enum NaClLogOptions {
+  NACL_LOG_OPTIONS_NONE,
+  NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT
+};
+
 /*
  * TODO: per-module logging, adding a module-name parameter, probably
  * an atom that is statically allocated.
  */
 void NaClLogModuleInit(void);
+
+void NaClLogModuleInitExtended(enum NaClLogOptions);
+
+/*
+ * Sets the log file to the named file.  Aborts program if the open
+ * fails.
+ *
+ * The GioFile object is dynamically allocated, so caller is responsible
+ * for obtaining it via NaClLogGetGio and freeing it as appropriate.
+ */
+void NaClLogSetFile(char const *log_file);
 
 void NaClLogModuleFini(void);
 

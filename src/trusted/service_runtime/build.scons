@@ -305,6 +305,7 @@ if env.Bit('windows'):
           'ws2_32',
           'kernel32',
           'advapi32',
+          'winmm',
 # TODO(gregoryd): ntdll.lib is required for sem_get_value implementation but
 # it is available in Windows DDK only. The DDK is not
 # in third_party, but we might need to add it if we want to use it.

@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2008  The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -38,11 +13,38 @@
 #include <time.h>
 
 #include "native_client/src/shared/platform/nacl_time.h"
+#include "native_client/src/shared/platform/linux/nacl_time_types.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
+
+static struct NaClTimeState gNaClTimeState;
+
+void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
+  ntsp->time_resolution_ns = NACL_NANOS_PER_MICRO;
+}
+
+void NaClTimeInternalFini(struct NaClTimeState *ntsp) {
+  UNREFERENCED_PARAMETER(ntsp);
+}
+
+uint64_t NaClTimerResolutionNsInternal(struct NaClTimeState *ntsp) {
+  return ntsp->time_resolution_ns;
+}
+
+void NaClTimeInit(void) {
+  NaClTimeInternalInit(&gNaClTimeState);
+}
+
+void NaClTimeFini(void) {
+  NaClTimeInternalFini(&gNaClTimeState);
+}
+
+uint64_t NaClTimerResolutionNanoseconds(void) {
+  return NaClTimerResolutionNsInternal(&gNaClTimeState);
+}
 
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv) {
   struct timeval  sys_tv;
@@ -54,6 +56,29 @@ int NaClGetTimeOfDay(struct nacl_abi_timeval *tv) {
     tv->nacl_abi_tv_usec = sys_tv.tv_usec;
   }
 
+  retval = NaClXlateSysRet(retval);
+  return retval;
+}
+
+int NaClNanosleep(struct nacl_abi_timespec const  *req,
+                  struct nacl_abi_timespec        *rem) {
+  struct timespec host_req;
+  struct timespec host_rem;
+  struct timespec *host_remptr;
+  int             retval;
+
+  host_req.tv_sec = req->tv_sec;
+  host_req.tv_nsec = req->tv_nsec;
+  if (NULL == rem) {
+    host_remptr = NULL;
+  } else {
+    host_remptr = &host_rem;
+  }
+  retval = nanosleep(&host_req, host_remptr);
+  if (0 != retval && EINTR == errno && NULL != rem) {
+    rem->tv_sec = host_rem.tv_sec;
+    rem->tv_nsec = host_rem.tv_nsec;
+  }
   retval = NaClXlateSysRet(retval);
   return retval;
 }

@@ -33,12 +33,16 @@
  * NaCl Server Runtime logging code.
  */
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define NON_THREAD_SAFE_DETAIL_CHECK  1
 /*
@@ -71,8 +75,61 @@ static int              timestamp_enabled = 1;
 /* global, but explicitly not exposed in non-test header file */
 void (*gNaClLogAbortBehavior)(void) = abort;
 
-void NaClLogModuleInit(void) {
+void NaClLogSetFile(char const *log_file) {
+  int log_desc = -1;
+  FILE            *log_stream;
+  struct GioFile  *log_gio;
+
+  log_desc = open(log_file, O_WRONLY | O_APPEND | O_CREAT, 0777);
+  if (-1 == log_desc) {
+    perror("NaClLogSetFile");
+    fprintf(stderr, "Could not create log file\n");
+    abort();
+  }
+
+  log_stream = FDOPEN(log_desc, "a");
+  if (NULL == log_stream) {
+    perror("NaClLogSetFile");
+    fprintf(stderr, "Could not fdopen log stream\n");
+    abort();
+  }
+  log_gio = malloc(sizeof *log_gio);
+  if (NULL == log_gio) {
+    perror("NaClLogSetFile");
+    fprintf(stderr, "No memory for log buffers\n");
+    abort();
+  }
+  GioFileRefCtor(log_gio, log_stream);
+  NaClLogSetGio((struct Gio *) log_gio);
+}
+
+void NaClLogModuleInitExtended(enum NaClLogOptions opt) {
+  char *log_file;
+  char *env_verbosity;
+
   NaClMutexCtor(&log_mu);
+  switch (opt) {
+    case NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT:
+      log_file = getenv("NACLLOG");
+
+      if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
+        int v = strtol(env_verbosity, (char **) 0, 0);
+
+        if (v >= 0) {
+          NaClLogSetVerbosity(v);
+        }
+      }
+      if (NULL != log_file) {
+        NaClLogSetFile(log_file);
+      }
+      break;
+    case NACL_LOG_OPTIONS_NONE:
+      break;
+  }
+}
+
+void NaClLogModuleInit(void) {
+  NaClLogModuleInitExtended(NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT);
 }
 
 void NaClLogModuleFini(void) {
