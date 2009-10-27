@@ -695,6 +695,12 @@ static NPError FlushRenderContext(NPP id,
   }
   return NPERR_GENERIC_ERROR;
 }
+
+static NPError DestroyRenderContext(NPP id,
+                                    NPRenderContext* context) {
+  // TODO(sehr) implement render context destruction.
+  return NPERR_GENERIC_ERROR;
+}
 #endif  // defined(PEPPER_APIS_ENABLED)
 
 NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
@@ -850,19 +856,18 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
   }
 #endif
 #if defined(PEPPER_APIS_ENABLED)
-  case NPNVInitializeRenderContextFunc:
+  case NPNVPepperExtensions:
   {
-    NPInitializeRenderContextPtr* func =
-        reinterpret_cast<NPInitializeRenderContextPtr*>(value);
-    *func = InitializeRenderContext;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case NPNVFlushRenderContextFunc:
-  {
-    NPFlushRenderContextPtr* func =
-        reinterpret_cast<NPFlushRenderContextPtr*>(value);
-    *func = FlushRenderContext;
+    static const NPPepperExtensions kExtensions = {
+      InitializeRenderContext,
+      FlushRenderContext,
+      DestroyRenderContext
+    };
+    // Return a pointer to the canonical function table.
+    NPPepperExtensions* extensions =
+        const_cast<NPPepperExtensions*>(&kExtensions);
+    NPPepperExtensions** exts = reinterpret_cast<NPPepperExtensions**>(value);
+    *exts = extensions;
     rv = NPERR_NO_ERROR;
     break;
   }

@@ -44,11 +44,11 @@
 #define _NPAPI_H_
 
 
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 
 #include "base/basictypes.h"
 
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 
 #ifdef INCLUDE_JAVA
 #include "jri.h"                /* Java Runtime Interface */
@@ -63,13 +63,13 @@
 #    endif /* XP_WIN */
 #endif /* _WIN32 */
 
-// BEGIN GOOGLE MODIFICATIONS
-// On Linux and Mac, be sure to set Mozilla-specific macros.
+/* BEGIN GOOGLE MODIFICATIONS */
+/* On Linux and Mac, be sure to set Mozilla-specific macros. */
 #if defined(OS_LINUX) || defined(OS_FREEBSD)
 #define XP_UNIX 1
 #define MOZ_X11 1
 #endif
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 
 #ifdef __MWERKS__
 #    define _declspec __declspec
@@ -117,16 +117,16 @@
 
 #if defined(XP_UNIX) 
 #	include <stdio.h>
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 #if 0
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 #	if defined(MOZ_X11)
 #		include <X11/Xlib.h>
 #		include <X11/Xutil.h>
 #	endif
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 #endif
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 #endif
 
 #ifdef XP_WIN
@@ -138,9 +138,9 @@
 /*----------------------------------------------------------------------*/
 
 #define NP_VERSION_MAJOR 0
-// BEGIN GOOGLE MODIFICATIONS
-#define NP_VERSION_MINOR 23 // maximum version currently supported by Chromium
-// END GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
+#define NP_VERSION_MINOR 23 /* maximum version currently supported by Chromium */
+/* END GOOGLE MODIFICATIONS */
 
 
 /*----------------------------------------------------------------------*/
@@ -287,9 +287,9 @@ typedef struct
   int32 type;
 } NPAnyCallbackStruct;
 
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 typedef struct _NPSetWindowCallbackStruct NPSetWindowCallbackStruct;
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 
 typedef struct
 {
@@ -443,8 +443,7 @@ typedef enum {
    * Until they are, they need to be distinct values from other enum
    * elements here.
    */
-  , NPNVInitializeRenderContextFunc = 4000 /* A pointer to the InitializeRenderContext function */
-  , NPNVFlushRenderContextFunc = 4001 /* A pointer to the FlushRenderContext function */
+  , NPNVPepperExtensions = 4000  /* A pointer to an NPPepperExtensions structure */
 #endif
 } NPNVariable;
 
@@ -453,7 +452,7 @@ typedef enum {
   NPNURLVProxy
 } NPNURLVariable;
 
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 /*
  * The type of Tookkit the widgets use
  */
@@ -461,7 +460,7 @@ typedef enum {
   NPNVGtk12 = 1,
   NPNVGtk2
 } NPNToolkitType;
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 
 /*
  * The type of a NPWindow - it specifies the type of the data structure
@@ -600,9 +599,9 @@ typedef struct _NPPrint
 } NPPrint;
 
 #ifdef XP_MACOSX
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 typedef struct _NPNSMenu NPNSMenu;
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 typedef NPNSMenu NPMenu;
 #else
 typedef void * NPMenu;
@@ -631,9 +630,9 @@ typedef struct _NPEvent
   uint32 lParam;
 } NPEvent;
 #elif defined (XP_UNIX) && defined(MOZ_X11)
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 typedef union _XEvent XEvent;
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 typedef XEvent NPEvent;
 #else
 typedef void*			NPEvent;
@@ -655,9 +654,9 @@ typedef CGPathRef NPCGRegion;
 #elif defined(XP_WIN)
 typedef HRGN NPRegion;
 #elif defined(XP_UNIX)
-// BEGIN GOOGLE MODIFICATIONS	
+/* BEGIN GOOGLE MODIFICATIONS */
 typedef struct _XRegion *Region;	
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 typedef Region NPRegion;
 #else
 typedef void *NPRegion;
@@ -676,7 +675,7 @@ typedef struct NP_CGContext
 #ifdef NP_NO_CARBON
   NPNSWindow *window;
 #else
-  void *window; // Can be either an NSWindow or a WindowRef depending on the event model
+  void *window; /* Can be either an NSWindow or a WindowRef depending on the event model */
 #endif
 } NP_CGContext;
 
@@ -691,7 +690,7 @@ typedef struct NP_GLContext
 #ifdef NP_NO_CARBON
   NPNSWindow *window;
 #else
-  void *window; // Can be either an NSWindow or a WindowRef depending on the event model
+  void *window; /* Can be either an NSWindow or a WindowRef depending on the event model */
 #endif
 } NP_GLContext;
 
@@ -727,7 +726,7 @@ typedef struct NP_Port
 /*
  *  Non-standard event types that can be passed to HandleEvent
  */
-// BEGIN GOOGLE MODIFICATIONS
+/* BEGIN GOOGLE MODIFICATIONS */
 enum NPEventType {
   NPEventType_GetFocusEvent = (osEvt + 16),
   NPEventType_LoseFocusEvent,
@@ -743,15 +742,16 @@ enum NPEventType {
 #define loseFocusEvent    (osEvt + 17)
 #define adjustCursorEvent (osEvt + 18)
 #endif
-// END GOOGLE MODIFICATIONS
+/* END GOOGLE MODIFICATIONS */
 
 #endif /* XP_MACOSX */
 
 /* Stub typedefs for interfaces requiring Pepper types. */
 typedef int NPRenderType;
 typedef struct _NPRenderContext NPRenderContext;
+typedef struct _NPPepperExtensions NPPepperExtensions;
 
-#else  // defined(PEPPER_APIS_ENABLED)
+#else  /* defined(PEPPER_APIS_ENABLED) */
 typedef enum {
   NPMouseButton_None    = -1,
   NPMouseButton_Left    = 0,
@@ -823,7 +823,7 @@ typedef struct _NPMouseWheelEvent
 typedef struct _NPDeviceEvent {
   uint32 device_uid;
   uint32 subtype;
-  // uint8 generic[0];
+  /* uint8 generic[0]; */
 } NPDeviceEvent;
 
 typedef struct _NPMinimizeEvent {
@@ -883,7 +883,19 @@ typedef NPError (*NPFlushRenderContextPtr)(NPP instance,
                                            NPRenderContext* context,
                                            NPFlushRenderContextCallbackPtr callback,
                                            void* userData);
-#endif  // defined(PEPPER_APIS_ENABLED)
+typedef NPError (*NPDestroyRenderContextPtr)(NPP instance,
+                                             NPRenderContext* context);
+
+typedef struct _NPPepperExtensions
+{
+  /* Renderer extensions */
+  NPInitializeRenderContextPtr initializeRender;
+  NPFlushRenderContextPtr flushRender;
+  NPDestroyRenderContextPtr destroyRender;
+  /* Shared memory extensions */
+} NPPepperExtensions;
+
+#endif  /* defined(PEPPER_APIS_ENABLED) */
 
 /*
  * Values for mode passed to NPP_New:

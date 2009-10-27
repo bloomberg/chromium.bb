@@ -237,14 +237,14 @@ void FlushCallback(NPRenderContext* context, void* user_data) {
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())) {
-  if (!initialize_render_context) {
-    browser->getvalue(npp_, NPNVInitializeRenderContextFunc,
-                      reinterpret_cast<void*>(&initialize_render_context));
+  if (!initialize_render_context || !flush_render_context) {
+    NPPepperExtensions* extensions;
+    browser->getvalue(npp_, NPNVPepperExtensions,
+                      reinterpret_cast<void*>(&extensions));
+    CHECK(extensions);
+    initialize_render_context = extensions->initializeRender;
     CHECK(initialize_render_context);
-  }
-  if (!flush_render_context) {
-    browser->getvalue(npp_, NPNVFlushRenderContextFunc,
-                      reinterpret_cast<void*>(&flush_render_context));
+    flush_render_context = extensions->flushRender;
     CHECK(flush_render_context);
   }
 }

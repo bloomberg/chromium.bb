@@ -4,5 +4,9 @@ This is a test plugin for manual testing of the Pepper plugin API. See
 To generate a project from the gyp file, use:
   python ..\..\..\build\gyp_chromium pepper_test_plugin.gyp
 
-To load this plugin in Chrome, use the command line flag:
+You need to enable PEPPER_APIS_ENABLED in src\chrome\renderer\render_view.cc in your Chrome build.
+
+To load this plugin in Chrome, use the command line flags:
+  --no-sandbox
   --load-plugin=<<<YOUR CHECKOUT ROOT>>\src\webkit\tools\pepper_test_plugin\Debug\pepper_test_plugin.dll
+  
