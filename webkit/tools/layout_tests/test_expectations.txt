@@ -66,7 +66,6 @@ BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-
 BUG24182 SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 BUG24182 SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
 BUG24182 SLOW : LayoutTests/tables/mozilla/other/slashlogo.html = PASS
-BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 SLOW WIN LINUX : LayoutTests/tables/mozilla/bugs/bug113235-1.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/fast/js/toString-and-valueOf-override.html = PASS
 
@@ -418,7 +417,7 @@ WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects
 
 // These tests propagate auth credentials back to the renderer, which we
 // don't want to do.
-WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
+WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL TIMEOUT
 WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
 
 // This checks the IDN behavior of WebKit/WebKit on Mac, not WebKit/WebCore or
@@ -3299,3 +3298,12 @@ BUG_JORLOW LINUX : LayoutTests/fast/gradients/background-clipped.html = FAIL
 BUG_JORLOW LINUX : LayoutTests/fast/images/svg-as-tiled-background.html = FAIL
 BUG_JORLOW LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
 BUG_JORLOW LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = FAIL
+BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = TIMEOUT
+BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = TIMEOUT
+BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
+BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
+
+// The following should be uncommented when the next line is no longer needed.
+// BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
+BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL PASS
+
