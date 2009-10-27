@@ -558,6 +558,10 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
+// Use Flip for the transport protocol instead of HTTP.
+// This is a temporary testing flag.
+const char kUseFlip[]                       = "use-flip";
+
 // Use the low fragmentation heap for the CRT.
 const char kUseLowFragHeapCrt[]             = "use-lf-heap";
 
@@ -606,10 +610,6 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 
 // Causes the process to run as a renderer zygote.
 const char kZygoteProcess[]                 = "zygote";
-
-// Use Flip for the transport protocol instead of HTTP.
-// This is a temporary testing flag.
-const wchar_t kUseFlip[] = L"use-flip";
 
 #if defined(OS_CHROMEOS)
 // The name of the pipe over which the Chrome OS login manager will send

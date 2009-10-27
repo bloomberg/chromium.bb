@@ -806,7 +806,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
   if (command_line.HasSwitch(switches::kUseFlip)) {
     std::string flip_mode =
-      WideToASCII(command_line.GetSwitchValue(switches::kUseFlip));
+        WideToASCII(command_line.GetSwitchValue(switches::kUseFlip));
     net::HttpNetworkLayer::EnableFlip(flip_mode);
   }
 

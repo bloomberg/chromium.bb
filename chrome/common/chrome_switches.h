@@ -159,6 +159,7 @@ extern const char kThumbnailStore[];
 extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
+extern const char kUseFlip[];
 extern const char kUseLowFragHeapCrt[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
@@ -173,7 +174,6 @@ extern const char kWininetFtp[];
 extern const char kWorkerProcess[];
 extern const char kZygoteCmdPrefix[];
 extern const char kZygoteProcess[];
-extern const wchar_t kUseFlip[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCookiePipe[];
