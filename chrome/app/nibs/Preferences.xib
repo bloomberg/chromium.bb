@@ -603,7 +603,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPathCell" key="NSCell" id="25958950">
 							<int key="NSCellFlags">606207489</int>
-							<int key="NSCellFlags2">0</int>
+							<int key="NSCellFlags2">33554432</int>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="484273049"/>
 							<object class="NSColor" key="NSBackgroundColor">
