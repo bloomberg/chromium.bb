@@ -51,16 +51,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
 
-// A single AutocompleteController used solely for making synchronous calls to
-// determine how to deal with the clipboard contents for Paste And Go
-// functionality.  We avoid using the popup's controller here because we don't
-// want to interrupt in-progress queries or modify the popup state just
-// because the user right-clicked the edit.  We don't need a controller for
-// every edit because this will always be accessed on the main thread, so we
-// won't have thread-safety problems.
-static AutocompleteController* paste_and_go_controller = NULL;
-static int paste_and_go_controller_refcount = 0;
-
 namespace {
 
 // EditDropTarget is the IDropTarget implementation installed on
