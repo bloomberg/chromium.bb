@@ -35,12 +35,6 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 
 + (id)registrationWithProductID:(NSString*)productID;
 
-// Older API
-- (BOOL)registerWithVersion:(NSString*)version
-       existenceCheckerType:(KSExistenceCheckerType)xctype
-     existenceCheckerString:(NSString*)xc
-            serverURLString:(NSString*)serverURLString;
-// Newer API
 - (BOOL)registerWithVersion:(NSString*)version
        existenceCheckerType:(KSExistenceCheckerType)xctype
      existenceCheckerString:(NSString*)xc
@@ -201,24 +195,12 @@ static KeystoneGlue* sDefaultKeystoneGlue = nil;  // leaked
   // The existence checks should use the path to the app bundle, not the
   // app framework bundle, so use [NSBundle mainBundle] instead of
   // mac_util::MainBundle().
-  //
-  // Only use new API if we can.  This lets us land the new call
-  // before the new Keystone has been released.
-  //
-  // TODO(jrg): once we hit Beta and the new Keystone is released,
-  // make this call unconditional.
-  if ([registration_ respondsToSelector:@selector(registerWithVersion:existenceCheckerType:existenceCheckerString:serverURLString:preserveTTToken:tag:)])
-    [registration_ registerWithVersion:version_
-                  existenceCheckerType:kKSPathExistenceChecker
-                existenceCheckerString:[[NSBundle mainBundle] bundlePath]
-                       serverURLString:url_
-                       preserveTTToken:YES
-                                   tag:channel_];
-  else
-    [registration_ registerWithVersion:version_
-                  existenceCheckerType:kKSPathExistenceChecker
-                existenceCheckerString:[[NSBundle mainBundle] bundlePath]
-                       serverURLString:url_];
+  [registration_ registerWithVersion:version_
+                existenceCheckerType:kKSPathExistenceChecker
+              existenceCheckerString:[[NSBundle mainBundle] bundlePath]
+                     serverURLString:url_
+                     preserveTTToken:YES
+                                 tag:channel_];
 
   // Mark an active RIGHT NOW; don't wait an hour for the first one.
   [registration_ setActive];
