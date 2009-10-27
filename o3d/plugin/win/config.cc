@@ -80,11 +80,12 @@ bool CheckOSVersion(NPP npp) {
   return true;
 }
 
-// Checks user agent string. We only allow Firefox, Chrome, and IE.
+// Checks user agent string. We only allow Firefox, Chrome, Safari and IE.
 bool CheckUserAgent(NPP npp, const std::string &user_agent) {
   if (user_agent.find("Firefox") == user_agent.npos &&
       user_agent.find("Chrome") == user_agent.npos &&
-      user_agent.find("MSIE") == user_agent.npos) {
+      user_agent.find("MSIE") == user_agent.npos &&
+      user_agent.find("Safari") == user_agent.npos) {
     std::string error = std::string("Unsupported user agent: ") + user_agent;
     return AskUser(npp, error);
   }

@@ -76,6 +76,19 @@ Wix script for building o3d installer.
               <File Id='pu.GoogleNpapiDll.dll' Name='npo3d.dll'
                     LongName='npo3dautoplugin.dll' DiskId='1'
                     Source='$(var.NPPluginPath)' Vital='yes' />
+              <Registry Id='pu.NpapiPlugin' Root='HKCU'
+                  Key='Software\MozillaPlugins\@google.com/O3DPlugin'>
+                <Registry Id='pu.NpapiPluginPath' Type='string'
+                    Action='write' Name='Path' Value='[pu.FirefoxPluginsDir]npo3dautoplugin.dll' />
+                <Registry Id='pu.NpapiPluginName' Type='string'
+                    Action='write' Name='ProductName' Value='O3D Plugin' />
+                <Registry Id='pu.NpapiPluginDescription' Type='string'
+                    Action='write' Name='Description' Value='O3D Plugin' />
+                <Registry Id='pu.NpapiPluginVendor' Type='string'
+                    Action='write' Name='Vendor' Value='Google' />
+                <Registry Id='pu.NpapiPluginVersion' Type='string'
+                    Action='write' Name='Version' Value='$(var.NppVersion)' />
+              </Registry>
               <Condition>NOT (ALLUSERS)</Condition>
             </Component>
             <?if $(var.IncludeSoftwareRenderer) = True ?>

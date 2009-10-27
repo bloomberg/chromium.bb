@@ -210,7 +210,7 @@ bool CheckConfig(NPP npp) {
     }
   }
 
-  // Check User agent. Only Firefox, Chrome and IE are supported.
+  // Check User agent. Only Firefox, Chrome, Safari and IE are supported.
   std::string user_agent = GetUserAgent(npp);
   if (!CheckUserAgent(npp, user_agent)) return false;
   return true;
