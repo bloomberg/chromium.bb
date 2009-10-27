@@ -46,13 +46,18 @@
 namespace nacl {
 
 // For OSX we get the bundle pathname to the browser plugin or the main bundle.
-// The returned string is autoreleased, meaning it will be freed the next time
-// around the event loop.
+// The returned pointer refers to static storage, so this function is not
+// reentrant, but that's okay.
 const char* SelLdrLauncher::GetPluginDirname() {
   // Semantics for all of the OS-dependent implementations of this
   // function is that a static buffer is used, and caller need not
   // deallocate.  Not thread safe.
   static char system_buffer[MAXPATHLEN + 1];
+
+  // Guard our temporary objects below with our own autorelease pool.
+  // (We cannot guarantee this is being called from a thread with a pool.)
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
   // Identify the path the plugin was loaded from.
   // Create the identifier the build specified in Info.plist.
   NSString* ident = @"com.google.npGoogleNaClPlugin";
@@ -70,10 +75,12 @@ const char* SelLdrLauncher::GetPluginDirname() {
   }
   // And strip off the dll name, returning only the path, or NULL if error.
   if (NULL == pathname) {
+    [pool release];
     return NULL;
   } else {
     strncpy(system_buffer,  pathname, sizeof system_buffer - 1);
     system_buffer[sizeof system_buffer - 1] = '\0';
+    [pool release];
     return dirname(system_buffer);
   }
 }
