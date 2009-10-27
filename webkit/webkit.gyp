@@ -582,8 +582,6 @@
         'glue/dom_serializer.cc',
         'glue/dom_serializer.h',
         'glue/dom_serializer_delegate.h',
-        'glue/dragclient_impl.cc',
-        'glue/dragclient_impl.h',
         'glue/entity_map.cc',
         'glue/entity_map.h',
         'glue/form_data.h',
