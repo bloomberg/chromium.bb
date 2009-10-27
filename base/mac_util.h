@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,16 @@
 
 #include <Carbon/Carbon.h>
 #include <string>
+#include <vector>
 
 class FilePath;
 
 #ifdef __OBJC__
 @class NSBundle;
+@class NSWindow;
 #else
 class NSBundle;
+class NSWindow;
 #endif
 
 namespace mac_util {
@@ -72,6 +75,9 @@ void RequestFullScreen();
 // this will show the menu bar.  Must be called on main thread.
 void ReleaseFullScreen();
 
+// Pulls a snapshot of the entire browser into png_representation.
+void GrabWindowSnapshot(NSWindow* window,
+                        std::vector<unsigned char>* png_representation);
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

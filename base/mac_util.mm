@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,6 +159,23 @@ void ReleaseFullScreen() {
   --g_full_screen_requests;
   if (g_full_screen_requests == 0)
     SetSystemUIMode(kUIModeNormal, 0);
+}
+
+void GrabWindowSnapshot(NSWindow* window,
+    std::vector<unsigned char>* png_representation) {
+  // Make sure to grab the "window frame" view so we get current tab +
+  // tabstrip.
+  NSView* view = [[window contentView] superview];
+  NSBitmapImageRep* rep =
+      [view bitmapImageRepForCachingDisplayInRect:[view bounds]];
+  [view cacheDisplayInRect:[view bounds] toBitmapImageRep:rep];
+  NSData* data = [rep representationUsingType:NSPNGFileType properties:nil];
+  const unsigned char* buf = static_cast<const unsigned char*>([data bytes]);
+  NSUInteger length = [data length];
+  if (buf != NULL && length > 0){
+    png_representation->assign(buf, buf + length);
+    DCHECK(png_representation->size() > 0);
+  }
 }
 
 }  // namespace mac_util
