@@ -455,20 +455,33 @@ void WebPluginProxy::UpdateGeometry(
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
     const TransportDIB::Handle& background_buffer) {
-  // Create a canvas that will reference the shared bits.
-  windowless_canvas_.reset(new skia::PlatformCanvas(
-      delegate_->GetRect().width(),
-      delegate_->GetRect().height(),
-      true,
-      win_util::GetSectionFromProcess(windowless_buffer,
-                                      channel_->renderer_handle(), false)));
+  // Create a canvas that will reference the shared bits. We have to handle
+  // errors here since we're mapping a large amount of memory that may not fit
+  // in our address space, or go wrong in some other way.
+  windowless_canvas_.reset(new skia::PlatformCanvas);
+  if (!windowless_canvas_->initialize(
+          delegate_->GetRect().width(),
+          delegate_->GetRect().height(),
+          true,
+          win_util::GetSectionFromProcess(windowless_buffer,
+              channel_->renderer_handle(), false))) {
+    windowless_canvas_.reset();
+    background_canvas_.reset();
+    return;
+  }
+
   if (background_buffer) {
-    background_canvas_.reset(new skia::PlatformCanvas(
-        delegate_->GetRect().width(),
-        delegate_->GetRect().height(),
-        true,
-        win_util::GetSectionFromProcess(background_buffer,
-                                        channel_->renderer_handle(), false)));
+    background_canvas_.reset(new skia::PlatformCanvas);
+    if (!background_canvas_->initialize(
+            delegate_->GetRect().width(),
+            delegate_->GetRect().height(),
+            true,
+            win_util::GetSectionFromProcess(background_buffer,
+                channel_->renderer_handle(), false))) {
+      windowless_canvas_.reset();
+      background_canvas_.reset();
+      return;
+    }
   }
 }
 

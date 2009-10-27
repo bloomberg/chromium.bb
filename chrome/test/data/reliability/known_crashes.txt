@@ -136,5 +136,5 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
-# bug 25689
-PREFIX : skia::crashforbitmapallocationfailure___skia::platformcanvas::platformcanvas___webpluginproxy::setwindowlessbuffer___webpluginproxy::updategeometry___webplugindelegatestub
+# bug 23780
+PREFIX : v8::internal::mayaccessprecheck
