@@ -1,0 +1,67 @@
+EDITING DELEGATE: shouldBeginEditingInDOMRange:range from 0 of DIV > BODY > HTML > #document to 3 of DIV > BODY > HTML > #document
+EDITING DELEGATE: webViewDidBeginEditing:WebViewDidBeginEditingNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: shouldChangeSelectedDOMRange:range from 0 of DIV > DIV > DIV > BODY > HTML > #document to 0 of DIV > DIV > DIV > BODY > HTML > #document toDOMRange:range from 0 of #text > SPAN > DIV > DIV > DIV > BODY > HTML > #document to 6 of #text > DIV > DIV > BODY > HTML > #document affinity:NSSelectionAffinityDownstream stillSelecting:FALSE
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: shouldChangeSelectedDOMRange:(null) toDOMRange:range from 0 of #text > SPAN > DIV > DIV > BLOCKQUOTE > DIV > BODY > HTML > #document to 6 of #text > DIV > BLOCKQUOTE > DIV > BODY > HTML > #document affinity:NSSelectionAffinityDownstream stillSelecting:FALSE
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock (anonymous) at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 372x19
+          text run at (0,0) width 372: "This tests indenting three paragraphs with different hierarchies."
+      RenderBlock {DIV} at (0,20) size 784x60
+        RenderBlock {BLOCKQUOTE} at (40,0) size 744x60
+          RenderBlock {DIV} at (0,0) size 744x20
+            RenderBlock {DIV} at (0,0) size 744x20
+              RenderInline {SPAN} at (0,0) size 75x19 [bgcolor=#FF0000]
+                RenderText {#text} at (0,0) size 36x19
+                  text run at (0,0) width 36: "Hello "
+                RenderImage {IMG} at (36,15) size 0x0
+                RenderText {#text} at (36,0) size 39x19
+                  text run at (36,0) width 39: " world"
+          RenderBlock {DIV} at (0,20) size 744x20
+            RenderBlock {DIV} at (0,0) size 744x20
+              RenderText {#text} at (0,0) size 36x19
+                text run at (0,0) width 36: "Hello "
+              RenderImage {IMG} at (36,15) size 0x0
+              RenderText {#text} at (36,0) size 39x19
+                text run at (36,0) width 39: " world"
+          RenderBlock {DIV} at (0,40) size 744x20
+            RenderText {#text} at (0,0) size 36x19
+              text run at (0,0) width 36: "Hello "
+            RenderImage {IMG} at (36,15) size 0x0
+            RenderText {#text} at (36,0) size 39x19
+              text run at (36,0) width 39: " world"
+      RenderBlock (anonymous) at (0,80) size 784x20
+        RenderBR {BR} at (0,0) size 0x19
+      RenderBlock {UL} at (0,116) size 784x120
+        RenderListItem {LI} at (40,0) size 744x40
+          RenderListMarker at (-18,0) size 7x19: bullet
+          RenderText {#text} at (0,0) size 84x19
+            text run at (0,0) width 84: "Before indent:"
+          RenderInline {SPAN} at (0,0) size 743x39
+            RenderText {#text} at (84,0) size 743x39
+              text run at (84,0) width 99: " <div id=\"test\"> "
+              text run at (183,0) width 560: "<div><span class=\"Apple-style-span\" style=\"background-color: rgb(255, 0, 0);\">Hello <img"
+              text run at (0,20) width 213: "src=\"http://\"> world</span></div> "
+              text run at (213,20) width 269: "<div>Hello <img src=\"http://\"> world</div> "
+              text run at (482,20) width 233: "Hello <img src=\"http://\"> world </div>"
+        RenderListItem {LI} at (40,40) size 744x80
+          RenderListMarker at (-18,0) size 7x19: bullet
+          RenderText {#text} at (0,0) size 74x19
+            text run at (0,0) width 74: "After indent:"
+          RenderInline {SPAN} at (0,0) size 739x79
+            RenderText {#text} at (74,0) size 739x79
+              text run at (74,0) width 665: " <blockquote class=\"webkit-indent-blockquote\" style=\"margin: 0 0 0 40px; border: none; padding: 0px;\"><div"
+              text run at (0,20) width 704: "id=\"test\"><div><span class=\"Apple-style-span\" style=\"background-color: rgb(255, 0, 0);\">Hello <img src=\"http://\">"
+              text run at (0,40) width 656: "world</span></div></div><div id=\"test\"><div>Hello <img src=\"http://\"> world</div></div><div id=\"test\"> "
+              text run at (656,40) width 66: "Hello <img"
+              text run at (0,60) width 253: "src=\"http://\"> world </div></blockquote>"
+selection start: position 0 of child 0 {#text} of child 0 {SPAN} of child 0 {DIV} of child 0 {DIV} of child 1 {BLOCKQUOTE} of child 1 {DIV} of child 1 {BODY} of child 0 {HTML} of document
+selection end:   position 6 of child 2 {#text} of child 2 {DIV} of child 1 {BLOCKQUOTE} of child 1 {DIV} of child 1 {BODY} of child 0 {HTML} of document
