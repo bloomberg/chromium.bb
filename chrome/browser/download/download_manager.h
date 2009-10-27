@@ -419,19 +419,16 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Registers this file extension for automatic opening upon download
   // completion if 'open' is true, or prevents the extension from automatic
   // opening if 'open' is false.
-  void OpenFilesBasedOnExtension(const FilePath& path, bool open);
+  void OpenFilesOfExtension(const FilePath::StringType& extension, bool open);
 
   // Tests if a file type should be opened automatically.
-  bool ShouldOpenFileBasedOnExtension(const FilePath& path) const;
+  bool ShouldOpenFileExtension(const FilePath::StringType& extension);
 
   // Tests if we think the server means for this mime_type to be executable.
   static bool IsExecutableMimeType(const std::string& mime_type);
 
-  // Tests if a file is considered executable, based on its type.
-  bool IsExecutableFile(const FilePath& path) const;
-
   // Tests if a file type is considered executable.
-  bool IsExecutableExtension(const FilePath::StringType& extension) const;
+  bool IsExecutable(const FilePath::StringType& extension);
 
   // Resets the automatic open preference.
   void ResetAutoOpenFiles();
@@ -608,14 +605,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   FilePath last_download_path_;
 
   // Set of file extensions to open at download completion.
-  struct AutoOpenCompareFunctor {
-    inline bool operator()(const FilePath::StringType& a,
-                           const FilePath::StringType& b) const {
-      return FilePath::CompareLessIgnoreCase(a, b);
-    }
-  };
-  typedef std::set<FilePath::StringType, AutoOpenCompareFunctor> AutoOpenSet;
-  AutoOpenSet auto_open_;
+  std::set<FilePath::StringType> auto_open_;
 
   // Set of file extensions that are executables and shouldn't be auto opened.
   std::set<std::string> exe_types_;

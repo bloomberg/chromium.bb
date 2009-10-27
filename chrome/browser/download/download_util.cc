@@ -53,7 +53,9 @@ bool CanOpenDownload(DownloadItem* download) {
   if (!download->original_name().value().empty())
     file_to_use = download->original_name();
 
-  return !download->manager()->IsExecutableFile(file_to_use);
+  const FilePath::StringType extension =
+      file_util::GetFileExtensionFromPath(file_to_use);
+  return !download->manager()->IsExecutable(extension);
 }
 
 void OpenDownload(DownloadItem* download) {

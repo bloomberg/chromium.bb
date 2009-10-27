@@ -32,8 +32,9 @@ bool DownloadShelfContextMenu::ItemIsChecked(int id) const {
       return download_->open_when_complete();
     }
     case ALWAYS_OPEN_TYPE: {
-      return download_->manager()->ShouldOpenFileBasedOnExtension(
-          download_->full_path());
+      const FilePath::StringType extension =
+          file_util::GetFileExtensionFromPath(download_->full_path());
+      return download_->manager()->ShouldOpenFileExtension(extension);
     }
     case TOGGLE_PAUSE: {
       return download_->is_paused();
@@ -95,8 +96,10 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       download_util::OpenDownload(download_);
       break;
     case ALWAYS_OPEN_TYPE: {
-      download_->manager()->OpenFilesBasedOnExtension(
-          download_->full_path(), !ItemIsChecked(ALWAYS_OPEN_TYPE));
+      const FilePath::StringType extension =
+          file_util::GetFileExtensionFromPath(download_->full_path());
+      download_->manager()->OpenFilesOfExtension(
+          extension, !ItemIsChecked(ALWAYS_OPEN_TYPE));
       break;
     }
     case CANCEL:

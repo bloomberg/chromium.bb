@@ -526,8 +526,8 @@ bool DownloadManager::Init(Profile* profile) {
   std::vector<std::wstring> extensions;
   SplitString(extensions_to_open, L':', &extensions);
   for (size_t i = 0; i < extensions.size(); ++i) {
-    if (!extensions[i].empty() && !IsExecutableFile(
-        FilePath::FromWStringHack(extensions[i])))
+    if (!extensions[i].empty() && !IsExecutable(
+        FilePath::FromWStringHack(extensions[i]).value()))
       auto_open_.insert(FilePath::FromWStringHack(extensions[i]).value());
   }
 
@@ -857,13 +857,19 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
   if (it != dangerous_finished_.end())
     dangerous_finished_.erase(it);
 
+  // Open the download if the user or user prefs indicate it should be.
+  FilePath::StringType extension = download->full_path().Extension();
+  // Drop the leading period. (The auto-open list is period-less.)
+  if (extension.size() > 0)
+    extension = extension.substr(1);
+
   // Handle chrome extensions explicitly and skip the shell execute.
   if (IsExtensionInstall(download)) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
     download->set_auto_opened(true);
   } else if (download->open_when_complete() ||
-             ShouldOpenFileBasedOnExtension(download->full_path())) {
+             ShouldOpenFileExtension(extension)) {
     OpenDownloadInShell(download, NULL);
     download->set_auto_opened(true);
   }
@@ -872,7 +878,6 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
   // state to complete but did not notify).
   download->UpdateObservers();
 }
-
 // Called on the file thread.  Renames the downloaded file to its original name.
 void DownloadManager::ProceedWithFinishedDangerousDownload(
     int64 download_handle,
@@ -999,7 +1004,11 @@ void DownloadManager::OnPauseDownloadRequest(ResourceDispatcherHost* rdh,
 
 bool DownloadManager::IsDangerous(const FilePath& file_name) {
   // TODO(jcampan): Improve me.
-  return IsExecutableFile(file_name);
+  FilePath::StringType extension = file_name.Extension();
+  // Drop the leading period.
+  if (extension.size() > 0)
+    extension = extension.substr(1);
+  return IsExecutable(extension);
 }
 
 void DownloadManager::RenameDownload(DownloadItem* download,
@@ -1146,7 +1155,7 @@ void DownloadManager::GenerateExtension(
     return;
   }
 
-  if (IsExecutableExtension(extension) && !IsExecutableMimeType(mime_type)) {
+  if (IsExecutable(extension) && !IsExecutableMimeType(mime_type)) {
     // We want to be careful about executable extensions.  The worry here is
     // that a trusted web site could be tricked into dropping an executable file
     // on the user's filesystem.
@@ -1174,7 +1183,7 @@ void DownloadManager::GenerateExtension(
     if (net::GetPreferredExtensionForMimeType(mime_type, &append_extension)) {
       if (append_extension != FILE_PATH_LITERAL("txt") &&
           append_extension != extension &&
-          !IsExecutableExtension(append_extension) &&
+          !IsExecutable(append_extension) &&
           !(append_extension == FILE_PATH_LITERAL("gz") &&
             extension == FILE_PATH_LITERAL("tgz")) &&
           (append_extension != FILE_PATH_LITERAL("tar") ||
@@ -1273,32 +1282,21 @@ void DownloadManager::OpenDownloadInShell(const DownloadItem* download,
 #endif
 }
 
-void DownloadManager::OpenFilesBasedOnExtension(
-    const FilePath& path, bool open) {
-  FilePath::StringType extension = path.Extension();
-  if (extension.empty())
-    return;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
-  extension.erase(0, 1);
-  if (open && !IsExecutableExtension(extension))
+void DownloadManager::OpenFilesOfExtension(
+    const FilePath::StringType& extension, bool open) {
+  if (open && !IsExecutable(extension))
     auto_open_.insert(extension);
   else
     auto_open_.erase(extension);
   SaveAutoOpens();
 }
 
-bool DownloadManager::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) const {
+bool DownloadManager::ShouldOpenFileExtension(
+    const FilePath::StringType& extension) {
   // Special-case Chrome extensions as always-open.
-  FilePath::StringType extension = path.Extension();
-  if (extension.empty())
-    return false;
-  if (IsExecutableExtension(extension))
-    return false;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
-  extension.erase(0, 1);
-  if (auto_open_.find(extension) != auto_open_.end() ||
-      Extension::IsExtension(path))
+  if (!IsExecutable(extension) &&
+      (auto_open_.find(extension) != auto_open_.end() ||
+       Extension::IsExtension(FilePath(extension))))
     return true;
   return false;
 }
@@ -1335,14 +1333,7 @@ bool DownloadManager::IsExecutableMimeType(const std::string& mime_type) {
   return net::MatchesMimeType("application/*", mime_type);
 }
 
-bool DownloadManager::IsExecutableFile(const FilePath& path) const {
-  return IsExecutableExtension(path.Extension());
-}
-
-bool DownloadManager::IsExecutableExtension(
-    const FilePath::StringType& extension) const {
-  if (extension.empty())
-    return false;
+bool DownloadManager::IsExecutable(const FilePath::StringType& extension) {
   if (!IsStringASCII(extension))
     return false;
 #if defined(OS_WIN)
@@ -1351,10 +1342,6 @@ bool DownloadManager::IsExecutableExtension(
   std::string ascii_extension = extension;
 #endif
   StringToLowerASCII(&ascii_extension);
-
-  // Strip out leading dot if it's still there
-  if (ascii_extension[0] == FilePath::kExtensionSeparator)
-    ascii_extension.erase(0, 1);
 
   return exe_types_.find(ascii_extension) != exe_types_.end();
 }
@@ -1372,7 +1359,7 @@ void DownloadManager::SaveAutoOpens() {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
     FilePath::StringType extensions;
-    for (AutoOpenSet::iterator it = auto_open_.begin();
+    for (std::set<FilePath::StringType>::iterator it = auto_open_.begin();
          it != auto_open_.end(); ++it) {
       extensions += *it + FILE_PATH_LITERAL(":");
     }

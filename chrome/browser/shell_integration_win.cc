@@ -115,7 +115,11 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       std::wstring short_path;
       GetShortPathName(command_line.program().c_str(),
                        WriteInto(&short_path, MAX_PATH), MAX_PATH);
-      if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
+      if ((short_path.size() != short_app_path.size()) ||
+          (!std::equal(short_path.begin(),
+                       short_path.end(),
+                       short_app_path.begin(),
+                       CaseInsensitiveCompare<wchar_t>())))
         return NOT_DEFAULT_BROWSER;
     }
   }
