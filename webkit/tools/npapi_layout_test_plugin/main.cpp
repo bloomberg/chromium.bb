@@ -43,6 +43,12 @@
 #define NPAPI
 #endif
 
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define EXPORT __attribute__((visibility ("default")))
+#else
+#define EXPORT
+#endif
+
 #if defined(OS_LINUX)
 #include <X11/Xlib.h>
 #endif
@@ -89,22 +95,22 @@ static void log(NPP instance, const char* format, ...)
 
 // Plugin entry points
 extern "C" {
-    NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
+    EXPORT NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
 #if defined(OS_LINUX)
                                 , NPPluginFuncs *pluginFuncs
 #endif
                                 );
-    NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
-    void NPAPI NP_Shutdown(void);
+    EXPORT NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
+    EXPORT void NPAPI NP_Shutdown(void);
 
 #if defined(OS_LINUX)
-    NPError NP_GetValue(NPP instance, NPPVariable variable, void *value);
-    const char* NP_GetMIMEDescription(void);
+    EXPORT NPError NPAPI NP_GetValue(NPP instance, NPPVariable variable, void *value);
+    EXPORT const char* NPAPI NP_GetMIMEDescription(void);
 #endif
 }
 
 // Plugin entry points
-NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
+EXPORT NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
 #if defined(OS_LINUX)
                             , NPPluginFuncs *pluginFuncs
 #endif
@@ -118,7 +124,7 @@ NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
 #endif
 }
 
-NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs)
+EXPORT NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs)
 {
     pluginFuncs->version = 11;
     pluginFuncs->size = sizeof(pluginFuncs);
@@ -139,7 +145,7 @@ NPError NPAPI NP_GetEntryPoints(NPPluginFuncs *pluginFuncs)
     return NPERR_NO_ERROR;
 }
 
-void NPAPI NP_Shutdown(void)
+EXPORT void NPAPI NP_Shutdown(void)
 {
 }
 
@@ -498,12 +504,12 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value)
 }
 
 #if defined(OS_LINUX)
-NPError NP_GetValue(NPP instance, NPPVariable variable, void *value)
+EXPORT NPError NPAPI NP_GetValue(NPP instance, NPPVariable variable, void *value)
 {
     return NPP_GetValue(instance, variable, value);
 }
 
-const char* NP_GetMIMEDescription(void) {
+EXPORT const char* NPAPI NP_GetMIMEDescription(void) {
     // The layout test LayoutTests/fast/js/navigator-mimeTypes-length.html
     // asserts that the number of mimetypes handled by plugins should be
     // greater than the number of plugins.  This isn't true if we're
