@@ -7,7 +7,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -254,54 +253,6 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
   ASSERT_TRUE(GetActiveTabURL() == url1_);
 }
 
-// Creates a tabbed browser and popup and makes sure we restore both.
-TEST_F(SessionRestoreUITest, NormalAndPopup) {
-  if (!browser_defaults::kRestorePopups)
-    return;  // Test only applicable if restoring popups.
-
-  NavigateToURL(url1_);
-
-  // Make sure we have one window.
-  int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_EQ(1, window_count);
-
-  // Open a popup.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_POPUP,
-                                                 true));
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_EQ(2, window_count);
-
-  // Restart and make sure we have only one window with one tab and the url
-  // is url1_.
-  QuitBrowserAndRestore(1);
-
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_EQ(2, window_count);
-
-  scoped_refptr<BrowserProxy> browser_proxy1(
-      automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser_proxy1.get());
-
-  scoped_refptr<BrowserProxy> browser_proxy2(
-      automation()->GetBrowserWindow(1));
-  ASSERT_TRUE(browser_proxy2.get());
-
-  BrowserProxy::Type type1, type2;
-  ASSERT_TRUE(browser_proxy1->GetType(&type1));
-  ASSERT_TRUE(browser_proxy2->GetType(&type2));
-
-  // The order of whether the normal window or popup is first depends upon
-  // activation order, which is not necessarily consistant across runs.
-  if (type1 == BrowserProxy::TYPE_NORMAL) {
-    EXPECT_EQ(type2, BrowserProxy::TYPE_POPUP);
-  } else {
-    EXPECT_EQ(type1, BrowserProxy::TYPE_POPUP);
-    EXPECT_EQ(type2, BrowserProxy::TYPE_NORMAL);
-  }
-}
-
-
 #if defined(OS_WIN)
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
@@ -357,8 +308,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(1, window_count);
 
   // Open a second window.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 true));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);
 

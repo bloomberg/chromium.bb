@@ -185,7 +185,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
 
   void GetTabCount(int handle, int* tab_count);
-  void GetType(int handle, int* type_as_int);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
 #if defined(OS_WIN)
   // TODO(port): Replace HWND.
@@ -284,9 +283,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                      int* autocomplete_edit_handle);
 
   // If |show| is true, call Show() on the new window after creating it.
-  void OpenNewBrowserWindow(int type,
-                            bool show,
-                            IPC::Message* reply_message);
+  void OpenNewBrowserWindow(bool show, IPC::Message* reply_message);
 
   void ShowInterstitialPage(int tab_handle,
                             const std::string& html_text,

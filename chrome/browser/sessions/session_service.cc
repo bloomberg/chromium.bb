@@ -119,14 +119,14 @@ struct PinnedStatePayload {
 
 SessionService::SessionService(Profile* profile)
     : BaseSessionService(SESSION_RESTORE, profile, FilePath()),
-      has_open_trackable_browsers_(false),
+      has_open_tabbed_browsers_(false),
       move_on_new_browser_(false) {
   Init();
 }
 
 SessionService::SessionService(const FilePath& save_path)
     : BaseSessionService(SESSION_RESTORE, NULL, save_path),
-      has_open_trackable_browsers_(false),
+      has_open_tabbed_browsers_(false),
       move_on_new_browser_(false) {
   Init();
 }
@@ -216,7 +216,7 @@ void SessionService::TabClosed(const SessionID& window_id,
     // User closed the last tab in the last tabbed browser. Don't mark the
     // tab closed.
     pending_tab_close_ids_.insert(tab_id.id());
-    has_open_trackable_browsers_ = false;
+    has_open_tabbed_browsers_ = false;
   }
 }
 
@@ -229,12 +229,12 @@ void SessionService::WindowClosing(const SessionID& window_id) {
   //
   // NOTE: if the user chooses the exit menu item session service is destroyed
   // and this code isn't hit.
-  if (has_open_trackable_browsers_) {
-    // Closing a window can never make has_open_trackable_browsers_ go from
-    // false to true, so only update it if already true.
-    has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
+  if (has_open_tabbed_browsers_) {
+    // Closing a window can never make has_open_tabbed_browsers_ go from false
+    // to true, so only update it if already true.
+    has_open_tabbed_browsers_ = HasOpenTabbedBrowsers(window_id);
   }
-  if (!has_open_trackable_browsers_)
+  if (!has_open_tabbed_browsers_)
     pending_window_close_ids_.insert(window_id.id());
   else
     window_closing_ids_.insert(window_id.id());
@@ -252,8 +252,8 @@ void SessionService::WindowClosed(const SessionID& window_id) {
   } else if (pending_window_close_ids_.find(window_id.id()) ==
              pending_window_close_ids_.end()) {
     // We'll hit this if user closed the last tab in a window.
-    has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
-    if (!has_open_trackable_browsers_)
+    has_open_tabbed_browsers_ = HasOpenTabbedBrowsers(window_id);
+    if (!has_open_tabbed_browsers_)
       pending_window_close_ids_.insert(window_id.id());
     else
       ScheduleCommand(CreateWindowClosedCommand(window_id.id()));
@@ -271,7 +271,7 @@ void SessionService::SetWindowType(const SessionID& window_id,
   // pending closes.
   CommitPendingCloses();
 
-  has_open_trackable_browsers_ = true;
+  has_open_tabbed_browsers_ = true;
   move_on_new_browser_ = true;
 
   ScheduleCommand(CreateSetWindowTypeCommand(window_id, type));
@@ -409,7 +409,7 @@ void SessionService::Observe(NotificationType type,
         return;
       }
 
-      if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup()) {
+      if (!has_open_tabbed_browsers_ && !BrowserInit::InProcessStartup()) {
         // We're going from no tabbed browsers to a tabbed browser (and not in
         // process startup), restore the last session.
         if (move_on_new_browser_) {
@@ -1019,7 +1019,7 @@ void SessionService::ScheduleReset() {
   if (!windows_tracking_.empty()) {
     // We're lazily created on startup and won't get an initial batch of
     // SetWindowType messages. Set these here to make sure our state is correct.
-    has_open_trackable_browsers_ = true;
+    has_open_tabbed_browsers_ = true;
     move_on_new_browser_ = true;
   }
   StartSaveTimer();
@@ -1108,7 +1108,7 @@ bool SessionService::IsOnlyOneTabLeft() {
   }
 
   // NOTE: This uses the original profile so that closing the last non-off the
-  // record window while there are open off the record windows resets state).
+  // record window while there are open off the record window resets state).
   int window_count = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
@@ -1127,7 +1127,7 @@ bool SessionService::IsOnlyOneTabLeft() {
   return true;
 }
 
-bool SessionService::HasOpenTrackableBrowsers(const SessionID& window_id) {
+bool SessionService::HasOpenTabbedBrowsers(const SessionID& window_id) {
   if (!profile()) {
     // We're testing, always return false.
     return true;

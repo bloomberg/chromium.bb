@@ -226,8 +226,7 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreToDifferentWindow) {
   EXPECT_EQ(starting_tab_count + 2, tab_count);
 
   // Create a new browser.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 false));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(false));
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(2, window_count);
@@ -269,8 +268,7 @@ TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
   tab_proxy->NavigateToURL(url2_);
 
   // Create a new browser.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 false));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(false));
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(2, window_count);
@@ -360,8 +358,7 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
   EXPECT_EQ(starting_tab_count + 2, tab_count);
 
   // Create a new browser.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 false));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(false));
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(2, window_count);
@@ -409,8 +406,7 @@ TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
   tab_proxy->NavigateToURL(url2_);
 
   // Create a new browser.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 false));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(false));
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(2, window_count);
@@ -552,8 +548,7 @@ TEST_F(TabRestoreUITest, RestoreWindow) {
   // Create a new window.
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
-                                                 false));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(false));
   int new_window_count = 0;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&new_window_count));
   EXPECT_EQ(++window_count, new_window_count);

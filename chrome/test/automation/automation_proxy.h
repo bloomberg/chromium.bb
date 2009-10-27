@@ -17,7 +17,6 @@
 #include "base/waitable_event.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
-#include "chrome/test/automation/browser_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -87,9 +86,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Returns true if the load is successful.
   bool WaitForInitialNewTabUILoad(int* load_time);
 
-  // Open a new browser window of type |type|, returning true on success. |show|
-  // identifies whether the window should be shown. Returns true on success.
-  bool OpenNewBrowserWindow(BrowserProxy::Type type, bool show);
+  // Open a new browser window, returning true on success. |show|
+  // identifies whether the window should be shown.
+  // False likely indicates an IPC error.
+  bool OpenNewBrowserWindow(bool show);
 
   // Fills the number of open browser windows into the given variable, returning
   // true on success. False likely indicates an IPC error.

@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/notification_observer.h"
@@ -305,19 +304,16 @@ class SessionService : public BaseSessionService,
   // our profile.
   bool IsOnlyOneTabLeft();
 
-  // Returns true if there are open trackable browser windows whose ids do
-  // match |window_id| with our profile. A trackable window is a window from
-  // which |should_track_changes_for_browser_type| returns true. See
-  // |should_track_changes_for_browser_type| for details.
-  bool HasOpenTrackableBrowsers(const SessionID& window_id);
+  // Returns true if there are no open tabbed browser windows with our profile,
+  // or the only tabbed browser open has a session id of window_id.
+  bool HasOpenTabbedBrowsers(const SessionID& window_id);
 
   // Returns true if changes to tabs in the specified window should be tracked.
   bool ShouldTrackChangesToWindow(const SessionID& window_id);
 
   // Returns true if we track changes to the specified browser type.
   static bool should_track_changes_for_browser_type(Browser::Type type) {
-    return type == Browser::TYPE_NORMAL ||
-        (type == Browser::TYPE_POPUP && browser_defaults::kRestorePopups);
+    return type == Browser::TYPE_NORMAL;
   }
 
   NotificationRegistrar registrar_;
@@ -351,11 +347,11 @@ class SessionService : public BaseSessionService,
   typedef std::set<SessionID::id_type> WindowsTracking;
   WindowsTracking windows_tracking_;
 
-  // Are there any open trackable browsers?
-  bool has_open_trackable_browsers_;
+  // Are there any open open tabbed browsers?
+  bool has_open_tabbed_browsers_;
 
   // If true and a new tabbed browser is created and there are no opened tabbed
-  // browser (has_open_trackable_browsers_ is false), then the current session
+  // browser (has_open_tabbed_browsers_ is false), then the current session
   // is made the previous session. See description above class for details on
   // current/previou session.
   bool move_on_new_browser_;

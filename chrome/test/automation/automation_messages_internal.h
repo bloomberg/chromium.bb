@@ -133,11 +133,6 @@ IPC_BEGIN_MESSAGES(Automation)
   // request failed.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_TabCount, int, int)
 
-  // This message requests the type of the window with the given handle. The
-  // return value contains the type (Browser::Type), or -1 if the request
-  // failed.
-  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_Type, int, int)
-
   // This message requests the handle of the tab with the given (zero-based)
   // index in the given app window. First parameter specifies the given window
   // handle, second specifies the given tab_index. On error, the returned handle
@@ -369,9 +364,8 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* view_handle */)
 
   // Opens a new browser window.
-  IPC_SYNC_MESSAGE_ROUTED2_0(AutomationMsg_OpenNewBrowserWindow,
-                             int   /* Type (Browser::Type) */,
-                             bool  /* show */ )
+  IPC_SYNC_MESSAGE_ROUTED1_0(AutomationMsg_OpenNewBrowserWindow,
+                             bool /* show */ )
 
   // This message requests the handle (int64 app-unique identifier) of the
   // current active top window.  On error, the returned handle value is 0.
