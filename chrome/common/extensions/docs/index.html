@@ -228,7 +228,7 @@
 #pics img {
   width:180px;
   height:85px;
-  border:1px solid black;
+  border:none;
 }
 </style>
 
@@ -251,25 +251,30 @@ you need to know to write extensions.
 
 <p>
 Here are some examples of what you can build with extensions:
+<span class="comment">
+[PENDING: improve * actions screenshots, so there are fewer unnecessary
+differences between them.]
+</span>
 </p>
 
 <table id="pics">
   <tbody><tr>
     <td valign="top">
-      <b>Toolstrips</b><br>
-      <a href="toolstrip.html"><img src="images/index/toolstrip.png"></a>
+      <b>Page actions</b><br>
+      <a href="pageAction.html"><img src="images/index/page_action.png" width="180"></a>
       <br>
-      Display small toolbars in Google Chrome's chrome
+      Display small icons in the address bar, but only for specific pages
     </td>
     <td valign="top">
-      <b>Page actions</b><br>
-      <a href="pageAction.html"><img src="images/index/page_action.png"></a>
+      <b>Browser actions</b><br>
+      <a href="browserAction.html"><img src="images/index/browser_action.png" width="240"></a>
       <br>
-      Add buttons to the Omnibox that get displayed for specific pages
+      Display small icons in the toolbar,
+      optionally with a custom popup
     </td>
     <td valign="top">
       <b>Content scripts</b><br>
-      <a href="content_scripts.html"><img src="images/index/content_script.png"></a>
+      <a href="content_scripts.html"><img src="images/index/content_script.png" width="180"></a>
       <br>
       Modify the look and behavior of web pages
     </td>
