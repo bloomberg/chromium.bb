@@ -185,7 +185,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   // fontconfig only knows how to load font config configs from a file name, so
   // we write to a temp file.
   base::StringPiece font_config_xml;
-  g_resource_data_pack->Get(IDR_LINUX_FONT_CONFIG, &font_config_xml);
+  g_resource_data_pack->GetStringPiece(IDR_LINUX_FONT_CONFIG, &font_config_xml);
   FilePath fontconfig_path;
   if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
     LOG(FATAL) << "failed to create temp font config file";
@@ -274,7 +274,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
 
   // Also load the layout-test-specific "Ahem" font.
   base::StringPiece ahem_font;
-  g_resource_data_pack->Get(IDR_AHEM_FONT, &ahem_font);
+  g_resource_data_pack->GetStringPiece(IDR_AHEM_FONT, &ahem_font);
   g_ahem_path = new FilePath;
   if (!file_util::CreateTemporaryFile(g_ahem_path)) {
     LOG(FATAL) << "failed to create temp ahem font";
@@ -637,7 +637,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 // static
 base::StringPiece TestShell::NetResourceProvider(int key) {
   base::StringPiece res;
-  g_resource_data_pack->Get(key, &res);
+  g_resource_data_pack->GetStringPiece(key, &res);
   return res;
 }
 
@@ -647,7 +647,7 @@ namespace webkit_glue {
 
 string16 GetLocalizedString(int message_id) {
   base::StringPiece res;
-  if (!g_resource_data_pack->Get(message_id, &res)) {
+  if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
 

@@ -25,17 +25,17 @@ TEST_F(DataPackTest, Load) {
   ASSERT_TRUE(pack.Load(data_path_));
 
   base::StringPiece data;
-  ASSERT_TRUE(pack.Get(4, &data));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
   EXPECT_EQ("this is id 4", data);
-  ASSERT_TRUE(pack.Get(6, &data));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
   EXPECT_EQ("this is id 6", data);
 
   // Try reading zero-length data blobs, just in case.
-  ASSERT_TRUE(pack.Get(1, &data));
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
   EXPECT_EQ(0U, data.length());
-  ASSERT_TRUE(pack.Get(10, &data));
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
   EXPECT_EQ(0U, data.length());
 
   // Try looking up an invalid key.
-  ASSERT_FALSE(pack.Get(140, &data));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }

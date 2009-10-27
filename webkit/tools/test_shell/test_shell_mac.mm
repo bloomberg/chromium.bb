@@ -635,7 +635,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 
 base::StringPiece TestShell::NetResourceProvider(int key) {
   base::StringPiece res;
-  g_resource_data_pack->Get(key, &res);
+  g_resource_data_pack->GetStringPiece(key, &res);
   return res;
 }
 
@@ -645,7 +645,7 @@ namespace webkit_glue {
 
 string16 GetLocalizedString(int message_id) {
   base::StringPiece res;
-  if (!g_resource_data_pack->Get(message_id, &res)) {
+  if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
 

@@ -75,24 +75,17 @@ void ResourceBundle::LoadThemeResources() {
 RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
     DataHandle module, int resource_id) {
   DCHECK(module);
-  base::StringPiece bytes;
-  if (!module->Get(resource_id, &bytes))
-    return NULL;
-
-  return new RefCountedStaticMemory(
-      reinterpret_cast<const unsigned char*>(bytes.data()), bytes.length());
+  return module->GetStaticMemory(resource_id);
 }
 
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
   DCHECK(resources_data_);
   base::StringPiece data;
-
-  if (!resources_data_->Get(resource_id, &data)) {
-    if (!locale_resources_data_->Get(resource_id, &data)) {
+  if (!resources_data_->GetStringPiece(resource_id, &data)) {
+    if (!locale_resources_data_->GetStringPiece(resource_id, &data)) {
       return base::StringPiece();
     }
   }
-
   return data;
 }
 
@@ -105,7 +98,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   }
 
   base::StringPiece data;
-  if (!locale_resources_data_->Get(message_id, &data)) {
+  if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).
     data = GetRawDataResource(message_id);

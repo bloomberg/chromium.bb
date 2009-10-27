@@ -89,7 +89,7 @@ bool DataPack::Load(const FilePath& path) {
   return true;
 }
 
-bool DataPack::Get(uint32_t resource_id, StringPiece* data) {
+bool DataPack::GetStringPiece(uint32_t resource_id, StringPiece* data) {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
 #if defined(__BYTE_ORDER)
@@ -111,6 +111,15 @@ bool DataPack::Get(uint32_t resource_id, StringPiece* data) {
 
   data->set(mmap_->data() + target->file_offset, target->length);
   return true;
+}
+
+RefCountedStaticMemory* DataPack::GetStaticMemory(uint32_t resource_id) {
+  base::StringPiece piece;
+  if (!GetStringPiece(resource_id, &piece))
+    return NULL;
+
+  return new RefCountedStaticMemory(
+      reinterpret_cast<const unsigned char*>(piece.data()), piece.length());
 }
 
 }  // namespace base
