@@ -5,6 +5,7 @@
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -363,6 +364,12 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
 
   if (item && [item action] == @selector(commandDispatch:) && [item tag] > 0)
     return [item tag];
+
+  // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
+  // that do not correspond to IDC_ constants need no special treatment however,
+  // as they can't be blacklisted in |Browser::IsReservedAccelerator()| anyhow.
+  if (item && [item action] == @selector(performClose:))
+    return IDC_CLOSE_WINDOW;
 
   // Look in secondary keyboard shortcuts.
   NSUInteger modifiers = [event.os_event modifierFlags];
