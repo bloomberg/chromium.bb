@@ -83,6 +83,7 @@ struct FileUploadData;
 }
 
 namespace WebKit {
+class WebDataSource;
 class WebDragData;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -715,6 +716,10 @@ class RenderView : public RenderWidget,
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
   void DumpLoadHistograms() const;
+
+  // Logs the navigation state to the console.
+  void LogNavigationState(const NavigationState* state,
+                          const WebKit::WebDataSource* ds) const;
 
   // Scan the given frame for password forms and send them up to the browser.
   void SendPasswordForms(WebKit::WebFrame* frame);

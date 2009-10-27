@@ -3420,6 +3420,8 @@ void RenderView::DumpLoadHistograms() const {
   if (navigation_state->load_histograms_recorded() || finish.is_null())
     return;
 
+  LogNavigationState(navigation_state, main_frame->dataSource());
+
   Time request = navigation_state->request_time();
   Time start = navigation_state->start_load_time();
   Time commit = navigation_state->commit_load_time();
@@ -3566,6 +3568,25 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   navigation_state->set_load_histograms_recorded(true);
+}
+
+void RenderView::LogNavigationState(const NavigationState* state,
+                                    const WebDataSource* ds) const {
+  // Because this function gets called on every page load,
+  // take extra care to optimize it away if logging is turned off.
+  if (logging::LOG_INFO < logging::GetMinLogLevel())
+    return;
+
+  DCHECK(state);
+  DCHECK(ds);
+  GURL url(ds->request().url());
+  Time start = state->start_load_time();
+  Time finish = state->finish_load_time();
+  // TODO(mbelshe): should we log more stats?
+  LOG(INFO) << "PLT: "
+            << (finish - start).InMilliseconds()
+            << "ms "
+            << url.spec();
 }
 
 void RenderView::focusAccessibilityObject(
