@@ -326,7 +326,7 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
       base::LaunchApp(cmdline, false, false, &process);
     }
   } else {
-    CommandLine cmdline(FilePath(path));
+    CommandLine cmdline((FilePath(path)));
     cmdline.AppendLooseValue(argument);
     base::LaunchApp(cmdline, false, false, &process);
   }
