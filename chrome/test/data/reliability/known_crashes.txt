@@ -24,6 +24,9 @@
 #           REGEX: Use this pattern as a regex to match against signatures.
 #       If the type is not listed, it defaults to PREFIX.
 
+# about:crash is a test page.
+PREFIX : abouthandler::aboutcrash
+
 # Any crash due to out of memory is ignored.
 PREFIX : `anonymous namespace'::onnomemory
 
