@@ -31,7 +31,7 @@
 #include "webkit/tools/test_shell/test_shell_webkit_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char* TestShellTest::kJavascriptDelayExitScript =
+const char* const TestShellTest::kJavascriptDelayExitScript =
   "<script>"
     "window.layoutTestController.waitUntilDone();"
     "window.addEventListener('load', function() {"
@@ -42,6 +42,7 @@ const char* TestShellTest::kJavascriptDelayExitScript =
 
 int main(int argc, char* argv[]) {
   base::ScopedNSAutoreleasePool autorelease_pool;
+  base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
   // Some unittests may use base::Singleton<>, thus we need to instanciate
   // the AtExitManager or else we will leak objects.

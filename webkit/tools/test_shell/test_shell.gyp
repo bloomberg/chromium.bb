@@ -244,6 +244,11 @@
         'test_shell_common',
         '../../../tools/imagediff/image_diff.gyp:image_diff',
       ],
+      'defines': [
+        # Technically not a unit test but require functions available only to
+        # unit tests.
+        'UNIT_TEST'
+      ],
       'sources': [
         'test_shell_main.cc',
       ],

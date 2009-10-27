@@ -29,7 +29,7 @@ class TestShellTest : public testing::Test {
   // Don't refactor away; some unittests override this!
   virtual void CreateEmptyWindow();
 
-  static const char* kJavascriptDelayExitScript;
+  static const char* const kJavascriptDelayExitScript;
 
  protected:
   // Location of SOURCE_ROOT/webkit/data/

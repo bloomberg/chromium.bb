@@ -45,13 +45,14 @@ using WebKit::WebScriptController;
 namespace {
 
 // StatsTable initialization parameters.
-static const char* kStatsFilePrefix = "testshell_";
-static int kStatsFileThreads = 20;
-static int kStatsFileCounters = 200;
+const char* const kStatsFilePrefix = "testshell_";
+int kStatsFileThreads = 20;
+int kStatsFileCounters = 200;
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
+  base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
   // Some tests may use base::Singleton<>, thus we need to instanciate
