@@ -147,7 +147,10 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // DownloadItem. We don't want to wait for autorelease since the DownloadItem
   // we are observing will likely be gone by then.
   [[NSNotificationCenter defaultCenter] removeObserver:download];
+
+  // TODO(dmaclach): Remove -- http://crbug.com/25845
   [[download view] removeFromSuperview];
+
   [downloadItemControllers_ removeObject:download];
 
   [self layoutItems];

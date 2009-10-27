@@ -82,7 +82,9 @@
 - (void)dealloc {
   // Remove our view from its superview so it doesn't attempt to reference
   // it when the controller is gone.
+  //TODO(dmaclach): Remove -- http://crbug.com/25845
   [[self view] removeFromSuperview];
+
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
