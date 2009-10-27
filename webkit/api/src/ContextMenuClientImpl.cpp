@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebContextMenuClientImpl.h"
+#include "ContextMenuClientImpl.h"
 
 #include "ContextMenu.h"
 #include "Document.h"
@@ -135,7 +135,7 @@ static String selectMisspelledWord(const ContextMenu* defaultMenu, Frame* select
     return misspelledWord;
 }
 
-PlatformMenuDescription WebContextMenuClientImpl::getCustomMenuFromDefaultItems(
+PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     ContextMenu* defaultMenu)
 {
     // Displaying the context menu in this function is a big hack as we don't

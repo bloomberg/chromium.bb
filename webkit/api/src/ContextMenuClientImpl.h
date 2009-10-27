@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContextMenuClientImpl_h
-#define WebContextMenuClientImpl_h
+#ifndef ContextMenuClientImpl_h
+#define ContextMenuClientImpl_h
 
 #include "ContextMenuClient.h"
 
@@ -37,10 +37,10 @@ class WebViewImpl;
 
 namespace WebKit {
 
-    class WebContextMenuClientImpl : public  WebCore::ContextMenuClient {
+    class ContextMenuClientImpl : public  WebCore::ContextMenuClient {
     public:
-        WebContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) {}
-        virtual ~WebContextMenuClientImpl() {}
+        ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) {}
+        virtual ~ContextMenuClientImpl() {}
         virtual void copyImageToClipboard(const WebCore::HitTestResult&) {}
         virtual void contextMenuDestroyed() {}
         virtual void contextMenuItemSelected(WebCore::ContextMenuItem*, const WebCore::ContextMenu*) {}
@@ -58,4 +58,4 @@ namespace WebKit {
 
 } // namespace WebKit
 
-#endif // WebContextMenuClientImpl_h
+#endif // ContextMenuClientImpl_h
