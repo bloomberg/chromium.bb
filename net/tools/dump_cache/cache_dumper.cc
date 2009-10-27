@@ -70,7 +70,11 @@ bool DiskDumper::CreateEntry(const std::string& key,
   // In order for long filenames to work, we'll need to prepend
   // the windows magic token.
   const std::wstring kLongFilenamePrefix(L"\\\\?\\");
-  entry_path_ = FilePath(kLongFilenamePrefix).Append(entry_path_);
+  // There is no way to prepend to a filename.  We simply *have*
+  // to convert to a wstring to do this.
+  std::wstring name = kLongFilenamePrefix;
+  name.append(entry_path_.ToWStringHack());
+  entry_path_ = FilePath(name);
 #endif
 
   entry_url_ = key;
