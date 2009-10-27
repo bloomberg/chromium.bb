@@ -227,9 +227,15 @@ class BookmarkFolderButton : public views::MenuButton {
   }
 
   virtual bool IsTriggerableEvent(const views::MouseEvent& e) {
-    // This is hard coded to avoid potential notification on left mouse down,
-    // which we want to show the menu.
-    return e.IsMiddleMouseButton();
+    // Left clicks should show the menu contents and right clicks should show
+    // the context menu. They should not trigger the opening of underlying urls.
+    if (e.GetFlags() == views::MouseEvent::EF_LEFT_BUTTON_DOWN ||
+        e.GetFlags() == views::MouseEvent::EF_RIGHT_BUTTON_DOWN)
+      return false;
+
+    WindowOpenDisposition disposition(
+        event_utils::DispositionFromEventFlags(e.GetFlags()));
+    return disposition != CURRENT_TAB;
   }
 
   virtual void Paint(gfx::Canvas *canvas) {

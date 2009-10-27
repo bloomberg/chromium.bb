@@ -89,10 +89,16 @@ bool BookmarkMenuController::IsTriggerableEvent(const views::MouseEvent& e) {
 void BookmarkMenuController::ExecuteCommand(int id, int mouse_event_flags) {
   DCHECK(page_navigator_);
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
-  GURL url = menu_id_to_node_map_[id]->GetURL();
-  page_navigator_->OpenURL(
-      url, GURL(), event_utils::DispositionFromEventFlags(mouse_event_flags),
-      PageTransition::AUTO_BOOKMARK);
+
+  const BookmarkNode* node = menu_id_to_node_map_[id];
+  std::vector<const BookmarkNode*> selection;
+  selection.push_back(node);
+
+  WindowOpenDisposition initial_disposition =
+      event_utils::DispositionFromEventFlags(mouse_event_flags);
+
+  bookmark_utils::OpenAll(parent_, profile_, page_navigator_, selection,
+                          initial_disposition);
 }
 
 bool BookmarkMenuController::GetDropFormats(

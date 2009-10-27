@@ -439,7 +439,11 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       return;
   }
 
-  if (!part.is_scroll() && part.menu && !part.menu->HasSubmenu()) {
+  // We can use Ctrl+click or the middle mouse button to recursively open urls
+  // for selected folder menu items. If it's only a left click, show the
+  // contents of the folder.
+  if (!part.is_scroll() && part.menu && !(part.menu->HasSubmenu() &&
+      (event.GetFlags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
     if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
       Accept(part.menu, event.GetFlags());
       return;

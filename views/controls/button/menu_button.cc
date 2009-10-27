@@ -189,8 +189,8 @@ bool MenuButton::OnMousePressed(const MouseEvent& e) {
 void MenuButton::OnMouseReleased(const MouseEvent& e,
                                  bool canceled) {
   if (GetDragOperations(e.x(), e.y()) != DragDropTypes::DRAG_NONE &&
-      state() != BS_DISABLED && !canceled && !InDrag() &&
-      e.IsOnlyLeftMouseButton() && HitTest(e.location())) {
+      state() != BS_DISABLED && !canceled && !InDrag() && !IsTriggerableEvent(e)
+      && HitTest(e.location())) {
     Activate();
   } else {
     TextButton::OnMouseReleased(e, canceled);
