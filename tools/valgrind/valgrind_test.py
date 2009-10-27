@@ -366,7 +366,11 @@ class Memcheck(ValgrindTool):
     use_gdb = (sys.platform == 'darwin')
     analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks,
                                                 use_gdb=use_gdb)
-    return analyzer.Report()
+    ret = analyzer.Report()
+    if ret != 0:
+      logging.info("Please see http://dev.chromium.org/developers/how-tos/"
+                   "using-valgrind for the info on Memcheck/Valgrind")
+    return ret
 
 class ThreadSanitizer(ValgrindTool):
   """ThreadSanitizer"""
@@ -436,7 +440,12 @@ class ThreadSanitizer(ValgrindTool):
     use_gdb = (sys.platform == 'darwin')
     analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,
                                         use_gdb=use_gdb)
-    return analyzer.Report()
+    ret = analyzer.Report()
+    if ret != 0:
+      logging.info("Please see http://dev.chromium.org/developers/how-tos/"
+                   "using-valgrind/threadsanitizer for the info on "
+                   "ThreadSanitizer")
+    return ret
 
 
 class ToolFactory:
@@ -445,7 +454,9 @@ class ToolFactory:
       return Memcheck()
     if tool_name == "tsan":
       if sys.platform != 'linux2':
-        logging.info("WARNING: ThreadSanitizer is not working yet on Mac")
+        logging.info("WARNING: ThreadSanitizer may be unstable on Mac.")
+        logging.info("See http://code.google.com/p/data-race-test/wiki/"
+                     "ThreadSanitizerOnMacOsx for the details")
       return ThreadSanitizer()
     raise RuntimeError, "Unknown tool" \
                         "(tool=%s, platform=%s)" % \
