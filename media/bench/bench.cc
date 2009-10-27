@@ -317,12 +317,13 @@ int main(int argc, const char** argv) {
   }
 
   // Buffer used for audio decoding.
-  int16* samples =
-      reinterpret_cast<int16*>(av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE));
+  scoped_ptr_malloc<int16, media::ScopedPtrAVFree> samples(
+      reinterpret_cast<int16*>(av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE)));
 
   // Buffer used for video decoding.
-  AVFrame* frame = avcodec_alloc_frame();
-  if (!frame) {
+  scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFree> frame(
+      avcodec_alloc_frame());
+  if (!frame.get()) {
     std::cerr << "Error: avcodec_alloc_frame for "
               << in_path << std::endl;
     return 1;
@@ -363,7 +364,7 @@ int main(int argc, const char** argv) {
         int size_out = AVCODEC_MAX_AUDIO_FRAME_SIZE;
 
         base::TimeTicks decode_start = base::TimeTicks::HighResNow();
-        result = avcodec_decode_audio3(codec_context, samples, &size_out,
+        result = avcodec_decode_audio3(codec_context, samples.get(), &size_out,
                                        &packet);
         base::TimeDelta delta = base::TimeTicks::HighResNow() - decode_start;
 
@@ -373,28 +374,29 @@ int main(int argc, const char** argv) {
           read_result = 0;  // Force continuation.
 
           if (output) {
-            if (fwrite(samples, 1, size_out, output) !=
+            if (fwrite(samples.get(), 1, size_out, output) !=
                 static_cast<size_t>(size_out)) {
               std::cerr << "Error: Could not write "
                         << size_out << " bytes for " << in_path << std::endl;
               return 1;
             }
           }
+
+          const uint8* u8_samples =
+              reinterpret_cast<const uint8*>(samples.get());
           if (hash_djb2) {
-            hash_value = DJB2Hash(reinterpret_cast<const uint8*>(samples),
-                                  size_out, hash_value);
+            hash_value = DJB2Hash(u8_samples, size_out, hash_value);
           }
           if (hash_md5) {
-            MD5Update(&ctx, reinterpret_cast<const uint8*>(samples),
-                      size_out);
+            MD5Update(&ctx, u8_samples, size_out);
           }
         }
       } else if (target_codec == CODEC_TYPE_VIDEO) {
         int got_picture = 0;
 
         base::TimeTicks decode_start = base::TimeTicks::HighResNow();
-        result = avcodec_decode_video2(codec_context, frame, &got_picture,
-                                       &packet);
+        result = avcodec_decode_video2(codec_context, frame.get(),
+                                       &got_picture, &packet);
         base::TimeDelta delta = base::TimeTicks::HighResNow() - decode_start;
 
         if (got_picture) {
@@ -474,8 +476,13 @@ int main(int argc, const char** argv) {
   base::TimeDelta total = base::TimeTicks::HighResNow() - start;
   LeaveTimingSection();
 
+  // Clean up.
   if (output)
     file_util::CloseFile(output);
+  if (codec_context)
+    avcodec_close(codec_context);
+  if (format_context)
+    av_close_input_file(format_context);
 
   // Calculate the sum of times.  Note that some of these may be zero.
   double sum = 0;
