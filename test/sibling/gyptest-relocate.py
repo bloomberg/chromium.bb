@@ -19,6 +19,13 @@ test.build('build/all.gyp', test.ALL, chdir='relocate/src')
 
 chdir = 'relocate/src/build'
 
+# The top-level Makefile is in the directory where gyp was run.
+# TODO(mmoss) Should the Makefile go in the directory of the passed in .gyp
+# file? What about when passing in multiple .gyp files? Would sub-project
+# Makefiles (see http://codereview.chromium.org/340008 comments) solve this?
+if test.format == 'make':
+  chdir = 'relocate/src'
+
 if test.format == 'xcode':
   chdir = 'relocate/src/prog1'
 test.run_built_executable('prog1',
