@@ -14,6 +14,7 @@
 #include <sys/timeb.h>
 #include <time.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/win/nacl_time_types.h"
 

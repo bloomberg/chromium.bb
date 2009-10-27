@@ -37,6 +37,10 @@
 
 #include <stdlib.h>
 
+/*****************************************************************************
+ * Safety macros                                                             *
+ *****************************************************************************/
+
 #define NACL_ARRAY_SIZE_UNSAFE(arr) ((sizeof arr)/sizeof arr[0])
 
 /*
@@ -187,5 +191,16 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  */
 #define NACL_ASSERT_IS_POINTER(ptr) do { if (0) { ++ptr; } } while (0)
 
+
+/*****************************************************************************
+ * Readability macros                                                        *
+ ****************************************************************************/
+
+#define NACL_NANOS_PER_MICRO          1000
+#define NACL_100_NANOS_PER_MILLI      (10 * 1000)
+#define NACL_NANOS_PER_MILLI          (1000 * 1000)
+#define NACL_MICROS_PER_UNIT          (1000 * 1000)
+#define NACL_MILLIS_PER_UNIT          1000
+#define NACL_UNIT_CONVERT_ROUND(v, m) (((v) + (m) - 1)/(m))
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_ */
