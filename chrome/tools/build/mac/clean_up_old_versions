@@ -24,22 +24,3 @@ for dir in "${VERSIONED_DIR}/"* ; do
     rm -rf "${dir}"
   fi
 done
-
-# Older builds did not use a versioned directory, and instead placed the
-# framework, helper app, and other components directly within the main app
-# bundle.  To keep incremental developer builds relatively pristine and
-# equivalent to clean builds, these old components need to be cleaned up if
-# present.
-# Frameworks includes the app framework (Chromium Framework.framework or
-# Google Chrome Framework.framework) and, if Keystone-enabled,
-# KeystoneRegistration.framework.  To simplify this script, it removes the
-# helper app at its old location under either of the supported branding names.
-# TODO(mark): Remove the following section some time after October 27, 2009,
-# allowing two weeks for the transition.
-
-rm -rf "${CONTENTS_DIR}/Frameworks" \
-       "${CONTENTS_DIR}/Resources/Chromium Helper.app" \
-       "${CONTENTS_DIR}/Resources/Google Chrome Helper.app" \
-       "${CONTENTS_DIR}/MacOS/libavcodec.52.dylib" \
-       "${CONTENTS_DIR}/MacOS/libavformat.52.dylib" \
-       "${CONTENTS_DIR}/MacOS/libavutil.50.dylib"

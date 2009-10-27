@@ -3685,11 +3685,6 @@
               'action': ['app/tweak_mac_lproj_folders'],
             },
             {
-              # TODO(mark): Remove after October 20, 2009.
-              'postbuild_name': 'Clean up old resources',
-              'action': ['app/clean_mac_resources'],
-            },
-            {
               'postbuild_name': 'Clean up old versions',
               'action': [
                 'tools/build/mac/clean_up_old_versions',
