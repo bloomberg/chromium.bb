@@ -34,6 +34,9 @@ extern const SessionStartupPref::Type kDefaultSessionStartupType;
 // Width of pinned tabs.
 extern const int kPinnedTabWidth;
 
+// Should session restore restore popup windows?
+extern const bool kRestorePopups;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

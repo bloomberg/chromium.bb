@@ -485,8 +485,10 @@ void AutomationProxy::InvalidateHandle(const IPC::Message& message) {
   }
 }
 
-bool AutomationProxy::OpenNewBrowserWindow(bool show) {
-  return Send(new AutomationMsg_OpenNewBrowserWindow(0, show));
+bool AutomationProxy::OpenNewBrowserWindow(BrowserProxy::Type type,
+                                           bool show) {
+  return Send(new AutomationMsg_OpenNewBrowserWindow(0, static_cast<int>(type),
+                                                     show));
 }
 
 scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(

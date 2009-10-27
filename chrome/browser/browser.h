@@ -44,6 +44,7 @@ class Browser : public TabStripModelDelegate,
                 public NotificationObserver,
                 public SelectFileDialog::Listener {
  public:
+  // If you change this, update browser_proxy as well.
   enum Type {
     TYPE_NORMAL = 0,
     TYPE_POPUP = 1,

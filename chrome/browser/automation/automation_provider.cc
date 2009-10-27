@@ -309,6 +309,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     WindowSimulateDrag)
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabHWND, GetTabHWND)
@@ -881,6 +882,15 @@ void AutomationProvider::GetTabCount(int handle, int* tab_count) {
   }
 }
 
+void AutomationProvider::GetType(int handle, int* type_as_int) {
+  *type_as_int = -1;  // -1 is the error code
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    *type_as_int = static_cast<int>(browser->type());
+  }
+}
+
 void AutomationProvider::GetTab(int win_handle, int tab_index,
                                 int* tab_handle) {
   *tab_handle = 0;
@@ -1277,12 +1287,14 @@ void AutomationProvider::GetDownloadDirectory(
   }
 }
 
-void AutomationProvider::OpenNewBrowserWindow(bool show,
+void AutomationProvider::OpenNewBrowserWindow(int type,
+                                              bool show,
                                               IPC::Message* reply_message) {
   new BrowserOpenedNotificationObserver(this, reply_message);
   // We may have no current browser windows open so don't rely on
   // asking an existing browser to execute the IDC_NEWWINDOW command
-  Browser* browser = Browser::Create(profile_);
+  Browser* browser = new Browser(static_cast<Browser::Type>(type), profile_);
+  browser->CreateBrowserWindow();
   browser->AddBlankTab(true);
   if (show)
     browser->window()->Show();
