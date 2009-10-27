@@ -175,14 +175,14 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (registry_length == std::wstring::npos)
     return QUERY;  // Could be a broken IP address, etc.
 
-  // See if the hostname is valid per RFC 1738.  While IE and GURL allow
-  // hostnames to contain many other characters (perhaps for weird intranet
-  // machines), it's extremely unlikely that a user would be trying to type
-  // those in for anything other than a search query.
+  // See if the hostname is valid.  While IE and GURL allow hostnames to contain
+  // many other characters (perhaps for weird intranet machines), it's extremely
+  // unlikely that a user would be trying to type those in for anything other
+  // than a search query.
   url_canon::CanonHostInfo host_info;
   const std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
   if ((host_info.family == url_canon::CanonHostInfo::NEUTRAL) &&
-      !net::IsCanonicalizedHostRFC1738Compliant(canonicalized_host))
+      !net::IsCanonicalizedHostCompliant(canonicalized_host))
     return QUERY;
 
   // Presence of a port means this is likely a URL, if the port is really a port
