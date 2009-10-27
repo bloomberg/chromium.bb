@@ -364,6 +364,8 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* view_handle */)
 
   // Opens a new browser window.
+  // TODO(sky): remove this and replace with OpenNewBrowserWindowOfType.
+  // Doing this requires updating the reference build.
   IPC_SYNC_MESSAGE_ROUTED1_0(AutomationMsg_OpenNewBrowserWindow,
                              bool /* show */ )
 
@@ -1142,6 +1144,16 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_LoadExpandedExtension,
                              FilePath /* root directory of extension */,
                              AutomationMsg_ExtensionResponseValues)
+
+  // This message requests the type of the window with the given handle. The
+  // return value contains the type (Browser::Type), or -1 if the request
+  // failed.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_Type, int, int)
+
+  // Opens a new browser window of a specific type.
+  IPC_SYNC_MESSAGE_ROUTED2_0(AutomationMsg_OpenNewBrowserWindowOfType,
+                             int   /* Type (Browser::Type) */,
+                             bool  /* show */ )
 
 
 IPC_END_MESSAGES(Automation)

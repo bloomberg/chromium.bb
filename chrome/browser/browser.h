@@ -44,6 +44,9 @@ class Browser : public TabStripModelDelegate,
                 public NotificationObserver,
                 public SelectFileDialog::Listener {
  public:
+  // If you change the values in this enum you'll need to update browser_proxy.
+  // TODO(sky): move into a common place that is referenced by both ui_tests
+  // and chrome.
   enum Type {
     TYPE_NORMAL = 0,
     TYPE_POPUP = 1,

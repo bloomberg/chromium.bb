@@ -16,6 +16,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
 const int kPinnedTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
+const bool kRestorePopups = true;
 
 #elif defined(OS_LINUX)
 
@@ -42,6 +43,7 @@ const bool kCanToggleSystemTitleBar = true;
 const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::DEFAULT;
 const int kPinnedTabWidth = 56;
+const bool kRestorePopups = false;
 
 #endif
 
