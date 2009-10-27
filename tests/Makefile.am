@@ -39,10 +39,6 @@ dist_check_SCRIPTS = \
 # interest to fix it.
 XFAIL_TESTS = present_progressive
 
-# The check_tables_against_corpus currently fails because it uses
-# UTF-8 characters which are not properly handled by lou_translate.
-XFAIL_TESTS += check_tables_against_corpus.pl
-
 TESTS =	\
 	$(check_PROGRAMS) \
 	$(dist_check_SCRIPTS)
