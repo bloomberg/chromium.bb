@@ -55,7 +55,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -603,36 +603,6 @@ void TabContents::SetIsCrashed(bool state) {
 
   is_crashed_ = state;
   NotifyNavigationStateChanged(INVALIDATE_TAB);
-}
-
-void TabContents::SetPageActionEnabled(const ExtensionAction* page_action,
-                                       bool enable,
-                                       const std::string& title,
-                                       int icon_id) {
-  DCHECK(page_action);
-  ExtensionActionState* state = GetOrCreatePageActionState(page_action);
-  state->set_hidden(!enable);
-  state->set_title(title);
-  state->set_icon_index(icon_id);
-  state->set_icon(NULL);
-}
-
-const ExtensionActionState* TabContents::GetPageActionState(
-    const ExtensionAction* page_action) {
-  if (page_actions_.end() == page_actions_.find(page_action))
-    return NULL;
-
-  return page_actions_[page_action].get();
-}
-
-ExtensionActionState* TabContents::GetOrCreatePageActionState(
-    const ExtensionAction* page_action) {
-  if (page_actions_.end() == page_actions_.find(page_action)) {
-    page_actions_[page_action].reset(
-        new ExtensionActionState(page_action->title(), 0));
-  }
-
-  return page_actions_[page_action].get();
 }
 
 void TabContents::PageActionStateChanged() {
@@ -1414,27 +1384,31 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Get the favicon, either from history or request it from the net.
   fav_icon_helper_.FetchFavIcon(details.entry->url());
 
-  // Disable all page actions, unless this is an in-page navigation.
+  // Clear all page and browser action state for this tab, unless this is an
+  // in-page navigation.
   url_canon::Replacements<char> replacements;
   replacements.ClearRef();
   if (params.url.ReplaceComponents(replacements) !=
       params.referrer.ReplaceComponents(replacements)) {
-    if (!page_actions_.empty())
-      page_actions_.clear();
-
     ExtensionsService* service = profile()->GetExtensionsService();
     if (service) {
       for (size_t i = 0; i < service->extensions()->size(); ++i) {
-        ExtensionAction2* action =
+        ExtensionAction2* browser_action =
             service->extensions()->at(i)->browser_action();
-        if (!action)
-          continue;
+        if (browser_action) {
+          browser_action->ClearAllValuesForTab(controller().session_id().id());
+          NotificationService::current()->Notify(
+              NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+              Source<ExtensionAction2>(browser_action),
+              NotificationService::NoDetails());
+        }
 
-        action->ClearAllValuesForTab(controller().session_id().id());
-        NotificationService::current()->Notify(
-            NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-            Source<ExtensionAction2>(action),
-            NotificationService::NoDetails());
+        ExtensionAction2* page_action =
+            service->extensions()->at(i)->page_action();
+        if (page_action) {
+          page_action->ClearAllValuesForTab(controller().session_id().id());
+          PageActionStateChanged();
+        }
       }
     }
   }

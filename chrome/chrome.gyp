@@ -538,8 +538,6 @@
         'common/extensions/extension_error_reporter.h',
         'common/extensions/extension_error_utils.cc',
         'common/extensions/extension_error_utils.h',
-        'common/extensions/extension_action.cc',
-        'common/extensions/extension_action.h',
         'common/extensions/extension_action2.cc',
         'common/extensions/extension_action2.h',
         'common/extensions/extension_message_bundle.cc',

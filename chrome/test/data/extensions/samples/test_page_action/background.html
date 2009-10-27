@@ -2,15 +2,18 @@
 <head>
 <script>
   var lastTabId = 0;
+  var visible = false;
   chrome.tabs.onUpdated.addListener(function(tabId, p) {
     lastTabId = tabId;
+    chrome.pageAction.show(tabId);
   });
   
-  // Called when the user clicks on the browser action.
+  // Called when the user clicks on the page action.
   var clicks = 0;
   var text = "";
   chrome.pageAction.onClicked.addListener(function(_, info) {
-    chrome.pageAction.setIcon({iconIndex: clicks, tabId: info.tabId});
+    chrome.pageAction.setIcon({path: "icon" + (clicks + 1) + ".png",
+                               tabId: info.tabId});
     if (clicks % 2) {
       chrome.pageAction.show(info.tabId);
     } else {
@@ -18,19 +21,7 @@
       setTimeout(function() { chrome.pageAction.show(info.tabId); }, 200);
     }
     chrome.pageAction.setTitle({title: "click:" + clicks, tabId: info.tabId});
-    chrome.pageAction.setBadgeTextColor({
-      tabId: info.tabId,
-      color: [255, 255, clicks * 50, 255]
-    });
-    chrome.pageAction.setBadgeBackgroundColor({
-      tabId: info.tabId,
-      color: [255, clicks * 50, 0, 255]
-    });
     text += clicks.toString();
-    chrome.pageAction.setBadgeText({
-      tabId: info.tabId,
-      text: text
-    });
 
     // We only have 2 icons, but cycle through 3 icons to test the
     // out-of-bounds index bug.
@@ -43,6 +34,10 @@
   window.setInterval(function() {
     // Don't animate while in "click" mode.
     if (clicks > 0) return;
+
+    // Don't do anything if we don't have a tab yet.
+    if (lastTabId == 0) return;
+    
     i++;
     chrome.pageAction.setIcon({imageData: draw(i*2, i*4), tabId: lastTabId});
   }, 50);

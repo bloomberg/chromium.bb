@@ -56,15 +56,14 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     }
   }
 
-  const ExtensionAction* page_action =
-      dispatcher()->GetExtension()->page_action();
+  ExtensionAction2* page_action = dispatcher()->GetExtension()->page_action();
   if (!page_action) {
     error_ = kNoPageActionError;
     return false;
   }
 
   if (icon_id < 0 ||
-      static_cast<size_t>(icon_id) >= page_action->icon_paths().size()) {
+      static_cast<size_t>(icon_id) >= page_action->icon_paths()->size()) {
     error_ = (icon_id == 0) ? kNoIconSpecified : kIconIndexOutOfBounds;
     return false;
   }
@@ -86,7 +85,9 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Set visibility and broadcast notifications that the UI should be updated.
-  contents->SetPageActionEnabled(page_action, enable, title, icon_id);
+  page_action->SetIsVisible(tab_id, enable);
+  page_action->SetTitle(tab_id, title);
+  page_action->SetIconIndex(tab_id, icon_id);
   contents->PageActionStateChanged();
 
   return true;
@@ -108,17 +109,16 @@ bool PageActionFunction::InitCommon(int tab_id) {
     return false;
   }
 
-  state_ = contents_->GetOrCreatePageActionState(page_action_);
   return true;
 }
 
-bool PageActionFunction::SetHidden(bool hidden) {
+bool PageActionFunction::SetVisible(bool visible) {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&tab_id));
   if (!InitCommon(tab_id))
     return false;
 
-  state_->set_hidden(hidden);
+  page_action_->SetIsVisible(tab_id, visible);
   contents_->PageActionStateChanged();
   return true;
 }
@@ -132,11 +132,11 @@ bool DisablePageActionFunction::RunImpl() {
 }
 
 bool PageActionShowFunction::RunImpl() {
-  return SetHidden(false);
+  return SetVisible(true);
 }
 
 bool PageActionHideFunction::RunImpl() {
-  return SetHidden(true);
+  return SetVisible(false);
 }
 
 bool PageActionSetIconFunction::RunImpl() {
@@ -158,15 +158,15 @@ bool PageActionSetIconFunction::RunImpl() {
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     EXTENSION_FUNCTION_VALIDATE(
         IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));
-    state_->set_icon(bitmap.release());
+    page_action_->SetIcon(tab_id, *bitmap);
   } else if (args->GetInteger(L"iconIndex", &icon_index)) {
-    if (icon_index < 0 ||
-        static_cast<size_t>(icon_index) >= page_action_->icon_paths().size()) {
+    if (icon_index < 0 || static_cast<size_t>(icon_index) >=
+                              page_action_->icon_paths()->size()) {
       error_ = kIconIndexOutOfBounds;
       return false;
     }
-    state_->set_icon(NULL);
-    state_->set_icon_index(icon_index);
+    page_action_->SetIcon(tab_id, SkBitmap());
+    page_action_->SetIconIndex(tab_id, icon_index);
   } else {
     EXTENSION_FUNCTION_VALIDATE(false);
   }
@@ -187,7 +187,7 @@ bool PageActionSetTitleFunction::RunImpl() {
   std::string title;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(L"title", &title));
 
-  state_->set_title(title);
+  page_action_->SetTitle(tab_id, title);
   contents_->PageActionStateChanged();
   return true;
 }
@@ -213,7 +213,7 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
 
   SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
                                  color_array[2]);
-  state_->set_badge_background_color(color);
+  page_action_->SetBadgeBackgroundColor(tab_id, color);
   contents_->PageActionStateChanged();
   return true;
 }
@@ -239,7 +239,7 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
 
   SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
                                  color_array[2]);
-  state_->set_badge_text_color(color);
+  page_action_->SetBadgeTextColor(tab_id, color);
   contents_->PageActionStateChanged();
   return true;
 }
@@ -258,7 +258,7 @@ bool PageActionSetBadgeTextFunction::RunImpl() {
   std::string text;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(L"text", &text));
 
-  state_->set_badge_text(text);
+  page_action_->SetBadgeText(tab_id, text);
   contents_->PageActionStateChanged();
   return true;
 }

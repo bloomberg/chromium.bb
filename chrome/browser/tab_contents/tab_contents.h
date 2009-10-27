@@ -30,7 +30,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/gears_api.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_registrar.h"
@@ -74,7 +73,6 @@ class DOMUI;
 class DownloadItem;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
-class PageAction;
 class PasswordManager;
 class PluginInstaller;
 class Profile;
@@ -255,28 +253,7 @@ class TabContents : public PageNavigator,
   bool is_crashed() const { return is_crashed_; }
   void SetIsCrashed(bool state);
 
-  // Adds/removes a page action to the list of page actions that are active in
-  // this tab. The parameter |title| (if not empty) can be used to override the
-  // page action title for this tab and |icon_id| specifies an icon index
-  // (defined in the manifest) to use instead of the first icon (for this tab).
-  void SetPageActionEnabled(const ExtensionAction* page_action, bool enable,
-                            const std::string& title, int icon_id);
-
-  // Returns the page action state for this tab. The pair returns contains
-  // the title (string) for the page action and the icon index to use (int).
-  // If this function returns NULL it means the page action is not enabled for
-  // this tab.
-  const ExtensionActionState* GetPageActionState(
-      const ExtensionAction* page_action);
-
-  // Same as above, but creates an enable state if it doesn't exist. The return
-  // value can be updated. The caller should call PageActionStateChanged when
-  // done modifying the state.
-  ExtensionActionState* GetOrCreatePageActionState(
-      const ExtensionAction* page_action);
-
-  // Call this after updating a ExtensionActionState object returned by
-  // GetOrCreatePageActionState to notify clients about the changes.
+  // Call this after updating a page action to notify clients about the changes.
   void PageActionStateChanged();
 
   // Whether the tab is in the process of being destroyed.
@@ -1126,16 +1103,6 @@ class TabContents : public PageNavigator,
   // matches, the find selection rectangle, etc. The UI can access this
   // information to build its presentation.
   FindNotificationDetails last_search_result_;
-
-  // Data for Page Actions -----------------------------------------------------
-
-  // A map of page actions that this tab knows about (and a state object that
-  // can be used to update the title, icon, visibilty, etc used for the page
-  // action). This map is cleared every time the mainframe navigates and
-  // populated by the PageAction extension API.
-  typedef std::map< const ExtensionAction*, linked_ptr<ExtensionActionState> >
-      PageActionStateMap;
-  PageActionStateMap page_actions_;
 
   // Data for misc internal state ----------------------------------------------
 

@@ -191,7 +191,7 @@ class Extension {
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  ExtensionAction* page_action() const { return page_action_.get(); }
+  ExtensionAction2* page_action() const { return page_action_.get(); }
   ExtensionAction2* browser_action() const { return browser_action_.get(); }
   const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
     return privacy_blacklists_;
@@ -281,7 +281,7 @@ class Extension {
 
   // Helper method that loads a ExtensionAction object from a
   // dictionary in the page_action or browser_action section of the manifest.
-  ExtensionAction* LoadExtensionActionHelper(
+  ExtensionAction2* LoadExtensionActionHelper(
       const DictionaryValue* contextual_action,
       std::string* error,
       ExtensionAction::ExtensionActionType action_type);
@@ -326,7 +326,7 @@ class Extension {
   UserScriptList content_scripts_;
 
   // The extension's page action, if any.
-  scoped_ptr<ExtensionAction> page_action_;
+  scoped_ptr<ExtensionAction2> page_action_;
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction2> browser_action_;

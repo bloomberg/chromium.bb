@@ -5,7 +5,6 @@
   "permissions": ["tabs"],
   "background_page": "background.html",
   "page_action": {
-    "default_title": "First icon",
-    "default_icon": "print_16x16.png"
+    "default_title": "First icon"
   }
 }

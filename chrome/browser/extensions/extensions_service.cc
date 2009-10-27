@@ -140,19 +140,6 @@ void ExtensionsService::Init() {
   GarbageCollectExtensions();
 }
 
-std::vector<ExtensionAction*> ExtensionsService::GetPageActions() const {
-  std::vector<ExtensionAction*> result;
-
-  // TODO(finnur): Sort the icons in some meaningful way.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    if ((*iter)->page_action())
-      result.push_back((*iter)->page_action());
-  }
-
-  return result;
-}
-
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
                       "",   // no expected id

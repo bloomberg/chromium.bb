@@ -15,8 +15,6 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_action2.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/app_resources.h"
@@ -86,7 +84,7 @@ void BrowserActionButton::LoadImage() {
   // Load the default image from the browser action asynchronously on the file
   // thread. We'll get a call back into OnImageLoaded if the image loads
   // successfully.
-  std::string relative_path = browser_action()->GetDefaultIconPath();
+  std::string relative_path = browser_action()->default_icon_path();
   if (relative_path.empty())
     return;
 
@@ -98,7 +96,8 @@ void BrowserActionButton::LoadImage() {
 }
 
 void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
-  SetIcon(*image);
+  if (image)
+    SetIcon(*image);
   tracker_ = NULL;  // The tracker object will delete itself when we return.
   GetParent()->SchedulePaint();
 }
@@ -211,11 +210,7 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   if (tab_id < 0)
     return;
 
-  ExtensionActionState::PaintBadge(
-    canvas, gfx::Rect(width(), height()),
-    action->GetBadgeText(tab_id),
-    action->GetBadgeTextColor(tab_id),
-    action->GetBadgeBackgroundColor(tab_id));
+  action->PaintBadge(canvas, gfx::Rect(width(), height()), tab_id);
 }
 
 

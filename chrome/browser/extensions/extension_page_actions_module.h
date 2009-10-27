@@ -8,19 +8,17 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class TabContents;
-class ExtensionAction;
-class ExtensionActionState;
+class ExtensionAction2;
 
 class PageActionFunction : public SyncExtensionFunction {
  protected:
   bool SetPageActionEnabled(bool enable);
 
   bool InitCommon(int tab_id);
-  bool SetHidden(bool hidden);
+  bool SetVisible(bool visible);
 
-  ExtensionAction* page_action_;
+  ExtensionAction2* page_action_;
   TabContents* contents_;
-  ExtensionActionState* state_;
 };
 
 class EnablePageActionFunction : public PageActionFunction {

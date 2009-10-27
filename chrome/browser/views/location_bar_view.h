@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_VIEW_H_
 
 #include <string>
+#include <map>
 #include <vector>
 
 #include "app/gfx/font.h"
@@ -29,8 +30,8 @@
 
 class BubblePositioner;
 class CommandUpdater;
+class ExtensionAction2;
 class GURL;
-class PageAction;
 class Profile;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -348,18 +349,19 @@ class LocationBarView : public LocationBar,
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
-                        const ExtensionAction* page_action,
+                        ExtensionAction2* page_action,
                         const BubblePositioner* bubble_positioner);
     virtual ~PageActionImageView();
 
-    const ExtensionActionState* GetPageActionState();
+    ExtensionAction2* page_action() { return page_action_; }
+
+    int current_tab_id() { return current_tab_id_; }
 
     // Overridden from view for the mouse hovering.
     virtual bool OnMousePressed(const views::MouseEvent& event);
 
     // Overridden from LocationBarImageView.
     virtual void ShowInfoBubble();
-    virtual void Paint(gfx::Canvas* canvas);
 
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
@@ -378,10 +380,11 @@ class LocationBarView : public LocationBar,
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
-    const ExtensionAction* page_action_;
+    ExtensionAction2* page_action_;
 
-    // The icons representing different states for the page action.
-    std::vector<SkBitmap> page_action_icons_;
+    // A cache of bitmaps the page actions might need to show, mapped by path.
+    typedef std::map<std::string, SkBitmap> PageActionMap;
+    PageActionMap page_action_icons_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.

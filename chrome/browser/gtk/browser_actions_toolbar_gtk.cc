@@ -53,7 +53,7 @@ class BrowserActionButton : public NotificationObserver,
 
     // The Browser Action API does not allow the default icon path to be
     // changed at runtime, so we can load this now and cache it.
-    std::string path = extension_->browser_action()->GetDefaultIconPath();
+    std::string path = extension_->browser_action()->default_icon_path();
     if (!path.empty()) {
       tracker_ = new ImageLoadingTracker(this, 1);
       tracker_->PostLoadImageTask(extension_->GetResource(path),
@@ -103,7 +103,8 @@ class BrowserActionButton : public NotificationObserver,
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, size_t index) {
-    default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
+    if (image)
+      default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
     UpdateState();
   }
 
@@ -167,10 +168,7 @@ class BrowserActionButton : public NotificationObserver,
 
     gfx::CanvasPaint canvas(event, false);
     gfx::Rect bounding_rect(widget->allocation);
-    ExtensionActionState::PaintBadge(&canvas, bounding_rect,
-                                     action->GetBadgeText(tab_id),
-                                     action->GetBadgeTextColor(tab_id),
-                                     action->GetBadgeBackgroundColor(tab_id));
+    action->PaintBadge(&canvas, bounding_rect, tab_id);
     return FALSE;
   }
 

@@ -7,8 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -21,14 +21,15 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "chrome/common/page_transition_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditViewGtk;
 class BubblePositioner;
 class Browser;
 class CommandUpdater;
+class ExtensionAction2;
 class GtkThemeProvider;
-class ExtensionAction;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -105,7 +106,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
    public:
     PageActionViewGtk(
         LocationBarViewGtk* owner, Profile* profile,
-        const ExtensionAction* page_action);
+        ExtensionAction2* page_action);
     virtual ~PageActionViewGtk();
 
     GtkWidget* widget() { return event_box_.get(); }
@@ -133,15 +134,16 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
-    const ExtensionAction* page_action_;
+    ExtensionAction2* page_action_;
 
-    // The icons representing different states for the page action.
-    std::vector<GdkPixbuf*> pixbufs_;
+    // A cache of all the different icon paths associated with this page action.
+    typedef std::map<std::string, GdkPixbuf*> PixbufMap;
+    PixbufMap pixbufs_;
 
     // A cache of the last dynamically generated bitmap and the pixbuf that
     // corresponds to it. We keep track of both so we can free old pixbufs as
     // their icons are replaced.
-    SkBitmap* last_icon_skbitmap_;
+    SkBitmap last_icon_skbitmap_;
     GdkPixbuf* last_icon_pixbuf_;
 
     // The object that is waiting for the image loading to complete

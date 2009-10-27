@@ -228,10 +228,12 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for page actions.
-  const ExtensionAction* page_action = extension->page_action();
+  ExtensionAction2* page_action = extension->page_action();
   if (page_action) {
-    const std::vector<std::string>& icon_paths = page_action->icon_paths();
-    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+    std::vector<std::string> icon_paths(*page_action->icon_paths());
+    if (!page_action->default_icon_path().empty())
+      icon_paths.push_back(page_action->default_icon_path());
+    for (std::vector<std::string>::iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
       if (extension->GetResource(*iter).GetFilePath().empty()) {
         *error = StringPrintf("Could not load icon '%s' for page action.",
@@ -242,14 +244,14 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for browser actions.
+  // Note: browser actions don't use the icon_paths().
   ExtensionAction2* browser_action = extension->browser_action();
   if (browser_action) {
-    std::vector<std::string>* icon_paths = browser_action->icon_paths();
-    for (std::vector<std::string>::iterator iter = icon_paths->begin();
-         iter != icon_paths->end(); ++iter) {
-      if (extension->GetResource(*iter).GetFilePath().empty()) {
+    std::string default_icon_path = browser_action->default_icon_path();
+    if (!default_icon_path.empty()) {
+      if (extension->GetResource(default_icon_path).GetFilePath().empty()) {
         *error = StringPrintf("Could not load icon '%s' for browser action.",
-                              iter->c_str());
+                              default_icon_path.c_str());
         return false;
       }
     }

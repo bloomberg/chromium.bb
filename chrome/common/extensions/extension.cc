@@ -297,98 +297,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
   return true;
 }
 
-// Helper method that loads a PageAction or BrowserAction object from a
-// dictionary in the page_actions list or browser_action key of the manifest.
-ExtensionAction* Extension::LoadExtensionActionHelper(
-    const DictionaryValue* page_action, std::string* error,
-    ExtensionAction::ExtensionActionType action_type) {
-  scoped_ptr<ExtensionAction> result(new ExtensionAction());
-  result->set_extension_id(id());
-  result->set_type(action_type);
-
-  // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
-  ListValue* icons = NULL;
-  if (page_action->HasKey(keys::kPageActionIcons) &&
-      page_action->GetList(keys::kPageActionIcons, &icons)) {
-    for (ListValue::const_iterator iter = icons->begin();
-         iter != icons->end(); ++iter) {
-      std::string path;
-      if (!(*iter)->GetAsString(&path) || path.empty()) {
-        *error = errors::kInvalidPageActionIconPath;
-        return NULL;
-      }
-
-      result->AddIconPath(path);
-    }
-  }
-
-  // TODO(EXTENSIONS_DEPRECATED): Read the page action |id| (optional).
-  std::string id;
-  if (action_type == ExtensionAction::PAGE_ACTION)
-    page_action->GetString(keys::kPageActionId, &id);
-  result->set_id(id);
-
-  std::string default_icon;
-  // Read the page action |default_icon| (optional).
-  if (page_action->HasKey(keys::kPageActionDefaultIcon)) {
-    if (!page_action->GetString(keys::kPageActionDefaultIcon, &default_icon) ||
-        default_icon.empty()) {
-      *error = errors::kInvalidPageActionIconPath;
-      return NULL;
-    }
-    // TODO(EXTENSIONS_DEPRECATED): one icon.
-    result->AddIconPath(default_icon);
-  }
-
-  // Read the page action |default_title|.
-  std::string title;
-  if (!page_action->GetString(keys::kName, &title) &&
-      !page_action->GetString(keys::kPageActionDefaultTitle, &title)) {
-    *error = errors::kInvalidPageActionDefaultTitle;
-    return NULL;
-  }
-  result->set_title(title);
-
-  // Read the action's |popup| (optional).
-  DictionaryValue* popup = NULL;
-  std::string url_str;
-  if (page_action->HasKey(keys::kPageActionPopup) &&
-     !page_action->GetDictionary(keys::kPageActionPopup, &popup) &&
-     !page_action->GetString(keys::kPageActionPopup, &url_str)) {
-    *error = errors::kInvalidPageActionPopup;
-    return NULL;
-  }
-  if (popup) {
-    // TODO(EXTENSIONS_DEPRECATED): popup is a string only
-    if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, "<missing>");
-      return NULL;
-    }
-    GURL url = GetResourceURL(url_str);
-    if (!url.is_valid()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, url_str);
-      return NULL;
-    }
-    result->set_popup_url(url);
-  } else if (!url_str.empty()) {
-    GURL url = GetResourceURL(url_str);
-    if (!url.is_valid()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionPopupPath, url_str);
-      return NULL;
-    }
-    result->set_popup_url(url);
-  }
-
-  return result.release();
-}
-
 ExtensionAction2* Extension::LoadExtensionAction2Helper(
     const DictionaryValue* extension_action, std::string* error) {
   scoped_ptr<ExtensionAction2> result(new ExtensionAction2());
   result->set_extension_id(id());
+
+  // Page actions are hidden by default, and browser actions ignore
+  // visibility.
+  result->SetIsVisible(ExtensionAction2::kDefaultTabId, false);
 
   // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
   ListValue* icons = NULL;
@@ -403,7 +319,6 @@ ExtensionAction2* Extension::LoadExtensionAction2Helper(
       }
 
       result->icon_paths()->push_back(path);
-      result->SetDefaultIcon(path);
     }
   }
 
@@ -426,7 +341,7 @@ ExtensionAction2* Extension::LoadExtensionAction2Helper(
       *error = errors::kInvalidPageActionIconPath;
       return NULL;
     }
-    result->SetDefaultIcon(default_icon);
+    result->set_default_icon_path(default_icon);
   }
 
   // Read the page action |default_title|.
@@ -1031,8 +946,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     page_action_.reset(
-        LoadExtensionActionHelper(page_action_value, error,
-                                  ExtensionAction::PAGE_ACTION));
+        LoadExtensionAction2Helper(page_action_value, error));
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
   } else if (source.HasKey(keys::kPageAction)) {
@@ -1043,8 +957,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     page_action_.reset(
-        LoadExtensionActionHelper(page_action_value, error,
-                                  ExtensionAction::PAGE_ACTION));
+        LoadExtensionAction2Helper(page_action_value, error));
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
   }
@@ -1179,9 +1092,9 @@ std::set<FilePath> Extension::GetBrowserImages() {
 
   // page action icons
   if (page_action_.get()) {
-    const std::vector<std::string>& icon_paths = page_action_->icon_paths();
-    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
+    std::vector<std::string>* icon_paths = page_action_->icon_paths();
+    for (std::vector<std::string>::iterator iter = icon_paths->begin();
+         iter != icon_paths->end(); ++iter) {
       image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
     }
   }

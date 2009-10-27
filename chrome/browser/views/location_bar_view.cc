@@ -108,13 +108,13 @@ void LocationBarView::PageActionWithBadgeView::Layout() {
 void LocationBarView::PageActionWithBadgeView::PaintChildren(
     gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
-  const ExtensionActionState* state = image_view_->GetPageActionState();
-  if (state) {
-    ExtensionActionState::PaintBadge(canvas, gfx::Rect(width(), height()),
-                                     state->badge_text(),
-                                     state->badge_text_color(),
-                                     state->badge_background_color());
-  }
+
+  ExtensionAction2* action = image_view_->page_action();
+  int tab_id = image_view_->current_tab_id();
+  if (tab_id < 0)
+    return;
+
+  action->PaintBadge(canvas, gfx::Rect(width(), height()), tab_id);
 }
 
 void LocationBarView::PageActionWithBadgeView::UpdateVisibility(
@@ -684,17 +684,14 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<ExtensionAction*> page_actions;
-  if (profile_->GetExtensionsService())
-    page_actions = profile_->GetExtensionsService()->GetPageActions();
+  std::vector<ExtensionAction2*> page_actions;
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return;
 
-  // Page actions can be created without an icon, so make sure we count only
-  // those that have been given an icon.
-  for (size_t i = 0; i < page_actions.size();) {
-    if (page_actions[i]->icon_paths().empty())
-      page_actions.erase(page_actions.begin() + i);
-    else
-      ++i;
+  for (size_t i = 0; i < service->extensions()->size(); ++i) {
+    if (service->extensions()->at(i)->page_action())
+      page_actions.push_back(service->extensions()->at(i)->page_action());
   }
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
@@ -1228,48 +1225,30 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
       SECURITY_INFO_BUBBLE_TEXT));
 }
 
-void LocationBarView::PageActionImageView::Paint(gfx::Canvas* canvas) {
-  LocationBarImageView::Paint(canvas);
-
-  TabContents* contents = owner_->delegate_->GetTabContents();
-  if (!contents)
-    return;
-
-  const ExtensionActionState* state =
-      contents->GetPageActionState(page_action_);
-  if (state) {
-    ExtensionActionState::PaintBadge(canvas, gfx::Rect(width(), height()),
-                                     state->badge_text(),
-                                     state->badge_text_color(),
-                                     state->badge_background_color());
-  }
-}
-
 // PageActionImageView----------------------------------------------------------
 
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    const ExtensionAction* page_action,
+    ExtensionAction2* page_action,
     const BubblePositioner* bubble_positioner)
     : LocationBarImageView(bubble_positioner),
       owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      current_tab_id_(-1),
-      tooltip_(page_action_->title()) {
+      current_tab_id_(-1) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id());
   DCHECK(extension);
 
-  // Load the images this view needs asynchronously on the file thread. We'll
-  // get a call back into OnImageLoaded if the image loads successfully. If not,
-  // the ImageView will have no image and will not appear in the Omnibox.
-  DCHECK(!page_action->icon_paths().empty());
-  const std::vector<std::string>& icon_paths = page_action->icon_paths();
-  page_action_icons_.resize(icon_paths.size());
+  // Load all the icons declared in the manifest. This is the contents of the
+  // icons array, plus the default_icon property, if any.
+  std::vector<std::string> icon_paths(*page_action->icon_paths());
+  if (!page_action_->default_icon_path().empty())
+    icon_paths.push_back(page_action_->default_icon_path());
+
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
-  for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+  for (std::vector<std::string>::iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
     tracker_->PostLoadImageTask(
         extension->GetResource(*iter),
@@ -1299,26 +1278,32 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
   return true;
 }
 
-const ExtensionActionState*
-    LocationBarView::PageActionImageView::GetPageActionState() {
-  TabContents* contents = owner_->delegate_->GetTabContents();
-  if (!contents)
-    return NULL;
-
-  return contents->GetPageActionState(page_action_);
-}
-
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
 }
 
 void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
                                                          size_t index) {
-  DCHECK(index < page_action_icons_.size());
-  if (index == page_action_icons_.size() - 1)
-    tracker_ = NULL;  // The tracker object will delete itself when we return.
-  if (image)
-    page_action_icons_[index] = *image;
+  // We loaded icons()->size() icons, plus one extra if the page action had
+  // a default icon.
+  int total_icons = page_action_->icon_paths()->size();
+  if (!page_action_->default_icon_path().empty())
+    total_icons++;
+  DCHECK(static_cast<int>(index) < total_icons);
+
+  // Map the index of the loaded image back to its name. If we ever get an
+  // index greater than the number of icons, it must be the default icon.
+  if (image) {
+    if (index < page_action_->icon_paths()->size())
+      page_action_icons_[page_action_->icon_paths()->at(index)] = *image;
+    else
+      page_action_icons_[page_action_->default_icon_path()] = *image;
+  }
+
+  // If we are done, release the tracker.
+  if (static_cast<int>(index) == (total_icons - 1))
+    tracker_ = NULL;
+
   owner_->UpdatePageActions();
 }
 
@@ -1329,26 +1314,39 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const ExtensionActionState* state =
-      contents->GetPageActionState(page_action_);
-  bool visible = state && !state->hidden();
+  bool visible = page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
-    if (state->title().empty())
-      tooltip_ = page_action_->title();
-    else
-      tooltip_ = state->title();
+    tooltip_ = page_action_->GetTitle(current_tab_id_);
 
     // Set the image.
-    SkBitmap* icon = state->icon();
-    if (!icon) {
-      int index = state->icon_index();
-      // The image index (if not within bounds) will be set to the first image.
-      if (index < 0 || index >= static_cast<int>(page_action_icons_.size()))
-        index = 0;
-      icon = &page_action_icons_[index];
+    // It can come from three places. In descending order of priority:
+    // - The developer can set it dynamically by path or bitmap. It will be in
+    //   page_action_->GetIcon().
+    // - The developer can set it dynamically by index. It will be in
+    //   page_action_->GetIconIndex().
+    // - It can be set in the manifest by path. It will be in page_action_->
+    //   default_icon_path().
+
+    // First look for a dynamically set bitmap.
+    SkBitmap icon = page_action_->GetIcon(current_tab_id_);
+    if (icon.isNull()) {
+      int icon_index = page_action_->GetIconIndex(current_tab_id_);
+      std::string icon_path;
+      if (icon_index >= 0)
+        icon_path = page_action_->icon_paths()->at(icon_index);
+      else
+        icon_path = page_action_->default_icon_path();
+
+      if (!icon_path.empty()) {
+        PageActionMap::iterator iter = page_action_icons_.find(icon_path);
+        if (iter != page_action_icons_.end())
+          icon = iter->second;
+      }
     }
-    ImageView::SetImage(icon);
+
+    if (!icon.isNull())
+      ImageView::SetImage(&icon);
   }
   SetVisible(visible);
 }

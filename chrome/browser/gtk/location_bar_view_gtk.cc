@@ -33,7 +33,6 @@
 #include "chrome/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -406,17 +405,15 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ExtensionAction*> page_actions;
-  if (profile_->GetExtensionsService())
-      page_actions = profile_->GetExtensionsService()->GetPageActions();
+  std::vector<ExtensionAction2*> page_actions;
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return;
 
-  // Page actions can be created without an icon, so make sure we count only
-  // those that have been given an icon.
-  for (size_t i = 0; i < page_actions.size();) {
-    if (page_actions[i]->icon_paths().empty())
-      page_actions.erase(page_actions.begin() + i);
-    else
-      ++i;
+  // Find all the page actions.
+  for (size_t i = 0; i < service->extensions()->size(); ++i) {
+    if (service->extensions()->at(i)->page_action())
+      page_actions.push_back(service->extensions()->at(i)->page_action());
   }
 
   // Initialize on the first call, or re-inialize if more extensions have been
@@ -690,11 +687,10 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
 
 LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     LocationBarViewGtk* owner, Profile* profile,
-    const ExtensionAction* page_action)
+    ExtensionAction2* page_action)
     : owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      last_icon_skbitmap_(NULL),
       last_icon_pixbuf_(NULL) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(), kButtonSize, kButtonSize);
@@ -713,11 +709,14 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       page_action->extension_id());
   DCHECK(extension);
 
-  DCHECK(!page_action->icon_paths().empty());
-  const std::vector<std::string>& icon_paths = page_action->icon_paths();
-  pixbufs_.resize(icon_paths.size());
+  // Load all the icons declared in the manifest. This is the contents of the
+  // icons array, plus the default_icon property, if any.
+  std::vector<std::string> icon_paths(*page_action->icon_paths());
+  if (!page_action_->default_icon_path().empty())
+    icon_paths.push_back(page_action_->default_icon_path());
+
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
-  for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+  for (std::vector<std::string>::iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
     tracker_->PostLoadImageTask(
         extension->GetResource(*iter),
@@ -731,9 +730,9 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
     tracker_->StopTrackingImageLoad();
   image_.Destroy();
   event_box_.Destroy();
-  for (size_t i = 0; i < pixbufs_.size(); ++i) {
-    if (pixbufs_[i])
-      g_object_unref(pixbufs_[i]);
+  for (PixbufMap::iterator iter = pixbufs_.begin(); iter != pixbufs_.end();
+       ++iter) {
+    g_object_unref(iter->second);
   }
   if (last_icon_pixbuf_)
     g_object_unref(last_icon_pixbuf_);
@@ -746,35 +745,48 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const ExtensionActionState* state =
-      contents->GetPageActionState(page_action_);
-  bool visible = state && !state->hidden();
+  bool visible = page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
-    if (state->title().empty())
-      gtk_widget_set_tooltip_text(event_box_.get(),
-                                  page_action_->title().c_str());
-    else
-      gtk_widget_set_tooltip_text(event_box_.get(), state->title().c_str());
+    gtk_widget_set_tooltip_text(event_box_.get(),
+                                page_action_->GetTitle(current_tab_id_).c_str());
 
     // Set the image.
-    SkBitmap* icon = state->icon();
+    // It can come from three places. In descending order of priority:
+    // - The developer can set it dynamically by path or bitmap. It will be in
+    //   page_action_->GetIcon().
+    // - The developer can set it dyanmically by index. It will be in
+    //   page_action_->GetIconIndex().
+    // - It can be set in the manifest by path. It will be in page_action_->
+    //   default_icon_path().
+
+    // First look for a dynamically set bitmap.
+    SkBitmap icon = page_action_->GetIcon(current_tab_id_);
     GdkPixbuf* pixbuf = NULL;
-    if (icon) {
-      if (icon != last_icon_skbitmap_) {
+    if (!icon.isNull()) {
+      if (icon.pixelRef() != last_icon_skbitmap_.pixelRef()) {
         if (last_icon_pixbuf_)
           g_object_unref(last_icon_pixbuf_);
         last_icon_skbitmap_ = icon;
-        last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(icon);
+        last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&icon);
       }
       DCHECK(last_icon_pixbuf_);
       pixbuf = last_icon_pixbuf_;
     } else {
-      int index = state->icon_index();
-      // The image index (if not within bounds) will be set to the first image.
-      if (index < 0 || index >= static_cast<int>(pixbufs_.size()))
-        index = 0;
-      pixbuf = pixbufs_[index];
+      // Otherwise look for a dynamically set index, or fall back to the
+      // default path.
+      int icon_index = page_action_->GetIconIndex(current_tab_id_);
+      std::string icon_path;
+      if (icon_index >= 0)
+        icon_path = page_action_->icon_paths()->at(icon_index);
+      else
+        icon_path = page_action_->default_icon_path();
+
+      if (!icon_path.empty()) {
+        PixbufMap::iterator iter = pixbufs_.find(icon_path);
+        if (iter != pixbufs_.end())
+          pixbuf = iter->second;
+      }
     }
 
     // The pixbuf might not be loaded yet.
@@ -793,10 +805,27 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 
 void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
                                                           size_t index) {
-  DCHECK(index < pixbufs_.size());
-  if (index == pixbufs_.size() - 1)
-    tracker_ = NULL;  // The tracker object will delete itself when we return.
-  pixbufs_[index] = gfx::GdkPixbufFromSkBitmap(image);
+  // We loaded icons()->size() icons, plus one extra if the page action had
+  // a default icon.
+  size_t total_icons = page_action_->icon_paths()->size();
+  if (!page_action_->default_icon_path().empty())
+    total_icons++;
+  DCHECK(index < total_icons);
+
+  // Map the index of the loaded image back to its name. If we ever get an
+  // index greater than the number of icons, it must be the default icon.
+  if (image) {
+    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
+    if (index < page_action_->icon_paths()->size())
+      pixbufs_[page_action_->icon_paths()->at(index)] = pixbuf;
+    else
+      pixbufs_[page_action_->default_icon_path()] = pixbuf;
+  }
+
+  // If we are done, release the tracker.
+  if (index == (total_icons - 1))
+    tracker_ = NULL;
+
   owner_->UpdatePageActions();
 }
 
@@ -821,16 +850,17 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
   TabContents* contents = view->owner_->browser_->GetSelectedTabContents();
   if (!contents)
     return FALSE;
-  const ExtensionActionState* state =
-      contents->GetPageActionState(view->page_action_);
-  if (!state || state->badge_text().empty())
+
+  int tab_id = ExtensionTabUtil::GetTabId(contents);
+  if (tab_id < 0)
+    return FALSE;
+
+  std::string badge_text = view->page_action_->GetBadgeText(tab_id);
+  if (badge_text.empty())
     return FALSE;
 
   gfx::CanvasPaint canvas(event, false);
   gfx::Rect bounding_rect(widget->allocation);
-  ExtensionActionState::PaintBadge(&canvas, bounding_rect,
-                                   state->badge_text(),
-                                   state->badge_text_color(),
-                                   state->badge_background_color());
+  view->page_action_->PaintBadge(&canvas, bounding_rect, tab_id);
   return FALSE;
 }

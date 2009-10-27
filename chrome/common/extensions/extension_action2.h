@@ -10,10 +10,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace gfx {
+class Canvas;
+class Rect;
+}
 
 // ExtensionAction2 encapsulates the state of a browser or page action.
 // Instances can have both global and per-tab state. If a property does not have
@@ -37,6 +43,13 @@ class ExtensionAction2 {
   void set_popup_url(const GURL& url) { popup_url_ = url; }
   bool has_popup() const { return !popup_url_.is_empty(); }
 
+  // action id -- only used with legacy page actions API
+  std::string id() const { return id_; }
+  void set_id(const std::string& id) { id_ = id; }
+
+  // static icon paths from manifest -- only used with legacy page actions API.
+  std::vector<std::string>* icon_paths() { return &icon_paths_; }
+
   // title
   void SetTitle(int tab_id, const std::string& title) {
     SetValue(&title_, tab_id, title);
@@ -50,20 +63,30 @@ class ExtensionAction2 {
   // To get the default icon, first check for the bitmap. If it is null, check
   // for the path.
 
-  // icon bitmap
+  // Icon bitmap.
   void SetIcon(int tab_id, const SkBitmap& bitmap) {
     SetValue(&icon_, tab_id, bitmap);
-    if (tab_id == kDefaultTabId)
-      default_icon_path_.clear();
   }
   SkBitmap GetIcon(int tab_id) { return GetValue(&icon_, tab_id); }
 
-  // icon path (relative to extension_id()'s root)
-  // For legacy code, we also support setting the path as an index into
-  // icon_paths().
-  void SetDefaultIcon(const std::string& path);
-  void SetDefaultIcon(int icon_index);
-  std::string GetDefaultIconPath() {
+  // Icon index -- for use with icon_paths(), only used in page actions.
+  void SetIconIndex(int tab_id, int index) {
+    if (static_cast<size_t>(index) >= icon_paths_.size()) {
+      NOTREACHED();
+      return;
+    }
+    SetValue(&icon_index_, tab_id, index);
+  }
+  int GetIconIndex(int tab_id) {
+    return GetValue(&icon_index_, tab_id);
+  }
+
+  // Non-tab-specific icon path. This is used to support the default_icon key of
+  // page and browser actions.
+  void set_default_icon_path(const std::string& path) {
+    default_icon_path_ = path;
+  }
+  std::string default_icon_path() {
     return default_icon_path_;
   }
 
@@ -89,16 +112,19 @@ class ExtensionAction2 {
     return GetValue(&badge_background_color_, tab_id);
   }
 
+  // visibility
+  void SetIsVisible(int tab_id, bool value) {
+    SetValue(&visible_, tab_id, value);
+  }
+  bool GetIsVisible(int tab_id) {
+    return GetValue(&visible_, tab_id);
+  }
+
   // Remove all tab-specific state.
   void ClearAllValuesForTab(int tab_id);
 
-  //---------------------------------------------------------------------------
-  // Legacy support
-
-  std::string id() const { return id_; }
-  void set_id(const std::string& id) { id_ = id; }
-
-  std::vector<std::string>* icon_paths() { return &icon_paths_; }
+  // If the specified tab has a badge, paint it into the provided bounds.
+  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds, int tab_id);
 
  private:
   template <class T>
@@ -132,31 +158,30 @@ class ExtensionAction2 {
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).
   std::map<int, std::string> title_;
   std::map<int, SkBitmap> icon_;
+  std::map<int, int> icon_index_;  // index into icon_paths_
   std::map<int, std::string> badge_text_;
   std::map<int, SkColor> badge_background_color_;
   std::map<int, SkColor> badge_text_color_;
+  std::map<int, bool> visible_;
 
   std::string default_icon_path_;
 
   // If the action has a popup, it has a URL and a height.
   GURL popup_url_;
 
-  //---------------------------------------------------------------------------
-  // Legacy support
-
   // The id for the ExtensionAction2, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.
   std::string id_;
 
   // A list of paths to icons this action might show. This is needed to support
-  // the setIcon({iconIndex:...} method.
+  // the legacy setIcon({iconIndex:...} method of the page actions API.
   std::vector<std::string> icon_paths_;
 };
 
-template <>
-struct ExtensionAction2::ValueTraits<SkColor> {
-  static SkColor CreateEmpty() {
-    return 0x00000000;
+template<>
+struct ExtensionAction2::ValueTraits<int> {
+  static int CreateEmpty() {
+    return -1;
   }
 };
 
