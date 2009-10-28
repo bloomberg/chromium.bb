@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros_library.h"
+#include "net/url_request/url_request_job.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
@@ -19,16 +19,26 @@ struct RunnableMethodTraits<CrosNetworkLibrary> {
   void ReleaseCallee(CrosNetworkLibrary* obj) {}
 };
 
-CrosNetworkLibrary::CrosNetworkLibrary() {
+////////////////////////////////////////////////////////////////////////////////
+// CrosNetworkLibrary
+
+// static
+const int CrosNetworkLibrary::kNetworkTrafficeTimerSecs = 1;
+
+CrosNetworkLibrary::CrosNetworkLibrary()
+    : traffic_type_(0),
+      ethernet_connected_(false) {
   if (CrosLibrary::loaded()) {
     Init();
   }
+  g_url_request_job_tracker.AddObserver(this);
 }
 
 CrosNetworkLibrary::~CrosNetworkLibrary() {
   if (CrosLibrary::loaded()) {
     chromeos::DisconnectNetworkStatus(network_status_connection_);
   }
+  g_url_request_job_tracker.RemoveObserver(this);
 }
 
 // static
@@ -39,6 +49,31 @@ CrosNetworkLibrary* CrosNetworkLibrary::Get() {
 // static
 bool CrosNetworkLibrary::loaded() {
   return CrosLibrary::loaded();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CrosNetworkLibrary, URLRequestJobTracker::JobObserver implementation:
+
+void CrosNetworkLibrary::OnJobAdded(URLRequestJob* job) {
+  CheckNetworkTraffic(false);
+}
+
+void CrosNetworkLibrary::OnJobRemoved(URLRequestJob* job) {
+  CheckNetworkTraffic(false);
+}
+
+void CrosNetworkLibrary::OnJobDone(URLRequestJob* job,
+                                   const URLRequestStatus& status) {
+  CheckNetworkTraffic(false);
+}
+
+void CrosNetworkLibrary::OnJobRedirect(URLRequestJob* job, const GURL& location,
+                                       int status_code) {
+  CheckNetworkTraffic(false);
+}
+
+void CrosNetworkLibrary::OnBytesRead(URLRequestJob* job, int byte_count) {
+  CheckNetworkTraffic(true);
 }
 
 void CrosNetworkLibrary::AddObserver(Observer* observer) {
@@ -157,4 +192,46 @@ void CrosNetworkLibrary::UpdateNetworkStatus(
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
+}
+
+void CrosNetworkLibrary::CheckNetworkTraffic(bool download) {
+  // If we already have a pending upload and download notification, then
+  // shortcut and return.
+  if (traffic_type_ == (Observer::TRAFFIC_DOWNLOAD | Observer::TRAFFIC_UPLOAD))
+    return;
+  // Figure out if we are uploading and/or downloading. We are downloading
+  // if download == true. We are uploading if we have upload progress.
+  if (download)
+    traffic_type_ |= Observer::TRAFFIC_DOWNLOAD;
+  if ((traffic_type_ & Observer::TRAFFIC_UPLOAD) == 0) {
+    URLRequestJobTracker::JobIterator it;
+    for (it = g_url_request_job_tracker.begin();
+         it != g_url_request_job_tracker.end();
+         ++it) {
+      URLRequestJob* job = *it;
+      if (job->GetUploadProgress() > 0) {
+        traffic_type_ |= Observer::TRAFFIC_UPLOAD;
+        break;
+      }
+    }
+  }
+  // If we have new traffic data to send out and the timer is not currently
+  // running, then start a new timer.
+  if (traffic_type_ && !timer_.IsRunning()) {
+    timer_.Start(base::TimeDelta::FromSeconds(kNetworkTrafficeTimerSecs), this,
+                 &CrosNetworkLibrary::NetworkTrafficTimerFired);
+  }
+}
+
+void CrosNetworkLibrary:: NetworkTrafficTimerFired() {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &CrosNetworkLibrary::NotifyNetworkTraffic,
+                        traffic_type_));
+  // Reset traffic type so that we don't send the same data next time.
+  traffic_type_ = 0;
+}
+
+void CrosNetworkLibrary::NotifyNetworkTraffic(int traffic_type) {
+  FOR_EACH_OBSERVER(Observer, observers_, NetworkTraffic(this, traffic_type));
 }

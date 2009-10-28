@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
@@ -18,17 +19,25 @@
 // NetworkMenuButton
 
 // static
-const int NetworkMenuButton::kNumWifiImages = 8;
+const int NetworkMenuButton::kNumWifiImages = 3;
+const int NetworkMenuButton::kMinOpacity = 50;
+const int NetworkMenuButton::kMaxOpacity = 256;
 const int NetworkMenuButton::kThrobDuration = 1000;
 
 NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
     : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
       browser_window_(browser_window),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
-  animation_.SetThrobDuration(kThrobDuration);
-  animation_.SetTweenType(SlideAnimation::NONE);
-  UpdateIcon();
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_downloading_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_uploading_(this)) {
+  animation_connecting_.SetThrobDuration(kThrobDuration);
+  animation_connecting_.SetTweenType(SlideAnimation::NONE);
+  animation_downloading_.SetThrobDuration(kThrobDuration);
+  animation_downloading_.SetTweenType(SlideAnimation::NONE);
+  animation_uploading_.SetThrobDuration(kThrobDuration);
+  animation_uploading_.SetTweenType(SlideAnimation::NONE);
+  NetworkChanged(CrosNetworkLibrary::Get());
   CrosNetworkLibrary::Get()->AddObserver(this);
 }
 
@@ -113,10 +122,102 @@ bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
 // NetworkMenuButton, AnimationDelegate implementation:
 
 void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
-  if (animation == &animation_)
-    UpdateIcon();
+  if (animation == &animation_connecting_ ||
+      animation == &animation_downloading_ ||
+      animation == &animation_uploading_)
+    SchedulePaint();
   else
     MenuButton::AnimationProgressed(animation);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, StatusAreaButton implementation:
+
+// Override the DrawIcon method to draw the wifi icon.
+// The wifi icon is composed of 1 or more alpha-blended icons to show the
+// network strength. We also draw an animation for when there's upload/download
+// traffic.
+void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
+  // First draw the base icon.
+  canvas->DrawBitmapInt(icon(), 0, 0);
+
+  // If wifi, we draw the wifi signal bars.
+  CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
+  if (cros->wifi_connecting() ||
+          (!cros->ethernet_connected() && !cros->wifi_ssid().empty())) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    // We want a value between 0-1.
+    // 0 reperesents no signal and 1 represents full signal strength.
+    double value = cros->wifi_connecting() ?
+        animation_connecting_.GetCurrentValue() : cros->wifi_strength() / 100.0;
+    if (value < 0)
+      value = 0;
+    else if (value > 1)
+      value = 1;
+
+    // If we are animating network traffic and not connecting, then we need to
+    // figure out if we are to also draw the extra image.
+    int downloading_index = -1;
+    int uploading_index = -1;
+    if (!animation_connecting_.IsAnimating()) {
+      // For network animation, we only show animation in one direction.
+      // So when we are hiding, we just use 1 minus the value.
+      // We have kNumWifiImages + 1 number of states. For the first state, where
+      // we are not adding any images, we set the index to -1.
+      if (animation_downloading_.IsAnimating()) {
+        double value_downloading = animation_downloading_.IsShowing() ?
+            animation_downloading_.GetCurrentValue() :
+            1.0 - animation_downloading_.GetCurrentValue();
+        downloading_index = static_cast<int>(value_downloading *
+              nextafter(static_cast<float>(kNumWifiImages + 1), 0)) - 1;
+      }
+      if (animation_uploading_.IsAnimating()) {
+        double value_uploading = animation_uploading_.IsShowing() ?
+            animation_uploading_.GetCurrentValue() :
+            1.0 - animation_uploading_.GetCurrentValue();
+        uploading_index = static_cast<int>(value_uploading *
+              nextafter(static_cast<float>(kNumWifiImages + 1), 0)) - 1;
+      }
+    }
+
+    // We need to determine opacity for each of the kNumWifiImages images.
+    // We split the range (0-1) into equal ranges per kNumWifiImages images.
+    // For example if kNumWifiImages is 3, then [0-0.33) is the first image and
+    // [0.33-0.66) is the second image and [0.66-1] is the last image.
+    // For each of the image:
+    //   If value < the range of this image, draw at kMinOpacity opacity.
+    //   If value > the range of this image, draw at kMaxOpacity-1 opacity.
+    //   If value within the range of this image, draw at an opacity value
+    //     between kMinOpacity and kMaxOpacity-1 relative to where in the range
+    //     value is at.
+    double value_per_image = 1.0 / kNumWifiImages;
+    SkPaint paint;
+    for (int i = 0; i < kNumWifiImages; i++) {
+      if (value > value_per_image) {
+        paint.setAlpha(kMaxOpacity - 1);
+        value -= value_per_image;
+      } else {
+        // Map value between 0 and value_per_image to [kMinOpacity,kMaxOpacity).
+        paint.setAlpha(kMinOpacity + static_cast<int>(value / value_per_image *
+            nextafter(static_cast<float>(kMaxOpacity - kMinOpacity), 0)));
+        // For following iterations, we want to draw at kMinOpacity.
+        // So we set value to 0 here.
+        value = 0;
+      }
+      canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1 + i),
+                            0, 0, paint);
+      canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1 + i),
+                            0, 0, paint);
+
+      // Draw network traffic downloading/uploading image if necessary.
+      if (i == downloading_index)
+        canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1P + i),
+                              0, 0, paint);
+      if (i == uploading_index)
+        canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1P + i),
+                              0, 0, paint);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,43 +235,48 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, CrosNetworkLibrary::Observer implementation:
 
-void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* obj) {
-  UpdateIcon();
-}
+void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* cros) {
+  int id = IDR_STATUSBAR_WARNING;
+  if (cros->loaded()) {
+    id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
+    if (cros->wifi_connecting()) {
+      // Start the connecting animation if not running.
+      if (!animation_connecting_.IsAnimating()) {
+        animation_connecting_.Reset();
+        animation_connecting_.StartThrobbing(std::numeric_limits<int>::max());
+      }
+      // Stop network traffic animation when we are connecting.
+      animation_downloading_.Stop();
+      animation_uploading_.Stop();
 
-void NetworkMenuButton::UpdateIcon() {
-  CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
-  int id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
-  if (cros->wifi_connecting()) {
-    // Start the connecting animation if not running.
-    if (!animation_.IsAnimating())
-      animation_.StartThrobbing(std::numeric_limits<int>::max());
+      id = IDR_STATUSBAR_WIFI_DOT;
+    } else {
+      // Stop connecting animation since we are not connecting.
+      animation_connecting_.Stop();
 
-    // We need to map the value of 0-1 in the animation to 0 - kNumWifiImages-1.
-    int index = static_cast<int>(animation_.GetCurrentValue() *
-                nextafter(static_cast<float>(kNumWifiImages), 0));
-    id = IDR_STATUSBAR_WIFI_1 + index;
-  } else {
-    // Stop connecting animation since we are not connecting.
-    if (animation_.IsAnimating())
-      animation_.Stop();
-
-    // Always show the higher priority connection first. So ethernet then wifi.
-    if (cros->ethernet_connected()) {
-      id = IDR_STATUSBAR_WIRED;
-    } else if (!cros->wifi_ssid().empty()) {
-      // Gets the wifi image of 1-8 bars depending on signal strength. Signal
-      // strength is from 0 to 100, so we need to convert that to 0 to 7.
-      int index = static_cast<int>(cros->wifi_strength() / 100.0 *
-                  nextafter(static_cast<float>(kNumWifiImages), 0));
-      // Make sure that index is between 0 and kNumWifiImages - 1
-      if (index < 0)
-        index = 0;
-      if (index >= kNumWifiImages)
-        index = kNumWifiImages - 1;
-      id = IDR_STATUSBAR_WIFI_1 + index;
+      // Always show the higher priority connection first. Ethernet then wifi.
+      if (cros->ethernet_connected()) {
+        id = IDR_STATUSBAR_WIRED;
+      } else if (!cros->wifi_ssid().empty()) {
+        id = IDR_STATUSBAR_WIFI_DOT;
+      }
     }
   }
+
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
   SchedulePaint();
+}
+
+void NetworkMenuButton::NetworkTraffic(CrosNetworkLibrary* cros,
+                                       int traffic_type) {
+  if (!cros->ethernet_connected() && !cros->wifi_ssid().empty() &&
+      !cros->wifi_connecting()) {
+    // For downloading/uploading animation, we want to force at least one cycle
+    // so that it looks smooth. And if we keep downloading/uploading, we will
+    // keep calling StartThrobbing which will update the cycle count back to 2.
+    if (traffic_type & TRAFFIC_DOWNLOAD)
+      animation_downloading_.StartThrobbing(2);
+    if (traffic_type & TRAFFIC_UPLOAD)
+      animation_uploading_.StartThrobbing(2);
+  }
 }

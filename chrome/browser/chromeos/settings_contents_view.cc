@@ -272,6 +272,8 @@ class NetworkSection : public SettingsContentsSection,
 
   // CrosNetworkLibrary::Observer implementation.
   virtual void NetworkChanged(CrosNetworkLibrary* obj);
+  virtual void NetworkTraffic(CrosNetworkLibrary* obj,
+                              int traffic_type) {}
 
  protected:
   // SettingsContentsSection overrides:

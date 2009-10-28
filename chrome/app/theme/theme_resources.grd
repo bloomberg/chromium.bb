@@ -402,14 +402,20 @@
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_15" file="statusbar_battery15d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_16" file="statusbar_battery16d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_1" file="statusbar_wifi_1.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_2" file="statusbar_wifi_2.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_3" file="statusbar_wifi_3.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_4" file="statusbar_wifi_4.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_5" file="statusbar_wifi_5.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_6" file="statusbar_wifi_6.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_7" file="statusbar_wifi_7.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIFI_8" file="statusbar_wifi_8.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOT" file="statusbar_wifi_dot.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN1" file="statusbar_wifi_down1.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN2" file="statusbar_wifi_down2.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN3" file="statusbar_wifi_down3.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN1P" file="statusbar_wifi_down1p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN2P" file="statusbar_wifi_down2p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_DOWN3P" file="statusbar_wifi_down3p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP1" file="statusbar_wifi_up1.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP2" file="statusbar_wifi_up2.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP3" file="statusbar_wifi_up3.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP1P" file="statusbar_wifi_up1p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP2P" file="statusbar_wifi_up2p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_UP3P" file="statusbar_wifi_up3p.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WARNING" file="statusbar_wifi_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
       </if>
 

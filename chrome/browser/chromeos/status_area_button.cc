@@ -23,7 +23,7 @@ StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
 void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   int bitmap_id;
 
-  switch(state()) {
+  switch (state()) {
     case BS_NORMAL:
       bitmap_id = IDR_STATUSBAR_CONTAINER;
       break;
@@ -40,5 +40,9 @@ void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   SkBitmap* container =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(bitmap_id);
   canvas->DrawBitmapInt(*container, 0, 0);
+  DrawIcon(canvas);
+}
+
+void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(icon(), 0, 0);
 }

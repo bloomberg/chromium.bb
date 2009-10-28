@@ -18,6 +18,10 @@
 class Browser;
 class SkBitmap;
 
+namespace gfx {
+class Canvas;
+}
+
 // The network menu button in the status area.
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
@@ -59,19 +63,28 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // CrosNetworkLibrary::Observer implementation.
   virtual void NetworkChanged(CrosNetworkLibrary* obj);
+  virtual void NetworkTraffic(CrosNetworkLibrary* cros,
+                              int traffic_type);
+
+ protected:
+  // StatusAreaButton implementation.
+  virtual void DrawIcon(gfx::Canvas* canvas);
 
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
-
-  // Update the icon to either the connecting, connected, or disconnected icon.
-  void UpdateIcon();
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
 
   // The number of wifi strength images.
   static const int kNumWifiImages;
+
+  // The minimum opacity of the wifi bars.
+  static const int kMinOpacity;
+
+  // The maximum opacity of the wifi bars.
+  static const int kMaxOpacity;
 
   // A list of wifi networks.
   WifiNetworkVector wifi_networks_;
@@ -86,9 +99,15 @@ class NetworkMenuButton : public StatusAreaButton,
   gfx::NativeWindow browser_window_;
 
   // The throb animation that does the wifi connecting animation.
-  ThrobAnimation animation_;
+  ThrobAnimation animation_connecting_;
 
-  // The duration of the wifi connecting icon throbbing in milliseconds.
+  // The throb animation that does the downloading animation.
+  ThrobAnimation animation_downloading_;
+
+  // The throb animation that does the uploading animation.
+  ThrobAnimation animation_uploading_;
+
+  // The duration of the icon throbbing in milliseconds.
   static const int kThrobDuration;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
