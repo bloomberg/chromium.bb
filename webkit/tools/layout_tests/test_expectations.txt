@@ -3116,11 +3116,8 @@ BUG24966 MAC DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = CRASH P
 BUG_JEREMY LINUX WIN : LayoutTests/http/tests/navigation/reload-subframe-object.html = FAIL
 BUG25202 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-02-b.svg = FAIL
 BUG25208 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
-BUG_JEREMY LINUX WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG_JEREMY WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
-BUG25204 WIN : chrome/fast/forms/basic-selects.html = FAIL
 BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
-BUG_JEREMY WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // WebKit Roll 49684:49761
 BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.html = FAIL
