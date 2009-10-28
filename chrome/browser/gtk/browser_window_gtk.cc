@@ -1720,6 +1720,10 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_show_all(render_area_vbox_);
   gtk_widget_hide(devtools_container_->widget());
   render_area_event_box_ = gtk_event_box_new();
+  // Set a white background so during startup the user sees white in the
+  // content area before we get a TabContents in place.
+  gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
+                       &gfx::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
   gtk_widget_show(render_area_event_box_);
   gtk_box_pack_end(GTK_BOX(window_vbox_), render_area_event_box_,
@@ -1826,8 +1830,6 @@ void BrowserWindowGtk::SetBackgroundColor() {
                        &frame_color_gdk);
 
   // Set the color of the dev tools divider.
-  gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
-                       &frame_color_gdk);
   gtk_widget_modify_bg(contents_split_, GTK_STATE_NORMAL, &frame_color_gdk);
 
   // When the cursor is over the divider, GTK+ normally lightens the background
