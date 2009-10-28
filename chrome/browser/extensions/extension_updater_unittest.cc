@@ -588,7 +588,8 @@ TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
   ExtensionUpdaterTest::TestExtensionUpdateCheckRequests();
 }
 
-TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
+// This test is disabled, see bug 26035
+TEST(ExtensionUpdaterTest, DISABLED_TestBlacklistUpdateCheckRequests) {
   ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
 }
 
