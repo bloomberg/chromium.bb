@@ -222,12 +222,22 @@ def main_linux(options, args):
     return 1
   symbol_time = os.path.getmtime(symbol_file)
 
-  dump_dir = options.dump_dir
-  if not dump_dir:
-    dump_dir = GetCrashDumpDir()
-  if not dump_dir:
-    print 'Cannot find dump dir.'
-    return 1
+  dump_files = []
+  if options.dump_file:
+    dump_files.append(options.dump_file)
+  else:
+    dump_dir = options.dump_dir
+    if not dump_dir:
+      dump_dir = GetCrashDumpDir()
+    if not dump_dir:
+      print 'Cannot find dump files.'
+      return 1
+    for dump_file in LocateFiles(pattern='*.dmp', root=dump_dir):
+      file_time = os.path.getmtime(dump_file)
+      if file_time < symbol_time:
+        # Ignore dumps older than symbol file.
+        continue
+      dump_files.append(dump_file)
 
   temp_dir = tempfile.mkdtemp(suffix='chromedump')
   if not VerifySymbolAndCopyToTempDir(symbol_file, temp_dir):
@@ -236,11 +246,7 @@ def main_linux(options, args):
     return 1
 
   dump_count = 0
-  for dump_file in LocateFiles(pattern='*.dmp', root=dump_dir):
-    file_time = os.path.getmtime(dump_file)
-    if file_time < symbol_time:
-      # Ignore dumps older than symbol file.
-      continue
+  for dump_file in dump_files:
     processed_dump_file = ProcessDump(dump_file, temp_dir)
     if not processed_dump_file:
       continue
@@ -261,9 +267,13 @@ if '__main__' == __name__:
                     help='The directory where the processor is installed. '
                          'The processor is used to get stack trace from dumps. '
                           'Searches $PATH by default')
+  parser.add_option('', '--dump-file', type='string', default='',
+                    help='The path of the dump file to be processed. '
+                         'Overwrites dump-path.')
   parser.add_option('', '--dump-dir', type='string', default='',
                     help='The directory where dump files are stored. '
-                         'Searches the Chromium crash directory by default.')
+                         'Searches this directory if dump-file is not '
+                         'specified. Default is the Chromium crash directory.')
   parser.add_option('', '--symbol-dir', default='',
                     help='The directory with the symbols file. [Required]')
   parser.add_option('', '--architecture', type='int', default=None,
