@@ -919,8 +919,6 @@ BUG10280 WIN LINUX : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL PAS
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-BUG6735 MAC : LayoutTests/plugins/netscape-throw-exception.html = FAIL
-
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
 
 //also BUG24863
@@ -1405,38 +1403,16 @@ BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 
 BUG10351 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug8499.html = FAIL
-BUG10673 MAC : chrome/plugins/call-as-function.html = FAIL
-BUG10351 MAC : LayoutTests/http/tests/plugins/cross-frame-object-access.html = FAIL
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/embed-inside-object.html = TIMEOUT
-BUG10351 MAC : LayoutTests/plugins/get-empty-url.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/get-url-that-the-resource-load-delegate-will-disallow.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/getintidentifier-special-values.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/geturl-replace-query.html = TIMEOUT
 BUG10351 MAC : LayoutTests/plugins/inner-html-display-none.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/invoke.html = FAIL
+BUG10351 MAC : LayoutTests/plugins/invoke.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/mouse-events.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-destroy-plugin-script-objects.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-dom-access.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-get-property-return-value.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-identifier-conversion.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/netscape-invoke-failure.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/npruntime.html = TIMEOUT
-BUG10351 MAC : LayoutTests/plugins/plugin-remove-subframe.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html = TIMEOUT
-BUG10351 MAC : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = FAIL
-BUG10667 MAC : chrome/plugins/get-file-url.html = TIMEOUT
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10667 SKIP MAC : chrome/plugins/get-url-with-blank-target.html = FAIL
 BUG10667 MAC SLOW : chrome/plugins/multiple-plugins.html = FAIL
-BUG10667 MAC : chrome/plugins/nested-plugin-objects.html = FAIL
-BUG10667 MAC : chrome/plugins/refcount-leaks.html = FAIL
 BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
-BUG10667 MAC : chrome/plugins/script-object-invoke.html = FAIL
 BUG10667 MAC SLOW : LayoutTests/plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
@@ -1472,7 +1448,6 @@ BUG14009 WIN MAC : LayoutTests/http/tests/misc/dns-prefetch-control.html = TIMEO
 // New tests. We should fix these, but they doesn't need to block the current
 // release
 BUG10354 WIN LINUX : LayoutTests/fast/layers/opacity-transforms.html = FAIL
-BUG10354 MAC : LayoutTests/plugins/netscape-construct.html = FAIL
 
 // MERGE 38389:38450
 // Form submit causes invalid page reload/navigation when action is a named
@@ -1534,10 +1509,6 @@ BUG10371 MAC : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
 // Error from CGImageSourceUpdateData but everything else is correct.
 BUG10373 MAC : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
-
-// window.open crashes (some of these are flaky, in that they don't always
-// crash, and are noted as such)
-BUG10374 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = CRASH TIMEOUT FAIL
 
 // Not really sure why these are failing at the moment
 BUG10376 MAC : LayoutTests/fast/dom/isindex-002.html = FAIL
@@ -2407,11 +2378,6 @@ BUG10435 WIN DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS 
 // New tests added in the 41420:41447 merge that fail (just needs a new baseline):
 BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
 
-// From webkit merge 41447:41498
-BUG10438 MAC : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
-BUG10438 MAC : LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
-BUG10438 MAC : LayoutTests/plugins/destroy-stream-twice.html = TIMEOUT
-
 // Flakey. Not clear when it started, but it was before 3/9/09.
 // This test also started failing with the merge of March 25th 2009
 BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = FAIL PASS
@@ -2683,8 +2649,7 @@ BUG10760 LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
 BUG10760 LINUX MAC : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FAIL
 
 // New failures from WebKit Merge 42671:42725
-BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
-BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT FAIL
+BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = PASS FAIL
 
 // New failures from WebKit merge 42725:42805
 // WebKit change http://trac.webkit.org/changeset/42785
@@ -2833,16 +2798,11 @@ BUG11613 LINUX : LayoutTests/fast/forms/tabbing-input-iframe.html = FAIL
 BUG11613 LINUX RELEASE : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 BUG11613 LINUX DEBUG SLOW : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 
-// Webkit 45555:45558
-// This was removed from test_expectations when it was passing after the Webkit merge 45495:45535.
-// Not sure if this is a regression or some manner of flakiness.
-BUG11613 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
-
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
 // This started crashing regularly as a result of r28798 (see bug 24720).
-BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL CRASH
+BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = PASS FAIL
 
 // WebKit merge 42738:45840
 // New test, needs baseline.
@@ -3002,15 +2962,6 @@ BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT TE
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
-
-// This newly added test times out on Mac:
-BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
-BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
-
-// Mac LayoutTest/http errors after removing blanket exception.
-BUG20748 MAC : LayoutTests/http/tests/plugins/npapi-response-headers.html = TIMEOUT
-BUG20748 MAC : LayoutTests/http/tests/plugins/get-url.html = TIMEOUT
-BUG20748 MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TIMEOUT
 
 // started crashing at build 5804 then green until 5863 of webkit-dbg-2
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
@@ -3202,12 +3153,12 @@ BUG25884 WIN LINUX : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRang
 // Missing results.
 BUG_TONY WIN LINUX SKIP : LayoutTests/fast/dom/defaultView.html = FAIL
 // Unknown
-BUG_TONY : LayoutTests/fast/dom/delete-contents.html = FAIL
+BUG_TONY : LayoutTests/fast/dom/delete-contents.html = PASS FAIL
 BUG_TONY : LayoutTests/fast/js/global-function-resolve.html = FAIL
 BUG_TONY WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
 BUG_TONY : LayoutTests/storage/change-version-handle-reuse.html = FAIL
 BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
-BUG_TONY WIN LINUX : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
+BUG_TONY WIN : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH FAIL
@@ -3223,11 +3174,9 @@ BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html =
 
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
-BUG25880 WIN LINUX : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
 
 // WebKit roll 50101:50158
-BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = FAIL
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL CRASH
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL CRASH
 BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
@@ -3291,5 +3240,9 @@ BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
 
 //  WebKit roll 50180:50186
 BUG_JORLOW LINUX WIN : LayoutTests/fast/repaint/inline-relative-positioned.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
-BUG_JORLOW MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html = FAIL
+
+// Flaky starting around WebKit merge to r50101
+BUG_JAPHET LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = PASS FAIL
+
+// Not sure when this started being flaky
+BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
