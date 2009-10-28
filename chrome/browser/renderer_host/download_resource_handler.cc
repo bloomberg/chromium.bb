@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -69,10 +70,10 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->save_as = save_as_;
   info->is_dangerous = false;
   info->referrer_charset = request_->context()->referrer_charset();
-  download_manager_->file_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(download_manager_,
-                        &DownloadFileManager::StartDownload,
-                        info));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          download_manager_, &DownloadFileManager::StartDownload, info));
   return true;
 }
 
@@ -104,7 +105,8 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   read_buffer_.swap(&buffer);
   buffer_->contents.push_back(std::make_pair(buffer, *bytes_read));
   if (need_update) {
-    download_manager_->file_loop()->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(download_manager_,
                           &DownloadFileManager::UpdateDownload,
                           download_id_,
@@ -123,7 +125,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
-  download_manager_->file_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(download_manager_,
                         &DownloadFileManager::DownloadFinished,
                         download_id_,

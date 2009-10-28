@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/history/history_types.h"
@@ -133,10 +133,12 @@ FileBrowseHandler::~FileBrowseHandler() {
 
 DOMMessageHandler* FileBrowseHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
-      &ChromeURLDataManager::AddDataSource,
-      new DOMUIFavIconSource(dom_ui->GetProfile())));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
+          &ChromeURLDataManager::AddDataSource,
+          new DOMUIFavIconSource(dom_ui->GetProfile())));
 
   return DOMMessageHandler::Attach(dom_ui);
 }
@@ -248,8 +250,10 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : DOMUI(contents) {
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

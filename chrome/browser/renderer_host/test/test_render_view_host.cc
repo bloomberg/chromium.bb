@@ -104,6 +104,8 @@ void RenderViewHostTestHarness::SetUp() {
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
 
   contents_.reset(new TestTabContents(profile_.get(), instance));
+
+  user_data_manager_.reset(UserDataManager::Create());
 }
 
 void RenderViewHostTestHarness::TearDown() {

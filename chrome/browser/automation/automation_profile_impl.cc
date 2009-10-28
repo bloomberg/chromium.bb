@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/automation_profile_impl.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/test/automation/automation_messages.h"
 
@@ -149,8 +150,7 @@ void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
   context->CleanupOnUIThread();
 
   // Clean up request context on IO thread.
-  g_browser_process->io_thread()->message_loop()->ReleaseSoon(FROM_HERE,
-                                                              context);
+  ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, context);
 }
 
 }  // namespace

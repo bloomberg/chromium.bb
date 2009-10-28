@@ -14,7 +14,6 @@
 class WebDropTargetTest : public RenderViewHostTestHarness {
  public:
   WebDropTargetTest() {
-   RenderViewHostTestHarness::SetUp();
    drop_target_.reset([[WebDropTarget alloc] initWithTabContents:contents()]);
   }
 

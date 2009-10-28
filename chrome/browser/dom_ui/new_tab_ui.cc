@@ -18,7 +18,7 @@
 #include "base/string_piece.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
@@ -548,9 +548,10 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     IncognitoTabHTMLSource* html_source = new IncognitoTabHTMLSource(
         GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar));
-
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            &chrome_url_data_manager,
             &ChromeURLDataManager::AddDataSource,
             html_source));
   } else {
@@ -569,15 +570,14 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
 
-    // In testing mode there may not be an I/O thread.
-    if (g_browser_process->io_thread()) {
-      InitializeCSSCaches();
-      NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(&chrome_url_data_manager,
-              &ChromeURLDataManager::AddDataSource,
-              html_source));
-    }
+    InitializeCSSCaches();
+    NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            &chrome_url_data_manager,
+            &ChromeURLDataManager::AddDataSource,
+            html_source));
   }
 
   // Listen for theme installation.
@@ -614,13 +614,12 @@ void NewTabUI::Observe(NotificationType type,
 }
 
 void NewTabUI::InitializeCSSCaches() {
-  // In testing mode there may not be an I/O thread.
-  if (g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
-                          &ChromeURLDataManager::AddDataSource,
-                          new DOMUIThemeSource(GetProfile())));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
+          &ChromeURLDataManager::AddDataSource,
+          new DOMUIThemeSource(GetProfile())));
 }
 
 // static

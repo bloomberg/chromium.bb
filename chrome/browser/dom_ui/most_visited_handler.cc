@@ -9,11 +9,11 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
@@ -55,19 +55,17 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
       GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
   pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
-  // Set up our sources for thumbnail and favicon data. Since we may be in
-  // testing mode with no I/O thread, only add our handler when an I/O thread
-  // exists. Ownership is passed to the ChromeURLDataManager.
-  if (g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
-                          &ChromeURLDataManager::AddDataSource,
-                          new DOMUIThumbnailSource(dom_ui->GetProfile())));
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
-                          &ChromeURLDataManager::AddDataSource,
-                          new DOMUIFavIconSource(dom_ui->GetProfile())));
-  }
+  // Set up our sources for thumbnail and favicon data.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(&chrome_url_data_manager,
+                        &ChromeURLDataManager::AddDataSource,
+                        new DOMUIThumbnailSource(dom_ui->GetProfile())));
+    ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(&chrome_url_data_manager,
+                        &ChromeURLDataManager::AddDataSource,
+                        new DOMUIFavIconSource(dom_ui->GetProfile())));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,

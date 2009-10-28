@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/browser/user_data_manager.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -253,6 +254,8 @@ class RenderViewHostTestHarness : public testing::Test {
   TestRenderViewHostFactory rvh_factory_;
 
   scoped_ptr<TestTabContents> contents_;
+
+  scoped_ptr<UserDataManager> user_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };

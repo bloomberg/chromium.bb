@@ -60,7 +60,6 @@ class IOBuffer;
 }
 struct DownloadCreateInfo;
 class DownloadManager;
-class MessageLoop;
 class ResourceDispatcherHost;
 class URLRequestContextGetter;
 
@@ -168,11 +167,10 @@ class DownloadFile {
 class DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
-  DownloadFileManager(MessageLoop* ui_loop, ResourceDispatcherHost* rdh);
+  DownloadFileManager(ResourceDispatcherHost* rdh);
   ~DownloadFileManager();
 
-  // Lifetime management functions, called on the UI thread.
-  void Initialize();
+  // Called on shutdown on the UI thread.
   void Shutdown();
 
   // Called on the IO thread
@@ -232,8 +230,6 @@ class DownloadFileManager
   // Timer notifications.
   void UpdateInProgressDownloads();
 
-  MessageLoop* file_loop() const { return file_loop_; }
-
   // Called by the download manager to delete non validated dangerous downloads.
   static void DeleteFile(const FilePath& path);
 
@@ -265,15 +261,6 @@ class DownloadFileManager
 
   // Throttle updates to the UI thread.
   base::RepeatingTimer<DownloadFileManager> update_timer_;
-
-  // The MessageLoop that the DownloadManagers live on.
-  MessageLoop* ui_loop_;
-
-  // The MessageLoop that the this objects primarily operates on.
-  MessageLoop* file_loop_;
-
-  // Used only for DCHECKs!
-  MessageLoop* io_loop_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
 

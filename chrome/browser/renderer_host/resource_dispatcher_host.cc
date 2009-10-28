@@ -254,7 +254,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
     : ui_loop_(MessageLoop::current()),
       io_loop_(io_loop),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          download_file_manager_(new DownloadFileManager(ui_loop_, this))),
+          download_file_manager_(new DownloadFileManager(this))),
       download_request_manager_(new DownloadRequestManager(io_loop, ui_loop_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(ui_loop_, io_loop, this))),
@@ -296,7 +296,6 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
 
 void ResourceDispatcherHost::Initialize() {
   DCHECK(MessageLoop::current() == ui_loop_);
-  download_file_manager_->Initialize();
   safe_browsing_->Initialize(io_loop_);
   io_loop_->PostTask(
       FROM_HERE,

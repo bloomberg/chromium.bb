@@ -71,7 +71,11 @@ class BrowserProcess {
 
   // Returns the thread that we perform I/O coordination on (network requests,
   // communication with renderers, etc.
-  // NOTE: need to check the return value for NULL.
+  // NOTE: You should ONLY use this to pass to IPC or other objects which must
+  // need a MessageLoop*.  If you just want to post a task, use
+  // ChromeThread::PostTask (or other variants) as they take care of checking
+  // that a thread is still alive, race conditions, lifetime differences etc.
+  // If you still must use this, need to check the return value for NULL.
   virtual base::Thread* io_thread() = 0;
 
   // Returns the thread that we perform random file operations on. For code

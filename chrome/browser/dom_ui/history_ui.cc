@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/history/history_types.h"
@@ -110,10 +110,12 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
 
 DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
-      &ChromeURLDataManager::AddDataSource,
-      new DOMUIFavIconSource(dom_ui->GetProfile())));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
+          &ChromeURLDataManager::AddDataSource,
+          new DOMUIFavIconSource(dom_ui->GetProfile())));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
@@ -368,8 +370,10 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 
   // Set up the chrome://history/ source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

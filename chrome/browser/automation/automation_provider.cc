@@ -28,6 +28,7 @@
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_manager.h"
@@ -1274,7 +1275,8 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
   }
   DCHECK(context_getter);
 
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       new SetProxyConfigTask(context_getter, new_proxy_config));
 }
 

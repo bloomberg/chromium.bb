@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 
@@ -26,8 +26,10 @@ PrintUI::PrintUI(TabContents* contents) : DOMUI(contents) {
   PrintUIHTMLSource* html_source = new PrintUIHTMLSource();
 
   // Set up the print:url source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }
