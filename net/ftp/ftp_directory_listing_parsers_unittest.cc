@@ -67,7 +67,7 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
       now_exploded.year, 10, 12, 13, 37 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i]));
+    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i].input));
     
     net::FtpLsDirectoryListingParser parser;
     RunSingleLineTestCase(&parser, good_cases[i]);
