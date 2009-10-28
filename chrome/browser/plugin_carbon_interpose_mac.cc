@@ -111,17 +111,19 @@ static void ChromePluginShowWindow(WindowRef window) {
 }
 
 static void ChromePluginDisposeWindow(WindowRef window) {
-  MaybeReactivateSavedProcess();
-  webkit_glue::NotifyBrowserOfPluginDisposeWindow(HIWindowGetCGWindowID(window),
-                                                  CGRectForWindow(window));
+  CGWindowID window_id = HIWindowGetCGWindowID(window);
+  CGRect window_rect = CGRectForWindow(window);
   DisposeWindow(window);
+  webkit_glue::NotifyBrowserOfPluginDisposeWindow(window_id, window_rect);
+  MaybeReactivateSavedProcess();
 }
 
 static void ChromePluginHideWindow(WindowRef window) {
-  MaybeReactivateSavedProcess();
-  webkit_glue::NotifyBrowserOfPluginHideWindow(HIWindowGetCGWindowID(window),
-                                               CGRectForWindow(window));
+  CGWindowID window_id = HIWindowGetCGWindowID(window);
+  CGRect window_rect = CGRectForWindow(window);
   HideWindow(window);
+  webkit_glue::NotifyBrowserOfPluginHideWindow(window_id, window_rect);
+  MaybeReactivateSavedProcess();
 }
 
 #pragma mark -
