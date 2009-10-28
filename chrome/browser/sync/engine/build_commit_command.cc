@@ -30,6 +30,20 @@ namespace browser_sync {
 BuildCommitCommand::BuildCommitCommand() {}
 BuildCommitCommand::~BuildCommitCommand() {}
 
+void BuildCommitCommand::AddExtensionsActivityToMessage(
+    SyncerSession* session, CommitMessage* message) {
+  const ExtensionsActivityMonitor::Records& records =
+      session->extensions_activity();
+  for (ExtensionsActivityMonitor::Records::const_iterator it = records.begin();
+       it != records.end(); ++it) {
+    sync_pb::CommitMessage_ChromiumExtensionsActivity* activity_message =
+        message->add_extensions_activity();
+    activity_message->set_extension_id(it->second.extension_id);
+    activity_message->set_bookmark_writes_since_last_commit(
+        it->second.bookmark_write_count);
+  }
+}
+
 void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
   ClientToServerMessage message;
   message.set_share(ToUTF8(session->account_name()).get_string());
@@ -38,6 +52,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
   CommitMessage* commit_message = message.mutable_commit();
   commit_message->set_cache_guid(
       session->write_transaction()->directory()->cache_guid());
+  AddExtensionsActivityToMessage(session, commit_message);
 
   const vector<Id>& commit_ids = session->commit_ids();
   for (size_t i = 0; i < commit_ids.size(); i++) {

@@ -612,11 +612,6 @@ class NotificationType {
     // are all source and no details.
     SESSION_END,
 
-    // Personalization ---------------------------------------------------------
-
-    PERSONALIZATION,
-    PERSONALIZATION_CREATED,
-
     // Privacy blacklists ------------------------------------------------------
 
     // Sent when a privacy blacklist path provider changes the list of its
@@ -713,6 +708,11 @@ class NotificationType {
     // test.
     EXTENSION_TEST_PASSED,
     EXTENSION_TEST_FAILED,
+
+    // Sent when an bookmarks extensions API function was successfully invoked.
+    // The source is the id of the extension that invoked the function, and the
+    // details are a pointer to the const BookmarksFunction in question.
+    EXTENSION_BOOKMARKS_API_INVOKED,
 
     // Privacy Blacklist -------------------------------------------------------
 

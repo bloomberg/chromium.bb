@@ -19,6 +19,8 @@ class BuildCommitCommand : public SyncerCommand {
   virtual void ExecuteImpl(SyncerSession *session);
 
  private:
+  void AddExtensionsActivityToMessage(SyncerSession* session,
+                                      CommitMessage* message);
   DISALLOW_COPY_AND_ASSIGN(BuildCommitCommand);
 };
 
