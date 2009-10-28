@@ -662,4 +662,7 @@ const char kGearsPluginPathOverride[]       = "gears-plugin-path";
 // appropriate ifdef at the bottom. The order should match the header.
 // -----------------------------------------------------------------------------
 
+// Enable AutoFill++.
+const char kEnableNewAutoFill[] = "enable-new-autofill";
+
 }  // namespace switches

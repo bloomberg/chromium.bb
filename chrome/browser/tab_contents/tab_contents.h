@@ -67,10 +67,11 @@ namespace IPC {
 class Message;
 }
 
-class FormFieldHistoryManager;
+class AutoFillManager;
 class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
+class FormFieldHistoryManager;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PasswordManager;
@@ -82,11 +83,11 @@ class TabContentsDelegate;
 class TabContentsFactory;
 class SkBitmap;
 class SiteInstance;
+class TabContents;
 class TabContentsView;
 struct ThumbnailScore;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_DidPrintPage_Params;
-class TabContents;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -836,6 +837,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::FormFieldHistory*
       GetFormFieldHistoryDelegate();
+  virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
   virtual TabContents* GetAsTabContents();
   virtual void AddBlockedNotice(const GURL& url, const string16& reason);
   virtual ViewType::Type GetRenderViewType() const;
@@ -991,6 +993,9 @@ class TabContents : public PageNavigator,
 
   // FormFieldHistoryManager, lazily created.
   scoped_ptr<FormFieldHistoryManager> form_field_history_manager_;
+
+  // AutoFillManager, lazily created.
+  scoped_ptr<AutoFillManager> autofill_manager_;
 
   // PasswordManager, lazily created.
   scoped_ptr<PasswordManager> password_manager_;

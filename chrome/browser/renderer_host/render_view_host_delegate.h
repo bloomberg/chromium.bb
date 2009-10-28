@@ -365,6 +365,16 @@ class RenderViewHostDelegate {
                                              const string16& value) = 0;
   };
 
+  // AutoFill ------------------------------------------------------------------
+  // Interface for AutoFill-related functions.
+
+  class AutoFill {
+   public:
+    // Called when the user submits a form.
+    virtual void FormFieldValuesSubmitted(
+        const webkit_glue::FormFieldValues& form) = 0;
+  };
+
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -377,6 +387,7 @@ class RenderViewHostDelegate {
   virtual Printing* GetPrintingDelegate();
   virtual FavIcon* GetFavIconDelegate();
   virtual FormFieldHistory* GetFormFieldHistoryDelegate();
+  virtual AutoFill* GetAutoFillDelegate();
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

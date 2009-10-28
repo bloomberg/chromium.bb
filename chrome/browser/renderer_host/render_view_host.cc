@@ -1355,6 +1355,11 @@ void RenderViewHost::OnMsgFormFieldValuesSubmitted(
       delegate_->GetFormFieldHistoryDelegate();
   if (formfield_history_delegate)
     formfield_history_delegate->FormFieldValuesSubmitted(form);
+
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  if (autofill_delegate)
+    autofill_delegate->FormFieldValuesSubmitted(form);
 }
 
 void RenderViewHost::OnMsgStartDragging(

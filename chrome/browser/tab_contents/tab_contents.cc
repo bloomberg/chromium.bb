@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
@@ -230,6 +231,7 @@ TabContents::TabContents(Profile* profile,
       save_package_(),
       cancelable_consumer_(),
       form_field_history_manager_(),
+      autofill_manager_(),
       password_manager_(),
       plugin_installer_(),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
@@ -1935,6 +1937,12 @@ TabContents::GetFormFieldHistoryDelegate() {
   if (form_field_history_manager_.get() == NULL)
     form_field_history_manager_.reset(new FormFieldHistoryManager(this));
   return form_field_history_manager_.get();
+}
+
+RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
+  if (autofill_manager_.get() == NULL)
+    autofill_manager_.reset(new AutoFillManager(this));
+  return autofill_manager_.get();
 }
 
 RendererPreferences TabContents::GetRendererPrefs() const {

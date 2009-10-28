@@ -226,6 +226,7 @@
       <include name="IDR_FINDINPAGE_NEXT_H" file="find_next_h.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_P" file="find_next_d.png" type="BINDATA" />
       <include name="IDR_COOKIE_ICON" file="cookie.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" type="BINDATA" />
       <include name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" type="BINDATA" />

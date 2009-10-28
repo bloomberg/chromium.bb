@@ -200,6 +200,8 @@ extern const char kGearsPluginPathOverride[];
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 
+extern const char kEnableNewAutoFill[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

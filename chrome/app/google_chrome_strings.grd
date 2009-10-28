@@ -412,6 +412,9 @@ Chrome supports. -->
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Google Chrome isn't your default browser.
       </message>
+      <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the autofill request infobar.">
+        Do you want Google Chrome to save this information?
+      </message>
       <if expr="os == 'darwin'">
         <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chrome

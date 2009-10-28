@@ -47,6 +47,11 @@ RenderViewHostDelegate::GetFormFieldHistoryDelegate() {
   return NULL;
 }
 
+RenderViewHostDelegate::AutoFill*
+RenderViewHostDelegate::GetAutoFillDelegate() {
+  return NULL;
+}
+
 const GURL& RenderViewHostDelegate::GetURL() const {
   return GURL::EmptyGURL();
 }
