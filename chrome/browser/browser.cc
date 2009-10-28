@@ -1230,6 +1230,12 @@ void Browser::OpenExtensionsTab() {
       PageTransition::AUTO_BOOKMARK, true, -1, false, NULL);
 }
 
+void Browser::OpenThemeGalleryTabAndActivate() {
+  OpenURL(GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
+          GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  window_->Activate();
+}
+
 #if defined(OS_CHROMEOS)
 void Browser::ShowControlPanel() {
   UserMetrics::RecordAction(L"ShowControlPanel", profile_);

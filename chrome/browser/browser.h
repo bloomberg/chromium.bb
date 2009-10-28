@@ -406,6 +406,8 @@ class Browser : public TabStripModelDelegate,
   void OpenAboutChromeDialog();
   void OpenHelpTab();
   void OpenExtensionsTab();
+  // Used by the "Get themes" link in the options dialog.
+  void OpenThemeGalleryTabAndActivate();
 #if defined(OS_CHROMEOS)
   void ShowControlPanel();
 #endif

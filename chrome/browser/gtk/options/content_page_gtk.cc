@@ -7,7 +7,9 @@
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -309,9 +311,7 @@ void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
                                               ContentPageGtk* page) {
   page->UserMetricsRecordAction(L"Options_ThemesGallery",
                                 page->profile()->GetPrefs());
-  BrowserList::GetLastActive()->OpenURL(
-      GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
-      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
 // static

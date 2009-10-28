@@ -144,10 +144,7 @@ void ContentPageView::ButtonPressed(
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   if (source == themes_gallery_link_) {
     UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
-    Browser* browser = BrowserList::GetLastActive();
-    browser->OpenURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
-                     GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-    browser->window()->Activate();
+    BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
     return;
   }
   DCHECK_EQ(source, sync_action_link_);
