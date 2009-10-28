@@ -93,6 +93,12 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
+  browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
+  browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
+  browser_->command_updater()->RemoveCommandObserver(IDC_RELOAD, this);
+  browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
+  browser_->command_updater()->RemoveCommandObserver(IDC_BOOKMARK_PAGE, this);
+
   offscreen_entry_.Destroy();
 
   // When we created our MenuGtk objects, we pass them a pointer to our accel
