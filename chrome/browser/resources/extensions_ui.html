@@ -314,7 +314,7 @@ var extensionDataFormat = {
 var devToolsExpanded = false;
 
 /**
- * Toggles the devToolsExpanded, and notifies the c++ dom_ui to toggle the 
+ * Toggles the devToolsExpanded, and notifies the c++ dom_ui to toggle the
  * extensions.ui.developer_mode which saved in the preferences.
  */
 function toggleDevToolsExpanded() {
@@ -366,7 +366,7 @@ function returnExtensionsData(extensionsData) {
   // insert localized strings happens prior to this call which runs during the
   // body.onload event, causes a flickering.
   document.getElementById('body-container').style.display = "inline";
-  
+
   // Explicitly set the height for each element that wants to be "slid" in and
   // out when the devToolsExpanded is toggled.
   var slidables = document.getElementsByClassName('showInDevMode');
@@ -374,7 +374,7 @@ function returnExtensionsData(extensionsData) {
     slidables[i].style.height = slidables[i].offsetHeight + "px";
   }
 
-  // If not in developer mode, hide the developer mode elements without the 
+  // If not in developer mode, hide the developer mode elements without the
   // slide/fade transition.
   if (!devToolsExpanded) {
     document.getElementsByTagName('body')[0].className = "hideDevModeInitial";
@@ -522,8 +522,8 @@ function autoUpdate() {
   <div id="dialogBackground">
     <div id="dialogHBackground">
       <div id="dialog">
-        <div id="dialogHeader">
-          Pack Extension
+        <div id="dialogHeader" i18n-content="packDialogTitle">
+          PACK EXTENSION
         </div>
         <div id="dialogBody">
           <div id="dialogContentHeader" i18n-content="packDialogHeading">
@@ -557,10 +557,12 @@ function autoUpdate() {
           </div>
           <div class="dialogBrowseRow" id="dialogContentFooter">
             <div>
-              <input type="button" value="OK" onclick="packExtension();">
+              <input type="button" value="OK"
+                  i18n-values="value:okButton" onclick="packExtension();">
             </div>
             <div>
-              <input type="button" value="Cancel" onclick="hidePackDialog();">
+              <input type="button" value="CANCEL"
+                  i18n-values="value:cancelButton" onclick="hidePackDialog();">
             </div>
           </div>
         </div>
@@ -570,7 +572,7 @@ function autoUpdate() {
 
   <div id="body-container" style="display:none;">
 
-    <div id="header"><h1>Installed Extensions</h1></div>
+    <div id="header"><h1 i18n-content="title">TITLE</h1></div>
 
     <div id="extensionTemplate">
 
@@ -581,10 +583,11 @@ function autoUpdate() {
           <table cellpadding="0" cellspacing="0" width="100%">
           <tr valign="center">
             <td>
-              <span class="section-header-title">Installed Extensions
-                <span jsdisplay="extensions.length > 0">(<span
+              <span class="section-header-title" i18n-content="title"
+                >TITLE</span>
+              <span class="section-header-title"
+                    jsdisplay="extensions.length > 0">(<span
                     jscontent="extensions.length"></span>)</span>
-              </span>
             </td>
             <td width="14" padding="">
               <img id="collapse" class="developer-tools-image"
@@ -595,7 +598,8 @@ function autoUpdate() {
             </td>
             <td width="50" align="right">
               <div class="developer-tools-link">
-                <a onclick="toggleDeveloperTools();">Developer tools</a>
+                <a onclick="toggleDeveloperTools();" i18n-content="devToolsLink"
+                  >DEVTOOLS</a>
               </div>
             </td>
           </tr>
@@ -605,17 +609,20 @@ function autoUpdate() {
       </div>
       <div id="developer_tools" class="wbox-dev-tools showInDevMode">
         <div class="developer-tools">
-          Developer Tools:
-          <button onclick="loadExtension()">Load unpacked Extension...</button>
-          <button onclick="showPackDialog()">Pack Extension...</button>
-          <button onclick="autoUpdate()">Update Extensions now</button>
+          <span i18n-content="devToolsPrefix">DEVELOPER_TOOLS:</span>
+          <button onclick="loadExtension()"
+                  i18n-content="loadUnpackedButton">LOAD</button>
+          <button onclick="showPackDialog()"
+                  i18n-content="packButton">PACK</button>
+          <button onclick="autoUpdate()"
+                  i18n-content="updateButton">UPDATE</button>
         </div>
       </div>
       </div>
 
       <div class="content">
-        <div class="extension-name" jsdisplay="extensions.length === 0">
-            No extensions installed</div>
+        <div class="extension-name" jsdisplay="extensions.length === 0"
+             i18n-content="noExtensions">NO_EXTENSIONS_ARE_INSTALLED</div>
 
         <div jsdisplay="extensions.length > 0">
         <div class="extension" jsselect="extensions">
@@ -635,18 +642,22 @@ function autoUpdate() {
           <td valign="top">
             <div>
               <span class="extension-name"
-                    jscontent="name">Extension Name</span>
-              <span>Version <span jscontent="version">x.x.x.x</span></span>
-              <span jsdisplay="!enabled">(Disabled)</span>
+                    jscontent="name">EXTENSION NAME</span>
+              <span i18n-content="extensionVersion">VERSION</span>
+              <span jscontent="version">x.x.x.x</span>
+              <span jsdisplay="!enabled"
+                    i18n-content="extensionDisabled">(DISABLED)</span>
             </div>
 
             <div class="extension-description" jscontent="description"></div>
             <div class="showInDevMode">
-              <div class="extension-details">ID: <span jscontent="id"></span>
+              <div class="extension-details">
+                <span i18n-content="extensionId">ID_LABEL: </span>
+                <span jscontent="id"></span>
               </div>
               <div class="extension-details">
-                <span jsdisplay="views.length > 0">
-                  Inspect active views:
+                <span jsdisplay="views.length > 0" i18n-content="inspectViews">
+                  INSPECT ACTIVE VIEWS:
                 </span>
                 <ul class="extension-views">
                   <li jsselect="views">
@@ -667,25 +678,29 @@ function autoUpdate() {
                   jsdisplay="enabled"
                   onclick="handleEnableExtension(this, false)"
                   href="javascript:void();"
-                  >Disable</a>
+                  i18n-content="disable"
+                  >DISABLE</a>
                 <a
                   jsvalues=".extensionId:id"
                   jsdisplay="!enabled"
                   onclick="handleEnableExtension(this, true)"
                   href="javascript:void();"
-                  >Enable</a> -
+                  i18n-content="enable"
+                  >ENABLE</a> -
                 <a
                   jsvalues=".extensionId:id"
                   jsdisplay="enabled"
                   onclick="handleReloadExtension(this)"
                   href="javascript:void();"
-                  >Reload</a>
+                  i18n-content="reload"
+                  >RELOAD</a>
                 <span jsdisplay="enabled">-</span>
                 <a
                   jsvalues=".extensionId:id"
                   onclick="handleUninstallExtension(this)"
                   href="javascript:void();"
-                  >Uninstall</a>
+                  i18n-content="uninstall"
+                  >UNINSTALL</a>
               </span>
             </div>
           </td>
@@ -694,12 +709,14 @@ function autoUpdate() {
                   jsdisplay="options_url"
                   jsvalues=".extensionId:id"
                   onclick="handleOptions(this)"
-                  >Options</button>
+                  i18n-content="options"
+                  >OPTIONS</button>
                 <button
                   jsdisplay="typeof(options_url) == 'undefined' ||
                              options_url.length == 0"
                   disabled="true"
-                  >Options</button>
+                  i18n-content="options"
+                  >OPTIONS</button>
           </td>
           </tr>
           </table>

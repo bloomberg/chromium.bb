@@ -52,6 +52,38 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_EXTENSIONS_TITLE));
+  localized_strings.SetString(L"devToolsLink",
+      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_TOOLS_LINK));
+  localized_strings.SetString(L"devToolsPrefix",
+      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_TOOLS_PREFIX));
+  localized_strings.SetString(L"loadUnpackedButton",
+      l10n_util::GetString(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
+  localized_strings.SetString(L"packButton",
+      l10n_util::GetString(IDS_EXTENSIONS_PACK_BUTTON));
+  localized_strings.SetString(L"updateButton",
+      l10n_util::GetString(IDS_EXTENSIONS_UPDATE_BUTTON));
+  localized_strings.SetString(L"noExtensions",
+      l10n_util::GetString(IDS_EXTENSIONS_NONE_INSTALLED));
+  localized_strings.SetString(L"extensionDisabled",
+      l10n_util::GetString(IDS_EXTENSIONS_DISABLED_EXTENSION));
+  localized_strings.SetString(L"extensionId",
+      l10n_util::GetString(IDS_EXTENSIONS_ID));
+  localized_strings.SetString(L"extensionVersion",
+      l10n_util::GetString(IDS_EXTENSIONS_VERSION));
+  localized_strings.SetString(L"inspectViews",
+      l10n_util::GetString(IDS_EXTENSIONS_INSPECT_VIEWS));
+  localized_strings.SetString(L"disable",
+      l10n_util::GetString(IDS_EXTENSIONS_DISABLE));
+  localized_strings.SetString(L"enable",
+      l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
+  localized_strings.SetString(L"reload",
+      l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
+  localized_strings.SetString(L"uninstall",
+      l10n_util::GetString(IDS_EXTENSIONS_UNINSTALL));
+  localized_strings.SetString(L"options",
+      l10n_util::GetString(IDS_EXTENSIONS_OPTIONS));
+  localized_strings.SetString(L"packDialogTitle",
+      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_TITLE));
   localized_strings.SetString(L"packDialogHeading",
       l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_HEADING));
   localized_strings.SetString(L"rootDirectoryLabel",
@@ -60,6 +92,10 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_BROWSE));
   localized_strings.SetString(L"privateKeyLabel",
       l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
+  localized_strings.SetString(L"okButton",
+      l10n_util::GetString(IDS_OK));
+  localized_strings.SetString(L"cancelButton",
+      l10n_util::GetString(IDS_CANCEL));
 
   static const base::StringPiece extensions_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

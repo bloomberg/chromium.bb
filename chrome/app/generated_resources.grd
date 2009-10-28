@@ -2584,6 +2584,51 @@ each locale. -->
       </message>
       
       <!-- chrome://extensions page -->
+      <message name="IDS_EXTENSIONS_DEVELOPER_TOOLS_LINK" desc="Text of the link for developer tools.">
+        Developer tools
+      </message>
+      <message name="IDS_EXTENSIONS_DEVELOPER_TOOLS_PREFIX" desc="Text of the prefix for the developer tools buttons.">
+        Developer tools:
+      </message>
+      <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load unpacked Extension' button.">
+        Load unpacked Extension...
+      </message>
+      <message name="IDS_EXTENSIONS_PACK_BUTTON" desc="Text for the 'Pack Extension' button.">
+        Pack Extension...
+      </message>
+      <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
+        Update Extensions now
+      </message>
+      <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
+        No extensions installed
+      </message>
+      <message name="IDS_EXTENSIONS_DISABLED_EXTENSION" desc="Text that signifies that the extension is currently disabled.">
+        (Disabled)
+      </message>
+      <message name="IDS_EXTENSIONS_ID" desc="The ID label in front if the extension ID.">
+        ID:
+      </message>
+      <message name="IDS_EXTENSIONS_VERSION" desc="The version label text in front of the version number.">
+        Version:
+      </message>
+      <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect active views.">
+        Inspect active views:
+      </message>
+      <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling extensions.">
+        Disable
+      </message>
+      <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
+        Enable
+      </message>
+      <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
+        Reload
+      </message>
+      <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
+        Uninstall
+      </message>
+      <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
+        Options
+      </message>
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.
       </message>
