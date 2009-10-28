@@ -13,10 +13,17 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-
 #include "views/widget/root_view.h"
 
 using views::Widget;
+
+// The minimum/maximum dimensions of the popup.
+// The minimum is just a little larger than the size of the button itself.
+// The maximum is an arbitrary number that should be smaller than most screens.
+const int ExtensionPopup::kMinWidth = 25;
+const int ExtensionPopup::kMinHeight = 25;
+const int ExtensionPopup::kMaxWidth = 800;
+const int ExtensionPopup::kMaxHeight = 600;
 
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                Widget* frame,
@@ -66,14 +73,16 @@ void ExtensionPopup::Show() {
 }
 
 void ExtensionPopup::ResizeToView() {
-  BrowserBubble::ResizeToView();
+  // We'll be sizing ourselves to this size shortly, but wait until we
+  // know our position to do it.
+  gfx::Size new_size = view()->size();
 
   // The rounded corners cut off more of the view than the border insets claim.
   // Since we can't clip the ExtensionView's corners, we need to increase the
   // inset by half the corner radius as well as lying about the size of the
   // contents size to compensate.
   int corner_inset = BubbleBorder::GetCornerRadius() / 2;
-  gfx::Size adjusted_size = bounds().size();
+  gfx::Size adjusted_size = new_size;
   adjusted_size.Enlarge(2 * corner_inset, 2 * corner_inset);
   gfx::Rect rect = border_->GetBounds(relative_to_, adjusted_size);
   border_widget_->SetBounds(rect);
@@ -87,7 +96,8 @@ void ExtensionPopup::ResizeToView() {
   views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
   origin.set_x(origin.x() + border_insets.left() + corner_inset);
   origin.set_y(origin.y() + border_insets.top() + corner_inset);
-  MoveTo(origin.x(), origin.y());
+
+  SetBounds(origin.x(), origin.y(), new_size.width(), new_size.height());
 }
 
 void ExtensionPopup::Observe(NotificationType type,
@@ -104,7 +114,12 @@ void ExtensionPopup::Observe(NotificationType type,
 }
 
 void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
-  view->SizeToPreferredSize();
+  // Constrain the size to popup min/max.
+  gfx::Size sz = view->GetPreferredSize();
+  view->SetBounds(view->x(), view->y(),
+      std::max(kMinWidth, std::min(kMaxWidth, sz.width())),
+      std::max(kMinHeight, std::min(kMaxHeight, sz.height())));
+
   ResizeToView();
 }
 

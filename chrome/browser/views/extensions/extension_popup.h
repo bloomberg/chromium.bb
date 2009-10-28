@@ -47,6 +47,12 @@ class ExtensionPopup : public BrowserBubble,
   virtual void OnExtensionMouseLeave(ExtensionView* view) { };
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
+  // The min/max height of popups.
+  static const int kMinWidth;
+  static const int kMinHeight;
+  static const int kMaxWidth;
+  static const int kMaxHeight;
+
  private:
   ExtensionPopup(ExtensionHost* host,
                  views::Widget* frame,

@@ -95,6 +95,5 @@ void BrowserBubble::Reposition() {
 }
 
 void BrowserBubble::ResizeToView() {
-  gfx::Size size = view_->GetPreferredSize();
-  SetBounds(bounds_.x(), bounds_.y(), size.width(), size.height());
+  SetBounds(bounds_.x(), bounds_.y(), view_->width(), view_->height());
 }

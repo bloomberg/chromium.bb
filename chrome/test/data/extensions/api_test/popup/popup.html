@@ -2,8 +2,8 @@
 <script>
 function run_tests() {
   // Compute the size of the popup.
-  var width = 100;
-  var height = 100;
+  var width = 0;
+  var height = 0;
   if (localStorage.height) {
     height = parseInt(localStorage.height);
   }
@@ -22,8 +22,8 @@ function run_tests() {
   //window.setTimeout(chrome.test.notifyPass, 0);
   chrome.test.notifyPass();
 
-  height += 100;
-  width += 100;
+  height += 500;
+  width += 500;
   localStorage.height = JSON.stringify(height);
   localStorage.width = JSON.stringify(width);
 }
@@ -40,5 +40,5 @@ div {
 </style>
 </head>
 <body onload="window.setTimeout(run_tests, 0)">
-<div id="test">TEST</div>
+<div id="test">A</div>
 </body>

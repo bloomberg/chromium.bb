@@ -149,25 +149,50 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_BrowserActionPopup) {
       browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
       browser_actions();
 
+  // This value is in api_test/popup/popup.html.
+  const int growFactor = 500;
+  ASSERT_GT(ExtensionPopup::kMinHeight + growFactor * 2,
+            ExtensionPopup::kMaxHeight);
+  ASSERT_GT(ExtensionPopup::kMinWidth + growFactor * 2,
+            ExtensionPopup::kMaxWidth);
+
+  // Our initial expected size.
+  int width = ExtensionPopup::kMinWidth;
+  int height = ExtensionPopup::kMinHeight;
+
   // Simulate a click on the browser action and verify the size of the resulting
-  // popup.
+  // popup.  The first one tries to be 0x0, so it should be the min values.
   browser_actions->TestExecuteBrowserAction(0);
   EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   gfx::Rect bounds = browser_actions->TestGetPopup()->view()->bounds();
-  EXPECT_EQ(100, bounds.width());
-  EXPECT_EQ(100, bounds.height());
+  EXPECT_EQ(width, bounds.width());
+  EXPECT_EQ(height, bounds.height());
   browser_actions->HidePopup();
   EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
 
   // Do it again, and verify the new bigger size (the popup grows each time it's
   // opened).
+  width = growFactor;
+  height = growFactor;
   browser_actions->TestExecuteBrowserAction(0);
   EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   bounds = browser_actions->TestGetPopup()->view()->bounds();
-  EXPECT_EQ(200, bounds.width());
-  EXPECT_EQ(200, bounds.height());
+  EXPECT_EQ(width, bounds.width());
+  EXPECT_EQ(height, bounds.height());
+  browser_actions->HidePopup();
+  EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
+
+  // One more time, but this time it should be constrained by the max values.
+  width = ExtensionPopup::kMaxWidth;
+  height = ExtensionPopup::kMaxHeight;
+  browser_actions->TestExecuteBrowserAction(0);
+  EXPECT_TRUE(browser_actions->TestGetPopup() != NULL);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  bounds = browser_actions->TestGetPopup()->view()->bounds();
+  EXPECT_EQ(width, bounds.width());
+  EXPECT_EQ(height, bounds.height());
   browser_actions->HidePopup();
   EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
 }
