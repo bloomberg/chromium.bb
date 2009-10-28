@@ -352,6 +352,8 @@ var chrome = chrome || {};
 
     var canvas;
     function setIconCommon(details, name, parameters) {
+      var EXTENSION_ACTION_ICON_SIZE = 19;
+
       if ("iconIndex" in details) {
         sendRequest(name, [details], parameters);
       } else if ("imageData" in details) {
@@ -367,6 +369,14 @@ var chrome = chrome || {};
           throw new Error(
               "The imageData property must contain an ImageData object.");
         }
+
+        if (details.imageData.width > EXTENSION_ACTION_ICON_SIZE ||
+            details.imageData.height > EXTENSION_ACTION_ICON_SIZE) {
+          throw new Error(
+              "The imageData property must contain an ImageData object that " +
+              "is no larger than 19 pixels square.");
+        }
+
         sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
       } else if ("path" in details) {
         var img = new Image();
@@ -376,8 +386,10 @@ var chrome = chrome || {};
         }
         img.onload = function() {
           var canvas = document.createElement("canvas");
-          canvas.width = img.width > 19 ? 19 : img.width;
-          canvas.height = img.height > 19 ? 19 : img.height;
+          canvas.width = img.width > EXTENSION_ACTION_ICON_SIZE ?
+              EXTENSION_ACTION_ICON_SIZE : img.width;
+          canvas.height = img.height > EXTENSION_ACTION_ICON_SIZE ?
+              EXTENSION_ACTION_ICON_SIZE : img.height;
 
           var canvas_context = canvas.getContext('2d');
           canvas_context.clearRect(0, 0, canvas.width, canvas.height);
