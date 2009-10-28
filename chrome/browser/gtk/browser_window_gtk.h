@@ -54,8 +54,6 @@ class BrowserWindowGtk : public BrowserWindow,
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
-  Browser* browser() const { return browser_.get(); }
-
   // Process a keyboard event which was not handled by webkit.
   bool HandleKeyboardEvent(GdkEventKey* event);
 
@@ -192,9 +190,7 @@ class BrowserWindowGtk : public BrowserWindow,
   // ID of the top-level X window of this object.
   static GtkWindow* GetBrowserWindowForXID(XID xid);
 
-  Browser* browser() {
-    return browser_.get();
-  }
+  Browser* browser() const { return browser_.get(); }
 
   GtkWindow* window() const { return window_; }
 
