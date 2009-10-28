@@ -20,6 +20,7 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/perf/mem_usage.h"
 #include "chrome/test/ui/ui_test.h"
@@ -638,13 +639,11 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
   void InitiateNextNavigation() {
     if (browser_pid_ == 0) {
-      std::wstring profile_directory;
-      if (GetUserProfileBaseDirectory(&profile_directory)) {
-        file_util::AppendToPath(&profile_directory,
-                                GetHostProcessName(false));
+      FilePath profile_directory;
+      if (chrome::GetChromeFrameUserDataDirectory(&user_data_dir_)) {
+        user_data_dir_ = user_data_dir_.Append(GetHostProcessName(false));
       }
 
-      user_data_dir_ = FilePath::FromWStringHack(profile_directory);
       browser_pid_ = ChromeBrowserProcessId(user_data_dir_);
     }
 

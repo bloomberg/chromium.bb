@@ -14,8 +14,6 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome_frame/resource.h"
@@ -545,31 +543,6 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
 
   if (StartsWith(url, kChromeAttachExternalTabPrefix, false))
     return true;
-
-  return false;
-}
-
-// TODO(robertshield): Register and use Chrome's PathProviders.
-// - Note that this function is used by unit tests as well to override
-//   PathService paths, so please test when addressing todo.
-bool GetUserProfileBaseDirectory(std::wstring* path) {
-  DCHECK(path);
-  wchar_t path_buffer[MAX_PATH * 4];
-  path_buffer[0] = 0;
-  // TODO(robertshield): Ideally we should use SHGetFolderLocation and then
-  // get a path via PIDL.
-  HRESULT hr = SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL,
-                               SHGFP_TYPE_CURRENT, path_buffer);
-
-  if (SUCCEEDED(hr)) {
-    *path = path_buffer;
-#if defined(GOOGLE_CHROME_BUILD)
-    file_util::AppendToPath(path, FILE_PATH_LITERAL("Google"));
-#endif
-    file_util::AppendToPath(path, chrome::kBrowserAppName);
-    file_util::AppendToPath(path, chrome::kUserDataDirname);
-    return true;
-  }
 
   return false;
 }

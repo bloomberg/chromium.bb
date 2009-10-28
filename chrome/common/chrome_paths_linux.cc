@@ -72,6 +72,16 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
   return true;
 }
 
+bool GetChromeFrameUserDataDirectory(FilePath* result) {
+  FilePath config_dir(GetXDGDirectory("XDG_CONFIG_HOME", ".config"));
+#if defined(GOOGLE_CHROME_BUILD)
+  *result = config_dir.Append("google-chrome-frame");
+#else
+  *result = config_dir.Append("chrome-frame");
+#endif
+  return true;
+}
+
 // See http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
 // for a spec on where cache files go.  The net effect for most
 // systems is we use ~/.cache/chromium/ for Chromium and

@@ -21,11 +21,12 @@
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -68,7 +69,7 @@ bool PromptAfterSetup() {
 
 FakeExternalTab::FakeExternalTab() {
   PathService::Get(chrome::DIR_USER_DATA, &overridden_user_dir_);
-  user_data_dir_ = FilePath::FromWStringHack(GetProfilePath());
+  GetProfilePath(&user_data_dir_);
   PathService::Override(chrome::DIR_USER_DATA, user_data_dir_);
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
 }
@@ -83,11 +84,11 @@ std::wstring FakeExternalTab::GetProfileName() {
   return L"iexplore";
 }
 
-std::wstring FakeExternalTab::GetProfilePath() {
-  std::wstring path;
-  GetUserProfileBaseDirectory(&path);
-  file_util::AppendToPath(&path, GetProfileName());
-  return path;
+bool FakeExternalTab::GetProfilePath(FilePath* path) {
+  if (!chrome::GetChromeFrameUserDataDirectory(path))
+    return false;
+  *path = path->Append(GetProfileName());
+  return true;
 }
 
 void FakeExternalTab::Initialize() {

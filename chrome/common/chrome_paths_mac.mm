@@ -27,6 +27,19 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
   return success;
 }
 
+bool GetChromeFrameUserDataDirectory(FilePath* result) {
+  bool success = false;
+  if (result && PathService::Get(base::DIR_APP_DATA, result)) {
+#if defined(GOOGLE_CHROME_BUILD)
+    *result = result->Append("Google").Append("Chrome Frame");
+#else
+    *result = result->Append("Chrome Frame");
+#endif
+    success = true;
+  }
+  return success;
+}
+
 bool GetUserDocumentsDirectory(FilePath* result) {
   bool success = false;
   NSArray* docArray =

@@ -176,17 +176,27 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
     file_util::Move(setup_exe_path, temp_file);
   }
 
-  // Move the browser's persisted local state
+  // Obtain the location of the user profile data. Chrome Frame needs to
+  // build this path manually since it doesn't use the Chrome default dir.
   FilePath user_local_state;
-  if (chrome::GetDefaultUserDataDirectory(&user_local_state)) {
+#if defined(CHROME_FRAME_BUILD)
+  bool got_local_state =
+      chrome::GetChromeFrameUserDataDirectory(&user_local_state);
+#else  // if !defined(CHROME_FRAME_BUILD)
+  bool got_local_state = chrome::GetDefaultUserDataDirectory(&user_local_state);
+#endif
+
+  // Move the browser's persisted local state
+  if (got_local_state) {
     FilePath user_local_file(
         user_local_state.Append(chrome::kLocalStateFilename));
-
     FilePath path = FilePath::FromWStringHack(*local_state_path);
     if (!file_util::CreateTemporaryFile(&path))
       LOG(ERROR) << "Failed to create temporary file for Local State.";
     else
       file_util::CopyFile(user_local_file, path);
+  } else {
+    LOG(ERROR) << "Could not retrieve user's profile directory.";
   }
 
   DeleteResult result = DELETE_SUCCEEDED;
@@ -210,7 +220,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
 #endif
   }
 
-  if (delete_profile) {
+  if (delete_profile && got_local_state) {
     LOG(INFO) << "Deleting user profile" << user_local_state.value();
     if (!file_util::Delete(user_local_state, true)) {
       LOG(ERROR) << "Failed to delete user profile dir: "

@@ -196,9 +196,6 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
 // When is_privileged is true, chrome extension URLs will be considered valid.
 bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
 
-// This returns the base directory in which to store user profiles.
-bool GetUserProfileBaseDirectory(std::wstring* path);
-
 // See COM_INTERFACE_BLIND_DELEGATE below for details.
 template <class T>
 STDMETHODIMP CheckOutgoingInterface(void* obj, REFIID iid, void** ret,

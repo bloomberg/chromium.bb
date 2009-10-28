@@ -25,6 +25,17 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
   return true;
 }
 
+bool GetChromeFrameUserDataDirectory(FilePath* result) {
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
+    return false;
+#if defined(GOOGLE_CHROME_BUILD)
+  *result = result->Append(FILE_PATH_LITERAL("Google"));
+#endif
+  *result = result->Append(L"Chrome Frame");
+  *result = result->Append(chrome::kUserDataDirname);
+  return true;
+}
+
 bool GetUserDocumentsDirectory(FilePath* result) {
   wchar_t path_buf[MAX_PATH];
   if (FAILED(SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS, NULL,

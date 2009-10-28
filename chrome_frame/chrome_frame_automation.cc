@@ -17,6 +17,7 @@
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_launcher.h"
@@ -251,11 +252,11 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // Place the profile directory in
   // "<chrome_exe_path>\..\User Data\<profile-name>"
   if (!entry->profile_name.empty()) {
-    std::wstring profile_path;
-    if (GetUserProfileBaseDirectory(&profile_path)) {
-      file_util::AppendToPath(&profile_path, entry->profile_name);
+    FilePath profile_path;
+    if (chrome::GetChromeFrameUserDataDirectory(&profile_path)) {
+      profile_path = profile_path.Append(entry->profile_name);
       command_line->AppendSwitchWithValue(switches::kUserDataDir,
-          profile_path);
+          profile_path.value());
     } else {
       // Can't get the profile dir :-( We need one to work, so fail.
       // We have no code for launch failure.
