@@ -3242,3 +3242,9 @@ BUG_JAPHET LINUX DEBUG : LayoutTests/fast/multicol/column-rules.html = PASS FAIL
 
 // Not sure when this started being flaky
 BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
+
+// WebKit roll 50i218:50235
+BUG_JORLOW : LayoutTests/http/tests/ssl/referer-301.html = FAIL
+BUG_JORLOW : LayoutTests/http/tests/ssl/referer-303.html = FAIL
+BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
+BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
