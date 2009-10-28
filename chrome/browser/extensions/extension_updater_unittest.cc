@@ -604,7 +604,7 @@ TEST(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading();
 }
 
-TEST(ExtensionUpdaterTest, TestBlacklistDownloading) {
+TEST(ExtensionUpdaterTest, DISABLED_TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
