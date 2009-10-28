@@ -13,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/lazy_instance.h"
-#include "base/linux_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -75,6 +74,7 @@
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
+#include "base/linux_util.h"
 #include "chrome/app/breakpad_linux.h"
 #endif
 
