@@ -96,7 +96,7 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     # Checkout.
     gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
+    gclient_scm.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
                                      self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -109,7 +109,7 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
     gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
                                      base_path, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -135,7 +135,7 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     gclient_scm.os.path.exists(file_path2).AndReturn(True)
     gclient_scm.os.path.isfile(file_path2).AndReturn(True)
     gclient_scm.os.remove(file_path2)
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
                                      base_path, mox.IgnoreArg())
     print(os.path.join(base_path, 'a'))
     print(os.path.join(base_path, 'b'))
@@ -161,7 +161,7 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_utils.RemoveDirectory(file_path)
     file_list1 = []
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
                                      base_path, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -174,8 +174,8 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.RunSVNAndGetFileList(['status'] + self.args, base_path,
-                                     []).AndReturn(None)
+    gclient_scm.RunSVNAndGetFileList(options, ['status'] + self.args,
+                                     base_path, []).AndReturn(None)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -198,8 +198,8 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     # Checkout.
     gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
-                                     self.root_dir, files_list)
+    gclient_scm.RunSVNAndGetFileList(options, ['checkout', self.url, 
+                                     base_path], self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -227,7 +227,8 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
     files_list = []
-    gclient_scm.RunSVNAndGetFileList(['update', base_path] + additional_args,
+    gclient_scm.RunSVNAndGetFileList(options,
+                                     ['update', base_path] + additional_args,
                                      self.root_dir, files_list)
 
     self.mox.ReplayAll()

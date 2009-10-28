@@ -892,7 +892,6 @@ def DoCleanup(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('cleanup', args)
 
 
@@ -971,7 +970,6 @@ def DoPack(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('pack', args)
 
 
@@ -988,7 +986,6 @@ def DoStatus(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('status', args)
 
 
@@ -1043,7 +1040,6 @@ def DoDiff(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('diff', args)
 
 

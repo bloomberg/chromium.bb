@@ -183,8 +183,13 @@ def SubprocessCallAndFilter(command,
   """Runs command, a list, in directory in_directory.
 
   If print_messages is true, a message indicating what is being done
-  is printed to stdout. If print_stdout is true, the command's stdout
-  is also forwarded to stdout.
+  is printed to stdout. If print_messages is false, the message is printed
+  only if we actually need to print something else as well, so you can
+  get the context of the output. If print_messages is false and print_stdout
+  is false, no output at all is generated.
+  
+  Also, if print_stdout is true, the command's stdout is also forwarded 
+  to stdout. 
 
   If a filter function is specified, it is expected to take a single
   string argument, and it will be called with each line of the
@@ -216,6 +221,10 @@ def SubprocessCallAndFilter(command,
     if in_byte != "\r":
       if print_stdout:
         sys.stdout.write(in_byte)
+        if not print_messages:
+          print("\n________ running \'%s\' in \'%s\'"
+              % (' '.join(command), in_directory))
+          print_messages = True 
       if in_byte != "\n":
         in_line += in_byte
     if in_byte == "\n" and filter:
