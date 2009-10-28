@@ -375,7 +375,7 @@
 +#endif
  #define ELF_ARCH			bfd_arch_i386
  #define ELF_MACHINE_CODE		EM_386
- #define ELF_MAXPAGESIZE			0x1000
+ #define ELF_MAXPAGESIZE			0x10000
 @@ -4640,6 +4748,63 @@
  #undef	elf_backend_post_process_headers
  #define	elf_backend_post_process_headers	_bfd_elf_set_osabi
