@@ -282,6 +282,11 @@ var chrome = chrome || {};
               eventDef.parameters);
         });
       }
+
+
+      // getTabContentses is retained for backwards compatibility
+      // See http://crbug.com/21433
+      chrome.extension.getTabContentses = chrome.extension.getExtensionTabs
     });
 
     apiFunctions["tabs.connect"].handleRequest = function(tabId, connectInfo) {
@@ -321,7 +326,7 @@ var chrome = chrome || {};
       return GetExtensionViews(windowId, "TOOLSTRIP");
     }
 
-    apiFunctions["extension.getTabContentses"].handleRequest =
+    apiFunctions["extension.getExtensionTabs"].handleRequest =
         function(windowId) {
       if (typeof(windowId) == "undefined")
         windowId = -1;

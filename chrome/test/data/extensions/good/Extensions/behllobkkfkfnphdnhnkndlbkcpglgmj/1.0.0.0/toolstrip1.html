@@ -39,12 +39,16 @@ function testgetBackgroundPageAPI() {
 }
 
 // This function is called from the C++ browser test. It tests the
-// getTabContentses function to make sure it can be used as an extension API.
-// This will pass if getTabContentses returns tabcontent view.
-function testgetTabContentsesAPI() {
-  var views = chrome.extension.getTabContentses();
+// getExtensionTabs function to make sure it can be used as an extension API.
+// This will pass if getExtensionTabs returns tabcontent view.
+function testgetExtensionTabsAPI() {
+  var views = chrome.extension.getExtensionTabs();
+  // getTabContentses is here for backwards compatibility
+  var views2 = chrome.extension.getTabContentses();
   window.domAutomationController.send(views.length == 1 &&
-                                      views[0].isTabContents == 1);
+                                      views[0].isTabContents == 1 &&
+                                      views2.length == 1 &&
+                                      views2[0].isTabContents == 1);
 }
 
 </script>

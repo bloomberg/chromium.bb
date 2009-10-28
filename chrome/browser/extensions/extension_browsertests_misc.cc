@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
            "test_gettabs.html"));
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testgetTabContentsesAPI()", &result);
+      host->render_view_host(), L"", L"testgetExtensionTabsAPI()", &result);
   EXPECT_TRUE(result);
 }
 #endif  // defined(OS_WIN)

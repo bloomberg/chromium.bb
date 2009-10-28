@@ -118,7 +118,7 @@
         }
       },
       {
-        "name": "getTabContentses",
+        "name": "getExtensionTabs",
         "type": "function",
         "description": "Returns an array of the global JavaScript objects for each of the tab contents views running inside the current extension. If windowId is specified, returns only the tab contentses attached to the specified window.",
         "parameters": [
