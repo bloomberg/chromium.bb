@@ -117,7 +117,7 @@ class BufferedResourceLoader :
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
       const std::string& security_info);
-  std::string GetURLForDebugging() { return url_.spec(); }
+  GURL GetURLForDebugging() const { return url_; }
 
  protected:
   // An empty constructor so mock classes can be constructed.

@@ -161,8 +161,8 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
   DoneInitialization_Locked(status.is_success());
 }
 
-std::string SimpleDataSource::GetURLForDebugging() {
-  return url_.spec();
+GURL SimpleDataSource::GetURLForDebugging() const {
+  return url_;
 }
 
 void SimpleDataSource::SetURL(const GURL& url) {

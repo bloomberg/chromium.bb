@@ -219,7 +219,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(
       const URLRequestStatus& status, const std::string& security_info);
-  virtual std::string GetURLForDebugging();
+  virtual GURL GetURLForDebugging() const;
 
  private:
   friend class base::RefCounted<Context>;
@@ -522,8 +522,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   Release();
 }
 
-std::string WebURLLoaderImpl::Context::GetURLForDebugging() {
-  return request_.url().spec();
+GURL WebURLLoaderImpl::Context::GetURLForDebugging() const {
+  return request_.url();
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {

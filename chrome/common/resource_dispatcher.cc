@@ -316,7 +316,7 @@ void ResourceDispatcher::OnUploadProgress(
   PendingRequestInfo& request_info = it->second;
 
   RESOURCE_LOG("Dispatching upload progress for " <<
-               request_info.peer->GetURLForDebugging());
+      request_info.peer->GetURLForDebugging().possibly_invalid_spec());
   request_info.peer->OnUploadProgress(position, size);
 
   // Acknowlegde reciept
@@ -351,7 +351,8 @@ void ResourceDispatcher::OnReceivedResponse(
     }
   }
 
-  RESOURCE_LOG("Dispatching response for " << peer->GetURLForDebugging());
+  RESOURCE_LOG("Dispatching response for " <<
+      peer->GetURLForDebugging().possibly_invalid_spec());
   peer->OnReceivedResponse(response_head, false);
 }
 
@@ -379,7 +380,7 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
 
   if (data_len > 0 && shared_mem.Map(data_len)) {
     RESOURCE_LOG("Dispatching " << data_len << " bytes for " <<
-                 request_info.peer->GetURLForDebugging());
+        request_info.peer->GetURLForDebugging().possibly_invalid_spec());
     const char* data = static_cast<char*>(shared_mem.memory());
     request_info.peer->OnReceivedData(data, data_len);
   }
@@ -401,7 +402,7 @@ void ResourceDispatcher::OnReceivedRedirect(
   PendingRequestInfo& request_info = it->second;
 
   RESOURCE_LOG("Dispatching redirect for " <<
-               request_info.peer->GetURLForDebugging());
+               request_info.peer->GetURLForDebugging().possibly_invalid_spec());
 
   if (request_info.peer->OnReceivedRedirect(new_url, info)) {
     message_sender()->Send(
@@ -426,7 +427,7 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
   webkit_glue::ResourceLoaderBridge::Peer* peer = request_info.peer;
 
   RESOURCE_LOG("Dispatching complete for " <<
-               request_info.peer->GetURLForDebugging());
+               request_info.peer->GetURLForDebugging().possibly_invalid_spec());
 
   if (status.status() == URLRequestStatus::CANCELED &&
       status.os_error() != net::ERR_ABORTED) {

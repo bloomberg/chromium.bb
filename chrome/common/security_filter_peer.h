@@ -48,7 +48,7 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
                                   const std::string& security_info);
-  virtual std::string GetURLForDebugging();
+  virtual GURL GetURLForDebugging() const;
 
  protected:
   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,

@@ -132,7 +132,7 @@ class ResourceLoaderBridge {
 
     // Returns the URL of the request, which allows us to display it in
     // debugging situations.
-    virtual std::string GetURLForDebugging() = 0;
+    virtual GURL GetURLForDebugging() const = 0;
   };
 
   // use Create() for construction, but anybody can delete at any time,

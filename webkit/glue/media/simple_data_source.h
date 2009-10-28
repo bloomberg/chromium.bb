@@ -62,7 +62,7 @@ class SimpleDataSource : public media::DataSource,
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
                                   const std::string& security_info);
-  virtual std::string GetURLForDebugging();
+  virtual GURL GetURLForDebugging() const;
 
  private:
   friend class media::FilterFactoryImpl2<

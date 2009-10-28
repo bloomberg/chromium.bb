@@ -118,8 +118,8 @@ class PluginRequestHandlerProxy
     }
   }
 
-  virtual std::string GetURLForDebugging() {
-    return cprequest_->url;
+  virtual GURL GetURLForDebugging() const {
+    return GURL(cprequest_->url);
   }
 
   void set_extra_headers(const std::string& headers) {

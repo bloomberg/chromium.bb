@@ -126,7 +126,7 @@ void SecurityFilterPeer::OnCompletedRequest(const URLRequestStatus& status,
   NOTREACHED();
 }
 
-std::string SecurityFilterPeer::GetURLForDebugging() {
+GURL SecurityFilterPeer::GetURLForDebugging() const {
   return original_peer_->GetURLForDebugging();
 }
 
