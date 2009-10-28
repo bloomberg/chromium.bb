@@ -275,6 +275,8 @@ void BrowserActionsContainer::AddBrowserAction(Extension* extension) {
   BrowserActionView* view = new BrowserActionView(extension, this);
   browser_action_views_.push_back(view);
   AddChildView(view);
+  if (GetParent()) 
+    GetParent()->SchedulePaint();
 }
 
 void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
@@ -287,11 +289,13 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
     if ((*iter)->button()->extension() == extension) {
       RemoveChildView(*iter);
       browser_action_views_.erase(iter);
+      if (GetParent()) 
+        GetParent()->SchedulePaint();
       return;
     }
   }
 
-   NOTREACHED() << "Asked to remove a browser action view that doesn't exist.";
+  NOTREACHED() << "Asked to remove a browser action view that doesn't exist.";
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
