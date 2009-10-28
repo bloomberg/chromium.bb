@@ -68,6 +68,10 @@ void FlipNetworkTransaction::OnRequestSent(int status) {
   DoLoop(status);
 }
 
+void FlipNetworkTransaction::OnUploadDataSent(int result) {
+  NOTIMPLEMENTED();
+}
+
 void FlipNetworkTransaction::OnResponseReceived(HttpResponseInfo* response) {
   next_state_ = STATE_READ_HEADERS_COMPLETE;
 
@@ -102,16 +106,6 @@ void FlipNetworkTransaction::OnClose(int status) {
   response_status_ = status;
   flip_request_id_ = 0;  // TODO(mbelshe) - do we need this?
   DoLoop(status);
-}
-
-void FlipNetworkTransaction::OnCancel() {
-  next_state_ = STATE_NONE;
-  response_complete_ = true;
-  response_status_ = net::ERR_ABORTED;
-  flip_request_id_ = 0;  // TODO(mbelshe) - do we need this?
-  // Clear any data in our buffer.
-  while (response_body_.size())
-    response_body_.pop_front();
 }
 
 int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,

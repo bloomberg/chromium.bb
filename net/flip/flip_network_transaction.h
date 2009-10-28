@@ -44,10 +44,10 @@ class FlipNetworkTransaction : public HttpTransaction, public FlipDelegate {
   virtual const HttpRequestInfo* request();
   virtual const UploadDataStream* data();
   virtual void OnRequestSent(int status);
+  virtual void OnUploadDataSent(int result);
   virtual void OnResponseReceived(HttpResponseInfo* response);
   virtual void OnDataReceived(const char* buffer, int bytes);
   virtual void OnClose(int status);
-  virtual void OnCancel();
 
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,

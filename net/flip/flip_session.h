@@ -31,18 +31,59 @@ class HttpNetworkSession;
 class HttpRequestInfo;
 class HttpResponseInfo;
 
-// A callback interface for HTTP content retrieved from the Flip stream.
+// The FlipDelegate interface is an interface so that the FlipSession
+// can interact with the provider of a given Flip stream.
 class FlipDelegate {
  public:
   virtual ~FlipDelegate() {}
+
+  // Accessors from the delegate.
+
+  // The delegate provides access to the HttpRequestInfo for use by the flip
+  // session.
   virtual const HttpRequestInfo* request() = 0;
+
+  // The delegate provides access to an UploadDataStream for use by the
+  // flip session.  If the delegate is not uploading content, this call
+  // must return NULL.
   virtual const UploadDataStream* data() = 0;
 
-  virtual void OnRequestSent(int status) = 0;
+  // Callbacks.
+
+  // Called by the FlipSession when UploadData has been sent.  If the
+  // request has no upload data, this call will never be called.  This
+  // callback may be called multiple times if large amounts of data are
+  // being uploaded.  This callback will only be called prior to the
+  // OnRequestSent callback.
+  // |result| contains the number of bytes written or an error code.
+  virtual void OnUploadDataSent(int result) = 0;
+
+  // Called by the FlipSession when the Request has been entirely sent.
+  // If the request contains upload data, all upload data has been sent.
+  // |result| contains an error code if a failure has occurred or OK
+  // on success.
+  virtual void OnRequestSent(int result) = 0;
+
+  // Called by the FlipSession when a response (e.g. a SYN_REPLY) has been
+  // received for this request.  This callback will never be called prior
+  // to the OnRequestSent() callback.
   virtual void OnResponseReceived(HttpResponseInfo* response) = 0;
+
+  // Called by the FlipSession when response data has been received for this
+  // request.  This callback may be called multiple times as data arrives
+  // from the network, and will never be called prior to OnResponseReceived.
+  // |buffer| contains the data received.  The delegate must copy any data
+  //          from this buffer before returning from this callback.
+  // |bytes| is the number of bytes received or an error.
+  //         A zero-length count does not indicate end-of-stream.
   virtual void OnDataReceived(const char* buffer, int bytes) = 0;
+
+  // Called by the FlipSession when the request is finished.  This callback
+  // will always be called at the end of the request and signals to the
+  // delegate that the delegate can be torn down.  No further callbacks to the
+  // delegate will be made after this call.
+  // |status| is an error code or OK.
   virtual void OnClose(int status) = 0;
-  virtual void OnCancel() = 0;
 };
 
 class PrioritizedIOBuffer {
