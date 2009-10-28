@@ -34,6 +34,9 @@ deps = {
   "third_party/libevent":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/libevent@" + Var("o3d_code_rev"),
 
+  "third_party/makeself":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/makeself@" + Var("o3d_code_rev"),
+
   "third_party/pdiff":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
 
