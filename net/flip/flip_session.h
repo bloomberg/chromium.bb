@@ -112,8 +112,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // status, such as "resolving host", "connecting", etc.
   LoadState GetLoadState() const;
  protected:
-  FRIEND_TEST(FlipNetworkTransactionTest, Connect);
-  FRIEND_TEST(FlipNetworkTransactionTest, ResponseWithoutSynReply);
+  friend class FlipNetworkTransactionTest;
   friend class FlipSessionPool;
   friend class HttpNetworkLayer;  // Temporary for server.
 

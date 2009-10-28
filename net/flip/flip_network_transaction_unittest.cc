@@ -88,25 +88,25 @@ class FlipNetworkTransactionTest : public PlatformTest {
  protected:
   void KeepAliveConnectionResendRequestTest(const MockRead& read_failure);
 
-  struct SimpleGetHelperResult {
+  struct TransactionHelperResult {
     int rv;
     std::string status_line;
     std::string response_data;
   };
 
-  SimpleGetHelperResult SimpleGetHelper(MockRead data_reads[]) {
-    SimpleGetHelperResult out;
+  TransactionHelperResult TransactionHelper(const HttpRequestInfo& request,
+                                            MockRead reads[],
+                                            MockWrite writes[]) {
+    TransactionHelperResult out;
+
+    // We disable SSL for this test.
+    FlipSession::SetSSLMode(false);
 
     SessionDependencies session_deps;
     scoped_ptr<FlipNetworkTransaction> trans(
         new FlipNetworkTransaction(CreateSession(&session_deps)));
 
-    HttpRequestInfo request;
-    request.method = "GET";
-    request.url = GURL("http://www.google.com/");
-    request.load_flags = 0;
-
-    StaticMockSocket data(data_reads, NULL);
+    StaticMockSocket data(reads, writes);
     session_deps.socket_factory.AddMockSocket(&data);
 
     TestCompletionCallback callback;
@@ -144,7 +144,20 @@ TEST_F(FlipNetworkTransactionTest, Constructor) {
   scoped_ptr<HttpTransaction> trans(new FlipNetworkTransaction(session));
 }
 
-TEST_F(FlipNetworkTransactionTest, Connect) {
+TEST_F(FlipNetworkTransactionTest, Get) {
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,                                        // header
+    0x01, 0x00, 0x00, 0x30,                                        // FIN, len
+    0x00, 0x00, 0x00, 0x01,                                        // stream id
+    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',                      // "hello"
+    0x00, 0x03, 'G', 'E', 'T',                                     // "bye"
+    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+    0x00, 0x01, '/',                                               // "/"
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "status"
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "200"
+  };
+
   static const unsigned char syn_reply[] = {
     0x80, 0x01, 0x00, 0x02,                                        // header
     0x00, 0x00, 0x00, 0x45,
@@ -171,17 +184,103 @@ TEST_F(FlipNetworkTransactionTest, Connect) {
     0x00, 0x00, 0x00, 0x00,
   };
 
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
+    MockWrite(true, reinterpret_cast<const char*>(body_frame),
+              sizeof(body_frame)),
+    MockWrite(true, reinterpret_cast<const char*>(fin_frame),
+              sizeof(fin_frame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  TransactionHelperResult out = TransactionHelper(request, reads, writes);
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+// Test that a simple POST works.
+TEST_F(FlipNetworkTransactionTest, Post) {
+  static const char upload[] = { "hello world" };
+
+  // Setup the request
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.upload_data = new UploadData();
+  request.upload_data->AppendBytes(upload, sizeof(upload));
+
+  // TODO(mbelshe): Hook up the write validation.
+
+  //static const unsigned char syn[] = {
+  //  0x80, 0x01, 0x00, 0x01,                                        // header
+  //  0x00, 0x00, 0x00, 0x30,                                        // FIN, len
+  //  0x00, 0x00, 0x00, 0x01,                                        // stream id
+  //  0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
+  //  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',                      // "hello"
+  //  0x00, 0x03, 'G', 'E', 'T',                                     // "bye"
+  //  0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+  //  0x00, 0x01, '/',                                               // "/"
+  //  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "status"
+  //  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "200"
+  //};
+
+  //static const unsigned char upload_frame[] = {
+  //  0x00, 0x00, 0x00, 0x01,                                        // header
+  //  0x01, 0x00, 0x00, 0x06,                                        // FIN flag
+  //  'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+  //};
+
+  // The response
+  static const unsigned char syn_reply[] = {
+    0x80, 0x01, 0x00, 0x02,                                        // header
+    0x00, 0x00, 0x00, 0x45,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
+    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
+    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
+    0x00, 0x03, '2', '0', '0',                                     // "200"
+    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "HTTP/1.1"
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
+  };
+  static const unsigned char body_frame[] = {
+    0x00, 0x00, 0x00, 0x01,                                        // header
+    0x00, 0x00, 0x00, 0x06,
+    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+  };
+  static const unsigned char fin_frame[] = {
+    0x80, 0x01, 0x00, 0x03,                                        // header
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  //MockWrite writes[] = {
+  //  MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+  //  MockWrite(true, reinterpret_cast<const char*>(upload_frame),
+  //            sizeof(upload_frame)),
+  //};
+
   MockRead data_reads[] = {
     MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
     MockRead(true, reinterpret_cast<const char*>(body_frame),
              sizeof(body_frame)),
     MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
-    MockRead(true, 0, 0),  // EOF
+    MockRead(true, 0, 0)  // EOF
   };
 
-  // We disable SSL for this test.
-  FlipSession::SetSSLMode(false);
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
+  TransactionHelperResult out = TransactionHelper(request, data_reads, NULL);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -205,14 +304,17 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
     MockRead(true, reinterpret_cast<const char*>(body_frame),
              sizeof(body_frame)),
     MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
-    MockRead(true, 0, 0),  // EOF
+    MockRead(true, 0, 0)  // EOF
   };
 
-  // We disable SSL for this test.
-  FlipSession::SetSSLMode(false);
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  TransactionHelperResult out = TransactionHelper(request, data_reads, NULL);
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
+
 
 }  // namespace net
 

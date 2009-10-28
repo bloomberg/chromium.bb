@@ -270,10 +270,13 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   flip::FlipHeaderBlock headers;
   CreateFlipHeadersFromHttpRequest(delegate->request(), &headers);
 
+  flip::FlipControlFlags flags = flip::CONTROL_FLAG_NONE;
+  if (!delegate->request()->upload_data)
+    flags = flip::CONTROL_FLAG_FIN;
+
   // Create a SYN_STREAM packet and add to the output queue.
   flip::FlipSynStreamControlFrame* syn_frame =
-      flip_framer_.CreateSynStream(stream_id, priority,
-                                   flip::CONTROL_FLAG_NONE, false, &headers);
+      flip_framer_.CreateSynStream(stream_id, priority, flags, false, &headers);
   int length = sizeof(flip::FlipFrame) + syn_frame->length();
   IOBufferWithSize* buffer =
       new IOBufferWithSize(length);
