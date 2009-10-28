@@ -96,10 +96,18 @@ class CompareFailures:
                       "Expected to timeout (deferred), but passed",
                       output)
     # Print real regressions.
-    PrintFilesFromSet(self._regressed_failures,
-                      "Regressions: Unexpected failures",
+    PrintFilesFromSet(self._regressed_text_failures,
+                      "Regressions: Unexpected text failures",
                       output,
-                      'FAIL')
+                      'TEXT')
+    PrintFilesFromSet(self._regressed_image_failures,
+                      "Regressions: Unexpected image failures",
+                      output,
+                      'IMAGE')
+    PrintFilesFromSet(self._regressed_image_plus_text_failures,
+                      "Regressions: Unexpected image + text failures",
+                      output,
+                      'IMAGE+TEXT')
     PrintFilesFromSet(self._regressed_hangs,
                       "Regressions: Unexpected timeouts",
                       output,
@@ -120,7 +128,9 @@ class CompareFailures:
     crashes = set()
     hangs = set()
     missing = set()
-    failures = set()
+    image_failures = set()
+    text_failures  = set()
+    image_plus_text_failures = set()
 
     for test, failure_type_instances in self._test_failures.iteritems():
       # Although each test can have multiple test_failures, we only put them
@@ -151,15 +161,15 @@ class CompareFailures:
       elif is_image_failure and is_text_failure:
         if (not test_expectations.FAIL in expectations and
             not test_expectations.IMAGE_PLUS_TEXT in expectations):
-            failures.add(test)
+            image_plus_text_failures.add(test)
       elif is_image_failure:
         if (not test_expectations.FAIL in expectations and
             not test_expectations.IMAGE in expectations):
-            failures.add(test)
+            image_failures.add(test)
       elif is_text_failure:
         if (not test_expectations.FAIL in expectations and
             not test_expectations.TEXT in expectations):
-            failures.add(test)
+            text_failures.add(test)
       elif is_failure:
         raise ValueError('unexpected failure type:' + f)
       worklist.remove(test)
@@ -173,13 +183,16 @@ class CompareFailures:
     self._regressed_crashes = crashes
     self._regressed_hangs = hangs
     self._missing = missing
-    self._regressed_failures = failures
+    self._regressed_image_failures = image_failures
+    self._regressed_text_failures = text_failures
+    self._regressed_image_plus_text_failures = image_plus_text_failures
 
   def GetRegressions(self):
     """Returns a set of regressions from the test expectations. This is
     used to determine which tests to list in results.html and the
     right script exit code for the build bots. The list does not
     include the unexpected passes."""
-    return (self._regressed_failures | self._regressed_hangs |
+    return (self._regressed_text_failures | self._regressed_image_failures |
+            self._regressed_image_plus_text_failures | self._regressed_hangs |
             self._regressed_crashes | self._missing)
 
