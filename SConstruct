@@ -718,7 +718,7 @@ mac_env = unix_like_env.Clone(
 )
 
 mac_env.Append(
-    CCFLAGS = ['-mmacosx-version-min=10.4'],
+    CCFLAGS = ['-mmacosx-version-min=10.4', '-m32'],
     # TODO(bradnelson): remove UNIX_LIKE_CFLAGS when scons bug is fixed
     CPPDEFINES = [['NACL_WINDOWS', '0'],
                   ['NACL_OSX', '1'],
@@ -726,7 +726,7 @@ mac_env.Append(
                   ['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4'],
                   # defining _DARWIN_C_SOURCE breaks 10.4
                   #['_DARWIN_C_SOURCE', '1'],
-                  ['__STDC_LIMIT_MACROS', '1'],
+                  ['__STDC_LIMIT_MACROS', '1']
                   ],
 )
 
