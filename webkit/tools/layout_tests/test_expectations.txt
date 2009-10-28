@@ -2676,7 +2676,7 @@ BUG10760 LINUX MAC : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FA
 
 // New failures from WebKit Merge 42671:42725
 BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
-BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
+BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT FAIL
 
 // New failures from WebKit merge 42725:42805
 // WebKit change http://trac.webkit.org/changeset/42785
@@ -3291,5 +3291,10 @@ BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS F
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH FAIL PASS
 
-// WebKit 50158:10171
+// WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
+
+//  WebKit roll 50180:50186
+BUG_JORLOW LINUX WIN : LayoutTests/fast/repaint/inline-relative-positioned.html = FAIL
+BUG_JORLOW LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = FAIL
+BUG_JORLOW MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html = FAIL
