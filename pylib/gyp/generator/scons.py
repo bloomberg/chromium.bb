@@ -360,7 +360,17 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            'config = configurations[env[\'CONFIG_NAME\']]\n'
            'env.Append(**config[\'Append\'])\n'
            'env.FilterOut(**config[\'FilterOut\'])\n'
-           'env.Replace(**config[\'Replace\'])\n'
+           'env.Replace(**config[\'Replace\'])\n')
+
+  fp.write('\n'
+           '# Scons forces -fPIC for SHCCFLAGS on some platforms.\n'
+           '# Disable that so we can control it from cflags in gyp.\n'
+           '# Note that Scons itself is inconsistent with its -fPIC\n'
+           '# setting. SHCCFLAGS forces -fPIC, and SHCFLAGS does not.\n'
+           '# This will make SHCCFLAGS consistent with SHCFLAGS.\n'
+           'env[\'SHCCFLAGS\'] = [\'$CCFLAGS\']\n')
+
+  fp.write('\n'
            'for _var in config[\'ImportExternal\']:\n'
            '  if _var in ARGUMENTS:\n'
            '    env[_var] = ARGUMENTS[_var]\n'
