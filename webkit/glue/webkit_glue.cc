@@ -68,6 +68,7 @@ static const char kDataUrlPattern[] = "data:";
 static const std::string::size_type kDataUrlPatternSize =
     arraysize(kDataUrlPattern) - 1;
 static const char kFileTestPrefix[] = "(file test):";
+static const char kChrome1ProductString[] = "Chrome/1.0.154.53";
 
 }
 
@@ -322,6 +323,7 @@ struct UserAgentState {
   }
 
   std::string user_agent;
+  std::string mimic_chrome1_user_agent;
   bool user_agent_requested;
   bool user_agent_is_overridden;
 };
@@ -381,7 +383,7 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
-void BuildUserAgent(std::string* result) {
+void BuildUserAgent(bool mimic_chrome1, std::string* result) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
       "Windows";
@@ -403,13 +405,17 @@ void BuildUserAgent(std::string* result) {
   // maximally compatible with Safari, we hope!!
   std::string product;
 
-  scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  if (version_info.get()) {
-    product = "Chrome/" + WideToASCII(version_info->product_version());
+  if (mimic_chrome1) {
+    product = kChrome1ProductString;
   } else {
-    DLOG(WARNING) << "Unknown product version";
-    product = "Chrome/0.0.0.0";
+    scoped_ptr<FileVersionInfo> version_info(
+        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+    if (version_info.get()) {
+      product = "Chrome/" + WideToASCII(version_info->product_version());
+    } else {
+      DLOG(WARNING) << "Unknown product version";
+      product = "Chrome/0.0.0.0";
+    }
   }
 
   // Derived from Safari's UA string.
@@ -430,7 +436,7 @@ void BuildUserAgent(std::string* result) {
 }
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(&g_user_agent->user_agent);
+  BuildUserAgent(false, &g_user_agent->user_agent);
 }
 
 }  // namespace
@@ -449,6 +455,18 @@ const std::string& GetUserAgent(const GURL& url) {
   if (g_user_agent->user_agent.empty())
     SetUserAgentToDefault();
   g_user_agent->user_agent_requested = true;
+  if (!g_user_agent->user_agent_is_overridden) {
+    // For cnn.com, which uses pointroll.com to serve their front door promo,
+    // we must spoof Chrome 1.0 in order to avoid blank page due to mis-sniffing
+    // of the UA on the server side (http://crbug.com/25934)
+    // TODO(dglazkov): Remove this once CNN's front door promo is over or when
+    // pointroll fixes their sniffing.
+    if (MatchPattern(url.host(), "*.pointroll.com")) {
+      if (g_user_agent->mimic_chrome1_user_agent.empty())
+        BuildUserAgent(true, &g_user_agent->mimic_chrome1_user_agent);
+      return g_user_agent->mimic_chrome1_user_agent;
+    }
+  }
   return g_user_agent->user_agent;
 }
 
