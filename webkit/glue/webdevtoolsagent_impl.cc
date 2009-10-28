@@ -278,7 +278,7 @@ void WebDevToolsAgentImpl::setApuAgentEnabled(bool enable) {
     if (!resource_tracking_was_enabled_) {
       // TODO(knorton): Introduce some kind of agents dependency here so that
       // user could turn off resource tracking while apu agent is on.
-      ic->enableResourceTracking(false);
+      ic->enableResourceTracking(false, false);
     }
   } else {
     ic->stopTimelineProfiler();
