@@ -62,22 +62,21 @@ SCREEN_BPP = 32
 join = os.path.join
 
 if util.IsWindows():
-  IMAGE_DIFF_PATH = join(const.O3D_PATH, 'third_party', 'pdiff', 'files', 
+  IMAGE_DIFF_PATH = join(const.BASE_PATH, 'third_party', 'pdiff', 'files',
                          'bin', 'win', 'perceptualdiff.exe')
 elif util.IsMac():
-  IMAGE_DIFF_PATH = join(const.O3D_PATH, 'third_party', 'pdiff', 'files',
+  IMAGE_DIFF_PATH = join(const.BASE_PATH, 'third_party', 'pdiff', 'files',
                          'bin', 'mac', 'perceptualdiff')
 else:
-  IMAGE_DIFF_PATH = join(const.O3D_PATH, 'third_party', 'pdiff', 'files',
+  IMAGE_DIFF_PATH = join(const.BASE_PATH, 'third_party', 'pdiff', 'files',
                          'bin', 'linux', 'perceptualdiff')
 
-SELENIUM_TEST_RUNNER_PATH = join(const.O3D_PATH, 'o3d', 'tests', 'selenium',
-                                 'main.py')
+SELENIUM_TEST_RUNNER_PATH = join(const.TEST_PATH, 'selenium', 'main.py')
 
-SELENIUM_JAR_PATH = join(const.O3D_PATH, 'third_party', 'selenium_rc', 'files',
+SELENIUM_JAR_PATH = join(const.BASE_PATH, 'third_party', 'selenium_rc', 'files',
                          'selenium-server', 'selenium-server.jar')
 
-O3D_REFERENCE_IMAGES_PATH = join(const.O3D_PATH, 'o3d', 'o3d_assets', 'tests',
+O3D_REFERENCE_IMAGES_PATH = join(const.O3D_PATH, 'o3d_assets', 'tests',
                                  'screenshots')
 
 SCREENSHOTS_PATH = join(const.RESULTS_PATH,'screenshots')
@@ -193,23 +192,17 @@ def RunTest(browser):
   Returns:
     True on success.
   """
-  # Run selenium test.
-  os.chdir(const.AUTO_PATH)
-
   if util.IsWindows(): 
     if not run_util.EnsureWindowsScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT, 
                                                   SCREEN_BPP):
-      logging.error('Failed to configure screen resolution.')
-      return 1
+      logging.warn('Could not detect/change screen resolution.')
 
-  
-    
   # Clear all screenshots.
   logging.info('** Deleting previous screenshots.')
   if os.path.exists(SCREENSHOTS_PATH):
     shutil.rmtree(SCREENSHOTS_PATH)
-    
-  os.makedirs(SCREENSHOTS_PATH)  
+
+  os.makedirs(SCREENSHOTS_PATH)
   
   logging.info('** Running selenium tests...')
 
@@ -263,7 +256,7 @@ def main(argv):
     config_path = argv[1]
   else:
     # Use default config file.
-    config_path = os.path.join(const.HOME_PATH, 'test_config.txt')
+    config_path = os.path.join(const.HOME, 'test_config.txt')
 
   # Uninstall/Install plugin.
   if not run_util.UninstallO3DPlugin():
