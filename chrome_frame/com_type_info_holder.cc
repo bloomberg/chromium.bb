@@ -38,6 +38,7 @@ TypeInfoNameCache* TypeInfoCache::Lookup(const IID* iid) {
     } else {
       NOTREACHED();
       delete tih;
+      tih = NULL;
     }
   } else {
     tih = it->second;
