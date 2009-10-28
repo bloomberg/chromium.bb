@@ -311,8 +311,15 @@ void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
     // The state of the tab (as seen from the extension point of view) has
     // changed.  Send a notification to the extension.
     ListValue args;
+
+    // First arg: The id of the tab that changed.
     args.Append(Value::CreateIntegerValue(tab_id));
+
+    // Second arg: An object containing the changes to the tab state.
     args.Append(changed_properties);
+
+    // Third arg: An object containing the state of the tab.
+    args.Append(ExtensionTabUtil::CreateTabValue(contents));
 
     std::string json_args;
     base::JSONWriter::Write(&args, false, &json_args);

@@ -369,7 +369,8 @@ const char* BrowserEventAutomationProxy::events_[] = {
       "'selected':true,'url':'http://www.google.com'}]\"]",
 
   "[\"tabs.onUpdated\", \"[42, {'status': 'complete',"
-      "'url':'http://www.google.com'}]\"]",
+      "'url':'http://www.google.com'}, {'id\':42,'index':1,'windowId':1,"
+      "'selected':true,'url':'http://www.google.com'}]\"]",
 
   "[\"tabs.onMoved\", \"[42, {'windowId':1,'fromIndex':1,'toIndex':2}]\"]",
 

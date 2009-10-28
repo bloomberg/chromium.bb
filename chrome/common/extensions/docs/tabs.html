@@ -4138,7 +4138,7 @@ For example:
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object changeInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object changeInfo, Tab tab</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -4191,7 +4191,7 @@ For example:
             </dl>
           </dd>
         </div>
-                  </div><div jsinstance="*1">
+                  </div><div jsinstance="1">
                     <div>
           <dt>
             <var>changeInfo</var>
@@ -4217,12 +4217,10 @@ For example:
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>Lists the changes to the state of the tab that was updated.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -4309,6 +4307,47 @@ For example:
             </dl>
           </dd>
         </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="*2">
+                    <div>
+          <dt>
+            <var>tab</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="tabs.html#type-Tab">Tab</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Gives the state of the tab that was updated.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
             </dl>
           </dd>

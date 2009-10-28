@@ -10,7 +10,7 @@ var testUrl = 'http://a.com:1337' + relativePath;
 var testFailureUrl = 'http://b.com:1337' + relativePath;
 var testingFailure = false;
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status == 'complete')
     return;
   if (testingFailure) {
