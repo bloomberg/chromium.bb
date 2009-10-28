@@ -3175,6 +3175,7 @@ BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TI
 
 // WebKit roll 50101:50158
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL CRASH
+BUG_JORLOW LINUX DEBUG : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = FAIL
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL CRASH
 BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 
@@ -3240,6 +3241,7 @@ BUG_JORLOW LINUX WIN : LayoutTests/fast/repaint/inline-relative-positioned.html 
 
 // Flaky starting around WebKit merge to r50101
 BUG_JAPHET LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = PASS FAIL
+BUG_JAPHET LINUX DEBUG : LayoutTests/fast/multicol/column-rules.html = PASS FAIL
 
 // Not sure when this started being flaky
 BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
