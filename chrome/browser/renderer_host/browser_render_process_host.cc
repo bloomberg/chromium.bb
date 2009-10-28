@@ -525,6 +525,10 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kEnableDatabases,
     switches::kDisableByteRangeSupport,
     switches::kEnableWebSockets,
+#if defined(OS_MACOSX)
+    // Allow this to be set when invoking the browser and relayed along.
+    switches::kEnableSandboxLogging,
+#endif
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
