@@ -218,6 +218,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_hidden_(false),
       about_to_validate_and_paint_(false),
       close_on_deactivate_(false),
+      being_destroyed_(false),
       tooltip_hwnd_(NULL),
       tooltip_showing_(false),
       shutdown_factory_(this),
@@ -620,7 +621,13 @@ void RenderWidgetHostViewWin::DidScrollRect(
 void RenderWidgetHostViewWin::RenderViewGone() {
   // TODO(darin): keep this around, and draw sad-tab into it.
   UpdateCursorIfOverSelf();
+  being_destroyed_ = true;
   DestroyWindow();
+}
+
+void RenderWidgetHostViewWin::WillDestroyRenderWidget(RenderWidgetHost* rwh) {
+  if (rwh == render_widget_host_)
+    render_widget_host_ = NULL;
 }
 
 void RenderWidgetHostViewWin::Destroy() {
@@ -630,6 +637,7 @@ void RenderWidgetHostViewWin::Destroy() {
   // triggering further destructions.  The deletion of this is handled by
   // OnFinalMessage();
   close_on_deactivate_ = false;
+  being_destroyed_ = true;
   DestroyWindow();
 }
 
@@ -827,19 +835,23 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
-  render_widget_host_->GotFocus();
+  if (render_widget_host_)
+    render_widget_host_->GotFocus();
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
-  render_widget_host_->Blur();
+  if (render_widget_host_)
+    render_widget_host_->Blur();
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
-  render_widget_host_->LostCapture();
+  if (render_widget_host_)
+    render_widget_host_->LostCapture();
 }
 
 void RenderWidgetHostViewWin::OnCancelMode() {
-  render_widget_host_->LostCapture();
+  if (render_widget_host_)
+    render_widget_host_->LostCapture();
 
   if (close_on_deactivate_ && shutdown_factory_.empty()) {
     // Dismiss popups and menus.  We do this asynchronously to avoid changing
@@ -896,7 +908,8 @@ void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
 }
 
 void RenderWidgetHostViewWin::OnThemeChanged() {
-  render_widget_host_->SystemThemeChanged();
+  if (render_widget_host_)
+    render_widget_host_->SystemThemeChanged();
 }
 
 LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
@@ -1048,8 +1061,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
       // If we get clicked on, where the resize corner is drawn, we delegate the
       // message to the root window, with the proper HTBOTTOMXXX wparam so that
       // Windows can take care of the resizing for us.
-      if (render_widget_host_->GetRootWindowResizerRect().
-          Contains(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam))) {
+      if (render_widget_host_ &&
+          render_widget_host_->GetRootWindowResizerRect().
+              Contains(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam))) {
         WPARAM wparam = HTBOTTOMRIGHT;
         if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
           wparam = HTBOTTOMLEFT;
@@ -1113,6 +1127,9 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
     return ::SendMessage(parent_hwnd_, message, wparam, lparam);
   }
 
+  if (!render_widget_host_)
+    return 0;
+
   // Bug 1845: we need to update the text direction when a user releases
   // either a right-shift key or a right-control key after pressing both of
   // them. So, we just update the text direction while a user is pressing the
@@ -1145,8 +1162,10 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
     }
   }
 
-  render_widget_host_->ForwardKeyboardEvent(
-      NativeWebKeyboardEvent(m_hWnd, message, wparam, lparam));
+  if (render_widget_host_) {
+    render_widget_host_->ForwardKeyboardEvent(
+        NativeWebKeyboardEvent(m_hWnd, message, wparam, lparam));
+  }
   return 0;
 }
 
@@ -1189,7 +1208,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
                         reinterpret_cast<LPARAM>(&new_message));
   }
 
-  if (!handled_by_TabContents) {
+  if (!handled_by_TabContents && render_widget_host_) {
     render_widget_host_->ForwardWheelEvent(
         WebInputEventFactory::mouseWheelEvent(m_hWnd, message, wparam,
                                               lparam));
@@ -1266,7 +1285,21 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 }
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
-  render_widget_host_->ViewDestroyed();
+  // When the render widget host is being destroyed, it ends up calling
+  // WillDestroyRenderWidget (through the RENDER_WIDGET_HOST_DESTROYED
+  // notification) which NULLs render_widget_host_.
+  // Note: the following bug http://crbug.com/24248 seems to report that
+  // OnFinalMessage is called with a deleted |render_widget_host_|. It is not
+  // clear how this could happen, hence the NULLing of render_widget_host_
+  // above.
+  if (!render_widget_host_ && !being_destroyed_) {
+    // If you hit this NOTREACHED, please add a comment to report it on
+    // http://crbug.com/24248, including what you did when it happened and if
+    // you can repro.
+    NOTREACHED();
+  }
+  if (render_widget_host_)
+    render_widget_host_->ViewDestroyed();
   delete this;
 }
 
@@ -1288,6 +1321,8 @@ void RenderWidgetHostViewWin::TrackMouseLeave(bool track) {
 }
 
 bool RenderWidgetHostViewWin::Send(IPC::Message* message) {
+  if (!render_widget_host_)
+    return false;
   return render_widget_host_->Send(message);
 }
 
@@ -1322,6 +1357,9 @@ void RenderWidgetHostViewWin::ResetTooltip() {
 void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
                                                           WPARAM wparam,
                                                           LPARAM lparam) {
+  if (!render_widget_host_)
+    return;
+
   WebMouseEvent event(
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
   switch (event.type) {
@@ -1353,6 +1391,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
 
 void RenderWidgetHostViewWin::ShutdownHost() {
   shutdown_factory_.RevokeAll();
-  render_widget_host_->Shutdown();
+  if (render_widget_host_)
+    render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
 }

@@ -103,6 +103,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void DidPaintRect(const gfx::Rect& rect);
   virtual void DidScrollRect(const gfx::Rect& rect, int dx, int dy);
   virtual void RenderViewGone();
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {};
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);

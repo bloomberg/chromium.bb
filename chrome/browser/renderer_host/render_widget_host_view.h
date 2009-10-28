@@ -122,6 +122,9 @@ class RenderWidgetHostView {
   // Notifies the View that the renderer has ceased to exist.
   virtual void RenderViewGone() = 0;
 
+  // Notifies the View that the renderer will be delete soon.
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) = 0;
+
   // Tells the View to destroy itself.
   virtual void Destroy() = 0;
 

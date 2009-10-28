@@ -64,6 +64,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void DidScrollRect(const gfx::Rect& rect, int dx, int dy);
   virtual void RenderViewGone();
   virtual void Destroy();
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual void SelectionChanged(const std::string& text);
   virtual void ShowingContextMenu(bool showing);

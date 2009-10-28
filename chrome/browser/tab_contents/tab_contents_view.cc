@@ -16,6 +16,8 @@ TabContentsView::TabContentsView(TabContents* tab_contents)
 }
 
 void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
+  if (host->view())
+    host->view()->WillDestroyRenderWidget(host);
   delegate_view_helper_.RenderWidgetHostDestroyed(host);
 }
 
