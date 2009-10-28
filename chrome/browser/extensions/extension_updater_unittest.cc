@@ -24,6 +24,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "libxml/globals.h"
 
+#if defined(OS_MACOSX)
+// These tests crash frequently on Mac 10.5 Tests debug. http://crbug.com/26035.
+#define MAYBE_TestBlacklistDownloading DISABLED_TestBlacklistDownloading
+#define MAYBE_TestBlacklistUpdateCheckRequests DISABLED_TestBlacklistUpdateCheckRequests
+#else
+#define MAYBE_TestBlacklistDownloading TestBlacklistDownloading
+#define MAYBE_TestBlacklistUpdateCheckRequests TestBlacklistUpdateCheckRequests
+#endif
+
 static int expected_load_flags =
     net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
 
@@ -588,8 +597,8 @@ TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
   ExtensionUpdaterTest::TestExtensionUpdateCheckRequests();
 }
 
-// This test is disabled, see bug 26035
-TEST(ExtensionUpdaterTest, DISABLED_TestBlacklistUpdateCheckRequests) {
+// This test is disabled on Mac, see http://crbug.com/26035.
+TEST(ExtensionUpdaterTest, MAYBE_TestBlacklistUpdateCheckRequests) {
   ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
 }
 
@@ -605,8 +614,8 @@ TEST(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading();
 }
 
-// This test is disabled, see bug 26035
-TEST(ExtensionUpdaterTest, DISABLED_TestBlacklistDownloading) {
+// This test is disabled on Mac, see http://crbug.com/26035.
+TEST(ExtensionUpdaterTest, MAYBE_TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
