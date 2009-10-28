@@ -84,7 +84,6 @@ BUG24182 WIN SLOW : LayoutTests/svg/hixie/perf/007.xml = PASS
 BUG24182 WIN LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS
 BUG24182 MAC SLOW : LayoutTests/dom/html/level2/html/HTMLImageElement01.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS
-BUG24182 SLOW DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 BUG24182 SLOW WONTFIX DEBUG : LayoutTests/platform/mac-snowleopard/accessibility/aria-list-and-listitem.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/local/file-url-sent-as-referer.html = PASS
@@ -704,20 +703,33 @@ BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 // I'm marking them as deferred for now, but we should do something with them.
 BUG24192 SKIP : chrome/http/mime = PASS
 
-// These tests all depend on DOM Storage events which are not yet supported.
-BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT FAIL
+// These tests all depend on SessionStorage events which are not yet supported.
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
-BUG4360 MAC : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/index-get-and-set.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-markup.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setattribute.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/localstorage/string-conversion.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html = FAIL
-
-// Depends on SessionStorage.  I'm not sure if this is working yet, but I don't think we need to SKIP it.
+BUG4360 : LayoutTests/storage/domstorage/documentURI.html = FAIL
+BUG4360 : LayoutTests/storage/domstorage/complex-values.html = FAIL
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
+
+// Flaky DOM Storage tests.
+//BUG_JORLOW : LayoutTests/storage/domstorage/quota.html = CRASH PASS
+//BUG_JORLOW DEBUG : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = PASS CRASH
+
+// Depends on URL support in storage events.
+BUG_JORLOW : LayoutTests/storage/domstorage/localstorage/iframe-events.html = FAIL
+
+// function(){} is serialized as "() {}" in JSC and "(){}" in V8.  Need to decide what to do with that.
+BUG_JORLOW : LayoutTests/storage/domstorage/localstorage/string-conversion.html = FAIL
+
+// TODO(jorlow): Triage.
+BUG_JORLOW MAC : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
+
+// TODO(jorlow): Is this really still slow?  If so, why?
+BUG_JORLOW SLOW DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 
 // HTML5 databases are not supported in test_shell yet
 BUG4359 SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
@@ -2615,7 +2627,6 @@ BUG9798 LINUX SLOW : LayoutTests/transitions/transition-timing-function.html = F
 BUG9798 MAC : LayoutTests/fast/forms/search-placeholder-value-changed.html = CRASH PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
 BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = PASS TIMEOUT
-BUG9798 DEBUG : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = PASS CRASH
 BUG9798 LINUX : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-empty-content-type.html = PASS TIMEOUT
 BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-minmax.html = PASS CRASH
 BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-appearance-default-bkcolor.html = PASS CRASH
@@ -3182,10 +3193,6 @@ BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = C
 // Incorrect baseline removed.
 BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
 
-// Webkit roll 49926:49941
-BUG25611 : LayoutTests/storage/domstorage/complex-values.html = FAIL
-BUG25611 : LayoutTests/storage/domstorage/quota.html = CRASH PASS
-
 // Webkit roll 49947:49957
 BUG_JOHNNYG WIN LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001.html = CRASH PASS
 
@@ -3218,8 +3225,6 @@ BUG25747 MAC : LayoutTests/fast/forms/tabbing-input-iframe.html = CRASH PASS
 BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html = CRASH PASS
 
 // WebKit roll 50073:50101
-// jorlow to add expected results.
-BUG_JORLOW : LayoutTests/storage/domstorage/documentURI.html = FAIL
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
 BUG25880 WIN LINUX : LayoutTests/editing/style/remove-nested-inline-styles.html = FAIL
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
