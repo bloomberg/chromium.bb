@@ -57,17 +57,6 @@ class O3DCmdHelper : public CommandBufferHelper {
 
   // ------------------ Individual commands ----------------------
 
-  void Noop(uint32 skip_count) {
-    o3d::Noop& cmd = GetImmediateCmdSpace<o3d::Noop>(
-        skip_count * sizeof(CommandBufferEntry));
-    cmd.Init(skip_count);
-  }
-
-  void SetToken(uint32 token) {
-    o3d::SetToken& cmd = GetCmdSpace<o3d::SetToken>();
-    cmd.Init(token);
-  }
-
   void BeginFrame() {
     o3d::BeginFrame& cmd = GetCmdSpace<o3d::BeginFrame>();
     cmd.Init();

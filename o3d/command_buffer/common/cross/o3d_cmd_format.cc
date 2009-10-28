@@ -39,19 +39,18 @@ namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
-const char* GetCommandName(CommandId id) {
+const char* GetCommandName(CommandId command_id) {
   static const char* const names[] = {
-
   #define O3D_COMMAND_BUFFER_CMD_OP(name) # name,
 
   O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
   #undef O3D_COMMAND_BUFFER_CMD_OP
-
   };
 
-  return (static_cast<int>(id) >= 0 && static_cast<int>(id) < kNumCommands) ?
-      names[id] : "*unknown-command*";
+  int id = static_cast<int>(command_id);
+  return (id > kStartPoint && id < kNumCommands) ?
+      names[id - kStartPoint - 1] : "*unknown-command*";
 }
 
 }  // namespace cmd

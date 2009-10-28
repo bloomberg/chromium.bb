@@ -30,55 +30,30 @@
  */
 
 
-// This file contains the GAPI decoder class.
+// This file contains the binary format definition of the command buffer and
+// command buffer commands.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
-
-#include "core/cross/types.h"
-#include "command_buffer/service/cross/common_decoder.h"
-#include "command_buffer/common/cross/o3d_cmd_format.h"
+#include "command_buffer/common/cross/cmd_buffer_common.h"
 
 namespace o3d {
 namespace command_buffer {
-namespace o3d {
+namespace cmd {
 
-class GAPIInterface;
+const char* GetCommandName(CommandId command_id) {
+  static const char* const names[] = {
+  #define COMMON_COMMAND_BUFFER_CMD_OP(name) # name,
 
-// This class implements the AsyncAPIInterface interface, decoding GAPI
-// commands and sending them to a GAPI interface.
-class GAPIDecoder : public CommonDecoder {
- public:
-  typedef parse_error::ParseError ParseError;
+  COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
 
-  explicit GAPIDecoder(GAPIInterface *gapi) : gapi_(gapi) {}
-  virtual ~GAPIDecoder() {}
+  #undef COMMON_COMMAND_BUFFER_CMD_OP
+  };
 
-  // Overridden from AsyncAPIInterface.
-  virtual ParseError DoCommand(unsigned int command,
-                               unsigned int arg_count,
-                               const void* args);
+  int id = static_cast<int>(command_id);
+  return (id >= 0 && id < kNumCommands) ? names[id] : "*unknown-command*";
+}
 
-  // Overridden from AsyncAPIInterface.
-  virtual const char* GetCommandName(unsigned int command_id) const;
-
- private:
-  // Generate a member function prototype for each command in an automated and
-  // typesafe way.
-  #define O3D_COMMAND_BUFFER_CMD_OP(name) \
-     ParseError Handle ## name(           \
-       unsigned int arg_count,            \
-       const o3d::name& args);            \
-
-  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
-
-  #undef O3D_COMMAND_BUFFER_CMD_OP
-
-  GAPIInterface *gapi_;
-};
-
-}  // namespace o3d
+}  // namespace cmd
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
+

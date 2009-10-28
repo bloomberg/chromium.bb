@@ -57,6 +57,14 @@
                 '../../<(glewdir)/lib/glew32.lib',
               ],
             },
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  "../../<(glewdir)/bin/glew32.dll",
+                ]
+              },
+            ],
           },
         ],
       ],

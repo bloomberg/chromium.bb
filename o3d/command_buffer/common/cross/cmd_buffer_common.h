@@ -171,7 +171,7 @@ namespace cmd {
   OP(SetToken)                      /*  1 */ \
 
 // Common commands.
-enum CommonCommandId {
+enum CommandId {
   #define COMMON_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
   COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
@@ -179,10 +179,65 @@ enum CommonCommandId {
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
   kNumCommands,
-  kLastCommonId = 1023,  // reserver 1024 spaces for common commands
+  kLastCommonId = 1023,  // reserve 1024 spaces for common commands.
 };
 
 COMPILE_ASSERT(kNumCommands - 1 <= kLastCommonId, Too_many_common_commands);
+
+const char* GetCommandName(CommandId id);
+
+struct Noop {
+  typedef Noop ValueType;
+  static const CommandId kCmdId = kNoop;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+
+  void SetHeader(uint32 skip_count) {
+    header.Init(kCmdId, skip_count + 1);
+  }
+
+  void Init(uint32 skip_count) {
+    SetHeader(skip_count);
+  }
+
+  static void* Set(void* cmd, uint32 skip_count) {
+    static_cast<ValueType*>(cmd)->Init(skip_count);
+    return NextImmediateCmdAddress<ValueType>(
+        cmd, skip_count * sizeof(CommandBufferEntry));  // NOLINT
+  }
+
+  CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Noop) == 4, Sizeof_Noop_is_not_4);
+COMPILE_ASSERT(offsetof(Noop, header) == 0, Offsetof_Noop_header_not_0);
+
+struct SetToken {
+  typedef SetToken ValueType;
+  static const CommandId kCmdId = kSetToken;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _token) {
+    SetHeader();
+    token = _token;
+  }
+  static void* Set(void* cmd, uint32 token) {
+    static_cast<ValueType*>(cmd)->Init(token);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 token;
+};
+
+COMPILE_ASSERT(sizeof(SetToken) == 8, Sizeof_SetToken_is_not_8);
+COMPILE_ASSERT(offsetof(SetToken, header) == 0,
+               Offsetof_SetToken_header_not_0);
+COMPILE_ASSERT(offsetof(SetToken, token) == 4,
+               Offsetof_SetToken_token_not_4);
 
 }  // namespace cmd
 

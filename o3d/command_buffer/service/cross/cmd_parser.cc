@@ -87,12 +87,16 @@ parse_error::ParseError CommandParser::ProcessCommand() {
   //     It seems like we need an official way to turn on a debug mode and
   //     get these errors.
   if (result != parse_error::kParseNoError) {
-    DLOG(INFO)
-        << "Error: " << result << " for Command "
-        << o3d::GetCommandName(static_cast<o3d::CommandId>(header.command));
+    ReportError(header.command, result);
   }
   get_ = (get + header.size) % entry_count_;
   return result;
+}
+
+void CommandParser::ReportError(unsigned int command_id,
+                                parse_error::ParseError result) {
+  DLOG(INFO) << "Error: " << result << " for Command "
+             << handler_->GetCommandName(command_id);
 }
 
 // Processes all the commands, while the buffer is not empty. Stop if an error

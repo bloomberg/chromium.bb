@@ -74,75 +74,73 @@ namespace o3d {
 //
 // NOTE: THE ORDER OF THESE MUST NOT CHANGE (their id is derived by order)
 #define O3D_COMMAND_BUFFER_CMDS(OP) \
-  OP(Noop)                          /* 1024 */ \
-  OP(SetToken)                      /* 1025 */ \
-  OP(BeginFrame)                    /* 1026 */ \
-  OP(EndFrame)                      /* 1027 */ \
-  OP(Clear)                         /* 1028 */ \
-  OP(CreateVertexBuffer)            /* 1029 */ \
-  OP(DestroyVertexBuffer)           /* 1030 */ \
-  OP(SetVertexBufferData)           /* 1031 */ \
-  OP(SetVertexBufferDataImmediate)  /* 1032 */ \
-  OP(GetVertexBufferData)           /* 1033 */ \
-  OP(CreateIndexBuffer)             /* 1034 */ \
-  OP(DestroyIndexBuffer)            /* 1035 */ \
-  OP(SetIndexBufferData)            /* 1036 */ \
-  OP(SetIndexBufferDataImmediate)   /* 1037 */ \
-  OP(GetIndexBufferData)            /* 1038 */ \
-  OP(CreateVertexStruct)            /* 1039 */ \
-  OP(DestroyVertexStruct)           /* 1040 */ \
-  OP(SetVertexInput)                /* 1041 */ \
-  OP(SetVertexStruct)               /* 1042 */ \
-  OP(Draw)                          /* 1043 */ \
-  OP(DrawIndexed)                   /* 1044 */ \
-  OP(CreateEffect)                  /* 1045 */ \
-  OP(CreateEffectImmediate)         /* 1046 */ \
-  OP(DestroyEffect)                 /* 1047 */ \
-  OP(SetEffect)                     /* 1048 */ \
-  OP(GetParamCount)                 /* 1049 */ \
-  OP(CreateParam)                   /* 1050 */ \
-  OP(CreateParamByName)             /* 1051 */ \
-  OP(CreateParamByNameImmediate)    /* 1052 */ \
-  OP(DestroyParam)                  /* 1053 */ \
-  OP(SetParamData)                  /* 1054 */ \
-  OP(SetParamDataImmediate)         /* 1055 */ \
-  OP(GetParamDesc)                  /* 1056 */ \
-  OP(GetStreamCount)                /* 1057 */ \
-  OP(GetStreamDesc)                 /* 1058 */ \
-  OP(DestroyTexture)                /* 1059 */ \
-  OP(CreateTexture2d)               /* 1060 */ \
-  OP(CreateTexture3d)               /* 1061 */ \
-  OP(CreateTextureCube)             /* 1062 */ \
-  OP(SetTextureData)                /* 1063 */ \
-  OP(SetTextureDataImmediate)       /* 1064 */ \
-  OP(GetTextureData)                /* 1065 */ \
-  OP(CreateSampler)                 /* 1066 */ \
-  OP(DestroySampler)                /* 1067 */ \
-  OP(SetSamplerStates)              /* 1068 */ \
-  OP(SetSamplerBorderColor)         /* 1069 */ \
-  OP(SetSamplerTexture)             /* 1070 */ \
-  OP(SetViewport)                   /* 1071 */ \
-  OP(SetScissor)                    /* 1072 */ \
-  OP(SetPointLineRaster)            /* 1073 */ \
-  OP(SetPolygonRaster)              /* 1074 */ \
-  OP(SetPolygonOffset)              /* 1075 */ \
-  OP(SetAlphaTest)                  /* 1076 */ \
-  OP(SetDepthTest)                  /* 1077 */ \
-  OP(SetStencilTest)                /* 1078 */ \
-  OP(SetBlending)                   /* 1079 */ \
-  OP(SetBlendingColor)              /* 1080 */ \
-  OP(SetColorWrite)                 /* 1081 */ \
-  OP(CreateRenderSurface)           /* 1082 */ \
-  OP(DestroyRenderSurface)          /* 1083 */ \
-  OP(CreateDepthSurface)            /* 1084 */ \
-  OP(DestroyDepthSurface)           /* 1085 */ \
-  OP(SetRenderSurface)              /* 1086 */ \
-  OP(SetBackSurfaces)               /* 1087 */ \
+  OP(BeginFrame)                    /* 1024 */ \
+  OP(EndFrame)                      /* 1025 */ \
+  OP(Clear)                         /* 1026 */ \
+  OP(CreateVertexBuffer)            /* 1027 */ \
+  OP(DestroyVertexBuffer)           /* 1028 */ \
+  OP(SetVertexBufferData)           /* 1029 */ \
+  OP(SetVertexBufferDataImmediate)  /* 1030 */ \
+  OP(GetVertexBufferData)           /* 1031 */ \
+  OP(CreateIndexBuffer)             /* 1032 */ \
+  OP(DestroyIndexBuffer)            /* 1033 */ \
+  OP(SetIndexBufferData)            /* 1034 */ \
+  OP(SetIndexBufferDataImmediate)   /* 1035 */ \
+  OP(GetIndexBufferData)            /* 1036 */ \
+  OP(CreateVertexStruct)            /* 1037 */ \
+  OP(DestroyVertexStruct)           /* 1038 */ \
+  OP(SetVertexInput)                /* 1039 */ \
+  OP(SetVertexStruct)               /* 1040 */ \
+  OP(Draw)                          /* 1041 */ \
+  OP(DrawIndexed)                   /* 1042 */ \
+  OP(CreateEffect)                  /* 1043 */ \
+  OP(CreateEffectImmediate)         /* 1044 */ \
+  OP(DestroyEffect)                 /* 1045 */ \
+  OP(SetEffect)                     /* 1046 */ \
+  OP(GetParamCount)                 /* 1047 */ \
+  OP(CreateParam)                   /* 1048 */ \
+  OP(CreateParamByName)             /* 1049 */ \
+  OP(CreateParamByNameImmediate)    /* 1050 */ \
+  OP(DestroyParam)                  /* 1051 */ \
+  OP(SetParamData)                  /* 1052 */ \
+  OP(SetParamDataImmediate)         /* 1053 */ \
+  OP(GetParamDesc)                  /* 1054 */ \
+  OP(GetStreamCount)                /* 1055 */ \
+  OP(GetStreamDesc)                 /* 1056 */ \
+  OP(DestroyTexture)                /* 1057 */ \
+  OP(CreateTexture2d)               /* 1058 */ \
+  OP(CreateTexture3d)               /* 1059 */ \
+  OP(CreateTextureCube)             /* 1060 */ \
+  OP(SetTextureData)                /* 1061 */ \
+  OP(SetTextureDataImmediate)       /* 1062 */ \
+  OP(GetTextureData)                /* 1063 */ \
+  OP(CreateSampler)                 /* 1064 */ \
+  OP(DestroySampler)                /* 1065 */ \
+  OP(SetSamplerStates)              /* 1066 */ \
+  OP(SetSamplerBorderColor)         /* 1067 */ \
+  OP(SetSamplerTexture)             /* 1068 */ \
+  OP(SetViewport)                   /* 1069 */ \
+  OP(SetScissor)                    /* 1070 */ \
+  OP(SetPointLineRaster)            /* 1071 */ \
+  OP(SetPolygonRaster)              /* 1072 */ \
+  OP(SetPolygonOffset)              /* 1073 */ \
+  OP(SetAlphaTest)                  /* 1074 */ \
+  OP(SetDepthTest)                  /* 1075 */ \
+  OP(SetStencilTest)                /* 1076 */ \
+  OP(SetBlending)                   /* 1077 */ \
+  OP(SetBlendingColor)              /* 1078 */ \
+  OP(SetColorWrite)                 /* 1079 */ \
+  OP(CreateRenderSurface)           /* 1080 */ \
+  OP(DestroyRenderSurface)          /* 1081 */ \
+  OP(CreateDepthSurface)            /* 1082 */ \
+  OP(DestroyDepthSurface)           /* 1083 */ \
+  OP(SetRenderSurface)              /* 1084 */ \
+  OP(SetBackSurfaces)               /* 1085 */ \
 
 
 // GAPI commands.
 enum CommandId {
-//  kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
+  kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
   #define O3D_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
   O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
@@ -246,59 +244,6 @@ const char* GetCommandName(CommandId id);
 // Make sure the compiler does not add extra padding to any of the command
 // structures.
 O3D_PUSH_STRUCTURE_PACKING_1;
-
-struct Noop {
-  typedef Noop ValueType;
-  static const CommandId kCmdId = kNoop;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-
-  void SetHeader(uint32 skip_count) {
-    header.Init(kCmdId, skip_count + 1);
-  }
-
-  void Init(uint32 skip_count) {
-    SetHeader(skip_count);
-  }
-
-  static void* Set(void* cmd, uint32 skip_count) {
-    static_cast<ValueType*>(cmd)->Init(skip_count);
-    return NextImmediateCmdAddress<ValueType>(
-        cmd, skip_count * sizeof(CommandBufferEntry));  // NOLINT
-  }
-
-  CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(Noop) == 4, Sizeof_Noop_is_not_4);
-COMPILE_ASSERT(offsetof(Noop, header) == 0, Offsetof_Noop_header_not_0);
-
-struct SetToken {
-  typedef SetToken ValueType;
-  static const CommandId kCmdId = kSetToken;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(uint32 _token) {
-    SetHeader();
-    token = _token;
-  }
-  static void* Set(void* cmd, uint32 token) {
-    static_cast<ValueType*>(cmd)->Init(token);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  uint32 token;
-};
-
-COMPILE_ASSERT(sizeof(SetToken) == 8, Sizeof_SetToken_is_not_8);
-COMPILE_ASSERT(offsetof(SetToken, header) == 0,
-               Offsetof_SetToken_header_not_0);
-COMPILE_ASSERT(offsetof(SetToken, token) == 4,
-               Offsetof_SetToken_token_not_4);
 
 struct BeginFrame {
   typedef BeginFrame ValueType;

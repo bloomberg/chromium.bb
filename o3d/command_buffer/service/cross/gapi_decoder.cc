@@ -36,7 +36,6 @@
 #include "base/cross/bits.h"
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/cross/gapi_decoder.h"
-#include "command_buffer/service/cross/cmd_buffer_engine.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -78,8 +77,7 @@ const CommandInfo g_command_info[] = {
 
 }  // anonymous namespace.
 
-// Decode command with its arguments, and call the corresponding GAPIInterface
-// method.
+// Decode command with its arguments, and call the corresponding method.
 // Note: args is a pointer to the command buffer. As such, it could be changed
 // by a (malicious) client at any time, so if validation has to happen, it
 // should operate on a copy of them.
@@ -87,9 +85,10 @@ parse_error::ParseError GAPIDecoder::DoCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
-  if (command < arraysize(g_command_info)) {
-    const CommandInfo& info = g_command_info[command];
-  unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
+  unsigned int command_index = command - kStartPoint - 1;
+  if (command_index < arraysize(g_command_info)) {
+    const CommandInfo& info = g_command_info[command_index];
+    unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
         (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
       switch (command) {
@@ -107,30 +106,16 @@ parse_error::ParseError GAPIDecoder::DoCommand(
       return parse_error::kParseInvalidArguments;
     }
   }
+  return DoCommonCommand(command, arg_count, cmd_data);
   return parse_error::kParseUnknownCommand;
 }
 
-void *GAPIDecoder::GetAddressAndCheckSize(unsigned int shm_id,
-                                          unsigned int offset,
-                                          unsigned int size) {
-  void * shm_addr = engine_->GetSharedMemoryAddress(shm_id);
-  if (!shm_addr) return NULL;
-  size_t shm_size = engine_->GetSharedMemorySize(shm_id);
-  if (offset + size > shm_size) return NULL;
-  return static_cast<char *>(shm_addr) + offset;
-}
-
-parse_error::ParseError GAPIDecoder::HandleNoop(
-    uint32 arg_count,
-    const Noop& args) {
-  return parse_error::kParseNoError;
-}
-
-parse_error::ParseError GAPIDecoder::HandleSetToken(
-    uint32 arg_count,
-    const SetToken& args) {
-  engine_->set_token(args.token);
-  return parse_error::kParseNoError;
+  // Overridden from AsyncAPIInterface.
+const char* GAPIDecoder::GetCommandName(unsigned int command_id) const {
+  if (command_id > kStartPoint && command_id < kNumCommands) {
+    return o3d::GetCommandName(static_cast<CommandId>(command_id));
+  }
+  return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
 }
 
 parse_error::ParseError GAPIDecoder::HandleBeginFrame(

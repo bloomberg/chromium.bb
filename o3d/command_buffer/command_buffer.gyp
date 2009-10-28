@@ -40,6 +40,7 @@
       'sources': [
         'common/cross/bitfield_helpers.h',
         'common/cross/cmd_buffer_common.h',
+        'common/cross/cmd_buffer_common.cc',
         'common/cross/o3d_cmd_format.h',
         'common/cross/o3d_cmd_format.cc',
         'common/cross/gapi_interface.h',
@@ -112,6 +113,8 @@
         'command_buffer_common',
       ],
       'sources': [
+        'service/cross/common_decoder.cc',
+        'service/cross/common_decoder.h',
         'service/cross/cmd_buffer_engine.h',
         'service/cross/cmd_parser.cc',
         'service/cross/cmd_parser.h',

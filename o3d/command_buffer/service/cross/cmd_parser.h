@@ -77,6 +77,9 @@ class CommandParser {
   // Processes all commands until get == put.
   parse_error::ParseError ProcessAllCommands();
 
+  // Reports an error.
+  void ReportError(unsigned int command_id, parse_error::ParseError result);
+
  private:
   CommandBufferOffset get_;
   CommandBufferOffset put_;
@@ -104,6 +107,9 @@ class AsyncAPIInterface {
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data) = 0;
+
+  // Returns a name for a command. Useful for logging / debuging.
+  virtual const char* GetCommandName(unsigned int command_id) const = 0;
 };
 
 }  // namespace command_buffer

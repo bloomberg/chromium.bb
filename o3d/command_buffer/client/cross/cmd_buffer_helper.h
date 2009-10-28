@@ -170,6 +170,19 @@ class CommandBufferHelper {
 
   parse_error::ParseError GetParseError();
 
+  // Common Commands
+  void Noop(uint32 skip_count) {
+    cmd::Noop& cmd = GetImmediateCmdSpace<cmd::Noop>(
+        skip_count * sizeof(CommandBufferEntry));
+    cmd.Init(skip_count);
+  }
+
+  void SetToken(uint32 token) {
+    cmd::SetToken& cmd = GetCmdSpace<cmd::SetToken>();
+    cmd.Init(token);
+  }
+
+
  private:
   // Waits until get changes, updating the value of get_.
   void WaitForGetChange();

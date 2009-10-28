@@ -427,6 +427,8 @@ class GAPIGL : public GAPIInterface {
   // programs, and updates parameters if needed.
   bool ValidateEffect();
 
+  CGcontext cg_context_;
+
 #if defined(OS_LINUX)
   XWindowWrapper *window_;
 #elif defined(OS_WIN)
@@ -435,8 +437,6 @@ class GAPIGL : public GAPIInterface {
   HDC device_context_;
   HGLRC gl_context_;
 #endif
-
-  CGcontext cg_context_;
 
   bool anti_aliased_;
   ResourceId current_vertex_struct_;

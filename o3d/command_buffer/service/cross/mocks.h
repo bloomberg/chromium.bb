@@ -82,6 +82,10 @@ class AsyncAPIMock : public AsyncAPIInterface {
       unsigned int arg_count,
       const void* cmd_data));
 
+  const char* GetCommandName(unsigned int command_id) const {
+    return "";
+  };
+
   // Sets the engine, to forward SetToken commands to it.
   void set_engine(CommandBufferEngine *engine) { engine_ = engine; }
 

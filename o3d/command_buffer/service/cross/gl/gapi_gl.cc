@@ -44,11 +44,16 @@ namespace command_buffer {
 namespace o3d {
 
 GAPIGL::GAPIGL()
+    : cg_context_(NULL),
 #ifdef OS_LINUX
-    : window_(NULL),
+      window_(NULL),
 #endif
-    : anti_aliased_(false),
-      cg_context_(NULL),
+#ifdef OS_WIN
+      hwnd_(NULL),
+      device_context_(NULL),
+      gl_context_(NULL),
+#endif
+      anti_aliased_(false),
       current_vertex_struct_(kInvalidResource),
       validate_streams_(true),
       max_vertices_(0),
@@ -328,7 +333,6 @@ bool GAPIGL::InitGlew() {
   // present.
   if (!GLEW_VERSION_2_0) {
     DLOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
-    return false;
   }
 
   bool extensions_found = true;
