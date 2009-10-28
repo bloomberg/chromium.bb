@@ -349,7 +349,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   bool is_first_run = FirstRun::IsChromeFirstRun() ||
       parsed_command_line.HasSwitch(switches::kFirstRun);
-  bool first_run_ui_bypass = false;
 
   scoped_ptr<BrowserProcess> browser_process;
   if (parsed_command_line.HasSwitch(switches::kImport)) {
@@ -490,11 +489,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   BrowserInit browser_init;
 
+#if defined(OS_WIN)
   int rlz_ping_delay = 0;
+#endif
   bool homepage_defined = false;
   int import_items = 0;
   int dont_import_items = 0;
+  bool first_run_ui_bypass = false;
   if (is_first_run) {
+#if defined(OS_WIN)
     // On first run, we need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
@@ -505,6 +508,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // The master prefs might specify a set of urls to display.
     if (first_run_tabs.size())
       AddFirstRunNewTabs(&browser_init, first_run_tabs);
+#endif  // OS_WIN
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.
@@ -637,8 +641,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
+#if defined(OS_WIN)
   if (parsed_command_line.HasSwitch(switches::kImport))
     return FirstRun::ImportNow(profile, parsed_command_line);
+#endif
 
   // When another process is running, use it instead of starting us.
   switch (process_singleton.NotifyOtherProcess()) {

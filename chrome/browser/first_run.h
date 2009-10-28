@@ -28,30 +28,18 @@ class ProcessSingleton;
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
-  // Returns true if this is the first time chrome is run for this user.
-  static bool IsChromeFirstRun();
+#if defined(OS_WIN)
   // Creates the desktop shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeDesktopShortcut();
   // Creates the quick launch shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeQuickLaunchShortcut();
-  // Creates the sentinel file that signals that chrome has been configured.
-  static bool CreateSentinel();
-  // Removes the sentinel file created in ConfigDone(). Returns false if the
-  // sentinel file could not be removed.
-  static bool RemoveSentinel();
-  // Imports settings in a separate process. It spawns a second dedicated
-  // browser process that just does the import with the import progress UI.
-  static bool ImportSettings(Profile* profile, int browser_type,
-                             int items_to_import,
-                             gfx::NativeView parent_window);
   // Import browser items in this process. The browser and the items to
   // import are encoded int the command line. This function is paired with
   // FirstRun::ImportSettings(). This function might or might not show
   // a visible UI depending on the cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
-
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from
   // master_pref_path or if that path is empty from the default location
@@ -74,6 +62,20 @@ class FirstRun {
                                        bool* homepage_defined,
                                        int* do_import_items,
                                        int* dont_import_items);
+#endif  // OS_WIN
+
+  // Returns true if this is the first time chrome is run for this user.
+  static bool IsChromeFirstRun();
+  // Creates the sentinel file that signals that chrome has been configured.
+  static bool CreateSentinel();
+  // Removes the sentinel file created in ConfigDone(). Returns false if the
+  // sentinel file could not be removed.
+  static bool RemoveSentinel();
+  // Imports settings in a separate process. It spawns a second dedicated
+  // browser process that just does the import with the import progress UI.
+  static bool ImportSettings(Profile* profile, int browser_type,
+                             int items_to_import,
+                             gfx::NativeView parent_window);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going. Returns false if

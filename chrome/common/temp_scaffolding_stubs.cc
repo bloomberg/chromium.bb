@@ -80,38 +80,6 @@ void AutomationProvider::OnMessageFromExternalHost(
 #endif  // defined(OS_MACOSX)
 
 //--------------------------------------------------------------------------
-
-#if defined(OS_MACOSX)
-// static
-bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        const FilePath& master_prefs_path,
-                                        std::vector<std::wstring>* new_tabs,
-                                        int* ping_delay,
-                                        bool* homepage_defined,
-                                        int* do_import_items,
-                                        int* dont_import_items) {
-  // http://code.google.com/p/chromium/issues/detail?id=11971
-  // Pretend we processed them correctly.
-  return true;
-}
-
-// static
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
-  // http://code.google.com/p/chromium/issues/detail?id=11971
-  return 0;
-}
-#endif
-
-bool FirstRun::CreateChromeDesktopShortcut() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool FirstRun::CreateChromeQuickLaunchShortcut() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 // static
 bool Upgrade::IsBrowserAlreadyRunning() {
   // http://code.google.com/p/chromium/issues/detail?id=9295
