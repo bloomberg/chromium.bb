@@ -75,30 +75,6 @@ void AutomationProvider::GetActiveWindow(int* handle) {
   *handle = window_tracker_->Add(window);
 }
 
-void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
-                                             bool screen_coordinates,
-                                             bool* success,
-                                             gfx::Rect* bounds) {
-  *success = false;
-  if (window_tracker_->ContainsHandle(handle)) {
-    gfx::NativeWindow window = window_tracker_->GetResource(handle);
-    views::RootView* root_view = views::WidgetWin::FindRootView(window);
-    if (root_view) {
-      views::View* view = root_view->GetViewByID(view_id);
-      if (view) {
-        *success = true;
-        gfx::Point point;
-        if (screen_coordinates)
-          views::View::ConvertPointToScreen(view, &point);
-        else
-          views::View::ConvertPointToView(view, root_view, &point);
-        *bounds = view->GetLocalBounds(false);
-        bounds->set_origin(point);
-      }
-    }
-  }
-}
-
 // This task enqueues a mouse event on the event loop, so that the view
 // that it's being sent to can do the requisite post-processing.
 class MouseEventTask : public Task {

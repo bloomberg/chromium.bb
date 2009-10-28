@@ -170,6 +170,9 @@ class WidgetGtk
   // drop is done.
   void ResetDropTarget();
 
+  // Returns the RootView for |widget|.
+  static RootView* GetRootViewForWidget(GtkWidget* widget);
+
  protected:
   // Returns the view::Event::flags for a GdkEventButton.
   static int GetFlagsForEventButton(const GdkEventButton& event);
@@ -259,7 +262,6 @@ class WidgetGtk
   // Sets the WidgetGtk in the userdata section of the widget.
   static void SetViewForNative(GtkWidget* widget, WidgetGtk* view);
 
-  static RootView* GetRootViewForWidget(GtkWidget* widget);
   static void SetRootViewForWidget(GtkWidget* widget, RootView* root_view);
 
   // A set of static signal handlers that bridge

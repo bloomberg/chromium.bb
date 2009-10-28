@@ -362,29 +362,6 @@ void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
   }
 }
 
-static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view =
-    reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
-  if (root_view) {
-    *reinterpret_cast<RootView**>(l_param) = root_view;
-    return FALSE;  // Stop enumerating.
-  }
-  return TRUE;  // Keep enumerating.
-}
-
-// static
-RootView* WidgetWin::FindRootView(HWND hwnd) {
-  RootView* root_view =
-    reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
-  if (root_view)
-    return root_view;
-
-  // Enumerate all children and check if they have a RootView.
-  EnumChildWindows(hwnd, EnumChildProc, reinterpret_cast<LPARAM>(&root_view));
-
-  return root_view;
-}
-
 // static
 WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
@@ -1182,6 +1159,29 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
   popup->set_window_ex_style(ex_style);
   popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
   return popup;
+}
+
+static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
+  RootView* root_view =
+      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  if (root_view) {
+    *reinterpret_cast<RootView**>(l_param) = root_view;
+    return FALSE;  // Stop enumerating.
+  }
+  return TRUE;  // Keep enumerating.
+}
+
+// static
+RootView* Widget::FindRootView(HWND hwnd) {
+  RootView* root_view =
+      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  if (root_view)
+    return root_view;
+
+  // Enumerate all children and check if they have a RootView.
+  EnumChildWindows(hwnd, EnumChildProc, reinterpret_cast<LPARAM>(&root_view));
+
+  return root_view;
 }
 
 }  // namespace views

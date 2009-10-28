@@ -39,6 +39,7 @@ void AutomationProvider::SetWindowVisible(int handle, bool visible,
   }
 }
 
+#if !defined(TOOLKIT_VIEWS)
 void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                                              bool screen_coordinates,
                                              bool* success,
@@ -66,6 +67,7 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
     bounds->set_origin(gfx::Point(x, y));
   }
 }
+#endif
 
 void AutomationProvider::ActivateWindow(int handle) {
   NOTIMPLEMENTED();

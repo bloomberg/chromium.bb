@@ -63,6 +63,11 @@ class Widget {
                                    EventsParam accept_events,
                                    DeleteParam delete_on_destroy);
 
+  // Returns the root view for |native_window|. If |native_window| does not have
+  // a rootview, this recurses through all of |native_window|'s children until
+  // one is found. If a root view isn't found, null is returned.
+  static RootView* FindRootView(gfx::NativeWindow native_window);
+
   // Initialize the Widget with a parent and an initial desired size.
   // |contents_view| is the view that will be the single child of RootView
   // within this Widget. As contents_view is inserted into RootView's tree,

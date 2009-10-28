@@ -846,6 +846,7 @@
         'browser/automation/automation_profile_impl.h',
         'browser/automation/automation_provider_gtk.cc',
         'browser/automation/automation_provider_mac.mm',
+        'browser/automation/automation_provider_views.cc',
         'browser/automation/automation_provider_win.cc',
         'browser/automation/automation_provider.cc',
         'browser/automation/automation_provider.h',

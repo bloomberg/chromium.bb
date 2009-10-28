@@ -836,6 +836,12 @@ void WidgetGtk::ReleaseGrab() {
 }
 
 // static
+RootView* WidgetGtk::GetRootViewForWidget(GtkWidget* widget) {
+  gpointer user_data = g_object_get_data(G_OBJECT(widget), "root-view");
+  return static_cast<RootView*>(user_data);
+}
+
+// static
 int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
   int flags = Event::GetFlagsFromGdkState(event.state);
   switch (event.button) {
@@ -945,12 +951,6 @@ void WidgetGtk::ResetDropTarget() {
 // static
 void WidgetGtk::SetViewForNative(GtkWidget* widget, WidgetGtk* view) {
   g_object_set_data(G_OBJECT(widget), "chrome-views", view);
-}
-
-// static
-RootView* WidgetGtk::GetRootViewForWidget(GtkWidget* widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget), "root-view");
-  return static_cast<RootView*>(user_data);
 }
 
 // static
@@ -1234,6 +1234,34 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
   if (transparent == Transparent)
     popup->MakeTransparent();
   return popup;
+}
+
+// Callback from gtk_container_foreach. Locates the first root view of widget
+// or one of it's descendants.
+static void RootViewLocatorCallback(GtkWidget* widget,
+                                    gpointer root_view_p) {
+  RootView** root_view = static_cast<RootView**>(root_view_p);
+  if (!*root_view) {
+    *root_view = WidgetGtk::GetRootViewForWidget(widget);
+    if (!*root_view && GTK_IS_CONTAINER(widget)) {
+      // gtk_container_foreach only iterates over children, not all descendants,
+      // so we have to recurse here to get all descendants.
+      gtk_container_foreach(GTK_CONTAINER(widget), RootViewLocatorCallback,
+                            root_view_p);
+    }
+  }
+}
+
+// static
+RootView* Widget::FindRootView(GtkWindow* window) {
+  RootView* root_view = WidgetGtk::GetRootViewForWidget(GTK_WIDGET(window));
+  if (root_view)
+    return root_view;
+
+  // Enumerate all children and check if they have a RootView.
+  gtk_container_foreach(GTK_CONTAINER(window), RootViewLocatorCallback,
+                        static_cast<gpointer>(&root_view));
+  return root_view;
 }
 
 }  // namespace views
