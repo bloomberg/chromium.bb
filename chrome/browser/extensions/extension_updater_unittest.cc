@@ -604,6 +604,7 @@ TEST(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading();
 }
 
+// This test is disabled, see bug 26035
 TEST(ExtensionUpdaterTest, DISABLED_TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
