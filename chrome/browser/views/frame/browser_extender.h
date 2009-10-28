@@ -9,6 +9,7 @@
 #include "base/gfx/rect.h"
 
 class BrowserView;
+class Tab;
 
 namespace views {
 class Window;
@@ -57,6 +58,15 @@ class BrowserExtender {
 
   // Toggles the visibility of CompactNavigationBar.
   virtual void ToggleCompactNavigationBar() = 0;
+
+  // Called when a mouse entered into the |tab|.
+  virtual void OnMouseEnteredToTab(Tab* tab) = 0;
+
+  // Called when a mouse moved (hovered) on the |tab|.
+  virtual void OnMouseMovedOnTab(Tab* tab) = 0;
+
+  // Called when a mouse exited from the |tab|.
+  virtual void OnMouseExitedFromTab(Tab* tab) = 0;
 
   // Tells if the browser can be closed.
   bool can_close() const {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/frame/browser_extender.h"
 
+class Tab;
+
 namespace {
 
 // StandardExtender for non ChromeOS build. This currently adds/does nothing.
@@ -26,6 +28,9 @@ class StandardExtender : public BrowserExtender {
   virtual void ActivationChanged() {}
   virtual bool ShouldForceHideToolbar() { return false; }
   virtual void ToggleCompactNavigationBar() {}
+  virtual void OnMouseEnteredToTab(Tab* tab) {}
+  virtual void OnMouseMovedOnTab(Tab* tab) {}
+  virtual void OnMouseExitedFromTab(Tab* tab) {}
 
   DISALLOW_COPY_AND_ASSIGN(StandardExtender);
 };

@@ -936,7 +936,7 @@ class View : public AcceleratorTarget {
                                      bool is_horizontal, bool is_positive);
 
   // Get the theme provider from the parent widget.
-  ThemeProvider* GetThemeProvider();
+  ThemeProvider* GetThemeProvider() const;
 
  protected:
   // The id of this View. Used to find this View.

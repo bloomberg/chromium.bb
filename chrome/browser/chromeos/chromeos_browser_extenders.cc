@@ -6,6 +6,7 @@
 
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/chromeos/compact_location_bar.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
+#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -60,6 +63,7 @@ class NormalExtender : public BrowserExtender,
     main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
     browser_view()->AddChildView(main_menu_);
 
+    compact_location_bar_.reset(new CompactLocationBar(browser_view()));
     compact_navigation_bar_ =
         new CompactNavigationBar(browser_view()->browser());
     browser_view()->AddChildView(compact_navigation_bar_);
@@ -94,6 +98,12 @@ class NormalExtender : public BrowserExtender,
       main_menu_->SetVisible(true);
       compact_navigation_bar_->SetVisible(compact_navigation_bar_enabled_);
       status_area_->SetVisible(true);
+    }
+
+    if (compact_navigation_bar_->IsVisible()) {
+      // Update the size and location of the compact location bar.
+      compact_location_bar_->UpdateBounds(
+          browser_view()->tabstrip()->AsTabStrip()->GetSelectedTab());
     }
 
     // Layout main menu before tab strip.
@@ -164,7 +174,28 @@ class NormalExtender : public BrowserExtender,
     compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
   }
 
+  virtual void OnMouseEnteredToTab(Tab* tab) {
+    ShowCompactLocationBarUnderSelectedTab();
+  }
+
+  virtual void OnMouseMovedOnTab(Tab* tab) {
+    ShowCompactLocationBarUnderSelectedTab();
+  }
+
+  virtual void OnMouseExitedFromTab(Tab* tab) {
+    compact_location_bar_->StartPopupTimer();
+  }
+
  private:
+  // Shows the compact location bar under the selected tab.
+  void ShowCompactLocationBarUnderSelectedTab() {
+    if (!compact_navigation_bar_enabled_)
+      return;
+    compact_location_bar_->Update(
+        browser_view()->tabstrip()->AsTabStrip()->GetSelectedTab(),
+        browser_view()->browser()->GetSelectedTabContents());
+  }
+
   // Creates system menu.
   void InitSystemMenu() {
     system_menu_contents_.reset(new views::SimpleMenuModel(browser_view()));
@@ -196,7 +227,7 @@ class NormalExtender : public BrowserExtender,
   // Status Area view.
   StatusAreaView* status_area_;
 
-  // System menus
+  // System menus.
   scoped_ptr<views::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
 
@@ -205,6 +236,9 @@ class NormalExtender : public BrowserExtender,
 
   // A toggle flag to show/hide the compact navigation bar.
   bool compact_navigation_bar_enabled_;
+
+  // CompactLocationBar view.
+  scoped_ptr<CompactLocationBar> compact_location_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
@@ -274,6 +308,12 @@ class PopupExtender : public BrowserExtender {
   }
 
   virtual void ToggleCompactNavigationBar() {}
+
+  virtual void OnMouseEnteredToTab(Tab* tab) {}
+
+  virtual void OnMouseMovedOnTab(Tab* tab) {}
+
+  virtual void OnMouseExitedFromTab(Tab* tab) {}
 
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<PanelController> panel_controller_;

@@ -772,6 +772,10 @@ gfx::Rect TabStrip::GetIdealBounds(int index) {
   return tab_data_.at(index).ideal_bounds;
 }
 
+Tab* TabStrip::GetSelectedTab() const {
+  return GetTabAtAdjustForAnimation(model()->selected_index());
+}
+
 void TabStrip::InitTabStripButtons() {
   newtab_button_ = new NewTabButton(this);
   LoadNewTabButtonImage();
@@ -1320,7 +1324,6 @@ void TabStrip::DidProcessEvent(GdkEvent* event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabStrip, TabStripWrapper implementation:
-
 int TabStrip::GetPreferredHeight() {
   return GetPreferredSize().height();
 }

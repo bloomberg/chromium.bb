@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/frame/browser_extender.h"
 
-#include <algorithm>
-
 #include "chrome/browser/views/frame/browser_view.h"
 
 ////////////////////////////////////////////////////////////////////////////////

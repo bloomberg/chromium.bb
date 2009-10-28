@@ -13,6 +13,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 
+class BrowserExtender;
 class DraggedTabController;
 class ScopedMouseCloseWidthCalculator;
 class TabStripModel;
@@ -55,7 +56,7 @@ class TabStrip : public views::View,
   bool CanProcessInputEvents() const;
 
   // Accessors for the model and individual Tabs.
-  TabStripModel* model() { return model_; }
+  TabStripModel* model() const { return model_; }
 
   // Destroys the active drag controller.
   void DestroyDragController();
@@ -65,6 +66,9 @@ class TabStrip : public views::View,
 
   // Retrieve the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int index);
+
+  // Returns the currently selected tab.
+  Tab* GetSelectedTab() const;
 
   // Create the new tab button.
   void InitTabStripButtons();

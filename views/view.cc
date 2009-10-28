@@ -1384,7 +1384,7 @@ int View::GetLineScrollIncrement(ScrollView* scroll_view,
   return 0;
 }
 
-ThemeProvider* View::GetThemeProvider() {
+ThemeProvider* View::GetThemeProvider() const {
   Widget* widget = GetWidget();
   return widget ? widget->GetThemeProvider() : NULL;
 }
