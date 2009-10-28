@@ -14,6 +14,9 @@ import os
 import optparse
 import sys
 
+# Find /third_party/pefile based on current directory and script path.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
+                             'third_party', 'pefile'))
 import pefile
 
 PE_FILE_EXTENSIONS = ['.exe', '.dll']
