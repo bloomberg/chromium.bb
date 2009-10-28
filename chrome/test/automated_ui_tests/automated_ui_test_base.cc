@@ -261,7 +261,7 @@ bool AutomatedUITestBase::Home() {
 
 bool AutomatedUITestBase::OpenAndActivateNewBrowserWindow(
     scoped_refptr<BrowserProxy>* previous_browser) {
-  if (!automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
+  if (!automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
                                           true /* SW_SHOWNORMAL */)) {
     LogWarningMessage("failed_to_open_new_browser_window");
     return false;

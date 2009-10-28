@@ -485,9 +485,8 @@ void AutomationProxy::InvalidateHandle(const IPC::Message& message) {
   }
 }
 
-bool AutomationProxy::OpenNewBrowserWindow(BrowserProxy::Type type,
-                                           bool show) {
-  if (type == BrowserProxy::TYPE_NORMAL)
+bool AutomationProxy::OpenNewBrowserWindow(Browser::Type type, bool show) {
+  if (type == Browser::TYPE_NORMAL)
     return Send(new AutomationMsg_OpenNewBrowserWindow(0, show));
   return Send(
       new AutomationMsg_OpenNewBrowserWindowOfType(0, static_cast<int>(type),

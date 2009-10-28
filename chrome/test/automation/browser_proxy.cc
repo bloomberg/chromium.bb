@@ -175,7 +175,7 @@ bool BrowserProxy::GetTabCountWithTimeout(int* num_tabs, uint32 timeout_ms,
   return succeeded;
 }
 
-bool BrowserProxy::GetType(Type* type) const {
+bool BrowserProxy::GetType(Browser::Type* type) const {
   if (!is_valid())
     return false;
 
@@ -188,23 +188,7 @@ bool BrowserProxy::GetType(Type* type) const {
   bool succeeded = sender_->SendWithTimeout(new AutomationMsg_Type(
       0, handle_, &type_as_int), base::kNoTimeout, NULL);
 
-  switch (type_as_int) {
-    case 0:
-      *type = TYPE_NORMAL;
-      break;
-    case 1:
-      *type = TYPE_POPUP;
-      break;
-    case 2:
-      *type = TYPE_APP;
-      break;
-    case 3:
-      *type = TYPE_APP_POPUP;
-      break;
-    default:
-      return false;
-  }
-
+  *type = static_cast<Browser::Type>(type_as_int);
   return succeeded;
 }
 

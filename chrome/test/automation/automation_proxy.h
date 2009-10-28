@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/browser.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -89,7 +90,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Open a new browser window of type |type|, returning true on success. |show|
   // identifies whether the window should be shown. Returns true on success.
-  bool OpenNewBrowserWindow(BrowserProxy::Type type, bool show);
+  bool OpenNewBrowserWindow(Browser::Type type, bool show);
 
   // Fills the number of open browser windows into the given variable, returning
   // true on success. False likely indicates an IPC error.

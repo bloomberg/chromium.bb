@@ -267,7 +267,7 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
   ASSERT_EQ(1, window_count);
 
   // Open a popup.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_POPUP,
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_POPUP,
                                                  true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);
@@ -287,17 +287,17 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
       automation()->GetBrowserWindow(1));
   ASSERT_TRUE(browser_proxy2.get());
 
-  BrowserProxy::Type type1, type2;
+  Browser::Type type1, type2;
   ASSERT_TRUE(browser_proxy1->GetType(&type1));
   ASSERT_TRUE(browser_proxy2->GetType(&type2));
 
   // The order of whether the normal window or popup is first depends upon
   // activation order, which is not necessarily consistant across runs.
-  if (type1 == BrowserProxy::TYPE_NORMAL) {
-    EXPECT_EQ(type2, BrowserProxy::TYPE_POPUP);
+  if (type1 == Browser::TYPE_NORMAL) {
+    EXPECT_EQ(type2, Browser::TYPE_POPUP);
   } else {
-    EXPECT_EQ(type1, BrowserProxy::TYPE_POPUP);
-    EXPECT_EQ(type2, BrowserProxy::TYPE_NORMAL);
+    EXPECT_EQ(type1, Browser::TYPE_POPUP);
+    EXPECT_EQ(type2, Browser::TYPE_NORMAL);
   }
 }
 
@@ -357,7 +357,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(1, window_count);
 
   // Open a second window.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(BrowserProxy::TYPE_NORMAL,
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
                                                  true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);

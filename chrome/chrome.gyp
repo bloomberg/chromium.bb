@@ -3925,6 +3925,8 @@
         '..',
       ],
       'sources': [
+        # The only thing used from browser is Browser::Type.
+        'browser/browser.h',
         # TODO:  these should live here but are currently used by
         # production code code in libbrowser (above).
         #'browser/net/url_request_mock_http_job.cc',

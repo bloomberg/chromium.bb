@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "chrome/browser/browser.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
 class GURL;
@@ -31,13 +32,6 @@ namespace gfx {
 // any subsequent calls will return false immediately.
 class BrowserProxy : public AutomationResourceProxy {
  public:
-  enum Type {
-    TYPE_NORMAL = 0,
-    TYPE_POPUP = 1,
-    TYPE_APP = 2,
-    TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
-  };
-
   BrowserProxy(AutomationMessageSender* sender,
                AutomationHandleTracker* tracker,
                int handle)
@@ -93,7 +87,7 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Returns the type of the given window. Returns true if the call was
   // successful.
-  bool GetType(Type* type) const;
+  bool GetType(Browser::Type* type) const;
 
   // Returns the TabProxy for the tab at the given index, transferring
   // ownership of the pointer to the caller. On failure, returns NULL.
