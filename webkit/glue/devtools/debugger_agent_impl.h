@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_
 
 #include <wtf/HashSet.h>
+#include <wtf/Noncopyable.h>
 
 #include "v8.h"
 #include "webkit/glue/devtools/debugger_agent.h"
@@ -72,8 +73,6 @@ class DebuggerAgentImpl : public DebuggerAgent {
   DebuggerAgentDelegate* delegate_;
   WebDevToolsAgentImpl* webdevtools_agent_;
   int profiler_log_position_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebuggerAgentImpl);
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_

@@ -52,9 +52,7 @@
 
 #include "PlatformString.h"
 
-// TODO(darin): Remove these dependencies on Chromium base/.
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include <wtf/Noncopyable.h>
 
 namespace WebCore {
 class String;
@@ -74,7 +72,7 @@ template<>
 struct RpcTypeTrait<bool> {
   typedef bool ApiType;
   static bool Parse(const WebCore::String& t) {
-    ALLOW_UNUSED bool success;
+    bool success;
     int i = t.toIntStrict(&success);
     ASSERT(success);
     return i;
@@ -88,7 +86,7 @@ template<>
 struct RpcTypeTrait<int> {
   typedef int ApiType;
   static int Parse(const WebCore::String& t) {
-    ALLOW_UNUSED bool success;
+    bool success;
     int i = t.toIntStrict(&success);
     ASSERT(success);
     return i;
@@ -206,7 +204,7 @@ if (method_name == #Method) { \
 // serializing method calls and ClassDispatch that is capable of dispatching
 // the serialized message into its delegate.
 #define DEFINE_RPC_CLASS(Class, STRUCT) \
-class Class {\
+class Class : public Noncopyable {\
  public: \
   Class() { \
     class_name = #Class; \
@@ -219,11 +217,11 @@ class Class {\
       TOOLS_RPC_API_METHOD2, \
       TOOLS_RPC_API_METHOD3) \
   WebCore::String class_name; \
- private: \
-  DISALLOW_COPY_AND_ASSIGN(Class); \
 }; \
 \
-class Class##Stub : public Class, public DevToolsRpc { \
+class Class##Stub \
+    : public Class, \
+      public DevToolsRpc { \
  public: \
   explicit Class##Stub(Delegate* delegate) : DevToolsRpc(delegate) {} \
   virtual ~Class##Stub() {} \
@@ -233,11 +231,9 @@ class Class##Stub : public Class, public DevToolsRpc { \
       TOOLS_RPC_STUB_METHOD1, \
       TOOLS_RPC_STUB_METHOD2, \
       TOOLS_RPC_STUB_METHOD3) \
- private: \
-  DISALLOW_COPY_AND_ASSIGN(Class##Stub); \
 }; \
 \
-class Class##Dispatch { \
+class Class##Dispatch : public Noncopyable { \
  public: \
   Class##Dispatch() {} \
   virtual ~Class##Dispatch() {} \
@@ -259,8 +255,6 @@ class Class##Dispatch { \
         TOOLS_RPC_DISPATCH3) \
     return false; \
   } \
- private: \
-  DISALLOW_COPY_AND_ASSIGN(Class##Dispatch); \
 };
 
 ///////////////////////////////////////////////////////
@@ -276,8 +270,6 @@ class DevToolsRpc {
                                 const WebCore::String& p1 = "",
                                 const WebCore::String& p2 = "",
                                 const WebCore::String& p3 = "") = 0;
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   explicit DevToolsRpc(Delegate* delegate)
@@ -286,8 +278,6 @@ class DevToolsRpc {
 
  protected:
   Delegate* delegate_;
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevToolsRpc);
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_H_

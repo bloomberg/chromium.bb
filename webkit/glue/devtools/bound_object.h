@@ -5,11 +5,13 @@
 #ifndef WEBKIT_GLUE_DEVTOOLS_BOUND_OBJECT_H_
 #define WEBKIT_GLUE_DEVTOOLS_BOUND_OBJECT_H_
 
+#include <wtf/Noncopyable.h>
+
 #include "v8.h"
 
 // BoundObject lets you map JavaScript method calls and property accesses
 // directly to C++ method calls and V8 variable access.
-class BoundObject {
+class BoundObject : public Noncopyable {
  public:
   BoundObject(v8::Handle<v8::Context> context,
               void* v8_this,
@@ -25,7 +27,6 @@ class BoundObject {
   v8::Persistent<v8::FunctionTemplate> host_template_;
   v8::Persistent<v8::External> v8_this_;
   v8::Persistent<v8::Object> bound_object_;
-  DISALLOW_COPY_AND_ASSIGN(BoundObject);
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_BOUND_OBJECT_H_

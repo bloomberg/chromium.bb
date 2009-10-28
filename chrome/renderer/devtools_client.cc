@@ -10,16 +10,17 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "webkit/api/public/WebDevToolsFrontend.h"
 #include "webkit/api/public/WebString.h"
-#include "webkit/glue/webdevtoolsclient.h"
 
+using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
 
 DevToolsClient::DevToolsClient(RenderView* view)
     : render_view_(view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  web_tools_client_.reset(
-      WebDevToolsClient::Create(
+  web_tools_frontend_.reset(
+      WebDevToolsFrontend::create(
           view->webview(),
           this,
           WideToUTF16Hack(command_line.GetSwitchValue(switches::kLang))));
@@ -46,7 +47,7 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsClient::SendMessageToAgent(const WebString& class_name,
+void DevToolsClient::sendMessageToAgent(const WebString& class_name,
                                         const WebString& method_name,
                                         const WebString& param1,
                                         const WebString& param2,
@@ -59,31 +60,31 @@ void DevToolsClient::SendMessageToAgent(const WebString& class_name,
       param3.utf8()));
 }
 
-void DevToolsClient::SendDebuggerCommandToAgent(const WebString& command) {
+void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
   Send(DevToolsAgentMsg_DebuggerCommand(command.utf8()));
 }
 
-void DevToolsClient::ActivateWindow() {
+void DevToolsClient::activateWindow() {
   render_view_->Send(new ViewHostMsg_ActivateDevToolsWindow(
       render_view_->routing_id()));
 }
 
-void DevToolsClient::CloseWindow() {
+void DevToolsClient::closeWindow() {
   render_view_->Send(new ViewHostMsg_CloseDevToolsWindow(
       render_view_->routing_id()));
 }
 
-void DevToolsClient::DockWindow() {
+void DevToolsClient::dockWindow() {
   render_view_->Send(new ViewHostMsg_DockDevToolsWindow(
       render_view_->routing_id()));
 }
 
-void DevToolsClient::UndockWindow() {
+void DevToolsClient::undockWindow() {
   render_view_->Send(new ViewHostMsg_UndockDevToolsWindow(
       render_view_->routing_id()));
 }
 
-void DevToolsClient::ToggleInspectElementMode(bool enabled) {
+void DevToolsClient::toggleInspectElementMode(bool enabled) {
   render_view_->Send(new ViewHostMsg_ToggleInspectElementMode(
       render_view_->routing_id(), enabled));
 }
@@ -94,7 +95,7 @@ void DevToolsClient::OnRpcMessage(const std::string& class_name,
                                   const std::string& param1,
                                   const std::string& param2,
                                   const std::string& param3) {
-  web_tools_client_->DispatchMessageFromAgent(
+  web_tools_frontend_->dispatchMessageFromAgent(
       WebString::fromUTF8(class_name),
       WebString::fromUTF8(method_name),
       WebString::fromUTF8(param1),

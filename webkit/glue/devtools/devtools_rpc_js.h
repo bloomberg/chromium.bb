@@ -8,9 +8,9 @@
 #define WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_
 
 // Do not remove this one although it is not used.
+#include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 
-#include "base/basictypes.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
@@ -106,7 +106,6 @@ class Js##Class##BoundObj : public Class##Stub { \
         param3); \
   } \
   OwnPtr<BoundObject> bound_obj_; \
-  DISALLOW_COPY_AND_ASSIGN(Js##Class##BoundObj); \
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_

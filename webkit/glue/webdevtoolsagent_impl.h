@@ -119,7 +119,6 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
   v8::Persistent<v8::Context> utility_context_;
   OwnPtr<BoundObject> devtools_agent_host_;
   OwnPtr<WebCore::ScriptState> inspector_frontend_script_state_;
-  DISALLOW_COPY_AND_ASSIGN(WebDevToolsAgentImpl);
 };
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSAGENT_IMPL_H_

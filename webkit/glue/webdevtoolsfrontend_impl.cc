@@ -24,7 +24,7 @@
 #include <wtf/Vector.h>
 #undef LOG
 
-#include "base/string_util.h"
+#include "webkit/api/public/WebDevToolsFrontendClient.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/glue/devtools/bound_object.h"
@@ -32,11 +32,12 @@
 #include "webkit/glue/devtools/devtools_rpc_js.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdevtoolsclient_delegate.h"
-#include "webkit/glue/webdevtoolsclient_impl.h"
+#include "webkit/glue/webdevtoolsfrontend_impl.h"
 #include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
+using WebKit::WebDevToolsFrontend;
+using WebKit::WebDevToolsFrontendClient;
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
@@ -68,7 +69,7 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
   // ToolsAgentNativeDelegate implementation.
   virtual void DidGetResourceContent(int request_id, const String& content) {
     if (!resource_content_requests_.contains(request_id)) {
-      NOTREACHED();
+      ASSERT_NOT_REACHED();
       return;
     }
     ResourceContentRequestData request =
@@ -84,8 +85,7 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
 
   bool WaitingForResponse(int resource_id, Node* frame) {
     if (resource_content_requests_.contains(resource_id)) {
-      DCHECK(resource_content_requests_.get(resource_id).frame.get() == frame)
-          << "Only one frame is expected to display given resource";
+      ASSERT(resource_content_requests_.get(resource_id).frame.get() == frame);
       return true;
     }
     return false;
@@ -95,7 +95,7 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
     ResourceContentRequestData data;
     data.mime_type = mime_type;
     data.frame = frame;
-    DCHECK(!resource_content_requests_.contains(resource_id));
+    ASSERT(!resource_content_requests_.contains(resource_id));
     resource_content_requests_.set(resource_id, data);
   }
 
@@ -106,22 +106,22 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
 };
 
 // static
-WebDevToolsClient* WebDevToolsClient::Create(
+WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebView* view,
-    WebDevToolsClientDelegate* delegate,
+    WebDevToolsFrontendClient* client,
     const WebString& application_locale) {
-  return new WebDevToolsClientImpl(
+  return new WebDevToolsFrontendImpl(
       static_cast<WebViewImpl*>(view),
-      delegate,
+      client,
       webkit_glue::WebStringToString(application_locale));
 }
 
-WebDevToolsClientImpl::WebDevToolsClientImpl(
+WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     WebViewImpl* web_view_impl,
-    WebDevToolsClientDelegate* delegate,
+    WebDevToolsFrontendClient* client,
     const String& application_locale)
     : web_view_impl_(web_view_impl),
-      delegate_(delegate),
+      client_(client),
       application_locale_(application_locale),
       loaded_(false) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
@@ -138,56 +138,56 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
       new BoundObject(frame_context, this, "RemoteDebuggerCommandExecutor"));
   debugger_command_executor_obj_->AddProtoFunction(
       "DebuggerCommand",
-      WebDevToolsClientImpl::JsDebuggerCommand);
+      WebDevToolsFrontendImpl::JsDebuggerCommand);
   debugger_command_executor_obj_->Build();
 
   dev_tools_host_.set(new BoundObject(frame_context, this, "DevToolsHost"));
   dev_tools_host_->AddProtoFunction(
       "reset",
-      WebDevToolsClientImpl::JsReset);
+      WebDevToolsFrontendImpl::JsReset);
   dev_tools_host_->AddProtoFunction(
       "addSourceToFrame",
-      WebDevToolsClientImpl::JsAddSourceToFrame);
+      WebDevToolsFrontendImpl::JsAddSourceToFrame);
   dev_tools_host_->AddProtoFunction(
       "addResourceSourceToFrame",
-      WebDevToolsClientImpl::JsAddResourceSourceToFrame);
+      WebDevToolsFrontendImpl::JsAddResourceSourceToFrame);
   dev_tools_host_->AddProtoFunction(
       "loaded",
-      WebDevToolsClientImpl::JsLoaded);
+      WebDevToolsFrontendImpl::JsLoaded);
   dev_tools_host_->AddProtoFunction(
       "search",
       WebCore::V8Custom::v8InspectorBackendSearchCallback);
   dev_tools_host_->AddProtoFunction(
       "getPlatform",
-      WebDevToolsClientImpl::JsGetPlatform);
+      WebDevToolsFrontendImpl::JsGetPlatform);
   dev_tools_host_->AddProtoFunction(
       "activateWindow",
-      WebDevToolsClientImpl::JsActivateWindow);
+      WebDevToolsFrontendImpl::JsActivateWindow);
   dev_tools_host_->AddProtoFunction(
       "closeWindow",
-      WebDevToolsClientImpl::JsCloseWindow);
+      WebDevToolsFrontendImpl::JsCloseWindow);
   dev_tools_host_->AddProtoFunction(
       "dockWindow",
-      WebDevToolsClientImpl::JsDockWindow);
+      WebDevToolsFrontendImpl::JsDockWindow);
   dev_tools_host_->AddProtoFunction(
       "undockWindow",
-      WebDevToolsClientImpl::JsUndockWindow);
+      WebDevToolsFrontendImpl::JsUndockWindow);
   dev_tools_host_->AddProtoFunction(
       "toggleInspectElementMode",
-      WebDevToolsClientImpl::JsToggleInspectElementMode);
+      WebDevToolsFrontendImpl::JsToggleInspectElementMode);
   dev_tools_host_->AddProtoFunction(
       "getApplicationLocale",
-      WebDevToolsClientImpl::JsGetApplicationLocale);
+      WebDevToolsFrontendImpl::JsGetApplicationLocale);
   dev_tools_host_->AddProtoFunction(
       "hiddenPanels",
-      WebDevToolsClientImpl::JsHiddenPanels);
+      WebDevToolsFrontendImpl::JsHiddenPanels);
   dev_tools_host_->Build();
 }
 
-WebDevToolsClientImpl::~WebDevToolsClientImpl() {
+WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
 }
 
-void WebDevToolsClientImpl::DispatchMessageFromAgent(
+void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
       const WebString& class_name,
       const WebString& method_name,
       const WebString& param1,
@@ -216,7 +216,7 @@ void WebDevToolsClientImpl::DispatchMessageFromAgent(
   ExecuteScript(v);
 }
 
-void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
+void WebDevToolsFrontendImpl::AddResourceSourceToFrame(int resource_id,
                                                      String mime_type,
                                                      Node* frame) {
   if (tools_agent_native_delegate_impl_->WaitingForResponse(resource_id,
@@ -227,7 +227,7 @@ void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
   tools_agent_native_delegate_impl_->RequestSent(resource_id, mime_type, frame);
 }
 
-void WebDevToolsClientImpl::ExecuteScript(const Vector<String>& v) {
+void WebDevToolsFrontendImpl::ExecuteScript(const Vector<String>& v) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
@@ -246,12 +246,12 @@ void WebDevToolsClientImpl::ExecuteScript(const Vector<String>& v) {
   function->Call(frame_context->Global(), 5, args);
 }
 
-void WebDevToolsClientImpl::SendRpcMessage(const String& class_name,
+void WebDevToolsFrontendImpl::SendRpcMessage(const String& class_name,
                                            const String& method_name,
                                            const String& param1,
                                            const String& param2,
                                            const String& param3) {
-  delegate_->SendMessageToAgent(
+  client_->sendMessageToAgent(
       webkit_glue::StringToWebString(class_name),
       webkit_glue::StringToWebString(method_name),
       webkit_glue::StringToWebString(param1),
@@ -260,18 +260,18 @@ void WebDevToolsClientImpl::SendRpcMessage(const String& class_name,
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsReset(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsReset(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  WebFrameImpl* frame = client->web_view_impl_->main_frame();
-  client->tools_agent_native_delegate_impl_.set(
+  WebFrameImpl* frame = frontend->web_view_impl_->main_frame();
+  frontend->tools_agent_native_delegate_impl_.set(
       new ToolsAgentNativeDelegateImpl(frame));
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddSourceToFrame(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddSourceToFrame(
     const v8::Arguments& args) {
   if (args.Length() < 2) {
     return v8::Undefined();
@@ -300,7 +300,7 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddSourceToFrame(
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddResourceSourceToFrame(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddResourceSourceToFrame(
     const v8::Arguments& args) {
   int resource_id = static_cast<int>(args[0]->NumberValue());
   String mime_type = WebCore::toWebCoreStringWithNullCheck(args[1]);
@@ -309,18 +309,18 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddResourceSourceToFrame(
   }
   v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
   Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(wrapper);
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->AddResourceSourceToFrame(resource_id, mime_type, node);
+  frontend->AddResourceSourceToFrame(resource_id, mime_type, node);
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsLoaded(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLoaded(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->loaded_ = true;
+  frontend->loaded_ = true;
 
   // Grant the devtools page the ability to have source view iframes.
   Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
@@ -328,17 +328,17 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsLoaded(
   origin->grantUniversalAccess();
 
   for (Vector<Vector<String> >::iterator it =
-           client->pending_incoming_messages_.begin();
-       it != client->pending_incoming_messages_.end();
+           frontend->pending_incoming_messages_.begin();
+       it != frontend->pending_incoming_messages_.end();
        ++it) {
-    client->ExecuteScript(*it);
+    frontend->ExecuteScript(*it);
   }
-  client->pending_incoming_messages_.clear();
+  frontend->pending_incoming_messages_.clear();
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetPlatform(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetPlatform(
     const v8::Arguments& args) {
 #if defined OS_MACOSX
   return v8String("mac-leopard");
@@ -350,73 +350,73 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetPlatform(
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsActivateWindow(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsActivateWindow(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->delegate_->ActivateWindow();
+  frontend->client_->activateWindow();
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsCloseWindow(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsCloseWindow(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->delegate_->CloseWindow();
+  frontend->client_->closeWindow();
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsDockWindow(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDockWindow(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->delegate_->DockWindow();
+  frontend->client_->dockWindow();
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsUndockWindow(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsUndockWindow(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  client->delegate_->UndockWindow();
+  frontend->client_->undockWindow();
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsToggleInspectElementMode(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsToggleInspectElementMode(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
   int enabled = static_cast<int>(args[0]->BooleanValue());
-  client->delegate_->ToggleInspectElementMode(enabled);
+  frontend->client_->toggleInspectElementMode(enabled);
   return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetApplicationLocale(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetApplicationLocale(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  return v8String(client->application_locale_);
+  return v8String(frontend->application_locale_);
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsHiddenPanels(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsHiddenPanels(
     const v8::Arguments& args) {
   Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
   return v8String(page->settings()->databasesEnabled() ? "" : "databases");
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsDebuggerCommand(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerCommand(
     const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
   String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
   WebString std_command = webkit_glue::StringToWebString(command);
-  client->delegate_->SendDebuggerCommandToAgent(std_command);
+  frontend->client_->sendDebuggerCommandToAgent(std_command);
   return v8::Undefined();
 }

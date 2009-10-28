@@ -6,9 +6,8 @@
 #define WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_
 
 #include <wtf/HashMap.h>
+#include <wtf/Noncopyable.h>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
 #include "v8/include/v8-debug.h"
 #include "webkit/api/public/WebDevToolsAgent.h"
 
@@ -33,7 +32,7 @@ class WebViewImpl;
 // would expect some actions from the handler. If there is no appropriate
 // debugger agent to handle such messages the manager will perform the action
 // itself, otherwise v8 may hang waiting for the action.
-class DebuggerAgentManager {
+class DebuggerAgentManager : public Noncopyable {
  public:
   static void DebugAttach(DebuggerAgentImpl* debugger_agent);
   static void DebugDetach(DebuggerAgentImpl* debugger_agent);
@@ -53,10 +52,10 @@ class DebuggerAgentManager {
 
   static void OnNavigate();
 
-  class UtilityContextScope {
+  class UtilityContextScope : public Noncopyable {
    public:
     UtilityContextScope() {
-      DCHECK(!in_utility_context_);
+      ASSERT(!in_utility_context_);
       in_utility_context_ = true;
     }
     ~UtilityContextScope() {
@@ -66,8 +65,6 @@ class DebuggerAgentManager {
       }
       in_utility_context_ = false;
     }
-   private:
-    DISALLOW_COPY_AND_ASSIGN(UtilityContextScope);
   };
 
  private:
@@ -95,8 +92,6 @@ class DebuggerAgentManager {
 
   static bool in_utility_context_;
   static bool debug_break_delayed_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebuggerAgentManager);
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_

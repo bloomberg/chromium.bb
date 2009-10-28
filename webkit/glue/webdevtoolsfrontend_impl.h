@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBDEVTOOLSCLIENT_IMPL_H_
-#define WEBKIT_GLUE_WEBDEVTOOLSCLIENT_IMPL_H_
+#ifndef WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_
+#define WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_
 
 #include <string>
 
 #include <wtf/HashMap.h>
+#include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
 
 #include "v8.h"
+#include "webkit/api/public/WebDevToolsFrontend.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
-#include "webkit/glue/webdevtoolsclient.h"
 
 namespace WebCore {
 class Node;
@@ -29,14 +30,15 @@ class ToolsAgentNativeDelegateImpl;
 class WebDevToolsClientDelegate;
 class WebViewImpl;
 
-class WebDevToolsClientImpl : public WebDevToolsClient,
-                              public DevToolsRpc::Delegate {
+class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
+                                public DevToolsRpc::Delegate,
+                                public Noncopyable {
  public:
-  WebDevToolsClientImpl(
+  WebDevToolsFrontendImpl(
       WebViewImpl* web_view_impl,
-      WebDevToolsClientDelegate* delegate,
+      WebKit::WebDevToolsFrontendClient* client,
       const String& application_locale);
-  virtual ~WebDevToolsClientImpl();
+  virtual ~WebDevToolsFrontendImpl();
 
   // DevToolsRpc::Delegate implementation.
   virtual void SendRpcMessage(const String& class_name,
@@ -45,8 +47,8 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
                               const String& param2,
                               const String& param3);
 
-  // WebDevToolsClient implementation.
-  virtual void DispatchMessageFromAgent(const WebKit::WebString& class_name,
+  // WebDevToolsFrontend implementation.
+  virtual void dispatchMessageFromAgent(const WebKit::WebString& class_name,
                                         const WebKit::WebString& method_name,
                                         const WebKit::WebString& param1,
                                         const WebKit::WebString& param2,
@@ -79,7 +81,7 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
       const v8::Arguments& args);
 
   WebViewImpl* web_view_impl_;
-  WebDevToolsClientDelegate* delegate_;
+  WebKit::WebDevToolsFrontendClient* client_;
   String application_locale_;
   OwnPtr<BoundObject> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
@@ -88,7 +90,6 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   Vector<Vector<String> > pending_incoming_messages_;
   OwnPtr<BoundObject> dev_tools_host_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
-  DISALLOW_COPY_AND_ASSIGN(WebDevToolsClientImpl);
 };
 
-#endif  // WEBKIT_GLUE_WEBDEVTOOLSCLIENT_IMPL_H_
+#endif  // WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_

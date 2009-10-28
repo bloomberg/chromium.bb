@@ -16,7 +16,6 @@
 #include "V8Proxy.h"
 #undef LOG
 
-#include "base/string_piece.h"
 #include "grit/webkit_resources.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
@@ -62,7 +61,7 @@ void DebuggerAgentImpl::GetContextId() {
 void DebuggerAgentImpl::StartProfiling(int flags) {
   v8::HandleScope scope;
   WebCore::Frame* frame = GetPage()->mainFrame();
-  DCHECK(V8Proxy::retrieve(GetPage()->mainFrame())->isContextInitialized());
+  ASSERT(V8Proxy::retrieve(GetPage()->mainFrame())->isContextInitialized());
   v8::Context::Scope context_scope(V8Proxy::context(frame));
   v8::V8::ResumeProfilerEx(flags);
 }

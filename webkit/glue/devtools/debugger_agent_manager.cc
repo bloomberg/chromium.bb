@@ -10,7 +10,6 @@
 #include <wtf/HashSet.h>
 #undef LOG
 
-#include "base/string_util.h"
 #include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
@@ -117,18 +116,18 @@ void DebuggerAgentManager::DebugAttach(DebuggerAgentImpl* debugger_agent) {
         &DebuggerAgentManager::V8DebugHostDispatchHandler, 100 /* ms */);
   }
   int host_id = debugger_agent->webdevtools_agent()->host_id();
-  DCHECK(host_id != 0);
+  ASSERT(host_id != 0);
   attached_agents_map_->set(host_id, debugger_agent);
 }
 
 // static
 void DebuggerAgentManager::DebugDetach(DebuggerAgentImpl* debugger_agent) {
   if (!attached_agents_map_) {
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
     return;
   }
   int host_id = debugger_agent->webdevtools_agent()->host_id();
-  DCHECK(attached_agents_map_->get(host_id) == debugger_agent);
+  ASSERT(attached_agents_map_->get(host_id) == debugger_agent);
   bool is_on_breakpoint = (FindAgentForCurrentV8Context() == debugger_agent);
   attached_agents_map_->remove(host_id);
 
@@ -163,7 +162,7 @@ void DebuggerAgentManager::DebugDetach(DebuggerAgentImpl* debugger_agent) {
 // static
 void DebuggerAgentManager::DebugBreak(DebuggerAgentImpl* debugger_agent) {
 #if USE(V8)
-  DCHECK(DebuggerAgentForHostId(debugger_agent->webdevtools_agent()->host_id())
+  ASSERT(DebuggerAgentForHostId(debugger_agent->webdevtools_agent()->host_id())
              == debugger_agent);
   if (in_utility_context_) {
     debug_break_delayed_ = true;
@@ -196,7 +195,7 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
     }
     return;
   } // Otherwise it's an event message.
-  DCHECK(message.IsEvent());
+  ASSERT(message.IsEvent());
 
   // Ignore unsupported event types.
   if (message.GetEvent() != v8::AfterCompile &&
@@ -254,7 +253,7 @@ void DebuggerAgentManager::SetMessageLoopDispatchHandler(
 
 // static
 void DebuggerAgentManager::SetHostId(WebFrameImpl* webframe, int host_id) {
-  DCHECK(host_id > 0);
+  ASSERT(host_id > 0);
   WebCore::V8Proxy* proxy = WebCore::V8Proxy::retrieve(webframe->frame());
   if (proxy) {
     proxy->setContextDebugId(host_id);
@@ -297,7 +296,7 @@ DebuggerAgentImpl* DebuggerAgentManager::FindAgentForCurrentV8Context() {
   if (!attached_agents_map_) {
     return NULL;
   }
-  DCHECK(!attached_agents_map_->isEmpty());
+  ASSERT(!attached_agents_map_->isEmpty());
 
   WebCore::Frame* frame = WebCore::V8Proxy::retrieveFrameForEnteredContext();
   if (!frame) {
