@@ -220,11 +220,11 @@ def SubprocessCallAndFilter(command,
   while in_byte:
     if in_byte != "\r":
       if print_stdout:
-        sys.stdout.write(in_byte)
         if not print_messages:
           print("\n________ running \'%s\' in \'%s\'"
               % (' '.join(command), in_directory))
           print_messages = True 
+        sys.stdout.write(in_byte)
       if in_byte != "\n":
         in_line += in_byte
     if in_byte == "\n" and filter:
