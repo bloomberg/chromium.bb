@@ -786,8 +786,7 @@ BUG13907 BUG25094 LINUX DEBUG : LayoutTests/media = PASS FAIL TIMEOUT
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
 BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = PASS FAIL
-BUG9798 BUG13907 WIN MAC : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
-BUG9798 BUG13907 LINUX RELEASE : LayoutTests/media/controls-drag-timebar.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/controls-drag-timebar.html = TEXT
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-collapse.html = PASS FAIL
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-ranges-1.html = PASS FAIL
 BUG9798 BUG13907 SLOW : LayoutTests/media/video-played-reset.html = PASS FAIL
@@ -2558,7 +2557,6 @@ BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEO
 BUG9797 BUG9798 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = PASS
 // Occasionally times out. Not just slow.
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
 BUG9798 SLOW LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
@@ -3147,18 +3145,17 @@ BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS
 // WebKit roll 49961:49992
 // Added in http://trac.webkit.org/changeset/49990
 BUG25884 WIN LINUX : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
-// Missing results.
-BUG_TONY WIN LINUX SKIP : LayoutTests/fast/dom/defaultView.html = FAIL
-// Unknown
-BUG_TONY : LayoutTests/fast/dom/delete-contents.html = PASS FAIL
-BUG_TONY : LayoutTests/fast/js/global-function-resolve.html = FAIL
-BUG_TONY WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
-BUG_TONY : LayoutTests/storage/change-version-handle-reuse.html = FAIL
-BUG_TONY WIN MAC : LayoutTests/storage/change-version.html = TIMEOUT
-BUG_TONY WIN : LayoutTests/fast/frames/frame-scrolling-attribute.html = CRASH
+
+// window.openDatabase doesn't exist yet as of r29980.  That's causing these
+// tests to fail.
+BUG26107 : LayoutTests/fast/js/global-function-resolve.html = FAIL
+BUG26107 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL PASS
+BUG26107 WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
+BUG26107 : LayoutTests/storage/change-version-handle-reuse.html = FAIL
+BUG26107 : LayoutTests/storage/change-version.html = TIMEOUT
+
 BUG_TONY LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG_TONY LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
-BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH FAIL
 
 // WebKit roll 49992:49997
 // hclam to add expected results.
