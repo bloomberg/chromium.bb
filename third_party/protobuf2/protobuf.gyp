@@ -38,6 +38,7 @@
     {
       'target_name': 'protobuf_lite',
       'type': '<(library)',
+      'toolsets': ['host', 'target'],
       'sources': [
         'src/src/google/protobuf/stubs/common.h',
         'src/src/google/protobuf/stubs/once.h',
@@ -92,6 +93,7 @@
     {
       'target_name': 'protobuf',
       'type': '<(library)',
+      'toolsets': ['host'],
       'sources': [
         'src/src/google/protobuf/descriptor.h',
         'src/src/google/protobuf/descriptor.pb.h',
@@ -149,6 +151,7 @@
     {
       'target_name': 'protoc',
       'type': 'executable',
+      'toolsets': ['host'],
       'sources': [
         'src/src/google/protobuf/compiler/code_generator.cc',
         'src/src/google/protobuf/compiler/command_line_interface.cc',

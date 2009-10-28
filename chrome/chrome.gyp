@@ -2895,7 +2895,7 @@
             ['chromeos==1 or toolkit_views==1',{
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-                '../third_party/protobuf2/protobuf.gyp:protoc',
+                '../third_party/protobuf2/protobuf.gyp:protoc#host',
                 '../third_party/cros/cros_api.gyp:cros_api',
               ],
               'actions': [
@@ -5102,7 +5102,7 @@
       ],
       'dependencies': [
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf2/protobuf.gyp:protoc',
+        '../third_party/protobuf2/protobuf.gyp:protoc#host',
       ],
       'export_dependent_settings': [
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
