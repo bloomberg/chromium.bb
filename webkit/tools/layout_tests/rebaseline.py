@@ -35,8 +35,11 @@ from layout_package import test_expectations
 from test_types import image_diff
 from test_types import text_diff
 
+# Repository type constants.
+REPO_SVN, REPO_UNKNOWN = range(2)
+
 BASELINE_SUFFIXES = ['.txt', '.png', '.checksum']
-REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'win-xp', 'linux']
+REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'win-xp', 'win-vista', 'linux']
 ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-rel',
                          'win-vista': 'webkit-dbg-vista',
                          'win-xp': 'webkit-rel',
@@ -48,15 +51,15 @@ ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-rel',
                          'mac-canary': 'webkit-rel-mac-webkit-org',
                          'linux-canary': 'webkit-rel-linux-webkit-org'}
 
-def RunShell(command, print_output=False):
-  """Executes a command and returns the output.
+def RunShellWithReturnCode(command, print_output=False):
+  """Executes a command and returns the output and process return code.
 
   Args:
     command: program and arguments.
     print_output: if true, print the command results to standard output.
 
   Returns:
-    command output
+    command output, return code
   """
 
   # Use a shell for subcommands on Windows to get a PATH search.
@@ -77,8 +80,22 @@ def RunShell(command, print_output=False):
     output = p.stdout.read()
   p.wait()
   p.stdout.close()
-  return output
 
+  return output, p.returncode
+
+def RunShell(command, print_output=False):
+  """Executes a command and returns the output.
+
+  Args:
+    command: program and arguments.
+    print_output: if true, print the command results to standard output.
+
+  Returns:
+    command output
+  """
+
+  output, return_code = RunShellWithReturnCode(command, print_output)
+  return output
 
 def LogDashedString(text, platform, logging_level=logging.INFO):
   """Log text message with dashes on both sides."""
@@ -172,6 +189,8 @@ class Rebaseliner(object):
                                                                  False,
                                                                  False)
 
+    self._repo_type = self._GetRepoType()
+
   def Run(self, backup):
     """Run rebaseline process."""
 
@@ -210,6 +229,15 @@ class Rebaseliner(object):
 
   def GetRebaseliningTests(self):
     return self._rebaselining_tests
+
+  def _GetRepoType(self):
+    """Get the repository type that client is using."""
+
+    output, return_code = RunShellWithReturnCode(['svn', 'info'], False)
+    if return_code == 0:
+      return REPO_SVN
+
+    return REPO_UNKNOWN
 
   def _CompileRebaseliningTests(self):
     """Compile list of tests that need rebaselining for the platform.
@@ -361,29 +389,36 @@ class Rebaseliner(object):
         found = True
         logging.info('  %s file found in archive.', suffix)
 
+        # Extract new baseline from archive and save it to a temp file.
+        data = zip_file.read(archive_test_name)
+        temp_fd, temp_name = tempfile.mkstemp(suffix)
+        f = os.fdopen(temp_fd, 'wb')
+        f.write(data)
+        f.close()
+
         expected_filename = '%s-expected%s' % (test_basename, suffix)
         expected_fullpath = os.path.join(
             path_utils.ChromiumBaselinePath(platform), expected_filename)
         expected_fullpath = os.path.normpath(expected_fullpath)
         logging.debug('  Expected file full path: "%s"', expected_fullpath)
 
-        data = zip_file.read(archive_test_name)
-
-        # Create the new baseline directory if it doesn't already exist.
-        path_utils.MaybeMakeDirectory(os.path.dirname(expected_fullpath))
-
-        f = open(expected_fullpath, 'wb')
-        f.write(data)
-        f.close()
-
         # TODO(victorw): for now, the rebaselining tool checks whether
         # or not THIS baseline is duplicate and should be skipped.
         # We could improve the tool to check all baselines in upper and lower
         # levels and remove all duplicated baselines.
-        if self._IsDupBaseline(expected_fullpath, test, suffix, self._platform):
-          # Clean up the duplicate baseline.
+        if self._IsDupBaseline(temp_name,
+                               expected_fullpath,
+                               test,
+                               suffix,
+                               self._platform):
+          os.remove(temp_name)
           self._DeleteBaseline(expected_fullpath)
           continue
+
+        # Create the new baseline directory if it doesn't already exist.
+        path_utils.MaybeMakeDirectory(os.path.dirname(expected_fullpath))
+
+        shutil.move(temp_name, expected_fullpath)
 
         if not self._SvnAdd(expected_fullpath):
           svn_error = True
@@ -406,7 +441,7 @@ class Rebaseliner(object):
 
     return self._rebaselined_tests
 
-  def _IsDupBaseline(self, baseline_path, test, suffix, platform):
+  def _IsDupBaseline(self, new_baseline, baseline_path, test, suffix, platform):
     """Check whether a baseline is duplicate and can fallback to same
        baseline for another platform. For example, if a test has same baseline
        on linux and windows, then we only store windows baseline and linux
@@ -433,7 +468,7 @@ class Rebaseliner(object):
         fallback_fullpath = os.path.normpath(
             os.path.join(fallback_dir, fallback_file))
         if fallback_fullpath.lower() != baseline_path.lower():
-          if not self._DiffBaselines(baseline_path, fallback_fullpath):
+          if not self._DiffBaselines(new_baseline, fallback_fullpath):
             logging.info('  Found same baseline at %s', fallback_fullpath)
             return True
           else:
@@ -467,20 +502,23 @@ class Rebaseliner(object):
                                                                   file2)
 
   def _DeleteBaseline(self, filename):
-    """Remove the file from SVN repository and delete it from disk.
+    """Remove the file from repository and delete it from disk.
 
     Args:
       filename: full path of the file to delete.
     """
 
-    if not filename:
+    if not filename or not os.path.isfile(filename):
       return
 
-    parent_dir, basename = os.path.split(filename)
-    original_dir = os.getcwd()
-    os.chdir(parent_dir)
-    status_output = RunShell(['svn', 'delete', '--force', basename], False)
-    os.chdir(original_dir)
+    if self._repo_type == REPO_SVN:
+      parent_dir, basename = os.path.split(filename)
+      original_dir = os.getcwd()
+      os.chdir(parent_dir)
+      RunShell(['svn', 'delete', '--force', basename], False)
+      os.chdir(original_dir)
+    else:
+      os.remove(filename)
 
   def _UpdateRebaselinedTestsInFile(self, backup):
     """Update the rebaselined tests in test expectations file.
@@ -514,9 +552,8 @@ class Rebaseliner(object):
       return False
 
     parent_dir, basename = os.path.split(filename)
-    if parent_dir == filename:
-      logging.info("No svn checkout found. Assuming it's a git repo and not "
-                   "adding")
+    if self._repo_type != REPO_SVN or parent_dir == filename:
+      logging.info("No svn checkout found, skip svn add.")
       return True
 
     original_dir = os.getcwd()
@@ -865,7 +902,7 @@ def main():
                            help='include debug-level logging.')
 
   option_parser.add_option('-p', '--platforms',
-                           default='mac,win,win-xp,linux',
+                           default='mac,win,win-xp,win-vista,linux',
                            help=('Comma delimited list of platforms that need '
                                  'rebaselining.'))
 
