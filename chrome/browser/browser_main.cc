@@ -410,10 +410,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
 
-  // Start the database thread (the order of when this happens in this function
-  // doesn't matter, all we need is to kick it off).
-  browser_process->db_thread();
-
 #if defined(TOOLKIT_GTK)
   // It is important for this to happen before the first run dialog, as it
   // styles the dialog as well.
@@ -717,6 +713,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize Winsock.
   net::EnsureWinsockInit();
 #endif  // defined(OS_WIN)
+
+  // Create the child threads.  We need to do this since ChromeThread::PostTask
+  // silently deletes a posted task if the target message loop isn't created.
+  browser_process->db_thread();
+  browser_process->file_thread();
+  browser_process->io_thread();
 
   // Initialize and maintain DNS prefetcher module.
   chrome_browser_net::DnsPrefetcherInit dns_prefetch(user_prefs, local_state);
