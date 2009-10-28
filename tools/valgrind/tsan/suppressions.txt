@@ -16,13 +16,6 @@
 }
 
 {
-  bug_22272
-  ThreadSanitizer:Race
-  ...
-  fun:*RefCounted*LoadLog*
-}
-
-{
   bug_22520
   ThreadSanitizer:Race
   fun:*CancelableRequestBase*
