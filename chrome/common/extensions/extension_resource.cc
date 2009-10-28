@@ -41,21 +41,35 @@ FilePath ExtensionResource::GetFilePath(const FilePath& extension_root,
   extension_l10n_util::GetL10nRelativePaths(relative_path,
                                             &l10n_relative_paths);
 
+  // We need to resolve the parent references in the extension_root
+  // path on its own because IsParent doesn't like parent references.
+  FilePath clean_extension_root(extension_root);
+  if (!file_util::AbsolutePath(&clean_extension_root))
+    return FilePath();
+
   // Stat l10n file(s), and return new path if it exists.
   for (size_t i = 0; i < l10n_relative_paths.size(); ++i) {
-    FilePath full_path;
-    if (extension_root.AppendAndResolveRelative(l10n_relative_paths[i],
-                                                &full_path) &&
-        extension_root.IsParent(full_path) &&
+    FilePath full_path = clean_extension_root.Append(l10n_relative_paths[i]);
+    if (file_util::AbsolutePath(&full_path) &&
+        clean_extension_root.IsParent(full_path) &&
         file_util::PathExists(full_path)) {
       return full_path;
     }
   }
 
   // Fall back to root resource.
-  FilePath full_path;
-  if (extension_root.AppendAndResolveRelative(relative_path, &full_path) &&
-      extension_root.IsParent(full_path)) {
+  FilePath full_path = clean_extension_root.Append(relative_path);
+
+  // We must resolve the absolute path of the combined path when
+  // the relative path contains references to a parent folder (i.e., '..').
+  // We also check if the path exists because the posix version of AbsolutePath
+  // will fail if the path doesn't exist, and we want the same behavior on
+  // Windows... So until the posix and Windows version of AbsolutePath are
+  // unified, we need an extra call to PathExists, unfortunately.
+  // TODO(mad): Fix this once AbsolutePath is unified.
+  if (file_util::AbsolutePath(&full_path) &&
+      file_util::PathExists(full_path) &&
+      clean_extension_root.IsParent(full_path)) {
     return full_path;
   }
 

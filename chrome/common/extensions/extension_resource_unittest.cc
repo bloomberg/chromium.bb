@@ -35,12 +35,10 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   relative_path = relative_path.AppendASCII("cira.js");
   ExtensionResource resource(root_path, relative_path);
 
+  // The path doesn't exist on disk, we will be returned an empty path.
   EXPECT_EQ(root_path.value(), resource.extension_root().value());
   EXPECT_EQ(relative_path.value(), resource.relative_path().value());
-  EXPECT_EQ(ToLower(root_path.Append(relative_path).value()),
-    ToLower(resource.GetFilePath().value()));
-
-  EXPECT_FALSE(resource.GetFilePath().empty());
+  EXPECT_TRUE(resource.GetFilePath().empty());
 }
 
 TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
@@ -76,6 +74,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ASSERT_FALSE(locales.empty());
   FilePath expected_path;
   expected_path = l10n_path.AppendASCII(locales[0]).AppendASCII(filename);
+  ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
 
   EXPECT_EQ(ToLower(expected_path.value()), ToLower(resolved_path.value()));
   EXPECT_EQ(ToLower(temp.path().value()),
