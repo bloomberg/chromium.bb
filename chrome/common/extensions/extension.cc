@@ -344,12 +344,19 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
     result->set_default_icon_path(default_icon);
   }
 
-  // Read the page action |default_title|.
+  // Read the page action title from |default_title| if present, |name| if not
+  // (both optional).
   std::string title;
-  if (!extension_action->GetString(keys::kName, &title) &&
-      !extension_action->GetString(keys::kPageActionDefaultTitle, &title)) {
-    *error = errors::kInvalidPageActionDefaultTitle;
-    return NULL;
+  if (extension_action->HasKey(keys::kPageActionDefaultTitle)) {
+    if (!extension_action->GetString(keys::kPageActionDefaultTitle, &title)) {
+      *error = errors::kInvalidPageActionDefaultTitle;
+      return NULL;
+    }
+  } else if (extension_action->HasKey(keys::kName)) {
+    if (!extension_action->GetString(keys::kName, &title)) {
+      *error = errors::kInvalidPageActionName;
+      return NULL;
+    }
   }
   result->SetTitle(ExtensionAction::kDefaultTabId, title);
 

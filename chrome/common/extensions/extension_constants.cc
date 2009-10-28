@@ -98,6 +98,8 @@ const char* kInvalidName =
     "Required value 'name' is missing or invalid.";
 const char* kInvalidPageAction =
     "Invalid value for 'page_action'.";
+const char* kInvalidPageActionName =
+    "Invalid value for 'page_action.name'.";
 const char* kInvalidPageActionIconPath =
     "Invalid value for 'page_action.default_icon'.";
 const char* kInvalidPageActionsList =
@@ -107,7 +109,7 @@ const char* kInvalidPageActionsListSize =
 const char* kInvalidPageActionId =
     "Required value 'id' is missing or invalid.";
 const char* kInvalidPageActionDefaultTitle =
-    "Required value 'default_title' is missing or invalid.";
+    "Invalid value for 'default_title'.";
 const char* kInvalidPageActionPopup =
     "Invalid type for page action popup.";
 const char* kInvalidPageActionPopupHeight =

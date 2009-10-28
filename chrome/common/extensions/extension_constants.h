@@ -90,6 +90,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidToolstrips;
   extern const char* kInvalidVersion;
   extern const char* kInvalidPageAction;
+  extern const char* kInvalidPageActionName;
   extern const char* kInvalidPageActionsList;
   extern const char* kInvalidPageActionsListSize;
   extern const char* kInvalidPageActionIconPath;

@@ -300,19 +300,13 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   scoped_ptr<ExtensionAction> action;
   DictionaryValue input;
 
-  // First try with an empty dictionary. We should get nothing back.
+  // First try with an empty dictionary.
   ASSERT_TRUE(extension.LoadExtensionActionHelper(
-      &input, &error_msg) == NULL);
-  ASSERT_STRNE("", error_msg.c_str());
+      &input, &error_msg) != NULL);
+  ASSERT_STREQ("", error_msg.c_str());
   error_msg = "";
 
-  // Now try the same, but as a browser action. Ensure same results.
-  ASSERT_TRUE(extension.LoadExtensionActionHelper(
-      &input, &error_msg) == NULL);
-  ASSERT_STRNE("", error_msg.c_str());
-  error_msg = "";
-
-  // Now setup some values to use in the page action.
+  // Now setup some values to use in the action.
   const std::string id("MyExtensionActionId");
   const std::string name("MyExtensionActionName");
   std::string img1("image1.png");
@@ -327,11 +321,11 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   input.Set(keys::kPageActionIcons, icons);
 
   // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionActionHelper(
-      &input, &error_msg));
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   ASSERT_STREQ(id.c_str(), action->id().c_str());
+  // No title, so fall back to name.
   ASSERT_STREQ(name.c_str(), action->GetTitle(1).c_str());
   ASSERT_EQ(2u, action->icon_paths()->size());
   ASSERT_STREQ(img1.c_str(), action->icon_paths()->at(0).c_str());
@@ -339,8 +333,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Explicitly set the same type and parse again.
   input.SetString(keys::kType, values::kPageActionTypeTab);
-  action.reset(extension.LoadExtensionActionHelper(
-      &input, &error_msg));
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
 
@@ -351,27 +344,24 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // First remove id key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionId, NULL);
-  action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), &error_msg));
+  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   error_msg = "";
 
-  // Then remove the name key.
+  // Then remove the name key. It's optional, so no error.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
-  action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), &error_msg));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidPageActionDefaultTitle));
+  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_STREQ("", action->GetTitle(1).c_str());
+  ASSERT_STREQ("", error_msg.c_str());
   error_msg = "";
 
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
-  action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), &error_msg));
+  action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
   error_msg = "";
 
@@ -387,12 +377,35 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   input.SetString(keys::kPageActionDefaultIcon, kIcon);
 
   // Parse and read back the values from the object.
-  action.reset(extension.LoadExtensionActionHelper(
-      &input, &error_msg));
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
   ASSERT_TRUE(action.get());
   ASSERT_STREQ("", error_msg.c_str());
   ASSERT_EQ(kTitle, action->GetTitle(1));
   ASSERT_EQ(0u, action->icon_paths()->size());
+
+  // Invalid title should give an error even with a valid name.
+  input.Clear();
+  input.SetInteger(keys::kPageActionDefaultTitle, 42);
+  input.SetString(keys::kName, name);
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  ASSERT_TRUE(NULL == action.get());
+  ASSERT_STREQ(errors::kInvalidPageActionDefaultTitle, error_msg.c_str());
+  error_msg = "";
+
+  // Invalid name should give an error only with no title.
+  input.SetString(keys::kPageActionDefaultTitle, kTitle);
+  input.SetInteger(keys::kName, 123);
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_EQ(kTitle, action->GetTitle(1));
+  ASSERT_STREQ("", error_msg.c_str());
+  error_msg = "";
+
+  input.Remove(keys::kPageActionDefaultTitle, NULL);
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  ASSERT_TRUE(NULL == action.get());
+  ASSERT_STREQ(errors::kInvalidPageActionName, error_msg.c_str());
+  error_msg = "";
 }
 
 TEST(ExtensionTest, IdIsValid) {
