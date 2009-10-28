@@ -24,13 +24,6 @@
     DISABLED_OpenCloseBrowserWindowWithAccelerator
 #endif
 
-// http://code.google.com/p/chromium/issues/detail?id=14774
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_CloseTab DISABLED_CloseTab
-#else
-#define MAYBE_CloseTab CloseTab
-#endif
-
 // Automation pieces are not implemented for these on platforms other than
 // Windows.
 #if defined(OS_WIN)
@@ -111,7 +104,8 @@ TEST_F(AutomatedUITestBase, DISABLED_RestoreTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-TEST_F(AutomatedUITestBase, MAYBE_CloseTab) {
+// http://code.google.com/p/chromium/issues/detail?id=14774
+TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
   int num_browser_windows;
   int tab_count;
   NewTab();
