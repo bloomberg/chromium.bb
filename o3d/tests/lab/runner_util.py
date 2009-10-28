@@ -42,9 +42,8 @@ import sys
 import runner_constants as const
 import util
 
-CHANGE_RESOLUTION_PATH = os.path.join(const.TEST_PATH, 'lab', 
-                                      'ChangeResolution','Debug',
-                                      'changeresolution.exe')
+CHANGE_RESOLUTION_PATH = (const.O3D_PATH + '/o3d/tests/lab' 
+                          '/ChangeResolution/Debug/changeresolution.exe')
 
 def EnsureWindowsScreenResolution(width, height, bpp):
   """Performs all steps needed to configure system for testing on Windows.
@@ -56,8 +55,7 @@ def EnsureWindowsScreenResolution(width, height, bpp):
   Returns:
     True on success.
   """
-  if not os.path.exists(CHANGE_RESOLUTION_PATH):
-    return False
+  
   command = 'call "%s" %d %d %d' % (CHANGE_RESOLUTION_PATH, width, height, bpp)
   
   

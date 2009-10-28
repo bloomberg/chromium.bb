@@ -29,8 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Defines common O3D test runner constants. This file determines paths to
-other O3D components relatively, so it must be placed in the right location.
+"""Defines common O3D test runner constants.
 
 """
 
@@ -41,57 +40,55 @@ import util
 
 join = os.path.join
 
-# Make sure OS is supported.
-if not util.IsWindows() and not util.IsMac() and not util.IsLinux():
+if util.IsWindows():
+  AUTO_PATH = r'C:\auto'
+  PYTHON = r'C:\Python24\python.exe'
+  if util.IsXP():
+    HOME_PATH = r'C:\Documents and Settings\testing'
+  else:
+    HOME_PATH = r'C:\Users\testing'
+
+elif util.IsMac():
+  AUTO_PATH = '/Users/testing/auto'
+  PYTHON = 'python'
+  HOME_PATH = '/Users/testing'
+
+elif util.IsLinux():
+  AUTO_PATH = '/home/testing/auto'
+  PYTHON = 'python'
+  HOME_PATH = '/home/testing'
+
+else:
   print 'Only Windows, Mac, and Linux are supported.'
   sys.exit(1)
 
-# This path should be root/o3d/tests.
-TEST_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# This path should be root/o3d.
-O3D_PATH = os.path.dirname(TEST_PATH)
-# This path should be root, i.e., the checkout location.
-BASE_PATH = os.path.dirname(O3D_PATH)
-
-
-HOME = os.path.expanduser('~')
-if HOME == '~':
-  print 'Cannot find user home directory.'
-  sys.exit(1)
-
-if util.IsWindows():
-  PYTHON = r'C:\Python24\python.exe'
-else:
-  PYTHON = 'python'
-
-# Note: this path may or may not exist.
-RESULTS_PATH = join(TEST_PATH, 'results')
+O3D_PATH = join(AUTO_PATH, 'o3d')
+SCRIPTS_PATH = join(AUTO_PATH, 'scripts')
+RESULTS_PATH = join(AUTO_PATH, 'results')
+SOFTWARE_PATH = join(AUTO_PATH, 'software')
 
 # Build directories.
 if util.IsWindows():
-  BUILD_PATH = join(O3D_PATH, 'build')
+  BUILD_PATH = join(O3D_PATH, 'o3d', 'build')
 elif util.IsMac():
-  BUILD_PATH = join(BASE_PATH, 'xcodebuild')
+  BUILD_PATH = join(O3D_PATH, 'xcodebuild')
 else:
-  BUILD_PATH = join(BASE_PATH, 'sconsbuild')
+  BUILD_PATH = join(O3D_PATH, 'sconsbuild')
   
 if os.path.exists(join(BUILD_PATH, 'Debug')):
   PRODUCT_DIR_PATH = join(BUILD_PATH, 'Debug')
-elif os.path.exists(join(BUILD_PATH, 'Release')):
-  PRODUCT_DIR_PATH = join(BUILD_PATH, 'Release')
 else:
-  print 'Cannot find Debug or Release folder in ' + BUILD_PATH
-  sys.exit(1)
+  PRODUCT_DIR_PATH = join(BUILD_PATH, 'Release')
   
 # Plugin locations.
 INSTALL_PATHS = []
 if util.IsWindows():
-  INSTALL_PATHS += [join(HOME, 'Application Data', 'Mozilla',
+  INSTALL_PATHS += [join(HOME_PATH, 'Application Data', 'Mozilla',
                          'plugins', 'npo3dautoplugin.dll')]
-  INSTALL_PATHS += [join(HOME, 'Application Data', 'Google', 'O3D',
+  INSTALL_PATHS += [join(HOME_PATH, 'Application Data', 'Google', 'O3D',
                          'o3d_host.dll')]
 elif util.IsMac():
   INSTALL_PATHS += ['/Library/Internet Plug-Ins/O3D.plugin']
 else:
-  INSTALL_PATHS += [join(HOME, '.mozilla', 'plugins',
+  INSTALL_PATHS += [join(HOME_PATH, '.mozilla', 'plugins',
                          'libnpo3dautoplugin.so')]
