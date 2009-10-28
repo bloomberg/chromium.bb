@@ -833,7 +833,7 @@ TEST(CookieMonsterTest, TestLastAccess) {
   EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm));
 
   // Reading after a short wait should update the access date.
-  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 10);
+  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
   EXPECT_EQ("A=B", cm->GetCookies(url_google));
   EXPECT_FALSE(last_access_date == GetFirstCookieAccessDate(cm));
 }
@@ -878,7 +878,7 @@ TEST(CookieMonsterTest, TestTotalGarbageCollection) {
     // always have the most recent access time).
     if (!(i % 500)) {
       // Ensure the timestamps will be different enough to update.
-      PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 10);
+      PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
       EXPECT_EQ("a=b", cm->GetCookies(sticky_cookie));
     }
   }
