@@ -3218,26 +3218,11 @@ BUG_TONY LINUX DEBUG : LayoutTests/media/controls-drag-timebar.html = CRASH FAIL
 // WebKit roll 49992:49997
 // hclam to add expected results.
 BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL
-// scherkus to add expected results.
-BUG_SCHERKUS : LayoutTests/media/video-pause-immediately.html = FAIL
 
 // New flaky crashing tests
 BUG25747 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-invalid-values.html = CRASH PASS
 BUG25747 MAC : LayoutTests/fast/forms/tabbing-input-iframe.html = CRASH PASS
 BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html = CRASH PASS
-
-// WebKit roll 50027:50073
-// HTML5 media element 'load' removed: http://trac.webkit.org/changeset/50063
-BUG_TONY : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
-BUG_TONY : LayoutTests/media/audio-constructor.html = FAIL
-BUG_TONY : LayoutTests/media/video-append-source.html = FAIL
-BUG_TONY : LayoutTests/media/video-canvas-source.html = FAIL
-BUG_TONY : LayoutTests/media/video-controls.html = FAIL
-BUG_TONY : LayoutTests/media/video-dom-src.html = FAIL
-BUG_TONY : LayoutTests/media/video-seek-past-end-paused.html = FAIL
-BUG_TONY : LayoutTests/media/video-src-change.html = FAIL
-BUG_TONY LINUX : LayoutTests/media/video-seekable.html = FAIL
-BUG_TONY MAC : LayoutTests/media/video-error-abort.html = FAIL
 
 // WebKit roll 50073:50101
 // jorlow to add expected results.

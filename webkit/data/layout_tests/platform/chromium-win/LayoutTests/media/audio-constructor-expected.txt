@@ -4,6 +4,5 @@ EXPECTED (audio instanceof HTMLAudioElement == 'true') OK
 RUN(audio.load())
 EVENT(loadstart)
 EXPECTED (relativeURL(audio.currentSrc) == 'content/test.oga') OK
-EVENT(load)
+EVENT(canplaythrough)
 END OF TEST
-
