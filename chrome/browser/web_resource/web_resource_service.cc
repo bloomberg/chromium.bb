@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/web_resource/web_resource_service.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -106,7 +108,8 @@ class WebResourceService::UnpackerClient
     // If we don't have a resource_dispatcher_host_, assume we're in
     // a test and run the unpacker directly in-process.
     bool use_utility_process =
-        web_resource_service_->resource_dispatcher_host_ != NULL;
+        web_resource_service_->resource_dispatcher_host_ != NULL &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 
 #if defined(OS_POSIX)
     // TODO(port): Don't use a utility process on linux (crbug.com/22703) or
