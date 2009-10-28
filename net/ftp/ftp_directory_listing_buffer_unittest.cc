@@ -1,0 +1,101 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/ftp/ftp_directory_listing_buffer.h"
+
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/string_tokenizer.h"
+#include "base/string_util.h"
+#include "net/base/net_errors.h"
+#include "net/ftp/ftp_directory_listing_parsers.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+TEST(FtpDirectoryListingBufferTest, Parse) {
+  const char* test_files[] = {
+    "dir-listing-ls-1",
+    "dir-listing-ls-2",
+  };
+  
+  FilePath test_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  test_dir = test_dir.AppendASCII("net");
+  test_dir = test_dir.AppendASCII("data");
+  test_dir = test_dir.AppendASCII("ftp");
+  
+  for (size_t i = 0; i < arraysize(test_files); i++) {
+    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, test_files[i]));
+    
+    net::FtpDirectoryListingBuffer buffer;
+    
+    std::string test_listing;
+    EXPECT_TRUE(file_util::ReadFileToString(test_dir.AppendASCII(test_files[i]),
+                                            &test_listing));
+    
+    EXPECT_EQ(net::OK, buffer.ConsumeData(test_listing.data(),
+                                          test_listing.length()));
+    EXPECT_EQ(net::OK, buffer.ProcessRemainingData());
+    
+    std::string expected_listing;
+    ASSERT_TRUE(file_util::ReadFileToString(
+        test_dir.AppendASCII(std::string(test_files[i]) + ".expected"),
+        &expected_listing));
+    
+    std::vector<std::string> lines;
+    StringTokenizer tokenizer(expected_listing, "\r\n");
+    while (tokenizer.GetNext())
+      lines.push_back(tokenizer.token());
+    ASSERT_EQ(0U, lines.size() % 7);
+    
+    for (size_t i = 0; i < lines.size() / 7; i++) {
+      std::string type(lines[7 * i]);
+      std::string name(lines[7 * i + 1]);
+      
+      SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
+      
+      int year;
+      if (lines[7 * i + 2] == "current") {
+        base::Time::Exploded now_exploded;
+        base::Time::Now().LocalExplode(&now_exploded);
+        year = now_exploded.year;
+      } else {
+        year = StringToInt(lines[7 * i + 2]);
+      }
+      int month = StringToInt(lines[7 * i + 3]);
+      int day_of_month = StringToInt(lines[7 * i + 4]);
+      int hour = StringToInt(lines[7 * i + 5]);
+      int minute = StringToInt(lines[7 * i + 6]);
+      
+      ASSERT_TRUE(buffer.EntryAvailable());
+      net::FtpDirectoryListingEntry entry = buffer.PopEntry();
+      
+      if (type == "d") {
+        EXPECT_EQ(net::FtpDirectoryListingEntry::DIRECTORY, entry.type);
+      } else if (type == "-") {
+        EXPECT_EQ(net::FtpDirectoryListingEntry::FILE, entry.type);
+      } else if (type == "l") {
+        EXPECT_EQ(net::FtpDirectoryListingEntry::SYMLINK, entry.type);
+      } else {
+        ADD_FAILURE() << "invalid gold test data: " << type;
+      }
+      
+      EXPECT_EQ(UTF8ToUTF16(name), entry.name);
+      
+      base::Time::Exploded time_exploded;
+      entry.last_modified.LocalExplode(&time_exploded);
+      EXPECT_EQ(year, time_exploded.year);
+      EXPECT_EQ(month, time_exploded.month);
+      EXPECT_EQ(day_of_month, time_exploded.day_of_month);
+      EXPECT_EQ(hour, time_exploded.hour);
+      EXPECT_EQ(minute, time_exploded.minute);
+      EXPECT_EQ(0, time_exploded.second);
+      EXPECT_EQ(0, time_exploded.millisecond);
+    }
+    EXPECT_FALSE(buffer.EntryAvailable());
+  }
+}
+
+}  // namespace
