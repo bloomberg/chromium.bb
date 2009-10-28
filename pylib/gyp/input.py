@@ -346,7 +346,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   ProcessToolsetsInDict(build_file_data)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False, variables.copy(),
+  ProcessVariablesAndConditionsInDict(build_file_data, False, variables,
                                       build_file_path)
 
   # Look at each project's target_defaults dict, and merge settings into
@@ -711,7 +711,7 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
       # Expand variables and nested conditinals in the merge_dict before
       # merging it.
       ProcessVariablesAndConditionsInDict(merge_dict, is_late,
-                                          variables.copy(), build_file)
+                                          variables, build_file)
 
       MergeDicts(the_dict, merge_dict, build_file, build_file)
 
@@ -754,19 +754,18 @@ def LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key):
     variables[variable_name] = value
 
 
-def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
+def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
                                         build_file, the_dict_key=None):
   """Handle all variable and command expansion and conditional evaluation.
 
   This function is the public entry point for all variable expansions and
-  conditional evaluations.
+  conditional evaluations.  The variables_in dictionary will not be modified
+  by this function.
   """
 
-  # Save a copy of the variables dict before loading automatics or the
-  # variables dict.  After performing steps that may result in either of
-  # these changing, the variables can be reloaded into a copy of the original
-  # state.
-  variables_orig = variables.copy()
+  # Make a copy of the variables_in dict that can be modified during the
+  # loading of automatics and the loading of the variables dict.
+  variables = variables_in.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
 
   if 'variables' in the_dict:
@@ -783,8 +782,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
     # Otherwise, it would have extra automatics added for everything that
     # should just be an ordinary variable in this scope.
     ProcessVariablesAndConditionsInDict(the_dict['variables'], is_late,
-                                        variables.copy(), build_file,
-                                        'variables')
+                                        variables, build_file, 'variables')
 
   LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
@@ -800,7 +798,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
 
   # Variable expansion may have resulted in changes to automatics.  Reload.
   # TODO(mark): Optimization: only reload if no changes were made.
-  variables = variables_orig.copy()
+  variables = variables_in.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
@@ -840,12 +838,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
 
   # Conditional processing may have resulted in changes to automatics or the
   # variables dict.  Reload.
-  # This is the last thing that might use variables_orig, so don't bother
-  # copying it, just use it directly.
-  # TODO(mark): Optimization: only reload if no changes were made.
-  # ProcessConditonsInDict could return a value indicating whether changes
-  # were made.
-  variables = variables_orig
+  variables = variables_in.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
@@ -859,7 +852,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
     if isinstance(value, dict):
       # Pass a copy of the variables dict so that subdicts can't influence
       # parents.
-      ProcessVariablesAndConditionsInDict(value, is_late, variables.copy(),
+      ProcessVariablesAndConditionsInDict(value, is_late, variables,
                                           build_file, key)
     elif isinstance(value, list):
       # The list itself can't influence the variables dict, and
@@ -882,8 +875,7 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables,
     if isinstance(item, dict):
       # Make a copy of the variables dict so that it won't influence anything
       # outside of its own scope.
-      ProcessVariablesAndConditionsInDict(item, is_late, variables.copy(),
-                                          build_file)
+      ProcessVariablesAndConditionsInDict(item, is_late, variables, build_file)
     elif isinstance(item, list):
       ProcessVariablesAndConditionsInList(item, is_late, variables, build_file)
     elif isinstance(item, str):
