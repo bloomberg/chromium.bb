@@ -383,19 +383,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // ID of the signal handler for "mark-set" on |text_buffer_|.
   gulong mark_set_handler_id_;
 
-  // Is the first mouse button currently down?
-  bool button_1_pressed_;
-
-  // Did the user change the selected text in the middle of the current click?
-  // If so, we don't select all of the text when the button is released -- we
-  // don't want to blow away their selection.
-  bool text_selected_during_click_;
-
-  // Was the text view already focused before the user clicked in it?  We use
-  // this to figure out whether we should select all of the text when the button
-  // is released (we only do so if the view was initially unfocused).
-  bool text_view_focused_before_button_press_;
-
 #if !defined(TOOLKIT_VIEWS)
   // Supplies colors, et cetera.
   GtkThemeProvider* theme_provider_;
