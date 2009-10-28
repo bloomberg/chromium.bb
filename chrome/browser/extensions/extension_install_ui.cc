@@ -20,6 +20,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
@@ -109,7 +110,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
 
   if (!install_icon) {
     install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_DEFAULT_EXTENSION_ICON_128);
+        IDR_EXTENSIONS_SECTION);
   }
 
   ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon,

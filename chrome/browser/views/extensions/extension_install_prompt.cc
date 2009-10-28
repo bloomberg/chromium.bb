@@ -36,8 +36,12 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
       Extension* extension, SkBitmap* icon, const std::wstring& warning_text)
           : delegate_(delegate), icon_(NULL) {
+    // Scale down to 85x85, but allow smaller icons (don't scale up).
+    gfx::Size size(icon->width(), icon->height());
+    if (size.width() > kIconSize || size.height() > kIconSize)
+      size = gfx::Size(kIconSize, kIconSize);
     icon_ = new views::ImageView();
-    icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    icon_->SetImageSize(size);
     icon_->SetImage(*icon);
     AddChildView(icon_);
 

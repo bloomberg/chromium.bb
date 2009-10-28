@@ -245,6 +245,7 @@
       <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="locationbg_readonly_edge.png" type="BINDATA" />
       <include name="IDR_HISTORY_SECTION" file="history_section.png" type="BINDATA" />
       <include name="IDR_DOWNLOADS_SECTION" file="downloads_section.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_SECTION" file="extensions_section.png" type="BINDATA" />
       <include name="IDR_DEFAULT_THUMBNAIL" file="default_thumbnail.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" type="BINDATA" />
