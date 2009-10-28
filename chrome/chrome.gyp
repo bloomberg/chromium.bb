@@ -1781,6 +1781,8 @@
         'browser/net/url_request_slow_http_job.h',
         'browser/net/url_request_tracking.cc',
         'browser/net/url_request_tracking.h',
+        'browser/net/websocket_experiment/websocket_experiment_task.cc',
+        'browser/net/websocket_experiment/websocket_experiment_task.h',
         'browser/notifications/balloons.h',
         'browser/notifications/desktop_notification_service.cc',
         'browser/notifications/desktop_notification_service.h',
