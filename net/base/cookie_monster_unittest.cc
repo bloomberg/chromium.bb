@@ -817,12 +817,12 @@ static Time GetFirstCookieAccessDate(net::CookieMonster* cm) {
   return all_cookies.front().second.LastAccessDate();
 }
 
-static const int kLastAccessThresholdSeconds = 1;
+static const int kLastAccessThresholdMilliseconds = 20;
 
 TEST(CookieMonsterTest, TestLastAccess) {
   GURL url_google(kUrlGoogle);
   scoped_refptr<net::CookieMonster> cm(
-      new net::CookieMonster(kLastAccessThresholdSeconds));
+      new net::CookieMonster(kLastAccessThresholdMilliseconds));
 
   EXPECT_TRUE(cm->SetCookie(url_google, "A=B"));
   const Time last_access_date(GetFirstCookieAccessDate(cm));
@@ -833,7 +833,7 @@ TEST(CookieMonsterTest, TestLastAccess) {
   EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm));
 
   // Reading after a short wait should update the access date.
-  PlatformThread::Sleep(1500);
+  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 10);
   EXPECT_EQ("A=B", cm->GetCookies(url_google));
   EXPECT_FALSE(last_access_date == GetFirstCookieAccessDate(cm));
 }
@@ -865,7 +865,7 @@ TEST(CookieMonsterTest, TestHostGarbageCollection) {
 
 TEST(CookieMonsterTest, TestTotalGarbageCollection) {
   scoped_refptr<net::CookieMonster> cm(
-      new net::CookieMonster(kLastAccessThresholdSeconds));
+      new net::CookieMonster(kLastAccessThresholdMilliseconds));
 
   // Add a bunch of cookies on a bunch of host, some should get purged.
   const GURL sticky_cookie("http://a0000.izzle");
@@ -877,8 +877,8 @@ TEST(CookieMonsterTest, TestTotalGarbageCollection) {
     // Keep touching the first cookie to ensure it's not purged (since it will
     // always have the most recent access time).
     if (!(i % 500)) {
-      PlatformThread::Sleep(1500);  // Ensure the timestamps will be different
-                                    // enough to update.
+      // Ensure the timestamps will be different enough to update.
+      PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 10);
       EXPECT_EQ("a=b", cm->GetCookies(sticky_cookie));
     }
   }

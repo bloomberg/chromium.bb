@@ -60,11 +60,11 @@ class CookieMonster : public CookieStore {
   CookieMonster(PersistentCookieStore* store);
 
 #ifdef UNIT_TEST
-  CookieMonster(int last_access_threshold_seconds)
+  CookieMonster(int last_access_threshold_milliseconds)
       : initialized_(false),
         store_(NULL),
-        last_access_threshold_(
-            base::TimeDelta::FromSeconds(last_access_threshold_seconds)) {
+        last_access_threshold_(base::TimeDelta::FromMilliseconds(
+            last_access_threshold_milliseconds)) {
     SetDefaultCookieableSchemes();
   }
 #endif
