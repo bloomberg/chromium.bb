@@ -115,6 +115,10 @@ deps_os = {
       "/trunk/deps/third_party/xulrunner-sdk@17887",
     "src/chrome_frame/tools/test/reference_build/chrome":
       "/trunk/deps/reference_builds/chrome_frame@27181",
+
+    # Parses Windows PE/COFF executable format.
+    "src/third_party/pefile":
+      "http://pefile.googlecode.com/svn/trunk@63",
   },
   "mac": {
     "src/third_party/GTM":
