@@ -164,7 +164,12 @@ ProxyFactory::ProxyFactory()
 }
 
 ProxyFactory::~ProxyFactory() {
-  DCHECK_EQ(proxies_.container().size(), 0);
+  for (size_t i = 0; i < proxies_.container().size(); ++i) {
+    if (WAIT_OBJECT_0 !=
+        WaitForSingleObject(proxies_[i]->thread->thread_handle(), 0))
+      // TODO(stoyan): Don't leak proxies on exit.
+      DLOG(ERROR) << "Proxies leaked on exit.";
+  }
 }
 
 void* ProxyFactory::GetAutomationServer(int launch_timeout,
