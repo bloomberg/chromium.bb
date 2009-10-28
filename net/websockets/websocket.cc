@@ -106,7 +106,7 @@ void WebSocket::OnConnected(SocketStream* socket_stream,
 
   // Use |max_pending_send_allowed| as hint for initial size of read buffer.
   current_read_buf_ = new GrowableIOBuffer();
-  current_read_buf_->set_capacity(max_pending_send_allowed_);
+  current_read_buf_->SetCapacity(max_pending_send_allowed_);
   read_consumed_len_ = 0;
 
   DCHECK(!current_write_buf_);
@@ -401,7 +401,7 @@ void WebSocket::AddToReadBuffer(const char* data, int len) {
   DCHECK(current_read_buf_);
   // Check if |current_read_buf_| has enough space to store |len| of |data|.
   if (len >= current_read_buf_->RemainingCapacity()) {
-    current_read_buf_->set_capacity(
+    current_read_buf_->SetCapacity(
         current_read_buf_->offset() + len);
   }
 
