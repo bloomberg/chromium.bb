@@ -6,4 +6,4 @@
 # Include pefile in the path.
 PYTHONPATH="$(dirname $0)/../../third_party/pefile:$PYTHONPATH"
 export PYTHONPATH
-python "$(dirname $0)/checkbin.py" "$@"
+python "$(dirname $0)/checkbins.py" "$@"
