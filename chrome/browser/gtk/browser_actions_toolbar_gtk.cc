@@ -115,8 +115,11 @@ class BrowserActionButton : public NotificationObserver,
     if (tab_id < 0)
       return;
 
-    gtk_widget_set_tooltip_text(button_.get(),
-        extension_->browser_action()->GetTitle(tab_id).c_str());
+    std::string tooltip = extension_->browser_action()->GetTitle(tab_id);
+    if (tooltip.empty())
+      gtk_widget_set_has_tooltip(button_.get(), FALSE);
+    else
+      gtk_widget_set_tooltip_text(button_.get(), tooltip.c_str());
 
     SkBitmap image = extension_->browser_action()->GetIcon(tab_id);
     if (!image.isNull()) {

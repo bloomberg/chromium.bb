@@ -26,8 +26,8 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
 }
 
 void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
-                                  const gfx::Rect& bounds,
-                                  int tab_id) {
+                                 const gfx::Rect& bounds,
+                                 int tab_id) {
   std::string text = GetBadgeText(tab_id);
   if (text.empty())
     return;
@@ -44,9 +44,10 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   // Different platforms need slightly different constants to look good.
 #if defined(OS_LINUX)
   const int kTextSize = 9;
-  const int kBottomMargin = 4;
+  const int kBottomMargin = 0;
   const int kPadding = 2;
-  const int kBadgeHeight = 12;
+  const int kTopTextPadding = 0;
+  const int kBadgeHeight = 11;
   const int kMaxTextWidth = 23;
   // The minimum width for center-aligning the badge.
   const int kCenterAlignThreshold = 20;
@@ -54,6 +55,8 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   const int kTextSize = 8;
   const int kBottomMargin = 5;
   const int kPadding = 2;
+  // The padding between the top of the badge and the top of the text.
+  const int kTopTextPadding = 1;
   const int kBadgeHeight = 11;
   const int kMaxTextWidth = 23;
   // The minimum width for center-aligning the badge.
@@ -131,7 +134,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   canvas->clipRect(rect);
   canvas->drawText(text.c_str(), text.size(),
                    rect.fLeft + (rect.width() - text_width) / 2,
-                   rect.fTop + kTextSize + 1,
+                   rect.fTop + kTextSize + kTopTextPadding,
                    text_paint);
   canvas->restore();
 }
