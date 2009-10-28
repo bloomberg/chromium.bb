@@ -153,6 +153,13 @@ class GitWrapper(SCMWrapper):
 
     All reverted files will be appended to file_list.
     """
+    path = os.path.join(self._root_dir, self.relpath)
+    if not os.path.isdir(path):
+      # revert won't work if the directory doesn't exist. It needs to
+      # checkout instead.
+      print("\n_____ %s is missing, synching instead" % self.relpath)
+      # Don't reuse the args.
+      return self.update(options, [], file_list)
     merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
     files = self._RunGit(['diff', merge_base, '--name-only']).split()
     print self._RunGit(['reset', '--hard', merge_base])
