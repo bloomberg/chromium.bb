@@ -384,7 +384,8 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
                               std::string* error) {
   // Reserved underscore names.
   static const char* reserved_names[] = {
-    Extension::kLocaleFolder
+    Extension::kLocaleFolder,
+    "__MACOSX"
   };
   static std::set<std::string> reserved_underscore_names(
     reserved_names, reserved_names + arraysize(reserved_names));

@@ -258,7 +258,8 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   return success;
 }
 
-bool Zip(const FilePath& src_dir, const FilePath& dest_file) {
+bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+         bool include_hidden_files) {
   DCHECK(file_util::DirectoryExists(src_dir));
 
 #if defined(OS_WIN)
@@ -291,6 +292,9 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file) {
           file_util::FileEnumerator::DIRECTORIES));
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
+    if (!include_hidden_files && path.BaseName().ToWStringHack()[0] == L'.')
+      continue;
+
     if (!AddEntryToZip(zip_file, path, src_dir)) {
       success = false;
       return false;

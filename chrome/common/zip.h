@@ -12,7 +12,10 @@
 // Zip the contents of src_dir into dest_file. src_path must be a directory.
 // An entry will *not* be created in the zip for the root folder -- children
 // of src_dir will be at the root level of the created zip.
-bool Zip(const FilePath& src_dir, const FilePath& dest_file);
+// If |include_hidden_files| is true, files starting with "." are included.
+// Otherwise they are omitted.
+bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+         bool include_hidden_files);
 
 // Unzip the contents of zip_file into dest_dir.
 bool Unzip(const FilePath& zip_file, const FilePath& dest_dir);

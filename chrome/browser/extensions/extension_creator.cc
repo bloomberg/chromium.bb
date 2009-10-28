@@ -123,7 +123,7 @@ bool ExtensionCreator::CreateZip(const FilePath& extension_dir,
   file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_"), zip_path);
   *zip_path = zip_path->Append(FILE_PATH_LITERAL("extension.zip"));
 
-  if (!Zip(extension_dir, *zip_path)) {
+  if (!Zip(extension_dir, *zip_path, false)) {  // no hidden files
     error_message_ = "Failed to create temporary zip file during packaging.";
     return false;
   }

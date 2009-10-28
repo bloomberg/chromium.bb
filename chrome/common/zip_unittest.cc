@@ -33,20 +33,24 @@ class ZipTest : public PlatformTest {
     zip_contents_.insert(zip_path);
     zip_contents_.insert(zip_path.AppendASCII("baz.txt"));
     zip_contents_.insert(zip_path.AppendASCII("quux.txt"));
+    zip_contents_.insert(zip_path.AppendASCII(".hidden"));
   }
 
   virtual void TearDown() {
     PlatformTest::TearDown();
   }
 
-  void TestUnzipFile(const FilePath::StringType& filename, bool need_success) {
+  void TestUnzipFile(const FilePath::StringType& filename,
+                     bool expect_hidden_files, bool need_success) {
     FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     test_dir = test_dir.AppendASCII("zip");
-    TestUnzipFile(test_dir.Append(filename), need_success);
+    TestUnzipFile(test_dir.Append(filename), expect_hidden_files,
+                  need_success);
   }
 
-  void TestUnzipFile(const FilePath& path, bool need_success) {
+  void TestUnzipFile(const FilePath& path, bool expect_hidden_files,
+                     bool need_success) {
     ASSERT_TRUE(file_util::PathExists(path)) << "no file " << path.value();
     if (need_success) {
       ASSERT_TRUE(Unzip(path, test_dir_));
@@ -70,7 +74,15 @@ class ZipTest : public PlatformTest {
       }
       next_path = files.Next();
     }
-    EXPECT_EQ(count, zip_contents_.size());
+
+    size_t expected_count = 0;
+    for (std::set<FilePath>::iterator iter = zip_contents_.begin();
+         iter != zip_contents_.end(); ++iter) {
+      if (expect_hidden_files || iter->BaseName().ToWStringHack()[0] != L'.')
+        ++expected_count;
+    }
+
+    EXPECT_EQ(expected_count, count);
   }
 
   // the path to temporary directory used to contain the test operations
@@ -83,15 +95,15 @@ class ZipTest : public PlatformTest {
 };
 
 TEST_F(ZipTest, Unzip) {
-  TestUnzipFile(FILE_PATH_LITERAL("test.zip"), true);
+  TestUnzipFile(FILE_PATH_LITERAL("test.zip"), true, true);
 }
 
 TEST_F(ZipTest, UnzipUncompressed) {
-  TestUnzipFile(FILE_PATH_LITERAL("test_nocompress.zip"), true);
+  TestUnzipFile(FILE_PATH_LITERAL("test_nocompress.zip"), true, true);
 }
 
 TEST_F(ZipTest, UnzipEvil) {
-  TestUnzipFile(FILE_PATH_LITERAL("evil.zip"), false);
+  TestUnzipFile(FILE_PATH_LITERAL("evil.zip"), true, false);
   FilePath evil_file = test_dir_;
   evil_file = evil_file.AppendASCII(
       "../levilevilevilevilevilevilevilevilevilevilevilevil");
@@ -107,9 +119,21 @@ TEST_F(ZipTest, Zip) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
 
-  EXPECT_TRUE(Zip(src_dir, zip_file));
+  EXPECT_TRUE(Zip(src_dir, zip_file, true));
+  TestUnzipFile(zip_file, true, true);
+}
 
-  TestUnzipFile(zip_file, true);
+TEST_F(ZipTest, ZipIgnoreHidden) {
+  FilePath src_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
+  src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
+
+  EXPECT_TRUE(Zip(src_dir, zip_file, false));
+  TestUnzipFile(zip_file, false, true);
 }
 
 }  // namespace
