@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
+#include "grit/generated_resources.h"
 
 class BookmarkHTMLWriterTest : public testing::Test {
  protected:
@@ -98,8 +100,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
-// Flaky, http://crbug.com/17592.
-TEST_F(BookmarkHTMLWriterTest, FLAKY_Test) {
+TEST_F(BookmarkHTMLWriterTest, Test) {
   // Populate the BookmarkModel. This creates the following bookmark structure:
   // Bookmarks bar
   //   F1
@@ -158,24 +159,18 @@ TEST_F(BookmarkHTMLWriterTest, FLAKY_Test) {
 
   // Verify we got back what we wrote.
   ASSERT_EQ(7U, parsed_bookmarks.size());
-  // Hardcode the value of IDS_BOOKMARK_BAR_FOLDER_NAME in en-US locale
-  // because all the unit tests are run in en-US locale.
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   // Windows and ChromeOS builds use Sentence case.
-  const wchar_t* kBookmarkBarFolderName = L"Bookmarks bar";
-#else
-  // Mac and Linux + GTK uses Title Case.
-  const wchar_t* kBookmarkBarFolderName = L"Bookmarks Bar";
-#endif
+  std::wstring bookmark_folder_name =
+      l10n_util::GetString(IDS_BOOMARK_BAR_FOLDER_NAME);
   AssertBookmarkEntryEquals(parsed_bookmarks[0], false, url1, url1_title, t1,
-                            kBookmarkBarFolderName, f1_title, std::wstring());
+                            bookmark_folder_name, f1_title, std::wstring());
   AssertBookmarkEntryEquals(parsed_bookmarks[1], false, url2, url2_title, t2,
-                            kBookmarkBarFolderName, f1_title, f2_title);
+                            bookmark_folder_name, f1_title, f2_title);
   AssertBookmarkEntryEquals(parsed_bookmarks[2], false, url3, url3_title, t3,
-                            kBookmarkBarFolderName, std::wstring(),
+                            bookmark_folder_name, std::wstring(),
                             std::wstring());
   AssertBookmarkEntryEquals(parsed_bookmarks[3], false, url4, url4_title, t4,
-                            kBookmarkBarFolderName, std::wstring(),
+                            bookmark_folder_name, std::wstring(),
                             std::wstring());
   AssertBookmarkEntryEquals(parsed_bookmarks[4], false, url1, url1_title, t1,
                             std::wstring(), std::wstring(), std::wstring());
