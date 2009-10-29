@@ -989,10 +989,7 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
 #endif  // OS_WIN
 
     if (should_set_backgrounded) {
-      bool rv = process_.SetProcessBackgrounded(backgrounded);
-      if (!rv) {
-        return;
-      }
+      process_.SetProcessBackgrounded(backgrounded);
     }
   }
 
