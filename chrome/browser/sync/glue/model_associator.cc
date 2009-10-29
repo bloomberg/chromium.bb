@@ -517,7 +517,7 @@ bool ModelAssociator::LoadAssociations() {
 
   // Count total number of nodes in sync model so that we can compare that
   // with the total number of nodes in the bookmark model.
-  int64 sync_node_count = 0;
+  size_t sync_node_count = 0;
   while (!dfs_stack.empty()) {
     int64 parent_id = dfs_stack.top();
     dfs_stack.pop();
@@ -564,7 +564,7 @@ bool ModelAssociator::LoadAssociations() {
   // model doesn't get a chance to persist its changes, for example when
   // Chrome does not shut down gracefully. In such cases we can't trust the
   // loaded associations.
-  return sync_node_count == id_index.count();
+  return sync_node_count == id_index.count());
 }
 
 }  // namespace browser_sync
