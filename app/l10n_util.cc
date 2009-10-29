@@ -525,6 +525,10 @@ static string16 GetStringF(int message_id,
                            const string16& c,
                            const string16& d,
                            std::vector<size_t>* offsets) {
+  // TODO(tc): We could save a string copy if we got the raw string as
+  // a StringPiece and were able to call ReplaceStringPlaceholders with
+  // a StringPiece format string and string16 substitution strings.  In
+  // practice, the strings should be relatively short.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const string16& format_string = rb.GetLocalizedString(message_id);
   std::vector<string16> subst;

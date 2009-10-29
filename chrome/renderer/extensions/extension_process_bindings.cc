@@ -325,7 +325,7 @@ class ExtensionImpl : public ExtensionBase {
     std::string message =
       ExtensionMessageBundle::GetL10nMessage(message_name, *l10n_messages);
 
-    std::vector<string16> substitutions;
+    std::vector<std::string> substitutions;
     if (args[1]->IsNull() || args[1]->IsUndefined()) {
       // chrome.i18n.getMessage("message_name");
       // chrome.i18n.getMessage("message_name", null);
@@ -333,7 +333,7 @@ class ExtensionImpl : public ExtensionBase {
     } else if (args[1]->IsString()) {
       // chrome.i18n.getMessage("message_name", "one param");
       std::string substitute = *v8::String::Utf8Value(args[1]->ToString());
-      substitutions.push_back(UTF8ToUTF16(substitute));
+      substitutions.push_back(substitute);
     } else if (args[1]->IsArray()) {
       // chrome.i18n.getMessage("message_name", ["more", "params"]);
       v8::Array* placeholders = static_cast<v8::Array*>(*args[1]);
@@ -343,15 +343,15 @@ class ExtensionImpl : public ExtensionBase {
         std::string substitute =
           *v8::String::Utf8Value(
               placeholders->Get(v8::Integer::New(i))->ToString());
-        substitutions.push_back(UTF8ToUTF16(substitute));
+        substitutions.push_back(substitute);
       }
     } else {
       NOTREACHED() << "Couldn't parse second parameter.";
       return v8::Undefined();
     }
 
-    return v8::String::New(UTF16ToUTF8(ReplaceStringPlaceholders(
-        UTF8ToUTF16(message), substitutions, NULL)).c_str());
+    return v8::String::New(ReplaceStringPlaceholders(
+        message, substitutions, NULL).c_str());
   }
 
   // Common code for starting an API request to the browser. |value_args|

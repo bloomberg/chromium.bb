@@ -193,9 +193,8 @@ void DOMUIThemeSource::InitNewTabCSS() {
       IDR_NEW_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string format_string = new_tab_theme_css.as_string();
   const std::string css_string = ReplaceStringPlaceholders(
-      format_string, subst, NULL);
+      new_tab_theme_css, subst, NULL);
   new_tab_css_ = ReplaceStringPlaceholders(
       css_string, subst2, NULL);
 }
@@ -227,9 +226,8 @@ void DOMUIThemeSource::InitNewIncognitoTabCSS() {
       IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string format_string = new_tab_theme_css.as_string();
   new_incognito_tab_css_ = ReplaceStringPlaceholders(
-      format_string, subst, NULL);
+      new_tab_theme_css, subst, NULL);
 }
 
 void DOMUIThemeSource::SendNewTabCSS(int request_id,
