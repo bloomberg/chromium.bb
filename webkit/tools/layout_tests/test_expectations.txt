@@ -574,7 +574,7 @@ BUG24195 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6473.html = IMAGE+TEXT
 
 // These tests rely on the keygen tag, we need to implement
 // WebCore::signedPublicKeyAndChallengeString to support them.
-BUG20566 : LayoutTests/fast/html/keygen.html = FAIL
+BUG20566 : LayoutTests/fast/html/keygen.html = PASS FAIL
 BUG20566 : LayoutTests/fast/invalid/residual-style.html = FAIL
 
 // -----------------------------------------------------------------
@@ -3213,7 +3213,7 @@ BUG_JORLOW LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = FAIL
 BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = TIMEOUT
 BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = TIMEOUT
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
-BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = CRASH
+BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = PASS CRASH
 BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS FAIL
 
 // The following should be uncommented when the next line is no longer needed.
@@ -3242,3 +3242,10 @@ BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAI
 // WebKit roll 50235:50245
 BUG_JOTH LINUX WIN : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE+TEXT
 BUG_JORLOW WIN : chrome/fast/forms/basic-selects.html = IMAGE
+
+// WebKit roll 50248:50258
+BUG_ROLANDSTEINER : LayoutTests/accessibility/aria-option-role.html = TEXT
+BUG_ROLANDSTEINER LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
+BUG_ROLANDSTEINER LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
+BUG_ROLANDSTEINER MAC : LayoutTests/css3/css3-modsel-33.html = TEXT
+BUG_ROLANDSTEINER MAC : chrome/plugins/script-object-invoke.html = TEXT
