@@ -1543,6 +1543,29 @@ def MergeDicts(to, fro, to_file, fro_file):
           v.__class__.__name__ + ' for key ' + k
 
 
+def MergeConfigWithInheritance(new_configuration_dict, build_file,
+                               target_dict, configuration, visited):
+  # Skip if previously visted.
+  if configuration in visited:
+    return
+
+  # Look at this configuration.
+  configuration_dict = target_dict['configurations'][configuration]
+
+  # Merge in parents.
+  for parent in configuration_dict.get('inherit_from', []):
+    MergeConfigWithInheritance(new_configuration_dict, build_file,
+                               target_dict, parent, visited + [configuration])
+
+  # Merge it into the new config.
+  MergeDicts(new_configuration_dict, configuration_dict,
+             build_file, build_file)
+
+  # Drop abstract.
+  if 'abstract' in new_configuration_dict:
+    del new_configuration_dict['abstract']
+
+
 def SetUpConfigurations(target, target_dict):
   global non_configuration_keys
   # key_suffixes is a list of key suffixes that might appear on key names.
@@ -1559,15 +1582,18 @@ def SetUpConfigurations(target, target_dict):
   if not 'configurations' in target_dict:
     target_dict['configurations'] = {'Default': {}}
   if not 'default_configuration' in target_dict:
-    target_dict['default_configuration'] = \
-        sorted(target_dict['configurations'].keys())[0]
+    concrete = [i for i in target_dict['configurations'].keys()
+                if not target_dict['configurations'][i].get('abstract')]
+    target_dict['default_configuration'] = sorted(concrete)[0]
 
-  index = 0
   for configuration in target_dict['configurations'].keys():
+    old_configuration_dict = target_dict['configurations'][configuration]
+    # Skip abstract configurations (saves work only).
+    if old_configuration_dict.get('abstract'):
+      continue
     # Configurations inherit (most) settings from the enclosing target scope.
     # Get the inheritance relationship right by making a copy of the target
     # dict.
-    old_configuration_dict = target_dict['configurations'][configuration]
     new_configuration_dict = copy.deepcopy(target_dict)
 
     # Take out the bits that don't belong in a "configurations" section.
@@ -1587,12 +1613,18 @@ def SetUpConfigurations(target, target_dict):
     for key in delete_keys:
       del new_configuration_dict[key]
 
-    # Merge the supplied configuration dict into the new dict based on the
-    # target dict, and put it back into the target dict as a configuration
-    # dict.
-    MergeDicts(new_configuration_dict, old_configuration_dict,
-               build_file, build_file)
+    # Merge in configuration (with all its parents first).
+    MergeConfigWithInheritance(new_configuration_dict, build_file,
+                               target_dict, configuration, [])
+
+    # Put the new result back into the target dict as a configuration.
     target_dict['configurations'][configuration] = new_configuration_dict
+
+  # Now drop all the abstract ones.
+  for configuration in target_dict['configurations'].keys():
+    old_configuration_dict = target_dict['configurations'][configuration]
+    if old_configuration_dict.get('abstract'):
+      del target_dict['configurations'][configuration]
 
   # Now that all of the target's configurations have been built, go through
   # the target dict's keys and remove everything that's been moved into a
