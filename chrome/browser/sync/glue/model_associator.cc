@@ -6,7 +6,6 @@
 
 #include <stack>
 
-#include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -111,49 +110,6 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
   return result;
 }
 
-// Helper class to build an index of bookmark nodes by their IDs.
-class BookmarkNodeIdIndex {
- public:
-  BookmarkNodeIdIndex() { }
-  ~BookmarkNodeIdIndex() { }
-
-  // Adds the given bookmark node and all its descendants to the ID index.
-  // Does nothing if node is NULL.
-  void AddAll(const BookmarkNode* node);
-
-  // Finds the bookmark node with the given ID.
-  // Returns NULL if none exists with the given id.
-  const BookmarkNode* Find(int64 id) const;
-
-  // Returns the count of nodes in the index.
-  size_t count() const { return node_index_.size(); }
-
- private:
-  typedef base::hash_map<int64, const BookmarkNode*> BookmarkIdMap;
-  // Map that holds nodes indexed by their ids.
-  BookmarkIdMap node_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkNodeIdIndex);
-};
-
-void BookmarkNodeIdIndex::AddAll(const BookmarkNode* node) {
-  if (!node)
-    return;
-
-  node_index_[node->id()] = node;
-
-  if (!node->is_folder())
-    return;
-
-  for (int i = 0; i < node->GetChildCount(); ++i)
-    AddAll(node->GetChild(i));
-}
-
-const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
-  BookmarkIdMap::const_iterator iter = node_index_.find(id);
-  return iter == node_index_.end() ? NULL : iter->second;
-}
-
 ModelAssociator::ModelAssociator(ProfileSyncService* sync_service)
     : sync_service_(sync_service),
       task_pending_(false) {
@@ -198,7 +154,6 @@ const BookmarkNode* ModelAssociator::GetBookmarkNodeFromSyncId(int64 sync_id) {
   if (!GetBookmarkIdFromSyncId(sync_id, &node_id))
     return false;
   BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
-  // TODO(munjal): Fix issue 26141.
   return model->GetNodeByID(node_id);
 }
 
@@ -496,17 +451,11 @@ bool ModelAssociator::LoadAssociations() {
   }
   int64 other_bookmarks_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
-      &other_bookmarks_id)) {
-    // We should always be able to find the permanent nodes.
-    sync_service_->OnUnrecoverableError();
-    return false;
+    &other_bookmarks_id)) {
+      // We should always be able to find the permanent nodes.
+      sync_service_->OnUnrecoverableError();
+      return false;
   }
-
-  // Build a bookmark node ID index since we are going to repeatedly search for
-  // bookmark nodes by their IDs.
-  BookmarkNodeIdIndex id_index;
-  id_index.AddAll(model->GetBookmarkBarNode());
-  id_index.AddAll(model->other_node());
 
   std::stack<int64> dfs_stack;
   dfs_stack.push(other_bookmarks_id);
@@ -515,13 +464,9 @@ bool ModelAssociator::LoadAssociations() {
   sync_api::ReadTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
 
-  // Count total number of nodes in sync model so that we can compare that
-  // with the total number of nodes in the bookmark model.
-  int64 sync_node_count = 0;
   while (!dfs_stack.empty()) {
     int64 parent_id = dfs_stack.top();
     dfs_stack.pop();
-    ++sync_node_count;
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(parent_id)) {
       sync_service_->OnUnrecoverableError();
@@ -532,7 +477,7 @@ bool ModelAssociator::LoadAssociations() {
     if (external_id == 0)
       return false;
 
-    const BookmarkNode* node = id_index.Find(external_id);
+    const BookmarkNode* node = model->GetNodeByID(external_id);
     if (!node)
       return false;
 
@@ -558,13 +503,7 @@ bool ModelAssociator::LoadAssociations() {
     }
   }
   DCHECK(dfs_stack.empty());
-
-  // It's possible that the number of nodes in the bookmark model is not the
-  // same as number of nodes in the sync model. This can happen when the sync
-  // model doesn't get a chance to persist its changes, for example when
-  // Chrome does not shut down gracefully. In such cases we can't trust the
-  // loaded associations.
-  return sync_node_count == id_index.count();
+  return true;
 }
 
 }  // namespace browser_sync
