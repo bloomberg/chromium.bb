@@ -131,6 +131,7 @@ class BrowserActionButton : public NotificationObserver,
     } else if (default_icon_) {
       SetImage(default_icon_);
     }
+    gtk_widget_queue_draw(button_.get());
   }
 
  private:
