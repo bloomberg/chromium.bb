@@ -43,12 +43,10 @@ class BrowserRootView : public views::RootView {
 
   TabStripWrapper* tabstrip() const;
 
-  // Returns true if |data| has string contents and the user can "paste and go"
-  // (see AutocompleteEditModel::CanPasteAndGo for details). If |url| is
-  // non-null and the user can "paste and go", |url| is set to the
-  // "paste and go" url.
-  bool GetPasteAndGoURL(const OSExchangeData& data,
-                        GURL* url);
+  // Returns true if |data| has string contents and the user can "paste and go".
+  // If |url| is non-NULL and the user can "paste and go", |url| is set to the
+  // desired destination.
+  bool GetPasteAndGoURL(const OSExchangeData& data, GURL* url);
 
   // The BrowserView.
   BrowserView* browser_view_;

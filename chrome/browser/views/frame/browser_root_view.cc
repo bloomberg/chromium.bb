@@ -6,9 +6,9 @@
 
 #include "app/drag_drop_types.h"
 #include "app/os_exchange_data.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/tabs/tab_strip_wrapper.h"
@@ -132,25 +132,21 @@ TabStripWrapper* BrowserRootView::tabstrip() const {
   return browser_view_->tabstrip();
 }
 
-bool BrowserRootView::GetPasteAndGoURL(const OSExchangeData& data,
-                                       GURL* url) {
+bool BrowserRootView::GetPasteAndGoURL(const OSExchangeData& data, GURL* url) {
   if (!data.HasString())
     return false;
 
-  LocationBar* location_bar = browser_view_->GetLocationBar();
-  if (!location_bar)
-    return false;
-
-  AutocompleteEditView* edit = location_bar->location_entry();
-  if (!edit)
-    return false;
-
   std::wstring text;
-  if (!data.GetString(&text) || text.empty() ||
-      !edit->model()->CanPasteAndGo(text)) {
+  if (!data.GetString(&text) || text.empty())
     return false;
-  }
+
+  GURL destination_url;
+  browser_view_->browser()->profile()->GetSearchVersusNavigateClassifier()->
+      Classify(text, std::wstring(), NULL, &destination_url, NULL, NULL, NULL);
+  if (!destination_url.is_valid())
+    return false;
+
   if (url)
-    *url = edit->model()->paste_and_go_url();
+    *url = destination_url;
   return true;
 }
