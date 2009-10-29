@@ -790,8 +790,8 @@ class TestRunner:
       else:
         dictionary[key] = 1
 
-    for test, failures in failures.iteritems():
-      for failure in failures:
+    for test, failure_types in failures.iteritems():
+      for failure_type in failure_types:
         # TODO(ojan): Now that we have IMAGE+TEXT, IMAGE and TEXT,
         # we can avoid adding multiple failures per test since there should
         # be a unique type of failure for each test. This would make the
@@ -806,7 +806,7 @@ class TestRunner:
           count_group = fixable_counts
           failure_group = fixable_failures
 
-        AddFailure(count_group, failure.__class__)
+        AddFailure(count_group, failure_type.__class__)
         failure_group.add(test)
 
     # Here and below, use the prechuncked expectations object for numbers of
