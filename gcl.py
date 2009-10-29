@@ -132,7 +132,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
             directory to the root repository.
 
   Note: The cache will be inconsistent if the same file is retrieved with both
-        use_root=True and use_root=False on the same file. Don't be stupid.
+        use_root=True and use_root=False. Don't be stupid.
   """
   global FILES_CACHE
   if filename not in FILES_CACHE:
@@ -153,9 +153,16 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = dir_info["URL"]
       content = ""
       while True:
-        # Look for the codereview.settings file at the current level.
-        svn_path = url_path + "/" + filename
-        content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
+        # First, look for a locally modified version of codereview.settings.
+        content, rc = RunShellWithReturnCode(["svn", "status", filename])
+        if not rc and content.startswith('M'):
+          content = ReadFile(filename)
+          rc = 0
+        else:
+          # Then look in the repository
+          svn_path = url_path + "/" + filename
+          content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
+
         if not rc:
           # Exit the loop if the file was found. Override content.
           break
@@ -1077,7 +1084,8 @@ def Change(change_info, args):
 IGNORE_PATHS = (os.path.join("webkit","api"),)
 
 # Valid extensions for files we want to lint.
-CPP_EXTENSIONS = ("cpp", "cc", "h")
+LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
+LINT_IGNORE_REGEX = r""
 
 def Lint(change_info, args):
   """Runs cpplint.py on all the files in |change_info|"""
@@ -1094,12 +1102,22 @@ def Lint(change_info, args):
   # Process cpplints arguments if any.
   filenames = cpplint.ParseArguments(args + change_info.GetFileNames())
 
+  white_list = GetCodeReviewSetting("LINT_REGEX")
+  if not white_list:
+    white_list = LINT_REGEX
+  white_regex = re.compile(white_list)
+  black_list = GetCodeReviewSetting("LINT_IGNORE_REGEX")
+  if not black_list:
+    black_list = LINT_IGNORE_REGEX
+  black_regex = re.compile(black_list)
   for file in filenames:
-    if len([file for suffix in CPP_EXTENSIONS if file.endswith(suffix)]):
-      if len([file for prefix in IGNORE_PATHS if file.startswith(prefix)]):
-        print "Ignoring non-Google styled file %s" % file
+    if white_regex.match(file):
+      if black_regex.match(file):
+        print "Ignoring file %s" % file
       else:
         cpplint.ProcessFile(file, cpplint._cpplint_state.verbose_level)
+    else:
+      print "Skipping file %s" % file
 
   print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
   os.chdir(previous_cwd)

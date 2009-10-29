@@ -40,7 +40,7 @@ class GclUnittest(GclTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'CPP_EXTENSIONS',
+      'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 
       'Change', 'ChangeInfo', 'Changes', 'DeleteEmptyChangeLists', 'Commit',
       'DoPresubmitChecks',
       'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
@@ -50,6 +50,7 @@ class GclUnittest(GclTestsBase):
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
       'GetModifiedFiles', 'GetRepositoryRoot',
       'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved',
+      'LINT_IGNORE_REGEX', 'LINT_REGEX', 
       'Lint', 'LoadChangelistInfoForMultiple',
       'MISSING_TEST_MSG', 'Opened', 'OptionallyDoPresubmitChecks',
       'PresubmitCL', 'ReadFile', 'REPOSITORY_ROOT', 'RunShell',
