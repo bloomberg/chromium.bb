@@ -67,8 +67,8 @@ using o3d::gpu_plugin::StubNPBrowser;
 using o3d::RendererCBLocal;
 #endif
 
-const int kWindowWidth = 512;
-const int kWindowHeight = 512;
+const int kWindowWidth = 16;
+const int kWindowHeight = 16;
 
 o3d::ServiceLocator* g_service_locator = NULL;
 o3d::DisplayWindow* g_display_window = NULL;
@@ -109,7 +109,7 @@ int WINAPI WinMain(HINSTANCE instance,
 
   wc.lpszClassName = L"MY_WINDOWS_CLASS";
   wc.cbSize = sizeof(WNDCLASSEX);
-  wc.style = CS_HREDRAW | CS_VREDRAW;
+  wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   wc.lpfnWndProc = ::WindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
@@ -130,8 +130,8 @@ int WINAPI WinMain(HINSTANCE instance,
                                       wc.lpszClassName,
                                       L"",
                                       WS_OVERLAPPEDWINDOW,
-                                      -1000,
-                                      0,
+                                      10,
+                                      10,
                                       kWindowWidth,
                                       kWindowHeight,
                                       0,

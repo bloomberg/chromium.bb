@@ -822,7 +822,7 @@ Renderer::InitStatus GetWindowsPixelFormat(HWND window,
   }
 
   WNDCLASS intermediate_class;
-  intermediate_class.style = CS_HREDRAW | CS_VREDRAW;
+  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   intermediate_class.lpfnWndProc = IntermediateWindowProc;
   intermediate_class.cbClsExtra = 0;
   intermediate_class.cbWndExtra = 0;
