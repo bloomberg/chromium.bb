@@ -3014,9 +3014,6 @@ BUG22526 : LayoutTests/fast/js/Object-defineProperties.html = FAIL
 BUG22526 : LayoutTests/fast/js/Object-defineProperty.html = FAIL
 BUG22526 : LayoutTests/http/tests/security/xss-DENIED-defineProperty.html = TIMEOUT
 
-// WebKit merge 48500:48585, introduced by a clipping bug fix.
-BUG22549 WIN LINUX : LayoutTests/fast/overflow/position-fixed-transform-clipping.html = FAIL
-
 // WebKit merge 48500:48585, due to newly added support for MathML.
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
