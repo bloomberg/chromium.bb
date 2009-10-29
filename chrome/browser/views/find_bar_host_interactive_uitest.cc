@@ -110,7 +110,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   ui_test_utils::RunMessageLoop();
 }
 
-// TODO: http://crbug.com/26231
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
