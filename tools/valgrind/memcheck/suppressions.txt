@@ -1058,3 +1058,19 @@
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
+{
+   bug_26213
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18MostVisitedHandler6AttachEP5DOMUI
+   fun:_ZN8NewTabUIC1EP11TabContents
+   fun:_Z8NewDOMUII8NewTabUIEP5DOMUIP11TabContentsRK4GURL
+   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
+}
+{
+   bug_26216
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9Extension25LoadExtensionActionHelperEPK15DictionaryValuePSs
+   fun:_ZN39ExtensionTest_LoadPageActionHelper_Test8TestBodyEv
+}
