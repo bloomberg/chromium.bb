@@ -21,6 +21,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -280,11 +281,7 @@ void ExtensionsService::LoadInstalledExtension(
       extension = tmp.release();
     }
   } else {
-    // TODO(mpcomplete): obsolete. remove after migration period.
-    // http://code.google.com/p/chromium/issues/detail?id=19733
-    extension = extension_file_util::LoadExtension(path,
-                                                   true,  // Require id
-                                                   &error);
+    error = extension_manifest_errors::kManifestUnreadable;
   }
 
   if (!extension) {

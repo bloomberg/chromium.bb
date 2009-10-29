@@ -503,11 +503,6 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   service_->Init();
   loop_.RunAllPending();
 
-  std::vector<std::string> errors = GetErrors();
-  for (std::vector<std::string>::iterator err = errors.begin();
-    err != errors.end(); ++err) {
-    LOG(ERROR) << *err;
-  }
   ASSERT_EQ(3u, loaded_.size());
 
   EXPECT_EQ(std::string(good0), loaded_[0]->id());
@@ -616,8 +611,8 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(0u, loaded_.size());
 
   EXPECT_TRUE(MatchPattern(GetErrors()[0],
-      std::string("Could not load extension from '*'. * ") +
-      base::JSONReader::kBadRootElementType)) << GetErrors()[0];
+      std::string("Could not load extension from '*'. ") +
+      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[0];
 
   EXPECT_TRUE(MatchPattern(GetErrors()[1],
       std::string("Could not load extension from '*'. ") +
@@ -1110,7 +1105,7 @@ TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
     err != errors.end(); ++err) {
     LOG(ERROR) << *err;
   }
-  EXPECT_EQ(2u, loaded_.size());
+  ASSERT_EQ(2u, loaded_.size());
 
   EXPECT_NE(std::string(good0), loaded_[0]->id());
   EXPECT_NE(std::string(good0), loaded_[1]->id());
