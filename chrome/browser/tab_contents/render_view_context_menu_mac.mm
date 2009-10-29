@@ -59,9 +59,24 @@ RenderViewContextMenuMac::~RenderViewContextMenuMac() {
 }
 
 void RenderViewContextMenuMac::DoInit() {
-  // show the menu
+  // Synthesize an event for the click, as there is no certainty that
+  // [NSApp currentEvent] will return a valid event.
+  NSEvent* currentEvent = [NSApp currentEvent];
+  NSWindow* window = [parent_view_ window];
+  NSPoint position = [window mouseLocationOutsideOfEventStream];
+  NSTimeInterval eventTime = [currentEvent timestamp];
+  NSEvent* clickEvent = [NSEvent mouseEventWithType:NSRightMouseDown
+                                           location:position
+                                      modifierFlags:NSRightMouseDownMask
+                                          timestamp:eventTime
+                                       windowNumber:[window windowNumber]
+                                            context:nil
+                                        eventNumber:0
+                                         clickCount:1
+                                           pressure:1.0];
+  // Show the menu.
   [NSMenu popUpContextMenu:menu_
-                 withEvent:[NSApp currentEvent]
+                 withEvent:clickEvent
                    forView:parent_view_];
 }
 
