@@ -9,6 +9,7 @@
 
 #include <string>
 
+class Extension;
 class SkBitmap;
 class TabContents;
 
@@ -17,8 +18,8 @@ class TabContents;
 class GtkThemeInstalledInfoBarDelegate : public ThemeInstalledInfoBarDelegate {
  public:
   GtkThemeInstalledInfoBarDelegate(TabContents* tab_contents,
-                                   const std::string& name,
-                                   const std::string& previous_theme,
+                                   const Extension* new_theme,
+                                   const std::string& previous_theme_id,
                                    bool previous_use_gtk_theme);
   virtual bool Cancel();
 

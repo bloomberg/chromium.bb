@@ -15,15 +15,29 @@
 #include "grit/theme_resources.h"
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
-    TabContents* tab_contents, const std::string& name,
+    TabContents* tab_contents, const Extension* new_theme,
     const std::string& previous_theme_id)
          : ConfirmInfoBarDelegate(tab_contents),
+           was_canceled_(false),
            profile_(tab_contents->profile()),
-           name_(name),
+           name_(new_theme->name()),
+           new_theme_id_(new_theme->id()),
            previous_theme_id_(previous_theme_id) {
 }
 
 void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (service) {
+    std::string uninstall_id;
+    if (was_canceled_)
+      uninstall_id = new_theme_id_;
+    else if (!previous_theme_id_.empty())
+      uninstall_id = previous_theme_id_;
+    // It's possible that the theme was already uninstalled by someone so make
+    // sure it exists.
+    if (!uninstall_id.empty() && service->GetExtensionById(uninstall_id))
+      service->UninstallExtension(uninstall_id, false);
+  }
   delete this;
 }
 
@@ -55,11 +69,13 @@ std::wstring ThemeInstalledInfoBarDelegate::GetButtonLabel(
       return l10n_util::GetString(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
     }
     default:
+      NOTREACHED();
       return L"";
   }
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
+  was_canceled_ = true;
   if (!previous_theme_id_.empty()) {
     ExtensionsService* service = profile_->GetExtensionsService();
     if (service) {

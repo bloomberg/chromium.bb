@@ -8,14 +8,16 @@
 
 GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,
-    const std::string& name,
-    const std::string& previous_theme,
+    const Extension* new_theme,
+    const std::string& previous_theme_id,
     bool previous_use_gtk_theme)
-    : ThemeInstalledInfoBarDelegate(tab_contents, name, previous_theme),
+    : ThemeInstalledInfoBarDelegate(tab_contents, new_theme, previous_theme_id),
       previous_use_gtk_theme_(previous_use_gtk_theme) {
 }
 
 bool GtkThemeInstalledInfoBarDelegate::Cancel() {
+  was_canceled_ = true;
+
   if (previous_use_gtk_theme_) {
     profile()->SetNativeTheme();
     return true;

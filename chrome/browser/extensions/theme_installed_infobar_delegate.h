@@ -7,6 +7,7 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
+class Extension;
 class SkBitmap;
 class TabContents;
 
@@ -15,8 +16,8 @@ class TabContents;
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ThemeInstalledInfoBarDelegate(TabContents* tab_contents,
-                                const std::string& name,
-                                const std::string& previous_theme);
+                                const Extension* new_theme,
+                                const std::string& previous_theme_id);
   virtual void InfoBarClosed();
   virtual std::wstring GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
@@ -29,10 +30,17 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   Profile* profile() { return profile_; }
 
+  // Keeps track of whether we canceled the install or not.
+  bool was_canceled_;
+
  private:
   Profile* profile_;
-  std::string name_;  // name of theme to install
-  std::string previous_theme_id_;  // used to undo theme install
+  // Name of theme that's just been installed.
+  std::string name_;
+  // Id of theme that's just been installed.
+  std::string new_theme_id_;
+  // Used to undo theme install.
+  std::string previous_theme_id_;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_

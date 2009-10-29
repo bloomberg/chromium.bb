@@ -167,10 +167,10 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
 InfoBarDelegate* ExtensionInstallUI::GetNewInfoBarDelegate(
     Extension* new_theme, TabContents* tab_contents) {
 #if defined(TOOLKIT_GTK)
-  return new GtkThemeInstalledInfoBarDelegate(tab_contents, new_theme->name(),
+  return new GtkThemeInstalledInfoBarDelegate(tab_contents, new_theme,
       previous_theme_id_, previous_use_gtk_theme_);
 #else
-  return new ThemeInstalledInfoBarDelegate(tab_contents, new_theme->name(),
+  return new ThemeInstalledInfoBarDelegate(tab_contents, new_theme,
       previous_theme_id_);
 #endif
 }
