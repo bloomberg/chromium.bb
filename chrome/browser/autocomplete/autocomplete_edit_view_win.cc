@@ -403,7 +403,9 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
       initiated_drag_(false),
       drop_highlight_position_(-1),
       background_color_(0),
-      scheme_security_level_(ToolbarModel::NORMAL) {
+      scheme_security_level_(ToolbarModel::NORMAL),
+      text_object_model_(NULL),
+      riched20dll_handle_(LoadLibrary(L"riched20.dll")) {
   model_->SetPopupModel(popup_view_->GetModel());
 
   saved_selection_for_focus_change_.cpMin = -1;
@@ -466,6 +468,15 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
       NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
       Source<AutocompleteEditViewWin>(this),
       NotificationService::NoDetails());
+
+  // Explicitly release the text object model now that we're done with it, and
+  // before we free the library. If the library gets unloaded before this
+  // released, it becomes garbage.
+  text_object_model_->Release();
+
+  // We're now done with this library, so release our reference to it so it can
+  // be unloaded if possible.
+  FreeLibrary(riched20dll_handle_);
 
   // We balance our reference count and unpatch when the last instance has
   // been destroyed.  This prevents us from relying on the AtExit or static
@@ -2241,8 +2252,11 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
     // constructor, in order to avoid hurting startup performance.
     ScopedComPtr<IRichEditOle, NULL> ole_interface;
     ole_interface.Attach(GetOleInterface());
-    if (ole_interface)
-      text_object_model_.QueryFrom(ole_interface);
+    if (ole_interface) {
+      ole_interface.QueryInterface(
+          __uuidof(ITextDocument),
+          reinterpret_cast<void**>(&text_object_model_));
+    }
   }
   return text_object_model_;
 }

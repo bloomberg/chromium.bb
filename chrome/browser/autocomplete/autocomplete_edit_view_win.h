@@ -342,10 +342,9 @@ class AutocompleteEditViewWin
   // Determines whether the user can "paste and go", given the specified text.
   bool CanPasteAndGo(const std::wstring& text) const;
 
-  // Getter for the text_object_model_, used by the ScopedXXX classes.  Note
-  // that the pointer returned here is only valid as long as the
-  // AutocompleteEdit is still alive.  Also, if the underlying call fails, this
-  // may return NULL.
+  // Getter for the text_object_model_.  Note that the pointer returned here is
+  // only valid as long as the AutocompleteEdit is still alive.  Also, if the
+  // underlying call fails, this may return NULL.
   ITextDocument* GetTextObjectModel() const;
 
   // Invoked during a mouse move. As necessary starts a drag and drop session.
@@ -477,7 +476,7 @@ class AutocompleteEditViewWin
   ToolbarModel::SecurityLevel scheme_security_level_;
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
-  mutable ScopedComPtr<ITextDocument> text_object_model_;
+  mutable ITextDocument* text_object_model_;
 
   // This contains the scheme char start and stop indexes that should be
   // striken-out when displaying an insecure scheme.
@@ -485,6 +484,10 @@ class AutocompleteEditViewWin
 
   // Instance of accessibility information and handling.
   mutable ScopedComPtr<IAccessible> autocomplete_accessibility_;
+
+  // We explicitly retain a handle to this library so it never gets unloaded out
+  // from underneath us.
+  HMODULE riched20dll_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewWin);
 };
