@@ -690,3 +690,51 @@ TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
   EXPECT_EQ(PageTransition::KEYWORD_GENERATED,
             PageTransition::StripQualifier(callback.visits[0].transition));
 }
+
+// Make sure that MergeEnginesFromPrepopulateData() deletes prepopulated engines
+// that no longer exist in the prepopulate data.
+TEST_F(TemplateURLModelTest, MergeDeletesUnusedProviders) {
+  VerifyLoad();
+
+  // Create an URL that appears to have been prepopulated but won't be in the
+  // current data.
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL(L"http://www.unittest.com/", 0, 0);
+  t_url->set_keyword(L"unittest");
+  t_url->set_short_name(L"unittest");
+  t_url->set_safe_for_autoreplace(true);
+  GURL favicon_url("http://favicon.url");
+  t_url->SetFavIconURL(favicon_url);
+  t_url->set_date_created(Time::FromTimeT(100));
+  t_url->set_prepopulate_id(999999);
+
+  // Make a few copies now, since as we add each to the model it takes ownership
+  // of them and deletes them when finished.
+  TemplateURL* t_url2 = new TemplateURL(*t_url);
+  TemplateURL* t_url3 = new TemplateURL(*t_url);
+
+  // Ensure that merging clears this engine.
+  model_->Add(t_url);
+  EXPECT_EQ(t_url, model_->GetTemplateURLForKeyword(L"unittest"));
+  model_->MergeEnginesFromPrepopulateData();
+  ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"unittest") == NULL);
+
+  // Ensure that merging won't clear it if the user has edited it.
+  t_url2->set_safe_for_autoreplace(false);
+  model_->Add(t_url2);
+  ASSERT_EQ(t_url2, model_->GetTemplateURLForKeyword(L"unittest"));
+  model_->MergeEnginesFromPrepopulateData();
+  ASSERT_FALSE(model_->GetTemplateURLForKeyword(L"unittest") == NULL);
+  model_->Remove(t_url2);
+
+  // Ensure that merging won't clear it if it's the default engine.
+  model_->Add(t_url3);
+  ASSERT_EQ(t_url3, model_->GetTemplateURLForKeyword(L"unittest"));
+  model_->SetDefaultSearchProvider(t_url3);
+  ASSERT_EQ(t_url3, model_->GetDefaultSearchProvider());
+  model_->MergeEnginesFromPrepopulateData();
+  ASSERT_EQ(t_url3, model_->GetTemplateURLForKeyword(L"unittest"));
+  ASSERT_EQ(t_url3, model_->GetDefaultSearchProvider());
+  // Don't remove |t_url3|; we'd need to make it non-default first, and why
+  // bother when the model shutdown will clean it up for us.
+}

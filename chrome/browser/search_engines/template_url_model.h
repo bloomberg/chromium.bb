@@ -212,6 +212,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   FRIEND_TEST(TemplateURLModelTest, UpdateKeywordSearchTermsForURL);
   FRIEND_TEST(TemplateURLModelTest, DontUpdateKeywordSearchForNonReplaceable);
   FRIEND_TEST(TemplateURLModelTest, ChangeGoogleBaseValue);
+  FRIEND_TEST(TemplateURLModelTest, MergeDeletesUnusedProviders);
   friend class TemplateURLModelTest;
 
   typedef std::map<std::wstring, const TemplateURL*> KeywordToTemplateMap;

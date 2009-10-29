@@ -710,10 +710,13 @@ void TemplateURLModel::NotifyLoaded() {
 
 void TemplateURLModel::MergeEnginesFromPrepopulateData() {
   // Build a map from prepopulate id to TemplateURL of existing urls.
-  std::map<int, const TemplateURL*> id_to_turl;
-  for (size_t i = 0; i < template_urls_.size(); ++i) {
-    if (template_urls_[i]->prepopulate_id() > 0)
-      id_to_turl[template_urls_[i]->prepopulate_id()] = template_urls_[i];
+  typedef std::map<int, const TemplateURL*> IDMap;
+  IDMap id_to_turl;
+  for (TemplateURLVector::const_iterator i(template_urls_.begin());
+       i != template_urls_.end(); ++i) {
+    int prepopulate_id = (*i)->prepopulate_id();
+    if (prepopulate_id > 0)
+      id_to_turl[prepopulate_id] = *i;
   }
 
   std::vector<TemplateURL*> loaded_urls;
@@ -722,17 +725,19 @@ void TemplateURLModel::MergeEnginesFromPrepopulateData() {
                                                      &loaded_urls,
                                                      &default_search_index);
 
+  std::set<int> updated_ids;
   for (size_t i = 0; i < loaded_urls.size(); ++i) {
     scoped_ptr<TemplateURL> t_url(loaded_urls[i]);
-
-    if (!t_url->prepopulate_id()) {
-      // Prepopulate engines need an id.
+    int t_url_id = t_url->prepopulate_id();
+    if (!t_url_id || updated_ids.count(t_url_id)) {
+      // Prepopulate engines need a unique id.
       NOTREACHED();
       continue;
     }
 
-    const TemplateURL* existing_url = id_to_turl[t_url->prepopulate_id()];
-    if (existing_url) {
+    IDMap::iterator existing_url_iter(id_to_turl.find(t_url_id));
+    if (existing_url_iter != id_to_turl.end()) {
+      const TemplateURL* existing_url = existing_url_iter->second;
       if (!existing_url->safe_for_autoreplace()) {
         // User edited the entry, preserve the keyword and description.
         loaded_urls[i]->set_safe_for_autoreplace(false);
@@ -742,14 +747,27 @@ void TemplateURLModel::MergeEnginesFromPrepopulateData() {
         loaded_urls[i]->set_short_name(existing_url->short_name());
       }
       Replace(existing_url, loaded_urls[i]);
-      id_to_turl[t_url->prepopulate_id()] = loaded_urls[i];
+      id_to_turl.erase(existing_url_iter);
     } else {
       Add(loaded_urls[i]);
     }
     if (i == default_search_index && !default_search_provider_)
       SetDefaultSearchProvider(loaded_urls[i]);
 
+    updated_ids.insert(t_url_id);
     t_url.release();
+  }
+
+  // Remove any prepopulated engines which are no longer in the master list, as
+  // long as the user hasn't modified them or made them the default engine.
+  for (IDMap::iterator i(id_to_turl.begin()); i != id_to_turl.end(); ++i) {
+    const TemplateURL* template_url = i->second;
+    // We use default_search_provider_ instead of GetDefaultSearchProvider()
+    // because we're running before |loaded_| is set, and calling
+    // GetDefaultSearchProvider() will erroneously try to read the prefs.
+    if ((template_url->safe_for_autoreplace()) &&
+        (template_url != default_search_provider_))
+      Remove(template_url);
   }
 }
 
