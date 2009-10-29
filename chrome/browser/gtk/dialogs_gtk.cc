@@ -7,7 +7,7 @@
 #include <set>
 
 #include "app/l10n_util.h"
-#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
@@ -87,9 +87,19 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // dialog. Used as a helper for the below callbacks.
   static bool IsCancelResponse(gint response_id);
 
-  // Callback for when the user responds to a Save As or Open File or
-  // Select Folder dialog.
+  // Common function for OnSelectSingleFileDialogResponse and
+  // OnSelectSingleFolderDialogResponse.
+  static void SelectSingleFileHelper(GtkWidget* dialog,
+                                     gint response_id,
+                                     SelectFileDialogImpl* dialog_impl,
+                                     bool allow_folder);
+
+  // Callback for when the user responds to a Save As or Open File dialog.
   static void OnSelectSingleFileDialogResponse(
+      GtkWidget* dialog, gint response_id, SelectFileDialogImpl* dialog_impl);
+
+  // Callback for when the user responds to a Select Folder dialog.
+  static void OnSelectSingleFolderDialogResponse(
       GtkWidget* dialog, gint response_id, SelectFileDialogImpl* dialog_impl);
 
   // Callback for when the user responds to a Open Multiple Files dialog.
@@ -341,7 +351,7 @@ GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
   }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
   g_signal_connect(G_OBJECT(dialog), "response",
-                   G_CALLBACK(OnSelectSingleFileDialogResponse), this);
+                   G_CALLBACK(OnSelectSingleFolderDialogResponse), this);
   return dialog;
 }
 
@@ -464,39 +474,81 @@ bool SelectFileDialogImpl::IsCancelResponse(gint response_id) {
 }
 
 // static
-void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(
-    GtkWidget* dialog, gint response_id,
-    SelectFileDialogImpl* dialog_impl) {
-  gchar* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+void SelectFileDialogImpl::SelectSingleFileHelper(GtkWidget* dialog,
+    gint response_id,
+    SelectFileDialogImpl* dialog_impl,
+    bool allow_folder) {
+  if (IsCancelResponse(response_id)) {
+    dialog_impl->FileNotSelected(dialog);
+    return;
+  }
 
-  if (!filename || IsCancelResponse(response_id)) {
+  gchar* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+  if (!filename) {
     dialog_impl->FileNotSelected(dialog);
     return;
   }
 
   FilePath path(filename);
   g_free(filename);
-  dialog_impl->FileSelected(dialog, path);
+
+  if (allow_folder) {
+    dialog_impl->FileSelected(dialog, path);
+    return;
+  }
+
+  // We're accessing the disk from the UI thread here, but in this case it's
+  // ok because we may have just done lots of stats in the file selection
+  // dialog. One more won't hurt too badly.
+  if (file_util::DirectoryExists(path))
+    dialog_impl->FileNotSelected(dialog);
+  else
+    dialog_impl->FileSelected(dialog, path);
+}
+
+// static
+void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(
+    GtkWidget* dialog, gint response_id,
+    SelectFileDialogImpl* dialog_impl) {
+  return SelectSingleFileHelper(dialog, response_id, dialog_impl, false);
+}
+
+// static
+void SelectFileDialogImpl::OnSelectSingleFolderDialogResponse(
+    GtkWidget* dialog, gint response_id,
+    SelectFileDialogImpl* dialog_impl) {
+  return SelectSingleFileHelper(dialog, response_id, dialog_impl, true);
 }
 
 // static
 void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(
     GtkWidget* dialog, gint response_id,
     SelectFileDialogImpl* dialog_impl) {
-  GSList* filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+  if (IsCancelResponse(response_id)) {
+    dialog_impl->FileNotSelected(dialog);
+    return;
+  }
 
-  if (!filenames || IsCancelResponse(response_id)) {
+  GSList* filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+  if (!filenames) {
     dialog_impl->FileNotSelected(dialog);
     return;
   }
 
   std::vector<FilePath> filenames_fp;
   for (GSList* iter = filenames; iter != NULL; iter = g_slist_next(iter)) {
-    filenames_fp.push_back(FilePath(static_cast<char*>(iter->data)));
+    FilePath path(static_cast<char*>(iter->data));
     g_free(iter->data);
+    if (file_util::DirectoryExists(path))
+      continue;
+    filenames_fp.push_back(path);
   }
-
   g_slist_free(filenames);
+
+  if (filenames_fp.empty()) {
+    dialog_impl->FileNotSelected(dialog);
+    return;
+  }
   dialog_impl->MultiFilesSelected(dialog, filenames_fp);
 }
 
