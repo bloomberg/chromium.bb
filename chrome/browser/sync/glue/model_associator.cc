@@ -564,7 +564,7 @@ bool ModelAssociator::LoadAssociations() {
   // model doesn't get a chance to persist its changes, for example when
   // Chrome does not shut down gracefully. In such cases we can't trust the
   // loaded associations.
-  return sync_node_count == id_index.count());
+  return sync_node_count == id_index.count();
 }
 
 }  // namespace browser_sync
