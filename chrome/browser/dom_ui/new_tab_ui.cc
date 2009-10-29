@@ -572,12 +572,14 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     InitializeCSSCaches();
     NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
-    ChromeThread::PostTask(
+    bool posted = ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
             &chrome_url_data_manager,
             &ChromeURLDataManager::AddDataSource,
             html_source));
+    if (!posted)
+      delete html_source;  // Keep Valgrind happy in tests.
   }
 
   // Listen for theme installation.
@@ -614,12 +616,15 @@ void NewTabUI::Observe(NotificationType type,
 }
 
 void NewTabUI::InitializeCSSCaches() {
-  ChromeThread::PostTask(
+  DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
+  bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
-          new DOMUIThemeSource(GetProfile())));
+          theme));
+  if (!posted)
+    delete theme;  // Keep Valgrind happy in tests.
 }
 
 // static
