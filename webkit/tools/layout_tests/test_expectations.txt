@@ -1681,8 +1681,8 @@ BUG23498 MAC : LayoutTests/fast/forms/textarea-rows-cols.html = IMAGE
 BUG23498 MAC SLOW : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE
 
 BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
-BUG23498 MAC RELEASE : LayoutTests/fast/frames/invalid.html = IMAGE CRASH
-BUG23498 MAC DEBUG SLOW : LayoutTests/fast/frames/invalid.html = IMAGE CRASH
+BUG23498 BUG26044 MAC RELEASE : LayoutTests/fast/frames/invalid.html = IMAGE CRASH
+BUG23498 BUG26044 MAC DEBUG SLOW : LayoutTests/fast/frames/invalid.html = IMAGE CRASH
 // BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/valid.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/gradients/background-clipped.html = IMAGE
@@ -3110,16 +3110,16 @@ BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
 
 // WebKit Roll 49684:49761
 BUG_YUTAK : LayoutTests/fast/events/drag-and-drop-dataTransfer-types-nocrash.html = FAIL
-BUG_YUTAK LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
+BUG26042 LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
 
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
-BUG_YUTAK MAC LINUX : LayoutTests/fast/frames/frame-set-same-src.html = CRASH PASS
+BUG26045 MAC LINUX : LayoutTests/fast/frames/frame-set-same-src.html = CRASH PASS
 BUG_YUTAK MAC RELEASE : LayoutTests/fast/overflow/002.html = CRASH PASS
 
 // Test expectation for MAC is located above.
 // Please remove CRASH from that line when the fix is in.
-BUG_YUTAK WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
+BUG26044 WIN LINUX : LayoutTests/fast/frames/invalid.html = CRASH PASS
 
 // Not sure when the flakiness started.
 BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = CRASH PASS
