@@ -500,7 +500,7 @@ void FlipSession::CloseAllStreams(net::Error code) {
     // Clear out anything pending.
     active_streams_.clear();
 
-    delete list;
+    delete[] list;
   }
 
   if (pushed_streams_.size()) {
