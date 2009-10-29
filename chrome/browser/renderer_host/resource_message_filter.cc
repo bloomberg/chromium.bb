@@ -30,6 +30,7 @@
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
+#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
@@ -172,6 +173,7 @@ ResourceMessageFilter::ResourceMessageFilter(
           new DatabaseDispatcherHost(profile->GetPath(), this))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
+      socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
@@ -180,6 +182,7 @@ ResourceMessageFilter::ResourceMessageFilter(
   DCHECK(audio_renderer_host_.get());
   DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
+  DCHECK(socket_stream_dispatcher_host_.get());
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {
@@ -233,6 +236,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   WorkerService::GetInstance()->Initialize(
       resource_dispatcher_host_, ui_loop());
   appcache_dispatcher_host_->Initialize(this, id(), handle());
+  socket_stream_dispatcher_host_->Initialize(this, id());
   dom_storage_dispatcher_host_->Init(handle());
 }
 
@@ -266,7 +270,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
-          msg, this, next_route_id_callback(), &msg_is_ok);
+          msg, this, next_route_id_callback(), &msg_is_ok) ||
+      socket_stream_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

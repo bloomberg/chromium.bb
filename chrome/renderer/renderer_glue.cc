@@ -24,6 +24,7 @@
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/socket_stream_dispatcher.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebKit.h"
@@ -245,14 +246,13 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
                                 appcache_host_id, routing_id);
 }
 
-
 // static factory function
 WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
     WebKit::WebSocketStreamHandle* handle,
     WebSocketStreamHandleDelegate* delegate) {
-  // TODO(ukai): implement dispathcer class.
-  NOTREACHED();
-  return NULL;
+  SocketStreamDispatcher* dispatcher =
+      RenderThread::current()->socket_stream_dispatcher();
+  return dispatcher->CreateBridge(handle, delegate);
 }
 
 void NotifyCacheStats() {

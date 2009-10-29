@@ -29,6 +29,7 @@ class RendererHistogram;
 class RendererWebDatabaseObserver;
 class RendererWebKitClientImpl;
 class SkBitmap;
+class SocketStreamDispatcher;
 class UserScriptSlave;
 class URLPattern;
 
@@ -113,6 +114,10 @@ class RenderThread : public RenderThreadBase,
 
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
+  }
+
+  SocketStreamDispatcher* socket_stream_dispatcher() const {
+    return socket_stream_dispatcher_.get();
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
@@ -202,6 +207,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
+  scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
   scoped_ptr<RendererWebDatabaseObserver> renderer_web_database_observer_;
 
   // Used on the renderer and IPC threads.

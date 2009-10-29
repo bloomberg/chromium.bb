@@ -78,6 +78,11 @@ WebKit::WebURLLoader* BrowserWebKitClientImpl::createURLLoader() {
   return NULL;
 }
 
+WebKit::WebSocketStreamHandle* BrowserWebKitClientImpl::createSocketStreamHandle() {
+  NOTREACHED();
+  return NULL;
+}
+
 void BrowserWebKitClientImpl::getPluginList(bool refresh,
     WebKit::WebPluginListBuilder* builder) {
   NOTREACHED();

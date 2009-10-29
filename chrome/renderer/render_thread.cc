@@ -44,6 +44,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/renderer_web_database_observer.h"
+#include "chrome/renderer/socket_stream_dispatcher.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "webkit/api/public/WebCache.h"
@@ -139,6 +140,7 @@ void RenderThread::Init() {
   dns_master_.reset(new RenderDnsMaster());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
+  socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
   devtools_agent_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_filter_.get());
   db_message_filter_ = new DBMessageFilter();
@@ -276,6 +278,8 @@ void RenderThread::OnExtensionSetL10nMessages(
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
   if (appcache_dispatcher_->OnMessageReceived(msg))
+    return;
+  if (socket_stream_dispatcher_->OnMessageReceived(msg))
     return;
 
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)

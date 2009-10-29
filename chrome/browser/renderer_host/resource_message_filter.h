@@ -39,6 +39,7 @@ class ExtensionMessageService;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
+class SocketStreamDispatcherHost;
 class SpellChecker;
 class URLRequestContextGetter;
 struct ViewHostMsg_Audio_CreateStream;
@@ -369,6 +370,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.
   scoped_refptr<NotificationsPrefsCache> notification_prefs_;
+
+  // Handles Socket Stream related messages.
+  scoped_ptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;

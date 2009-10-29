@@ -27,6 +27,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebThemeEngine* themeEngine();
   virtual WebKit::WebURLLoader* createURLLoader();
+  virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
