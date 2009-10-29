@@ -1235,6 +1235,26 @@ TEST_F(ProfileSyncServiceTestWithData, ModelAssociationPersistence) {
   ExpectModelMatch();
 }
 
+// Tests that when persisted model assocations are used, things work fine.
+TEST_F(ProfileSyncServiceTestWithData, ModelAssociationInvalidPersistence) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  WriteTestDataToBookmarkModel();
+  StartSyncService();
+  ExpectModelMatch();
+  // Force the sync service to shut down and write itself to disk.
+  StopSyncService(SAVE_TO_STORAGE);
+  // Change the bookmark model before restarting sync service to simulate
+  // the situation where bookmark model is different from sync model and
+  // make sure model associator correctly rebuilds associations.
+  const BookmarkNode* bookmark_bar_node = model_->GetBookmarkBarNode();
+  model_->AddURL(bookmark_bar_node, 0, L"xtra", GURL("http://www.xtra.com"));
+  // Now restart the sync service. This time it will try to use the persistent
+  // associations and realize that they are invalid and hence will rebuild
+  // associations.
+  StartSyncService();
+  ExpectModelMatch();
+}
+
 TEST_F(ProfileSyncServiceTestWithData, SortChildren) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
