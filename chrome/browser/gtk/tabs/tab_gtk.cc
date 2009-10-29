@@ -108,6 +108,23 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
 };
 
+class TabGtk::TabGtkObserverHelper {
+ public:
+  explicit TabGtkObserverHelper(TabGtk* tab)
+      : tab_(tab) {
+    MessageLoopForUI::current()->AddObserver(tab_);
+  }
+
+  ~TabGtkObserverHelper() {
+    MessageLoopForUI::current()->RemoveObserver(tab_);
+  }
+
+ private:
+  TabGtk* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabGtkObserverHelper);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabGtk, public:
 
@@ -162,7 +179,7 @@ gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
     }
 
     // Hook into the message loop to handle dragging.
-    MessageLoopForUI::current()->AddObserver(tab);
+    tab->observer_.reset(new TabGtkObserverHelper(tab));
 
     // Store the button press event, used to initiate a drag.
     tab->last_mouse_down_ = gdk_event_copy(reinterpret_cast<GdkEvent*>(event));
@@ -180,7 +197,7 @@ gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
 gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
                                       TabGtk* tab) {
   if (event->button == 1) {
-    MessageLoopForUI::current()->RemoveObserver(tab);
+    tab->observer_.reset();
 
     if (tab->last_mouse_down_) {
       gdk_event_free(tab->last_mouse_down_);
@@ -200,7 +217,7 @@ gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
     // started, we don't get the middle mouse click here.
     if (tab->last_mouse_down_) {
       DCHECK(!tab->drag_widget_);
-      MessageLoopForUI::current()->RemoveObserver(tab);
+      tab->observer_.reset();
       gdk_event_free(tab->last_mouse_down_);
       tab->last_mouse_down_ = NULL;
     }
@@ -382,5 +399,5 @@ void TabGtk::EndDrag(bool canceled) {
   // Clean up the drag helper, which is re-created on the next mouse press.
   delegate_->EndDrag(canceled);
 
-  MessageLoopForUI::current()->RemoveObserver(this);
+  observer_.reset();
 }

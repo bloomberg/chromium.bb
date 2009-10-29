@@ -97,6 +97,7 @@ class TabGtk : public TabRendererGtk,
 
  private:
   class ContextMenuController;
+  class TabGtkObserverHelper;
   friend class ContextMenuController;
 
   // MessageLoop::Observer implementation:
@@ -183,6 +184,9 @@ class TabGtk : public TabRendererGtk,
   // The cached width of the title in pixels, updated whenever the title
   // changes.
   int title_width_;
+
+  // Keep track of whether or not we have an observer.
+  scoped_ptr<TabGtkObserverHelper> observer_;
 
   // Used to destroy the drag widget after a return to the message loop.
   ScopedRunnableMethodFactory<TabGtk> destroy_factory_;
