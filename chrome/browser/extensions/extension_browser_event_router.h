@@ -77,6 +77,16 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(TabContents* contents, bool did_navigate);
 
+  // Called to dispatch a deprecated style page action click event that was
+  // registered like:
+  //   chrome.pageActions["name"].addListener(function(actionId, info){})
+  void DispatchOldPageActionEvent(Profile* profile,
+    const std::string& extension_id,
+    const std::string& page_action_id,
+    int tab_id,
+    const std::string& url,
+    int button);
+
   // Register ourselves to receive the various notifications we are interested
   // in for a browser.
   void RegisterForBrowserNotifications(const Browser* browser);

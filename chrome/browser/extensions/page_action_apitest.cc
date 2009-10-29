@@ -42,7 +42,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+    int tab_id =
+        ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         browser()->profile(), extension->id(), "", tab_id, "", 0);
     EXPECT_TRUE(catcher.GetNextResult());
@@ -60,3 +61,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   tab_id = browser()->GetSelectedTabContents()->controller().session_id().id();
   EXPECT_FALSE(action->GetIcon(tab_id).isNull());
 }
+
+
+// Tests old-style pageActions API that is deprecated but we don't want to
+// break.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
+  ASSERT_TRUE(RunExtensionTest("old_page_actions")) << message_;
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ASSERT_EQ(1u, service->extensions()->size());
+  Extension* extension = service->extensions()->at(0);
+  ASSERT_TRUE(extension);
+
+  // Have the extension enable the page action.
+  {
+    ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(browser(),
+        GURL(extension->GetResourceURL("page.html")));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  // Simulate the page action being clicked.
+  {
+    ResultCatcher catcher;
+    int tab_id =
+        ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+        browser()->profile(), extension->id(), "action", tab_id, "", 1);
+    EXPECT_TRUE(catcher.GetNextResult());
+  }
+}
+

@@ -1,0 +1,13 @@
+<html>
+<body>
+<script>
+
+// Enable the page action on this tab.
+chrome.tabs.getSelected(null, function(tab) {
+  chrome.pageActions.enableForTab("action", {"tabId":tab.id, "url":tab.url});
+  chrome.test.notifyPass();
+});
+
+</script>
+</body>
+</html>
