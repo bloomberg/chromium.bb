@@ -230,7 +230,8 @@ TestSuite.prototype.testEnableResourcesTab = function() {
       function(identifier, payload) {
         test.assertEquals('simple_page.html', payload.lastPathComponent);
         WebInspector.panels.resources.refresh();
-        WebInspector.resources[identifier]._resourcesTreeElement.select();
+        WebInspector.panels.resources.revealAndSelectItem(
+            WebInspector.resources[identifier]);
 
         test.releaseControl();
       });
