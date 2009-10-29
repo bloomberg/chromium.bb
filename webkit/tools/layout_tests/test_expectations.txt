@@ -2992,7 +2992,7 @@ BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
 
 // WK roll to 48371
 BUG21841 MAC RELEASE : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
-BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
+BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL CRASH
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
 BUG25616 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
