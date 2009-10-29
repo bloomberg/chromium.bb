@@ -17,7 +17,7 @@
 
 namespace {
 
-TEST(Extensio8nL10nUtil, GetValidLocalesEmptyLocaleFolder) {
+TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
