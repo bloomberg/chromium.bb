@@ -176,8 +176,7 @@ class DownloadTest : public UITest {
 
 // Download a file with non-viewable content, verify that the
 // download tab opened and the file exists.
-// This test is flaky. See bug 24889.
-TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
+TEST_F(DownloadTest, DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
 
   EXPECT_EQ(1, GetTabCount());
@@ -315,8 +314,7 @@ TEST_F(DownloadTest, DISABLED_KnownSize) {
 
 // Test that when downloading an item in Incognito mode, we don't crash when
 // closing the last Incognito window (http://crbug.com/13983).
-// This test is flaky. See bug 24684.
-TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
+TEST_F(DownloadTest, IncognitoDownload) {
   // Open a regular window and sanity check default values for window / tab
   // count and shelf visibility.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
