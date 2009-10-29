@@ -33,12 +33,12 @@
 static const char* kNewTabCSSPath = "css/newtab.css";
 static const char* kNewIncognitoTabCSSPath = "css/newincognitotab.css";
 
-static string16 SkColorToRGBAString(SkColor color) {
-  return WideToUTF16(l10n_util::GetStringF(IDS_RGBA_CSS_FORMAT_STRING,
-      IntToWString(SkColorGetR(color)),
-      IntToWString(SkColorGetG(color)),
-      IntToWString(SkColorGetB(color)),
-      DoubleToWString(SkColorGetA(color) / 255.0)));
+static std::string SkColorToRGBAString(SkColor color) {
+  // We convert the alpha using DoubleToString because StringPrintf will use
+  // locale specific formatters (e.g., use , instead of . in German).
+  return StringPrintf("rgba(%d,%d,%d,%s)", SkColorGetR(color),
+      SkColorGetG(color), SkColorGetB(color),
+      DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 
 static std::string StripQueryParams(const std::string& path) {
@@ -154,20 +154,20 @@ void DOMUIThemeSource::InitNewTabCSS() {
                      SkColorGetB(color_header));
 
   // Generate the replacements.
-  std::vector<string16> subst;
+  std::vector<std::string> subst;
   // A second list of replacements, each of which must be in $$x format,
   // where x is a digit from 1-9.
-  std::vector<string16> subst2;
+  std::vector<std::string> subst2;
 
   // Cache-buster for background.
-  subst.push_back(WideToUTF16(
+  subst.push_back(WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));  // $3
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));  // $4
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
+  subst.push_back(GetNewTabBackgroundCSS(false));  // $3
+  subst.push_back(GetNewTabBackgroundCSS(true));  // $4
+  subst.push_back(GetNewTabBackgroundTilingCSS());  // $5
   subst.push_back(SkColorToRGBAString(color_header));  // $6
   subst.push_back(SkColorToRGBAString(color_header_gradient_light));  // $7
   subst.push_back(SkColorToRGBAString(color_text));  // $8
@@ -178,15 +178,14 @@ void DOMUIThemeSource::InitNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_section_text));  // $$3
   subst2.push_back(SkColorToRGBAString(color_section_link));  // $$4
   subst2.push_back(
-      UTF8ToUTF16(tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
-          "block" : "none"));  // $$5
+      tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "block" : "none");  // $$5
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
   if (profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) > 0)
-    subst2.push_back(UTF8ToUTF16("block"));  // $$8
+    subst2.push_back("block");  // $$8
   else
-    subst2.push_back(UTF8ToUTF16("none"));  // $$8
+    subst2.push_back("none");  // $$8
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -194,11 +193,11 @@ void DOMUIThemeSource::InitNewTabCSS() {
       IDR_NEW_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
-  const std::string css_string = UTF16ToASCII(ReplaceStringPlaceholders(
-      format_string, subst, NULL));
-  new_tab_css_ = UTF16ToASCII(ReplaceStringPlaceholders(
-      ASCIIToUTF16(css_string), subst2, NULL));
+  std::string format_string = new_tab_theme_css.as_string();
+  const std::string css_string = ReplaceStringPlaceholders(
+      format_string, subst, NULL);
+  new_tab_css_ = ReplaceStringPlaceholders(
+      css_string, subst2, NULL);
 }
 
 void DOMUIThemeSource::InitNewIncognitoTabCSS() {
@@ -210,17 +209,17 @@ void DOMUIThemeSource::InitNewIncognitoTabCSS() {
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
 
   // Generate the replacements.
-  std::vector<string16> subst;
+  std::vector<std::string> subst;
 
   // Cache-buster for background.
-  subst.push_back(WideToUTF16(
+  subst.push_back(WideToUTF8(
       profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));  // $3
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));  // $4
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
+  subst.push_back(GetNewTabBackgroundCSS(false));  // $3
+  subst.push_back(GetNewTabBackgroundCSS(true));  // $4
+  subst.push_back(GetNewTabBackgroundTilingCSS());  // $5
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -228,9 +227,9 @@ void DOMUIThemeSource::InitNewIncognitoTabCSS() {
       IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
-  new_incognito_tab_css_ = UTF16ToASCII(ReplaceStringPlaceholders(
-      format_string, subst, NULL));
+  std::string format_string = new_tab_theme_css.as_string();
+  new_incognito_tab_css_ = ReplaceStringPlaceholders(
+      format_string, subst, NULL);
 }
 
 void DOMUIThemeSource::SendNewTabCSS(int request_id,

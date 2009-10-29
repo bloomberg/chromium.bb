@@ -5251,10 +5251,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_RGBA_CSS_FORMAT_STRING" translateable="false" desc="The format string to use when converting colors to CSS rgba().">
-        rgba($1, $2, $3, $4)
-      </message>
-
       <message name="IDS_USED_EXISTING_BROWSER" desc="Linux-specific message printed to console when the app is ran a second time, causing a new window to show rather than starting up a new browser.">
         Created new window in existing browser session.
       </message>
