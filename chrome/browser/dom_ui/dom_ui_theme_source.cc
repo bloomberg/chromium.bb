@@ -53,8 +53,10 @@ static std::string StripQueryParams(const std::string& path) {
 DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
       profile_(profile) {
-  InitNewTabCSS();
-  InitNewIncognitoTabCSS();
+  if (profile->IsOffTheRecord())
+    InitNewIncognitoTabCSS();
+  else
+    InitNewTabCSS();
 }
 
 void DOMUIThemeSource::StartDataRequest(const std::string& path,

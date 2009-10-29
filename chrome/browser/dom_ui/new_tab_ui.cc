@@ -543,6 +543,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (NewTabUI::FirstRunDisabled())
     NewTabHTMLSource::set_first_run(false);
 
+  InitializeCSSCaches();
   if (GetProfile()->IsOffTheRecord()) {
     incognito_ = true;
 
@@ -570,7 +571,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
 
-    InitializeCSSCaches();
     NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
     bool posted = ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
@@ -935,17 +935,24 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
         IDR_NEW_NEW_TAB_HTML);
   }
 
-  full_html_.assign(new_tab_html.data(), new_tab_html.size());
-
   // Inject the template data into the HTML so that it is available before any
   // layout is needed.
   std::string json_html;
   jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
 
-  static const std::string template_data_placeholder =
-      "<!-- template data placeholder -->";
-  ReplaceFirstSubstringAfterOffset(&full_html_, 0, template_data_placeholder,
-      json_html);
+  static const base::StringPiece template_data_placeholder(
+      "<!-- template data placeholder -->");
+  size_t pos = new_tab_html.find(template_data_placeholder);
 
+  if (pos != base::StringPiece::npos) {
+    full_html_.assign(new_tab_html.data(), pos);
+    full_html_.append(json_html);
+    size_t after_offset = pos + template_data_placeholder.size();
+    full_html_.append(new_tab_html.data() + after_offset,
+                      new_tab_html.size() - after_offset);
+  } else {
+    NOTREACHED();
+    full_html_.assign(new_tab_html.data(), new_tab_html.size());
+  }
   jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
 }
