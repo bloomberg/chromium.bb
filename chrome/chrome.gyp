@@ -796,6 +796,7 @@
         # mocks.
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
+        'browser/app_controller_cppsafe_mac.h',
         'browser/app_controller_mac.h',
         'browser/app_controller_mac.mm',
         'browser/app_modal_dialog.cc',

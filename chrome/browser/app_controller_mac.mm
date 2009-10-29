@@ -53,6 +53,12 @@
 - (BOOL)shouldQuitWithInProgressDownloads;
 @end
 
+// True while AppController is calling Browser::OpenEmptyWindow(). We need a
+// global flag here, analogue to BrowserInit::InProcessStartup() because
+// otherwise the SessionService will try to restore sessions when we make a new
+// window while there are no other active windows.
+static bool g_is_opening_new_window = false;
+
 @implementation AppController
 
 // This method is called very early in application startup (ie, before
@@ -489,7 +495,9 @@
   switch (tag) {
     case IDC_NEW_TAB:
     case IDC_NEW_WINDOW:
+      g_is_opening_new_window = true;
       Browser::OpenEmptyWindow(defaultProfile);
+      g_is_opening_new_window = false;
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
       Browser::OpenEmptyWindow(defaultProfile->GetOffTheRecordProfile());
@@ -527,7 +535,9 @@
     return YES;
 
   // Otherwise open a new window.
+  g_is_opening_new_window = true;
   Browser::OpenEmptyWindow([self defaultProfile]);
+  g_is_opening_new_window = false;
 
   // We've handled the reopen event, so return NO to tell AppKit not
   // to do anything.
@@ -729,3 +739,11 @@ void ShowOptionsWindow(OptionsPage page,
                        Profile* profile) {
   NOTIMPLEMENTED();
 }
+
+namespace app_controller_mac {
+
+bool IsOpeningNewWindow() {
+  return g_is_opening_new_window;
+}
+
+}  // namespace app_controller_mac

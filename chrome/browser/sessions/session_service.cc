@@ -29,6 +29,10 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/app_controller_cppsafe_mac.h"
+#endif
+
 using base::Time;
 
 // Identifier for commands written to file.
@@ -409,7 +413,14 @@ void SessionService::Observe(NotificationType type,
         return;
       }
 
-      if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup()) {
+      if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup()
+#if defined(OS_MACOSX)
+          // OSX has a fairly different idea of application lifetime than the
+          // other platforms. We need to check that we aren't opening a window
+          // from the dock or the menubar.
+          && !app_controller_mac::IsOpeningNewWindow()
+#endif
+          ) {
         // We're going from no tabbed browsers to a tabbed browser (and not in
         // process startup), restore the last session.
         if (move_on_new_browser_) {
