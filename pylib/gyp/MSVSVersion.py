@@ -94,7 +94,7 @@ def _DetectVisualStudioVersions():
   """
   version_to_year = { '8.0': '2005', '9.0': '2008' }
   versions = []
-  for version in ['8.0', '9.0']:
+  for version in ['9.0', '8.0']:
     # Get the install dir for this version.
     key = r'HKLM\Software\Microsoft\VisualStudio\%s' % version
     path = _RegistryGetValue(key, 'InstallDir')
