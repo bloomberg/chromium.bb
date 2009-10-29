@@ -943,6 +943,8 @@
         'browser/browsing_instance.cc',
         'browser/browsing_instance.h',
         'browser/bubble_positioner.h',
+        'browser/bug_report_util.cc',
+        'browser/bug_report_util.h',
         'browser/cancelable_request.cc',
         'browser/cancelable_request.h',
         'browser/cert_store.cc',

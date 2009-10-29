@@ -9,6 +9,7 @@
 #include "app/win_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
+#include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -38,10 +39,6 @@ static const int kBugReportVersion = 1;
 
 // Number of lines description field can display at one time.
 static const int kDescriptionLines = 5;
-
-// Google's phishing reporting URL.
-static const char kReportPhishingUrl[] =
-    "http://www.google.com/safebrowsing/report_phish/";
 
 class BugReportComboBoxModel : public ComboboxModel {
  public:
@@ -95,22 +92,6 @@ class BugReportComboBoxModel : public ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(BugReportComboBoxModel);
 };
 
-// Simple URLFetcher::Delegate to clean up URLFetcher on completion
-// (since the BugReportView will be gone by then).
-class BugReportView::PostCleanup : public URLFetcher::Delegate {
- public:
-  PostCleanup();
-  // Overridden from URLFetcher::Delegate.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
- private:
-  DISALLOW_COPY_AND_ASSIGN(PostCleanup);
-};
-
 namespace browser {
 
 // Global "display this dialog" function declared in browser_dialogs.h.
@@ -133,22 +114,6 @@ void ShowBugReportView(views::Widget* parent,
 }
 
 }  // namespace browser
-
-BugReportView::PostCleanup::PostCleanup() {
-}
-
-void BugReportView::PostCleanup::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const URLRequestStatus& status,
-    int response_code,
-    const ResponseCookies& cookies,
-    const std::string& data) {
-  // Delete the URLFetcher.
-  delete source;
-  // And then delete ourselves.
-  delete this;
-}
 
 // BugReportView - create and submit a bug report from the user.
 // This is separate from crash reporting, which is handled by Breakpad.
@@ -348,167 +313,21 @@ std::wstring BugReportView::GetWindowTitle() const {
 bool BugReportView::Accept() {
   if (IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
     if (problem_type_ == BugReportComboBoxModel::PHISHING_PAGE)
-      ReportPhishing();
+      BugReportUtil::ReportPhishing(tab_,
+                                    WideToUTF8(page_url_text_->text()));
     else
-      SendReport();
+      BugReportUtil::SendReport(profile_,
+          WideToUTF8(page_title_text_->GetText()),
+          problem_type_,
+          WideToUTF8(page_url_text_->text()),
+          WideToUTF8(description_text_->text()),
+          include_page_image_checkbox_->checked() && png_data_.get() ?
+              reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
+          png_data_->size());
   }
   return true;
 }
 
 views::View* BugReportView::GetContentsView() {
   return this;
-}
-
-// SetOSVersion copies the maj.minor.build + servicePack_string
-// into a string (for Windows only). This should probably be
-// in a util somewhere. We currently have:
-//   win_util::GetWinVersion returns WinVersion, which is just
-//     an enum of 2000, XP, 2003, or VISTA. Not enough detail for
-//     bug reports.
-//   base::SysInfo::OperatingSystemVersion returns an std::string
-//     but doesn't include the build or service pack. That function
-//     is probably the right one to extend, but will require changing
-//     all the call sites or making it a wrapper around another util.
-void BugReportView::SetOSVersion(std::string *os_version) {
-  OSVERSIONINFO osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-  if (GetVersionEx(&osvi)) {
-    *os_version = StringPrintf("%d.%d.%d %S",
-      osvi.dwMajorVersion,
-      osvi.dwMinorVersion,
-      osvi.dwBuildNumber,
-      osvi.szCSDVersion);
-  } else {
-    *os_version = "unknown";
-  }
-}
-
-// Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
-void BugReportView::CreateMimeBoundary(std::string *out) {
-  int r1 = rand();
-  int r2 = rand();
-  SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
-}
-
-void BugReportView::SendReport() {
-  std::wstring post_url = l10n_util::GetString(IDS_BUGREPORT_POST_URL);
-  std::string mime_boundary;
-  CreateMimeBoundary(&mime_boundary);
-
-  // Create a request body and add the mandatory parameters.
-  std::string post_body;
-
-  // Add the protocol version:
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"data_version\"\r\n\r\n");
-  post_body.append(StringPrintf("%d\r\n", kBugReportVersion));
-
-  // Add the page title.
-  post_body.append("--" + mime_boundary + "\r\n");
-  std::string page_title = WideToUTF8(page_title_text_->GetText());
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"title\"\r\n\r\n");
-  post_body.append(page_title + "\r\n");
-
-  // Add the problem type.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"problem\"\r\n\r\n");
-  post_body.append(StringPrintf("%d\r\n", problem_type_));
-
-  // Add in the URL, if we have one.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"url\"\r\n\r\n");
-
-  // Convert URL to UTF8.
-  std::string report_url = WideToUTF8(page_url_text_->text());
-  if (report_url.empty()) {
-    post_body.append("n/a\r\n");
-  } else {
-    post_body.append(report_url + "\r\n");
-  }
-
-  // Add Chrome version.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"chrome_version\"\r\n\r\n");
-
-  std::string version = WideToUTF8(version_);
-  if (version.empty()) {
-    post_body.append("n/a\r\n");
-  } else {
-    post_body.append(version + "\r\n");
-  }
-
-  // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
-  std::string os_version = "";
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"os_version\"\r\n\r\n");
-  SetOSVersion(&os_version);
-  post_body.append(os_version + "\r\n");
-
-  // Add locale.
-  icu::Locale locale = icu::Locale::getDefault();
-  const char *lang = locale.getLanguage();
-  std::string chrome_locale = (lang)? lang:"en";
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"chrome_locale\"\r\n\r\n");
-  post_body.append(chrome_locale + "\r\n");
-
-  // Add a description if we have one.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"description\"\r\n\r\n");
-
-  std::string description = WideToUTF8(description_text_->text());
-  if (description.empty()) {
-    post_body.append("n/a\r\n");
-  } else {
-    post_body.append(description + "\r\n");
-  }
-
-  // Include the page image if we have one.
-  if (include_page_image_checkbox_->checked() && png_data_.get()) {
-    post_body.append("--" + mime_boundary + "\r\n");
-    post_body.append("Content-Disposition: form-data; name=\"screenshot\"; "
-                      "filename=\"screenshot.png\"\r\n");
-    post_body.append("Content-Type: application/octet-stream\r\n");
-    post_body.append(StringPrintf("Content-Length: %lu\r\n\r\n",
-                     png_data_->size()));
-    // The following relies on the fact that STL vectors are guaranteed to
-    // be stored contiguously.
-    post_body.append(reinterpret_cast<const char *>(&((*png_data_)[0])),
-                     png_data_->size());
-    post_body.append("\r\n");
-  }
-
-  // TODO(awalker): include the page source if we can get it.
-  if (include_page_source_checkbox_->checked()) {
-  }
-
-  // Terminate the body.
-  post_body.append("--" + mime_boundary + "--\r\n");
-
-  // We have the body of our POST, so send it off to the server.
-  URLFetcher* fetcher = new URLFetcher(post_url_, URLFetcher::POST,
-                                       new BugReportView::PostCleanup);
-  fetcher->set_request_context(profile_->GetRequestContext());
-  std::string mime_type("multipart/form-data; boundary=");
-  mime_type += mime_boundary;
-  fetcher->set_upload_data(mime_type, post_body);
-  fetcher->Start();
-}
-
-void BugReportView::ReportPhishing() {
-  tab_->controller().LoadURL(
-      safe_browsing_util::GeneratePhishingReportUrl(
-          kReportPhishingUrl, WideToUTF8(page_url_text_->text())),
-      GURL(),
-      PageTransition::LINK);
 }
