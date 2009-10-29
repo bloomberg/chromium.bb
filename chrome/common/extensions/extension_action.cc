@@ -63,14 +63,16 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   const int kCenterAlignThreshold = 20;
 #endif
 
+#if defined(OS_MACOSX)
+  const char kTypeFaceName[] = "Helvetica";
+#else
+  const char kTypeFaceName[] = "Arial";
+#endif
+
   canvas->save();
 
-#if defined(OS_MACOSX)
-  SkTypeface* typeface =
-      SkTypeface::CreateFromName("Helvetica", SkTypeface::kBold);
-#else
-  SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
-#endif
+  SkTypeface* typeface = SkTypeface::CreateFromName(kTypeFaceName,
+                                                    SkTypeface::kBold);
   SkPaint text_paint;
   text_paint.setAntiAlias(true);
   text_paint.setColor(text_color);
@@ -95,7 +97,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect.fBottom = SkIntToScalar(bounds.bottom() - kBottomMargin);
   rect.fTop = rect.fBottom - SkIntToScalar(kBadgeHeight);
   if (badge_width >= kCenterAlignThreshold) {
-    rect.fLeft = SkIntToScalar((bounds.right() - badge_width) / 2);
+    rect.fLeft = SkIntToScalar(bounds.CenterPoint().x() - badge_width / 2);
     rect.fRight = rect.fLeft + SkIntToScalar(badge_width);
   } else {
     rect.fRight = SkIntToScalar(bounds.right());
