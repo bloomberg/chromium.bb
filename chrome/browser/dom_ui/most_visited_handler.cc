@@ -56,16 +56,26 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
   // Set up our sources for thumbnail and favicon data.
-  ChromeThread::PostTask(
+  DOMUIThumbnailSource* thumbnail_src =
+      new DOMUIThumbnailSource(dom_ui->GetProfile());
+  bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(&chrome_url_data_manager,
-                        &ChromeURLDataManager::AddDataSource,
-                        new DOMUIThumbnailSource(dom_ui->GetProfile())));
-    ChromeThread::PostTask(
+                        &ChromeURLDataManager::AddDataSource, thumbnail_src));
+  if (!posted) {
+    thumbnail_src->AddRef();
+    thumbnail_src->Release();  // Keep Valgrind happy in unit tests.
+  }
+
+  DOMUIFavIconSource* favicon_src = new DOMUIFavIconSource(dom_ui->GetProfile());
+  posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(&chrome_url_data_manager,
-                        &ChromeURLDataManager::AddDataSource,
-                        new DOMUIFavIconSource(dom_ui->GetProfile())));
+                        &ChromeURLDataManager::AddDataSource, favicon_src));
+  if (!posted) {
+    favicon_src->AddRef();
+    favicon_src->Release();  // Keep Valgrind happy in unit tests.
+  }
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
