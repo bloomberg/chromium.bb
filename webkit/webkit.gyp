@@ -187,7 +187,6 @@
         'api/src/DragClientImpl.h',
         'api/src/EditorClientImpl.cpp',
         'api/src/EditorClientImpl.h',
-        'api/src/EmptyWebFrameClientImpl.h',
         'api/src/gtk/WebFontInfo.cpp',
         'api/src/gtk/WebFontInfo.h',
         'api/src/gtk/WebInputEventFactory.cpp',

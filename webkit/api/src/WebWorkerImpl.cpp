@@ -45,7 +45,6 @@
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
 
-#include "EmptyWebFrameClientImpl.h"
 #include "PlatformMessagePortChannel.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
@@ -66,7 +65,7 @@ namespace WebKit {
 
 // Dummy WebViewDelegate - we only need it in Worker process to load a
 // 'shadow page' which will initialize WebCore loader.
-class WorkerWebFrameClient : public WebKit::EmptyWebFrameClient {
+class WorkerWebFrameClient : public WebKit::WebFrameClient {
 public:
     // Tell the loader to load the data into the 'shadow page' synchronously,
     // so we can grab the resulting Document right after load.
