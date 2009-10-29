@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
 #include "chrome_frame/utils.h"
@@ -297,6 +298,8 @@ void CFUrlRequestUnittestRunner::StartTests() {
 // static
 DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
   PlatformThread::SetName("CFUrlRequestUnittestRunner");
+  // Needed for some url request tests like the intercept job tests, etc.
+  NotificationService service;
   CFUrlRequestUnittestRunner* me =
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
   me->Run();
