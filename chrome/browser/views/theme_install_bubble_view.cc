@@ -58,6 +58,13 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
       this,
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
+
+  // Don't let the bubble overlap the confirm dialog.
+  registrar_.Add(
+      this,
+      NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+      NotificationService::AllSources());
+
   gfx::Rect rc(0, 0, 0, 0);
   popup_ = new views::WidgetWin;
   popup_->set_window_style(WS_POPUP);

@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -112,6 +113,11 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_EXTENSIONS_SECTION);
   }
+
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+                  Source<ExtensionInstallUI>(this),
+                  NotificationService::NoDetails());
 
   ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon,
                              GetInstallWarning(extension));

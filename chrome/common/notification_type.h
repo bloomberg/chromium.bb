@@ -407,6 +407,10 @@ class NotificationType {
     // NoDetails.
     EXTENSION_SHELF_VISIBILITY_PREF_CHANGED,
 
+    // Sent just before the installation confirm dialog is shown. The source
+    // is the ExtensionInstallUI, the details are NoDetails.
+    EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+
     // Used to monitor web cache usage by notifying whenever the
     // CacheManagerHost observes new UsageStats. The source will be the
     // RenderProcessHost that corresponds to the new statistics. Details are a
@@ -726,7 +730,7 @@ class NotificationType {
     // Sent when the blacklist manager encounters an error. The details are
     // a string16 (error message), and the source is a Profile.
     BLACKLIST_MANAGER_ERROR,
-    
+
     // Sent by the resource dispatcher host when a resource is blocked.
     BLACKLIST_BLOCKED_RESOURCE,
 

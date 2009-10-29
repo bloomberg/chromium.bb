@@ -73,6 +73,16 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(NSWindow* window)
       this,
       NotificationType::EXTENSION_INSTALLED,
       NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      NotificationType::EXTENSION_INSTALL_ERROR,
+      NotificationService::AllSources());
+
+  // Don't let the bubble overlap the confirm dialog.
+  registrar_.Add(
+      this,
+      NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+      NotificationService::AllSources());
 
   // Add the view.
   [cocoa_view_ setFrame:parent_bounds];
