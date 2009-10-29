@@ -38,8 +38,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-#define _XOPEN_SOURCE 600 /* get XSI compliant version of strerror_r */
 #include <errno.h>
 #include <string.h>
 
