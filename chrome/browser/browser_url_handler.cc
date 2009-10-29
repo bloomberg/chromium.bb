@@ -17,6 +17,27 @@ static bool HandleViewSource(GURL* url, Profile* profile) {
   if (url->SchemeIs(chrome::kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
+
+    // Bug 26129: limit view-source to view the content and not any
+    // other kind of 'active' url scheme like 'javascript' or 'data'.
+    static const char* const allowed_sub_schemes[] = {
+      chrome::kHttpScheme, chrome::kHttpsScheme, chrome::kFtpScheme,
+      chrome::kChromeUIScheme
+    };
+
+    bool is_sub_scheme_allowed = false;
+    for (size_t i = 0; i < arraysize(allowed_sub_schemes); i++) {
+      if (url->SchemeIs(allowed_sub_schemes[i])) {
+        is_sub_scheme_allowed = true;
+        break;
+      }
+    }
+
+    if (!is_sub_scheme_allowed) {
+      *url = GURL(chrome::kAboutBlankURL);
+      return false;
+    }
+
     return true;
   }
   return false;
