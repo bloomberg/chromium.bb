@@ -38,6 +38,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
   Returns: a list of failure objects and times for the test being processed
   """
   outlines = []
+  extra_lines = []
   failures = []
   crash = False
 
@@ -48,6 +49,10 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
   start_time = time.time()
 
   line = proc.stdout.readline()
+
+  # Only start saving output lines once we've loaded the URL for the test.
+  hit_load_url = False
+
   while line.rstrip() != "#EOF":
     # Make sure we haven't crashed.
     if line == '' and proc.poll() is not None:
@@ -68,6 +73,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
 
     # Don't include #URL lines in our output
     if line.startswith("#URL:"):
+      hit_load_url = True
       test_string = test_info.uri.strip()
       url = line.rstrip()[5:]
       if url != test_string:
@@ -79,11 +85,18 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
     elif line.startswith("#TEST_TIMED_OUT"):
       # Test timed out, but we still need to read until #EOF.
       failures.append(test_failures.FailureTimeout())
-    else:
+    elif hit_load_url:
       outlines.append(line)
+    else:
+      extra_lines.append(line)
+
     line = proc.stdout.readline()
 
   end_test_time = time.time()
+
+  if len(extra_lines):
+    logging.warning("Previous test output extra lines after dump:\n%s" % (
+        "".join(extra_lines)))
 
   # Check the output and save the results.
   time_for_diffs = {}

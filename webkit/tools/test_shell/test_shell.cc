@@ -197,8 +197,6 @@ void TestShell::Dump(TestShell* shell) {
     return;
 
   WebScriptController::flushConsoleMessages();
-  // Echo the url in the output so we know we're not getting out of sync.
-  printf("#URL:%s\n", params->test_url.c_str());
 
   // Dump the requested representation.
   WebFrame* frame = shell->webView()->mainFrame();
@@ -538,6 +536,11 @@ void TestShell::LoadFile(const FilePath& file) {
 }
 
 void TestShell::LoadURL(const GURL& url) {
+  // Used as a sentinal for run_webkit_tests.py to know when to start reading
+  // test output for this test and so we know we're not getting out of sync.
+  if (layout_test_mode_ && test_params())
+    printf("#URL:%s\n", test_params()->test_url.c_str());
+
   LoadURLForFrame(url, std::wstring());
 }
 
