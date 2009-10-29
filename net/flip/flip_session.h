@@ -26,7 +26,7 @@
 
 namespace net {
 
-class FlipStreamImpl;
+class FlipStream;
 class HttpNetworkSession;
 class HttpRequestInfo;
 class HttpResponseInfo;
@@ -203,13 +203,13 @@ class FlipSession : public base::RefCounted<FlipSession>,
   int GetNewStreamId();
 
   // Track active streams in the active stream list.
-  FlipStreamImpl* ActivateStream(flip::FlipStreamId id, FlipDelegate* delegate);
+  FlipStream* ActivateStream(flip::FlipStreamId id, FlipDelegate* delegate);
   void DeactivateStream(flip::FlipStreamId id);
 
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
   // list), returns NULL otherwise.
-  FlipStreamImpl* GetPushStream(std::string url);
+  FlipStream* GetPushStream(std::string url);
 
   // Callbacks for the Flip session.
   CompletionCallbackImpl<FlipSession> connect_callback_;
@@ -239,8 +239,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // TODO(mbelshe): We need to track these stream lists better.
   //                I suspect it is possible to remove a stream from
   //                one list, but not the other.
-  typedef std::map<int, FlipStreamImpl*> ActiveStreamMap;
-  typedef std::list<FlipStreamImpl*> ActiveStreamList;
+  typedef std::map<int, FlipStream*> ActiveStreamMap;
+  typedef std::list<FlipStream*> ActiveStreamList;
   ActiveStreamMap active_streams_;
 
   ActiveStreamList pushed_streams_;
