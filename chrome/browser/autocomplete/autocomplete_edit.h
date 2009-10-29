@@ -101,7 +101,7 @@ class AutocompleteEditModel : public NotificationObserver {
   AutocompleteEditModel(AutocompleteEditView* view,
                         AutocompleteEditController* controller,
                         Profile* profile);
-  ~AutocompleteEditModel();
+  ~AutocompleteEditModel() {}
 
   void SetPopupModel(AutocompletePopupModel* popup_model);
 
@@ -333,18 +333,6 @@ class AutocompleteEditModel : public NotificationObserver {
   GURL GetURLForCurrentText(PageTransition::Type* transition,
                             bool* is_history_what_you_typed_match,
                             GURL* alternate_nav_url) const;
-
-  // Performs a query for only the synchronously available matches for the
-  // current input, sets |transition|, |is_history_what_you_typed_match|, and
-  // |alternate_nav_url| (if applicable) based on the default match, and returns
-  // its url. |transition|, |is_history_what_you_typed_match| and/or
-  // |alternate_nav_url| may be null, in which case they are not updated.
-  //
-  // If there are no matches for the input, leaves the outparams unset and
-  // returns the empty string.
-  GURL URLsForDefaultMatch(PageTransition::Type* transition,
-                           bool* is_history_what_you_typed_match,
-                           GURL* alternate_nav_url) const;
 
   AutocompleteEditView* view_;
 

@@ -2006,6 +2006,8 @@
         'browser/safe_browsing/safe_browsing_util.h',
         'browser/sandbox_policy.cc',
         'browser/sandbox_policy.h',
+        'browser/search_versus_navigate_classifier.cc',
+        'browser/search_versus_navigate_classifier.h',
         'browser/search_engines/edit_search_engine_controller.cc',
         'browser/search_engines/edit_search_engine_controller.h',
         'browser/search_engines/keyword_editor_controller.cc',

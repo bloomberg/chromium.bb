@@ -32,6 +32,7 @@
 #include "chrome/browser/privacy_blacklist/blacklist_io.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -301,6 +302,10 @@ class OffTheRecordProfileImpl : public Profile,
     }
   }
 
+  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
+    return profile_->GetSearchVersusNavigateClassifier();
+  }
+
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) {
     if (sat == EXPLICIT_ACCESS) {
       return profile_->GetWebDataService(sat);
@@ -546,7 +551,7 @@ class OffTheRecordProfileImpl : public Profile,
   // Time we were started.
   Time start_time_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(OffTheRecordProfileImpl);
+  DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
 
 ProfileImpl::ProfileImpl(const FilePath& path)
@@ -1004,6 +1009,15 @@ TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {
   if (!template_url_fetcher_.get())
     template_url_fetcher_.reset(new TemplateURLFetcher(this));
   return template_url_fetcher_.get();
+}
+
+SearchVersusNavigateClassifier* ProfileImpl::GetSearchVersusNavigateClassifier()
+{
+  if (!search_versus_navigate_classifier_.get()) {
+    search_versus_navigate_classifier_.reset(
+        new SearchVersusNavigateClassifier(this));
+  }
+  return search_versus_navigate_classifier_.get();
 }
 
 WebDataService* ProfileImpl::GetWebDataService(ServiceAccessType sat) {

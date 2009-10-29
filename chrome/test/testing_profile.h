@@ -98,6 +98,9 @@ class TestingProfile : public Profile {
   void set_has_history_service(bool has_history_service) {
     has_history_service_ = has_history_service;
   }
+  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
+    return NULL;
+  }
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return NULL;
   }

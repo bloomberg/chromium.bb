@@ -84,6 +84,9 @@ class AutomationProfileImpl : public Profile {
   virtual HistoryService* GetHistoryServiceWithoutCreating() {
     return original_profile_->GetHistoryServiceWithoutCreating();
   }
+  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
+    return original_profile_->GetSearchVersusNavigateClassifier();
+  }
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return original_profile_->GetWebDataService(access);
   }

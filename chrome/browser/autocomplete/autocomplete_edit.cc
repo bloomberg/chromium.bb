@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -24,14 +25,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
-
-// A single AutocompleteController used solely for making synchronous calls.  We
-// avoid using the popup's controller here because we don't want to interrupt
-// in-progress queries or modify the popup state.  We don't need a controller
-// for every edit because this will always be accessed on the main thread, so we
-// won't have thread-safety problems.
-static AutocompleteController* synchronous_controller = NULL;
-static int synchronous_controller_refcount = 0;
 
 AutocompleteEditModel::AutocompleteEditModel(
     AutocompleteEditView* view,
@@ -52,16 +45,6 @@ AutocompleteEditModel::AutocompleteEditModel(
       show_search_hint_(true),
       paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile) {
-  if (++synchronous_controller_refcount == 1) {
-    // We don't have a controller yet, so create one.  No profile is set since
-    // we'll set this before each call to the controller.
-    synchronous_controller = new AutocompleteController(NULL);
-  }
-}
-
-AutocompleteEditModel::~AutocompleteEditModel() {
-  if (--synchronous_controller_refcount == 0)
-    delete synchronous_controller;
 }
 
 void AutocompleteEditModel::SetPopupModel(AutocompletePopupModel* popup_model) {
@@ -203,28 +186,13 @@ void AutocompleteEditModel::StartAutocomplete(
 }
 
 bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
-  // Reset local state.
   paste_and_go_url_ = GURL();
   paste_and_go_transition_ = PageTransition::TYPED;
   paste_and_go_alternate_nav_url_ = GURL();
 
-  // Ask the controller what do do with this input.
-  // Setting the profile is cheap, and since there's one synchronous_controller
-  // for many tabs which may all have different profiles, it ensures we're
-  // always using the right one.
-  synchronous_controller->SetProfile(profile_);
-  synchronous_controller->Start(text, std::wstring(), true, false, true);
-  DCHECK(synchronous_controller->done());
-  const AutocompleteResult& result = synchronous_controller->result();
-  if (result.empty())
-    return false;
-
-  // Set local state based on the default action for this input.
-  const AutocompleteResult::const_iterator match(result.default_match());
-  DCHECK(match != result.end());
-  paste_and_go_url_ = match->destination_url;
-  paste_and_go_transition_ = match->transition;
-  paste_and_go_alternate_nav_url_ = result.alternate_nav_url();
+  profile_->GetSearchVersusNavigateClassifier()->Classify(text, std::wstring(),
+      NULL, &paste_and_go_url_, &paste_and_go_transition_, NULL,
+      &paste_and_go_alternate_nav_url_);
 
   return paste_and_go_url_.is_valid();
 }
@@ -600,38 +568,16 @@ GURL AutocompleteEditModel::GetURLForCurrentText(
     PageTransition::Type* transition,
     bool* is_history_what_you_typed_match,
     GURL* alternate_nav_url) const {
-  return (popup_->IsOpen() || query_in_progress()) ?
-      popup_->URLsForCurrentSelection(transition,
-                                      is_history_what_you_typed_match,
-                                      alternate_nav_url) :
-      URLsForDefaultMatch(transition, is_history_what_you_typed_match,
-                          alternate_nav_url);
-}
+  if (popup_->IsOpen() || query_in_progress()) {
+    return popup_->URLsForCurrentSelection(transition,
+                                           is_history_what_you_typed_match,
+                                           alternate_nav_url);
+  }
 
-GURL AutocompleteEditModel::URLsForDefaultMatch(
-    PageTransition::Type* transition,
-    bool* is_history_what_you_typed_match,
-    GURL* alternate_nav_url) const {
-  // Ask the controller what do do with this input.
-  // Setting the profile is cheap, and since there's one synchronous_controller
-  // for many tabs which may all have different profiles, it ensures we're
-  // always using the right one.
-  synchronous_controller->SetProfile(profile_);
-  synchronous_controller->Start(UserTextFromDisplayText(view_->GetText()),
-                                GetDesiredTLD(), true, false, true);
-  CHECK(synchronous_controller->done());
-
-  const AutocompleteResult& result = synchronous_controller->result();
-  if (result.empty())
-    return GURL();
-
-  // Get the URLs for the default match.
-  const AutocompleteResult::const_iterator match = result.default_match();
-  if (transition)
-    *transition = match->transition;
-  if (is_history_what_you_typed_match)
-    *is_history_what_you_typed_match = match->is_history_what_you_typed_match;
-  if (alternate_nav_url)
-    *alternate_nav_url = result.alternate_nav_url();
-  return match->destination_url;
+  GURL destination_url;
+  profile_->GetSearchVersusNavigateClassifier()->Classify(
+      UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), NULL,
+      &destination_url, transition, is_history_what_you_typed_match,
+      alternate_nav_url);
+  return destination_url;
 }
