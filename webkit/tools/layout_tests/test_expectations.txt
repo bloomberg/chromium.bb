@@ -493,7 +493,8 @@ BUG20404 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
 // Works fine when run stand-alone.  Not needed for Beta.
 // Also skipped by Apple on Windows, due to intermittent failure
 // (rdar://5313536)
-BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = FAIL
+// started WIN only, since r30442 fails on all platforms
+BUG10270 : LayoutTests/fast/dom/frame-loading-via-document-write.html = FAIL
 
 // -----------------------------------------------------------------
 // LIGHTTPD
@@ -2608,7 +2609,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/forms/button-spacebar-click.html = CRASH PA
 BUG9798 WIN : LayoutTests/animations/change-transform-in-end-event.html = PASS TIMEOUT
 BUG9798 LINUX MAC : LayoutTests/http/tests/navigation/reload-subframe-iframe.html = PASS TIMEOUT
 BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html = CRASH PASS
-BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
+BUG9798 WIN LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
 BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 WIN LINUX : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PASS
@@ -3247,5 +3248,6 @@ BUG_JORLOW WIN : chrome/fast/forms/basic-selects.html = IMAGE
 BUG_ROLANDSTEINER : LayoutTests/accessibility/aria-option-role.html = TEXT
 BUG_ROLANDSTEINER LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
 BUG_ROLANDSTEINER LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
+BUG_ROLANDSTEINER LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = CRASH
 BUG_ROLANDSTEINER MAC : LayoutTests/css3/css3-modsel-33.html = TEXT
 BUG_ROLANDSTEINER MAC : chrome/plugins/script-object-invoke.html = TEXT
