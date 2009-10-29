@@ -5,48 +5,25 @@
 #ifndef CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_IO_H_
 #define CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_IO_H_
 
-#include <list>
+#include <string>
 
-#include "base/string16.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
-
+class Blacklist;
 class FilePath;
 
-// Helper class to keep state while reading multiple text blacklists to
-// produce a single binary blacklist used by the Blacklist constructor.
+// Set of routines to read and write blacklists.
 class BlacklistIO {
  public:
-  BlacklistIO();
-  ~BlacklistIO();
-
-  // Reads a text blacklist, as downloaded from the blacklist provider.
-  bool Read(const FilePath& path);
-
-  // Writes a binary blacklist with aggregated entries for all read blacklists.
-  bool Write(const FilePath& path);
-
-  // Returns the text of the last occuring error. An empty string is returned
-  // if no such error happened.
-  const string16& last_error() const {
-    return last_error_;
-  }
-
- private:
-  // Introspection functions, for testing purposes.
-  const std::list<Blacklist::Entry*>& blacklist() const {
-    return blacklist_;
-  }
-  const std::list<Blacklist::Provider*>& providers() const {
-    return providers_;
-  }
-
-  std::list<Blacklist::Entry*> blacklist_;
-  std::list<Blacklist::Provider*> providers_;
-  string16 last_error_;  // Stores text of last error, empty if N/A.
-
-  FRIEND_TEST(BlacklistIOTest, Generic);
-  FRIEND_TEST(BlacklistIOTest, Combine);
-  DISALLOW_COPY_AND_ASSIGN(BlacklistIO);
+  // Reads a blacklist stored on disk in a text format.
+  // On error returns false and fills |error_string|.
+  static bool ReadText(Blacklist* blacklist, const FilePath& path,
+                       std::string* error_string);
+  
+  // Reads a blacklist stored on disk in a binary format.
+  // Returns true on success.
+  static bool ReadBinary(Blacklist* blacklist, const FilePath& path);
+  
+  // Writes |blacklist| to |path| in a binary format. Returns true on success.
+  static bool WriteBinary(const Blacklist* blacklist, const FilePath& path);
 };
 
 #endif  // CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_IO_H_

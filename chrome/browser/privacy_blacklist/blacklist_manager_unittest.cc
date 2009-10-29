@@ -34,28 +34,51 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
   explicit TestBlacklistPathProvider(Profile* profile) : profile_(profile) {
   }
 
-  virtual std::vector<FilePath> GetBlacklistPaths() {
-    return paths_;
+  virtual std::vector<FilePath> GetPersistentBlacklistPaths() {
+    return persistent_paths_;
+  }
+  
+  virtual std::vector<FilePath> GetTransientBlacklistPaths() {
+    return transient_paths_;
   }
 
-  void AddPath(const FilePath& path) {
-    paths_.push_back(path);
-    NotificationService::current()->Notify(
-        NotificationType::PRIVACY_BLACKLIST_PATH_PROVIDER_UPDATED,
-        Source<Profile>(profile_),
-        Details<BlacklistPathProvider>(this));
+  void AddPersistentPath(const FilePath& path) {
+    persistent_paths_.push_back(path);
+    SendUpdateNotification();
+  }
+  
+  void AddTransientPath(const FilePath& path) {
+    transient_paths_.push_back(path);
+    SendUpdateNotification();
+  }
+  
+  void clear() {
+    persistent_paths_.clear();
+    transient_paths_.clear();
+    SendUpdateNotification();
   }
 
  private:
+  void SendUpdateNotification() {
+    NotificationService::current()->Notify(
+        NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED,
+        Source<Profile>(profile_),
+        Details<BlacklistPathProvider>(this));
+  }
+  
   Profile* profile_;
 
-  std::vector<FilePath> paths_;
+  std::vector<FilePath> persistent_paths_;
+  std::vector<FilePath> transient_paths_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBlacklistPathProvider);
 };
 
-class BlacklistManagerTest : public testing::Test {
+class BlacklistManagerTest : public testing::Test, public NotificationObserver {
  public:
+  BlacklistManagerTest() : path_provider_(&profile_) {
+  }
+  
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("blacklist_samples");
@@ -65,10 +88,35 @@ class BlacklistManagerTest : public testing::Test {
     loop_.RunAllPending();
   }
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    MessageLoop::current()->Quit();
+  }
+
  protected:
+  void WaitForBlacklistError() {
+    NotificationRegistrar registrar;
+    registrar.Add(this,
+                  NotificationType::BLACKLIST_MANAGER_ERROR,
+                  Source<Profile>(&profile_));
+    MessageLoop::current()->Run();
+  }
+  
+  void WaitForBlacklistUpdate() {
+    NotificationRegistrar registrar;
+    registrar.Add(this,
+                  NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
+                  Source<Profile>(&profile_));
+    MessageLoop::current()->Run();
+  }
+  
   FilePath test_data_dir_;
 
   MyTestingProfile profile_;
+  
+  TestBlacklistPathProvider path_provider_;
 
  private:
   MessageLoop loop_;
@@ -87,13 +135,11 @@ bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
 
 TEST_F(BlacklistManagerTest, Basic) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, NULL));
+      new BlacklistManager(&profile_, &path_provider_, NULL));
+  WaitForBlacklistUpdate();
 
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
-
-  // We should get an empty, but valid object.
-  ASSERT_TRUE(blacklist);
-  EXPECT_TRUE(blacklist->is_good());
+  EXPECT_TRUE(blacklist);
 
   // Repeated invocations of GetCompiledBlacklist should return the same object.
   EXPECT_EQ(blacklist, manager->GetCompiledBlacklist());
@@ -101,31 +147,47 @@ TEST_F(BlacklistManagerTest, Basic) {
 
 TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, NULL));
+      new BlacklistManager(&profile_, &path_provider_, NULL));
+  WaitForBlacklistUpdate();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
   EXPECT_FALSE(BlacklistHasMatch(blacklist1,
                                  "http://host/annoying_ads/ad.jpg"));
 
-  TestBlacklistPathProvider provider(&profile_);
-  manager->RegisterBlacklistPathProvider(&provider);
-
-  // Blacklist should not get recompiled.
-  EXPECT_EQ(blacklist1, manager->GetCompiledBlacklist());
-
-  provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
-
+  path_provider_.AddPersistentPath(
+      test_data_dir_.AppendASCII("annoying_ads.pbl"));
+  WaitForBlacklistUpdate();
+  
   const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
 
   // Added a real blacklist, the manager should recompile.
   EXPECT_NE(blacklist1, blacklist2);
   EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
-
-  manager->UnregisterBlacklistPathProvider(&provider);
-
-  // Just unregistering the provider doesn't remove the blacklist paths
-  // from the manager.
-  EXPECT_EQ(blacklist2, manager->GetCompiledBlacklist());
+  EXPECT_FALSE(BlacklistHasMatch(blacklist2, "http://host/other_ads/ad.jpg"));
+  
+  path_provider_.AddTransientPath(test_data_dir_.AppendASCII("other_ads.pbl"));
+  WaitForBlacklistUpdate();
+  
+  const Blacklist* blacklist3 = manager->GetCompiledBlacklist();
+  
+  // In theory blacklist2 and blacklist3 could be the same object, so we're
+  // not checking for inequality.
+  EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/annoying_ads/ad.jpg"));
+  EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/other_ads/ad.jpg"));
+  
+  // Now make sure that transient blacklists don't survive after re-creating
+  // the BlacklistManager.
+  manager = NULL;
+  path_provider_.clear();
+  path_provider_.AddPersistentPath(
+      test_data_dir_.AppendASCII("annoying_ads.pbl"));
+  manager = new BlacklistManager(&profile_, &path_provider_, NULL);
+  WaitForBlacklistUpdate();
+  
+  const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
+  
+  EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://host/annoying_ads/ad.jpg"));
+  EXPECT_FALSE(BlacklistHasMatch(blacklist4, "http://host/other_ads/ad.jpg"));
 }
 
 TEST_F(BlacklistManagerTest, RealThread) {
@@ -133,93 +195,36 @@ TEST_F(BlacklistManagerTest, RealThread) {
   backend_thread.Start();
 
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &backend_thread));
-
-  // Make sure all pending tasks run.
-  backend_thread.Stop();
-  backend_thread.Start();
+      new BlacklistManager(&profile_, &path_provider_, &backend_thread));
+  WaitForBlacklistUpdate();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
   EXPECT_FALSE(BlacklistHasMatch(blacklist1,
                                  "http://host/annoying_ads/ad.jpg"));
 
-  TestBlacklistPathProvider provider(&profile_);
-  manager->RegisterBlacklistPathProvider(&provider);
-
-  // Make sure all pending tasks run.
-  backend_thread.Stop();
-  backend_thread.Start();
-
-  // Blacklist should not get recompiled.
-  EXPECT_EQ(blacklist1, manager->GetCompiledBlacklist());
-
-  provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
-
-  // Make sure all pending tasks run.
-  backend_thread.Stop();
-  backend_thread.Start();
+  path_provider_.AddPersistentPath(
+      test_data_dir_.AppendASCII("annoying_ads.pbl"));
+  WaitForBlacklistUpdate();
 
   const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
 
   // Added a real blacklist, the manager should recompile.
   EXPECT_NE(blacklist1, blacklist2);
   EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
-
-  manager->UnregisterBlacklistPathProvider(&provider);
-
-  // Make sure all pending tasks run.
-  backend_thread.Stop();
-  backend_thread.Start();
-
-  // Just unregistering the provider doesn't remove the blacklist paths
-  // from the manager.
-  EXPECT_EQ(blacklist2, manager->GetCompiledBlacklist());
-}
-
-TEST_F(BlacklistManagerTest, CompiledBlacklistStaysOnDisk) {
-  {
-    scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, NULL));
-
-    TestBlacklistPathProvider provider(&profile_);
-    manager->RegisterBlacklistPathProvider(&provider);
-    provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
-    const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_TRUE(BlacklistHasMatch(blacklist,
-                                  "http://host/annoying_ads/ad.jpg"));
-    manager->UnregisterBlacklistPathProvider(&provider);
-  }
-
-  {
-    scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, NULL));
-
-    // Make sure we read the compiled blacklist from disk and don't even touch
-    // the paths providers.
-    const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_TRUE(BlacklistHasMatch(blacklist,
-                                  "http://host/annoying_ads/ad.jpg"));
-  }
 }
 
 TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, NULL));
-
-  TestBlacklistPathProvider provider(&profile_);
-  manager->RegisterBlacklistPathProvider(&provider);
+      new BlacklistManager(&profile_, &path_provider_, NULL));
+  WaitForBlacklistUpdate();
 
   FilePath bogus_path(test_data_dir_.AppendASCII("does_not_exist_randomness"));
   ASSERT_FALSE(file_util::PathExists(bogus_path));
-  provider.AddPath(bogus_path);
-
+  path_provider_.AddPersistentPath(bogus_path);
+  WaitForBlacklistError();
+  
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
-
-  // We should get an empty, but valid object.
-  ASSERT_TRUE(blacklist);
-  EXPECT_TRUE(blacklist->is_good());
-
-  manager->UnregisterBlacklistPathProvider(&provider);
+  EXPECT_TRUE(blacklist);
 }
 
 TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
@@ -227,15 +232,15 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
 
   {
     scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, NULL));
+        new BlacklistManager(&profile_, &path_provider_, NULL));
+    WaitForBlacklistUpdate();
 
-    TestBlacklistPathProvider provider(&profile_);
-    manager->RegisterBlacklistPathProvider(&provider);
-    provider.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
+    path_provider_.AddPersistentPath(
+        test_data_dir_.AppendASCII("annoying_ads.pbl"));
+    WaitForBlacklistUpdate();
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
     EXPECT_TRUE(BlacklistHasMatch(blacklist,
                                   "http://host/annoying_ads/ad.jpg"));
-    manager->UnregisterBlacklistPathProvider(&provider);
 
     compiled_blacklist_path = manager->compiled_blacklist_path();
   }
@@ -245,57 +250,14 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
 
   {
     scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, NULL));
+        new BlacklistManager(&profile_, &path_provider_, NULL));
+    WaitForBlacklistUpdate();
 
-    // Now we don't have any providers, and no compiled blacklist file. We
-    // shouldn't match any URLs.
+    // The manager should recompile the blacklist.
     const Blacklist* blacklist = manager->GetCompiledBlacklist();
-    EXPECT_FALSE(BlacklistHasMatch(blacklist,
-                                   "http://host/annoying_ads/ad.jpg"));
+    EXPECT_TRUE(BlacklistHasMatch(blacklist,
+                                  "http://host/annoying_ads/ad.jpg"));
   }
-}
-
-TEST_F(BlacklistManagerTest, MultipleProviders) {
-  scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, NULL));
-
-  TestBlacklistPathProvider provider1(&profile_);
-  TestBlacklistPathProvider provider2(&profile_);
-  manager->RegisterBlacklistPathProvider(&provider1);
-  manager->RegisterBlacklistPathProvider(&provider2);
-
-  const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
-  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
-                                 "http://sample/annoying_ads/a.jpg"));
-  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
-                                 "http://sample/other_ads/a.jpg"));
-  EXPECT_FALSE(BlacklistHasMatch(blacklist1, "http://host/something.doc"));
-
-  provider1.AddPath(test_data_dir_.AppendASCII("annoying_ads.pbl"));
-  const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
-  EXPECT_NE(blacklist1, blacklist2);
-
-  provider2.AddPath(test_data_dir_.AppendASCII("host.pbl"));
-  const Blacklist* blacklist3 = manager->GetCompiledBlacklist();
-  EXPECT_NE(blacklist2, blacklist3);
-
-  EXPECT_TRUE(BlacklistHasMatch(blacklist3,
-                                "http://sample/annoying_ads/a.jpg"));
-  EXPECT_FALSE(BlacklistHasMatch(blacklist3, "http://sample/other_ads/a.jpg"));
-  EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/something.doc"));
-
-  provider1.AddPath(test_data_dir_.AppendASCII("other_ads.pbl"));
-
-  const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
-
-  EXPECT_NE(blacklist3, blacklist4);
-  EXPECT_TRUE(BlacklistHasMatch(blacklist4,
-                                "http://sample/annoying_ads/a.jpg"));
-  EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://sample/other_ads/a.jpg"));
-  EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://host/something.doc"));
-
-  manager->UnregisterBlacklistPathProvider(&provider1);
-  manager->UnregisterBlacklistPathProvider(&provider2);
 }
 
 }  // namespace

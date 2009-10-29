@@ -510,7 +510,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
-  Blacklist* blacklist_;
+  scoped_ptr<Blacklist> blacklist_;
 
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;

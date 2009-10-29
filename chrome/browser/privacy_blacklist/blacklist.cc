@@ -106,7 +106,7 @@ bool Blacklist::Matches(const std::string& pattern, const std::string& url) {
   return pattern[p] == '\0';
 }
 
-bool Blacklist::Entry::MatchType(const std::string& type) const {
+bool Blacklist::Entry::MatchesType(const std::string& type) const {
   return std::find(types_.begin(), types_.end(), type) != types_.end();
 }
 
@@ -134,15 +134,14 @@ void Blacklist::Entry::Merge(const Entry& entry) {
 }
 
 void Blacklist::Entry::SwapTypes(std::vector<std::string>* types) {
-  if (types && types->size()) {
-    types->swap(types_);
-  }
+  DCHECK(types);
+  types->swap(types_);
 }
 
 bool Blacklist::Match::MatchType(const std::string& type) const {
   for (std::vector<const Entry*>::const_iterator i = entries_.begin();
       i != entries_.end(); ++i) {
-    if ((*i)->MatchType(type))
+    if ((*i)->MatchesType(type))
       return true;
   }
   return false;
@@ -160,67 +159,25 @@ void Blacklist::Match::AddEntry(const Entry* entry) {
   entries_.push_back(entry);
 }
 
-Blacklist::Blacklist(const FilePath& file) : is_good_(false) {
-  // No blacklist, nothing to load.
-  if (file.value().empty())
-    return;
-
-  FILE* fp = file_util::OpenFile(file, "rb");
-  if (fp == NULL)
-    return;
-
-  BlacklistStoreInput input(fp);
-
-  // Read the providers
-  std::size_t n = input.ReadNumProviders();
-  if (n == std::numeric_limits<uint32>::max())
-    return;
-
-  providers_.reserve(n);
-  std::string name;
-  std::string url;
-  for (std::size_t i = 0; i < n; ++i) {
-    if (!input.ReadProvider(&name, &url))
-      return;
-    providers_.push_back(new Provider(name.c_str(), url.c_str()));
-  }
-
-  // Read the entries
-  n = input.ReadNumEntries();
-  if (n == std::numeric_limits<uint32>::max())
-    return;
-
-  std::string pattern;
-  unsigned int attributes, provider;
-  std::vector<std::string> types;
-  for (unsigned int i = 0; i < n; ++i) {
-    if (!input.ReadEntry(&pattern, &attributes, &types, &provider))
-      return;
-
-    Entry* entry = new Entry(pattern, providers_[provider]);
-    entry->AddAttributes(attributes);
-    entry->SwapTypes(&types);
-    blacklist_.push_back(entry);
-  }
-
-  is_good_ = true;
+Blacklist::Blacklist() {
 }
 
 Blacklist::~Blacklist() {
-  for (std::vector<Entry*>::iterator i = blacklist_.begin();
-       i != blacklist_.end(); ++i)
-    delete *i;
-  for (std::vector<Provider*>::iterator i = providers_.begin();
-       i != providers_.end(); ++i)
-    delete *i;
+}
+
+void Blacklist::AddEntry(Entry* entry) {
+  DCHECK(entry);
+  blacklist_.push_back(linked_ptr<Entry>(entry));
+}
+
+void Blacklist::AddProvider(Provider* provider) {
+  DCHECK(provider);
+  providers_.push_back(linked_ptr<Provider>(provider));
 }
 
 // Returns a pointer to the Blacklist-owned entry which matches the given
 // URL. If no matching Entry is found, returns null.
 Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
-  if (!is_good_)
-    return NULL;  // Don't attempt to find matches if the data is corrupt.
-
   // Never match something which is not http, https or ftp.
   // TODO(idanan): Investigate if this would be an inclusion test instead of an
   // exclusion test and if there are other schemes to test for.
@@ -229,12 +186,12 @@ Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
       !url.SchemeIs(chrome::kFtpScheme))
     return 0;
   Match* match = NULL;
-  for (std::vector<Entry*>::const_iterator i = blacklist_.begin();
+  for (EntryList::const_iterator i = blacklist_.begin();
        i != blacklist_.end(); ++i) {
-    if (Matches((*i)->pattern(), url.host()+url.path())) {
+    if (Matches((*i)->pattern(), url.host() + url.path())) {
       if (!match)
         match = new Match;
-      match->AddEntry(*i);
+      match->AddEntry(i->get());
     }
   }
   return match;

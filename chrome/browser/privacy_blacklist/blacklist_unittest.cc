@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/privacy_blacklist/blacklist_io.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,47 +18,51 @@ TEST(BlacklistTest, Generic) {
   PathService::Get(chrome::DIR_TEST_DATA, &input);
   input = input.AppendASCII("blacklist_small.pbr");
 
-  Blacklist blacklist(input);
+  Blacklist blacklist;
+  ASSERT_TRUE(BlacklistIO::ReadBinary(&blacklist, input));
+  
+  Blacklist::EntryList entries(blacklist.entries_begin(),
+                               blacklist.entries_end());
 
-  // This test is a friend, so inspect the internal structures.
-  EXPECT_EQ(5U, blacklist.blacklist_.size());
-  std::vector<Blacklist::Entry*>::const_iterator i =
-      blacklist.blacklist_.begin();
+  ASSERT_EQ(5U, entries.size());
 
   EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
-            (*i)->attributes());
-  EXPECT_TRUE((*i)->MatchType("application/x-shockwave-flash"));
-  EXPECT_FALSE((*i)->MatchType("image/jpeg"));
-  EXPECT_EQ("@", (*i++)->pattern());
+            entries[0]->attributes());
+  EXPECT_TRUE(entries[0]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[0]->MatchesType("image/jpeg"));
+  EXPECT_EQ("@", entries[0]->pattern());
 
   // All entries include global attributes.
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
-  EXPECT_EQ(Blacklist::kBlockUnsecure|0, (*i)->attributes());
-  EXPECT_FALSE((*i)->MatchType("application/x-shockwave-flash"));
-  EXPECT_FALSE((*i)->MatchType("image/jpeg"));
-  EXPECT_EQ("@poor-security-site.com", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kBlockUnsecure|0, entries[1]->attributes());
+  EXPECT_FALSE(entries[1]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[1]->MatchesType("image/jpeg"));
+  EXPECT_EQ("@poor-security-site.com", entries[1]->pattern());
 
   EXPECT_EQ(Blacklist::kDontSendCookies|Blacklist::kDontStoreCookies,
-            (*i)->attributes());
-  EXPECT_FALSE((*i)->MatchType("application/x-shockwave-flash"));
-  EXPECT_FALSE((*i)->MatchType("image/jpeg"));
-  EXPECT_EQ("@.ad-serving-place.com", (*i++)->pattern());
+            entries[2]->attributes());
+  EXPECT_FALSE(entries[2]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[2]->MatchesType("image/jpeg"));
+  EXPECT_EQ("@.ad-serving-place.com", entries[2]->pattern());
 
   EXPECT_EQ(Blacklist::kDontSendUserAgent|Blacklist::kDontSendReferrer,
-            (*i)->attributes());
-  EXPECT_FALSE((*i)->MatchType("application/x-shockwave-flash"));
-  EXPECT_FALSE((*i)->MatchType("image/jpeg"));
-  EXPECT_EQ("www.site.com/anonymous/folder/@", (*i++)->pattern());
+            entries[3]->attributes());
+  EXPECT_FALSE(entries[3]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[3]->MatchesType("image/jpeg"));
+  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[3]->pattern());
 
   // NOTE: Silly bitwise-or with zero to workaround a Mac compiler bug.
-  EXPECT_EQ(Blacklist::kBlockAll|0, (*i)->attributes());
-  EXPECT_FALSE((*i)->MatchType("application/x-shockwave-flash"));
-  EXPECT_FALSE((*i)->MatchType("image/jpeg"));
-  EXPECT_EQ("www.site.com/bad/url", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kBlockAll|0, entries[4]->attributes());
+  EXPECT_FALSE(entries[4]->MatchesType("application/x-shockwave-flash"));
+  EXPECT_FALSE(entries[4]->MatchesType("image/jpeg"));
+  EXPECT_EQ("www.site.com/bad/url", entries[4]->pattern());
 
-  EXPECT_EQ(1U, blacklist.providers_.size());
-  EXPECT_EQ("Sample", blacklist.providers_.front()->name());
-  EXPECT_EQ("http://www.google.com", blacklist.providers_.front()->url());
+  Blacklist::ProviderList providers(blacklist.providers_begin(),
+                                    blacklist.providers_end());
+  
+  ASSERT_EQ(1U, providers.size());
+  EXPECT_EQ("Sample", providers[0]->name());
+  EXPECT_EQ("http://www.google.com", providers[0]->url());
 
   // No match for chrome, about or empty URLs.
   EXPECT_FALSE(blacklist.findMatch(GURL()));

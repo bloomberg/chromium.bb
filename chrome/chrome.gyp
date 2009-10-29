@@ -2166,8 +2166,6 @@
         'browser/views/autocomplete/autocomplete_popup_win.h',
         'browser/views/autocomplete/autocomplete_popup_gtk.cc',
         'browser/views/autocomplete/autocomplete_popup_gtk.h',
-        'browser/views/blacklist_error_dialog.cc',
-        'browser/views/blacklist_error_dialog.h',
         'browser/views/blocked_popup_container_view_views.cc',
         'browser/views/blocked_popup_container_view_views.h',
         'browser/views/bookmark_bar_view.cc',
@@ -6180,29 +6178,6 @@
           ],
           'sources': [
             'tools/perf/flush_cache/flush_cache.cc',
-          ],
-        },
-        {
-          'target_name': 'pbl_tool',
-          'type': 'executable',
-          'msvs_guid': '265C427B-D1FF-4922-A47C-0754DDFF52E1',
-          'dependencies': [
-            '../app/app.gyp:app_base',
-            '../base/base.gyp:base',
-            '../webkit/webkit.gyp:glue',
-            'browser',
-            'debugger',
-            'renderer',
-          ],
-          'sources': [
-            'tools/pbl_tool/pbl_tool.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-              ],
-            },],
           ],
         },
         {

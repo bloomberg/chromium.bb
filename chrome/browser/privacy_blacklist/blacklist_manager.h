@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_MANAGER_H_
 #define CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_MANAGER_H_
 
-#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -28,7 +27,9 @@ class BlacklistPathProvider {
  public:
   virtual ~BlacklistPathProvider();
 
-  virtual std::vector<FilePath> GetBlacklistPaths() = 0;
+  virtual std::vector<FilePath> GetPersistentBlacklistPaths() = 0;
+  
+  virtual std::vector<FilePath> GetTransientBlacklistPaths() = 0;
 };
 
 // Updates one compiled binary blacklist based on a list of plaintext
@@ -38,10 +39,9 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
                          public NonThreadSafe {
  public:
   // You must create and destroy BlacklistManager on the same thread.
-  BlacklistManager(Profile* profile, base::Thread* backend_thread);
-
-  void RegisterBlacklistPathProvider(BlacklistPathProvider* provider);
-  void UnregisterBlacklistPathProvider(BlacklistPathProvider* provider);
+  BlacklistManager(Profile* profile,
+                   BlacklistPathProvider* path_provider,
+                   base::Thread* backend_thread);
 
   const Blacklist* GetCompiledBlacklist() const {
     return compiled_blacklist_.get();
@@ -60,8 +60,6 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
   class CompileBlacklistTask;
   class ReadBlacklistTask;
 
-  typedef std::set<BlacklistPathProvider*> ProvidersSet;
-
   void CompileBlacklist();
   void ReadBlacklist();
 
@@ -70,19 +68,19 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
 
   void RunTaskOnBackendThread(Task* task);
 
+  // True after the first blacklist read has finished (regardless of success).
+  // Used to avoid an infinite loop.
+  bool first_read_finished_;
+                           
+  Profile* profile_;
+
   // Path where we store the compiled blacklist.
   FilePath compiled_blacklist_path_;
 
   // Keep the compiled blacklist object in memory.
   scoped_ptr<Blacklist> compiled_blacklist_;
 
-  // If true, then we started compiling a blacklist and haven't yet finished
-  // successfully. This helps prevent an infinite loop in case of multiple
-  // I/O errors.
-  bool compiling_blacklist_;
-
-  // Registered blacklist paths providers.
-  ProvidersSet providers_;
+  BlacklistPathProvider* path_provider_;
 
   // Backend thread we will execute I/O operations on (NULL means no separate
   // thread).

@@ -612,12 +612,10 @@ class NotificationType {
     // are all source and no details.
     SESSION_END,
 
-    // Privacy blacklists ------------------------------------------------------
+    // Personalization ---------------------------------------------------------
 
-    // Sent when a privacy blacklist path provider changes the list of its
-    // blacklist paths (like adds/removes items). The details are
-    // a BlacklistPathProvider, and the source is a Profile.
-    PRIVACY_BLACKLIST_PATH_PROVIDER_UPDATED,
+    PERSONALIZATION,
+    PERSONALIZATION_CREATED,
 
     // User Scripts ------------------------------------------------------------
 
@@ -716,6 +714,19 @@ class NotificationType {
 
     // Privacy Blacklist -------------------------------------------------------
 
+    // Sent when a privacy blacklist path provider changes the list of its
+    // blacklist paths (like adds/removes items). The details are
+    // a BlacklistPathProvider, and the source is a Profile.
+    BLACKLIST_PATH_PROVIDER_UPDATED,
+
+    // Sent when the blacklist manager successfully finishes reading
+    // a blacklist. The details are a Blacklist, and the source is a Profile.
+    BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
+
+    // Sent when the blacklist manager encounters an error. The details are
+    // a string16 (error message), and the source is a Profile.
+    BLACKLIST_MANAGER_ERROR,
+    
     // Sent by the resource dispatcher host when a resource is blocked.
     BLACKLIST_BLOCKED_RESOURCE,
 

@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,80 +21,34 @@ TEST(BlacklistIOTest, Generic) {
 
   FilePath expected = data_dir.AppendASCII("blacklist_small.pbr");
 
-  BlacklistIO io;
-  EXPECT_TRUE(io.Read(input));
-  const std::list<Blacklist::Entry*>& blacklist = io.blacklist();
-  EXPECT_EQ(5U, blacklist.size());
+  Blacklist blacklist;
+  std::string error_string;
+  ASSERT_TRUE(BlacklistIO::ReadText(&blacklist, input, &error_string));
+  EXPECT_TRUE(error_string.empty());
+  
+  const Blacklist::EntryList entries(blacklist.entries_begin(),
+                                     blacklist.entries_end());
+  ASSERT_EQ(5U, entries.size());
 
-  std::list<Blacklist::Entry*>::const_iterator i = blacklist.begin();
-  EXPECT_EQ("@", (*i++)->pattern());
-  EXPECT_EQ("@poor-security-site.com", (*i++)->pattern());
-  EXPECT_EQ("@.ad-serving-place.com", (*i++)->pattern());
-  EXPECT_EQ("www.site.com/anonymous/folder/@", (*i++)->pattern());
-  EXPECT_EQ("www.site.com/bad/url", (*i++)->pattern());
+  EXPECT_EQ("@", entries[0]->pattern());
+  EXPECT_EQ("@poor-security-site.com", entries[1]->pattern());
+  EXPECT_EQ("@.ad-serving-place.com", entries[2]->pattern());
+  EXPECT_EQ("www.site.com/anonymous/folder/@", entries[3]->pattern());
+  EXPECT_EQ("www.site.com/bad/url", entries[4]->pattern());
+  
+  const Blacklist::ProviderList providers(blacklist.providers_begin(),
+                                          blacklist.providers_end());
 
-  EXPECT_EQ(1U, io.providers().size());
-  EXPECT_EQ("Sample", io.providers().front()->name());
-  EXPECT_EQ("http://www.google.com", io.providers().front()->url());
+  ASSERT_EQ(1U, providers.size());
+  EXPECT_EQ("Sample", providers[0]->name());
+  EXPECT_EQ("http://www.google.com", providers[0]->url());
 
   FilePath output;
   PathService::Get(base::DIR_TEMP, &output);
   output = output.AppendASCII("blacklist_small.pbr");
-  CHECK(io.Write(output));
+  ASSERT_TRUE(BlacklistIO::WriteBinary(&blacklist, output));
   EXPECT_TRUE(file_util::ContentsEqual(output, expected));
   EXPECT_TRUE(file_util::Delete(output, false));
 }
 
-TEST(BlacklistIOTest, Combine) {
-  // Testing data path.
-  FilePath data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
-  data_dir = data_dir.AppendASCII("blacklist_samples");
 
-  FilePath input1 = data_dir.AppendASCII("annoying_ads.pbl");
-
-  FilePath input2 = data_dir.AppendASCII("block_flash.pbl");
-
-  FilePath input3 = data_dir.AppendASCII("session_cookies.pbl");
-
-  BlacklistIO io;
-  EXPECT_TRUE(io.Read(input1));
-  EXPECT_TRUE(io.Read(input2));
-  EXPECT_TRUE(io.Read(input3));
-
-  const std::list<Blacklist::Entry*>& blacklist = io.blacklist();
-  EXPECT_EQ(5U, blacklist.size());
-
-  std::list<Blacklist::Entry*>::const_iterator i = blacklist.begin();
-  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
-  EXPECT_EQ("annoying.ads.tv/@", (*i++)->pattern());
-  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
-  EXPECT_EQ("@/annoying/120x600.jpg", (*i++)->pattern());
-  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
-  EXPECT_EQ("@/annoying_ads/@", (*i++)->pattern());
-  EXPECT_EQ(Blacklist::kBlockByType, (*i)->attributes());
-  EXPECT_EQ("@", (*i++)->pattern());
-  EXPECT_EQ(Blacklist::kDontPersistCookies, (*i)->attributes());
-  EXPECT_EQ("@", (*i++)->pattern());
-
-  const std::list<Blacklist::Provider*>& providers = io.providers();
-  EXPECT_EQ(3U, providers.size());
-
-  std::list<Blacklist::Provider*>::const_iterator j = providers.begin();
-  EXPECT_EQ("AnnoyingAds", (*j)->name());
-  EXPECT_EQ("http://www.ads.tv", (*j++)->url());
-  EXPECT_EQ("BlockFlash", (*j)->name());
-  EXPECT_EQ("http://www.google.com", (*j++)->url());
-  EXPECT_EQ("SessionCookies", (*j)->name());
-  EXPECT_EQ("http://www.google.com", (*j++)->url());
-
-  FilePath output;
-  PathService::Get(base::DIR_TEMP, &output);
-  output = output.AppendASCII("combine3.pbr");
-
-  FilePath expected = data_dir.AppendASCII("combine3.pbr");
-
-  CHECK(io.Write(output));
-  EXPECT_TRUE(file_util::ContentsEqual(output, expected));
-  EXPECT_TRUE(file_util::Delete(output, false));
-}

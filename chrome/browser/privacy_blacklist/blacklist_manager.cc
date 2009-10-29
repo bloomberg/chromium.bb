@@ -5,12 +5,14 @@
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_io.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 
@@ -21,8 +23,8 @@
 class BlacklistManagerTask : public Task {
  public:
   explicit BlacklistManagerTask(BlacklistManager* manager)
-      : manager_(manager),
-        original_loop_(MessageLoop::current()) {
+      : original_loop_(MessageLoop::current()),
+        manager_(manager) {
     DCHECK(original_loop_);
     manager->AddRef();
   }
@@ -33,11 +35,11 @@ class BlacklistManagerTask : public Task {
 
  protected:
   BlacklistManager* blacklist_manager() const { return manager_; }
+  
+  MessageLoop* original_loop_;
 
  private:
   BlacklistManager* manager_;
-
-  MessageLoop* original_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistManagerTask);
 };
@@ -56,12 +58,14 @@ class BlacklistManager::CompileBlacklistTask : public BlacklistManagerTask {
   }
 
   virtual void Run() {
-    BlacklistIO io;
     bool success = true;
+    
+    Blacklist blacklist;
+    std::string error_string;
 
     for (std::vector<FilePath>::const_iterator i = source_blacklists_.begin();
          i != source_blacklists_.end(); ++i) {
-      if (!io.Read(*i)) {
+      if (!BlacklistIO::ReadText(&blacklist, *i, &error_string)) {
         success = false;
         break;
       }
@@ -70,9 +74,13 @@ class BlacklistManager::CompileBlacklistTask : public BlacklistManagerTask {
     // Only overwrite the current compiled blacklist if we read all source
     // files successfully.
     if (success)
-      success = io.Write(destination_blacklist_);
+      success = BlacklistIO::WriteBinary(&blacklist, destination_blacklist_);
 
-    blacklist_manager()->OnBlacklistCompilationFinished(success);
+    original_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(blacklist_manager(),
+                          &BlacklistManager::OnBlacklistCompilationFinished,
+                          success));
   }
 
  private:
@@ -85,98 +93,125 @@ class BlacklistManager::CompileBlacklistTask : public BlacklistManagerTask {
 
 class BlacklistManager::ReadBlacklistTask : public BlacklistManagerTask {
  public:
-  ReadBlacklistTask(BlacklistManager* manager, const FilePath& blacklist_path)
+  ReadBlacklistTask(BlacklistManager* manager,
+                    const FilePath& compiled_blacklist,
+                    const std::vector<FilePath>& transient_blacklists)
       : BlacklistManagerTask(manager),
-        blacklist_path_(blacklist_path) {
+        compiled_blacklist_(compiled_blacklist),
+        transient_blacklists_(transient_blacklists) {
   }
 
   virtual void Run() {
-    Blacklist* blacklist = new Blacklist(blacklist_path_);
-    blacklist_manager()->OnBlacklistReadFinished(blacklist);
+    scoped_ptr<Blacklist> blacklist(new Blacklist);
+    if (!BlacklistIO::ReadBinary(blacklist.get(), compiled_blacklist_)) {
+      ReportReadResult(NULL);
+      return;
+    }
+    
+    std::string error_string;
+    std::vector<FilePath>::const_iterator i;
+    for (i = transient_blacklists_.begin();
+         i != transient_blacklists_.end(); ++i) {
+      if (!BlacklistIO::ReadText(blacklist.get(), *i, &error_string)) {
+        ReportReadResult(NULL);
+        return;
+      }
+    }
+    
+    ReportReadResult(blacklist.release());
   }
 
  private:
-  FilePath blacklist_path_;
+  void ReportReadResult(Blacklist* blacklist) {
+    original_loop_->PostTask(
+        FROM_HERE, NewRunnableMethod(blacklist_manager(),
+                                     &BlacklistManager::OnBlacklistReadFinished,
+                                     blacklist));
+  }
+  
+  FilePath compiled_blacklist_;
+  std::vector<FilePath> transient_blacklists_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadBlacklistTask);
 };
 
 BlacklistManager::BlacklistManager(Profile* profile,
+                                   BlacklistPathProvider* path_provider,
                                    base::Thread* backend_thread)
-    : compiled_blacklist_path_(
+    : first_read_finished_(false),
+      profile_(profile),
+      compiled_blacklist_path_(
         profile->GetPath().Append(chrome::kPrivacyBlacklistFileName)),
-      compiling_blacklist_(false),
+      path_provider_(path_provider),
       backend_thread_(backend_thread) {
   registrar_.Add(this,
-                 NotificationType::PRIVACY_BLACKLIST_PATH_PROVIDER_UPDATED,
+                 NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED,
                  Source<Profile>(profile));
   ReadBlacklist();
-}
-
-void BlacklistManager::RegisterBlacklistPathProvider(
-    BlacklistPathProvider* provider) {
-  DCHECK(providers_.find(provider) == providers_.end());
-  providers_.insert(provider);
-}
-
-void BlacklistManager::UnregisterBlacklistPathProvider(
-    BlacklistPathProvider* provider) {
-  DCHECK(providers_.find(provider) != providers_.end());
-  providers_.erase(provider);
 }
 
 void BlacklistManager::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::PRIVACY_BLACKLIST_PATH_PROVIDER_UPDATED);
+  DCHECK(type == NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED);
   CompileBlacklist();
 }
 
 void BlacklistManager::CompileBlacklist() {
-  if (compiling_blacklist_) {
-    // If we end up here, that means that initial compile succeeded,
-    // but then we couldn't read back the resulting Blacklist. Return early
-    // to avoid a potential infinite loop.
-    // TODO(phajdan.jr): Report the error.
-    compiling_blacklist_ = false;
-    return;
-  }
+  DCHECK(CalledOnValidThread());
 
-  compiling_blacklist_ = true;
-
-  std::vector<FilePath> source_blacklists;
-
-  for (ProvidersSet::iterator provider = providers_.begin();
-       provider != providers_.end(); ++provider) {
-    std::vector<FilePath> provided_paths((*provider)->GetBlacklistPaths());
-    source_blacklists.insert(source_blacklists.end(),
-                             provided_paths.begin(), provided_paths.end());
-  }
-
-  RunTaskOnBackendThread(new CompileBlacklistTask(this, compiled_blacklist_path_,
-                                                source_blacklists));
+  RunTaskOnBackendThread(new CompileBlacklistTask(
+      this, compiled_blacklist_path_,
+      path_provider_->GetPersistentBlacklistPaths()));
 }
 
 void BlacklistManager::ReadBlacklist() {
-  RunTaskOnBackendThread(new ReadBlacklistTask(this, compiled_blacklist_path_));
+  DCHECK(CalledOnValidThread());
+  
+  RunTaskOnBackendThread(new ReadBlacklistTask(
+      this, compiled_blacklist_path_,
+      path_provider_->GetTransientBlacklistPaths()));
 }
 
 void BlacklistManager::OnBlacklistCompilationFinished(bool success) {
+  DCHECK(CalledOnValidThread());
+  
   if (success) {
     ReadBlacklist();
   } else {
-    // TODO(phajdan.jr): Report the error.
+    string16 error_message(ASCIIToUTF16("Blacklist compilation failed."));
+    NotificationService::current()->Notify(
+        NotificationType::BLACKLIST_MANAGER_ERROR,
+        Source<Profile>(profile_),
+        Details<string16>(&error_message));
   }
 }
 
 void BlacklistManager::OnBlacklistReadFinished(Blacklist* blacklist) {
-  if (blacklist->is_good()) {
-    compiled_blacklist_.reset(blacklist);
-    compiling_blacklist_ = false;
-  } else {
-    delete blacklist;
-    CompileBlacklist();
+  DCHECK(CalledOnValidThread());
+  
+  if (!blacklist) {
+    if (!first_read_finished_) {
+      // If we're loading for the first time, the compiled blacklist could
+      // just not exist. Try compiling it once.
+      first_read_finished_ = true;
+      CompileBlacklist();
+    } else {
+      string16 error_message(ASCIIToUTF16("Blacklist read failed."));
+      NotificationService::current()->Notify(
+          NotificationType::BLACKLIST_MANAGER_ERROR,
+          Source<Profile>(profile_),
+          Details<string16>(&error_message));
+    }
+    return;
   }
+  first_read_finished_ = true;
+  compiled_blacklist_.reset(blacklist);
+  
+  NotificationService::current()->Notify(
+      NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
+      Source<Profile>(profile_),
+      Details<Blacklist>(blacklist));
 }
 
 void BlacklistManager::RunTaskOnBackendThread(Task* task) {

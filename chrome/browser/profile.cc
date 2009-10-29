@@ -29,7 +29,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blacklist_io.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -594,7 +594,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 #else
     FilePath path(option);
 #endif
-    blacklist_ = new Blacklist(path);
+    blacklist_.reset(new Blacklist);
+    // TODO(phajdan.jr): Handle errors when reading blacklist.
+    BlacklistIO::ReadBinary(blacklist_.get(), path);
   }
 
 #if defined(OS_MACOSX)
@@ -757,8 +759,7 @@ ProfileImpl::~ProfileImpl() {
   CleanupRequestContext(extensions_request_context_);
 
   // When the request contexts are gone, the blacklist wont be needed anymore.
-  delete blacklist_;
-  blacklist_ = 0;
+  blacklist_.reset();
 
   // HistoryService may call into the BookmarkModel, as such we need to
   // delete HistoryService before the BookmarkModel. The destructor for
@@ -970,7 +971,7 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
 }
 
 Blacklist* ProfileImpl::GetBlacklist() {
-  return blacklist_;
+  return blacklist_.get();
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
