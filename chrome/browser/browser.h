@@ -138,6 +138,7 @@ class Browser : public TabStripModelDelegate,
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   FindBarController* find_bar() { return find_bar_controller_.get(); }
+  FindBarController* GetFindBarController();
   ExtensionShelfModel* extension_shelf_model() {
     return extension_shelf_model_.get();
   }

@@ -246,10 +246,6 @@ void Browser::CreateBrowserWindow() {
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
     window_->GetLocationBar()->ShowFirstRunBubble(show_OEM_bubble);
   }
-
-  FindBar* find_bar = BrowserWindow::CreateFindBar(this);
-  find_bar_controller_.reset(new FindBarController(find_bar));
-  find_bar->SetFindBarController(find_bar_controller_.get());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -262,6 +258,17 @@ const std::vector<std::wstring>& Browser::user_data_dir_profiles() const {
 void Browser::set_user_data_dir_profiles(
     const std::vector<std::wstring>& profiles) {
   g_browser_process->user_data_dir_profiles() = profiles;
+}
+
+FindBarController* Browser::GetFindBarController() {
+  if (!find_bar_controller_.get()) {
+    FindBar* find_bar = BrowserWindow::CreateFindBar(this);
+    find_bar_controller_.reset(new FindBarController(find_bar));
+    find_bar->SetFindBarController(find_bar_controller_.get());
+    find_bar_controller_->ChangeTabContents(GetSelectedTabContents());
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
+  }
+  return find_bar_controller_.get();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -944,7 +951,7 @@ void Browser::ViewSource() {
 }
 
 void Browser::ShowFindBar() {
-  find_bar_controller_->Show();
+  GetFindBarController()->Show();
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
@@ -1773,8 +1780,7 @@ void Browser::TabSelectedAt(TabContents* old_contents,
 
   if (find_bar_controller_.get()) {
     find_bar_controller_->ChangeTabContents(new_contents);
-    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(),
-                                                                true);
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
 
   // Update sessions. Don't force creation of sessions. If sessions doesn't
