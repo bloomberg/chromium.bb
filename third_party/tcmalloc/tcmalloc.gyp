@@ -16,21 +16,7 @@
       ],
       'direct_dependent_settings': {
         'configurations': {
-          # TODO(bradnelson): find a way to make this more graceful in gyp.
-          #    Ideally configurations should be able to have some sort of
-          #    inheritance hierarchy. So that Purify no-tcmalloc could be
-          #    be derived from Release.
-          'Debug': {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
-                'AdditionalDependencies': [
-                  '<(SHARED_INTERMEDIATE_DIR)/tcmalloc/libcmt.lib'
-                ],
-              },
-            },
-          },
-          'Release': {
+          'Common': {
             'msvs_settings': {
               'VCLinkerTool': {
                 'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
