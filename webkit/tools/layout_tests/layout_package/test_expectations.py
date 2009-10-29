@@ -195,7 +195,8 @@ class TestExpectationsFile:
   DEFER: Test does not count in our statistics for the current release.
   DEBUG: Expectations apply only to the debug build.
   RELEASE: Expectations apply only to release build.
-  LINUX/WIN/WIN-XP/WIN-VISTA/MAC: Expectations apply only to these platforms.
+  LINUX/WIN/WIN-XP/WIN-VISTA/WIN-7/MAC: Expectations apply only to these
+      platforms.
 
   Notes:
     -A test cannot be both SLOW and TIMEOUT
@@ -217,7 +218,7 @@ class TestExpectationsFile:
                    'timeout': TIMEOUT,
                    'crash': CRASH }
 
-  PLATFORMS = [ 'mac', 'linux', 'win', 'win-xp', 'win-vista' ]
+  PLATFORMS = [ 'mac', 'linux', 'win', 'win-xp', 'win-vista', 'win-7' ]
 
   BUILD_TYPES = [ 'debug', 'release' ]
 

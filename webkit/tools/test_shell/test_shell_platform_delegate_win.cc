@@ -49,28 +49,33 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
   ::GetVersionEx((OSVERSIONINFO *)&osvi);
 
-  // default to XP metrics, override if on Vista
+  // Default to XP metrics, override if on Vista or win 7.
   int requiredVScrollSize = 17;
   int requiredFontSize = -11; // 8 pt
   const wchar_t* requiredFont = L"Tahoma";
-  // Consider Windows 7 as Vista.
   bool isVista = false;
+  bool isWin7 = false;
   if (osvi.dwMajorVersion == 6
-      && (osvi.dwMinorVersion == 0 || osvi.dwMinorVersion == 1)
+      && osvi.dwMinorVersion == 1
+      && osvi.wProductType == VER_NT_WORKSTATION) {
+    requiredFont = L"Segoe UI";
+    requiredFontSize = -12;
+    isWin7 = true;
+  } else if (osvi.dwMajorVersion == 6
+      && osvi.dwMinorVersion == 0
       && osvi.wProductType == VER_NT_WORKSTATION) {
     requiredFont = L"Segoe UI";
     requiredFontSize = -12; // 9 pt
     isVista = true;
-  } else if (osvi.dwMajorVersion == 5
-             && osvi.dwMinorVersion == 1
-             && osvi.wProductType == VER_NT_WORKSTATION) {
-    // XP;
-  } else {
+  } else if (!(osvi.dwMajorVersion == 5
+              && osvi.dwMinorVersion == 1
+              && osvi.wProductType == VER_NT_WORKSTATION)) {
+    // The above check is for XP, so that means ...
     errors.push_back("Unsupported Operating System version "
-                     "(must use XP or Vista).");
+                     "(must use XP, Vista, or Windows 7).");
   }
 
-  // on both XP and Vista, this metric will be 17 when font size is "Normal".
+  // This metric will be 17 when font size is "Normal".
   // The size of drop-down menus depends on it.
   int vScrollSize = ::GetSystemMetrics(SM_CXVSCROLL);
   if (vScrollSize != requiredVScrollSize) {
@@ -97,7 +102,7 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
   for (size_t i = 0; i < arraysize(system_fonts); ++i) {
     if (system_fonts[i]->lfHeight != requiredFontSize ||
         wcscmp(requiredFont, system_fonts[i]->lfFaceName)) {
-      if (isVista)
+      if (isVista || isWin7)
         errors.push_back("Must use either the Aero or Basic theme.");
       else
         errors.push_back("Must use the default XP theme (Luna).");
