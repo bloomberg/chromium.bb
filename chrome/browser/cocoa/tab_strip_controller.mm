@@ -649,7 +649,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
     newContents->view()->RestoreFocus();
 
     if (newContents->find_ui_active())
-      browser_->find_bar()->find_bar()->SetFocusAndSelection();
+      browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 }
 

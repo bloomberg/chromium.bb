@@ -43,7 +43,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
  protected:
   void GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) {
     FindBarTesting* find_bar =
-        browser()->find_bar()->find_bar()->GetFindBarTesting();
+        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
     find_bar->GetFindBarWindowInfo(position, fully_visible);
   }
 };
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   EXPECT_NE(new_target, old_target);
 
   // Close the Find box.
-  browser()->find_bar()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession();
 
   // The accelerator for Escape should be back to what it was before.
   EXPECT_EQ(old_target, focus_manager->GetCurrentTargetForAccelerator(escape));

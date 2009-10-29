@@ -1256,7 +1256,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
   if (!browser_->tabstrip_model()->closing_all()) {
     new_contents->view()->RestoreFocus();
     if (new_contents->find_ui_active())
-      browser_->find_bar()->find_bar()->SetFocusAndSelection();
+      browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 
   // Update all the UI bits.

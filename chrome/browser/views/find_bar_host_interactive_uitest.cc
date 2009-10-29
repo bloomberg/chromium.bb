@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 }
 
 // TODO: http://crbug.com/26231
-IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_FocusRestore) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -123,9 +123,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_FocusRestore) {
   // return to the location bar.
   browser()->FocusLocationBar();
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
-  browser()->find_bar()->Show();
+  // Ensure the creation of the find bar controller.
+  browser()->GetFindBarController()->Show();
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
-  browser()->find_bar()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession();
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
 
   // Focus the location bar, find something on the page, close the find box,
@@ -135,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_FocusRestore) {
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
   ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             L"a", true, false, NULL);
-  browser()->find_bar()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession();
   EXPECT_EQ(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW, GetFocusedViewID());
 
   // Focus the location bar, open and close the find box, focus should return to
@@ -143,8 +144,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_FocusRestore) {
   // is fixed).
   browser()->FocusLocationBar();
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
-  browser()->find_bar()->Show();
+  browser()->GetFindBarController()->Show();
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
-  browser()->find_bar()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession();
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
 }

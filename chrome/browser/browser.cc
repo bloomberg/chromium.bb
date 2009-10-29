@@ -271,6 +271,10 @@ FindBarController* Browser::GetFindBarController() {
   return find_bar_controller_.get();
 }
 
+bool Browser::HasFindBarController() const {
+  return find_bar_controller_.get() != NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Creation Helpers:
 
@@ -1777,7 +1781,7 @@ void Browser::TabSelectedAt(TabContents* old_contents,
     status_bubble->SetStatus(GetSelectedTabContents()->GetStatusText());
   }
 
-  if (find_bar_controller_.get()) {
+  if (HasFindBarController()) {
     find_bar_controller_->ChangeTabContents(new_contents);
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }

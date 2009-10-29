@@ -136,11 +136,16 @@ class Browser : public TabStripModelDelegate,
   ToolbarModel* toolbar_model() { return &toolbar_model_; }
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
-  FindBarController* find_bar() { return find_bar_controller_.get(); }
-  FindBarController* GetFindBarController();
   ExtensionShelfModel* extension_shelf_model() {
     return extension_shelf_model_.get();
   }
+
+  // Get the FindBarController for this browser, creating it if it does not
+  // yet exist.
+  FindBarController* GetFindBarController();
+
+  // Returns true if a FindBarController exists for this browser.
+  bool HasFindBarController() const;
 
   // Setters /////////////////////////////////////////////////////////////////
 

@@ -1633,9 +1633,10 @@ void BrowserView::Layout() {
   // back into us to find the bounding box the find bar must be laid out within,
   // and that code depends on the TabContentsContainer's bounds being up to
   // date.
-  FindBarController* find_controller = browser_->find_bar();
-  if (find_controller)
-    find_controller->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
+  if (browser_->HasFindBarController()) {
+    browser_->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
+        gfx::Rect(), true);
+  }
   // Align status bubble with the bottom of the contents_container_.
   LayoutStatusBubble(top + contents_container_->bounds().height());
   SchedulePaint();
