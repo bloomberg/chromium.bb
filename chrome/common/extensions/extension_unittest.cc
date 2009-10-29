@@ -21,7 +21,8 @@ namespace errors = extension_manifest_errors;
 class ExtensionTest : public testing::Test {
 };
 
-TEST(ExtensionTest, InitFromValueInvalid) {
+// TODO(mad): http://crbug.com/26214
+TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)

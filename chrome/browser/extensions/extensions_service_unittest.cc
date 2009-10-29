@@ -673,7 +673,8 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
 // Test installing extensions. This test tries to install few extensions using
 // crx files. If you need to change those crx files, feel free to repackage
 // them, throw away the key used and change the id's above.
-TEST_F(ExtensionsServiceTest, InstallExtension) {
+// TODO(mad): http://crbug.com/26214
+TEST_F(ExtensionsServiceTest, DISABLED_InstallExtension) {
   InitializeEmptyExtensionsService();
 
   FilePath extensions_path;
