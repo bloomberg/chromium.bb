@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "net/base/bandwidth_metrics.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/flip/flip_frame_builder.h"
 #include "net/flip/flip_protocol.h"
 #include "net/http/http_network_session.h"
@@ -195,6 +196,7 @@ void CreateFlipHeadersFromHttpRequest(
   (*headers)["method"] = info->method;
   (*headers)["url"] = hack_url;
   (*headers)["version"] = kHttpProtocolVersion;
+  (*headers)["host"] = GetHostAndOptionalPort(info->url);
   if (info->user_agent.length())
     (*headers)["user-agent"] = info->user_agent;
   if (!info->referrer.is_empty())
