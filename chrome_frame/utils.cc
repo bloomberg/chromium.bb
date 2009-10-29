@@ -14,6 +14,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome_frame/resource.h"
@@ -534,11 +535,23 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
 
   GURL crack_url(url);
 
-  if (crack_url.SchemeIs("http") || crack_url.SchemeIs("https") ||
-      crack_url.SchemeIs("about") || crack_url.SchemeIs("view-source"))
+  if (crack_url.SchemeIs(chrome::kHttpScheme) ||
+      crack_url.SchemeIs(chrome::kHttpsScheme) ||
+      crack_url.SchemeIs(chrome::kAboutScheme))
     return true;
 
-  if (is_privileged && crack_url.SchemeIs("chrome-extension"))
+  // Additional checking for view-source. Allow only http and https
+  // URLs in view source.
+  if (crack_url.SchemeIs(chrome::kViewSourceScheme)) {
+    GURL sub_url(crack_url.path());
+    if (sub_url.SchemeIs(chrome::kHttpScheme) ||
+        sub_url.SchemeIs(chrome::kHttpsScheme))
+      return true;
+    else
+      return false;
+  }
+
+  if (is_privileged && crack_url.SchemeIs(chrome::kExtensionScheme))
     return true;
 
   if (StartsWith(url, kChromeAttachExternalTabPrefix, false))
