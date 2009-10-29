@@ -633,10 +633,32 @@ void NewTabUI::InitializeCSSCaches() {
 
 // static
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kNTPPrefVersion, 0);
+
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::WebResourcesEnabled())
     TipsHandler::RegisterUserPrefs(prefs);
+
+  UpdateUserPrefsVersion(prefs);
+}
+
+// static
+bool NewTabUI::UpdateUserPrefsVersion(PrefService* prefs) {
+  const int old_pref_version = prefs->GetInteger(prefs::kNTPPrefVersion);
+  if (old_pref_version != current_pref_version()) {
+    MigrateUserPrefs(prefs, old_pref_version, current_pref_version());
+    prefs->SetInteger(prefs::kNTPPrefVersion, current_pref_version());
+    return true;
+  }
+  return false;
+}
+
+// static
+void NewTabUI::MigrateUserPrefs(PrefService* prefs, int old_pref_version,
+                                int new_pref_version) {
+  ShownSectionsHandler::MigrateUserPrefs(prefs, old_pref_version,
+                                         current_pref_version());
 }
 
 // static
@@ -859,6 +881,11 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
       l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
   localized_strings.SetString(L"themelink",
       l10n_util::GetString(IDS_THEMES_GALLERY_URL));
+  localized_strings.SetString(L"tips",
+      l10n_util::GetString(IDS_NEW_TAB_TIPS));
+  localized_strings.SetString(L"sync",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC));
+
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
   if (profile_->GetProfileSyncService())

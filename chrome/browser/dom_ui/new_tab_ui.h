@@ -10,6 +10,7 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/notification_registrar.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 class MessageLoop;
@@ -29,6 +30,8 @@ class NewTabUI : public DOMUI,
   virtual void RenderViewReused(RenderViewHost* render_view_host);
 
   static void RegisterUserPrefs(PrefService* prefs);
+  static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
+                               int new_pref_version);
 
   // Whether we should disable the web resources backend service
   static bool WebResourcesEnabled();
@@ -42,6 +45,9 @@ class NewTabUI : public DOMUI,
   static void SetURLTitleAndDirection(DictionaryValue* dictionary,
                                       const string16& title,
                                       const GURL& gurl);
+
+  // The current preference version.
+  static const int current_pref_version() { return current_pref_version_; }
 
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:
@@ -102,12 +108,18 @@ class NewTabUI : public DOMUI,
   };
 
  private:
+  FRIEND_TEST(NewTabUITest, UpdateUserPrefsVersion);
+
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
   // Reset the CSS caches.
   void InitializeCSSCaches();
+
+  // Updates the user prefs version and calls |MigrateUserPrefs| if needed.
+  // Returns true if the version was updated.
+  static bool UpdateUserPrefsVersion(PrefService* prefs);
 
   NotificationRegistrar registrar_;
 
@@ -118,6 +130,9 @@ class NewTabUI : public DOMUI,
   // Whether the user is in incognito mode or not, used to determine
   // what HTML to load.
   bool incognito_;
+
+  // The preference version. This used for migrating prefs of the NTP.
+  static const int current_pref_version_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabUI);
 };

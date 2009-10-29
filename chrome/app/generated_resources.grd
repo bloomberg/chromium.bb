@@ -4486,8 +4486,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Recent activities
       </message>
       <message name="IDS_NEW_TAB_TIPS"
-               desc="Heading text for the section containing tips and suggestions.">
-        Tips and Suggestions
+               desc="Menu item text for showing and hiding the tips section.">
+        Tips
       </message>
       <message name="IDS_NEW_TAB_DEFAULT_TIPS_TITLE"
                desc="Default content of tip box when no tips are available.  This is a short advertisement and explanation for the tips and suggestions to come.">
@@ -4605,6 +4605,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE"
          desc="Title for the hard coded thumbnail that represents the Google Chrome Themes Gallery page. This is used on the NTP when there aren't enough thumbnails to show.">
         Google Chrome Themes Gallery
+      </message>
+      <message name="IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC"
+         desc="Menu item text used to show or hide the bookmark sync status.">
+        Bookmark sync
       </message>
 
       <!-- New tab page web clips. These are not in use yet -->

@@ -47,6 +47,18 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
 // static
 void ShownSectionsHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kNTPShownSections,
-      THUMB | RECENT | TIPS);
+      THUMB | RECENT | TIPS | SYNC);
 }
 
+// static
+void ShownSectionsHandler::MigrateUserPrefs(PrefService* prefs,
+                                            int old_pref_version,
+                                            int new_pref_version) {
+  if (old_pref_version < 1) {
+    int shown_sections = prefs->GetInteger(prefs::kNTPShownSections);
+    // TIPS was used in early builds of the NNTP but since it was removed before
+    // Chrome 3.0 we want to ensure that it is shown by default.
+    shown_sections |= TIPS | SYNC;
+    prefs->SetInteger(prefs::kNTPShownSections, shown_sections);
+  }
+}

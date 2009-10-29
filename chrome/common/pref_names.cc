@@ -581,8 +581,12 @@ const wchar_t kNTPTipsServer[] = L"ntp.tips_server";
 // 1 - Show the most visited sites in a grid
 // 2 - Show the most visited sites as a list
 // 4 - Show the recent section
-// 8 - Show recommendations
+// 8 - Show tips
+// 16 - show sync status
 const wchar_t kNTPShownSections[] = L"ntp.shown_sections";
+
+// This pref is used for migrating the prefs for the NTP
+const wchar_t kNTPPrefVersion[] = L"ntp.pref_version";
 
 // A boolean specifying whether dev tools window should be opened docked.
 const wchar_t kDevToolsOpenDocked[] = L"devtools.open_docked";

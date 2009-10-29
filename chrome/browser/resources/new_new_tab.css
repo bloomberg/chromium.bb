@@ -12,6 +12,7 @@ body {
   position: relative;
   margin: 0 auto;
   width: 920px;
+  min-height: 50px;
   -webkit-transition: width .15s;
 }
 
@@ -468,7 +469,6 @@ html[dir='rtl'] .item {
 }
 
 #recently-closed {
-  -webkit-transition: opacity .15s;
   background-color: hsla(213, 60%, 92%, .4);
   border: 1px solid hsl(213, 60%, 92%);
   -webkit-border-radius: 5px;
@@ -681,6 +681,10 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
 #tip-line {
   margin: 10px 0;
   text-align: center;
+}
+
+#attribution {
+  margin: 10px 0;
 }
 
 #themes-promo {

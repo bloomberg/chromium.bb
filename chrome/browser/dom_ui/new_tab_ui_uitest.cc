@@ -4,7 +4,11 @@
 
 #include "chrome/test/ui/ui_test.h"
 
+#include "base/file_path.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -53,4 +57,26 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
     wait_time -= kWaitDuration;
   }
   EXPECT_EQ(0, filler_thumbnails_count);
+}
+
+TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
+  PrefService prefs(FilePath(), NULL);
+
+  // Does the migration
+  NewTabUI::RegisterUserPrefs(&prefs);
+
+  ASSERT_EQ(NewTabUI::current_pref_version(),
+            prefs.GetInteger(prefs::kNTPPrefVersion));
+
+  // Reset the version
+  prefs.ClearPref(prefs::kNTPPrefVersion);
+  ASSERT_EQ(0, prefs.GetInteger(prefs::kNTPPrefVersion));
+
+  bool migrated = NewTabUI::UpdateUserPrefsVersion(&prefs);
+  ASSERT_TRUE(migrated);
+  ASSERT_EQ(NewTabUI::current_pref_version(),
+            prefs.GetInteger(prefs::kNTPPrefVersion));
+
+  migrated = NewTabUI::UpdateUserPrefsVersion(&prefs);
+  ASSERT_FALSE(migrated);
 }

@@ -16,7 +16,8 @@ enum Section {
   THUMB = 1,
   LIST = 2,
   RECENT = 4,
-  TIPS = 8
+  TIPS = 8,
+  SYNC = 16
 };
 
 class ShownSectionsHandler : public DOMMessageHandler {
@@ -34,6 +35,9 @@ class ShownSectionsHandler : public DOMMessageHandler {
   void HandleSetShownSections(const Value* value);
 
   static void RegisterUserPrefs(PrefService* prefs);
+
+  static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
+                               int new_pref_version);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShownSectionsHandler);

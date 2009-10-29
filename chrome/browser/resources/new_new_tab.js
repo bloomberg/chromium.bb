@@ -8,7 +8,10 @@ function hasClass(el, name) {
 }
 
 function addClass(el, name) {
-  el.className += ' ' + name;
+  var names = el.className.split(/\s+/);
+  if (names.indexOf(name) == -1) {
+    el.className += ' ' + name;
+  }
 }
 
 function removeClass(el, name) {
@@ -297,17 +300,27 @@ function showSection(section) {
     if (section == Section.THUMB) {
       // hide LIST
       shownSections &= ~Section.LIST;
-      mostVisited.invalidate();
     } else if (section == Section.LIST) {
       // hide THUMB
       shownSections &= ~Section.THUMB;
-      mostVisited.invalidate();
-    } else {
-      renderRecentlyClosed();
     }
-
-    mostVisited.updateDisplayMode();
-    mostVisited.layout();
+    switch (section) {
+      case Section.THUMB:
+      case Section.LIST:
+        mostVisited.invalidate();
+        mostVisited.updateDisplayMode();
+        mostVisited.layout();
+        break;
+      case Section.RECENT:
+        renderRecentlyClosed();
+        break;
+      case Section.TIPS:
+        $('tip-line').style.display = '';
+        break;
+      case Section.SYNC:
+        $('sync-status').style.display = '';
+        break;
+    }
   }
 }
 
@@ -315,16 +328,23 @@ function hideSection(section) {
   if (section & shownSections) {
     shownSections &= ~section;
 
-    if (section & Section.THUMB || section & Section.LIST) {
-      mostVisited.invalidate();
+    switch (section) {
+      case Section.THUMB:
+      case Section.LIST:
+        mostVisited.invalidate();
+        mostVisited.updateDisplayMode();
+        mostVisited.layout();
+        break;
+      case Section.RECENT:
+        renderRecentlyClosed();
+        break;
+      case Section.TIPS:
+        $('tip-line').style.display = 'none';
+        break;
+      case Section.SYNC:
+        $('sync-status').style.display = 'none';
+        break;
     }
-
-    if (section & Section.RECENT) {
-      renderRecentlyClosed();
-    }
-
-    mostVisited.updateDisplayMode();
-    mostVisited.layout();
   }
 }
 
@@ -545,15 +565,12 @@ var mostVisited = {
 // Recently closed
 
 function layoutRecentlyClosed() {
-  var recentElement = $('recently-closed');
   var recentShown = shownSections & Section.RECENT;
-  var style = recentElement.style;
+  updateSimpleSection('recently-closed', Section.RECENT);
 
-  if (!recentShown) {
-    addClass(recentElement, 'collapsed');
-  } else {
-    removeClass(recentElement, 'collapsed');
-
+  if (recentShown) {
+    var recentElement = $('recently-closed');
+    var style = recentElement.style;
     // We cannot use clientWidth here since the width has a transition.
     var spacing = 20;
     var headerEl = recentElement.firstElementChild;
@@ -602,9 +619,10 @@ function layoutRecentlyClosed() {
 function syncMessageChanged(newMessage) {
   var syncStatusElement = $('sync-status');
   var style = syncStatusElement.style;
+  $('sync-menu-item').style.display = 'block';
 
   // Hide the section if the message is emtpy.
-  if (!newMessage.syncsectionisvisible) {
+  if (!newMessage['syncsectionisvisible'] || !(shownSections & Section.SYNC)) {
     style.display = 'none';
     return;
   }

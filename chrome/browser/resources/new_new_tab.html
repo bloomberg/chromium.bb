@@ -66,7 +66,9 @@ registerCallback('tips');
 var Section = {
   THUMB: 1,
   LIST: 2,
-  RECENT: 4
+  RECENT: 4,
+  TIPS: 8,
+  SYNC: 16
 };
 
 var shownSections = templateData['shown_sections'];
@@ -160,6 +162,10 @@ function applyMostVisitedRects() {
   }
 }
 
+function updateSimpleSection(id, section) {
+  $(id).style.display = shownSections & section ? '' : 'none';
+}
+
 </script>
 </head>
 <body class="loading"
@@ -178,6 +184,9 @@ function applyMostVisitedRects() {
   <div id="option-menu" class="window-menu">
     <div command="hide" section="THUMB" i18n-content="mostvisited"></div>
     <div command="hide" section="RECENT" i18n-content="recentlyclosed"></div>
+    <div command="hide" section="TIPS" i18n-content="tips"></div>
+    <div command="hide" section="SYNC" i18n-content="sync"
+         id="sync-menu-item"></div>
     <hr>
     <div command="clear-all-blacklisted"
          i18n-content="restorethumbnails"></div>
@@ -186,6 +195,8 @@ function applyMostVisitedRects() {
   <script>
     $('thumb-checkbox').checked = shownSections & Section.THUMB;
     $('list-checkbox').checked = shownSections & Section.LIST;
+    $('sync-menu-item').style.display =
+        templateData['syncispresent'] == 'true' ? '' : 'none';
   </script>
 
   <div id="notification">
@@ -235,16 +246,13 @@ function applyMostVisitedRects() {
           i18n-content="viewfullhistory"></a>
     </span>
   </div>
-  <script>
-    if (!(shownSections & Section.RECENT)) {
-      $('recently-closed').className = 'collapsed';
-    }
-  </script>
+  <script>updateSimpleSection('recently-closed', Section.RECENT);</script>
 
   <div id="sync-status">
     <h2></h2>
     <span></span>
   </div>
+  <script>updateSimpleSection('sync-status', Section.SYNC);</script>
 
   <div id="set-as-homepage">
     <button class="link">
@@ -253,6 +261,7 @@ function applyMostVisitedRects() {
   </div>
 
   <div id="tip-line"></div>
+  <script>updateSimpleSection('tip-line', Section.TIPS);</script>
 
   <div id="attribution" class="attribution">
     <div i18n-content="attributionintro"></div>
