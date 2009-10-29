@@ -1485,6 +1485,8 @@ void BrowserWindowGtk::AddFindBar(FindBarGtk* findbar) {
   gtk_box_pack_start(GTK_BOX(render_area_vbox_), findbar->widget(),
                      FALSE, FALSE, 0);
   gtk_box_reorder_child(GTK_BOX(render_area_vbox_), findbar->widget(), 0);
+
+  gtk_widget_hide(toolbar_border_);
 }
 
 void BrowserWindowGtk::ResetCustomFrameCursor() {
@@ -1694,6 +1696,13 @@ void BrowserWindowGtk::InitWidgets() {
   // |render_area_vbox_| is packed in |render_area_event_box_|.
   render_area_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_set_name(render_area_vbox_, "chrome-render-area-vbox");
+
+  toolbar_border_ = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(render_area_vbox_),
+                     toolbar_border_, FALSE, FALSE, 0);
+  gtk_widget_set_size_request(toolbar_border_, -1, 1);
+  gtk_widget_show(toolbar_border_);
+
   infobar_container_.reset(new InfoBarContainerGtk(browser_->profile()));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      infobar_container_->widget(),
@@ -1812,7 +1821,7 @@ void BrowserWindowGtk::InitWidgets() {
 
 void BrowserWindowGtk::SetBackgroundColor() {
   Profile* profile = browser()->profile();
-  ThemeProvider* theme_provider = profile->GetThemeProvider();
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile);
   int frame_color_id;
   if (IsActive()) {
     frame_color_id = browser()->profile()->IsOffTheRecord()
@@ -1842,6 +1851,9 @@ void BrowserWindowGtk::SetBackgroundColor() {
   GdkColor frame_prelight_color_gdk = SkColorToGdkColor(frame_prelight_color);
   gtk_widget_modify_bg(contents_split_, GTK_STATE_PRELIGHT,
       &frame_prelight_color_gdk);
+
+  GdkColor border_color = theme_provider->GetBorderColor();
+  gtk_widget_modify_bg(toolbar_border_, GTK_STATE_NORMAL, &border_color);
 }
 
 void BrowserWindowGtk::OnSizeChanged(int width, int height) {

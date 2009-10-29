@@ -215,6 +215,9 @@ class BrowserWindowGtk : public BrowserWindow,
   GtkWidget* render_area_vbox_;
   // EventBox that holds render_area_vbox_.
   GtkWidget* render_area_event_box_;
+  // Border between toolbar and render area. This is hidden when the find bar
+  // is added because thereafter the findbar will draw the border for us.
+  GtkWidget* toolbar_border_;
 
   scoped_ptr<Browser> browser_;
 
