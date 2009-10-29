@@ -2426,9 +2426,9 @@ void Browser::UpdateCommandsForTabState() {
 
   // Current navigation entry, may be NULL.
   NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
-    bool is_source_viewable =
-        net::IsSupportedNonImageMimeType(
-            current_tab->contents_mime_type().c_str());
+  bool is_source_viewable =
+      net::IsSupportedNonImageMimeType(
+          current_tab->contents_mime_type().c_str());
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());

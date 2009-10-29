@@ -376,34 +376,35 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   windowless_canvas_->save();
 
-  // The given clip rect is in global coordinates, so install it before the
-  // transformation is done for the coordinate system.
+  // The given clip rect is relative to the plugin coordinate system.
   SkRect sk_rect = { SkIntToScalar(rect.x()),
                      SkIntToScalar(rect.y()),
                      SkIntToScalar(rect.right()),
                      SkIntToScalar(rect.bottom()) };
   windowless_canvas_->clipRect(sk_rect);
-  windowless_canvas_->translate(SkIntToScalar(-delegate_->GetRect().x()),
-                                SkIntToScalar(-delegate_->GetRect().y()));
 
   // Setup the background.
-  if (!background_canvas_.get()) {
+  if (background_canvas_.get()) {
+    // When a background canvas is given, we're in transparent mode. This means
+    // the plugin wants to have the image of the page in the canvas it's drawing
+    // into (which is windowless_canvas_) so it can do blending. So we copy the
+    // background bitmap into the windowless_canvas_.
+    const SkBitmap& background_bitmap =
+        background_canvas_->getTopPlatformDevice().accessBitmap(false);
+    windowless_canvas_->drawBitmap(background_bitmap, 0, 0);
+  } else {
+    // In non-transparent mode, the plugin doesn't care what's underneath, so we
+    // can just give it black.
     SkPaint black_fill_paint;
     black_fill_paint.setARGB(0xFF, 0x00, 0x00, 0x00);
     windowless_canvas_->drawPaint(black_fill_paint);
-  } else {
-    SkIRect src_rect = { rect.x(), rect.y(),
-                         rect.x() + offset_rect.width(),
-                         rect.y() + offset_rect.height() };
-
-    SkRect dest_rect = { SkIntToScalar(offset_rect.x()),
-                         SkIntToScalar(offset_rect.y()),
-                         SkIntToScalar(offset_rect.right()),
-                         SkIntToScalar(offset_rect.bottom()) };
-    const SkBitmap& background_bitmap =
-        background_canvas_->getTopPlatformDevice().accessBitmap(false);
-    windowless_canvas_->drawBitmapRect(background_bitmap, &src_rect, dest_rect);
   }
+
+  // Bring the windowless_canvas_ into the window coordinate system, which is
+  // how the plugin expects to draw (since the windowless API was originally
+  // designed just for scribbling over the web page).
+  windowless_canvas_->translate(SkIntToScalar(-delegate_->GetRect().x()),
+                                SkIntToScalar(-delegate_->GetRect().y()));
 
   // Before we send the invalidate, paint so that renderer uses the updated
   // bitmap.
