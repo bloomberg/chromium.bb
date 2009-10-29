@@ -48,26 +48,27 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     StringTokenizer tokenizer(expected_listing, "\r\n");
     while (tokenizer.GetNext())
       lines.push_back(tokenizer.token());
-    ASSERT_EQ(0U, lines.size() % 7);
+    ASSERT_EQ(0U, lines.size() % 8);
     
-    for (size_t i = 0; i < lines.size() / 7; i++) {
-      std::string type(lines[7 * i]);
-      std::string name(lines[7 * i + 1]);
+    for (size_t i = 0; i < lines.size() / 8; i++) {
+      std::string type(lines[8 * i]);
+      std::string name(lines[8 * i + 1]);
+      int64 size = StringToInt64(lines[8 * i + 2]);
       
       SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
       
       int year;
-      if (lines[7 * i + 2] == "current") {
+      if (lines[8 * i + 3] == "current") {
         base::Time::Exploded now_exploded;
         base::Time::Now().LocalExplode(&now_exploded);
         year = now_exploded.year;
       } else {
-        year = StringToInt(lines[7 * i + 2]);
+        year = StringToInt(lines[8 * i + 3]);
       }
-      int month = StringToInt(lines[7 * i + 3]);
-      int day_of_month = StringToInt(lines[7 * i + 4]);
-      int hour = StringToInt(lines[7 * i + 5]);
-      int minute = StringToInt(lines[7 * i + 6]);
+      int month = StringToInt(lines[8 * i + 4]);
+      int day_of_month = StringToInt(lines[8 * i + 5]);
+      int hour = StringToInt(lines[8 * i + 6]);
+      int minute = StringToInt(lines[8 * i + 7]);
       
       ASSERT_TRUE(buffer.EntryAvailable());
       net::FtpDirectoryListingEntry entry = buffer.PopEntry();
@@ -83,6 +84,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       }
       
       EXPECT_EQ(UTF8ToUTF16(name), entry.name);
+      EXPECT_EQ(size, entry.size);
       
       base::Time::Exploded time_exploded;
       entry.last_modified.LocalExplode(&time_exploded);

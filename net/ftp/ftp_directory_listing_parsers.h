@@ -23,6 +23,7 @@ struct FtpDirectoryListingEntry {
   
   Type type;
   string16 name;
+  int64 size;  // File size, in bytes. -1 if not applicable.
   
   // Last modified time, in local time zone.
   base::Time last_modified;

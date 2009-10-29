@@ -128,8 +128,12 @@ bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
   if (!IsStringNonNegativeNumber(columns[1]))
     return false;
   
-  if (!IsStringNonNegativeNumber(columns[4]))
+  if (!StringToInt64(columns[4], &entry.size))
     return false;
+  if (entry.size < 0)
+    return false;
+  if (entry.type != FtpDirectoryListingEntry::FILE)
+    entry.size = -1;
   
   if (!UnixDateListingToTime(columns, &entry.last_modified))
     return false;

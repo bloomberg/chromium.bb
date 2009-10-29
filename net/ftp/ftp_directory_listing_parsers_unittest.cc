@@ -13,6 +13,7 @@ struct SingleLineTestData {
   const char* input;
   net::FtpDirectoryListingEntry::Type type;
   const char* filename;
+  int64 size;
   int year;
   int month;
   int day_of_month;
@@ -32,6 +33,7 @@ class FtpDirectoryListingParsersTest : public testing::Test {
     net::FtpDirectoryListingEntry entry = parser->PopEntry();
     EXPECT_EQ(test_case.type, entry.type);
     EXPECT_EQ(UTF8ToUTF16(test_case.filename), entry.name);
+    EXPECT_EQ(test_case.size, entry.size);
     
     base::Time::Exploded time_exploded;
     entry.last_modified.LocalExplode(&time_exploded);
@@ -54,16 +56,16 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
   
   const struct SingleLineTestData good_cases[] = {
     { "-rw-r--r--    1 ftp      ftp           528 Nov 01  2007 README",
-      net::FtpDirectoryListingEntry::FILE, "README",
+      net::FtpDirectoryListingEntry::FILE, "README", 528,
       2007, 11, 1, 0, 0 },
     { "drwxr-xr-x    3 ftp      ftp          4096 May 15 18:11 directory",
-      net::FtpDirectoryListingEntry::DIRECTORY, "directory",
+      net::FtpDirectoryListingEntry::DIRECTORY, "directory", -1,
       now_exploded.year, 5, 15, 18, 11 },
     { "lrwxrwxrwx 1 0  0 26 Sep 18 2008 pub -> vol/1/.CLUSTER/var_ftp/pub",
-      net::FtpDirectoryListingEntry::SYMLINK, "pub",
+      net::FtpDirectoryListingEntry::SYMLINK, "pub", -1,
       2008, 9, 18, 0, 0 },
     { "lrwxrwxrwx 1 0  0 3 Oct 12 13:37 mirror -> pub",
-      net::FtpDirectoryListingEntry::SYMLINK, "mirror",
+      net::FtpDirectoryListingEntry::SYMLINK, "mirror", -1,
       now_exploded.year, 10, 12, 13, 37 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
