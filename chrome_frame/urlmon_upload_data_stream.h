@@ -17,7 +17,7 @@
 
 // Provides an IStream interface to the very different UploadDataStream
 // implementation.
-class UrlmonUploadDataStream : public CComObjectRoot,
+class UrlmonUploadDataStream : public CComObjectRootEx<CComMultiThreadModel>,
                                public IStream {
  public:
   UrlmonUploadDataStream() {}

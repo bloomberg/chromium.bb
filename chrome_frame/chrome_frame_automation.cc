@@ -982,7 +982,7 @@ bool ChromeFrameAutomationClient::AddRequest(PluginUrlRequest* request) {
   }
 
   DCHECK(request_map_.end() == request_map_.find(request->id()));
-  request_map_[request->id()] =  request;
+  request_map_[request->id()] = request;
   return true;
 }
 

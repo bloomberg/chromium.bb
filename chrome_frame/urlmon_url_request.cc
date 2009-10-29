@@ -25,7 +25,6 @@ UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
       status_(URLRequestStatus::FAILED, net::ERR_FAILED),
       thread_(PlatformThread::CurrentId()),
-      post_data_len_(0),
       redirect_status_(0),
       parent_window_(NULL),
       worker_thread_(NULL),
@@ -177,7 +176,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       if (redirect_status_ != 307 &&
           LowerCaseEqualsASCII(method(), "post")) {
         set_method("get");
-        post_data_len_ = 0;
+        ClearPostData();
       }
       break;
 
@@ -238,24 +237,10 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     bind_info->grfBindInfoF = 0;
     bind_info->szCustomVerb = NULL;
 
-    scoped_refptr<net::UploadData> upload_data(upload_data());
-    post_data_len_ = upload_data.get() ? upload_data->GetContentLength() : 0;
-    if (post_data_len_) {
-      DLOG(INFO) << " Obj: " << std::hex << this << " POST request with "
-          << Int64ToString(post_data_len_) << " bytes";
-      CComObject<UrlmonUploadDataStream>* upload_stream = NULL;
-      HRESULT hr =
-          CComObject<UrlmonUploadDataStream>::CreateInstance(&upload_stream);
-      if (FAILED(hr)) {
-        NOTREACHED();
-        return hr;
-      }
-      upload_stream->Initialize(upload_data.get());
-
-      // Fill the STGMEDIUM with the data to post
+    if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
-      bind_info->stgmedData.pstm = static_cast<IStream*>(upload_stream);
-      bind_info->stgmedData.pstm->AddRef();
+      DLOG(INFO) << " Obj: " << std::hex << this << " POST request with "
+          << Int64ToString(post_data_len()) << " bytes";
     } else {
       DLOG(INFO) << " Obj: " << std::hex << this
           << "POST request with no data!";
@@ -351,11 +336,11 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   HRESULT hr = S_OK;
 
   std::string new_headers;
-  if (post_data_len_ > 0) {
+  if (post_data_len() > 0) {
     // Tack on the Content-Length header since when using an IStream type
     // STGMEDIUM, it looks like it doesn't get set for us :(
     new_headers = StringPrintf("Content-Length: %s\r\n",
-                               Int64ToString(post_data_len_).c_str());
+                               Int64ToString(post_data_len()).c_str());
   }
 
   if (!extra_headers().empty()) {
@@ -615,7 +600,8 @@ void UrlmonUrlRequest::EndRequest() {
   // Remove the request mapping and release the outstanding reference to us in
   // the context of the UI thread.
   task_marshaller_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::EndRequestInternal));
+      FROM_HERE, NewRunnableMethod(this,
+                                   &UrlmonUrlRequest::EndRequestInternal));
 }
 
 void UrlmonUrlRequest::EndRequestInternal() {

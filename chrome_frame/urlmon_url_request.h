@@ -246,8 +246,6 @@ END_SERVICE_MAP()
   size_t pending_read_size_;
   URLRequestStatus status_;
 
-  uint64 post_data_len_;
-
   PlatformThreadId thread_;
   static int instance_count_;
   HWND parent_window_;

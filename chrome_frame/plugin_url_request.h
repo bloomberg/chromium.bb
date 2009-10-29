@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "base/ref_counted.h"
+#include "base/scoped_comptr_win.h"
 #include "base/time.h"
+#include "chrome_frame/chrome_frame_delegate.h"
+#include "chrome_frame/urlmon_upload_data_stream.h"
 #include "ipc/ipc_message.h"
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
-#include "base/ref_counted.h"
-#include "chrome_frame/chrome_frame_delegate.h"
 
 class PluginUrlRequest;
 
@@ -25,11 +27,13 @@ class PluginRequestHandler : public IPC::Message::Sender {
   virtual void RemoveRequest(PluginUrlRequest* request) = 0;
 };
 
-// A reference counting solution that's compatible with COM IUnknown
+// A reference counting solution whose method's are compatible with
+// scoped_refptr and COM's IUnknown.  Don't cast this object directly over to
+// IUnknown though since IUnknown's first method is QueryInterface.
 class UrlRequestReference {
  public:
-  virtual unsigned long API_CALL AddRef() = 0;
-  virtual unsigned long API_CALL Release() = 0;
+  virtual unsigned long API_CALL AddRef() = 0;  // NOLINT
+  virtual unsigned long API_CALL Release() = 0;  // NOLINT
 };
 
 class PluginUrlRequest : public UrlRequestReference {
@@ -67,12 +71,15 @@ class PluginUrlRequest : public UrlRequestReference {
   PluginRequestHandler* request_handler() const {
     return request_handler_;
   }
+
   int id() const {
     return remote_request_id_;
   }
+
   const std::string& url() const {
     return url_;
   }
+
   const std::string& method() const {
     return method_;
   }
@@ -84,11 +91,27 @@ class PluginUrlRequest : public UrlRequestReference {
   const std::string& referrer() const {
     return referrer_;
   }
+
   const std::string& extra_headers() const {
     return extra_headers_;
   }
-  scoped_refptr<net::UploadData> upload_data() {
-    return upload_data_;
+
+  uint64 post_data_len() const {
+    return post_data_len_;
+  }
+
+  HRESULT get_upload_data(IStream** ret) {
+    DCHECK(ret);
+    if (!upload_data_.get())
+      return S_FALSE;
+    *ret = upload_data_.get();
+    (*ret)->AddRef();
+    return S_OK;
+  }
+
+  void ClearPostData() {
+    upload_data_.Release();
+    post_data_len_ = 0;
   }
 
   bool is_done() const {
@@ -107,14 +130,13 @@ class PluginUrlRequest : public UrlRequestReference {
   PluginRequestHandler* request_handler_;
   int tab_;
   int remote_request_id_;
+  uint64 post_data_len_;
   std::string url_;
   std::string method_;
   std::string referrer_;
   std::string extra_headers_;
-  scoped_refptr<net::UploadData> upload_data_;
+  ScopedComPtr<IStream> upload_data_;
   URLRequestStatus::Status status_;
 };
 
-
 #endif  // CHROME_FRAME_PLUGIN_URL_REQUEST_H_
-
