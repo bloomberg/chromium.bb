@@ -69,7 +69,7 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
-    result->elements.push_back(FormField(form_element, name, value));
+    result->elements.push_back(FormField(name, value));
   }
 
   return result;

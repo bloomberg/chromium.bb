@@ -756,7 +756,7 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
         string16 name, value;
         result = result && ReadParam(m, iter, &name);
         result = result && ReadParam(m, iter, &value);
-        p->elements[i] = webkit_glue::FormField(NULL, name, value);
+        p->elements[i] = webkit_glue::FormField(name, value);
       }
       return result;
   }

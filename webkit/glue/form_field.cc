@@ -6,15 +6,12 @@
 
 namespace webkit_glue {
 
-FormField::FormField()
-  : element_(NULL) {
+FormField::FormField() {
 }
 
-FormField::FormField(WebCore::HTMLFormControlElement* element,
-                     const string16& name,
+FormField::FormField(const string16& name,
                      const string16& value)
-  : element_(element),
-    name_(name),
+  : name_(name),
     value_(value) {
 }
 
