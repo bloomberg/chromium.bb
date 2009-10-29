@@ -3115,7 +3115,6 @@ BUG26042 LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
 BUG26045 MAC LINUX : LayoutTests/fast/frames/frame-set-same-src.html = CRASH PASS
-BUG_YUTAK MAC RELEASE : LayoutTests/fast/overflow/002.html = CRASH PASS
 
 // Test expectation for MAC is located above.
 // Please remove CRASH from that line when the fix is in.
