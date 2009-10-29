@@ -97,7 +97,7 @@ var chrome = chrome || {};
 
   // Test if the given callback is registered for this event.
   chrome.Event.prototype.hasListener = function(cb) {
-    return this.findListeners_(cb) > -1;
+    return this.findListener_(cb) > -1;
   };
 
   // Test if any callbacks are registered for this event.
