@@ -48,10 +48,11 @@ class Browser : public TabStripModelDelegate,
   // TODO(sky): move into a common place that is referenced by both ui_tests
   // and chrome.
   enum Type {
-    TYPE_NORMAL = 0,
-    TYPE_POPUP = 1,
-    TYPE_APP = 2,
+    TYPE_NORMAL = 1,
+    TYPE_POPUP = 2,
+    TYPE_APP = 4,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
+    TYPE_ANY = TYPE_NORMAL | TYPE_POPUP | TYPE_APP
   };
 
   // Possible elements of the Browser window.
