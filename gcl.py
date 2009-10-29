@@ -145,6 +145,8 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       return None
     if (not os.path.exists(cached_file) or
         os.stat(cached_file).st_mtime > max_age):
+      local_dir = os.path.dirname(os.path.abspath(filename))
+      local_base = os.path.basename(filename)
       dir_info = gclient_scm.CaptureSVNInfo(".")
       repo_root = dir_info["Repository Root"]
       if use_root:
@@ -153,13 +155,14 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = dir_info["URL"]
       content = ""
       while True:
-        # First, look for a locally modified version of codereview.settings.
-        content, rc = RunShellWithReturnCode(["svn", "status", filename])
+        # First, look for a locally modified version of the file.
+        local_path = os.path.join(local_dir, local_base)
+        content, rc = RunShellWithReturnCode(["svn", "status", local_path])
         if not rc and content.startswith('M'):
-          content = ReadFile(filename)
+          content = ReadFile(local_path)
           rc = 0
         else:
-          # Then look in the repository
+          # Then look in the repository.
           svn_path = url_path + "/" + filename
           content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
 
@@ -173,6 +176,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
           break
         # Go up one level to try again.
         url_path = os.path.dirname(url_path)
+        local_dir = os.path.dirname(local_dir)
       # Write a cached version even if there isn't a file, so we don't try to
       # fetch it each time.
       WriteFile(cached_file, content)
@@ -1080,12 +1084,9 @@ def Change(change_info, args):
   if change_info.MissingTests():
     Warn("WARNING: " + MISSING_TEST_MSG)
 
-# We don't lint files in these path prefixes.
-IGNORE_PATHS = (os.path.join("webkit","api"),)
-
 # Valid extensions for files we want to lint.
-LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
-LINT_IGNORE_REGEX = r""
+DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
+DEFAULT_LINT_IGNORE_REGEX = r""
 
 def Lint(change_info, args):
   """Runs cpplint.py on all the files in |change_info|"""
@@ -1104,11 +1105,11 @@ def Lint(change_info, args):
 
   white_list = GetCodeReviewSetting("LINT_REGEX")
   if not white_list:
-    white_list = LINT_REGEX
+    white_list = DEFAULT_LINT_REGEX
   white_regex = re.compile(white_list)
   black_list = GetCodeReviewSetting("LINT_IGNORE_REGEX")
   if not black_list:
-    black_list = LINT_IGNORE_REGEX
+    black_list = DEFAULT_LINT_IGNORE_REGEX
   black_regex = re.compile(black_list)
   for file in filenames:
     if white_regex.match(file):
