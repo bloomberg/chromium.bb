@@ -617,7 +617,7 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
     FilePath replace_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &replace_path);
     replace_path = replace_path.Append(
-        "webkit/data/layout_tests/LayoutTests/");
+        "third_party/WebKit/LayoutTests/");
     new_url = std::string("file://") + replace_path.value() +
         url.substr(kPrefixLen);
   }

@@ -1501,11 +1501,6 @@ BUG10369 LINUX : LayoutTests/editing/selection/5354455-2.html = FAIL
 // incorrect layout
 BUG10370 MAC : LayoutTests/fast/css/font-weight-1.html = FAIL
 
-// not loading local files
-BUG10371 SLOW MAC : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
-BUG10371 MAC : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
-BUG10371 MAC : LayoutTests/fast/loader/local-image-from-local.html = FAIL
-
 // Error from CGImageSourceUpdateData but everything else is correct.
 BUG10373 MAC : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 
@@ -2904,11 +2899,6 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 
 // Test failures from WebKit merge r46143:46194
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
-
-// not sure why this started failing
-BUG17509 LINUX SLOW : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
-BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
-BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
 // New tests with WebKit merge 46288:46363
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
