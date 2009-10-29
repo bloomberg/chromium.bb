@@ -578,8 +578,10 @@ NewTabUI::NewTabUI(TabContents* contents)
             &chrome_url_data_manager,
             &ChromeURLDataManager::AddDataSource,
             html_source));
-    if (!posted)
-      delete html_source;  // Keep Valgrind happy in tests.
+    if (!posted) {
+      html_source->AddRef();
+      html_source->Release();  // Keep Valgrind happy in tests.
+    }
   }
 
   // Listen for theme installation.
@@ -623,8 +625,10 @@ void NewTabUI::InitializeCSSCaches() {
           &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           theme));
-  if (!posted)
-    delete theme;  // Keep Valgrind happy in tests.
+  if (!posted) {
+    theme->AddRef();
+    theme->Release();  // Keep Valgrind happy in tests.
+  }
 }
 
 // static
