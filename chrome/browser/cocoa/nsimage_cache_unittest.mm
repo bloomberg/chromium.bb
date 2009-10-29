@@ -47,13 +47,18 @@ TEST_F(NSImageCacheTest, LookupMiss) {
       << "There shouldn't be an image with this name?";
 }
 
-// This test is flaky. See bug 26176.
-TEST_F(NSImageCacheTest, FLAKY_LookupFoundAndClear) {
+TEST_F(NSImageCacheTest, LookupFoundAndClear) {
   NSImage *first = nsimage_cache::ImageNamed(@"back_Template.pdf");
+  // Hang on to the first image so that the second one doesn't get allocated
+  // in the same location by (bad) luck.
+  [[first retain] autorelease];
   EXPECT_TRUE(first != nil)
       << "Failed to find the toolbar image?";
   nsimage_cache::Clear();
-  EXPECT_NE(first, nsimage_cache::ImageNamed(@"back_Template.pdf"))
+  NSImage *second = nsimage_cache::ImageNamed(@"back_Template.pdf");
+  EXPECT_TRUE(second != nil)
+      << "Failed to find the toolbar image...again?";
+  EXPECT_NE(second, first)
       << "how'd we get the same image after a cache clear?";
 }
 
