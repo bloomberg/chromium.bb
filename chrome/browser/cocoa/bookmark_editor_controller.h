@@ -12,13 +12,15 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 
+@class BookmarkTreeBrowserCell;
+
 // A controller for the bookmark editor, opened with Edit... from the
 // context menu of a bookmark button.
 @interface BookmarkEditorController : NSWindowController<NSTextFieldDelegate> {
  @private
   IBOutlet NSTextField* nameField_;
   IBOutlet NSTextField* urlField_;
-  IBOutlet NSBrowser* browser_;
+  IBOutlet NSBrowser* folderBrowser_;
   IBOutlet NSButton* okButton_;
   IBOutlet NSButton* newFolderButton_;
 
@@ -31,6 +33,7 @@
 
   scoped_nsobject<NSString> initialName_;
   scoped_nsobject<NSString> initialUrl_;
+  scoped_nsobject<BookmarkTreeBrowserCell> currentEditCell_;
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
@@ -43,8 +46,11 @@
 // Run the bookmark editor as a modal sheet.  Does not block.
 - (void)runAsModalSheet;
 
-// Actions for the buttons at the bottom of the window.
+// Create a new folder at the end of the selected parent folder, give it
+// an untitled name, and put it into editing mode.
 - (IBAction)newFolder:(id)sender;
+
+// Actions for the buttons at the bottom of the window.
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;
 @end
@@ -56,6 +62,4 @@
 - (void)selectTestNodeInBrowser:(const BookmarkNode*)node;
 @end
 
-
 #endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_ */
-

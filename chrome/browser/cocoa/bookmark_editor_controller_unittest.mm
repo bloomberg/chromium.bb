@@ -255,8 +255,6 @@ TEST_F(BookmarkEditorControllerTreeTest, RenameBookmarkInPlace) {
   [default_controller_ setDisplayName:@"NEW NAME"];
   [default_controller_ ok:nil];
   const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
-  std::cout << "oldParent: " << oldParent->GetTitle() << "\r";
-  std::cout << "newParent: " << newParent->GetTitle() << "\r";
   ASSERT_EQ(newParent, oldParent);
   int childIndex = newParent->IndexOfChild(bookmark_bb_3_);
   ASSERT_EQ(3, childIndex);
@@ -292,6 +290,14 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   EXPECT_EQ(bookmark_bb_3_->GetTitle(), L"NEW NAME");
 }
 
+TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
+  [default_controller_ newFolder:nil];
+  [default_controller_ cancel:nil];
+  EXPECT_EQ(6, group_bb_->GetChildCount());
+  const BookmarkNode* folderChild = group_bb_->GetChild(5);
+  EXPECT_EQ(folderChild->GetTitle(), L"New folder");
+}
+
 class BookmarkEditorControllerTreeNoNodeTest :
     public BookmarkEditorControllerTreeTest {
  public:
@@ -316,5 +322,31 @@ TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
   ASSERT_EQ(0, new_node->GetChildCount());
   EXPECT_EQ(new_node->GetTitle(), L"NEW BOOKMARK");
   EXPECT_EQ(new_node->GetURL(), GURL("http://NEWURL.com"));
+}
+
+class BookmarkEditorControllerTreeNoParentTest :
+    public BookmarkEditorControllerTreeTest {
+ public:
+  BookmarkEditorControllerTreeNoParentTest() {
+    // Reset the controller so that we have no |node|.
+    default_controller_.reset([[BookmarkEditorController alloc]
+                               initWithParentWindow:cocoa_helper_.window()
+                               profile:helper_.profile()
+                               parent:nil
+                               node:nil
+                               configuration:BookmarkEditor::SHOW_TREE
+                               handler:nil]);
+    [default_controller_ window];  // Forces a nib load
+  }
+};
+
+TEST_F(BookmarkEditorControllerTreeNoParentTest, AddFolderWithNoGroupSelected) {
+  [default_controller_ newFolder:nil];
+  [default_controller_ cancel:nil];
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* bookmarkBar = model->GetBookmarkBarNode();
+  EXPECT_EQ(5, bookmarkBar->GetChildCount());
+  const BookmarkNode* folderChild = bookmarkBar->GetChild(4);
+  EXPECT_EQ(folderChild->GetTitle(), L"New folder");
 }
 
