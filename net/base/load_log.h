@@ -14,7 +14,10 @@ namespace net {
 
 // LoadLog stores profiling information on where time was spent while servicing
 // a request (waiting in queues, resolving hosts, resolving proxy, etc...).
-class LoadLog : public base::RefCounted<LoadLog> {
+//
+// Note that LoadLog is NOT THREADSAFE, however it is RefCountedThreadSafe so
+// that it can be AddRef() / Release() across threads.
+class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
  public:
 
   enum EventType {
