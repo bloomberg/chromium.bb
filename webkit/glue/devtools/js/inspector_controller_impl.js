@@ -30,9 +30,12 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('releaseWrapperObjectGroup');
   this.installInspectorControllerDelegate_('removeAttribute');
   this.installInspectorControllerDelegate_('setAttribute');
+  this.installInspectorControllerDelegate_('setDOMStorageItem');
   this.installInspectorControllerDelegate_('setSetting');
   this.installInspectorControllerDelegate_('setTextNodeValue');
   this.installInspectorControllerDelegate_('setting');
+  this.installInspectorControllerDelegate_('startTimelineProfiler');
+  this.installInspectorControllerDelegate_('stopTimelineProfiler');
   this.installInspectorControllerDelegate_('storeLastActivePanel');
 };
 goog.inherits(devtools.InspectorControllerImpl,
