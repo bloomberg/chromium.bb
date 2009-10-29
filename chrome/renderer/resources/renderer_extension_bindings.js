@@ -73,6 +73,10 @@ var chrome = chrome || {};
     // the right event.
     var isExternal = sourceExtensionId != chromeHidden.extensionId;
 
+    if (tab)
+      tab = JSON.parse(tab);
+    var sender = {tab: tab, id: sourceExtensionId};
+
     // Special case for sendRequest/onRequest.
     if (channelName == chromeHidden.kRequestChannel) {
       var requestEvent = (isExternal ?
@@ -80,7 +84,7 @@ var chrome = chrome || {};
       if (requestEvent.hasListeners()) {
         var port = chromeHidden.Port.createPort(portId, channelName);
         port.onMessage.addListener(function(request) {
-          requestEvent.dispatch(request, function(response) {
+          requestEvent.dispatch(request, sender, function(response) {
             port.postMessage(response);
           });
         });
@@ -92,10 +96,7 @@ var chrome = chrome || {};
         chrome.extension.onConnectExternal : chrome.extension.onConnect);
     if (connectEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
-      if (tab) {
-        tab = JSON.parse(tab);
-      }
-      port.sender = {tab: tab, id: sourceExtensionId};
+      port.sender = sender;
       // TODO(EXTENSIONS_DEPRECATED): port.tab is obsolete.
       port.tab = port.sender.tab;
 

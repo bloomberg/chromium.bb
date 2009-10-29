@@ -3,6 +3,15 @@
     "namespace": "extension",
     "types": [
       {
+        "id": "MessageSender",
+        "type": "object",
+        "description": "An object containing information about the script context that sent a message or request.",
+        "properties": {
+          "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
+          "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
+        }
+      },
+      {
         "id": "Port",
         "type": "object",
         "description": "An object which allows two way communication with other pages.",
@@ -12,13 +21,9 @@
           "onMessage": {"type": "object"},
           "postMessage": {"type": "function"},
           "sender": {
-            "type": "object",
+            "$ref": "MessageSender",
             "optional": true,
-            "description": "This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners.",
-            "properties": {
-              "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
-              "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
-            }
+            "description": "This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners."
           }
         }
       }
@@ -153,8 +158,9 @@
         "type": "function",
         "description": "Fired when a request is sent from either an extension process or a content script.",
         "parameters": [
-          { "type": "any", "name": "request" },
-          { "type": "function", "name": "sendResponse", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
+          {"name": "request", "type": "any", "description": "The request sent by the calling script."},
+          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "sendResponse", "type": "function", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
       },
       {
@@ -162,8 +168,9 @@
         "type": "function",
         "description": "Fired when a request is sent from another extension.",
         "parameters": [
-          { "type": "any", "name": "request" },
-          { "type": "function", "name": "sendResponse", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
+          {"name": "request", "type": "any", "description": "The request sent by the calling script."},
+          {"name": "sender", "$ref": "MessageSender" },
+          {"name": "sendResponse", "type": "function", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
       }
     ]

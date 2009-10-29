@@ -5,6 +5,6 @@ chrome.extension.sendRequest({step: 1}, function(response) {
 });
 
 // For test sendRequest.
-chrome.extension.onRequest.addListener(function(request, sendResponse) {
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
   sendResponse({success: (request.step2 == 1)});
 });

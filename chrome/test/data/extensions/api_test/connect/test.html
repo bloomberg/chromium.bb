@@ -2,22 +2,25 @@
 chrome.test.runTests([
   // Tests receiving a request from a content script and responding.
   function onRequest() {
-    chrome.extension.onRequest.addListener(function(request, sendResponse) {
-      if (request.step == 1) {
-        // Step 1: Page should send another request for step 2.
-        sendResponse({nextStep: true});
-      } else {
-        // Step 2.
-        chrome.test.assertEq(request.step, 2);
-        sendResponse({});
-        chrome.test.succeed();
-      } 
-    });
+    chrome.extension.onRequest.addListener(
+      function(request, sender, sendResponse) {
+        chrome.test.assertTrue("url" in sender.tab, "no tab available.");
+        chrome.test.assertEq(sender.id, location.host);
+        if (request.step == 1) {
+          // Step 1: Page should send another request for step 2.
+          sendResponse({nextStep: true});
+        } else {
+          // Step 2.
+          chrome.test.assertEq(request.step, 2);
+          sendResponse({});
+          chrome.test.succeed();
+        } 
+      });
   },
   // Tests sending a request to a tab and receiving a response.
   function sendRequest() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.test.log('Selected tab: ' + tab.url);
+      chrome.test.log("Selected tab: " + tab.url);
       chrome.tabs.sendRequest(tab.id, {step2: 1}, function(response) {
         chrome.test.assertTrue(response.success);
         chrome.test.succeed();

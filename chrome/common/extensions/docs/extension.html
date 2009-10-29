@@ -217,8 +217,10 @@
                   <li>
                     <a href="#types">Types</a>
                     <ol>
-                      <li jsinstance="*0">
+                      <li jsinstance="0">
                         <a href="#type-Port">Port</a>
+                      </li><li jsinstance="*1">
+                        <a href="#type-MessageSender">MessageSender</a>
                       </li>
                     </ol>
                   </li>
@@ -1511,7 +1513,7 @@ For details, see
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.extension.</span><span>onRequest</span><span class="subdued">.addListener</span>(function(<span>any request, function sendResponse</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.extension.</span><span>onRequest</span><span class="subdued">.addListener</span>(function(<span>any request, MessageSender sender, function sendResponse</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1547,6 +1549,47 @@ For details, see
 
               </em>
           </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The request sent by the calling script.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="1">
+                    <div>
+          <dt>
+            <var>sender</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
           <dd class="todo">
             Undocumented.
           </dd>
@@ -1564,7 +1607,7 @@ For details, see
             </dl>
           </dd>
         </div>
-                  </div><div jsinstance="*1">
+                  </div><div jsinstance="*2">
                     <div>
           <dt>
             <var>sendResponse</var>
@@ -1616,7 +1659,7 @@ For details, see
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.extension.</span><span>onRequestExternal</span><span class="subdued">.addListener</span>(function(<span>any request, function sendResponse</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.extension.</span><span>onRequestExternal</span><span class="subdued">.addListener</span>(function(<span>any request, MessageSender sender, function sendResponse</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1652,6 +1695,47 @@ For details, see
 
               </em>
           </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The request sent by the calling script.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="1">
+                    <div>
+          <dt>
+            <var>sender</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
           <dd class="todo">
             Undocumented.
           </dd>
@@ -1669,7 +1753,7 @@ For details, see
             </dl>
           </dd>
         </div>
-                  </div><div jsinstance="*1">
+                  </div><div jsinstance="*2">
                     <div>
           <dt>
             <var>sendResponse</var>
@@ -1725,7 +1809,7 @@ For details, see
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
-            <div class="apiItem" jsinstance="*0">
+            <div class="apiItem" jsinstance="0">
               <a name="type-Port"></a>
               <h4>Port</h4>
 
@@ -1945,6 +2029,55 @@ For details, see
                   (
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
+                      <span>
+                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+
+            </div><div class="apiItem" jsinstance="*1">
+              <a name="type-MessageSender"></a>
+              <h4>MessageSender</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
                       </span>
@@ -1963,7 +2096,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners.</dd>
+          <dd>An object containing information about the script context that sent a message or request.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -2046,10 +2179,6 @@ For details, see
               <div>
                 <div>
                 </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
               </div>
             </dl>
           </dd>
