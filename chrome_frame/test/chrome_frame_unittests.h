@@ -11,6 +11,7 @@
 #include <exdispid.h>
 
 #include "base/ref_counted.h"
+#include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/test/http_server.h"
@@ -94,17 +95,33 @@ class ChromeFrameTestWithWebServer: public testing::Test {
 // subscribes to the following events:-
 // 1. DISPID_BEFORENAVIGATE2
 // 2. DISPID_NAVIGATEERROR
-// 3. DISPID_NAVIGATECOMPLETE2 
+// 3. DISPID_NAVIGATECOMPLETE2
+// 4. DISPID_NEWWINDOW3
 // Other events can be subscribed to on an if needed basis.
 class WebBrowserEventSink
     : public CComObjectRootEx<CComSingleThreadModel>,
       public IDispEventSimpleImpl<0, WebBrowserEventSink,
                                   &DIID_DWebBrowserEvents2> {
  public:
-  WebBrowserEventSink()
-      : navigation_failed_(false),
-        main_thread_id_(0) {
+  typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
+                               &DIID_DWebBrowserEvents2> DispEventsImpl;
+  WebBrowserEventSink() {}
+  ~WebBrowserEventSink() {
+    Uninitialize();
   }
+
+  void Uninitialize() {
+    if (web_browser2_.get()) {
+      DispEventUnadvise(web_browser2_);
+      web_browser2_.Release();
+    }
+  }
+
+  // Helper function to launch IE and navigate to a URL.
+  // Returns S_OK on success, S_FALSE if the test was not run, other
+  // errors on failure.
+  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
+                              _IDispEvent* sink);
 
 BEGIN_COM_MAP(WebBrowserEventSink)
 END_COM_MAP()
@@ -116,12 +133,14 @@ BEGIN_SINK_MAP(WebBrowserEventSink)
                  OnNavigateComplete2, &kNavigateComplete2Info)
  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
                  OnNavigateError, &kNavigateErrorInfo)
+ SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW3,
+                 OnNewWindow3, &kNewWindow3Info)
 END_SINK_MAP()
 
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
                                     VARIANT* frame_name, VARIANT* status_code,
                                     VARIANT* cancel) {
-    navigation_failed_ = true;
+    DLOG(INFO) << __FUNCTION__;
   }
 
   STDMETHOD(OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT*
@@ -129,13 +148,6 @@ END_SINK_MAP()
                                VARIANT* post_data, VARIANT* headers,
                                VARIANT_BOOL* cancel) {
     DLOG(INFO) << __FUNCTION__;
-    // If a navigation fails then IE issues a navigation to an interstitial
-    // page. Catch this to track navigation errors as the NavigateError
-    // notification does not seem to fire reliably.
-    GURL crack_url(url->bstrVal);
-    if (crack_url.scheme() == "res") {
-      navigation_failed_ = true;
-    }
     return S_OK;
   }
 
@@ -143,21 +155,31 @@ END_SINK_MAP()
     DLOG(INFO) << __FUNCTION__;
   }
 
-  bool navigation_failed() const {
-    return navigation_failed_;
+  STDMETHOD_(void, OnNewWindow3)(IDispatch** dispatch, VARIANT_BOOL* Cancel,
+      DWORD flags, BSTR url_context, BSTR url) {
+    DLOG(INFO) << __FUNCTION__;
   }
 
-  void set_main_thread_id(DWORD thread_id) {
-    main_thread_id_ = thread_id;
+#ifdef _DEBUG
+  STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
+    LCID lcid, WORD flags, DISPPARAMS* params, VARIANT* result,
+    EXCEPINFO* except_info, UINT* arg_error) {
+    DLOG(INFO) << __FUNCTION__ << L" disp id :"  << dispid;
+    return DispEventsImpl::Invoke(dispid, riid, lcid, flags, params, result,
+                                  except_info, arg_error);
+  }
+#endif  // _DEBUG
+
+  IWebBrowser2* web_browser2() {
+    return web_browser2_.get();
   }
 
  protected:
-  bool navigation_failed_;
-
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
   static _ATL_FUNC_INFO kNavigateComplete2Info;
   static _ATL_FUNC_INFO kNavigateErrorInfo;
-  DWORD main_thread_id_;
+  static _ATL_FUNC_INFO kNewWindow3Info;
+  ScopedComPtr<IWebBrowser2> web_browser2_;
 };
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_UNITTESTS_H_

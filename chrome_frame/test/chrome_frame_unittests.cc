@@ -14,7 +14,6 @@
 #include "base/file_version_info.h"
 #include "base/file_util.h"
 #include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/sys_info.h"
 #include "gmock/gmock.h"
@@ -64,6 +63,15 @@ _ATL_FUNC_INFO WebBrowserEventSink::kBeforeNavigate2Info = {
   }
 };
 
+_ATL_FUNC_INFO WebBrowserEventSink::kNewWindow3Info = {
+  CC_STDCALL, VT_EMPTY, 5, {
+    VT_DISPATCH | VT_BYREF,
+    VT_BOOL | VT_BYREF,
+    VT_UINT,
+    VT_BSTR,
+    VT_BSTR
+  }
+};
 
 
 void ChromeFrameTestWithWebServer::SetUp() {
@@ -830,12 +838,16 @@ template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
 struct TimedMsgLoop {
  public:
   void RunFor(int seconds) {
-    loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 1000 * seconds);
+    QuitAfter(seconds);
     loop_.MessageLoop::Run();
   }
 
   void Quit() {
     loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
+
+  void QuitAfter(int seconds) {
+    loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 1000 * seconds);
   }
 
   MessageLoopForUI loop_;
@@ -851,6 +863,9 @@ template <> struct RunnableMethodTraits<TimedMsgLoop> {
 // non-public (testing::internal) type.
 #define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
     CreateFunctor(&loop, &TimedMsgLoop::Quit))
+
+#define QUIT_LOOP_SOON(loop, seconds) testing::InvokeWithoutArgs(\
+    CreateFunctor(&loop, &TimedMsgLoop::QuitAfter, seconds))
 
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
 TEST(CFACWithChrome, CreateTooFast) {
@@ -1280,7 +1295,9 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   return hr;
 }
 
-TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
+// WebBrowserEventSink member defines
+HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
+    const std::wstring& navigate_url, _IDispEvent* sink) {
   int major_version = 0;
   int minor_version = 0;
   int bugfix_version = 0;
@@ -1290,54 +1307,204 @@ TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
   if (major_version > 5) {
     DLOG(INFO) << __FUNCTION__ << " Not running test on Windows version: "
                << major_version;
-    return;
+    return S_FALSE;
   }
 
   IEVersion ie_version = GetIEVersion();
   if (ie_version == IE_8) {
     DLOG(INFO) << __FUNCTION__ << " Not running test on IE8";
-    return;
+    return S_FALSE;
   }
 
-  HRESULT hr = CoInitialize(NULL);
-  bool should_uninit = SUCCEEDED(hr);
+  EXPECT_TRUE(S_OK == LaunchIEAsComServer(web_browser2_.Receive()));
+  web_browser2_->put_Visible(VARIANT_TRUE);
 
-  ScopedComPtr<IWebBrowser2> web_browser2;
-  EXPECT_TRUE(S_OK == LaunchIEAsComServer(web_browser2.Receive()));
-  web_browser2->put_Visible(VARIANT_TRUE);
-
-  CComObject<WebBrowserEventSink>* web_browser_sink = NULL;
-  CComObject<WebBrowserEventSink>::CreateInstance(&web_browser_sink);
-
-  // Pass the main thread id to the browser sink so that it can notify
-  // us about test completion.
-  web_browser_sink->set_main_thread_id(GetCurrentThreadId());
-
-  hr = web_browser_sink->DispEventAdvise(web_browser2,
-                                         &DIID_DWebBrowserEvents2);
+  HRESULT hr = sink->DispEventAdvise(web_browser2_,
+                                     &DIID_DWebBrowserEvents2);
   EXPECT_TRUE(hr == S_OK);
 
   VARIANT empty = ScopedVariant::kEmptyVariant;
   ScopedVariant url;
-  url.Set(L"cf:file:///C:/");
+  url.Set(navigate_url.c_str());
 
+  hr = web_browser2_->Navigate2(url.AsInput(), &empty, &empty, &empty, &empty);
+  EXPECT_TRUE(hr == S_OK);
+  return hr;
+}
+
+const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
+
+// This class provides functionality to add expectations to IE full tab mode
+// tests.
+class MockWebBrowserEventSink : public WebBrowserEventSink {
+ public:
+  // Needed to support PostTask.
+  static bool ImplementsThreadSafeReferenceCounting() {
+    return true;
+  }
+
+  MOCK_METHOD7_WITH_CALLTYPE(__stdcall, OnBeforeNavigate2,
+                             HRESULT (IDispatch* dispatch,
+                                      VARIANT* url,
+                                      VARIANT* flags,
+                                      VARIANT* target_frame_name,
+                                      VARIANT* post_data,
+                                      VARIANT* headers,
+                                      VARIANT_BOOL* cancel));
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, OnNavigateComplete2,
+                             void (IDispatch* dispatch, VARIANT* url));
+
+  MOCK_METHOD5_WITH_CALLTYPE(__stdcall, OnNewWindow3,
+                             void (IDispatch** dispatch,
+                                   VARIANT_BOOL* Cancel,
+                                   DWORD flags,
+                                   BSTR url_context,
+                                   BSTR url));
+
+  MOCK_METHOD5_WITH_CALLTYPE(__stdcall, OnNavigateError,
+                             void (IDispatch* dispatch,
+                                   VARIANT* url,
+                                   VARIANT* frame_name,
+                                   VARIANT* status_code,
+                                   VARIANT* cancel));
+};
+
+using testing::_;
+
+const wchar_t kChromeFrameFileUrl[] = L"cf:file:///C:/";
+
+TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
+  TimedMsgLoop loop;
+  // If a navigation fails then IE issues a navigation to an interstitial
+  // page. Catch this to track navigation errors as the NavigateError
+  // notification does not seem to fire reliably.
+  CComObjectStackEx<MockWebBrowserEventSink> mock;
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kChromeFrameFileUrl)),
+                                _, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StartsWith(L"res:")),
+                                _, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::DoAll(
+          QUIT_LOOP(loop),
+          testing::Return(S_OK)));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameFileUrl, &mock);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  mock.Uninitialize();
+  chrome_frame_test::CloseAllIEWindows();
+}
+
+const wchar_t kChromeFrameFullTabWindowOpenTestUrl[] =
+    L"http://localhost:1337/files/chrome_frame_window_open.html";
+
+const wchar_t kChromeFrameFullTabWindowOpenPopupUrl[] =
+    L"http://localhost:1337/files/chrome_frame_window_open_popup.html";
+
+// This test checks if window.open calls issued by a full tab mode ChromeFrame
+// instance make it back to IE and then transitions back to Chrome as the
+// window.open target page is supposed to render within Chrome.
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowOpen) {
   TimedMsgLoop loop;
 
-  hr = web_browser2->Navigate2(url.AsInput(), &empty, &empty, &empty, &empty);
-  EXPECT_TRUE(hr == S_OK);
+  CComObjectStackEx<MockWebBrowserEventSink> mock;
 
-  loop.RunFor(10);
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(
+                  _, testing::Field(&VARIANT::bstrVal,
+                  testing::StrCaseEq(kChromeFrameFullTabWindowOpenTestUrl)),
+                  _, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::Return(S_OK));
 
-  EXPECT_TRUE(web_browser_sink->navigation_failed());
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(
+                  _, testing::Field(&VARIANT::bstrVal,
+                  testing::StrCaseEq(kChromeFrameFullTabWindowOpenPopupUrl)),
+                  _, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::DoAll(
+          QUIT_LOOP_SOON(loop, 2),
+          testing::Return(S_OK)));
 
-  hr = web_browser_sink->DispEventUnadvise(web_browser2);
-  EXPECT_TRUE(hr == S_OK);
+  HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameFullTabWindowOpenTestUrl,
+                                        &mock);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
 
-  web_browser2.Release();
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  ASSERT_TRUE(CheckResultFile(L"ChromeFrameWindowOpenPopup", "OK"));
+
+  mock.Uninitialize();
   chrome_frame_test::CloseAllIEWindows();
+}
 
-  if (should_uninit) {
-    CoUninitialize();
-  }
+const wchar_t kChromeFrameAboutBlankUrl[] =
+    L"cf:about:blank";
+
+const wchar_t kChromeFrameAboutVersion[] =
+    L"cf:about:version";
+
+// This test launches chrome frame in full tab mode in IE by having IE navigate
+// to cf:about:blank. It then looks for the chrome renderer window and posts
+// the WM_RBUTTONDOWN/WM_RBUTTONUP messages to it, which bring up the context
+// menu. This is followed by keyboard messages sent via SendInput to select
+// the About chrome frame menu option, which would then bring up a new window
+// with the chrome revision. The test finally checks for success by comparing
+// the URL of the window being opened with cf:about:version, which indicates
+// that the operation succeeded.
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AboutChromeFrame) {
+  TimedMsgLoop loop;
+
+  CComObjectStackEx<MockWebBrowserEventSink> mock;
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kChromeFrameAboutBlankUrl)),
+                                _, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::Return(S_OK));
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .Times(1)
+      .WillOnce(testing::InvokeWithoutArgs(
+          &chrome_frame_test::ShowChromeFrameContextMenu));
+
+  EXPECT_CALL(mock,
+              OnNewWindow3(_, _, _, _,
+                           testing::StrCaseEq(kChromeFrameAboutVersion)))
+      .Times(1)
+      .WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameAboutBlankUrl, &mock);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  mock.Uninitialize();
+  chrome_frame_test::CloseAllIEWindows();
 }
 

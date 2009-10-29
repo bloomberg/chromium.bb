@@ -1,0 +1,33 @@
+<!-- saved from url=(0014)about:internet -->
+<!-- Note that for the above Mark of the Web to work, the comment must
+     be followed by a CR/LF ending, so please do not change the line endings. -->
+<html>
+<!-- This page is meant to load inside a host browser like IE/FF -->
+<head>
+<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+<script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+<script type="text/javascript">
+
+function onLoad() {
+  if (!TestIfRunningInChrome()) {
+    onFailure("ChromeFrameWindowOpen", "Window Open failed :-(",
+                "User agent = " + navigator.userAgent.toLowerCase());
+  } else {
+    setTimeout(OpenPopup, 100);
+  }
+}
+
+function OpenPopup() {
+  window.open("chrome_frame_window_open_popup.html", "_self");
+}
+</script>
+</head>
+
+<body onload="onLoad();">
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+ChromeFrame full tab mode window open test running....
+</div>
+<p>
+
+</body>
+</html>

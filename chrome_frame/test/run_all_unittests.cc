@@ -18,6 +18,10 @@
 // To enable ATL-based code to run in this module
 class ChromeFrameUnittestsModule
     : public CAtlExeModuleT<ChromeFrameUnittestsModule> {
+ public:
+  static HRESULT InitializeCom() {
+    return CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  }
 };
 
 ChromeFrameUnittestsModule _AtlModule;

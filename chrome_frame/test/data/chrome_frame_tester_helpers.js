@@ -13,8 +13,8 @@ function getXHRObject(){
   var XMLHTTP_PROGIDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP',
                          'Msxml2.XMLHTTP.4.0'];
   var http = null;
-  try { 
-    http = new XMLHttpRequest(); 
+  try {
+    http = new XMLHttpRequest();
   } catch(e) {
   }
   
@@ -26,10 +26,10 @@ function getXHRObject(){
     try {
       http = new ActiveXObject(progid);
     } catch(e) {
-    }
-  
-    if (http)
-      break;
+  }
+
+  if (http)
+    break;
   }
   return http;
 }
@@ -69,7 +69,7 @@ function writeToServer(name, result) {
     appendStatus("XHR send failed. Error: " + e.description);
   }
 }
-  
+
 function postResult(name, result) {
   writeToServer(name, result);
   // NOTE:
@@ -77,7 +77,7 @@ function postResult(name, result) {
   shutdownServer();
 }
 
-// Finish running a test by setting the status 
+// Finish running a test by setting the status
 // and the cookie.
 function onFinished(name, id, result) {
   appendStatus(result);
@@ -85,7 +85,7 @@ function onFinished(name, id, result) {
   // set a cookie to report the results...
   var cookie = name + "." + id + ".status=" + result + "; path=/";
   document.cookie = cookie;
-  
+
   // ...and POST the status back to the server
   postResult(name, result);
 }
@@ -140,3 +140,11 @@ function reloadUsingCFProtocol() {
   window.location = redirect_location;
 }
 
+function TestIfRunningInChrome() {
+  var is_chrome = /chrome/.test(navigator.userAgent.toLowerCase());
+  if (!is_chrome) {
+    onFailure("ChromeFrameWindowOpen", "Window Open failed :-(",
+                "User agent = " + navigator.userAgent.toLowerCase());
+  }
+  return is_chrome;
+}

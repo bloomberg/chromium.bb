@@ -1,0 +1,22 @@
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame window open popup</title>
+<script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+<script type="text/javascript">
+function onLoad() {
+  if (!TestIfRunningInChrome()) {
+    onFailure("ChromeFrameWindowOpenPopup",
+              "Window Open failed to enter Chrome:-(",
+                    "User agent = " + navigator.userAgent.toLowerCase());
+  } else {
+    onSuccess("ChromeFrameWindowOpenPopup", 1);
+  }
+}
+
+</script>
+</head>
+<body onload="onLoad();">
+ChromeFrame full tab mode window open popup test
+</body>
+</html>

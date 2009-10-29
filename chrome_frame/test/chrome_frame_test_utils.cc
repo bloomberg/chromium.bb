@@ -8,12 +8,14 @@
 #include <atlwin.h>
 #include <iepmapi.h>
 
+#include "base/message_loop.h"
 #include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_handle.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_frame_test {
 
@@ -410,6 +412,67 @@ int CloseAllIEWindows() {
   }
 
   return ret;
+}
+
+void ShowChromeFrameContextMenuTask() {
+  static const int kChromeFrameContextMenuTimeout = 500;
+  HWND renderer_window = GetChromeRendererWindow();
+  EXPECT_TRUE(IsWindow(renderer_window));
+
+  // Bring up the context menu in the Chrome renderer window.
+  PostMessage(renderer_window, WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(50, 50));
+  PostMessage(renderer_window, WM_RBUTTONUP, MK_RBUTTON, MAKELPARAM(50, 50));
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableFunction(SelectAboutChromeFrame),
+      kChromeFrameContextMenuTimeout);
+}
+
+void ShowChromeFrameContextMenu() {
+  static const int kContextMenuDelay = 5000;
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableFunction(ShowChromeFrameContextMenuTask),
+      kContextMenuDelay);
+}
+
+void SelectAboutChromeFrame() {
+  // Send a key up message to enable the About chrome frame option to be
+  // selected followed by a return to select it.
+  chrome_frame_test::SendVirtualKey(VK_UP);
+  chrome_frame_test::SendVirtualKey(VK_RETURN);
+}
+
+BOOL CALLBACK FindChromeRendererWindowProc(
+    HWND window, LPARAM lParam) {
+  HWND* target_window = reinterpret_cast<HWND*>(lParam);
+  wchar_t class_name[MAX_PATH] = {0};
+
+  GetClassName(window, class_name, arraysize(class_name));
+  if (!_wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND")) {
+    *target_window = window;
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL CALLBACK EnumHostBrowserWindowProc(
+    HWND window, LPARAM lParam) {
+  EnumChildWindows(window, FindChromeRendererWindowProc, lParam);
+  HWND* target_window = reinterpret_cast<HWND*>(lParam);
+  if (IsWindow(*target_window))
+    return FALSE;
+  return TRUE;
+}
+
+HWND GetChromeRendererWindow() {
+  HWND chrome_window = NULL;
+  EnumWindows(EnumHostBrowserWindowProc,
+              reinterpret_cast<LPARAM>(&chrome_window));
+  return chrome_window;
 }
 
 }  // namespace chrome_frame_test

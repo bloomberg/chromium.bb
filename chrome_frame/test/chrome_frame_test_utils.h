@@ -56,6 +56,18 @@ extern const wchar_t kOperaImageName[];
 extern const wchar_t kSafariImageName[];
 extern const wchar_t kChromeImageName[];
 
+// Displays the chrome frame context menu by posting mouse move messages to
+// Chrome
+void ShowChromeFrameContextMenu();
+
+// Sends keyboard messages to the chrome frame context menu to select the About
+// Chrome frame option.
+void SelectAboutChromeFrame();
+
+// Returns a handle to the chrome frame render widget child window.
+// Returns NULL on failure.
+HWND GetChromeRendererWindow();
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_CHROMETAB_UNITTESTS_CF_TEST_UTILS_H_
