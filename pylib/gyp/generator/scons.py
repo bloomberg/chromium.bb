@@ -27,6 +27,7 @@ generator_default_variables = {
     'SHARED_INTERMEDIATE_DIR': '${SHARED_INTERMEDIATE_DIR}',
     'OS': 'linux',
     'PRODUCT_DIR': '$TOP_BUILDDIR',
+    'SHARED_LIB_DIR': '$LIB_DIR',
     'LIB_DIR': '$LIB_DIR',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
     'RULE_INPUT_EXT': '${SOURCE.suffix}',
