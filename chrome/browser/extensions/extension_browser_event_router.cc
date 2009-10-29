@@ -111,6 +111,23 @@ void ExtensionBrowserEventRouter::Init() {
 
   BrowserList::AddObserver(this);
 
+  // Init() can happen after the browser is running, so catch up with any
+  // windows that already exist.
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end(); ++iter) {
+    RegisterForBrowserNotifications(*iter);
+
+    // Also catch up our internal bookkeeping of tab entries.
+    Browser* browser = *iter;
+    if (browser->tabstrip_model()) {
+      for (int i = 0; i < browser->tabstrip_model()->count(); ++i) {
+        TabContents* contents = browser->tabstrip_model()->GetTabContentsAt(i);
+        int tab_id = ExtensionTabUtil::GetTabId(contents);
+        tab_entries_[tab_id] = TabEntry(contents);
+      }
+    }
+  }
+
   initialized_ = true;
 }
 
@@ -118,12 +135,38 @@ ExtensionBrowserEventRouter::ExtensionBrowserEventRouter()
     : initialized_(false) { }
 
 void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
+  RegisterForBrowserNotifications(browser);
+}
+
+void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
+    const Browser* browser) {
   // Start listening to TabStripModel events for this browser.
   browser->tabstrip_model()->AddObserver(this);
 
-  // The window isn't ready at this point, so we defer until it is.
+  // If this is a new window, it isn't ready at this point, so we register to be
+  // notified when it is. If this is an existing window, this is a no-op that we
+  // just do to reduce code complexity.
   registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
       Source<const Browser>(browser));
+
+  if (browser->tabstrip_model()) {
+    for (int i = 0; i < browser->tabstrip_model()->count(); ++i)
+      RegisterForTabNotifications(
+          browser->tabstrip_model()->GetTabContentsAt(i));
+  }
+}
+
+void ExtensionBrowserEventRouter::RegisterForTabNotifications(
+    TabContents* contents) {
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 Source<NavigationController>(&contents->controller()));
+
+  // Observing TAB_CONTENTS_DESTROYED is necessary because it's
+  // possible for tabs to be created, detached and then destroyed without
+  // ever having been re-attached and closed. This happens in the case of
+  // a devtools TabContents that is opened in window, docked, then closed.
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 Source<TabContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
@@ -168,15 +211,7 @@ void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
 
   DispatchEvent(contents->profile(), events::kOnTabCreated, json_args);
 
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                 Source<NavigationController>(&contents->controller()));
-
-  // Observing TAB_CONTENTS_DESTROYED is necessary because it's
-  // possible for tabs to be created, detached and then destroyed without
-  // ever having been re-attached and closed. This happens in the case of
-  // a devtools TabContents that is opened in window, docked, then closed.
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(contents));
+  RegisterForTabNotifications(contents);
 }
 
 void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,

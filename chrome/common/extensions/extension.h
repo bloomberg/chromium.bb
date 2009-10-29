@@ -71,6 +71,9 @@ class Extension {
   static const int kBrowserActionIconMaxSize;
 
   // Each permission is a module that the extension is permitted to use.
+  static const char* kTabPermission;
+  static const char* kBookmarkPermission;
+
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
 
@@ -209,6 +212,12 @@ class Extension {
   // Returns true if the extension has permission to access the host for the
   // specified URL.
   bool CanAccessHost(const GURL& url) const;
+
+  // Returns true if the extension has the specified API permission.
+  bool HasApiPermission(const std::string& permission) const {
+    return std::find(api_permissions_.begin(), api_permissions_.end(),
+                     permission) != api_permissions_.end();
+  }
 
   // Returns the set of hosts that the extension effectively has access to. This
   // is used in the permissions UI and is a combination of the hosts accessible

@@ -77,6 +77,14 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(TabContents* contents, bool did_navigate);
 
+  // Register ourselves to receive the various notifications we are interested
+  // in for a browser.
+  void RegisterForBrowserNotifications(const Browser* browser);
+
+  // Register ourselves to receive the various notifications we are interested
+  // in for a tab.
+  void RegisterForTabNotifications(TabContents* contents);
+
   ExtensionBrowserEventRouter();
   friend struct DefaultSingletonTraits<ExtensionBrowserEventRouter>;
 

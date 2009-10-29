@@ -127,9 +127,6 @@ void ExtensionsService::Init() {
   // the first extension, because its members listen for loaded notifications.
   g_browser_process->resource_dispatcher_host();
 
-  // Start up the extension event routers.
-  ExtensionBrowserEventRouter::GetInstance()->Init();
-
   LoadAllExtensions();
 
   // TODO(erikkay) this should probably be deferred to a future point
@@ -507,6 +504,12 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
     switch (extension_prefs_->GetExtensionState(extension->id())) {
       case Extension::ENABLED:
         extensions_.push_back(scoped_extension.release());
+
+        // We delay starting up the browser event router until at least one
+        // extension that needs it is loaded.
+        if (extension->HasApiPermission(Extension::kTabPermission)) {
+          ExtensionBrowserEventRouter::GetInstance()->Init();
+        }
 
         if (extension->location() != Extension::LOAD)
           extension_prefs_->MigrateToPrefs(extension);

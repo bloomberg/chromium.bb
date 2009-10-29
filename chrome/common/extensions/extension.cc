@@ -99,9 +99,12 @@ const int Extension::kIconSizes[] = {
 const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 
+const char* Extension::kTabPermission = "tabs";
+const char* Extension::kBookmarkPermission = "bookmarks";
+
 const char* Extension::kPermissionNames[] = {
-  "tabs",
-  "bookmarks",
+  Extension::kTabPermission,
+  Extension::kBookmarkPermission,
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
