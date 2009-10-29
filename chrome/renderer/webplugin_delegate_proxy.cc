@@ -273,6 +273,16 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
       transparent_ = true;
     }
   }
+#if defined(OS_MACOSX)
+  // Until we have a way to support accelerated (3D) drawing on Macs, ask
+  // Flash to use windowless mode so that it use CoreGraphics instead of opening
+  // OpenGL contexts overlaying the browser window (which will fail or crash
+  // because Mac OS X does not allow that across processes).
+  if (!transparent_ && mime_type_ == "application/x-shockwave-flash" ) {
+    params.arg_names.push_back("wmode");
+    params.arg_values.push_back("opaque");
+  }
+#endif
   params.load_manually = load_manually;
 
   plugin_ = plugin;
