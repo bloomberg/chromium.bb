@@ -6,6 +6,7 @@
 
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/string_util.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -19,7 +20,9 @@ void WriteURLToClipboard(const GURL& url,
 
   // Unescaping path and query is not a good idea because other applications
   // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
-  string16 text = WideToUTF16(net::FormatUrl(url, languages, false,
+  string16 text = url.SchemeIs(chrome::kMailToScheme) ?
+                      ASCIIToUTF16(url.path()) :
+                      WideToUTF16(net::FormatUrl(url, languages, false,
                                              UnescapeRule::NONE, NULL, NULL));
 
   ScopedClipboardWriter scw(clipboard);
