@@ -165,8 +165,8 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
     tools_agent_delegate_stub_->FrameNavigate(
         webkit_glue::WebURLToKURL(url).string());
     SetApuAgentEnabledInUtilityContext(utility_context_, apu_agent_enabled_);
+    UnhideResourcesPanelIfNecessary();
   }
-  UnhideResourcesPanelIfNecessary();
 }
 
 void WebDevToolsAgentImpl::WindowObjectCleared(WebFrameImpl* webframe) {
