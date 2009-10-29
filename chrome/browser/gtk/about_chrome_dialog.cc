@@ -11,7 +11,9 @@
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/gtk_util.h"
@@ -42,8 +44,6 @@ const char* kBeginLinkOss = "BEGIN_LINK_OSS";
 const char* kEndLinkOss = "END_LINK_OSS";
 const char* kBeginLink = "BEGIN_LINK";
 const char* kEndLink = "END_LINK";
-
-const char* kSmaller = "<span size=\"smaller\">%s</span>";
 
 void OnDialogResponse(GtkDialog* dialog, int response_id) {
   // We're done.
@@ -78,8 +78,23 @@ const char* GetChromiumUrl() {
   return url.c_str();
 }
 
-std::string Smaller(const std::string& text) {
-  return std::string("<span size=\"smaller\">") + text + std::string("</span>");
+gboolean OnEventBoxExpose(GtkWidget* event_box,
+                          GdkEventExpose* expose,
+                          gboolean user_data) {
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event_box->window));
+  gdk_cairo_rectangle(cr, &expose->area);
+  cairo_clip(cr);
+  GtkThemeProvider* theme_provider =
+      GtkThemeProvider::GetFrom(BrowserList::GetLastActive()->profile());
+  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+      IDR_ABOUT_BACKGROUND_COLOR, event_box);
+
+  background->SetSource(cr, 0, 0);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  gdk_cairo_rectangle(cr, &expose->area);
+  cairo_fill(cr);
+  cairo_destroy(cr);
+  return FALSE;
 }
 
 }  // namespace
@@ -101,7 +116,6 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
       l10n_util::GetStringUTF8(IDS_ABOUT_CHROME_TITLE).c_str(),
       parent,
       GTK_DIALOG_MODAL,
-      GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
       NULL);
   // Pick up the style set in gtk_util.cc:InitRCStyles().
   // The layout of this dialog is special because the logo should be flush
@@ -109,11 +123,15 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_widget_set_name(dialog, "about-dialog");
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 
+  GtkWidget* close_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
+      GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE);
+
   GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
 
   // Use an event box to get the background painting correctly
   GtkWidget* ebox = gtk_event_box_new();
-  gtk_widget_modify_bg(ebox, GTK_STATE_NORMAL, &gfx::kGdkWhite);
+  gtk_widget_set_app_paintable(ebox, TRUE);
+  g_signal_connect(ebox, "expose-event", G_CALLBACK(OnEventBoxExpose), NULL);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
 
@@ -126,7 +144,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   GdkColor black = gfx::kGdkBlack;
   GtkWidget* product_label = MakeMarkupLabel(
-      "<span font_desc=\"18\" weight=\"bold\" style=\"normal\">%s</span>",
+      "<span font_desc=\"18\" style=\"normal\">%s</span>",
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
   gtk_widget_modify_fg(product_label, GTK_STATE_NORMAL, &black);
   gtk_box_pack_start(GTK_BOX(text_vbox), product_label, FALSE, FALSE, 0);
@@ -151,13 +169,12 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   // We use a separate box for the licensing etc. text.  See the comment near
   // the top of this function about using a special layout for this dialog.
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox),
-                                 gtk_util::kContentAreaBorder);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
 
-  GtkWidget* copyright_label = MakeMarkupLabel(
-      kSmaller, l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_COPYRIGHT));
-  gtk_box_pack_start(GTK_BOX(vbox), copyright_label, TRUE, TRUE, 5);
+  GtkWidget* copyright_label = gtk_label_new(
+      l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_COPYRIGHT).c_str());
+  gtk_misc_set_alignment(GTK_MISC(copyright_label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox), copyright_label, FALSE, FALSE, 5);
 
   std::string license = l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_LICENSE);
   bool chromium_url_appears_first =
@@ -171,26 +188,25 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   size_t link2_end = license.find(kEndLink, link2);
   DCHECK(link1_end != std::string::npos);
 
-  GtkWidget* license_chunk1 = MakeMarkupLabel(
-      kSmaller, license.substr(0, link1));
-  GtkWidget* license_chunk2 = MakeMarkupLabel(
-      kSmaller,
+  GtkWidget* license_chunk1 = gtk_label_new(license.substr(0, link1).c_str());
+  gtk_misc_set_alignment(GTK_MISC(license_chunk1), 0.0, 0.5);
+  GtkWidget* license_chunk2 = gtk_label_new(
       license.substr(link1_end + strlen(kEndLinkOss),
-                     link2 - link1_end - strlen(kEndLinkOss)));
-  GtkWidget* license_chunk3 = MakeMarkupLabel(
-      kSmaller, license.substr(link2_end + strlen(kEndLinkOss)));
+                     link2 - link1_end - strlen(kEndLinkOss)).c_str());
+  gtk_misc_set_alignment(GTK_MISC(license_chunk2), 0.0, 0.5);
+  GtkWidget* license_chunk3 = gtk_label_new(
+      license.substr(link2_end + strlen(kEndLinkOss)).c_str());
+  gtk_misc_set_alignment(GTK_MISC(license_chunk3), 0.0, 0.5);
 
-  std::string first_link_text = Smaller(
+  std::string first_link_text =
       license.substr(link1 + strlen(kBeginLinkOss),
-                     link1_end - link1 - strlen(kBeginLinkOss)));
-  std::string second_link_text = Smaller(
+                     link1_end - link1 - strlen(kBeginLinkOss));
+  std::string second_link_text =
       license.substr(link2 + strlen(kBeginLinkOss),
-                     link2_end - link2 - strlen(kBeginLinkOss)));
+                     link2_end - link2 - strlen(kBeginLinkOss));
 
-  GtkWidget* first_link =
-      gtk_chrome_link_button_new_with_markup(first_link_text.c_str());
-  GtkWidget* second_link =
-      gtk_chrome_link_button_new_with_markup(second_link_text.c_str());
+  GtkWidget* first_link = gtk_chrome_link_button_new(first_link_text.c_str());
+  GtkWidget* second_link = gtk_chrome_link_button_new(second_link_text.c_str());
   if (!chromium_url_appears_first) {
     GtkWidget* swap = second_link;
     second_link = first_link;
@@ -224,23 +240,26 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   GtkWidget* license_vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox2, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), license_vbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), license_vbox, FALSE, FALSE, 0);
 
 #if defined(GOOGLE_CHROME_BUILD)
+  // Spacing line.
+  gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(""), FALSE, FALSE, 0);
+
   std::vector<size_t> url_offsets;
   std::wstring text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
                                             std::wstring(),
                                             std::wstring(),
                                             &url_offsets);
 
-  std::string tos_link_text = Smaller(
-      l10n_util::GetStringUTF8(IDS_TERMS_OF_SERVICE));
-  GtkWidget* tos_chunk1 = MakeMarkupLabel(
-      kSmaller, WideToUTF8(text.substr(0, url_offsets[0])).c_str());
-  GtkWidget* tos_link =
-      gtk_chrome_link_button_new_with_markup(tos_link_text.c_str());
-  GtkWidget* tos_chunk2 = MakeMarkupLabel(
-      kSmaller, WideToUTF8(text.substr(url_offsets[0])).c_str());
+  GtkWidget* tos_chunk1 = gtk_label_new(
+      WideToUTF8(text.substr(0, url_offsets[0])).c_str());
+  gtk_misc_set_alignment(GTK_MISC(tos_chunk1), 0.0, 0.5);
+  GtkWidget* tos_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_TERMS_OF_SERVICE).c_str());
+  GtkWidget* tos_chunk2 = gtk_label_new(
+      WideToUTF8(text.substr(url_offsets[0])).c_str());
+  gtk_misc_set_alignment(GTK_MISC(tos_chunk2), 0.0, 0.5);
 
   GtkWidget* tos_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk1, FALSE, FALSE, 0);
@@ -252,9 +271,15 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
 #endif
 
-  gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+      gtk_util::kContentAreaBorder, 0,
+      gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+  gtk_container_add(GTK_CONTAINER(alignment), vbox);
+  gtk_box_pack_start(GTK_BOX(content_area), alignment, FALSE, FALSE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), NULL);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
   gtk_widget_show_all(dialog);
+  gtk_widget_grab_focus(close_button);
 }
