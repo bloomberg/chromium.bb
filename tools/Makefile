@@ -1,4 +1,4 @@
-# Copyright 2008, Google Inc.
+ # Copyright 2008, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -271,19 +271,37 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
-	cd BUILD/build-newlib-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) \
-		CFLAGS="-m32 -march=i486 -msse2 -mfpmath=sse" \
-	    ../newlib-$(NEWLIB_VERSION)/configure \
+	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  cd BUILD/build-newlib-$(CROSSARCH) && \
+	    PATH=$(BUILDPATH) \
+		  CFLAGS="-march=x86-64" \
+	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
-	      --prefix=$(SDKROOT) \
-	      --target=$(CROSSARCH)
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
-	        CXXFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
-	    all
+	        --prefix=$(SDKROOT) \
+	        --target=$(CROSSARCH) && \
+	  cd ../.. ; \
+	  PATH=$(BUILDPATH) \
+	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
+		    CFLAGS_FOR_TARGET="-march=x86-64 -O2" \
+	          CXXFLAGS_FOR_TARGET="-march=x86-64 -O2" \
+	      all ; \
+	else \
+	  cd BUILD/build-newlib-$(CROSSARCH) && \
+	    PATH=$(BUILDPATH) \
+		  CFLAGS="-m32 -march=i486 -msse2 -mfpmath=sse" \
+	      ../newlib-$(NEWLIB_VERSION)/configure \
+			  --enable-newlib-io-long-long \
+			  --enable-newlib-io-c99-formats \
+	        --prefix=$(SDKROOT) \
+	        --target=$(CROSSARCH) ; \
+	  cd ../.. ; \
+	  PATH=$(BUILDPATH) \
+	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
+		    CFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
+	          CXXFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
+	      all ; \
+	fi
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
 	    install_root=$(SDKROOT)/$(CROSSARCH) install
