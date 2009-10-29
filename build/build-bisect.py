@@ -145,7 +145,7 @@ def AskIsGoodBuild(rev):
       print("Just answer the question...")
 
 def main():
-  usage = ('%prog [options]\n'
+  usage = ('%prog [options] [-- chromium-options]\n'
            'Perform binary search on the snapshot builds.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
@@ -206,6 +206,9 @@ def main():
 
   # Get a list of revisions to bisect across.
   revlist = GetRevList(good_rev, bad_rev)
+  if len(revlist) < 2:  # Don't have enough builds to bisect
+    print "We don't have enough builds to bisect. revlist: %s" % revlist
+    sys.exit(1)
 
   # If we don't have a |good_rev|, set it to be the first revision possible.
   if good_rev == 0:
