@@ -304,5 +304,10 @@ fi
 
 chmod -R "${CHMOD_MODE}" "${DEST}" >& /dev/null
 
+# On the Mac, or at least on HFS+, symbolic link permissions are significant,
+# but chmod -R and -h can't be used together on the Mac.  Do another pass to
+# fix the permissions on any symbolic links.
+find "${DEST}" -type l -exec chmod -h "${CHMOD_MODE}" {} \; >& /dev/null
+
 # Great success!
 exit 0
