@@ -35,6 +35,7 @@
 
 #include "WebCommon.h"
 #include "WebLocalizedString.h"
+#include "WebVector.h"
 #include "webkit/api/src/TemporaryGlue.h"
 
 #ifdef WIN32
@@ -56,6 +57,7 @@ namespace WebKit {
     class WebThemeEngine;
     class WebURL;
     class WebURLLoader;
+    struct WebCookie;
     struct WebPluginInfo;
     template <typename T> class WebVector;
 
@@ -169,6 +171,8 @@ namespace WebKit {
         virtual void setCookies(
             const WebURL& url, const WebURL& policyURL, const WebString& cookies) = 0;
         virtual WebString cookies(const WebURL& url, const WebURL& policyURL) = 0;
+        virtual bool rawCookies(const WebURL& url, const WebURL& policyURL, WebVector<WebCookie>*) = 0;
+        virtual void deleteCookie(const WebURL& url, const WebString& cookieName) = 0;
 
         // A suggestion to prefetch IP information for the given hostname.
         virtual void prefetchHostName(const WebString&) = 0;

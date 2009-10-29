@@ -47,6 +47,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/worker_messages.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
 #include "net/base/load_flags.h"
@@ -295,6 +296,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookies, OnGetCookies)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetRawCookies, OnGetRawCookies)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -500,6 +503,53 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
   URLRequestContext* context = GetRequestContextForURL(url);
   if (context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
     *cookies = context->cookie_store()->GetCookies(url);
+}
+
+void ResourceMessageFilter::OnGetRawCookies(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    std::vector<webkit_glue::WebCookie>* raw_cookies) {
+  raw_cookies->clear();
+
+  URLRequestContext* context = GetRequestContextForURL(url);
+  net::CookieMonster* cookie_monster = context->cookie_store()->
+      GetCookieMonster();
+  if (!cookie_monster) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
+    return;
+
+  typedef std::vector<net::CookieMonster::CanonicalCookie> CanonicalCookieList;
+  CanonicalCookieList cookies;
+  cookie_monster->GetRawCookies(url, &cookies);
+  for (CanonicalCookieList::iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+     raw_cookies->push_back(
+         webkit_glue::WebCookie(
+             it->Name(),
+             it->Value(),
+             url.host(),
+             it->Path(),
+             it->ExpiryDate().ToDoubleT() * 1000,
+             it->IsHttpOnly(),
+             it->IsSecure(),
+             !it->IsPersistent()));
+  }
+}
+
+void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
+                                           const std::string& cookie_name)
+{
+  URLRequestContext* context = GetRequestContextForURL(url);
+  net::CookieMonster* cookie_monster = context->cookie_store()->
+      GetCookieMonster();
+  if (!cookie_monster)
+    return;
+
+  cookie_monster->DeleteCookie(url, cookie_name);
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.

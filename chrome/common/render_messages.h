@@ -43,6 +43,7 @@
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
+#include "webkit/glue/webcookie.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webplugin.h"
@@ -2121,6 +2122,36 @@ struct ParamTraits<DOMStorageType> {
         break;
     }
     LogParam(control, l);
+  }
+};
+
+// Traits for WebCookie
+template <>
+struct ParamTraits<webkit_glue::WebCookie> {
+  typedef webkit_glue::WebCookie param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.name);
+    WriteParam(m, p.value);
+    WriteParam(m, p.domain);
+    WriteParam(m, p.path);
+    WriteParam(m, p.expires);
+    WriteParam(m, p.http_only);
+    WriteParam(m, p.secure);
+    WriteParam(m, p.session);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->value) &&
+      ReadParam(m, iter, &p->domain) &&
+      ReadParam(m, iter, &p->path) &&
+      ReadParam(m, iter, &p->expires) &&
+      ReadParam(m, iter, &p->http_only) &&
+      ReadParam(m, iter, &p->secure) &&
+      ReadParam(m, iter, &p->session);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<WebCookie>");
   }
 };
 

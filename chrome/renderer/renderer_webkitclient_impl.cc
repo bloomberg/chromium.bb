@@ -24,8 +24,10 @@
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebCookie.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/api/public/WebVector.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -40,11 +42,13 @@
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebCookie;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebVector;
 
 //------------------------------------------------------------------------------
 
@@ -118,6 +122,38 @@ WebString RendererWebKitClientImpl::cookies(
   RenderThread::current()->Send(
       new ViewHostMsg_GetCookies(url, first_party_for_cookies, &value_utf8));
   return WebString::fromUTF8(value_utf8);
+}
+
+bool RendererWebKitClientImpl::rawCookies(
+    const WebURL& url,
+    const WebURL& first_party_for_cookies,
+    WebVector<WebKit::WebCookie>* raw_cookies) {
+  std::vector<webkit_glue::WebCookie> cookies;
+  RenderThread::current()->Send(
+      new ViewHostMsg_GetRawCookies(url, first_party_for_cookies, &cookies));
+
+  WebVector<WebKit::WebCookie> result(cookies.size());
+  int i = 0;
+  for (std::vector<webkit_glue::WebCookie>::iterator it = cookies.begin();
+       it != cookies.end(); ++it)
+     result[i++] = WebKit::WebCookie(WebString::fromUTF8(it->name),
+                                     WebString::fromUTF8(it->value),
+                                     WebString::fromUTF8(it->domain),
+                                     WebString::fromUTF8(it->path),
+                                     it->expires,
+                                     it->http_only,
+                                     it->secure,
+                                     it->session);
+  raw_cookies->assign(result);
+  return true;
+}
+
+void RendererWebKitClientImpl::deleteCookie(const WebURL& url,
+                                            const WebString& cookie_name) {
+  std::string cookie_name_utf8;
+  UTF16ToUTF8(cookie_name.data(), cookie_name.length(), &cookie_name_utf8);
+  RenderThread::current()->Send(
+      new ViewHostMsg_DeleteCookie(url, cookie_name_utf8));
 }
 
 void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {

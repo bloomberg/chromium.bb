@@ -769,6 +769,38 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   return cookie_line;
 }
 
+void CookieMonster::GetRawCookies(const GURL& url,
+                                  std::vector<CanonicalCookie>* raw_cookies) {
+  raw_cookies->clear();
+  if (!HasCookieableScheme(url))
+    return;
+
+  CookieOptions options;
+  options.set_include_httponly();
+  // Get the cookies for this host and its domain(s).
+  std::vector<CanonicalCookie*> cookies;
+  FindCookiesForHostAndDomain(url, options, &cookies);
+  std::sort(cookies.begin(), cookies.end(), CookieSorter);
+
+  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it)
+    raw_cookies->push_back(*(*it));
+}
+
+void CookieMonster::DeleteCookie(const GURL& url,
+                                 const std::string& cookie_name) {
+  if (!HasCookieableScheme(url))
+    return;
+
+  for (CookieMapItPair its = cookies_.equal_range(url.host());
+       its.first != its.second; ++its.first) {
+    if (its.first->second->Name() == cookie_name) {
+      InternalDeleteCookie(its.first, true);
+      return;
+    }
+  }
+}
+
 CookieMonster::CookieList CookieMonster::GetAllCookies() {
   AutoLock autolock(lock_);
   InitIfNecessary();

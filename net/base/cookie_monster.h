@@ -95,6 +95,9 @@ class CookieMonster : public CookieStore {
   virtual std::string GetCookies(const GURL& url);
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
+  virtual void GetRawCookies(const GURL& url,
+                             std::vector<CanonicalCookie>* raw_cookies);
+  virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
   virtual CookieMonster* GetCookieMonster() {
     return this;

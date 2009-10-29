@@ -17,7 +17,9 @@
 // information.
 class ChildProcessSecurityPolicy::SecurityState {
  public:
-  SecurityState() : enabled_bindings_(0) { }
+  SecurityState()
+    : enabled_bindings_(0),
+      can_read_raw_cookies_(false) { }
   ~SecurityState() {
     scheme_policy_.clear();
   }
@@ -39,6 +41,14 @@ class ChildProcessSecurityPolicy::SecurityState {
 
   void GrantBindings(int bindings) {
     enabled_bindings_ |= bindings;
+  }
+
+  void GrantReadRawCookies() {
+    can_read_raw_cookies_ = true;
+  }
+
+  void RevokeReadRawCookies() {
+    can_read_raw_cookies_ = false;
   }
 
   // Determine whether permission has been granted to request url.
@@ -66,6 +76,10 @@ class ChildProcessSecurityPolicy::SecurityState {
     return BindingsPolicy::is_extension_enabled(enabled_bindings_);
   }
 
+  bool can_read_raw_cookies() const {
+    return can_read_raw_cookies_;
+  }
+
  private:
   typedef std::map<std::string, bool> SchemeMap;
   typedef std::set<FilePath> FileSet;
@@ -81,6 +95,8 @@ class ChildProcessSecurityPolicy::SecurityState {
   FileSet uploadable_files_;
 
   int enabled_bindings_;
+
+  bool can_read_raw_cookies_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
@@ -252,6 +268,26 @@ void ChildProcessSecurityPolicy::GrantExtensionBindings(int renderer_id) {
   state->second->GrantBindings(BindingsPolicy::EXTENSION);
 }
 
+void ChildProcessSecurityPolicy::GrantReadRawCookies(int renderer_id) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->GrantReadRawCookies();
+}
+
+void ChildProcessSecurityPolicy::RevokeReadRawCookies(int renderer_id) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->RevokeReadRawCookies();
+}
+
 bool ChildProcessSecurityPolicy::CanRequestURL(
     int renderer_id, const GURL& url) {
   if (!url.is_valid())
@@ -324,4 +360,14 @@ bool ChildProcessSecurityPolicy::HasExtensionBindings(int renderer_id) {
     return false;
 
   return state->second->has_extension_bindings();
+}
+
+bool ChildProcessSecurityPolicy::CanReadRawCookies(int renderer_id) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return false;
+
+  return state->second->can_read_raw_cookies();
 }

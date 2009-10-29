@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/profile.h"
@@ -42,9 +43,8 @@ DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
     RenderViewHost* inspected_rvh) {
   InspectedRvhToClientHostMap::iterator it =
       inspected_rvh_to_client_host_.find(inspected_rvh);
-  if (it != inspected_rvh_to_client_host_.end()) {
+  if (it != inspected_rvh_to_client_host_.end())
     return it->second;
-  }
   return NULL;
 }
 
@@ -64,9 +64,8 @@ void DevToolsManager::ForwardToDevToolsAgent(
     RenderViewHost* client_rvh,
     const IPC::Message& message) {
   DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  if (client_host) {
+  if (client_host)
     ForwardToDevToolsAgent(client_host, message);
-  }
 }
 
 void DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
@@ -96,9 +95,9 @@ void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
 
 void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
   DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  if (!client_host) {
+  if (!client_host)
     return;
-  }
+
   DevToolsWindow* window = client_host->AsDevToolsWindow();
   DCHECK(window);
   window->Activate();
@@ -106,9 +105,8 @@ void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
 
 void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
   DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  if (client_host) {
+  if (client_host)
     CloseWindow(client_host);
-  }
 }
 
 void DevToolsManager::DockWindow(RenderViewHost* client_rvh) {
@@ -147,9 +145,8 @@ void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(host);
-  if (!inspected_rvh) {
+  if (!inspected_rvh)
     return;
-  }
   SendDetachToAgent(inspected_rvh);
 
   inspected_rvh_to_client_host_.erase(inspected_rvh);
@@ -160,26 +157,34 @@ RenderViewHost* DevToolsManager::GetInspectedRenderViewHost(
     DevToolsClientHost* client_host) {
   ClientHostToInspectedRvhMap::iterator it =
       client_host_to_inspected_rvh_.find(client_host);
-  if (it != client_host_to_inspected_rvh_.end()) {
+  if (it != client_host_to_inspected_rvh_.end())
     return it->second;
-  }
   return NULL;
 }
 
 void DevToolsManager::UnregisterDevToolsClientHostFor(
       RenderViewHost* inspected_rvh) {
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
-  if (!host) {
+  if (!host)
     return;
-  }
   inspected_rvh_to_client_host_.erase(inspected_rvh);
   client_host_to_inspected_rvh_.erase(host);
-  if (inspected_rvh_for_reopen_ == inspected_rvh) {
+  if (inspected_rvh_for_reopen_ == inspected_rvh)
     inspected_rvh_for_reopen_ = NULL;
-  }
 
   // Issue tab closing event post unbound.
   host->InspectedTabClosing();
+
+  int process_id = inspected_rvh->process()->id();
+  for (InspectedRvhToClientHostMap::iterator it =
+           inspected_rvh_to_client_host_.begin();
+       it != inspected_rvh_to_client_host_.end();
+       ++it) {
+    if (it->first->process()->id() == process_id)
+      return;
+  }
+  // We've disconnected from the last renderer -> revoke cookie permissions.
+  ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
 }
 
 void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
@@ -219,6 +224,8 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
 
 void DevToolsManager::SendAttachToAgent(RenderViewHost* inspected_rvh) {
   if (inspected_rvh) {
+    ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(
+        inspected_rvh->process()->id());
     IPC::Message* m = new DevToolsAgentMsg_Attach();
     m->set_routing_id(inspected_rvh->routing_id());
     inspected_rvh->Send(m);
@@ -249,21 +256,18 @@ DevToolsClientHost* DevToolsManager::FindOnwerDevToolsClientHost(
        it != inspected_rvh_to_client_host_.end();
        ++it) {
     DevToolsWindow* win = it->second->AsDevToolsWindow();
-    if (!win) {
+    if (!win)
       continue;
-    }
-    if (client_rvh == win->GetRenderViewHost()) {
+    if (client_rvh == win->GetRenderViewHost())
       return it->second;
-    }
   }
   return NULL;
 }
 
 void DevToolsManager::ReopenWindow(RenderViewHost* client_rvh, bool docked) {
   DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  if (!client_host) {
+  if (!client_host)
     return;
-  }
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
   DCHECK(inspected_rvh);
   inspected_rvh->process()->profile()->GetPrefs()->SetBoolean(
@@ -294,9 +298,8 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
     do_open = true;
   }
   DevToolsWindow* window = host->AsDevToolsWindow();
-  if (!window) {
+  if (!window)
     return;
-  }
 
   // If window is docked and visible, we hide it on toggle. If window is
   // undocked, we show (activate) it.

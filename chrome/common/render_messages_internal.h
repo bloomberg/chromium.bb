@@ -1048,6 +1048,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* first_party_for_cookies */,
                               std::string /* cookies */)
 
+  // Used to get raw cookie information for the given URL
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetRawCookies,
+                              GURL /* url */,
+                              GURL /* first_party_for_cookies */,
+                              std::vector<webkit_glue::WebCookie>
+                                  /* raw_cookies */)
+
+  // Used to delete cookie for the given URL and name
+  IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
+                              GURL /* url */,
+                              std::string /* cookie_name */)
+
   // Used to get the list of plugins
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
                               bool /* refresh*/,

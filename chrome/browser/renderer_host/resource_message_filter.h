@@ -50,6 +50,10 @@ class PrinterQuery;
 class PrintJobManager;
 }
 
+namespace webkit_glue {
+struct WebCookie;
+}
+
 namespace WebKit {
 struct WebScreenInfo;
 }
@@ -124,6 +128,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     std::string* cookies);
+  void OnGetRawCookies(const GURL& url,
+                       const GURL& first_party_for_cookies,
+                       std::vector<webkit_glue::WebCookie>* raw_cookies);
+  void OnDeleteCookie(const GURL& url,
+                      const std::string& cookieName);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,

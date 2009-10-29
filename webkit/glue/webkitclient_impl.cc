@@ -22,12 +22,15 @@
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "net/base/net_util.h"
+#include "webkit/api/public/WebCookie.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebPluginListBuilder.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebVector.h"
+#include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/ChromeClientImpl.h"
 #include "webkit/glue/glue_util.h"
@@ -42,6 +45,7 @@
 using WebKit::ChromeClientImpl;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebCookie;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
@@ -50,7 +54,9 @@ using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebSocketStreamHandle;
 using WebKit::WebThemeEngine;
+using WebKit::WebURL;
 using WebKit::WebURLLoader;
+using WebKit::WebVector;
 using WebKit::WebWidgetClient;
 
 namespace {
@@ -151,6 +157,18 @@ WebThemeEngine* WebKitClientImpl::themeEngine() {
 #else
   return NULL;
 #endif
+}
+
+bool WebKitClientImpl::rawCookies(const WebURL& url,
+                                  const WebURL& policy_url,
+                                  WebVector<WebCookie>* raw_cookies) {
+  NOTREACHED();
+  return false;
+}
+
+void WebKitClientImpl::deleteCookie(const WebURL& url,
+                                    const WebString& cookie_name) {
+  NOTREACHED();
 }
 
 WebURLLoader* WebKitClientImpl::createURLLoader() {

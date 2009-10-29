@@ -38,6 +38,11 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
                           const WebKit::WebString&);
   virtual WebKit::WebString cookies(
       const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies);
+  virtual bool rawCookies(const WebKit::WebURL& url,
+                          const WebKit::WebURL& first_party_for_cookies,
+                          WebKit::WebVector<WebKit::WebCookie>* raw_cookies);
+  virtual void deleteCookie(const WebKit::WebURL& url,
+                            const WebKit::WebString& cookie_name);
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);

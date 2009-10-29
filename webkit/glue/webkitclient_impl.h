@@ -22,6 +22,11 @@ class WebKitClientImpl : public WebKit::WebKitClient {
 
   // WebKitClient methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
+  virtual bool rawCookies(const WebKit::WebURL& url,
+                          const WebKit::WebURL& policy_url,
+                          WebKit::WebVector<WebKit::WebCookie>*);
+  virtual void deleteCookie(const WebKit::WebURL& url,
+                            const WebKit::WebString& cookie_name);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
