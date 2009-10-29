@@ -239,3 +239,12 @@
   ...
   fun:mkstemp*
 }
+
+# We already ignore memory accesses inside ld
+# but we also need to ignore accesses below it.
+{
+  fun:_dl_close
+  ThreadSanitizer:Race
+  ...
+  fun:_dl_close
+}
