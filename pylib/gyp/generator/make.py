@@ -466,8 +466,12 @@ class MakefileWriter:
       # Set LD_LIBRARY_PATH in case the action runs an executable from this
       # build which links to shared libs from this build.
       cd_action = 'cd %s; ' % Sourceify(self.path) if self.path else ''
-      self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib:'
-                   '$$LD_LIBRARY_PATH; %s%s'
+      # actions run on the host, so they should in theory only use host
+      # libraries, but until everything is made cross-compile safe, also use
+      # target libraries.
+      # TODO(piman): when everything is cross-compile safe, remove lib.target
+      self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib.host:'
+                   '$(builddir)/lib.target:$$LD_LIBRARY_PATH; %s%s'
                    % (name, cd_action, command))
       self.WriteLn()
       outputs = map(self.Absolutify, outputs)
@@ -684,8 +688,8 @@ class MakefileWriter:
       target = 'lib%s.a' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
     elif self.type in ('loadable_module', 'shared_library'):
       target = 'lib%s.so' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
-      path = spec.get('product_dir', os.path.join('$(builddir)', 'lib',
-                                                  self.path))
+      path = spec.get('product_dir', os.path.join('$(builddir)', 'lib.' +
+                                                  self.toolset, self.path))
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
@@ -774,9 +778,9 @@ class MakefileWriter:
     if self.type in self._INSTALLABLE_TARGETS:
       if self.type in ('shared_library'):
         file_desc = 'shared library'
-        # Install all shared libs into a common lib/ directory for convenient
-        # access with LD_LIBRARY_PATH.
-        binpath = '$(builddir)/lib/' + self.alias
+        # Install all shared libs into a common directory (per toolset) for
+        # convenient access with LD_LIBRARY_PATH.
+        binpath = '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)
       else:
         file_desc = 'executable'
         binpath = '$(builddir)/' + self.alias

@@ -63,7 +63,7 @@ if test.format == 'xcode':
   test.must_exist('relocate/src/dir1/build/Default/lib1.dylib')
 elif test.format == 'make':
   # TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
-  test.must_exist('relocate/src/out/Default/lib/dir1/lib1.so')
+  test.must_exist('relocate/src/out/Default/lib.target/dir1/lib1.so')
 elif test.format == 'scons':
   test.must_exist('relocate/src/dir1/Default/lib/lib1.so')
 else:

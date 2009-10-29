@@ -281,7 +281,9 @@ class TestGypMake(TestGypBase):
     Runs an executable built by Make.
     """
     configuration = self.configuration or 'Default'
-    os.environ['LD_LIBRARY_PATH'] = os.path.join('out', configuration, 'lib')
+    libdir = os.path.join('out', configuration, 'lib')
+    # TODO(piman): when everything is cross-compile safe, remove lib.target
+    os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
