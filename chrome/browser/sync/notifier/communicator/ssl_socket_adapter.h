@@ -51,10 +51,11 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   virtual bool SetSendBufferSize(int32 size);
 
  private:
+  friend class SSLSocketAdapter;
+
   void OnConnectEvent(talk_base::AsyncSocket * socket);
-  void OnReadEvent(talk_base::AsyncSocket * socket);
-  void OnWriteEvent(talk_base::AsyncSocket * socket);
-  void OnCloseEvent(talk_base::AsyncSocket * socket, int err);
+  bool OnReadEvent(talk_base::AsyncSocket * socket);
+  bool OnWriteEvent(talk_base::AsyncSocket * socket);
 
   net::CompletionCallback* connect_callback_;
   net::CompletionCallback* read_callback_;
@@ -67,7 +68,6 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 
   talk_base::AsyncSocket *socket_;
   talk_base::SocketAddress addr_;
-  SSLSocketAdapter *ssl_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocket);
 };
@@ -109,8 +109,11 @@ class SSLSocketAdapter : public talk_base::AsyncSocketAdapter {
   void OnConnected(int result);
   void OnIO(int result);
 
+  void OnReadEvent(talk_base::AsyncSocket * socket);
+  void OnWriteEvent(talk_base::AsyncSocket * socket);
+
   bool ignore_bad_cert_;
-  scoped_ptr<TransportSocket> socket_;
+  TransportSocket* socket_;
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
   net::CompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
   net::CompletionCallbackImpl<SSLSocketAdapter> io_callback_;

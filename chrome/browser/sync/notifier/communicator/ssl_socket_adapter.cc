@@ -64,7 +64,7 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
         io_callback_(this, &SSLSocketAdapter::OnIO)),
       ssl_connected_(false),
       state_(STATE_NONE) {
-  socket_.reset(new TransportSocket(socket, this));
+  socket_ = new TransportSocket(socket, this);
 }
 
 int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
@@ -77,7 +77,7 @@ int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
   socket_->set_addr(talk_base::SocketAddress(hostname));
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          socket_.release(), hostname, ssl_config));
+          socket_, hostname, ssl_config));
 
   int result = ssl_socket_->Connect(&connected_callback_);
 
@@ -91,38 +91,17 @@ int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
 int SSLSocketAdapter::Send(const void* buf, size_t len) {
   if (!ssl_connected_) {
     return AsyncSocketAdapter::Send(buf, len);
-  }
+  } else {
+    scoped_refptr<net::IOBuffer> transport_buf = new net::IOBuffer(len);
+    memcpy(transport_buf->data(), buf, len);
 
-  switch (state_) {
-    case STATE_NONE: {
-      transport_buf_ = new net::IOBuffer(len);
-      memcpy(transport_buf_->data(), buf, len);
-
-      int result = ssl_socket_->Write(transport_buf_, len, &io_callback_);
-      if (result == net::ERR_IO_PENDING) {
-        state_ = STATE_WRITE;
-        SetError(EWOULDBLOCK);
-      } else {
-        transport_buf_ = NULL;
-      }
-      return result;
-    }
-    case STATE_WRITE_COMPLETE:
-      transport_buf_ = NULL;
-      state_ = STATE_NONE;
-      return data_transferred_;
-
-    case STATE_READ:
-    case STATE_READ_COMPLETE:
-    case STATE_WRITE:
+    int result = ssl_socket_->Write(transport_buf, len, NULL);
+    if (result == net::ERR_IO_PENDING) {
       SetError(EWOULDBLOCK);
-      return -1;
-
-    default:
-      NOTREACHED();
-      break;
+    }
+    transport_buf = NULL;
+    return result;
   }
-  return -1;
 }
 
 int SSLSocketAdapter::Recv(void* buf, size_t len) {
@@ -142,6 +121,10 @@ int SSLSocketAdapter::Recv(void* buf, size_t len) {
         state_ = STATE_READ;
         SetError(EWOULDBLOCK);
       } else {
+        if (result < 0) {
+          SetError(result);
+          LOG(INFO) << "Socket error " << result;
+        }
         transport_buf_ = NULL;
       }
       return result;
@@ -177,10 +160,12 @@ void SSLSocketAdapter::OnIO(int result) {
     case STATE_READ:
       state_ = STATE_READ_COMPLETE;
       data_transferred_ = result;
+      AsyncSocketAdapter::OnReadEvent(this);
       break;
     case STATE_WRITE:
       state_ = STATE_WRITE_COMPLETE;
       data_transferred_ = result;
+      AsyncSocketAdapter::OnWriteEvent(this);
       break;
     case STATE_NONE:
     case STATE_READ_COMPLETE:
@@ -191,6 +176,16 @@ void SSLSocketAdapter::OnIO(int result) {
   }
 }
 
+void SSLSocketAdapter::OnReadEvent(talk_base::AsyncSocket* socket) {
+  if (!socket_->OnReadEvent(socket))
+    AsyncSocketAdapter::OnReadEvent(socket);
+}
+
+void SSLSocketAdapter::OnWriteEvent(talk_base::AsyncSocket* socket) {
+  if (!socket_->OnWriteEvent(socket))
+    AsyncSocketAdapter::OnWriteEvent(socket);
+}
+
 TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
                                  SSLSocketAdapter *ssl_adapter)
     : connect_callback_(NULL),
@@ -198,12 +193,8 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
       write_callback_(NULL),
       read_buffer_len_(0),
       write_buffer_len_(0),
-      socket_(socket),
-      ssl_adapter_(ssl_adapter) {
+      socket_(socket) {
     socket_->SignalConnectEvent.connect(this, &TransportSocket::OnConnectEvent);
-    socket_->SignalReadEvent.connect(this, &TransportSocket::OnReadEvent);
-    socket_->SignalWriteEvent.connect(this, &TransportSocket::OnWriteEvent);
-    socket_->SignalCloseEvent.connect(this, &TransportSocket::OnCloseEvent);
 }
 
 int TransportSocket::Connect(net::CompletionCallback* callback) {
@@ -282,12 +273,10 @@ void TransportSocket::OnConnectEvent(talk_base::AsyncSocket * socket) {
     net::CompletionCallback *callback = connect_callback_;
     connect_callback_ = NULL;
     callback->RunWithParams(Tuple1<int>(MapPosixError(socket_->GetError())));
-  } else {
-    ssl_adapter_->OnConnectEvent(socket);
   }
 }
 
-void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
+bool TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
   if (read_callback_) {
     DCHECK(read_buffer_.get());
     net::CompletionCallback* callback = read_callback_;
@@ -305,16 +294,17 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
         read_callback_ = callback;
         read_buffer_ = buffer;
         read_buffer_len_ = buffer_len;
-        return;
+        return true;
       }
     }
     callback->RunWithParams(Tuple1<int>(result));
+    return true;
   } else {
-    ssl_adapter_->OnReadEvent(socket);
+    return false;
   }
 }
 
-void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
+bool TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
   if (write_callback_) {
     DCHECK(write_buffer_.get());
     net::CompletionCallback* callback = write_callback_;
@@ -332,17 +322,14 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
         write_callback_ = callback;
         write_buffer_ = buffer;
         write_buffer_len_ = buffer_len;
-        return;
+        return true;
       }
     }
     callback->RunWithParams(Tuple1<int>(result));
+    return true;
   } else {
-    ssl_adapter_->OnWriteEvent(socket);
+    return false;
   }
-}
-
-void TransportSocket::OnCloseEvent(talk_base::AsyncSocket* socket, int err) {
-  ssl_adapter_->OnCloseEvent(socket, err);
 }
 
 }  // namespace notifier
