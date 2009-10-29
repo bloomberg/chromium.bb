@@ -58,14 +58,14 @@ class BrowserList {
   // open browser owned by |profile| is returned. If none exist, returns NULL.
   static Browser* GetLastActiveWithProfile(Profile *profile);
 
-  // Find an existing browser window with the provided type. Searches in the
-  // order of last activation. Only browsers that have been active can be
-  // returned. Returns NULL if no such browser currently exists.
+  // Find an existing browser window with the provided type. If the last active
+  // has the right type, it is returned. Otherwise, the next available browser
+  // is returned. Returns NULL if no such browser currently exists.
   static Browser* FindBrowserWithType(Profile* p, Browser::Type t);
 
-  // Find an existing browser window with the provided profile. Searches in the
-  // order of last activation. Only browsers that have been active can be
-  // returned. Returns NULL if no such browser currently exists.
+  // Find an existing browser window with the provided profile. If the last
+  // active has the right profile, it is returned.  Returns NULL if no such
+  // browser currently exists.
   static Browser* FindBrowserWithProfile(Profile* p);
 
   // Find an existing browser with the provided ID. Returns NULL if no such
