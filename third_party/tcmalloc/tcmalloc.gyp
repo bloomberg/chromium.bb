@@ -232,6 +232,9 @@
             # TODO(willchan): Unfork linux.
             'tcmalloc/src/malloc_hook.cc',
           ],
+          'cflags!': [
+            '-fvisibility=hidden',
+          ],
           'link_settings': {
             'ldflags': [
               # Don't let linker rip this symbol out, otherwise the heap&cpu
