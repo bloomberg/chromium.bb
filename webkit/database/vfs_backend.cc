@@ -72,73 +72,74 @@ void VfsBackend::OpenFile(const FilePath& file_name,
                           base::PlatformFile* target_dir_handle) {
   // Verify the flags for consistency and create the database
   // directory if it doesn't exist.
-  if (OpenFileFlagsAreConsistent(file_name, db_dir, desired_flags) &&
-      file_util::CreateDirectory(db_dir)) {
-    int flags = 0;
-    flags |= base::PLATFORM_FILE_READ;
-    if (desired_flags & SQLITE_OPEN_READWRITE)
-      flags |= base::PLATFORM_FILE_WRITE;
+  if (!OpenFileFlagsAreConsistent(file_name, db_dir, desired_flags) ||
+      !file_util::CreateDirectory(db_dir))
+    return;
 
-    if (!(desired_flags & SQLITE_OPEN_MAIN_DB)) {
-      flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-               base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-    }
+  int flags = 0;
+  flags |= base::PLATFORM_FILE_READ;
+  if (desired_flags & SQLITE_OPEN_READWRITE)
+    flags |= base::PLATFORM_FILE_WRITE;
 
-    flags |= ((desired_flags & SQLITE_OPEN_CREATE) ?
-        base::PLATFORM_FILE_OPEN_ALWAYS : base::PLATFORM_FILE_OPEN);
+  if (!(desired_flags & SQLITE_OPEN_MAIN_DB)) {
+    flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
+             base::PLATFORM_FILE_EXCLUSIVE_WRITE;
+  }
 
-    if (desired_flags & SQLITE_OPEN_EXCLUSIVE) {
-      flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-               base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-    }
+  flags |= ((desired_flags & SQLITE_OPEN_CREATE) ?
+      base::PLATFORM_FILE_OPEN_ALWAYS : base::PLATFORM_FILE_OPEN);
 
-    if (desired_flags & SQLITE_OPEN_DELETEONCLOSE) {
-      flags |= base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN |
-               base::PLATFORM_FILE_DELETE_ON_CLOSE;
-    }
+  if (desired_flags & SQLITE_OPEN_EXCLUSIVE) {
+    flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
+             base::PLATFORM_FILE_EXCLUSIVE_WRITE;
+  }
 
-    // If this is a request for a handle to a temp file, get a unique file name
-    FilePath db_file_name;
-    if (file_name == db_dir) {
-      if (!file_util::CreateTemporaryFileInDir(db_dir, &db_file_name))
-        db_file_name = FilePath();
-    } else {
-      db_file_name = file_name;
-    }
+  if (desired_flags & SQLITE_OPEN_DELETEONCLOSE) {
+    flags |= base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN |
+             base::PLATFORM_FILE_DELETE_ON_CLOSE;
+  }
 
-    // Try to open/create the DB file.
-    base::PlatformFile file_handle = (db_file_name.empty() ?
-         base::kInvalidPlatformFileValue :
-         base::CreatePlatformFile(db_file_name.ToWStringHack(), flags, NULL));
-    if (file_handle != base::kInvalidPlatformFileValue) {
+  // If this is a request for a handle to a temp file, get a unique file name.
+  FilePath db_file_name;
+  if (file_name == db_dir) {
+    if (!file_util::CreateTemporaryFileInDir(db_dir, &db_file_name))
+      db_file_name = FilePath();
+  } else {
+    db_file_name = file_name;
+  }
+
+  // Try to open/create the DB file.
+  base::PlatformFile file_handle = (db_file_name.empty() ?
+       base::kInvalidPlatformFileValue :
+       base::CreatePlatformFile(db_file_name.ToWStringHack(), flags, NULL));
+  if (file_handle != base::kInvalidPlatformFileValue) {
 #if defined(OS_WIN)
-      // Duplicate the file handle.
-      if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                           handle, target_handle, 0, false,
-                           DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-          // file_handle is closed whether or not DuplicateHandle succeeds.
-          *target_handle = INVALID_HANDLE_VALUE;
-      }
-#elif defined(OS_POSIX)
-      *target_handle = file_handle;
-
-      int file_type = desired_flags & 0x00007F00;
-      bool creating_new_file = (desired_flags & SQLITE_OPEN_CREATE);
-      if (creating_new_file && ((file_type == SQLITE_OPEN_MASTER_JOURNAL) ||
-                                (file_type == SQLITE_OPEN_MAIN_JOURNAL))) {
-        // We return a handle to the containing directory because on POSIX
-        // systems the VFS might want to fsync it after changing a file.
-        // By returning it here, we avoid an extra IPC call.
-        *target_dir_handle = base::CreatePlatformFile(
-            db_dir.ToWStringHack(),
-            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
-        if (*target_dir_handle == base::kInvalidPlatformFileValue) {
-          base::ClosePlatformFile(*target_handle);
-          *target_handle = base::kInvalidPlatformFileValue;
-        }
-      }
-#endif
+    // Duplicate the file handle.
+    if (!DuplicateHandle(GetCurrentProcess(), file_handle,
+                         handle, target_handle, 0, false,
+                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+      // file_handle is closed whether or not DuplicateHandle succeeds.
+      *target_handle = INVALID_HANDLE_VALUE;
     }
+#elif defined(OS_POSIX)
+    *target_handle = file_handle;
+
+    int file_type = desired_flags & 0x00007F00;
+    bool creating_new_file = (desired_flags & SQLITE_OPEN_CREATE);
+    if (creating_new_file && ((file_type == SQLITE_OPEN_MASTER_JOURNAL) ||
+                              (file_type == SQLITE_OPEN_MAIN_JOURNAL))) {
+      // We return a handle to the containing directory because on POSIX
+      // systems the VFS might want to fsync it after changing a file.
+      // By returning it here, we avoid an extra IPC call.
+      *target_dir_handle = base::CreatePlatformFile(
+          db_dir.ToWStringHack(),
+          base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
+      if (*target_dir_handle == base::kInvalidPlatformFileValue) {
+        base::ClosePlatformFile(*target_handle);
+        *target_handle = base::kInvalidPlatformFileValue;
+      }
+    }
+#endif
   }
 }
 

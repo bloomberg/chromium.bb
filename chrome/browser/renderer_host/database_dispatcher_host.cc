@@ -77,9 +77,9 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
   response_params.file_handle = base::FileDescriptor(target_handle, true);
   response_params.dir_handle = base::FileDescriptor(target_dir_handle, true);
 #endif
-   io_thread_message_loop->PostTask(FROM_HERE,
-       NewRunnableFunction(SendMessage, sender,
-           new ViewMsg_DatabaseOpenFileResponse(message_id, response_params)));
+  io_thread_message_loop->PostTask(FROM_HERE,
+      NewRunnableFunction(SendMessage, sender,
+          new ViewMsg_DatabaseOpenFileResponse(message_id, response_params)));
 }
 
 // Scheduled by the IO thread on the file thread.
@@ -96,8 +96,8 @@ static void DatabaseDeleteFile(MessageLoop* io_thread_message_loop,
   if (!reschedule_count) {
     io_thread_message_loop->PostTask(FROM_HERE,
         NewRunnableFunction(SendMessage, sender,
-            new ViewMsg_DatabaseDeleteFileResponse(
-                message_id, SQLITE_IOERR_DELETE)));
+            new ViewMsg_DatabaseDeleteFileResponse(message_id,
+                                                   SQLITE_IOERR_DELETE)));
     return;
   }
 

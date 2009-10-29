@@ -293,18 +293,18 @@ WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
 
   ViewMsg_DatabaseOpenFileResponse_Params default_response =
 #if defined(OS_WIN)
-    { base::kInvalidPlatformFileValue };
+      { base::kInvalidPlatformFileValue };
 #elif defined(OS_POSIX)
-    { base::FileDescriptor(base::kInvalidPlatformFileValue, true),
-      base::FileDescriptor(base::kInvalidPlatformFileValue, true) };
+      { base::FileDescriptor(base::kInvalidPlatformFileValue, true),
+        base::FileDescriptor(base::kInvalidPlatformFileValue, true) };
 #endif
 
   ViewMsg_DatabaseOpenFileResponse_Params result =
-    db_message_filter->SendAndWait(
-      new ViewHostMsg_DatabaseOpenFile(
-        FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-        desired_flags, message_id),
-      message_id, default_response);
+      db_message_filter->SendAndWait(
+          new ViewHostMsg_DatabaseOpenFile(
+              FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+              desired_flags, message_id),
+          message_id, default_response);
 
 #if defined(OS_WIN)
   if (dir_handle) {
@@ -324,10 +324,10 @@ int RendererWebKitClientImpl::databaseDeleteFile(
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-    new ViewHostMsg_DatabaseDeleteFile(
-      FilePath(webkit_glue::WebStringToFilePathString(file_name)), sync_dir,
-      message_id),
-    message_id, SQLITE_IOERR_DELETE);
+      new ViewHostMsg_DatabaseDeleteFile(
+          FilePath(webkit_glue::WebStringToFilePathString(file_name)), sync_dir,
+          message_id),
+      message_id, SQLITE_IOERR_DELETE);
 }
 
 long RendererWebKitClientImpl::databaseGetFileAttributes(
@@ -335,10 +335,10 @@ long RendererWebKitClientImpl::databaseGetFileAttributes(
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-    new ViewHostMsg_DatabaseGetFileAttributes(
-      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-      message_id),
-    message_id, -1L);
+      new ViewHostMsg_DatabaseGetFileAttributes(
+          FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+          message_id),
+      message_id, -1L);
 }
 
 long long RendererWebKitClientImpl::databaseGetFileSize(
@@ -346,10 +346,10 @@ long long RendererWebKitClientImpl::databaseGetFileSize(
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-    new ViewHostMsg_DatabaseGetFileSize(
-      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-      message_id),
-    message_id, 0LL);
+      new ViewHostMsg_DatabaseGetFileSize(
+          FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+          message_id),
+      message_id, 0LL);
 }
 
 //------------------------------------------------------------------------------
@@ -362,7 +362,7 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
   RenderThread::current()->Send(new ViewHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
       webkit_glue::WebStringToStdString(challenge),
-      GURL(url) ,
+      GURL(url),
       &signed_public_key));
   return webkit_glue::StdStringToWebString(signed_public_key);
 }
