@@ -30,6 +30,7 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/ChromeClientImpl.h"
+#include "webkit/api/src/WebWorkerClientImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
@@ -37,7 +38,6 @@
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/glue/webview_impl.h"
-#include "webkit/glue/webworkerclient_impl.h"
 
 using WebKit::ChromeClientImpl;
 using WebKit::WebApplicationCacheHost;
@@ -52,6 +52,7 @@ using WebKit::WebSocketStreamHandle;
 using WebKit::WebThemeEngine;
 using WebKit::WebURLLoader;
 using WebKit::WebWidgetClient;
+using WebKit::WebWorkerClientImpl;
 
 namespace {
 
