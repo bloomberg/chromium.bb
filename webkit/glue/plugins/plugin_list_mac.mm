@@ -67,20 +67,69 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
   }
 }
 
+// Returns true if |array| contains a string matching |test_string|.
+static bool ArrayContainsString(const char** array, unsigned int array_size,
+                                const std::string& test_string) {
+  // We're dealing with very small lists, so just walk in order; if we someday
+  // end up with very big blacklists or whitelists we can revisit the approach.
+  for (unsigned int i = 0; i < array_size; ++i) {
+    if (test_string == array[i])
+      return true;
+  }
+  return false;
+}
+
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  // Screen out some plugins that we know don't work at all.
+  // Plugins that we know don't work at all.
+  const char* blacklisted_plugin_mimes[] = {
+    "application/x-director",             // Crashes during initialization.
+    "application/x-googlegears",          // Safari-specific.
+    "application/x-vnd.movenetworks.qm",  // Crashes during initialization.
+  };
+  // In the case of plugins that share MIME types, we have to blacklist by name.
+  const char* blacklisted_plugin_names[] = {
+    // Blacklisted for now since having it non-functional but trying to handle
+    // PDFs is worse than not having it (PDF content would otherwise be
+    // downloaded or handled by QuickTime).
+    "PDF Browser Plugin",
+  };
+
+  // Plugins that we know are working reasonably well.
+  const char* whitelisted_plugin_mimes[] = {
+    "application/googletalk",
+    "application/x-picasa-detect",
+    "application/x-shockwave-flash",
+    "application/x-webkit-test-netscape",
+  };
+
+  // Start with names.
+  std::string plugin_name = WideToUTF8(info.name);
+  if (ArrayContainsString(blacklisted_plugin_names,
+                          arraysize(blacklisted_plugin_names), plugin_name)) {
+    return false;
+  }
+  // Then check mime types.
+  bool whitelisted = false;
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {
-    // The Gears plugin is Safari-specific. MoveNetworks Quantum Media Player
-    // and Shockwave for Director crash during initialization, and don't work in
-    // Safari on 10.6 either.
-    if (i->mime_type == "application/x-googlegears" ||
-        i->mime_type == "application/x-vnd.movenetworks.qm" ||
-        i->mime_type == "application/x-director") {
+    if (ArrayContainsString(blacklisted_plugin_mimes,
+                            arraysize(blacklisted_plugin_mimes),
+                            i->mime_type)) {
       return false;
     }
+    if (ArrayContainsString(whitelisted_plugin_mimes,
+                            arraysize(whitelisted_plugin_mimes),
+                            i->mime_type)) {
+      whitelisted = true;
+      break;
+    }
   }
+
+#if OS_MACOSX_BLACKLIST_PLUGINS_BY_DEFAULT
+  if (!whitelisted)
+    return false;
+#endif
 
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
