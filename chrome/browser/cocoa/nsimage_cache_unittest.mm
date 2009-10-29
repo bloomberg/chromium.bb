@@ -47,7 +47,8 @@ TEST_F(NSImageCacheTest, LookupMiss) {
       << "There shouldn't be an image with this name?";
 }
 
-TEST_F(NSImageCacheTest, LookupFoundAndClear) {
+// This test is flaky. See bug 26176.
+TEST_F(NSImageCacheTest, FLAKY_LookupFoundAndClear) {
   NSImage *first = nsimage_cache::ImageNamed(@"back_Template.pdf");
   EXPECT_TRUE(first != nil)
       << "Failed to find the toolbar image?";
