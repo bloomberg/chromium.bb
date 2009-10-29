@@ -495,8 +495,11 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
   ASSERT(ds);  // Should not be null when navigating to a reference fragment!
   if (ds) {
     KURL url = webkit_glue::WebURLToKURL(ds->request().url());
-    KURL chain_end = ds->endOfRedirectChain();
-    ds->clearRedirectChain();
+    KURL chain_end;
+    if (ds->hasRedirectChain()) {
+      chain_end = ds->endOfRedirectChain();
+      ds->clearRedirectChain();
+    }
 
     // Figure out if this location change is because of a JS-initiated client
     // redirect (e.g onload/setTimeout document.location.href=).
