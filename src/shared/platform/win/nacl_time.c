@@ -142,6 +142,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   st.wMilliseconds = 0;
   SystemTimeToFileTime(&st, &ft);
   ntsp->epoch_start_ms = NaClFileTimeToMs(&ft);
+  ntsp->last_reported_time_ms = 0;
   NaClLog(0, "Unix epoch start is  %"PRIu64"ms in Windows epoch time\n",
           ntsp->epoch_start_ms);
   NaClMutexCtor(&ntsp->mu);
@@ -213,6 +214,15 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
   NaClLog(5, "adjusted t_ms =      %"PRIu64"\n", t_ms);
 
   unix_time_ms = t_ms - ntsp->epoch_start_ms;
+
+  /*
+   * Time is monotonically non-decreasing.
+   */
+  if (unix_time_ms < ntsp->last_reported_time_ms) {
+    unix_time_ms = ntsp->last_reported_time_ms;
+  } else {
+    ntsp->last_reported_time_ms = unix_time_ms;
+  }
 
   NaClMutexUnlock(&ntsp->mu);
 

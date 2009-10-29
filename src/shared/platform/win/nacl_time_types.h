@@ -40,6 +40,10 @@ struct NaClTimeState {
   uint64_t          system_time_start_ms;
   DWORD             ms_counter_start;
   uint64_t          epoch_start_ms;
+  /*
+   * Ensure that reported unix time is monotonically non-decreasing.
+   */
+  uint64_t          last_reported_time_ms;
 };
 
 EXTERN_C_END
