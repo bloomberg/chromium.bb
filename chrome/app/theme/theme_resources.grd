@@ -323,6 +323,10 @@
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" type="BINDATA" />
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
 
+      <!-- Desktop notifications -->
+      <include name="IDR_BALLOON_BORDER" file="notused.png" type="BINDATA" />
+      <include name="IDR_BALLOON_SHELF" file="notused.png" type="BINDATA" />
+     
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_ABOUT_BACKGROUND" file="google_chrome/about_background.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_RTL" file="google_chrome/about_background_rtl.png" type="BINDATA" />

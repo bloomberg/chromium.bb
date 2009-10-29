@@ -736,6 +736,19 @@ class NotificationType {
     // http://code.google.com/p/chromium/issues/detail?id=21201
     EXTENSION_PORT_DELETED_DEBUG,
 
+    // Desktop Notifications ---------------------------------------------------
+
+    // This notification is sent when a balloon is connected to a renderer
+    // process to render the balloon contents.  The source is a Source<Balloon>
+    // with a pointer to the the balloon.  A NOTIFY_BALLOON_DISCONNECTED is
+    // guaranteed before the source pointer becomes junk. No details expected.
+    NOTIFY_BALLOON_CONNECTED,
+
+    // This message is sent after a balloon is disconnected from the renderer
+    // process. The source is a Source<Balloon> with a pointer to the balloon
+    // (the pointer is usable). No details are expected.
+    NOTIFY_BALLOON_DISCONNECTED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.
