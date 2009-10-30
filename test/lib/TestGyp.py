@@ -201,6 +201,18 @@ class TestGypBase(TestCommon.TestCommon):
     """
     self.configuration = configuration
 
+  def configuration_dirname(self):
+    if self.configuration:
+      return self.configuration.split('|')[0]
+    else:
+      return 'Default'
+
+  def configuration_buildname(self):
+    if self.configuration:
+      return self.configuration
+    else:
+      return 'Default'
+
   #
   # Abstract methods to be defined by format-specific subclasses.
   #
@@ -280,7 +292,7 @@ class TestGypMake(TestGypBase):
     """
     Runs an executable built by Make.
     """
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     libdir = os.path.join('out', configuration, 'lib')
     # TODO(piman): when everything is cross-compile safe, remove lib.target
     os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
@@ -288,7 +300,7 @@ class TestGypMake(TestGypBase):
     program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
   def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     # Make static and shared libs go in different places, so allow tests to pass
     # in the expected library path.
     libdir = kw.get('libdir', 'lib')
@@ -296,7 +308,7 @@ class TestGypMake(TestGypBase):
                              self._lib)
     self.must_exist(lib_path)
   def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     # Make static and shared libs go in different places, so allow tests to pass
     # in the expected library path.
     libdir = kw.get('libdir', 'lib')
@@ -345,16 +357,19 @@ class TestGypMSVS(TestGypBase):
         if os.path.exists(bt):
           self.build_tool = bt
           break
-  def build(self, gyp_file, target=None, **kw):
+  def build(self, gyp_file, target=None, rebuild=False, **kw):
     """
     Runs a Visual Studio build using the configuration generated
     from the specified gyp_file.
     """
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_buildname()
+    if rebuild:
+      build = '/Rebuild'
+    else:
+      build = '/Build'
     arguments = kw.get('arguments', [])
     arguments.extend([gyp_file.replace('.gyp', '.sln'),
-                      '/Build',
-                      configuration])
+                      build, configuration])
     # Note:  the Visual Studio generator doesn't add an explicit 'all'
     # target, so we just treat it the same as the default.
     if target not in (None, self.ALL, self.DEFAULT):
@@ -379,16 +394,16 @@ class TestGypMSVS(TestGypBase):
     """
     Runs an executable built by Visual Studio.
     """
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, '%s.exe' % name)]
     return self.run(program=program, *args, **kw)
   def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
     self.must_exist(lib_path)
   def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)
 
@@ -435,17 +450,17 @@ class TestGypSCons(TestGypBase):
     """
     Runs an executable built by scons.
     """
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, name)]
     return self.run(program=program, *args, **kw)
   def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
     self.must_exist(lib_path)
   def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)
 
@@ -510,18 +525,18 @@ class TestGypXcode(TestGypBase):
     """
     Runs an executable built by xcodebuild.
     """
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     os.environ['DYLD_LIBRARY_PATH'] = os.path.join('build', configuration)
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('build', configuration, name)]
     return self.run(program=program, *args, **kw)
   def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath('build', configuration,
                              self.lib_ + name + self._lib)
     self.must_exist(lib_path)
   def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration or 'Default'
+    configuration = self.configuration_dirname()
     lib_path = self.workpath('build', configuration,
                              self.lib_ + name + self._lib)
     self.must_not_exist(lib_path)

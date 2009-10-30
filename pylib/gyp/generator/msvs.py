@@ -162,9 +162,15 @@ def _ToolAppend(tools, tool_name, setting, value, only_if_unset=False):
     tool[setting] = value
 
 
+def _ConfigPlatform(config_data):
+  return config_data.get('msvs_configuration_platform', 'Win32')
+
+
 def _ConfigFullName(config_name, config_data):
-  return '|'.join([config_name,
-                   config_data.get('configuration_platform', 'Win32')])
+  platform = _ConfigPlatform(config_data)
+  if config_name.endswith('_' + platform):
+    config_name = config_name[0:-len(platform)-1]
+  return '|'.join((config_name, platform))
 
 
 def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path, quote_cmd):
@@ -352,10 +358,10 @@ def _GenerateNativeRules(p, rules, output_dir,
                                      config_name,
                                      options.suffix)
   rules_file = MSVSToolFile.Writer(os.path.join(output_dir, rules_filename))
-  rules_file.Create(spec['target_name'])
+  rules_file.Create('%s_%s' % (spec['target_name'], config_name))
   # Add each rule.
   for r in rules:
-    rule_name = r['rule_name']
+    rule_name = '%s_%s' % (r['rule_name'], config_name)
     rule_ext = r['extension']
     inputs = [_FixPath(i) for i in r.get('inputs', [])]
     outputs = [_FixPath(i) for i in r.get('outputs', [])]
@@ -536,8 +542,14 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   if vcproj_dir and not os.path.exists(vcproj_dir):
     os.makedirs(vcproj_dir)
 
+  # Gather list of unique platforms.
+  platforms = set()
+  for configuration in spec['configurations']:
+    platforms.add(_ConfigPlatform(spec['configurations'][configuration]))
+  platforms = list(platforms)
+
   p = MSVSProject.Writer(vcproj_filename, version=version)
-  p.Create(spec['target_name'], guid=guid)
+  p.Create(spec['target_name'], guid=guid, platforms=platforms)
 
   # Create the user file.
   (domain, username) = _GetDomainAndUserName()
@@ -712,8 +724,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       prepared_attrs['IntermediateDirectory'] = intermediate
 
     # Add in this configuration.
-    p.AddConfig('|'.join([config_name,
-                          c.get('configuration_platform', 'Win32')]),
+    p.AddConfig(_ConfigFullName(config_name, c),
                 attrs=prepared_attrs, tools=tool_list)
 
   # Prepare list of sources and excluded sources.
@@ -1030,8 +1041,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     build_file = gyp.common.BuildFile(qualified_target)
     spec = target_dicts[qualified_target]
     for config_name, c in spec['configurations'].iteritems():
-      configs.add('|'.join([config_name,
-                            c.get('configuration_platform', 'Win32')]))
+      configs.add(_ConfigFullName(config_name, c))
   configs = list(configs)
 
   # Generate each project.

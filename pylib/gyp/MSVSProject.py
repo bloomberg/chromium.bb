@@ -74,7 +74,7 @@ class Writer(object):
     self.doc = None
     self.version = version
 
-  def Create(self, name, guid=None):
+  def Create(self, name, guid=None, platforms=None):
     """Creates the project document.
 
     Args:
@@ -83,6 +83,10 @@ class Writer(object):
     """
     self.name = name
     self.guid = guid or MSVSNew.MakeGuid(self.project_path)
+
+    # Default to Win32 for platforms.
+    if not platforms:
+      platforms = ['Win32']
 
     # Create XML doc
     xml_impl = xml.dom.getDOMImplementation()
@@ -100,9 +104,10 @@ class Writer(object):
     # Add platform list
     n_platform = self.doc.createElement('Platforms')
     self.n_root.appendChild(n_platform)
-    n = self.doc.createElement('Platform')
-    n.setAttribute('Name', 'Win32')
-    n_platform.appendChild(n)
+    for platform in platforms:
+      n = self.doc.createElement('Platform')
+      n.setAttribute('Name', platform)
+      n_platform.appendChild(n)
 
     # Add tool files section
     self.n_tool_files = self.doc.createElement('ToolFiles')
