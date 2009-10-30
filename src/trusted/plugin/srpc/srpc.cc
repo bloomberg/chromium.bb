@@ -337,12 +337,15 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
                            int32_t offset,
                            int32_t len,
                            void* buf) {
-  StreamBuffer* stream_buffer;
+  StreamBuffer* stream_buffer = NULL;
   if (NULL == stream->pdata) {
-    stream_buffer = new StreamBuffer(stream);
+    stream_buffer = new(std::nothrow) StreamBuffer(stream);
     stream->pdata = reinterpret_cast<void*>(stream_buffer);
   } else {
     stream_buffer = reinterpret_cast<StreamBuffer*>(stream->pdata);
+  }
+  if (NULL == stream_buffer) {
+    return 0;
   }
 
   int32_t written = stream_buffer->write(offset, len, buf);

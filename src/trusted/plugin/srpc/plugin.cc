@@ -227,9 +227,10 @@ bool Plugin::UrlAsNaClDesc(void *obj, SrpcParams *params) {
   BrowserScriptableObject* callback_obj =
       reinterpret_cast<BrowserScriptableObject*>(params->ins[1]->u.oval);
   dprintf(("loading %s as file\n", url));
-  UrlAsNaClDescNotify* callback = new UrlAsNaClDescNotify(plugin,
-                                                          url,
-                                                          callback_obj);
+  UrlAsNaClDescNotify* callback = new(std::nothrow) UrlAsNaClDescNotify(
+      plugin,
+      url,
+      callback_obj);
   if (NULL == callback) {
     params->SetExceptionInfo("Out of memory in __urlAsNaClDesc");
     return false;
@@ -302,8 +303,9 @@ bool Plugin::SetSrcProperty(void *obj, SrpcParams *params) {
   // Load the new module if the origin of the page is valid.
   const char* url = params->ins[0]->u.sval;
   dprintf(("Plugin::SetProperty src = '%s'\n", url));
-  LoadNaClAppNotify* callback = new LoadNaClAppNotify(plugin, url);
-  if (!callback->StartDownload()) {
+  LoadNaClAppNotify* callback = new(std::nothrow) LoadNaClAppNotify(plugin,
+                                                                    url);
+  if ((NULL == callback) || (!callback->StartDownload())) {
     dprintf(("Failed to load URL to local file.\n"));
     // callback is always deleted in URLNotify
     return false;
