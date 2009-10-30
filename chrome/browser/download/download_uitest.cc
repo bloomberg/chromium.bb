@@ -248,7 +248,8 @@ TEST_F(DownloadTest, FLAKY_ContentDisposition) {
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
-TEST_F(DownloadTest, PerWindowShelf) {
+// See bug http://crbug.com/26325
+TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
