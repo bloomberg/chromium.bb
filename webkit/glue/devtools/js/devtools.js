@@ -338,11 +338,13 @@ WebInspector.UIString = function(string) {
 (function() {
   var originalDragStart = WebInspector.elementDragStart;
   WebInspector.elementDragStart = function(element) {
-    var glassPane = document.createElement("div");
-    glassPane.style.cssText =
-        'position:absolute;width:100%;height:100%;opacity:0;z-index:1';
-    glassPane.id = 'glass-pane-for-drag';
-    element.parentElement.appendChild(glassPane);
+    if (element) {
+      var glassPane = document.createElement("div");
+      glassPane.style.cssText =
+          'position:absolute;width:100%;height:100%;opacity:0;z-index:1';
+      glassPane.id = 'glass-pane-for-drag';
+      element.parentElement.appendChild(glassPane);
+    }
 
     originalDragStart.apply(this, arguments);
   };
@@ -352,7 +354,9 @@ WebInspector.UIString = function(string) {
     originalDragEnd.apply(this, arguments);
 
     var glassPane = document.getElementById('glass-pane-for-drag');
-    glassPane.parentElement.removeChild(glassPane);
+    if (glassPane) {
+      glassPane.parentElement.removeChild(glassPane);
+    }
   };
 })();
 
