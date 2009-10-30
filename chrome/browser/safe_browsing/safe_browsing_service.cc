@@ -38,13 +38,9 @@ SafeBrowsingService::SafeBrowsingService()
       resetting_(false),
       database_loaded_(false),
       update_in_progress_(false) {
-  base::SystemMonitor::Get()->AddObserver(this);
 }
 
 SafeBrowsingService::~SafeBrowsingService() {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  if (system_monitor)
-    system_monitor->RemoveObserver(this);
 }
 
 // Only called on the UI thread.
@@ -651,26 +647,6 @@ void SafeBrowsingService::CacheHashResults(
   const std::vector<SBFullHashResult>& full_hashes) {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
   GetDatabase()->CacheHashResults(prefixes, full_hashes);
-}
-
-// Tell the SafeBrowsing database not to do expensive disk operations for a few
-// minutes after waking up. It's quite likely that the act of resuming from a
-// low power state will involve much disk activity, which we don't want to
-// exacerbate.
-void SafeBrowsingService::OnResume() {
-  if (enabled_) {
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SafeBrowsingService::HandleResume));
-  }
-}
-
-void SafeBrowsingService::HandleResume() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  // We don't call GetDatabase() here, since we want to avoid unnecessary calls
-  // to Open, Reset, etc, or reload the bloom filter while we're coming out of
-  // a suspended state.
-  if (database_)
-    database_->HandleResume();
 }
 
 void SafeBrowsingService::RunQueuedClients() {

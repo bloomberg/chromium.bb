@@ -48,7 +48,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits);
-  virtual void HandleResume();
   virtual bool UpdateStarted();
   virtual void UpdateFinished(bool update_succeeded);
 
@@ -125,14 +124,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   void HandleCorruptDatabase();
   void OnHandleCorruptDatabase();
 
-  // Clears the did_resume_ flag.  This is called by HandleResume after a delay
-  // to handle the case where we weren't in the middle of any work.
-  void OnResumeDone();
-
-  // If the did_resume_ flag is set, sleep for a period and then clear the
-  // flag.  This method should be called periodically inside of busy disk loops.
-  void WaitAfterResume();
-
   // Adding add entries to the database.
   void InsertAdd(SBPrefix host, SBEntry* entry);
   void InsertAddPrefix(SBPrefix prefix, int encoded_chunk);
@@ -196,9 +187,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   // Used to schedule resetting the database because of corruption.
   ScopedRunnableMethodFactory<SafeBrowsingDatabaseBloom> reset_factory_;
 
-  // Used to schedule resuming from a lower power state.
-  ScopedRunnableMethodFactory<SafeBrowsingDatabaseBloom> resume_factory_;
-
   // Caches for all of the existing add and sub chunks.
   std::set<int> add_chunk_cache_;
   std::set<int> sub_chunk_cache_;
@@ -210,11 +198,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   // The number of entries in the add_prefix table. Used to pick the correct
   // size for the bloom filter and stats gathering.
   int add_count_;
-
-  // Set to true if the machine just resumed out of a sleep.  When this happens,
-  // we pause disk activity for some time to avoid thrashing the system while
-  // it's presumably going to be pretty busy.
-  bool did_resume_;
 
   // Transaction for protecting database integrity during updates.
   scoped_ptr<SQLTransaction> insert_transaction_;

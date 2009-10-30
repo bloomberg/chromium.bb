@@ -81,9 +81,6 @@ class SafeBrowsingDatabase {
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits) = 0;
 
-  // Called when the user's machine has resumed from a lower power state.
-  virtual void HandleResume() = 0;
-
   // Returns true if we have successfully started the update transaction.
   virtual bool UpdateStarted() = 0;
   virtual void UpdateFinished(bool update_succeeded) = 0;

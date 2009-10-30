@@ -26,11 +26,6 @@ using base::TimeDelta;
 // database is reset.
 static const int kDatabaseVersion = 6;
 
-// When we awake from a low power state, we try to avoid doing expensive disk
-// operations for a few minutes to let the system page itself in and settle
-// down.
-static const int kOnResumeHoldupMs = 5 * 60 * 1000;  // 5 minutes.
-
 // The maximum staleness for a cached entry.
 static const int kMaxStalenessMinutes = 45;
 
@@ -45,9 +40,7 @@ SafeBrowsingDatabaseBloom::SafeBrowsingDatabaseBloom()
     : db_(NULL),
       init_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resume_factory_(this)),
-      add_count_(0),
-      did_resume_(false) {
+      add_count_(0) {
 }
 
 SafeBrowsingDatabaseBloom::~SafeBrowsingDatabaseBloom() {
@@ -1206,8 +1199,6 @@ bool SafeBrowsingDatabaseBloom::BuildSubFullHashCache(HashCache* sub_cache) {
   return true;
 }
 
-// TODO(erikkay): should we call WaitAfterResume() inside any of the loops here?
-// This is a pretty fast operation and it would be nice to let it finish.
 void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
 #if defined(OS_WIN)
   // For measuring the amount of IO during the bloom filter build.
@@ -1436,26 +1427,6 @@ void SafeBrowsingDatabaseBloom::HandleCorruptDatabase() {
 void SafeBrowsingDatabaseBloom::OnHandleCorruptDatabase() {
   ResetDatabase();
   DCHECK(false) << "SafeBrowsing database was corrupt and reset";
-}
-
-void SafeBrowsingDatabaseBloom::HandleResume() {
-  did_resume_ = true;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      resume_factory_.NewRunnableMethod(
-          &SafeBrowsingDatabaseBloom::OnResumeDone),
-      kOnResumeHoldupMs);
-}
-
-void SafeBrowsingDatabaseBloom::OnResumeDone() {
-  did_resume_ = false;
-}
-
-void SafeBrowsingDatabaseBloom::WaitAfterResume() {
-  if (did_resume_) {
-    PlatformThread::Sleep(kOnResumeHoldupMs);
-    did_resume_ = false;
-  }
 }
 
 // This database is always synchronous since we don't need to worry about
