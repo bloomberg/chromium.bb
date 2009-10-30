@@ -242,6 +242,37 @@ FORCE_DO_CMD:
 
 """)
 
+ROOT_HEADER_SUFFIX_RULES = ("""\
+# Suffix rules, putting all outputs into $(obj).
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
+	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
+	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+
+# Try building from generated source, too.
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+
+$(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+""")
+
 SHARED_HEADER_SUFFIX_RULES = ("""\
 # Suffix rules, putting all outputs into $(obj).
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
@@ -951,7 +982,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                             default_configuration))
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
-    root_makefile.write(SHARED_HEADER_SUFFIX_RULES)
+    root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
 
   # Find the list of targets that derive from the gyp file(s) being built.
   needed_targets = set()
