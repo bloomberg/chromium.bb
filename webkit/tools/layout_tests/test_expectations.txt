@@ -62,8 +62,6 @@ BUG24182 SLOW : LayoutTests/fast/js/regexp-overflow.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/misc/DOMContentLoaded-event.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/navigation/multiple-back-forward-entries.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
-BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
-BUG24182 SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 BUG24182 SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
 BUG24182 SLOW : LayoutTests/tables/mozilla/other/slashlogo.html = PASS
 BUG24182 SLOW WIN LINUX : LayoutTests/tables/mozilla/bugs/bug113235-1.html = PASS
@@ -115,6 +113,12 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequest
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
+
+// --- collecting results for supported-xml-content-types.html ---
+BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
+// was slow, started to timeout
+BUG24182 LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -689,8 +693,6 @@ BUG24193 : LayoutTests/fast/replaced/applet-rendering-java-disabled.html = FAIL
 // Due to differences in error pages. Needs re-baselining.
 BUG24208 WIN SLOW : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 BUG24208 LINUX MAC : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
-
-BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 // Since we don't have Aqua-themed controls, don't ignore the
 // box-shadow properties of controls that request Aqua theming.  But since Aqua
@@ -1381,8 +1383,8 @@ BUG10343 SKIP LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIME
 BUG10344 LINUX : LayoutTests/fast/text/should-use-atsui.html = FAIL
 
 // We print to stderr when a failure happens while importing XSL;
-// should disable this in libxml.
-BUG10347 MAC LINUX : LayoutTests/fast/xsl/transform-xhr-doc.xhtml = FAIL
+// should disable this in libxml. Started to pass in roll to WebKit r50313
+BUG10347 MAC LINUX : LayoutTests/fast/xsl/transform-xhr-doc.xhtml = PASS FAIL
 
 // Linux pixeltest failure: Failing to apply style
 BUG10349 LINUX : LayoutTests/fast/forms/select-style.html = FAIL
@@ -1462,7 +1464,8 @@ BUG10358 SKIP MAC LINUX : LayoutTests/animations/animation-drt-api.html = PASS
 BUG10361 : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
 // Windows is missing the green box.
-BUG8729 WIN SLOW : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
+// started to pass in roll to WebKit r50313
+BUG8729 WIN SLOW : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS FAIL
 
 // -----------------------------------------------------------------
 // MAC PORT TESTS
@@ -2293,7 +2296,8 @@ BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = 
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
 
 // Pass locally but fail on the bots.
-BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
+// Started to pass again on bots in roll to WebKit r50313
+BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = PASS FAIL
 
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
@@ -2654,7 +2658,8 @@ BUG11001 LINUX MAC WIN : LayoutTests/http/tests/history/back-to-post.php = TIMEO
 
 // New failures from WebKit merge 42725:42805
 // Reasons unknown..
-BUG11012 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xml-external-entity.xhtml = FAIL
+// Started to pass again in roll to 50313
+BUG11012 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xml-external-entity.xhtml = PASS FAIL
 
 // Need Linux rebaselines from WebKit Merge 42805:42932
 BUG11123 LINUX : LayoutTests/editing/inserting/4960120-1.html = FAIL
@@ -2794,7 +2799,8 @@ BUG11613 LINUX DEBUG SLOW : LayoutTests/fast/overflow/scrollRevealButton.html = 
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
-BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
+// started to pass again in roll to WebKit r50313
+BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = PASS FAIL
 // This started crashing regularly as a result of r28798 (see bug 24720).
 BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = PASS FAIL
 
@@ -3085,8 +3091,9 @@ SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
-BUG24930 LINUX DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL
 BUG24930 MAC DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
+// was FAIL for above roll, passed in roll to 50313
+BUG24930 LINUX DEBUG : LayoutTests/editing/selection/editable-html-element.html = FAIL PASS
 
 // WebKit Roll 49597:49640
 BUG24965 LINUX RELEASE : LayoutTests/fast/forms/preserveFormDuringResidualStyle.html = CRASH PASS
@@ -3150,63 +3157,23 @@ BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html =
 
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
-BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = TIMEOUT
+// Passed after roll to WebKit r50313
+BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
 
 // WebKit roll 50101:50158
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL CRASH
-BUG_JORLOW LINUX DEBUG : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = FAIL
 BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL CRASH
 BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
+// passed in roll to 50313
+BUG_JORLOW LINUX DEBUG : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = PASS FAIL
 
 // More fallout from the above roll.
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/5026848-2.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/5026848-3.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/5032066.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/5115601.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/5206311-2.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/deleting/delete-block-table.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/selection/4895428-1.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/selection/4895428-4.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/editing/style/font-family-with-space.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/background-origin-root-element.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/repeat/background-repeat-shorthand.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize01.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize02.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize04.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize05.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize06.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize07.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize08.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize09.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize10.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize11.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize12.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize13.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize14.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize15.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize16.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize17.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize18.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize19.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize20.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize21.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/backgroundSize22.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/parsing-background-size-values.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/parsing-inherit.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/size/zero.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/css/getComputedStyle/getComputedStyle-background-size.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/css/uri-token-parsing.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/css/value-list-out-of-bounds-crash.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/gradients/background-clipped.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/images/svg-as-tiled-background.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = FAIL
-BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = TIMEOUT
-BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = TIMEOUT
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = PASS CRASH
 BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS FAIL
+// continued, started to pass again in roll to 50313
+BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = PASS TIMEOUT
+BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = PASS TIMEOUT
 
 // The following should be uncommented when the next line is no longer needed.
 // BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
@@ -3228,17 +3195,84 @@ BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
 // WebKit roll 50218:50235
 BUG_JORLOW : LayoutTests/http/tests/ssl/referer-301.html = FAIL
 BUG_JORLOW : LayoutTests/http/tests/ssl/referer-303.html = FAIL
-BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
-BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
+// started to pass again in roll to 50313
+BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = PASS FAIL
+BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = PASS FAIL
 
 // WebKit roll 50235:50245
 BUG_JOTH LINUX WIN : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE+TEXT
 BUG_JORLOW WIN : chrome/fast/forms/basic-selects.html = IMAGE
 
 // WebKit roll 50248:50258
-BUG_ROLANDSTEINER : LayoutTests/accessibility/aria-option-role.html = TEXT
-BUG_ROLANDSTEINER LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
-BUG_ROLANDSTEINER LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
-BUG_ROLANDSTEINER LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = CRASH
-BUG_ROLANDSTEINER MAC : LayoutTests/css3/css3-modsel-33.html = TEXT
-BUG_ROLANDSTEINER MAC : chrome/plugins/script-object-invoke.html = TEXT
+BUG26195 : LayoutTests/accessibility/aria-option-role.html = TEXT
+BUG26195 LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
+BUG26195 LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
+BUG26195 LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = PASS CRASH
+BUG26195 MAC : LayoutTests/css3/css3-modsel-33.html = TEXT
+BUG26195 MAC : chrome/plugins/script-object-invoke.html = TEXT
+
+// randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
+BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
+BUG26195 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-single-quote.html = PASS TIMEOUT
+
+// expected test failures (passed in roll to WebKit r50313)
+BUG_HAMAJI : LayoutTests/fast/css/counters/invalidate-cached-counter-node.html = PASS FAIL
+
+// ==== WebKit roll 50258:50313 ====
+// --- Linux ---
+// Expected to fail since roll 50101:50158, but passed in roll to 50313 (47):
+BUG26291 LINUX : LayoutTests/editing/deleting/5026848-2.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/deleting/5026848-3.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/deleting/5032066.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/deleting/5115601.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/deleting/5206311-2.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/deleting/delete-block-table.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/selection/4895428-1.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/selection/4895428-4.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/editing/style/font-family-with-space.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/background-origin-root-element.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/repeat/background-repeat-shorthand.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize01.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize02.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize04.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize05.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize06.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize07.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize08.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize09.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize10.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize11.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize12.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize13.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize14.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize15.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize16.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize17.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize18.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize19.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize20.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize21.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize22.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/parsing-background-size-values.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/parsing-inherit.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/backgrounds/size/zero.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/css/getComputedStyle/getComputedStyle-background-size.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/css/remove-shorthand.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/css/uri-token-parsing.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/css/value-list-out-of-bounds-crash.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/gradients/background-clipped.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/images/svg-as-tiled-background.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/repaint/background-misaligned.html = PASS FAIL
+BUG26291 LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = PASS FAIL
+// --- Mac ---
+// Regressions: Unexpected text failures (1):
+BUG26291 MAC : LayoutTests/transitions/multiple-mask-transitions.html = TEXT
+// Regressions: Unexpected image failures (3):
+// Note: these are probably related to the latest changes in ComplexTextController in
+// third_party\WebKit\WebCore\platform\graphics\mac
+BUG26291 MAC : LayoutTests/fast/text/atsui-multiple-renderers.html = IMAGE
+BUG26291 MAC : LayoutTests/fast/text/drawBidiText.html = IMAGE
+BUG26291 MAC : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
+// --- Windows ---
+// Regressions: Unexpected crashes (1):
+BUG26291 WIN : LayoutTests/fast/forms/button-submit.html = CRASH
