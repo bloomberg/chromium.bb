@@ -82,12 +82,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
                                      PrefService* prefs,
                                      const FilePath& install_directory,
-                                     MessageLoop* frontend_loop,
-                                     MessageLoop* backend_loop,
                                      bool autoupdate_enabled)
     : profile_(profile),
       extension_prefs_(new ExtensionPrefs(prefs, install_directory)),
-      backend_loop_(backend_loop),
       install_directory_(install_directory),
       extensions_enabled_(true),
       show_extensions_prompts_(true),
@@ -106,11 +103,10 @@ ExtensionsService::ExtensionsService(Profile* profile,
       update_frequency = StringToInt(WideToASCII(command_line->GetSwitchValue(
           switches::kExtensionsUpdateFrequency)));
     }
-    updater_ = new ExtensionUpdater(this, prefs, update_frequency,
-        backend_loop_, g_browser_process->io_thread()->message_loop());
+    updater_ = new ExtensionUpdater(this, prefs, update_frequency);
   }
 
-  backend_ = new ExtensionsServiceBackend(install_directory_, frontend_loop);
+  backend_ = new ExtensionsServiceBackend(install_directory_);
 }
 
 ExtensionsService::~ExtensionsService() {
@@ -143,7 +139,6 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
                       "",   // no expected id
                       false,  // don't delete crx when complete
                       true,  // allow privilege increase
-                      backend_loop_,
                       this,
                       NULL);  // no client (silent install)
 }
@@ -160,7 +155,6 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                       id,
                       true,  // delete crx when complete
                       false,  // do not allow upgrade of privileges
-                      backend_loop_,
                       this,
                       NULL);  // no client (silent install)
 }
@@ -196,9 +190,11 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (Extension::LOAD != extension->location()) {
-    backend_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      &extension_file_util::UninstallExtension, extension_id,
-      install_directory_));
+    ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          &extension_file_util::UninstallExtension, extension_id,
+          install_directory_));
   }
 
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
@@ -256,9 +252,12 @@ void ExtensionsService::DisableExtension(const std::string& extension_id) {
 }
 
 void ExtensionsService::LoadExtension(const FilePath& extension_path) {
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::LoadSingleExtension,
-      extension_path, scoped_refptr<ExtensionsService>(this)));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          backend_.get(),
+          &ExtensionsServiceBackend::LoadSingleExtension,
+          extension_path, scoped_refptr<ExtensionsService>(this)));
 }
 
 void ExtensionsService::LoadAllExtensions() {
@@ -297,9 +296,12 @@ void ExtensionsService::LoadInstalledExtension(
 
   if (location == Extension::EXTERNAL_PREF ||
       location == Extension::EXTERNAL_REGISTRY) {
-    backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-        &ExtensionsServiceBackend::CheckExternalUninstall,
-        scoped_refptr<ExtensionsService>(this), id, location));
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            backend_.get(),
+            &ExtensionsServiceBackend::CheckExternalUninstall,
+            scoped_refptr<ExtensionsService>(this), id, location));
   }
 }
 
@@ -315,11 +317,13 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
         static_cast<ChromeURLRequestContextGetter*>(
             profile_->GetRequestContext());
     if (context_getter) {
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(context_getter,
-                            &ChromeURLRequestContextGetter::OnNewExtensions,
-                            extension->id(),
-                            extension->path()));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              context_getter,
+              &ChromeURLRequestContextGetter::OnNewExtensions,
+              extension->id(),
+              extension->path()));
     }
   }
 
@@ -342,7 +346,8 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
         static_cast<ChromeURLRequestContextGetter*>(
             profile_->GetRequestContext());
     if (context_getter) {
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
               context_getter,
               &ChromeURLRequestContextGetter::OnUnloadedExtension,
@@ -384,10 +389,11 @@ void ExtensionsService::CheckForExternalUpdates() {
   // later?
   std::set<std::string> killed_extensions;
   extension_prefs_->GetKilledExtensionIds(&killed_extensions);
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::CheckForExternalUpdates,
-      killed_extensions,
-      scoped_refptr<ExtensionsService>(this)));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          backend_.get(), &ExtensionsServiceBackend::CheckForExternalUpdates,
+          killed_extensions, scoped_refptr<ExtensionsService>(this)));
 }
 
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
@@ -439,9 +445,11 @@ void ExtensionsService::ReloadExtensions() {
 void ExtensionsService::GarbageCollectExtensions() {
   InstalledExtensionSet installed(
       new InstalledExtensions(extension_prefs_.get()));
-  backend_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      &extension_file_util::GarbageCollectExtensions, install_directory_,
-      installed.extensions()));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          &extension_file_util::GarbageCollectExtensions, install_directory_,
+          installed.extensions()));
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
@@ -601,15 +609,19 @@ Extension* ExtensionsService::GetExtensionByURL(const GURL& url) {
 }
 
 void ExtensionsService::ClearProvidersForTesting() {
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::ClearProvidersForTesting));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          backend_.get(), &ExtensionsServiceBackend::ClearProvidersForTesting));
 }
 
 void ExtensionsService::SetProviderForTesting(
     Extension::Location location, ExternalExtensionProvider* test_provider) {
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::SetProviderForTesting,
-      location, test_provider));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          backend_.get(), &ExtensionsServiceBackend::SetProviderForTesting,
+          location, test_provider));
 }
 
 void ExtensionsService::OnExternalExtensionFound(const std::string& id,
@@ -639,7 +651,6 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
   CrxInstaller::Start(path, install_directory_, location, id,
                       false,  // don't delete crx when complete
                       true,  // allow privilege increase
-                      backend_loop_,
                       this,
                       NULL);  // no client (silent install)
 }
@@ -664,11 +675,10 @@ void ExtensionsService::ReportExtensionLoadError(
 // ExtensionsServicesBackend
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
-    const FilePath& install_directory, MessageLoop* frontend_loop)
+    const FilePath& install_directory)
         : frontend_(NULL),
           install_directory_(install_directory),
-          alert_on_error_(false),
-          frontend_loop_(frontend_loop) {
+          alert_on_error_(false) {
   // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
   // pref data in the ctor and that is called on the UI thread. Would be better
   // to re-read data each time we list external extensions, anyway.
@@ -715,25 +725,19 @@ void ExtensionsServiceBackend::LoadSingleExtension(
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
-  // In the unit tests, frontend_loop_ may be null.
-  if (frontend_loop_ == NULL) {
-    frontend_->ReportExtensionLoadError(
-        extension_path,
-        error,
-        NotificationType::EXTENSION_INSTALL_ERROR,
-        alert_on_error_);
-    return;
-  }
-
-  frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(frontend_,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          frontend_,
           &ExtensionsService::ReportExtensionLoadError, extension_path,
           error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
 }
 
 void ExtensionsServiceBackend::ReportExtensionLoaded(Extension* extension) {
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionLoaded, extension, true));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          frontend_, &ExtensionsService::OnExtensionLoaded, extension, true));
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(
@@ -795,9 +799,10 @@ void ExtensionsServiceBackend::CheckExternalUninstall(
     return;  // Yup, known extension, don't uninstall.
 
   // This is an external extension that we don't have registered.  Uninstall.
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend.get(), &ExtensionsService::UninstallExtension,
-      id, true));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          frontend.get(), &ExtensionsService::UninstallExtension, id, true));
 }
 
 void ExtensionsServiceBackend::ClearProvidersForTesting() {
@@ -815,7 +820,9 @@ void ExtensionsServiceBackend::SetProviderForTesting(
 void ExtensionsServiceBackend::OnExternalExtensionFound(
     const std::string& id, const Version* version, const FilePath& path,
     Extension::Location location) {
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(frontend_,
-      &ExtensionsService::OnExternalExtensionFound, id, version->GetString(),
-      path, location));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          frontend_, &ExtensionsService::OnExternalExtensionFound, id,
+          version->GetString(), path, location));
 }

@@ -29,7 +29,6 @@ class Extension;
 class ExtensionsServiceBackend;
 class ExtensionUpdater;
 class GURL;
-class MessageLoop;
 class PrefService;
 class Profile;
 class ResourceDispatcherHost;
@@ -81,8 +80,6 @@ class ExtensionsService
                     const CommandLine* command_line,
                     PrefService* prefs,
                     const FilePath& install_directory,
-                    MessageLoop* frontend_loop,
-                    MessageLoop* backend_loop,
                     bool autoupdate_enabled);
   virtual ~ExtensionsService();
 
@@ -247,9 +244,6 @@ class ExtensionsService
   // Preferences for the owning profile.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
 
-  // The message loop to use with the backend.
-  MessageLoop* backend_loop_;
-
   // The current list of installed extensions.
   ExtensionList extensions_;
 
@@ -286,8 +280,7 @@ class ExtensionsServiceBackend
   // |rdh| can be NULL in the case of test environment.
   // |extension_prefs| contains a dictionary value that points to the extension
   // preferences.
-  ExtensionsServiceBackend(const FilePath& install_directory,
-                           MessageLoop* frontend_loop);
+  ExtensionsServiceBackend(const FilePath& install_directory);
 
   virtual ~ExtensionsServiceBackend();
 
@@ -365,9 +358,6 @@ class ExtensionsServiceBackend
 
   // Whether errors result in noisy alerts.
   bool alert_on_error_;
-
-  // The message loop to use to call the frontend.
-  MessageLoop* frontend_loop_;
 
   // A map of all external extension providers.
   typedef std::map<Extension::Location,

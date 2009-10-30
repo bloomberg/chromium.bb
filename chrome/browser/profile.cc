@@ -668,16 +668,12 @@ void ProfileImpl::InitExtensions() {
   }
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
-  user_script_master_ = new UserScriptMaster(
-      g_browser_process->file_thread()->message_loop(),
-      script_dir);
+  user_script_master_ = new UserScriptMaster(script_dir);
   extensions_service_ = new ExtensionsService(
       this,
       CommandLine::ForCurrentProcess(),
       GetPrefs(),
       GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
-      MessageLoop::current(),
-      g_browser_process->file_thread()->message_loop(),
       true);
 
   extensions_service_->Init();

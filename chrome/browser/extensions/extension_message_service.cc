@@ -112,12 +112,9 @@ const char ExtensionMessageService::kDispatchEvent[] =
     "Event.dispatchJSON";
 
 ExtensionMessageService::ExtensionMessageService(Profile* profile)
-    : ui_loop_(MessageLoop::current()),
-      profile_(profile),
+    : profile_(profile),
       extension_devtools_manager_(NULL),
       next_port_id_(0) {
-  DCHECK_EQ(ui_loop_->type(), MessageLoop::TYPE_UI);
-
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
@@ -132,8 +129,6 @@ ExtensionMessageService::~ExtensionMessageService() {
 }
 
 void ExtensionMessageService::ProfileDestroyed() {
-  DCHECK_EQ(ui_loop_->type(), MessageLoop::TYPE_UI);
-
   profile_ = NULL;
 
   // We remove notifications here because our destructor might be called on
@@ -207,9 +202,10 @@ int ExtensionMessageService::OpenChannelToExtension(
 
   // Each side of the port is given his own port ID.  When they send messages,
   // we convert to the opposite port ID.  See PostMessageFromRenderer.
-  ui_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-          &ExtensionMessageService::OpenChannelToExtensionOnUIThread,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ExtensionMessageService::OpenChannelToExtensionOnUIThread,
           source->id(), routing_id, port2_id, source_extension_id,
           target_extension_id, channel_name));
 
@@ -230,9 +226,10 @@ int ExtensionMessageService::OpenChannelToTab(int routing_id,
 
   // Each side of the port is given his own port ID.  When they send messages,
   // we convert to the opposite port ID.  See PostMessageFromRenderer.
-  ui_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-          &ExtensionMessageService::OpenChannelToTabOnUIThread,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ExtensionMessageService::OpenChannelToTabOnUIThread,
           source->id(), routing_id, port2_id, tab_id, extension_id,
           channel_name));
 

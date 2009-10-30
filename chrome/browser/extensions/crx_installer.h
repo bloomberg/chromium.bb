@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -48,7 +47,6 @@ class CrxInstaller :
   //               should be after unpacking, it can be specified here as a
   //               sanity check.
   //  delete_crx: Whether the crx should be deleted on completion.
-  //  file_loop: The message loop to do file IO on.
   //  frontend: The ExtensionsService to report the successfully installed
   //            extension to.
   //  client: Optional. If specified, will be used to confirm installation and
@@ -60,7 +58,6 @@ class CrxInstaller :
                     const std::string& expected_id,
                     bool delete_crx,
                     bool allow_privilege_increase,
-                    MessageLoop* file_loop,
                     ExtensionsService* frontend,
                     ExtensionInstallUI* client);
 
@@ -80,7 +77,6 @@ class CrxInstaller :
                const std::string& expected_id,
                bool delete_crx,
                bool allow_privilege_increase,
-               MessageLoop* file_loop,
                ExtensionsService* frontend,
                ExtensionInstallUI* client);
   ~CrxInstaller();
@@ -133,12 +129,6 @@ class CrxInstaller :
   // Whether privileges should be allowed to silently increaes from any
   // previously installed version of the extension.
   bool allow_privilege_increase_;
-
-  // The message loop to use for file IO.
-  MessageLoop* file_loop_;
-
-  // The message loop the UI is running on.
-  MessageLoop* ui_loop_;
 
   // The extension we're installing. We own this and either pass it off to
   // ExtensionsService on success, or delete it on failure.

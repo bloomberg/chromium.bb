@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "ipc/ipc_channel.h"
@@ -17,7 +18,6 @@
 class CommandLine;
 class DictionaryValue;
 class ListValue;
-class MessageLoop;
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run
@@ -72,7 +72,7 @@ class UtilityProcessHost : public ChildProcessHost {
   };
 
   UtilityProcessHost(ResourceDispatcherHost* rdh, Client* client,
-                     MessageLoop* client_loop);
+                     ChromeThread::ID client_thread_id);
   virtual ~UtilityProcessHost();
 
   // Start a process to unpack the extension at the given path.  The process
@@ -117,7 +117,7 @@ class UtilityProcessHost : public ChildProcessHost {
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;
-  MessageLoop* client_loop_;
+  ChromeThread::ID client_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHost);
 };

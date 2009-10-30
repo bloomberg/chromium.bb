@@ -22,17 +22,17 @@ namespace {
 
 class UtilityProcessHostTest : public testing::Test {
  public:
-  UtilityProcessHostTest() {
+  UtilityProcessHostTest() : io_thread_(ChromeThread::IO, &message_loop_) {
   }
 
  protected:
   MessageLoopForIO message_loop_;
+  ChromeThread io_thread_;
 };
 
 class TestUtilityProcessHostClient : public UtilityProcessHost::Client {
  public:
-  explicit TestUtilityProcessHostClient(MessageLoop* message_loop)
-      : message_loop_(message_loop), success_(false) {
+  explicit TestUtilityProcessHostClient() : success_(false) {
   }
 
   // UtilityProcessHost::Client methods.
@@ -63,16 +63,14 @@ class TestUtilityProcessHostClient : public UtilityProcessHost::Client {
   }
 
  private:
-  MessageLoop* message_loop_;
   bool success_;
 };
 
 class TestUtilityProcessHost : public UtilityProcessHost {
  public:
   TestUtilityProcessHost(TestUtilityProcessHostClient* client,
-                         MessageLoop* loop_io,
                          ResourceDispatcherHost* rdh)
-      : UtilityProcessHost(rdh, client, loop_io) {
+      : UtilityProcessHost(rdh, client, ChromeThread::IO) {
   }
 
  protected:
@@ -140,10 +138,10 @@ TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
                                   temp_extension_dir.AppendASCII("theme.crx")));
 
   scoped_refptr<TestUtilityProcessHostClient> client(
-      new TestUtilityProcessHostClient(&message_loop_));
+      new TestUtilityProcessHostClient());
   ResourceDispatcherHost rdh(NULL);
   TestUtilityProcessHost* process_host =
-      new TestUtilityProcessHost(client.get(), &message_loop_, &rdh);
+      new TestUtilityProcessHost(client.get(), &rdh);
   // process_host will delete itself when it's done.
   ProcessClosedObserver observer(&message_loop_);
   process_host->StartExtensionUnpacker(

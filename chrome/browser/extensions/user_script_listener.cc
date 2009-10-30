@@ -4,27 +4,17 @@
 
 #include "chrome/browser/extensions/user_script_listener.h"
 
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
-UserScriptListener::UserScriptListener(MessageLoop* ui_loop,
-                                       MessageLoop* io_loop,
-                                       ResourceDispatcherHost* rdh)
-    : ui_loop_(ui_loop),
-      io_loop_(io_loop),
-      resource_dispatcher_host_(rdh),
+UserScriptListener::UserScriptListener(ResourceDispatcherHost* rdh)
+    : resource_dispatcher_host_(rdh),
       user_scripts_ready_(false) {
-  DCHECK(ui_loop_);
-  DCHECK_EQ(ui_loop_, MessageLoop::current());
   DCHECK(resource_dispatcher_host_);
-
-  // IO loop can be NULL in unit tests.
-  if (!io_loop_)
-    io_loop_ = ui_loop;
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
@@ -35,7 +25,7 @@ UserScriptListener::UserScriptListener(MessageLoop* ui_loop,
 }
 
 bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
@@ -72,7 +62,7 @@ bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
 }
 
 void UserScriptListener::StartDelayedRequests() {
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   user_scripts_ready_ = true;
 
@@ -92,7 +82,7 @@ void UserScriptListener::StartDelayedRequests() {
 }
 
 void UserScriptListener::AppendNewURLPatterns(const URLPatterns& new_patterns) {
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   user_scripts_ready_ = false;
   url_patterns_.insert(url_patterns_.end(),
@@ -100,13 +90,13 @@ void UserScriptListener::AppendNewURLPatterns(const URLPatterns& new_patterns) {
 }
 
 void UserScriptListener::ReplaceURLPatterns(const URLPatterns& patterns) {
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   url_patterns_ = patterns;
 }
 
 void UserScriptListener::CollectURLPatterns(Extension* extension,
                                             URLPatterns* patterns) {
-  DCHECK_EQ(ui_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   const UserScriptList& scripts = extension->content_scripts();
   for (UserScriptList::const_iterator iter = scripts.begin();
@@ -120,7 +110,7 @@ void UserScriptListener::CollectURLPatterns(Extension* extension,
 void UserScriptListener::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK_EQ(ui_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED: {
@@ -131,8 +121,10 @@ void UserScriptListener::Observe(NotificationType type,
       URLPatterns new_patterns;
       CollectURLPatterns(Details<Extension>(details).ptr(), &new_patterns);
       if (!new_patterns.empty()) {
-        io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-            &UserScriptListener::AppendNewURLPatterns, new_patterns));
+        ChromeThread::PostTask(
+            ChromeThread::IO, FROM_HERE,
+            NewRunnableMethod(
+                this, &UserScriptListener::AppendNewURLPatterns, new_patterns));
       }
       break;
     }
@@ -150,13 +142,16 @@ void UserScriptListener::Observe(NotificationType type,
         if (*it != unloaded_extension)
           CollectURLPatterns(*it, &new_patterns);
       }
-      io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &UserScriptListener::ReplaceURLPatterns, new_patterns));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              this, &UserScriptListener::ReplaceURLPatterns, new_patterns));
       break;
     }
 
     case NotificationType::USER_SCRIPTS_UPDATED: {
-      io_loop_->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UserScriptListener::StartDelayedRequests));
       break;
     }

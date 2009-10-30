@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,7 +22,7 @@
 
 // The LoadImageTask is for asynchronously loading the image on the file thread.
 // If the image is successfully loaded and decoded it will report back on the
-// |callback_loop| to let the caller know the image is done loading.
+// calling thread to let the caller know the image is done loading.
 class ImageLoadingTracker::LoadImageTask : public Task {
  public:
   // Constructor for the LoadImageTask class. |tracker| is the object that
@@ -35,17 +35,18 @@ class ImageLoadingTracker::LoadImageTask : public Task {
                 const ExtensionResource& resource,
                 const gfx::Size& max_size,
                 size_t index)
-    : callback_loop_(MessageLoop::current()),
-      tracker_(tracker),
+    : tracker_(tracker),
       resource_(resource),
       max_size_(max_size),
-      index_(index) {}
+      index_(index) {
+    CHECK(ChromeThread::GetCurrentThreadIdentifier(&callback_thread_id_));
+  }
 
   void ReportBack(SkBitmap* image) {
-    callback_loop_->PostTask(FROM_HERE, NewRunnableMethod(tracker_,
-        &ImageLoadingTracker::OnImageLoaded,
-        image,
-        index_));
+    ChromeThread::PostTask(
+        callback_thread_id_, FROM_HERE,
+        NewRunnableMethod(
+            tracker_, &ImageLoadingTracker::OnImageLoaded, image, index_));
   }
 
   virtual void Run() {
@@ -80,8 +81,8 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   }
 
  private:
-  // The message loop that we need to call back on to report that we are done.
-  MessageLoop* callback_loop_;
+  // The thread that we need to call back on to report that we are done.
+  ChromeThread::ID callback_thread_id_;
 
   // The object that is waiting for us to respond back.
   ImageLoadingTracker* tracker_;
@@ -101,9 +102,9 @@ class ImageLoadingTracker::LoadImageTask : public Task {
 
 void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource,
                                             const gfx::Size& max_size) {
-  MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
-  file_loop->PostTask(FROM_HERE, new LoadImageTask(this, resource, max_size,
-                                                   posted_count_++));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new LoadImageTask(this, resource, max_size, posted_count_++));
 }
 
 void ImageLoadingTracker::OnImageLoaded(SkBitmap* image, size_t index) {

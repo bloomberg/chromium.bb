@@ -31,8 +31,8 @@ class SimpleTestJob : public URLRequestTestJob {
 
 class MockUserScriptMaster : public UserScriptMaster {
  public:
-  explicit MockUserScriptMaster(MessageLoop* worker, const FilePath& script_dir)
-      : UserScriptMaster(worker, script_dir) {}
+  explicit MockUserScriptMaster(const FilePath& script_dir)
+      : UserScriptMaster(script_dir) {}
 
   virtual void StartScan() {
     // Do nothing. We want to manually control when scans occur.
@@ -184,6 +184,8 @@ class ResourceDispatcherHostTester
 class UserScriptListenerTest : public testing::Test {
  public:
   virtual void SetUp() {
+    ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
+    file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
     io_thread_.reset(new MockIOThread());
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
@@ -196,14 +198,12 @@ class UserScriptListenerTest : public testing::Test {
     resource_tester_ =
         new ResourceDispatcherHostTester(io_thread_->message_loop());
 
-    master_ = new MockUserScriptMaster(&loop_, install_dir);
+    master_ = new MockUserScriptMaster(install_dir);
 
     service_ = new ExtensionsService(&profile_,
                                      CommandLine::ForCurrentProcess(),
                                      profile_.GetPrefs(),
                                      install_dir,
-                                     &loop_,
-                                     &loop_,
                                      false);
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
@@ -213,12 +213,16 @@ class UserScriptListenerTest : public testing::Test {
 
   virtual void TearDown() {
     io_thread_.reset();
+    file_thread_.reset();
+    ui_thread_.reset();
     resource_tester_ = NULL;
   }
 
  protected:
   TestingProfile profile_;
   MessageLoopForUI loop_;
+  scoped_ptr<ChromeThread> ui_thread_;
+  scoped_ptr<ChromeThread> file_thread_;
   scoped_ptr<MockIOThread> io_thread_;
   scoped_refptr<ResourceDispatcherHostTester> resource_tester_;
   scoped_refptr<MockUserScriptMaster> master_;

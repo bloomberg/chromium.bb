@@ -36,8 +36,8 @@ static bool GetDeclarationValue(const base::StringPiece& line,
 }
 
 UserScriptMaster::ScriptReloader::ScriptReloader(UserScriptMaster* master)
-    : master_(master),
-      master_message_loop_(MessageLoop::current()) {
+    : master_(master) {
+  CHECK(ChromeThread::GetCurrentThreadIdentifier(&master_thread_id_));
 }
 
 // static
@@ -110,15 +110,15 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 }
 
 void UserScriptMaster::ScriptReloader::StartScan(
-    MessageLoop* work_loop, const FilePath& script_dir,
-    const UserScriptList& lone_scripts) {
+    const FilePath& script_dir, const UserScriptList& lone_scripts) {
   // Add a reference to ourselves to keep ourselves alive while we're running.
   // Balanced by NotifyMaster().
   AddRef();
-  work_loop->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &UserScriptMaster::ScriptReloader::RunScan,
-                        script_dir, lone_scripts));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &UserScriptMaster::ScriptReloader::RunScan, script_dir,
+          lone_scripts));
 }
 
 void UserScriptMaster::ScriptReloader::NotifyMaster(
@@ -252,17 +252,15 @@ void UserScriptMaster::ScriptReloader::RunScan(
   // Scripts now contains list of up-to-date scripts. Load the content in the
   // shared memory and let the master know it's ready. We need to post the task
   // back even if no scripts ware found to balance the AddRef/Release calls
-  master_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &ScriptReloader::NotifyMaster,
-                        Serialize(scripts)));
+  ChromeThread::PostTask(
+      master_thread_id_, FROM_HERE,
+      NewRunnableMethod(
+          this, &ScriptReloader::NotifyMaster, Serialize(scripts)));
 }
 
 
-UserScriptMaster::UserScriptMaster(MessageLoop* worker_loop,
-                                   const FilePath& script_dir)
+UserScriptMaster::UserScriptMaster(const FilePath& script_dir)
     : user_script_dir_(script_dir),
-      worker_loop_(worker_loop),
       extensions_service_ready_(false),
       pending_scan_(false) {
   if (!user_script_dir_.value().empty())
@@ -383,5 +381,5 @@ void UserScriptMaster::StartScan() {
   if (!script_reloader_)
     script_reloader_ = new ScriptReloader(this);
 
-  script_reloader_->StartScan(worker_loop_, user_script_dir_, lone_scripts_);
+  script_reloader_->StartScan(user_script_dir_, lone_scripts_);
 }

@@ -25,8 +25,7 @@ class ExtensionDisabledDialogDelegate
   ExtensionDisabledDialogDelegate(Profile* profile,
                                   ExtensionsService* service,
                                   Extension* extension)
-        : profile_(profile), service_(service), extension_(extension),
-          ui_loop_(MessageLoop::current()) {
+        : profile_(profile), service_(service), extension_(extension) {
     AddRef();  // balanced in ContinueInstall or AbortInstall.
 
     // Do this now because we can't touch extension on the file loop.
@@ -57,13 +56,14 @@ class ExtensionDisabledDialogDelegate
     FilePath install_icon_path = install_icon_resource_.GetFilePath();
     CrxInstaller::DecodeInstallIcon(install_icon_path, &install_icon_);
     // Then we display the UI on the UI thread.
-    ui_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
-                          &ExtensionDisabledDialogDelegate::ConfirmInstall));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &ExtensionDisabledDialogDelegate::ConfirmInstall));
   }
 
   void ConfirmInstall() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     ExtensionInstallUI ui(profile_);
     ui.ConfirmInstall(this, extension_, install_icon_.get());
   }
@@ -73,7 +73,6 @@ class ExtensionDisabledDialogDelegate
   Extension* extension_;
   ExtensionResource install_icon_resource_;
   scoped_ptr<SkBitmap> install_icon_;
-  MessageLoop* ui_loop_;
 };
 
 class ExtensionDisabledInfobarDelegate

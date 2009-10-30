@@ -22,7 +22,6 @@
 
 class Extension;
 class ExtensionUpdaterTest;
-class MessageLoop;
 class ExtensionUpdaterFileHandler;
 class PrefService;
 
@@ -30,9 +29,7 @@ class PrefService;
 //
 // ExtensionUpdater* updater = new ExtensionUpdater(my_extensions_service,
 //                                                  pref_service,
-//                                                  update_frequency_secs,
-//                                                  file_io_loop,
-//                                                  io_loop);
+//                                                  update_frequency_secs);
 // updater.Start();
 // ....
 // updater.Stop();
@@ -45,9 +42,7 @@ class ExtensionUpdater
   // controls how often update checks are scheduled.
   ExtensionUpdater(ExtensionUpdateService* service,
                    PrefService* prefs,
-                   int frequency_seconds,
-                   MessageLoop* file_io_loop,
-                   MessageLoop* io_loop);
+                   int frequency_seconds);
 
   virtual ~ExtensionUpdater();
 
@@ -177,12 +172,6 @@ class ExtensionUpdater
 
   base::OneShotTimer<ExtensionUpdater> timer_;
   int frequency_seconds_;
-
-  // The MessageLoop where we should do file I/O.
-  MessageLoop* file_io_loop_;
-
-  // The IO loop for IPC.
-  MessageLoop* io_loop_;
 
   PrefService* prefs_;
 

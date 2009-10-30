@@ -259,7 +259,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(ui_loop_, io_loop, this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(
-          new UserScriptListener(ui_loop_, io_loop, this))),
+          new UserScriptListener(this))),
       safe_browsing_(new SafeBrowsingService),
       webkit_thread_(new WebKitThread),
       request_id_(-1),

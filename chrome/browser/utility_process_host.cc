@@ -26,10 +26,10 @@
 
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
                                        Client* client,
-                                       MessageLoop* client_loop)
+                                       ChromeThread::ID client_thread_id)
     : ChildProcessHost(UTILITY_PROCESS, rdh),
       client_(client),
-      client_loop_(client_loop) {
+      client_thread_id_(client_thread_id) {
 }
 
 UtilityProcessHost::~UtilityProcessHost() {
@@ -139,7 +139,8 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 }
 
 void UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
-  client_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      client_thread_id_, FROM_HERE,
       NewRunnableMethod(client_.get(), &Client::OnMessageReceived, message));
 }
 
@@ -147,7 +148,8 @@ void UtilityProcessHost::OnChannelError() {
   bool child_exited;
   bool did_crash = base::DidProcessCrash(&child_exited, handle());
   if (did_crash) {
-    client_loop_->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        client_thread_id_, FROM_HERE,
         NewRunnableMethod(client_.get(), &Client::OnProcessCrashed));
   }
 }

@@ -7,14 +7,13 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_creator.h"
 
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
                                    const FilePath& key_file)
-    : ui_loop_(MessageLoop::current()), client_(client),
-      root_directory_(root_directory), key_file_(key_file) {
+    : client_(client), root_directory_(root_directory), key_file_(key_file) {
+  CHECK(ChromeThread::GetCurrentThreadIdentifier(&client_thread_id_));
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &PackExtensionJob::RunOnFileThread));
@@ -34,11 +33,15 @@ void PackExtensionJob::RunOnFileThread() {
   // returns. See bug 20734.
   ExtensionCreator creator;
   if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_)) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &PackExtensionJob::ReportSuccessOnUIThread));
+    ChromeThread::PostTask(
+        client_thread_id_, FROM_HERE,
+        NewRunnableMethod(this, &PackExtensionJob::ReportSuccessOnUIThread));
   } else {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &PackExtensionJob::ReportFailureOnUIThread, creator.error_message()));
+    ChromeThread::PostTask(
+        client_thread_id_, FROM_HERE,
+        NewRunnableMethod(
+            this, &PackExtensionJob::ReportFailureOnUIThread,
+            creator.error_message()));
   }
 }
 

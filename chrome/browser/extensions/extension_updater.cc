@@ -60,15 +60,11 @@ static const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 class ExtensionUpdaterFileHandler
     : public base::RefCountedThreadSafe<ExtensionUpdaterFileHandler> {
  public:
-  ExtensionUpdaterFileHandler(MessageLoop* updater_loop,
-                              MessageLoop* file_io_loop)
-      : updater_loop_(updater_loop), file_io_loop_(file_io_loop) {}
-
   // Writes crx file data into a tempfile, and calls back the updater.
   void WriteTempFile(const std::string& extension_id, const std::string& data,
                      scoped_refptr<ExtensionUpdater> updater) {
     // Make sure we're running in the right thread.
-    DCHECK(MessageLoop::current() == file_io_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
     FilePath path;
     if (!file_util::CreateTemporaryFile(&path)) {
@@ -86,47 +82,32 @@ class ExtensionUpdaterFileHandler
 
     // The ExtensionUpdater is now responsible for cleaning up the temp file
     // from disk.
-    updater_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
-        path));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
+            path));
   }
 
   void DeleteFile(const FilePath& path) {
-    DCHECK(MessageLoop::current() == file_io_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
     if (!file_util::Delete(path, false)) {
       LOG(WARNING) << "Failed to delete temp file " << path.value();
     }
   }
-
- private:
-  // The MessageLoop we use to call back the ExtensionUpdater.
-  MessageLoop* updater_loop_;
-
-  // The MessageLoop we should be operating on for file operations.
-  MessageLoop* file_io_loop_;
 };
 
 
 ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
                                    PrefService* prefs,
-                                   int frequency_seconds,
-                                   MessageLoop* file_io_loop,
-                                   MessageLoop* io_loop)
+                                   int frequency_seconds)
     : service_(service), frequency_seconds_(frequency_seconds),
-      file_io_loop_(file_io_loop), io_loop_(io_loop), prefs_(prefs),
-      file_handler_(new ExtensionUpdaterFileHandler(MessageLoop::current(),
-                                                    file_io_loop_)),
+      prefs_(prefs), file_handler_(new ExtensionUpdaterFileHandler()),
       blacklist_checks_enabled_(true) {
   Init();
 }
 
 void ExtensionUpdater::Init() {
-  // Unless we're in a unit test, expect that the file_io_loop_ is on the
-  // browser file thread.
-  if (g_browser_process->file_thread() != NULL) {
-    DCHECK(file_io_loop_ == g_browser_process->file_thread()->message_loop());
-  }
-
   DCHECK_GE(frequency_seconds_, 5);
   DCHECK(frequency_seconds_ <= kMaxUpdateFrequencySeconds);
 #ifdef NDEBUG
@@ -225,10 +206,8 @@ void ExtensionUpdater::OnURLFetchComplete(
 // Utility class to handle doing xml parsing in a sandboxed utility process.
 class SafeManifestParser : public UtilityProcessHost::Client {
  public:
-  SafeManifestParser(const std::string& xml, ExtensionUpdater* updater,
-                     MessageLoop* updater_loop, MessageLoop* io_loop)
-      : xml_(xml), updater_loop_(updater_loop), io_loop_(io_loop),
-        updater_(updater) {
+  SafeManifestParser(const std::string& xml, ExtensionUpdater* updater)
+      : xml_(xml), updater_(updater) {
   }
 
   ~SafeManifestParser() {}
@@ -236,15 +215,17 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   // Posts a task over to the IO loop to start the parsing of xml_ in a
   // utility process.
   void Start() {
-    DCHECK(MessageLoop::current() == updater_loop_);
-    io_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SafeManifestParser::ParseInSandbox,
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this, &SafeManifestParser::ParseInSandbox,
             g_browser_process->resource_dispatcher_host()));
   }
 
   // Creates the sandboxed utility process and tells it to start parsing.
   void ParseInSandbox(ResourceDispatcherHost* rdh) {
-    DCHECK(MessageLoop::current() == io_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     // TODO(asargent) we shouldn't need to do this branch here - instead
     // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
@@ -259,18 +240,22 @@ class SafeManifestParser : public UtilityProcessHost::Client {
 
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
-          rdh, this, updater_loop_);
+          rdh, this, ChromeThread::UI);
       host->StartUpdateManifestParse(xml_);
     } else {
       UpdateManifest manifest;
       if (manifest.Parse(xml_)) {
-        updater_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-            &SafeManifestParser::OnParseUpdateManifestSucceeded,
-            manifest.results()));
+        ChromeThread::PostTask(
+            ChromeThread::UI, FROM_HERE,
+            NewRunnableMethod(
+                this, &SafeManifestParser::OnParseUpdateManifestSucceeded,
+                manifest.results()));
       } else {
-        updater_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-            &SafeManifestParser::OnParseUpdateManifestFailed,
-            manifest.errors()));
+        ChromeThread::PostTask(
+            ChromeThread::UI, FROM_HERE,
+            NewRunnableMethod(
+                this, &SafeManifestParser::OnParseUpdateManifestFailed,
+                manifest.errors()));
       }
     }
   }
@@ -278,24 +263,18 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   // Callback from the utility process when parsing succeeded.
   virtual void OnParseUpdateManifestSucceeded(
       const UpdateManifest::ResultList& list) {
-    DCHECK(MessageLoop::current() == updater_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     updater_->HandleManifestResults(list);
   }
 
   // Callback from the utility process when parsing failed.
   virtual void OnParseUpdateManifestFailed(const std::string& error_message) {
-    DCHECK(MessageLoop::current() == updater_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
   }
 
  private:
   const std::string& xml_;
-
-  // The MessageLoop we use to call back the ExtensionUpdater.
-  MessageLoop* updater_loop_;
-
-  // The MessageLoop where we create the utility process.
-  MessageLoop* io_loop_;
 
   scoped_refptr<ExtensionUpdater> updater_;
 };
@@ -308,8 +287,8 @@ void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
   if (status.status() == URLRequestStatus::SUCCESS && response_code == 200) {
-    scoped_refptr<SafeManifestParser>  safe_parser =
-        new SafeManifestParser(data, this, MessageLoop::current(), io_loop_);
+    scoped_refptr<SafeManifestParser> safe_parser =
+        new SafeManifestParser(data, this);
     safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
@@ -375,9 +354,11 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
     } else {
       // Successfully fetched - now write crx to a file so we can have the
       // ExtensionsService install it.
-      file_io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        file_handler_.get(), &ExtensionUpdaterFileHandler::WriteTempFile,
-        current_extension_fetch_.id, data, this));
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              file_handler_.get(), &ExtensionUpdaterFileHandler::WriteTempFile,
+              current_extension_fetch_.id, data, this));
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling
@@ -405,8 +386,10 @@ void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
 void ExtensionUpdater::OnExtensionInstallFinished(const FilePath& path,
                                                   Extension* extension) {
   // Have the file_handler_ delete the temp file on the file I/O thread.
-  file_io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-    file_handler_.get(), &ExtensionUpdaterFileHandler::DeleteFile, path));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_handler_.get(), &ExtensionUpdaterFileHandler::DeleteFile, path));
 }
 
 

@@ -139,9 +139,6 @@ class ExtensionMessageService
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
                         bool notify_other_port);
 
-  // The UI message loop, used for posting tasks.
-  MessageLoop* ui_loop_;
-
   // --- UI thread only:
 
   // Handles channel creation and notifies the destinations that a channel was

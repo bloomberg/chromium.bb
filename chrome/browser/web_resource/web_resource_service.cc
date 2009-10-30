@@ -118,11 +118,13 @@ class WebResourceService::UnpackerClient
 #endif
 
     if (use_utility_process) {
+      ChromeThread::ID thread_id;
+      CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_id));
       ChromeThread::PostTask(
           ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
                             web_resource_service_->resource_dispatcher_host_,
-                            MessageLoop::current()));
+                            thread_id));
     } else {
       WebResourceUnpacker unpacker(json_data_);
       if (unpacker.Run()) {
@@ -164,8 +166,8 @@ class WebResourceService::UnpackerClient
   }
 
   void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                              MessageLoop* file_loop) {
-    UtilityProcessHost* host = new UtilityProcessHost(rdh, this, file_loop);
+                              ChromeThread::ID thread_id) {
+    UtilityProcessHost* host = new UtilityProcessHost(rdh, this, thread_id);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
     host->StartWebResourceUnpacker(json_data_);

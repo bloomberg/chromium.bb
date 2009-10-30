@@ -555,9 +555,11 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
   ExtensionsUIHTMLSource* html_source = new ExtensionsUIHTMLSource();
 
   // Set up the chrome://extensions/ source.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
-          &ChromeURLDataManager::AddDataSource, html_source));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          &chrome_url_data_manager, &ChromeURLDataManager::AddDataSource,
+          html_source));
 }
 
 // static

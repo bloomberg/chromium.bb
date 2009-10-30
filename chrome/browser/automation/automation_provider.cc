@@ -2152,15 +2152,12 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
                                       reply_message);
 
     const FilePath& install_dir = service->install_directory();
-    MessageLoop* io_loop = g_browser_process->file_thread()->message_loop();
-
     CrxInstaller::Start(crx_path,
                         install_dir,
                         Extension::INTERNAL,
                         "",  // no expected id
                         false,  // please do not delete crx file
                         true,  // privilege increase allowed
-                        io_loop,
                         service,
                         NULL);  // silent isntall, no UI
   } else {

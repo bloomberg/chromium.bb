@@ -13,7 +13,6 @@
 #include "chrome/common/notification_registrar.h"
 
 class Extension;
-class MessageLoop;
 class URLRequest;
 
 // This class handles delaying of resource loads that depend on unloaded user
@@ -27,9 +26,7 @@ class UserScriptListener
     : public base::RefCountedThreadSafe<UserScriptListener>,
       public NotificationObserver {
  public:
-  UserScriptListener(MessageLoop* ui_loop,
-                     MessageLoop* io_loop,
-                     ResourceDispatcherHost* rdh);
+  UserScriptListener(ResourceDispatcherHost* rdh);
 
   void OnResourceDispatcherHostGone() { resource_dispatcher_host_ = NULL; }
 
@@ -52,8 +49,6 @@ class UserScriptListener
   // deleted, so user_scripts_ready_ remains unchanged.
   void ReplaceURLPatterns(const URLPatterns& patterns);
 
-  MessageLoop* ui_loop_;
-  MessageLoop* io_loop_;
   ResourceDispatcherHost* resource_dispatcher_host_;
 
   // A list of every request that we delayed. Will be flushed when user scripts

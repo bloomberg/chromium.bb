@@ -121,13 +121,13 @@ class ChromeThread : public base::Thread {
   //   unless you've specifically spun up the threads, but be mindful of it.
   static bool CurrentlyOn(ID identifier);
 
- private:
-  // Common initialization code for the constructors.
-  void Initialize();
-
   // If the current message loop is one of the known threads, returns true and
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier);
+
+ private:
+  // Common initialization code for the constructors.
+  void Initialize();
 
   static bool PostTaskHelper(
       ID identifier,

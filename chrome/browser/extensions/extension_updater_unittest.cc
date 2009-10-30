@@ -252,7 +252,7 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
+        new ExtensionUpdater(&service, prefs.get(), 60*60*24);
     updater->Start();
 
     // Tell the update that it's time to do update checks.
@@ -298,7 +298,7 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
+        new ExtensionUpdater(&service, prefs.get(), 60*60*24);
     updater->Start();
 
     // Tell the updater that it's time to do update checks.
@@ -341,8 +341,7 @@ class ExtensionUpdaterTest : public testing::Test {
     MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           NULL, NULL);
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
 
     // Check passing an empty list of parse results to DetermineUpdates
     std::vector<UpdateManifest::Result> updates;
@@ -366,6 +365,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleManifestDownloading() {
     MessageLoop ui_loop;
+    ChromeThread ui_thread(ChromeThread::UI, &ui_loop);
     ChromeThread file_thread(ChromeThread::FILE);
     file_thread.Start();
     ChromeThread io_thread(ChromeThread::IO);
@@ -377,9 +377,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           file_thread.message_loop(),
-                           io_thread.message_loop());
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
 
     GURL url1("http://localhost/manifest1");
     GURL url2("http://localhost/manifest2");
@@ -427,6 +425,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestSingleExtensionDownloading() {
     MessageLoop ui_loop;
+    ChromeThread ui_thread(ChromeThread::UI, &ui_loop);
     ChromeThread file_thread(ChromeThread::FILE);
     file_thread.Start();
     ChromeThread io_thread(ChromeThread::IO);
@@ -438,8 +437,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           file_thread.message_loop(), NULL);
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
 
     GURL test_url("http://localhost/extension.crx");
 
@@ -476,6 +474,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestBlacklistDownloading() {
     MessageLoop message_loop;
+    ChromeThread ui_thread(ChromeThread::UI, &message_loop);
     ChromeThread io_thread(ChromeThread::IO);
     io_thread.Start();
 
@@ -485,8 +484,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForBlacklistTests service;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           NULL, NULL);
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
     prefs.get()->
       RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, L"0");
     GURL test_url("http://localhost/extension.crx");
@@ -523,6 +521,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleExtensionDownloading() {
     MessageLoopForUI message_loop;
+    ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+    ChromeThread file_thread(ChromeThread::FILE, &message_loop);
     ChromeThread io_thread(ChromeThread::IO);
     io_thread.Start();
 
@@ -532,8 +532,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop, NULL);
+        new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");

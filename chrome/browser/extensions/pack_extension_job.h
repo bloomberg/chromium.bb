@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 
-class MessageLoop;
 
 // Manages packing an extension on the file thread and reporting the result
 // back to the UI.
@@ -38,7 +38,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ReportSuccessOnUIThread();
   void ReportFailureOnUIThread(const std::string& error);
 
-  MessageLoop* ui_loop_;
+  ChromeThread::ID client_thread_id_;
   Client* client_;
   FilePath root_directory_;
   FilePath key_file_;

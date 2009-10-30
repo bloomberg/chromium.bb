@@ -194,7 +194,10 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
 class ExtensionsServiceTest
   : public testing::Test, public NotificationObserver {
  public:
-  ExtensionsServiceTest() : installed_(NULL) {
+  ExtensionsServiceTest()
+      : ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_),
+        installed_(NULL) {
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -213,8 +216,6 @@ class ExtensionsServiceTest
                                      CommandLine::ForCurrentProcess(),
                                      prefs_.get(),
                                      extensions_install_dir,
-                                     &loop_,
-                                     &loop_,
                                      false);
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
@@ -468,6 +469,8 @@ class ExtensionsServiceTest
   scoped_refptr<ExtensionsService> service_;
   size_t total_successes_;
   MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   ExtensionList loaded_;
   std::string unloaded_id_;
   Extension* installed_;
@@ -1527,6 +1530,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   ExtensionsReadyRecorder recorder;
   TestingProfile profile;
   MessageLoop loop;
+  ChromeThread ui_thread(ChromeThread::UI, &loop);
+  ChromeThread file_thread(ChromeThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
   scoped_refptr<ExtensionsService> service;
   FilePath install_dir = profile.GetPath()
@@ -1535,7 +1540,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
   service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, &loop, &loop, false);
+      profile.GetPrefs(), install_dir, false);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -1545,7 +1550,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   command_line->AppendSwitch(switches::kDisableExtensions);
   service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, &loop, &loop, false);
+      profile.GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -1554,7 +1559,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, &loop, &loop, false);
+      profile.GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -1563,7 +1568,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
   service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, &loop, &loop, false);
+      profile.GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

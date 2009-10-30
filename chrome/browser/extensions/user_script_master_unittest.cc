@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,12 +40,18 @@ class UserScriptMasterTest : public testing::Test,
     // Register for all user script notifications.
     registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                    NotificationService::AllSources());
+
+    // UserScriptMaster posts tasks to the file thread so make the current
+    // thread look like one.
+    file_thread_.reset(new ChromeThread(
+        ChromeThread::FILE, MessageLoop::current()));
   }
 
   virtual void TearDown() {
     // Clean up test directory.
     ASSERT_TRUE(file_util::Delete(script_dir_, true));
     ASSERT_FALSE(file_util::PathExists(script_dir_));
+    file_thread_.reset();
   }
 
   virtual void Observe(NotificationType type,
@@ -62,6 +69,8 @@ class UserScriptMasterTest : public testing::Test,
   // MessageLoop used in tests.
   MessageLoop message_loop_;
 
+  scoped_ptr<ChromeThread> file_thread_;
+
   // Directory containing user scripts.
   FilePath script_dir_;
 
@@ -71,9 +80,7 @@ class UserScriptMasterTest : public testing::Test,
 
 // Test that we get notified even when there are no scripts.
 TEST_F(UserScriptMasterTest, NoScripts) {
-
-  scoped_refptr<UserScriptMaster> master(
-      new UserScriptMaster(MessageLoop::current(), script_dir_));
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
   master->StartScan();
   message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
   message_loop_.Run();
@@ -85,8 +92,7 @@ TEST_F(UserScriptMasterTest, NoScripts) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Test that we get notified about new scripts after they're added.
 TEST_F(UserScriptMasterTest, NewScripts) {
-  scoped_refptr<UserScriptMaster> master(
-      new UserScriptMaster(MessageLoop::current(), script_dir_));
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
 
   FilePath path = script_dir_.AppendASCII("script.user.js");
 
@@ -112,8 +118,7 @@ TEST_F(UserScriptMasterTest, ExistingScripts) {
   size_t written = file_util::WriteFile(path, content, sizeof(content));
   ASSERT_EQ(written, sizeof(content));
 
-  scoped_refptr<UserScriptMaster> master(
-      new UserScriptMaster(MessageLoop::current(), script_dir_));
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_));
   master->StartScan();
 
   message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
