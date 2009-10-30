@@ -86,6 +86,8 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/x-director",             // Crashes during initialization.
     "application/x-googlegears",          // Safari-specific.
     "application/x-vnd.movenetworks.qm",  // Crashes during initialization.
+    "application/vnd.o3d.auto",           // Doesn't render, and having it
+                                          // detected can prevent fallbacks.
   };
   // In the case of plugins that share MIME types, we have to blacklist by name.
   const char* blacklisted_plugin_names[] = {
