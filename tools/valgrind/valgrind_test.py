@@ -392,6 +392,9 @@ class ThreadSanitizer(ValgrindTool):
     parser.add_option("", "--pure-happens-before", default="yes",
                       dest="pure_happens_before",
                       help="Less false reports, more missed races")
+    parser.add_option("", "--ignore-in-dtor", default="no",
+                      dest="ignore_in_dtor",
+                      help="Ignore data races inside destructors")
     parser.add_option("", "--announce-threads", default="yes",
                       dest="announce_threads",
                       help="Show the the stack traces of thread creation")
@@ -424,7 +427,10 @@ class ThreadSanitizer(ValgrindTool):
     ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
 
     if self.EvalBoolFlag(self._options.pure_happens_before):
-      ret += ["--pure-happens-before=yes"];
+      ret += ["--pure-happens-before=yes"] # "no" is the default value for TSAN
+
+    if not self.EvalBoolFlag(self._options.ignore_in_dtor):
+      ret += ["--ignore-in-dtor=no"] # "yes" is the default value for TSAN
 
     if self.EvalBoolFlag(self._options.announce_threads):
       ret += ["--announce-threads"]
