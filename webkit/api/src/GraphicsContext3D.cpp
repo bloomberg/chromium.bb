@@ -1310,12 +1310,6 @@ bool GraphicsContext3D::getActiveAttrib(CanvasProgram* program, unsigned long in
 {
     if (!program)
         return false;
-    GLint numActiveAttribs = -1;
-    glGetProgramiv(EXTRACT(program), GL_ACTIVE_ATTRIBUTES, &numActiveAttribs);
-    if (numActiveAttribs < 0)
-        return false;
-    if (index >= static_cast<GLuint>(numActiveAttribs))
-        return false;
     GLint maxNameLength = -1;
     glGetProgramiv(EXTRACT(program), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
     if (maxNameLength < 0)
@@ -1342,12 +1336,6 @@ bool GraphicsContext3D::getActiveAttrib(CanvasProgram* program, unsigned long in
 bool GraphicsContext3D::getActiveUniform(CanvasProgram* program, unsigned long index, ActiveInfo& info)
 {
     if (!program)
-        return false;
-    GLint numActiveUniforms = -1;
-    glGetProgramiv(EXTRACT(program), GL_ACTIVE_UNIFORMS, &numActiveUniforms);
-    if (numActiveUniforms < 0)
-        return false;
-    if (index >= static_cast<GLuint>(numActiveUniforms))
         return false;
     GLint maxNameLength = -1;
     glGetProgramiv(EXTRACT(program), GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
