@@ -17,6 +17,7 @@
 #include "webkit/glue/plugins/test/plugin_new_fails_test.h"
 #include "webkit/glue/plugins/test/plugin_private_test.h"
 #include "webkit/glue/plugins/test/plugin_schedule_timer_test.h"
+#include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
 #include "webkit/glue/plugins/test/plugin_npobject_lifetime_test.h"
 #include "webkit/glue/plugins/test/plugin_npobject_proxy_test.h"
 #include "webkit/glue/plugins/test/plugin_window_size_test.h"
@@ -168,6 +169,9 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
         instance, NPAPIClient::PluginClient::HostFunctions());
   } else if (test_name == "plugin_popup_with_plugin_target") {
     new_test = new NPAPIClient::ExecuteJavascriptPopupWindowTargetPluginTest(
+        instance, NPAPIClient::PluginClient::HostFunctions());
+  } else if (test_name == "plugin_thread_async_call") {
+    new_test = new NPAPIClient::PluginThreadAsyncCallTest(
         instance, NPAPIClient::PluginClient::HostFunctions());
   } else if (test_name == "private") {
     new_test = new NPAPIClient::PrivateTest(instance,

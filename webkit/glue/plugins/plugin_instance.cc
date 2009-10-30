@@ -365,7 +365,9 @@ void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
 
 void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
                                              void *user_data) {
-  func(user_data);
+  // Do not invoke the callback if NPP_Destroy has already been invoked.
+  if (webplugin_)
+    func(user_data);
 }
 
 uint32 PluginInstance::ScheduleTimer(uint32 interval,

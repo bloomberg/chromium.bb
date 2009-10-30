@@ -300,6 +300,13 @@ TEST_F(NPAPITester, ScheduleTimer) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+TEST_F(NPAPITester, PluginThreadAsyncCall) {
+  GURL url = GetTestUrl(L"npapi", L"plugin_thread_async_call.html");
+  NavigateToURL(url);
+  WaitForFinish("plugin_thread_async_call", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}
+
 // Test checking the privacy mode is on.
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   if (UITest::in_process_renderer())
