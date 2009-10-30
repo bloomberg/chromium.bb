@@ -48,14 +48,13 @@
 #include "PlatformMessagePortChannel.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebMessagePortChannel.h"
 #include "WebScreenInfo.h"
 #include "WebString.h"
 #include "WebURL.h"
 #include "WebView.h"
 #include "WebWorkerClient.h"
-// FIXME: webframe should eventually move to api/src too.
-#include "webkit/glue/webframe_impl.h"
 
 using namespace WebCore;
 

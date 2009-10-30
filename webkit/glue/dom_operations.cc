@@ -33,16 +33,18 @@ MSVC_POP_WARNING();
 #include "base/string_util.h"
 // TODO(yaar) Eventually should not depend on api/src.
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_autocomplete_listener_impl.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebCore::String;
+using WebKit::FrameLoaderClientImpl;
 using WebKit::WebFrame;
+using WebKit::WebFrameImpl;
 using WebKit::WebView;
 
 namespace {
@@ -345,11 +347,11 @@ void FillPasswordForm(WebView* view,
     WebCore::HTMLInputElement* password_element =
         form_elements->input_elements[data.basic_data.elements[1]].get();
 
-    WebFrameLoaderClient* frame_loader_client =
-        static_cast<WebFrameLoaderClient*>(username_element->document()->
-                                           frame()->loader()->client());
-    WebFrameImpl* webframe_impl = frame_loader_client->webframe();
-    webframe_impl->RegisterPasswordListener(
+    FrameLoaderClientImpl* frame_loader_client =
+        static_cast<FrameLoaderClientImpl*>(username_element->document()->
+                                            frame()->loader()->client());
+    WebFrameImpl* webframe_impl = frame_loader_client->webFrame();
+    webframe_impl->registerPasswordListener(
         username_element,
         new PasswordAutocompleteListenerImpl(
             new HTMLInputDelegate(username_element),
@@ -369,7 +371,7 @@ WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
       WebCore::HTMLFrameOwnerElement* frame_element =
           static_cast<WebCore::HTMLFrameOwnerElement*>(element);
       WebCore::Frame* content_frame = frame_element->contentFrame();
-      return WebFrameImpl::FromFrame(content_frame);
+      return WebFrameImpl::fromFrame(content_frame);
     }
   }
   return NULL;

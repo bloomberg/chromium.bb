@@ -41,15 +41,16 @@
 #include "PlatformString.h"
 #include "RenderObject.h"
 
+#include "DOMUtilitiesPrivate.h"
+#include "PasswordAutocompleteListener.h"
 #include "WebEditingAction.h"
+#include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebNode.h"
 #include "WebRange.h"
 #include "WebTextAffinity.h"
 #include "WebViewClient.h"
-#include "DOMUtilitiesPrivate.h"
-#include "PasswordAutocompleteListener.h"
-#include "webkit/glue/webview_impl.h"
+#include "WebViewImpl.h"
 
 using namespace WebCore;
 
@@ -114,7 +115,7 @@ bool EditorClientImpl::shouldSpellcheckByDefault()
 {
     // Spellcheck should be enabled for all editable areas (such as textareas,
     // contentEditable regions, and designMode docs), except text inputs.
-    const Frame* frame = m_webView->GetFocusedWebCoreFrame();
+    const Frame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return false;
     const Editor* editor = frame->editor();
@@ -265,7 +266,7 @@ void EditorClientImpl::didBeginEditing()
 void EditorClientImpl::respondToChangedSelection()
 {
     if (m_webView->client()) {
-        Frame* frame = m_webView->GetFocusedWebCoreFrame();
+        Frame* frame = m_webView->focusedWebCoreFrame();
         if (frame)
             m_webView->client()->didChangeSelection(!frame->selection()->isRange());
     }
@@ -653,7 +654,7 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
     m_autofillTimer.stop();
 
     // Hide any showing popup.
-    m_webView->HideAutoCompletePopup();
+    m_webView->hideAutoCompletePopup();
 
     if (!m_webView->client())
         return; // The page is getting closed, don't fill the password.
@@ -663,8 +664,8 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
     if (!inputElement)
         return;
 
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(inputElement->document()->frame());
-    PasswordAutocompleteListener* listener = webframe->GetPasswordListener(inputElement);
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(inputElement->document()->frame());
+    PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (!listener)
         return;
 
@@ -744,15 +745,15 @@ void EditorClientImpl::doAutofill(Timer<EditorClientImpl>* timer)
                        && inputElement->selectionEnd() == static_cast<int>(value.length());
 
     if ((!args->autofillOnEmptyValue && value.isEmpty()) || !isCaretAtEnd) {
-        m_webView->HideAutoCompletePopup();
+        m_webView->hideAutoCompletePopup();
         return;
     }
 
     // First let's see if there is a password listener for that element.
     // We won't trigger form autofill in that case, as having both behavior on
     // a node would be confusing.
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(inputElement->document()->frame());
-    PasswordAutocompleteListener* listener = webframe->GetPasswordListener(inputElement);
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(inputElement->document()->frame());
+    PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (listener) {
         if (args->autofillFormOnly)
             return;
@@ -780,8 +781,8 @@ void EditorClientImpl::cancelPendingAutofill()
 
 void EditorClientImpl::onAutofillSuggestionAccepted(HTMLInputElement* textField)
 {
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(textField->document()->frame());
-    PasswordAutocompleteListener* listener = webframe->GetPasswordListener(textField);
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(textField->document()->frame());
+    PasswordAutocompleteListener* listener = webframe->getPasswordListener(textField);
     // Password listeners need to autocomplete other fields that depend on the
     // input element with autofill suggestions.
     if (listener)

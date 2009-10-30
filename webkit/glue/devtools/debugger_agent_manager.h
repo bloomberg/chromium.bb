@@ -15,10 +15,13 @@ namespace WebCore {
 class PageGroupLoadDeferrer;
 }
 
-class DebuggerAgentImpl;
-class DictionaryValue;
+namespace WebKit {
 class WebFrameImpl;
 class WebViewImpl;
+}
+
+class DebuggerAgentImpl;
+class DictionaryValue;
 
 // There is single v8 instance per render process. Also there may be several
 // RenderViews and consequently devtools agents in the process that want to talk
@@ -46,9 +49,9 @@ class DebuggerAgentManager : public Noncopyable {
 
   // Sets |host_id| as the frame context data. This id is used to filter scripts
   // related to the inspected page.
-  static void SetHostId(WebFrameImpl* webframe, int host_id);
+  static void SetHostId(WebKit::WebFrameImpl* webframe, int host_id);
 
-  static void OnWebViewClosed(WebViewImpl* webview);
+  static void OnWebViewClosed(WebKit::WebViewImpl* webview);
 
   static void OnNavigate();
 
@@ -86,7 +89,7 @@ class DebuggerAgentManager : public Noncopyable {
   static WebKit::WebDevToolsAgent::MessageLoopDispatchHandler
       message_loop_dispatch_handler_;
   static bool in_host_dispatch_handler_;
-  typedef HashMap<WebViewImpl*, WebCore::PageGroupLoadDeferrer*>
+  typedef HashMap<WebKit::WebViewImpl*, WebCore::PageGroupLoadDeferrer*>
       DeferrersMap;
   static DeferrersMap page_deferrers_;
 

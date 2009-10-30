@@ -41,9 +41,8 @@ class IntPoint;
 class KURL;
 }
 
-class WebViewImpl;
-
 namespace WebKit {
+class WebViewImpl;
 
 class DragClientImpl : public WebCore::DragClient {
 public:

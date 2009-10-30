@@ -13,10 +13,13 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_autocomplete_listener_impl.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
+
+using WebKit::WebFrameImpl;
+using WebKit::WebViewImpl;
 
 namespace webkit_glue {
 
@@ -47,8 +50,8 @@ void HTMLInputDelegate::RefreshAutofillPopup(
     const std::vector<string16>& suggestions,
     int default_suggestion_index) {
   WebFrameImpl* webframe =
-      WebFrameImpl::FromFrame(element_->document()->frame());
-  WebViewImpl* webview = webframe->GetWebViewImpl();
+      WebFrameImpl::fromFrame(element_->document()->frame());
+  WebViewImpl* webview = webframe->viewImpl();
   if (!webview)
     return;
 

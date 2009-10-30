@@ -35,9 +35,8 @@
 #include "InspectorController.h"
 #include <wtf/OwnPtr.h>
 
-class WebViewImpl;
-
 namespace WebKit {
+class WebViewImpl;
 
 class InspectorClientImpl : public WebCore::InspectorClient {
 public:

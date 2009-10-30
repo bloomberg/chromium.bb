@@ -33,9 +33,8 @@
 
 #include "ContextMenuClient.h"
 
-class WebViewImpl;
-
 namespace WebKit {
+    class WebViewImpl;
 
     class ContextMenuClientImpl : public  WebCore::ContextMenuClient {
     public:

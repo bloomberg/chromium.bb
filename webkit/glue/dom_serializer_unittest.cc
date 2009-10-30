@@ -37,9 +37,11 @@ MSVC_POP_WARNING();
 #include "webkit/glue/dom_serializer.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe_impl.h"
+#include "webkit/api/src/WebFrameImpl.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+using WebKit::WebFrameImpl;
 
 namespace {
 

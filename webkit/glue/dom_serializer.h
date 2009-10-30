@@ -11,8 +11,6 @@
 #include "base/hash_tables.h"
 #include "googleurl/src/gurl.h"
 
-class WebFrameImpl;
-
 namespace WebCore {
 class Document;
 class Element;
@@ -23,6 +21,7 @@ class TextEncoding;
 
 namespace WebKit {
 class WebFrame;
+class WebFrameImpl;
 }
 
 namespace webkit_glue {
@@ -71,7 +70,7 @@ class DomSerializer {
 
  private:
   // Specified frame which need to be serialized;
-  WebFrameImpl* specified_webframeimpl_;
+  WebKit::WebFrameImpl* specified_webframeimpl_;
   // This hash_map is used to map resource URL of original link to its local
   // file path.
   typedef base::hash_map<std::string, FilePath> LinkLocalPathMap;
@@ -92,7 +91,7 @@ class DomSerializer {
   // Local directory name of all local resource files.
   const FilePath& local_directory_name_;
   // Vector for saving all frames which need to be serialized.
-  std::vector<WebFrameImpl*> frames_;
+  std::vector<WebKit::WebFrameImpl*> frames_;
 
   struct SerializeDomParam {
     // Frame URL of current processing document presented by GURL

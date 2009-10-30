@@ -9,12 +9,11 @@
 #include "webkit/glue/resource_fetcher.h"
 
 class SkBitmap;
-class WebViewImpl;
 
 namespace webkit_glue {
 
 // ImageResourceFetcher handles downloading an image for a webview. Once
-// downloading is done the hosting WebViewImpl is notified. ImageResourceFetcher
+// downloading is done the supplied callback is notified. ImageResourceFetcher
 // is used to download the favicon and images for web apps.
 class ImageResourceFetcher {
  public:

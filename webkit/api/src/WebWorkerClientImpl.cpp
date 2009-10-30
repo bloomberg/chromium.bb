@@ -47,21 +47,19 @@
 #include "WorkerContextExecutionProxy.h"
 #include "WorkerMessagingProxy.h"
 #include <wtf/Threading.h>
-#undef LOG
 
+#include "FrameLoaderClientImpl.h"
 #include "PlatformMessagePortChannel.h"
 #include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMessagePortChannel.h"
 #include "WebString.h"
 #include "WebURL.h"
+#include "WebViewImpl.h"
 #include "WebWorker.h"
 #include "WebWorkerImpl.h"
-// FIXME: remove the includes below
-#include "webkit/glue/webframeloaderclient_impl.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
 
@@ -93,7 +91,7 @@ WorkerContextProxy* WebWorkerClientImpl::createWorkerContextProxy(Worker* worker
     if (worker->scriptExecutionContext()->isDocument()) {
         Document* document = static_cast<Document*>(
             worker->scriptExecutionContext());
-        WebFrameImpl* webFrame = WebFrameImpl::FromFrame(document->frame());
+        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         webWorker = webFrame->client()->createWorker(webFrame, proxy);
     } else {
         WorkerContextExecutionProxy* currentContext =

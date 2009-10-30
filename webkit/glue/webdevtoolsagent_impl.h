@@ -25,20 +25,20 @@ class String;
 namespace WebKit {
 class WebDevToolsAgentClient;
 class WebFrame;
+class WebFrameImpl;
+class WebViewImpl;
 }
 
 class BoundObject;
 class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
 class Value;
-class WebFrameImpl;
-class WebViewImpl;
 
 class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
                              public ToolsAgent,
                              public DevToolsRpc::Delegate {
  public:
-  WebDevToolsAgentImpl(WebViewImpl* web_view_impl,
+  WebDevToolsAgentImpl(WebKit::WebViewImpl* web_view_impl,
                        WebKit::WebDevToolsAgentClient* client);
   virtual ~WebDevToolsAgentImpl();
 
@@ -78,11 +78,11 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
 
   // Methods called by the glue.
   void SetMainFrameDocumentReady(bool ready);
-  void DidCommitLoadForFrame(WebViewImpl* webview,
+  void DidCommitLoadForFrame(WebKit::WebViewImpl* webview,
                              WebKit::WebFrame* frame,
                              bool is_new_navigation);
 
-  void WindowObjectCleared(WebFrameImpl* webframe);
+  void WindowObjectCleared(WebKit::WebFrameImpl* webframe);
 
   void ForceRepaint();
 
@@ -105,7 +105,7 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
 
   int host_id_;
   WebKit::WebDevToolsAgentClient* client_;
-  WebViewImpl* web_view_impl_;
+  WebKit::WebViewImpl* web_view_impl_;
   OwnPtr<DebuggerAgentDelegateStub> debugger_agent_delegate_stub_;
   OwnPtr<ToolsAgentDelegateStub> tools_agent_delegate_stub_;
   OwnPtr<ToolsAgentNativeDelegateStub> tools_agent_native_delegate_stub_;

@@ -44,19 +44,21 @@
 #if defined(OS_WIN)
 #include "webkit/api/public/win/WebInputEventFactory.h"
 #endif
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 #include "webkit_version.h"  // Generated
 
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
+using WebKit::WebFrameImpl;
 using WebKit::WebHistoryItem;
 using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
+using WebKit::WebViewImpl;
 
 namespace {
 
@@ -123,7 +125,7 @@ std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
     WebCore::Frame* child = webFrameImpl->frame()->tree()->firstChild();
     for (; child; child = child->tree()->nextSibling()) {
       result.append(
-          DumpFramesAsText(WebFrameImpl::FromFrame(child), recursive));
+          DumpFramesAsText(WebFrameImpl::fromFrame(child), recursive));
     }
   }
 
@@ -155,7 +157,7 @@ bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
 
 std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
-  WebCore::IntSize offset = webFrameImpl->frameview()->scrollOffset();
+  WebCore::IntSize offset = webFrameImpl->frameView()->scrollOffset();
   std::wstring result;
 
   if (offset.width() > 0 || offset.height() > 0) {
@@ -170,7 +172,7 @@ std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   if (recursive) {
     WebCore::Frame* child = webFrameImpl->frame()->tree()->firstChild();
     for (; child; child = child->tree()->nextSibling()) {
-      result.append(DumpFrameScrollPosition(WebFrameImpl::FromFrame(child),
+      result.append(DumpFrameScrollPosition(WebFrameImpl::fromFrame(child),
                                             recursive));
     }
   }
@@ -274,7 +276,7 @@ void DumpLeakedObject(const char* file, int line, const char* object, int count)
 
 void CheckForLeaks() {
 #ifndef NDEBUG
-  int count = WebFrameImpl::live_object_count();
+  int count = WebFrameImpl::liveObjectCount();
   if (count)
     DumpLeakedObject(__FILE__, __LINE__, "WebFrame", count);
 #endif

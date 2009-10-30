@@ -27,21 +27,24 @@
 #include "webkit/api/public/WebDevToolsFrontendClient.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
 #include "webkit/glue/devtools/devtools_rpc_js.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsfrontend_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebDevToolsFrontendClient;
 using WebKit::WebFrame;
+using WebKit::WebFrameImpl;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebView;
+using WebKit::WebViewImpl;
 
 static v8::Local<v8::String> ToV8String(const String& s) {
   if (s.isNull())
@@ -124,7 +127,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       client_(client),
       application_locale_(application_locale),
       loaded_(false) {
-  WebFrameImpl* frame = web_view_impl_->main_frame();
+  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
 
@@ -228,7 +231,7 @@ void WebDevToolsFrontendImpl::AddResourceSourceToFrame(int resource_id,
 }
 
 void WebDevToolsFrontendImpl::ExecuteScript(const Vector<String>& v) {
-  WebFrameImpl* frame = web_view_impl_->main_frame();
+  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
   v8::Context::Scope context_scope(frame_context);
@@ -264,7 +267,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsReset(
     const v8::Arguments& args) {
   WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
-  WebFrameImpl* frame = frontend->web_view_impl_->main_frame();
+  WebFrameImpl* frame = frontend->web_view_impl_->mainFrameImpl();
   frontend->tools_agent_native_delegate_impl_.set(
       new ToolsAgentNativeDelegateImpl(frame));
   return v8::Undefined();

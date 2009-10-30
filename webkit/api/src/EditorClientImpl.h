@@ -39,9 +39,8 @@ namespace WebCore {
 class HTMLInputElement;
 }
 
-class WebViewImpl;
-
 namespace WebKit {
+class WebViewImpl;
 
 class EditorClientImpl : public WebCore::EditorClient {
 public:

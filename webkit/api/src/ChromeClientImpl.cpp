@@ -56,23 +56,20 @@
 #include "WebAccessibilityObject.h"
 #include "WebConsoleMessage.h"
 #include "WebCursorInfo.h"
-#include "WebFileChooserCompletion.h"
+#include "WebFileChooserCompletionImpl.h"
 #include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebInputEvent.h"
 #include "WebKit.h"
+#include "WebPopupMenuImpl.h"
 #include "WebPopupMenuInfo.h"
 #include "WebRect.h"
 #include "WebTextDirection.h"
 #include "WebURLRequest.h"
 #include "WebViewClient.h"
-#include "WebFileChooserCompletionImpl.h"
-#include "WebPopupMenuImpl.h"
+#include "WebViewImpl.h"
 #include "WindowFeatures.h"
 #include "WrappedResourceRequest.h"
-
-// FIXME: Remove these once they move out of glue/.
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
 
@@ -148,14 +145,14 @@ void ChromeClientImpl::focus()
 
     // If accessibility is enabled, we should notify assistive technology that
     // the active AccessibilityObject changed.
-    const Frame* frame = m_webView->GetFocusedWebCoreFrame();
+    const Frame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return;
 
     Document* doc = frame->document();
 
     if (doc && doc->axObjectCache()->accessibilityEnabled()) {
-        Node* focusedNode = m_webView->GetFocusedNode();
+        Node* focusedNode = m_webView->focusedWebCoreNode();
 
         if (!focusedNode) {
             // Could not retrieve focused Node.
@@ -202,7 +199,7 @@ Page* ChromeClientImpl::createWindow(
         return 0;
 
     WebViewImpl* newView = static_cast<WebViewImpl*>(
-        m_webView->client()->createView(WebFrameImpl::FromFrame(frame)));
+        m_webView->client()->createView(WebFrameImpl::fromFrame(frame)));
     if (!newView)
         return 0;
 
@@ -210,13 +207,13 @@ Page* ChromeClientImpl::createWindow(
     // This corresponds to window.open(""), for example.
     if (!r.resourceRequest().isEmpty()) {
         WrappedResourceRequest request(r.resourceRequest());
-        newView->main_frame()->loadRequest(request);
+        newView->mainFrame()->loadRequest(request);
     }
 
     return newView->page();
 }
 
-static inline bool CurrentEventShouldCauseBackgroundTab(const WebInputEvent* inputEvent)
+static inline bool currentEventShouldCauseBackgroundTab(const WebInputEvent* inputEvent)
 {
     if (!inputEvent)
         return false;
@@ -246,7 +243,7 @@ static inline bool CurrentEventShouldCauseBackgroundTab(const WebInputEvent* inp
     bool alt = mouseEvent->modifiers & WebMouseEvent::AltKey;
     bool meta = mouseEvent->modifiers & WebMouseEvent::MetaKey;
 
-    if (!WebViewImpl::NavigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &policy))
+    if (!WebViewImpl::navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &policy))
         return false;
 
     return policy == WebNavigationPolicyNewBackgroundTab;
@@ -270,7 +267,7 @@ void ChromeClientImpl::show()
     WebNavigationPolicy policy = WebNavigationPolicyNewForegroundTab;
     if (asPopup)
         policy = WebNavigationPolicyNewPopup;
-    if (CurrentEventShouldCauseBackgroundTab(WebViewImpl::current_input_event()))
+    if (currentEventShouldCauseBackgroundTab(WebViewImpl::currentInputEvent()))
         policy = WebNavigationPolicyNewBackgroundTab;
 
     m_webView->client()->show(policy);
@@ -312,7 +309,7 @@ void ChromeClientImpl::setScrollbarsVisible(bool value)
     m_scrollbarsVisible = value;
     WebFrameImpl* web_frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
     if (web_frame)
-        web_frame->SetAllowsScrolling(value);
+        web_frame->setAllowsScrolling(value);
 }
 
 bool ChromeClientImpl::scrollbarsVisible()
@@ -359,7 +356,7 @@ bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, Frame*
 {
     if (m_webView->client()) {
         return m_webView->client()->runModalBeforeUnloadDialog(
-            WebFrameImpl::FromFrame(frame), message);
+            WebFrameImpl::fromFrame(frame), message);
     }
     return false;
 }
@@ -387,7 +384,7 @@ void ChromeClientImpl::runJavaScriptAlert(Frame* frame, const String& message)
         V8Proxy::processConsoleMessages();
 #endif
         m_webView->client()->runModalAlertDialog(
-            WebFrameImpl::FromFrame(frame), message);
+            WebFrameImpl::fromFrame(frame), message);
     }
 }
 
@@ -396,7 +393,7 @@ bool ChromeClientImpl::runJavaScriptConfirm(Frame* frame, const String& message)
 {
     if (m_webView->client()) {
         return m_webView->client()->runModalConfirmDialog(
-            WebFrameImpl::FromFrame(frame), message);
+            WebFrameImpl::fromFrame(frame), message);
     }
     return false;
 }
@@ -410,7 +407,7 @@ bool ChromeClientImpl::runJavaScriptPrompt(Frame* frame,
     if (m_webView->client()) {
         WebString actualValue;
         bool ok = m_webView->client()->runModalPromptDialog(
-            WebFrameImpl::FromFrame(frame),
+            WebFrameImpl::fromFrame(frame),
             message,
             defaultValue,
             &actualValue);
@@ -492,7 +489,7 @@ IntRect ChromeClientImpl::windowToScreen(const IntRect& rect) const {
 
 void ChromeClientImpl::contentsSizeChanged(Frame* frame, const IntSize& size) const
 {
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
     if (webframe->client())
         webframe->client()->didChangeContentsSize(webframe, size);
 }
@@ -527,7 +524,7 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
 void ChromeClientImpl::print(Frame* frame)
 {
     if (m_webView->client())
-        m_webView->client()->printPage(WebFrameImpl::FromFrame(frame));
+        m_webView->client()->printPage(WebFrameImpl::fromFrame(frame));
 }
 
 void ChromeClientImpl::exceededDatabaseQuota(Frame* frame, const String& databaseName)
@@ -613,7 +610,7 @@ void ChromeClientImpl::formStateDidChange(const Node* node)
 {
     // The current history item is not updated yet.  That happens lazily when
     // WebFrame::currentHistoryItem is requested.
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(node->document()->frame());
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(node->document()->frame());
     if (webframe->client())
         webframe->client()->didUpdateCurrentHistoryItem(webframe);
 }
@@ -655,7 +652,7 @@ void ChromeClientImpl::getPopupMenuInfo(PopupContainer* popupContainer,
 #if ENABLE(NOTIFICATIONS)
 NotificationPresenter* ChromeClientImpl::notificationPresenter() const
 {
-    return m_webView->GetNotificationPresenter();
+    return m_webView->notificationPresenterImpl();
 }
 #endif
 

@@ -15,11 +15,11 @@ class String;
 }
 
 namespace WebKit {
+class WebFrameImpl;
 class WebView;
 }
 
 class GURL;
-class WebFrameImpl;
 
 namespace webkit_glue {
 
@@ -27,8 +27,8 @@ namespace webkit_glue {
 // object corresponding to the content frame, otherwise return NULL.
 // The parameter is_frame_element indicates whether the input element
 // is frame/iframe element or not.
-WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
-                                         bool* is_frame_element);
+WebKit::WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
+                                                 bool* is_frame_element);
 
 // If element is img, script or input type=image, then return its link refer
 // to the "src" attribute. If element is link, then return its link refer to
@@ -50,8 +50,8 @@ bool ElementHasLegalLinkAttribute(const WebCore::Element* element,
                                   const WebCore::QualifiedName& attr_name);
 
 // Get pointer of WebFrameImpl from webview according to specific URL.
-WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebKit::WebView* view,
-                                                       const GURL& page_url);
+WebKit::WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(
+    WebKit::WebView* view, const GURL& page_url);
 
 }  // namespace webkit_glue
 

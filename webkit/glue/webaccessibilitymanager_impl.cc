@@ -13,12 +13,13 @@
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 
 #include "webkit/api/public/WebAccessibilityObject.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/glue_accessibility_object.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebKit::WebAccessibilityObject;
+using WebKit::WebFrameImpl;
 using WebKit::WebView;
 
 namespace webkit_glue {

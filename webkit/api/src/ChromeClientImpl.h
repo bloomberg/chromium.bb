@@ -33,8 +33,6 @@
 
 #include "ChromeClientChromium.h"
 
-class WebViewImpl;
-
 namespace WebCore {
 class HTMLParserQuirks;
 class PopupContainer;
@@ -43,6 +41,7 @@ struct WindowFeatures;
 }
 
 namespace WebKit {
+class WebViewImpl;
 struct WebCursorInfo;
 struct WebPopupMenuInfo;
 

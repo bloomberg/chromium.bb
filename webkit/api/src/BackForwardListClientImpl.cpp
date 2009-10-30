@@ -33,9 +33,7 @@
 
 #include "HistoryItem.h"
 #include "WebViewClient.h"
-
-// FIXME: Remove this once WebViewImpl moves out of glue/.
-#include "webkit/glue/webview_impl.h"
+#include "WebViewImpl.h"
 
 using namespace WebCore;
 
@@ -52,13 +50,13 @@ BackForwardListClientImpl::~BackForwardListClientImpl()
 {
 }
 
-void BackForwardListClientImpl::SetCurrentHistoryItem(HistoryItem* item)
+void BackForwardListClientImpl::setCurrentHistoryItem(HistoryItem* item)
 {
     m_previousItem = m_currentItem;
     m_currentItem = item;
 }
 
-HistoryItem* BackForwardListClientImpl::GetPreviousHistoryItem() const
+HistoryItem* BackForwardListClientImpl::previousHistoryItem() const
 {
     return m_previousItem.get();
 }
@@ -70,7 +68,7 @@ void BackForwardListClientImpl::addItem(PassRefPtr<HistoryItem> item)
 
     // If WebCore adds a new HistoryItem, it means this is a new navigation (ie,
     // not a reload or back/forward).
-    m_webView->ObserveNewNavigation();
+    m_webView->observeNewNavigation();
 
     if (m_webView->client())
         m_webView->client()->didAddHistoryItem();

@@ -36,9 +36,7 @@
 #include "Frame.h"
 #include "WebDragData.h"
 #include "WebViewClient.h"
-
-// FIXME: Remove this once WebViewImpl moves out of glue/.
-#include "webkit/glue/webview_impl.h"
+#include "WebViewImpl.h"
 
 using namespace WebCore;
 
@@ -85,7 +83,7 @@ void DragClientImpl::startDrag(DragImageRef dragImage,
     if (!clipboard->sourceOperation(dragOperationMask))
         dragOperationMask = DragOperationEvery;
 
-    m_webView->StartDragging(
+    m_webView->startDragging(
         eventPos, dragData, static_cast<WebDragOperationsMask>(dragOperationMask));
 }
 

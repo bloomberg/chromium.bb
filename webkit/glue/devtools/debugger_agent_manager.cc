@@ -11,16 +11,19 @@
 #undef LOG
 
 #include "webkit/api/public/WebDevToolsAgent.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 #if USE(V8)
 #include "v8/include/v8-debug.h"
 #endif
 
 using WebKit::WebDevToolsAgent;
+using WebKit::WebFrameImpl;
+using WebKit::WebViewImpl;
 
 WebDevToolsAgent::MessageLoopDispatchHandler
     DebuggerAgentManager::message_loop_dispatch_handler_ = NULL;
@@ -77,7 +80,7 @@ void DebuggerAgentManager::V8DebugHostDispatchHandler() {
         agent->web_view(),
         new WebCore::PageGroupLoadDeferrer(agent->GetPage(), true));
     views.append(agent->web_view());
-    agent->web_view()->SetIgnoreInputEvents(true);
+    agent->web_view()->setIgnoreInputEvents(true);
   }
 
   // 2. Process messages.
@@ -89,7 +92,7 @@ void DebuggerAgentManager::V8DebugHostDispatchHandler() {
        ++it) {
     if (page_deferrers_.contains(*it)) {
       // The view was not closed during the dispatch.
-      (*it)->SetIgnoreInputEvents(false);
+      (*it)->setIgnoreInputEvents(false);
     }
   }
   deleteAllValues(page_deferrers_);

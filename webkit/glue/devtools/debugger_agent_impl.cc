@@ -9,6 +9,7 @@
 #include <wtf/Vector.h>
 
 #include "Document.h"
+#include "Frame.h"
 #include "Page.h"
 #include "V8Binding.h"
 #include "V8DOMWindow.h"
@@ -17,12 +18,12 @@
 #undef LOG
 
 #include "grit/webkit_resources.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebCore::DOMWindow;
 using WebCore::Document;
@@ -34,6 +35,7 @@ using WebCore::V8Custom;
 using WebCore::V8DOMWindow;
 using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
+using WebKit::WebViewImpl;
 
 DebuggerAgentImpl::DebuggerAgentImpl(
     WebViewImpl* web_view_impl,

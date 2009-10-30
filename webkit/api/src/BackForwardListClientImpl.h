@@ -33,9 +33,8 @@
 
 #include "BackForwardList.h"
 
-class WebViewImpl;
-
 namespace WebKit {
+class WebViewImpl;
 
 extern const char backForwardNavigationScheme[];
 
@@ -44,8 +43,8 @@ public:
     BackForwardListClientImpl(WebViewImpl* webview);
     ~BackForwardListClientImpl();
 
-    void SetCurrentHistoryItem(WebCore::HistoryItem* item);
-    WebCore::HistoryItem* GetPreviousHistoryItem() const;
+    void setCurrentHistoryItem(WebCore::HistoryItem* item);
+    WebCore::HistoryItem* previousHistoryItem() const;
 
 private:
     // WebCore::BackForwardListClient methods:

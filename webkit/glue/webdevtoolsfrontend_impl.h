@@ -22,20 +22,23 @@ class Page;
 class String;
 }
 
+namespace WebKit {
+class WebViewImpl;
+}
+
 class BoundObject;
 class JsDebuggerAgentBoundObj;
 class JsNetAgentBoundObj;
 class JsToolsAgentBoundObj;
 class ToolsAgentNativeDelegateImpl;
 class WebDevToolsClientDelegate;
-class WebViewImpl;
 
 class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
                                 public DevToolsRpc::Delegate,
                                 public Noncopyable {
  public:
   WebDevToolsFrontendImpl(
-      WebViewImpl* web_view_impl,
+      WebKit::WebViewImpl* web_view_impl,
       WebKit::WebDevToolsFrontendClient* client,
       const String& application_locale);
   virtual ~WebDevToolsFrontendImpl();
@@ -80,7 +83,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   static v8::Handle<v8::Value> JsDebuggerCommand(
       const v8::Arguments& args);
 
-  WebViewImpl* web_view_impl_;
+  WebKit::WebViewImpl* web_view_impl_;
   WebKit::WebDevToolsFrontendClient* client_;
   String application_locale_;
   OwnPtr<BoundObject> debugger_command_executor_obj_;

@@ -33,6 +33,8 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/ChromeClientImpl.h"
+#include "webkit/api/src/WebFrameImpl.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/api/src/WebWorkerClientImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -40,7 +42,6 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebKit::ChromeClientImpl;
 using WebKit::WebApplicationCacheHost;
@@ -48,6 +49,7 @@ using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
+using WebKit::WebFrameImpl;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebStorageNamespace;
@@ -57,6 +59,7 @@ using WebKit::WebThemeEngine;
 using WebKit::WebURL;
 using WebKit::WebURLLoader;
 using WebKit::WebVector;
+using WebKit::WebViewImpl;
 using WebKit::WebWidgetClient;
 using WebKit::WebWorkerClientImpl;
 
@@ -417,7 +420,7 @@ bool WebKitClientImpl::makeAllDirectories(
 
 WebKit::WebMediaPlayer* WebKitClientImpl::createWebMediaPlayer(
   WebKit::WebMediaPlayerClient* client, WebCore::Frame* frame) {
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
   if (!webframe->client())
     return NULL;
 
@@ -443,7 +446,7 @@ void WebKitClientImpl::notifyJSOutOfMemory(WebCore::Frame* frame) {
   if (!frame)
     return;
 
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
   if (!webframe->client())
     return;
   webframe->client()->didExhaustMemoryAvailableForScript(webframe);

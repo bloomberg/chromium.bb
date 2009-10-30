@@ -17,7 +17,6 @@ class WebView;
 }
 
 struct FormData;
-class WebFrameImpl;
 
 // A collection of operations that access the underlying WebKit DOM directly.
 namespace webkit_glue {

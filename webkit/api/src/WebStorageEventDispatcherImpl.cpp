@@ -35,9 +35,9 @@
 
 #include "SecurityOrigin.h"
 
-extern const char* pageGroupName;
-
 namespace WebKit {
+
+extern const char* pageGroupName;
 
 WebStorageEventDispatcher* WebStorageEventDispatcher::create()
 {

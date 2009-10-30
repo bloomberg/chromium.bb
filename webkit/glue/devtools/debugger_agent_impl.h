@@ -12,7 +12,6 @@
 #include "webkit/glue/devtools/debugger_agent.h"
 
 class WebDevToolsAgentImpl;
-class WebViewImpl;
 
 namespace WebCore {
 class Document;
@@ -21,13 +20,17 @@ class Page;
 class String;
 }
 
+namespace WebKit {
+class WebViewImpl;
+}
+
 class DebuggerAgentImpl : public DebuggerAgent {
  public:
   // Creates utility context with injected js agent.
   static void CreateUtilityContext(WebCore::Frame* frame,
                                    v8::Persistent<v8::Context>* context);
 
-  DebuggerAgentImpl(WebViewImpl* web_view_impl,
+  DebuggerAgentImpl(WebKit::WebViewImpl* web_view_impl,
                     DebuggerAgentDelegate* delegate,
                     WebDevToolsAgentImpl* webdevtools_agent);
   virtual ~DebuggerAgentImpl();
@@ -66,10 +69,10 @@ class DebuggerAgentImpl : public DebuggerAgent {
   WebCore::Page* GetPage();
   WebDevToolsAgentImpl* webdevtools_agent() { return webdevtools_agent_; };
 
-  WebViewImpl* web_view() { return web_view_impl_; }
+  WebKit::WebViewImpl* web_view() { return web_view_impl_; }
 
  private:
-  WebViewImpl* web_view_impl_;
+  WebKit::WebViewImpl* web_view_impl_;
   DebuggerAgentDelegate* delegate_;
   WebDevToolsAgentImpl* webdevtools_agent_;
   int profiler_log_position_;

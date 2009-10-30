@@ -26,14 +26,15 @@
 
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDevToolsAgentClient.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
-#include "webkit/glue/webview_impl.h"
 
 using WebCore::Document;
 using WebCore::InspectorBackend;
@@ -53,10 +54,12 @@ using WebCore::V8Proxy;
 using WebKit::WebDataSource;
 using WebKit::WebDevToolsAgentClient;
 using WebKit::WebFrame;
+using WebKit::WebFrameImpl;
 using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
+using WebKit::WebViewImpl;
 
 namespace {
 

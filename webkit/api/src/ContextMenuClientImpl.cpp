@@ -48,17 +48,14 @@
 #include "Widget.h"
 
 #include "WebContextMenuData.h"
-#include "WebFrame.h"
+#include "WebDataSourceImpl.h"
+#include "WebFrameImpl.h"
 #include "WebPoint.h"
 #include "WebString.h"
 #include "WebURL.h"
 #include "WebURLResponse.h"
 #include "WebViewClient.h"
-#include "WebDataSourceImpl.h"
-#undef LOG
-
-// FIXME: Temporary hack until WebViewImpl is in api/src.
-#include "webkit/glue/webview_impl.h"
+#include "WebViewImpl.h"
 
 using namespace WebCore;
 
@@ -143,7 +140,7 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     // response to user input (Mouse event WM_RBUTTONDOWN,
     // Keyboard events KeyVK_APPS, Shift+F10). Check if this is being invoked
     // in response to the above input events before popping up the context menu.
-    if (!m_webView->context_menu_allowed())
+    if (!m_webView->contextMenuAllowed())
         return 0;
 
     HitTestResult r = defaultMenu->hitTestResult();
@@ -192,8 +189,8 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     data.frameEncoding = selectedFrame->loader()->encoding();
 
     // Send the frame and page URLs in any case.
-    data.pageURL = urlFromFrame(m_webView->main_frame()->frame());
-    if (selectedFrame != m_webView->main_frame()->frame())
+    data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
+    if (selectedFrame != m_webView->mainFrameImpl()->frame())
         data.frameURL = urlFromFrame(selectedFrame);
 
     if (r.isSelected())
@@ -202,7 +199,7 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
     data.isEditable = false;
     if (r.isContentEditable()) {
         data.isEditable = true;
-        if (m_webView->GetFocusedWebCoreFrame()->editor()->isContinuousSpellCheckingEnabled()) {
+        if (m_webView->focusedWebCoreFrame()->editor()->isContinuousSpellCheckingEnabled()) {
             data.isSpellCheckingEnabled = true;
             data.misspelledWord = selectMisspelledWord(defaultMenu, selectedFrame);
         }
@@ -216,22 +213,22 @@ PlatformMenuDescription ContextMenuClientImpl::getCustomMenuFromDefaultItems(
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canUndo())
+    if (m_webView->focusedWebCoreFrame()->editor()->canUndo())
         data.editFlags |= WebContextMenuData::CanUndo;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canRedo())
+    if (m_webView->focusedWebCoreFrame()->editor()->canRedo())
         data.editFlags |= WebContextMenuData::CanRedo;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canCut())
+    if (m_webView->focusedWebCoreFrame()->editor()->canCut())
         data.editFlags |= WebContextMenuData::CanCut;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canCopy())
+    if (m_webView->focusedWebCoreFrame()->editor()->canCopy())
         data.editFlags |= WebContextMenuData::CanCopy;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canPaste())
+    if (m_webView->focusedWebCoreFrame()->editor()->canPaste())
         data.editFlags |= WebContextMenuData::CanPaste;
-    if (m_webView->GetFocusedWebCoreFrame()->editor()->canDelete())
+    if (m_webView->focusedWebCoreFrame()->editor()->canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
     // We can always select all...
     data.editFlags |= WebContextMenuData::CanSelectAll;
 
-    WebFrame* selected_web_frame = WebFrameImpl::FromFrame(selectedFrame);
+    WebFrame* selected_web_frame = WebFrameImpl::fromFrame(selectedFrame);
     if (m_webView->client())
         m_webView->client()->showContextMenu(selected_web_frame, data);
 
