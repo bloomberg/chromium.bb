@@ -36,14 +36,14 @@
     #
     # TODO(ajwong): Per the comment above, reduce this conditional's size and
     # determine if in-tree build in Windows is tractable.
-    ['OS!="linux" and OS!="freebsd"', {
+    ['OS!="linux" or OS=="freebsd" or OS=="linux"', {
       'variables': {
         'target_for_binaries': 'ffmpeg_binaries',
         'ffmpeg_include_root': 'include',
       },
     },{  # else OS=="linux"
       'variables': {
-        'target_for_binaries': 'ffmpeg_binaries',
+        'target_for_binaries': 'ffmpegsumo_nolink',
         'ffmpeg_include_root': 'source/patched-ffmpeg-mt',
       },
       'targets': [
