@@ -112,6 +112,19 @@
   fun:*talk_base*MessageQueue*Get*
 }
 
+# The race happens during enumeration of ChromeThreads.
+# For each ChromeThread we check whether its message_loop()
+# equals MessageLoop::current().
+# The race can happen if one of the ChromeThreads is exiting.
+# This is benign since current thread can't exit while we
+# execute GetCurrentThreadIdentifier() and other message_loops
+# won't match the current one anyway.
+{
+  Benign race under ChromeThread::GetCurrentThreadIdentifier
+  fun:*base*Thread*message_loop*
+  fun:*ChromeThread*GetCurrentThreadIdentifier*
+}
+
 ############################
 # Data races in tests
 
@@ -247,4 +260,14 @@
   ThreadSanitizer:Race
   ...
   fun:_dl_close
+}
+
+# fprintf is thread-safe. The benign races happen on the internal lock.
+{
+  Benign races below fprintf
+  ThreadSanitizer:Race
+  ...
+  fun:buffered_vfprintf
+  ...
+  fun:fprintf
 }
