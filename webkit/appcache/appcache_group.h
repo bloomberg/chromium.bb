@@ -86,6 +86,10 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   const Caches& old_caches() const { return old_caches_; }
 
+  // Used by update process to restore the group's newest cache if storage
+  // fails to store the newly created cache.
+  void RestoreCacheAsNewest(AppCache* cache);
+
   GURL manifest_url_;
   UpdateStatus update_status_;
   bool is_obsolete_;

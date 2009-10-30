@@ -27,7 +27,9 @@ namespace appcache {
 
 MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      simulate_make_group_obsolete_failure_(false),
+      simulate_store_group_and_newest_cache_failure_(false) {
   last_cache_id_ = 0;
   last_entry_id_ = 0;
   last_group_id_ = 0;
@@ -156,6 +158,12 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
     scoped_refptr<DelegateReference> delegate_ref) {
   DCHECK(group->newest_complete_cache() == newest_cache.get());
 
+  if (simulate_store_group_and_newest_cache_failure_) {
+    if (delegate_ref->delegate)
+      delegate_ref->delegate->OnGroupAndNewestCacheStored(group, false);
+    return;
+  }
+
   AddStoredGroup(group);
   AddStoredCache(group->newest_complete_cache());
 
@@ -195,6 +203,12 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
 void MockAppCacheStorage::ProcessMakeGroupObsolete(
     scoped_refptr<AppCacheGroup> group,
     scoped_refptr<DelegateReference> delegate_ref) {
+  if (simulate_make_group_obsolete_failure_) {
+    if (delegate_ref->delegate)
+      delegate_ref->delegate->OnGroupMadeObsolete(group, false);
+    return;
+  }
+
   RemoveStoredGroup(group);
   if (group->newest_complete_cache())
     RemoveStoredCache(group->newest_complete_cache());

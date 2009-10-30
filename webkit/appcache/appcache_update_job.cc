@@ -20,7 +20,8 @@ static const int kMax503Retries = 3;
 
 // Extra info associated with requests for use during response processing.
 // This info is deleted when the URLRequest is deleted.
-struct UpdateJobInfo :  public URLRequest::UserData {
+class UpdateJobInfo :  public URLRequest::UserData {
+ public:
   enum RequestType {
     MANIFEST_FETCH,
     URL_FETCH,
@@ -28,16 +29,40 @@ struct UpdateJobInfo :  public URLRequest::UserData {
   };
 
   explicit UpdateJobInfo(RequestType request_type)
-      : type(request_type),
-        buffer(new net::IOBuffer(kBufferSize)),
-        retry_503_attempts(0) {
+      : type_(request_type),
+        buffer_(new net::IOBuffer(kBufferSize)),
+        retry_503_attempts_(0),
+        update_job_(NULL),
+        request_(NULL),
+        wrote_response_info_(false),
+        ALLOW_THIS_IN_INITIALIZER_LIST(write_callback_(
+            this, &UpdateJobInfo::OnWriteComplete)) {
   }
 
-  RequestType type;
-  scoped_refptr<net::IOBuffer> buffer;
-  // TODO(jennb): need storage info to stream response data to storage
+  void SetUpResponseWriter(AppCacheResponseWriter* writer,
+                         AppCacheUpdateJob* update,
+                         URLRequest* request) {
+    DCHECK(!response_writer_.get());
+    response_writer_.reset(writer);
+    update_job_ = update;
+    request_ = request;
+  }
 
-  int retry_503_attempts;
+  void OnWriteComplete(int result) {
+    // A completed write may delete the URL request and this object.
+    update_job_->OnWriteResponseComplete(result, request_, this);
+  }
+
+  RequestType type_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  int retry_503_attempts_;
+
+  // Info needed to write responses to storage and process callbacks.
+  scoped_ptr<AppCacheResponseWriter> response_writer_;
+  AppCacheUpdateJob* update_job_;
+  URLRequest* request_;
+  bool wrote_response_info_;
+  net::CompletionCallbackImpl<UpdateJobInfo> write_callback_;
 };
 
 // Helper class for collecting hosts per frontend when sending notifications
@@ -82,7 +107,11 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       internal_state_(FETCH_MANIFEST),
       master_entries_completed_(0),
       url_fetches_completed_(0),
-      manifest_url_request_(NULL) {
+      manifest_url_request_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(manifest_info_write_callback_(
+          this, &AppCacheUpdateJob::OnManifestInfoWriteComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_write_callback_(
+          this, &AppCacheUpdateJob::OnManifestDataWriteComplete)) {
   DCHECK(group_);
   manifest_url_ = group_->manifest_url();
 }
@@ -160,13 +189,14 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
 
 void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
   if (internal_state_ == CACHE_FAILURE || internal_state_ == CANCELLED ||
-      internal_state_ == COMPLETED)
+      internal_state_ == COMPLETED) {
     return;
+  }
 
   int bytes_read = 0;
   UpdateJobInfo* info =
       static_cast<UpdateJobInfo*>(request->GetUserData(this));
-  request->Read(info->buffer, kBufferSize, &bytes_read);
+  request->Read(info->buffer_, kBufferSize, &bytes_read);
   OnReadCompleted(request, bytes_read);
 }
 
@@ -179,7 +209,7 @@ void AppCacheUpdateJob::OnReadCompleted(URLRequest* request, int bytes_read) {
     data_consumed = ConsumeResponseData(request, info, bytes_read);
     if (data_consumed) {
       bytes_read = 0;
-      while (request->Read(info->buffer, kBufferSize, &bytes_read)) {
+      while (request->Read(info->buffer_, kBufferSize, &bytes_read)) {
         if (bytes_read > 0) {
           data_consumed = ConsumeResponseData(request, info, bytes_read);
           if (!data_consumed)
@@ -198,25 +228,50 @@ void AppCacheUpdateJob::OnReadCompleted(URLRequest* request, int bytes_read) {
 bool AppCacheUpdateJob::ConsumeResponseData(URLRequest* request,
                                             UpdateJobInfo* info,
                                             int bytes_read) {
-  switch (info->type) {
+  DCHECK_GT(bytes_read, 0);
+  switch (info->type_) {
     case UpdateJobInfo::MANIFEST_FETCH:
-      manifest_data_.append(info->buffer->data(), bytes_read);
+      manifest_data_.append(info->buffer_->data(), bytes_read);
       break;
     case UpdateJobInfo::URL_FETCH:
-      // TODO(jennb): stream data to storage. will be async so need to wait
-      // for callback before reading next chunk.
-      // For now, schedule a task to continue reading to simulate async-ness.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &AppCacheUpdateJob::ReadResponseData, request));
-      return false;
+      if (!info->response_writer_.get()) {
+        info->SetUpResponseWriter(
+            service_->storage()->CreateResponseWriter(manifest_url_),
+            this, request);
+      }
+      info->response_writer_->WriteData(info->buffer_, bytes_read,
+                                        &info->write_callback_);
+      return false;  // wait for async write completion to continue reading
     case UpdateJobInfo::MANIFEST_REFETCH:
-      manifest_refetch_data_.append(info->buffer->data(), bytes_read);
+      manifest_refetch_data_.append(info->buffer_->data(), bytes_read);
       break;
     default:
       NOTREACHED();
   }
   return true;
+}
+
+void AppCacheUpdateJob::OnWriteResponseComplete(int result,
+                                                URLRequest* request,
+                                                UpdateJobInfo* info) {
+  DCHECK(internal_state_ == DOWNLOADING);
+
+  if (result < 0) {
+    request->Cancel();
+    OnResponseCompleted(request);
+    return;
+  }
+
+  if (!info->wrote_response_info_) {
+    info->wrote_response_info_ = true;
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        new HttpResponseInfoIOBuffer(
+            new net::HttpResponseInfo(request->response_info()));
+    info->response_writer_->WriteInfo(io_buffer, &info->write_callback_);
+    return;
+  }
+
+  ReadResponseData(request);
 }
 
 void AppCacheUpdateJob::OnReceivedRedirect(URLRequest* request,
@@ -237,7 +292,7 @@ void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
 
   UpdateJobInfo* info =
       static_cast<UpdateJobInfo*>(request->GetUserData(this));
-  switch (info->type) {
+  switch (info->type_) {
     case UpdateJobInfo::MANIFEST_FETCH:
       HandleManifestFetchCompleted(request);
       break;
@@ -257,7 +312,7 @@ void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
 bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
   UpdateJobInfo* info =
       static_cast<UpdateJobInfo*>(request->GetUserData(this));
-  if (info->retry_503_attempts >= kMax503Retries) {
+  if (info->retry_503_attempts_ >= kMax503Retries) {
     return false;
   }
 
@@ -266,13 +321,13 @@ bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
 
   const GURL& url = request->original_url();
   URLRequest* retry = new URLRequest(url, this);
-  UpdateJobInfo* retry_info = new UpdateJobInfo(info->type);
-  retry_info->retry_503_attempts = info->retry_503_attempts + 1;
+  UpdateJobInfo* retry_info = new UpdateJobInfo(info->type_);
+  retry_info->retry_503_attempts_ = info->retry_503_attempts_ + 1;
   retry->SetUserData(this, retry_info);
   retry->set_context(request->context());
   retry->set_load_flags(request->load_flags());
 
-  switch (info->type) {
+  switch (info->type_) {
     case UpdateJobInfo::MANIFEST_FETCH:
     case UpdateJobInfo::MANIFEST_REFETCH:
       manifest_url_request_ = retry;
@@ -307,6 +362,8 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   int response_code = request->GetResponseCode();
   std::string mime_type;
   request->GetMimeType(&mime_type);
+  manifest_response_info_.reset(
+      new net::HttpResponseInfo(request->response_info()));
 
   if ((response_code / 100 == 2) && mime_type == kManifestMimeType) {
     if (update_type_ == UPGRADE_ATTEMPT)
@@ -315,18 +372,27 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
       ContinueHandleManifestFetchCompleted(true);
   } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
     ContinueHandleManifestFetchCompleted(false);
+  } else if (response_code == 404 || response_code == 410) {
+    service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
-    if (response_code == 404 || response_code == 410) {
-      group_->set_obsolete(true);
-      NotifyAllAssociatedHosts(OBSOLETE_EVENT);
-      NotifyAllPendingMasterHosts(ERROR_EVENT);
-      internal_state_ = COMPLETED;
-    } else {
-      LOG(INFO) << "Cache failure, response code: " << response_code;
-      internal_state_ = CACHE_FAILURE;
-    }
+    LOG(INFO) << "Cache failure, response code: " << response_code;
+    internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
   }
+}
+
+void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
+                                            bool success) {
+  NotifyAllPendingMasterHosts(ERROR_EVENT);
+  if (success) {
+    DCHECK(group->is_obsolete());
+    NotifyAllAssociatedHosts(OBSOLETE_EVENT);
+    internal_state_ = COMPLETED;
+  } else {
+    // Treat failure to mark group obsolete as a cache failure.
+    internal_state_ = CACHE_FAILURE;
+  }
+  MaybeCompleteUpdate();
 }
 
 void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
@@ -382,8 +448,14 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
   int response_code = request->GetResponseCode();
   AppCacheEntry& entry = url_file_list_.find(url)->second;
 
+  UpdateJobInfo* info =
+      static_cast<UpdateJobInfo*>(request->GetUserData(this));
+
   if (request->status().is_success() && (response_code / 100 == 2)) {
-    // TODO(jennb): associate storage with the new entry
+    // Associate storage with the new entry.
+    DCHECK(info->response_writer_.get());
+    entry.set_response_id(info->response_writer_->response_id());
+
     inprogress_cache_->AddEntry(url, entry);
 
     // Foreign entries will be detected during cache selection.
@@ -396,7 +468,9 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
 
-    // TODO(jennb): discard any stored data for this entry
+    // TODO(jennb): Discard any stored data for this entry? May be unnecessary
+    // if handled automatically by storage layer.
+
     if (entry.IsExplicit() || entry.IsFallback()) {
       internal_state_ = CACHE_FAILURE;
 
@@ -434,35 +508,88 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
 
   int response_code = request->GetResponseCode();
   if (response_code == 304 || manifest_data_ == manifest_refetch_data_) {
-    AppCacheEntry entry(AppCacheEntry::MANIFEST);
-    // TODO(jennb): add manifest_data_ to storage and put storage key in entry
-    // Also store response headers from request for HTTP cache control.
-    inprogress_cache_->AddOrModifyEntry(manifest_url_, entry);
-    inprogress_cache_->set_update_time(base::TimeTicks::Now());
-
-    // TODO(jennb): start of part to make async (cache/group storage may fail)
-    inprogress_cache_->set_complete(true);
-    group_->AddCache(inprogress_cache_);
-    protect_new_cache_.swap(inprogress_cache_);
-
-    // TODO(jennb): write new group and cache to storage here
-
-    if (update_type_ == CACHE_ATTEMPT) {
-      NotifyAllAssociatedHosts(CACHED_EVENT);
+    // Only need to store response in storage if manifest is not already an
+    // an entry in the cache.
+    AppCacheEntry* entry = inprogress_cache_->GetEntry(manifest_url_);
+    if (entry) {
+      entry->add_types(AppCacheEntry::MANIFEST);
+      CompleteInprogressCache();
     } else {
-      NotifyAllAssociatedHosts(UPDATE_READY_EVENT);
+      manifest_response_writer_.reset(
+          service_->storage()->CreateResponseWriter(manifest_url_));
+      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+          new HttpResponseInfoIOBuffer(manifest_response_info_.release());
+      manifest_response_writer_->WriteInfo(io_buffer,
+                                           &manifest_info_write_callback_);
     }
-    internal_state_ = COMPLETED;
-    // TODO(jennb): end of part that needs to be made async.
   } else {
     LOG(INFO) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
+    HandleManifestRefetchFailure();
+  }
+}
+
+void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
+  if (result > 0) {
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        new net::StringIOBuffer(manifest_data_);
+    manifest_response_writer_->WriteData(io_buffer, manifest_data_.length(),
+                                         &manifest_data_write_callback_);
+  } else {
+    // Treat storage failure as if refetch of manifest failed.
+    HandleManifestRefetchFailure();
+  }
+}
+
+void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
+  if (result > 0) {
+    AppCacheEntry entry(AppCacheEntry::MANIFEST,
+        manifest_response_writer_->response_id());
+    inprogress_cache_->AddOrModifyEntry(manifest_url_, entry);
+    CompleteInprogressCache();
+  } else {
+    // Treat storage failure as if refetch of manifest failed.
+    HandleManifestRefetchFailure();
+  }
+}
+
+void AppCacheUpdateJob::CompleteInprogressCache() {
+  inprogress_cache_->set_update_time(base::TimeTicks::Now());
+  inprogress_cache_->set_complete(true);
+
+  protect_former_newest_cache_ = group_->newest_complete_cache();
+  group_->AddCache(inprogress_cache_);
+  protect_new_cache_.swap(inprogress_cache_);
+
+  service_->storage()->StoreGroupAndNewestCache(group_, this);  // async
+}
+
+void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                                    bool success) {
+  if (success) {
+    if (update_type_ == CACHE_ATTEMPT)
+      NotifyAllAssociatedHosts(CACHED_EVENT);
+    else
+      NotifyAllAssociatedHosts(UPDATE_READY_EVENT);
+    internal_state_ = COMPLETED;
+    MaybeCompleteUpdate();  // will definitely complete
+  } else {
+    // TODO(jennb): Change storage so clients won't need to revert group state?
+    // Change group back to reflect former newest group.
+    group_->RestoreCacheAsNewest(protect_former_newest_cache_);
+    protect_new_cache_ = NULL;
+
+    // Treat storage failure as if manifest refetch failed.
+    HandleManifestRefetchFailure();
+  }
+  protect_former_newest_cache_ = NULL;
+}
+
+void AppCacheUpdateJob::HandleManifestRefetchFailure() {
     ScheduleUpdateRetry(kRerunDelayMs);
     internal_state_ = CACHE_FAILURE;
-  }
-
-  MaybeCompleteUpdate();  // will definitely complete
+    MaybeCompleteUpdate();  // will definitely complete
 }
 
 void AppCacheUpdateJob::NotifySingleHost(AppCacheHost* host,
@@ -654,7 +781,7 @@ void AppCacheUpdateJob::CopyEntryToCache(const GURL& url,
                                          const AppCacheEntry& src,
                                          AppCacheEntry* dest) {
   DCHECK(dest);
-  // TODO(jennb): copy storage key from src to dest
+  dest->set_response_id(src.response_id());
   inprogress_cache_->AddEntry(url, *dest);
 }
 
@@ -718,18 +845,28 @@ void AppCacheUpdateJob::Cancel() {
 
   pending_master_entries_.clear();
   DiscardInprogressCache();
-  // TODO(jennb): cancel any storage callbacks
+
+  // Delete response writer to avoid any callbacks.
+  if (manifest_response_writer_.get())
+    manifest_response_writer_.reset();
+
+  service_->storage()->CancelDelegateCallbacks(this);
 }
 
 void AppCacheUpdateJob::DiscardInprogressCache() {
   if (!inprogress_cache_)
     return;
 
-  // TODO(jennb): cleanup stored responses for entries in the cache
+  // TODO(jennb): Cleanup stored responses for entries in the cache?
+  // May not be necessary if handled automatically by storage layer.
+
   inprogress_cache_ = NULL;
 }
 
 void AppCacheUpdateJob::DeleteSoon() {
+  manifest_response_writer_.reset();
+  service_->storage()->CancelDelegateCallbacks(this);
+
   // Break the connection with the group so the group cannot call delete
   // on this object after we've posted a task to delete ourselves.
   group_->SetUpdateStatus(AppCacheGroup::IDLE);

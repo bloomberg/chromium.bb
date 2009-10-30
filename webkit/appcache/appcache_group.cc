@@ -75,17 +75,29 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
 void AppCacheGroup::RemoveCache(AppCache* cache) {
   DCHECK(cache->associated_hosts().empty());
   if (cache == newest_complete_cache_) {
-    AppCache* cache = newest_complete_cache_;
+    AppCache* tmp_cache = newest_complete_cache_;
     newest_complete_cache_ = NULL;
-    cache->set_owning_group(NULL);  // may cause this group to be deleted
+    tmp_cache->set_owning_group(NULL);  // may cause this group to be deleted
   } else {
     Caches::iterator it =
         std::find(old_caches_.begin(), old_caches_.end(), cache);
     if (it != old_caches_.end()) {
-      AppCache* cache = *it;
+      AppCache* tmp_cache = *it;
       old_caches_.erase(it);
-      cache->set_owning_group(NULL);  // may cause group to be deleted
+      tmp_cache->set_owning_group(NULL);  // may cause group to be deleted
     }
+  }
+}
+
+void AppCacheGroup::RestoreCacheAsNewest(AppCache* former_newest_cache) {
+  newest_complete_cache_->set_owning_group(NULL);
+  newest_complete_cache_ = former_newest_cache;
+  if (former_newest_cache) {
+    DCHECK(former_newest_cache->owning_group() == this);
+    Caches::iterator it =
+        std::find(old_caches_.begin(), old_caches_.end(), former_newest_cache);
+    DCHECK(it != old_caches_.end());
+    old_caches_.erase(it);
   }
 }
 

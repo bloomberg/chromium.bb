@@ -14,13 +14,15 @@
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
 
-struct UpdateJobInfo;
+class UpdateJobInfo;
 
 // Application cache Update algorithm and state.
-class AppCacheUpdateJob : public URLRequest::Delegate {
+class AppCacheUpdateJob : public URLRequest::Delegate,
+                          public AppCacheStorage::Delegate {
  public:
   AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
   ~AppCacheUpdateJob();
@@ -29,13 +31,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
   // in progress.
   void StartUpdate(AppCacheHost* host, const GURL& new_master_resource);
 
-
-  // TODO(jennb): add callback method for writing data to storage
-  // TODO(jennb): add callback method for reading data from storage
-
  private:
   friend class ScopedRunnableMethodFactory<AppCacheUpdateJob>;
   friend class AppCacheUpdateJobTest;
+  friend class UpdateJobInfo;
 
   // Master entries have multiple hosts, for example, the same page is opened
   // in different tabs.
@@ -71,6 +70,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
                           bool* defer_redirect);
   // TODO(jennb): any other delegate callbacks to handle? certificate?
 
+  // Methods for AppCacheStorage::Delegate.
+  void OnGroupAndNewestCacheStored(AppCacheGroup* group, bool success);
+  void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
+
   void FetchManifest(bool is_first_fetch);
 
   void OnResponseCompleted(URLRequest* request);
@@ -82,16 +85,24 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
   void ReadResponseData(URLRequest* request);
 
   // Returns false if response data is processed asynchronously, in which
-  // case a callback will be invoked when it is safe to continue reading
-  // more response data from the request.
+  // case ReadResponseData will be invoked when it is safe to continue
+  // reading more response data from the request.
   bool ConsumeResponseData(URLRequest* request,
                            UpdateJobInfo* info,
                            int bytes_read);
+  void OnWriteResponseComplete(int result, URLRequest* request,
+                               UpdateJobInfo* info);
 
   void HandleManifestFetchCompleted(URLRequest* request);
   void ContinueHandleManifestFetchCompleted(bool changed);
+
   void HandleUrlFetchCompleted(URLRequest* request);
+
   void HandleManifestRefetchCompleted(URLRequest* request);
+  void OnManifestInfoWriteComplete(int result);
+  void OnManifestDataWriteComplete(int result);
+  void CompleteInprogressCache();
+  void HandleManifestRefetchFailure();
 
   void NotifySingleHost(AppCacheHost* host, EventID event_id);
   void NotifyAllPendingMasterHosts(EventID event_id);
@@ -157,6 +168,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
   // the notification when its status is set to IDLE in ~AppCacheUpdateJob.
   scoped_refptr<AppCache> protect_new_cache_;
 
+  // Hold a reference to the group's newest cache (prior to update) in order
+  // to restore the group's newest cache if storage fails.
+  scoped_refptr<AppCache> protect_former_newest_cache_;
+
   AppCacheGroup* group_;
 
   UpdateType update_type_;
@@ -181,6 +196,11 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
   // Temporary storage of manifest response data for parsing and comparison.
   std::string manifest_data_;
   std::string manifest_refetch_data_;
+  scoped_ptr<net::HttpResponseInfo> manifest_response_info_;
+  scoped_ptr<AppCacheResponseWriter> manifest_response_writer_;
+
+  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
+  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
 
   // TODO(jennb): delete when able to mock storage behavior
   bool simulate_manifest_changed_;

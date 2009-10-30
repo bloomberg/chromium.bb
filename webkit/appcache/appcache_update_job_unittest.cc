@@ -673,7 +673,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Give the newest cache a master entry that is also one of the explicit
     // entries in the manifest.
     cache->AddEntry(http_server_->TestServerPage("files/explicit1"),
-                    AppCacheEntry(AppCacheEntry::MASTER));
+                    AppCacheEntry(AppCacheEntry::MASTER, 111));
 
     // TODO(jennb): simulate this by mocking storage behavior instead
     update->SimulateManifestChanged(true);  // changed
@@ -795,13 +795,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Give the newest cache some master entries; one will fail with a 404.
     cache->AddEntry(
         http_server_->TestServerPage("files/notfound"),
-        AppCacheEntry(AppCacheEntry::MASTER));
+        AppCacheEntry(AppCacheEntry::MASTER, 222));
     cache->AddEntry(
         http_server_->TestServerPage("files/explicit2"),
-        AppCacheEntry(AppCacheEntry::MASTER | AppCacheEntry::FOREIGN));
+        AppCacheEntry(AppCacheEntry::MASTER | AppCacheEntry::FOREIGN, 333));
     cache->AddEntry(
         http_server_->TestServerPage("files/servererror"),
-        AppCacheEntry(AppCacheEntry::MASTER));
+        AppCacheEntry(AppCacheEntry::MASTER, 444));
 
     // TODO(jennb): simulate this by mocking storage behavior instead
     update->SimulateManifestChanged(true);  // changed
@@ -820,7 +820,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         AppCacheEntry(AppCacheEntry::MASTER)));  // foreign flag is dropped
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         http_server_->TestServerPage("files/servererror"),
-        AppCacheEntry(AppCacheEntry::MASTER)));  // foreign flag is dropped
+        AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
@@ -1012,6 +1012,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void RetryUrlTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
     // Set 1 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
     RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
@@ -1039,6 +1041,147 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
+  void FailStoreNewestCacheTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    MockAppCacheStorage* storage =
+        reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+    storage->SimulateStoreGroupAndNewestCacheFailure();
+
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/manifest1"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;  // storage failed
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void UpgradeFailStoreNewestCacheTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    MockAppCacheStorage* storage =
+        reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+    storage->SimulateStoreGroupAndNewestCacheFailure();
+
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/manifest1"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    MockFrontend* frontend1 = MakeMockFrontend();
+    MockFrontend* frontend2 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(1, frontend1);
+    AppCacheHost* host2 = MakeHost(2, frontend2);
+    host1->AssociateCache(cache);
+    host2->AssociateCache(cache);
+
+    // TODO(jennb): simulate this by mocking storage behavior instead
+    update->SimulateManifestChanged(true);  // changed
+
+    update->StartUpdate(NULL, GURL::EmptyGURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_newest_cache_ = cache;  // unchanged
+    MockFrontend::HostIds ids1(1, host1->host_id());
+    frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend1->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(ids1, ERROR_EVENT);
+    MockFrontend::HostIds ids2(1, host2->host_id());
+    frontend2->AddExpectedEvent(ids2, CHECKING_EVENT);
+    frontend2->AddExpectedEvent(ids2, DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(ids2, ERROR_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void FailMakeGroupObsoleteTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    MockAppCacheStorage* storage =
+        reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+    storage->SimulateMakeGroupObsoleteFailure();
+
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/gone"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void UpgradeFailMakeGroupObsoleteTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    MockAppCacheStorage* storage =
+        reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+    storage->SimulateMakeGroupObsoleteFailure();
+
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/nosuchfile"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    AppCache* cache = MakeCacheForGroup(1);
+    MockFrontend* frontend1 = MakeMockFrontend();
+    MockFrontend* frontend2 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(1, frontend1);
+    AppCacheHost* host2 = MakeHost(2, frontend2);
+    host1->AssociateCache(cache);
+    host2->AssociateCache(cache);
+
+    update->StartUpdate(NULL, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_newest_cache_ = cache;  // newest cache unaffected by update
+    MockFrontend::HostIds ids1(1, host1->host_id());
+    frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend1->AddExpectedEvent(ids1, ERROR_EVENT);
+    MockFrontend::HostIds ids2(1, host2->host_id());
+    frontend2->AddExpectedEvent(ids2, CHECKING_EVENT);
+    frontend2->AddExpectedEvent(ids2, ERROR_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -1053,8 +1196,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpdateFinished() {
-    // We unwind the stack prior to finishing up to let stack
-    // based objects get deleted.
+    // We unwind the stack prior to finishing up to let stack-based objects
+    // get deleted.
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(
             &AppCacheUpdateJobTest::UpdateFinishedUnwound));
@@ -1119,8 +1262,29 @@ class AppCacheUpdateJobTest : public testing::Test,
             std::find(group_->old_caches().begin(),
                       group_->old_caches().end(), expect_old_cache_));
       }
-      if (expect_newest_cache_)
+      if (expect_newest_cache_) {
         EXPECT_EQ(expect_newest_cache_, group_->newest_complete_cache());
+        EXPECT_TRUE(group_->old_caches().end() ==
+            std::find(group_->old_caches().begin(),
+                      group_->old_caches().end(), expect_newest_cache_));
+      } else {
+        // Tests that don't know which newest cache to expect contain updates
+        // that succeed (because the update creates a new cache whose pointer
+        // is unknown to the test). Check group and newest cache were stored
+        // when update succeeds.
+        MockAppCacheStorage* storage =
+            reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+        EXPECT_TRUE(storage->IsGroupStored(group_));
+        EXPECT_TRUE(storage->IsCacheStored(group_->newest_complete_cache()));
+
+        // Check that all entries in the newest cache were stored.
+        const AppCache::EntryMap& entries =
+            group_->newest_complete_cache()->entries();
+        for (AppCache::EntryMap::const_iterator it = entries.begin();
+             it != entries.end(); ++it) {
+          EXPECT_NE(kNoResponseId, it->second.response_id());
+        }
+      }
     } else {
       EXPECT_TRUE(group_->newest_complete_cache() == NULL);
     }
@@ -1456,6 +1620,22 @@ TEST_F(AppCacheUpdateJobTest, RetrySuccess) {
 
 TEST_F(AppCacheUpdateJobTest, RetryUrl) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetryUrlTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, FailStoreNewestCache) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::FailStoreNewestCacheTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailStoreNewestCacheTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, FailMakeGroupObsolete) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::FailMakeGroupObsoleteTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailMakeGroupObsoleteTest);
 }
 
 }  // namespace appcache

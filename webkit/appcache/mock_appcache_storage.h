@@ -41,6 +41,8 @@ class MockAppCacheStorage : public AppCacheStorage {
       const GURL& manifest_url, const std::vector<int64>& response_ids);
 
  private:
+  friend class AppCacheUpdateJobTest;
+
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
   typedef std::set<int64> DoomedResponseIds;
@@ -70,6 +72,9 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   void AddStoredGroup(AppCacheGroup* group);
   void RemoveStoredGroup(AppCacheGroup* group);
+  bool IsGroupStored(const AppCacheGroup* group) {
+    return stored_groups_.find(group->manifest_url()) != stored_groups_.end();
+  }
 
   // These helpers determine when certain operations should complete
   // asynchronously vs synchronously to faithfully mimic, or mock,
@@ -87,12 +92,23 @@ class MockAppCacheStorage : public AppCacheStorage {
     return disk_cache_.get();
   }
 
+  // Simulate failures for testing.
+  void SimulateMakeGroupObsoleteFailure() {
+    simulate_make_group_obsolete_failure_ = true;
+  }
+  void SimulateStoreGroupAndNewestCacheFailure() {
+    simulate_store_group_and_newest_cache_failure_ = true;
+  }
+
   StoredCacheMap stored_caches_;
   StoredGroupMap stored_groups_;
   DoomedResponseIds doomed_response_ids_;
   scoped_ptr<disk_cache::Backend> disk_cache_;
   std::deque<Task*> pending_tasks_;
   ScopedRunnableMethodFactory<MockAppCacheStorage> method_factory_;
+
+  bool simulate_make_group_obsolete_failure_;
+  bool simulate_store_group_and_newest_cache_failure_;
 
   FRIEND_TEST(MockAppCacheStorageTest, CreateGroup);
   FRIEND_TEST(MockAppCacheStorageTest, LoadCache_FarHit);
