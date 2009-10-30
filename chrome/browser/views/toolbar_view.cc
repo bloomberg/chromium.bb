@@ -1179,7 +1179,8 @@ void ToolbarView::CreateAppMenu() {
     // TODO(timsteele): Need a ui helper method to just get the type without
     // needing labels.
     SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
-        browser_->profile()->GetProfileSyncService(), &label, &link);
+        browser_->profile()->GetOriginalProfile()->GetProfileSyncService(),
+        &label, &link);
     label = type == SyncStatusUIHelper::SYNCED ?
         l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
         type == SyncStatusUIHelper::SYNC_ERROR ?

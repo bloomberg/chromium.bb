@@ -679,8 +679,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
   command_updater_.UpdateCommandEnabled(
-      IDC_SYNC_BOOKMARKS,
-      show_main_ui && profile_->GetProfileSyncService() != NULL);
+      IDC_SYNC_BOOKMARKS, show_main_ui &&
+          profile_->GetOriginalProfile()->GetProfileSyncService() != NULL);
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1226,11 +1226,13 @@ void Browser::OpenImportSettingsDialog() {
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {
-  ProfileSyncService* service = profile_->GetProfileSyncService();
-  // TODO(timsteele): Incognito has no sync service for the time being,
-  // so protect against this case.
+  ProfileSyncService* service =
+      profile_->GetOriginalProfile()->GetProfileSyncService();
+  // It shouldn't be possible to be in this function without a service.
+  DCHECK(service);
   if (!service)
     return;
+
   if (service->HasSyncSetupCompleted()) {
     ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile_);
   } else {
