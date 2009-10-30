@@ -3060,10 +3060,6 @@ BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = PASS
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-maxlength.html = PASS
 
-// Webkit update: 49221:49245
-BUG_HAMAJI WIN LINUX : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
-BUG_HAMAJI WIN LINUX : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
-
 // Failing after r28267
 BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
 

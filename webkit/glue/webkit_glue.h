@@ -58,6 +58,12 @@ std::wstring DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
 // Returns the renderer's description of its tree (its externalRepresentation).
 std::wstring DumpRenderer(WebKit::WebFrame* web_frame);
 
+// Fill the value of counter in the element specified by the id into
+// counter_value.  Return false when the specified id doesn't exist.
+bool CounterValueForElementById(WebKit::WebFrame* web_frame,
+                                const std::string& id,
+                                std::wstring* counter_value);
+
 // Returns a dump of the scroll position of the webframe.
 std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 

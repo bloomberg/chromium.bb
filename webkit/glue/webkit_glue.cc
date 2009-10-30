@@ -139,6 +139,20 @@ std::wstring DumpRenderer(WebFrame* web_frame) {
   return StringToStdWString(frameText);
 }
 
+bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
+                                std::wstring* counter_value) {
+  WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
+  WebCore::Frame* frame = webFrameImpl->frame();
+
+  WebCore::Element* element =
+      frame->document()->getElementById(WebCore::AtomicString(id.c_str()));
+  if (!element)
+      return false;
+  WebCore::String counterValue = WebCore::counterValueForElement(element);
+  *counter_value = StringToStdWString(counterValue);
+  return true;
+}
+
 std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
   WebCore::IntSize offset = webFrameImpl->frameview()->scrollOffset();

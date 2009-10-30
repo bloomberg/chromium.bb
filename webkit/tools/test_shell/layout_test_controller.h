@@ -205,6 +205,10 @@ class LayoutTestController : public CppBoundClass {
   // Resets between tests.
   void setPOSIXLocale(const CppArgumentList& args, CppVariant* result);
 
+  // Gets the value of the counter in the element specified by its ID.
+  void counterValueForElementById(
+      const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

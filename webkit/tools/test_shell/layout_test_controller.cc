@@ -22,6 +22,7 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -117,6 +118,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
   BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
+  BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -990,6 +992,19 @@ void LayoutTestController::setPOSIXLocale(const CppArgumentList& args,
     std::string new_locale = args[0].ToString();
     setlocale(LC_ALL, new_locale.c_str());
   }
+}
+
+void LayoutTestController::counterValueForElementById(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  if (args.size() < 1 || !args[0].isString())
+    return;
+  std::wstring counterValue;
+  if (!webkit_glue::CounterValueForElementById(shell_->webView()->mainFrame(),
+                                               args[0].ToString(),
+                                               &counterValue))
+    return;
+  result->Set(WideToUTF8(counterValue));
 }
 
 void LayoutTestController::LogErrorToConsole(const std::string& text) {
