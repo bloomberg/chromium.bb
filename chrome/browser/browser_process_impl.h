@@ -126,6 +126,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return clipboard_.get();
   }
 
+  virtual NotificationUIManager* notification_ui_manager() {
+    DCHECK(CalledOnValidThread());
+    if (!created_notification_ui_manager_)
+      CreateNotificationUIManager();
+    return notification_ui_manager_.get();
+  }
+
   virtual IconManager* icon_manager() {
     DCHECK(CalledOnValidThread());
     if (!created_icon_manager_)
@@ -217,6 +224,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateDebuggerWrapper(int port);
   void CreateDevToolsManager();
   void CreateGoogleURLTracker();
+  void CreateNotificationUIManager();
 
 #if defined(OS_WIN)
   void InitBrokerServices(sandbox::BrokerServices* broker_services);
@@ -266,6 +274,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_refptr<DevToolsManager> devtools_manager_;
 
   scoped_ptr<Clipboard> clipboard_;
+
+  // Manager for desktop notification UI.
+  bool created_notification_ui_manager_;
+  scoped_ptr<NotificationUIManager> notification_ui_manager_;
 
   scoped_ptr<AutomationProviderList> automation_provider_list_;
 

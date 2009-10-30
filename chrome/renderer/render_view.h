@@ -188,7 +188,7 @@ class RenderView : public RenderWidget,
       const WebKit::WebString& source_name, unsigned source_line);
   virtual void printPage(WebKit::WebFrame* frame);
   virtual WebKit::WebNotificationPresenter* notificationPresenter() {
-    return NULL;
+    return notification_provider_.get();
   }
   virtual void didStartLoading();
   virtual void didStopLoading();

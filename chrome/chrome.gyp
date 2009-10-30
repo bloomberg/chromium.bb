@@ -1813,6 +1813,8 @@
         'browser/notifications/notification.h',
         'browser/notifications/notification_object_proxy.cc',
         'browser/notifications/notification_object_proxy.h',
+        'browser/notifications/notification_ui_manager.cc',
+        'browser/notifications/notification_ui_manager.h',
         'browser/notifications/notifications_prefs_cache.cc',
         'browser/notifications/notifications_prefs_cache.h',
         'browser/ntp_background_util.cc',

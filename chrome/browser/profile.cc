@@ -1318,11 +1318,9 @@ WebKitContext* ProfileImpl::GetWebKitContext() {
 DesktopNotificationService* ProfileImpl::GetDesktopNotificationService() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!desktop_notification_service_.get()) {
-     // TODO(johnnyg): hook this up with notification UI manager.
      desktop_notification_service_.reset(new DesktopNotificationService(
-         this, NULL));
+         this, g_browser_process->notification_ui_manager()));
   }
-
   return desktop_notification_service_.get();
 }
 

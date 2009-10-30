@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -147,6 +148,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_icon_manager_(false),
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
+      created_notification_ui_manager_(false),
       module_ref_count_(0),
       checked_for_new_frames_(false),
       using_new_frames_(false),
@@ -431,6 +433,12 @@ void BrowserProcessImpl::CreateGoogleURLTracker() {
   DCHECK(google_url_tracker_.get() == NULL);
   scoped_ptr<GoogleURLTracker> google_url_tracker(new GoogleURLTracker);
   google_url_tracker_.swap(google_url_tracker);
+}
+
+void BrowserProcessImpl::CreateNotificationUIManager() {
+  DCHECK(notification_ui_manager_.get() == NULL);
+  notification_ui_manager_.reset(NotificationUIManager::Create());
+  created_notification_ui_manager_ = true;
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

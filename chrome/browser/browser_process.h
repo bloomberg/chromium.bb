@@ -23,6 +23,7 @@ class DownloadRequestManager;
 class GoogleURLTracker;
 class IconManager;
 class MetricsService;
+class NotificationUIManager;
 class PrefService;
 class ProfileManager;
 class DebuggerWrapper;
@@ -68,6 +69,9 @@ class BrowserProcess {
   virtual DebuggerWrapper* debugger_wrapper() = 0;
   virtual DevToolsManager* devtools_manager() = 0;
   virtual Clipboard* clipboard() = 0;
+
+  // Returns the manager for desktop notifications.
+  virtual NotificationUIManager* notification_ui_manager() = 0;
 
   // Returns the thread that we perform I/O coordination on (network requests,
   // communication with renderers, etc.

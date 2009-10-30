@@ -12,9 +12,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/child_process_host.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -59,9 +59,7 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
 // put the notification with the requested parameters on the desktop.
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
-  SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
-  // TODO(johnnyg): When UI Manager is available, add from here.
-  //  ui_manager_->Add(notification, profile_, site_instance);
+  ui_manager_->Add(notification, profile_);
 }
 
 // Shows a notification bubble which contains the contents of url.
@@ -94,4 +92,3 @@ bool DesktopNotificationService::ShowDesktopNotificationText(
   ShowNotification(notif);
   return true;
 }
-

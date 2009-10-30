@@ -103,6 +103,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return clipboard_.get();
   }
 
+  virtual NotificationUIManager* notification_ui_manager() {
+    return NULL;
+  }
+
   virtual GoogleURLTracker* google_url_tracker() {
     return NULL;
   }
