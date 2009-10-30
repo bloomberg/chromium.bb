@@ -33,6 +33,9 @@ Font::Font()
 
 void Font::calculateMetrics() {
   NSFont* font = nativeFont();
+  // TODO(akalin): This is the wrong height to use!  Use either the height
+  // of the bounding rect for the font or ascender - descender; this needs
+  // further investigation.  Width may be wrong, too.
   height_ = [font xHeight];
   ascent_ = [font ascender];
   avg_width_ = [font boundingRectForGlyph:[font glyphWithName:@"x"]].size.width;

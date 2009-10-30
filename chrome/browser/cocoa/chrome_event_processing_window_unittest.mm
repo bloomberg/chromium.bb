@@ -66,6 +66,19 @@ class ChromeEventProcessingWindowTest : public CocoaTest {
   ChromeEventProcessingWindow* window_;
 };
 
+id CreateBrowserWindowControllerMock() {
+  id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
+  // Make conformsToProtocol return YES for @protocol(BrowserCommandExecutor)
+  // to satisfy the DCHECK() in handleExtraKeyboardShortcut.
+  //
+  // TODO(akalin): Figure out how to replace OCMOCK_ANY below with
+  // @protocol(BrowserCommandExecutor) and have it work.
+  BOOL yes = YES;
+  [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
+    conformsToProtocol:OCMOCK_ANY];
+  return delegate;
+}
+
 // Verify that the window intercepts a particular key event and
 // forwards it to [delegate executeCommand:].  Assume that other
 // CommandForKeyboardShortcut() will work the same for the rest.
@@ -73,11 +86,7 @@ TEST_F(ChromeEventProcessingWindowTest,
        PerformKeyEquivalentForwardToExecuteCommand) {
   NSEvent* event = KeyEvent(NSCommandKeyMask, kVK_ANSI_1);
 
-  id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
-  // -stub to satisfy the DCHECK.
-  BOOL yes = YES;
-  [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
-    isKindOfClass:[BrowserWindowController class]];
+  id delegate = CreateBrowserWindowControllerMock();
   [[delegate expect] executeCommand:IDC_SELECT_TAB_0];
 
   [window_ setDelegate:delegate];
@@ -95,11 +104,7 @@ TEST_F(ChromeEventProcessingWindowTest,
 TEST_F(ChromeEventProcessingWindowTest, PerformKeyEquivalentNoForward) {
   NSEvent* event = KeyEvent(0, 0);
 
-  id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
-  // -stub to satisfy the DCHECK.
-  BOOL yes = YES;
-  [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
-    isKindOfClass:[BrowserWindowController class]];
+  id delegate = CreateBrowserWindowControllerMock();
 
   [window_ setDelegate:delegate];
   [window_ performKeyEquivalent:event];

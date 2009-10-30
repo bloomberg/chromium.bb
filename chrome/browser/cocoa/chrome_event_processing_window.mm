@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
 
 #include "base/logging.h"
-#import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
@@ -28,14 +28,12 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
   int cmdNum = commandForKeyboardShortcut(cmdKey, shiftKey, cntrlKey, optKey,
       keyCode);
 
-  BrowserWindowController* controller =
-      (BrowserWindowController*)[self delegate];
-  // A bit of sanity.
-  DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
-  DCHECK([controller respondsToSelector:@selector(executeCommand:)]);
-
   if (cmdNum != -1) {
-    [controller executeCommand:cmdNum];
+    id executor = [self delegate];
+    // A bit of sanity.
+    DCHECK([executor conformsToProtocol:@protocol(BrowserCommandExecutor)]);
+    DCHECK([executor respondsToSelector:@selector(executeCommand:)]);
+    [executor executeCommand:cmdNum];
     return YES;
   }
   return NO;

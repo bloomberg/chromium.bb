@@ -17,6 +17,7 @@
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
+#import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
@@ -44,6 +45,7 @@ class TabStripModelObserverBridge;
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkURLOpener,
                       BookmarkBubbleControllerDelegate,
+                      BrowserCommandExecutor,
                       ViewResizer,
                       GTMThemeDelegate> {
  @private

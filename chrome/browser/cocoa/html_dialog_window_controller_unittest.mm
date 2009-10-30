@@ -1,0 +1,93 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/cocoa/html_dialog_window_controller.h"
+
+#include <string>
+#include <vector>
+
+#import <Cocoa/Cocoa.h>
+
+#include "base/gfx/size.h"
+#import "base/scoped_nsautorelease_pool.h"
+#include "base/sys_string_conversions.h"
+#include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/test/browser_with_test_window_test.h"
+#include "googleurl/src/gurl.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class MockDelegate : public HtmlDialogUIDelegate {
+public:
+  MOCK_CONST_METHOD0(IsDialogModal, bool());
+  MOCK_CONST_METHOD0(GetDialogTitle, std::wstring());
+  MOCK_CONST_METHOD0(GetDialogContentURL, GURL());
+  MOCK_CONST_METHOD1(GetDOMMessageHandlers,
+                     void(std::vector<DOMMessageHandler*>*));
+  MOCK_CONST_METHOD1(GetDialogSize, void(gfx::Size*));
+  MOCK_CONST_METHOD0(GetDialogArgs, std::string());
+  MOCK_METHOD1(OnDialogClosed, void(const std::string& json_retval));
+};
+
+class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {
+ public:
+  virtual void SetUp() {
+    BrowserWithTestWindowTest::SetUp();
+    title_ = L"Mock Title";
+    size_ = gfx::Size(50, 100);
+    gurl_ = GURL("");
+  }
+
+ protected:
+  std::wstring title_;
+  gfx::Size size_;
+  GURL gurl_;
+
+  // Order here is important.
+  CocoaTestHelper cocoa_helper_;
+  MockDelegate delegate_;
+};
+
+using ::testing::_;
+using ::testing::Return;
+using ::testing::SetArgumentPointee;
+
+// TODO(akalin): We can't test much more than the below without a real browser.
+// In particular, GetDOMMessageHandlers() and GetDialogArgs() are never called.
+// This should be fixed.
+
+TEST_F(HtmlDialogWindowControllerTest, showDialog) {
+  // We want to make sure html_dialog_window_controller below gets
+  // destroyed before cocoa_helper_ and delegate_, so we specify our
+  // own autorelease pool.
+  //
+  // TODO(dmaclach): Remove this once
+  // http://code.google.com/p/chromium/issues/detail?id=26133 is fixed.
+  base::ScopedNSAutoreleasePool release_pool;
+
+  EXPECT_CALL(delegate_, GetDialogTitle())
+    .WillOnce(Return(title_));
+  EXPECT_CALL(delegate_, GetDialogSize(_))
+    .WillOnce(SetArgumentPointee<0>(size_));
+  EXPECT_CALL(delegate_, GetDialogContentURL())
+    .WillOnce(Return(gurl_));
+  EXPECT_CALL(delegate_, OnDialogClosed(_))
+    .Times(1);
+
+  NSWindow* parent_window = cocoa_helper_.window();
+  HtmlDialogWindowController* html_dialog_window_controller =
+    [[HtmlDialogWindowController alloc] initWithDelegate:&delegate_
+                                            parentWindow:parent_window
+                                                 browser:browser()];
+
+  [html_dialog_window_controller loadDialogContents];
+  [html_dialog_window_controller showWindow:nil];
+  [html_dialog_window_controller close];
+}
+
+}  // namespace

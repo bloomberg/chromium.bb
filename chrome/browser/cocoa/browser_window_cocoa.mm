@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
@@ -296,7 +297,12 @@ void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
 
 void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                                         gfx::NativeWindow parent_window) {
-  NOTIMPLEMENTED();
+  if (!parent_window) {
+    parent_window = GetNativeHandle();
+  }
+  [HtmlDialogWindowController showHtmlDialog:delegate
+                                parentWindow:parent_window
+                                     browser:browser_];
 }
 
 void BrowserWindowCocoa::UserChangedTheme() {
