@@ -63,19 +63,19 @@ class NormalExtender : public BrowserExtender,
     main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
     browser_view()->AddChildView(main_menu_);
 
-    compact_location_bar_.reset(new CompactLocationBar(browser_view()));
+    compact_location_bar_.reset(new chromeos::CompactLocationBar(browser_view()));
     compact_navigation_bar_ =
-        new CompactNavigationBar(browser_view()->browser());
+        new chromeos::CompactNavigationBar(browser_view()->browser());
     browser_view()->AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
-    status_area_ = new StatusAreaView(
+    status_area_ = new chromeos::StatusAreaView(
         browser_view()->browser(),
         browser_view()->GetWindow()->GetNativeWindow());
     browser_view()->AddChildView(status_area_);
     status_area_->Init();
 
     InitSystemMenu();
-    MainMenu::ScheduleCreation();
+    chromeos::MainMenu::ScheduleCreation();
 
     // The ContextMenuController has to be set to a NonClientView but
     // not to a NonClientFrameView because a TabStrip is not a child of
@@ -210,7 +210,7 @@ class NormalExtender : public BrowserExtender,
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    MainMenu::Show(browser_view()->browser());
+    chromeos::MainMenu::Show(browser_view()->browser());
   }
 
   // views::ContextMenuController overrides.
@@ -225,20 +225,20 @@ class NormalExtender : public BrowserExtender,
   views::ImageButton* main_menu_;
 
   // Status Area view.
-  StatusAreaView* status_area_;
+  chromeos::StatusAreaView* status_area_;
 
   // System menus.
   scoped_ptr<views::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
 
   // CompactNavigationBar view.
-  CompactNavigationBar* compact_navigation_bar_;
+  chromeos::CompactNavigationBar* compact_navigation_bar_;
 
   // A toggle flag to show/hide the compact navigation bar.
   bool compact_navigation_bar_enabled_;
 
   // CompactLocationBar view.
-  scoped_ptr<CompactLocationBar> compact_location_bar_;
+  scoped_ptr<chromeos::CompactLocationBar> compact_location_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
@@ -280,7 +280,7 @@ class PopupExtender : public BrowserExtender {
   }
 
   virtual void Show() {
-    panel_controller_.reset(new PanelController(browser_view()));
+    panel_controller_.reset(new chromeos::PanelController(browser_view()));
   }
 
   virtual void Close() {
@@ -316,7 +316,7 @@ class PopupExtender : public BrowserExtender {
   virtual void OnMouseExitedFromTab(Tab* tab) {}
 
   // Controls interactions with the window manager for popup panels.
-  scoped_ptr<PanelController> panel_controller_;
+  scoped_ptr<chromeos::PanelController> panel_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupExtender);
 };
