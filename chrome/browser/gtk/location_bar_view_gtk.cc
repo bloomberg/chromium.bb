@@ -21,6 +21,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/rounded_window.h"
@@ -495,62 +496,41 @@ void LocationBarViewGtk::Observe(NotificationType type,
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
-  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
   GdkRectangle* alloc_rect = &hbox_->allocation;
-
-  // The area outside of our margin, which includes the border.
-  GdkRectangle inner_rect = {
-      alloc_rect->x,
-      alloc_rect->y + kTopMargin,
-      alloc_rect->width,
-      alloc_rect->height - kTopMargin - kBottomMargin};
 
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
   if (!profile_ ||
       !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
-    GdkGC* gc = gdk_gc_new(drawable);
+    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
+    cairo_rectangle(cr, event->area.x, event->area.y, event->area.width,
+                    event->area.height);
+    cairo_clip(cr);
+    CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
+        popup_window_mode_ ? IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG,
+        widget);
 
-    // Some of our calculations are a bit sloppy.  Since we draw on our parent
-    // window, set a clip to make sure that we don't draw outside.
-    gdk_gc_set_clip_rectangle(gc, &inner_rect);
+    // We paint the source to the "outer" rect, which is the size of the hbox's
+    // allocation. This image blends with whatever is behind it as the top and
+    // bottom fade out.
+    background->SetSource(cr, alloc_rect->x, alloc_rect->y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, alloc_rect->x, alloc_rect->y,
+                    alloc_rect->width, alloc_rect->height);
+    cairo_fill(cr);
 
-    // Draw the background.
-    gdk_gc_set_rgb_fg_color(gc,
-        &kBackgroundColorByLevel[toolbar_model_->GetSchemeSecurityLevel()]);
-    gdk_draw_rectangle(drawable, gc, TRUE,
-                       inner_rect.x,
-                       inner_rect.y,
-                       inner_rect.width,
-                       inner_rect.height);
+    // But on top of that, we also need to draw the "inner" rect, which is all
+    // the color that the background should be.
+    cairo_rectangle(cr, alloc_rect->x,
+                    alloc_rect->y + kTopMargin + kBorderThickness,
+                    alloc_rect->width,
+                    alloc_rect->height - kTopMargin -
+                    kBottomMargin - 2 * kBorderThickness);
+    gdk_cairo_set_source_color(cr, const_cast<GdkColor*>(
+        &kBackgroundColorByLevel[toolbar_model_->GetSchemeSecurityLevel()]));
+    cairo_fill(cr);
 
-    // Draw our 1px border.  TODO(deanm): Maybe this would be cleaner as an
-    // overdrawn stroked rect with a clip to the allocation?
-    gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
-    gdk_draw_rectangle(drawable, gc, TRUE,
-                       inner_rect.x,
-                       inner_rect.y,
-                       inner_rect.width,
-                       kBorderThickness);
-    gdk_draw_rectangle(drawable, gc, TRUE,
-                       inner_rect.x,
-                       inner_rect.y + inner_rect.height - kBorderThickness,
-                       inner_rect.width,
-                       kBorderThickness);
-    if (popup_window_mode_) {
-      gdk_draw_rectangle(drawable, gc, TRUE,
-                         inner_rect.x,
-                         inner_rect.y,
-                         kBorderThickness,
-                         inner_rect.height);
-      gdk_draw_rectangle(drawable, gc, TRUE,
-                         inner_rect.x + inner_rect.width - kBorderThickness,
-                         inner_rect.y,
-                         kBorderThickness,
-                         inner_rect.height);
-    }
-
-    g_object_unref(gc);
+    cairo_destroy(cr);
   }
 
   return FALSE;  // Continue propagating the expose.
