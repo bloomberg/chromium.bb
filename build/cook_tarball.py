@@ -156,6 +156,15 @@ def CookTarball(tgz_name, build_mode):
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'scons-out'),
                 ignore_errors=True)
 
+  # Drop tools BUILD intermediate output.
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'tools', 'BUILD'),
+                ignore_errors=True)
+
+  # Drop any sdk present.
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'src',
+                             'third_party', 'nacl_sdk'),
+                ignore_errors=True)
+
   # Pick scons version.
   if sys.platform in ['win32']:
     scons = os.path.join(dst_dir, 'native_client', 'scons.bat')
@@ -173,11 +182,36 @@ def CookTarball(tgz_name, build_mode):
   doxy_path = os.path.normpath('../third_party/doxygen/%s/doxygen' %
                                doxy_version)
 
+  # Build the tools.
+  tool_platform = {
+      'win32': 'windows',
+      'cygwin': 'windows',
+      'darwin': 'mac',
+      'linux': 'linux',
+      'linux2': 'linux',
+  }[sys.platform]
+  if sys.platform in ['win32', 'cygwin']:
+    pwd = '`cygpath -u ${PWD}`'
+  else:
+    pwd = '`pwd`'
+  cmd = ('MAKEINFO=%(pwd)s/makeinfo_dummy '
+         'make '
+         'SDKLOC=%(pwd)s/../src/third_party/nacl_sdk/%(tool_platform)s/sdk '
+         'HAMMER=scons') % {'tool_platform': tool_platform,
+                            'pwd': pwd}
+  if sys.platform in ['win32', 'cygwin']:
+    cmd = "c:\\cygwin\\bin\\bash -c '%s'" % cmd
+  subprocess.call(cmd, shell=True,
+                  cwd=os.path.join(dst_dir, 'native_client', 'tools'))
+
+  # Drop tools BUILD intermediate output.
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'tools', 'BUILD'),
+                ignore_errors=True)
+
   # Build the desired version.
   subprocess.call([scons,
                    '--mode='+build_mode,
                    '--verbose',
-                   '--download',
                    'DOXYGEN=%s' % doxy_path],
                   cwd=os.path.join(dst_dir, 'native_client'))
 
