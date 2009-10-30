@@ -470,7 +470,9 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceIfrPost) {
   SimpleBrowserTest(IE, kCFIIfrPostPage, L"CFInstanceIfrPost");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceIfrPost) {
+// Flakes out on the bots, http://crbug.com/26372
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_WidgetModeFF_CFInstanceIfrPost) {
   SimpleBrowserTest(FIREFOX, kCFIIfrPostPage, L"CFInstanceIfrPost");
 }
 
