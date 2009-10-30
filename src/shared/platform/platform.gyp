@@ -83,7 +83,7 @@
           'linux/nacl_secure_random.c',
           'linux/nacl_threads.c',
           'osx/nacl_host_dir.c',
-          'osx/util_osx.c',
+          'osx/strnlen_osx.c',
         ],
       }],
       ['OS=="win"', {

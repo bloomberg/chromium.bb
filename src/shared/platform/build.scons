@@ -94,7 +94,7 @@ elif env.Bit('mac'):
     'linux/nacl_secure_random.c',
     'linux/nacl_threads.c',
     'osx/nacl_host_dir.c',
-    'osx/util_osx.c',
+    'osx/strnlen_osx.c',
   ] + map(basic_types_env.ComponentObject, [
       'linux/condition_variable.cc',
       'linux/lock.cc',
