@@ -35,8 +35,10 @@ static void SplitTooltipString(const std::wstring& text,
 int TooltipManager::GetMaxWidth(int x, int y) {
   gfx::Rect monitor_bounds =
       Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
-  // We don't want the tooltip to get too big, otherwise it looks wrong.
-  return monitor_bounds.width() == 0 ? 400 : monitor_bounds.width() / 4;
+  // Allow the tooltip to be almost as wide as the screen.
+  // Otherwise, we would truncate important text, since we're not word-wrapping
+  // the text onto multiple lines.
+  return monitor_bounds.width() == 0 ? 800 : monitor_bounds.width() - 30;
 }
 
 // static
