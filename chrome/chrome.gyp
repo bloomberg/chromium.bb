@@ -1177,6 +1177,8 @@
         'browser/cocoa/preferences_window_controller.mm',
         'browser/cocoa/rwhvm_editcommand_helper.h',
         'browser/cocoa/rwhvm_editcommand_helper.mm',
+        'browser/cocoa/repost_form_warning_mac.h',
+        'browser/cocoa/repost_form_warning_mac.mm',
         'browser/cocoa/restart_browser.h',
         'browser/cocoa/restart_browser.mm',
         'browser/cocoa/sad_tab_view.h',

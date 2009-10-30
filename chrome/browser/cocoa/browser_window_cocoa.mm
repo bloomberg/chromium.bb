@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
+#include "chrome/browser/cocoa/repost_form_warning_mac.h"
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
 #import "chrome/browser/cocoa/theme_install_bubble_view.h"
@@ -276,7 +277,7 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
 
 void BrowserWindowCocoa::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
-  NOTIMPLEMENTED();
+  new RepostFormWarningMac(GetNativeHandle(), &tab_contents->controller());
 }
 
 void BrowserWindowCocoa::ShowHistoryTooNewDialog() {
