@@ -173,7 +173,7 @@ void AboutChromeView::Init() {
   about_title_label_ = new views::Label(
       l10n_util::GetString(IDS_PRODUCT_NAME));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(18, gfx::Font::BOLD));
+      ResourceBundle::BaseFont).DeriveFont(18));
   about_title_label_->SetColor(SK_ColorBLACK);
   AddChildView(about_title_label_);
 
@@ -185,7 +185,7 @@ void AboutChromeView::Init() {
   version_label_->SetTextColor(SK_ColorBLACK);
   version_label_->SetBackgroundColor(SK_ColorWHITE);
   version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
+      ResourceBundle::BaseFont));
   AddChildView(version_label_);
 
   // The copyright URL portion of the main label.
