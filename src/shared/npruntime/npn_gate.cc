@@ -351,3 +351,16 @@ void NPN_ForceRedraw(NPP instance) {
   }
   navigator->ForceRedraw(instance);
 }
+
+void NPN_PluginThreadAsyncCall(NPP instance,
+                               void (*func)(void*),
+                               void* user_data) {
+  if (NULL == instance) {
+    return;
+  }
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return;
+  }
+  navigator->PluginThreadAsyncCall(instance, func, user_data);
+}

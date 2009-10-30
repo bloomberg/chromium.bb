@@ -30,12 +30,14 @@
  */
 
 
+#include <string>
+
 #include "native_client/src/shared/npruntime/nprpc.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/npruntime/npnavigator.h"
 
 namespace nacl {
 

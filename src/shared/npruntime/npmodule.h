@@ -47,6 +47,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 
 namespace nacl {
 
@@ -62,6 +63,9 @@ class NPModule : public NPBridge {
   // The NPWindow of this plugin instance.
   NPWindow* window_;
   bool origin_valid_;
+
+  // The NaClThread that handles the upcalls for e.g., PluginThreadAsyncCall.
+  struct NaClThread upcall_thread_;
 
   // There are some identifier differences if the browser is based on WebKit.
   static bool IsWebKit;

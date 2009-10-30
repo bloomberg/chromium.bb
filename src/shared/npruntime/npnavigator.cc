@@ -58,6 +58,8 @@ std::map<const NPUTF8*, NPIdentifier>* NPNavigator::string_id_map = NULL;
 std::map<NPIdentifier, const NPUTF8*>* NPNavigator::id_string_map = NULL;
 std::set<const NPUTF8*, NPNavigator::StringCompare>*
     NPNavigator::string_set = NULL;
+uint32_t NPNavigator::next_pending_call = 0;
+
 
 static void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
@@ -74,7 +76,8 @@ NPNavigator::NPNavigator(uint32_t peer_pid,
     : NPBridge(),
       notify_(0),
       notify_data_(NULL),
-      url_(NULL) {
+      url_(NULL),
+      upcall_channel_(NULL) {
   set_peer_pid(peer_pid);
   set_peer_npvariant_size(peer_npvariant_size);
   navigator = this;
@@ -88,10 +91,13 @@ NPNavigator::NPNavigator(uint32_t peer_pid,
   id_string_map = new(std::nothrow) std::map<NPIdentifier, const NPUTF8*>;
   int_id_map = new(std::nothrow) std::map<int32_t, NPIdentifier>;
   id_int_map = new(std::nothrow) std::map<NPIdentifier, int32_t>;
+  // Initialize the pending call mutex.
+  pthread_mutex_init(&pending_mu_, NULL);
 }
 
 NPNavigator::~NPNavigator() {
   DebugPrintf("~NPNavigator\n");
+  pthread_mutex_destroy(&pending_mu_);
   // Note that all the mappings are per-module and only cleaned up on
   // shutdown.
 }
@@ -143,6 +149,7 @@ NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
   { "NPP_Destroy:i:i", Destroy },
   { "NPP_GetScriptableInstance:i:C", GetScriptableInstance },
   { "NPP_URLNotify:ihi:", URLNotify },
+  { "NPN_DoAsyncCall:i", DoAsyncCall },
   // Exported from NPObjectStub
   { "NPN_Deallocate:C:", NPObjectStub::Deallocate },
   { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
@@ -166,15 +173,12 @@ NaClSrpcError NPNavigator::SetUpcallServices(NaClSrpcChannel *channel,
                                              NaClSrpcArg **in_args,
                                              NaClSrpcArg **out_args) {
   const char* sd_string = (const char*) in_args[0]->u.sval;
-  NaClSrpcService* service;
   printf("SetUpcallServices: %s\n", sd_string);
-  service = (NaClSrpcService*) malloc(sizeof(*service));
-  if (NULL == service) {
-    printf("malloc failed\n");
+  NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
+  if (NULL == service)
     return NACL_SRPC_RESULT_APP_ERROR;
-  }
   if (!NaClSrpcServiceStringCtor(service, sd_string)) {
-    printf("CTOR failed\n");
+    delete service;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   channel->client = service;
@@ -184,6 +188,7 @@ NaClSrpcError NPNavigator::SetUpcallServices(NaClSrpcChannel *channel,
 // inputs:
 // (int) peer_pid
 // (int) peer_npvariant_size
+// (desc) browser upcall service
 // outputs:
 // (none)
 NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
@@ -210,8 +215,21 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
     DebugPrintf("  Error: couldn't create navigator\n");
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  channel->server_instance_data = static_cast<void*>(navigator);
   navigator->channel_ = channel;
+  // Remember the upcall service port on the navigator.
+  NaClSrpcImcDescType upcall_desc = inputs[2]->u.hval;
+  NaClSrpcChannel* upcall_channel = new(std::nothrow) NaClSrpcChannel;
+  if (NULL == upcall_channel) {
+    delete navigator;
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  if (!NaClSrpcClientCtor(upcall_channel, upcall_desc)) {
+    delete upcall_channel;
+    delete navigator;
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  channel->server_instance_data = static_cast<void*>(navigator);
+  navigator->upcall_channel_ = upcall_channel;
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -368,7 +386,7 @@ NPError NPNavigator::DestroyImpl(NPP npp) {
 NPCapability* NPNavigator::GetScriptableInstanceImpl(NPP npp) {
   DebugPrintf("SII:\n");
   NPObject* object = NPP_GetScriptableInstance(npp);
-  DebugPrintf("SII: %p\n", (void*) object);
+  DebugPrintf("SII: %p\n", reinterpret_cast<void*>(object));
   if (NULL != object) {
     NPCapability* capability = new(std::nothrow) NPCapability;
     if (NULL != capability) {
@@ -584,8 +602,7 @@ NPUTF8* NPNavigator::UTF8FromIdentifier(NPIdentifier identifier) {
       }
       // Enter it into our cache if it was found.
       AddStringIdentifierMapping(str, identifier);
-    }
-    else {
+    } else {
       // Browser says it is not a string.  Return an error.
       return NULL;
     }
@@ -634,6 +651,85 @@ int32_t NPNavigator::IntFromIdentifier(NPIdentifier identifier) {
     AddIntIdentifierMapping(intid, identifier);
   }
   return (*id_int_map)[identifier];
+}
+
+class NPPendingCallClosure {
+ public:
+  NPPendingCallClosure(NPNavigator::AsyncCallFunc func, void* user_data) :
+    func_(func), user_data_(user_data) {
+    }
+  NPNavigator::AsyncCallFunc func() const { return func_; }
+  void* user_data() const { return user_data_; }
+
+ private:
+  NPNavigator::AsyncCallFunc func_;
+  void* user_data_;
+};
+
+// TODO(sehr): this should move to platform.
+class MutexLock {
+  pthread_mutex_t* mutex_;
+ public:
+  explicit MutexLock(pthread_mutex_t* mutex) : mutex_(mutex) {
+    if (NULL == mutex_) {
+      abort();
+    } else {
+      pthread_mutex_lock(mutex_);
+    }
+  }
+  ~MutexLock() {
+    if (NULL == mutex_) {
+      abort();
+    } else {
+      pthread_mutex_unlock(mutex_);
+    }
+  }
+};
+
+void NPNavigator::PluginThreadAsyncCall(NPP instance,
+                                        AsyncCallFunc func,
+                                        void* user_data) {
+  uint32_t next_call;
+  // The map of pending calls.
+  NPPendingCallClosure* closure =
+      new(std::nothrow) NPPendingCallClosure(func, user_data);
+  if (NULL == closure)
+    return;
+  // There may be out-of-order responses to calls from different threads.
+  // Hence we guard the accesses by a mutex.
+  MutexLock ml(&pending_mu_);
+  next_call = next_pending_call++;
+  pending_calls_[next_call] = closure;
+  // Send an RPC to the NPAPI upcall thread in the browser plugin.
+  NaClSrpcInvokeByName(upcall_channel_,
+                       "NPN_PluginThreadAsyncCall",
+                       static_cast<int>(next_call));
+}
+
+NaClSrpcError NPNavigator::DoAsyncCall(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs) {
+  NPNavigator* nav =
+      reinterpret_cast<NPNavigator*>(channel->server_instance_data);
+  uint32_t key = static_cast<uint32_t>(inputs[0]->u.ival);
+  AsyncCallFunc func;
+  void* user_data;
+  {  /* SCOPE */
+    MutexLock ml(&(nav->pending_mu_));
+    std::map<uint32_t, NPPendingCallClosure*>::iterator i;
+    i = nav->pending_calls_.find(key);
+    if (nav->pending_calls_.end() == i)
+      return NACL_SRPC_RESULT_APP_ERROR;
+    NPPendingCallClosure* closure = i->second;
+    func = closure->func();
+    user_data = closure->user_data();
+    delete closure;
+    nav->pending_calls_.erase(i);
+  }
+  // Invoke the function with the data.
+  (*func)(user_data);
+  // Return success.
+  return NACL_SRPC_RESULT_OK;
 }
 
 }  // namespace nacl

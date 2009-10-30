@@ -35,29 +35,36 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPNAVIGATOR_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPNAVIGATOR_H_
 
+#ifndef __native_client__
+#error "This file is only for inclusion in Native Client modules"
+#endif  // __native_client__
+
+#include <pthread.h>
 #include <string.h>
-#include <set>
 #include <map>
+#include <set>
 
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace nacl {
 
+// Closures used by PluginThreadAsyncCall.
+class NPPendingCallClosure;
+
 // Represents the NaCl module end of the connection to the browser plugin. The
 // opposite end is the NPModule.
 class NPNavigator : public NPBridge {
-  // The following three member variables save the user parameters passed to
-  // OpenURL().
-  //
-  // The callback function to be called upon a successful OpenURL() invocation.
-  void (*notify_)(const char* url,
-                  void* notify_data,
-                  NaClSrpcImcDescType handle);
-  // The user supplied pointer to the user data.
-  void* notify_data_;
-  // The URL to open.
-  char* url_;
+ public:
+  // A typedef used to define callbacks used by NPN_PluginThreadAsyncCall.
+  typedef void (*AsyncCallFunc)(void* user_data);
+
+  // The map of pending calls for NPN_PluginThreadAsyncCalls.
+  std::map<uint32_t, NPPendingCallClosure*> pending_calls_;
+  // The identifier of the next pending call.
+  static uint32_t next_pending_call;
+  // The lock that guards pending call insertion/deletion.
+  pthread_mutex_t pending_mu_;
 
   // The one navigator in this NaCl module.
   static NPNavigator* navigator;
@@ -90,6 +97,23 @@ class NPNavigator : public NPBridge {
   };
   // The set of character strings for NPIdentifier names.
   static std::set<const NPUTF8*, StringCompare>* string_set;
+
+ private:
+  // The following three member variables save the user parameters passed to
+  // OpenURL().
+  //
+  // The callback function to be called upon a successful OpenURL() invocation.
+  void (*notify_)(const char* url,
+                  void* notify_data,
+                  NaClSrpcImcDescType handle);
+  // The user supplied pointer to the user data.
+  void* notify_data_;
+  // The URL to open.
+  char* url_;
+
+  // The SRPC service used to send upcalls to the browser plugin.
+  // This is used, among other things, to implement NPN_PluginThreadAsyncCall.
+  NaClSrpcChannel* upcall_channel_;
 
  public:
   // Creates a new instance of NPNavigator. argc and argv should be unmodified
@@ -134,6 +158,11 @@ class NPNavigator : public NPBridge {
                                  NaClSrpcArg** inputs,
                                  NaClSrpcArg** outputs);
 
+  // Processes responses to NPN_PluginThreadAsyncCall by the browser.
+  static NaClSrpcError DoAsyncCall(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs);
+
   // Implements NPP_New() request from the plugin.
   NPError NewImpl(NPMIMEType mimetype,
                   NPP npp,
@@ -168,6 +197,11 @@ class NPNavigator : public NPBridge {
   void InvalidateRect(NPP npp, NPRect* invalid_rect);
   // Sends NPN_ForceRedraw() request to the plugin.
   void ForceRedraw(NPP npp);
+
+  // Signals the browser to invoke a function on the navigator thread.
+  void PluginThreadAsyncCall(NPP instance,
+                             AsyncCallFunc func,
+                             void* user_data);
 
   static void AddIntIdentifierMapping(int32_t intid, NPIdentifier identifier);
   static void AddStringIdentifierMapping(const NPUTF8* name,

@@ -37,7 +37,9 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
+#ifdef __native_client__
 #include "native_client/src/shared/npruntime/npnavigator.h"
+#endif  // __native_client__
 
 #ifdef __native_client__
 NPObject* NaClNPN_CreateArray(NPP npp) {

@@ -31,12 +31,16 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
-#include "native_client/src/trusted/plugin/origin.h"
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/plugin/origin.h"
 
 namespace nacl {
 
@@ -337,18 +341,146 @@ NaClSrpcError NPModule::Utf8FromIdentifier(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+class NppClosure {
+ public:
+  NppClosure(uint32_t number, NPModule* module) {
+    number_ = number;
+    module_ = module;
+  }
+  uint32_t number() const { return number_; }
+  NPModule* module() const { return module_; }
+ private:
+  uint32_t number_;
+  NPModule* module_;
+};
+
+// The thunk enqueued on the browser's foreground thread.
+// static void doNppAsyncCall(void* arg) {
+//   NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
+//   NaClSrpcInvokeByName(closure->module()->channel(),
+//                        "NPP_PluginThreadAsyncCall",
+//                        closure->number());
+// }
+
+static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
+                                     NaClSrpcArg** inputs,
+                                     NaClSrpcArg** outputs) {
+  // uint32_t number = static_cast<uint32_t>(inputs[0]->u.ival);
+  // NPModule* module =
+  //     reinterpret_cast<NPModule*>(channel->server_instance_data);
+  // Place a closure on the browser's NPAPI thread.
+  // NppClosure* closure = new(std::nothrow) NppClosure(number, module);
+  // TODO(sehr): add the correct NPP here.
+  // NPN_PluginThreadAsyncCall(NULL,
+  //                           doNppAsyncCall,
+  //                           static_cast<void*>(closure));
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(inputs);
+  UNREFERENCED_PARAMETER(outputs);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// Structure for passing information to the thread.  Shares ownership of
+// the descriptor with the creating routine.  This allows passing ownership
+// to the upcall thread.
+struct UpcallInfo {
+ public:
+  struct NaClDesc* desc_;
+  NPModule* module_;
+  UpcallInfo(struct NaClDesc* desc, NPModule* module) {
+    desc_ = NaClDescRef(desc);
+    module_ = module;
+  }
+  ~UpcallInfo() {
+    NaClDescUnref(desc_);
+  }
+};
+
+static void WINAPI UpcallThread(void* arg) {
+  UpcallInfo* info = reinterpret_cast<UpcallInfo*>(arg);
+  NaClSrpcHandlerDesc handlers[] = {
+    { "NPN_PluginThreadAsyncCall:i:", handleAsyncCall },
+    { NULL, NULL }
+  };
+  DebugPrintf("UpcallThread(%p)\n", arg);
+  // Run the SRPC server.
+  NaClSrpcServerLoop(info->desc_, handlers, info->module_);
+  // Free the info node.
+  delete info;
+  DebugPrintf("UpcallThread: End\n");
+}
+
 NPError NPModule::Initialize() {
   NaClSrpcError retval;
+  nacl::Handle pair[2];
+  struct NaClDescImcDesc* desc[2];
+  UpcallInfo* info = NULL;
+  NPError err = NPERR_GENERIC_ERROR;
 
   DebugPrintf("Initialize\n");
+
+  // Initialize some state.
+  pair[0] = nacl::kInvalidHandle;
+  pair[1] = nacl::kInvalidHandle;
+  desc[0] = NULL;
+  desc[1] = NULL;
+  // Create a socket pair for the upcall server.
+  if (0 != SocketPair(pair))
+    goto done;
+  // Set up the NaClDesc the upcall server will be placed on.
+  desc[0] = new(std::nothrow) struct NaClDescImcDesc;
+  if (NULL == desc[0])
+    goto done;
+  if (!NaClDescImcDescCtor(desc[0], pair[0])) {
+    delete desc[0];
+    desc[0] = NULL;
+    goto done;
+  }
+  // Create an info node to pass to the thread.
+  info = new(std::nothrow)
+      UpcallInfo(reinterpret_cast<struct NaClDesc*>(desc[0]), this);
+  if (NULL == info)
+    goto done;
+  // Create a thread and an SRPC "upcall" server.
+  if (!NaClThreadCtor(&upcall_thread_, UpcallThread, info, 128 << 10))
+    goto done;
+  // On success, ownership of info passes to the thread.
+  info = NULL;
+  // Set up the NaClDesc that will be passed to the NaCl module.
+  desc[1] = new(std::nothrow) struct NaClDescImcDesc;
+  if (NULL == desc[1])
+    goto done;
+  if (!NaClDescImcDescCtor(desc[1], pair[1])) {
+    delete desc[1];
+    desc[1] = NULL;
+    goto done;
+  }
+  // Invoke the NaCl module's NP_Initialize function.
   retval = NaClSrpcInvokeByName(channel(),
                                 "NP_Initialize",
                                 GETPID(),
-                                static_cast<int>(sizeof(NPVariant)));
-  if (NACL_SRPC_RESULT_OK != retval) {
-    return NPERR_GENERIC_ERROR;
+                                static_cast<int>(sizeof(NPVariant)),
+                                desc[1]);
+  // Return the appropriate error code.
+  if (NACL_SRPC_RESULT_OK != retval)
+    goto done;
+  err = NPERR_NO_ERROR;
+ done:
+  if (NULL != info)
+    delete info;
+  if (NULL != desc[0]) {
+    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(desc[0]));
+    pair[0] = nacl::kInvalidHandle;
   }
-  return NPERR_NO_ERROR;
+  if (nacl::kInvalidHandle == pair[0])
+    Close(pair[0]);
+  if (NULL != desc[1]) {
+    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(desc[1]));
+    pair[1] = nacl::kInvalidHandle;
+  }
+  if (nacl::kInvalidHandle == pair[1])
+    Close(pair[1]);
+  return err;
 }
 
 static bool SerializeArgArray(int argc,
