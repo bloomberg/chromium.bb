@@ -32,6 +32,7 @@
 #define WebAccessibilityObject_h
 
 #include "WebCommon.h"
+#include "WebAccessibilityRole.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class AccessibilityObject; }
@@ -40,6 +41,7 @@ namespace WTF { template <typename T> class PassRefPtr; }
 
 namespace WebKit {
     class WebAccessibilityObjectPrivate;
+    class WebString;
 
     // A container for passing around a reference to AccessibilityObject.
     class WebAccessibilityObject {
@@ -54,6 +56,13 @@ namespace WebKit {
         WEBKIT_API void assign(const WebAccessibilityObject&);
 
         bool isNull() const { return m_private == 0; }
+
+        WebString accessibilityDescription() const;
+        WebAccessibilityObject childAt(unsigned) const;
+        unsigned childCount() const;
+        bool isEnabled() const;
+        WebAccessibilityRole roleValue() const;
+        WebString title() const;
 
 #if WEBKIT_IMPLEMENTATION
         WebAccessibilityObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);

@@ -77,6 +77,7 @@
         'api/public/mac/WebInputEventFactory.h',
         'api/public/mac/WebScreenInfoFactory.h',
         'api/public/WebAccessibilityObject.h',
+        'api/public/WebAccessibilityRole.h',
         'api/public/WebApplicationCacheHost.h',
         'api/public/WebApplicationCacheHostClient.h',
         'api/public/WebBindings.h',

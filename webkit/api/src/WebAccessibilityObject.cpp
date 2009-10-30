@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "WebAccessibilityObject.h"
-
 #include "AccessibilityObject.h"
+#include "WebAccessibilityObject.h"
+#include "WebString.h"
 
 using namespace WebCore;
 
@@ -51,6 +51,60 @@ void WebAccessibilityObject::assign(const WebKit::WebAccessibilityObject& other)
     if (p)
         p->ref();
     assign(p);
+}
+
+WebString WebAccessibilityObject::accessibilityDescription() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    return m_private->accessibilityDescription();
+}
+
+WebAccessibilityObject WebAccessibilityObject::childAt(unsigned index) const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    if (m_private->children().size() <= index)
+        return WebAccessibilityObject();
+
+    return WebAccessibilityObject(m_private->children()[index]);
+}
+
+unsigned WebAccessibilityObject::childCount() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->children().size();
+}
+
+bool WebAccessibilityObject::isEnabled() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isEnabled();
+}
+
+WebAccessibilityRole WebAccessibilityObject::roleValue() const
+{
+    m_private->updateBackingStore();
+    return static_cast<WebAccessibilityRole>(m_private->roleValue());
+}
+
+WebString WebAccessibilityObject::title() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    return m_private->title();
 }
 
 WebAccessibilityObject::WebAccessibilityObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
