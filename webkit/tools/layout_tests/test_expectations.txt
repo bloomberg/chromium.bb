@@ -3145,8 +3145,8 @@ BUG26107 WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.htm
 BUG26107 : LayoutTests/storage/change-version-handle-reuse.html = FAIL
 BUG26107 : LayoutTests/storage/change-version.html = TIMEOUT
 
-BUG_TONY LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
-BUG_TONY LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
+BUG26344 LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
+BUG26344 LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
 
 // WebKit roll 49992:49997
 // hclam to add expected results.
