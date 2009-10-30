@@ -34,6 +34,7 @@
 #include <googleurl/src/url_util.h>
 
 #include "WebClipboard.h"
+#include "WebCookie.h"
 #include "WebData.h"
 #include "WebImage.h"
 #include "WebKit.h"
@@ -42,6 +43,7 @@
 #include "WebPluginContainerImpl.h"
 #include "WebPluginListBuilderImpl.h"
 #include "WebString.h"
+#include "WebVector.h"
 #include "WebURL.h"
 #include "Worker.h"
 #include "WorkerContextProxy.h"
@@ -62,6 +64,7 @@
 #endif
 
 #include "BitmapImage.h"
+#include "Cookie.h"
 #include "GraphicsContext.h"
 #include "KURL.h"
 #include "NotImplemented.h"
@@ -146,6 +149,33 @@ String ChromiumBridge::cookies(const KURL& url,
                                const KURL& firstPartyForCookies)
 {
     return webKitClient()->cookies(url, firstPartyForCookies);
+}
+
+bool ChromiumBridge::rawCookies(const KURL& url, const KURL& firstPartyForCookies, Vector<Cookie>* rawCookies)
+{
+    rawCookies->clear();
+    WebVector<WebCookie> webCookies;
+    if (!webKitClient()->rawCookies(url, firstPartyForCookies, &webCookies))
+        return false;
+
+    for (unsigned i = 0; i < webCookies.size(); ++i) {
+        const WebCookie& webCookie = webCookies[i];
+        Cookie cookie(webCookie.name,
+                      webCookie.value,
+                      webCookie.domain,
+                      webCookie.path,
+                      webCookie.expires,
+                      webCookie.httpOnly,
+                      webCookie.secure,
+                      webCookie.session);
+        rawCookies->append(cookie);
+    }
+    return true;
+}
+
+void ChromiumBridge::deleteCookie(const KURL& url, const String& cookieName)
+{
+    webKitClient()->deleteCookie(url, cookieName);
 }
 
 // DNS ------------------------------------------------------------------------
