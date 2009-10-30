@@ -161,8 +161,6 @@ class FindBarGtk : public FindBar,
   // The border around the text entry area.
   GtkWidget* border_bin_;
   GtkWidget* border_bin_alignment_;
-  GtkWidget* border_bin_aa_;
-  GtkWidget* border_bin_aa_alignment_;
 
   // The next and previous match buttons.
   scoped_ptr<CustomDrawButton> find_previous_button_;

@@ -30,11 +30,10 @@
 
 namespace {
 
-const GdkColor kTextBorderColor = GDK_COLOR_RGB(0xa6, 0xaf, 0xba);
-const GdkColor kTextBorderColorAA = GDK_COLOR_RGB(0xee, 0xf4, 0xfb);
 // Used as the color of the text in the entry box and the text for the results
 // label for failure searches.
 const GdkColor kEntryTextColor = gfx::kGdkBlack;
+
 // Used as the color of the background of the entry box and the background of
 // the find label for successful searches.
 const GdkColor kEntryBackgroundColor = gfx::kGdkWhite;
@@ -293,12 +292,12 @@ void FindBarGtk::InitWidgets() {
   g_signal_connect(content_event_box_, "expose-event",
                    G_CALLBACK(OnContentEventBoxExpose), this);
 
-  // We fake anti-aliasing by having two borders.
-  BuildBorder(content_event_box_, false, 1, 1, 1, 0,
+  // This alignment isn't centered and is used for spacing in chrome theme
+  // mode. (It's also used in GTK mode for padding because left padding doesn't
+  // equal bottom padding naturally.)
+  BuildBorder(content_event_box_, false, 2, 2, 2, 0,
               &border_bin_, &border_bin_alignment_);
-  BuildBorder(border_bin_, false, 1, 1, 1, 0,
-              &border_bin_aa_, &border_bin_aa_alignment_);
-  gtk_util::CenterWidgetInHBox(hbox, border_bin_aa_, true, 0);
+  gtk_util::CenterWidgetInHBox(hbox, border_bin_, true, 0);
 
   theme_provider_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -488,15 +487,15 @@ void FindBarGtk::Observe(NotificationType type,
     gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment_),
                               yborder, yborder, xborder, xborder);
 
-    gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, NULL);
-    gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, NULL);
-
     // We leave left padding on the left, even in GTK mode, as it's required
     // for the left margin to be equivalent to the bottom margin.
     gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_alignment_),
                               0, 0, 1, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_aa_alignment_),
-                              0, 0, 0, 0);
+
+    // We need this event box to have its own window in GTK mode for doing the
+    // hacky widget rendering.
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(border_bin_), TRUE);
+    gtk_widget_set_app_paintable(border_bin_, TRUE);
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
@@ -514,13 +513,14 @@ void FindBarGtk::Observe(NotificationType type,
     gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment_),
                               0.0, 0.0, 0.0, 0.0);
 
-    gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
-    gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
-
     gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_alignment_),
-                              1, 1, 1, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_aa_alignment_),
-                              1, 1, 1, 0);
+                              2, 2, 3, 0);
+
+    // We need this event box to be invisible because we're only going to draw
+    // on the background (but we can't take it out of the heiarchy entirely
+    // because we also need it to take up space).
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(border_bin_), FALSE);
+    gtk_widget_set_app_paintable(border_bin_, FALSE);
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
   }
@@ -776,6 +776,38 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                         e->area.x + e->area.width - tabstrip_origin.x(),
                         background->Height());
     cairo_fill(cr);
+
+    // During chrome theme mode, we need to draw the border around content_hbox
+    // now instead of when we render |border_bin_|. We don't use stacked event
+    // boxes to simulate the effect because we need to blend them with this
+    // background.
+    GtkAllocation border_allocation = bar->border_bin_->allocation;
+
+    // Blit the left part of the background image once on the left.
+    bool rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+    CairoCachedSurface* background_left = bar->theme_provider_->GetSurfaceNamed(
+        rtl ? IDR_FIND_BOX_BACKGROUND_LEFT_RTL : IDR_FIND_BOX_BACKGROUND_LEFT,
+        widget);
+    background_left->SetSource(cr, border_allocation.x, border_allocation.y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, border_allocation.x, border_allocation.y,
+                    background_left->Width(), background_left->Height());
+    cairo_fill(cr);
+
+    // Blit the center part of the background image in all the space between.
+    background = bar->theme_provider_->GetSurfaceNamed(
+        IDR_FIND_BOX_BACKGROUND, widget);
+    background->SetSource(cr,
+                          border_allocation.x + background_left->Width(),
+                          border_allocation.y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr,
+                    border_allocation.x + background_left->Width(),
+                    border_allocation.y,
+                    border_allocation.width - background_left->Width(),
+                    background->Height());
+    cairo_fill(cr);
+
     cairo_destroy(cr);
 
     // Draw the border.
