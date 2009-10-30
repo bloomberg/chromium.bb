@@ -130,9 +130,19 @@ def FindTestShell():
                    "To specify a path to test_shell use --test-shell-path")
 
 def GetAPIModuleNames():
-  contents = open(_extension_api_json, 'r').read();
-  extension_api = json.loads(contents, encoding="ASCII")
-  return set( module['namespace'].encode() for module in extension_api)
+  try:
+    contents = open(_extension_api_json, 'r').read()
+  except IOError, msg:
+    raise Exception("Failed to read the file that defines the extensions API.  "
+                    "The specific error was: %s." % msg)
+
+  try:
+    extension_api = json.loads(contents, encoding="ASCII")
+  except ValueError, msg:
+    raise Exception("File %s has a syntax error: %s" %
+                    (_extension_api_json, msg))
+
+  return set(module['namespace'].encode() for module in extension_api)
 
 def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
