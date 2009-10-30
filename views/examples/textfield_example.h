@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyight (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,19 @@ namespace examples {
 using views::Textfield;
 
 // TextfieldExample mimics login screen.
-class TextfieldExample : protected ExampleBase,
-                         private Textfield::Controller,
-                         private views::ButtonListener {
+class TextfieldExample : public ExampleBase,
+                         public Textfield::Controller,
+                         public views::ButtonListener {
  public:
-  explicit TextfieldExample(ExamplesMain* main) : ExampleBase(main) {
+  explicit TextfieldExample(ExamplesMain* main) : ExampleBase(main) {}
+
+  virtual ~TextfieldExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Textfield";
+  }
+
+  virtual void CreateExampleView(views::View* container) {
     name_ = new Textfield();
     password_ = new Textfield(Textfield::STYLE_PASSWORD);
     show_password_ = new views::TextButton(this, L"Show password");
@@ -30,9 +38,8 @@ class TextfieldExample : protected ExampleBase,
     name_->SetController(this);
     password_->SetController(this);
 
-    container_ = new views::View();
-    views::GridLayout* layout = new views::GridLayout(container_);
-    container_->SetLayoutManager(layout);
+    views::GridLayout* layout = new views::GridLayout(container);
+    container->SetLayoutManager(layout);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
@@ -51,16 +58,6 @@ class TextfieldExample : protected ExampleBase,
     layout->AddView(clear_all_);
     layout->StartRow(0, 0);
     layout->AddView(append_);
-  }
-
-  virtual ~TextfieldExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Textfield";
-  }
-
-  virtual views::View* GetExampleView() {
-    return container_;
   }
 
  private:
@@ -95,9 +92,6 @@ class TextfieldExample : protected ExampleBase,
     }
   }
 
-  // The view containing this test's controls.
-  views::View* container_;
-
   // Textfields for name and password.
   views::Textfield* name_;
   views::Textfield* password_;
@@ -113,3 +107,4 @@ class TextfieldExample : protected ExampleBase,
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
+

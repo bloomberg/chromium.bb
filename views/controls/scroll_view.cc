@@ -190,7 +190,8 @@ void ScrollView::Layout() {
 
   // Non-default.
   if (horiz_sb_required) {
-    viewport_bounds.set_height(viewport_bounds.height() - horiz_sb_height);
+    viewport_bounds.set_height(
+        std::max(0, viewport_bounds.height() - horiz_sb_height));
     should_layout_contents = true;
   }
   // Default.

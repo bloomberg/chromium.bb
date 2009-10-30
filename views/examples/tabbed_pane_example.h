@@ -12,20 +12,27 @@
 namespace examples {
 
 // A TabbedPane example tests adding/removing/selecting tabs.
-class TabbedPaneExample : protected ExampleBase,
-                          private views::ButtonListener,
+class TabbedPaneExample : public ExampleBase,
+                          public views::ButtonListener,
                           views::TabbedPane::Listener {
  public:
-  explicit TabbedPaneExample(ExamplesMain* main) : ExampleBase(main) {
+  explicit TabbedPaneExample(ExamplesMain* main) : ExampleBase(main) {}
+
+  virtual ~TabbedPaneExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Tabbed Pane";
+  }
+
+  virtual void CreateExampleView(views::View* container) {
     tabbed_pane_ = new views::TabbedPane();
     add_ = new views::TextButton(this, L"Add");
     add_at_ = new views::TextButton(this, L"Add At 1");
     remove_at_ = new views::TextButton(this, L"Remove At 1");
     select_at_ = new views::TextButton(this, L"Select At 1");
 
-    container_ = new views::View();
-    views::GridLayout* layout = new views::GridLayout(container_);
-    container_->SetLayoutManager(layout);
+    views::GridLayout* layout = new views::GridLayout(container);
+    container->SetLayoutManager(layout);
 
     const int tabbed_pane_column = 0;
     views::ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
@@ -51,16 +58,6 @@ class TabbedPaneExample : protected ExampleBase,
     layout->AddView(add_at_);
     layout->AddView(remove_at_);
     layout->AddView(select_at_);
-  }
-
-  virtual ~TabbedPaneExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Tabbed Pane";
-  }
-
-  virtual views::View* GetExampleView() {
-    return container_;
   }
 
  private:
@@ -99,9 +96,6 @@ class TabbedPaneExample : protected ExampleBase,
     views::TextButton* button = new views::TextButton(NULL, label);
     tabbed_pane_->AddTab(label, button);
   }
-
-  // The view containing this test's controls.
-  views::View* container_;
 
   // The tabbed pane to be tested.
   views::TabbedPane* tabbed_pane_;

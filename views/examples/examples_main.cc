@@ -69,6 +69,9 @@ void ExamplesMain::Run() {
   layout->StartRow(0 /* no expand */, 0);
   layout->AddView(status_label_);
 
+  views::Window* window =
+      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 600, 300), this);
+
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
                       textfield_example.GetExampleView());
@@ -97,10 +100,7 @@ void ExamplesMain::Run() {
   tabbed_pane->AddTab(scroll_view_example.GetExampleTitle(),
                       scroll_view_example.GetExampleView());
 
-  views::Window* window =
-      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 600, 300), this);
   window->Show();
-
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
 }

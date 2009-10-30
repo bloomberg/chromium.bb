@@ -16,17 +16,25 @@
 namespace examples {
 
 // A MessageBoxView example. This tests some of checkbox features as well.
-class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
+class MessageBoxExample : public ExampleBase,
+                          public views::ButtonListener {
  public:
-  explicit MessageBoxExample(ExamplesMain* main) : ExampleBase(main) {
+  explicit MessageBoxExample(ExamplesMain* main) : ExampleBase(main) {}
+
+  virtual ~MessageBoxExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Message Box View";
+  }
+
+  virtual void CreateExampleView(views::View* container) {
     message_box_view_ =
         new MessageBoxView(0, L"Message Box Message", L"Default Prompt");
     status_ = new views::TextButton(this, L"Show Status");
     toggle_ = new views::TextButton(this, L"Toggle Checkbox");
 
-    container_ = new views::View();
-    views::GridLayout* layout = new views::GridLayout(container_);
-    container_->SetLayoutManager(layout);
+    views::GridLayout* layout = new views::GridLayout(container);
+    container->SetLayoutManager(layout);
 
     message_box_view_->SetCheckBoxLabel(L"Check Box");
 
@@ -50,16 +58,6 @@ class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
     layout->AddView(toggle_);
   }
 
-  virtual ~MessageBoxExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Message Box View";
-  }
-
-  virtual views::View* GetExampleView() {
-    return container_;
-  }
-
  private:
   // ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
@@ -73,9 +71,6 @@ class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
           !message_box_view_->IsCheckBoxSelected());
     }
   }
-
-  // The view containing this test's controls.
-  views::View* container_;
 
   // The MessageBoxView to be tested.
   MessageBoxView* message_box_view_;

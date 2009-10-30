@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/examples/example_base.h"
+#include "views/fill_layout.h"
 
 namespace examples {
 
@@ -25,8 +26,9 @@ class ComboboxExample : public ExampleBase, public views::Combobox::Listener {
     return L"Combo Box";
   }
 
-  virtual views::View* GetExampleView() {
-    return combobox_;
+  virtual void CreateExampleView(views::View* container) {
+    container->SetLayoutManager(new views::FillLayout);
+    container->AddChildView(combobox_);
   }
 
  private:
@@ -65,5 +67,4 @@ class ComboboxExample : public ExampleBase, public views::Combobox::Listener {
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_COMBOBOX_EXAMPLE_H_
-
 

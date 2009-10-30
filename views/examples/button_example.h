@@ -8,11 +8,13 @@
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
+#include "views/fill_layout.h"
+#include "views/view.h"
 
 namespace examples {
 
 // ButtonExample simply counts the number of clicks.
-class ButtonExample : protected ExampleBase, private views::ButtonListener {
+class ButtonExample : public ExampleBase, public views::ButtonListener {
  public:
   explicit ButtonExample(ExamplesMain* main) : ExampleBase(main), count_(0) {
     button_ = new views::TextButton(this, L"Button");
@@ -24,8 +26,9 @@ class ButtonExample : protected ExampleBase, private views::ButtonListener {
     return L"Text Button";
   }
 
-  virtual views::View* GetExampleView() {
-    return button_;
+  virtual void CreateExampleView(views::View* container) {
+    container->SetLayoutManager(new views::FillLayout);
+    container->AddChildView(button_);
   }
 
  private:

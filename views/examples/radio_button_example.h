@@ -13,10 +13,18 @@
 
 namespace examples {
 
-class RadioButtonExample : protected ExampleBase,
-                           private views::ButtonListener {
+class RadioButtonExample : public ExampleBase,
+                           public views::ButtonListener {
  public:
-  explicit RadioButtonExample(ExamplesMain* main) : ExampleBase(main) {
+  explicit RadioButtonExample(ExamplesMain* main): ExampleBase(main) {}
+
+  virtual ~RadioButtonExample() {}
+
+  virtual std::wstring GetExampleTitle() {
+    return L"Radio Button";
+  }
+
+  virtual void CreateExampleView(views::View* container) {
     select_ = new views::TextButton(this, L"Select");
     status_ = new views::TextButton(this, L"Show Status");
 
@@ -31,9 +39,8 @@ class RadioButtonExample : protected ExampleBase,
           group);
     }
 
-    container_ = new views::View();
-    views::GridLayout* layout = new views::GridLayout(container_);
-    container_->SetLayoutManager(layout);
+    views::GridLayout* layout = new views::GridLayout(container);
+    container->SetLayoutManager(layout);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -46,16 +53,6 @@ class RadioButtonExample : protected ExampleBase,
     layout->AddView(select_);
     layout->StartRow(0, 0);
     layout->AddView(status_);
-  }
-
-  virtual ~RadioButtonExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Radio Button";
-  }
-
-  virtual views::View* GetExampleView() {
-    return container_;
   }
 
  private:
@@ -75,9 +72,6 @@ class RadioButtonExample : protected ExampleBase,
                   IntToOnOff(radio_buttons_[5]->checked()));
     }
   }
-
-  // The view containing this test's controls.
-  views::View* container_;
 
   // 6 radio buttons, 0-2 consists 1st group, and 3-5 consists
   // 2nd group.
