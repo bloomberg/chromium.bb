@@ -141,6 +141,13 @@ deps_os = {
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@29103",
 
+    "src/third_party/yasm/source/patched-yasm":
+      "/trunk/deps/third_party/yasm/patched-yasm@29937",
+
+    "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
+      "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
+      Var("ffmpeg_revision"),
+
     "src/third_party/ffmpeg/binaries/chromium/linux/ia32":
       "/trunk/deps/third_party/ffmpeg/binaries/linux@" +
       Var("ffmpeg_revision"),

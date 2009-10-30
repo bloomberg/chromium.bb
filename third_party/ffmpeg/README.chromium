@@ -1,5 +1,10 @@
-This contains FFmpeg's public header files from the output of a "make install"
-command.  The header files are from Chromium's copy of FFmpeg.
+This file describes how to produce the FFmpeg include directory, and how to
+create the ffmpeg.gyp file and related configurations.
+
+-- FFmpeg headers in the 'include' directory.
+
+The include directory contains FFmpeg's public header files from the output of
+a "make install" command.  The header files are from Chromium's copy of FFmpeg.
 
 Steps to reproduce:
   1) If on Windows, refer to our MinGW/MSYS environment setup:
@@ -13,11 +18,187 @@ Steps to reproduce:
        /path/to/install/include/libavutil
 
 The project contains some hand-written DEF files used to generate import
-libraries to permit dynamically loading FFmpeg.  The libaries are linked in
-using /DELAYLOAD to avoid having the DLLs present at run-time.
+libraries to permit dynamically loading FFmpeg.  On Windows, the libraries are
+linked in using /DELAYLOAD to avoid having the DLLs present at run-time.  On
+POSIX systems, dlopen() is used to achieve a similar effect.
 
 We don't use the import libraries generated from building FFmpeg because they
-export every method by ordinal, which makes binary compatability with different
+export every method by ordinal, which makes binary compatibility with different
 builds of FFmpeg difficult if not impossible.  Furthermore, it is much easier
 to update a DEF file instead of rebuilding FFmpeg to generate new import
 libraries.
+
+
+-- Recreating the ffmpeg.gyp file and populating the config directory.
+The ffmpeg.gyp file is meant to be used in place of FFmpeg's
+
+   ./configure && make
+
+steps.  The file was created by inspecting the build log from above.
+The FFmpeg build is relatively straightforward.  All files are built with
+the same CFLAGS.  The config.h and version.h files are the only files generated
+by ./configure that are included elsewhere.  They require a small bit of
+post-processing.
+
+Other than the configure step, FFmpeg just compiles its .c files, assembles a
+few more using yasm, and that's it.  Exact instructions for reproducing
+ffmpeg.gyp are in the "Detailed Directions" section.
+
+Here is a list of gotchas that have shown up.
+  1) FFmpeg requires special configure (--disable-optimizations) in order
+     to be built with -O0 successfully due to some of the hand-written
+     assembler using ebp.  -O0 implies -fno-omit-frame-pointer which breaks
+     this. This will produce compiler errors like:
+       libavcodec/cabac.h:527: error: can't find a register in class
+       'GENERAL_REGS' while reloading 'asm'
+       cabac.h:527: error: 'asm' operand has impossible constraints
+
+  2) On ia32, FFmpeg cannot be built with -fPIC, again due to assembly
+     issues. There may be a workaround, but the performance impact is
+     unknown.
+
+  3) Sometimes, with -O0, invalid code will be exposed because dead-branch
+     pruning is disabled in gcc.  This can manifest itself as strange link
+     issues or compile issues.  Be careful to read all warnings in this case.
+
+  4) Since config.h is generated via ./configure, the generated file will
+     be sensitive to the configuration of the machine it was produced on.
+     In particular, yasm does not seem to always be detected if
+     cross-compiling for 32-bit on a 64-bit machine. Since yasm is built in
+     tree, make sure to force things with --enable-yasm.
+
+  5) Similar to issue #4, ./configure may detect the presence of SDL and
+     adjust config.h accordingly. This is harmless because all the SDL
+     related code has been disabled in our configuration.
+
+  6) On ia32, we want to be able to compile with WITHOUT -fomit-frame-pointer
+     (so breakpad can function).  To do this, we need to disable the use of the
+     EBP register, otherwise some of FFmpeg's inline assembly will cause
+     compilation errors similar to gotcha #1.  For more details, see the file
+     comment in the munge_config_optimizations.sh. This script will fix up
+     the generated config.h to be building without -fomit-frame-pointer.
+
+
+Detailed Directions:
+  1) Get a clean version of the patched tree.  This should be here:
+
+      src/third_party/ffmpeg/source/patched-ffmpeg-mt
+
+  2) Run the configure in a directory out of the tree with the arguments you
+     want.  To see what was used before, find the config.h for the platform
+     of interest in:
+
+       src/third_party/ffmpeg/source/config/[branding]/[platform]/[variant]
+
+     The value of the FFMPEG_CONFIGURATION macro should have the configure
+     commandline that generated the file.
+
+     Note that if you are trying to build a 32-bit FFmpeg for linux on a
+     64-bit box, the extra flags you want to pass to ./configure are
+
+       --arch=i686 --extra-cflags=-m32 --extra-ldflags=-m32
+
+     Also, as noted in gotcha #4, explicitly setting --enable-yasm is
+     a good idea.
+
+  3) Copy the newly generated config.h and version.h into the correct platform
+     location:
+
+       src/third_party/ffmpeg/source/config/[branding]/[platform]/[variant]
+
+     Make sure to double-check that config.h and version.h are the only files
+     of interest.  By that, I mean check that the other generated files are
+     makefiles, documentation, .pc files, or something else that is not
+     relevant to our build.
+
+     TODO(ajwong): Check if we can modify version.h to tag our builds.
+
+ 3b) If on ia32, handle gotcha #6 by munging the geneated config.h file to
+     disable use of EBP.  Call the munge_config_optimizations.sh script on
+     the config.h for each ia32 variant.
+
+     ** This script is not idempotent. Don't run it twice **
+
+     Remember, this is only necessary for ia32 config.h files.  Running this
+     on config.h files for other platforms (in particular, for x64) will
+     likely result in unecessarily slow code, or compile failures.
+
+  4) Next, capture all the output from a build of libavcodec.so and
+     libavformat.so.  We will use the build log as a reference for making
+     the ffmpeg.gyp file.
+
+       make libavcodec/libavcodec.so libavformat/libavformat.so \
+          > ffmpeg_build_log 2> ffmpeg_build_err
+
+  5) Check ffmpeg_build_err to see if there are any significant
+     anomalies.  FFmpeg source generates a lot of compiler warnings; it
+     is safe to ignore those.
+
+  6) Examine all non-gcc commands to see if we're missing anything
+     interesting:
+
+       grep -v '^gcc' ffmpeg_build_log
+
+     There should be yasm commands for assembling two yasm files, but nothing
+     else.  Include those yasm files in the sources list for gyp.  That means
+
+       grep -v '^gcc\|^yasm'
+
+     should generate nothing beyond "cd" and "ln" commands.
+
+  7) Verify that the all the gcc commands have the same compiler flags.
+     Do that with the following "one-liner":
+
+       grep - '^gcc' ffmpeg_build_log |
+       grep -v ' -MM ' |
+       grep -v ' -shared ' |
+       sed -e 's/ -o .*$//' |
+       sort | uniq -c
+
+     This should find all gcc commands, exclude the dependency generation
+     lines, the link lines, and strip the output/input file names leaving
+     just the compiler flags + invocation.  You should only see one "line"
+     of output.  If there is more than one, figure out if the differences
+     in compiler flags are significant, and then use your best judgment.
+
+     Look at gotcha #2 in for notes about the -fPIC flag in particular.
+
+  8) Examine the output from step 7 and update the compiler flags in
+     ffmpeg.gyp. For easier cut/paste, append the following to the previous
+     command line to isolate each flag on its own line and add
+     single-quotes:
+
+       tr -s ' ' | tr ' ' '\n' | sed -e "s/\(.*\)/'\1',/" | sort -u
+
+  9) Next, examine the link flags to see if anything interesting appears.
+
+        grep ' -shared ' ffmpeg_build_log  |
+        tr ' ' '\n' |
+        grep -Ev '^[^-].*' |
+        grep -v rpath |
+        grep -Ev '^-L' |
+        sort -u
+
+     This should find all link lines, move each flag to its own line,
+     remove any argument that isn't a flag, remove all the rpaths (not
+     useful for us anyways), and remove all the -L lines (also not useful
+     for us).
+
+     The most interesting will likely be the -Wl,.* lines. Update the
+     ldflags section in ffmpeg.gyp accordingly.
+
+ 10) Lastly, Find all the build .c files and update the sources line (this is
+     very similar to step 7):
+
+       grep -E '^gcc' ffmpeg_build_log |
+       grep -v ' -MM ' |
+       grep -v ' -shared ' |
+       sed -e "s|.* -o .* \(.*\)$|'source/patched-ffmpeg-mt/\1',|" |
+       sort
+
+ 11) Attempt to build. :)
+
+*12) Update the the sources! clause to exclude files that should only be built
+     for Chromium.  For this, you basically need to do the steps above once
+     with the configure options for Chrome, then once with the options for
+     Chromium and diff the list of .c and .asm source files.

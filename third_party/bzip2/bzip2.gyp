@@ -34,7 +34,7 @@
             ['OS=="win"', {
               'product_name': 'libbzip2',
             }, {  # else: OS!="win"
-              'product_name': 'bz2',
+              'product_name': 'chrome_bz2',
             }],
           ],
         },
