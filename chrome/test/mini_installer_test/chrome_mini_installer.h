@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H__
-#define CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H__
+#ifndef CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
+#define CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
 
 #include <windows.h>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string_util.h"
 
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
-  explicit ChromeMiniInstaller(std::wstring install_type) {
-    install_type_ = install_type;
-  }
+  explicit ChromeMiniInstaller(const std::wstring& install_type);
 
   ~ChromeMiniInstaller() {}
 
@@ -29,15 +28,14 @@ class ChromeMiniInstaller {
   std::wstring GetChromeInstallDirectoryLocation();
 
   // Installs the latest full installer.
-  void InstallFullInstaller(bool over_install, const wchar_t* channel_type);
+  void InstallFullInstaller(bool over_install);
 
   // Installs chrome.
   void Install();
 
   // This method will first install the full installer and
   // then over installs with diff installer.
-  void OverInstallOnFullInstaller(const std::wstring& install_type,
-                                  const wchar_t* channel_type);
+  void OverInstallOnFullInstaller(const std::wstring& install_type);
 
   // Installs Google Chrome through meta installer.
   void InstallMetaInstaller();
@@ -50,13 +48,15 @@ class ChromeMiniInstaller {
   void InstallStandaloneInstaller();
 
   // Repairs Chrome based on the passed argument.
-  void Repair(RepairChrome repair_type, const wchar_t* channel_type);
+  void Repair(RepairChrome repair_type);
 
   // Uninstalls Chrome.
   void UnInstall();
 
   // This method will perform a over install
-  void OverInstall(const wchar_t* channel_type);
+  void OverInstall();
+
+  void SetBuildUnderTest(const std::wstring& build);
 
  private:
   // This variable holds the install type.
@@ -64,6 +64,20 @@ class ChromeMiniInstaller {
   std::wstring install_type_;
 
   bool standalone_installer;
+
+  // Name of the browser (Chrome or Chromium) and install type (sys or user)
+  std::wstring installer_name_;
+
+  // The full path to the various installers.
+  std::wstring full_installer_, diff_installer_, prev_installer_;
+
+  // Whether the path to the associated installer could be found.
+  // This is because we do not want to assert that these paths exist
+  // except in the tests that use them.
+  bool has_full_installer_, has_diff_installer_, has_prev_installer_;
+
+  // The version string of the current and previous builds.
+  std::wstring curr_version_, prev_version_;
 
   // Will clean up the machine if Chrome install is messed up.
   void CleanChromeInstall();
@@ -124,16 +138,11 @@ class ChromeMiniInstaller {
   bool VerifyOverInstall(const std::wstring& reg_key_value_before_overinstall,
                          const std::wstring& reg_key_value_after_overinstall);
 
-  // Checks if the differential install is correct.
-  bool VerifyDifferentialInstall(const std::wstring& full_installer_value,
-                                 const std::wstring& diff_installer_value,
-                                 const std::wstring& diff_installer_name,
-                                 const wchar_t* channel_type);
-
   // This method will verify if the installed build is correct.
   bool VerifyStandaloneInstall();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMiniInstaller);
 };
 
-#endif  // CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H__
+#endif  // CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
+

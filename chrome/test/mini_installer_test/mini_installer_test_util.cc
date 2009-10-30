@@ -101,16 +101,17 @@ bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
   FileInfoList exe_list;
   std::wstring chrome_diff_installer(
       mini_installer_constants::kChromeDiffInstallerLocation);
+
   chrome_diff_installer.append(L"*");
   if (!GetLatestFile(chrome_diff_installer.c_str(),
                      channel_type, &builds_list))
     return false;
+
   FileInfoList::const_reverse_iterator builds_list_size = builds_list.rbegin();
   while (builds_list_size != builds_list.rend()) {
     path->assign(mini_installer_constants::kChromeDiffInstallerLocation);
     file_util::AppendToPath(path, builds_list_size->name_);
-    if (channel_type == mini_installer_constants::kDevChannelBuild)
-      file_util::AppendToPath(path, L"win");
+    file_util::AppendToPath(path, L"win");
     std::wstring installer_path(path->c_str());
     file_util::AppendToPath(&installer_path, L"*.exe");
     if (!GetLatestFile(installer_path.c_str(), pattern, &exe_list)) {
@@ -130,6 +131,7 @@ bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
 // This method will get the latest installer filename from the directory.
 bool MiniInstallerTestUtil::GetLatestFile(const wchar_t* file_name,
     const wchar_t* pattern, FileInfoList *file_details) {
+
   WIN32_FIND_DATA find_file_data;
   HANDLE file_handle = FindFirstFile(file_name, &find_file_data);
   if (file_handle == INVALID_HANDLE_VALUE) {
@@ -162,19 +164,33 @@ bool MiniInstallerTestUtil::GetLatestFile(const wchar_t* file_name,
   return return_val;
 }
 
-void MiniInstallerTestUtil::GetPreviousBuildNumber(const std::wstring& path,
-    std::wstring *build_number, const wchar_t* channel_type) {
-  std::wstring diff_installer_name = file_util::GetFilenameFromPath(path);
-  std::wstring::size_type start_position = diff_installer_name.find(L"f");
-  std::wstring::size_type end_position = diff_installer_name.find(L"_c");
-  end_position = end_position - start_position;
-  std::wstring file_name = diff_installer_name.substr(start_position,
-                                                      end_position);
-  file_name = file_name.substr(file_name.find(L'_')+1, file_name.size());
-  file_name = channel_type + file_name;
-  build_number->assign(file_name);
-  LOG(INFO) << "Previous build number: " << file_name.c_str();
+// This method retrieves the previous build version for the given diff
+// installer path.
+bool MiniInstallerTestUtil::GetPreviousBuildNumber(const std::wstring& path,
+    std::wstring *build_number) {
+
+  std::wstring diff_name = file_util::GetFilenameFromPath(path);
+  // We want to remove 'from_', so add its length to found index (which is 5)
+  std::wstring::size_type start_position = diff_name.find(L"from_") + 5;
+  std::wstring::size_type end_position = diff_name.find(L"_c");
+  std::wstring::size_type size = end_position - start_position;
+
+  std::wstring build_no = diff_name.substr(start_position, size);
+
+  // Search for a build folder with this build suffix.
+  std::wstring pattern = L"*" + build_no;
+
+  file_util::FileEnumerator files(FilePath(
+      mini_installer_constants::kChromeDiffInstallerLocation),
+      false, file_util::FileEnumerator::DIRECTORIES, pattern);
+  FilePath folder = files.Next();
+  if (folder.empty())
+    return false;
+
+  build_number->assign(folder.BaseName().ToWStringHack());
+  return true;
 }
+
 
 // This method will get the previous full installer path
 // from given diff installer path. It will first get the
@@ -182,27 +198,24 @@ void MiniInstallerTestUtil::GetPreviousBuildNumber(const std::wstring& path,
 // build information from the filename, then computes the
 // path for previous full installer.
 bool MiniInstallerTestUtil::GetPreviousFullInstaller(
-    const std::wstring& diff_file_name, std::wstring *previous,
-    const wchar_t* channel_type) {
-  std::wstring diff_file = diff_file_name;
-  std::wstring build_number;
-  GetPreviousBuildNumber(diff_file, &build_number, channel_type);
-  file_util::UpOneDirectory(&diff_file);
-  file_util::UpOneDirectory(&diff_file);
-  if (channel_type == mini_installer_constants::kDevChannelBuild)
-    file_util::UpOneDirectory(&diff_file);
-  file_util::AppendToPath(&diff_file, build_number.c_str());
-  if (channel_type == mini_installer_constants::kDevChannelBuild)
-    file_util::AppendToPath(&diff_file, L"win");
-  previous->assign(diff_file);
-  file_util::AppendToPath(&diff_file, L"*.exe");
-  FileInfoList directory_list;
-  if (!GetLatestFile(diff_file.c_str(),
-                     mini_installer_constants::kFullInstallerPattern,
-                     &directory_list))
+    const std::wstring& diff_path, std::wstring *previous) {
+  std::wstring build_no;
+
+  if (!GetPreviousBuildNumber(diff_path, &build_no))
     return false;
-  file_util::AppendToPath(previous, directory_list.at(0).name_);
-  return file_util::PathExists(FilePath::FromWStringHack(*previous));
+
+  // Use the fifth and onward characters of the build version string
+  // to compose the full installer name.
+  std::wstring name = build_no.substr(4) +
+      mini_installer_constants::kFullInstallerPattern + L".exe";
+
+  // Create the full installer path.
+  FilePath installer = FilePath(
+      mini_installer_constants::kChromeDiffInstallerLocation);
+  installer = installer.Append(build_no).Append(L"win").Append(name);
+  previous->assign(installer.value());
+
+  return file_util::PathExists(installer);
 }
 
 bool MiniInstallerTestUtil::GetStandaloneInstallerFileName(
@@ -230,7 +243,7 @@ bool MiniInstallerTestUtil::GetStandaloneVersion(
   file_name = file_name.substr(0, last_dot);
   std::wstring::size_type pos = file_name.find(L'_');
   file_name.replace(pos, 1, L".");
-  file_name = L"2.0." + file_name;
+  file_name = L"3.0." + file_name;
   return_file_name->assign(file_name.c_str());
   LOG(INFO) << "Standalone installer version: " << file_name.c_str();
   return true;
@@ -249,16 +262,19 @@ void MiniInstallerTestUtil::SendEnterKeyToWindow() {
   SendInput(1, &key, sizeof(INPUT));
 }
 
+
 void MiniInstallerTestUtil::VerifyProcessLaunch(
     const wchar_t* process_name, bool expected_status) {
   int timer = 0, wait_time = 60000;
   if (!expected_status)
     wait_time = 8000;
+
   while ((base::GetProcessCount(process_name, NULL) == 0) &&
          (timer < wait_time)) {
     PlatformThread::Sleep(200);
     timer = timer + 200;
   }
+
   if (expected_status)
     ASSERT_NE(0, base::GetProcessCount(process_name, NULL));
   else
