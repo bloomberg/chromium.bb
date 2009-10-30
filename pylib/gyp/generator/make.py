@@ -244,32 +244,32 @@ FORCE_DO_CMD:
 
 SHARED_HEADER_SUFFIX_RULES = ("""\
 # Suffix rules, putting all outputs into $(obj).
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
 	@$(call do_cmd,cc)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
 	@$(call do_cmd,cc)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
-$(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """)
 
@@ -390,6 +390,8 @@ class MakefileWriter:
       self.alias = self.output
 
     self.WriteLn("TOOLSET := " + self.toolset)
+    self.WriteLn("TARGET := " + self.target)
+    self.WriteLn(SHARED_HEADER_SUFFIX_RULES)
 
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
@@ -886,9 +888,9 @@ class MakefileWriter:
   def Objectify(self, path):
     """Convert a path to its output directory form."""
     if '$(' in path:
-      path = path.replace('$(obj)/', '$(obj).%s/' % self.toolset)
+      path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/' % self.toolset)
       return path
-    return '$(obj).%s/%s' % (self.toolset, path)
+    return '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
 
   def Absolutify(self, path):
     """Convert a subdirectory-relative path into a base-relative path.
@@ -939,7 +941,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if options.generator_output:
     global srcdir_prefix
     makefile_path = os.path.join(options.generator_output, makefile_path)
-    srcdir = gyp.common.RelativePath('.', options.generator_output)
+    srcdir = gyp.common.RelativePath(srcdir, options.generator_output)
     srcdir_prefix = '$(srcdir)/'
   ensure_directory_exists(makefile_path)
   root_makefile = open(makefile_path, 'w')
