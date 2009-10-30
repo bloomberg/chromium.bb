@@ -289,11 +289,6 @@ void RenderWidgetHostViewMac::Destroy() {
     [subview renderWidgetHostViewMac]->ShutdownHost();
   }
 
-  // We've been told to destroy.
-  [cocoa_view_ retain];
-  [cocoa_view_ removeFromSuperview];
-  [cocoa_view_ autorelease];
-
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
   // by some other code.  Examples are TabContentsViewMac's
@@ -544,7 +539,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if (ignoreKeyEvents_)
     return NO;
 
-  // We have some magic in |CrApplication sendEvent:| that always sends key 
+  // We have some magic in |CrApplication sendEvent:| that always sends key
   // events to |keyEvent:| so that cocoa doesn't have a chance to intercept it.
   DCHECK([[self window] firstResponder] != self);
   return NO;
