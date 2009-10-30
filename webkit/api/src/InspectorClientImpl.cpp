@@ -34,6 +34,7 @@
 #include "DOMWindow.h"
 #include "FloatRect.h"
 #include "InspectorController.h"
+#include "NotImplemented.h"
 #include "Page.h"
 #include "Settings.h"
 #include "WebRect.h"

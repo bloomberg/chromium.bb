@@ -279,8 +279,6 @@ private:
     WebViewImpl(WebViewClient* client);
     ~WebViewImpl();
 
-    void modifySelection(uint32 message, WebCore::Frame*, const WebCore::PlatformKeyboardEvent&);
-
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);
 
@@ -367,7 +365,7 @@ private:
 
     // Valid when m_dragTargetDispatch is true; the identity of the drag data
     // copied from the WebDropData object sent from the browser process.
-    int32 m_dragIdentity;
+    int m_dragIdentity;
 
     // Valid when m_dragTargetDispatch is true.  Used to override the default
     // browser drop effect with the effects "none" or "copy".
