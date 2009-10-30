@@ -88,7 +88,7 @@ void GetParentLocales(const std::string& current_locale,
   parent_locales->push_back(parent);
   UErrorCode err = U_ZERO_ERROR;
   while (uloc_getParent(parent, parent, kNameCapacity, &err) > 0) {
-    if (err != U_ZERO_ERROR)
+    if (U_FAILURE(err))
       break;
     parent_locales->push_back(parent);
   }
