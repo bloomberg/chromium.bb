@@ -36,6 +36,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       input(input),
       trim_http(trim_http),
       cancel(false),
+      failed(false),
       languages(languages) {
 }
 
@@ -103,8 +104,10 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
                                        history::URLDatabase* db,
                                        HistoryURLProviderParams* params) {
   // We may get called with a NULL database if it couldn't be properly
-  // initialized.  In this case we just say the query is complete.
-  if (db && !params->cancel) {
+  // initialized.
+  if (!db) {
+    params->failed = true;
+  } else if (!params->cancel) {
     TimeTicks beginning_time = TimeTicks::Now();
 
     DoAutocomplete(backend, db, params);
@@ -222,9 +225,14 @@ void HistoryURLProvider::QueryComplete(
   if (params->cancel)
     return;  // Already set done_ when we canceled, no need to set it again.
 
+  // Don't modify |matches_| if the query failed, since it might have a default
+  // match in it, whereas |params->matches| will be empty.
+  if (!params->failed) {
+    matches_.swap(params->matches);
+    UpdateStarredStateOfMatches();
+  }
+
   done_ = true;
-  matches_.swap(params->matches);
-  UpdateStarredStateOfMatches();
   listener_->OnProviderUpdate(true);
 }
 

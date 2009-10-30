@@ -101,6 +101,13 @@ struct HistoryURLProviderParams {
   // we run the extra queries, the lack of signaling is not a problem.
   bool cancel;
 
+  // Set by ExecuteWithDB() on the history thread when the query could not be
+  // performed because the history system failed to properly init the database.
+  // If this is set when the main thread is called back, it avoids changing
+  // |matches_| at all, so it won't delete the default match
+  // RunAutocompletePasses() creates.
+  bool failed;
+
   // List of matches written by the history thread.  We keep this separate list
   // to avoid having the main thread read the provider's matches while the
   // history thread is manipulating them.  The provider copies this list back
