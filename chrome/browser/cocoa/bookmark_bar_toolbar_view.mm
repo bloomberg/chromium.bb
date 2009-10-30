@@ -76,14 +76,15 @@ const CGFloat kBorderRadius = 3.0;
   }
 
   // Draw our bookmark bar border on top of the background.
-  NSRect frame_rect =
+  NSRect frameRect =
       NSMakeRect(bookmarks::kNTPBookmarkBarPadding,
                  bookmarks::kNTPBookmarkBarPadding,
                  NSWidth(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding,
                  NSHeight(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding);
   // Now draw a bezier path with rounded rectangles around the area
+  frameRect = NSInsetRect(frameRect, 0.5, 0.5);
   NSBezierPath* border =
-      [NSBezierPath bezierPathWithRoundedRect:frame_rect
+      [NSBezierPath bezierPathWithRoundedRect:frameRect
                                       xRadius:kBorderRadius
                                       yRadius:kBorderRadius];
   NSColor* toolbarColor =
@@ -100,7 +101,7 @@ const CGFloat kBorderRadius = 3.0;
   [border fill];
 
   NSColor* borderColor =
-      [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
+      [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBarButton
                                       state:GTMThemeStateActiveWindow];
   [borderColor set];
   [border stroke];
