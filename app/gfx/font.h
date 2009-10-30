@@ -97,7 +97,7 @@ class Font {
   // Font Name.
   // It is actually a font family name, because Skia expects a family name
   // and not a font name.
-  std::wstring FontName();
+  const std::wstring& FontName() const;
 
   // Font Size.
   int FontSize();
@@ -175,6 +175,7 @@ class Font {
     int ave_char_width() const { return ave_char_width_; }
     int style() const { return style_; }
     int dlu_base_x() const { return dlu_base_x_; }
+    const std::wstring& font_name() const { return font_name_; }
 
    private:
     const HFONT hfont_;
@@ -184,6 +185,7 @@ class Font {
     const int style_;
     // Constants used in converting dialog units to pixels.
     const int dlu_base_x_;
+    std::wstring font_name_;
 
     DISALLOW_COPY_AND_ASSIGN(HFontRef);
   };

@@ -1039,7 +1039,7 @@ void TabRendererGtk::InitResources() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // Force the font size to 9pt, which matches Windows' default font size
   // (taken from the system).
-  gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
+  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
   title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 9));
   title_font_height_ = title_font_->height();
 

@@ -139,7 +139,7 @@ void AddLanguageWindowView::Layout() {
 
 gfx::Size AddLanguageWindowView::GetPreferredSize() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
+  const gfx::Font& font = rb.GetFont(ResourceBundle::BaseFont);
   return gfx::Size(font.ave_char_width() * kDefaultWindowWidthChars,
                    font.height() * kDefaultWindowHeightLines);
 }

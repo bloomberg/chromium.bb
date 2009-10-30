@@ -5,13 +5,80 @@
 #include "chrome/common/extensions/extension_action.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+
+namespace {
+
+// Different platforms need slightly different constants to look good.
+#if defined(OS_LINUX)
+const int kTextSize = 9;
+const int kBottomMargin = 0;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
+const int kBadgeHeight = 11;
+const int kMaxTextWidth = 23;
+// The minimum width for center-aligning the badge.
+const int kCenterAlignThreshold = 20;
+#else
+const int kTextSize = 8;
+const int kBottomMargin = 5;
+const int kPadding = 2;
+// The padding between the top of the badge and the top of the text.
+const int kTopTextPadding = 1;
+const int kBadgeHeight = 11;
+const int kMaxTextWidth = 23;
+// The minimum width for center-aligning the badge.
+const int kCenterAlignThreshold = 20;
+#endif
+
+#if defined(OS_MACOSX)
+const char kPreferredTypeface[] = "Helvetica";
+#else
+const char kPreferredTypeface[] = "Arial";
+#endif
+
+SkPaint* GetTextPaint() {
+  static SkPaint* text_paint = NULL;
+  if (!text_paint) {
+    text_paint = new SkPaint;
+    text_paint->setAntiAlias(true);
+
+    text_paint->setTextAlign(SkPaint::kLeft_Align);
+    text_paint->setTextSize(SkIntToScalar(kTextSize));
+
+    SkTypeface* typeface = SkTypeface::CreateFromName(
+        kPreferredTypeface, SkTypeface::kBold);
+    // Skia doesn't do any font fallback---if the user is missing the font then
+    // typeface will be NULL. If we don't do manual fallback then we'll crash.
+    if (typeface) {
+      text_paint->setFakeBoldText(true);
+    } else {
+      // Fall back to the system font. We don't bold it because we aren't sure
+      // how it will look.
+      // For the most part this code path will only be hit on Linux systems
+      // that don't have Arial.
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+      typeface = SkTypeface::CreateFromName(
+          WideToUTF8(base_font.FontName()).c_str(), SkTypeface::kNormal);
+    }
+
+    text_paint->setTypeface(typeface);
+    // |text_paint| adds its own ref. Release the ref from CreateFontName.
+    typeface->unref();
+  }
+  return text_paint;
+}
+
+}  // namespace
 
 const int ExtensionAction::kDefaultTabId = -1;
 
@@ -41,48 +108,13 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   if (SkColorGetA(background_color) == 0x00)
     background_color = SkColorSetARGB(255, 218, 0, 24);  // default badge color
 
-  // Different platforms need slightly different constants to look good.
-#if defined(OS_LINUX)
-  const int kTextSize = 9;
-  const int kBottomMargin = 0;
-  const int kPadding = 2;
-  const int kTopTextPadding = 0;
-  const int kBadgeHeight = 11;
-  const int kMaxTextWidth = 23;
-  // The minimum width for center-aligning the badge.
-  const int kCenterAlignThreshold = 20;
-#else
-  const int kTextSize = 8;
-  const int kBottomMargin = 5;
-  const int kPadding = 2;
-  // The padding between the top of the badge and the top of the text.
-  const int kTopTextPadding = 1;
-  const int kBadgeHeight = 11;
-  const int kMaxTextWidth = 23;
-  // The minimum width for center-aligning the badge.
-  const int kCenterAlignThreshold = 20;
-#endif
-
-#if defined(OS_MACOSX)
-  const char kTypeFaceName[] = "Helvetica";
-#else
-  const char kTypeFaceName[] = "Arial";
-#endif
-
   canvas->save();
 
-  SkTypeface* typeface = SkTypeface::CreateFromName(kTypeFaceName,
-                                                    SkTypeface::kBold);
-  SkPaint text_paint;
-  text_paint.setAntiAlias(true);
-  text_paint.setColor(text_color);
-  text_paint.setFakeBoldText(true);
-  text_paint.setTextAlign(SkPaint::kLeft_Align);
-  text_paint.setTextSize(SkIntToScalar(kTextSize));
-  text_paint.setTypeface(typeface);
+  SkPaint* text_paint = GetTextPaint();
+  text_paint->setColor(text_color);
 
   // Calculate text width. We clamp it to a max size.
-  SkScalar text_width = text_paint.measureText(text.c_str(), text.size());
+  SkScalar text_width = text_paint->measureText(text.c_str(), text.size());
   text_width = SkIntToScalar(
       std::min(kMaxTextWidth, SkScalarFloor(text_width)));
 
@@ -137,6 +169,6 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   canvas->drawText(text.c_str(), text.size(),
                    rect.fLeft + (rect.width() - text_width) / 2,
                    rect.fTop + kTextSize + kTopTextPadding,
-                   text_paint);
+                   *text_paint);
   canvas->restore();
 }

@@ -113,7 +113,7 @@ class ResourceBundle {
   string16 GetLocalizedString(int message_id);
 
   // Returns the font for the specified style.
-  gfx::Font GetFont(FontStyle style);
+  const gfx::Font& GetFont(FontStyle style);
 
 #if defined(OS_WIN)
   // Loads and returns an icon from the theme dll.

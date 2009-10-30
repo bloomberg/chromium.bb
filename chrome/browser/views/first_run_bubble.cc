@@ -109,7 +109,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
       label3_(NULL),
       keep_button_(NULL),
       change_button_(NULL) {
-  gfx::Font& font =
+  const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
   label1_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_TITLE));
@@ -261,7 +261,7 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
       label3_(NULL),
       close_button_(NULL) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
+  const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
   label1_ = new views::Label(l10n_util::GetString(IDS_FR_OEM_BUBBLE_TITLE_1));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
