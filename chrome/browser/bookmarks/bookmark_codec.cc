@@ -237,8 +237,9 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     if (!value.GetString(kURLKey, &url_string))
       return false;
 
-    if (!node)
-      node = new BookmarkNode(id, GURL(WideToUTF8(url_string)));
+    GURL url = GURL(WideToUTF8(url_string));
+    if (!node && url.is_valid())
+      node = new BookmarkNode(id, url);
     else
       return false;  // Node invalid.
 

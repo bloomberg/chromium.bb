@@ -81,7 +81,7 @@ class BookmarkStorage::LoadTask : public Task {
       scoped_ptr<Value> root(serializer.Deserialize(NULL));
 
       if (root.get()) {
-        // Building the index cane take a while, so we do it on the background
+        // Building the index can take a while, so we do it on the background
         // thread.
         int64 max_node_id = 0;
         BookmarkCodec codec;
@@ -116,7 +116,8 @@ class BookmarkStorage::LoadTask : public Task {
   // Adds node to the model's index, recursing through all children as well.
   void AddBookmarksToIndex(BookmarkNode* node) {
     if (node->is_url()) {
-      details_->index()->Add(node);
+      if (node->GetURL().is_valid())
+        details_->index()->Add(node);
     } else {
       for (int i = 0; i < node->GetChildCount(); ++i)
         AddBookmarksToIndex(node->GetChild(i));
