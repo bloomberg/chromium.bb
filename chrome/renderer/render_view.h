@@ -241,6 +241,7 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame, const WebKit::WebContextMenuData& data);
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
+  virtual void setKeyboardFocusURL(const WebKit::WebURL& url);
   virtual void setToolTipText(
       const WebKit::WebString& text, WebKit::WebTextDirection hint);
   virtual void startDragging(
@@ -738,6 +739,10 @@ class RenderView : public RenderWidget,
   // Initializes the document_tag_ member if necessary.
   void EnsureDocumentTag();
 
+  // Update the target url and tell the browser that the target URL has changed.
+  // If |url| is empty, show |fallback_url|.
+  void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
@@ -754,10 +759,15 @@ class RenderView : public RenderWidget,
   // The last gotten main frame's encoding.
   std::string last_encoding_name_;
 
-  // The URL we think the user's mouse is hovering over. We use this to
+  // The URL we show the user in the status bar. We use this to
   // determine if we want to send a new one (we do not need to send
-  // duplicates).
+  // duplicates). It will be equal to either |mouse_over_url_| or |focus_url_|,
+  // depending on which was updated last.
   GURL target_url_;
+  // The URL the user's mouse is hovering over.
+  GURL mouse_over_url_;
+  // The URL that has keyboard focus.
+  GURL focus_url_;
 
   // The state of our target_url transmissions. When we receive a request to
   // send a URL to the browser, we set this to TARGET_INFLIGHT until an ACK

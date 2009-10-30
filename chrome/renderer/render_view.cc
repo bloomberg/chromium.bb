@@ -1612,10 +1612,11 @@ void RenderView::showContextMenu(
 void RenderView::setStatusText(const WebString& text) {
 }
 
-void RenderView::setMouseOverURL(const WebURL& url) {
-  GURL latest_url(url);
+void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
+  GURL latest_url = url.spec().empty() ? fallback_url : url;
   if (latest_url == target_url_)
     return;
+
   // Tell the browser to display a destination link.
   if (target_url_status_ == TARGET_INFLIGHT ||
       target_url_status_ == TARGET_PENDING) {
@@ -1629,6 +1630,16 @@ void RenderView::setMouseOverURL(const WebURL& url) {
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }
+}
+
+void RenderView::setMouseOverURL(const WebURL& url) {
+  mouse_over_url_ = GURL(url);
+  UpdateTargetURL(mouse_over_url_, focus_url_);
+}
+
+void RenderView::setKeyboardFocusURL(const WebURL& url) {
+  focus_url_ = GURL(url);
+  UpdateTargetURL(focus_url_, mouse_over_url_);
 }
 
 void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {

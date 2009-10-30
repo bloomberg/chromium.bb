@@ -204,6 +204,9 @@ namespace WebKit {
         // Called when hovering over an anchor with the given URL.
         virtual void setMouseOverURL(const WebURL&) = 0;
 
+        // Called when keyboard focus switches to an anchor with the given URL.
+        virtual void setKeyboardFocusURL(const WebURL&) = 0;
+
         // Called when a tooltip should be shown at the current cursor position.
         virtual void setToolTipText(const WebString&, WebTextDirection hint) = 0;
 
