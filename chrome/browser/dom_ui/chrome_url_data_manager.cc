@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -30,6 +29,9 @@
 // The URL scheme used for internal chrome resources.
 // TODO(glen): Choose a better location for this.
 static const char kChromeURLScheme[] = "chrome";
+
+// The single global instance of ChromeURLDataManager.
+ChromeURLDataManager chrome_url_data_manager;
 
 // URLRequestChromeJob is a URLRequestJob that manages running chrome-internal
 // resource requests asynchronously.
@@ -103,10 +105,9 @@ void RegisterURLRequestChromeJob() {
     // all features of in-process Web Inspector and Console Debugger. For the
     // time being we need to serve the same content from chrome://inspector
     // for the Console Debugger and in-process Web Inspector.
-    Singleton<ChromeURLDataManager>()->AddFileSource("inspector",
-                                                     inspector_dir);
-    Singleton<ChromeURLDataManager>()->AddFileSource(
-        chrome::kChromeUIDevToolsHost, inspector_dir);
+    chrome_url_data_manager.AddFileSource("inspector", inspector_dir);
+    chrome_url_data_manager.AddFileSource(chrome::kChromeUIDevToolsHost,
+                                          inspector_dir);
   }
 
   URLRequest::RegisterProtocolFactory(kChromeURLScheme,
@@ -118,9 +119,8 @@ void RegisterURLRequestChromeJob() {
 void UnregisterURLRequestChromeJob() {
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    Singleton<ChromeURLDataManager>()->RemoveFileSource("inspector");
-    Singleton<ChromeURLDataManager>()->RemoveFileSource(
-        chrome::kChromeUIDevToolsHost);
+    chrome_url_data_manager.RemoveFileSource("inspector");
+    chrome_url_data_manager.RemoveFileSource(chrome::kChromeUIDevToolsHost);
   }
 }
 
@@ -164,8 +164,8 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
   URLToRequest(url, &source_name, &relative_path);
 
   FileSourceMap::const_iterator i(
-      Singleton<ChromeURLDataManager>()->file_sources_.find(source_name));
-  if (i == Singleton<ChromeURLDataManager>()->file_sources_.end())
+      chrome_url_data_manager.file_sources_.find(source_name));
+  if (i == chrome_url_data_manager.file_sources_.end())
     return false;
 
   *file_path = i->second.AppendASCII(relative_path);
@@ -275,7 +275,7 @@ void ChromeURLDataManager::DataSource::SendResponse(
     RefCountedMemory* bytes) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(&chrome_url_data_manager,
                         &ChromeURLDataManager::DataAvailable,
                         request_id, scoped_refptr<RefCountedMemory>(bytes)));
 }
@@ -350,7 +350,7 @@ URLRequestChromeJob::URLRequestChromeJob(URLRequest* request)
 }
 
 URLRequestChromeJob::~URLRequestChromeJob() {
-  CHECK(!Singleton<ChromeURLDataManager>()->HasPendingJob(this));
+  CHECK(!chrome_url_data_manager.HasPendingJob(this));
 }
 
 void URLRequestChromeJob::Start() {
@@ -361,7 +361,7 @@ void URLRequestChromeJob::Start() {
 }
 
 void URLRequestChromeJob::Kill() {
-  Singleton<ChromeURLDataManager>()->RemoveRequest(this);
+  chrome_url_data_manager.RemoveRequest(this);
 }
 
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
@@ -421,7 +421,7 @@ void URLRequestChromeJob::StartAsync() {
   if (!request_)
     return;
 
-  if (Singleton<ChromeURLDataManager>()->StartRequest(request_->url(), this)) {
+  if (chrome_url_data_manager.StartRequest(request_->url(), this)) {
     NotifyHeadersComplete();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,

@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
-#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
@@ -553,7 +552,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
-            Singleton<ChromeURLDataManager>().get(),
+            &chrome_url_data_manager,
             &ChromeURLDataManager::AddDataSource,
             html_source));
   } else {
@@ -576,7 +575,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     bool posted = ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
-            Singleton<ChromeURLDataManager>().get(),
+            &chrome_url_data_manager,
             &ChromeURLDataManager::AddDataSource,
             html_source));
     if (!posted) {
@@ -623,7 +622,7 @@ void NewTabUI::InitializeCSSCaches() {
   bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          Singleton<ChromeURLDataManager>().get(),
+          &chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           theme));
   if (!posted) {

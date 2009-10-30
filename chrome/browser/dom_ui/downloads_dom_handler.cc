@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
-#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -55,7 +54,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
   // Create our fileicon data source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(&chrome_url_data_manager,
                         &ChromeURLDataManager::AddDataSource,
                         new FileIconSource()));
 }
