@@ -185,7 +185,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   int width, height;
   pango_layout_get_pixel_size(layout, &width, &height);
 
-  cairo_rectangle(cr, x, y, width, height);
+  cairo_rectangle(cr, x, y, w, h);
   cairo_clip(cr);
 
   if (flags & Canvas::TEXT_VALIGN_TOP) {
