@@ -13,8 +13,8 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
 
 #if defined(USE_LINUX_BREAKPAD)

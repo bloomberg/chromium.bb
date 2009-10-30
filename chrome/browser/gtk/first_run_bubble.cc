@@ -14,9 +14,8 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
-#include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
+#include "grit/locale_settings.h"
 
 namespace {
 // Markup for the text of the Omnibox search label
