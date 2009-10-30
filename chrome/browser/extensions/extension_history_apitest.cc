@@ -6,7 +6,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, History) {
+// Flaky, http://crbug.com/26296.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_History) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
