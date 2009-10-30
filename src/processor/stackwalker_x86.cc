@@ -447,7 +447,7 @@ bool StackwalkerX86::ScanForReturnAddress(u_int32_t location_start,
     if (!memory_->GetMemoryAtAddress(location, &eip))
       break;
 
-    if (modules_->GetModuleForAddress(eip) &&
+    if (modules_ && modules_->GetModuleForAddress(eip) &&
         InstructionAddressSeemsValid(eip)) {
 
       eip_found = eip;
