@@ -495,6 +495,7 @@ static bool g_is_opening_new_window = false;
   switch (tag) {
     case IDC_NEW_TAB:
     case IDC_NEW_WINDOW:
+    case IDC_FOCUS_LOCATION:
       g_is_opening_new_window = true;
       Browser::OpenEmptyWindow(defaultProfile);
       g_is_opening_new_window = false;
@@ -518,6 +519,12 @@ static bool g_is_opening_new_window = false;
       [controller runModalDialog];
       break;
     }
+    case IDC_SHOW_HISTORY:
+      Browser::OpenHistoryWindow(defaultProfile);
+      break;
+    case IDC_SHOW_DOWNLOADS:
+      Browser::OpenDownloadsWindow(defaultProfile);
+      break;
     case IDC_HELP_PAGE:
       Browser::OpenHelpWindow(defaultProfile);
       break;
@@ -552,6 +559,9 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_OPEN_FILE, true);
   menuState_->UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
   menuState_->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
+  menuState_->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   // TODO(pinkerton): ...more to come...
 }

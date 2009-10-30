@@ -168,7 +168,10 @@ class Browser : public TabStripModelDelegate,
   static void OpenApplicationWindow(Profile* profile, const GURL& url);
 
 #if defined(OS_MACOSX)
-  // Open a new window with help (needed on Mac when there are no windows).
+  // Open a new window with history/downloads/help (needed on Mac when there are
+  // no windows).
+  static void OpenHistoryWindow(Profile* profile);
+  static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
 #endif
 

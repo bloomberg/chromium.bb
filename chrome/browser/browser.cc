@@ -332,6 +332,20 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
 
 #if defined(OS_MACOSX)
 // static
+void Browser::OpenHistoryWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->ShowHistoryTab();
+  browser->window()->Show();
+}
+
+// static
+void Browser::OpenDownloadsWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->ShowDownloadsTab();
+  browser->window()->Show();
+}
+
+// static
 void Browser::OpenHelpWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->OpenHelpTab();
