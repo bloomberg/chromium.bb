@@ -43,7 +43,7 @@
       },
     },{  # else OS=="linux"
       'variables': {
-        'target_for_binaries': 'ffmpegsumo_nolink',
+        'target_for_binaries': 'ffmpeg_binaries',
         'ffmpeg_include_root': 'source/patched-ffmpeg-mt',
       },
       'targets': [
@@ -560,7 +560,13 @@
               'variables': {
                 # TODO(ajwong): Clean this up after we've finished
                 # migrating to in-tree build.
-                'source_files': [],
+                'source_files': [
+                  # TODO(ajwong): Temporary revert to make tree green while
+                  # builder libraries are updated.
+                  'binaries/<(ffmpeg_bin_dir)/libavcodec.so.52',
+                  'binaries/<(ffmpeg_bin_dir)/libavformat.so.52',
+                  'binaries/<(ffmpeg_bin_dir)/libavutil.so.50',
+                ],
               },
         }], ['OS=="mac"', {
               # TODO(ajwong): These files are also copied in:
