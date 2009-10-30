@@ -412,17 +412,6 @@ WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
 // Glue layer.  Once the Glue layer moves entirely into the WebKit layer, these
 // methods will be deleted.
 
-bool WebKitClientImpl::popupsAllowed(NPP npp) {
-  bool popups_allowed = false;
-  if (npp) {
-    NPAPI::PluginInstance* plugin_instance =
-        reinterpret_cast<NPAPI::PluginInstance*>(npp->ndata);
-    if (plugin_instance)
-      popups_allowed = plugin_instance->popups_allowed();
-  }
-  return popups_allowed;
-}
-
 WebCore::String WebKitClientImpl::uiResourceProtocol() {
   return StdStringToString(webkit_glue::GetUIResourceProtocol());
 }

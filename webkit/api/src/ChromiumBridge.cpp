@@ -664,7 +664,8 @@ IntRect ChromiumBridge::screenAvailableRect(Widget* widget)
 
 bool ChromiumBridge::popupsAllowed(NPP npp)
 {
-    return webKitClient()->popupsAllowed(npp);
+    // FIXME: Give the embedder a way to control this.
+    return false;
 }
 
 void ChromiumBridge::widgetSetCursor(Widget* widget, const Cursor& cursor)

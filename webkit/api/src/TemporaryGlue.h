@@ -35,10 +35,6 @@
 // use to call to the Glue layer.  Once the Glue layer moves entirely into the
 // WebKit layer, this file will be deleted.
 
-struct _NPP;
-typedef struct _NPP NPP_t;
-typedef NPP_t* NPP;
-
 namespace WebCore {
     class String;
 }
@@ -47,7 +43,6 @@ namespace WebKit {
     class TemporaryGlue {
     public:
         virtual WebCore::String uiResourceProtocol() = 0;
-        virtual bool popupsAllowed(NPP) = 0;
     };
 
 } // namespace WebKit

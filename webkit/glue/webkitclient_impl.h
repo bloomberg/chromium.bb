@@ -82,7 +82,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   // Glue layer.  Once the Glue layer moves entirely into the WebKit layer,
   // these methods will be deleted.
   virtual WebCore::String uiResourceProtocol();
-  virtual bool popupsAllowed(NPP);
 
  private:
   void DoTimeout() {
