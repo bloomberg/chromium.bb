@@ -102,22 +102,6 @@ class TestTypeBase(object):
                                    path_utils.RelativeTestFilename(filename))
     return os.path.splitext(output_filename)[0] + modifier
 
-  def RelativeOutputFilename(self, filename, modifier):
-    """Returns a relative filename inside the output dir that contains
-    modifier.
-
-    For example, if filename is fast\dom\foo.html and modifier is
-    "-expected.txt", the return value is fast\dom\foo-expected.txt
-
-    Args:
-      filename: relative filename to test file
-      modifier: a string to replace the extension of filename with
-
-    Return:
-      The relative windows path to the output filename
-    """
-    return os.path.splitext(filename)[0] + modifier
-
   def CompareOutput(self, filename, proc, output, test_args, target):
     """Method that compares the output from the test with the expected value.
 

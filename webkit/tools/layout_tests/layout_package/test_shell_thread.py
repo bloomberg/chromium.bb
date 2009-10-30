@@ -24,7 +24,7 @@ import time
 import path_utils
 import test_failures
 
-def ProcessOutput(proc, test_info, test_types, test_args, target):
+def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
   """Receives the output from a test_shell process, subjects it to a number
   of tests, and returns a list of failure types the test produced.
 
@@ -34,6 +34,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
     test_types: list of test types to subject the output to
     test_args: arguments to be passed to each test
     target: Debug or Release
+    output_dir: directory to put crash stack traces into
 
   Returns: a list of failure objects and times for the test being processed
   """
@@ -51,7 +52,8 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
   line = proc.stdout.readline()
 
   # Only start saving output lines once we've loaded the URL for the test.
-  hit_load_url = False
+  url = None
+  test_string = test_info.uri.strip()
 
   while line.rstrip() != "#EOF":
     # Make sure we haven't crashed.
@@ -73,8 +75,6 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
 
     # Don't include #URL lines in our output
     if line.startswith("#URL:"):
-      hit_load_url = True
-      test_string = test_info.uri.strip()
       url = line.rstrip()[5:]
       if url != test_string:
         logging.fatal("Test got out of sync:\n|%s|\n|%s|" %
@@ -85,7 +85,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
     elif line.startswith("#TEST_TIMED_OUT"):
       # Test timed out, but we still need to read until #EOF.
       failures.append(test_failures.FailureTimeout())
-    elif hit_load_url:
+    elif url:
       outlines.append(line)
     else:
       extra_lines.append(line)
@@ -95,8 +95,18 @@ def ProcessOutput(proc, test_info, test_types, test_args, target):
   end_test_time = time.time()
 
   if len(extra_lines):
-    logging.warning("Previous test output extra lines after dump:\n%s" % (
-        "".join(extra_lines)))
+    extra = "".join(extra_lines)
+    if crash:
+      logging.info("Stacktrace for %s:\n%s" % (test_string, extra))
+      # Strip off "file://" since RelativeTestFilename expects filesystem paths.
+      filename = os.path.join(output_dir,
+          path_utils.RelativeTestFilename(test_string[7:]))
+      filename = os.path.splitext(filename)[0] + "-stack.txt"
+      path_utils.MaybeMakeDirectory(os.path.split(filename)[0])
+      open(filename, "wb").write(extra)
+    else:
+      logging.warning("Previous test output extra lines after dump:\n%s" %
+          extra)
 
   # Check the output and save the results.
   time_for_diffs = {}
@@ -147,10 +157,11 @@ class TestStats:
 class SingleTestThread(threading.Thread):
   """Thread wrapper for running a single test file."""
   def __init__(self, test_shell_command, shell_args, test_info, test_types,
-      test_args, target):
+      test_args, target, output_dir):
     """
     Args:
       test_info: Object containing the test filename, uri and timeout
+      output_dir: Directory to put crash stacks into.
       See TestShellThread for documentation of the remaining arguments.
     """
 
@@ -161,12 +172,13 @@ class SingleTestThread(threading.Thread):
     self._test_types = test_types
     self._test_args = test_args
     self._target = target
+    self._output_dir = output_dir
 
   def run(self):
     proc = StartTestShell(self._command, self._shell_args +
         ["--time-out-ms=" + self._test_info.timeout, self._test_info.uri])
     self._test_stats = ProcessOutput(proc, self._test_info, self._test_types,
-        self._test_args, self._target)
+        self._test_args, self._target, self._output_dir)
 
   def GetTestStats(self):
     return self._test_stats
@@ -357,7 +369,8 @@ class TestShellThread(threading.Thread):
                               test_info,
                               self._test_types,
                               self._test_args,
-                              self._options.target)
+                              self._options.target,
+                              self._options.results_directory)
 
     worker.start()
 
@@ -416,7 +429,7 @@ class TestShellThread(threading.Thread):
     self._test_shell_proc.stdin.flush()
 
     stats = ProcessOutput(self._test_shell_proc, test_info, self._test_types,
-        self._test_args, self._options.target)
+        self._test_args, self._options.target, self._options.results_directory)
 
     self._test_stats.append(stats)
     return stats.failures

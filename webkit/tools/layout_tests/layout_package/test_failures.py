@@ -4,6 +4,8 @@
 
 """Classes for failures that occur during tests."""
 
+import os
+
 class FailureSort(object):
   """A repository for failure sort orders and tool to facilitate sorting."""
 
@@ -43,6 +45,21 @@ class TestFailure(object):
     """Returns True if we should kill the test shell before the next test."""
     return False
 
+  def RelativeOutputFilename(self, filename, modifier):
+    """Returns a relative filename inside the output dir that contains
+    modifier.
+
+    For example, if filename is fast\dom\foo.html and modifier is
+    "-expected.txt", the return value is fast\dom\foo-expected.txt
+
+    Args:
+      filename: relative filename to test file
+      modifier: a string to replace the extension of filename with
+
+    Return:
+      The relative windows path to the output filename
+    """
+    return os.path.splitext(filename)[0] + modifier
 
 class FailureWithType(TestFailure):
   """Base class that produces standard HTML output based on the test type.
@@ -52,6 +69,7 @@ class FailureWithType(TestFailure):
   """
   def __init__(self, test_type):
     TestFailure.__init__(self)
+    # TODO(ojan): This class no longer needs to know the test_type.
     self._test_type = test_type
 
   # Filename suffixes used by ResultHtmlOutput.
@@ -70,8 +88,7 @@ class FailureWithType(TestFailure):
           string.
     """
     links = ['']
-    uris = [self._test_type.RelativeOutputFilename(filename, fn)
-            for fn in out_names]
+    uris = [self.RelativeOutputFilename(filename, fn) for fn in out_names]
     if len(uris) > 1:
       links.append("<a href='%s'>expected</a>" % uris[1])
     if len(uris) > 0:
@@ -108,7 +125,8 @@ class FailureCrash(TestFailure):
 
   def ResultHtmlOutput(self, filename):
     # TODO(tc): create a link to the minidump file
-    return "<strong>%s</strong>" % self.Message()
+    stack = self.RelativeOutputFilename(filename, "-stack.txt")
+    return "<strong>%s</strong> <a href=%s>stack</a>" % (self.Message(), stack)
 
   def ShouldKillTestShell(self):
     return True
