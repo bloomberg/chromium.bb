@@ -75,6 +75,20 @@
   fun:*browser_sync*BookmarkModelWorker*
 }
 
+# The race happens during enumeration of ChromeThreads.
+# For each ChromeThread we check whether its message_loop()
+# equals MessageLoop::current().
+# The race can happen if one of the ChromeThreads is exiting.
+# This is benign since current thread can't exit while we
+# execute GetCurrentThreadIdentifier() and other message_loops
+# won't match the current one anyway.
+{
+  Benign race under ChromeThread::GetCurrentThreadIdentifier
+  ThreadSanitizer:Race
+  fun:*base*Thread*message_loop*
+  fun:*ChromeThread*GetCurrentThreadIdentifier*
+}
+
 ############################
 # Real races in third_party
 {
@@ -110,19 +124,6 @@
   bug_25913 (libjingle) (2)
   ThreadSanitizer:Race
   fun:*talk_base*MessageQueue*Get*
-}
-
-# The race happens during enumeration of ChromeThreads.
-# For each ChromeThread we check whether its message_loop()
-# equals MessageLoop::current().
-# The race can happen if one of the ChromeThreads is exiting.
-# This is benign since current thread can't exit while we
-# execute GetCurrentThreadIdentifier() and other message_loops
-# won't match the current one anyway.
-{
-  Benign race under ChromeThread::GetCurrentThreadIdentifier
-  fun:*base*Thread*message_loop*
-  fun:*ChromeThread*GetCurrentThreadIdentifier*
 }
 
 ############################
