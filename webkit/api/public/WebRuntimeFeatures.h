@@ -28,35 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKit_h
-#define WebKit_h
+#ifndef WebRuntimeFeatures_h
+#define WebRuntimeFeatures_h
 
 #include "WebCommon.h"
 
 namespace WebKit {
-    class WebKitClient;
 
-    // Must be called on the thread that will be the main WebKit thread before
-    // using any other WebKit APIs.  The provided WebKitClient must be non-null
-    // and must remain valid until the current thread calls shutdown.
-    WEBKIT_API void initialize(WebKitClient*);
+// This class is used to enable runtime features of WebKit.  It is unspecified
+// whether a feature is enabled by default.  In the future, a feature may be
+// promoted from disabled by default to enabled by default once it reaches a
+// certain level of maturity.
+class WebRuntimeFeatures {
+public:
+    WEBKIT_API static void enableDatabase(bool);
+    WEBKIT_API static bool isDatabaseEnabled();
 
-    // Once shutdown, the WebKitClient passed to initialize will no longer be
-    // accessed.  No other WebKit objects should be in use when this function
-    // is called.  Any background threads created by WebKit are promised to be
-    // terminated by the time this function returns.
-    WEBKIT_API void shutdown();
+    WEBKIT_API static void enableLocalStorage(bool);
+    WEBKIT_API static bool isLocalStorageEnabled();
 
-    // Returns the WebKitClient instance passed to initialize.
-    WEBKIT_API WebKitClient* webKitClient();
+    WEBKIT_API static void enableSessionStorage(bool);
+    WEBKIT_API static bool isSessionStorageEnabled();
 
-    // Alters the rendering of content to conform to a fixed set of rules.
-    WEBKIT_API void setLayoutTestMode(bool);
-    WEBKIT_API bool layoutTestMode();
+    WEBKIT_API static void enableMediaPlayer(bool);
+    WEBKIT_API static bool isMediaPlayerEnabled();
 
-    // Purge the plugin list cache. If |reloadPages| is true, any pages
-    // containing plugins will be reloaded after refreshing the plugin list.
-    WEBKIT_API void resetPluginCache(bool reloadPages);
+    WEBKIT_API static void enableSockets(bool);
+    WEBKIT_API static bool isSocketsEnabled();
+
+private:
+    WebRuntimeFeatures();
+};
 
 } // namespace WebKit
 

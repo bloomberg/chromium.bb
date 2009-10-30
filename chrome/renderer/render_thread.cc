@@ -50,6 +50,7 @@
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCrossOriginPreflightResultCache.h"
+#include "webkit/api/public/WebRuntimeFeatures.h"
 #include "webkit/api/public/WebFontCache.h"
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebDatabase.h"
@@ -71,6 +72,7 @@
 
 using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
+using WebKit::WebRuntimeFeatures;
 using WebKit::WebFontCache;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebScriptController;
@@ -518,14 +520,14 @@ void RenderThread::EnsureWebKitInitialized() {
         extensions_v8::PlaybackExtension::Get());
   }
 
-  if (RenderProcess::current()->initialized_media_library())
-    WebKit::enableMediaPlayer();
+  WebRuntimeFeatures::enableMediaPlayer(
+      RenderProcess::current()->initialized_media_library());
 
-  if (command_line.HasSwitch(switches::kEnableWebSockets))
-    WebKit::enableWebSockets();
+  WebRuntimeFeatures::enableSockets(
+      command_line.HasSwitch(switches::kEnableWebSockets));
 
-  if (command_line.HasSwitch(switches::kEnableDatabases))
-    WebKit::enableDatabases();
+  WebRuntimeFeatures::enableDatabase(
+      command_line.HasSwitch(switches::kEnableDatabases));
 }
 
 void RenderThread::IdleHandler() {

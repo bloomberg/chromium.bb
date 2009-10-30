@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "media/base/media.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebRuntimeFeatures.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebSecurityPolicy.h"
@@ -55,14 +56,13 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
         extensions_v8::GearsExtension::Get());
     WebKit::WebScriptController::registerExtension(
         extensions_v8::IntervalExtension::Get());
-    WebKit::enableWebSockets();
+    WebKit::WebRuntimeFeatures::enableSockets(true);
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
-    if (PathService::Get(base::DIR_MODULE, &module_path) &&
-        media::InitializeMediaLibrary(module_path)) {
-      WebKit::enableMediaPlayer();
-    }
+    WebKit::WebRuntimeFeatures::enableMediaPlayer(
+        PathService::Get(base::DIR_MODULE, &module_path) &&
+        media::InitializeMediaLibrary(module_path));
 
     // Construct and initialize an appcache system for this scope.
     // A new empty temp directory is created to house any cached

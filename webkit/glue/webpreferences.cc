@@ -5,6 +5,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #include "base/string_util.h"
+#include "webkit/api/public/WebRuntimeFeatures.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebSettings.h"
 #include "webkit/api/public/WebString.h"
@@ -12,6 +13,7 @@
 #include "webkit/api/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::WebRuntimeFeatures;
 using WebKit::WebSettings;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -50,7 +52,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDownloadableBinaryFontsEnabled(remote_fonts_enabled);
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
-  settings->setDatabasesEnabled(WebKit::databasesEnabled() || databases_enabled);
+  settings->setDatabasesEnabled(
+      WebRuntimeFeatures::isDatabaseEnabled() || databases_enabled);
   settings->setSessionStorageEnabled(session_storage_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
   settings->setExperimentalNotificationsEnabled(

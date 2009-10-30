@@ -46,6 +46,7 @@ namespace WebKit {
     class WebMediaPlayerClientImpl : public WebMediaPlayerClient
                                    , public WebCore::MediaPlayerPrivateInterface {
     public:
+        static bool isEnabled();
         static void setIsEnabled(bool);
         static void registerSelf(WebCore::MediaEngineRegistrar);
 
@@ -103,6 +104,7 @@ namespace WebKit {
 
         WebCore::MediaPlayer* m_mediaPlayer;
         OwnPtr<WebMediaPlayer> m_webMediaPlayer;
+        static bool m_isEnabled;
     };
 
 } // namespace WebKit

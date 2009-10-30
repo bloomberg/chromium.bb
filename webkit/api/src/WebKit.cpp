@@ -47,7 +47,6 @@ namespace WebKit {
 
 static WebKitClient* s_webKitClient = 0;
 static bool s_layoutTestMode = false;
-static bool s_databasesEnabled = false;
 
 void initialize(WebKitClient* webKitClient)
 {
@@ -95,45 +94,9 @@ bool layoutTestMode()
     return s_layoutTestMode;
 }
 
-void enableMediaPlayer()
-{
-#if ENABLE(VIDEO)
-    WebMediaPlayerClientImpl::setIsEnabled(true);
-#endif
-}
-
 void resetPluginCache(bool reloadPages)
 {
     WebCore::Page::refreshPlugins(reloadPages);
-}
-
-void enableDatabases()
-{
-#if ENABLE(DATABASE)
-    s_databasesEnabled = true;
-    WebCore::RuntimeEnabledFeatures::setDatabaseEnabled(true);
-#endif
-}
-
-bool databasesEnabled()
-{
-    return s_databasesEnabled;
-}
-
-void enableWebSockets()
-{
-#if ENABLE(WEB_SOCKETS)
-    WebCore::WebSocket::setIsAvailable(true);
-#endif
-}
-
-bool webSocketsEnabled()
-{
-#if ENABLE(WEB_SOCKETS)
-    return WebCore::WebSocket::isAvailable();
-#else
-    return false;
-#endif
 }
 
 } // namespace WebKit

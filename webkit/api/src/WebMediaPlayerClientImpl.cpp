@@ -37,16 +37,21 @@ using namespace WebCore;
 
 namespace WebKit {
 
-static bool s_isEnabled = false;
+bool WebMediaPlayerClientImpl::m_isEnabled = false;
+
+bool WebMediaPlayerClientImpl::isEnabled()
+{
+    return m_isEnabled;
+}
 
 void WebMediaPlayerClientImpl::setIsEnabled(bool isEnabled)
 {
-    s_isEnabled = isEnabled;
+    m_isEnabled = isEnabled;
 }
 
 void WebMediaPlayerClientImpl::registerSelf(MediaEngineRegistrar registrar)
 {
-    if (s_isEnabled) {
+    if (m_isEnabled) {
         registrar(WebMediaPlayerClientImpl::create,
                   WebMediaPlayerClientImpl::getSupportedTypes,
                   WebMediaPlayerClientImpl::supportsType);
