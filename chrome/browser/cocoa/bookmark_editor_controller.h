@@ -16,7 +16,8 @@
 
 // A controller for the bookmark editor, opened with Edit... from the
 // context menu of a bookmark button.
-@interface BookmarkEditorController : NSWindowController<NSTextFieldDelegate> {
+@interface BookmarkEditorController : NSWindowController<NSMatrixDelegate,
+                                                         NSTextFieldDelegate> {
  @private
   IBOutlet NSTextField* nameField_;
   IBOutlet NSTextField* urlField_;
