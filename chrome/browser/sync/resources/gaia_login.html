@@ -123,7 +123,10 @@
     function sendCredentialsAndClose() {
       if (!setErrorVisibility())
         return false;
-        
+
+      document.getElementById('Email').disabled = true;
+      document.getElementById('Passwd').disabled = true;
+
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "inline";
       var f = document.getElementById("gaia_loginform");
@@ -142,6 +145,8 @@
     function setBlurbError() {
       document.getElementById("top_blurb").style.display = "none";
       document.getElementById("top_blurb_error").style.display = "block";
+      document.getElementById('Email').disabled = false;
+      document.getElementById('Passwd').disabled = false;
     }
     
     function resetErrorVisibility() {
