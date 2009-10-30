@@ -9,6 +9,8 @@
 #include "base/hash_tables.h"
 #include "net/url_request/url_request.h"
 
+namespace chromeos {
+
 // This class integrates the Google Document Viewer into ChromeOS,
 // enabling the viewing of supported document types that the user
 // clicks on.  This class will intercept requests to supported
@@ -37,5 +39,6 @@ class GViewRequestInterceptor : public URLRequest::Interceptor {
   base::hash_set<std::string> supported_mime_types_;
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_GVIEW_REQUEST_INTERCEPTOR_H__
+}  // namespace chromeos
 
+#endif  // CHROME_BROWSER_CHROMEOS_GVIEW_REQUEST_INTERCEPTOR_H__

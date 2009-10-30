@@ -52,7 +52,7 @@
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
 #elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/chromeos_version_loader.h"
+#include "chrome/browser/chromeos/version_loader.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/about_ipc_dialog.h"
 #endif
@@ -156,8 +156,8 @@ class ChromeOSAboutVersionHandler {
  public:
   ChromeOSAboutVersionHandler(AboutSource* source, int request_id);
 
-  // Callback from ChromeOSVersionLoader giving the version.
-  void OnVersion(ChromeOSVersionLoader::Handle handle,
+  // Callback from chromeos::VersionLoader giving the version.
+  void OnVersion(chromeos::VersionLoader::Handle handle,
                  std::string version);
 
  private:
@@ -168,7 +168,7 @@ class ChromeOSAboutVersionHandler {
   int request_id_;
 
   // Handles asynchronously loading the version.
-  ChromeOSVersionLoader loader_;
+  chromeos::VersionLoader loader_;
 
   // Used to request the version.
   CancelableRequestConsumer consumer_;
@@ -775,7 +775,7 @@ ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(AboutSource* source,
 }
 
 void ChromeOSAboutVersionHandler::OnVersion(
-    ChromeOSVersionLoader::Handle handle,
+    chromeos::VersionLoader::Handle handle,
     std::string version) {
   DictionaryValue localized_strings;
   localized_strings.SetString(L"os_name",

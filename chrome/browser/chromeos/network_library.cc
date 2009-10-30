@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros_network_library.h"
+#include "chrome/browser/chromeos/network_library.h"
 
 #include <algorithm>
 
@@ -14,18 +14,20 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<CrosNetworkLibrary> {
-  void RetainCallee(CrosNetworkLibrary* obj) {}
-  void ReleaseCallee(CrosNetworkLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::NetworkLibrary> {
+  void RetainCallee(chromeos::NetworkLibrary* obj) {}
+  void ReleaseCallee(chromeos::NetworkLibrary* obj) {}
 };
 
+namespace chromeos {
+
 ////////////////////////////////////////////////////////////////////////////////
-// CrosNetworkLibrary
+// NetworkLibrary
 
 // static
-const int CrosNetworkLibrary::kNetworkTrafficeTimerSecs = 1;
+const int NetworkLibrary::kNetworkTrafficeTimerSecs = 1;
 
-CrosNetworkLibrary::CrosNetworkLibrary()
+NetworkLibrary::NetworkLibrary()
     : traffic_type_(0),
       ethernet_connected_(false) {
   if (CrosLibrary::loaded()) {
@@ -34,7 +36,7 @@ CrosNetworkLibrary::CrosNetworkLibrary()
   g_url_request_job_tracker.AddObserver(this);
 }
 
-CrosNetworkLibrary::~CrosNetworkLibrary() {
+NetworkLibrary::~NetworkLibrary() {
   if (CrosLibrary::loaded()) {
     chromeos::DisconnectNetworkStatus(network_status_connection_);
   }
@@ -42,45 +44,45 @@ CrosNetworkLibrary::~CrosNetworkLibrary() {
 }
 
 // static
-CrosNetworkLibrary* CrosNetworkLibrary::Get() {
-  return Singleton<CrosNetworkLibrary>::get();
+NetworkLibrary* NetworkLibrary::Get() {
+  return Singleton<NetworkLibrary>::get();
 }
 
 // static
-bool CrosNetworkLibrary::loaded() {
+bool NetworkLibrary::loaded() {
   return CrosLibrary::loaded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CrosNetworkLibrary, URLRequestJobTracker::JobObserver implementation:
+// NetworkLibrary, URLRequestJobTracker::JobObserver implementation:
 
-void CrosNetworkLibrary::OnJobAdded(URLRequestJob* job) {
+void NetworkLibrary::OnJobAdded(URLRequestJob* job) {
   CheckNetworkTraffic(false);
 }
 
-void CrosNetworkLibrary::OnJobRemoved(URLRequestJob* job) {
+void NetworkLibrary::OnJobRemoved(URLRequestJob* job) {
   CheckNetworkTraffic(false);
 }
 
-void CrosNetworkLibrary::OnJobDone(URLRequestJob* job,
-                                   const URLRequestStatus& status) {
+void NetworkLibrary::OnJobDone(URLRequestJob* job,
+                               const URLRequestStatus& status) {
   CheckNetworkTraffic(false);
 }
 
-void CrosNetworkLibrary::OnJobRedirect(URLRequestJob* job, const GURL& location,
-                                       int status_code) {
+void NetworkLibrary::OnJobRedirect(URLRequestJob* job, const GURL& location,
+                                   int status_code) {
   CheckNetworkTraffic(false);
 }
 
-void CrosNetworkLibrary::OnBytesRead(URLRequestJob* job, int byte_count) {
+void NetworkLibrary::OnBytesRead(URLRequestJob* job, int byte_count) {
   CheckNetworkTraffic(true);
 }
 
-void CrosNetworkLibrary::AddObserver(Observer* observer) {
+void NetworkLibrary::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void CrosNetworkLibrary::RemoveObserver(Observer* observer) {
+void NetworkLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -98,8 +100,8 @@ static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
   return "none";
 }
 
-void CrosNetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
-                                              const string16& password) {
+void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
+                                          const string16& password) {
   if (CrosLibrary::loaded()) {
     // This call kicks off a request to connect to this network, the results of
     // which we'll hear about through the monitoring we've set up in Init();
@@ -111,9 +113,9 @@ void CrosNetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
 }
 
 // static
-void CrosNetworkLibrary::NetworkStatusChangedHandler(void* object,
+void NetworkLibrary::NetworkStatusChangedHandler(void* object,
     const chromeos::ServiceStatus& service_status) {
-  CrosNetworkLibrary* network = static_cast<CrosNetworkLibrary*>(object);
+  NetworkLibrary* network = static_cast<NetworkLibrary*>(object);
   WifiNetworkVector networks;
   bool ethernet_connected;
   ParseNetworks(service_status, &networks, &ethernet_connected);
@@ -121,7 +123,7 @@ void CrosNetworkLibrary::NetworkStatusChangedHandler(void* object,
 }
 
 // static
-void CrosNetworkLibrary::ParseNetworks(
+void NetworkLibrary::ParseNetworks(
     const chromeos::ServiceStatus& service_status, WifiNetworkVector* networks,
     bool* ethernet_connected) {
   *ethernet_connected = false;
@@ -150,7 +152,7 @@ void CrosNetworkLibrary::ParseNetworks(
   }
 }
 
-void CrosNetworkLibrary::Init() {
+void NetworkLibrary::Init() {
   // First, get the currently available networks.  This data is cached
   // on the connman side, so the call should be quick.
   chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
@@ -168,14 +170,14 @@ void CrosNetworkLibrary::Init() {
       &NetworkStatusChangedHandler, this);
 }
 
-void CrosNetworkLibrary::UpdateNetworkStatus(
+void NetworkLibrary::UpdateNetworkStatus(
     const WifiNetworkVector& networks, bool ethernet_connected) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &CrosNetworkLibrary::UpdateNetworkStatus, networks,
+            &NetworkLibrary::UpdateNetworkStatus, networks,
             ethernet_connected));
     return;
   }
@@ -194,7 +196,7 @@ void CrosNetworkLibrary::UpdateNetworkStatus(
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
 }
 
-void CrosNetworkLibrary::CheckNetworkTraffic(bool download) {
+void NetworkLibrary::CheckNetworkTraffic(bool download) {
   // If we already have a pending upload and download notification, then
   // shortcut and return.
   if (traffic_type_ == (Observer::TRAFFIC_DOWNLOAD | Observer::TRAFFIC_UPLOAD))
@@ -219,19 +221,21 @@ void CrosNetworkLibrary::CheckNetworkTraffic(bool download) {
   // running, then start a new timer.
   if (traffic_type_ && !timer_.IsRunning()) {
     timer_.Start(base::TimeDelta::FromSeconds(kNetworkTrafficeTimerSecs), this,
-                 &CrosNetworkLibrary::NetworkTrafficTimerFired);
+                 &NetworkLibrary::NetworkTrafficTimerFired);
   }
 }
 
-void CrosNetworkLibrary:: NetworkTrafficTimerFired() {
+void NetworkLibrary:: NetworkTrafficTimerFired() {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrosNetworkLibrary::NotifyNetworkTraffic,
+      NewRunnableMethod(this, &NetworkLibrary::NotifyNetworkTraffic,
                         traffic_type_));
   // Reset traffic type so that we don't send the same data next time.
   traffic_type_ = 0;
 }
 
-void CrosNetworkLibrary::NotifyNetworkTraffic(int traffic_type) {
+void NetworkLibrary::NotifyNetworkTraffic(int traffic_type) {
   FOR_EACH_OBSERVER(Observer, observers_, NetworkTraffic(this, traffic_type));
 }
+
+}  // namespace chromeos

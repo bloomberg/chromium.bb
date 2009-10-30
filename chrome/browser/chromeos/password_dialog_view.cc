@@ -11,6 +11,8 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/window/window.h"
 
+namespace chromeos {
+
 PasswordDialogView::PasswordDialogView(PasswordDialogDelegate* delegate,
                                        const std::string& ssid)
     : delegate_(delegate),
@@ -59,3 +61,5 @@ void PasswordDialogView::Init() {
   password_textfield_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   AddChildView(password_textfield_);
 }
+
+}  // namespace chromeos

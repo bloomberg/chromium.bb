@@ -19,6 +19,8 @@
 #include "views/controls/image_view.h"
 #include "views/controls/native/native_view_host.h"
 
+namespace chromeos {
+
 // Padding inside each button around the image.
 static const int kInnerPadding = 1;
 
@@ -241,3 +243,5 @@ void CompactNavigationBar::AddTabWithURL(const GURL& url,
     }
   }
 }
+
+}  // namespace chromeos

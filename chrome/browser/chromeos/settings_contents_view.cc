@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/cros_network_library.h"
+#include "chrome/browser/chromeos/network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
@@ -33,7 +33,7 @@
 using views::GridLayout;
 using views::ColumnSet;
 
-namespace {
+namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SettingsContentsSection
@@ -255,7 +255,7 @@ void DateTimeSection::SelectTimeZone(const std::wstring& id) {
 class NetworkSection : public SettingsContentsSection,
                        public views::Combobox::Listener,
                        public PasswordDialogDelegate,
-                       public CrosNetworkLibrary::Observer {
+                       public NetworkLibrary::Observer {
  public:
   explicit NetworkSection(Profile* profile);
   virtual ~NetworkSection();
@@ -270,10 +270,9 @@ class NetworkSection : public SettingsContentsSection,
   virtual bool OnPasswordDialogAccept(const std::string& ssid,
                                       const string16& password);
 
-  // CrosNetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(CrosNetworkLibrary* obj);
-  virtual void NetworkTraffic(CrosNetworkLibrary* obj,
-                              int traffic_type) {}
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(NetworkLibrary* obj);
+  virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
 
  protected:
   // SettingsContentsSection overrides:
@@ -284,7 +283,7 @@ class NetworkSection : public SettingsContentsSection,
   class WifiNetworkComboModel : public ComboboxModel {
    public:
     WifiNetworkComboModel() {
-      wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
+      wifi_networks_ = NetworkLibrary::Get()->wifi_networks();
     }
 
     virtual int GetItemCount() {
@@ -342,11 +341,11 @@ NetworkSection::NetworkSection(Profile* profile)
                               IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK),
       wifi_ssid_combobox_(NULL),
       last_selected_wifi_ssid_index_(0) {
-  CrosNetworkLibrary::Get()->AddObserver(this);
+  NetworkLibrary::Get()->AddObserver(this);
 }
 
 NetworkSection::~NetworkSection() {
-  CrosNetworkLibrary::Get()->RemoveObserver(this);
+  NetworkLibrary::Get()->RemoveObserver(this);
 }
 
 void NetworkSection::ItemChanged(views::Combobox* sender,
@@ -375,7 +374,7 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else {
-    CrosNetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
+    NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
                                                     string16());
   }
 }
@@ -388,12 +387,12 @@ bool NetworkSection::OnPasswordDialogCancel() {
 
 bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
                                             const string16& password) {
-  CrosNetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
+  NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
                                                   password);
   return true;
 }
 
-void NetworkSection::NetworkChanged(CrosNetworkLibrary* obj) {
+void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
   SelectWifi(obj->wifi_ssid());
 }
 
@@ -407,7 +406,7 @@ void NetworkSection::InitContents(GridLayout* layout) {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Select the initial connected wifi network.
-  SelectWifi(CrosNetworkLibrary::Get()->wifi_ssid());
+  SelectWifi(NetworkLibrary::Get()->wifi_ssid());
 }
 
 void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
@@ -580,8 +579,6 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
   }
 }
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // SettingsContentsView
 
@@ -607,3 +604,5 @@ void SettingsContentsView::InitControlLayout() {
   layout->AddView(new TouchpadSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
+
+}  // namespace chromeos

@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POWER_LIBRARY_H_
+#define CHROME_BROWSER_CHROMEOS_POWER_LIBRARY_H_
 
 #include "base/observer_list.h"
 #include "base/singleton.h"
 #include "base/time.h"
 #include "third_party/cros/chromeos_power.h"
 
+namespace chromeos {
+
 // This class handles the interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: CrosPowerLibrary::Get()
-class CrosPowerLibrary {
+// library class like this: PowerLibrary::Get()
+class PowerLibrary {
  public:
   class Observer {
    public:
-    virtual void PowerChanged(CrosPowerLibrary* obj) = 0;
+    virtual void PowerChanged(PowerLibrary* obj) = 0;
   };
 
-  // This gets the singleton CrosPowerLibrary
-  static CrosPowerLibrary* Get();
+  // This gets the singleton PowerLibrary
+  static PowerLibrary* Get();
 
   // Returns true if the ChromeOS library was loaded.
   static bool loaded();
@@ -48,10 +50,10 @@ class CrosPowerLibrary {
   base::TimeDelta battery_time_to_full() const;
 
  private:
-  friend struct DefaultSingletonTraits<CrosPowerLibrary>;
+  friend struct DefaultSingletonTraits<PowerLibrary>;
 
-  CrosPowerLibrary();
-  ~CrosPowerLibrary();
+  PowerLibrary();
+  ~PowerLibrary();
 
   // This method is called when there's a change in power status.
   // This method is called on a background thread.
@@ -74,7 +76,9 @@ class CrosPowerLibrary {
   // The latest power status.
   chromeos::PowerStatus status_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrosPowerLibrary);
+  DISALLOW_COPY_AND_ASSIGN(PowerLibrary);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_POWER_LIBRARY_H_

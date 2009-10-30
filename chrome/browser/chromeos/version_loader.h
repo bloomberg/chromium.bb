@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CHROMEOS_VERSION_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_CHROMEOS_VERSION_LOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_
+#define CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_
+
+#include <string>
 
 #include "chrome/browser/cancelable_request.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
+
+namespace chromeos {
 
 // ChromeOSVersionLoader loads the version of Chrome OS from the file system.
 // Loading is done asynchronously on the file thread. Once loaded,
@@ -16,15 +20,15 @@ class FilePath;
 // (or an empty string if the version couldn't be found).
 // To use ChromeOSVersionLoader do the following:
 //
-// . In your class define a member field of type ChromeOSVersionLoader and
+// . In your class define a member field of type chromeos::VersionLoader and
 //   CancelableRequestConsumerBase.
 // . Define the callback method, something like:
-//   void OnGetChromeOSVersion(ChromeOSVersionLoader::Handle,
+//   void OnGetChromeOSVersion(chromeos::VersionLoader::Handle,
 //                             std::string version);
 // . When you want the version invoke:  loader.GetVersion(&consumer, callback);
-class ChromeOSVersionLoader : public CancelableRequestProvider {
+class VersionLoader : public CancelableRequestProvider {
  public:
-  ChromeOSVersionLoader();
+  VersionLoader();
 
   // Signature
   typedef Callback2<Handle, std::string>::Type GetVersionCallback;
@@ -36,9 +40,9 @@ class ChromeOSVersionLoader : public CancelableRequestProvider {
                     GetVersionCallback* callback);
 
  private:
-  FRIEND_TEST(ChromeOSVersionLoaderTest, ParseVersion);
+  FRIEND_TEST(VersionLoaderTest, ParseVersion);
 
-  // ChromeOSVersionLoader calls into the Backend on the file thread to load
+  // VersionLoader calls into the Backend on the file thread to load
   // and extract the version.
   class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
@@ -57,7 +61,9 @@ class ChromeOSVersionLoader : public CancelableRequestProvider {
 
   scoped_refptr<Backend> backend_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSVersionLoader);
+  DISALLOW_COPY_AND_ASSIGN(VersionLoader);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_CHROMEOS_VERSION_LOADER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_VERSION_LOADER_H_

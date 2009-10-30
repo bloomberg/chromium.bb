@@ -9,7 +9,7 @@
 
 #include "app/throb_animation.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros_network_library.h"
+#include "chrome/browser/chromeos/network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
 #include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -22,6 +22,8 @@ namespace gfx {
 class Canvas;
 }
 
+namespace chromeos {
+
 // The network menu button in the status area.
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
@@ -30,7 +32,7 @@ class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
                           public views::Menu2Model,
                           public PasswordDialogDelegate,
-                          public CrosNetworkLibrary::Observer {
+                          public NetworkLibrary::Observer {
  public:
   explicit NetworkMenuButton(gfx::NativeWindow browser_window);
   virtual ~NetworkMenuButton();
@@ -61,10 +63,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);
 
-  // CrosNetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(CrosNetworkLibrary* obj);
-  virtual void NetworkTraffic(CrosNetworkLibrary* cros,
-                              int traffic_type);
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(NetworkLibrary* obj);
+  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
  protected:
   // StatusAreaButton implementation.
@@ -112,5 +113,7 @@ class NetworkMenuButton : public StatusAreaButton,
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NETWORK_MENU_BUTTON_H_

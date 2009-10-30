@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/main_menu.h"
 
+#include <string>
 #include <vector>
 
 #include "app/gfx/insets.h"
@@ -29,6 +30,8 @@
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
+
+namespace chromeos {
 
 // Initial size of the renderer. This is contained within a window whose size
 // is set to the size of the image IDR_MAIN_MENU_BUTTON_DROP_DOWN.
@@ -105,7 +108,7 @@ void MainMenu::ScheduleCreation() {
 MainMenu::~MainMenu() {
   // NOTE: we leak the menu_rvh_ and popup_ as by the time we get here the
   // message loop and notification services have been shutdown.
-  // TODO(sky); fix this.
+  // TODO(sky): fix this.
   // menu_rvh_->Shutdown();
   // popup_->CloseNow();
 }
@@ -282,3 +285,5 @@ void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
 void MainMenu::LoadTask::Run() {
   MainMenu::Get();
 }
+
+}  // namespace chromeos

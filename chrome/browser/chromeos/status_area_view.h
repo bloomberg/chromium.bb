@@ -12,6 +12,9 @@
 #include "views/view.h"
 
 class Browser;
+
+namespace chromeos {
+
 class ClockMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
@@ -77,5 +80,7 @@ class StatusAreaView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_

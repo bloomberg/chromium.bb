@@ -9,6 +9,8 @@
 
 #include "chrome/browser/views/options/options_page_view.h"
 
+namespace chromeos {
+
 class SettingsContentsView;
 
 // Settings page for Chrome OS.
@@ -30,5 +32,7 @@ class SettingsPageView : public OptionsPageView {
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPageView);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_PAGE_VIEW_H_

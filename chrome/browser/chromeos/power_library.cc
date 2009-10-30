@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros_power_library.h"
+#include "chrome/browser/chromeos/power_library.h"
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -12,83 +12,85 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<CrosPowerLibrary> {
-  void RetainCallee(CrosPowerLibrary* obj) {}
-  void ReleaseCallee(CrosPowerLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::PowerLibrary> {
+  void RetainCallee(chromeos::PowerLibrary* obj) {}
+  void ReleaseCallee(chromeos::PowerLibrary* obj) {}
 };
 
-CrosPowerLibrary::CrosPowerLibrary() : status_(chromeos::PowerStatus()) {
+namespace chromeos {
+
+PowerLibrary::PowerLibrary() : status_(chromeos::PowerStatus()) {
   if (CrosLibrary::loaded()) {
     Init();
   }
 }
 
-CrosPowerLibrary::~CrosPowerLibrary() {
+PowerLibrary::~PowerLibrary() {
   if (CrosLibrary::loaded()) {
     chromeos::DisconnectPowerStatus(power_status_connection_);
   }
 }
 
 // static
-CrosPowerLibrary* CrosPowerLibrary::Get() {
-  return Singleton<CrosPowerLibrary>::get();
+PowerLibrary* PowerLibrary::Get() {
+  return Singleton<PowerLibrary>::get();
 }
 
 // static
-bool CrosPowerLibrary::loaded() {
+bool PowerLibrary::loaded() {
   return CrosLibrary::loaded();
 }
 
-void CrosPowerLibrary::AddObserver(Observer* observer) {
+void PowerLibrary::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void CrosPowerLibrary::RemoveObserver(Observer* observer) {
+void PowerLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool CrosPowerLibrary::line_power_on() const {
+bool PowerLibrary::line_power_on() const {
   return status_.line_power_on;
 }
 
-bool CrosPowerLibrary::battery_is_present() const {
+bool PowerLibrary::battery_is_present() const {
   return status_.battery_is_present;
 }
 
-bool CrosPowerLibrary::battery_fully_charged() const {
+bool PowerLibrary::battery_fully_charged() const {
   return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
 }
 
-double CrosPowerLibrary::battery_percentage() const {
+double PowerLibrary::battery_percentage() const {
   return status_.battery_percentage;
 }
 
-base::TimeDelta CrosPowerLibrary::battery_time_to_empty() const {
+base::TimeDelta PowerLibrary::battery_time_to_empty() const {
   return base::TimeDelta::FromSeconds(status_.battery_time_to_empty);
 }
 
-base::TimeDelta CrosPowerLibrary::battery_time_to_full() const {
+base::TimeDelta PowerLibrary::battery_time_to_full() const {
   return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
 }
 
 // static
-void CrosPowerLibrary::PowerStatusChangedHandler(void* object,
+void PowerLibrary::PowerStatusChangedHandler(void* object,
     const chromeos::PowerStatus& status) {
-  CrosPowerLibrary* power = static_cast<CrosPowerLibrary*>(object);
+  PowerLibrary* power = static_cast<PowerLibrary*>(object);
   power->UpdatePowerStatus(status);
 }
 
-void CrosPowerLibrary::Init() {
+void PowerLibrary::Init() {
   power_status_connection_ = chromeos::MonitorPowerStatus(
       &PowerStatusChangedHandler, this);
 }
 
-void CrosPowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
+void PowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &CrosPowerLibrary::UpdatePowerStatus, status));
+        NewRunnableMethod(this, &PowerLibrary::UpdatePowerStatus, status));
     return;
   }
 
@@ -101,3 +103,5 @@ void CrosPowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
   status_ = status;
   FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
 }
+
+}  // namespace chromeos

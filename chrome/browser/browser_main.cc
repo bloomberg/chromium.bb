@@ -854,7 +854,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     profile->InitWebResources();
 
 #if defined(OS_CHROMEOS)
-  ExternalCookieHandler::GetCookies(parsed_command_line, profile);
+  chromeos::ExternalCookieHandler::GetCookies(parsed_command_line, profile);
 #endif
 
   // Stat the directory with the inspector's files so that we can know if we

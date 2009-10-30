@@ -27,7 +27,7 @@
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/simple_menu_model.h"
 
-namespace {
+namespace chromeos {
 
 // Number of pixels to pad on the left border.
 const int kLeftBorder = 1;
@@ -113,8 +113,6 @@ class OptionsMenuModel : public views::SimpleMenuModel,
 
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
-
-}  // namespace
 
 // Default to opening new tabs on the left.
 StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
@@ -282,3 +280,5 @@ void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt) {
   CreateAppMenu();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
+
+}  // namespace chromeos

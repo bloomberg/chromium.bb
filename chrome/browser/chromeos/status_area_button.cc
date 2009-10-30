@@ -11,6 +11,8 @@
 #include "views/border.h"
 #include "views/view.h"
 
+namespace chromeos {
+
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaButton
 
@@ -46,3 +48,5 @@ void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
 void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(icon(), 0, 0);
 }
+
+}  // namespace chromeos

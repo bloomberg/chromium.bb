@@ -11,6 +11,8 @@
 #include "net/url_request/url_request_redirect_job.h"
 #include "googleurl/src/gurl.h"
 
+namespace chromeos {
+
 // This is the list of mime types currently supported by the Google
 // Document Viewer.
 static const char* const supported_mime_type_list[] = {
@@ -61,3 +63,4 @@ URLRequest::Interceptor* GViewRequestInterceptor::GetGViewRequestInterceptor() {
   return Singleton<GViewRequestInterceptor>::get();
 }
 
+}  // namespace chromeos

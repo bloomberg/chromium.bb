@@ -7,12 +7,15 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <string>
+
 #include "base/basictypes.h"
+
+namespace chromeos {
 
 // Given a named pipe, this class reads data from it and returns it as a string.
 // Currently, we are sending login cookies from the Chrome OS login manager to
@@ -47,5 +50,7 @@ class PipeReader {
 
   DISALLOW_COPY_AND_ASSIGN(PipeReader);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PIPE_READER_H_

@@ -12,6 +12,8 @@
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chromeos {
+
 class GViewURLRequestTestJob : public URLRequestTestJob {
  public:
   explicit GViewURLRequestTestJob(URLRequest* request)
@@ -97,3 +99,4 @@ TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
                  request.url());
 }
 
+}  // namespace chromeos

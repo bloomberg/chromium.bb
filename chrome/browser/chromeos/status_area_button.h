@@ -8,6 +8,8 @@
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
+namespace chromeos {
+
 // Button to be used to represent status and allow menus to be popped up.
 // Shows current button state by drawing a border around the current icon.
 class StatusAreaButton : public views::MenuButton {
@@ -24,5 +26,7 @@ class StatusAreaButton : public views::MenuButton {
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaButton);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_STATUS_AREA_BUTTON_H_

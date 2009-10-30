@@ -25,6 +25,8 @@ namespace views {
 class WidgetGtk;
 }
 
+namespace chromeos {
+
 // MainMenu manages showing the main menu. The menu is currently an HTML page.
 // When the user clicks a link on the page a new tab is added to the current
 // browser and the menu is hidden.
@@ -201,4 +203,6 @@ class MainMenu : public RenderViewHostDelegate,
   DISALLOW_COPY_AND_ASSIGN(MainMenu);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_CHROMEOS_VERSION_LOADER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_MAIN_MENU_H_

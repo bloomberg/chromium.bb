@@ -6,6 +6,8 @@
 
 #include "base/scoped_ptr.h"
 
+namespace chromeos {
+
 std::string PipeReader::Read(const uint32 bytes_to_read) {
   scoped_array<char> buffer(new char[bytes_to_read]);
   if (pipe_ || (pipe_ = fopen(pipe_name_.c_str(), "r"))) {
@@ -15,3 +17,5 @@ std::string PipeReader::Read(const uint32 bytes_to_read) {
   }
   return std::string();
 }
+
+}  // namespace chromeos

@@ -21,6 +21,8 @@ class ImageView;
 class NativeViewHost;
 }
 
+namespace chromeos {
+
 // This class provides a small navigation bar that includes back, forward, and
 // a small text entry box.
 class CompactNavigationBar : public views::View,
@@ -74,5 +76,7 @@ class CompactNavigationBar : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(CompactNavigationBar);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_COMPACT_NAVIGATION_BAR_H_

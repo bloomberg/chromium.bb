@@ -18,6 +18,8 @@
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"
 
+namespace chromeos {
+
 // Amount of slop to add into the timer to make sure we're into the next minute
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
@@ -140,3 +142,5 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   clock_menu_.UpdateStates();
   clock_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
+
+}  // namespace chromeos

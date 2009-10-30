@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_NETWORK_LIBRARY_H_
+#define CHROME_BROWSER_CHROMEOS_NETWORK_LIBRARY_H_
 
 #include <string>
 #include <vector>
@@ -15,6 +15,8 @@
 #include "base/timer.h"
 #include "net/url_request/url_request_job_tracker.h"
 #include "third_party/cros/chromeos_network.h"
+
+namespace chromeos {
 
 struct WifiNetwork {
   WifiNetwork()
@@ -52,8 +54,8 @@ typedef std::vector<WifiNetwork> WifiNetworkVector;
 
 // This class handles the interaction with the ChromeOS network library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: CrosNetworkLibrary::Get()
-class CrosNetworkLibrary : public URLRequestJobTracker::JobObserver {
+// library class like this: NetworkLibrary::Get()
+class NetworkLibrary : public URLRequestJobTracker::JobObserver {
  public:
   class Observer {
    public:
@@ -64,15 +66,15 @@ class CrosNetworkLibrary : public URLRequestJobTracker::JobObserver {
     } TrafficTypeMasks;
 
     // Called when the network has changed. (wifi networks, and ethernet)
-    virtual void NetworkChanged(CrosNetworkLibrary* obj) = 0;
+    virtual void NetworkChanged(NetworkLibrary* obj) = 0;
 
     // Called when network traffic has been detected.
     // Takes a bitfield of TrafficTypeMasks.
-    virtual void NetworkTraffic(CrosNetworkLibrary* obj, int traffic_type) = 0;
+    virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) = 0;
   };
 
-  // This gets the singleton CrosNetworkLibrary
-  static CrosNetworkLibrary* Get();
+  // This gets the singleton NetworkLibrary
+  static NetworkLibrary* Get();
 
   // Returns true if the ChromeOS library was loaded.
   static bool loaded();
@@ -100,10 +102,10 @@ class CrosNetworkLibrary : public URLRequestJobTracker::JobObserver {
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
 
  private:
-  friend struct DefaultSingletonTraits<CrosNetworkLibrary>;
+  friend struct DefaultSingletonTraits<NetworkLibrary>;
 
-  CrosNetworkLibrary();
-  ~CrosNetworkLibrary();
+  NetworkLibrary();
+  ~NetworkLibrary();
 
   // This method is called when there's a change in network status.
   // This method is called on a background thread.
@@ -148,7 +150,7 @@ class CrosNetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // Timer for sending NetworkTraffic notification every
   // kNetworkTrafficeTimerSecs seconds.
-  base::OneShotTimer<CrosNetworkLibrary> timer_;
+  base::OneShotTimer<NetworkLibrary> timer_;
 
   // The current traffic type that will be sent out for the next NetworkTraffic
   // notification. This is a bitfield of TrafficTypeMasks.
@@ -166,7 +168,9 @@ class CrosNetworkLibrary : public URLRequestJobTracker::JobObserver {
   // The current connected (or connecting) wifi network.
   WifiNetwork wifi_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrosNetworkLibrary);
+  DISALLOW_COPY_AND_ASSIGN(NetworkLibrary);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_NETWORK_LIBRARY_H_

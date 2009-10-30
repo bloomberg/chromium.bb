@@ -338,7 +338,7 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   // of compatible documents (PDF, etc) to the GView document viewer.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kEnableGView)) {
-    GViewRequestInterceptor::GetGViewRequestInterceptor();
+    chromeos::GViewRequestInterceptor::GetGViewRequestInterceptor();
   }
 #endif
   return true;

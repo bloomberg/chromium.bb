@@ -5,20 +5,21 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_
 
-#include "chrome/browser/chromeos/cros_power_library.h"
+#include "chrome/browser/chromeos/power_library.h"
 #include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class CrosPowerLibrary;
 class SkBitmap;
+
+namespace chromeos {
 
 // The power menu button in the status area.
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public views::Menu2Model,
-                        public CrosPowerLibrary::Observer {
+                        public PowerLibrary::Observer {
  public:
   PowerMenuButton();
   virtual ~PowerMenuButton();
@@ -41,8 +42,8 @@ class PowerMenuButton : public StatusAreaButton,
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}
 
-  // CrosPowerLibrary::Observer implementation.
-  virtual void PowerChanged(CrosPowerLibrary* obj);
+  // PowerLibrary::Observer implementation.
+  virtual void PowerChanged(PowerLibrary* obj);
 
  private:
   // views::ViewMenuDelegate implementation.
@@ -59,5 +60,7 @@ class PowerMenuButton : public StatusAreaButton,
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_

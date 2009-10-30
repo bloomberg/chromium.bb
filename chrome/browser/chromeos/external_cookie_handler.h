@@ -20,6 +20,8 @@ namespace net {
 class CookieStore;
 }
 
+namespace chromeos {
+
 class ExternalCookieHandler {
  public:
   // Takes ownsership of |reader|.
@@ -45,5 +47,7 @@ class ExternalCookieHandler {
 
   DISALLOW_COPY_AND_ASSIGN(ExternalCookieHandler);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTERNAL_COOKIE_HANDLER_H_

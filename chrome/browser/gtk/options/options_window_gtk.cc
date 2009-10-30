@@ -106,7 +106,7 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 #if defined(OS_CHROMEOS)
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
-      (new SettingsPageView(profile_))->WrapInGtkWidget(),
+      (new chromeos::SettingsPageView(profile_))->WrapInGtkWidget(),
       gtk_label_new(
           l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME).c_str()));
 #endif

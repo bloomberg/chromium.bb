@@ -14,6 +14,8 @@
 #include "net/base/cookie_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chromeos {
+
 typedef testing::Test ExternalCookieHandlerTest;
 
 static const std::string cookie1 = "coookie1\n";
@@ -151,3 +153,5 @@ TEST_F(ExternalCookieHandlerTest, SuccessfulSlowReadTest) {
   ExternalCookieHandler handler(reader);  // takes ownership.
   EXPECT_TRUE(handler.HandleCookies(cookie_store.get()));
 }
+
+}  // namespace chromeos

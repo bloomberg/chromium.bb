@@ -14,6 +14,8 @@
 
 class Browser;
 
+namespace chromeos {
+
 // The clock menu button in the status area.
 // This button shows the current time.
 class ClockMenuButton : public views::MenuButton,
@@ -69,5 +71,7 @@ class ClockMenuButton : public views::MenuButton,
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CLOCK_MENU_BUTTON_H_

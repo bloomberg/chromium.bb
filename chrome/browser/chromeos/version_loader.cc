@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/chromeos_version_loader.h"
+#include "chrome/browser/chromeos/version_loader.h"
+
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -11,18 +13,20 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 
+namespace chromeos {
+
 // Beginning of line we look for that gives version number.
 static const char kPrefix[] = "CHROMEOS_RELEASE_DESCRIPTION=";
 
 // File to look for version number in.
 static const char kPath[] = "/etc/lsb-release";
 
-ChromeOSVersionLoader::ChromeOSVersionLoader() : backend_(new Backend()) {
+VersionLoader::VersionLoader() : backend_(new Backend()) {
 }
 
-ChromeOSVersionLoader::Handle ChromeOSVersionLoader::GetVersion(
+VersionLoader::Handle VersionLoader::GetVersion(
     CancelableRequestConsumerBase* consumer,
-    ChromeOSVersionLoader::GetVersionCallback* callback) {
+    VersionLoader::GetVersionCallback* callback) {
   if (!g_browser_process->file_thread()) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
@@ -40,7 +44,7 @@ ChromeOSVersionLoader::Handle ChromeOSVersionLoader::GetVersion(
 }
 
 // static
-std::string ChromeOSVersionLoader::ParseVersion(const std::string& contents) {
+std::string VersionLoader::ParseVersion(const std::string& contents) {
   // The file contains lines such as:
   // XXX=YYY
   // AAA=ZZZ
@@ -62,7 +66,7 @@ std::string ChromeOSVersionLoader::ParseVersion(const std::string& contents) {
   return std::string();
 }
 
-void ChromeOSVersionLoader::Backend::GetVersion(
+void VersionLoader::Backend::GetVersion(
     scoped_refptr<GetVersionRequest> request) {
   if (request->canceled())
     return;
@@ -74,3 +78,5 @@ void ChromeOSVersionLoader::Backend::GetVersion(
   request->ForwardResult(GetVersionCallback::TupleType(request->handle(),
                                                        version));
 }
+
+}  // namespace chromeos

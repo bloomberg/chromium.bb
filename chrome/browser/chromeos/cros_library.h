@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+namespace chromeos {
+
 // This class handles the loading of the ChromeOS shared library.
 class CrosLibrary {
  public:
@@ -23,5 +25,7 @@ class CrosLibrary {
 
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_LIBRARY_H_

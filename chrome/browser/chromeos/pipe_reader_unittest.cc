@@ -9,6 +9,8 @@
 #include "base/safe_strerror_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chromeos {
+
 typedef testing::Test PipeReaderTest;
 
 TEST_F(PipeReaderTest, SuccessfulReadTest) {
@@ -96,3 +98,5 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadNoEndingNewlineTest) {
     EXPECT_EQ(my_boo, boo);
   }
 }
+
+}  // namespace chromeos

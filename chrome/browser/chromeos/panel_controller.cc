@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/panel_controller.h"
 
+#include <vector>
+
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/singleton.h"
@@ -27,6 +29,8 @@
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
+
+namespace chromeos {
 
 static int close_button_width;
 static int close_button_height;
@@ -332,3 +336,4 @@ void PanelController::TitleContentView::OnFocusOut() {
   SchedulePaint();
 }
 
+}  // namespace chromeos

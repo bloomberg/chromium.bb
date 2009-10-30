@@ -15,6 +15,8 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+namespace chromeos {
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton
 
@@ -37,12 +39,12 @@ NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
   animation_downloading_.SetTweenType(SlideAnimation::NONE);
   animation_uploading_.SetThrobDuration(kThrobDuration);
   animation_uploading_.SetTweenType(SlideAnimation::NONE);
-  NetworkChanged(CrosNetworkLibrary::Get());
-  CrosNetworkLibrary::Get()->AddObserver(this);
+  NetworkChanged(NetworkLibrary::Get());
+  NetworkLibrary::Get()->AddObserver(this);
 }
 
 NetworkMenuButton::~NetworkMenuButton() {
-  CrosNetworkLibrary::Get()->RemoveObserver(this);
+  NetworkLibrary::Get()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +70,7 @@ string16 NetworkMenuButton::GetLabelAt(int index) const {
 bool NetworkMenuButton::IsItemCheckedAt(int index) const {
   // WifiNetwork that we are connected to (or connecting to) is checked.
   return wifi_networks_.empty() ? false :
-      wifi_networks_[index].ssid == CrosNetworkLibrary::Get()->wifi_ssid();
+      wifi_networks_[index].ssid == NetworkLibrary::Get()->wifi_ssid();
 }
 
 bool NetworkMenuButton::IsEnabledAt(int index) const {
@@ -80,7 +82,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
   if (refreshing_menu_)
     return;
 
-  CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
+  NetworkLibrary* cros = NetworkLibrary::Get();
 
   // If clicked on a network that we are already connected to or we are
   // currently trying to connect to, then do nothing.
@@ -113,8 +115,8 @@ void NetworkMenuButton::ActivatedAt(int index) {
 
 bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
                                                const string16& password) {
-  CrosNetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
-                                                  password);
+  NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
+                                              password);
   return true;
 }
 
@@ -142,7 +144,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(icon(), 0, 0);
 
   // If wifi, we draw the wifi signal bars.
-  CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (cros->wifi_connecting() ||
           (!cros->ethernet_connected() && !cros->wifi_ssid().empty())) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -224,7 +226,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 // NetworkMenuButton, views::ViewMenuDelegate implementation:
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  wifi_networks_ = CrosNetworkLibrary::Get()->wifi_networks();
+  wifi_networks_ = NetworkLibrary::Get()->wifi_networks();
   refreshing_menu_ = true;
   network_menu_.Rebuild();
   network_menu_.UpdateStates();
@@ -233,9 +235,9 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, CrosNetworkLibrary::Observer implementation:
+// NetworkMenuButton, NetworkLibrary::Observer implementation:
 
-void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* cros) {
+void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   int id = IDR_STATUSBAR_WARNING;
   if (cros->loaded()) {
     id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
@@ -267,8 +269,7 @@ void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* cros) {
   SchedulePaint();
 }
 
-void NetworkMenuButton::NetworkTraffic(CrosNetworkLibrary* cros,
-                                       int traffic_type) {
+void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
   if (!cros->ethernet_connected() && !cros->wifi_ssid().empty() &&
       !cros->wifi_connecting()) {
     // For downloading/uploading animation, we want to force at least one cycle
@@ -280,3 +281,5 @@ void NetworkMenuButton::NetworkTraffic(CrosNetworkLibrary* cros,
       animation_uploading_.StartThrobbing(2);
   }
 }
+
+}  // namespace chromeos

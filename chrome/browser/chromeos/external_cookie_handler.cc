@@ -13,6 +13,8 @@
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
+namespace chromeos {
+
 void ExternalCookieHandler::GetCookies(const CommandLine& parsed_command_line,
                                        Profile* profile) {
   // If there are Google External SSO cookies, add them to the cookie store.
@@ -70,3 +72,5 @@ bool ExternalCookieHandler::HandleCookies(net::CookieStore *cookie_store) {
   }
   return false;
 }
+
+}  // namespace chromeos

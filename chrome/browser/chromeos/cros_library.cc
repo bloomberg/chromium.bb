@@ -12,6 +12,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "third_party/cros/chromeos_cros_api.h"
 
+namespace chromeos {
+
 // static
 bool CrosLibrary::loaded_ = false;
 
@@ -21,7 +23,7 @@ bool CrosLibrary::loaded() {
   if (!initialized) {
     FilePath path;
     if (PathService::Get(chrome::FILE_CHROMEOS_API, &path))
-      loaded_ = chromeos::LoadCros(path.value().c_str());
+      loaded_ = LoadCros(path.value().c_str());
 
     if (!loaded_) {
       char* error = dlerror();
@@ -32,3 +34,5 @@ bool CrosLibrary::loaded() {
   }
   return loaded_;
 }
+
+}  // namespace chromeos

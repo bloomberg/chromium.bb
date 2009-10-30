@@ -27,6 +27,8 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
 
+namespace chromeos {
+
 const int kDefaultLocationBarWidth = 300;
 const int kHideTimeoutInSeconds = 2;
 
@@ -271,3 +273,4 @@ gfx::Rect CompactLocationBar::GetLocationStackBounds() const {
   return gfx::Rect(lower_left.x(), lower_left.y(), 700, 100);
 }
 
+}  // namespace chromeos

@@ -16,6 +16,8 @@ class View;
 class Window;
 }
 
+namespace chromeos {
+
 // Delegate implemented by caller of PasswordDialogView to handle the user
 // interacting with the dialog box.
 class PasswordDialogDelegate {
@@ -69,5 +71,7 @@ class PasswordDialogView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDialogView);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_

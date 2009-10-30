@@ -25,6 +25,8 @@ class ImageButton;
 class NativeViewHost;
 }  // namespace views
 
+namespace chromeos {
+
 // CompactLocationBar is a version of location bar that is shown under
 // a tab for short priod of used when Chrome is in the compact
 // navigation bar mode.
@@ -106,6 +108,8 @@ class CompactLocationBar : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(CompactLocationBar);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_H_
 

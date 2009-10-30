@@ -352,7 +352,7 @@ gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
 // Callback from GTK when the user clicks the main menu button.
 static void OnMainMenuButtonClicked(GtkWidget* widget,
                                     BrowserWindowGtk* browser) {
-  MainMenu::Show(browser->browser());
+  chromeos::MainMenu::Show(browser->browser());
 }
 
 #endif  // OS_CHROMEOS
@@ -803,7 +803,7 @@ void BrowserWindowGtk::Show() {
 
 #if defined(OS_CHROMEOS)
   if (browser_->type() == Browser::TYPE_POPUP) {
-    panel_controller_ = new PanelController(this);
+    panel_controller_ = new chromeos::PanelController(this);
   } else {
     TabOverviewTypes::instance()->SetWindowType(
         GTK_WIDGET(window_),
@@ -1645,7 +1645,7 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button_->widget(),
                        FALSE, FALSE, 0);
 
-    MainMenu::ScheduleCreation();
+    chromeos::MainMenu::ScheduleCreation();
 
     if (has_compact_nav_bar) {
       compact_navbar_hbox_ = gtk_hbox_new(FALSE, 0);
@@ -1788,7 +1788,8 @@ void BrowserWindowGtk::InitWidgets() {
       clb_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
       gtk_widget_reparent(clb_widget->GetNativeView(), compact_navbar_hbox_);
 
-      compact_navigation_bar_ = new CompactNavigationBar(browser_.get());
+      compact_navigation_bar_ =
+          new chromeos::CompactNavigationBar(browser_.get());
 
       clb_widget->SetContentsView(compact_navigation_bar_);
       compact_navigation_bar_->Init();
@@ -1805,7 +1806,7 @@ void BrowserWindowGtk::InitWidgets() {
     status_widget->set_delete_on_destroy(true);
     status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
     gtk_widget_reparent(status_widget->GetNativeView(), status_container);
-    status_area_ = new StatusAreaView(browser(), GetNativeHandle());
+    status_area_ = new chromeos::StatusAreaView(browser(), GetNativeHandle());
     status_widget->SetContentsView(status_area_);
     status_area_->Init();
 

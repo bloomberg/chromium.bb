@@ -10,6 +10,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+namespace chromeos {
+
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton
 
@@ -20,11 +22,11 @@ PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
   UpdateIcon();
-  CrosPowerLibrary::Get()->AddObserver(this);
+  PowerLibrary::Get()->AddObserver(this);
 }
 
 PowerMenuButton::~PowerMenuButton() {
-  CrosPowerLibrary::Get()->RemoveObserver(this);
+  PowerLibrary::Get()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +41,7 @@ views::Menu2Model::ItemType PowerMenuButton::GetTypeAt(int index) const {
 }
 
 string16 PowerMenuButton::GetLabelAt(int index) const {
-  CrosPowerLibrary* cros = CrosPowerLibrary::Get();
+  PowerLibrary* cros = PowerLibrary::Get();
   // The first item shows the percentage of battery left.
   if (index == 0) {
     // If fully charged, always show 100% even if internal number is a bit less.
@@ -91,16 +93,16 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, CrosPowerLibrary::Observer implementation:
+// PowerMenuButton, PowerLibrary::Observer implementation:
 
-void PowerMenuButton::PowerChanged(CrosPowerLibrary* obj) {
+void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
   UpdateIcon();
 }
 
 void PowerMenuButton::UpdateIcon() {
-  CrosPowerLibrary* cros = CrosPowerLibrary::Get();
+  PowerLibrary* cros = PowerLibrary::Get();
   int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
-  if (CrosPowerLibrary::loaded()) {
+  if (PowerLibrary::loaded()) {
     if (!cros->battery_is_present()) {
       id = IDR_STATUSBAR_BATTERY_MISSING;
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {
@@ -127,3 +129,5 @@ void PowerMenuButton::UpdateIcon() {
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
   SchedulePaint();
 }
+
+}  // namespace chromeos

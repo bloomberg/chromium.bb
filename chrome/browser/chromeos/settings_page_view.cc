@@ -10,6 +10,8 @@
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"
 
+namespace chromeos {
+
 SettingsPageView::SettingsPageView(Profile* profile)
     : OptionsPageView(profile) {
   SetLayoutManager(new views::FillLayout());
@@ -39,3 +41,5 @@ void SettingsPageView::InitControlLayout() {
   settings_contents_view_ = new SettingsContentsView(profile());
   AddChildView(settings_contents_view_);
 }
+
+}  // namespace chromeos

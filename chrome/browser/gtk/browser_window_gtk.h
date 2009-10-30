@@ -21,8 +21,11 @@
 #include "chrome/common/x11_util.h"
 
 #ifdef OS_CHROMEOS
+namespace chromeos {
 class CompactNavigationBar;
+class PanelController;
 class StatusAreaView;
+}
 #endif
 
 class BookmarkBarGtk;
@@ -37,10 +40,6 @@ class LocationBar;
 class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;
-
-#ifdef OS_CHROMEOS
-class PanelController;
-#endif
 
 // An implementation of BrowserWindow for GTK.
 // Cross-platform code will interact with this object when
@@ -388,10 +387,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // True if a drag is active. See description above setter for details.
   bool drag_active_;
   // Controls interactions with the window manager for popup panels.
-  PanelController* panel_controller_;
+  chromeos::PanelController* panel_controller_;
 
-  CompactNavigationBar* compact_navigation_bar_;
-  StatusAreaView* status_area_;
+  chromeos::CompactNavigationBar* compact_navigation_bar_;
+  chromeos::StatusAreaView* status_area_;
 
   // The MainMenu button.
   CustomDrawButton* main_menu_button_;

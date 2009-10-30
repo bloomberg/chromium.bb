@@ -19,7 +19,7 @@ class Window;
 // BrowserExtender adds chromeos specific features to BrowserView.
 // The factory method |Create(BrowserView*)| creates different types
 // of extender depending on the type of BrowserView and target platform.
-// Please see chromeos_browser_extenders.cc for ChromeOS extenders, and
+// Please see browser/chromeos/browser_extenders.cc for ChromeOS extenders, and
 // standard_extender.cc for Chrome browser.
 class BrowserExtender {
  public:
@@ -99,4 +99,4 @@ class BrowserExtender {
   DISALLOW_COPY_AND_ASSIGN(BrowserExtender);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_BROWSER_EXTENDER_H_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_EXTENDER_H_

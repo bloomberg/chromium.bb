@@ -24,6 +24,8 @@ class MouseEvent;
 class WidgetGtk;
 }
 
+namespace chromeos {
+
 // Controls interactions with the WM for popups / panels.
 class PanelController : public views::ButtonListener {
  public:
@@ -122,6 +124,8 @@ class PanelController : public views::ButtonListener {
 
   DISALLOW_COPY_AND_ASSIGN(PanelController);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PANEL_CONTROLLER_H_
 
