@@ -32,7 +32,6 @@
 #define WebSharedWorkerRepository_h
 
 #include "WebCommon.h"
-#include "WebVector.h"
 
 namespace WebKit {
     class WebString;
@@ -42,7 +41,7 @@ namespace WebKit {
     class WebSharedWorkerRepository {
     public:
         // Unique identifier for the parent document of a worker (unique within a given process).
-        typedef uintptr_t DocumentID;
+        typedef unsigned long long DocumentID;
 
         // Connects the passed SharedWorker object with the specified worker thread.
         // Caller is responsible for freeing the returned object. Returns null if a SharedWorker with that name already exists but with a different URL.

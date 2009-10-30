@@ -230,7 +230,9 @@ namespace WebKit {
         // sandbox isn't active).
         virtual bool sandboxEnabled() = 0;
 
+
         // Shared Workers ------------------------------------------------------
+
         virtual WebSharedWorkerRepository* sharedWorkerRepository() = 0;
 
         // Sudden Termination --------------------------------------------------

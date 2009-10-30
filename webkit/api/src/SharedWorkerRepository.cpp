@@ -61,9 +61,9 @@ using WebKit::WebSharedWorkerRepository;
 class SharedWorkerScriptLoader : public RefCounted<SharedWorkerScriptLoader>, private WorkerScriptLoaderClient {
 public:
     SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
-            : m_worker(worker),
-              m_webWorker(webWorker),
-              m_port(port)
+        : m_worker(worker)
+        , m_webWorker(webWorker)
+        , m_port(port)
     {
     }
 
@@ -85,7 +85,8 @@ void SharedWorkerScriptLoader::load(const KURL& url)
 }
 
 // Extracts a WebMessagePortChannel from a MessagePortChannel.
-static WebMessagePortChannel* getWebPort(PassOwnPtr<MessagePortChannel> port) {
+static WebMessagePortChannel* getWebPort(PassOwnPtr<MessagePortChannel> port)
+{
     // Extract the WebMessagePortChannel to send to the worker.
     PlatformMessagePortChannel* platformChannel = port->channel();
     WebMessagePortChannel* webPort = platformChannel->webChannelRelease();
@@ -109,7 +110,7 @@ void SharedWorkerScriptLoader::notifyFinished()
 bool SharedWorkerRepository::isAvailable()
 {
     // SharedWorkers are disabled for now until the implementation is further along.
-    // TODO(atwilson): Add code to check for a runtime flag like so:
+    // FIXME(atwilson): Add code to check for a runtime flag like so:
     // return commandLineFlag && WebKit::webKitClient()->sharedWorkerRepository();
     return false;
 }
@@ -145,14 +146,14 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr
 
 void SharedWorkerRepository::documentDetached(Document* document)
 {
-    WebKit::WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
+    WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
     if (repo)
         repo->documentDetached(getId(document));
 }
 
 bool SharedWorkerRepository::hasSharedWorkers(Document* document)
 {
-    WebKit::WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
+    WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
     return repo && repo->hasSharedWorkers(getId(document));
 }
 

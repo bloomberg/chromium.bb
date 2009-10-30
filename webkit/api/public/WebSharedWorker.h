@@ -32,7 +32,6 @@
 #define WebSharedWorker_h
 
 #include "WebCommon.h"
-#include "WebVector.h"
 
 namespace WebKit {
     class ScriptExecutionContext;
@@ -44,10 +43,10 @@ namespace WebKit {
     // Since SharedWorkers communicate entirely through MessagePorts this interface only contains APIs for starting up a SharedWorker.
     class WebSharedWorker {
     public:
-        virtual ~WebSharedWorker() {};
+        virtual ~WebSharedWorker() {}
 
         // Returns false if the thread hasn't been started yet (script loading has not taken place).
-        // TODO(atwilson): Remove this when we move the initial script loading into the worker process.
+        // FIXME(atwilson): Remove this when we move the initial script loading into the worker process.
         virtual bool isStarted() = 0;
 
         virtual void startWorkerContext(const WebURL& scriptURL,
