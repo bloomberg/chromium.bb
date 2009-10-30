@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/singleton.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -141,7 +142,7 @@ SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
   if (g_browser_process && g_browser_process->io_thread()) {
     // Add our network layer data source for 'cloudy' URLs.
     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
+        NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
                           &ChromeURLDataManager::AddDataSource,
                           new SyncResourcesSource()));
   }

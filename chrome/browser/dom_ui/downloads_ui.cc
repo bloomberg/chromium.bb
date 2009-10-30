@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -134,7 +135,7 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
   // Set up the chrome://downloads/ source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

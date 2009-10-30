@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
+#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -113,7 +114,7 @@ DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          &chrome_url_data_manager,
+          Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource,
           new DOMUIFavIconSource(dom_ui->GetProfile())));
 
@@ -373,7 +374,7 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          &chrome_url_data_manager,
+          Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/md5.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -60,7 +61,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
       new DOMUIThumbnailSource(dom_ui->GetProfile());
   bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
                         &ChromeURLDataManager::AddDataSource, thumbnail_src));
   if (!posted) {
     thumbnail_src->AddRef();
@@ -70,7 +71,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   DOMUIFavIconSource* favicon_src = new DOMUIFavIconSource(dom_ui->GetProfile());
   posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
                         &ChromeURLDataManager::AddDataSource, favicon_src));
   if (!posted) {
     favicon_src->AddRef();
