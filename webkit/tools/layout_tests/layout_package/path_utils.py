@@ -181,6 +181,7 @@ def _WinPathToUnix(path):
 #
 def FilenameToUri(full_path):
   """Convert a test file to a URI."""
+  LAYOUTTESTS_DIR = "LayoutTests/"
   LAYOUTTEST_HTTP_DIR = "LayoutTests/http/tests/"
   PENDING_HTTP_DIR    = "pending/http/tests/"
   LAYOUTTEST_WEBSOCKET_DIR = "LayoutTests/websocket/tests/"
@@ -198,8 +199,9 @@ def FilenameToUri(full_path):
     relative_path = relative_path[len(PENDING_HTTP_DIR):]
     port = 9000
   elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
-    # LayoutTests/websocket/tests/ run off port 8880
-    relative_path = relative_path[len(LAYOUTTEST_WEBSOCKET_DIR):]
+    # LayoutTests/websocket/tests/ run off port 8880 and 9323
+    # Note: the root is LayoutTests/, not LayoutTests/websocket/tests/
+    relative_path = relative_path[len(LAYOUTTESTS_DIR):]
     port = 8880
   elif relative_path.find("/http/") >= 0:
     # chrome/http/tests run off of port 8081 with the full path

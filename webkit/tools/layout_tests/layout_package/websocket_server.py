@@ -27,7 +27,6 @@ _WSS_LOG_PREFIX = 'pywebsocket.wss.log-'
 
 _DEFAULT_WS_PORT = 8880
 _DEFAULT_WSS_PORT = 9323
-_DEFAULT_ROOT = '.'
 
 
 def RemoveLogFiles(folder, starts_with):
@@ -44,7 +43,6 @@ class PyWebSocketNotStarted(Exception):
 
 class PyWebSocket(http_server.Lighttpd):
   def __init__(self, output_dir, port=_DEFAULT_WS_PORT,
-               root=_DEFAULT_ROOT,
                use_tls=False,
                private_key=http_server.Lighttpd._pem_file,
                certificate=http_server.Lighttpd._pem_file):
@@ -54,7 +52,6 @@ class PyWebSocket(http_server.Lighttpd):
     self._output_dir = output_dir
     self._process = None
     self._port = port
-    self._root = root
     self._use_tls = use_tls
     self._private_key = private_key
     self._certificate = certificate
@@ -67,13 +64,15 @@ class PyWebSocket(http_server.Lighttpd):
 
     # Webkit tests
     try:
-      self._webkit_tests = path_utils.PathFromBase(
+      self._web_socket_tests = path_utils.PathFromBase(
           'third_party', 'WebKit', 'LayoutTests', 'websocket', 'tests')
+      self._layout_tests = path_utils.PathFromBase(
+          'third_party', 'WebKit', 'LayoutTests')
     except path_utils.PathNotFound:
-      self._webkit_tests = None
+      self._web_socket_tests = None
 
   def Start(self):
-    if not self._webkit_tests:
+    if not self._web_socket_tests:
       logging.info('No need to start %s server.' % self._server_name)
       return
     if self.IsRunning():
@@ -97,7 +96,8 @@ class PyWebSocket(http_server.Lighttpd):
     start_cmd = [
         python_interp, pywebsocket_script,
         '-p', str(self._port),
-        '-d', self._webkit_tests,
+        '-d', self._layout_tests,
+        '-s', self._web_socket_tests,
     ]
     if self._use_tls:
       start_cmd.extend(['-t', '-k', self._private_key,
@@ -157,8 +157,6 @@ if '__main__' == __name__:
   option_parser = optparse.OptionParser()
   option_parser.add_option('-p', '--port', dest='port',
                            default=None, help='Port to listen on')
-  option_parser.add_option('-r', '--root', dest='root', default='.',
-                           help='Absolute path to DocumentRoot')
   option_parser.add_option('-t', '--tls', dest='use_tls', action='store_true',
                            default=False, help='use TLS (wss://)')
   option_parser.add_option('-k', '--private_key', dest='private_key',
@@ -174,7 +172,6 @@ if '__main__' == __name__:
       options.port = _DEFAULT_WS_PORT
 
   kwds = {'port':options.port,
-          'root':options.root,
           'use_tls':options.use_tls}
   if options.private_key:
     kwds['private_key'] = options.private_key
