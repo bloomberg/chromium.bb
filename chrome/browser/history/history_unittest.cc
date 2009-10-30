@@ -96,7 +96,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {
   }
 
-  virtual void NotifyTooNew();
+  virtual void NotifyProfileError(int message_id);
   virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend);
   virtual void BroadcastNotifications(NotificationType type,
                                       HistoryDetails* details);
@@ -294,7 +294,7 @@ class HistoryTest : public testing::Test {
   HistoryDatabase* db_;  // Cached reference to the backend's database.
 };
 
-void BackendDelegate::NotifyTooNew() {
+void BackendDelegate::NotifyProfileError(int message_id) {
 }
 
 void BackendDelegate::SetInMemoryBackend(InMemoryHistoryBackend* backend) {

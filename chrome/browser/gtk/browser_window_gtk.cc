@@ -1127,9 +1127,9 @@ void BrowserWindowGtk::ShowRepostFormWarningDialog(
   new RepostFormWarningGtk(GetNativeHandle(), &tab_contents->controller());
 }
 
-void BrowserWindowGtk::ShowHistoryTooNewDialog() {
+void BrowserWindowGtk::ShowProfileErrorDialog(int message_id) {
   std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
-  std::string message = l10n_util::GetStringUTF8(IDS_PROFILE_TOO_NEW_ERROR);
+  std::string message = l10n_util::GetStringUTF8(message_id);
   GtkWidget* dialog = gtk_message_dialog_new(window_,
       static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
       "%s", message.c_str());

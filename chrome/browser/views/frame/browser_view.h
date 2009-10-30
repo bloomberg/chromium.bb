@@ -255,7 +255,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowSelectProfileDialog();
   virtual void ShowNewProfileDialog();
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void ShowHistoryTooNewDialog();
+  virtual void ShowProfileErrorDialog(int message_id);
   virtual void ShowThemeInstallBubble();
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

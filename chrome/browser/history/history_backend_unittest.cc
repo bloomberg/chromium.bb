@@ -32,11 +32,9 @@ class HistoryBackendTest;
 // This just forwards the messages we're interested in to the test object.
 class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
-  explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {
-  }
+  explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
 
-  virtual void NotifyTooNew() {
-  }
+  virtual void NotifyProfileError(int message_id) {}
   virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend);
   virtual void BroadcastNotifications(NotificationType type,
                                       HistoryDetails* details);

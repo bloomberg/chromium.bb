@@ -1093,15 +1093,15 @@ void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
 }
 
-void BrowserView::ShowHistoryTooNewDialog() {
+void BrowserView::ShowProfileErrorDialog(int message_id) {
 #if defined(OS_WIN)
   std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
-  std::wstring message = l10n_util::GetString(IDS_PROFILE_TOO_NEW_ERROR);
+  std::wstring message = l10n_util::GetString(message_id);
   win_util::MessageBox(GetNativeHandle(), message, title,
                        MB_OK | MB_ICONWARNING | MB_TOPMOST);
 #elif defined(OS_LINUX)
   std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
-  std::string message = l10n_util::GetStringUTF8(IDS_PROFILE_TOO_NEW_ERROR);
+  std::string message = l10n_util::GetStringUTF8(message_id);
   GtkWidget* dialog = gtk_message_dialog_new(GetNativeHandle(),
       static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
       "%s", message.c_str());

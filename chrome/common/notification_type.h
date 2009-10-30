@@ -518,9 +518,10 @@ class NotificationType {
     // history_notifications.h).
     FAVICON_CHANGED,
 
-    // Sent by history if the history database is too new.  The active browser
-    // window should notify the user of this error.
-    HISTORY_TOO_NEW,
+    // Sent by history if there is a problem reading the profile.  The details
+    // is an int that's one of the message IDs in the string table.  The active
+    // browser window should notify the user of this error.
+    PROFILE_ERROR,
 
     // Thumbnails---------------------------------------------------------------
 

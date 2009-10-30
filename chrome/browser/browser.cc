@@ -140,7 +140,7 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::HISTORY_TOO_NEW,
+  registrar_.Add(this, NotificationType::PROFILE_ERROR,
                  NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
@@ -2264,10 +2264,11 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::HISTORY_TOO_NEW: {
+    case NotificationType::PROFILE_ERROR: {
       if (BrowserList::GetLastActive() != this)
         break;
-      window()->ShowHistoryTooNewDialog();
+      int* message_id = Details<int>(details).ptr();
+      window()->ShowProfileErrorDialog(*message_id);
       break;
     }
 

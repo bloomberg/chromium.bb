@@ -281,7 +281,7 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
   new RepostFormWarningMac(GetNativeHandle(), &tab_contents->controller());
 }
 
-void BrowserWindowCocoa::ShowHistoryTooNewDialog() {
+void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {
   NOTIMPLEMENTED();
 }
 

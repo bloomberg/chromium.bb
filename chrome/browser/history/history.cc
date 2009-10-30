@@ -94,10 +94,10 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         message_loop_(MessageLoop::current()) {
   }
 
-  virtual void NotifyTooNew() {
+  virtual void NotifyProfileError(int message_id) {
     // Send the backend to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::NotifyTooNew));
+        &HistoryService::NotifyProfileError, message_id));
   }
 
   virtual void SetInMemoryBackend(
@@ -666,10 +666,10 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_->AttachToHistoryService(profile_);
 }
 
-void HistoryService::NotifyTooNew() {
+void HistoryService::NotifyProfileError(int message_id) {
   Source<HistoryService> source(this);
-  NotificationService::current()->Notify(NotificationType::HISTORY_TOO_NEW,
-      source, NotificationService::NoDetails());
+  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
+                                         source, Details<int>(&message_id));
 }
 
 void HistoryService::DeleteURL(const GURL& url) {

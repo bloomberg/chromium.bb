@@ -52,9 +52,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
    public:
     virtual ~Delegate() {}
 
-    // Called when the database is from a future version of the product and can
-    // not be used.
-    virtual void NotifyTooNew() = 0;
+    // Called when the database cannot be read correctly for some reason.
+    virtual void NotifyProfileError(int message_id) = 0;
 
     // Sets the in-memory history backend. The in-memory backend is created by
     // the main backend. For non-unit tests, this happens on the background

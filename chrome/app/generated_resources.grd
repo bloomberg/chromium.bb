@@ -5074,6 +5074,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_RESET_CANCELLABEL" desc="The label of the Cancel button in the 'Reset Chrome options' confirmation dialog box">
         Don't reset
       </message>
+      
+      <!-- General app failure messages -->
+      <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
+        Your profile could not be opened correctly.\n\nSome features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
+      </message>
 
       <!-- Can't write to user data directory dialog -->
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">

@@ -613,9 +613,9 @@ class HistoryService : public CancelableRequestProvider,
   // database is loaded to make it available.
   void SetInMemoryBackend(history::InMemoryHistoryBackend* mem_backend);
 
-  // Called by our BackendDelegate when the database version is too new to be
-  // read properly.
-  void NotifyTooNew();
+  // Called by our BackendDelegate when there is a problem reading the database.
+  // |message_id| is the relevant message in the string table to display.
+  void NotifyProfileError(int message_id);
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.

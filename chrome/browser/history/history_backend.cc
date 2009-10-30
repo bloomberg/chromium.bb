@@ -25,6 +25,8 @@
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 
 using base::Time;
@@ -501,11 +503,11 @@ void HistoryBackend::InitImpl() {
     case INIT_FAILURE:
       // A NULL db_ will cause all calls on this object to notice this error
       // and to not continue.
-      LOG(WARNING) << "Unable to initialize history DB.";
+      delegate_->NotifyProfileError(IDS_COULDNT_OPEN_PROFILE_ERROR);
       db_.reset();
       return;
     case INIT_TOO_NEW:
-      delegate_->NotifyTooNew();
+      delegate_->NotifyProfileError(IDS_PROFILE_TOO_NEW_ERROR);
       db_.reset();
       return;
     default:

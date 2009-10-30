@@ -205,8 +205,10 @@ class BrowserWindow {
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
 
-  // Shows a dialog to the user that the history is too new.
-  virtual void ShowHistoryTooNewDialog() = 0;
+  // Shows a dialog to the user that something is wrong with the profile.
+  // |message_id| is the ID for a string in the string table which will be
+  // displayed in the dialog.
+  virtual void ShowProfileErrorDialog(int message_id) = 0;
 
   // Show the bubble that indicates to the user that a theme is being installed.
   virtual void ShowThemeInstallBubble() = 0;
