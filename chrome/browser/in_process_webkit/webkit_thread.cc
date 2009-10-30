@@ -35,6 +35,7 @@ WebKitThread::InternalWebKitThread::InternalWebKitThread()
 }
 
 WebKitThread::InternalWebKitThread::~InternalWebKitThread() {
+  Stop();
 }
 
 void WebKitThread::InternalWebKitThread::Init() {
