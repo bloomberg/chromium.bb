@@ -1385,8 +1385,8 @@ BUG10343 SKIP LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIME
 BUG10344 LINUX : LayoutTests/fast/text/should-use-atsui.html = FAIL
 
 // We print to stderr when a failure happens while importing XSL;
-// should disable this in libxml. Started to pass in roll to WebKit r50313
-BUG10347 MAC LINUX : LayoutTests/fast/xsl/transform-xhr-doc.xhtml = PASS FAIL
+// should disable this in libxml.
+BUG10347 MAC : LayoutTests/fast/xsl/transform-xhr-doc.xhtml = FAIL
 
 // Linux pixeltest failure: Failing to apply style
 BUG10349 LINUX : LayoutTests/fast/forms/select-style.html = FAIL
@@ -1413,6 +1413,7 @@ BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/inner-html-display-none.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/invoke.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/mouse-events.html = FAIL
+BUG10351 MAC DEBUG : LayoutTests/http/tests/plugins/npapi-response-headers.html = PASS FAIL
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10667 SKIP MAC : chrome/plugins/get-url-with-blank-target.html = FAIL
 BUG10667 MAC SLOW : chrome/plugins/multiple-plugins.html = FAIL
@@ -1506,10 +1507,6 @@ BUG10369 LINUX : LayoutTests/editing/selection/5354455-2.html = FAIL
 
 // incorrect layout
 BUG10370 MAC : LayoutTests/fast/css/font-weight-1.html = FAIL
-
-// Error from CGImageSourceUpdateData but everything else is correct.
-// started to pass in roll to WebKit r50324
-BUG10373 MAC : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS FAIL
 
 // Not really sure why these are failing at the moment
 BUG10376 MAC : LayoutTests/fast/dom/isindex-002.html = FAIL
@@ -2298,10 +2295,6 @@ BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
 
-// Pass locally but fail on the bots.
-// Started to pass again on bots in roll to WebKit r50313
-BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = PASS FAIL
-
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
 
@@ -2658,11 +2651,6 @@ BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = PASS FAIL
 // so the test timeouts.
 BUG11001 LINUX MAC WIN : LayoutTests/http/tests/history/back-to-post.php = TIMEOUT
 
-// New failures from WebKit merge 42725:42805
-// Reasons unknown..
-// Started to pass again in roll to 50313
-BUG11012 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xml-external-entity.xhtml = PASS FAIL
-
 // Need Linux rebaselines from WebKit Merge 42805:42932
 BUG11123 LINUX : LayoutTests/editing/inserting/4960120-1.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
@@ -2790,8 +2778,8 @@ BUG15270 DEBUG SLOW : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 // WebKit 45270:45287
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS FAIL CRASH
 
-// Flaky for a while on DEBUG; also related to BUG17974
-BUG15267 WIN LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
+// Flaky for a while; also related to BUG17974
+BUG15267 WIN LINUX : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 
 // WebKit 45431:45444
 BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
@@ -2801,8 +2789,7 @@ BUG11613 LINUX DEBUG SLOW : LayoutTests/fast/overflow/scrollRevealButton.html = 
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
-// started to pass again in roll to WebKit r50313
-BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = PASS FAIL
+
 // This started crashing regularly as a result of r28798 (see bug 24720).
 BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = PASS FAIL
 
@@ -2999,7 +2986,6 @@ BUG24233 WIN LINUX : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
 
 // WK roll to 48371
-BUG21841 MAC RELEASE : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL CRASH
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
@@ -3159,7 +3145,6 @@ BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html =
 
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
-// Passed after roll to WebKit r50313
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
 
 // WebKit roll 50101:50158
