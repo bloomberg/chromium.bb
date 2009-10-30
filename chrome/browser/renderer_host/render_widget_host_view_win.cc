@@ -940,6 +940,9 @@ LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
 
 LRESULT RenderWidgetHostViewWin::OnImeSetContext(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (!render_widget_host_)
+    return 0;
+
   // We need status messages about the focused input control from a
   // renderer process when:
   //   * the current input context has IMEs, and;
@@ -965,6 +968,9 @@ LRESULT RenderWidgetHostViewWin::OnImeSetContext(
 
 LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (!render_widget_host_)
+    return 0;
+
   // Reset the composition status and create IME windows.
   ime_input_.CreateImeWindow(m_hWnd);
   ime_input_.ResetComposition(m_hWnd);
@@ -977,6 +983,9 @@ LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
 
 LRESULT RenderWidgetHostViewWin::OnImeComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (!render_widget_host_)
+    return 0;
+
   // At first, update the position of the IME window.
   ime_input_.UpdateImeWindow(m_hWnd);
 
@@ -1014,6 +1023,9 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
 
 LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (!render_widget_host_)
+    return 0;
+
   if (ime_input_.is_composing()) {
     // A composition has been ended while there is an ongoing composition,
     // i.e. the ongoing composition has been canceled.
