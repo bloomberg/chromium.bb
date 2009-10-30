@@ -961,44 +961,4 @@ TEST(CookieMonsterTest, SetCookieableSchemes) {
   EXPECT_FALSE(cm_foo->SetCookie(http_url, "x=1"));
 }
 
-TEST(CookieMonsterTest, GetRawCookies) {
-  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster);
-  GURL url_google(kUrlGoogle);
-
-  net::CookieOptions options;
-  options.set_include_httponly();
-
-  // Create a httponly cookie.
-  EXPECT_TRUE(cm->SetCookieWithOptions(url_google, "A=B; httponly", options));
-
-  // Get raw cookies.
-  std::vector<net::CookieMonster::CanonicalCookie> raw_cookies;
-  cm->GetRawCookies(url_google, &raw_cookies);
-  EXPECT_TRUE(raw_cookies.begin() != raw_cookies.end());
-  net::CookieMonster::CanonicalCookie cookie = *raw_cookies.begin();
-  EXPECT_EQ("A", cookie.Name());
-}
-
-TEST(CookieMonsterTest, DeleteCookieByName) {
-  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster);
-  GURL url_google(kUrlGoogle);
-
-  EXPECT_TRUE(cm->SetCookie(url_google, "A=A1; path=/"));
-  EXPECT_TRUE(cm->SetCookie(url_google, "A=A2; path=/foo"));
-  EXPECT_TRUE(cm->SetCookie(url_google, "A=A3; path=/bar"));
-  EXPECT_TRUE(cm->SetCookie(url_google, "B=B1; path=/"));
-  EXPECT_TRUE(cm->SetCookie(url_google, "B=B2; path=/foo"));
-  EXPECT_TRUE(cm->SetCookie(url_google, "B=B3; path=/bar"));
-
-  cm->DeleteCookie(GURL(std::string(kUrlGoogle) + "/foo/bar"), "A");
-
-  net::CookieMonster::CookieList cookies = cm->GetAllCookies();
-  EXPECT_EQ(4, cookies.size());
-  for (net::CookieMonster::CookieList::iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    EXPECT_NE("A1", it->second.Value());
-    EXPECT_NE("A2", it->second.Value());
-  }
-}
-
 // TODO test overwrite cookie

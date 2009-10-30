@@ -792,27 +792,12 @@ void CookieMonster::DeleteCookie(const GURL& url,
   if (!HasCookieableScheme(url))
     return;
 
-  CookieOptions options;
-  options.set_include_httponly();
-  // Get the cookies for this host and its domain(s).
-  std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, &cookies);
-  std::set<CanonicalCookie*> matching_cookies;
-
-  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    if ((*it)->Name() != cookie_name)
-      continue;
-    if (url.path().find((*it)->Path()))
-      continue;
-    matching_cookies.insert(*it);
-  }
-
-  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
-    CookieMap::iterator curit = it;
-    ++it;
-    if (matching_cookies.find(curit->second) != matching_cookies.end())
-      InternalDeleteCookie(curit, true);
+  for (CookieMapItPair its = cookies_.equal_range(url.host());
+       its.first != its.second; ++its.first) {
+    if (its.first->second->Name() == cookie_name) {
+      InternalDeleteCookie(its.first, true);
+      return;
+    }
   }
 }
 
