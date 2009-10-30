@@ -11,7 +11,7 @@
 #include "webkit/api/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache(
-    ListValue* allowed, ListValue* denied) {
+    const ListValue* allowed, const ListValue* denied) {
   ListValue::const_iterator i;
   std::wstring origin;
   if (allowed) {

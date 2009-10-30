@@ -153,20 +153,16 @@ DesktopNotificationService::~DesktopNotificationService() {
 // create the preferences if they don't exist yet.
 void DesktopNotificationService::InitPrefs() {
   PrefService* prefs = profile_->GetPrefs();
-  ListValue* allowed_sites = NULL;
-  ListValue* denied_sites = NULL;
+  const ListValue* allowed_sites;
+  const ListValue* denied_sites;
 
-  if (prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
-    allowed_sites =
-        prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  else
+  if (!prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
     prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
+  allowed_sites = prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
 
-  if (prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
-    denied_sites =
-        prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
-  else
+  if (!prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
     prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+  denied_sites = prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
 
   prefs_cache_ = new NotificationsPrefsCache(allowed_sites, denied_sites);
 }

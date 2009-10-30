@@ -19,7 +19,7 @@ class ListValue;
 class NotificationsPrefsCache :
     public base::RefCountedThreadSafe<NotificationsPrefsCache> {
  public:
-  NotificationsPrefsCache(ListValue* allowed, ListValue* denied);
+  NotificationsPrefsCache(const ListValue* allowed, const ListValue* denied);
 
   // Checks to see if a given origin has permission to create desktop
   // notifications.  Returns a constant from WebNotificationPresenter
