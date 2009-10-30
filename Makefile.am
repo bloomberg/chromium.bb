@@ -1,6 +1,6 @@
 SUBDIRS = gnulib liblouis tools tables doc man tests python
 
-ACLOCAL_AMFLAGS = -I gnulib/m4
+ACLOCAL_AMFLAGS = -I m4 -I gnulib/m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liblouis.pc
