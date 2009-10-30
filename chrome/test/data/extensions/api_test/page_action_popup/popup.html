@@ -1,0 +1,14 @@
+<head>
+<script>
+// Wait to be resized by the browser once before indicating pass.
+function onResize() {
+  window.removeEventListener("resize", onResize);
+  chrome.test.notifyPass();
+}
+
+window.addEventListener("resize", onResize);
+</script>
+</head>
+<body>
+<div id="test">Hello&nbsp;World</div>
+</body>
