@@ -151,3 +151,11 @@ select.status-bar-item {
 select.status-bar-item:active {
     -webkit-border-image: url(Images/statusbarMenuButtonSelectedChromium.png) 0 17 0 2;
 }
+
+.scope-bar li.selected {
+    -webkit-box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
+}
+
+.scope-bar li:active {
+    -webkit-box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
+}
