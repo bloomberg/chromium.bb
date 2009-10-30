@@ -24,10 +24,9 @@ ResourceBundle::~ResourceBundle() {
 
   delete locale_resources_data_;
   locale_resources_data_ = NULL;
-  delete theme_data_;
-  theme_data_ = NULL;
   delete resources_data_;
   resources_data_ = NULL;
+  theme_data_ = NULL;
 }
 
 namespace {
@@ -66,9 +65,10 @@ void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
 }
 
 void ResourceBundle::LoadThemeResources() {
-  DCHECK(theme_data_ == NULL) << "theme data already loaded!";
-  theme_data_ = LoadResourceDataPack(@"theme");
-  DCHECK(theme_data_) << "failed to load theme.pak";
+  // The data has been merged with chrome.pak so just set the pointer to be
+  // the same file.
+  DCHECK(resources_data_);
+  theme_data_ = resources_data_;
 }
 
 // static

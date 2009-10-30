@@ -3521,10 +3521,6 @@
                 '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
             },
-            {
-              'destination': '<(PRODUCT_DIR)/themes',
-              'files': ['<(INTERMEDIATE_DIR)/repack/default.pak'],
-            },
           ],
         }],
         ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
@@ -3742,6 +3738,14 @@
                 '<(version_full)'
               ],
             },
+            {
+              # TODO(tony): Remove this after Nov 13, 2009.
+              'postbuild_name': 'cleanup_theme_pak',
+              'action': ['rm', '-f',
+                  '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions'
+                  '/<(version_full)/<(mac_product_name) Framework.framework/'
+                  'Resources/theme.pak'],
+            },
           ],  # postbuilds
         }, { # else: OS != "mac"
           'conditions': [
@@ -3883,6 +3887,8 @@
                   '<(grit_out_dir)/browser_resources.pak',
                   '<(grit_out_dir)/common_resources.pak',
                   '<(grit_out_dir)/renderer_resources.pak',
+                  '<(grit_out_dir)/theme_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                 ],
@@ -3893,24 +3899,6 @@
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/repack/chrome.pak',
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)',
-                         '<@(pak_inputs)'],
-            },
-            {
-              'action_name': 'repack_theme',
-              'variables': {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
-                  '<(grit_out_dir)/theme_resources.pak',
-                ],
-              },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/repack/default.pak',
               ],
               'action': ['python', '<(repack_path)', '<@(_outputs)',
                          '<@(pak_inputs)'],
@@ -5740,7 +5728,7 @@
               },
               'actions': [
                 # TODO(mark): These actions are duplicated for Linux and
-                # and FreeBSD in the chrome target.  Can they be unified?
+                # FreeBSD in the chrome target.  Can they be unified?
                 {
                   'action_name': 'repack_chrome',
                   'variables': {
@@ -5748,6 +5736,8 @@
                       '<(grit_out_dir)/browser_resources.pak',
                       '<(grit_out_dir)/common_resources.pak',
                       '<(grit_out_dir)/renderer_resources.pak',
+                      '<(grit_out_dir)/theme_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                     ],
@@ -5758,25 +5748,6 @@
                   ],
                   'outputs': [
                     '<(INTERMEDIATE_DIR)/repack/chrome.pak',
-                  ],
-                  'action': ['python', '<(repack_path)', '<@(_outputs)',
-                             '<@(pak_inputs)'],
-                  'process_outputs_as_mac_bundle_resources': 1,
-                },
-                {
-                  'action_name': 'repack_theme',
-                  'variables': {
-                    'pak_inputs': [
-                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
-                      '<(grit_out_dir)/theme_resources.pak',
-                    ],
-                  },
-                  'inputs': [
-                    '<(repack_path)',
-                    '<@(pak_inputs)',
-                  ],
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/theme.pak',
                   ],
                   'action': ['python', '<(repack_path)', '<@(_outputs)',
                              '<@(pak_inputs)'],
