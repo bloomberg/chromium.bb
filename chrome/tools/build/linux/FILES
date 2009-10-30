@@ -3,9 +3,7 @@ chrome-wrapper
 chrome.pak
 chrome_sandbox
 chromium-browser.1
-libavcodec.so.52
-libavformat.so.52
-libavutil.so.50
+libffmpegsumo.so
 locales
 product_logo_48.png
 themes

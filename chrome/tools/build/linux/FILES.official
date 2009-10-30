@@ -4,9 +4,7 @@ chrome.pak
 chrome_sandbox
 google-chrome.1
 installer
-libavcodec.so.52
-libavformat.so.52
-libavutil.so.50
+libffmpegsumo.so
 locales
 product_logo_48.png
 themes
