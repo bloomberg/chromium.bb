@@ -163,7 +163,7 @@ TEST_F(NewTabUIStartupTest, PerfCold) {
                  UITest::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, DISABLED_PerfWarm) {
+TEST_F(NewTabUIStartupTest, PerfWarm) {
   RunStartupTest("tab_warm", true /* warm */, false /* not important */,
                  UITest::DEFAULT_THEME);
 }
