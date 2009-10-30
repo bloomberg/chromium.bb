@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/singleton.h"
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -29,7 +30,7 @@ PrintUI::PrintUI(TabContents* contents) : DOMUI(contents) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          &chrome_url_data_manager,
+          Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

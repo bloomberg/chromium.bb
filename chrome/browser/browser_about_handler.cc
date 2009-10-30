@@ -568,7 +568,7 @@ AboutSource::AboutSource()
 
   // Add us to the global URL handler on the IO thread.
   g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(&chrome_url_data_manager,
+      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource, this));
 }
 

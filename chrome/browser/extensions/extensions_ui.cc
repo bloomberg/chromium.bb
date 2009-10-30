@@ -558,7 +558,8 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          &chrome_url_data_manager, &ChromeURLDataManager::AddDataSource,
+          Singleton<ChromeURLDataManager>().get(),
+          &ChromeURLDataManager::AddDataSource,
           html_source));
 }
 

@@ -158,9 +158,6 @@ template <> struct RunnableMethodTraits<ChromeURLDataManager> {
   void ReleaseCallee(ChromeURLDataManager* manager) {}
 };
 
-// The single global instance of ChromeURLDataManager.
-extern ChromeURLDataManager chrome_url_data_manager;
-
 // Register our special URL handler under our special URL scheme.
 // Must be done once at startup.
 void RegisterURLRequestChromeJob();
