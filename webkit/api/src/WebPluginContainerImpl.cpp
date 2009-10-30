@@ -31,12 +31,12 @@
 #include "config.h"
 #include "WebPluginContainerImpl.h"
 
+#include "ChromeClientImpl.h"
 #include "WebCursorInfo.h"
 #include "WebDataSourceImpl.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebKit.h"
-#include "WebKitClient.h"
 #include "WebPlugin.h"
 #include "WebRect.h"
 #include "WebURLError.h"
@@ -373,7 +373,12 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     // A windowless plugin can change the cursor in response to a mouse move
     // event.  We need to reflect the changed cursor in the frame view as the
     // mouse is moved in the boundaries of the windowless plugin.
-    webKitClient()->setCursorForPlugin(cursorInfo, parentView->frame());
+    Page* page = parentView->frame()->page();
+    if (!page)
+        return;
+    ChromeClientImpl* chromeClient =
+        static_cast<ChromeClientImpl*>(page->chrome()->client());
+    chromeClient->setCursorForPlugin(cursorInfo);
 }
 
 void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)

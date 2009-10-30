@@ -7,9 +7,10 @@
 
 #if ENABLE(VIDEO)
 
-#include "TimeRanges.h"
 #include "WebCanvas.h"
 #include "WebCString.h"
+#include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMediaPlayer.h"
@@ -27,6 +28,7 @@
 #include "KURL.h"
 #include "MediaPlayer.h"
 #include "NotImplemented.h"
+#include "TimeRanges.h"
 #include <wtf/Assertions.h>
 
 #if WEBKIT_USING_SKIA
@@ -36,6 +38,15 @@
 using namespace WebCore;
 
 namespace WebKit {
+
+static WebMediaPlayer* createWebMediaPlayer(
+    WebMediaPlayerClient* client, Frame* frame)
+{
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    if (!webFrame->client())
+        return 0;
+    return webFrame->client()->createMediaPlayer(webFrame, client);
+}
 
 bool WebMediaPlayerClientImpl::m_isEnabled = false;
 
@@ -57,7 +68,6 @@ void WebMediaPlayerClientImpl::registerSelf(MediaEngineRegistrar registrar)
                   WebMediaPlayerClientImpl::supportsType);
     }
 }
-
 
 // WebMediaPlayerClient --------------------------------------------------------
 
@@ -121,7 +131,7 @@ void WebMediaPlayerClientImpl::load(const String& url)
 {
     Frame* frame = static_cast<HTMLMediaElement*>(
         m_mediaPlayer->mediaPlayerClient())->document()->frame();
-    m_webMediaPlayer.set(webKitClient()->createWebMediaPlayer(this, frame));
+    m_webMediaPlayer.set(createWebMediaPlayer(this, frame));
     if (m_webMediaPlayer.get())
         m_webMediaPlayer->load(KURL(ParsedURLString, url));
 }
@@ -258,13 +268,13 @@ float WebMediaPlayerClientImpl::maxTimeSeekable() const
     return 0.0f;
 }
 
-WTF::PassRefPtr<WebCore::TimeRanges> WebMediaPlayerClientImpl::buffered() const
+PassRefPtr<TimeRanges> WebMediaPlayerClientImpl::buffered() const
 {
     if (m_webMediaPlayer.get()) {
         const WebTimeRanges& webRanges = m_webMediaPlayer->buffered();
 
         // FIXME: Save the time ranges in a member variable and update it when needed.
-        WTF::RefPtr<TimeRanges> ranges = TimeRanges::create();
+        RefPtr<TimeRanges> ranges = TimeRanges::create();
         for (size_t i = 0; i < webRanges.size(); ++i)
             ranges->add(webRanges[i].start, webRanges[i].end);
         return ranges.release();

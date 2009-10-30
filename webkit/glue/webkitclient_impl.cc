@@ -23,7 +23,6 @@
 #include "grit/webkit_strings.h"
 #include "net/base/net_util.h"
 #include "webkit/api/public/WebCookie.h"
-#include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebPluginListBuilder.h"
@@ -31,11 +30,6 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebViewClient.h"
-#include "webkit/api/src/ChromeClientImpl.h"
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
-#include "webkit/api/src/WebWorkerClientImpl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
@@ -43,13 +37,10 @@
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 
-using WebKit::ChromeClientImpl;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
-using WebKit::WebCursorInfo;
 using WebKit::WebData;
-using WebKit::WebFrameImpl;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebStorageNamespace;
@@ -59,37 +50,6 @@ using WebKit::WebThemeEngine;
 using WebKit::WebURL;
 using WebKit::WebURLLoader;
 using WebKit::WebVector;
-using WebKit::WebViewImpl;
-using WebKit::WebWidgetClient;
-using WebKit::WebWorkerClientImpl;
-
-namespace {
-
-ChromeClientImpl* ToChromeClient(WebCore::Widget* widget) {
-  WebCore::FrameView* view;
-  if (widget->isFrameView()) {
-    view = static_cast<WebCore::FrameView*>(widget);
-  } else if (widget->parent() && widget->parent()->isFrameView()) {
-    view = static_cast<WebCore::FrameView*>(widget->parent());
-  } else {
-    return NULL;
-  }
-
-  WebCore::Page* page = view->frame() ? view->frame()->page() : NULL;
-  if (!page)
-    return NULL;
-
-  return static_cast<ChromeClientImpl*>(page->chrome()->client());
-}
-
-WebWidgetClient* ToWebWidgetClient(WebCore::Widget* widget) {
-  ChromeClientImpl* chrome_client = ToChromeClient(widget);
-  if (!chrome_client || !chrome_client->webview())
-    return NULL;
-  return chrome_client->webview()->client();
-}
-
-}
 
 namespace webkit_glue {
 
@@ -181,6 +141,10 @@ WebURLLoader* WebKitClientImpl::createURLLoader() {
 
 WebSocketStreamHandle* WebKitClientImpl::createSocketStreamHandle() {
   return new WebSocketStreamHandleImpl();
+}
+
+WebString WebKitClientImpl::userAgent(const WebURL& url) {
+  return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
 }
 
 void WebKitClientImpl::getPluginList(bool refresh,
@@ -326,6 +290,17 @@ void WebKitClientImpl::callOnMainThread(void (*func)()) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func));
 }
 
+WebStorageNamespace* WebKitClientImpl::createLocalStorageNamespace(
+    const WebString& path, unsigned quota) {
+  NOTREACHED();
+  return 0;
+}
+
+WebStorageNamespace* WebKitClientImpl::createSessionStorageNamespace() {
+  NOTREACHED();
+  return 0;
+}
+
 void WebKitClientImpl::dispatchStorageEvent(const WebString& key,
     const WebString& oldValue, const WebString& newValue,
     const WebString& origin, bool isLocalStorage) {
@@ -412,126 +387,6 @@ bool WebKitClientImpl::makeAllDirectories(
   return file_util::CreateDirectory(FilePath(file_path));
 }
 
-//--------------------------------------------------------------------------
-
-// These are temporary methods that the WebKit layer can use to call to the
-// Glue layer.  Once the Glue layer moves entirely into the WebKit layer, these
-// methods will be deleted.
-
-WebKit::WebMediaPlayer* WebKitClientImpl::createWebMediaPlayer(
-  WebKit::WebMediaPlayerClient* client, WebCore::Frame* frame) {
-  WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
-  if (!webframe->client())
-    return NULL;
-
-  return webframe->client()->createMediaPlayer(webframe, client);
-}
-
-void WebKitClientImpl::setCursorForPlugin(
-    const WebKit::WebCursorInfo& cursor_info, WebCore::Frame* frame) {
-  WebCore::Page* page = frame->page();
-  if (!page)
-      return;
-
-  ChromeClientImpl* chrome_client =
-      static_cast<ChromeClientImpl*>(page->chrome()->client());
-
-  // A windowless plugin can change the cursor in response to the WM_MOUSEMOVE
-  // event. We need to reflect the changed cursor in the frame view as the
-  // mouse is moved in the boundaries of the windowless plugin.
-  chrome_client->setCursorForPlugin(cursor_info);
-}
-
-void WebKitClientImpl::notifyJSOutOfMemory(WebCore::Frame* frame) {
-  if (!frame)
-    return;
-
-  WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
-  if (!webframe->client())
-    return;
-  webframe->client()->didExhaustMemoryAvailableForScript(webframe);
-}
-
-bool WebKitClientImpl::popupsAllowed(NPP npp) {
-  bool popups_allowed = false;
-  if (npp) {
-    NPAPI::PluginInstance* plugin_instance =
-        reinterpret_cast<NPAPI::PluginInstance*>(npp->ndata);
-    if (plugin_instance)
-      popups_allowed = plugin_instance->popups_allowed();
-  }
-  return popups_allowed;
-}
-
-WebCore::String WebKitClientImpl::uiResourceProtocol() {
-  return StdStringToString(webkit_glue::GetUIResourceProtocol());
-}
-
-int WebKitClientImpl::screenDepth(WebCore::Widget* widget) {
-  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
-  if (!client)
-    return 0;
-  return client->screenInfo().depth;
-}
-
-int WebKitClientImpl::screenDepthPerComponent(WebCore::Widget* widget) {
-  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
-  if (!client)
-    return 0;
-  return client->screenInfo().depthPerComponent;
-}
-
-bool WebKitClientImpl::screenIsMonochrome(WebCore::Widget* widget) {
-  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
-  if (!client)
-    return false;
-  return client->screenInfo().isMonochrome;
-}
-
-WebCore::IntRect WebKitClientImpl::screenRect(WebCore::Widget* widget) {
-  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
-  if (!client)
-    return WebCore::IntRect();
-  return ToIntRect(client->screenInfo().rect);
-}
-
-WebCore::IntRect WebKitClientImpl::screenAvailableRect(
-    WebCore::Widget* widget) {
-  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
-  if (!client)
-    return WebCore::IntRect();
-  return ToIntRect(client->screenInfo().availableRect);
-}
-
-void WebKitClientImpl::widgetSetCursor(WebCore::Widget* widget,
-                                       const WebCore::Cursor& cursor) {
-  ChromeClientImpl* chrome_client = ToChromeClient(widget);
-  if (chrome_client)
-    chrome_client->setCursor(CursorToWebCursorInfo(cursor));
-}
-
-void WebKitClientImpl::widgetSetFocus(WebCore::Widget* widget) {
-  ChromeClientImpl* chrome_client = ToChromeClient(widget);
-  if (chrome_client)
-    chrome_client->focus();
-}
-
-WebCore::WorkerContextProxy* WebKitClientImpl::createWorkerContextProxy(
-    WebCore::Worker* worker) {
-  return WebWorkerClientImpl::createWorkerContextProxy(worker);
-}
-
-WebStorageNamespace* WebKitClientImpl::createLocalStorageNamespace(
-    const WebString& path, unsigned quota) {
-  NOTREACHED();
-  return 0;
-}
-
-WebStorageNamespace* WebKitClientImpl::createSessionStorageNamespace() {
-  NOTREACHED();
-  return 0;
-}
-
 WebKit::WebString WebKitClientImpl::getAbsolutePath(
     const WebKit::WebString& path) {
   FilePath file_path(webkit_glue::WebStringToFilePathString(path));
@@ -549,5 +404,30 @@ WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
   GURL file_url = net::FilePathToFileURL(file_path);
   return webkit_glue::KURLToWebURL(webkit_glue::GURLToKURL(file_url));
 }
+
+//--------------------------------------------------------------------------
+// BEGIN(TemporaryGlue)
+
+// These are temporary methods that the WebKit layer can use to call to the
+// Glue layer.  Once the Glue layer moves entirely into the WebKit layer, these
+// methods will be deleted.
+
+bool WebKitClientImpl::popupsAllowed(NPP npp) {
+  bool popups_allowed = false;
+  if (npp) {
+    NPAPI::PluginInstance* plugin_instance =
+        reinterpret_cast<NPAPI::PluginInstance*>(npp->ndata);
+    if (plugin_instance)
+      popups_allowed = plugin_instance->popups_allowed();
+  }
+  return popups_allowed;
+}
+
+WebCore::String WebKitClientImpl::uiResourceProtocol() {
+  return StdStringToString(webkit_glue::GetUIResourceProtocol());
+}
+
+// END(TemporaryGlue)
+//--------------------------------------------------------------------------
 
 }  // namespace webkit_glue

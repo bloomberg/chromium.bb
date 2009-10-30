@@ -33,20 +33,26 @@
 
 #include <googleurl/src/url_util.h>
 
+#include "ChromeClientImpl.h"
 #include "WebClipboard.h"
 #include "WebCookie.h"
+#include "WebCursorInfo.h"
 #include "WebData.h"
+#include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebImage.h"
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMimeRegistry.h"
 #include "WebPluginContainerImpl.h"
 #include "WebPluginListBuilderImpl.h"
+#include "WebScreenInfo.h"
 #include "WebString.h"
 #include "WebVector.h"
 #include "WebURL.h"
-#include "Worker.h"
-#include "WorkerContextProxy.h"
+#include "WebViewClient.h"
+#include "WebViewImpl.h"
+#include "WebWorkerClientImpl.h"
 
 #if PLATFORM(WIN_OS)
 #include "WebRect.h"
@@ -67,15 +73,43 @@
 #include "Cookie.h"
 #include "GraphicsContext.h"
 #include "KURL.h"
+#include "FrameView.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "PluginData.h"
+#include "Worker.h"
+#include "WorkerContextProxy.h"
 #include <wtf/Assertions.h>
 
 // We are part of the WebKit implementation.
 using namespace WebKit;
 
 namespace WebCore {
+
+static ChromeClientImpl* toChromeClientImpl(Widget* widget)
+{
+    FrameView* view;
+    if (widget->isFrameView())
+        view = static_cast<FrameView*>(widget);
+    else if (widget->parent() && widget->parent()->isFrameView())
+        view = static_cast<FrameView*>(widget->parent());
+    else
+        return 0;
+
+    Page* page = view->frame() ? view->frame()->page() : 0;
+    if (!page)
+        return 0;
+
+    return static_cast<ChromeClientImpl*>(page->chrome()->client());
+}
+
+static WebWidgetClient* toWebWidgetClient(Widget* widget)
+{
+    ChromeClientImpl* chromeClientImpl = toChromeClientImpl(widget);
+    if (!chromeClientImpl || !chromeClientImpl->webView())
+        return 0;
+    return chromeClientImpl->webView()->client();
+}
 
 // Clipboard ------------------------------------------------------------------
 
@@ -365,7 +399,7 @@ bool ChromiumBridge::plugins(bool refresh, Vector<PluginInfo*>* results)
 NPObject* ChromiumBridge::pluginScriptableObject(Widget* widget)
 {
     if (!widget)
-        return NULL;
+        return 0;
 
     ASSERT(!widget->isFrameView());
 
@@ -520,18 +554,17 @@ void ChromiumBridge::traceEventEnd(const char* name, void* id, const char* extra
 
 // Visited Links --------------------------------------------------------------
 
-WebCore::LinkHash ChromiumBridge::visitedLinkHash(const UChar* url,
-                                                  unsigned length)
+LinkHash ChromiumBridge::visitedLinkHash(const UChar* url, unsigned length)
 {
     url_canon::RawCanonOutput<2048> buffer;
     url_parse::Parsed parsed;
-    if (!url_util::Canonicalize(url, length, NULL, &buffer, &parsed))
+    if (!url_util::Canonicalize(url, length, 0, &buffer, &parsed))
         return 0;  // Invalid URLs are unvisited.
     return webKitClient()->visitedLinkHash(buffer.data(), buffer.length());
 }
 
-WebCore::LinkHash ChromiumBridge::visitedLinkHash(const WebCore::KURL& base,
-                                                  const WebCore::AtomicString& attributeURL)
+LinkHash ChromiumBridge::visitedLinkHash(const KURL& base,
+                                         const AtomicString& attributeURL)
 {
     // Resolve the relative URL using googleurl and pass the absolute URL up to
     // the embedder. We could create a GURL object from the base and resolve
@@ -541,7 +574,7 @@ WebCore::LinkHash ChromiumBridge::visitedLinkHash(const WebCore::KURL& base,
     url_parse::Parsed parsed;
 
 #if USE(GOOGLEURL)
-    const WebCore::CString& cstr = base.utf8String();
+    const CString& cstr = base.utf8String();
     const char* data = cstr.data();
     int length = cstr.length();
     const url_parse::Parsed& srcParsed = base.parsed();
@@ -550,21 +583,21 @@ WebCore::LinkHash ChromiumBridge::visitedLinkHash(const WebCore::KURL& base,
     // below.
     url_canon::RawCanonOutput<2048> srcCanon;
     url_parse::Parsed srcParsed;
-    WebCore::String str = base.string();
-    if (!url_util::Canonicalize(str.characters(), str.length(), NULL, &srcCanon, &srcParsed))
+    String str = base.string();
+    if (!url_util::Canonicalize(str.characters(), str.length(), 0, &srcCanon, &srcParsed))
         return 0;
     const char* data = srcCanon.data();
     int length = srcCanon.length();
 #endif
 
     if (!url_util::ResolveRelative(data, length, srcParsed, attributeURL.characters(),
-                                   attributeURL.length(), NULL, &buffer, &parsed))
+                                   attributeURL.length(), 0, &buffer, &parsed))
         return 0;  // Invalid resolved URL.
 
     return webKitClient()->visitedLinkHash(buffer.data(), buffer.length());
 }
 
-bool ChromiumBridge::isLinkVisited(WebCore::LinkHash visitedLinkHash)
+bool ChromiumBridge::isLinkVisited(LinkHash visitedLinkHash)
 {
     return webKitClient()->isLinkVisited(visitedLinkHash);
 }
@@ -578,34 +611,55 @@ String ChromiumBridge::uiResourceProtocol()
     return webKitClient()->uiResourceProtocol();
 }
 
-void ChromiumBridge::notifyJSOutOfMemory(WebCore::Frame* frame)
+void ChromiumBridge::notifyJSOutOfMemory(Frame* frame)
 {
-    return webKitClient()->notifyJSOutOfMemory(frame);
+    if (!frame)
+        return;
+
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    if (!webFrame->client())
+        return;
+    webFrame->client()->didExhaustMemoryAvailableForScript(webFrame);
 }
 
 int ChromiumBridge::screenDepth(Widget* widget)
 {
-    return webKitClient()->screenDepth(widget);
+    WebWidgetClient* client = toWebWidgetClient(widget);
+    if (!client)
+        return 0;
+    return client->screenInfo().depth;
 }
 
 int ChromiumBridge::screenDepthPerComponent(Widget* widget)
 {
-    return webKitClient()->screenDepthPerComponent(widget);
+    WebWidgetClient* client = toWebWidgetClient(widget);
+    if (!client)
+        return 0;
+    return client->screenInfo().depthPerComponent;
 }
 
 bool ChromiumBridge::screenIsMonochrome(Widget* widget)
 {
-    return webKitClient()->screenIsMonochrome(widget);
+    WebWidgetClient* client = toWebWidgetClient(widget);
+    if (!client)
+        return 0;
+    return client->screenInfo().isMonochrome;
 }
 
 IntRect ChromiumBridge::screenRect(Widget* widget)
 {
-    return webKitClient()->screenRect(widget);
+    WebWidgetClient* client = toWebWidgetClient(widget);
+    if (!client)
+        return IntRect();
+    return client->screenInfo().rect;
 }
 
 IntRect ChromiumBridge::screenAvailableRect(Widget* widget)
 {
-    return webKitClient()->screenAvailableRect(widget);
+    WebWidgetClient* client = toWebWidgetClient(widget);
+    if (!client)
+        return IntRect();
+    return client->screenInfo().availableRect;
 }
 
 bool ChromiumBridge::popupsAllowed(NPP npp)
@@ -615,17 +669,21 @@ bool ChromiumBridge::popupsAllowed(NPP npp)
 
 void ChromiumBridge::widgetSetCursor(Widget* widget, const Cursor& cursor)
 {
-    return webKitClient()->widgetSetCursor(widget, cursor);
+    ChromeClientImpl* client = toChromeClientImpl(widget);
+    if (client)
+        client->setCursor(WebCursorInfo(cursor));
 }
 
 void ChromiumBridge::widgetSetFocus(Widget* widget)
 {
-    return webKitClient()->widgetSetFocus(widget);
+    ChromeClientImpl* client = toChromeClientImpl(widget);
+    if (client)
+        client->focus();
 }
 
 WorkerContextProxy* WorkerContextProxy::create(Worker* worker)
 {
-    return webKitClient()->createWorkerContextProxy(worker);
+    return WebWorkerClientImpl::createWorkerContextProxy(worker);
 }
 
 } // namespace WebCore

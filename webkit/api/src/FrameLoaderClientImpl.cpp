@@ -51,6 +51,8 @@
 #include "WebForm.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "WebKit.h"
+#include "WebKitClient.h"
 #include "WebNode.h"
 #include "WebPlugin.h"
 #include "WebPluginParams.h"
@@ -68,11 +70,8 @@
 #include "WrappedResourceResponse.h"
 
 // FIXME: remove these
-#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
-#include "webkit/glue/webkit_glue.h"
 
 using namespace WebCore;
 
@@ -1207,9 +1206,7 @@ void FrameLoaderClientImpl::setTitle(const String& title, const KURL& url)
 
 String FrameLoaderClientImpl::userAgent(const KURL& url)
 {
-    // FIXME: Convert this to a WebKitClient callback.
-    return webkit_glue::StdStringToString(
-        webkit_glue::GetUserAgent(webkit_glue::KURLToGURL(url)));
+    return webKitClient()->userAgent(url);
 }
 
 void FrameLoaderClientImpl::savePlatformDataToCachedFrame(CachedFrame*)

@@ -758,7 +758,7 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
     if (!page)
         return 0;
 
-    return static_cast<ChromeClientImpl*>(page->chrome()->client())->webview();
+    return static_cast<ChromeClientImpl*>(page->chrome()->client())->webView();
 }
 
 // WebWidget ------------------------------------------------------------------

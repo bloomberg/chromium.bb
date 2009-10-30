@@ -128,7 +128,7 @@ namespace WebKit {
         virtual bool isLinkVisited(unsigned long long linkHash) = 0;
 
 
-        // HTML5 DB ------------------------------------------------------------
+        // Database ------------------------------------------------------------
 
 #ifdef WIN32
         typedef HANDLE FileHandle;
@@ -150,6 +150,7 @@ namespace WebKit {
         // Returns the size of the given database file
         virtual long long databaseGetFileSize(const WebString& fileName) = 0;
 
+
         // Keygen --------------------------------------------------------------
 
         // Handle the <keygen> tag for generating client certificates
@@ -159,6 +160,7 @@ namespace WebKit {
         virtual WebString signedPublicKeyAndChallengeString(unsigned keySizeIndex,
                                                             const WebKit::WebString& challenge,
                                                             const WebKit::WebURL& url) = 0;
+
 
         // Message Ports -------------------------------------------------------
 
@@ -183,6 +185,9 @@ namespace WebKit {
 
         // Returns a new WebSocketStreamHandle instance.
         virtual WebSocketStreamHandle* createSocketStreamHandle() = 0;
+
+        // Returns the User-Agent string that should be used for the given URL.
+        virtual WebString userAgent(const WebURL&) = 0;
 
 
         // Plugins -------------------------------------------------------------
