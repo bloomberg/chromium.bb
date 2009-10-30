@@ -26,6 +26,7 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 };
 
 #endif  // CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_

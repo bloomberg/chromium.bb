@@ -36,6 +36,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
       const WebKit::WebString& origin, bool isLocalStorage);
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CLIENT_IMPL_H_

@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_RENDERER_WEBKIT_CLIENT_IMPL_H_
 
 #include "base/platform_file.h"
+#include "chrome/renderer/websharedworkerrepository_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
@@ -64,6 +65,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);
 
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+
  private:
   class MimeRegistry : public webkit_glue::SimpleWebMimeRegistryImpl {
    public:
@@ -106,6 +109,11 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // increments by 1, for every enable decrements by 1. When it reaches 0,
   // we tell the browser to enable fast termination.
   int sudden_termination_disables_;
+
+  // Implementation of the WebSharedWorkerRepository APIs (provides an interface
+  // to WorkerService on the browser thread.
+  WebSharedWorkerRepositoryImpl shared_worker_repository_;
+
 };
 
 #endif  // CHROME_RENDERER_WEBKIT_CLIENT_IMPL_H_

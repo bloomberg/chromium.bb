@@ -123,3 +123,9 @@ void BrowserWebKitClientImpl::dispatchStorageEvent(
   DOMStorageDispatcherHost::DispatchStorageEvent(key, old_value, new_value,
                                                  origin, is_local_storage);
 }
+
+WebKit::WebSharedWorkerRepository*
+BrowserWebKitClientImpl::sharedWorkerRepository() {
+    NOTREACHED();
+    return NULL;
+}

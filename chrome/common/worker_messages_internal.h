@@ -94,6 +94,10 @@ IPC_BEGIN_MESSAGES(Worker)
                       std::vector<int>  /* sent_message_port_ids */,
                       std::vector<int>  /* new_routing_ids */)
 
+  IPC_MESSAGE_ROUTED2(WorkerMsg_Connect,
+                      int /* sent_message_port_id */,
+                      int /* routing_id */)
+
   IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 IPC_END_MESSAGES(Worker)
 

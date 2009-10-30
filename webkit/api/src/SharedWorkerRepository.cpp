@@ -34,35 +34,128 @@
 
 #include "SharedWorkerRepository.h"
 
+#include "Event.h"
+#include "EventNames.h"
 #include "MessagePortChannel.h"
 #include "SharedWorker.h"
+#include "PlatformMessagePortChannel.h"
+#include "WebKit.h"
+#include "WebKitClient.h"
+#include "WebMessagePortChannel.h"
+#include "WebSharedWorker.h"
+#include "WebSharedWorkerRepository.h"
+#include "WebString.h"
+#include "WebURL.h"
+#include "WorkerScriptLoader.h"
+#include "WorkerScriptLoaderClient.h"
 
 namespace WebCore {
 
 class Document;
+using WebKit::WebMessagePortChannel;
+using WebKit::WebSharedWorker;
+using WebKit::WebSharedWorkerRepository;
+
+// Callback class that keeps the Worker object alive while loads are potentially happening, and also translates load errors into error events on the worker.
+class SharedWorkerScriptLoader : public RefCounted<SharedWorkerScriptLoader>, private WorkerScriptLoaderClient {
+public:
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
+            : m_worker(worker),
+              m_webWorker(webWorker),
+              m_port(port)
+    {
+    }
+
+    void load(const KURL&);
+
+private:
+    // WorkerScriptLoaderClient callback
+    virtual void notifyFinished();
+
+    RefPtr<SharedWorker> m_worker;
+    OwnPtr<WebSharedWorker> m_webWorker;
+    OwnPtr<MessagePortChannel> m_port;
+    WorkerScriptLoader m_scriptLoader;
+};
+
+void SharedWorkerScriptLoader::load(const KURL& url)
+{
+    m_scriptLoader.loadAsynchronously(m_worker->scriptExecutionContext(), url, DenyCrossOriginRequests, this);
+}
+
+// Extracts a WebMessagePortChannel from a MessagePortChannel.
+static WebMessagePortChannel* getWebPort(PassOwnPtr<MessagePortChannel> port) {
+    // Extract the WebMessagePortChannel to send to the worker.
+    PlatformMessagePortChannel* platformChannel = port->channel();
+    WebMessagePortChannel* webPort = platformChannel->webChannelRelease();
+    webPort->setClient(0);
+    return webPort;
+}
+
+void SharedWorkerScriptLoader::notifyFinished()
+{
+    if (m_scriptLoader.failed())
+        m_worker->dispatchEvent(Event::create(eventNames().errorEvent, false, true));
+    else {
+        m_webWorker->startWorkerContext(m_scriptLoader.url(), m_worker->scriptExecutionContext()->userAgent(m_scriptLoader.url()), m_scriptLoader.script());
+        m_webWorker->connect(getWebPort(m_port.release()));
+    }
+
+    // Connect event has been sent, so free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
+    delete this;
+}
 
 bool SharedWorkerRepository::isAvailable()
 {
     // SharedWorkers are disabled for now until the implementation is further along.
+    // TODO(atwilson): Add code to check for a runtime flag like so:
+    // return commandLineFlag && WebKit::webKitClient()->sharedWorkerRepository();
     return false;
 }
 
-void SharedWorkerRepository::connect(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String&, ExceptionCode&)
+static WebSharedWorkerRepository::DocumentID getId(void* document)
 {
-    // Should not be called because SharedWorkers are disabled.
-    ASSERT_NOT_REACHED();
+    ASSERT(document);
+    return reinterpret_cast<WebSharedWorkerRepository::DocumentID>(document);
 }
 
-void SharedWorkerRepository::documentDetached(Document*)
+void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionCode& ec)
 {
-    // Does nothing for now (will shutdown shared workers in the future).
+    ScriptExecutionContext* context = worker->scriptExecutionContext();
+    // No nested workers (for now) - connect() should only be called from document context.
+    ASSERT(context->isDocument());
+    OwnPtr<WebSharedWorker> webWorker;
+    ASSERT(WebKit::webKitClient()->sharedWorkerRepository());
+    webWorker = WebKit::webKitClient()->sharedWorkerRepository()->lookup(url, name, getId(context));
+
+    if (!webWorker) {
+        // Existing worker does not match this url, so return an error back to the caller.
+        ec = URL_MISMATCH_ERR;
+        return;
+    }
+
+    if (!webWorker->isStarted()) {
+        // Need to kick off a load for the worker. The loader will connect to the worker once the script has been loaded, then free itself.
+        SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, port.release(), webWorker.release());
+        loader->load(url);
+    } else
+        webWorker->connect(getWebPort(port.release()));
 }
 
-bool SharedWorkerRepository::hasSharedWorkers(Document*)
+void SharedWorkerRepository::documentDetached(Document* document)
 {
-    // There can be no shared workers until the API is enabled.
-    return false;
+    WebKit::WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
+    if (repo)
+        repo->documentDetached(getId(document));
 }
+
+bool SharedWorkerRepository::hasSharedWorkers(Document* document)
+{
+    WebKit::WebSharedWorkerRepository* repo = WebKit::webKitClient()->sharedWorkerRepository();
+    return repo && repo->hasSharedWorkers(getId(document));
+}
+
+
 
 } // namespace WebCore
 

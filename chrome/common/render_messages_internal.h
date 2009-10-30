@@ -720,9 +720,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                       bool /* active */)
 
-  // Response message to ViewHostMsg_CreateDedicatedWorker.  Sent when the
-  // worker has started.
-  IPC_MESSAGE_ROUTED0(ViewMsg_DedicatedWorkerCreated)
+  // Response message to ViewHostMsg_CreateShared/DedicatedWorker.
+  // Sent when the worker has started.
+  IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)
 
   // Tell the renderer which browser window it's being attached to.
   IPC_MESSAGE_ROUTED1(ViewMsg_UpdateBrowserWindowId,
@@ -1710,6 +1710,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* render_view_route_id */,
                               int /* route_id */)
 
+  // A renderer sends this to the browser process when it wants to create a
+  // shared worker.  The browser will create the worker process if necessary,
+  // and will return the route id on success.  On error returns
+  // MSG_ROUTING_NONE.
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_CreateSharedWorker,
+                              GURL /* url */,
+                              string16 /* name */,
+                              int /* render_view_route_id */,
+                              int /* route_id */)
+
   // A message sent to the browser on behalf of a renderer which wants to show
   // a desktop notification.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDesktopNotification,
@@ -1732,7 +1742,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              int /* permission_result */)
 
   // Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker
-  // message and not received a ViewMsg_DedicatedWorkerCreated reply, but in the
+  // message and not received a ViewMsg_WorkerCreated reply, but in the
   // mean time it's destroyed.  This tells the browser to not create the queued
   // worker.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_CancelCreateDedicatedWorker,

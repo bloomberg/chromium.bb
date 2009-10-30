@@ -74,3 +74,8 @@ WebKit::WebString WorkerWebKitClientImpl::defaultLocale() {
   NOTREACHED();
   return WebKit::WebString();
 }
+
+WebKit::WebSharedWorkerRepository*
+WorkerWebKitClientImpl::sharedWorkerRepository() {
+    return 0;
+}

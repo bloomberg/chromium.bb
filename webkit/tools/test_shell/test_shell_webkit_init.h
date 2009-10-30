@@ -226,6 +226,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 #endif
 
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() {
+      return NULL;
+  }
+
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;

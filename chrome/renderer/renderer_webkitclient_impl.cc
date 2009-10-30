@@ -352,6 +352,11 @@ long long RendererWebKitClientImpl::databaseGetFileSize(
       message_id, 0LL);
 }
 
+WebKit::WebSharedWorkerRepository*
+RendererWebKitClientImpl::sharedWorkerRepository() {
+    return &shared_worker_repository_;
+}
+
 //------------------------------------------------------------------------------
 
 WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
