@@ -1310,12 +1310,6 @@ HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
     return S_FALSE;
   }
 
-  IEVersion ie_version = GetIEVersion();
-  if (ie_version == IE_8) {
-    DLOG(INFO) << __FUNCTION__ << " Not running test on IE8";
-    return S_FALSE;
-  }
-
   EXPECT_TRUE(S_OK == LaunchIEAsComServer(web_browser2_.Receive()));
   web_browser2_->put_Visible(VARIANT_TRUE);
 

@@ -59,12 +59,12 @@ bool SupplyProxyCredentials::OnDialogDetected(HWND hwnd,
   chrome_frame_test::SendString(username_.c_str());
   Sleep(100);
 
-  chrome_frame_test::SendVirtualKey(VK_TAB);
+  chrome_frame_test::SendVirtualKey(VK_TAB, false);
   Sleep(100);
   chrome_frame_test::SendString(password_.c_str());
 
   Sleep(100);
-  chrome_frame_test::SendVirtualKey(VK_RETURN);
+  chrome_frame_test::SendVirtualKey(VK_RETURN, false);
 
   return true;
 }

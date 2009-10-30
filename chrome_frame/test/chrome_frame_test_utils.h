@@ -23,7 +23,8 @@ bool SendString(const wchar_t* s);
 
 // Sends a virtual key such as VK_TAB, VK_RETURN or a character that has been
 // translated to a virtual key.
-void SendVirtualKey(int16 key);
+// The extended flag indicates if this is an extended key
+void SendVirtualKey(int16 key, bool extended);
 
 // Translates a single char to a virtual key and calls SendVirtualKey.
 void SendChar(char c);

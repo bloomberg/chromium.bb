@@ -212,16 +212,17 @@ bool SendString(const wchar_t* string) {
   return true;
 }
 
-void SendVirtualKey(int16 key) {
+void SendVirtualKey(int16 key, bool extended) {
   INPUT input = { INPUT_KEYBOARD };
   input.ki.wVk = key;
+  input.ki.dwFlags = extended ? KEYEVENTF_EXTENDEDKEY : 0;
   SendInput(1, &input, sizeof(input));
-  input.ki.dwFlags = KEYEVENTF_KEYUP;
+  input.ki.dwFlags = (extended ? KEYEVENTF_EXTENDEDKEY : 0) | KEYEVENTF_KEYUP;
   SendInput(1, &input, sizeof(input));
 }
 
 void SendChar(char c) {
-  SendVirtualKey(VkKeyScanA(c));
+  SendVirtualKey(VkKeyScanA(c), false);
 }
 
 void SendString(const char* s) {
@@ -441,8 +442,8 @@ void ShowChromeFrameContextMenu() {
 void SelectAboutChromeFrame() {
   // Send a key up message to enable the About chrome frame option to be
   // selected followed by a return to select it.
-  chrome_frame_test::SendVirtualKey(VK_UP);
-  chrome_frame_test::SendVirtualKey(VK_RETURN);
+  SendVirtualKey(VK_UP, true);
+  SendVirtualKey(VK_RETURN, false);
 }
 
 BOOL CALLBACK FindChromeRendererWindowProc(
