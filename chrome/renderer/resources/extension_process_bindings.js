@@ -238,8 +238,12 @@ var chrome = chrome || {};
     var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
 
     apiDefinitions.forEach(function(apiDef) {
-      chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
-      var module = chrome[apiDef.namespace];
+      var module = chrome;
+      var namespaces = apiDef.namespace.split('.');
+      for (var index = 0, name; name = namespaces[index]; index++) {
+        module[name] = module[name] || {};
+        module = module[name];
+      };
 
       // Add types to global validationTypes
       if (apiDef.types) {
@@ -422,4 +426,24 @@ var chrome = chrome || {};
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
   });
+
+  if (!chrome.experimental)
+    chrome.experimental = {};
+
+  if (!chrome.experimental.history)
+    chrome.experimental.history = {};
+
+  chrome.experimental.history.transistionType = {
+    LINK: 0,
+    TYPED: 1,
+    AUTO_BOOKMARK: 2,
+    AUTO_SUBFRAME: 3,
+    MANUAL_SUBFRAME: 4,
+    GENERATED: 5,
+    START_PAGE: 6,
+    FORM_SUBMIT: 7,
+    RELOAD: 8,
+    KEYWORD: 9,
+    KEYWORD_GENERATED: 10
+  };
 })();

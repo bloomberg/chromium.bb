@@ -1,0 +1,7 @@
+{
+  "name": "chrome.history",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.history API",
+  "background_page": "test.html",
+  "permissions": ["experimental", "tabs"]
+}

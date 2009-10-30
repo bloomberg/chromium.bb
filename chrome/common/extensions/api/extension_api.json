@@ -1342,6 +1342,160 @@
     ]
   },
   {
+    "namespace": "experimental.history",
+    "types": [
+      {
+        "id": "HistoryItem",
+        "type": "object",
+        "description": "An object encapsulating one result of a history query.",
+        "properties": {
+          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the item."},
+          "url": {"type": "string", "optional": true, "description": "The URL navigated to by a user."},
+          "title": {"type": "string", "optional": true, "description": "The title of the history page."},
+          "lastVisitTime": {"type": "number", "optional": true, "description": "When this page was last loaded, represented in milliseconds since the epoch."},
+          "visitCount": {"type": "integer", "optional": true, "description": "The number of times the user has navigated to this page."},
+          "typedCount": {"type": "integer", "optional": true, "description": "The number of times the user has navigated to this page by typing in the address."}
+        }
+      },
+      {
+        "id": "VisitItem",
+        "type": "object",
+        "description": "An object encapsulating one visit to a url.",
+        "properties": {
+          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the item."},
+          "visitId": {"type": "string", "description": "The unique identifier for this visit."},
+          "visitTime": {"type": "number", "optional": true, "description": "When this visit occurred, represented in milliseconds since the epoch."},
+          "referringVisitId": {"type": "string", "description": "The visit_id of the referrer."},
+          "transition": {"type": "integer", "minimum": 0, "maximum": 10, "description": "The transition type for this visit from its referrer.  The enumeration is defined in chrome.history.transistionType."}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "search",
+        "type": "function",
+        "description": "Search the history for the last visit time of each page matching the query.",
+        "parameters": [
+          {
+            "name": "query",
+            "type": "object",
+            "properties": {
+              "search": {"type": "string", "description": "A free-text query to the history service, leave empty to retrieve all pages."},
+              "startTime": {"type": "number", "optional": true, "description": "Limit results to those visited after this date, represented in milliseconds since the epoch."},
+              "endTime": {"type": "number", "optional": true, "description": "Limit results to those visited before this date, represented in milliseconds since the epoch."},
+              "maxResults": {"type": "integer", "optional": true, "minimum": 0, "description": "The maximum number of results to retrieve.  Defaults to 100."}
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              { "name": "results", "type": "array", "items": { "$ref": "HistoryItem"} }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getVisits",
+        "type": "function",
+        "description": "Retrieve information about visits to a url.",
+        "parameters": [
+          {
+            "type": "object",
+            "properties": {
+              "url": {"type": "string", "description": "The url for which to retrieve visit information.  It must be in the format as returned from a call to history.search."}
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              { "name": "results", "type": "array", "items": { "$ref": "VisitItem"} }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "addUrl",
+        "type": "function",
+        "description": "Adds a Url to the history at the current time with transition of LINK.",
+        "parameters": [
+          {
+            "type": "object",
+            "properties": {
+              "url": {"type": "string", "description": "The url to add."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "deleteUrl",
+        "type": "function",
+        "description": "Removes all occurrences of the given Url from the history.",
+        "parameters": [
+          {
+            "type": "object",
+            "properties": {
+              "url": {"type": "string", "description": "The url to remove."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "deleteRange",
+        "type": "function",
+        "description": "Removes all items within the specified date range from the history.  Pages will not be removed from the history unless all visits fall within the range.",
+        "parameters": [
+          {
+            "type": "object",
+            "properties": {
+              "startTime": { "type": "number", "description": "Items added to history after this date, represented in milliseconds since the epoch." },
+              "endTime": { "type": "number", "description": "Items added to history before this date, represented in milliseconds since the epoch." }
+            }
+          },
+          {
+            "name": "callback", "type": "function", "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "deleteAll",
+        "type": "function",
+        "description": "Deletes all items from the history.",
+        "parameters": [
+          {
+            "name": "callback", "type": "function", "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onVisited",
+        "type": "function",
+        "description": "Fired when a url is visited, providing the HistoryItem data for that url.",
+        "parameters": [
+          { "name": "result", "$ref": "HistoryItem"}
+        ]
+      },
+      {
+        "name": "onVisitRemoved",
+        "type": "function",
+        "description": "Fired when one or more urls are removed from the history service.  When all visits have been removed the url is purged from history.",
+        "parameters": [
+          {
+            "name": "removed",
+            "type": "object",
+            "properties": {
+              "allHistory": { "type": "boolean", "description": "True if all history was removed.  If true, then urls will be empty." },
+              "urls": { "type": "array", "items": { "type": "string" }, "optional": true}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "toolstrip",
     "types": [],
     "functions": [

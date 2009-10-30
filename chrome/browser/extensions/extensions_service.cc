@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_file_util.h"
+#include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
@@ -123,6 +124,9 @@ void ExtensionsService::Init() {
   // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
   // the first extension, because its members listen for loaded notifications.
   g_browser_process->resource_dispatcher_host();
+
+  // Start up the extension event routers.
+  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
 
   LoadAllExtensions();
 

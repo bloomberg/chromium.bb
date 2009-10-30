@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -14,6 +15,7 @@
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -58,6 +60,11 @@ static bool IsAPIPermission(const std::string& str) {
     if (str == Extension::kPermissionNames[i])
       return true;
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis) &&
+      str == Extension::kExperimentalName)
+    return true;
 
   return false;
 }
@@ -108,6 +115,8 @@ const char* Extension::kPermissionNames[] = {
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
+
+const char* Extension::kExperimentalName = "experimental";
 
 Extension::~Extension() {
 }

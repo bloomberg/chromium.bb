@@ -62,6 +62,7 @@ extern const char kEnableApplicationCache[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableDatabases[];
 extern const char kEnableDesktopNotifications[];
+extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];

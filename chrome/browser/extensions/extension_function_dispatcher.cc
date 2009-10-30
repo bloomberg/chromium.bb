@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
@@ -122,6 +123,14 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<CreateBookmarkFunction>();
   RegisterFunction<MoveBookmarkFunction>();
   RegisterFunction<UpdateBookmarkFunction>();
+
+  // History
+  RegisterFunction<AddUrlHistoryFunction>();
+  RegisterFunction<DeleteAllHistoryFunction>();
+  RegisterFunction<DeleteRangeHistoryFunction>();
+  RegisterFunction<DeleteUrlHistoryFunction>();
+  RegisterFunction<GetVisitsHistoryFunction>();
+  RegisterFunction<SearchHistoryFunction>();
 
   // Toolstrips.
   RegisterFunction<ToolstripExpandFunction>();

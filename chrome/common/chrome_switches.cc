@@ -164,6 +164,10 @@ const char kEnableDatabases[]               = "enable-databases";
 // Enabled desktop notifications.
 const char kEnableDesktopNotifications[]    = "enable-desktop-notifications";
 
+// Enables extension APIs that are in development.
+const char kEnableExperimentalExtensionApis[] =
+    "--enable-experimental-extension-apis";
+
 // Enable experimental WebGL support.
 const char kEnableExperimentalWebGL[]       = "enable-webgl";
 
