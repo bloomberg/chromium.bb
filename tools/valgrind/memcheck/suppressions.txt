@@ -314,6 +314,14 @@
    fun:sqlite3BtreeCommitPhaseOne
 }
 {
+   bug_23314b
+   Memcheck:Addr4
+   fun:sqlite3PcacheClearSyncFlags
+   fun:syncJournal
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+}
+{
    # Valgrind doesn't grok clone quite yet on x64,
    # see https://bugs.kde.org/show_bug.cgi?id=117564
    valgrind_bug_117564
