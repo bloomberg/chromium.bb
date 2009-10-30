@@ -25,6 +25,8 @@
     'ffmpeg_branding%': '<(branding)',
     'ffmpeg_variant%': '<(target_arch)',
 
+    'use_system_ffmpeg%': 0,
+
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
     'asm_library': 'ffmpegasm',
@@ -36,7 +38,7 @@
     #
     # TODO(ajwong): Per the comment above, reduce this conditional's size and
     # determine if in-tree build in Windows is tractable.
-    ['OS!="linux" or OS=="freebsd" or OS=="linux"', {
+    ['OS!="linux" or OS!="freebsd" or use_system_ffmpeg==0', {
       'variables': {
         'target_for_binaries': 'ffmpeg_binaries',
         'ffmpeg_include_root': 'include',
@@ -561,11 +563,6 @@
                 # TODO(ajwong): Clean this up after we've finished
                 # migrating to in-tree build.
                 'source_files': [
-                  # TODO(ajwong): Temporary revert to make tree green while
-                  # builder libraries are updated.
-                  'binaries/<(ffmpeg_bin_dir)/libavcodec.so.52',
-                  'binaries/<(ffmpeg_bin_dir)/libavformat.so.52',
-                  'binaries/<(ffmpeg_bin_dir)/libavutil.so.50',
                 ],
               },
         }], ['OS=="mac"', {
