@@ -974,6 +974,8 @@
         'browser/chromeos/cros_library.h',
         'browser/chromeos/external_cookie_handler.cc',
         'browser/chromeos/external_cookie_handler.h',
+        'browser/chromeos/external_protocol_dialog.cc',
+        'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/main_menu.cc',
@@ -2463,8 +2465,10 @@
           ],
         }],
         ['chromeos==1 and toolkit_views==0', {
-          'sources!': [
-            'browser/chromeos/browser_extenders.cc',
+          'sources/': [
+            ['exclude', '^browser/chromeos/browser_extenders.cc'],
+            ['exclude', '^browser/gtk/external_protocol_dialog_gtk.cc'],
+            ['exclude', '^browser/gtk/external_protocol_dialog_gtk.h'],
            ],
         }],
         ['chromeos==0 and toolkit_views==0', {

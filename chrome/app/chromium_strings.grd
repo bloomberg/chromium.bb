@@ -127,7 +127,7 @@ be available for now. -->
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Chromium
       </message>
-      <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
+      <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Chromium OS
         </message>
@@ -236,9 +236,16 @@ be available for now. -->
                desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
         Welcome to Chromium
       </message>
-      <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
-        Chromium needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
-      </message>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
+          Chromium needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
+          Chromium OS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+        </message>
+      </if>
       <!-- Strings used to warn that an OS is not supported -->
       <message name="IDS_UNSUPPORTED_OS_WIN2000" desc="The text used to warn the user that Windows 2000 is not supported">
         Chromium does not support Windows 2000. Some features may not work.

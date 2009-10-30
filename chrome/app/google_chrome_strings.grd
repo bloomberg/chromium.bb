@@ -177,7 +177,7 @@ Chrome supports. -->
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome
       </message>
-      <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
+      <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Google Chrome OS
         </message>
@@ -286,9 +286,16 @@ Chrome supports. -->
                desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
         Welcome to Google Chrome
       </message>
-      <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
-        Google Chrome needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
-      </message>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
+          Google Chrome needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
+          Google ChromeOS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+        </message>
+      </if>
       <!-- Strings used to warn that an OS is not supported -->
       <message name="IDS_UNSUPPORTED_OS_WIN2000" desc="The text used to warn the user that Windows 2000 is not supported">
         Google Chrome does not support Windows 2000. Some features may not work.

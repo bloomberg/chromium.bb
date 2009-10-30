@@ -39,6 +39,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   }
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       render_process_host_id, routing_id);
+  DCHECK(tab_contents);
   ExternalProtocolDialog* handler =
       new ExternalProtocolDialog(tab_contents, url, command);
 }
@@ -128,7 +129,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
 
   message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
                                          message_text,
-                                         L"",
+                                         std::wstring(),
                                          kMessageWidth);
   message_box_view_->SetCheckBoxLabel(
       l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));

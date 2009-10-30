@@ -2,36 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
-#define CHROME_BROWSER_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTERNAL_PROTOCOL_DIALOG_H_
+#define CHROME_BROWSER_CHROMEOS_EXTERNAL_PROTOCOL_DIALOG_H_
 
 #include "base/time.h"
-#include "googleurl/src/gurl.h"
 #include "views/window/dialog_delegate.h"
 
+class GURL;
 class MessageBoxView;
 class TabContents;
 
+// An external protocol dialog for ChromeOS. Unlike other platforms,
+// ChromeOS does not support launching external program, therefore,
+// this dialog simply says it is not supported.
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
   // RunExternalProtocolDialog calls this private constructor.
-  ExternalProtocolDialog(TabContents* tab_contents,
-                         const GURL& url,
-                         const std::wstring& command);
-
-  // Returns the path of the application to be launched given the protocol
-  // of the requested url. Returns an empty string on failure.
-  static std::wstring GetApplicationForProtocol(const GURL& url);
+  ExternalProtocolDialog(TabContents* tab_contents, const GURL& url);
 
   virtual ~ExternalProtocolDialog();
 
   // views::DialogDelegate Methods:
-  virtual int GetDefaultDialogButton() const;
+  virtual int GetDialogButtons() const;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
   virtual std::wstring GetWindowTitle() const;
   virtual void DeleteDelegate();
-  virtual bool Cancel();
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
@@ -43,16 +39,13 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   // The message box view whose commands we handle.
   MessageBoxView* message_box_view_;
 
-  // The associated TabContents.
-  TabContents* tab_contents_;
-
-  // URL of the external protocol request.
-  GURL url_;
-
   // The time at which this dialog was created.
   base::Time creation_time_;
+
+  // The scheme of the url.
+  std::wstring scheme_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialog);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTERNAL_PROTOCOL_DIALOG_H_
