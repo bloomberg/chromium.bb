@@ -4425,10 +4425,10 @@
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
         'browser/child_process_security_policy_unittest.cc',
         'browser/chrome_thread_unittest.cc',
-        'browser/chromeos/chromeos_version_loader_unittest.cc',
-        'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
+        'browser/chromeos/pipe_reader_unittest.cc',
+        'browser/chromeos/version_loader_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
