@@ -43,7 +43,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
   void WaitForChildToDie() {
     // Wait forever case.
     if (timeout_ == 0) {
-      pid_t r = waitpid(child_, NULL, 0);
+      pid_t r = HANDLE_EINTR(waitpid(child_, NULL, 0));
       if (r != child_) {
         LOG(ERROR) << "While waiting for " << child_
                    << " to terminate, we got the following result: " << r;
