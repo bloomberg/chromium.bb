@@ -552,8 +552,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // prompt the user to pick a different user-data-dir and restart chrome
     // with the new dir.
     // http://code.google.com/p/chromium/issues/detail?id=11510
-    user_data_dir = FilePath::FromWStringHack(
-        UserDataDirDialog::RunUserDataDirDialog(user_data_dir.ToWStringHack()));
+    user_data_dir = UserDataDirDialog::RunUserDataDirDialog(user_data_dir);
     if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
       // Only delete the resources if we're not running tests. If we're running
       // tests the resources need to be reused as many places in the UI cache

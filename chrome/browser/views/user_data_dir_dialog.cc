@@ -13,20 +13,20 @@
 #include "views/window/window.h"
 
 // static
-std::wstring UserDataDirDialog::RunUserDataDirDialog(
-    const std::wstring& user_data_dir) {
+FilePath UserDataDirDialog::RunUserDataDirDialog(
+    const FilePath& user_data_dir) {
   // When the window closes, it will delete itself.
   UserDataDirDialog* dlg = new UserDataDirDialog(user_data_dir);
   MessageLoopForUI::current()->Run(dlg);
   return dlg->user_data_dir();
 }
 
-UserDataDirDialog::UserDataDirDialog(const std::wstring& user_data_dir)
+UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           select_file_dialog_(SelectFileDialog::Create(this))),
       is_blocking_(true) {
   std::wstring message_text = l10n_util::GetStringF(
-      IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY, user_data_dir);
+      IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY, user_data_dir.ToWStringHack());
   const int kDialogWidth = 400;
   message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
       message_text.c_str(), std::wstring(), kDialogWidth);
@@ -91,7 +91,7 @@ bool UserDataDirDialog::Dispatch(const MSG& msg) {
 
 void UserDataDirDialog::FileSelected(const FilePath& path,
                                      int index, void* params) {
-  user_data_dir_ = path.ToWStringHack();
+  user_data_dir_ = path;
   is_blocking_ = false;
 }
 
