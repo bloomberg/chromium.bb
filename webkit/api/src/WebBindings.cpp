@@ -255,13 +255,13 @@ static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
         return false;
 
     // Drag events are mouse events and should have a clipboard.
-    MouseEvent* me = reinterpret_cast<MouseEvent*>(event);
+    MouseEvent* me = static_cast<MouseEvent*>(event);
     Clipboard* clipboard = me->clipboard();
     if (!clipboard)
         return false;
 
     // And that clipboard should be accessible by WebKit policy.
-    ClipboardChromium* chrome = reinterpret_cast<ClipboardChromium*>(clipboard);
+    ClipboardChromium* chrome = static_cast<ClipboardChromium*>(clipboard);
     HashSet<String> accessible(chrome->types());
     if (accessible.isEmpty())
         return false;
