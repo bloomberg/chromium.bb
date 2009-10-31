@@ -20,6 +20,7 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/pepper/pepper.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"

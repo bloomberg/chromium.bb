@@ -8,6 +8,7 @@
 #define WEBKIT_GLUE_PLUGIN_NPHOSTAPI_H__
 
 #include "base/port.h"
+#include "webkit/glue/pepper/pepper.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 

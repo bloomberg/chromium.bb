@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/pepper/pepper.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -280,10 +281,10 @@ void WebPluginDelegatePepper::InstallMissingPlugin() {
 }
 
 void WebPluginDelegatePepper::SetFocus() {
-  NPEvent npevent;
+  NPPepperEvent npevent;
 
   npevent.type = NPEventType_Focus;
-  npevent.size = sizeof(NPEvent);
+  npevent.size = sizeof(npevent);
   // TODO(sehr): what timestamp should this have?
   npevent.timeStampSeconds = 0.0;
   // Currently this API only supports gaining focus.
@@ -321,14 +322,14 @@ NPEventTypes ConvertEventTypes(WebInputEvent::Type wetype) {
   }
 }
 
-void BuildKeyEvent(const WebInputEvent* event, NPEvent* npevent) {
+void BuildKeyEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
   const WebKeyboardEvent* key_event =
       reinterpret_cast<const WebKeyboardEvent*>(event);
   npevent->u.key.modifier = key_event->modifiers;
   npevent->u.key.normalizedKeyCode = key_event->windowsKeyCode;
 }
 
-void BuildCharEvent(const WebInputEvent* event, NPEvent* npevent) {
+void BuildCharEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
   const WebKeyboardEvent* key_event =
       reinterpret_cast<const WebKeyboardEvent*>(event);
   npevent->u.character.modifier = key_event->modifiers;
@@ -342,7 +343,7 @@ void BuildCharEvent(const WebInputEvent* event, NPEvent* npevent) {
   }
 }
 
-void BuildMouseEvent(const WebInputEvent* event, NPEvent* npevent) {
+void BuildMouseEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
   const WebMouseEvent* mouse_event =
       reinterpret_cast<const WebMouseEvent*>(event);
   npevent->u.mouse.modifier = mouse_event->modifiers;
@@ -352,7 +353,7 @@ void BuildMouseEvent(const WebInputEvent* event, NPEvent* npevent) {
   npevent->u.mouse.clickCount = mouse_event->clickCount;
 }
 
-void BuildMouseWheelEvent(const WebInputEvent* event, NPEvent* npevent) {
+void BuildMouseWheelEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
   const WebMouseWheelEvent* mouse_wheel_event =
       reinterpret_cast<const WebMouseWheelEvent*>(event);
   npevent->u.wheel.modifier = mouse_wheel_event->modifiers;
@@ -366,10 +367,10 @@ void BuildMouseWheelEvent(const WebInputEvent* event, NPEvent* npevent) {
 
 bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
                                                WebCursorInfo* cursor_info) {
-  NPEvent npevent;
+  NPPepperEvent npevent;
 
   npevent.type = ConvertEventTypes(event.type);
-  npevent.size = sizeof(NPEvent);
+  npevent.size = sizeof(npevent);
   npevent.timeStampSeconds = event.timeStampSeconds;
   switch (npevent.type) {
     case NPEventType_Undefined:

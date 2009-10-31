@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "webkit/glue/pepper/pepper.h"
 #include "webkit/api/public/WebCanvas.h"
 
 class FilePath;
