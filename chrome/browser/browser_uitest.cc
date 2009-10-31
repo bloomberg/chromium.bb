@@ -79,7 +79,7 @@ class VisibleBrowserTest : public UITest {
 TEST_F(BrowserTest, WindowsSessionEnd) {
 #elif defined(OS_POSIX)
 // The browser should quit gracefully and quickly if it receives a SIGTERM.
-TEST_F(BrowserTest, PosixSessionEnd) {
+TEST_F(BrowserTest, DISABLED_PosixSessionEnd) {
 #endif
 #if defined(OS_WIN) || defined(OS_POSIX)
   FilePath test_file(test_data_directory_);
