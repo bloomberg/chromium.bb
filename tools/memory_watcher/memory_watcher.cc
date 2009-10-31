@@ -88,16 +88,14 @@ void MemoryWatcher::CloseLogFile() {
 }
 
 void MemoryWatcher::OnTrack(HANDLE heap, int32 id, int32 size) {
+  // Don't track zeroes.  It's a waste of time.
+  if (size == 0)
+    return;
+
   // AllocationStack overrides new/delete to not allocate
   // from the main heap.
-  AllocationStack* stack = new AllocationStack(size);
+  AllocationStack* stack = new AllocationStack();
   {
-    // Don't track zeroes.  It's a waste of time.
-    if (size == 0) {
-      delete stack;
-      return;
-    }
-
     AutoLock lock(block_map_lock_);
 
     // Ideally, we'd like to verify that the block being added
@@ -129,7 +127,7 @@ void MemoryWatcher::OnTrack(HANDLE heap, int32 id, int32 size) {
 }
 
 void MemoryWatcher::OnUntrack(HANDLE heap, int32 id, int32 size) {
-  DCHECK(size >= 0);
+  DCHECK_GE(size, 0);
 
   // Don't bother with these.
   if (size == 0)
@@ -146,16 +144,22 @@ void MemoryWatcher::OnUntrack(HANDLE heap, int32 id, int32 size) {
       DCHECK(id_it != stack_map_->end());
       id_it->second.size -= size;
       id_it->second.count--;
-      DCHECK(id_it->second.count >= 0);
+      DCHECK_GE(id_it->second.count, 0);
 
       // If there are no more callstacks with this stack, then we
       // have cleaned up all instances, and can safely delete the
-      // stack pointer in the stack_map.
+      // StackTracker in the stack_map.
       bool safe_to_delete = true;
-      if (id_it->second.count == 0)
-        stack_map_->erase(id_it);
-      else if (id_it->second.stack == stack)
-        safe_to_delete = false;  // we're still using the stack
+      if (id_it->second.count != 0) {
+        // See if our |StackTracker| is also using |stack|.
+        if (id_it->second.stack == stack)
+          safe_to_delete = false;  // We're still using |stack|.
+      } else {
+        // See if we skipped deleting our |StackTracker|'s |stack| earlier.
+        if (id_it->second.stack != stack)
+          delete id_it->second.stack;  // We skipped it earlier.
+        stack_map_->erase(id_it);  // Discard our StackTracker.
+      }
 
       block_map_size_ -= size;
       block_map_->erase(id);

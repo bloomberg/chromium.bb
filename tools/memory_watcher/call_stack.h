@@ -15,6 +15,7 @@
 #include <dbghelp.h>
 #include <functional>
 #include <map>
+#include <string>
 
 #include "memory_watcher.h"
 #include "base/lock.h"
@@ -81,28 +82,19 @@ class CallStack {
   DISALLOW_EVIL_CONSTRUCTORS(CallStack);
 };
 
-// An AllocationStack is a type of CallStack which represents
-// a CallStack where memory has been allocated.  As such, in
-// addition to the CallStack information, it also tracks the
-// amount of memory allocated.
+// An AllocationStack is a type of CallStack which represents a CallStack where
+// memory has been allocated.  This class is also a list item, so that it can
+// be easilly allocated and deallocated from its static singly-linked-list of
+// free instances.
 class AllocationStack : public CallStack {
  public:
-  explicit AllocationStack(int32 alloc_size)
-    : allocation_size_(alloc_size),
-      next_(NULL),
-      CallStack() {
-  }
-
-  // The size of the allocation.
-  int32 allocation_size() { return allocation_size_; }
+  AllocationStack() : next_(NULL), CallStack() {}
 
   // We maintain a freelist of the AllocationStacks.
   void* operator new(size_t s);
   void operator delete(void*p);
 
  private:
-  int32 allocation_size_;  // The size of the allocation
-
   AllocationStack* next_;     // Pointer used when on the freelist.
   static AllocationStack* freelist_;
   static Lock freelist_lock_;
