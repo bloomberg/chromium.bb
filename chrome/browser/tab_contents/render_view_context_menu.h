@@ -23,8 +23,9 @@ struct WebMediaPlayerAction;
 
 class RenderViewContextMenu {
  public:
-  RenderViewContextMenu(TabContents* tab_contents,
-                        const ContextMenuParams& params);
+  RenderViewContextMenu(
+      TabContents* tab_contents,
+      const ContextMenuParams& params);
 
   virtual ~RenderViewContextMenu();
 
@@ -107,13 +108,6 @@ class RenderViewContextMenu {
                            const WebKit::WebMediaPlayerAction& action);
 
   bool IsDevCommandEnabled(int id) const;
-
-  // The destination URL to use if the user tries to search for or navigate to
-  // a text selection.
-  GURL selection_navigation_url_;
-
-  // The transition type of |selection_navigation_url_|.
-  PageTransition::Type transition_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
