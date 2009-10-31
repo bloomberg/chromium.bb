@@ -395,6 +395,53 @@ TestSuite.prototype.testShowScriptsTab = function() {
 
 
 /**
+ * Tests that scripts tab is populated with inspected scripts even if it
+ * hadn't been shown by the moment inspected paged refreshed.
+ * @see http://crbug.com/26312
+ */
+TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh =
+    function() {
+  var test = this;
+  this.assertEquals(WebInspector.panels.elements,
+      WebInspector.currentPanel, 'Elements panel should be current one.');
+
+  this.addSniffer(devtools.DebuggerAgent.prototype, 'reset',
+      waitUntilScriptIsParsed);
+
+  // Reload inspected page. It will reset the debugger agent.
+  test.evaluateInConsole_(
+      'window.location.reload(true);',
+      function(resultText) {
+        test.assertEquals('undefined', resultText,
+                          'Unexpected result of reload().');
+      });
+
+  function waitUntilScriptIsParsed() {
+    var parsed = devtools.tools.getDebuggerAgent().parsedScripts_;
+    for (var id in parsed) {
+      var url = parsed[id].getUrl();
+      if (url && url.search('debugger_test_page.html$') != -1) {
+        checkScriptsPanel();
+        return;
+      }
+    }
+    test.addSniffer(devtools.DebuggerAgent.prototype, 'addScriptInfo_',
+        waitUntilScriptIsParsed);
+  }
+
+  function checkScriptsPanel() {
+    test.showPanel('scripts');
+    test.assertTrue(test._scriptsAreParsed(['debugger_test_page.html$']),
+                    'Inspected script not found in the scripts list');
+    test.releaseControl();
+  }
+
+  // Wait until all scripts are added to the debugger.
+  this.takeControl();
+};
+
+
+/**
  * Tests that scripts list contains content scripts.
  */
 TestSuite.prototype.testContentScriptIsPresent = function() {

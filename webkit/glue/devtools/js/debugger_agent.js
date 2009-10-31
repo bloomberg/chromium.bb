@@ -62,10 +62,10 @@ devtools.DebuggerAgent = function() {
   this.requestSeqToCallback_ = null;
 
   /**
-   * Whether the scripts list has been requested.
+   * Whether the scripts panel has been shown and initialilzed.
    * @type {boolean}
    */
-  this.scriptsCacheInitialized_ = false;
+  this.scriptsPanelInitialized_ = false;
 
   /**
    * Whether the scripts list should be requested next time when context id is
@@ -155,14 +155,22 @@ devtools.DebuggerAgent.prototype.reset = function() {
  */
 devtools.DebuggerAgent.prototype.initUI = function() {
   // Initialize scripts cache when Scripts panel is shown first time.
-  if (this.scriptsCacheInitialized_) {
+  if (this.scriptsPanelInitialized_) {
     return;
   }
-  this.scriptsCacheInitialized_ = true;
+  this.scriptsPanelInitialized_ = true;
   if (this.contextId_) {
     // We already have context id. This means that we are here from the
     // very beginning of the page load cycle and hence will get all scripts
     // via after-compile events. No need to request scripts for this session.
+    //
+    // There can be a number of scripts from after-compile events that are
+    // pending addition into the UI.
+    for (var scriptId in this.parsedScripts_) {
+      var script = this.parsedScripts_[scriptId];
+      WebInspector.parsedScriptSource(scriptId, script.getUrl(),
+          undefined /* script source */, script.getLineOffset());
+    }
     return;
   }
   // Script list should be requested only when current context id is known.
@@ -1033,7 +1041,7 @@ devtools.DebuggerAgent.prototype.addScriptInfo_ = function(script, msg) {
   var contextType = context.data.type;
   this.parsedScripts_[script.id] = new devtools.ScriptInfo(
       script.id, script.name, script.lineOffset, contextType);
-  if (WebInspector.panels.scripts.element.parentElement) {
+  if (this.scriptsPanelInitialized_) {
     // Only report script as parsed after scripts panel has been shown.
     WebInspector.parsedScriptSource(
         script.id, script.name, script.source, script.lineOffset);

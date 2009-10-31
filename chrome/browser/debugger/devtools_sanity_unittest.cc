@@ -108,8 +108,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     GURL url = server->TestServerPageW(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    TabContents* tab = browser()->GetTabContentsAt(0);
-    inspected_rvh_ = tab->render_view_host();
+    inspected_rvh_ = GetInspectedTab()->render_view_host();
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     devtools_manager->OpenDevToolsWindow(inspected_rvh_);
 
@@ -119,6 +118,10 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     client_contents_ = client_rvh->delegate()->GetAsTabContents();
     ui_test_utils::WaitForNavigation(&client_contents_->controller());
+  }
+
+  TabContents* GetInspectedTab() {
+    return browser()->GetTabContentsAt(0);
   }
 
   void CloseDevToolsWindow() {
@@ -281,6 +284,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
+
+// Tests that scripts tab is populated with inspected scripts even if it
+// hadn't been shown by the moment inspected paged refreshed.
+// @see http://crbug.com/26312
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+  // Reset inspector settings to defaults to ensure that Elements will be
+  // current panel when DevTools window is open.
+  GetInspectedTab()->render_view_host()->delegate()->UpdateInspectorSettings(
+      WebPreferences().inspector_settings);
+  RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
+          kDebuggerTestPage);
+}
+
 
 // Tests that a content script is in the scripts list.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
