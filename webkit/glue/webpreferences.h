@@ -60,7 +60,6 @@ struct WebPreferences {
   bool allow_universal_access_from_file_urls;
 
   bool experimental_webgl_enabled;
-  bool experimental_notifications_enabled;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
@@ -99,8 +98,7 @@ struct WebPreferences {
         tabs_to_links(true),
         user_style_sheet_enabled(false),
         allow_universal_access_from_file_urls(false),
-        experimental_webgl_enabled(false),
-        experimental_notifications_enabled(false) {
+        experimental_webgl_enabled(false) {
   }
 
   void Apply(WebKit::WebView* web_view) const;

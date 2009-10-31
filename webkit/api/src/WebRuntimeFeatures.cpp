@@ -119,4 +119,20 @@ bool WebRuntimeFeatures::isSocketsEnabled()
 #endif
 }
 
+void WebRuntimeFeatures::enableNotifications(bool enable)
+{
+#if ENABLE(NOTIFICATIONS)
+    RuntimeEnabledFeatures::setNotificationsEnabled(enable);
+#endif
+}
+
+bool WebRuntimeFeatures::isNotificationsEnabled()
+{
+#if ENABLE(NOTIFICATIONS)
+    return RuntimeEnabledFeatures::notificationsEnabled();
+#else
+    return false;
+#endif
+}
+
 } // namespace WebKit

@@ -1530,7 +1530,6 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.user_style_sheet_location);
     WriteParam(m, p.allow_universal_access_from_file_urls);
     WriteParam(m, p.experimental_webgl_enabled);
-    WriteParam(m, p.experimental_notifications_enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -1569,8 +1568,7 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->user_style_sheet_enabled) &&
         ReadParam(m, iter, &p->user_style_sheet_location) &&
         ReadParam(m, iter, &p->allow_universal_access_from_file_urls) &&
-        ReadParam(m, iter, &p->experimental_webgl_enabled) &&
-        ReadParam(m, iter, &p->experimental_notifications_enabled);
+        ReadParam(m, iter, &p->experimental_webgl_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebPreferences>");

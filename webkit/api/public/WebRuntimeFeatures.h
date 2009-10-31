@@ -56,6 +56,9 @@ public:
     WEBKIT_API static void enableSockets(bool);
     WEBKIT_API static bool isSocketsEnabled();
 
+    WEBKIT_API static void enableNotifications(bool);
+    WEBKIT_API static bool isNotificationsEnabled();
+
 private:
     WebRuntimeFeatures();
 };

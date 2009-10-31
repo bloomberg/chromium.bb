@@ -528,6 +528,12 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableDatabase(
       command_line.HasSwitch(switches::kEnableDatabases));
+
+#if defined(OS_WIN)
+  // We don't yet support notifications on non-Windows, so hide it from pages.
+  WebRuntimeFeatures::enableNotifications(
+      command_line.HasSwitch(switches::kEnableDesktopNotifications));
+#endif
 }
 
 void RenderThread::IdleHandler() {
