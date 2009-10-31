@@ -7,7 +7,9 @@
 
 #include "webkit/api/public/WebSharedWorkerRepository.h"
 
-class WebKit::WebSharedWorker;
+namespace WebKit {
+  class WebSharedWorker;
+}
 
 class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
     virtual WebKit::WebSharedWorker* lookup(const WebKit::WebURL& url,
