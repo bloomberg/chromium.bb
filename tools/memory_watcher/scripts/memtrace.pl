@@ -15,20 +15,15 @@
 #
 # Sample output:
 #
-# 41975368    77.64%      f:\sp\vctools\crt_bld\self_x86\crt\src\malloc.c (163): malloc
-#  2097152    3.88%       c:\src\chrome1\src\webkit\pending\frameloader.cpp (3300): WebCore::FrameLoader::committedLoad
-#  1572864    2.91%       c:\src\chrome1\src\webkit\port\bridge\v8bridge.cpp (214): WebCore::V8Bridge::evaluate
-#  1572864    2.91%       c:\src\chrome1\src\webkit\glue\webframeloaderclient_impl.cc (1071): WebFrameLoaderClient::committedLoad
-#  1572864    2.91%       c:\src\chrome1\src\v8\src\ast.h (1181): v8::internal::Visitor::Visit
+# 41,975,368    77.64%      f:\sp\vctools\crt_bld\self_x86\crt\src\malloc.c (163): malloc
+#  2,097,152    3.88%       c:\src\chrome1\src\webkit\pending\frameloader.cpp (3300): WebCore::FrameLoader::committedLoad
+#  1,572,864    2.91%       c:\src\chrome1\src\webkit\port\bridge\v8bridge.cpp (214): WebCore::V8Bridge::evaluate
+#  1,572,864    2.91%       c:\src\chrome1\src\webkit\glue\webframeloaderclient_impl.cc (1071): WebFrameLoaderClient::committedLoad
+#  1,572,864    2.91%       c:\src\chrome1\src\v8\src\ast.h (1181): v8::internal::Visitor::Visit
 #
 #
 #
-# ********
-# Note: The output is not currently sorted. To make it more legible,
-# you will want to sort numerically by the first field:
-#   $ ./memtrace.pl memwatcher.log3620.txt | sort -n -r
-# ********
-#
+
 
 sub process_raw($) {
   my $file = shift;
@@ -81,7 +76,7 @@ sub process_raw($) {
     elsif ($line =~ m/Untracking untracked/) {
       next;
     }
-    elsif ($line =~ m/[ ]*(c:\\trunk\\[a-zA-Z_\\0-9\.]*) /) {
+    elsif ($line =~ m/[ ]*([a-z]:\\[a-z]*\\[a-zA-Z_\\0-9\.]*) /) {
       my $filename = $1;
       if ($filename =~ m/memory_watcher/) {
         next;
@@ -123,15 +118,22 @@ sub process_raw($) {
 
   # now dump our hash table
   my $sum = 0;
-  my @keys = keys(%leaks);
+  my @keys = sort { $leaks{$b} <=> $leaks{$a}  }keys %leaks;
   for ($i=0; $i<@keys; $i++) {
     my $key = @keys[$i];
-    printf "%8d\t%3.2f%%\t%s\n", $leaks{$key}, (100* $leaks{$key} / $total_bytes), $key;
+    if (0 == $total_bytes) { $total_bytes = 1; }
+    printf "%11s\t%3.2f%%\t%s\n", comma_print($leaks{$key}), (100* $leaks{$key} / $total_bytes), $key;
     $sum += $leaks{$key};
   }
-  print("TOTAL: $sum\n");
+  printf("TOTAL: %s\n", comma_print($sum));
 }
 
+# Insert commas into an integer after each three digits for printing.
+sub comma_print {
+    my $num = "$_[0]";
+    $num =~ s/(\d{1,3}?)(?=(\d{3})+$)/$1,/g;
+    return $num;
+}
 
 # ----- Main ------------------------------------------------
 

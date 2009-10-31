@@ -20,16 +20,29 @@ sub process_stdin() {
     chomp($line);
     my $bytes, $loc;
     ($bytes, $loc) = ($line =~ m/[ \t]*([0-9]*)[ \t]*[0-9\.%]*[ \t]*(.*)/);
+    chomp($loc);
+    while(<STDIN>) {
+	my $cont = $_;
+        chomp($cont);
+        last if $cont =~ m/=====/;
+	$loc .= "\n" . $cont;
+    }
     my $location_blame = "";
 
 #    print "Found: $bytes, $loc\n";
-
-    $total_bytes += $bytes;
-
-    if ($loc =~ m/v8/) {
+    
+    if ($loc =~ m/v8::internal::Snapshot::Deserialize/) {
+      $location_blame = "v8 Snapshot Deserialize";
+    } elsif ($loc =~ m/v8::internal::OldSpace::SlowAllocateRaw/) {
+      $location_blame = "v8 OldSpace";
+    } elsif ($loc =~ m/v8/) {
       $location_blame = "v8";
     } elsif ($loc =~ m/sqlite/) {
       $location_blame = "sqlite";
+    } elsif ($loc =~ m/ TransportDIB::Map/) {
+      $location_blame = "Shared Memory Backing Store";
+    } elsif ($loc =~ m/imagedecoder/) {
+      $location_blame = "img decoder";
     } elsif ($loc =~ m/SkBitmap/) {
       $location_blame = "skia";
     } elsif ($loc =~ m/disk_cache/) {
@@ -58,8 +71,6 @@ sub process_stdin() {
       $location_blame = "plugin";
     } elsif ($loc =~ m/hunspell/) {
       $location_blame = "hunspell";
-    } elsif ($loc =~ m/decoder/) {
-      $location_blame = "img decoder";
     } elsif ($loc =~ m/TextCodec/) {
       $location_blame = "fonts";
     } elsif ($loc =~ m/glyph/) {
@@ -70,6 +81,10 @@ sub process_stdin() {
       $location_blame = "webkit css";
     } elsif ($loc =~ m/Arena/) {
       $location_blame = "webkit arenas";
+    } elsif ($loc =~ m/WebCore::.*ResourceLoader::addData/) {
+      $location_blame = "WebCore *ResourceLoader addData";
+    } elsif ($loc =~ m/OnUpdateVisitedLinks/) {
+      $location_blame = "OnUpdateVisitedLinks";
     } elsif ($loc =~ m/IPC/) {
       $location_blame = "ipc";
     } elsif ($loc =~ m/trunk\\chrome\\browser/) {
@@ -86,31 +101,52 @@ sub process_stdin() {
       $location_blame = "webkit javascriptcore";
     } elsif ($loc =~ m/webkit/) {
       $location_blame = "webkit other";
-#      print "$location_blame: ($bytes) $loc\n";
+    } elsif ($loc =~ m/safe_browsing/) {
+      $location_blame = "safe_browsing";
+    } elsif ($loc =~ m/VisitedLinkMaster/) {
+      $location_blame = "VisitedLinkMaster";
+    } elsif ($loc =~ m/NewDOMUI/) {
+      $location_blame = "NewDOMUI";
+    } elsif ($loc =~ m/RegistryControlledDomainService/) {
+      $location_blame = "RegistryControlledDomainService";
+    } elsif ($loc =~ m/URLRequestChromeJob::DataAvailable/) {
+      $location_blame = "URLRequestChromeJob DataAvailable";
+    } elsif ($loc =~ m/history_publisher/) {
+      $location_blame = "history publisher";
     } else {
       $location_blame = "unknown";
 #      print "$location_blame: ($bytes) $loc\n";
     }
 
-    # surface large outliers
-    if ($bytes > 1000000 && $location_blame eq "unknown") {
-      $location_blame = $loc;
+    # Surface large outliers in an "interesting" group.
+    # When questioned about a specific group listed above, we
+    # can just enter its name here, and get details.
+    # TODO(jar): Add this as a pair of shell arguments.
+    if ($bytes > 10000000 && $location_blame eq "unknown") {
+      $location_blame = "\n" . $loc;
     }
 
+    $total_bytes += $bytes;
     $leaks{$location_blame} += $bytes;
   }
 
   # now dump our hash table
   my $sum = 0;
-  my @keys = keys(%leaks);
+  my @keys = sort { $leaks{$b} <=> $leaks{$a}  }keys %leaks;
   for ($i=0; $i<@keys; $i++) {
     my $key = @keys[$i];
-    printf "%8d\t%3.2f%%\t%s\n", $leaks{$key}, (100* $leaks{$key} / $total_bytes), $key;
+    printf "%11s\t%3.2f%%\t%s\n", comma_print($leaks{$key}), (100* $leaks{$key} / $total_bytes), $key;
     $sum += $leaks{$key};
   }
-  print("TOTAL: $sum\n");
+  printf("TOTAL: %s\n", comma_print($sum));
 }
 
+# Insert commas into an integer after each three digits for printing.
+sub comma_print {
+    my $num = "$_[0]";
+    $num =~ s/(\d{1,3}?)(?=(\d{3})+$)/$1,/g;
+    return $num;
+}
 
 # ----- Main ------------------------------------------------
 

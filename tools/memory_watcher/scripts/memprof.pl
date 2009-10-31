@@ -13,22 +13,20 @@
 #
 # Sample output:
 #
-# 54061617        100.00% AllocationStack::AllocationStack
-# 41975368        77.64%  malloc
-# 11886592        21.99%  VirtualAlloc
-#  7168000        13.26%  v8::internal::OS::Allocate
-#  7168000        13.26%  v8::internal::MemoryAllocator::AllocateRawMemory
-#  5976184        11.05%  WebCore::V8Bridge::evaluate
-#  5767168        10.67%  v8::internal::MemoryAllocator::AllocatePages
-#  5451776        10.08%  WebCore::V8Proxy::initContextIfNeeded
+# 54,061,617        100.00% AllocationStack::AllocationStack
+# 41,975,368        77.64%  malloc
+# 11,886,592        21.99%  VirtualAlloc
+#  7,168,000        13.26%  v8::internal::OS::Allocate
+#  7,168,000        13.26%  v8::internal::MemoryAllocator::AllocateRawMemory
+#  5,976,184        11.05%  WebCore::V8Bridge::evaluate
+#  5,767,168        10.67%  v8::internal::MemoryAllocator::AllocatePages
+#  5,451,776        10.08%  WebCore::V8Proxy::initContextIfNeeded
 #  ....
 #
 #
 #
 # ********
-# Note: The output is not currently sorted. To make it more legible,
-# you will want to sort numerically by the first field:
-#   $ ./memprof.pl memwatcher.log3620.txt | sort -n -r
+# Note: The output is currently sorted by decreasing size.
 # ********
 #
 
@@ -90,15 +88,21 @@ sub process_raw($$) {
 
   # now dump our hash table
   my $sum = 0;
-  my @keys = keys(%leaks);
+  my @keys = sort { $leaks{$b} <=> $leaks{$a}  }keys %leaks;
   for ($i=0; $i<@keys; $i++) {
     my $key = @keys[$i];
-    printf "%8d\t%3.2f%%\t%s\n", $leaks{$key}, (100* $leaks{$key} / $total_bytes), $key;
+    printf "%11s\t%3.2f%%\t%s\n", comma_print($leaks{$key}), (100* $leaks{$key} / $total_bytes), $key;
     $sum += $leaks{$key};
   }
-  print("TOTAL: $sum\n");
+  printf("TOTAL: %s\n", comma_print($sum));
 }
 
+# Insert commas into an integer after each three digits for printing.
+sub comma_print {
+    my $num = "$_[0]";
+    $num =~ s/(\d{1,3}?)(?=(\d{3})+$)/$1,/g;
+    return $num;
+}
 
 # ----- Main ------------------------------------------------
 
