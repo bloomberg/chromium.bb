@@ -103,6 +103,11 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       popup_window_mode_(popup_window_mode),
       scheme_security_level_(ToolbarModel::NORMAL),
       mark_set_handler_id_(0),
+#if defined(OS_CHROMEOS)
+      button_1_pressed_(false),
+      text_selected_during_click_(false),
+      text_view_focused_before_button_press_(false),
+#endif
 #if !defined(TOOLKIT_VIEWS)
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
 #endif
@@ -189,6 +194,12 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleKeyPressThunk), this);
   g_signal_connect(text_view_, "key-release-event",
                    G_CALLBACK(&HandleKeyReleaseThunk), this);
+#if defined(OS_CHROMEOS)
+  g_signal_connect(text_view_, "button-press-event",
+                   G_CALLBACK(&HandleViewButtonPressThunk), this);
+  g_signal_connect(text_view_, "button-release-event",
+                   G_CALLBACK(&HandleViewButtonReleaseThunk), this);
+#endif
   g_signal_connect(text_view_, "focus-in-event",
                    G_CALLBACK(&HandleViewFocusInThunk), this);
   g_signal_connect(text_view_, "focus-out-event",
@@ -715,6 +726,65 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
   return FALSE;  // Propagate into GtkTextView.
 }
 
+#if defined(OS_CHROMEOS)
+gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
+  // We don't need to care about double and triple clicks.
+  if (event->type != GDK_BUTTON_PRESS)
+    return FALSE;
+
+  if (event->button == 1) {
+    // When the first button is pressed, track some stuff that will help us
+    // determine whether we should select all of the text when the button is
+    // released.
+    button_1_pressed_ = true;
+    text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
+    text_selected_during_click_ = false;
+
+    // Button press event may change the selection, we need to record the change
+    // and report it to |model_| later when button is released.
+    OnBeforePossibleChange();
+  } else if (event->button == 2) {
+    // GtkTextView pastes PRIMARY selection with middle click.
+    // We can't call model_->on_paste_replacing_all() here, because the actual
+    // paste clipboard action may not be performed if the clipboard is empty.
+    paste_clipboard_requested_ = true;
+  }
+  return FALSE;
+}
+
+gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
+    GdkEventButton* event) {
+  if (event->button != 1)
+    return FALSE;
+
+  button_1_pressed_ = false;
+
+  // Call the GtkTextView default handler, ignoring the fact that it will
+  // likely have told us to stop propagating.  We want to handle selection.
+  GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
+  klass->button_release_event(text_view_, event);
+
+  if (!text_view_focused_before_button_press_ && !text_selected_during_click_) {
+    // If this was a focusing click and the user didn't drag to highlight any
+    // text, select the full input and update the PRIMARY selection.
+    SelectAllInternal(false, true);
+
+    // So we told the buffer where the cursor should be, but make sure to tell
+    // the view so it can scroll it to be visible if needed.
+    // NOTE: This function doesn't seem to like a count of 0, looking at the
+    // code it will skip an important loop.  Use -1 to achieve the same.
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+    gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
+  }
+
+  // Inform |model_| about possible text selection change.
+  OnAfterPossibleChange();
+
+  return TRUE;  // Don't continue, we called the default handler already.
+}
+#endif
+
 gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
   GdkModifierType modifiers;
   gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
@@ -851,6 +921,14 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
       new_selected_text = std::string(text, text_len);
     g_free(text);
   }
+
+#if defined(OS_CHROMEOS)
+  // If the user just selected some text with the mouse (or at least while the
+  // mouse button was down), make sure that we won't blow their selection away
+  // later by selecting all of the text when the button is released.
+  if (button_1_pressed_ && !new_selected_text.empty())
+    text_selected_during_click_ = true;
+#endif
 
   // If we had some text selected earlier but it's no longer highlighted, we
   // might need to save it now...

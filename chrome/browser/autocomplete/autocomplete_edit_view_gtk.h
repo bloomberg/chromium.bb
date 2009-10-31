@@ -147,6 +147,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   gboolean HandleKeyRelease(GtkWidget* widget, GdkEventKey* event);
 
+#if defined(OS_CHROMEOS)
   static gboolean HandleViewButtonPressThunk(GtkWidget* view,
                                              GdkEventButton* event,
                                              gpointer self) {
@@ -162,6 +163,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
         HandleViewButtonRelease(event);
   }
   gboolean HandleViewButtonRelease(GdkEventButton* event);
+#endif
 
   static gboolean HandleViewFocusInThunk(GtkWidget* view,
                                           GdkEventFocus* event,
@@ -382,6 +384,27 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   // ID of the signal handler for "mark-set" on |text_buffer_|.
   gulong mark_set_handler_id_;
+
+#if defined(OS_CHROMEOS)
+  // The following variables are used to implement select-all-on-mouse-up, which
+  // is disabled in the standard Linux build due to poor interaction with the
+  // PRIMARY X selection.
+
+  // Is the first mouse button currently down?  When selection marks get moved,
+  // we use this to determine if the user was highlighting text with the mouse
+  // -- if so, we avoid selecting all the text on mouse-up.
+  bool button_1_pressed_;
+
+  // Did the user change the selected text in the middle of the current click?
+  // If so, we don't select all of the text when the button is released -- we
+  // don't want to blow away their selection.
+  bool text_selected_during_click_;
+
+  // Was the text view already focused before the user clicked in it?  We use
+  // this to figure out whether we should select all of the text when the button
+  // is released (we only do so if the view was initially unfocused).
+  bool text_view_focused_before_button_press_;
+#endif
 
 #if !defined(TOOLKIT_VIEWS)
   // Supplies colors, et cetera.
