@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include "base/histogram.h"
-#include "base/scoped_nsobject.h"
+#import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_trial.h"
@@ -289,6 +289,11 @@ void RenderWidgetHostViewMac::Destroy() {
     [subview renderWidgetHostViewMac]->ShutdownHost();
   }
 
+  // We've been told to destroy.
+  [cocoa_view_ retain];
+  [cocoa_view_ removeFromSuperview];
+  [cocoa_view_ autorelease];
+
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
   // by some other code.  Examples are TabContentsViewMac's
@@ -549,8 +554,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if (ignoreKeyEvents_)
     return;
 
-  // TODO(avi): Possibly kill self? See RenderWidgetHostViewWin::OnKeyEvent and
-  // http://b/issue?id=1192881 .
+  scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
 
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
@@ -586,7 +590,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   // To send an onkeydown() event before an onkeypress() event, we should
   // dispatch this NSKeyDown event AFTER sending it to the renderer.
   // (See <https://bugs.webkit.org/show_bug.cgi?id=25119>).
-  if ([theEvent type] == NSKeyDown)
+  //
+  // If this object's retainCount is 1, the only reference is the one held by
+  // keepSelfAlive.  All other references may have been destroyed in the
+  // RenderWidgetHost::ForwardKeyboardEvent call above if it resulted in tab
+  // closure.  Were it not for that single reference, this object would
+  // already be deallocated.  In that case, there's no point in calling
+  // -interpretKeyEvents:.
+  if ([self retainCount] > 1 && [theEvent type] == NSKeyDown)
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
   // Possibly autohide the cursor.
@@ -1250,4 +1261,3 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 @end
-

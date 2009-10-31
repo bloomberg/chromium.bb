@@ -237,8 +237,16 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)destroyBrowser {
+  [NSApp removeWindowsItem:[self window]];
+
   // We need the window to go away now.
-  [self close];
+  // We can't actually use |-autorelease| here because there's an embedded
+  // run loop in the |-performClose:| which contains its own autorelease pool.
+  // Instead we use call it after a zero-length delay, which gets us back
+  // to the main event loop.
+  [self performSelector:@selector(autorelease)
+             withObject:nil
+             afterDelay:0];
 }
 
 // Called when the window meets the criteria to be closed (ie,
@@ -254,7 +262,13 @@ willPositionSheet:(NSWindow*)sheet
   // that its window has on our window before our window goes away.
   delete statusBubble_;
   statusBubble_ = NULL;
-  [self autorelease];
+  // We can't actually use |-autorelease| here because there's an embedded
+  // run loop in the |-performClose:| which contains its own autorelease pool.
+  // Instead we call it after a zero-length delay, which gets us back
+  // to the main event loop.
+  [self performSelector:@selector(autorelease)
+             withObject:nil
+             afterDelay:0];
 }
 
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
