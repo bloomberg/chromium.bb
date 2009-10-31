@@ -79,6 +79,16 @@ class BrowserActivityObserver : public NotificationObserver {
 
 BrowserActivityObserver* activity_observer = NULL;
 
+// Returns true if the specified |browser| has a matching profile and type to
+// those specified. If |any_type| is true, only |profile| must be matched.
+bool BrowserMatchesProfileAndType(Browser* browser,
+                                  Profile* profile,
+                                  Browser::Type type,
+                                  bool any_type) {
+  return (any_type || browser->type() == type) &&
+      browser->profile() == profile;
+}
+
 }  // namespace
 
 BrowserList::list_type BrowserList::browsers_;
@@ -242,8 +252,10 @@ void BrowserList::WindowsSessionEnding() {
 bool BrowserList::HasBrowserWithProfile(Profile* profile) {
   BrowserList::const_iterator iter;
   for (size_t i = 0; i < browsers_.size(); ++i) {
-    if (browsers_[i]->profile() == profile)
+    if (BrowserMatchesProfileAndType(browsers_[i], profile,
+                                     Browser::TYPE_NORMAL, true)) {
       return true;
+    }
   }
   return false;
 }
@@ -272,44 +284,28 @@ Browser* BrowserList::GetLastActive() {
 Browser* BrowserList::GetLastActiveWithProfile(Profile* p) {
   list_type::reverse_iterator browser = last_active_browsers_.rbegin();
   for (; browser != last_active_browsers_.rend(); ++browser) {
-    if ((*browser)->profile() == p) {
+    if (BrowserMatchesProfileAndType(*browser, p, Browser::TYPE_NORMAL, true))
       return *browser;
-    }
   }
-
   return NULL;
 }
 
 // static
 Browser* BrowserList::FindBrowserWithType(Profile* p, Browser::Type t) {
-  Browser* last_active = GetLastActive();
-  if (last_active && last_active->profile() == p && last_active->type() == t)
-    return last_active;
-
-  BrowserList::const_iterator i;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
-    if (*i == last_active)
-      continue;
-
-    if ((*i)->profile() == p && (*i)->type() == t)
-      return *i;
+  list_type::reverse_iterator browser = last_active_browsers_.rbegin();
+  for (; browser != last_active_browsers_.rend(); ++browser) {
+    if (BrowserMatchesProfileAndType(*browser, p, t, false))
+      return *browser;
   }
   return NULL;
 }
 
 // static
 Browser* BrowserList::FindBrowserWithProfile(Profile* p) {
-  Browser* last_active = GetLastActive();
-  if (last_active && last_active->profile() == p)
-    return last_active;
-
-  BrowserList::const_iterator i;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
-    if (*i == last_active)
-      continue;
-
-    if ((*i)->profile() == p)
-      return *i;
+  list_type::reverse_iterator browser = last_active_browsers_.rbegin();
+  for (; browser != last_active_browsers_.rend(); ++browser) {
+    if (BrowserMatchesProfileAndType(*browser, p, Browser::TYPE_NORMAL, true))
+      return *browser;
   }
   return NULL;
 }
@@ -329,8 +325,8 @@ size_t BrowserList::GetBrowserCountForType(Profile* p, Browser::Type type) {
   BrowserList::const_iterator i;
   size_t result = 0;
   for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
-    if ((*i)->profile() == p && (*i)->type() == type)
-      result++;
+    if (BrowserMatchesProfileAndType(*i, p, type, false))
+      ++result;
   }
   return result;
 }
@@ -340,7 +336,7 @@ size_t BrowserList::GetBrowserCount(Profile* p) {
   BrowserList::const_iterator i;
   size_t result = 0;
   for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
-    if ((*i)->profile() == p)
+    if (BrowserMatchesProfileAndType(*i, p, Browser::TYPE_NORMAL, true))
       result++;
   }
   return result;
