@@ -101,6 +101,7 @@
 {
   A warning on destruction of third party ClientAudioQueue object (AudioToolbox)
   ThreadSanitizer:Race
+  ...
   fun:*AQClient*CheckDisposal*
   fun:*ClientAudioQueueD*
   fun:AudioQueueDispose
