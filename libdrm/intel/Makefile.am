@@ -46,3 +46,5 @@ libdrm_intel_la_SOURCES = \
 
 libdrm_intelincludedir = ${includedir}
 libdrm_intelinclude_HEADERS = intel_bufmgr.h
+
+pkgconfig_DATA = libdrm_intel.pc

@@ -194,6 +194,7 @@ AC_OUTPUT([
 	Makefile
 	libdrm/Makefile
 	libdrm/intel/Makefile
+	libdrm/intel/libdrm_intel.pc
 	libdrm/radeon/Makefile
 	libdrm/radeon/libdrm_radeon.pc
 	libdrm/nouveau/Makefile
@@ -202,5 +203,4 @@ AC_OUTPUT([
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
-	libdrm.pc
-	libdrm_intel.pc])
+	libdrm.pc])
