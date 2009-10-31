@@ -1616,8 +1616,7 @@ void Browser::DuplicateContentsAt(int index) {
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
-      browser = Browser::CreateForApp(app_name_, profile_,
-                                      !!(type_ & TYPE_POPUP));
+      browser = Browser::CreateForApp(app_name_, profile_, type_ & TYPE_POPUP);
     } else if (type_ == TYPE_POPUP) {
       browser = Browser::CreateForPopup(profile_);
     }
@@ -1974,7 +1973,7 @@ void Browser::DetachContents(TabContents* source) {
 
 bool Browser::IsPopup(TabContents* source) {
   // A non-tabbed BROWSER is an unconstrained popup.
-  return !!(type() & TYPE_POPUP);
+  return (type() & TYPE_POPUP);
 }
 
 void Browser::ToolbarSizeChanged(TabContents* source, bool is_animating) {
