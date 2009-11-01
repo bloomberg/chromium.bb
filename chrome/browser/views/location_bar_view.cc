@@ -24,6 +24,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/extensions/extension_popup.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -695,6 +696,14 @@ void LocationBarView::RefreshPageActionViews() {
   if (!service)
     return;
 
+  std::map<ExtensionAction*, bool> old_visibility;
+  for (size_t i = 0; i < page_action_views_.size(); i++) {
+    old_visibility[page_action_views_[i]->image_view()->page_action()] =
+        page_action_views_[i]->IsVisible();
+  }
+
+  // Remember the previous visibility of the page actions so that we can
+  // notify when this changes.
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     if (service->extensions()->at(i)->page_action())
       page_actions.push_back(service->extensions()->at(i)->page_action());
@@ -721,8 +730,20 @@ void LocationBarView::RefreshPageActionViews() {
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(model_->GetText()));
 
-    for (size_t i = 0; i < page_action_views_.size(); i++)
+    for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(contents, url);
+
+      // Check if the visibility of the action changed and notify if it did.
+      ExtensionAction* action =
+          page_action_views_[i]->image_view()->page_action();
+      if (old_visibility.find(action) == old_visibility.end() ||
+          old_visibility[action] != page_action_views_[i]->IsVisible()) {
+        NotificationService::current()->Notify(
+            NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+            Source<ExtensionAction>(action),
+            Details<TabContents>(contents));
+      }
+    }
   }
 }
 
@@ -1268,6 +1289,36 @@ LocationBarView::PageActionImageView::~PageActionImageView() {
     tracker_->StopTrackingImageLoad();
 }
 
+void LocationBarView::PageActionImageView::ExecuteAction(int button) {
+  if (page_action_->has_popup()) {
+    gfx::Point origin;
+    View::ConvertPointToScreen(this, &origin);
+    gfx::Rect rect = bounds();
+    rect.set_x(origin.x());
+    rect.set_y(origin.y());
+
+    // In tests, GetLastActive could return NULL, so we need to have
+    // a fallback.
+    // TODO(erikkay): Find a better way to get the Browser that this
+    // button is in.
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    if (!browser)
+      browser = BrowserList::FindBrowserWithProfile(profile_);
+    ExtensionPopup::Show(page_action_->popup_url(), browser, rect);
+  } else {
+    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+        profile_, page_action_->extension_id(), page_action_->id(),
+        current_tab_id_, current_url_.spec(), button);
+  }
+}
+
+void LocationBarView::PageActionImageView::OnMouseMoved(
+    const views::MouseEvent& event) {
+  // PageActionImageView uses normal tooltips rather than the info bubble,
+  // so just do nothing here rather than letting LocationBarImageView start
+  // its hover timer.
+}
+
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
   int button = -1;
@@ -1277,10 +1328,8 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
     button = 2;
   else if (event.IsRightMouseButton())
     button = 3;
-  // Our PageAction icon was clicked on, notify proper authorities.
-  ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-      profile_, page_action_->extension_id(), page_action_->id(),
-      current_tab_id_, current_url_.spec(), button);
+
+  ExecuteAction(button);
   return true;
 }
 
@@ -1324,6 +1373,7 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   if (visible) {
     // Set the tooltip.
     tooltip_ = page_action_->GetTitle(current_tab_id_);
+    SetTooltipText(ASCIIToWide(tooltip_));
 
     // Set the image.
     // It can come from three places. In descending order of priority:
@@ -1412,4 +1462,46 @@ int LocationBarView::PageActionVisibleCount() {
       ++result;
   }
   return result;
+}
+
+ExtensionAction* LocationBarView::GetPageAction(size_t index) {
+  if (index < page_action_views_.size())
+    return page_action_views_[index]->image_view()->page_action();
+
+  NOTREACHED();
+  return NULL;
+}
+
+ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
+  if (index >= 0) {
+    size_t current = 0;
+    for (size_t i = 0; i < page_action_views_.size(); ++i) {
+      if (page_action_views_[i]->IsVisible()) {
+        if (current == index)
+          return page_action_views_[i]->image_view()->page_action();
+
+        ++current;
+      }
+    }
+  }
+
+  NOTREACHED();
+  return NULL;
+}
+
+void LocationBarView::TestPageActionPressed(size_t index) {
+  if (index >= 0) {
+    size_t current = 0;
+    for (size_t i = 0; i < page_action_views_.size(); ++i) {
+      if (page_action_views_[i]->IsVisible()) {
+        if (current == index) {
+          const int button = 1;  // Left mouse button.
+          page_action_views_[i]->image_view()->ExecuteAction(button);
+          return;
+        }
+        ++current;
+      }
+    }
+  }
+  NOTREACHED();
 }

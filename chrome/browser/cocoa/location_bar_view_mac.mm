@@ -295,6 +295,20 @@ int LocationBarViewMac::PageActionVisibleCount() {
   return -1;
 }
 
+ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void LocationBarViewMac::TestPageActionPressed(size_t index) {
+  NOTIMPLEMENTED();
+}
+
 NSImage* LocationBarViewMac::GetTabButtonImage() {
   if (!tab_button_image_) {
     SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().

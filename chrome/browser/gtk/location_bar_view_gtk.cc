@@ -465,6 +465,20 @@ int LocationBarViewGtk::PageActionVisibleCount() {
   return count;
 }
 
+ExtensionAction* LocationBarViewGtk::GetPageAction(size_t index) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+ExtensionAction* LocationBarViewGtk::GetVisiblePageAction(size_t index) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void LocationBarViewGtk::TestPageActionPressed(size_t index) {
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewGtk::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

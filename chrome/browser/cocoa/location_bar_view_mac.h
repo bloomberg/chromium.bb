@@ -56,6 +56,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Overriden from LocationBarTesting:
   virtual int PageActionCount();
   virtual int PageActionVisibleCount();
+  virtual ExtensionAction* GetPageAction(size_t index);
+  virtual ExtensionAction* GetVisiblePageAction(size_t index);
+  virtual void TestPageActionPressed(size_t index);
 
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores

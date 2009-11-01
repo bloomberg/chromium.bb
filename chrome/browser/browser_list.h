@@ -52,10 +52,12 @@ class BrowserList {
   // a browser does not become active (perhaps the user launches Chrome, then
   // clicks on another app before the first browser window appears) then this
   // returns NULL.
+  // WARNING #2: this will always be NULL in unit tests run on the bots.
   static Browser* GetLastActive();
 
   // Identical in behavior to GetLastActive(), except that the most recently
   // open browser owned by |profile| is returned. If none exist, returns NULL.
+  // WARNING: see warnings in GetLastActive().
   static Browser* GetLastActiveWithProfile(Profile *profile);
 
   // Find an existing browser window with the provided type. Searches in the

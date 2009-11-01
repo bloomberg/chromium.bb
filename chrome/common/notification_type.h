@@ -707,6 +707,10 @@ class NotificationType {
     // ExtensionAction* that changed. The details are an ExtensionActionState*.
     EXTENSION_BROWSER_ACTION_UPDATED,
 
+    // Sent when a page action's visibility has changed. The source is the
+    // ExtensionAction* that changed. The details are a TabContents*.
+    EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+
     // Sent by an extension to notify the browser about the results of a unit
     // test.
     EXTENSION_TEST_PASSED,

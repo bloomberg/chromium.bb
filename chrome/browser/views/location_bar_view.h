@@ -158,6 +158,9 @@ class LocationBarView : public LocationBar,
   // Overridden from LocationBarTesting:
   virtual int PageActionCount() { return page_action_views_.size(); }
   virtual int PageActionVisibleCount();
+  virtual ExtensionAction* GetPageAction(size_t index);
+  virtual ExtensionAction* GetVisiblePageAction(size_t index);
+  virtual void TestPageActionPressed(size_t index);
 
   static const int kVertMargin;
 
@@ -357,7 +360,8 @@ class LocationBarView : public LocationBar,
 
     int current_tab_id() { return current_tab_id_; }
 
-    // Overridden from view for the mouse hovering.
+    // Overridden from view.
+    virtual void OnMouseMoved(const views::MouseEvent& event);
     virtual bool OnMousePressed(const views::MouseEvent& event);
 
     // Overridden from LocationBarImageView.
@@ -370,6 +374,9 @@ class LocationBarView : public LocationBar,
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
     void UpdateVisibility(TabContents* contents, const GURL& url);
+
+    // Either notify listners or show a popup depending on the page action.
+    void ExecuteAction(int button);
 
    private:
     // The location bar view that owns us.

@@ -46,8 +46,13 @@ public:
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
     BrowserBubble::Delegate* delegate = bubble_->delegate();
-    if (!delegate)
+    if (!delegate) {
+      if (action == WA_INACTIVE && !closed_) {
+        bubble_->DetachFromBrowser();
+        delete bubble_;
+      }
       return;
+    }
 
     if (action == WA_INACTIVE && !closed_) {
       delegate->BubbleLostFocus(bubble_);

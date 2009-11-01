@@ -91,6 +91,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Implement the LocationBarTesting interface.
   virtual int PageActionCount() { return page_action_views_.size(); }
   virtual int PageActionVisibleCount();
+  virtual ExtensionAction* GetPageAction(size_t index);
+  virtual ExtensionAction* GetVisiblePageAction(size_t index);
+  virtual void TestPageActionPressed(size_t index);
 
   // Implement the NotificationObserver interface.
   virtual void Observe(NotificationType type,

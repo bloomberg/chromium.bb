@@ -17,6 +17,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditView;
+class ExtensionAction;
 class LocationBarTesting;
 class TabContents;
 
@@ -77,6 +78,15 @@ class LocationBarTesting {
 
   // Returns the number of visible page actions in the Omnibox.
   virtual int PageActionVisibleCount() = 0;
+
+  // Returns the ExtensionAction at |index|.
+  virtual ExtensionAction* GetPageAction(size_t index) = 0;
+
+  // Returns the visible ExtensionAction at |index|.
+  virtual ExtensionAction* GetVisiblePageAction(size_t index) = 0;
+
+  // Simulates a left mouse pressed on the visible page action at |index|.
+  virtual void TestPageActionPressed(size_t index) = 0;
 };
 
 #endif  // CHROME_BROWSER_LOCATION_BAR_H_

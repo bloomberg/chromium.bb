@@ -62,7 +62,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   EXPECT_FALSE(action->GetIcon(tab_id).isNull());
 }
 
-
 // Tests old-style pageActions API that is deprecated but we don't want to
 // break.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
@@ -92,3 +91,81 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
   }
 }
 
+class PageActionPopupTest : public ExtensionApiTest {
+public:
+  bool RunExtensionTest(const char* extension_name) {
+    last_action_ = NULL;
+    last_visibility_ = false;
+    waiting_ = false;
+
+    return ExtensionApiTest::RunExtensionTest(extension_name);
+  };
+
+  void Observe(NotificationType type, const NotificationSource& source,
+               const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+        last_action_ = Source<ExtensionAction>(source).ptr();
+        TabContents* contents = Details<TabContents>(details).ptr();
+        int tab_id = ExtensionTabUtil::GetTabId(contents);
+        last_visibility_ = last_action_->GetIsVisible(tab_id);
+        if (waiting_)
+          MessageLoopForUI::current()->Quit();
+        break;
+      }
+      default:
+        ExtensionBrowserTest::Observe(type, source, details);
+        break;
+    }
+  }
+
+  void WaitForPopupVisibilityChange() {
+    // Wait for EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED to come in.
+    if (!last_action_) {
+      waiting_ = true;
+      ui_test_utils::RunMessageLoop();
+      waiting_ = false;
+    }
+  }
+
+ protected:
+  bool waiting_;
+  ExtensionAction* last_action_;
+  bool last_visibility_;
+};
+
+// TODO(port)
+#if defined(OS_WIN)
+// Tests popups in page actions.
+IN_PROC_BROWSER_TEST_F(PageActionPopupTest, Show) {
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+                NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+                NotificationService::AllSources());
+
+  ASSERT_TRUE(RunExtensionTest("page_action_popup")) << message_;
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ASSERT_EQ(1u, service->extensions()->size());
+  Extension* extension = service->extensions()->at(0);
+  ASSERT_TRUE(extension);
+
+  // Wait for The page action to actually become visible.
+  if (!last_visibility_)
+    last_action_ = NULL;
+  WaitForPopupVisibilityChange();
+  ASSERT_TRUE(last_visibility_);
+
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  ASSERT_EQ(1, location_bar->PageActionVisibleCount());
+  ExtensionAction* action = location_bar->GetVisiblePageAction(0);
+  ASSERT_TRUE(action == last_action_);
+
+  {
+    ResultCatcher catcher;
+    location_bar->TestPageActionPressed(0);
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+}
+#endif
