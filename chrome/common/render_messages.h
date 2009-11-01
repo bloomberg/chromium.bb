@@ -740,6 +740,9 @@ template <>
 struct ParamTraits<webkit_glue::FormFieldValues> {
   typedef webkit_glue::FormFieldValues param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.form_name);
+    WriteParam(m, p.source_url);
+    WriteParam(m, p.target_url);
     WriteParam(m, p.elements.size());
     std::vector<webkit_glue::FormField>::const_iterator itr;
     for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
@@ -749,6 +752,10 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
       bool result = true;
+      result = result &&
+          ReadParam(m, iter, &p->form_name) &&
+          ReadParam(m, iter, &p->source_url) &&
+          ReadParam(m, iter, &p->target_url);
       size_t elements_size = 0;
       result = result && ReadParam(m, iter, &elements_size);
       p->elements.resize(elements_size);

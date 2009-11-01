@@ -4,6 +4,7 @@
 
 #include "config.h"
 
+#include "Document.h"
 #include "Frame.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
@@ -28,7 +29,8 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   RefPtr<WebCore::HTMLFormElement> form = WebFormToHTMLFormElement(webform);
   DCHECK(form);
 
-  WebCore::Frame* frame = form->document()->frame();
+  WebCore::Document* document = form->document();
+  WebCore::Frame* frame = document->frame();
   if (!frame)
     return NULL;
 
@@ -36,14 +38,24 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   if (!loader)
     return NULL;
 
-  const WTF::Vector<WebCore::HTMLFormControlElement*>& form_elements =
-      form->formElements;
-
   // Construct a new FormFieldValues.
   FormFieldValues* result = new FormFieldValues();
 
-  size_t form_element_count = form_elements.size();
+  result->form_name = StringToString16(form->name());
+  result->source_url = KURLToGURL(document->url());
+  result->target_url = KURLToGURL(document->completeURL(form->action()));
+  result->ExtractFormFieldValues(webform);
 
+  return result;
+}
+
+void FormFieldValues::ExtractFormFieldValues(const WebKit::WebForm& webform) {
+  RefPtr<WebCore::HTMLFormElement> form = WebFormToHTMLFormElement(webform);
+
+  const WTF::Vector<WebCore::HTMLFormControlElement*>& form_elements =
+      form->formElements;
+
+  size_t form_element_count = form_elements.size();
   for (size_t i = 0; i < form_element_count; i++) {
     WebCore::HTMLFormControlElement* form_element = form_elements[i];
 
@@ -69,10 +81,8 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
     if (name.length() == 0)
       continue;  // If we have no name, there is nothing to store.
 
-    result->elements.push_back(FormField(name, value));
+    elements.push_back(FormField(name, value));
   }
-
-  return result;
 }
 
 }  // namespace webkit_glue

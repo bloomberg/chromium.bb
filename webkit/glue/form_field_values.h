@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/string16.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/glue/form_field.h"
 
 namespace WebKit {
@@ -15,14 +17,26 @@ class WebForm;
 
 namespace webkit_glue {
 
-// The FormFieldValues struct represents a single HTML form together with the
+// The FormFieldValues class represents a single HTML form together with the
 // values entered in the fields.
 class FormFieldValues {
  public:
-  static FormFieldValues* Create(const WebKit::WebForm& form);
+  static FormFieldValues* Create(const WebKit::WebForm& webform);
+
+  // The name of the form.
+  string16 form_name;
+
+  // The source URL.
+  GURL source_url;
+
+  // The target URL.
+  GURL target_url;
 
   // A vector of all the input fields in the form.
   std::vector<FormField> elements;
+
+ private:
+  void ExtractFormFieldValues(const WebKit::WebForm& webform);
 };
 
 }  // namespace webkit_glue
