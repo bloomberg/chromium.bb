@@ -50,8 +50,13 @@ generator_default_variables = {
 
 # The msvs specific sections that hold paths
 generator_additional_path_sections = [
-  'msvs_cygwin_dirs',
-  'msvs_props',
+    'msvs_cygwin_dirs',
+    'msvs_props',
+]
+
+generator_additional_non_configuration_keys = [
+    'msvs_cygwin_dirs',
+    'msvs_cygwin_shell',
 ]
 
 cached_username = None
@@ -173,10 +178,10 @@ def _ConfigFullName(config_name, config_data):
   return '|'.join((config_name, platform))
 
 
-def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path, quote_cmd):
+def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
   if cygwin_shell:
     # Find path to cygwin.
-    cygwin_dir = _FixPath(config.get('msvs_cygwin_dirs', ['.'])[0])
+    cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
     # Prepare command.
     direct_cmd = cmd
     direct_cmd = [i.replace('$(IntDir)',
@@ -219,9 +224,9 @@ def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path, quote_cmd):
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
-def _PrepareAction(config, rule, has_input_path):
+def _PrepareAction(spec, rule, has_input_path):
   # Find path to cygwin.
-  cygwin_dir = _FixPath(config.get('msvs_cygwin_dirs', ['.'])[0])
+  cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
 
   # Currently this weird argument munging is used to duplicate the way a
   # python script would need to be run as part of the chrome tree.
@@ -229,11 +234,11 @@ def _PrepareAction(config, rule, has_input_path):
   # per project. For now the behavior chrome needs is the default.
   mcs = rule.get('msvs_cygwin_shell')
   if mcs is None:
-    mcs = int(config.get('msvs_cygwin_shell', 1))
+    mcs = int(spec.get('msvs_cygwin_shell', 1))
   elif isinstance(mcs, str):
     mcs = int(mcs)
   quote_cmd = int(rule.get('msvs_quote_cmd', 1))
-  return _PrepareActionRaw(config, rule['action'], mcs,
+  return _PrepareActionRaw(spec, rule['action'], mcs,
                            has_input_path, quote_cmd)
 
 
@@ -261,14 +266,12 @@ def _SetRunAs(user_file, config_name, c_data, command,
   user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
                              command, environment, working_directory)
 
-def _AddCustomBuildTool(p, config_name, c_data,
-                        inputs, outputs, description, cmd):
+def _AddCustomBuildTool(p, spec, inputs, outputs, description, cmd):
   """Add a custom build tool to execute something.
 
   Arguments:
     p: the target project
-    config_name: name of the configuration to add it to
-    c_data: dict of the configuration to add it to
+    spec: the target project dict
     inputs: list of inputs
     outputs: list of outputs
     description: description of the action
@@ -284,9 +287,10 @@ def _AddCustomBuildTool(p, config_name, c_data,
       'CommandLine': cmd,
       })
   primary_input = _PickPrimaryInput(inputs)
-  # Add to the properties of primary input.
-  p.AddFileConfig(primary_input,
-                  _ConfigFullName(config_name, c_data), tools=[tool])
+  # Add to the properties of primary input for each config.
+  for config_name, c_data in spec['configurations'].iteritems():
+    p.AddFileConfig(primary_input,
+                    _ConfigFullName(config_name, c_data), tools=[tool])
 
 
 def _RuleExpandPath(path, input_file):
@@ -341,31 +345,27 @@ def _RuleInputsAndOutputs(rule, trigger_file):
   return (inputs, outputs)
 
 
-def _GenerateNativeRules(p, rules, output_dir,
-                         config_name, c_data, spec, options):
+def _GenerateNativeRules(p, rules, output_dir, spec, options):
   """Generate a native rules file.
 
   Arguments:
     p: the target project
     rules: the set of rules to include
     output_dir: the directory in which the project/gyp resides
-    config_name: the configuration this is for
-    c_data: the configuration dict
     spec: the project dict
     options: global generator options
   """
-  rules_filename = '%s_%s%s.rules' % (spec['target_name'],
-                                     config_name,
-                                     options.suffix)
+  rules_filename = '%s%s.rules' % (spec['target_name'],
+                                   options.suffix)
   rules_file = MSVSToolFile.Writer(os.path.join(output_dir, rules_filename))
-  rules_file.Create('%s_%s' % (spec['target_name'], config_name))
+  rules_file.Create(spec['target_name'])
   # Add each rule.
   for r in rules:
-    rule_name = '%s_%s' % (r['rule_name'], config_name)
+    rule_name = r['rule_name']
     rule_ext = r['extension']
     inputs = [_FixPath(i) for i in r.get('inputs', [])]
     outputs = [_FixPath(i) for i in r.get('outputs', [])]
-    cmd = _PrepareAction(c_data, r, has_input_path=True)
+    cmd = _PrepareAction(spec, r, has_input_path=True)
     rules_file.AddCustomBuildRule(name=rule_name,
                                   description=r.get('message', rule_name),
                                   extensions=[rule_ext],
@@ -386,8 +386,7 @@ def _Cygwinify(path):
 
 
 def _GenerateExternalRules(p, rules, output_dir, spec,
-                           config_name, c_data, sources, options,
-                           actions_to_add):
+                           sources, options, actions_to_add):
   """Generate an external makefile to do a set of rules.
 
   Arguments:
@@ -395,14 +394,10 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
     rules: the list of rules to include
     output_dir: path containing project and gyp files
     spec: project specification data
-    config_name: name of the configuration in question
-    c_data: dict for the configuration in question
     sources: set of sources known
     options: global generator options
   """
-  filename = '%s_%s_rules%s.mk' % (spec['target_name'],
-                                   config_name,
-                                   options.suffix)
+  filename = '%s_rules%s.mk' % (spec['target_name'], options.suffix)
   file = gyp.common.WriteOnDiff(os.path.join(output_dir, filename))
   # Find cygwin style versions of some paths.
   file.write('OutDirCygwin:=$(shell cygpath -u "$(OutDir)")\n')
@@ -457,14 +452,12 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
          'IntDir=$(IntDir)',
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
-  cmd = _PrepareActionRaw(c_data, cmd, True, False, True)
+  cmd = _PrepareActionRaw(spec, cmd, True, False, True)
   # TODO(bradnelson): this won't be needed if we have a better way to pick
   #                   the primary input.
   all_inputs = list(all_inputs)
   all_inputs.insert(1, filename)
   actions_to_add.append({
-      'config_name': config_name,
-      'c_data': c_data,
       'inputs': [_FixPath(i) for i in all_inputs],
       'outputs': [_FixPath(i) for i in all_outputs],
       'description': 'Running %s' % cmd,
@@ -488,30 +481,28 @@ def _GenerateRules(p, output_dir, options, spec,
   rules = spec.get('rules', [])
   rules_native = [r for r in rules if not int(r.get('msvs_external_rule', 0))]
   rules_external = [r for r in rules if int(r.get('msvs_external_rule', 0))]
-  for config_name, c_data in spec['configurations'].iteritems():
-    # Handle rules that use a native rules file.
-    if rules_native:
-     _GenerateNativeRules(p, rules_native, output_dir,
-                          config_name, c_data, spec, options)
 
-    # Handle external rules (non-native rules).
-    if rules_external:
-      _GenerateExternalRules(p, rules_external, output_dir, spec,
-                             config_name, c_data, sources, options,
-                             actions_to_add)
+  # Handle rules that use a native rules file.
+  if rules_native:
+   _GenerateNativeRules(p, rules_native, output_dir, spec, options)
 
-    # Add outputs generated by each rule (if applicable).
-    for rule in rules:
-      # Done if not processing outputs as sources.
-      if not int(rule.get('process_outputs_as_sources', False)): continue
-      # Add in the outputs from this rule.
-      trigger_files = _FindRuleTriggerFiles(rule, sources)
-      for tf in trigger_files:
-        inputs, outputs = _RuleInputsAndOutputs(rule, tf)
-        inputs.remove(tf)
-        sources.update(inputs)
-        excluded_sources.update(inputs)
-        sources.update(outputs)
+  # Handle external rules (non-native rules).
+  if rules_external:
+    _GenerateExternalRules(p, rules_external, output_dir, spec,
+                           sources, options, actions_to_add)
+
+  # Add outputs generated by each rule (if applicable).
+  for rule in rules:
+    # Done if not processing outputs as sources.
+    if not int(rule.get('process_outputs_as_sources', False)): continue
+    # Add in the outputs from this rule.
+    trigger_files = _FindRuleTriggerFiles(rule, sources)
+    for tf in trigger_files:
+      inputs, outputs = _RuleInputsAndOutputs(rule, tf)
+      inputs.remove(tf)
+      sources.update(inputs)
+      excluded_sources.update(inputs)
+      sources.update(outputs)
 
 
 def _GenerateProject(vcproj_filename, build_file, spec, options, version):
@@ -815,7 +806,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
 
   # Add deferred actions to add.
   for a in actions_to_add:
-    _AddCustomBuildTool(p, a['config_name'], a['c_data'],
+    _AddCustomBuildTool(p, spec,
                         inputs=a['inputs'],
                         outputs=a['outputs'],
                         description=a['description'],
@@ -859,13 +850,12 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
-    for config_name, c_data in spec['configurations'].iteritems():
-      cmd = _PrepareAction(c_data, a, has_input_path=False)
-      _AddCustomBuildTool(p, config_name, c_data,
-                          inputs=a.get('inputs', []),
-                          outputs=a.get('outputs', []),
-                          description=a.get('message', a['action_name']),
-                          cmd=cmd)
+    cmd = _PrepareAction(spec, a, has_input_path=False)
+    _AddCustomBuildTool(p, spec,
+                        inputs=a.get('inputs', []),
+                        outputs=a.get('outputs', []),
+                        description=a.get('message', a['action_name']),
+                        cmd=cmd)
 
   # Add run_as and test targets.
   has_run_as = False
@@ -883,17 +873,16 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
 
   # Add copies.
   for cpy in spec.get('copies', []):
-    for config_name, c_data in spec['configurations'].iteritems():
-      for src in cpy.get('files', []):
-        dst = os.path.join(cpy['destination'], os.path.basename(src))
-        # _AddCustomBuildTool() will call _FixPath() on the inputs and
-        # outputs, so do the same for our generated command line.
-        cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
-            _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
-        _AddCustomBuildTool(p, config_name, c_data,
-                            inputs=[src], outputs=[dst],
-                            description='Copying %s to %s' % (src, dst),
-                            cmd=cmd)
+    for src in cpy.get('files', []):
+      dst = os.path.join(cpy['destination'], os.path.basename(src))
+      # _AddCustomBuildTool() will call _FixPath() on the inputs and
+      # outputs, so do the same for our generated command line.
+      cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
+          _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
+      _AddCustomBuildTool(p, spec,
+                          inputs=[src], outputs=[dst],
+                          description='Copying %s to %s' % (src, dst),
+                          cmd=cmd)
 
   # Write it out.
   p.Write()
