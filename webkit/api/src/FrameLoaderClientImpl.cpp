@@ -53,6 +53,7 @@
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebKitClient.h"
+#include "WebMimeRegistry.h"
 #include "WebNode.h"
 #include "WebPlugin.h"
 #include "WebPluginParams.h"
@@ -70,7 +71,6 @@
 #include "WrappedResourceResponse.h"
 
 // FIXME: remove these
-#include "net/base/mime_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 
 using namespace WebCore;
@@ -1118,7 +1118,7 @@ bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const
     // mimeType strings are supposed to be ASCII, but if they are not for some
     // reason, then it just means that the mime type will fail all of these "is
     // supported" checks and go down the path of an unhandled mime type.
-    if (net::IsSupportedMimeType(mimeType.latin1().data()))
+    if (WebKit::webKitClient()->mimeRegistry()->supportsMIMEType(mimeType) == WebMimeRegistry::IsSupported)
         return true;
 
     // If Chrome is started with the --disable-plugins switch, pluginData is null.

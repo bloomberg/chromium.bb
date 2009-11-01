@@ -40,6 +40,7 @@ namespace WebKit {
     public:
         enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
 
+        virtual SupportsType supportsMIMEType(const WebString& mimeType) = 0;
         virtual SupportsType supportsImageMIMEType(const WebString& mimeType) = 0;
         virtual SupportsType supportsJavaScriptMIMEType(const WebString& mimeType) = 0;
         virtual SupportsType supportsMediaMIMEType(const WebString& mimeType,
