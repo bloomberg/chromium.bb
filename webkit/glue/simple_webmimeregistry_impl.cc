@@ -28,13 +28,6 @@ std::string AsASCII(const WebString& string) {
 
 namespace webkit_glue {
 
-WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMIMEType(
-    const WebString& mime_type) {
-  if (!net::IsSupportedMimeType(AsASCII(mime_type).c_str()))
-    return WebMimeRegistry::IsNotSupported;
-  return WebMimeRegistry::IsSupported;
-}
-
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsImageMIMEType(
     const WebString& mime_type) {
   if (!net::IsSupportedImageMimeType(AsASCII(mime_type).c_str()))
