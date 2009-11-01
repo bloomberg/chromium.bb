@@ -18,7 +18,6 @@
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -74,6 +73,7 @@ void RenderViewContextMenu::Init() {
 }
 
 void RenderViewContextMenu::InitMenu() {
+
   bool has_link = !params_.link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
 
@@ -220,31 +220,16 @@ void RenderViewContextMenu::AppendSearchProvider() {
   DCHECK(profile_);
   const TemplateURL* const default_provider =
       profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
-  if (!default_provider)
-    return;
-
-  string16 selection_text = EscapeAmpersands(WideToUTF16(
-      l10n_util::TruncateString(params_.selection_text, 50)));
-  if (selection_text.empty())
-    return;
-
-  bool is_search;
-  profile_->GetSearchVersusNavigateClassifier()->Classify(
-      UTF16ToWide(selection_text), std::wstring(), &is_search,
-      &selection_navigation_url_, &transition_, NULL, NULL);
-  if (!selection_navigation_url_.is_valid())
-    return;
-
-  if (is_search) {
-    string16 label(l10n_util::GetStringFUTF16(
-        IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-        WideToUTF16(default_provider->short_name()),
-        selection_text));
-    AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR, label);
-  } else {
-    string16 label(l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
-                                              selection_text));
-    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL, label);
+  if (default_provider != NULL) {
+    string16 selection_text = EscapeAmpersands(WideToUTF16(
+        l10n_util::TruncateString(params_.selection_text, 50)));
+    if (!selection_text.empty()) {
+      string16 label(l10n_util::GetStringFUTF16(
+          IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+          WideToUTF16(default_provider->short_name()),
+          selection_text));
+      AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR, label);
+    }
   }
 }
 
@@ -460,7 +445,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_COPYIMAGE:
     case IDS_CONTENT_CONTEXT_PRINT:
     case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
-    case IDS_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLCHECK_SUGGESTION_0:
     case IDC_SPELLCHECK_SUGGESTION_1:
     case IDC_SPELLCHECK_SUGGESTION_2:
@@ -717,9 +701,16 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       source_tab_contents_->render_view_host()->SelectAll();
       break;
 
-    case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
-    case IDS_CONTENT_CONTEXT_GOTOURL: {
-      OpenURL(selection_navigation_url_, NEW_FOREGROUND_TAB, transition_);
+    case IDS_CONTENT_CONTEXT_SEARCHWEBFOR: {
+      const TemplateURL* const default_provider =
+          profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+      DCHECK(default_provider);  // The context menu should not contain this
+                                 // item when there is no provider.
+      const TemplateURLRef* const search_url = default_provider->url();
+      DCHECK(search_url->SupportsReplacement());
+      OpenURL(GURL(WideToUTF8(search_url->ReplaceSearchTerms(*default_provider,
+          params_.selection_text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+          std::wstring()))), NEW_FOREGROUND_TAB, PageTransition::GENERATED);
       break;
     }
 
