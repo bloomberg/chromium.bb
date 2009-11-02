@@ -1031,6 +1031,15 @@ def main(options, args):
     options.results_directory = path_utils.GetAbsolutePath(
         os.path.join(basedir, options.target, options.results_directory))
 
+  if options.clobber_old_results:
+    # Just clobber the actual test results directories since the other files
+    # in the results directory are explicitly used for cross-run tracking.
+    test_dirs = ("LayoutTests", "chrome", "pending")
+    for directory in test_dirs:
+      path = os.path.join(options.results_directory, directory)
+      if os.path.exists(path):
+        shutil.rmtree(path)
+
   # Ensure platform is valid and force it to the form 'chromium-<platform>'.
   options.platform = path_utils.PlatformName(options.platform)
 
@@ -1173,6 +1182,9 @@ if '__main__' == __name__:
   option_parser.add_option("", "--full-results-html", action="store_true",
                            default=False, help="show all failures in "
                            "results.html, rather than only regressions")
+  option_parser.add_option("", "--clobber-old-results", action="store_true",
+                           default=False, help="Clobbers test results from "
+                           "previous runs.")
   option_parser.add_option("", "--lint-test-files", action="store_true",
                            default=False, help="Makes sure the test files "
                            "parse for all configurations. Does not run any "
