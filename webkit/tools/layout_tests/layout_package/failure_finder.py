@@ -142,7 +142,7 @@ def CreateDirectory(dir):
   This will create directories recursively until the given dir exists.
   """
   if not os.path.exists(dir):
-    os.makedirs(dir)
+    os.makedirs(dir, 0777)
 
 def ExtractFirstValue(string, regex):
   m = re.search(regex, string)
@@ -452,13 +452,14 @@ class FailureFinder(object):
         extracted_file_path = os.path.join(base_dir, name)
         try:
           (path, filename) = os.path.split(extracted_file_path)
-          os.makedirs(path)
+          os.makedirs(path, 0777)
         except:
           pass
         outfile = open(extracted_file_path, 'wb')
         outfile.write(zip.read(name))
         outfile.flush()
         outfile.close()
+        os.chmod(extracted_file_path, 0777)
 
   def _GetRevisionAndBuildFromArchiveStep(self):
     if self.archive_step_log_file:
@@ -789,6 +790,7 @@ class FailureFinder(object):
       localFile = open(file_to_create, "w%s" % modifiers)
       localFile.write(zip.read(file_in_zip))
       localFile.close()
+      os.chmod(file_to_create, 0777)
       return True
     except KeyError:
       print "File %s does not exist in zip file." % (file_in_zip)
@@ -818,6 +820,7 @@ class FailureFinder(object):
       localFile.write(webFile.read())
       webFile.close()
       localFile.close()
+      os.chmod(local_filename, 0777)
     except urllib2.HTTPError:
       return None
     except urllib2.URLError:
