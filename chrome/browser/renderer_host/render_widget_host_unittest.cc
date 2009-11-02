@@ -311,13 +311,14 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Simulate a renderer crash before the paint message.  Ensure all the resize
-  // ack logic is cleared.
+  // ack logic is cleared.  Must clear the view first so it doesn't get deleted.
+  host_->set_view(NULL);
   host_->RendererExited();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
 
   // Reset the view so we can exit the test cleanly.
-  view_.reset(new TestView(host_.get()));
+  host_->set_view(view_.get());
 }
 
 // Tests setting custom background
