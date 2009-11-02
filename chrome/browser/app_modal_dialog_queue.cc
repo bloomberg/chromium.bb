@@ -30,6 +30,8 @@ void AppModalDialogQueue::ActivateModalDialog() {
 }
 
 void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
-  dialog->ShowModalDialog();
+  // Set active_dialog_ before showing it, because ShowModalDialog can wind up
+  // calling ShowNextDialog in some cases, which will change active_dialog_.
   active_dialog_ = dialog;
+  dialog->ShowModalDialog();
 }
