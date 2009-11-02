@@ -5240,6 +5240,9 @@
             'POSIX',
             'OS_LINUX',
           ],
+          'sources!': [
+            'browser/sync/notifier/base/network_status_detector_task_mt.cc',
+          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],

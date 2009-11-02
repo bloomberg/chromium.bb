@@ -67,6 +67,7 @@
         'files/talk/base/asyncpacketsocket.cc',
         'files/talk/base/asyncpacketsocket.h',
         'files/talk/base/asynctcpsocket.h',
+        'files/talk/base/asynctcpsocket.cc',
         'files/talk/base/asyncudpsocket.cc',
         'files/talk/base/asyncudpsocket.h',
         'files/talk/base/autodetectproxy.cc',

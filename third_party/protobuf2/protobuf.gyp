@@ -133,11 +133,12 @@
         'src/src/google/protobuf/text_format.cc',
         'src/src/google/protobuf/unknown_field_set.cc',
         'src/src/google/protobuf/wire_format.cc',
-        'src/src/google/protobuf/io/gzip_stream.cc',
+        # This file pulls in zlib, but it's not actually used by protoc, so
+        # instead of compiling zlib for the host, let's just exclude this.
+        # 'src/src/google/protobuf/io/gzip_stream.cc',
         'src/src/google/protobuf/io/printer.cc',
         'src/src/google/protobuf/io/tokenizer.cc',
         'src/src/google/protobuf/io/zero_copy_stream_impl.cc',
-        'src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
         'src/src/google/protobuf/compiler/importer.cc',
         'src/src/google/protobuf/compiler/parser.cc',
       ],
