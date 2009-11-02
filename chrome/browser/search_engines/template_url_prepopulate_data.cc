@@ -1630,16 +1630,6 @@ const PrepopulatedEngine tango = {
   58,
 };
 
-const PrepopulatedEngine tapuz = {
-  L"\x05ea\x05e4\x05d5\x05d6 \x05d0\x05e0\x05e9\x05d9\x05dd",
-  L"tapuz.co.il",
-  "http://www.tapuz.co.il/favicon.ico",
-  L"http://www.tapuz.co.il/search/search.asp?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  57,
-};
-
 const PrepopulatedEngine terra_ar = {
   L"Terra Argentina",
   L"terra.com.ar",
@@ -2444,7 +2434,7 @@ const PrepopulatedEngine* engines_IE[] = { &google, &yahoo_uk, &msn_en_IE, };
 
 // Israel
 const PrepopulatedEngine* engines_IL[] =
-    { &google, &walla, &nana10, &tapuz, &msn_he_IL, };
+    { &google, &walla, &nana10, &msn_he_IL, };
 
 // India
 const PrepopulatedEngine* engines_IN[] =
@@ -3212,7 +3202,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 }
 
 int GetDataVersion() {
-  return 24;  // Increment this if you change the above data in ways that mean
+  return 25;  // Increment this if you change the above data in ways that mean
               // users with existing data should get a new version.
 }
 
