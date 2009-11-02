@@ -32,6 +32,15 @@
         'test_object.cc',
         'test_object.h',
       ],
+      'run_as': {
+        'working_directory': '.',
+        'action': [
+          '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
+          '--no-sandbox',
+          '--load-plugin=$(TargetPath)',
+          'test_page.html',
+        ],
+      },
     }
   ],
 }

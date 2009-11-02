@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(ENABLE_PEPPER)
+#define PEPPER_APIS_ENABLED
+#endif
+
 #include "chrome/renderer/render_view.h"
 
 #include <algorithm>

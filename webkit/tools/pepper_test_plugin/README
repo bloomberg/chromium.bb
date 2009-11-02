@@ -1,12 +1,22 @@
 This is a test plugin for manual testing of the Pepper plugin API. See
   https://wiki.mozilla.org/Plugins:PlatformIndependentNPAPI
 
-To generate a project from the gyp file, use:
-  python ..\..\..\build\gyp_chromium pepper_test_plugin.gyp
-
-You need to enable PEPPER_APIS_ENABLED in src\chrome\renderer\render_view.cc in your Chrome build.
+To generate a project from the gyp file, set the GYP_DEFINES environment
+variable to "enable_pepper=1". From a Windows command prompt:
+  set GYP_DEFINES=enable_pepper=1
+  
+Then rebuild the project files:
+  gclient runhooks --force
+  
+Then open the Chrome all.sln solution and rebuild the pepper_test_plugin and
+chrome projects.
 
 To load this plugin in Chrome, use the command line flags:
   --no-sandbox
   --load-plugin=<<<YOUR CHECKOUT ROOT>>\src\webkit\tools\pepper_test_plugin\Debug\pepper_test_plugin.dll
   
+A simple way to launch Chrome with these command line flags is to run the
+generated pepper_test_plugin project.
+
+Note that pepper_test_plugin is not dependent on the chrome project so you
+need to remember to build Chrome separately if necessary.
