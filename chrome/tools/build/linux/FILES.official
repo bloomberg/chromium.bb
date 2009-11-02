@@ -7,6 +7,5 @@ installer
 libffmpegsumo.so
 locales
 product_logo_48.png
-themes
 resources
 xdg-settings
