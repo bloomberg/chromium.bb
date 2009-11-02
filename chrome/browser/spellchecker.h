@@ -25,7 +25,6 @@ class FilePath;
 class Hunspell;
 class PrefService;
 class Profile;
-class MessageLoop;
 class URLFetcher;
 class URLRequestContextGetter;
 
@@ -116,6 +115,14 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
  private:
   friend class ReadDictionaryTask;
+  FRIEND_TEST(SpellCheckTest, SpellCheckStrings_EN_US);
+  FRIEND_TEST(SpellCheckTest, SpellCheckSuggestions_EN_US);
+  FRIEND_TEST(SpellCheckTest, SpellCheckText);
+  FRIEND_TEST(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US);
+  FRIEND_TEST(SpellCheckTest,
+              DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US);
+  FRIEND_TEST(SpellCheckTest, GetAutoCorrectionWord_EN_US);
+  FRIEND_TEST(SpellCheckTest, IgnoreWords_EN_US);
 
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to disk.
@@ -205,9 +212,6 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // Flag indicating whether we tried to download the dictionary file.
   bool tried_to_download_dictionary_file_;
-
-  // File Thread Message Loop.
-  MessageLoop* file_loop_;
 
   // Used for requests. MAY BE NULL which means don't try to download.
   URLRequestContextGetter* request_context_getter_;

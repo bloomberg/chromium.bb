@@ -14,7 +14,7 @@ class ShownSectionsHandlerTest : public testing::Test {
 };
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
-  PrefService pref(FilePath(), NULL);
+  PrefService pref((FilePath()));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);

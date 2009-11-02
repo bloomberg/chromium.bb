@@ -9,7 +9,7 @@
 #include "base/singleton.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
@@ -137,14 +137,16 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
     : service_(service),
       flow_container_(new SyncSetupFlowContainer()) {
-  // Register data sources for HTML content we require.
-  // g_browser_process and/or io_thread may not exist during testing.
-  if (g_browser_process && g_browser_process->io_thread()) {
-    // Add our network layer data source for 'cloudy' URLs.
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
-                          &ChromeURLDataManager::AddDataSource,
-                          new SyncResourcesSource()));
+  // Add our network layer data source for 'cloudy' URLs.
+  SyncResourcesSource* sync_source = new SyncResourcesSource();
+  bool posted = ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+                        &ChromeURLDataManager::AddDataSource,
+                        sync_source));
+  if (!posted) {
+    sync_source->AddRef();
+    sync_source->Release();  // Keep Valgrind happy in unit tests.
   }
 }
 

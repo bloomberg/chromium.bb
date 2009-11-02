@@ -6,6 +6,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/url_constants.h"
@@ -78,6 +79,8 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
 }
 
 TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
+  ChromeThread ui_loop(ChromeThread::UI, MessageLoop::current());
+  ChromeThread file_loop(ChromeThread::FILE, MessageLoop::current());
   // We use profile() here, since it's a TestingProfile.
   profile()->CreateBookmarkModel(true);
   profile()->BlockUntilBookmarkModelLoaded();

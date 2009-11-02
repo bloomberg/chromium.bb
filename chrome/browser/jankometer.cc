@@ -18,6 +18,7 @@
 #include "base/watchdog.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_LINUX)
@@ -249,12 +250,9 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
       TimeDelta::FromMilliseconds(kMaxIOMessageDelayMs),
       io_watchdog_enabled);
   io_observer->AddRef();
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread) {
-    io_thread->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(io_observer,
-            &JankObserver::AttachToCurrentThread));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(io_observer, &JankObserver::AttachToCurrentThread));
 }
 
 void UninstallJankometer() {

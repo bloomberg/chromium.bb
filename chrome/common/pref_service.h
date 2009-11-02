@@ -28,10 +28,6 @@
 class NotificationObserver;
 class Preference;
 
-namespace base {
-class Thread;
-}
-
 class PrefService : public NonThreadSafe,
                     public ImportantFileWriter::DataSerializer {
  public:
@@ -77,11 +73,8 @@ class PrefService : public NonThreadSafe,
   };
 
   // |pref_filename| is the path to the prefs file we will try to load or save
-  // to. Saves will be executed on |backend_thread|. It should be the file
-  // thread in Chrome. You can pass NULL for unit tests, and then no separate
-  // thread will be used.
-  PrefService(const FilePath& pref_filename,
-              const base::Thread* backend_thread);
+  // to. Saves will be executed on the file thread.
+  explicit PrefService(const FilePath& pref_filename);
   ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer

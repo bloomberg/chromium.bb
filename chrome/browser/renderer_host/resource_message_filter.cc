@@ -234,8 +234,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   // this object for sending messages.
   audio_renderer_host_->IPCChannelConnected(id(), handle(), this);
 
-  WorkerService::GetInstance()->Initialize(
-      resource_dispatcher_host_, ui_loop());
+  WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
   appcache_dispatcher_host_->Initialize(this, id(), handle());
   socket_stream_dispatcher_host_->Initialize(this, id());
   dom_storage_dispatcher_host_->Init(handle());
@@ -430,8 +429,9 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
 
   // Create a new ViewHostMsg_ContextMenu message.
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
-  ui_loop()->PostTask(FROM_HERE, new ContextMenuMessageDispatcher(
-      id(), context_menu_message));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new ContextMenuMessageDispatcher(id(), context_menu_message));
 }
 
 // Called on the IPC thread:
@@ -454,10 +454,6 @@ URLRequestContext* ResourceMessageFilter::GetRequestContext(
   if (request_data.resource_type == ResourceType::MEDIA)
     request_context = media_request_context_;
   return request_context->GetURLRequestContext();
-}
-
-MessageLoop* ResourceMessageFilter::ui_loop() {
-  return render_widget_helper_->ui_loop();
 }
 
 void ResourceMessageFilter::OnMsgCreateWindow(
@@ -704,7 +700,8 @@ void ResourceMessageFilter::OnClipboardWriteObjects(
   Clipboard::DuplicateRemoteHandles(handle(), long_living_objects);
 #endif
 
-  ui_loop()->PostTask(FROM_HERE, new WriteClipboardTask(long_living_objects));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE, new WriteClipboardTask(long_living_objects));
 }
 
 #if !defined(OS_LINUX)
@@ -823,8 +820,9 @@ void ResourceMessageFilter::OnResourceTypeStats(
                    static_cast<int>(stats.fonts.size / 1024));
   // We need to notify the TaskManager of these statistics from the UI
   // thread.
-  ui_loop()->PostTask(
-      FROM_HERE, NewRunnableFunction(
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(
           &ResourceMessageFilter::OnResourceTypeStatsOnUIThread,
           stats,
           base::GetProcId(handle())));
@@ -1170,7 +1168,8 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
 #if defined(USE_TCMALLOC)
 void ResourceMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
                                                const std::string& output) {
-  ui_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
 }
 #endif

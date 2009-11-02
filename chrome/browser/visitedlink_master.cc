@@ -24,7 +24,6 @@
 #include "base/rand_util.h"
 #include "base/stack_container.h"
 #include "base/string_util.h"
-#include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
@@ -190,9 +189,6 @@ class VisitedLinkMaster::TableBuilder
   // Owner of this object. MAY ONLY BE ACCESSED ON THE MAIN THREAD!
   VisitedLinkMaster* master_;
 
-  // The thread the visited link master is on where we will notify it.
-  MessageLoop* main_message_loop_;
-
   // Indicates whether the operation has failed or not.
   bool success_;
 
@@ -205,19 +201,17 @@ class VisitedLinkMaster::TableBuilder
 
 // VisitedLinkMaster ----------------------------------------------------------
 
-VisitedLinkMaster::VisitedLinkMaster(base::Thread* file_thread,
-                                     Listener* listener,
+VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      Profile* profile) {
-  InitMembers(file_thread, listener, profile);
+  InitMembers(listener, profile);
 }
 
-VisitedLinkMaster::VisitedLinkMaster(base::Thread* file_thread,
-                                     Listener* listener,
+VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      HistoryService* history_service,
                                      bool suppress_rebuild,
                                      const FilePath& filename,
                                      int32 default_table_size) {
-  InitMembers(file_thread, listener, NULL);
+  InitMembers(listener, NULL);
 
   database_name_override_ = filename;
   table_size_override_ = default_table_size;
@@ -236,15 +230,8 @@ VisitedLinkMaster::~VisitedLinkMaster() {
   FreeURLTable();
 }
 
-void VisitedLinkMaster::InitMembers(base::Thread* file_thread,
-                                    Listener* listener,
-                                    Profile* profile) {
+void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
   DCHECK(listener);
-
-  if (file_thread)
-    file_thread_ = file_thread->message_loop();
-  else
-    file_thread_ = NULL;
 
   listener_ = listener;
   file_ = NULL;
@@ -553,13 +540,8 @@ bool VisitedLinkMaster::WriteFullTable() {
               hash_table_, table_length_ * sizeof(Fingerprint));
 
   // The hash table may have shrunk, so make sure this is the end.
-  if (file_thread_) {
-    AsyncSetEndOfFile* setter = new AsyncSetEndOfFile(file_);
-    file_thread_->PostTask(FROM_HERE, setter);
-  } else {
-    TruncateFile(file_);
-  }
-
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, new AsyncSetEndOfFile(file_));
   return true;
 }
 
@@ -754,14 +736,11 @@ void VisitedLinkMaster::FreeURLTable() {
     delete shared_memory_;
     shared_memory_ = NULL;
   }
-  if (file_) {
-    if (file_thread_) {
-      AsyncCloseHandle* closer = new AsyncCloseHandle(file_);
-      file_thread_->PostTask(FROM_HERE, closer);
-    } else {
-      fclose(file_);
-    }
-  }
+  if (!file_)
+    return;
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, new AsyncCloseHandle(file_));
 }
 
 bool VisitedLinkMaster::ResizeTableIfNecessary() {
@@ -941,15 +920,9 @@ void VisitedLinkMaster::WriteToFile(FILE* file,
   posted_asynchronous_operation_ = true;
 #endif
 
-  if (file_thread_) {
-    // Send the write to the other thread for execution to avoid blocking.
-    AsyncWriter* writer = new AsyncWriter(file, offset, data, data_size);
-    file_thread_->PostTask(FROM_HERE, writer);
-  } else {
-    // When there is no I/O thread, we are probably running in unit test mode,
-    // just do the write synchronously.
-    AsyncWriter::WriteToFile(file, offset, data, data_size);
-  }
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new AsyncWriter(file, offset, data, data_size));
 }
 
 void VisitedLinkMaster::WriteUsedItemCountToFile() {
@@ -1000,7 +973,6 @@ VisitedLinkMaster::TableBuilder::TableBuilder(
     VisitedLinkMaster* master,
     const uint8 salt[LINK_SALT_LENGTH])
     : master_(master),
-      main_message_loop_(MessageLoop::current()),
       success_(true) {
   fingerprints_.reserve(4096);
   memcpy(salt_, salt, sizeof(salt));
@@ -1025,8 +997,9 @@ void VisitedLinkMaster::TableBuilder::OnComplete(bool success) {
 
   // Marshal to the main thread to notify the VisitedLinkMaster that the
   // rebuild is complete.
-  main_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &TableBuilder::OnCompleteMainThread));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &TableBuilder::OnCompleteMainThread));
 }
 
 void VisitedLinkMaster::TableBuilder::OnCompleteMainThread() {

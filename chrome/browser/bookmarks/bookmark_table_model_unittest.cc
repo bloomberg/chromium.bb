@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "app/table_model_observer.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_table_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,12 +34,15 @@ class BookmarkTableModelTest : public testing::Test,
         changed_count_(0),
         item_changed_count_(0),
         added_count_(0),
-        removed_count_(0) {
+        removed_count_(0),
+        ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_) {
   }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
+    profile_->BlockUntilBookmarkModelLoaded();
     // Populate with some default data.
     Time t0 = Time::Now();
     const BookmarkNode* bb = bookmark_model()->GetBookmarkBarNode();
@@ -110,6 +115,9 @@ class BookmarkTableModelTest : public testing::Test,
   int added_count_;
   int removed_count_;
   scoped_ptr<TestingProfile> profile_;
+  MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 // Verifies the count when showing various nodes.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/render_messages.h"
@@ -73,7 +74,8 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest() {
+  SafeBrowsingBlockingPageTest()
+      : io_thread_(ChromeThread::IO, MessageLoop::current()) {
     ResetUserResponse();
     service_ = new SafeBrowsingService();
   }
@@ -157,6 +159,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
   UserResponse user_response_;
   scoped_refptr<SafeBrowsingService> service_;
   TestSafeBrowsingBlockingPageFactory factory_;
+  ChromeThread io_thread_;
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
@@ -168,6 +171,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
+
+  MessageLoop::current()->RunAllPending();
 
   // Simulate the user clicking "don't proceed".
   DontProceedThroughInterstitial(sb_interstitial);

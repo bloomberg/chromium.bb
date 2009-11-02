@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data_remover.h"
 
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
@@ -133,18 +132,17 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
   if (remove_mask & REMOVE_CACHE) {
     // Invoke ClearBrowsingDataView::ClearCache on the IO thread.
-    base::Thread* thread = g_browser_process->io_thread();
-    if (thread) {
-      waiting_for_clear_cache_ = true;
-      UserMetrics::RecordAction(L"ClearBrowsingData_Cache", profile_);
-      thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-          this,
-          &BrowsingDataRemover::ClearCacheOnIOThread,
-          profile_->GetRequestContext(),
-          delete_begin_,
-          delete_end_,
-          MessageLoop::current()));
-    }
+    waiting_for_clear_cache_ = true;
+    UserMetrics::RecordAction(L"ClearBrowsingData_Cache", profile_);
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &BrowsingDataRemover::ClearCacheOnIOThread,
+            profile_->GetRequestContext(),
+            delete_begin_,
+            delete_end_,
+            MessageLoop::current()));
   }
 
   NotifyAndDeleteIfDone();

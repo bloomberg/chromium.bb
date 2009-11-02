@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/bookmark_editor_view.h"
 #include "chrome/common/pref_names.h"
@@ -18,7 +20,10 @@ using base::TimeDelta;
 // it with test data.
 class BookmarkEditorViewTest : public testing::Test {
  public:
-  BookmarkEditorViewTest() : model_(NULL) {
+  BookmarkEditorViewTest()
+      : model_(NULL),
+        ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -27,6 +32,7 @@ class BookmarkEditorViewTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
 
     model_ = profile_->GetBookmarkModel();
+    profile_->BlockUntilBookmarkModelLoaded();
 
     AddTestData();
   }
@@ -117,6 +123,8 @@ class BookmarkEditorViewTest : public testing::Test {
   }
 
   scoped_ptr<BookmarkEditorView> editor_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 // Makes sure the tree model matches that of the bookmark bar model.

@@ -4,14 +4,26 @@
 
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test BookmarkDragDataTest;
+class BookmarkDragDataTest : public testing::Test {
+ public:
+  BookmarkDragDataTest()
+      : ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_) { }
+
+ private:
+  MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
+};
 
 namespace {
 
@@ -59,6 +71,7 @@ TEST_F(BookmarkDragDataTest, URL) {
   // Write a single node representing a URL to the clipboard.
   TestingProfile profile;
   profile.CreateBookmarkModel(false);
+  profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
@@ -101,6 +114,7 @@ TEST_F(BookmarkDragDataTest, URL) {
 TEST_F(BookmarkDragDataTest, Group) {
   TestingProfile profile;
   profile.CreateBookmarkModel(false);
+  profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
@@ -140,6 +154,7 @@ TEST_F(BookmarkDragDataTest, GroupWithChild) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
+  profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
   const BookmarkNode* group = model->AddGroup(root, 0, L"g1");
@@ -178,6 +193,7 @@ TEST_F(BookmarkDragDataTest, MultipleNodes) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
+  profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
   const BookmarkNode* group = model->AddGroup(root, 0, L"g1");

@@ -10,6 +10,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -495,16 +496,16 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   // The tab might not have a render_view_host if it was closed (in which case,
   // we have taken care of the blocked requests when processing
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
-  // Also we need to test there is an IO thread, as when unit-tests we don't
-  // have one.
+  // Also we need to test there is a ResourceDispatcherHost, as when unit-tests
+  // we don't have one.
   RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
                                                original_rvh_id_);
-  if (rvh && g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(
-        FROM_HERE, new ResourceRequestTask(original_child_id_,
-                                           original_rvh_id_,
-                                           action));
-  }
+  if (!rvh || !g_browser_process->resource_dispatcher_host())
+    return;
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      new ResourceRequestTask(original_child_id_, original_rvh_id_, action));
 }
 
 // static

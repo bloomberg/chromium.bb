@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 // StrictTransportSecurityState calls...
 // StrictTransportSecurityPersister::StateIsDirty
 //   since the callback isn't allowed to block or reenter, we schedule a Task
-//   on |file_thread_| after some small amount of time
+//   on the file thread after some small amount of time
 //
 // ...
 //
@@ -35,16 +35,12 @@
 #include "base/ref_counted.h"
 #include "net/base/strict_transport_security_state.h"
 
-namespace base {
-class Thread;
-}
 
 class StrictTransportSecurityPersister :
     public base::RefCountedThreadSafe<StrictTransportSecurityPersister>,
     public net::StrictTransportSecurityState::Delegate {
  public:
   StrictTransportSecurityPersister(net::StrictTransportSecurityState* state,
-                                   base::Thread* file_thread,
                                    const FilePath& profile_path);
 
   ~StrictTransportSecurityPersister();
@@ -67,10 +63,6 @@ class StrictTransportSecurityPersister :
 
   scoped_refptr<net::StrictTransportSecurityState>
       strict_transport_security_state_;
-
-  // This is a thread which can perform file access.
-  base::Thread* const file_thread_;
-
   // The path to the file in which we store the serialised state.
   const FilePath state_file_;
 };

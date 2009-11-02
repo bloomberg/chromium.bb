@@ -118,6 +118,9 @@ static net::ProxyConfigService* CreateProxyConfigService(
 
   if (!proxy_config_from_cmd_line.get()) {
     // Use system settings.
+    // TODO(port): the IO and FILE message loops are only used by Linux.  Can
+    // that code be moved to chrome/browser instead of being in net, so that it
+    // can use ChromeThread instead of raw MessageLoop pointers? See bug 25354.
     return net::ProxyService::CreateSystemProxyConfigService(
         g_browser_process->io_thread()->message_loop(),
         g_browser_process->file_thread()->message_loop());
@@ -667,7 +670,8 @@ void ChromeURLRequestContextGetter::Observe(NotificationType type,
     if (*pref_name_in == prefs::kAcceptLanguages) {
       std::string accept_language =
           WideToASCII(prefs->GetString(prefs::kAcceptLanguages));
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
@@ -675,7 +679,8 @@ void ChromeURLRequestContextGetter::Observe(NotificationType type,
     } else if (*pref_name_in == prefs::kCookieBehavior) {
       net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
           prefs_->GetInteger(prefs::kCookieBehavior));
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ChromeURLRequestContextGetter::OnCookiePolicyChange,
@@ -683,7 +688,8 @@ void ChromeURLRequestContextGetter::Observe(NotificationType type,
     } else if (*pref_name_in == prefs::kDefaultCharset) {
       std::string default_charset =
           WideToASCII(prefs->GetString(prefs::kDefaultCharset));
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
@@ -869,8 +875,8 @@ net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   base::WaitableEvent completion(false, false);
   net::CookieStore* result = NULL;
 
-  g_browser_process->io_thread()->message_loop()->PostTask(
-      FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this,
           &ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper,
           &completion,

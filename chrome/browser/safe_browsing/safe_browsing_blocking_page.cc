@@ -11,7 +11,7 @@
 #include "base/histogram.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/google_util.h"
@@ -437,15 +437,11 @@ void SafeBrowsingBlockingPage::NotifySafeBrowsingService(
     SafeBrowsingService* sb_service,
     const UnsafeResourceList& unsafe_resources,
     bool proceed) {
-  MessageLoop* message_loop;
-  if (g_browser_process->io_thread())
-    message_loop = g_browser_process->io_thread()->message_loop();
-  else  // For unit-tests, just post on the current thread.
-    message_loop = MessageLoop::current();
-
-  message_loop->PostTask(FROM_HERE, NewRunnableMethod(
-      sb_service, &SafeBrowsingService::OnBlockingPageDone, unsafe_resources,
-      proceed));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          sb_service, &SafeBrowsingService::OnBlockingPageDone,
+          unsafe_resources, proceed));
 }
 
 // static

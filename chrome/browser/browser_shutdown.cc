@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/jankometer.h"
@@ -90,10 +91,9 @@ FilePath GetShutdownMsPath() {
 
 void Shutdown() {
   // Unload plugins. This needs to happen on the IO thread.
-  if (g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
         NewRunnableFunction(&ChromePluginLib::UnloadAllPlugins));
-  }
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,

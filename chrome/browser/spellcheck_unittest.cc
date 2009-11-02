@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_paths.h"
@@ -19,8 +20,17 @@ const FilePath::CharType kTempCustomDictionaryFile[] =
 }  // namespace
 
 class SpellCheckTest : public testing::Test {
- private:
+ public:
+  SpellCheckTest()
+      : file_thread_(ChromeThread::FILE, &message_loop_),
+        io_thread_(ChromeThread::IO, &message_loop_) {}
+
+ protected:
   MessageLoop message_loop_;
+
+ private:
+  ChromeThread file_thread_;
+  ChromeThread io_thread_;  // To keep DCHECKs inside spell checker happy.
 };
 
 // Represents a special initialization function used only for the unit tests
@@ -271,6 +281,8 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
 
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, FilePath()));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     size_t input_length = 0;
@@ -616,6 +628,8 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
 
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, FilePath()));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     std::vector<string16> suggestions;
@@ -889,6 +903,8 @@ TEST_F(SpellCheckTest, SpellCheckText) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
         hunspell_directory, kTestCases[i].language, NULL, FilePath()));
+    spell_checker->Initialize();
+    message_loop_.RunAllPending();
 
     size_t input_length = 0;
     if (kTestCases[i].input != NULL)
@@ -926,6 +942,8 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
 
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, custom_dictionary_file));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Add the word to spellchecker.
@@ -954,6 +972,8 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
   // Now initialize another spellchecker to see that AddToWord is permanent.
   scoped_refptr<SpellChecker> spell_checker_new(new SpellChecker(
       hunspell_directory, "en-US", NULL, custom_dictionary_file));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Now check whether it is added to Spellchecker.
@@ -997,6 +1017,8 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
 
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, custom_dictionary_file));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     // Add the word to spellchecker.
@@ -1083,6 +1105,8 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, FilePath()));
   spell_checker->EnableAutoSpellCorrect(true);
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     string16 misspelled_word(UTF8ToUTF16(kTestCases[i].input));
@@ -1118,6 +1142,8 @@ TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
 
   scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
       hunspell_directory, "en-US", NULL, FilePath()));
+  spell_checker->Initialize();
+  message_loop_.RunAllPending();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     string16 word(UTF8ToUTF16(kTestCases[i].input));

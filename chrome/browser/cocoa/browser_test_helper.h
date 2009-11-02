@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/test/testing_profile.h"
 
@@ -18,7 +19,9 @@
 // navigation_controller_unittest.cc, ..
 class BrowserTestHelper {
  public:
-  BrowserTestHelper() {
+  BrowserTestHelper()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -32,6 +35,8 @@ class BrowserTestHelper {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_

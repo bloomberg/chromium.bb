@@ -6,12 +6,14 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/i18n/time_formatting.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "grit/generated_resources.h"
 
@@ -149,7 +151,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
                               url4, t4);
 
   // Write to a temp file.
-  bookmark_html_writer::WriteBookmarks(NULL, &model, path_);
+  MessageLoop message_loop;
+  ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
+  bookmark_html_writer::WriteBookmarks(&model, path_);
+  message_loop.RunAllPending();
 
   // Read the bookmarks back in.
   std::vector<ProfileWriter::BookmarkEntry> parsed_bookmarks;

@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
@@ -116,12 +115,10 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
     if (!action_taken_)
       UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
-    base::Thread* io_thread = g_browser_process->io_thread();
-    if (io_thread && io_thread->message_loop()) {
-      io_thread->message_loop()->PostTask(FROM_HERE,
-        new NotificationPermissionCallbackTask(process_id_, route_id_,
-            callback_context_));
-    }
+    ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      new NotificationPermissionCallbackTask(
+          process_id_, route_id_, callback_context_));
 
     delete this;
   }
@@ -221,13 +218,11 @@ void DesktopNotificationService::GrantPermission(const GURL& origin) {
   prefs->ScheduleSavePersistentPrefs();
 
   // Schedule a cache update on the IO thread.
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread && io_thread->message_loop()) {
-    io_thread->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(prefs_cache_.get(),
-                          &NotificationsPrefsCache::CacheAllowedOrigin,
-                          origin));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          prefs_cache_.get(), &NotificationsPrefsCache::CacheAllowedOrigin,
+          origin));
 }
 
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
@@ -244,13 +239,11 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
   prefs->ScheduleSavePersistentPrefs();
 
   // Schedule a cache update on the IO thread.
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread && io_thread->message_loop()) {
-    io_thread->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(prefs_cache_.get(),
-                          &NotificationsPrefsCache::CacheDeniedOrigin,
-                          origin));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          prefs_cache_.get(), &NotificationsPrefsCache::CacheDeniedOrigin,
+          origin));
 }
 
 void DesktopNotificationService::RequestPermission(

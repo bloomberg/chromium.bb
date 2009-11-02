@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,6 +95,11 @@ static TestURLInfo test_db[] = {
 
 class HistoryURLProviderTest : public testing::Test,
                                public ACProviderListener {
+ public:
+  HistoryURLProviderTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {}
+
   // ACProviderListener
   virtual void OnProviderUpdate(bool updated_matches);
 
@@ -114,6 +120,8 @@ class HistoryURLProviderTest : public testing::Test,
                size_t num_results);
 
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
@@ -130,6 +138,7 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 void HistoryURLProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateBookmarkModel(true);
+  profile_->BlockUntilBookmarkModelLoaded();
   profile_->CreateHistoryService(true);
   history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 

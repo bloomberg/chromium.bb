@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #import "chrome/browser/cocoa/find_pasteboard.h"
 
 // The number of utf16 code units that will be written to the find pasteboard,
@@ -35,7 +36,8 @@ void ResourceMessageFilter::OnClipboardFindPboardWriteString(
     NSString* nsText = base::SysUTF16ToNSString(text);
     if (nsText) {
       // FindPasteboard must be used on the UI thread.
-      ui_loop()->PostTask(FROM_HERE, new WriteFindPboardTask(nsText));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE, new WriteFindPboardTask(nsText));
     }
   }
 }

@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_tracker.h"
@@ -96,10 +96,8 @@ JobTracker::~JobTracker() {
 
 // main thread:
 void JobTracker::InvokeOnIOThread(void (JobTracker::*m)()) {
-  base::Thread* thread = g_browser_process->io_thread();
-  if (!thread)
-    return;
-  thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this, m));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE, NewRunnableMethod(this, m));
 }
 
 // main thread:

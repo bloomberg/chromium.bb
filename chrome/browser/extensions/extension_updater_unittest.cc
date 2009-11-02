@@ -74,7 +74,7 @@ class ScopedTempPrefService {
     // problem when different tests are running in parallel.
     temp_dir_.CreateUniqueTempDir();
     FilePath pref_file = temp_dir_.path().AppendASCII("prefs");
-    prefs_.reset(new PrefService(pref_file, NULL));
+    prefs_.reset(new PrefService(pref_file));
   }
 
   ~ScopedTempPrefService() {}

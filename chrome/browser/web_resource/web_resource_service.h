@@ -16,8 +16,7 @@ class Profile;
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
-  WebResourceService(Profile* profile,
-                     MessageLoop* backend_loop);
+  WebResourceService(Profile* profile);
   ~WebResourceService();
 
   // Sleep until cache needs to be updated, but always for at least 5 seconds
@@ -60,9 +59,6 @@ class WebResourceService
 
   // Server from which we are currently pulling web resource data.
   std::wstring web_resource_server_;
-
-  // Whenever we update resource cache, schedule another task.
-  MessageLoop* backend_loop_;
 
   WebResourceFetcher* web_resource_fetcher_;
 

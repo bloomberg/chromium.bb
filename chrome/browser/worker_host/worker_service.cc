@@ -28,8 +28,7 @@ WorkerService* WorkerService::GetInstance() {
 
 WorkerService::WorkerService()
     : next_worker_route_id_(0),
-      resource_dispatcher_host_(NULL),
-      ui_loop_(NULL) {
+      resource_dispatcher_host_(NULL) {
   // Receive a notification if a message filter or WorkerProcessHost is deleted.
   registrar_.Add(this, NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
                  NotificationService::AllSources());
@@ -38,10 +37,8 @@ WorkerService::WorkerService()
                  NotificationService::AllSources());
 }
 
-void WorkerService::Initialize(ResourceDispatcherHost* rdh,
-                               MessageLoop* ui_loop) {
+void WorkerService::Initialize(ResourceDispatcherHost* rdh) {
   resource_dispatcher_host_ = rdh;
-  ui_loop_ = ui_loop;
 }
 
 WorkerService::~WorkerService() {

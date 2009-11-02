@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -77,10 +77,10 @@ WorkerProcessHost::~WorkerProcessHost() {
       NotificationService::NoDetails());
 
   // If we crashed, tell the RenderViewHost.
-  MessageLoop* ui_loop = WorkerService::GetInstance()->ui_loop();
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    ui_loop->PostTask(FROM_HERE, new WorkerCrashTask(
-        i->renderer_id, i->render_view_route_id));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        new WorkerCrashTask(i->renderer_id, i->render_view_route_id));
   }
 
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());

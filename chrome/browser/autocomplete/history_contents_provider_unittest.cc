@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +30,9 @@ struct TestEntry {
 class HistoryContentsProviderTest : public testing::Test,
                                     public ACProviderListener {
  public:
+  HistoryContentsProviderTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {}
 
   void RunQuery(const AutocompleteInput& input,
                 bool minimal_changes) {
@@ -87,6 +91,8 @@ class HistoryContentsProviderTest : public testing::Test,
   }
 
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 
   std::wstring history_dir_;
 

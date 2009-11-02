@@ -16,6 +16,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "chrome/browser/chrome_thread.h"
 
 using base::TimeDelta;
 
@@ -82,10 +83,8 @@ class WriteToDiskTask : public Task {
 
 }  // namespace
 
-ImportantFileWriter::ImportantFileWriter(const FilePath& path,
-                                         const base::Thread* backend_thread)
+ImportantFileWriter::ImportantFileWriter(const FilePath& path)
     : path_(path),
-      backend_thread_(backend_thread),
       serializer_(NULL),
       commit_interval_(TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)) {
   DCHECK(CalledOnValidThread());
@@ -109,13 +108,8 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  Task* task = new WriteToDiskTask(path_, data);
-  if (backend_thread_) {
-    backend_thread_->message_loop()->PostTask(FROM_HERE, task);
-  } else {
-    task->Run();
-    delete task;
-  }
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, new WriteToDiskTask(path_, data));
 }
 
 void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {

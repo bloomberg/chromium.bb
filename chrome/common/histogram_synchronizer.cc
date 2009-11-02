@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/render_messages.h"
 
@@ -97,8 +97,10 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   }
 
   // callback_task_ member can only be accessed on IO thread.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(current_synchronizer,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          current_synchronizer,
           &HistogramSynchronizer::SetCallbackTaskToCallAfterGettingHistograms,
           callback_thread,
           callback_task));
@@ -114,8 +116,10 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   }
 
   // Post a task that would be called after waiting for wait_time.
-  g_browser_process->io_thread()->message_loop()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(current_synchronizer,
+  ChromeThread::PostDelayedTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          current_synchronizer,
           &HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback,
           sequence_number),
       wait_time);

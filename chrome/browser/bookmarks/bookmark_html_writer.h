@@ -12,14 +12,11 @@ class MessageLoop;
 namespace bookmark_html_writer {
 
 // Writes the bookmarks out in the 'bookmarks.html' format understood by
-// Firefox and IE. The results are written to the file at |path|.
-// If |thread| is non-null, writing is done on that thread, otherwise
-// writing is synchronous.
+// Firefox and IE. The results are written to the file at |path|.  The file
+// thread is used.
 //
 // TODO(sky): need a callback on failure.
-void WriteBookmarks(MessageLoop* thread,
-                    BookmarkModel* model,
-                    const FilePath& path);
+void WriteBookmarks(BookmarkModel* model, const FilePath& path);
 
 }
 

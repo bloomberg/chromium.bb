@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/model_associator.h"
@@ -267,7 +268,10 @@ class ProfileSyncServiceTest : public testing::Test {
  protected:
   enum LoadOption { LOAD_FROM_STORAGE, DELETE_EXISTING_STORAGE };
   enum SaveOption { SAVE_TO_STORAGE, DONT_SAVE_TO_STORAGE };
-  ProfileSyncServiceTest() : model_(NULL) {
+  ProfileSyncServiceTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_),
+        model_(NULL) {
     profile_.reset(new TestingProfile());
     profile_->set_has_history_service(true);
   }
@@ -464,6 +468,8 @@ class ProfileSyncServiceTest : public testing::Test {
   // avoid leaking the ProfileSyncService (the PostTask will retain the callee
   // and caller until the task is run).
   MessageLoop message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 
   scoped_ptr<ProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;

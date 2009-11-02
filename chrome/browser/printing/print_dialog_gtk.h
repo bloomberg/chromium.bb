@@ -11,16 +11,14 @@
 #include "base/file_path.h"
 
 class Browser;
-class MessageLoop;
 
 typedef struct _GtkPrintJob GtkPrintJob;
 
 // Currently this dialog only allows the user to choose a printer.
 class PrintDialogGtk {
  public:
-  // Called on the IO thread. Posts the dialog creation action on the given
-  // loop.
-  static void CreatePrintDialogForPdf(const FilePath& path, MessageLoop* loop);
+  // Called on the IO thread.
+  static void CreatePrintDialogForPdf(const FilePath& path);
 
  private:
   explicit PrintDialogGtk(const FilePath& path_to_pdf);

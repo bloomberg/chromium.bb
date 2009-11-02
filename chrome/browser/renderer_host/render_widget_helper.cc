@@ -6,7 +6,7 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -45,7 +45,6 @@ class RenderWidgetHelper::PaintMsgProxy : public Task {
 
 RenderWidgetHelper::RenderWidgetHelper()
     : render_process_id_(-1),
-      ui_loop_(MessageLoop::current()),
 #if defined(OS_WIN)
       event_(CreateEvent(NULL, FALSE /* auto-reset */, FALSE, NULL)),
 #elif defined(OS_POSIX)
@@ -76,22 +75,23 @@ int RenderWidgetHelper::GetNextRoutingID() {
 }
 
 void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
-  if (g_browser_process->io_thread() && render_process_id_ != -1) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
-                          &RenderWidgetHelper::OnCancelResourceRequests,
-                          render_widget_id));
-  }
+  if (render_process_id_ == -1)
+    return;
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &RenderWidgetHelper::OnCancelResourceRequests,
+                        render_widget_id));
 }
 
 void RenderWidgetHelper::CrossSiteClosePageACK(
     const ViewMsg_ClosePage_Params& params) {
-  if (g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
-                          &RenderWidgetHelper::OnCrossSiteClosePageACK,
-                          params));
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &RenderWidgetHelper::OnCrossSiteClosePageACK,
+                        params));
 }
 
 bool RenderWidgetHelper::WaitForPaintMsg(int render_widget_id,
@@ -161,7 +161,7 @@ void RenderWidgetHelper::DidReceivePaintMsg(const IPC::Message& msg) {
   event_.Signal();
 
   // The proxy will be deleted when it is run as a task.
-  ui_loop_->PostTask(FROM_HERE, proxy);
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, proxy);
 }
 
 void RenderWidgetHelper::OnDiscardPaintMsg(PaintMsgProxy* proxy) {
@@ -209,8 +209,10 @@ void RenderWidgetHelper::CreateNewWindow(int opener_id,
   resource_dispatcher_host_->BlockRequestsForRoute(
       render_process_id_, *route_id);
 
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(int opener_id, int route_id) {
@@ -218,7 +220,8 @@ void RenderWidgetHelper::OnCreateWindowOnUI(int opener_id, int route_id) {
   if (host)
     host->CreateNewWindow(route_id);
 
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &RenderWidgetHelper::OnCreateWindowOnIO,
                         route_id));
 }
@@ -232,9 +235,11 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          bool activatable,
                                          int* route_id) {
   *route_id = GetNextRoutingID();
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidgetHelper::OnCreateWidgetOnUI, opener_id, *route_id,
-      activatable));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &RenderWidgetHelper::OnCreateWidgetOnUI, opener_id, *route_id,
+          activatable));
 }
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(

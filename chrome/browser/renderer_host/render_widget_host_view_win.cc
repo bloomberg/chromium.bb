@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_accessibility_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -411,7 +412,8 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
       0, 0, 0, 0, ::GetParent(window), 0, GetModuleHandle(NULL), 0);
   DCHECK(parent);
   ::SetParent(window, parent);
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       new NotifyPluginProcessHostTask(window, parent));
   return parent;
 }

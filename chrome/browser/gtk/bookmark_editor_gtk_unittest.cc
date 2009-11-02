@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/bookmark_editor_gtk.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
@@ -25,13 +26,17 @@ using bookmark_utils::GetTitleFromTreeIter;
 // BookmarkModel class to GTK's native GtkTreeStore.
 class BookmarkEditorGtkTest : public testing::Test {
  public:
-  BookmarkEditorGtkTest() : model_(NULL) {
+  BookmarkEditorGtkTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_),
+        model_(NULL) {
   }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->set_has_history_service(true);
     profile_->CreateBookmarkModel(true);
+    profile_->BlockUntilBookmarkModelLoaded();
 
     model_ = profile_->GetBookmarkModel();
 
@@ -43,6 +48,8 @@ class BookmarkEditorGtkTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   BookmarkModel* model_;
   scoped_ptr<TestingProfile> profile_;
 

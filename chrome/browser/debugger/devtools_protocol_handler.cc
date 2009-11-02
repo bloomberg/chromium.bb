@@ -5,8 +5,7 @@
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 
 #include "base/logging.h"
-#include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/devtools_remote_listen_socket.h"
@@ -16,8 +15,6 @@ DevToolsProtocolHandler::DevToolsProtocolHandler(int port)
     : port_(port),
       connection_(NULL),
       server_(NULL) {
-  ui_loop_ = MessageLoop::current();
-  io_loop_ = g_browser_process->io_thread()->message_loop();
   inspectable_tab_proxy_.reset(new InspectableTabProxy);
 }
 
@@ -28,8 +25,9 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 }
 
 void DevToolsProtocolHandler::Start() {
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &DevToolsProtocolHandler::Init));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &DevToolsProtocolHandler::Init));
 }
 
 void DevToolsProtocolHandler::Init() {
@@ -38,8 +36,9 @@ void DevToolsProtocolHandler::Init() {
 }
 
 void DevToolsProtocolHandler::Stop() {
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &DevToolsProtocolHandler::Teardown));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &DevToolsProtocolHandler::Teardown));
   tool_to_listener_map_.clear();  // Releases all scoped_refptr's to listeners
 }
 
@@ -73,9 +72,11 @@ void DevToolsProtocolHandler::HandleMessage(
     NOTREACHED();  // an unsupported tool, bail out
     return;
   }
-  DCHECK(MessageLoop::current() == io_loop_);
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      it->second.get(), &DevToolsRemoteListener::HandleMessage, message));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          it->second.get(), &DevToolsRemoteListener::HandleMessage, message));
 }
 
 void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
@@ -86,7 +87,7 @@ void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
 
 void DevToolsProtocolHandler::DidAccept(ListenSocket *server,
                                         ListenSocket *connection) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (connection_ == NULL) {
     connection_ = connection;
     connection_->AddRef();
@@ -100,7 +101,7 @@ void DevToolsProtocolHandler::DidRead(ListenSocket *connection,
 }
 
 void DevToolsProtocolHandler::DidClose(ListenSocket *sock) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(connection_ == sock);
   connection_ = NULL;
   sock->Release();
@@ -108,7 +109,9 @@ void DevToolsProtocolHandler::DidClose(ListenSocket *sock) {
        end = tool_to_listener_map_.end();
        it != end;
        ++it) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        it->second.get(), &DevToolsRemoteListener::OnConnectionLost));
+    ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          it->second.get(), &DevToolsRemoteListener::OnConnectionLost));
   }
 }

@@ -90,7 +90,7 @@ class VisitedLink : public testing::Test {
 // useful to make another set of tests to test these things in isolation.
 TEST_F(VisitedLink, TestAddAndQuery) {
   // init
-  VisitedLinkMaster master(NULL, DummyVisitedLinkEventListener::GetInstance(),
+  VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                            NULL, true, FilePath(db_name_), 0);
   ASSERT_TRUE(master.Init());
 
@@ -121,7 +121,7 @@ TEST_F(VisitedLink, TestLoad) {
   {
     PerfTimeLogger table_initialization_timer("Table_initialization");
 
-    VisitedLinkMaster master(NULL, DummyVisitedLinkEventListener::GetInstance(),
+    VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                              NULL, true, FilePath(db_name_), 0);
 
     // time init with empty table
@@ -160,8 +160,7 @@ TEST_F(VisitedLink, TestLoad) {
     {
       PerfTimer cold_timer;
 
-      VisitedLinkMaster master(NULL,
-                               DummyVisitedLinkEventListener::GetInstance(),
+      VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
                                true,
                                FilePath(db_name_),
@@ -177,8 +176,7 @@ TEST_F(VisitedLink, TestLoad) {
     {
       PerfTimer hot_timer;
 
-      VisitedLinkMaster master(NULL,
-                               DummyVisitedLinkEventListener::GetInstance(),
+      VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
                                true,
                                FilePath(db_name_),

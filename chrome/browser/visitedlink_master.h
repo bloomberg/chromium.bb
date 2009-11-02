@@ -23,16 +23,12 @@ class GURL;
 class MessageLoop;
 class Profile;
 
-namespace base {
-class Thread;
-}  // namespace base
-
 // Controls the link coloring database. The master controls all writing to the
 // database as well as disk I/O. There should be only one master.
 //
-// This class will optionally defer writing operations to another thread. This
-// means that after class destruction, the file may still be open since
-// operations are pending on another thread.
+// This class will defer writing operations to the file thread. This means that
+// class destruction, the file may still be open since operations are pending on
+// another thread.
 class VisitedLinkMaster : public VisitedLinkCommon {
  public:
   // Listens to the link coloring database events. The master is given this
@@ -54,12 +50,8 @@ class VisitedLinkMaster : public VisitedLinkCommon {
     virtual void Reset() = 0;
   };
 
-  // The |file_thread| may be NULL, in which case write operations will be
-  // synchronous.
   // The |listener| may not be NULL.
-  VisitedLinkMaster(base::Thread* file_thread,
-                    Listener* listener,
-                    Profile* profile);
+  VisitedLinkMaster(Listener* listener, Profile* profile);
 
   // In unit test mode, we allow the caller to optionally specify the database
   // filename so that it can be run from a unit test. The directory where this
@@ -76,8 +68,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // When |suppress_rebuild| is set, we'll not attempt to load data from
   // history if the file can't be loaded. This should generally be set for
   // testing except when you want to test the rebuild process explicitly.
-  VisitedLinkMaster(base::Thread* file_thread,
-                    Listener* listener,
+  VisitedLinkMaster(Listener* listener,
                     HistoryService* history_service,
                     bool suppress_rebuild,
                     const FilePath& filename,
@@ -168,9 +159,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   static const size_t kBigDeleteThreshold;
 
   // Backend for the constructors initializing the members.
-  void InitMembers(base::Thread* file_thread,
-                   Listener* listener,
-                   Profile* profile);
+  void InitMembers(Listener* listener, Profile* profile);
 
   // If a rebuild is in progress, we save the URL in the temporary list.
   // Otherwise, we add this to the table. Returns the index of the
@@ -324,10 +313,6 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // asynchronous writes have been fired.
   bool posted_asynchronous_operation_;
 #endif
-
-  // The thread where we do write operations from to avoid synchronous I/O on
-  // the main thread. This may be NULL, which indicates synchronous I/O.
-  MessageLoop* file_thread_;
 
   // Reference to the user profile that this object belongs to
   // (it knows the path to where the data is stored)

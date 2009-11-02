@@ -10,9 +10,9 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
@@ -58,9 +58,9 @@ class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
 }  // namespace
 
 // static
-void PrintDialogGtk::CreatePrintDialogForPdf(const FilePath& path,
-                                                MessageLoop* loop) {
-  loop->PostTask(FROM_HERE,
+void PrintDialogGtk::CreatePrintDialogForPdf(const FilePath& path) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableFunction(&PrintDialogGtk::CreateDialogImpl, path));
 }
 

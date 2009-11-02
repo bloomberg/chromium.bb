@@ -58,8 +58,7 @@ static const struct {
   { "", MAX_BROWSERS },
 };
 
-MemoryDetails::MemoryDetails()
-  : ui_loop_(NULL) {
+MemoryDetails::MemoryDetails() {
 }
 
 ProcessData* MemoryDetails::ChromeBrowser() {
@@ -252,6 +251,7 @@ void MemoryDetails::CollectProcessData(
   }
 
   // Finally return to the browser thread.
-  ui_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
 }

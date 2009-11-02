@@ -404,8 +404,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   AddRef();
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&BufferedResourceHandler::LoadPlugins,
-          this, host_->ui_loop()));
+      NewRunnableFunction(&BufferedResourceHandler::LoadPlugins, this));
   return true;
 }
 
@@ -469,34 +468,26 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       GURL(), type, allow_wildcard, &info, NULL);
 }
 
-void BufferedResourceHandler::LoadPlugins(BufferedResourceHandler* handler,
-                                          MessageLoop* main_message_loop) {
+void BufferedResourceHandler::LoadPlugins(BufferedResourceHandler* handler) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
-  // Note, we want to get to the IO thread now, but the file thread outlives it
-  // so we can't post a task to it directly as it might be in the middle of
-  // destruction.  So hop through the main thread, where the destruction of the
-  // IO thread happens and hence no race conditions exist.
-  main_message_loop->PostTask(FROM_HERE,
-      NewRunnableFunction(&BufferedResourceHandler::NotifyPluginsLoaded,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&BufferedResourceHandler::OnPluginsLoaded,
           handler));
 }
 
-void BufferedResourceHandler::NotifyPluginsLoaded(
+void BufferedResourceHandler::OnPluginsLoaded(
     BufferedResourceHandler* handler) {
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(handler, &BufferedResourceHandler::OnPluginsLoaded));
-}
-
-void BufferedResourceHandler::OnPluginsLoaded() {
-  wait_for_plugins_ = false;
-  if (request_) {
+  handler->wait_for_plugins_ = false;
+  if (handler->request_) {
     ResourceDispatcherHostRequestInfo* info =
-        ResourceDispatcherHost::InfoForRequest(request_);
-    host_->PauseRequest(info->child_id(), info->request_id(), false);
-    if (!CompleteResponseStarted(info->request_id(), false))
-      host_->CancelRequest(info->child_id(), info->request_id(), false);
+        ResourceDispatcherHost::InfoForRequest(handler->request_);
+    handler->host_->PauseRequest(info->child_id(), info->request_id(), false);
+    if (!handler->CompleteResponseStarted(info->request_id(), false))
+      handler->host_->CancelRequest(
+          info->child_id(), info->request_id(), false);
   }
-  Release();
+  handler->Release();
 }

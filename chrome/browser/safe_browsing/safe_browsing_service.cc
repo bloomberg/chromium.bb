@@ -258,13 +258,10 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     // Just act as "Don't Proceed" was chosen.
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
-    MessageLoop* message_loop;
-    if (g_browser_process->io_thread())
-      message_loop = g_browser_process->io_thread()->message_loop();
-    else  // For unit-tests, just post on the current thread.
-      message_loop = MessageLoop::current();
-    message_loop->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &SafeBrowsingService::OnBlockingPageDone, resources, false));
+    ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SafeBrowsingService::OnBlockingPageDone, resources, false));
     return;
   }
 

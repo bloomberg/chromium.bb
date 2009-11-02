@@ -8,7 +8,6 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -34,8 +33,7 @@ enum {
 // These entries must match the ordering for MemoryDetails::BrowserProcess.
 static ProcessData g_process_template[MAX_BROWSERS];
 
-MemoryDetails::MemoryDetails()
-  : ui_loop_(NULL) {
+MemoryDetails::MemoryDetails() {
   static const std::wstring google_browser_name =
       l10n_util::GetString(IDS_PRODUCT_NAME);
   ProcessData g_process_template[MAX_BROWSERS] = {
@@ -150,6 +148,7 @@ void MemoryDetails::CollectProcessData(
   } while (::Process32Next(snapshot, &process_entry));
 
   // Finally return to the browser thread.
-  ui_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
 }

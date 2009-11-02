@@ -17,6 +17,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
@@ -817,7 +818,8 @@ void CPHandleCommand(int command, CPCommandInterface* data,
   // brain trying to compile the Tuple3 ctor. This cast works.
   int32 context_as_int32 = static_cast<int32>(context);
   // Plugins can only be accessed on the IO thread.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(PluginCommandHandler::HandleCommand,
                           command, data, context_as_int32));
 }

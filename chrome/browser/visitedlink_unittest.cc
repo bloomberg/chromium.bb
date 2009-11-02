@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
@@ -71,6 +72,9 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
 
 class VisitedLinkTest : public testing::Test {
  protected:
+  VisitedLinkTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {}
   // Initialize the history system. This should be called before InitVisited().
   bool InitHistory() {
     history_service_ = new HistoryService;
@@ -84,7 +88,7 @@ class VisitedLinkTest : public testing::Test {
   // the VisitedLinkMaster constructor.
   bool InitVisited(int initial_size, bool suppress_rebuild) {
     // Initialize the visited link system.
-    master_.reset(new VisitedLinkMaster(NULL, &listener_, history_service_,
+    master_.reset(new VisitedLinkMaster(&listener_, history_service_,
                                         suppress_rebuild, visited_file_,
                                         initial_size));
     return master_->Init();
@@ -170,6 +174,8 @@ class VisitedLinkTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 
   // Filenames for the services;
   FilePath history_dir_;
@@ -452,8 +458,7 @@ class VisitCountingProfile : public TestingProfile {
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     if (!visited_link_master_.get()) {
-      visited_link_master_.reset(
-          new VisitedLinkMaster(NULL, event_listener_, this));
+      visited_link_master_.reset(new VisitedLinkMaster(event_listener_, this));
       visited_link_master_->Init();
     }
     return visited_link_master_.get();
@@ -570,7 +575,14 @@ class VisitedLinkRenderProcessHostFactory
 
 class VisitedLinkEventsTest : public RenderViewHostTestHarness {
  public:
-  VisitedLinkEventsTest() : RenderViewHostTestHarness() {}
+  VisitedLinkEventsTest()
+      : RenderViewHostTestHarness(),
+        file_thread_(ChromeThread::FILE, &message_loop_) {}
+  ~VisitedLinkEventsTest() {
+    // This ends up using the file thread to schedule the delete.
+    profile_.reset();
+    message_loop_.RunAllPending();
+  }
   virtual void SetFactoryMode() {}
   virtual void SetUp() {
     SetFactoryMode();
@@ -596,6 +608,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
 
  private:
   scoped_ptr<VisitedLinkEventListener> event_listener_;
+  ChromeThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventsTest);
 };

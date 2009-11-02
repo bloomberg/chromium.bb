@@ -210,7 +210,7 @@ class ExtensionsServiceTest
 
   virtual void InitializeExtensionsService(const FilePath& pref_file,
       const FilePath& extensions_install_dir) {
-    prefs_.reset(new PrefService(pref_file, NULL));
+    prefs_.reset(new PrefService(pref_file));
     profile_.reset(new TestingProfile());
     service_ = new ExtensionsService(profile_.get(),
                                      CommandLine::ForCurrentProcess(),

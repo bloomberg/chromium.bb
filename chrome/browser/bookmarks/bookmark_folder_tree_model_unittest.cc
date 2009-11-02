@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_folder_tree_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,12 +33,15 @@ class BookmarkFolderTreeModelTest : public testing::Test,
         added_count_(0),
         removed_count_(0),
         changed_count_(0),
-        reordered_count_(0) {
+        reordered_count_(0),
+        ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_) {
    }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
+    profile_->BlockUntilBookmarkModelLoaded();
     // Populate with some default data.
     const BookmarkNode* bb = bookmark_model()->GetBookmarkBarNode();
     bookmark_model()->AddURL(bb, 0, L"url1", url1_);
@@ -112,6 +117,9 @@ class BookmarkFolderTreeModelTest : public testing::Test,
   int removed_count_;
   int reordered_count_;
   scoped_ptr<TestingProfile> profile_;
+  MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 // Verifies the root node has 4 nodes, and the contents of the bookmark bar

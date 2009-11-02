@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/query_parser.h"
@@ -212,6 +213,8 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // This ensures MessageLoop::current() will exist, which is needed by
   // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  ChromeThread ui_thread(ChromeThread::UI, &loop);
+  ChromeThread file_thread(ChromeThread::FILE, &loop);
 
   TestingProfile profile;
   profile.CreateHistoryService(true);

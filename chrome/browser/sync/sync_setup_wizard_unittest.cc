@@ -141,7 +141,11 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
 
 class SyncSetupWizardTest : public BrowserWithTestWindowTest {
  public:
-  SyncSetupWizardTest() : test_window_(NULL), wizard_(NULL) { }
+  SyncSetupWizardTest()
+      : ui_thread_(ChromeThread::UI, MessageLoop::current()),
+        file_thread_(ChromeThread::FILE, MessageLoop::current()),
+        test_window_(NULL),
+        wizard_(NULL) { }
   virtual ~SyncSetupWizardTest() { }
   virtual void SetUp() {
     set_profile(new TestingProfileWithSyncService());
@@ -164,6 +168,8 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     wizard_.reset();
   }
 
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   TestBrowserWindowForWizardTest* test_window_;
   scoped_ptr<SyncSetupWizard> wizard_;
   ProfileSyncServiceForWizardTest* service_;

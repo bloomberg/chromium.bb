@@ -108,7 +108,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
-  MessageLoop* ui_loop();
   bool off_the_record() { return off_the_record_; }
   CallbackWithReturnValue<int>::Type* next_route_id_callback() {
     return next_route_id_callback_.get();

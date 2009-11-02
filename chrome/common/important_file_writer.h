@@ -48,11 +48,9 @@ class ImportantFileWriter : public NonThreadSafe {
   };
 
   // Initialize the writer.
-  // |path| is the name of file to write. Disk operations will be executed on
-  // |backend_thread|, or current thread if |backend_thread| is NULL.
-  //
+  // |path| is the name of file to write.
   // All non-const methods, ctor and dtor must be called on the same thread.
-  ImportantFileWriter(const FilePath& path, const base::Thread* backend_thread);
+  ImportantFileWriter(const FilePath& path);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -90,9 +88,6 @@ class ImportantFileWriter : public NonThreadSafe {
  private:
   // Path being written to.
   const FilePath path_;
-
-  // Thread on which disk operation run. NULL means no separate thread is used.
-  const base::Thread* backend_thread_;
 
   // Timer used to schedule commit after ScheduleWrite.
   base::OneShotTimer<ImportantFileWriter> timer_;

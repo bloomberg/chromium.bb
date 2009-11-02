@@ -8,7 +8,6 @@
 #include "base/file_version_info.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -37,14 +36,13 @@
 //
 
 void MemoryDetails::StartFetch() {
-  ui_loop_ = MessageLoop::current();
-
-  DCHECK(ui_loop_ != g_browser_process->io_thread()->message_loop());
-  DCHECK(ui_loop_ != g_browser_process->file_thread()->message_loop());
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnIOThread));
 }
 
@@ -72,7 +70,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
 #if defined(OS_LINUX)
   const pid_t zygote_pid = Singleton<ZygoteHost>()->pid();

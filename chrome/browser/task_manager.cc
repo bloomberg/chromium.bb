@@ -13,8 +13,8 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -436,10 +436,10 @@ void TaskManagerModel::StartUpdating() {
 
   // Register jobs notifications so we can compute network usage (it must be
   // done from the IO thread).
-  base::Thread* thread = g_browser_process->io_thread();
-  if (thread)
-    thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &TaskManagerModel::RegisterForJobDoneNotifications));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+         this, &TaskManagerModel::RegisterForJobDoneNotifications));
 
   // Notify resource providers that we are updating.
   for (ResourceProviderList::iterator iter = providers_.begin();
@@ -459,10 +459,10 @@ void TaskManagerModel::StopUpdating() {
   }
 
   // Unregister jobs notification (must be done from the IO thread).
-  base::Thread* thread = g_browser_process->io_thread();
-  if (thread)
-    thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &TaskManagerModel::UnregisterForJobDoneNotifications));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &TaskManagerModel::UnregisterForJobDoneNotifications));
 }
 
 void TaskManagerModel::AddResourceProvider(

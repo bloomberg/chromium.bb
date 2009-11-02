@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/timer.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/dns_host_info.h"
 #include "chrome/common/net/dns.h"
@@ -59,7 +60,8 @@ class WaitForResolutionHelper {
 class DnsMasterTest : public testing::Test {
  public:
   DnsMasterTest()
-      : host_resolver_(new net::MockCachingHostResolver()),
+      : io_thread_(ChromeThread::IO, &loop_),
+        host_resolver_(new net::MockCachingHostResolver()),
         default_max_queueing_delay_(TimeDelta::FromMilliseconds(
             DnsPrefetcherInit::kMaxQueueingDelayMs)) {
   }
@@ -91,7 +93,8 @@ class DnsMasterTest : public testing::Test {
   // IMPORTANT: do not move this below |host_resolver_|; the host resolver
   // must not outlive the message loop, otherwise bad things can happen
   // (like posting to a deleted message loop).
-  MessageLoop loop;
+  MessageLoop loop_;
+  ChromeThread io_thread_;
 
  protected:
   scoped_refptr<net::MockCachingHostResolver> host_resolver_;
@@ -105,15 +108,13 @@ class DnsMasterTest : public testing::Test {
 
 TEST_F(DnsMasterTest, StartupShutdownTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
   testing_master->Shutdown();
 }
 
 TEST_F(DnsMasterTest, BenefitLookupTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
 
   std::string goog("www.google.com"),
     goog2("gmail.google.com.com"),
@@ -177,8 +178,7 @@ TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
   host_resolver_->Reset(resolver_proc);
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
 
   std::string localhost("127.0.0.1");
   NameList names;
@@ -201,8 +201,7 @@ TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
 
 TEST_F(DnsMasterTest, SingleLookupTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
 
   std::string goog("www.google.com");
 
@@ -231,8 +230,7 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
 
   std::string goog("www.google.com"),
     goog2("gmail.google.com.com"),
@@ -280,8 +278,7 @@ TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
 
   NameList names;
   for (int i = 0; i < 100; i++)
@@ -385,8 +382,7 @@ int GetLatencyFromSerialization(const std::string& motivation,
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(DnsMasterTest, ReferrerSerializationNilTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
   ListValue referral_list;
   master->SerializeReferrers(&referral_list);
   EXPECT_EQ(0U, referral_list.GetSize());
@@ -401,8 +397,7 @@ TEST_F(DnsMasterTest, ReferrerSerializationNilTest) {
 // serialization without being changed.
 TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
   std::string motivation_hostname = "www.google.com";
   std::string subresource_hostname = "icons.google.com";
   const int kLatency = 3;
@@ -426,8 +421,7 @@ TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
 // Make sure the Trim() functionality works as expected.
 TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
-      MessageLoop::current(), default_max_queueing_delay_,
-      DnsPrefetcherInit::kMaxConcurrentLookups);
+      default_max_queueing_delay_, DnsPrefetcherInit::kMaxConcurrentLookups);
   std::string motivation_hostname = "www.google.com";
   std::string icon_subresource_hostname = "icons.google.com";
   std::string img_subresource_hostname = "img.google.com";
@@ -555,8 +549,5 @@ TEST_F(DnsMasterTest, PriorityQueueReorderTest) {
 
   EXPECT_TRUE(queue.IsEmpty());
 }
-
-
-
 
 }  // namespace chrome_browser_net

@@ -12,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "chrome/browser/chrome_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -42,6 +43,7 @@ class DataSerializer : public ImportantFileWriter::DataSerializer {
 
 class ImportantFileWriterTest : public testing::Test {
  public:
+  ImportantFileWriterTest() : file_thread_(ChromeThread::FILE, &loop_) { }
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("test-file");
@@ -49,35 +51,25 @@ class ImportantFileWriterTest : public testing::Test {
 
  protected:
   FilePath file_;
+  MessageLoop loop_;
 
  private:
-  MessageLoop loop_;
+  ChromeThread file_thread_;
   ScopedTempDir temp_dir_;
 };
 
-TEST_F(ImportantFileWriterTest, WithoutBackendThread) {
-  ImportantFileWriter writer(file_, NULL);
+TEST_F(ImportantFileWriterTest, Basic) {
+  ImportantFileWriter writer(file_);
   EXPECT_FALSE(file_util::PathExists(writer.path()));
   writer.WriteNow("foo");
-  ASSERT_TRUE(file_util::PathExists(writer.path()));
-  EXPECT_EQ("foo", GetFileContent(writer.path()));
-}
-
-TEST_F(ImportantFileWriterTest, WithBackendThread) {
-  base::Thread thread("file_writer_test");
-  ASSERT_TRUE(thread.Start());
-
-  ImportantFileWriter writer(file_, &thread);
-  EXPECT_FALSE(file_util::PathExists(writer.path()));
-  writer.WriteNow("foo");
-  thread.Stop();  // Blocks until all tasks are executed.
+  loop_.RunAllPending();
 
   ASSERT_TRUE(file_util::PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
 TEST_F(ImportantFileWriterTest, ScheduleWrite) {
-  ImportantFileWriter writer(file_, NULL);
+  ImportantFileWriter writer(file_);
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
@@ -92,19 +84,22 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
-  ImportantFileWriter writer(file_, NULL);
+  ImportantFileWriter writer(file_);
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
   writer.ScheduleWrite(&serializer);
   EXPECT_TRUE(writer.HasPendingWrite());
   writer.DoScheduledWrite();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          new MessageLoop::QuitTask(), 100);
+  MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
   ASSERT_TRUE(file_util::PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
 TEST_F(ImportantFileWriterTest, BatchingWrites) {
-  ImportantFileWriter writer(file_, NULL);
+  ImportantFileWriter writer(file_);
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));
   DataSerializer foo("foo"), bar("bar"), baz("baz");
   writer.ScheduleWrite(&foo);

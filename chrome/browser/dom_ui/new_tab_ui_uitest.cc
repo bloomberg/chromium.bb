@@ -60,7 +60,7 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
 }
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
 
   // Does the migration
   NewTabUI::RegisterUserPrefs(&prefs);

@@ -196,11 +196,9 @@ const wchar_t* WebResourceService::kDefaultResourceServer =
 const char* WebResourceService::kResourceDirectoryName =
     "Resources";
 
-WebResourceService::WebResourceService(Profile* profile,
-                                       MessageLoop* backend_loop) :
+WebResourceService::WebResourceService(Profile* profile) :
     prefs_(profile->GetPrefs()),
     web_resource_dir_(profile->GetPath().AppendASCII(kResourceDirectoryName)),
-    backend_loop_(backend_loop),
     in_fetch_(false) {
   Init();
 }

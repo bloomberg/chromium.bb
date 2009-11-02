@@ -248,33 +248,41 @@ void ResourceMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
 void ResourceMessageFilter::OnClipboardIsFormatAvailable(
     Clipboard::FormatType format, Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
-  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ResourceMessageFilter::DoOnClipboardIsFormatAvailable, format,
-      buffer, reply_msg));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::DoOnClipboardIsFormatAvailable, format,
+          buffer, reply_msg));
 }
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
-  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ResourceMessageFilter::DoOnClipboardReadText, buffer,
-      reply_msg));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::DoOnClipboardReadText, buffer,
+          reply_msg));
 }
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
                                                      IPC::Message* reply_msg) {
-  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ResourceMessageFilter::DoOnClipboardReadAsciiText, buffer,
-      reply_msg));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::DoOnClipboardReadAsciiText, buffer,
+          reply_msg));
 }
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
-  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ResourceMessageFilter::DoOnClipboardReadHTML, buffer,
-      reply_msg));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::DoOnClipboardReadHTML, buffer,
+          reply_msg));
 }
 
 // Called on the IO thread.
@@ -298,7 +306,7 @@ void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
   }
 
 #if defined(TOOLKIT_GTK)
-  PrintDialogGtk::CreatePrintDialogForPdf(it->second, ui_loop());
+  PrintDialogGtk::CreatePrintDialogForPdf(it->second);
 #else
   NOTIMPLEMENTED();
 #endif

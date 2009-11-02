@@ -10,7 +10,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/thread.h"
 #include "build/build_config.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
@@ -61,11 +60,10 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
 
 }  // namespace
 
-PrefService::PrefService(const FilePath& pref_filename,
-                         const base::Thread* backend_thread)
+PrefService::PrefService(const FilePath& pref_filename)
     : persistent_(new DictionaryValue),
       transient_(new DictionaryValue),
-      writer_(pref_filename, backend_thread) {
+      writer_(pref_filename) {
   ReloadPersistentPrefs();
 }
 

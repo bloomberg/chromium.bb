@@ -13,8 +13,6 @@
 #include "base/path_service.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
-#include "base/thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
@@ -95,59 +93,15 @@ bool SaveBufferToFile(const std::string& data,
 
 }  // namespace
 
-// This is a helper class which acts as a proxy for invoking a task from the
-// file loop back to the IO loop. Invoking a task from file loop to the IO
-// loop directly is not safe as during browser shutdown, the IO loop tears
-// down before the file loop. To avoid a crash, this object is invoked in the
-// UI loop from the file loop, from where it gets the IO thread directly from
-// g_browser_process and invokes the given task in the IO loop if it is not
-// NULL. This object also takes ownership of the given task.
-class UIProxyForIOTask : public Task {
- public:
-  explicit UIProxyForIOTask(Task* callback_task, SpellChecker* spellchecker)
-      : callback_task_(callback_task),
-        spellchecker_(spellchecker) {
-  }
-
- private:
-  void Run();
-
-  Task* callback_task_;
-  // The SpellChecker that invoked the file loop task. May be NULL. If not
-  // NULL, then we will Release() on it if we don't run |callback_task_|. This
-  // balances any refs the spellchecker might have had outstanding which it
-  // would have Released() when |callback_task_| was run.
-  SpellChecker* spellchecker_;
-  DISALLOW_COPY_AND_ASSIGN(UIProxyForIOTask);
-};
-
-void UIProxyForIOTask::Run() {
-  // This has been invoked in the UI thread.
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread) {  // io_thread has not been torn down yet.
-    MessageLoop* io_loop = io_thread->message_loop();
-    io_loop->PostTask(FROM_HERE, callback_task_);
-  } else {
-    if (spellchecker_)
-      spellchecker_->Release();
-    delete callback_task_;
-  }
-
-  callback_task_ = NULL;
-}
-
 // Design: The spellchecker initializes hunspell_ in the Initialize() method.
 // This is done using the dictionary file on disk, e.g. "en-US_1_1.bdic".
 // Initialization of hunspell_ is held off during this process. If the
 // dictionary is not available, we first attempt to download and save it. After
 // the dictionary is downloaded and saved to disk (or the attempt to do so
-// fails)), corresponding flags are set
-// in spellchecker - in the IO thread. Since IO thread goes first during closing
-// of browser, a proxy task |UIProxyForIOTask| is created in the UI thread,
-// which obtains the IO thread independently and invokes the task in the IO
-// thread if it's not NULL. After the flags are cleared, a (final) attempt is
-// made to initialize hunspell_. If it fails even then (dictionary could not
-// download), no more attempts are made to initialize it.
+// fails)), corresponding flags are set in spellchecker - in the IO thread.
+// After the flags are cleared, a (final) attempt is  made to initialize
+// hunspell_. If it fails even then (dictionary could not download), no more
+// attempts are made to initialize it.
 class SaveDictionaryTask : public Task {
  public:
   SaveDictionaryTask(Task* on_dictionary_save_complete_callback_task,
@@ -201,13 +155,12 @@ void SaveDictionaryTask::Run() {
 
   // Set Flag that dictionary is not downloading anymore.
   ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      new UIProxyForIOTask(on_dictionary_save_complete_callback_task_, NULL));
+      ChromeThread::IO, FROM_HERE, on_dictionary_save_complete_callback_task_);
 }
 
 // Design: this task tries to read the dictionary from disk and load it into
 // memory. It is executed on the file thread, and posts the results back to
-// the IO thread (via the UI thread---see UIProxyForIOTask).
+// the IO thread.
 // The task first checks for the existence of the dictionary in one of the two
 // given locations. If it does not exist, the task informs the SpellChecker,
 // which will try to download the directory and run a new ReadDictionaryTask.
@@ -265,21 +218,11 @@ class ReadDictionaryTask : public Task {
 
  private:
   void Finish(bool file_existed) {
-    Task* task = NewRunnableMethod(spellchecker_, &SpellChecker::HunspellInited,
-                                   hunspell_, bdict_file_, file_existed);
-    if (spellchecker_->file_loop_) {
-      // We were called on the file loop. Post back to the IO loop.
-      // If this never gets posted to the IO loop, then we will leak |hunspell_|
-      // and |bdict_file_|. But that can only happen during shutdown, so it's
-      // not worth caring about.
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          new UIProxyForIOTask(task, spellchecker_));
-    } else {
-      // We were called directly (e.g., during testing). Run the task directly.
-      task->Run();
-      delete task;
-    }
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            spellchecker_, &SpellChecker::HunspellInited, hunspell_,
+            bdict_file_, file_existed));
   }
 
   // The SpellChecker we are working for. We are guaranteed to be outlived
@@ -470,9 +413,7 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       custom_dictionary_file_name_(custom_dictionary_file_name),
       tried_to_init_(false),
       language_(language),
-      worker_loop_(NULL),
       tried_to_download_dictionary_file_(false),
-      file_loop_(NULL),
       request_context_getter_(request_context_getter),
       obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
@@ -492,11 +433,6 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
   // Get the corresponding BDIC file name.
   bdic_file_name_ = GetVersionedFileName(language, dict_dir).BaseName();
 
-  // Get File Loop - hunspell gets initialized here.
-  base::Thread* file_thread = g_browser_process->file_thread();
-  if (file_thread)
-    file_loop_ = file_thread->message_loop();
-
   // Get the path to the custom dictionary file.
   if (custom_dictionary_file_name_.empty()) {
     FilePath personal_file_directory;
@@ -511,11 +447,7 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
 }
 
 SpellChecker::~SpellChecker() {
-  // This must be deleted on the I/O thread (see the header). This is the same
-  // thread that SpellCheckWord is called on, so we verify that they were all
-  // the same thread.
-  if (worker_loop_)
-    DCHECK(MessageLoop::current() == worker_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 }
 
 void SpellChecker::StartDictionaryDownload(const FilePath& file_name) {
@@ -558,8 +490,10 @@ void SpellChecker::OnURLFetchComplete(const URLFetcher* source,
   FilePath fallback_file_name = user_data_dir.Append(bdic_file_name_);
   Task* dic_task = method_factory_.
       NewRunnableMethod(&SpellChecker::OnDictionarySaveComplete);
-  file_loop_->PostTask(FROM_HERE, new SaveDictionaryTask(dic_task,
-      first_attempt_file_name, fallback_file_name, data));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new SaveDictionaryTask(
+          dic_task, first_attempt_file_name, fallback_file_name, data));
 }
 
 void SpellChecker::OnDictionarySaveComplete() {
@@ -571,10 +505,7 @@ void SpellChecker::OnDictionarySaveComplete() {
 // Initialize SpellChecker. In this method, if the dictionary is not present
 // in the local disk, it is fetched asynchronously.
 bool SpellChecker::Initialize() {
-  if (!worker_loop_)
-    worker_loop_ = MessageLoop::current();
-  else
-    DCHECK(worker_loop_ == MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Return false if the dictionary files are downloading.
   if (obtaining_dictionary_)
@@ -606,17 +537,12 @@ bool SpellChecker::Initialize() {
   FilePath dictionary_file_name_usr = GetVersionedFileName(language_,
       dict_dir_userdata);
 
-  // Balances Release() in HunspellInited(), or in UIProxyForIOTask if the IO
-  // thread is torn down before the ReadDictionaryTask calls us back.
+  // Balances Release() in HunspellInited().
   AddRef();
-  Task* task = new ReadDictionaryTask(this,
-      dictionary_file_name_app, dictionary_file_name_usr);
-  if (file_loop_) {
-    file_loop_->PostTask(FROM_HERE, task);
-  } else {
-    task->Run();
-    delete task;
-  }
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new ReadDictionaryTask(
+          this, dictionary_file_name_app, dictionary_file_name_usr));
 
   return hunspell_.get() != NULL;
 }
@@ -624,7 +550,7 @@ bool SpellChecker::Initialize() {
 void SpellChecker::HunspellInited(Hunspell* hunspell,
                                   file_util::MemoryMappedFile* bdict_file,
                                   bool file_existed) {
-  DCHECK(worker_loop_ == MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   if (file_existed)
     tried_to_init_ = true;
@@ -655,7 +581,7 @@ void SpellChecker::HunspellInited(Hunspell* hunspell,
 
 void SpellChecker::DoDictionaryDownload() {
   // Download the dictionary file.
-  if (file_loop_ && request_context_getter_) {
+  if (request_context_getter_) {
     if (!tried_to_download_dictionary_file_) {
       FilePath dictionary_file_name_app = GetVersionedFileName(language_,
           given_dictionary_directory_);
@@ -750,8 +676,7 @@ bool SpellChecker::SpellCheckWord(
   DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
 
   // This must always be called on the same thread (normally the I/O thread).
-  if (worker_loop_)
-    DCHECK(MessageLoop::current() == worker_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Check if the platform spellchecker is being used.
   if (!is_using_platform_spelling_engine_) {
@@ -850,14 +775,9 @@ void SpellChecker::AddWord(const string16& word) {
   }
 
   // Now add the word to the custom dictionary file.
-  Task* write_word_task =
-      new AddWordToCustomDictionaryTask(custom_dictionary_file_name_, word);
-  if (file_loop_) {
-    file_loop_->PostTask(FROM_HERE, write_word_task);
-  } else {
-    write_word_task->Run();
-    delete write_word_task;
-  }
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new AddWordToCustomDictionaryTask(custom_dictionary_file_name_, word));
 }
 
 bool SpellChecker::CheckSpelling(const string16& word_to_check, int tag) {

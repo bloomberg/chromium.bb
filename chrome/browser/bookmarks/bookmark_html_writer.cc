@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -316,18 +317,13 @@ class Writer : public Task {
 
 }  // namespace
 
-void WriteBookmarks(MessageLoop* thread,
-                    BookmarkModel* model,
-                    const FilePath& path) {
+void WriteBookmarks(BookmarkModel* model, const FilePath& path) {
   // BookmarkModel isn't thread safe (nor would we want to lock it down
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  scoped_ptr<Writer> writer(new Writer(codec.Encode(model), path));
-  if (thread)
-    thread->PostTask(FROM_HERE, writer.release());
-  else
-    writer->Run();
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, new Writer(codec.Encode(model), path));
 }
 
 }  // namespace bookmark_html_writer

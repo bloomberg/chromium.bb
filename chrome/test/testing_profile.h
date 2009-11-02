@@ -114,7 +114,7 @@ class TestingProfile : public Profile {
     if (!prefs_.get()) {
       FilePath prefs_filename =
           path_.Append(FILE_PATH_LITERAL("TestPreferences"));
-      prefs_.reset(new PrefService(prefs_filename, NULL));
+      prefs_.reset(new PrefService(prefs_filename));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }

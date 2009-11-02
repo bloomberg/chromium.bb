@@ -23,7 +23,6 @@ namespace base {
 class TimeDelta;
 }
 
-class MessageLoop;
 class ResourceDispatcherHost;
 struct ViewMsg_ClosePage_Params;
 
@@ -120,8 +119,6 @@ class RenderWidgetHelper :
   // Called on the IO thread when a PaintRect message is received.
   void DidReceivePaintMsg(const IPC::Message& msg);
 
-  MessageLoop* ui_loop() { return ui_loop_; }
-
   void CreateNewWindow(int opener_id,
                        bool user_gesture,
                        base::ProcessHandle render_process,
@@ -184,7 +181,6 @@ class RenderWidgetHelper :
   Lock pending_paints_lock_;
 
   int render_process_id_;
-  MessageLoop* ui_loop_;
 
   // Event used to implement WaitForPaintMsg.
   base::WaitableEvent event_;

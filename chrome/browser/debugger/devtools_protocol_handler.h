@@ -69,8 +69,6 @@ class DevToolsProtocolHandler
   void Init();
   void Teardown();
   int port_;
-  MessageLoop* ui_loop_;
-  MessageLoop* io_loop_;
   ToolToListenerMap tool_to_listener_map_;
   scoped_refptr<ListenSocket> connection_;
   scoped_refptr<DevToolsRemoteListenSocket> server_;

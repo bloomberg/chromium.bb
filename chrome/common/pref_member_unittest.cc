@@ -50,7 +50,7 @@ class PrefMemberTestClass : public NotificationObserver {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -140,7 +140,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two RealPrefMembers stay in sync.
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   RealPrefMember pref1;
@@ -160,7 +160,7 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);

@@ -32,8 +32,6 @@ namespace net {
 class HostResolver;
 }
 
-class MessageLoop;
-
 namespace chrome_browser_net {
 
 typedef chrome_common_net::NameList NameList;
@@ -42,9 +40,9 @@ typedef std::map<std::string, DnsHostInfo> Results;
 class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
  public:
   // |max_concurrent| specifies how many concurrent (paralell) prefetches will
-  // be performed. Host lookups will be issued on the |host_resolver_loop|
-  // thread, using the |host_resolver| instance.
-  DnsMaster(net::HostResolver* host_resolver, MessageLoop* host_resolver_loop,
+  // be performed. Host lookups will be issued on the IO thread, using the
+  // |host_resolver| instance.
+  DnsMaster(net::HostResolver* host_resolver,
             TimeDelta max_queue_delay_ms, size_t max_concurrent);
   ~DnsMaster();
 
@@ -236,9 +234,8 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   const TimeDelta max_queue_delay_;
 
   // The host resovler we warm DNS entries for. The resolver (which is not
-  // thread safe) should be accessed only on |host_resolver_loop_|.
+  // thread safe) should be accessed only on the IO thread.
   scoped_refptr<net::HostResolver> host_resolver_;
-  MessageLoop* host_resolver_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsMaster);
 };

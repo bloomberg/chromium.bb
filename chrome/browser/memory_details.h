@@ -11,8 +11,6 @@
 #include "base/ref_counted.h"
 #include "chrome/common/child_process_info.h"
 
-class MessageLoop;
-
 // We collect data about each browser process.  A browser may
 // have multiple processes (of course!).  Even IE has multiple
 // processes these days.
@@ -117,7 +115,6 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   ProcessData* ChromeBrowser();
 
   std::vector<ProcessData> process_data_;
-  MessageLoop* ui_loop_;
 
   DISALLOW_EVIL_CONSTRUCTORS(MemoryDetails);
 };

@@ -604,11 +604,7 @@ void BookmarkManagerView::FileSelected(const FilePath& path,
                          profile_info, profile_,
                          new ImportObserverImpl(profile()), false);
   } else if (id == IDS_BOOKMARK_MANAGER_EXPORT_MENU) {
-    if (g_browser_process->io_thread()) {
-      bookmark_html_writer::WriteBookmarks(
-          g_browser_process->io_thread()->message_loop(), GetBookmarkModel(),
-          path);
-    }
+    bookmark_html_writer::WriteBookmarks(GetBookmarkModel(), path);
   } else {
     NOTREACHED();
   }

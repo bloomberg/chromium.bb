@@ -4,7 +4,9 @@
 
 #include "app/test/data/resource.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
@@ -81,7 +83,7 @@ TEST_F(PrefServiceTest, Basic) {
   {
     // Test that it fails on nonexistent file.
     FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
-    PrefService prefs(bogus_input_file, NULL);
+    PrefService prefs(bogus_input_file);
     EXPECT_FALSE(prefs.ReloadPersistentPrefs());
   }
 
@@ -91,7 +93,7 @@ TEST_F(PrefServiceTest, Basic) {
   // Test that the persistent value can be loaded.
   FilePath input_file = test_dir_.AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
-  PrefService prefs(input_file, NULL);
+  PrefService prefs(input_file);
   ASSERT_TRUE(prefs.ReloadPersistentPrefs());
 
   // Register test prefs.
@@ -141,10 +143,14 @@ TEST_F(PrefServiceTest, Basic) {
   EXPECT_EQ(some_path.value(), prefs.GetFilePath(kSomeDirectory).value());
 
   // Serialize and compare to expected output.
+  // SavePersistentPrefs uses ImportantFileWriter which needs a file thread.
+  MessageLoop message_loop;
+  ChromeThread file_thread(ChromeThread::FILE, &message_loop);
   FilePath output_file = test_dir_.AppendASCII("write.json");
   FilePath golden_output_file = data_dir_.AppendASCII("write.golden.json");
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
   ASSERT_TRUE(prefs.SavePersistentPrefs());
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
   ASSERT_TRUE(file_util::Delete(output_file, false));
 }
@@ -159,7 +165,7 @@ TEST_F(PrefServiceTest, Overlay) {
   std::wstring transient_string(L"transient");
 
   FilePath persistent_file = data_dir_.AppendASCII("overlay.json");
-  PrefService prefs(persistent_file, NULL);
+  PrefService prefs(persistent_file);
   EXPECT_TRUE(prefs.ReloadPersistentPrefs());
 
   Value* transient_value;
@@ -286,7 +292,7 @@ TEST_F(PrefServiceTest, Observers) {
   FilePath input_file = data_dir_.AppendASCII("read.json");
   EXPECT_TRUE(file_util::PathExists(input_file));
 
-  PrefService prefs(input_file, NULL);
+  PrefService prefs(input_file);
 
   EXPECT_TRUE(prefs.ReloadPersistentPrefs());
 
@@ -329,7 +335,7 @@ TEST_F(PrefServiceTest, Observers) {
 // TODO(port): port this test to POSIX.
 #if defined(OS_WIN)
 TEST_F(PrefServiceTest, LocalizedPrefs) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
   const wchar_t kBoolean[] = L"boolean";
   const wchar_t kInteger[] = L"integer";
   const wchar_t kString[] = L"string";
@@ -352,7 +358,7 @@ TEST_F(PrefServiceTest, LocalizedPrefs) {
 #endif
 
 TEST_F(PrefServiceTest, NoObserverFire) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
 
   const wchar_t pref_name[] = L"homepage";
   prefs.RegisterStringPref(pref_name, L"");
@@ -387,7 +393,7 @@ TEST_F(PrefServiceTest, NoObserverFire) {
 }
 
 TEST_F(PrefServiceTest, HasPrefPath) {
-  PrefService prefs(FilePath(), NULL);
+  PrefService prefs((FilePath()));
 
   const wchar_t path[] = L"fake.path";
 

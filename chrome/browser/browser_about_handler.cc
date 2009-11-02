@@ -21,6 +21,7 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/dns_global.h"
@@ -567,8 +568,10 @@ AboutSource::AboutSource()
   about_source = this;
 
   // Add us to the global URL handler on the IO thread.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>().get(),
           &ChromeURLDataManager::AddDataSource, this));
 }
 

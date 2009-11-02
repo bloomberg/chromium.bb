@@ -13,8 +13,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -132,8 +132,7 @@ static void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
     context->CleanupOnUIThread();
 
     // Clean up request context on IO thread.
-    g_browser_process->io_thread()->message_loop()->ReleaseSoon(FROM_HERE,
-                                                                context);
+    ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, context);
   }
 }
 
@@ -695,10 +694,7 @@ void ProfileImpl::InitWebResources() {
   if (web_resource_service_)
     return;  // Already initialized.
 
-  web_resource_service_ = new WebResourceService(
-      this,
-      g_browser_process->file_thread()->message_loop());
-
+  web_resource_service_ = new WebResourceService(this);
   web_resource_service_->StartAfterDelay();
 }
 
@@ -814,8 +810,7 @@ Profile* ProfileImpl::GetOriginalProfile() {
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
   if (!visited_link_master_.get()) {
     scoped_ptr<VisitedLinkMaster> visited_links(
-      new VisitedLinkMaster(g_browser_process->file_thread(),
-                            visited_link_event_listener_.get(), this));
+      new VisitedLinkMaster(visited_link_event_listener_.get(), this));
     if (!visited_links->Init())
       return NULL;
     visited_link_master_.swap(visited_links);
@@ -857,8 +852,7 @@ net::StrictTransportSecurityState*
   if (!strict_transport_security_state_.get()) {
     strict_transport_security_state_ = new net::StrictTransportSecurityState();
     strict_transport_security_persister_ = new StrictTransportSecurityPersister(
-        strict_transport_security_state_.get(),
-        g_browser_process->file_thread(), path_);
+        strict_transport_security_state_.get(), path_);
   }
 
   return strict_transport_security_state_.get();
@@ -866,8 +860,7 @@ net::StrictTransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    prefs_.reset(new PrefService(GetPrefFilePath(),
-                                 g_browser_process->file_thread()));
+    prefs_.reset(new PrefService(GetPrefFilePath()));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.
@@ -1268,31 +1261,23 @@ void ProfileImpl::ReinitializeSpellChecker() {
 }
 
 void ProfileImpl::NotifySpellCheckerChanged() {
-  // The I/O thread may be NULL during testing.
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread) {  // Notify resource message filters.
-    SpellcheckerReinitializedDetails scoped_spellchecker;
-    scoped_spellchecker.spellchecker = spellchecker_;
-    io_thread->message_loop()->PostTask(FROM_HERE,
-        new NotifySpellcheckerChangeTask(this, scoped_spellchecker));
-  }
+  SpellcheckerReinitializedDetails scoped_spellchecker;
+  scoped_spellchecker.spellchecker = spellchecker_;
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      new NotifySpellcheckerChangeTask(this, scoped_spellchecker));
 }
 
 void ProfileImpl::DeleteSpellCheckerImpl(bool notify) {
-  if (spellchecker_) {
-    // The spellchecker must be deleted on the I/O thread.
-    // The I/O thread may be NULL during testing.
-    base::Thread* io_thread = g_browser_process->io_thread();
-    if (io_thread)
-      io_thread->message_loop()->ReleaseSoon(FROM_HERE, spellchecker_);
-    else  //  during testing, we don't have an I/O thread
-      spellchecker_->Release();
+  if (!spellchecker_)
+    return;
 
-    spellchecker_ = NULL;
+  // The spellchecker must be deleted on the I/O thread.
+  ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, spellchecker_);
+  spellchecker_ = NULL;
 
-    if (notify)
-      NotifySpellCheckerChanged();
-  }
+  if (notify)
+    NotifySpellCheckerChanged();
 }
 
 SpellChecker* ProfileImpl::GetSpellChecker() {

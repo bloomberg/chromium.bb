@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -220,7 +221,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif
   CHECK(PathService::Override(base::FILE_EXE, chrome_path));
 
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
   browser_ = CreateBrowser(profile);

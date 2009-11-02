@@ -13,7 +13,6 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_host_info.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profile.h"
@@ -422,7 +421,6 @@ void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
     // Have the DnsMaster issue resolve requests through a global HostResolver
     // that is shared by the main URLRequestContext, and lives on the IO thread.
     dns_master = new DnsMaster(GetGlobalHostResolver(),
-                               g_browser_process->io_thread()->message_loop(),
                                max_queue_delay, max_concurrent);
     dns_master->AddRef();
     // We did the initialization, so we should prime the pump, and set up

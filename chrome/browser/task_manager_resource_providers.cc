@@ -25,6 +25,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile_manager.h"
@@ -362,9 +363,11 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
                  NotificationService::AllSources());
 
   // Get the existing plugins
-  MessageLoop* io_loop_ = g_browser_process->io_thread()->message_loop();
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo));
 }
 
 void TaskManagerChildProcessResourceProvider::StopUpdating() {

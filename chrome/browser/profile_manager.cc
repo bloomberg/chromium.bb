@@ -221,16 +221,18 @@ void ProfileManager::OnSuspend() {
   DCHECK(CalledOnValidThread());
 
   for (const_iterator i(begin()); i != end(); ++i) {
-     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-       NewRunnableFunction(&ProfileManager::SuspendProfile, *i));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&ProfileManager::SuspendProfile, *i));
   }
 }
 
 void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
   for (const_iterator i(begin()); i != end(); ++i) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
   }
 }
 
