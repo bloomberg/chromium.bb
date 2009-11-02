@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 
+class FilePath;
 class Profile;
 class PageUsageData;
 
@@ -170,7 +171,7 @@ class JumpList : public TabRestoreService::Observer {
   Profile* profile_;
 
   // The directory which contains JumpList icons.
-  std::wstring icon_dir_;
+  FilePath icon_dir_;
 
   // Items in the "Most Visited" category of the application JumpList.
   ShellLinkItemList most_visited_pages_;

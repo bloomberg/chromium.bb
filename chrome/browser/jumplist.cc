@@ -239,13 +239,13 @@ HRESULT AddShellLink(ScopedComPtr<IObjectCollection> collection,
 
 // Creates a temporary icon file to be shown in JumpList.
 bool CreateIconFile(const SkBitmap& bitmap,
-                    const std::wstring& icon_dir,
-                    std::wstring* icon_path) {
+                    const FilePath& icon_dir,
+                    FilePath* icon_path) {
   // Retrieve the path to a temporary file.
   // We don't have to care about the extension of this temporary file because
   // JumpList does not care about it.
   FilePath path;
-  if (!file_util::CreateTemporaryFileInDir(FilePath(icon_dir), &path))
+  if (!file_util::CreateTemporaryFileInDir(icon_dir, &path))
     return false;
 
   // Create an icon file from the favicon attached to the given |page|, and
@@ -255,7 +255,7 @@ bool CreateIconFile(const SkBitmap& bitmap,
 
   // Add this icon file to the list and return its absolute path.
   // The IShellLink::SetIcon() function needs the absolute path to an icon.
-  icon_path->assign(path.value());
+  *icon_path = path;
   return true;
 }
 
@@ -458,7 +458,7 @@ bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
 // 3. Post this task to the file thread.
 class JumpListUpdateTask : public Task {
  public:
-  JumpListUpdateTask(const std::wstring& icon_dir,
+  JumpListUpdateTask(const FilePath& icon_dir,
                      const ShellLinkItemList& most_visited_pages,
                      const ShellLinkItemList& recently_closed_pages)
     : icon_dir_(icon_dir),
@@ -472,7 +472,7 @@ class JumpListUpdateTask : public Task {
   void Run();
 
   // The directory which contains JumpList icons.
-  std::wstring icon_dir_;
+  FilePath icon_dir_;
 
   // Items in the "Most Visited" category of the application JumpList.
   ShellLinkItemList most_visited_pages_;
@@ -485,11 +485,10 @@ void JumpListUpdateTask::Run() {
   // Delete the directory which contains old icon files, rename the current
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
-  std::wstring icon_dir_old(icon_dir_ + L"Old");
-  if (file_util::PathExists(FilePath::FromWStringHack(icon_dir_old)))
+  FilePath icon_dir_old(icon_dir_.value() + L"Old");
+  if (file_util::PathExists(icon_dir_old))
     file_util::Delete(icon_dir_old, true);
-  file_util::Move(FilePath::FromWStringHack(icon_dir_),
-                  FilePath::FromWStringHack(icon_dir_old));
+  file_util::Move(icon_dir_, icon_dir_old);
   file_util::CreateDirectory(icon_dir_);
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.
@@ -500,9 +499,9 @@ void JumpListUpdateTask::Run() {
         gfx::PNGCodec::Decode((*item)->data()->front(),
                               (*item)->data()->size(),
                               &icon_bitmap)) {
-      std::wstring icon_path;
+      FilePath icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
-        (*item)->SetIcon(icon_path, 0, true);
+        (*item)->SetIcon(icon_path.value(), 0, true);
     }
   }
 
@@ -515,9 +514,9 @@ void JumpListUpdateTask::Run() {
         gfx::PNGCodec::Decode((*item)->data()->front(),
                               (*item)->data()->size(),
                               &icon_bitmap)) {
-      std::wstring icon_path;
+      FilePath icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
-        (*item)->SetIcon(icon_path, 0, true);
+        (*item)->SetIcon(icon_path.value(), 0, true);
     }
   }
 
@@ -561,7 +560,7 @@ bool JumpList::AddObserver(Profile* profile) {
   if (!tab_restore_service)
     return false;
 
-  icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname).value();
+  icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname);
   profile_ = profile;
   tab_restore_service->AddObserver(this);
   return true;
