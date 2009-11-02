@@ -33,6 +33,7 @@ class ThemeProvider;
 // Returns true if the bookmark bar should be drawn as if it's a disconnected
 // bookmark bar on the New Tag Page.
 - (BOOL)drawAsFloatingBar;
+
 @end
 
 @interface BookmarkBarToolbarView : BackgroundGradientView {
@@ -40,15 +41,7 @@ class ThemeProvider;
    // The controller which tells us how we should be drawing (as normal or as a
    // floating bar).
    IBOutlet id<BookmarkBarToolbarViewController> controller_;
-
-   // The bookmark bar's contents.
-   IBOutlet BookmarkBarView* buttonView_;
 }
-
-// Called by our controller to layout our subviews, so that on new tab pages,
-// we have a border.
-- (void)layoutViews;
-
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_TOOLBAR_VIEW_H_

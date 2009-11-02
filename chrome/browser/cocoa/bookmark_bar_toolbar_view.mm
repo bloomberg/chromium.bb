@@ -36,24 +36,6 @@ const CGFloat kBorderRadius = 3.0;
   }
 }
 
-- (void)layoutViews {
-  if ([controller_ drawAsFloatingBar]) {
-    // The internal bookmark bar should have padding to center it.
-    NSRect frame = [self frame];
-    [buttonView_ setFrame:
-                   NSMakeRect(bookmarks::kNTPBookmarkBarPadding,
-                              bookmarks::kNTPBookmarkBarPadding,
-                              NSWidth(frame) -
-                              bookmarks::kNTPBookmarkBarPadding,
-                              NSHeight(frame) -
-                              bookmarks::kNTPBookmarkBarPadding)];
-  } else {
-    // The frame of our child should be equal to our frame.
-    NSRect frame = [self frame];
-    [buttonView_ setFrame:NSMakeRect(0, 0, NSWidth(frame), NSHeight(frame))];
-  }
-}
-
 - (void)drawRectAsFloating:(NSRect)rect {
   NSRect bounds = [self bounds];
 

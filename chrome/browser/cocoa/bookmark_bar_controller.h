@@ -95,8 +95,11 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
   scoped_ptr<TabStripModelObserverBridge> tabObserver_;
 
   IBOutlet BookmarkBarView* buttonView_;
-  IBOutlet MenuButton* offTheSideButton_;
+  IBOutlet MenuButton* offTheSideButton_;  // aka the chevron
   IBOutlet NSMenu* buttonContextMenu_;
+
+  // "Other bookmarks" button on the right side.
+  scoped_nsobject<NSButton> otherBookmarksButton_;
 }
 
 // Initializes the bookmark bar controller with the given browser
@@ -184,6 +187,7 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 @interface BookmarkBarController(InternalOrTestingAPI)
 // Set the delegate for a unit test.
 - (void)setUrlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
 - (void)clearBookmarkBar;
 - (BookmarkBarView*)buttonView;
 - (NSArray*)buttons;
@@ -196,6 +200,8 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 - (int32)menuTagFromNodeId:(int64)menuid;
 - (void)buildOffTheSideMenu;
 - (NSMenu*)offTheSideMenu;
+- (NSButton*)offTheSideButton;
+- (NSButton*)otherBookmarksButton;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

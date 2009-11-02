@@ -22,6 +22,9 @@ const int kNTPBookmarkBarHeight = 40;
 const int kNTPBookmarkBarPadding =
     (kNTPBookmarkBarHeight - kBookmarkBarHeight) / 2;
 
+// The height of buttons in the bookmark bar.
+const int kBookmarkButtonHeight = kBookmarkBarHeight;
+
 }  // namespace bookmarks
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONSTANTS_H_

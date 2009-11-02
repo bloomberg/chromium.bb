@@ -218,7 +218,7 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   bar.reset(
       [[AlwaysNewTabPageBookmarkBarController alloc]
           initWithBrowser:helper_.browser()
-             initialWidth:100  // arbitrary
+             initialWidth:800  // arbitrary
          compressDelegate:compressDelegate_.get()
            resizeDelegate:resizeDelegate_.get()
               urlDelegate:nil]);
@@ -231,6 +231,32 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   EXPECT_FALSE([[bar view] isHidden]);
   EXPECT_GT([resizeDelegate_ height], 0);
   EXPECT_GT([[bar view] frame].size.height, 0);
+
+  // Make sure no buttons fall off the bar, either now or when resized
+  // bigger or smaller.
+  CGFloat sizes[] = { 300.0, -100.0, 200.0, -420.0 };
+  CGFloat previousX = 0.0;
+  for (unsigned x = 0; x < arraysize(sizes); x++) {
+    // Confirm the buttons moved from the last check (which may be
+    // init but that's fine).
+    CGFloat newX = [[bar offTheSideButton] frame].origin.x;
+    EXPECT_NE(previousX, newX);
+    previousX = newX;
+
+    // Confirm the buttons have a reasonable bounds.
+    EXPECT_TRUE(NSContainsRect([[bar buttonView] frame],
+                               [[bar offTheSideButton] frame]));
+    EXPECT_TRUE(NSContainsRect([[bar buttonView] frame],
+                               [[bar otherBookmarksButton] frame]));
+
+    // Now move them implicitly.
+    // We confirm FrameChangeNotification works in the next unit test;
+    // we simply assume it works here to resize or reposition the
+    // buttons above.
+    NSRect frame = [[bar view] frame];
+    frame.size.width += sizes[x];
+    [[bar view] setFrame:frame];
+  }
 }
 
 // Make sure we're watching for frame change notifications.
@@ -552,18 +578,22 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
 // checkForBookmarkButtonGrowth:.
 
-// TODO(jrg): Make sure showing the bookmark bar calls loaded: (to
-// process bookmarks)
-TEST_F(BookmarkBarControllerTest, ShowAndLoad) {
-}
-
-// TODO(jrg): Test cellForBookmarkNode:
 TEST_F(BookmarkBarControllerTest, Cell) {
-}
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ loaded:model];
 
-TEST_F(BookmarkBarControllerTest, Contents) {
-  // TODO(jrg): addNodesToBar has a LOT of TODOs; when flushed out, write
-  // appropriate tests.
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  model->AddURL(parent, parent->GetChildCount(),
+                L"supertitle",
+                GURL("http://superfriends.hall-of-justice.edu"));
+  const BookmarkNode* node = parent->GetChild(0);
+
+  NSCell* cell = [bar_ cellForBookmarkNode:node];
+  EXPECT_TRUE(cell);
+  EXPECT_TRUE([[cell title] isEqual:@"supertitle"]);
+  EXPECT_EQ(node, [[cell representedObject] pointerValue]);
+
+  // cell is autoreleased; no need to release here
 }
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
@@ -699,11 +729,5 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     EXPECT_EQ(parent->GetChild(i)->GetTitle(), titles[i]);
   }
 }
-
-
-// Cannot test these methods since they simply call a single static
-// method, BookmarkEditor::Show(), which is impossible to mock.
-// editBookmark:, addPage:
-
 
 }  // namespace
