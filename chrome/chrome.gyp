@@ -3738,10 +3738,12 @@
             {
               # TODO(tony): Remove this after Nov 13, 2009.
               'postbuild_name': 'cleanup_theme_pak',
-              'action': ['rm', '-f',
-                  '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions'
-                  '/<(version_full)/<(mac_product_name) Framework.framework/'
-                  'Resources/theme.pak'],
+              'action': [
+                'rm', '-f',
+                '${BUILT_PRODUCTS_DIR}/<(mac_product_name).app/Contents/'
+                'Versions/<(version_full)/'
+                '<(mac_product_name) Framework.framework/Resources/theme.pak'
+              ],
             },
           ],  # postbuilds
         }, { # else: OS != "mac"
