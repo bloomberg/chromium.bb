@@ -46,9 +46,16 @@ class SendTask;
 //
 class ChannelProxy : public Message::Sender {
  public:
+
+  class MessageFilter;
+  struct MessageFilterTraits {
+    static void Destruct(MessageFilter* filter);
+  };
+
   // A class that receives messages on the thread where the IPC channel is
   // running.  It can choose to prevent the default action for an IPC message.
-  class MessageFilter : public base::RefCountedThreadSafe<MessageFilter> {
+  class MessageFilter
+      : public base::RefCountedThreadSafe<MessageFilter, MessageFilterTraits> {
    public:
     virtual ~MessageFilter() {}
 
@@ -78,6 +85,13 @@ class ChannelProxy : public Message::Sender {
     // the message be handled in the default way.
     virtual bool OnMessageReceived(const Message& message) {
       return false;
+    }
+
+    // Called when the message filter is about to be deleted.  This gives
+    // derived classes the option of controlling which thread they're deleted
+    // on etc.
+    virtual void OnDestruct() {
+      delete this;
     }
   };
 

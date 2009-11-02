@@ -1,72 +1,108 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include <vector>
 
 #include "chrome/browser/chrome_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-typedef PlatformTest ChromeThreadTest;
+class ChromeThreadTest : public testing::Test {
+ public:
+  void Release() {
+    CHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
 
-TEST_F(ChromeThreadTest, Get) {
-  /*
-  // TODO(jabdelmalek): rewrite this test when the change to delete objects on
-  // a specific thread lands.
-  scoped_ptr<ChromeThread> io_thread;
-  scoped_ptr<ChromeThread> file_thread;
-  scoped_ptr<ChromeThread> db_thread;
+ protected:
+  virtual void SetUp() {
+    file_thread_.reset(new ChromeThread(ChromeThread::FILE));
+    io_thread_.reset(new ChromeThread(ChromeThread::IO));
+    file_thread_->Start();
+    io_thread_->Start();
+  }
 
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::IO) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::DB) == NULL);
+  virtual void TearDown() {
+    file_thread_->Stop();
+    io_thread_->Stop();
+  }
 
-  // Phase 1: Create threads.
+  static void BasicFunction(MessageLoop* message_loop) {
+    CHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
 
-  io_thread.reset(new ChromeThread(ChromeThread::IO));
-  file_thread.reset(new ChromeThread(ChromeThread::FILE));
-  db_thread.reset(new ChromeThread(ChromeThread::DB));
+  class DummyTask : public Task {
+   public:
+    DummyTask(bool* deleted) : deleted_(deleted) { }
+    ~DummyTask() {
+      *deleted_ = true;
+    }
 
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::IO) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::DB) == NULL);
+    void Run() {
+      CHECK(false);
+    }
 
-  // Phase 2: Start the threads.
+   private:
+    bool* deleted_;
+  };
 
-  io_thread->Start();
-  file_thread->Start();
-  db_thread->Start();
+  class DeletedOnIO
+      : public base::RefCountedThreadSafe<
+            DeletedOnIO, ChromeThread::DeleteOnIOThread> {
+   public:
+    DeletedOnIO(MessageLoop* message_loop) : message_loop_(message_loop) { }
 
-  EXPECT_TRUE(io_thread->message_loop() != NULL);
-  EXPECT_TRUE(file_thread->message_loop() != NULL);
-  EXPECT_TRUE(db_thread->message_loop() != NULL);
+    ~DeletedOnIO() {
+      CHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+      message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    }
 
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::IO) ==
-              io_thread->message_loop());
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) ==
-              file_thread->message_loop());
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::DB) ==
-              db_thread->message_loop());
+   private:
+    MessageLoop* message_loop_;
+  };
 
-  // Phase 3: Stop the threads.
+  class NeverDeleted
+      : public base::RefCountedThreadSafe<
+            NeverDeleted, ChromeThread::DeleteOnWebKitThread> {
+   public:
+    ~NeverDeleted() {
+      CHECK(false);
+    }
+  };
 
-  io_thread->Stop();
-  file_thread->Stop();
-  db_thread->Stop();
+ private:
+  scoped_ptr<ChromeThread> file_thread_;
+  scoped_ptr<ChromeThread> io_thread_;
+  MessageLoop loop_;
+};
 
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::IO) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::DB) == NULL);
+TEST_F(ChromeThreadTest, PostTask) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&BasicFunction, MessageLoop::current()));
+  MessageLoop::current()->Run();
+}
 
-  // Phase 4: Destroy the threads.
+TEST_F(ChromeThreadTest, Release) {
+  ChromeThread::ReleaseSoon(ChromeThread::FILE, FROM_HERE, this);
+  MessageLoop::current()->Run();
+}
 
-  io_thread.reset();
-  file_thread.reset();
-  db_thread.reset();
+TEST_F(ChromeThreadTest, TaskToNonExistentThreadIsDeleted) {
+  bool deleted = false;
+  ChromeThread::PostTask(
+      ChromeThread::WEBKIT, FROM_HERE,
+      new DummyTask(&deleted));
+  EXPECT_TRUE(deleted);
+}
 
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::IO) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::FILE) == NULL);
-  EXPECT_TRUE(ChromeThread::GetMessageLoop(ChromeThread::DB) == NULL);
-  */
+TEST_F(ChromeThreadTest, ReleasedOnCorrectThread) {
+  {
+    scoped_refptr<DeletedOnIO> test(new DeletedOnIO(MessageLoop::current()));
+  }
+  MessageLoop::current()->Run();
+}
+
+TEST_F(ChromeThreadTest, NotReleasedIfTargetThreadNonExistent) {
+  scoped_refptr<NeverDeleted> test(new NeverDeleted());
 }

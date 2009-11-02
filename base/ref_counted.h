@@ -93,6 +93,21 @@ class RefCounted : public subtle::RefCountedBase {
   DISALLOW_COPY_AND_ASSIGN(RefCounted<T>);
 };
 
+// Forward declaration.
+template <class T, typename Traits> class RefCountedThreadSafe;
+
+// Default traits for RefCountedThreadSafe<T>.  Deletes the object when its ref
+// count reaches 0.  Overload to delete it on a different thread etc.
+template<typename T>
+struct DefaultRefCountedThreadSafeTraits {
+  static void Destruct(T* x) {
+    // Delete through RefCountedThreadSafe to make child classes only need to be
+    // friend with RefCountedThreadSafe instead of this struct, which is an
+    // implementation detail.
+    RefCountedThreadSafe<T, DefaultRefCountedThreadSafeTraits>::DeleteInternal(x);
+  }
+};
+
 //
 // A thread-safe variant of RefCounted<T>
 //
@@ -100,7 +115,12 @@ class RefCounted : public subtle::RefCountedBase {
 //    ...
 //   };
 //
-template <class T>
+// If you're using the default trait, then you may choose to add compile time
+// asserts that no one else is deleting your object.  i.e.
+//    private:
+//     friend struct base::RefCountedThreadSafe<MyFoo>;
+//     ~MyFoo();
+template <class T, typename Traits = DefaultRefCountedThreadSafeTraits<T> >
 class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
  public:
   RefCountedThreadSafe() { }
@@ -112,12 +132,15 @@ class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
 
   void Release() {
     if (subtle::RefCountedThreadSafeBase::Release()) {
-      delete static_cast<T*>(this);
+      Traits::Destruct(static_cast<T*>(this));
     }
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafe<T>);
+  friend struct DefaultRefCountedThreadSafeTraits<T>;
+  static void DeleteInternal(T* x) { delete x; }
+
+  DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafe);
 };
 
 //

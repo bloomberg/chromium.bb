@@ -7,6 +7,7 @@
 #include "app/clipboard/clipboard.h"
 #include "app/gfx/native_widget_types.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/thread.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
-#include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/spellchecker.h"
@@ -406,6 +406,10 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void ResourceMessageFilter::OnDestruct() {
+  ChromeThread::DeleteOnIOThread::Destruct(this);
+}
+
 void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
   void* iter = NULL;
   ContextMenuParams params;
@@ -594,35 +598,22 @@ void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
                                          IPC::Message* reply_msg) {
-  // Schedule plugin loading on the file thread.
-  // Note: it's possible that the only reference to this object is the task.  If
-  // If the task executes on the file thread, and before it returns, the task it
-  // posts to the IO thread runs, then this object will get destructed on the
-  // file thread.  We need this object to be destructed on the IO thread, so do
-  // the refcounting manually.
-  AddRef();
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&ResourceMessageFilter::OnGetPluginsOnFileThread,
-          this, refresh, reply_msg));
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetPluginsOnFileThread, refresh,
+          reply_msg));
 }
 
 void ResourceMessageFilter::OnGetPluginsOnFileThread(
-    ResourceMessageFilter* filter,
-    bool refresh,
-    IPC::Message* reply_msg) {
+    bool refresh, IPC::Message* reply_msg) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(filter, &ResourceMessageFilter::OnPluginsLoaded,
-          reply_msg));
-}
-
-void ResourceMessageFilter::OnPluginsLoaded(IPC::Message* reply_msg) {
-  Send(reply_msg);
-  Release();
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
@@ -1130,29 +1121,36 @@ void ResourceMessageFilter::OnSetCacheMode(bool enabled) {
 
 void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
                                           IPC::Message* reply_msg) {
-  // Increase the ref count to ensure ResourceMessageFilter won't be destroyed
-  // before GetFileSize callback is done.
-  AddRef();
-
   // Get file size only when the child process has been granted permission to
   // upload the file.
-  if (ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
-    FileSystemAccessor::RequestFileSize(
-        path,
-        reply_msg,
-        NewCallback(this, &ResourceMessageFilter::ReplyGetFileSize));
-  } else {
-    ReplyGetFileSize(-1, reply_msg);
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+    ViewHostMsg_GetFileSize::WriteReplyParams(
+        reply_msg, static_cast<int64>(-1));
+    Send(reply_msg);
+    return;
   }
+
+  // Getting file size could take long time if it lives on a network share,
+  // so run it on FILE thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetFileSizeOnFileThread, path,
+          reply_msg));
 }
 
-void ResourceMessageFilter::ReplyGetFileSize(int64 result, void* param) {
-  IPC::Message* reply_msg = static_cast<IPC::Message*>(param);
-  ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, result);
-  Send(reply_msg);
+void ResourceMessageFilter::OnGetFileSizeOnFileThread(
+    const FilePath& path, IPC::Message* reply_msg) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  // Getting file size callback done, decrease the ref count.
-  Release();
+  int64 result;
+  if (!file_util::GetFileSize(path, &result))
+    result = -1;
+  ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, result);
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnKeygen(uint32 key_size_index,

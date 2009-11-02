@@ -125,6 +125,35 @@ class ChromeThread : public base::Thread {
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier);
 
+  // Use these templates in conjuction with RefCountedThreadSafe when you want
+  // to ensure that an object is deleted on a specific thread.  This is needed
+  // when an object can hop between threads (i.e. IO -> FILE -> IO), and thread
+  // switching delays can mean that the final IO tasks executes before the FILE
+  // task's stack unwinds.  This would lead to the object destructing on the
+  // FILE thread, which often is not what you want (i.e. to unregister from
+  // NotificationService, to notify other objects on the creating thread etc).
+  template<ID thread>
+  struct DeleteOnThread {
+    template<typename T>
+    static void Destruct(T* x) {
+      if (CurrentlyOn(thread)) {
+        delete x;
+      } else {
+        DeleteSoon(thread, FROM_HERE, x);
+      }
+    }
+  };
+
+  // Sample usage:
+  // class Foo
+  //     : public base::RefCountedThreadSafe<
+  //           Foo, ChromeThread::DeleteOnIOThread> {
+  struct DeleteOnUIThread : public DeleteOnThread<UI> { };
+  struct DeleteOnIOThread : public DeleteOnThread<IO> { };
+  struct DeleteOnFileThread : public DeleteOnThread<FILE> { };
+  struct DeleteOnDBThread : public DeleteOnThread<DB> { };
+  struct DeleteOnWebKitThread : public DeleteOnThread<WEBKIT> { };
+
  private:
   // Common initialization code for the constructors.
   void Initialize();

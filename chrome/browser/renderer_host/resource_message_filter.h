@@ -97,6 +97,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual void OnChannelError();
   virtual void OnChannelClosing();
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnDestruct();
 
   // ResourceDispatcherHost::Receiver methods:
   virtual bool Send(IPC::Message* message);
@@ -149,10 +150,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  static void OnGetPluginsOnFileThread(ResourceMessageFilter* filter,
-                                       bool refresh,
-                                       IPC::Message* reply_msg);
-  void OnPluginsLoaded(IPC::Message* reply_msg);
+  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
@@ -283,7 +281,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnSetCacheMode(bool enabled);
 
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
-  void ReplyGetFileSize(int64 result, void* param);
+  void OnGetFileSizeOnFileThread(const FilePath& path, IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, std::string* signed_public_key);
 #if defined(OS_LINUX)
