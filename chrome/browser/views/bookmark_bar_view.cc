@@ -1214,9 +1214,11 @@ void BookmarkBarView::ShowContextMenu(View* source,
     parent = model_->GetBookmarkBarNode();
     nodes.push_back(parent);
   }
+  // Browser may be null during testing.
+  PageNavigator* navigator =
+      browser() ? browser()->GetSelectedTabContents() : NULL;
   BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
-                                 browser()->GetSelectedTabContents(),
-                                 parent, nodes,
+                                 navigator, parent, nodes,
                                  BookmarkContextMenuController::BOOKMARK_BAR);
   controller.RunMenuAt(gfx::Point(x, y));
 }

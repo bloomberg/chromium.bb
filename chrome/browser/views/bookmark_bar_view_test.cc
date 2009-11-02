@@ -1064,3 +1064,35 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest13, ClickOnContextMenuSeparator)
+
+// Makes sure right cliking on a folder on the bookmark bar doesn't result in
+// both a context menu and showing the menu.
+class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
+ protected:
+  virtual void DoTestOnMessageLoop() {
+    // Move the mouse to the first folder on the bookmark bar and press the
+    // right mouse button.
+    views::TextButton* button = bb_view_->GetBookmarkButton(0);
+    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::RIGHT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest14::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should NOT be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu == NULL);
+
+    // Send escape so that the context menu hides.
+    ui_controls::SendKeyPressNotifyWhenDone(
+        NULL, base::VKEY_ESCAPE, false, false, false,
+        CreateEventTask(this, &BookmarkBarViewTest14::Step3));
+  }
+
+  void Step3() {
+    Done();
+  }
+};
+
+VIEW_TEST(BookmarkBarViewTest14, ContextMenus2)
