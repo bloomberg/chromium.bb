@@ -80,7 +80,6 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioManager;
-class MessageLoop;
 struct ViewHostMsg_Audio_CreateStream;
 
 class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
@@ -88,7 +87,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   class IPCAudioSource;
  public:
   // Called from UI thread from the owner of this object.
-  explicit AudioRendererHost(MessageLoop* message_loop);
+  AudioRendererHost();
 
   // Destruction can happen on either UI thread or IO thread, but at destruction
   // all associated sources are destroyed and streams are closed.
@@ -340,8 +339,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   // and stream id. Returns NULL if not found.
   IPCAudioSource* Lookup(int render_view_id, int stream_id);
 
-  MessageLoop* io_loop() { return io_loop_; }
-
   int process_id_;
   base::ProcessHandle process_handle_;
   IPC::Message::Sender* ipc_sender_;
@@ -350,8 +347,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   typedef std::pair<int32, int32> SourceID;
   typedef std::map<SourceID, IPCAudioSource*> SourceMap;
   SourceMap sources_;
-
-  MessageLoop* io_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

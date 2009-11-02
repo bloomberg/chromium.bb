@@ -22,10 +22,10 @@
 
 #include "base/histogram.h"
 #include "base/lock.h"
-#include "base/message_loop.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
@@ -331,14 +331,14 @@ void AudioRendererHost::IPCAudioSource::StartBuffering() {
 //-----------------------------------------------------------------------------
 // AudioRendererHost implementations.
 
-AudioRendererHost::AudioRendererHost(MessageLoop* message_loop)
+AudioRendererHost::AudioRendererHost()
     : process_id_(0),
       process_handle_(0),
-      ipc_sender_(NULL),
-      io_loop_(message_loop) {
+      ipc_sender_(NULL) {
   // Make sure we perform actual initialization operations in the thread where
   // this object should live.
-  io_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &AudioRendererHost::OnInitialized));
 }
 
@@ -349,15 +349,16 @@ AudioRendererHost::~AudioRendererHost() {
 void AudioRendererHost::Destroy() {
   // Post a message to the thread where this object should live and do the
   // actual operations there.
-  io_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &AudioRendererHost::OnDestroyed));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &AudioRendererHost::OnDestroyed));
 }
 
 // Event received when IPC channel is connected to the renderer process.
 void AudioRendererHost::IPCChannelConnected(int process_id,
                                             base::ProcessHandle process_handle,
                                             IPC::Message::Sender* ipc_sender) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   process_id_ = process_id;
   process_handle_ = process_handle;
   ipc_sender_ = ipc_sender;
@@ -365,7 +366,7 @@ void AudioRendererHost::IPCChannelConnected(int process_id,
 
 // Event received when IPC channel is closing.
 void AudioRendererHost::IPCChannelClosing() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ipc_sender_ = NULL;
   process_handle_ = 0;
   process_id_ = 0;
@@ -411,7 +412,7 @@ bool AudioRendererHost::IsAudioRendererHostMessage(
 void AudioRendererHost::OnCreateStream(
     const IPC::Message& msg, int stream_id,
     const ViewHostMsg_Audio_CreateStream& params) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(Lookup(msg.routing_id(), stream_id) == NULL);
 
   IPCAudioSource* source = IPCAudioSource::CreateIPCAudioSource(
@@ -438,7 +439,7 @@ void AudioRendererHost::OnCreateStream(
 }
 
 void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->Play();
@@ -448,7 +449,7 @@ void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
 }
 
 void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->Pause();
@@ -458,7 +459,7 @@ void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
 }
 
 void AudioRendererHost::OnCloseStream(const IPC::Message& msg, int stream_id) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     DestroySource(source);
@@ -467,7 +468,7 @@ void AudioRendererHost::OnCloseStream(const IPC::Message& msg, int stream_id) {
 
 void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
                                     double left_channel, double right_channel) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->SetVolume(left_channel, right_channel);
@@ -477,7 +478,7 @@ void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
 }
 
 void AudioRendererHost::OnGetVolume(const IPC::Message& msg, int stream_id) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->GetVolume();
@@ -488,7 +489,7 @@ void AudioRendererHost::OnGetVolume(const IPC::Message& msg, int stream_id) {
 
 void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
                                             int stream_id, size_t packet_size) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->NotifyPacketReady(packet_size);
@@ -498,14 +499,14 @@ void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
 }
 
 void AudioRendererHost::OnInitialized() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Increase the ref count of this object so it is active until we do
   // Release().
   AddRef();
 }
 
 void AudioRendererHost::OnDestroyed() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ipc_sender_ = NULL;
   process_handle_ = 0;
   process_id_ = 0;
@@ -515,14 +516,14 @@ void AudioRendererHost::OnDestroyed() {
 }
 
 void AudioRendererHost::OnSend(IPC::Message* message) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (ipc_sender_) {
     ipc_sender_->Send(message);
   }
 }
 
 void AudioRendererHost::OnDestroySource(IPCAudioSource* source) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (source) {
     sources_.erase(SourceID(source->route_id(), source->stream_id()));
     source->Close();
@@ -531,7 +532,7 @@ void AudioRendererHost::OnDestroySource(IPCAudioSource* source) {
 }
 
 void AudioRendererHost::DestroyAllSources() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   std::vector<IPCAudioSource*> sources;
   for (SourceMap::iterator i = sources_.begin(); i != sources_.end(); ++i) {
     sources.push_back(i->second);
@@ -544,7 +545,7 @@ void AudioRendererHost::DestroyAllSources() {
 
 AudioRendererHost::IPCAudioSource* AudioRendererHost::Lookup(int route_id,
                                                              int stream_id) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   SourceMap::iterator i = sources_.find(SourceID(route_id, stream_id));
   if (i != sources_.end())
     return i->second;
@@ -552,13 +553,11 @@ AudioRendererHost::IPCAudioSource* AudioRendererHost::Lookup(int route_id,
 }
 
 void AudioRendererHost::Send(IPC::Message* message) {
-  if (MessageLoop::current() == io_loop_) {
+  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     OnSend(message);
   } else {
-    // TODO(hclam): make sure it's always safe to post a task to IO loop.
-    // It is possible that IO message loop is destroyed but there's still some
-    // dangling audio hardware threads that try to call this method.
-    io_loop_->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(this, &AudioRendererHost::OnSend, message));
   }
 }
@@ -572,13 +571,11 @@ void AudioRendererHost::SendErrorMessage(int32 render_view_id,
 }
 
 void AudioRendererHost::DestroySource(IPCAudioSource* source) {
-  if (MessageLoop::current() == io_loop_) {
+  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     OnDestroySource(source);
   } else {
-    // TODO(hclam): make sure it's always safe to post a task to IO loop.
-    // It is possible that IO message loop is destroyed but there's still some
-    // dangling audio hardware threads that try to call this method.
-    io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::OnDestroySource, source));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererHost::OnDestroySource, source));
   }
 }

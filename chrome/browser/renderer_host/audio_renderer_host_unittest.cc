@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,8 +30,8 @@ const int kPacketSize = 16384;
 
 class MockAudioRendererHost : public AudioRendererHost {
  public:
-  MockAudioRendererHost(MessageLoop* loop)
-      : AudioRendererHost(loop) {
+  MockAudioRendererHost()
+      : AudioRendererHost() {
   }
 
   virtual ~MockAudioRendererHost() {
@@ -120,7 +121,8 @@ class AudioRendererHostTest : public testing::Test {
   virtual void SetUp() {
     // Create a message loop so AudioRendererHost can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-    host_ = new MockAudioRendererHost(message_loop_.get());
+    io_thread_.reset(new ChromeThread(ChromeThread::IO, message_loop_.get()));
+    host_ = new MockAudioRendererHost();
   }
 
   virtual void TearDown() {
@@ -128,11 +130,13 @@ class AudioRendererHostTest : public testing::Test {
     // message_loop_.
     host_->Destroy();
 
+    // Release the reference to the mock object.
+    host_ = NULL;
+
     // We need to continue running message_loop_ to complete all destructions.
     message_loop_->RunAllPending();
 
-    // Release the reference to the mock object.
-    host_ = NULL;
+    io_thread_.reset();
   }
 
   AudioRendererHost::IPCAudioSource* CreateAudioStream(
@@ -180,6 +184,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
 
  private:
+  scoped_ptr<ChromeThread> io_thread_;
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
 

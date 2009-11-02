@@ -5,7 +5,6 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
 #include "base/histogram.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
@@ -14,11 +13,11 @@
 #include "chrome/browser/net/url_request_slow_download_job.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "net/url_request/url_request_filter.h"
 
 
-MessageLoop* AutomationResourceMessageFilter::io_loop_ = NULL;
 AutomationResourceMessageFilter::RenderViewMap
     AutomationResourceMessageFilter::filtered_render_views_;
 int AutomationResourceMessageFilter::unique_request_id_ = 1;
@@ -35,7 +34,6 @@ AutomationResourceMessageFilter::~AutomationResourceMessageFilter() {
 void AutomationResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(channel_ == NULL);
   channel_ = channel;
-  io_loop_ = MessageLoop::current();
 }
 
 // Called on the IPC thread:
@@ -94,7 +92,7 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
 // Called on the IPC thread:
 bool AutomationResourceMessageFilter::Send(IPC::Message* message) {
   // This has to be called on the IO thread.
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!channel_) {
     delete message;
     return false;
@@ -110,7 +108,7 @@ bool AutomationResourceMessageFilter::RegisterRequest(
     return false;
   }
 
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(request_map_.end() == request_map_.find(job->id()));
   request_map_[job->id()] = job;
   return true;
@@ -118,7 +116,7 @@ bool AutomationResourceMessageFilter::RegisterRequest(
 
 void AutomationResourceMessageFilter::UnRegisterRequest(
     URLRequestAutomationJob* job) {
-  DCHECK_EQ(io_loop_, MessageLoop::current());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(request_map_.find(job->id()) != request_map_.end());
   request_map_.erase(job->id());
 }
@@ -131,19 +129,21 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
     return false;
   }
 
-  DCHECK(io_loop_);
-  io_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
-      renderer_pid, renderer_id, tab_handle, filter));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
+          renderer_pid, renderer_id, tab_handle, filter));
   return true;
 }
 
 void AutomationResourceMessageFilter::UnRegisterRenderView(
     int renderer_pid, int renderer_id) {
-  DCHECK(io_loop_);
-  io_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread,
-      renderer_pid, renderer_id));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread,
+          renderer_pid, renderer_id));
 }
 
 void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(

@@ -253,8 +253,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   base::Thread* io_thread = g_browser_process->io_thread();
 
   // Construct the AudioRendererHost with the IO thread.
-  audio_renderer_host_ =
-      new AudioRendererHost(io_thread->message_loop());
+  audio_renderer_host_ = new AudioRendererHost();
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter =
       new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),

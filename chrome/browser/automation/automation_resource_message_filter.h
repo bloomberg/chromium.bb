@@ -13,7 +13,6 @@
 #include "ipc/ipc_channel_proxy.h"
 
 class URLRequestAutomationJob;
-class MessageLoop;
 
 // This class filters out incoming automation IPC messages for network
 // requests and processes them on the IPC thread.  As a result, network
@@ -98,7 +97,6 @@ class AutomationResourceMessageFilter
   // The channel associated with the automation connection. This pointer is not
   // owned by this class.
   IPC::Channel* channel_;
-  static MessageLoop* io_loop_;
 
   // A unique request id per process.
   static int unique_request_id_;
