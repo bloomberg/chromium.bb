@@ -9,7 +9,7 @@
 {
   'WATCHLIST_DEFINITIONS': {
     'this_file': {
-        'filepath': '^WATCHLISTS$',
+      'filepath': '^WATCHLISTS$',
     },
     'valgrind': {
       'filepath': 'valgrind',
@@ -40,10 +40,12 @@
       'filepath': 'chrome/browser/history/.*',
     },
     'renderer': {
-      'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|chrome/common/render.*',
+      'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|'\
+        'chrome/common/render.*',
     },
     'safe_browsing': {
-      'filepath': 'chrome/browser/safe_browsing/.*|chrome/browser/renderer_host/safe.*',
+      'filepath': 'chrome/browser/safe_browsing/.*|'\
+        'chrome/browser/renderer_host/safe.*',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/.*',
@@ -52,10 +54,12 @@
       'filepath': 'webkit/.*',
     },
     'plugin': {
-      'filepath': 'chrome/browser/plugin.*|chrome/plugin/.*|chrome/common/plugin.*|webkit/glue/webplugin.*|webkit/glue/plugins/.*',
+      'filepath': 'chrome/browser/plugin.*|chrome/plugin/.*|'\
+        'chrome/common/plugin.*|webkit/glue/webplugin.*|webkit/glue/plugins/.*',
     },
     'worker': {
-      'filepath': 'chrome/browser/worker_host/.*|chrome/worker/.*|chrome/common/worker_messages.*|webkit/glue/webworker.*',
+      'filepath': 'chrome/browser/worker_host/.*|chrome/worker/.*|'\
+        'chrome/common/worker_messages.*|webkit/glue/webworker.*',
     },
     'net': {
       'filepath': 'net/.*',
@@ -79,7 +83,8 @@
       'filepath': 'sandbox/linux/.*',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|chrome/test/live_sync/.*',
+      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|'\
+        'chrome/test/live_sync/.*',
     },
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
@@ -97,27 +102,35 @@
       'filepath': 'chrome_frame/.*',
     },
     'nacl': {
-      'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|chrome/browser/nacl_process_host.*|chrome/common/nacl.*',
+      'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|'\
+        'chrome/browser/nacl_process_host.*|chrome/common/nacl.*',
     },
 
   },
 
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
-    'valgrind': ['nirnimesh@chromium.org', 'dank@chromium.org', 'timurrrr@chromium.org', 'stuartmorgan@chromium.org', 'ramosian.glider@gmail.com'],
+    'valgrind': ['dank@chromium.org',
+                 'timurrrr@chromium.org',
+                 'stuartmorgan@chromium.org',
+                 'ramosian.glider@gmail.com'],
     'mac': ['jrg@chromium.org', 'pam+watch@chromium.org'],
     'base': ['brettw+cc@chromium.org'],
     'views': ['ben+cc@chromium.org'],
     'browser': ['ben+cc@chromium.org'],
     'download': ['paul@chromium.org'],
     'history': ['brettw+cc@chromium.org'],
-    'renderer': ['darin@chromium.org', 'brettw+cc@chromium.org', 'jam@chromium.org'],
+    'renderer': ['darin@chromium.org',
+                 'brettw+cc@chromium.org',
+                 'jam@chromium.org'],
     'safe_browsing': ['paul@chromium.org'],
     'tab_contents': ['brettw+cc@chromium.org'],
     'webkit': ['darin@chromium.org'],
     'plugin': ['darin@chromium.org', 'jam@chromium.org'],
     'worker': ['jam@chromium.org'],
-    'extension': ['aa@chromium.org', 'erikkay@chromium.org', 'pam+watch@chromium.org'],
+    'extension': ['aa@chromium.org',
+                  'erikkay@chromium.org',
+                  'pam+watch@chromium.org'],
     'purify': ['erikkay@chromium.org'],
     'net': ['darin@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
