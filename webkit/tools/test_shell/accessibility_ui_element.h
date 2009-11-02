@@ -6,10 +6,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_ACCESSIBILITY_UI_ELEMENT_H_
 
 #include "webkit/glue/cpp_bound_class.h"
-
-namespace WebKit {
-class WebAccessibilityObject;
-}
+#include "webkit/api/public/WebAccessibilityObject.h"
 
 class AccessibilityUIElement : public CppBoundClass {
  public:
