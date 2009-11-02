@@ -22,6 +22,99 @@
 
 set -e
 
+# Returns 0 (true) if the parameter exists, is a symbolic link, and appears
+# writeable on the basis of its POSIX permissions.  This is used to determine
+# writeability like test's -w primary, but -w resolves symbolic links and this
+# function does not.
+function is_writeable_symlink() {
+  SYMLINK=${1}
+  LINKMODE=$(stat -f %Sp "${SYMLINK}" 2> /dev/null || true)
+  if [ -z "${LINKMODE}" ] || [ "${LINKMODE:0:1}" != "l" ] ; then
+    return 1
+  fi
+  LINKUSER=$(stat -f %u "${SYMLINK}" 2> /dev/null || true)
+  LINKGROUP=$(stat -f %g "${SYMLINK}" 2> /dev/null || true)
+  if [ -z "${LINKUSER}" ] || [ -z "${LINKGROUP}" ] ; then
+    return 1
+  fi
+
+  # If the users match, check the owner-write bit.
+  if [ ${EUID} -eq ${LINKUSER} ] ; then
+    if [ "${LINKMODE:2:1}" = "w" ] ; then
+      return 0
+    fi
+    return 1
+  fi
+
+  # If the file's group matches any of the groups that this process is a
+  # member of, check the group-write bit.
+  GROUPMATCH=
+  for group in ${GROUPS[@]} ; do
+    if [ ${group} -eq ${LINKGROUP} ] ; then
+      GROUPMATCH=1
+      break
+    fi
+  done
+  if [ -n "${GROUPMATCH}" ] ; then
+    if [ "${LINKMODE:5:1}" = "w" ] ; then
+      return 0
+    fi
+    return 1
+  fi
+
+  # Check the other-write bit.
+  if [ "${LINKMODE:8:1}" = "w" ] ; then
+    return 0
+  fi
+  return 1
+}
+
+# If SYMLINK exists and is a symbolic link, but is not writeable according to
+# is_writeable_symlink, this function attempts to replace it with a new
+# writeable symbolic link.  If FROM does not exist, is not a symbolic link, or
+# is already writeable, this function does nothing.  This function always
+# returns 0 (true).
+function ensure_writeable_symlink() {
+  SYMLINK=${1}
+  if [ -L "${SYMLINK}" ] && ! is_writeable_symlink "${SYMLINK}" ; then
+    # If ${SYMLINK} refers to a directory, doing this naively might result in
+    # the new link being placed in that directory, instead of replacing the
+    # existing link.  ln -fhs is supposed to handle this case, but it does so
+    # by unlinking (removing) the existing symbolic link before creating a new
+    # one.  That leaves a small window during which the symbolic link is not
+    # present on disk at all.
+    #
+    # To avoid that possibility, a new symbolic link is created in a temporary
+    # location and then swapped into place with mv.  An extra temporary
+    # directory is used to convince mv to replace the symbolic link: again, if
+    # the existing link refers to a directory, "mv newlink oldlink" will
+    # actually leave oldlink alone and place newlink into the directory.
+    # "mv newlink dirname(oldlink)" works as expected, but in order to replace
+    # oldlink, newlink must have the same basename, hence the temporary
+    # directory.
+
+    TARGET=$(readlink "${SYMLINK}" 2> /dev/null || true)
+    if [ -z "${TARGET}" ] ; then
+      return 0
+    fi
+
+    SYMLINKDIR=$(dirname "${SYMLINK}")
+    TEMPLINKDIR="${SYMLINKDIR}/.symlink_temp.${$}.${RANDOM}"
+    TEMPLINK="${TEMPLINKDIR}/$(basename "${SYMLINK}")"
+
+    # Don't bail out here if this fails.  Something else will probably fail.
+    # Let it, it'll probably be easier to understand that failure than this
+    # one.
+    (mkdir "${TEMPLINKDIR}" && \
+        ln -fhs "${TARGET}" "${TEMPLINK}" && \
+        chmod -h 755 "${TEMPLINK}" && \
+        mv -f "${TEMPLINK}" "${SYMLINKDIR}") || true
+    rm -rf "${TEMPLINKDIR}"
+  fi
+
+  return 0
+}
+
 # The argument should be the disk image path.  Make sure it exists.
 if [ $# -lt 1 ] || [ ! -d "${1}" ]; then
   exit 10
@@ -78,17 +171,65 @@ if [ "${DEST}" -nt "${SRC}" ] ; then
   NEEDS_TOUCH=1
 fi
 
+# In some very weird and rare cases, it is possible to wind up with a user
+# installation that contains symbolic links that the user does not have write
+# permission over.  More on how that might happen later.
+#
+# If a weird and rare case like this is observed, rsync will exit with an
+# error when attempting to update the times on these symbolic links.  rsync
+# may not be intelligent enough to try creating a new symbolic link in these
+# cases, but this script can be.
+#
+# This fix-up is not necessary when running as root, because root will always
+# be able to write everything needed.
+#
+# The problem occurs when an administrative user first drag-installs the
+# application to /Applications, resulting in the program's user being set to
+# the user's own ID.  If, subsequently, a .pkg package is installed over that,
+# the existing directory ownership will be preserved, but file ownership will
+# be changed to whateer is specified by the package, typically root.  This
+# applies to symbolic links as well.  On a subsequent update, rsync will
+# be able to copy the new files into place, because the user still has
+# permission to write to the directories.  If the symbolic link targets are
+# not changing, though, rsync will not replace them, and they will remain
+# owned by root.  The user will not have permission to update the time on
+# the symbolic links, resulting in an rsync error.
+if [ ${EUID} -ne 0 ] ; then
+  # This step isn't critical.
+  set +e
+
+  # Reset ${IFS} to deal with spaces in the for loop by not breaking the
+  # list up when they're encountered.
+  IFS_OLD="${IFS}"
+  IFS=$(printf '\n\t')
+
+  # Only consider symbolic links in ${SRC}.  If there are any other links in
+  # ${DEST} not present in ${SRC}, rsync will delete them as needed later.
+  LINKS=$(cd "${SRC}" && find . -type l)
+
+  for link in ${LINKS} ; do
+    # ${link} is relative to ${SRC}.  Prepending ${DEST} looks for the same
+    # link already on disk.
+    DESTLINK="${DEST}/${link}"
+    ensure_writeable_symlink "${DESTLINK}"
+  done
+
+  # Go back to how things were.
+  IFS="${IFS_OLD}"
+  set -e
+fi
+
 # Don't use rsync -a, because -a expands to -rlptgoD.  -g and -o copy owners
 # and groups, respectively, from the source, and that is undesirable in this
 # case.  -D copies devices and special files; copying devices only works
 # when running as root, so for consistency between privileged and unprivileged
 # operation, this option is omitted as well.
-#  -c, --checksum              skip based on checksum, not mod-time & size
+#  -I, --ignore-times          don't skip files that match in size and mod-time
 #  -l, --links                 copy symlinks as symlinks
 #  -r, --recursive             recurse into directories
 #  -p, --perms                 preserve permissions
 #  -t, --times                 preserve times
-RSYNC_FLAGS="-clprt"
+RSYNC_FLAGS="-Ilprt"
 
 # By copying to ${DEST}, the existing application name will be preserved, even
 # if the user has renamed the application on disk.  Respecting the user's
