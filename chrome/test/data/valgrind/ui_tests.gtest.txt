@@ -13,3 +13,7 @@ ErrorPageTest.DNSError_GoBack2AndForward
 # Flaky timeout on Linux; see http://crbug.com/22927
 UnloadTest.BrowserCloseInfiniteBeforeUnload
 UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
+
+# This test hangs under Valgrind;
+# See http://crbug.com/25917 and http://crbug.com/22608
+WorkerTest.LimitTotal

@@ -1,6 +1,3 @@
-# This test hangs under ThreadSanitizer, see http://crbug.com/25917
-WorkerTest.LimitTotal
-
 # The reference builds give numerous reports under ThreadSanitizer
 # TODO(timurrrr): do we need to run ReferenceTests under Valgrind at all?
 DromaeoReferenceTest.Perf
