@@ -1,88 +1,58 @@
 vars = {
-  "chromium_trunk":
-    "http://src.chromium.org/svn/trunk",
-  "nixysa_rev": "54",
-  "chromium_rev": "22547",
+  "chromium_trunk": "http://src.chromium.org/svn/trunk",
+  "nixysa_rev": "56",
+  "chromium_rev": "28829",
   "o3d_code_rev": "157",
-  "skia_rev": "279",
+  "skia_rev": "376",
   "gyp_rev": "725",
-  "gtest_rev": "267",
+  "gtest_rev": "329",
   "gflags_rev": "30",
-  "breakpad_rev": "346",
-  "v8_rev": "2624",
+  "breakpad_rev": "391",
+  "v8_rev": "2901",
+  "nacl_rev": "842",
 }
 
 deps = {
   "o3d/o3d_assets":
     "http://o3d.googlecode.com/svn/trunk/googleclient/o3d_assets@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/antlr3":
+  "third_party/antlr3":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/antlr3@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/cg":
+  "third_party/cg":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cg@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/chrome":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/chrome@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/fcollada":
+  "third_party/fcollada":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/fcollada@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/glew":
+  "third_party/glew":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/glew@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/icu38":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/icu38@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/jpeg":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jpeg@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/jsdoctoolkit":
+  "third_party/jsdoctoolkit":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jsdoctoolkit@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/libevent":
+  "third_party/libevent":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/libevent@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/makeself":
+  "third_party/makeself":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/makeself@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/pdiff":
+  "third_party/pdiff":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/png":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/png@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/scons":
+  "third_party/scons":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/scons@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/selenium_rc":
+  "third_party/zip_utils":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
+
+  "third_party/selenium_rc":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
 
-  "o3d/third_party/skia":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/skia/files@" + Var("o3d_code_rev"),
+# Stuff that is O3D specific (from a Chrome point of view).
 
   "o3d/third_party/vectormath":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/wix_2_0_4221":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/zip_utils":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/zlib":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zlib@" + Var("o3d_code_rev"),
-
-  "o3d/third_party/v8":
-    "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
-
-  # NACL has to be in this weird directory because it looks for
-  # googleclient two levels above it.
-  "o3d/third_party/native_client/googleclient/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/nacl/googleclient/native_client@188",
-
-  "o3d/third_party/breakpad":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
 
   "o3d/third_party/nixysa":
     "http://nixysa.googlecode.com/svn/trunk/nixysa@" + Var("nixysa_rev"),
@@ -93,14 +63,65 @@ deps = {
   "o3d/third_party/ply":
     "http://nixysa.googlecode.com/svn/trunk/third_party/ply-3.1@" + Var("nixysa_rev"),
 
-  "o3d/third_party/gflags/":
+  "o3d/third_party/gflags":
     "http://google-gflags.googlecode.com/svn/trunk@" + Var("gflags_rev"),
 
-  "o3d/third_party/gtest/files":
+# Stuff from the Chromium tree.
+
+  "third_party/harfbuzz":
+    Var("chromium_trunk") + "/src/third_party/harfbuzz@" + Var("chromium_rev"),
+
+  "third_party/icu":
+    Var("chromium_trunk") + "/deps/third_party/icu42@" + Var("chromium_rev"),
+
+  "third_party/libevent":
+    Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
+
+  "third_party/libjpeg":
+    Var("chromium_trunk") + "/src/third_party/libjpeg@" + Var("chromium_rev"),
+
+  "third_party/libpng":
+    Var("chromium_trunk") + "/src/third_party/libpng@" + Var("chromium_rev"),
+
+  "chrome/third_party/wtl":
+    Var("chromium_trunk") + "/src/chrome/third_party/wtl@" + Var("chromium_rev"),
+
+  "third_party/zlib":
+    Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
+
+  "third_party/skia":
+    "http://skia.googlecode.com/svn/trunk@" + Var("skia_rev"),
+
+  "v8":
+    "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
+
+  "testing":
+    Var("chromium_trunk") + "/src/testing@" + Var("chromium_rev"),
+
+  "skia":
+    Var("chromium_trunk") + "/src/skia@" + Var("chromium_rev"),
+
+  "breakpad":
+    Var("chromium_trunk") + "/src/breakpad@" + Var("chromium_rev"),
+
+  "base":
+    Var("chromium_trunk") + "/src/base@" + Var("chromium_rev"),
+
+  "native_client":
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_rev"),
+
+  "breakpad/src":
+    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
+
+  "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
 
-  "o3d/third_party/gmock/files":
+  "testing/gmock":
     Var("chromium_trunk") + "/src/testing/gmock@" + Var("chromium_rev"),
+
+  # Stuff needed for GYP to run
+  "build":
+    Var("chromium_trunk") + "/src/build@" + Var("chromium_rev"),
 
   "tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
@@ -108,7 +129,36 @@ deps = {
 
 deps_os = {
   "win": {
-    "o3d/third_party/python_24":
+    "third_party/wix_2_0_4221":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@" + Var("o3d_code_rev"),
+
+    "third_party/cygwin":
+      "/trunk/deps/third_party/cygwin@11984",
+
+    "third_party/python_24":
       Var("chromium_trunk") + "/deps/third_party/python_24@19441",
   },
+  "unix": {
+    # Linux, really.
+    "site_scons":
+      Var("chromium_trunk") + "/src/site_scons@" + Var("chromium_rev"),
+    # TODO(bradnelson): make these optional!!!
+    # These are currently required by gyp on linux (even though o3d isn't using
+    # data_pack or grit).
+    "tools/grit":
+      Var("chromium_trunk") + "/src/tools/grit@" + Var("chromium_rev"),
+    "tools/data_pack":
+      Var("chromium_trunk") + "/src/tools/data_pack@" + Var("chromium_rev"),
+    "tools/xdisplaycheck":
+      Var("chromium_trunk") + "/src/tools/xdisplaycheck@" + Var("chromium_rev"),
+
+  },
 }
+
+hooks = [
+  {
+    # A change to a .gyp, .gypi, or to GYP itself should run the generator.
+    "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|[/\\\\]src[/\\\\]o3d[/\\\\]build[/\\\\]gyp_o3d$|MANIFEST$",
+    "action": ["python", "o3d/build/gyp_o3d", "o3d/build/o3d.gyp", "o3d/tests/lab/ChangeResolution/change_resolution.gyp"],
+  },
+]
