@@ -88,7 +88,7 @@ void SearchProviderTest::SetUp() {
   SearchProvider::set_query_suggest_immediately(true);
 
   // We need both the history service and template url model loaded.
-  profile_.CreateHistoryService(true);
+  profile_.CreateHistoryService(true, false);
   profile_.CreateTemplateURLModel();
 
   TemplateURLModel* turl_model = profile_.GetTemplateURLModel();

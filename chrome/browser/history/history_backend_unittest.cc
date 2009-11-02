@@ -121,7 +121,7 @@ class HistoryBackendTest : public testing::Test {
     backend_ = new HistoryBackend(test_dir_,
                                   new HistoryBackendTestDelegate(this),
                                   &bookmark_model_);
-    backend_->Init();
+    backend_->Init(false);
   }
   virtual void TearDown() {
     backend_->Closing();

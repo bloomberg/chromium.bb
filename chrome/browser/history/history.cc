@@ -130,7 +130,9 @@ const history::StarID HistoryService::kBookmarkBarID = 1;
 HistoryService::HistoryService()
     : thread_(new ChromeHistoryThread()),
       profile_(NULL),
-      backend_loaded_(false) {
+      backend_loaded_(false),
+      bookmark_service_(NULL),
+      no_db_(false) {
   // Is NULL when running generate_profile.
   if (NotificationService::current()) {
     registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
@@ -141,7 +143,9 @@ HistoryService::HistoryService()
 HistoryService::HistoryService(Profile* profile)
     : thread_(new ChromeHistoryThread()),
       profile_(profile),
-      backend_loaded_(false) {
+      backend_loaded_(false),
+      bookmark_service_(NULL),
+      no_db_(false) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
 }
@@ -149,21 +153,6 @@ HistoryService::HistoryService(Profile* profile)
 HistoryService::~HistoryService() {
   // Shutdown the backend. This does nothing if Cleanup was already invoked.
   Cleanup();
-}
-
-bool HistoryService::Init(const FilePath& history_dir,
-                          BookmarkService* bookmark_service) {
-  if (!thread_->Start()) {
-    Cleanup();
-    return false;
-  }
-
-  history_dir_ = history_dir;
-  bookmark_service_ = bookmark_service;
-
-  // Create the history backend.
-  LoadBackendIfNecessary();
-  return true;
 }
 
 bool HistoryService::BackendLoaded() {
@@ -620,6 +609,23 @@ void HistoryService::Observe(NotificationType type,
     visited_links->DeleteURLs(deleted_details->urls);
 }
 
+bool HistoryService::Init(const FilePath& history_dir,
+                          BookmarkService* bookmark_service,
+                          bool no_db) {
+  if (!thread_->Start()) {
+    Cleanup();
+    return false;
+  }
+
+  history_dir_ = history_dir;
+  bookmark_service_ = bookmark_service;
+  no_db_ = no_db;
+
+  // Create the history backend.
+  LoadBackendIfNecessary();
+  return true;
+}
+
 void HistoryService::ScheduleAutocomplete(HistoryURLProvider* provider,
                                           HistoryURLProviderParams* params) {
   ScheduleAndForget(PRIORITY_UI, &HistoryBackend::ScheduleAutocomplete,
@@ -722,7 +728,7 @@ void HistoryService::LoadBackendIfNecessary() {
                          bookmark_service_));
   history_backend_.swap(backend);
 
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init);
+  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, no_db_);
 }
 
 void HistoryService::OnDBLoaded() {

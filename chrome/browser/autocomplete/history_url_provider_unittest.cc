@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,10 +105,15 @@ class HistoryURLProviderTest : public testing::Test,
 
  protected:
   // testing::Test
-  virtual void SetUp();
+  virtual void SetUp() {
+    SetUpImpl(false);
+  }
   virtual void TearDown();
 
-  // Fills test data into the history system
+  // Does the real setup.
+  void SetUpImpl(bool no_db);
+
+  // Fills test data into the history system.
   void FillData();
 
   // Runs an autocomplete query on |text| and checks to see that the returned
@@ -130,16 +135,23 @@ class HistoryURLProviderTest : public testing::Test,
   scoped_refptr<HistoryURLProvider> autocomplete_;
 };
 
+class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
+ protected:
+  virtual void SetUp() {
+    SetUpImpl(true);
+  }
+};
+
 void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
   if (autocomplete_->done())
     MessageLoop::current()->Quit();
 }
 
-void HistoryURLProviderTest::SetUp() {
+void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
   profile_->CreateBookmarkModel(true);
   profile_->BlockUntilBookmarkModelLoaded();
-  profile_->CreateHistoryService(true);
+  profile_->CreateHistoryService(true, no_db);
   history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
   autocomplete_ = new HistoryURLProvider(this, profile_.get());
@@ -383,4 +395,18 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   // An number "17173" should result in "http://www.17173.com/" in db.
   std::string fixup_5[] = {"http://www.17173.com/"};
   RunTest(L"17173", std::wstring(), false, fixup_5, arraysize(fixup_5));
+}
+
+TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
+  // Ensure that we will still produce matches for navigation when there is no
+  // database.
+  std::string navigation_1[] = {"http://test.com/"};
+  RunTest(L"test.com", std::wstring(), false, navigation_1,
+          arraysize(navigation_1));
+
+  std::string navigation_2[] = {"http://slash/"};
+  RunTest(L"slash", std::wstring(), false, navigation_2,
+          arraysize(navigation_2));
+
+  RunTest(L"this is a query", std::wstring(), false, NULL, 0);
 }

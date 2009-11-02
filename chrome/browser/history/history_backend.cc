@@ -212,8 +212,9 @@ HistoryBackend::~HistoryBackend() {
   }
 }
 
-void HistoryBackend::Init() {
-  InitImpl();
+void HistoryBackend::Init(bool force_fail) {
+  if (!force_fail)
+    InitImpl();
   delegate_->DBLoaded();
 }
 

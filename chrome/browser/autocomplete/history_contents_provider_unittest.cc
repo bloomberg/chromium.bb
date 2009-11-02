@@ -54,7 +54,7 @@ class HistoryContentsProviderTest : public testing::Test,
   // testing::Test
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
-    profile_->CreateHistoryService(false);
+    profile_->CreateHistoryService(false, false);
 
     HistoryService* history_service =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

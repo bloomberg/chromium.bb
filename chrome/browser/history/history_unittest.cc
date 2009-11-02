@@ -138,7 +138,7 @@ class HistoryTest : public testing::Test {
   void CreateBackendAndDatabase() {
     backend_ =
         new HistoryBackend(history_dir_, new BackendDelegate(this), NULL);
-    backend_->Init();
+    backend_->Init(false);
     db_ = backend_->db_.get();
     DCHECK(in_mem_backend_.get()) << "Mem backend should have been set by "
         "HistoryBackend::Init";

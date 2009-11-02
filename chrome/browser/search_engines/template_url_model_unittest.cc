@@ -655,7 +655,7 @@ struct QueryHistoryCallbackImpl {
 // KEYWORD visits.
 TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
   VerifyLoad();
-  profile_->CreateHistoryService(true);
+  profile_->CreateHistoryService(true, false);
 
   // Create a keyword.
   TemplateURL* t_url = AddKeywordWithDate(

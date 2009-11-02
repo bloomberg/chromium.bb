@@ -217,7 +217,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   ChromeThread file_thread(ChromeThread::FILE, &loop);
 
   TestingProfile profile;
-  profile.CreateHistoryService(true);
+  profile.CreateHistoryService(true, false);
   profile.BlockUntilHistoryProcessesPendingRequests();
   profile.CreateBookmarkModel(true);
   profile.BlockUntilBookmarkModelLoaded();

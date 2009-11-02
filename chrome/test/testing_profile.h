@@ -32,9 +32,11 @@ class TestingProfile : public Profile {
 
   // Creates the history service. If |delete_file| is true, the history file is
   // deleted first, then the HistoryService is created. As TestingProfile
-  // deletes the directory containing the files used by HistoryService, the
-  // boolean only matters if you're recreating the HistoryService.
-  void CreateHistoryService(bool delete_file);
+  // deletes the directory containing the files used by HistoryService, this
+  // only matters if you're recreating the HistoryService.  If |no_db| is true,
+  // the history backend will fail to initialize its database; this is useful
+  // for testing error conditions.
+  void CreateHistoryService(bool delete_file, bool no_db);
 
   // Creates the BookmkarBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then

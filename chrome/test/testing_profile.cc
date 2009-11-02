@@ -104,7 +104,7 @@ TestingProfile::~TestingProfile() {
   file_util::Delete(path_, true);
 }
 
-void TestingProfile::CreateHistoryService(bool delete_file) {
+void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   if (history_service_.get())
     history_service_->Cleanup();
 
@@ -116,7 +116,7 @@ void TestingProfile::CreateHistoryService(bool delete_file) {
     file_util::Delete(path, false);
   }
   history_service_ = new HistoryService(this);
-  history_service_->Init(GetPath(), bookmark_bar_model_.get());
+  history_service_->Init(GetPath(), bookmark_bar_model_.get(), no_db);
 }
 
 void TestingProfile::DestroyHistoryService() {

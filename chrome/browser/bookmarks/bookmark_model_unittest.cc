@@ -619,7 +619,7 @@ class BookmarkModelTestWithProfile : public testing::Test,
     // Need to shutdown the old one before creating a new one.
     profile_.reset(NULL);
     profile_.reset(new TestingProfile());
-    profile_->CreateHistoryService(true);
+    profile_->CreateHistoryService(true, false);
   }
 
   BookmarkModel* bb_model_;
@@ -685,7 +685,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     profile_.reset(NULL);
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
-    profile_->CreateHistoryService(true);
+    profile_->CreateHistoryService(true, false);
     BlockTillBookmarkModelLoaded();
 
     TestNode bbn;
@@ -818,7 +818,7 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
 
   // Create the history service making sure it doesn't blow away the file we
   // just copied.
-  profile_->CreateHistoryService(false);
+  profile_->CreateHistoryService(false, false);
   profile_->CreateBookmarkModel(true);
   BlockTillBookmarkModelLoaded();
 
@@ -847,7 +847,7 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
 
   // Recreate the history service (with a clean db). Do this just to make sure
   // we're loading correctly from the bookmarks file.
-  profile_->CreateHistoryService(true);
+  profile_->CreateHistoryService(true, false);
   profile_->CreateBookmarkModel(false);
   BlockTillBookmarkModelLoaded();
   VerifyExpectedState();
@@ -857,7 +857,7 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
 // Simple test that removes a bookmark. This test exercises the code paths in
 // History that block till bookmark bar model is loaded.
 TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
-  profile_->CreateHistoryService(false);
+  profile_->CreateHistoryService(false, false);
   profile_->CreateBookmarkModel(true);
   BlockTillBookmarkModelLoaded();
 

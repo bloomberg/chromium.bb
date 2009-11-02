@@ -101,7 +101,9 @@ class HistoryService : public CancelableRequestProvider,
   // not call any other functions. The given directory will be used for storing
   // the history files. The BookmarkService is used when deleting URLs to
   // test if a URL is bookmarked; it may be NULL during testing.
-  bool Init(const FilePath& history_dir, BookmarkService* bookmark_service);
+  bool Init(const FilePath& history_dir, BookmarkService* bookmark_service) {
+    return Init(history_dir, bookmark_service, false);
+  }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
   // it's finished loading.
@@ -545,6 +547,12 @@ class HistoryService : public CancelableRequestProvider,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Low-level Init().  Same as the public version, but adds a |no_db| parameter
+  // that is only set by unittests which causes the backend to not init its DB.
+  bool Init(const FilePath& history_dir,
+            BookmarkService* bookmark_service,
+            bool no_db);
+
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history
   // database so it can query. See history_autocomplete.cc for a diagram.
@@ -797,6 +805,7 @@ class HistoryService : public CancelableRequestProvider,
   // Cached values from Init(), used whenever we need to reload the backend.
   FilePath history_dir_;
   BookmarkService* bookmark_service_;
+  bool no_db_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
