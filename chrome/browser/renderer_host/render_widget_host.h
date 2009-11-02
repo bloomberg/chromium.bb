@@ -391,6 +391,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
  private:
   FRIEND_TEST(RenderWidgetHostTest, Resize);
+  FRIEND_TEST(RenderWidgetHostTest, ResizeThenCrash);
   FRIEND_TEST(RenderWidgetHostTest, HiddenPaint);
 
   // Tell this object to destroy itself.

@@ -536,7 +536,8 @@ void RenderWidgetHost::RendererExited() {
 
   // Reset some fields in preparation for recovering from a crash.
   resize_ack_pending_ = false;
-  current_size_ = gfx::Size();
+  in_flight_size_.SetSize(0, 0);
+  current_size_.SetSize(0, 0);
   is_hidden_ = false;
 
   if (view_) {

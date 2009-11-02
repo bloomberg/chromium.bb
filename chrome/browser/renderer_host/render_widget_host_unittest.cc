@@ -217,6 +217,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Setting the bounds to a "real" rect should send out the notification.
@@ -225,6 +226,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(original_size);
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
+  EXPECT_EQ(original_size.size(), host_->in_flight_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send out a paint that's not a resize ack. This should not clean the
@@ -233,6 +235,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   process_->InitPaintRectParams(&params);
   host_->OnMsgPaintRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
+  EXPECT_EQ(original_size.size(), host_->in_flight_size_);
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a resize ACK is pending.
@@ -241,6 +244,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(second_size);
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
+  EXPECT_EQ(original_size.size(), host_->in_flight_size_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send a paint that's a resize ack, but for the original_size we sent. Since
@@ -251,6 +255,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = original_size.size();
   host_->OnMsgPaintRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
+  EXPECT_EQ(second_size.size(), host_->in_flight_size_);
   ASSERT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send the resize ack for the latest size.
@@ -258,6 +263,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = second_size.size();
   host_->OnMsgPaintRect(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   ASSERT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
@@ -267,6 +273,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send a rect that has no area but has either width or height set.
@@ -274,19 +281,43 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(gfx::Rect(0, 0, 0, 30));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->in_flight_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->in_flight_size_);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // A different size should be sent again, however.
   view_->set_bounds(gfx::Rect(0, 0, 0, 31));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(0, 31), host_->in_flight_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+}
+
+// Test for crbug.com/25097.  If a renderer crashes between a resize and the
+// corresponding paint message, we must be sure to clear the resize ack logic.
+TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
+  // Setting the bounds to a "real" rect should send out the notification.
+  gfx::Rect original_size(0, 0, 100, 100);
+  view_->set_bounds(original_size);
+  host_->WasResized();
+  EXPECT_TRUE(host_->resize_ack_pending_);
+  EXPECT_EQ(original_size.size(), host_->in_flight_size_);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+
+  // Simulate a renderer crash before the paint message.  Ensure all the resize
+  // ack logic is cleared.
+  host_->RendererExited();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
+
+  // Reset the view so we can exit the test cleanly.
+  view_.reset(new TestView(host_.get()));
 }
 
 // Tests setting custom background
