@@ -392,7 +392,19 @@
    ...
    fun:_ZN7WebCore8SVGNames4initEv
 }
-
+{
+   intentional_ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN58ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
