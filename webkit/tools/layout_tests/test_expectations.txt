@@ -3207,61 +3207,54 @@ BUG_HAMAJI : LayoutTests/fast/css/counters/invalidate-cached-counter-node.html =
 // ==== WebKit roll 50258:50313 ====
 // --- Linux ---
 // Expected to fail since roll 50101:50158, but passed in roll to 50313 (47):
-BUG26291 LINUX : LayoutTests/editing/deleting/5026848-2.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/deleting/5026848-3.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/deleting/5032066.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/deleting/5115601.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/deleting/5206311-2.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/deleting/delete-block-table.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/selection/4895428-1.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/selection/4895428-4.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/editing/style/font-family-with-space.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/background-origin-root-element.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/repeat/background-repeat-shorthand.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize01.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize02.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize04.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize05.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize06.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize07.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize08.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize09.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize10.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize11.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize12.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize13.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize14.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize15.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize16.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize17.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize18.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize19.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize20.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize21.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/backgroundSize22.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/parsing-background-size-values.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/parsing-inherit.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/backgrounds/size/zero.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/css/getComputedStyle/getComputedStyle-background-size.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/css/remove-shorthand.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/css/uri-token-parsing.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/css/value-list-out-of-bounds-crash.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/gradients/background-clipped.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/images/svg-as-tiled-background.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/repaint/background-misaligned.html = PASS FAIL
-BUG26291 LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = PASS FAIL
-// --- Mac ---
-// Regressions: Unexpected text failures (1):
+// Best guesses for culprit WebKit patches are 50108, 50115, and 50259.
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/5026848-2.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/5026848-3.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/5032066.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/5115601.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/5206311-2.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/deleting/delete-block-table.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/selection/4895428-1.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/selection/4895428-4.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/editing/style/font-family-with-space.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/background-origin-root-element.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/repeat/background-repeat-shorthand.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize01.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize02.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize04.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize05.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize06.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize07.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize08.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize09.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize10.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize11.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize12.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize13.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize14.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize15.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize16.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize17.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize18.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize19.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize20.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize21.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/backgroundSize22.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/parsing-background-size-values.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/parsing-inherit.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/backgrounds/size/zero.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/css/getComputedStyle/getComputedStyle-background-size.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/css/remove-shorthand.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/css/uri-token-parsing.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/css/value-list-out-of-bounds-crash.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/gradients/background-clipped.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/images/svg-as-tiled-background.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/repaint/background-misaligned.html = FAIL
+BUG26291 LINUX DEBUG : LayoutTests/fast/repaint/backgroundSizeRepaint.html = FAIL
 BUG26291 MAC : LayoutTests/transitions/multiple-mask-transitions.html = TEXT
-// Regressions: Unexpected image failures (3):
-// Note: these are probably related to the latest changes in ComplexTextController in
-// third_party\WebKit\WebCore\platform\graphics\mac
 BUG26291 MAC : LayoutTests/fast/text/atsui-multiple-renderers.html = IMAGE
 BUG26291 MAC : LayoutTests/fast/text/drawBidiText.html = IMAGE
 BUG26291 MAC : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
-// --- Windows ---
-// Regressions: Unexpected crashes (1), passed again in roll to 50324
-BUG26291 WIN : LayoutTests/fast/forms/button-submit.html = PASS CRASH
 
 // WebKit roll 50313:50324
 BUG_ROLANDSTEINER MAC LINUX : LayoutTests/fast/block/float/float-in-float-hit-testing.html = IMAGE
