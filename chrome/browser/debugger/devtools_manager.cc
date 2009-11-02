@@ -4,6 +4,8 @@
 
 #include "chrome/browser/debugger/devtools_manager.h"
 
+#include <vector>
+
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
@@ -57,7 +59,7 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
   client_host_to_inspected_rvh_[client_host] = inspected_rvh;
   client_host->set_close_listener(this);
 
-  SendAttachToAgent(inspected_rvh);
+  SendAttachToAgent(inspected_rvh, std::set<std::string>());
 }
 
 void DevToolsManager::ForwardToDevToolsAgent(
@@ -134,6 +136,22 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh) {
   ToggleDevToolsWindow(inspected_rvh, false);
 }
 
+void DevToolsManager::RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
+                                                 const std::string& feature,
+                                                 bool enabled) {
+  RuntimeFeaturesMap::iterator it = runtime_features_.find(inspected_rvh);
+  if (it == runtime_features_.end()) {
+    std::pair<RenderViewHost*, std::set<std::string> > value(
+        inspected_rvh,
+        std::set<std::string>());
+    it = runtime_features_.insert(value).first;
+  }
+  if (enabled)
+    it->second.insert(feature);
+  else
+    it->second.erase(feature);
+}
+
 void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
                                      int x,
                                      int y) {
@@ -150,6 +168,7 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
   SendDetachToAgent(inspected_rvh);
 
   inspected_rvh_to_client_host_.erase(inspected_rvh);
+  runtime_features_.erase(inspected_rvh);
   client_host_to_inspected_rvh_.erase(host);
 }
 
@@ -168,6 +187,8 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
   if (!host)
     return;
   inspected_rvh_to_client_host_.erase(inspected_rvh);
+  runtime_features_.erase(inspected_rvh);
+
   client_host_to_inspected_rvh_.erase(host);
   if (inspected_rvh_for_reopen_ == inspected_rvh)
     inspected_rvh_for_reopen_ = NULL;
@@ -198,10 +219,12 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
       GetDevToolsClientHostFor(rvh);
   if (client_host) {
     // Navigating to URL in the inspected window.
+    std::set<std::string> runtime_features = runtime_features_[rvh];
     inspected_rvh_to_client_host_.erase(rvh);
+    runtime_features_.erase(rvh);
     inspected_rvh_to_client_host_[dest_rvh] = client_host;
     client_host_to_inspected_rvh_[client_host] = dest_rvh;
-    SendAttachToAgent(dest_rvh);
+    SendAttachToAgent(dest_rvh, runtime_features);
     return;
   }
 
@@ -222,11 +245,15 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
   }
 }
 
-void DevToolsManager::SendAttachToAgent(RenderViewHost* inspected_rvh) {
+void DevToolsManager::SendAttachToAgent(
+    RenderViewHost* inspected_rvh,
+    const std::set<std::string>& runtime_features) {
   if (inspected_rvh) {
     ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(
         inspected_rvh->process()->id());
-    IPC::Message* m = new DevToolsAgentMsg_Attach();
+    std::vector<std::string> features(runtime_features.begin(),
+                                      runtime_features.end());
+    IPC::Message* m = new DevToolsAgentMsg_Attach(features);
     m->set_routing_id(inspected_rvh->routing_id());
     inspected_rvh->Send(m);
   }

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_H_
 
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/ref_counted.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
@@ -54,8 +56,10 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void ToggleInspectElementMode(RenderViewHost* client_rvh, bool enabled);
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
-
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh);
+  void RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
+                                  const std::string& feature,
+                                  bool enabled);
 
   // Starts element inspection in the devtools client.
   // Creates one by means of OpenDevToolsWindow if no client
@@ -79,7 +83,8 @@ private:
   // client hosted by DevToolsClientHost.
   RenderViewHost* GetInspectedRenderViewHost(DevToolsClientHost* client_host);
 
-  void SendAttachToAgent(RenderViewHost* inspected_rvh);
+  void SendAttachToAgent(RenderViewHost* inspected_rvh,
+                         const std::set<std::string>& runtime_features);
   void SendDetachToAgent(RenderViewHost* inspected_rvh);
 
   void ForceReopenWindow();
@@ -107,6 +112,11 @@ private:
   typedef std::map<DevToolsClientHost*, RenderViewHost*>
       ClientHostToInspectedRvhMap;
   ClientHostToInspectedRvhMap client_host_to_inspected_rvh_;
+
+  typedef std::map<RenderViewHost*, std::set<std::string> >
+      RuntimeFeaturesMap;
+  RuntimeFeaturesMap runtime_features_;
+
   RenderViewHost* inspected_rvh_for_reopen_;
   bool in_initial_show_;
 

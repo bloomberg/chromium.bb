@@ -10,6 +10,7 @@
 #include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/glue/glue_util.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebPoint;
@@ -19,9 +20,9 @@ using WebKit::WebView;
 // static
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
 
-DevToolsAgent::DevToolsAgent(int routing_id, RenderView* view)
+DevToolsAgent::DevToolsAgent(int routing_id, RenderView* render_view)
     : routing_id_(routing_id),
-      view_(view) {
+      render_view_(render_view) {
   agent_for_routing_id_[routing_id] = this;
 }
 
@@ -64,7 +65,7 @@ void DevToolsAgent::sendMessageToFrontend(const WebString& class_name,
           param1.utf8(),
           param2.utf8(),
           param3.utf8()));
-  view_->Send(m);
+  render_view_->Send(m);
 }
 
 int DevToolsAgent::hostIdentifier() {
@@ -72,7 +73,15 @@ int DevToolsAgent::hostIdentifier() {
 }
 
 void DevToolsAgent::forceRepaint() {
-  view_->GenerateFullRepaint();
+  render_view_->GenerateFullRepaint();
+}
+
+void DevToolsAgent::runtimeFeatureStateChanged(const WebKit::WebString& feature,
+                                               bool enabled) {
+  render_view_->Send(new ViewHostMsg_DevToolsRuntimeFeatureStateChanged(
+      routing_id_,
+      feature.utf8(),
+      enabled));
 }
 
 // static
@@ -85,10 +94,14 @@ DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
   return NULL;
 }
 
-void DevToolsAgent::OnAttach() {
+void DevToolsAgent::OnAttach(const std::vector<std::string>& runtime_features) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
     web_agent->attach();
+    for (std::vector<std::string>::const_iterator it = runtime_features.begin();
+         it != runtime_features.end(); ++it) {
+      web_agent->setRuntimeFeatureEnabled(WebString::fromUTF8(*it), true);
+    }
   }
 }
 
@@ -126,12 +139,14 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
 void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->setApuAgentEnabled(enabled);
+    web_agent->setRuntimeFeatureEnabled(
+        webkit_glue::StdStringToWebString("apu-agent"),
+        enabled);
   }
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
-  WebView* web_view = view_->webview();
+  WebView* web_view = render_view_->webview();
   if (!web_view)
     return NULL;
   return web_view->devToolsAgent();

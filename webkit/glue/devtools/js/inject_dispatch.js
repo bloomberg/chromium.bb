@@ -61,6 +61,18 @@ function dispatch(method, var_args) {
     return;
   }
 
+  // Sniff some inspector controller state changes in order to support
+  // cross-navigation instrumentation. Keep names in sync with
+  // webdevtoolsagent_impl.
+  if (method == 'timelineProfilerWasStarted')
+    DevToolsAgentHost.runtimeFeatureStateChanged('timeline-profiler', true);
+  else if (method == 'timelineProfilerWasStopped')
+    DevToolsAgentHost.runtimeFeatureStateChanged('timeline-profiler', false);
+  else if (method == 'resourceTrackingWasEnabled')
+    DevToolsAgentHost.runtimeFeatureStateChanged('resource-tracking', true);
+  else if (method == 'resourceTrackingWasDisabled')
+    DevToolsAgentHost.runtimeFeatureStateChanged('resource-tracking', false);
+
   if (ApuAgentDispatcher.enabled) {
     ApuAgentDispatcher.dispatchToApu(method, args);
     return;

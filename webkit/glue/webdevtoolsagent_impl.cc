@@ -27,6 +27,7 @@
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDevToolsAgentClient.h"
 #include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/src/WebViewImpl.h"
@@ -81,6 +82,13 @@ void SetApuAgentEnabledInUtilityContext(v8::Handle<v8::Context> context,
   }
   dispatcher->Set(v8::String::New("enabled"), v8::Boolean::New(enabled));
 }
+
+// TODO(pfeldman): Make this public in WebDevToolsAgent API.
+static const char kApuAgentFeatureName[] = "apu-agent";
+
+// Keep these in sync with the ones in inject_dispatch.js.
+static const char kTimelineFeatureName[] = "timeline-profiler";
+static const char kResourceTrackingFeatureName[] = "resource-tracking";
 
 } //  namespace
 
@@ -271,24 +279,23 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point) {
   web_view_impl_->inspectElementAt(point);
 }
 
-void WebDevToolsAgentImpl::setApuAgentEnabled(bool enable) {
-  apu_agent_enabled_ = enable;
-  SetApuAgentEnabledInUtilityContext(utility_context_, enable);
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  if (enable) {
-    resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
-    ic->startTimelineProfiler();
-    if (!resource_tracking_was_enabled_) {
-      // TODO(knorton): Introduce some kind of agents dependency here so that
-      // user could turn off resource tracking while apu agent is on.
-      ic->enableResourceTracking(false, false);
-    }
-  } else {
-    ic->stopTimelineProfiler();
-    if (!resource_tracking_was_enabled_) {
-      ic->disableResourceTracking(false);
-    }
-    resource_tracking_was_enabled_ = false;
+void WebDevToolsAgentImpl::setRuntimeFeatureEnabled(const WebString& wfeature,
+                                                    bool enabled) {
+  String feature = webkit_glue::WebStringToString(wfeature);
+  if (feature == kApuAgentFeatureName) {
+    setApuAgentEnabled(enabled);
+  } else if (feature == kTimelineFeatureName) {
+    InspectorController* ic = web_view_impl_->page()->inspectorController();
+    if (enabled)
+      ic->startTimelineProfiler();
+    else
+      ic->stopTimelineProfiler();
+  } else if (feature == kResourceTrackingFeatureName) {
+    InspectorController* ic = web_view_impl_->page()->inspectorController();
+    if (enabled)
+      ic->enableResourceTracking(false /* not sticky */, false /* no reload */);
+    else
+      ic->disableResourceTracking(false /* not sticky */);
   }
 }
 
@@ -315,6 +322,9 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
   devtools_agent_host_->AddProtoFunction(
       "dispatchToApu",
       WebDevToolsAgentImpl::JsDispatchToApu);
+  devtools_agent_host_->AddProtoFunction(
+      "runtimeFeatureStateChanged",
+      WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged);
   devtools_agent_host_->Build();
 
   v8::HandleScope scope;
@@ -379,6 +389,30 @@ void WebDevToolsAgentImpl::ResetInspectorFrontendProxy() {
       ScriptObject(state, injected_script));
 }
 
+void WebDevToolsAgentImpl::setApuAgentEnabled(bool enabled) {
+  apu_agent_enabled_ = enabled;
+  SetApuAgentEnabledInUtilityContext(utility_context_, enabled);
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  if (enabled) {
+    resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
+    ic->startTimelineProfiler();
+    if (!resource_tracking_was_enabled_) {
+      // TODO(knorton): Introduce some kind of agents dependency here so that
+      // user could turn off resource tracking while apu agent is on.
+      ic->enableResourceTracking(false, false);
+    }
+  } else {
+    ic->stopTimelineProfiler();
+    if (!resource_tracking_was_enabled_) {
+      ic->disableResourceTracking(false);
+    }
+    resource_tracking_was_enabled_ = false;
+  }
+  client_->runtimeFeatureStateChanged(
+      webkit_glue::StringToWebString(kApuAgentFeatureName),
+      enabled);
+}
+
 // static
 v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchOnClient(
     const v8::Arguments& args) {
@@ -404,6 +438,23 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchToApu(
   WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
       v8::External::Cast(*args.Data())->Value());
   agent->apu_agent_delegate_stub_->DispatchToApu(message);
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged(
+    const v8::Arguments& args) {
+  v8::TryCatch exception_catcher;
+  String feature = WebCore::toWebCoreStringWithNullCheck(args[0]);
+  bool enabled = args[1]->ToBoolean()->Value();
+  if (feature.isEmpty() || exception_catcher.HasCaught()) {
+    return v8::Undefined();
+  }
+  WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+  agent->client_->runtimeFeatureStateChanged(
+      webkit_glue::StringToWebString(feature),
+      enabled);
   return v8::Undefined();
 }
 

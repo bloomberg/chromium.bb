@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "webkit/api/public/WebDevToolsAgentClient.h"
@@ -43,18 +44,20 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
                                      const WebKit::WebString& param3);
   virtual int hostIdentifier();
   virtual void forceRepaint();
+  virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
+                                          bool enabled);
 
   // Returns agent instance for its host id.
   static DevToolsAgent* FromHostId(int host_id);
 
-  RenderView* render_view() { return view_; }
+  RenderView* render_view() { return render_view_; }
 
   WebKit::WebDevToolsAgent* GetWebAgent();
 
  private:
   friend class DevToolsAgentFilter;
 
-  void OnAttach();
+  void OnAttach(const std::vector<std::string>& runtime_features);
   void OnDetach();
   void OnRpcMessage(const std::string& class_name,
                     const std::string& method_name,
@@ -67,7 +70,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 
   int routing_id_; //  View routing id that we can access from IO thread.
-  RenderView* view_;
+  RenderView* render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

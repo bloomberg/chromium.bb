@@ -52,10 +52,10 @@ public:
 
     virtual void inspectElementAt(const WebPoint&) = 0;
 
-    virtual void setApuAgentEnabled(bool enabled) = 0;
+    virtual void setRuntimeFeatureEnabled(const WebString& feature, bool enabled) = 0;
 
     // Asynchronously executes debugger command in the render thread.
-    // |caller_id| will be used for sending response.
+    // |callerIdentifier| will be used for sending response.
     WEBKIT_API static void executeDebuggerCommand(
         const WebString& command, int callerIdentifier);
 

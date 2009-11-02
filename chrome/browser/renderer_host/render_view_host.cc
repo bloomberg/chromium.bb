@@ -808,6 +808,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnUndockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleInspectElementMode,
                         OnToggleInspectElementMode);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,
+                        OnDevToolsRuntimeFeatureStateChanged);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                         OnUserMetricsRecordAction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
@@ -1436,6 +1438,13 @@ void RenderViewHost::OnUndockDevToolsWindow() {
 
 void RenderViewHost::OnToggleInspectElementMode(bool enabled) {
   DevToolsManager::GetInstance()->ToggleInspectElementMode(this, enabled);
+}
+
+void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
+    const std::string& feature,
+    bool enabled) {
+  DevToolsManager::GetInstance()->
+      RuntimeFeatureStateChanged(this, feature, enabled);
 }
 
 void RenderViewHost::OnUserMetricsRecordAction(const std::wstring& action) {

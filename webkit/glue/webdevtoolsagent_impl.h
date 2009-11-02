@@ -26,6 +26,7 @@ namespace WebKit {
 class WebDevToolsAgentClient;
 class WebFrame;
 class WebFrameImpl;
+class WebString;
 class WebViewImpl;
 }
 
@@ -67,7 +68,8 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
       const WebKit::WebString& param2,
       const WebKit::WebString& param3);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
-  virtual void setApuAgentEnabled(bool enable);
+  virtual void setRuntimeFeatureEnabled(const WebKit::WebString& feature,
+                                        bool enabled);
 
   // DevToolsRpc::Delegate implementation.
   void SendRpcMessage(const WebCore::String& class_name,
@@ -91,11 +93,15 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
  private:
   static v8::Handle<v8::Value> JsDispatchOnClient(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDispatchToApu(const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsOnRuntimeFeatureStateChanged(
+      const v8::Arguments& args);
+
   void DisposeUtilityContext();
   void UnhideResourcesPanelIfNecessary();
 
   void InitDevToolsAgentHost();
   void ResetInspectorFrontendProxy();
+  void setApuAgentEnabled(bool enabled);
 
   // Creates InspectorBackend v8 wrapper in the utility context so that it's
   // methods prototype is Function.protoype object from the utility context.

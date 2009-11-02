@@ -50,6 +50,9 @@ public:
     // Returns the identifier of the entity hosting this agent.
     virtual int hostIdentifier() = 0;
 
+    // Notifies host upon runtime feature being enabled/disabled.
+    virtual void runtimeFeatureStateChanged(const WebString& feature, bool enabled) = 0;
+
 protected:
     ~WebDevToolsAgentClient() {}
 };
