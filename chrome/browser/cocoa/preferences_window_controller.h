@@ -38,6 +38,8 @@ class Profile;
   IBOutlet NSView* basicsView_;
   IBOutlet NSView* personalStuffView_;
   IBOutlet NSView* underTheHoodView_;
+  // The last page the user was on when they opened the Options window.
+  IntegerPrefMember lastSelectedPage_;
 
   // Having two animations around is bad (they fight), so just use one.
   scoped_nsobject<NSViewAnimation> animation_;

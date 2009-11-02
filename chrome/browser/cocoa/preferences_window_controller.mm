@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/session_startup_pref.h"
@@ -207,11 +208,15 @@ class PrefObserverBridge : public NotificationObserver {
   CenterViewForWidth(personalStuffView_, widest);
   CenterViewForWidth(underTheHoodView_, widest);
 
-  // Ensure the "basics" is selected.
-  // TODO: change this to remember what's selected in a preference and restore
-  // it.
+  // Get the last visited page from local state.
+  OptionsPage page = static_cast<OptionsPage>(lastSelectedPage_.GetValue());
+  if (page == OPTIONS_PAGE_DEFAULT)
+    page = OPTIONS_PAGE_GENERAL;
 
-  NSToolbarItem* firstItem = [[toolbar_ items] objectAtIndex:0];
+  NSUInteger pageIndex = (NSUInteger)page;
+  if (pageIndex >= [[toolbar_ items] count])
+    pageIndex = 0;
+  NSToolbarItem* firstItem = [[toolbar_ items] objectAtIndex:pageIndex];
   [self displayPreferenceViewForToolbarItem:firstItem animate:NO];
   [toolbar_ setSelectedItemIdentifier:[firstItem itemIdentifier]];
 
@@ -275,6 +280,9 @@ class PrefObserverBridge : public NotificationObserver {
   defaultDownloadLocation_.Init(prefs::kDownloadDefaultDirectory, prefs_,
                                 observer_.get());
   askForSaveLocation_.Init(prefs::kPromptForDownload, prefs_, observer_.get());
+
+  // We don't need to observe changes in this value.
+  lastSelectedPage_.Init(prefs::kOptionsWindowLastTabIndex, local, NULL);
 }
 
 // Clean up what was registered in -registerPrefObservers. We only have to
@@ -851,16 +859,20 @@ const int kDisabledIndex = 1;
 - (void)displayPreferenceViewForToolbarItem:(NSToolbarItem*)toolbarItem
                                     animate:(BOOL)animate {
   NSView* prefsView = NULL;
+  OptionsPage page = OPTIONS_PAGE_DEFAULT;
   // Tags are set in the nib file.
   switch ([toolbarItem tag]) {
     case 0:  // Basics
       prefsView = basicsView_;
+      page = OPTIONS_PAGE_GENERAL;
       break;
     case 1:  // Personal Stuff
       prefsView = personalStuffView_;
+      page = OPTIONS_PAGE_CONTENT;
       break;
     case 2:  // Under the Hood
       prefsView = underTheHoodView_;
+      page = OPTIONS_PAGE_ADVANCED;
       break;
     default:
       NOTIMPLEMENTED();
@@ -882,6 +894,10 @@ const int kDisabledIndex = 1;
   if (currentPrefsView == prefsView) {
     return;
   }
+
+  // Remember new options page as current page.
+  if (page != OPTIONS_PAGE_DEFAULT)
+    lastSelectedPage_.SetValue(page);
 
   // Stop any running animation, and remove any past views that were on the way
   // out.
