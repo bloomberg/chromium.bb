@@ -376,3 +376,10 @@
    fun:_ZN7WebCore23enableSuddenTerminationEv
    fun:_ZN7WebCore15StorageAreaSync11performSyncEv
 }
+{
+   bug_26489
+   Memcheck:Cond
+   fun:-[NSView setFrameOrigin:]
+   fun:-[NSView setFrame:]
+   fun:-[BookmarkBarController *
+}
