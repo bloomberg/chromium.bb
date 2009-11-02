@@ -4205,6 +4205,7 @@
         'test/ui/fast_shutdown_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
+        'test/ui/mouseleave_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/omnibox_uitest.cc',
         'test/ui/sandbox_uitests.cc',

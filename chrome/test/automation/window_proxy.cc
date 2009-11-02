@@ -23,6 +23,13 @@ bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {
       new AutomationMsg_WindowClick(0, handle_, click, flags));
 }
 
+bool WindowProxy::SimulateOSMouseMove(const gfx::Point& location) {
+  if (!is_valid()) return false;
+
+  return sender_->Send(
+      new AutomationMsg_WindowMouseMove(0, handle_, location));
+}
+
 bool WindowProxy::GetWindowTitle(string16* text) {
   if (!is_valid()) return false;
 

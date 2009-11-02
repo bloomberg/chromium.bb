@@ -44,6 +44,10 @@ class WindowProxy : public AutomationResourceProxy {
   // window, the top window is clicked.
   bool SimulateOSClick(const gfx::Point& click, int flags);
 
+  // Moves the mouse pointer this location at the OS level.  |location| is
+  // in the window's coordinates.
+  bool SimulateOSMouseMove(const gfx::Point& location);
+
   // Get the title of the top level window.
   bool GetWindowTitle(string16* text);
 
