@@ -96,21 +96,22 @@ class GitWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
-    self._RunGit(['prune'])
-    self._RunGit(['fsck'])
-    self._RunGit(['gc'])
+    self._RunGit(['prune'], redirect_stdout=False)
+    self._RunGit(['fsck'], redirect_stdout=False)
+    self._RunGit(['gc'], redirect_stdout=False)
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
-    print self._RunGit(['diff', merge_base])
+    self._RunGit(['diff', merge_base], redirect_stdout=False)
 
   def export(self, options, args, file_list):
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
       os.makedirs(export_path)
-    self._RunGit(['checkout-index', '-a', '--prefix=%s/' % export_path])
+    self._RunGit(['checkout-index', '-a', '--prefix=%s/' % export_path],
+                 redirect_stdout=False)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -133,20 +134,21 @@ class GitWrapper(SCMWrapper):
       revision = components[1]
 
     if not os.path.exists(self.checkout_path):
-      self._RunGit(['clone', '-q', url, self.checkout_path], cwd=self._root_dir)
+      self._RunGit(['clone', url, self.checkout_path],
+                   cwd=self._root_dir, redirect_stdout=False)
       if revision:
-        self._RunGit(['reset', '--hard', revision])
+        self._RunGit(['reset', '--hard', revision], redirect_stdout=False)
       files =  self._RunGit(['ls-files']).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       return
 
-    self._RunGit(['remote', 'update'])
+    self._RunGit(['remote', 'update'], redirect_stdout=False)
     new_base = 'origin'
     if revision:
       new_base = revision
     files = self._RunGit(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-    self._RunGit(['rebase', new_base])
+    self._RunGit(['rebase', new_base], redirect_stdout=False)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications.
@@ -162,7 +164,7 @@ class GitWrapper(SCMWrapper):
       return self.update(options, [], file_list)
     merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
     files = self._RunGit(['diff', merge_base, '--name-only']).split()
-    print self._RunGit(['reset', '--hard', merge_base])
+    self._RunGit(['reset', '--hard', merge_base], redirect_stdout=False)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def runhooks(self, options, args, file_list):
@@ -175,20 +177,25 @@ class GitWrapper(SCMWrapper):
             'does not exist.' % checkout_path)
     else:
       merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
-      print self._RunGit(['diff', '--name-status', merge_base])
+      self._RunGit(['diff', '--name-status', merge_base], redirect_stdout=False)
       files = self._RunGit(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
-  def _RunGit(self, args, cwd=None, checkrc=True):
+  def _RunGit(self, args, cwd=None, checkrc=True, redirect_stdout=True):
+    stdout=None
+    if redirect_stdout:
+      stdout=subprocess.PIPE
     if cwd == None:
       cwd = self.checkout_path
     cmd = ['git']
     cmd.extend(args)
-    sp = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE)
+    sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
     if checkrc and sp.returncode:
       raise gclient_utils.Error('git command %s returned %d' %
                                 (args[0], sp.returncode))
-    return sp.communicate()[0].strip()
+    output = sp.communicate()[0]
+    if output != None:
+      return output.strip()
 
 
 class SVNWrapper(SCMWrapper):
