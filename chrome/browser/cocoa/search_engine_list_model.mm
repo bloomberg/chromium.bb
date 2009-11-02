@@ -88,14 +88,19 @@ class SearchEngineObserver : public TemplateURLModelObserver {
 - (NSUInteger)defaultIndex {
   if (!model_) return 0;
 
+  NSUInteger index = 0;
   const TemplateURL* defaultSearchProvider = model_->GetDefaultSearchProvider();
   if (defaultSearchProvider) {
     typedef std::vector<const TemplateURL*> TemplateURLs;
     TemplateURLs urls = model_->GetTemplateURLs();
-    TemplateURLs::iterator i =
-        find(urls.begin(), urls.end(), defaultSearchProvider);
-    if (i != urls.end())
-      return static_cast<int>(i - urls.begin());
+    for (std::vector<const TemplateURL*>::iterator it = urls.begin();
+         it != urls.end(); ++it) {
+      const TemplateURL* url = *it;
+      if (url->id() == defaultSearchProvider->id())
+        return index;
+      if (url->ShowInDefaultList())
+        ++index;
+    }
   }
   return 0;
 }

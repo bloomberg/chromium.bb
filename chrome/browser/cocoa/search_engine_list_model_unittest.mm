@@ -30,13 +30,13 @@ class SearchEngineListModelTest : public PlatformTest {
     // Build a fake set of template urls.
     template_model_.reset(new TemplateURLModel(helper_.profile()));
     TemplateURL* t_url = new TemplateURL();
-    t_url->SetURL(L"http://www.google.com/foo/bar", 0, 0);
+    t_url->SetURL(L"http://www.google.com/?q={searchTerms}", 0, 0);
     t_url->set_keyword(L"keyword");
     t_url->set_short_name(L"google");
     t_url->set_show_in_default_list(true);
     template_model_->Add(t_url);
     t_url = new TemplateURL();
-    t_url->SetURL(L"http://www.google2.com/foo/bar", 0, 0);
+    t_url->SetURL(L"http://www.google2.com/?q={searchTerms}", 0, 0);
     t_url->set_keyword(L"keyword2");
     t_url->set_short_name(L"google2");
     t_url->set_show_in_default_list(true);
@@ -70,9 +70,7 @@ TEST_F(SearchEngineListModelTest, Init) {
 
 TEST_F(SearchEngineListModelTest, Engines) {
   NSArray* engines = [model_ searchEngines];
-  // TODO(pinkerton): because the templates we create aren't truly parsable,
-  // they won't pass the "displayable" test and thus we don't get any results.
-  EXPECT_EQ([engines count], /* 2U */ 0U);
+  EXPECT_EQ([engines count], 2U);
 }
 
 TEST_F(SearchEngineListModelTest, Default) {
@@ -80,6 +78,32 @@ TEST_F(SearchEngineListModelTest, Default) {
 
   [model_ setDefaultIndex:1];
   EXPECT_EQ([model_ defaultIndex], 1U);
+
+  // Add two more URLs, neither of which are shown in the default list.
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL(L"http://www.google3.com/?q={searchTerms}", 0, 0);
+  t_url->set_keyword(L"keyword3");
+  t_url->set_short_name(L"google3 not eligible");
+  t_url->set_show_in_default_list(false);
+  template_model_->Add(t_url);
+  t_url = new TemplateURL();
+  t_url->SetURL(L"http://www.google4.com/?q={searchTerms}", 0, 0);
+  t_url->set_keyword(L"keyword4");
+  t_url->set_short_name(L"google4");
+  t_url->set_show_in_default_list(false);
+  template_model_->Add(t_url);
+
+  // Still should only have 2 engines and not these newly added ones.
+  EXPECT_EQ([[model_ searchEngines] count], 2U);
+
+  // Since keyword3 is not in the default list, the 2nd index in the default
+  // keyword list should be keyword4. Test for http://crbug.com/21898.
+  template_model_->SetDefaultSearchProvider(t_url);
+  EXPECT_EQ([[model_ searchEngines] count], 3U);
+  EXPECT_EQ([model_ defaultIndex], 2U);
+
+  NSString* defaultString = [[model_ searchEngines] objectAtIndex:2];
+  EXPECT_TRUE([@"google4" isEqualToString:defaultString]);
 }
 
 // Make sure that when the back-end model changes that we get a notification.
