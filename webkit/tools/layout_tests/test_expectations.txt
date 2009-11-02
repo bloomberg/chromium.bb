@@ -2751,8 +2751,8 @@ BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-ch
 BUG14207 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
-BUG14673 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
-BUG14673 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
+BUG18733 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
+BUG18733 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 
 BUG14752 LINUX RELEASE SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = FAIL PASS
 // Occasionally times out. Not just slow.
@@ -3139,12 +3139,7 @@ BUG26344 LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete
 
 // WebKit roll 49992:49997
 // hclam to add expected results.
-BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL
-
-// New flaky crashing tests
-BUG25747 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-invalid-values.html = CRASH PASS
-BUG25747 MAC : LayoutTests/fast/forms/tabbing-input-iframe.html = CRASH PASS
-BUG25747 LINUX : LayoutTests/fast/overflow/scroll-vertical-not-horizontal.html = CRASH PASS
+BUG_HCLAM : LayoutTests/media/video-volume-slider.html = FAIL CRASH
 
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
