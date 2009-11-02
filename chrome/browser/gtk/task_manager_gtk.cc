@@ -13,9 +13,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -267,6 +265,8 @@ TaskManagerGtk::~TaskManagerGtk() {
   g_object_unref(accel_group_);
   accel_group_ = NULL;
 
+  // Disconnect the destroy signal so it doesn't delete |this|.
+  g_signal_handler_disconnect(G_OBJECT(dialog_), destroy_handler_id_);
   gtk_widget_destroy(dialog_);
 }
 
@@ -375,6 +375,8 @@ void TaskManagerGtk::Init() {
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
+  destroy_handler_id_ = g_signal_connect(G_OBJECT(dialog_), "destroy",
+                                         G_CALLBACK(OnDestroy), this);
   g_signal_connect(G_OBJECT(dialog_), "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(G_OBJECT(dialog_), "button-release-event",
                    G_CALLBACK(OnButtonReleaseEvent), this);
@@ -669,6 +671,13 @@ gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
   return model_->CompareValues(row1, row2, id);
+}
+
+// static
+void TaskManagerGtk::OnDestroy(GtkDialog* dialog,
+                               TaskManagerGtk* task_manager) {
+  instance_ = NULL;
+  delete task_manager;
 }
 
 // static

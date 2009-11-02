@@ -69,6 +69,9 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   gint CompareImpl(GtkTreeModel* tree_model, GtkTreeIter* a,
                    GtkTreeIter* b, int id);
 
+  // response signal handler that notifies us of dialog destruction.
+  static void OnDestroy(GtkDialog* dialog, TaskManagerGtk* task_manager);
+
   // response signal handler that notifies us of dialog responses.
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          TaskManagerGtk* task_manager);
@@ -192,6 +195,9 @@ class TaskManagerGtk : public TaskManagerModelObserver {
 
   // The number of processes in |process_list_|.
   int process_count_;
+
+  // The id of the |dialog_| destroy signal handler.
+  gulong destroy_handler_id_;
 
   // The context menu controller.
   scoped_ptr<ContextMenuController> menu_controller_;
