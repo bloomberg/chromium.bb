@@ -59,7 +59,6 @@ class DownloadFileManager;
 class DownloadItemView;
 class DownloadManager;
 class GURL;
-class MessageLoop;
 class PrefService;
 class Profile;
 class ResourceDispatcherHost;
@@ -591,13 +590,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
-
-  // A pointer to the main UI loop.
-  MessageLoop* ui_loop_;
-
-  // A pointer to the file thread's loop. The file thread lives longer than
-  // the DownloadManager, so this is safe to cache.
-  MessageLoop* file_loop_;
 
   // User preferences
   BooleanPrefMember prompt_for_download_;

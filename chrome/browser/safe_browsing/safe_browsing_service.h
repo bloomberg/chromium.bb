@@ -23,7 +23,6 @@
 #include "webkit/glue/resource_type.h"
 
 class BloomFilter;
-class MessageLoop;
 class PrefService;
 class SafeBrowsingBlockingPage;
 class SafeBrowsingDatabase;
@@ -68,14 +67,11 @@ class SafeBrowsingService
   SafeBrowsingService();
   ~SafeBrowsingService();
 
-  // Initializes the service.  io_loop is the message loop that the
-  // caller of this service (ResourceDispatcherHost) wants to be notified on
-  // for check results.
-  void Initialize(MessageLoop* io_loop);
+  // Initializes the service.
+  void Initialize();
 
   // Called to initialize objects that are used on the io_thread.
-  void OnIOInitialize(MessageLoop* notify_loop,
-                      const std::string& client_key,
+  void OnIOInitialize(const std::string& client_key,
                       const std::string& wrapped_key);
 
   // Called to initialize objects that are used on the db_thread.
@@ -233,8 +229,6 @@ class SafeBrowsingService
   void RunQueuedClients();
 
   void OnUpdateComplete(bool update_succeeded);
-
-  MessageLoop* io_loop_;
 
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   CurrentChecks checks_;

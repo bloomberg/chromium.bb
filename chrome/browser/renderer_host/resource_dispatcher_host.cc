@@ -257,7 +257,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
           download_file_manager_(new DownloadFileManager(this))),
       download_request_manager_(new DownloadRequestManager(io_loop, ui_loop_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          save_file_manager_(new SaveFileManager(ui_loop_, io_loop, this))),
+          save_file_manager_(new SaveFileManager(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(
           new UserScriptListener(this))),
       safe_browsing_(new SafeBrowsingService),
@@ -295,16 +295,16 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
 }
 
 void ResourceDispatcherHost::Initialize() {
-  DCHECK(MessageLoop::current() == ui_loop_);
-  safe_browsing_->Initialize(io_loop_);
-  io_loop_->PostTask(
-      FROM_HERE,
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  safe_browsing_->Initialize();
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(&appcache::AppCacheInterceptor::EnsureRegistered));
 }
 
 void ResourceDispatcherHost::Shutdown() {
-  DCHECK(MessageLoop::current() == ui_loop_);
-  io_loop_->PostTask(FROM_HERE, new ShutdownTask(this));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, new ShutdownTask(this));
 }
 
 void ResourceDispatcherHost::SetRequestInfo(
@@ -314,7 +314,7 @@ void ResourceDispatcherHost::SetRequestInfo(
 }
 
 void ResourceDispatcherHost::OnShutdown() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   is_shutdown_ = true;
   STLDeleteValues(&pending_requests_);
   // Make sure we shutdown the timer now, otherwise by the time our destructor
@@ -332,8 +332,10 @@ bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,
   if (!ResourceType::IsFrame(type) || URLRequest::IsHandledURL(url))
     return false;
 
-  ui_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 
   handler->OnResponseCompleted(request_id, URLRequestStatus(
                                                URLRequestStatus::FAILED,
@@ -677,8 +679,8 @@ void ResourceDispatcherHost::OnClosePageACK(
     // This is a tab close, so just forward the message to close it.
     DCHECK(params.new_render_process_host_id == -1);
     DCHECK(params.new_request_id == -1);
-    ui_loop_->PostTask(
-        FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
         new RVHCloseNotificationTask(params.closing_process_id,
                                      params.closing_route_id));
   }
@@ -1517,9 +1519,8 @@ void ResourceDispatcherHost::RemoveObserver(Observer* obs) {
 
 URLRequest* ResourceDispatcherHost::GetURLRequest(
     GlobalRequestID request_id) const {
-  // This should be running in the IO loop. io_loop_ can be NULL during the
-  // unit_tests.
-  DCHECK(MessageLoop::current() == io_loop_ && io_loop_);
+  // This should be running in the IO loop.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   PendingRequestList::const_iterator i = pending_requests_.find(request_id);
   if (i == pending_requests_.end())
@@ -1551,9 +1552,12 @@ void ResourceDispatcherHost::NotifyResponseStarted(URLRequest* request,
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRequestStarted(this, request));
 
   // Notify the observers on the UI thread.
-  ui_loop_->PostTask(FROM_HERE, new RVHDelegateNotificationTask(request,
-      &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
-      new ResourceRequestDetails(request, GetCertID(request, child_id))));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new RVHDelegateNotificationTask(
+          request,
+          &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
+          new ResourceRequestDetails(request, GetCertID(request, child_id))));
 }
 
 void ResourceDispatcherHost::NotifyResponseCompleted(URLRequest* request,
@@ -1573,9 +1577,10 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(URLRequest* request,
   int cert_id = GetCertID(request, child_id);
 
   // Notify the observers on the UI thread.
-  ui_loop_->PostTask(FROM_HERE,
-      new RVHDelegateNotificationTask(request,
-          &RenderViewHostDelegate::Resource::DidRedirectResource,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new RVHDelegateNotificationTask(
+          request, &RenderViewHostDelegate::Resource::DidRedirectResource,
           new ResourceRedirectDetails(request, cert_id, new_url)));
 }
 
@@ -1696,7 +1701,7 @@ void ResourceDispatcherHost::UpdateLoadStates() {
 
   LoadInfoUpdateTask* task = new LoadInfoUpdateTask;
   task->info_map.swap(info_map);
-  ui_loop_->PostTask(FROM_HERE, task);
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, task);
 }
 
 // Calls the ResourceHandler to send upload progress messages to the renderer.

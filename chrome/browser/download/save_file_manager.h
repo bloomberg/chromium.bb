@@ -72,7 +72,6 @@ class IOBuffer;
 class GURL;
 class SaveFile;
 class SavePackage;
-class MessageLoop;
 class ResourceDispatcherHost;
 class Task;
 class URLRequestContextGetter;
@@ -80,9 +79,7 @@ class URLRequestContextGetter;
 class SaveFileManager
     : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
-  SaveFileManager(MessageLoop* ui_loop,
-                  MessageLoop* io_loop,
-                  ResourceDispatcherHost* rdh);
+  SaveFileManager(ResourceDispatcherHost* rdh);
   ~SaveFileManager();
 
   // Lifetime management.
@@ -127,10 +124,6 @@ class SaveFileManager
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
 
-  // For posting notifications from the UI and file threads.
-  MessageLoop* ui_loop() const { return ui_loop_; }
-  MessageLoop* file_loop() const { return file_loop_; }
-
   // Runs on file thread to save a file by copying from file system when
   // original url is using file scheme.
   void SaveLocalFile(const GURL& original_file_url,
@@ -153,12 +146,6 @@ class SaveFileManager
  private:
   // A cleanup helper that runs on the file thread.
   void OnShutdown();
-
-  // The resource does not come from the network, but we still needs to call
-  // this function for getting unique save ID by calling
-  // OnRequireSaveJobFromOtherSource in the net IO thread and start saving
-  // operation. This function is called on the UI thread.
-  void RequireSaveJobFromOtherSource(SaveFileCreateInfo* info);
 
   // Called only on UI thread to get the SavePackage for a tab's profile.
   static SavePackage* GetSavePackageFromRenderIds(int render_process_id,
@@ -199,10 +186,6 @@ class SaveFileManager
   // For those requests that do not have valid save id, use
   // map:(url, SavePackage) to find the request and remove it.
   void OnErrorFinished(GURL save_url, int tab_id);
-  // Handler for a notification sent to the UI thread.
-  // The user has requested a cancel in the UI thread, so send a cancel request
-  // to stop the network requests in net IO thread.
-  void OnCancelSaveRequest(int render_process_id, int request_id);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id, int render_view_id);
 
@@ -231,17 +214,6 @@ class SaveFileManager
   // A map of all saving jobs by using save id.
   typedef base::hash_map<int, SaveFile*> SaveFileMap;
   SaveFileMap save_file_map_;
-
-  // Message loop that the SavePackages live on.
-  MessageLoop* ui_loop_;
-
-  // We cache the IO loop, we will use it to request resources from network.
-  MessageLoop* io_loop_;
-
-  // We cache the file loop, we will use it to do real file operation.
-  // We guarantee that we won't access them incorrectly during the shutdown
-  // process
-  MessageLoop* file_loop_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
 

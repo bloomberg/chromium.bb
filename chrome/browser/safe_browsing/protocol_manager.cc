@@ -7,13 +7,13 @@
 #include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/task.h"
 #include "base/timer.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -67,7 +67,6 @@ static const int kSbMaxBackOff = 8;
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
-    MessageLoop* notify_loop,
     const std::string& client_key,
     const std::string& wrapped_key)
     : sb_service_(sb_service),
@@ -80,7 +79,6 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       update_state_(FIRST_REQUEST),
       initial_request_(true),
       chunk_pending_to_write_(false),
-      notify_loop_(notify_loop),
       client_key_(client_key),
       wrapped_key_(wrapped_key),
       update_size_(0) {
@@ -423,9 +421,11 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
       client_key_ = client_key;
       wrapped_key_ = wrapped_key;
-      notify_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          sb_service_, &SafeBrowsingService::OnNewMacKeys, client_key_,
-          wrapped_key_));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              sb_service_, &SafeBrowsingService::OnNewMacKeys, client_key_,
+              wrapped_key_));
       break;
     }
 

@@ -31,8 +31,7 @@ using base::Time;
 using base::TimeDelta;
 
 SafeBrowsingService::SafeBrowsingService()
-    : io_loop_(NULL),
-      database_(NULL),
+    : database_(NULL),
       protocol_manager_(NULL),
       enabled_(false),
       resetting_(false),
@@ -44,9 +43,7 @@ SafeBrowsingService::~SafeBrowsingService() {
 }
 
 // Only called on the UI thread.
-void SafeBrowsingService::Initialize(MessageLoop* io_loop) {
-  io_loop_ = io_loop;
-
+void SafeBrowsingService::Initialize() {
   // Get the profile's preference for SafeBrowsing.
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -75,26 +72,26 @@ void SafeBrowsingService::Start() {
       WideToASCII(local_state->GetString(prefs::kSafeBrowsingWrappedKey));
   }
 
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnIOInitialize, MessageLoop::current(),
-      client_key, wrapped_key));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SafeBrowsingService::OnIOInitialize, client_key, wrapped_key));
 
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::OnDBInitialize));
 }
 
 void SafeBrowsingService::ShutDown() {
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnIOShutdown));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnIOShutdown));
 }
 
-void SafeBrowsingService::OnIOInitialize(MessageLoop* notify_loop,
-                                         const std::string& client_key,
+void SafeBrowsingService::OnIOInitialize(const std::string& client_key,
                                          const std::string& wrapped_key) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   enabled_ = true;
   protocol_manager_ = new SafeBrowsingProtocolManager(this,
-                                                      notify_loop,
                                                       client_key,
                                                       wrapped_key);
   // We want to initialize the protocol manager only after the database has
@@ -111,7 +108,7 @@ void SafeBrowsingService::OnDBInitialize() {
 }
 
 void SafeBrowsingService::OnIOShutdown() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!enabled_)
     return;
 
@@ -166,7 +163,7 @@ bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
 }
 
 bool SafeBrowsingService::CheckUrl(const GURL& url, Client* client) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!enabled_ || !database_)
     return true;
 
@@ -202,8 +199,9 @@ bool SafeBrowsingService::CheckUrl(const GURL& url, Client* client) {
   check->full_hits.swap(full_hits);
   checks_.insert(check);
 
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnCheckDone, check));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
 
   return false;
 }
@@ -278,7 +276,8 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     NavigationEntry* entry = wc->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer();
-    io_loop_->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &SafeBrowsingService::ReportMalware,
                           resource.url,
@@ -290,7 +289,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
 }
 
 void SafeBrowsingService::CancelCheck(Client* client) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   for (CurrentChecks::iterator i = checks_.begin(); i != checks_.end(); ++i) {
     if ((*i)->client == client)
@@ -309,7 +308,7 @@ void SafeBrowsingService::CancelCheck(Client* client) {
 }
 
 void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // If we've been shutdown during the database lookup, this check will already
   // have been deleted (in OnIOShutdown).
@@ -367,8 +366,9 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   database->Init(path, chunk_callback);
   database_ = database;
 
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::DatabaseLoadComplete));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::DatabaseLoadComplete));
 
   TimeDelta open_time = Time::Now() - before;
   SB_DLOG(INFO) << "SafeBrowsing database open took " <<
@@ -445,7 +445,7 @@ void SafeBrowsingService::HandleOneCheck(
 }
 
 void SafeBrowsingService::UpdateStarted() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
   DCHECK(!update_in_progress_);
   update_in_progress_ = true;
@@ -454,7 +454,7 @@ void SafeBrowsingService::UpdateStarted() {
 }
 
 void SafeBrowsingService::UpdateFinished(bool update_succeeded) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
   if (update_in_progress_) {
     update_in_progress_ = false;
@@ -509,18 +509,19 @@ void SafeBrowsingService::OnNewMacKeys(const std::string& client_key,
 
 void SafeBrowsingService::ChunkInserted() {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnChunkInserted));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnChunkInserted));
 }
 
 void SafeBrowsingService::OnChunkInserted() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (enabled_)
     protocol_manager_->OnChunkInserted();
 }
 
 void SafeBrowsingService::DatabaseLoadComplete() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!enabled_)
     return;
 
@@ -541,7 +542,7 @@ void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
 }
 
 void SafeBrowsingService::ResetDatabase() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   resetting_ = true;
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::OnResetDatabase));
@@ -550,12 +551,13 @@ void SafeBrowsingService::ResetDatabase() {
 void SafeBrowsingService::OnResetDatabase() {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnResetComplete));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnResetComplete));
 }
 
 void SafeBrowsingService::OnResetComplete() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (enabled_) {
     resetting_ = false;
     database_loaded_ = true;
@@ -565,7 +567,7 @@ void SafeBrowsingService::OnResetComplete() {
 
 void SafeBrowsingService::HandleChunk(const std::string& list,
                                       std::deque<SBChunk>* chunks) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::HandleChunkForDatabase, list, chunks));
@@ -581,7 +583,7 @@ void SafeBrowsingService::HandleChunkForDatabase(
 
 void SafeBrowsingService::HandleChunkDelete(
     std::vector<SBChunkDelete>* chunk_deletes) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::DeleteChunks, chunk_deletes));
@@ -608,15 +610,17 @@ void SafeBrowsingService::GetAllChunksFromDatabase() {
     }
   }
 
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::OnGetAllChunksFromDatabase, lists,
-      database_error));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SafeBrowsingService::OnGetAllChunksFromDatabase, lists,
+          database_error));
 }
 
 // Called on the io thread with the results of all chunks.
 void SafeBrowsingService::OnGetAllChunksFromDatabase(
     const std::vector<SBListChunkRanges>& lists, bool database_error) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (enabled_)
     protocol_manager_->OnGetChunksComplete(lists, database_error);
 }
@@ -647,7 +651,7 @@ void SafeBrowsingService::CacheHashResults(
 }
 
 void SafeBrowsingService::RunQueuedClients() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   HISTOGRAM_COUNTS("SB.QueueDepth", queued_checks_.size());
   while (!queued_checks_.empty()) {
     QueuedCheck check = queued_checks_.front();
@@ -660,7 +664,7 @@ void SafeBrowsingService::RunQueuedClients() {
 void SafeBrowsingService::ReportMalware(const GURL& malware_url,
                                         const GURL& page_url,
                                         const GURL& referrer_url) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   if (!enabled_ || !database_)
     return;

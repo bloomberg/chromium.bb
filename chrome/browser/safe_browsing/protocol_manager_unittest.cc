@@ -16,7 +16,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, NULL, "", "");
+  SafeBrowsingProtocolManager pm(NULL, "", "");
   pm.next_update_sec_ = 1800;
   DCHECK(pm.back_off_fuzz_ >= 0.0 && pm.back_off_fuzz_ <= 1.0);
 
@@ -54,7 +54,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
 
 // Test string combinations with and without MAC.
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
-  SafeBrowsingProtocolManager pm(NULL, NULL, "", "");
+  SafeBrowsingProtocolManager pm(NULL, "", "");
 
   // Add and Sub chunks.
   SBListChunkRanges phish("goog-phish-shavar");
@@ -87,7 +87,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, NULL, "", "");
+  SafeBrowsingProtocolManager pm(NULL, "", "");
 
   // No errors or back off time yet.
   EXPECT_EQ(pm.gethash_error_count_, 0);

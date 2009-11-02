@@ -18,6 +18,7 @@
 #include "base/timer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -347,9 +348,7 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
 DownloadManager::DownloadManager()
     : shutdown_needed_(false),
       profile_(NULL),
-      file_manager_(NULL),
-      ui_loop_(MessageLoop::current()),
-      file_loop_(NULL) {
+      file_manager_(NULL) {
 }
 
 DownloadManager::~DownloadManager() {
@@ -494,12 +493,6 @@ bool DownloadManager::Init(Profile* profile) {
     return false;
   }
 
-  file_loop_ = g_browser_process->file_thread()->message_loop();
-  if (!file_loop_) {
-    NOTREACHED();
-    return false;
-  }
-
   // Get our user preference state.
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
@@ -513,8 +506,9 @@ bool DownloadManager::Init(Profile* profile) {
   // get rid of |CreateDirectoryPtr|.
   bool (*CreateDirectoryPtr)(const FilePath&) = &file_util::CreateDirectory;
   // Ensure that the download directory specified in the preferences exists.
-  file_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      CreateDirectoryPtr, download_path()));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(CreateDirectoryPtr, download_path()));
 
   // We use this to determine possibly dangerous downloads.
   download_util::InitializeExeTypes(&exe_types_);
@@ -551,7 +545,7 @@ void DownloadManager::QueryHistoryForDownloads() {
 // point. OnCreateDatabaseEntryComplete() handles that finalization of the the
 // download creation as a callback from the history thread.
 void DownloadManager::StartDownload(DownloadCreateInfo* info) {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(info);
 
   // Freeze the user's preference for showing a Save As dialog.  We're going to
@@ -590,10 +584,10 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadManager::CheckIfSuggestedPathExists,
-                        info));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &DownloadManager::CheckIfSuggestedPathExists, info));
 }
 
 void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
@@ -647,14 +641,15 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
   }
 
   // Now we return to the UI thread.
-  ui_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &DownloadManager::OnPathExistenceAvailable,
                         info));
 }
 
 void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(info);
 
   if (info->save_as) {
@@ -713,12 +708,11 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
 
   // Called before DownloadFinished in order to avoid a race condition where we
   // attempt to open a completed download before it has been renamed.
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &DownloadFileManager::OnFinalDownloadName,
-                        download->id(),
-                        target_path,
-                        this));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::OnFinalDownloadName,
+          download->id(), target_path, this));
 
   // If the download already completed by the time we reached this point, then
   // notify observers that it did.
@@ -836,7 +830,8 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
   if (download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
     // We first need to rename the downloaded file from its temporary name to
     // its final name before we can continue.
-    file_loop_->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
             this, &DownloadManager::ProceedWithFinishedDangerousDownload,
             download->db_handle(),
@@ -896,7 +891,8 @@ void DownloadManager::ProceedWithFinishedDangerousDownload(
     NOTREACHED();
   }
 
-  ui_loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &DownloadManager::DangerousDownloadRenamed,
                         download_handle, success, new_path, uniquifier));
 }
@@ -964,10 +960,10 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
 
   // Tell the file manager to cancel the download.
   file_manager_->RemoveDownload(download_id, this);  // On the UI thread
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &DownloadFileManager::CancelDownload,
-                        download_id));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
@@ -1212,15 +1208,16 @@ void DownloadManager::RemoveObserver(Observer* observer) {
 // user interface.
 void DownloadManager::ShowDownloadInShell(const DownloadItem* download) {
   DCHECK(file_manager_);
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 #if defined(OS_MACOSX)
   // Mac needs to run this operation on the UI thread.
   platform_util::ShowItemInFolder(download->full_path());
 #else
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &DownloadFileManager::OnShowDownloadInShell,
-                        FilePath(download->full_path())));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::OnShowDownloadInShell,
+          FilePath(download->full_path())));
 #endif
 }
 
@@ -1260,15 +1257,16 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
 void DownloadManager::OpenDownloadInShell(const DownloadItem* download,
                                           gfx::NativeView parent_window) {
   DCHECK(file_manager_);
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 #if defined(OS_MACOSX)
   // Mac OS X requires opening downloads on the UI thread.
   platform_util::OpenItem(download->full_path());
 #else
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &DownloadFileManager::OnOpenDownloadInShell,
-                        download->full_path(), download->url(), parent_window));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::OnOpenDownloadInShell,
+          download->full_path(), download->url(), parent_window));
 #endif
 }
 
@@ -1407,8 +1405,9 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 }
 
 void DownloadManager::DeleteDownload(const FilePath& path) {
-  file_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      &DownloadFileManager::DeleteFile, FilePath(path)));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(&DownloadFileManager::DeleteFile, FilePath(path)));
 }
 
 
@@ -1422,11 +1421,12 @@ void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
   if (download->state() != DownloadItem::COMPLETE)
     return;
 
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadManager::ProceedWithFinishedDangerousDownload,
-                        download->db_handle(), download->full_path(),
-                        download->original_name()));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &DownloadManager::ProceedWithFinishedDangerousDownload,
+          download->db_handle(), download->full_path(),
+          download->original_name()));
 }
 
 void DownloadManager::GenerateSafeFilename(const std::string& mime_type,

@@ -105,6 +105,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     }
   };
 
+  // TODO(jam): take the parameter out once 25354 is done.
   explicit ResourceDispatcherHost(MessageLoop* io_loop);
   ~ResourceDispatcherHost();
 

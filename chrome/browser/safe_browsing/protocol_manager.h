@@ -24,7 +24,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class MessageLoop;
 class Task;
 class Timer;
 class URLRequestStatus;
@@ -50,7 +49,6 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
 
  public:
   SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
-                              MessageLoop* notify_loop,
                               const std::string& client_key,
                               const std::string& wrapped_key);
   ~SafeBrowsingProtocolManager();
@@ -211,10 +209,6 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // True if the service has been given an add/sub chunk but it hasn't been
   // added to the database yet.
   bool chunk_pending_to_write_;
-
-  // Message loop for forwarding MAC keys to the SafeBrowsingService for
-  // storage.
-  MessageLoop* notify_loop_;
 
   // The keys used for MAC. Empty keys mean we aren't using MAC.
   std::string client_key_;
