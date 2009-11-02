@@ -102,6 +102,9 @@ namespace WebKit {
         WebAccessibilityRoleAnnotation,
         WebAccessibilityRoleSliderThumb,
         WebAccessibilityRoleIgnored,
+        WebAccessibilityRoleTab,
+        WebAccessibilityRoleTabList,
+        WebAccessibilityRoleTabPanel,
 
         WebAccessibilityRoleLandmarkApplication,
         WebAccessibilityRoleLandmarkBanner,

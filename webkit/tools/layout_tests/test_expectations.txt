@@ -3266,6 +3266,9 @@ BUG_ROLANDSTEINER WIN : LayoutTests/fast/block/float/float-in-float-hit-testing.
 BUG9798 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
 
+// Turned flaky at WebKit 50325:50358
+BUG_SENORBLANCO WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
+
 // WebKit 50358:50395
 BUG_SENORBLANCO : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
 BUG_SENORBLANCO WIN : LayoutTests/transitions/multiple-background-size-transitions.html = TEXT
