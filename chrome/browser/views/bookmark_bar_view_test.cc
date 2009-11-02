@@ -69,7 +69,11 @@ class TestingPageNavigator : public PageNavigator {
 class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  public:
   BookmarkBarViewEventTestBase()
-      : ViewEventTestBase(), model_(NULL), bb_view_(NULL) {
+      : ViewEventTestBase(),
+        model_(NULL),
+        bb_view_(NULL),
+        ui_thread_(ChromeThread::UI, MessageLoop::current()),
+        file_thread_(ChromeThread::FILE, MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -79,6 +83,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_.reset(new TestingProfile());
     profile_->set_has_history_service(true);
     profile_->CreateBookmarkModel(true);
+    profile_->BlockUntilBookmarkModelLoaded();
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
     model_ = profile_->GetBookmarkModel();
@@ -171,6 +176,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
   gfx::Size bb_view_pref_;
   scoped_ptr<TestingProfile> profile_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
 };
 
 // Clicks on first menu, makes sure button is depressed. Moves mouse to first
