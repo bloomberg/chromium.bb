@@ -494,6 +494,10 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
       'sources': [
+        'database/databases_table.cc',
+        'database/databases_table.h',
+        'database/database_tracker.cc',
+        'database/database_tracker.h',
         'database/vfs_backend.cc',
         'database/vfs_backend.h',
       ],

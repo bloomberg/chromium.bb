@@ -13,6 +13,9 @@ include_rules = [
   "+grit",  # For generated headers
   "+third_party/sqlite",
 
+  # For databases/
+  "+app/sql",
+
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+net/base",
   "+net/ftp",
