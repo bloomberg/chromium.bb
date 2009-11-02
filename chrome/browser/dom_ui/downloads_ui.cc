@@ -21,14 +21,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-#if defined(OS_WIN)
-// TODO(port): re-enable when download_util is ported
-#include "chrome/browser/download/download_util.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
-
-
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////

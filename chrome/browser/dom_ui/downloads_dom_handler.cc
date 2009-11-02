@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/fileicon_source.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -23,13 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
-
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-// TODO(port): re-enable when download_util is ported
-#include "chrome/browser/download/download_util.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 
 namespace {
 

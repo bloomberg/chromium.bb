@@ -753,12 +753,12 @@
         }, { # else: OS != "win"
           'sources!': [
             'common/classfactory.cc',
+            'common/temp_scaffolding_stubs.h',
           ],
         }],
-        ['OS=="win" or (OS=="linux" and toolkit_views==0)', {
+        ['OS=="win" or OS=="linux"', {
           'sources!': [
             'common/temp_scaffolding_stubs.cc',
-            'common/temp_scaffolding_stubs.h',
           ],
         }],
       ],

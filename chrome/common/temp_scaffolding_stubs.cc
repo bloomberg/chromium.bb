@@ -8,31 +8,13 @@
 
 #include "base/gfx/rect.h"
 #include "base/logging.h"
-#include "chrome/browser/first_run.h"
-#include "chrome/browser/rlz/rlz.h"
-
-#if defined(OS_LINUX)
-#include "chrome/browser/dock_info.h"
-#include "chrome/common/render_messages.h"
-#endif
-
-#if defined(OS_MACOSX)
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/memory_details.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/download/download_request_manager.h"
-#include "chrome/browser/tab_contents/constrained_window.h"
-#endif
-
-class TabContents;
 
 //--------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
 void AutomationProvider::GetAutocompleteEditForBrowser(
     int browser_handle,
     bool* success,
@@ -77,35 +59,6 @@ void AutomationProvider::OnMessageFromExternalHost(
   NOTIMPLEMENTED();
 }
 
-#endif  // defined(OS_MACOSX)
-
-//--------------------------------------------------------------------------
-// static
-bool Upgrade::IsBrowserAlreadyRunning() {
-  // http://code.google.com/p/chromium/issues/detail?id=9295
-  return false;
-}
-
-// static
-bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
-  // http://code.google.com/p/chromium/issues/detail?id=9295
-  return true;
-}
-
-// static
-bool Upgrade::SwapNewChromeExeIfPresent() {
-  // http://code.google.com/p/chromium/issues/detail?id=9295
-  return true;
-}
-
-// static
-Upgrade::TryResult ShowTryChromeDialog(size_t version) {
-  return Upgrade::TD_NOT_NOW;
-}
-
-//--------------------------------------------------------------------------
-
-#if defined(OS_MACOSX)
 void InstallJankometer(const CommandLine&) {
   // http://code.google.com/p/chromium/issues/detail?id=8077
 }
@@ -113,29 +66,8 @@ void InstallJankometer(const CommandLine&) {
 void UninstallJankometer() {
   // http://code.google.com/p/chromium/issues/detail?id=8077
 }
-#endif
-
-//--------------------------------------------------------------------------
-
-void RLZTracker::CleanupRlz() {
-  // http://code.google.com/p/chromium/issues/detail?id=8152
-}
-
-bool RLZTracker::GetAccessPointRlz(AccessPoint point, std::wstring* rlz) {
-  // http://code.google.com/p/chromium/issues/detail?id=8152
-  return false;
-}
-
-bool RLZTracker::RecordProductEvent(Product product, AccessPoint point,
-                                    Event event) {
-  // http://code.google.com/p/chromium/issues/detail?id=8152
-  return false;
-}
-
-//--------------------------------------------------------------------------
-
-#if defined(OS_MACOSX)
 MemoryDetails::MemoryDetails() {
+
   NOTIMPLEMENTED();
   process_data_.push_back(ProcessData());
 }
@@ -149,21 +81,7 @@ void MemoryDetails::StartFetch() {
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &MemoryDetails::OnDetailsAvailable));
 }
-#endif
 
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-namespace download_util {
-
-void DragDownload(const DownloadItem* download,
-                  SkBitmap* icon,
-                  gfx::NativeView view) {
-  NOTIMPLEMENTED();
-}
-
-}  // namespace download_util
-#endif
-
-#if defined(OS_MACOSX)
 void BrowserList::AllBrowsersClosed() {
   // TODO(port): Close any dependent windows if necessary when the last browser
   //             window is closed.
@@ -182,15 +100,11 @@ void DockInfo::AdjustOtherWindowBounds() const {
   // TODO(pinkerton): Implement on Mac.
   // http://crbug.com/9274
 }
-#endif
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
 void ShowFontsLanguagesWindow(gfx::NativeWindow window,
                               FontsLanguagesPage page,
                               Profile* profile) {
   NOTIMPLEMENTED();
 }
-#endif
-

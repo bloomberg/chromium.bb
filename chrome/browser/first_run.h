@@ -97,10 +97,7 @@ class FirstRun {
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };
 
-#if !defined(OS_LINUX) || defined(TOOLKIT_VIEWS)
-// TODO(port): remove on Mac and Linux+views as well.
-// http://code.google.com/p/chromium/issues/detail?id=9295
-
+#if defined(OS_WIN)
 // This class contains the actions that need to be performed when an upgrade
 // is required. This involves mainly swapping the chrome exe and relaunching
 // the new browser.

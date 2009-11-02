@@ -17,15 +17,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-// For download_util::DragDownload
-#include "app/gfx/native_widget_types.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#endif
-
 class CancelableTask;
 class CommandLine;
-class DownloadItem;
 class TabContents;
 struct ViewHostMsg_DidPrintPage_Params;
 
@@ -122,28 +115,12 @@ class PrintJobManager {
 //---------------------------------------------------------------------------
 // These stubs are for Browser
 
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-namespace download_util {
-void DragDownload(const DownloadItem* download,
-                  SkBitmap* icon,
-                  gfx::NativeView view);
-}  // namespace download_util
-#endif
-
 #if defined(OS_MACOSX)
 class DockInfo {
  public:
   bool GetNewWindowBounds(gfx::Rect*, bool*) const;
   void AdjustOtherWindowBounds() const;
 };
-#else
-
 #endif
-
-//---------------------------------------------------------------------------
-// These stubs are for TabContents
-
-class BaseDragSource {
-};
 
 #endif  // CHROME_COMMON_TEMP_SCAFFOLDING_STUBS_H_

@@ -125,11 +125,9 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
 // Helper function for download views to use when acting as a drag source for a
 // DownloadItem. If |icon| is NULL, no image will be accompany the drag. |view|
 // is only required for Mac OS X, elsewhere it can be NULL.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 void DragDownload(const DownloadItem* download,
                   SkBitmap* icon,
                   gfx::NativeView view);
-#endif
 
 // Executable file support -----------------------------------------------------
 
