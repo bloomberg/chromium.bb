@@ -60,7 +60,7 @@ case ":$PATH:" in
 esac
 
 # Always use our ffmpeg and other shared libs.
-export LD_LIBRARY_PATH="$HERE:$HERE/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target:$LD_LIBRARY_PATH"
 
 exists_desktop_file || generate_desktop_file
 
