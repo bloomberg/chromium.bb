@@ -3347,3 +3347,9 @@ BUG_SENORBLANCO LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug46368-1.html = 
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug46368-2.html = IMAGE+TEXT
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug50695-2.html = IMAGE+TEXT
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/webarchive/test-duplicate-resources.html = IMAGE+TEXT
+
+// WebKit 50407:50416
+BUG_SENORBLANCO : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
+BUG_SENORBLANCO : LayoutTests/accessibility/aria-tab-roles.html = TEXT
+BUG_SENORBLANCO LINUX WIN : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
+BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
