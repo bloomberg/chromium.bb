@@ -803,7 +803,7 @@ BUG13907 SKIP : LayoutTests/media/video-loop.html = FAIL
 // We occasionally fail to perform the third seek.
 BUG13907 MAC WIN : LayoutTests/media/video-seeking.html = PASS FAIL
 BUG13907 LINUX RELEASE : LayoutTests/media/video-seeking.html = PASS FAIL
-BUG13907 LINUX DEBUG : LayoutTests/media/video-seeking.html = PASS TIMEOUT
+BUG13907 LINUX DEBUG : LayoutTests/media/video-seeking.html = PASS FAIL TIMEOUT
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
 // The test uses setTimeout() and is flaky.
@@ -1486,6 +1486,7 @@ BUG8729 WIN SLOW : LayoutTests/http/tests/multipart/invalid-image-data.html = PA
 
 // text fields wrong width
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug53690-1.html = FAIL
+BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug53690-2.html = FAIL
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug9024.html = FAIL
 BUG10670 MAC : chrome/fast/forms/basic-selects.html = FAIL
 
@@ -3273,3 +3274,8 @@ BUG_ROLANDSTEINER WIN : LayoutTests/fast/events/click-focus-anchor.html = TEXT
 BUG_ROLANDSTEINER WIN : LayoutTests/fast/block/float/float-in-float-hit-testing.html = IMAGE
 BUG9798 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
+
+// WebKit 50358:50395
+BUG_SENORBLANCO : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
+BUG_SENORBLANCO WIN : LayoutTests/transitions/multiple-background-size-transitions.html = TEXT
+BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = IMAGE

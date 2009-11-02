@@ -1953,18 +1953,14 @@ static int texImage2DHelper(unsigned target, unsigned level,
     return 0;
 }
 
-int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElement* image,
+int GraphicsContext3D::texImage2D(unsigned target, unsigned level, Image* image,
                                   bool flipY, bool premultiplyAlpha)
 {
-    CachedImage* cachedImage = image->cachedImage();
-    if (cachedImage == NULL) {
-        ASSERT_NOT_REACHED();
-        return -1;
-    }
-    Image* img = cachedImage->image();
+    ASSERT(image);
+
     int res = -1;
 #if PLATFORM(SKIA)
-    NativeImageSkia* skiaImage = img->nativeImageForCurrentFrame();
+    NativeImageSkia* skiaImage = image->nativeImageForCurrentFrame();
     if (skiaImage == NULL) {
         ASSERT_NOT_REACHED();
         return -1;
@@ -1990,7 +1986,7 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElem
                            false,
                            pixels);
 #elif PLATFORM(CG)
-    CGImageRef cgImage = img->nativeImageForCurrentFrame();
+    CGImageRef cgImage = image->nativeImageForCurrentFrame();
     if (cgImage == NULL) {
         ASSERT_NOT_REACHED();
         return -1;
@@ -2019,14 +2015,6 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElem
 #error Must port to your platform
 #endif
     return res;
-}
-
-int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLCanvasElement* canvas,
-                                  bool flipY, bool premultiplyAlpha)
-{
-    // FIXME: implement.
-    notImplemented();
-    return -1;
 }
 
 int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLVideoElement* video,
@@ -2077,22 +2065,7 @@ int GraphicsContext3D::texSubImage2D(unsigned target,
                                      unsigned yoffset,
                                      unsigned width,
                                      unsigned height,
-                                     HTMLImageElement* image,
-                                     bool flipY,
-                                     bool premultiplyAlpha)
-{
-    // FIXME: implement.
-    notImplemented();
-    return -1;
-}
-
-int GraphicsContext3D::texSubImage2D(unsigned target,
-                                     unsigned level,
-                                     unsigned xoffset,
-                                     unsigned yoffset,
-                                     unsigned width,
-                                     unsigned height,
-                                     HTMLCanvasElement* canvas,
+                                     Image* image,
                                      bool flipY,
                                      bool premultiplyAlpha)
 {
