@@ -262,7 +262,7 @@ TestSuite.prototype.testResourceContentLength = function() {
         if (!resource || !resource.url)
           return;
         if (resource.url.search('image.html$') != -1) {
-          var expectedLength = 93;
+          var expectedLength = 87;
           test.assertTrue(
               resource.contentLength <= expectedLength,
               'image.html content length is greater thatn expected.');
