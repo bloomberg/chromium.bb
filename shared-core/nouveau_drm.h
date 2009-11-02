@@ -155,6 +155,9 @@ struct drm_nouveau_gem_pushbuf_call {
 	uint64_t relocs;
 	uint32_t suffix0;
 	uint32_t suffix1;
+	/* below only accessed for CALL2 */
+	uint64_t vram_available;
+	uint64_t gart_available;
 };
 
 struct drm_nouveau_gem_pin {
@@ -212,5 +215,6 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_GEM_CPU_PREP       0x45
 #define DRM_NOUVEAU_GEM_CPU_FINI       0x46
 #define DRM_NOUVEAU_GEM_INFO           0x47
+#define DRM_NOUVEAU_GEM_PUSHBUF_CALL2  0x48
 
 #endif /* __NOUVEAU_DRM_H__ */

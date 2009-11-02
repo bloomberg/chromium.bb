@@ -202,10 +202,17 @@ nouveau_pushbuf_init_call(struct nouveau_channel *chan)
 	req.channel = chan->id;
 	req.handle = 0;
 	ret = drmCommandWriteRead(nouveau_device(dev)->fd,
-				  DRM_NOUVEAU_GEM_PUSHBUF_CALL,
+				  DRM_NOUVEAU_GEM_PUSHBUF_CALL2,
 				  &req, sizeof(req));
-	if (ret)
-		return;
+	if (ret) {
+		ret = drmCommandWriteRead(nouveau_device(dev)->fd,
+					  DRM_NOUVEAU_GEM_PUSHBUF_CALL2,
+					  &req, sizeof(req));
+		if (ret)
+			return;
+
+		nvpb->no_aper_update = 1;
+	}
 
 	for (i = 0; i < CALPB_BUFFERS; i++) {
 		ret = nouveau_bo_new(dev, NOUVEAU_BO_GART | NOUVEAU_BO_MAP,
@@ -282,14 +289,19 @@ restart_cal:
 				nvpb->current_offset;
 		req.suffix0 = nvpb->cal_suffix0;
 		req.suffix1 = nvpb->cal_suffix1;
-		ret = drmCommandWriteRead(nvdev->fd,
-					  DRM_NOUVEAU_GEM_PUSHBUF_CALL,
+		ret = drmCommandWriteRead(nvdev->fd, nvpb->no_aper_update ?
+					  DRM_NOUVEAU_GEM_PUSHBUF_CALL :
+					  DRM_NOUVEAU_GEM_PUSHBUF_CALL2,
 					  &req, sizeof(req));
 		if (ret == -EAGAIN)
 			goto restart_cal;
 		nvpb->cal_suffix0 = req.suffix0;
 		nvpb->cal_suffix1 = req.suffix1;
 		assert(ret == 0);
+		if (!nvpb->no_aper_update) {
+			nvdev->base.vm_vram_size = req.vram_available;
+			nvdev->base.vm_gart_size = req.gart_available;
+		}
 	} else {
 		struct drm_nouveau_gem_pushbuf req;
 

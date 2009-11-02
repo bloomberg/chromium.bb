@@ -41,6 +41,7 @@
 struct nouveau_pushbuf_priv {
 	struct nouveau_pushbuf base;
 
+	int no_aper_update;
 	int use_cal;
 	uint32_t cal_suffix0;
 	uint32_t cal_suffix1;
