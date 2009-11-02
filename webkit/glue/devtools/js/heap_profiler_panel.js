@@ -99,6 +99,12 @@ WebInspector.HeapSnapshotView.prototype = {
         this.dataGrid.updateWidths();
     },
 
+    hide: function()
+    {
+        WebInspector.View.prototype.hide.call(this);
+        this._currentSearchResultIndex = -1;
+    },
+
     resize: function()
     {
         if (this.dataGrid)
@@ -123,6 +129,114 @@ WebInspector.HeapSnapshotView.prototype = {
         this.refreshVisibleData();
     },
 
+    _deleteSearchMatchedFlags: function(node)
+    {
+        delete node._searchMatchedConsColumn;
+        delete node._searchMatchedCountColumn;
+        delete node._searchMatchedSizeColumn;
+        delete node._searchMatchedCountDeltaColumn;
+        delete node._searchMatchedSizeDeltaColumn;
+    },
+
+    searchCanceled: function()
+    {
+        if (this._searchResults) {
+            for (var i = 0; i < this._searchResults.length; ++i) {
+                var profileNode = this._searchResults[i].profileNode;
+                this._deleteSearchMatchedFlags(profileNode);
+                profileNode.refresh();
+            }
+        }
+
+        delete this._searchFinishedCallback;
+        this._currentSearchResultIndex = -1;
+        this._searchResults = [];
+    },
+
+    performSearch: function(query, finishedCallback)
+    {
+        // Call searchCanceled since it will reset everything we need before doing a new search.
+        this.searchCanceled();
+
+        query = query.trimWhitespace();
+
+        if (!query.length)
+            return;
+
+        this._searchFinishedCallback = finishedCallback;
+
+        var helper = WebInspector.HeapSnapshotView.SearchHelper;
+
+        var operationAndNumber = helper.parseOperationAndNumber(query);
+        var operation = operationAndNumber[0];
+        var queryNumber = operationAndNumber[1];
+
+        var percentUnits = helper.percents.test(query);
+        var megaBytesUnits = helper.megaBytes.test(query);
+        var kiloBytesUnits = helper.kiloBytes.test(query);
+        var bytesUnits = helper.bytes.test(query);
+
+        var queryNumberBytes = (megaBytesUnits ? (queryNumber * 1024 * 1024) : (kiloBytesUnits ? (queryNumber * 1024) : queryNumber));
+
+        function matchesQuery(heapSnapshotDataGridNode)
+        {
+            WebInspector.HeapSnapshotView.prototype._deleteSearchMatchedFlags(heapSnapshotDataGridNode);
+
+            if (percentUnits) {
+                heapSnapshotDataGridNode._searchMatchedCountColumn = operation(heapSnapshotDataGridNode.countPercent, queryNumber);
+                heapSnapshotDataGridNode._searchMatchedSizeColumn = operation(heapSnapshotDataGridNode.sizePercent, queryNumber);
+                heapSnapshotDataGridNode._searchMatchedCountDeltaColumn = operation(heapSnapshotDataGridNode.countDeltaPercent, queryNumber);
+                heapSnapshotDataGridNode._searchMatchedSizeDeltaColumn = operation(heapSnapshotDataGridNode.sizeDeltaPercent, queryNumber);
+            } else if (megaBytesUnits || kiloBytesUnits || bytesUnits) {
+                heapSnapshotDataGridNode._searchMatchedSizeColumn = operation(heapSnapshotDataGridNode.size, queryNumberBytes);
+                heapSnapshotDataGridNode._searchMatchedSizeDeltaColumn = operation(heapSnapshotDataGridNode.sizeDelta, queryNumberBytes);
+            } else {
+                heapSnapshotDataGridNode._searchMatchedCountColumn = operation(heapSnapshotDataGridNode.count, queryNumber);
+                heapSnapshotDataGridNode._searchMatchedCountDeltaColumn = operation(heapSnapshotDataGridNode.countDelta, queryNumber);
+            }
+
+            if (heapSnapshotDataGridNode.constructorName.hasSubstring(query, true))
+                heapSnapshotDataGridNode._searchMatchedConsColumn = true;
+
+            if (heapSnapshotDataGridNode._searchMatchedConsColumn ||
+                heapSnapshotDataGridNode._searchMatchedCountColumn ||
+                heapSnapshotDataGridNode._searchMatchedSizeColumn ||
+                heapSnapshotDataGridNode._searchMatchedCountDeltaColumn ||
+                heapSnapshotDataGridNode._searchMatchedSizeDeltaColumn) {
+                heapSnapshotDataGridNode.refresh();
+                return true;
+            }
+
+            return false;
+        }
+
+        var current = this.snapshotDataGridList.children[0];
+        var depth = 0;
+        var info = {};
+
+        // The second and subsequent levels of heap snapshot nodes represent retainers,
+        // so recursive expansion will be infinite, since a graph is being traversed.
+        // So default to a recursion cap of 2 levels.
+        var maxDepth = 2;
+
+        while (current) {
+            if (matchesQuery(current))
+                this._searchResults.push({ profileNode: current });
+            current = current.traverseNextNode(false, null, (depth >= maxDepth), info);
+            depth += info.depthChange;
+        }
+
+        finishedCallback(this, this._searchResults.length);
+    },
+
+    jumpToFirstSearchResult: WebInspector.CPUProfileView.prototype.jumpToFirstSearchResult,
+    jumpToLastSearchResult: WebInspector.CPUProfileView.prototype.jumpToLastSearchResult,
+    jumpToNextSearchResult: WebInspector.CPUProfileView.prototype.jumpToNextSearchResult,
+    jumpToPreviousSearchResult: WebInspector.CPUProfileView.prototype.jumpToPreviousSearchResult,
+    showingFirstSearchResult: WebInspector.CPUProfileView.prototype.showingFirstSearchResult,
+    showingLastSearchResult: WebInspector.CPUProfileView.prototype.showingLastSearchResult,
+    _jumpToSearchResult: WebInspector.CPUProfileView.prototype._jumpToSearchResult,
+
     refreshVisibleData: function()
     {
         var child = this.dataGrid.children[0];
@@ -139,6 +253,15 @@ WebInspector.HeapSnapshotView.prototype = {
 
         this._resetDataGridList();
         this.refresh();
+
+        if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
+            return;
+
+        // The current search needs to be performed again. First negate out previous match
+        // count by calling the search finished callback with a negative number of matches.
+        // Then perform the search again with the same query and callback.
+        this._searchFinishedCallback(this, -this._searchResults.length);
+        this.performSearch(this.currentQuery, this._searchFinishedCallback);
     },
 
     _createSnapshotDataGridList: function()
@@ -193,9 +316,8 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         this.baseSnapshot = WebInspector.HeapSnapshotProfileType.snapshots[this.baseSelectElement.selectedIndex];
         var lastComparator = WebInspector.HeapSnapshotDataGridList.propertyComparator("size", false);
-        if (this.snapshotDataGridList) {
+        if (this.snapshotDataGridList)
             lastComparator = this.snapshotDataGridList.lastComparator;
-        }
         this.snapshotDataGridList = this._createSnapshotDataGridList();
         this.snapshotDataGridList.sort(lastComparator, true);
     },
@@ -205,14 +327,14 @@ WebInspector.HeapSnapshotView.prototype = {
         var sortAscending = this.dataGrid.sortOrder === "ascending";
         var sortColumnIdentifier = this.dataGrid.sortColumnIdentifier;
         var sortProperty = {
-                "cons": "constructorName",
-                "count": "count",
-                "size": "size",
-                "countDelta": this.showCountDeltaAsPercent ? "countDeltaPercent" : "countDelta",
-                "sizeDelta": this.showSizeDeltaAsPercent ? "sizeDeltaPercent" : "sizeDelta"
+                "cons": ["constructorName", null],
+                "count": ["count", null],
+                "size": ["size", "count"],
+                "countDelta": this.showCountDeltaAsPercent ? ["countDeltaPercent", null] : ["countDelta", null],
+                "sizeDelta": this.showSizeDeltaAsPercent ? ["sizeDeltaPercent", "countDeltaPercent"] : ["sizeDelta", "sizeDeltaPercent"]
         }[sortColumnIdentifier];
 
-        this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator(sortProperty, sortAscending));
+        this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator(sortProperty[0], sortProperty[1], sortAscending));
 
         this.refresh();
     },
@@ -250,6 +372,40 @@ WebInspector.HeapSnapshotView.prototype = {
 };
 
 WebInspector.HeapSnapshotView.prototype.__proto__ = WebInspector.View.prototype;
+
+WebInspector.HeapSnapshotView.SearchHelper = {
+    // In comparators, we assume that a value from a node is passed as the first parameter.
+    operations: { LESS: function (a, b) { return a !== null && a < b; },
+                  LESS_OR_EQUAL: function (a, b) { return a !== null && a <= b; },
+                  EQUAL: function (a, b) { return a !== null && a == b; },
+                  GREATER_OR_EQUAL: function (a, b) { return a !== null && a >= b; },
+                  GREATER: function (a, b) { return a !== null && a > b; } },
+
+    operationParsers: { LESS: /^<(\d+)/,
+                        LESS_OR_EQUAL: /^<=(\d+)/,
+                        GREATER_OR_EQUAL: /^>=(\d+)/,
+                        GREATER: /^>(\d+)/ },
+
+    parseOperationAndNumber: function(query) 
+    {
+        var operations = WebInspector.HeapSnapshotView.SearchHelper.operations;
+        var parsers = WebInspector.HeapSnapshotView.SearchHelper.operationParsers;
+        for (var operation in parsers) {
+            var match = query.match(parsers[operation]);
+            if (match != null)
+                return [operations[operation], parseFloat(match[1])];
+        }
+        return [operations.EQUAL, parseFloat(query)];
+    },
+
+    percents: /%$/,
+
+    megaBytes: /MB$/i,
+
+    kiloBytes: /KB$/i,
+
+    bytes: /B$/i
+}
 
 WebInspector.HeapSummaryCalculator = function(total)
 {
@@ -425,9 +581,8 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
     getTotalCount: function() {
         if (!this._count) {
             this._count = 0;
-            for (var i = 0, n = this.children.length; i < n; ++i) {
+            for (var i = 0, n = this.children.length; i < n; ++i)
                 this._count += this.children[i].count;
-            }
         }
         return this._count;
     },
@@ -435,9 +590,8 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
     getTotalSize: function() {
         if (!this._size) {
             this._size = 0;
-            for (var i = 0, n = this.children.length; i < n; ++i) {
+            for (var i = 0, n = this.children.length; i < n; ++i)
                 this._size += this.children[i].size;
-            }
         }
         return this._size;
     },
@@ -474,7 +628,7 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
             return Number.POSITIVE_INFINITY;
     },
 
-    getData: function(showSize)
+    get data()
     {
         var data = {};
 
@@ -485,30 +639,42 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
         else
             data["count"] = this.count;
 
-        if (showSize) {
+        if (this.size !== null) {
             if (this.snapshotView.showSizeAsPercent)
                 data["size"] = WebInspector.UIString("%.2f%%", this.sizePercent);
             else
                 data["size"] = Number.bytesToString(this.size);
-        } else {
+        } else
             data["size"] = "";
-        }
 
         if (this.snapshotView.showCountDeltaAsPercent)
             data["countDelta"] = this.showDeltaAsPercent(this.countDeltaPercent);
         else
             data["countDelta"] = WebInspector.UIString("%s%d", this.signForDelta(this.countDelta), Math.abs(this.countDelta));
 
-        if (showSize) {
+        if (this.sizeDelta != null) {
             if (this.snapshotView.showSizeDeltaAsPercent)
                 data["sizeDelta"] = this.showDeltaAsPercent(this.sizeDeltaPercent);
             else
                 data["sizeDelta"] = WebInspector.UIString("%s%s", this.signForDelta(this.sizeDelta), Number.bytesToString(Math.abs(this.sizeDelta)));
-        } else {
+        } else
             data["sizeDelta"] = "";
-        }
 
         return data;
+    },
+
+    createCell: function(columnIdentifier)
+    {
+        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
+
+        if ((columnIdentifier === "cons" && this._searchMatchedConsColumn) ||
+            (columnIdentifier === "count" && this._searchMatchedCountColumn) ||
+            (columnIdentifier === "size" && this._searchMatchedSizeColumn) ||
+            (columnIdentifier === "countDelta" && this._searchMatchedCountDeltaColumn) ||
+            (columnIdentifier === "sizeDelta" && this._searchMatchedSizeDeltaColumn))
+            cell.addStyleClass("highlight");
+
+        return cell;
     }
 };
 
@@ -534,13 +700,6 @@ WebInspector.HeapSnapshotDataGridNode = function(snapshotView, baseEntry, snapsh
     this.baseRetainers = baseEntry.retainers;
 
     WebInspector.HeapSnapshotDataGridNodeWithRetainers.call(this, owningTree);
-};
-
-WebInspector.HeapSnapshotDataGridNode.prototype = {
-    get data()
-    {
-        return this.getData(true);
-    }
 };
 
 WebInspector.HeapSnapshotDataGridNode.prototype.__proto__ = WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype;
@@ -586,16 +745,19 @@ WebInspector.HeapSnapshotDataGridList.prototype = {
 
 WebInspector.HeapSnapshotDataGridList.propertyComparators = [{}, {}];
 
-WebInspector.HeapSnapshotDataGridList.propertyComparator = function(property, isAscending)
+WebInspector.HeapSnapshotDataGridList.propertyComparator = function(property, property2, isAscending)
 {
-    var comparator = this.propertyComparators[(isAscending ? 1 : 0)][property];
+    var propertyHash = property + '#' + property2;
+    var comparator = this.propertyComparators[(isAscending ? 1 : 0)][propertyHash];
     if (!comparator) {
         comparator = function(lhs, rhs) {
             var l = lhs[property], r = rhs[property];
+            if ((l === null || r === null) && property2 !== null)
+                l = lhs[property2], r = rhs[property2];
             var result = l < r ? -1 : (l > r ? 1 : 0);
             return isAscending ? result : -result;
         };
-        this.propertyComparators[(isAscending ? 1 : 0)][property] = comparator;
+        this.propertyComparators[(isAscending ? 1 : 0)][propertyHash] = comparator;
     }
     return comparator;
 };
@@ -616,15 +778,21 @@ WebInspector.HeapSnapshotDataGridRetainerNode = function(snapshotView, baseEntry
     this.countDelta = this.count - this.baseCount;
     this.baseRetainers = this._calculateRetainers(this.snapshotView.baseSnapshot, baseEntry.clusters);
 
-    this.size = this.count;  // This way, when sorting by sizes entries will be sorted by references count.
+    this.size = null;
+    this.sizeDelta = null;
 
     WebInspector.HeapSnapshotDataGridNodeWithRetainers.call(this, owningTree);
 }
 
 WebInspector.HeapSnapshotDataGridRetainerNode.prototype = {
-    get data()
+    get sizePercent()
     {
-        return this.getData(false);
+        return null;
+    },
+
+    get sizeDeltaPercent()
+    {
+        return null;
     },
 
     _calculateRetainers: function(snapshot, clusters) {
