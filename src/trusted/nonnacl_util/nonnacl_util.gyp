@@ -99,7 +99,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../handle_pass/handle_pass.gyp:browserhandle',
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
               ],
             }],
           ],

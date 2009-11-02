@@ -55,7 +55,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        '../desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/third_party_mod/gtest/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -86,7 +86,7 @@
       'target_name': 'mmap_test',
       'type': 'executable',
       'dependencies': [
-        '../../shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         'service_runtime.gyp:sel',
       ],
       'sources': [
@@ -98,7 +98,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        '../../shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
       'sources': [
         'nacl_sync_cond_test.c',

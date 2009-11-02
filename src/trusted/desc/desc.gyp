@@ -121,8 +121,8 @@
         ]}],
       ],
       'dependencies': [
-        '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-        '../../shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
     }
   ]

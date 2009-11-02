@@ -33,6 +33,67 @@
   ],
   'targets': [
     {
+      'target_name': 'tramp_gen',
+      'type': 'executable',
+      'conditions': [
+        ['OS=="linux"', {
+          'asflags!': [
+            '-m64',
+          ],
+          'cflags!': [
+            '-m64',
+          ],
+          'ldflags!': [
+            '-m64',
+          ],
+          'asflags': [
+            '-m32',
+          ],
+          'cflags': [
+            '-m32',
+          ],
+          'ldflags': [
+            '-m32',
+          ],
+        }],
+      ],
+      'sources': [
+        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/tramp.S',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/tramp_gen.c',
+      ],
+    },
+    {
+      'target_name': 'springboard_gen',
+      'type': 'executable',
+      'conditions': [
+        ['OS=="linux"', {
+          'asflags!': [
+            '-m64',
+          ],
+          'cflags!': [
+            '-m64',
+          ],
+          'ldflags!': [
+            '-m64',
+          ],
+          'asflags': [
+            '-m32',
+          ],
+          'cflags': [
+            '-m32',
+          ],
+          'ldflags': [
+            '-m32',
+          ],
+        }],
+      ],
+
+      'sources': [
+        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/springboard.S',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/springboard_gen.c',
+      ],
+    },
+    {
       'target_name': 'service_runtime_x86',
       'type': 'static_library',
       'sources': [
@@ -51,8 +112,8 @@
       'conditions': [
         ['target_arch=="ia32"', {
           'dependencies': [
-            '../../service_runtime.gyp:tramp_gen',
-            '../../service_runtime.gyp:springboard_gen',
+            'tramp_gen',
+            'springboard_gen',
           ],
           'actions': [
             {

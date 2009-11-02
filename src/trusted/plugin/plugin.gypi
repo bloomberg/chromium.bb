@@ -33,8 +33,8 @@
       # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
       # which exports a library which is then linked in.
       # Currently this results inlink time symbol clashes
-      '../../third_party_mod/npapi_plugin/np_entry.cc',
-      '../../third_party_mod/npapi_plugin/npn_gate.cc',
+      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
+      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
       'npp_gate.cc',
       'npp_launcher.cc',
       # SRPC support
@@ -63,11 +63,11 @@
   ],
   'target_defaults': {
     'dependencies': [
-      '../../shared/srpc/srpc.gyp:nonnacl_srpc',
-      '../desc/desc.gyp:nrd_xfer',
-      '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-      '../service_runtime/service_runtime.gyp:gio',
-      '../service_runtime/service_runtime.gyp:expiration',
+      '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+      '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+      '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+      '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio',
+      '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
       ],
     'conditions': [
       ['OS=="linux"', {

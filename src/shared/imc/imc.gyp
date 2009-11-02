@@ -30,7 +30,7 @@
 {
   ######################################################################
   'variables': {
-    'COMMAND_TESTER': '../../../tools/command_tester.py',
+    'COMMAND_TESTER': '<(DEPTH)/native_client/tools/command_tester.py',
     'common_sources': [
       'nacl_imc_common.cc',
       'nacl_imc.h',
@@ -99,9 +99,9 @@
         'sigpipe_test.cc',
       ],
       'dependencies': [
-        '../../shared/imc/imc.gyp:google_nacl_imc',
-        '../../shared/platform/platform.gyp:platform',
-        '../../trusted/service_runtime/service_runtime.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio',
       ],
     },
     # ----------------------------------------------------------------------

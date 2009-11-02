@@ -36,9 +36,9 @@
       'target_name': 'npGoogleNaClPlugin',
       'type': 'shared_library',
       'dependencies': [
-        '../nonnacl_util/nonnacl_util.gyp:nonnacl_util',
-        '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
-        '../../shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+        '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
       'sources': [
         '<@(common_sources)',
@@ -90,10 +90,10 @@
           'target_name': 'npGoogleNaClPluginChrome',
           'type': 'static_library',
           'dependencies': [
-            '../nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
-            '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
-            '../../shared/platform/platform.gyp:platform',
-            '../../../../third_party/npapi/npapi.gyp:npapi',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
+            '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
             '<@(common_sources)',

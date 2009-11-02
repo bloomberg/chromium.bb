@@ -83,10 +83,10 @@
          '<(syscall_handler)',
       ],
       'dependencies': [
-        '../desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         'gio',
-        '../validator_x86/validator_x86.gyp:ncvalidate',
-        '../../shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
         ['target_arch=="ia32" or target_arch=="x64"', {
@@ -158,7 +158,7 @@
         }],
         ['nacl_standalone==0 and OS=="win"', {
           'dependencies': [
-            '../handle_pass/handle_pass.gyp:ldrhandle',
+            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
       ],
@@ -219,75 +219,14 @@
       ],
     },
     {
-      'target_name': 'tramp_gen',
-      'type': 'executable',
-      'conditions': [
-        ['OS=="linux"', {
-          'asflags!': [
-            '-m64',
-          ],
-          'cflags!': [
-            '-m64',
-          ],
-          'ldflags!': [
-            '-m64',
-          ],
-          'asflags': [
-            '-m32',
-          ],
-          'cflags': [
-            '-m32',
-          ],
-          'ldflags': [
-            '-m32',
-          ],
-        }],
-      ],
-      'sources': [
-        'arch/x86_32/tramp.S',
-        'arch/x86_32/tramp_gen.c',
-      ],
-    },
-    {
-      'target_name': 'springboard_gen',
-      'type': 'executable',
-      'conditions': [
-        ['OS=="linux"', {
-          'asflags!': [
-            '-m64',
-          ],
-          'cflags!': [
-            '-m64',
-          ],
-          'ldflags!': [
-            '-m64',
-          ],
-          'asflags': [
-            '-m32',
-          ],
-          'cflags': [
-            '-m32',
-          ],
-          'ldflags': [
-            '-m32',
-          ],
-        }],
-      ],
-
-      'sources': [
-        'arch/x86_32/springboard.S',
-        'arch/x86_32/springboard_gen.c',
-      ],
-    },
-    {
       'target_name': 'sel_ldr',
       'type': 'executable',
       # TODO(gregoryd): currently building sel_ldr without SDL
       'dependencies': [
         'expiration',
         'sel',
-        '../../shared/platform/platform.gyp:platform',
-        '../platform_qualify/platform_qualify.gyp:platform_qual_lib',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
       'sources': [
         'sel_main.c',
