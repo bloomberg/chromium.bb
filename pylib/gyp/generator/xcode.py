@@ -187,7 +187,7 @@ class XcodeProject(object):
       targets.append(xcode_target)
       ordinary_targets.append(xcode_target)
 
-      if not target.get('suppress_wildcard', False):
+      if not int(target.get('suppress_wildcard', False)):
         targets_for_all.append(xcode_target)
 
       if target_name.lower() == 'all':
@@ -697,11 +697,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
       prebuild_index = prebuild_index + 1
 
       # TODO(mark): Should verify that at most one of these is specified.
-      if action.get('process_outputs_as_sources', False):
+      if int(action.get('process_outputs_as_sources', False)):
         for output in action['outputs']:
           AddSourceToTarget(output, pbxp, xct)
 
-      if action.get('process_outputs_as_mac_bundle_resources', False):
+      if int(action.get('process_outputs_as_mac_bundle_resources', False)):
         for output in action['outputs']:
           AddResourceToTarget(output, pbxp, xct)
 

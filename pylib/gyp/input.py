@@ -1014,7 +1014,7 @@ def ExpandWildcardDependencies(targets, data):
         # wildcard.
         dependency_target_dicts = data[dependency_build_file]['targets']
         for dependency_target_dict in dependency_target_dicts:
-          if dependency_target_dict.get('suppress_wildcard', False):
+          if int(dependency_target_dict.get('suppress_wildcard', False)):
             continue
           dependency_target_name = dependency_target_dict['target_name']
           if (dependency_target != '*' and
