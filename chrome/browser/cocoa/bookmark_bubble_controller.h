@@ -32,8 +32,8 @@ class BookmarkNode;
   BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
 
-  // A mapping from titles to nodes so we only have to walk this once.
-  scoped_nsobject<NSMutableArray> titleMapping_;
+  // A mapping from NSComboBox index to parent nodes.
+  scoped_nsobject<NSMutableArray> parentMapping_;
 
   BOOL alreadyBookmarked_;
   scoped_nsobject<NSString> chooseAnotherFolder_;
@@ -71,6 +71,7 @@ class BookmarkNode;
 - (void)addFolderNodes:(const BookmarkNode*)parent toComboBox:(NSComboBox*)box;
 - (void)updateBookmarkNode;
 - (void)setTitle:(NSString*)title parentFolder:(NSString*)folder;
+- (void)setParentFolderSelection:(const BookmarkNode*)parent;
 - (NSString*)chooseAnotherFolderString;
 - (NSComboBox*)folderComboBox;
 @end

@@ -30,7 +30,7 @@
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
     // But this is strong.
-    titleMapping_.reset([[NSMutableDictionary alloc] init]);
+    parentMapping_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
@@ -126,12 +126,10 @@
 
 
 // Fill in all information related to the folder combo box.
-//
-// TODO(jrg): make sure nested folders that have the same name are
-// handled properly.
-// http://crbug.com/19408
 - (void)fillInFolderList {
   [nameTextField_ setStringValue:base::SysWideToNSString(node_->GetTitle())];
+  DCHECK([parentMapping_ count] == 0);
+  DCHECK([folderComboBox_ numberOfItems] == 0);
   [self addFolderNodes:model_->root_node() toComboBox:folderComboBox_];
 
   // Add "Choose another folder...".  Remember it for later to compare against.
@@ -148,13 +146,12 @@
 
 // For the given folder node, walk the tree and add folder names to
 // the given combo box.
-//
-// TODO(jrg): no distinction is made among folders with the same name.
 - (void)addFolderNodes:(const BookmarkNode*)parent toComboBox:(NSComboBox*)box {
   NSString* title = base::SysWideToNSString(parent->GetTitle());
   if ([title length])  {  // no title if root
     [box addItemWithObjectValue:title];
-    [titleMapping_ setValue:[NSValue valueWithPointer:parent] forKey:title];
+    [parentMapping_ insertObject:[NSValue valueWithPointer:parent]
+                         atIndex:[box numberOfItems]-1];
   }
   for (int i = 0; i < parent->GetChildCount(); i++) {
     const BookmarkNode* child = parent->GetChild(i);
@@ -177,25 +174,48 @@
                               model_->profile());
   }
   // Then the parent folder.
-  NSString* oldParentTitle = base::SysWideToNSString(
-    node_->GetParent()->GetTitle());
-  NSString* newParentTitle = [folderComboBox_ objectValueOfSelectedItem];
-  if (![oldParentTitle isEqual:newParentTitle]) {
-    const BookmarkNode* newParent = static_cast<const BookmarkNode*>(
-      [[titleMapping_ objectForKey:newParentTitle] pointerValue]);
-    if (newParent) {
-      // newParent should only ever possibly be NULL in a unit test.
+  const BookmarkNode* oldParent = node_->GetParent();
+  NSInteger selectedIndex = [folderComboBox_ indexOfSelectedItem];
+  if (selectedIndex == -1)  // No selection ever made.
+    return;
+
+  if ((NSUInteger)selectedIndex == [parentMapping_ count]) {
+    // "Choose another folder..."
+    return;
+  }
+  const BookmarkNode* newParent = static_cast<const BookmarkNode*>(
+      [[parentMapping_ objectAtIndex:selectedIndex] pointerValue]);
+  DCHECK(newParent);
+  if (oldParent != newParent) {
       int index = newParent->GetChildCount();
       model_->Move(node_, newParent, index);
       UserMetrics::RecordAction(L"BookmarkBubble_ChangeParent",
                                 model_->profile());
-    }
   }
 }
 
 - (void)setTitle:(NSString*)title parentFolder:(NSString*)folder {
   [nameTextField_ setStringValue:title];
   [folderComboBox_ selectItemWithObjectValue:folder];
+}
+
+// Pick a specific parent node in the selection by finding the right
+// combo box index.
+- (void)setParentFolderSelection:(const BookmarkNode*)parent {
+  // Expectation: we have a parent mapping for all items in the
+  // folderComboBox except the last one ("Choose another folder...").
+  DCHECK((NSInteger)[parentMapping_ count] ==
+         [folderComboBox_ numberOfItems]-1);
+  for (NSUInteger i = 0; i < [parentMapping_ count]; i++) {
+    const BookmarkNode* possible = static_cast<const BookmarkNode*>(
+        [[parentMapping_ objectAtIndex:i] pointerValue]);
+    DCHECK(possible);
+    if (possible == parent) {
+      [folderComboBox_ selectItemAtIndex:i];
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 - (NSString*)chooseAnotherFolderString {

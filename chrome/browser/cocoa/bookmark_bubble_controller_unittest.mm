@@ -79,7 +79,8 @@ class BookmarkBubbleControllerTest : public CocoaTest {
   // Returns a controller but ownership not transferred.
   // Only one of these will be valid at a time.
   BookmarkBubbleController* ControllerForNode(const BookmarkNode* node) {
-    DCHECK(controller_ == nil);
+    if (controller_)
+      [controller_ close];
     controller_ = [[BookmarkBubbleController alloc]
                        initWithDelegate:delegate_.get()
                        parentWindow:test_window()
@@ -194,6 +195,31 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
   // Make sure bookmark has changed
   EXPECT_EQ(node->GetTitle(), L"oops");
   EXPECT_EQ(node->GetParent()->GetTitle(), L"grandma");
+}
+
+// Confirm happiness with parent nodes that have the same name.
+TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
+  for (int i=0; i<2; i++) {
+    BookmarkModel* model = GetBookmarkModel();
+    const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+                                             0,
+                                             L"short-title",
+                                             GURL("http://www.google.com"));
+    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
+    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
+    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
+    BookmarkBubbleController* controller = ControllerForNode(node);
+    EXPECT_TRUE(controller);
+
+    // simulate a user edit
+    [controller setParentFolderSelection:
+                  model->GetBookmarkBarNode()->GetChild(i)];
+    [controller edit:controller];
+
+    // Make sure bookmark has changed, and that the parent is what we
+    // expect.  This proves nobody did searching based on name.
+    EXPECT_EQ(node->GetParent(), model->GetBookmarkBarNode()->GetChild(i));
+  }
 }
 
 // Click the "remove" button
