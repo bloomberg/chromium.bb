@@ -114,9 +114,11 @@
         # their various targets (net.gyp:net_resources, etc.),
         # but that causes errors in other targets when
         # resulting .res files get referenced multiple times.
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
       ],
