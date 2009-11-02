@@ -602,7 +602,7 @@ bool ChromiumBridge::isLinkVisited(LinkHash visitedLinkHash)
     return webKitClient()->isLinkVisited(visitedLinkHash);
 }
 
-// These are temporary methoeds that the WebKit layer can use to call to the
+// These are temporary methods that the WebKit layer can use to call to the
 // Glue layer. Once the Glue layer moves entirely into the WebKit layer, these
 // methods will be deleted.
 
@@ -620,6 +620,11 @@ void ChromiumBridge::notifyJSOutOfMemory(Frame* frame)
     if (!webFrame->client())
         return;
     webFrame->client()->didExhaustMemoryAvailableForScript(webFrame);
+}
+
+int ChromiumBridge::memoryUsageMB()
+{
+    return static_cast<int>(webKitClient()->memoryUsageMB());
 }
 
 int ChromiumBridge::screenDepth(Widget* widget)

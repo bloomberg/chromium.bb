@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/platform_file.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -336,6 +337,14 @@ WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
     const WebKit::WebURL& url) {
   NOTREACHED();
   return WebKit::WebString();
+}
+
+size_t WebKitClientImpl::memoryUsageMB() {
+  using base::ProcessMetrics;
+  static ProcessMetrics* process_metrics =
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+  DCHECK(process_metrics);
+  return process_metrics->GetPagefileUsage() >> 20;
 }
 
 bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {

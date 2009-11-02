@@ -53,6 +53,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index, const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
+  virtual size_t memoryUsageMB();
   virtual bool rawCookies(const WebKit::WebURL& url,
                           const WebKit::WebURL& policy_url,
                           WebKit::WebVector<WebKit::WebCookie>*);

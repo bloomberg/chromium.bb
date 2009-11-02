@@ -162,6 +162,14 @@ namespace WebKit {
                                                             const WebKit::WebURL& url) = 0;
 
 
+
+        // Memory --------------------------------------------------------------
+
+        // Returns the current space allocated for the pagefile, in MB.
+        // That is committed size for Windows and virtual memory size for POSIX
+        virtual size_t memoryUsageMB() = 0;
+
+
         // Message Ports -------------------------------------------------------
 
         // Creates a Message Port Channel.  This can be called on any thread.
