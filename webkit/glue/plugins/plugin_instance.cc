@@ -207,8 +207,7 @@ NPError PluginInstance::NPP_DestroyStream(NPStream *stream, NPReason reason) {
   DCHECK(npp_functions_ != 0);
   DCHECK(npp_functions_->destroystream != 0);
 
-  if (stream == NULL || (stream->ndata == NULL) ||
-      !IsValidStream(stream))
+  if (stream == NULL || !IsValidStream(stream) || (stream->ndata == NULL))
     return NPERR_INVALID_INSTANCE_ERROR;
 
   if (npp_functions_->destroystream != 0) {
