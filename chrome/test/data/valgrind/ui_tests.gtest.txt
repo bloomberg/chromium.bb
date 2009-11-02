@@ -2,10 +2,6 @@
 BrowserTest.ThirtyFourTabs
 # FIXME: these tests hang frequently in valgrind
 SessionRestoreUITest.*
-# The reference builds have old problems; don't run them until they're updated
-# And on the Mac, they don't have symbols, even, so suppressions don't work
-SunSpiderReferenceTest.Perf
-V8BenchmarkReferenceTest.Perf
 # Buggy test; see http://crbug.com/6522
 DownloadTest.UnknownSize
 # Flakily hangs on Linux
@@ -17,3 +13,8 @@ UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
 # This test hangs under Valgrind;
 # See http://crbug.com/25917 and http://crbug.com/22608
 WorkerTest.LimitTotal
+
+# Don't run reference tests under Valgrind
+# On the Mac, they don't have symbols, even, so suppressions don't work
+# They probably don't have ThreadSanitizer annotations TODO(timurrrr): check
+*ReferenceTest.Perf

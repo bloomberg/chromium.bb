@@ -23,5 +23,3 @@ DownloadTest.IncognitoDownload
 DownloadTest.NoDownload
 DownloadTest.PerWindowShelf
 ErrorPageTest.IFrameDNSError_GoBackAndForward
-# Kills valgrind stack traces: http://crbug.com/25589
-DromaeoReferenceTest.Perf
