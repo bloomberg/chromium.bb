@@ -13,6 +13,10 @@
 #include "net/socket/ssl_client_socket.h"
 #include "talk/base/asyncsocket.h"
 
+namespace net {
+class LoadLog;
+}  // namespace net
+
 namespace notifier {
 
 class SSLSocketAdapter;
@@ -32,7 +36,8 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 
   // net::ClientSocket implementation
 
-  virtual int Connect(net::CompletionCallback* callback);
+  virtual int Connect(net::CompletionCallback* callback,
+                      net::LoadLog* /* load_log */);
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;

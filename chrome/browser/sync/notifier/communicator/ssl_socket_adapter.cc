@@ -79,7 +79,7 @@ int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           socket_, hostname, ssl_config));
 
-  int result = ssl_socket_->Connect(&connected_callback_);
+  int result = ssl_socket_->Connect(&connected_callback_, NULL);
 
   if (result == net::ERR_IO_PENDING || result == net::OK) {
     return 0;
@@ -197,7 +197,8 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
     socket_->SignalConnectEvent.connect(this, &TransportSocket::OnConnectEvent);
 }
 
-int TransportSocket::Connect(net::CompletionCallback* callback) {
+int TransportSocket::Connect(net::CompletionCallback* callback,
+                             net::LoadLog* /* load_log */) {
   connect_callback_ = callback;
   return socket_->Connect(addr_);
 }

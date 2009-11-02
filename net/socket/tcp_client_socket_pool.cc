@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "net/base/load_log.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -123,8 +124,7 @@ int TCPConnectJob::DoTCPConnect() {
   next_state_ = kStateTCPConnectComplete;
   set_socket(client_socket_factory_->CreateTCPClientSocket(addresses_));
   connect_start_time_ = base::TimeTicks::Now();
-  // TODO(eroman): Socket::Connect() should take a LoadLog.
-  return socket()->Connect(&callback_);
+  return socket()->Connect(&callback_, load_log());
 }
 
 int TCPConnectJob::DoTCPConnectComplete(int result) {

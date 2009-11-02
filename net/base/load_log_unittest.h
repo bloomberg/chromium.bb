@@ -5,6 +5,7 @@
 #ifndef NET_BASE_LOAD_LOG_UNITTEST_H_
 #define NET_BASE_LOAD_LOG_UNITTEST_H_
 
+#include <cstddef>
 #include "net/base/load_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +39,29 @@ inline void ExpectLogContains(const LoadLog* log,
   ASSERT_LT(i, log->events().size());
   EXPECT_EQ(expected_event, log->events()[i].type);
   EXPECT_EQ(expected_phase, log->events()[i].phase);
+}
+
+inline ::testing::AssertionResult LogContains(
+    const LoadLog& log,
+    int i,  // Negative indices are reverse indices.
+    LoadLog::EventType expected_event,
+    LoadLog::EventPhase expected_phase) {
+  // Negative indices are reverse indices.
+  size_t j = (i < 0) ? log.events().size() + i : i;
+  if (j >= log.events().size())
+    return ::testing::AssertionFailure() << j << " is out of bounds.";
+  if (expected_event != log.events()[j].type) {
+    return ::testing::AssertionFailure()
+        << "Actual event: " << LoadLog::EventTypeToString(log.events()[j].type)
+        << ". Expected event: " << LoadLog::EventTypeToString(expected_event)
+        << ".";
+  }
+  if (expected_phase != log.events()[j].phase) {
+    return ::testing::AssertionFailure()
+        << "Actual phase: " << log.events()[j].phase
+        << ". Expected phase: " << expected_phase << ".";
+  }
+  return ::testing::AssertionSuccess();
 }
 
 }  // namespace net

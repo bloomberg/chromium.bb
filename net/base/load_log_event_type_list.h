@@ -77,6 +77,22 @@ EVENT_TYPE(PROXY_RESOLVER_V8_DNS_RESOLVE)
 EVENT_TYPE(PROXY_RESOLVER_V8_DNS_RESOLVE_EX)
 
 // ------------------------------------------------------------------------
+// ClientSocket::Connect
+// ------------------------------------------------------------------------
+
+// The start/end of a TCP connect().
+EVENT_TYPE(TCP_CONNECT)
+
+// The start/end of a SOCKS connect().
+EVENT_TYPE(SOCKS_CONNECT)
+
+// The start/end of a SOCKS5 connect().
+EVENT_TYPE(SOCKS5_CONNECT)
+
+// The start/end of a SSL connect().
+EVENT_TYPE(SSL_CONNECT)
+
+// ------------------------------------------------------------------------
 // ClientSocketPoolBase::ConnectJob
 // ------------------------------------------------------------------------
 
@@ -128,4 +144,3 @@ EVENT_TYPE(HTTP_CACHE_READ_INFO)
 // the cache entry to become available (for example if we are waiting for
 // exclusive access to an existing entry).
 EVENT_TYPE(HTTP_CACHE_WAITING)
-

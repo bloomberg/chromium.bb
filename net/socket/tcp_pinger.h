@@ -86,7 +86,7 @@ class TCPPinger {
 
     void DoConnect() {
       sock_.reset(new TCPClientSocket(addr_));
-      int rv = sock_->Connect(&connect_callback_);
+      int rv = sock_->Connect(&connect_callback_, NULL);
       // Regardless of success or failure, if we're done now,
       // signal the customer.
       if (rv != ERR_IO_PENDING)

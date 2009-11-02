@@ -305,7 +305,8 @@ void FlipSession::OnTCPConnect(int result) {
     socket = session_->socket_factory()->CreateSSLClientSocket(
         socket, "" /* request_->url.HostNoBrackets() */ , ssl_config_);
     connection_.set_socket(socket);
-    int status = connection_.socket()->Connect(&ssl_connect_callback_);
+    // TODO(willchan): Plumb LoadLog into FLIP code.
+    int status = connection_.socket()->Connect(&ssl_connect_callback_, NULL);
     CHECK(status == net::ERR_IO_PENDING);
   } else {
     connection_ready_ = true;
@@ -734,4 +735,3 @@ void FlipSession::OnLameDuck() {
 }
 
 }  // namespace net
-
