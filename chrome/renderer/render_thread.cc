@@ -8,6 +8,12 @@
 #include <map>
 #include <vector>
 
+#if defined(USE_SYSTEM_SQLITE)
+#include <sqlite3.h>
+#else
+#include "third_party/sqlite/preprocessed/sqlite3.h"
+#endif
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -47,14 +53,14 @@
 #include "chrome/renderer/socket_stream_dispatcher.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
+#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCrossOriginPreflightResultCache.h"
-#include "webkit/api/public/WebRuntimeFeatures.h"
-#include "webkit/api/public/WebFontCache.h"
-#include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebDatabase.h"
+#include "webkit/api/public/WebFontCache.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebRuntimeFeatures.h"
 #include "webkit/api/public/WebScriptController.h"
 #include "webkit/api/public/WebSecurityPolicy.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
@@ -63,7 +69,6 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
-#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -72,8 +77,8 @@
 
 using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
-using WebKit::WebRuntimeFeatures;
 using WebKit::WebFontCache;
+using WebKit::WebRuntimeFeatures;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebScriptController;
 using WebKit::WebString;
@@ -582,6 +587,11 @@ void RenderThread::OnPurgeMemory() {
 
   // Clear the Cross-Origin Preflight cache.
   WebCrossOriginPreflightResultCache::clear();
+
+  // Release all freeable memory from the SQLite process-global page cache (a
+  // low-level object which backs the Connection-specific page caches).
+  while (sqlite3_release_memory(std::numeric_limits<int>::max()) > 0)
+    ;
 
   // Repeatedly call the V8 idle notification until it returns true ("nothing
   // more to free").  Note that it makes more sense to do this than to implement
