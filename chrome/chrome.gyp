@@ -2564,6 +2564,8 @@
             # Build the necessary GTM sources
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h',
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.m',
+            '../third_party/GTM/AppKit/GTMIBArray.h',
+            '../third_party/GTM/AppKit/GTMIBArray.m',
             '../third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.m',
             '../third_party/GTM/AppKit/GTMNSColor+Luminance.m',
             '../third_party/GTM/AppKit/GTMTheme.m',

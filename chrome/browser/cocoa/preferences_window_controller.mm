@@ -38,6 +38,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cookie_policy.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 NSString* const kUserDoneEditingPrefsNotification =
     @"kUserDoneEditingPrefsNotification";
@@ -62,6 +63,161 @@ void RemoveAllButLastView(NSArray* views) {
   for (NSView* view in toRemove) {
     [view removeFromSuperviewWithoutNeedingDisplay];
   }
+}
+
+// Helper for tweaking the prefs window, if view is a:
+//   checkbox, radio group or label: it gets a forced wrap at current size
+//   editable field: left as is
+//   anything else: do  +[GTMUILocalizerAndLayoutTweaker sizeToFitView:]
+NSSize WrapOrSizeToFit(NSView* view) {
+  if ([view isKindOfClass:[NSTextField class]]) {
+    NSTextField* textField = static_cast<NSTextField*>(view);
+    if ([textField isEditable])
+      return NSZeroSize;
+    CGFloat heightChange =
+        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:textField];
+    return NSMakeSize(0.0, heightChange);
+  }
+  if ([view isKindOfClass:[NSMatrix class]]) {
+    NSMatrix* radioGroup = static_cast<NSMatrix*>(view);
+    [GTMUILocalizerAndLayoutTweaker wrapRadioGroupForWidth:radioGroup];
+    return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
+  }
+  if ([view isKindOfClass:[NSButton class]]) {
+    NSButton* button = static_cast<NSButton*>(view);
+    NSButtonCell* buttonCell = [button cell];
+    // Decide it's a checkbox via showsStateBy and highlightsBy.
+    if (([buttonCell showsStateBy] == NSCellState) &&
+        ([buttonCell highlightsBy] == NSCellState)) {
+      [GTMUILocalizerAndLayoutTweaker wrapButtonTitleForWidth:button];
+      return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
+    }
+  }
+  return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
+}
+
+// The different behaviors for the "pref group" auto sizing.
+enum AutoSizeGroupBehavior {
+  kAutoSizeGroupBehaviorVerticalToFit,
+  kAutoSizeGroupBehaviorVerticalFirstToFit,
+  kAutoSizeGroupBehaviorHorizontalToFit,
+  kAutoSizeGroupBehaviorHorizontalFirstGrows
+};
+
+// Helper to tweak the layout of the "pref groups" and also ripple any height
+// changes from one group to the next groups' origins.
+// |views| is an ordered list of views with first being the label for the
+// group and the rest being top down or left to right ordering of the views.
+// The label is assumed to already be the same height as all the views it is
+// next too.
+CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
+                      CGFloat verticalShift) {
+  DCHECK_GE([views count], 2U) << "Should be at least a label and a control";
+  NSTextField* label = [views objectAtIndex:0];
+  DCHECK([label isKindOfClass:[NSTextField class]])
+      << "First view should be the label for the group";
+
+  // Auto size the label to see if we need more vertical space for its localized
+  // string.
+  CGFloat labelHeightChange =
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:label];
+
+  CGFloat localVerticalShift = 0.0;
+  switch (behavior) {
+    case kAutoSizeGroupBehaviorVerticalToFit: {
+      // Walk bottom up doing the sizing and moves.
+      for (NSUInteger idx = [views count] - 1; idx > 0; --idx) {
+        NSView* view = [views objectAtIndex:idx];
+        NSSize delta = WrapOrSizeToFit(view);
+        DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+        if (localVerticalShift) {
+          NSPoint origin = [view frame].origin;
+          origin.y += localVerticalShift;
+          [view setFrameOrigin:origin];
+        }
+        localVerticalShift += delta.height;
+      }
+      break;
+    }
+    case kAutoSizeGroupBehaviorVerticalFirstToFit: {
+      // Just size the top one.
+      NSView* view = [views objectAtIndex:1];
+      NSSize delta = WrapOrSizeToFit(view);
+      DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+      localVerticalShift += delta.height;
+      break;
+    }
+    case kAutoSizeGroupBehaviorHorizontalToFit: {
+      // Walk left to right doing the sizing and moves.
+      // NOTE: Don't worry about vertical, assume it always fits.
+      CGFloat horizontalShift = 0.0;
+      for (NSUInteger idx = 1; idx < [views count]; ++idx) {
+        NSView* view = [views objectAtIndex:idx];
+        NSSize delta = WrapOrSizeToFit(view);
+        DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+        if (horizontalShift) {
+          NSPoint origin = [view frame].origin;
+          origin.x += horizontalShift;
+          [view setFrameOrigin:origin];
+        }
+        horizontalShift += delta.width;
+      }
+      break;
+    }
+    case kAutoSizeGroupBehaviorHorizontalFirstGrows: {
+      // Walk right to left doing the sizing and moves, then apply the space
+      // collected into the first.
+      // NOTE: Don't worry about vertical, assume it always all fits.
+      CGFloat horizontalShift = 0.0;
+      for (NSUInteger idx = [views count] - 1; idx > 1; --idx) {
+        NSView* view = [views objectAtIndex:idx];
+        NSSize delta = WrapOrSizeToFit(view);
+        DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+        horizontalShift -= delta.width;
+        NSPoint origin = [view frame].origin;
+        origin.x += horizontalShift;
+        [view setFrameOrigin:origin];
+      }
+      if (horizontalShift) {
+        NSView* view = [views objectAtIndex:1];
+        NSSize delta = NSMakeSize(horizontalShift, 0.0);
+        [GTMUILocalizerAndLayoutTweaker
+            resizeViewWithoutAutoResizingSubViews:view
+                                            delta:delta];
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // If the label grew more then the views, the other views get an extra shift.
+  // Otherwise, move the label to its top is aligned with the other views.
+  CGFloat nonLabelShift = 0.0;
+  if (labelHeightChange > localVerticalShift) {
+    // Since the lable is taller, centering the other views looks best, just
+    // shift the views by 1/2 of the size difference.
+    nonLabelShift = (labelHeightChange - localVerticalShift) / 2.0;
+  } else {
+    NSPoint origin = [label frame].origin;
+    origin.y += localVerticalShift - labelHeightChange;
+    [label setFrameOrigin:origin];
+  }
+
+  // Apply the input shift requested along with any the shift from label being
+  // taller then the rest of the group.
+  for (NSView* view in views) {
+    NSPoint origin = [view frame].origin;
+    origin.y += verticalShift;
+    if (view != label) {
+      origin.y += nonLabelShift;
+    }
+    [view setFrameOrigin:origin];
+  }
+
+  // Return how much the group grew.
+  return localVerticalShift + nonLabelShift;
 }
 
 }  // namespace
@@ -179,9 +335,49 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)awakeFromNib {
-  NSRect underTheHoodFrame = [underTheHoodView_ frame];
+
+  // Do runtime fixup of the "basics" and "personal stuff" pages for the
+  // strings.  Work bottom up shifting views up as needed, and then resize the
+  // page.
+  CGFloat verticalShift = 0.0;
+  verticalShift += AutoSizeGroup(basicsGroupDefaultBrowser_,
+                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(basicsGroupSearchEngine_,
+                                 kAutoSizeGroupBehaviorHorizontalFirstGrows,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(basicsGroupToolbar_,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(basicsGroupHomePage_,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(basicsGroupStartup_,
+                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 verticalShift);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeViewWithoutAutoResizingSubViews:basicsView_
+                                      delta:NSMakeSize(0.0, verticalShift)];
+
+  verticalShift = 0.0;
+  verticalShift += AutoSizeGroup(personalStuffGroupThemes_,
+                                 kAutoSizeGroupBehaviorHorizontalToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(personalStuffGroupBrowserData_,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(personalStuffGroupAutofill_,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
+                                 verticalShift);
+  verticalShift += AutoSizeGroup(personalStuffGroupPasswords_,
+                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 verticalShift);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeViewWithoutAutoResizingSubViews:personalStuffView_
+                                      delta:NSMakeSize(0.0, verticalShift)];
 
   // Make sure the window is wide enough to fit the the widest view
+  NSRect underTheHoodFrame = [underTheHoodView_ frame];
   CGFloat widest = std::max(NSWidth([basicsView_ frame]),
                             NSWidth([personalStuffView_ frame]));
   widest = std::max(widest, NSWidth(underTheHoodFrame));
@@ -199,14 +395,14 @@ class PrefObserverBridge : public NotificationObserver {
   advancedContentSize.width = [advancedScroller_ contentSize].width;
   [advancedView_ setFrameSize:advancedContentSize];
 
-  // Put the advanced view into the scroller and scroll it to the top.
-  [advancedScroller_ setDocumentView:advancedView_];
-  [advancedView_ scrollPoint:NSMakePoint(0, advancedContentSize.height)];
-
   // Adjust the view origins so they show up centered.
   CenterViewForWidth(basicsView_, widest);
   CenterViewForWidth(personalStuffView_, widest);
   CenterViewForWidth(underTheHoodView_, widest);
+
+  // Put the advanced view into the scroller and scroll it to the top.
+  [advancedScroller_ setDocumentView:advancedView_];
+  [advancedView_ scrollPoint:NSMakePoint(0, advancedContentSize.height)];
 
   // Get the last visited page from local state.
   OptionsPage page = static_cast<OptionsPage>(lastSelectedPage_.GetValue());

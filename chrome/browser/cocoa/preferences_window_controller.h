@@ -41,6 +41,19 @@ class Profile;
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember lastSelectedPage_;
 
+  // The groups of the Basics view for layout fixup.
+  IBOutlet NSArray* basicsGroupStartup_;
+  IBOutlet NSArray* basicsGroupHomePage_;
+  IBOutlet NSArray* basicsGroupToolbar_;
+  IBOutlet NSArray* basicsGroupSearchEngine_;
+  IBOutlet NSArray* basicsGroupDefaultBrowser_;
+
+  // The groups of the Personal Stuff view for layout fixup.
+  IBOutlet NSArray* personalStuffGroupPasswords_;
+  IBOutlet NSArray* personalStuffGroupAutofill_;
+  IBOutlet NSArray* personalStuffGroupBrowserData_;
+  IBOutlet NSArray* personalStuffGroupThemes_;
+
   // Having two animations around is bad (they fight), so just use one.
   scoped_nsobject<NSViewAnimation> animation_;
 
