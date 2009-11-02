@@ -3201,7 +3201,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../webkit/webkit.gyp:glue',
-        '../webkit/webkit.gyp:webkit',
+        '../webkit/api/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
@@ -3389,7 +3389,7 @@
       'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
       'dependencies': [
         '../base/base.gyp:base',
-        '../webkit/webkit.gyp:webkit',
+        '../webkit/api/WebKit.gyp:webkit',
       ],
       'sources': [
         'worker/nativewebworker_impl.cc',
@@ -4376,7 +4376,7 @@
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
-        '../webkit/webkit.gyp:webkit',
+        '../webkit/api/WebKit.gyp:webkit',
         '../webkit/webkit.gyp:webkit_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
@@ -6533,7 +6533,7 @@
               'syncapi',
               'test_support_unit',
               '../printing/printing.gyp:printing',
-              '../webkit/webkit.gyp:webkit',
+              '../webkit/api/WebKit.gyp:webkit',
               '../skia/skia.gyp:skia',
               '../testing/gtest.gyp:gtest',
               '../third_party/icu/icu.gyp:icui18n',

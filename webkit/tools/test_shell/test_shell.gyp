@@ -39,7 +39,7 @@
         '../../webkit.gyp:appcache',
         '../../webkit.gyp:database',
         '../../webkit.gyp:glue',
-        '../../webkit.gyp:webkit',
+        '../../api/WebKit.gyp:webkit',
         '../../webkit.gyp:inspector_resources',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
@@ -116,7 +116,7 @@
         '../../../net/net.gyp:net',
         '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../../webkit.gyp:glue',
-        '../../webkit.gyp:webkit',
+        '../../api/WebKit.gyp:webkit',
       ],
       'conditions': [
         # http://code.google.com/p/chromium/issues/detail?id=18337
