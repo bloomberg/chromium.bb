@@ -820,6 +820,11 @@ void WebPluginDelegateProxy::OnSetWindowlessPumpEvent(
       HANDLE modal_loop_pump_messages_event) {
   DCHECK(modal_loop_pump_messages_event_ == NULL);
 
+  // Bug 25583: this can be null because some "virus scanners" block the
+  // DuplicateHandle call in the plugin process.
+  if (!modal_loop_pump_messages_event)
+    return;
+
   modal_loop_pump_messages_event_.reset(
       new base::WaitableEvent(modal_loop_pump_messages_event));
 }
