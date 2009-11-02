@@ -11,17 +11,13 @@
 #include "chrome/common/notification_registrar.h"
 
 class NavigationController;
+@class RepostDelegate;
 class RepostFormWarningMac;
 
-@interface RepostDelegate : NSObject {
-  RepostFormWarningMac* warning_;  // weak, owns us.
-}
-- (id)initWithWarning:(RepostFormWarningMac*)warning;
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
-@end
-
+// Displays a dialog that warns the user that they are about to resubmit a form.
+// To display the dialog, allocate this object on the heap. It will open the
+// dialog from its constructor and then delete itself when the user dismisses
+// the dialog.
 class RepostFormWarningMac : public NotificationObserver {
  public:
   RepostFormWarningMac(NSWindow* parent,

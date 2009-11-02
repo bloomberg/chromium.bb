@@ -11,6 +11,10 @@
 
 class NavigationController;
 
+// Displays a dialog that warns the user that they are about to resubmit a form.
+// To display the dialog, allocate this object on the heap. It will open the
+// dialog from its constructor and then delete itself when the user dismisses
+// the dialog.
 class RepostFormWarningGtk : public NotificationObserver {
  public:
   RepostFormWarningGtk(GtkWindow* parent,

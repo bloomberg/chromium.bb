@@ -10,6 +10,17 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 
+// The delegate of the NSAlert used to display the dialog. Forwards the alert's
+// completion event to the C++ class |RepostFormWarningMac|.
+@interface RepostDelegate : NSObject {
+  RepostFormWarningMac* warning_;  // weak, owns us.
+}
+- (id)initWithWarning:(RepostFormWarningMac*)warning;
+- (void)alertDidEnd:(NSAlert*)alert
+         returnCode:(int)returnCode
+        contextInfo:(void*)contextInfo;
+@end
+
 @implementation RepostDelegate
 - (id)initWithWarning:(RepostFormWarningMac*)warning {
   if ((self = [super init])) {
