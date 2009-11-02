@@ -46,7 +46,11 @@
 
 /* BEGIN GOOGLE MODIFICATIONS */
 
+#ifdef __native_client__
+#include <stdint.h>
+#else
 #include "base/basictypes.h"
+#endif  /* __native_client__ */
 
 /* END GOOGLE MODIFICATIONS */
 
@@ -382,11 +386,11 @@ typedef enum {
   NPPVpluginWantsAllNetworkStreams = 18,
   
   /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
-  NPPVpluginCancelSrcStream = 20,
+  NPPVpluginCancelSrcStream = 20
   
 #ifdef XP_MACOSX
   /* Used for negotiating drawing models */
-  NPPVpluginDrawingModel = 1000,
+  , NPPVpluginDrawingModel = 1000,
   /* Used for negotiating event models */
   NPPVpluginEventModel = 1001,
   /* In the NPDrawingModelCoreAnimation drawing model, the browser asks the plug-in for a Core Animation layer. */

@@ -70,10 +70,8 @@
 
 
 // BEGIN GOOGLE MODIFICATIONS
-
-#include "base/basictypes.h"
-#include "bindings/npapi.h"
-
+#include "npapi.h"
+#ifndef __native_client__
 typedef uint8 uint8_t;
 typedef int8 int8_t;
 typedef uint16 uint16_t;
@@ -82,7 +80,7 @@ typedef uint32 uint32_t;
 typedef int32 int32_t;
 typedef int64 int64_t;
 typedef uint64 uint64_t;
-
+#endif  /* __native_client__ */
 // END GOOGLE MODIFICATIONS
 
 
