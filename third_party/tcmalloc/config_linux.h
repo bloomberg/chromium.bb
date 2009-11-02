@@ -79,6 +79,9 @@
 /* define if the compiler implements namespaces */
 #define HAVE_NAMESPACES 1
 
+/* Define to 1 if you have the <poll.h> header file. */
+#define HAVE_POLL_H 1
+
 /* define if libc has program_invocation_name */
 #define HAVE_PROGRAM_INVOCATION_NAME 1
 
@@ -167,13 +170,13 @@
 #define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "google-perftools 1.3"
+#define PACKAGE_STRING "google-perftools 1.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "google-perftools"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.3"
+#define PACKAGE_VERSION "1.4"
 
 /* How to access the PC from a struct ucontext */
 #define PC_FROM_UCONTEXT uc_mcontext.gregs[REG_RIP]
@@ -205,7 +208,7 @@
 #define STL_NAMESPACE std
 
 /* Version number of package */
-#define VERSION "1.3"
+#define VERSION "1.4"
 
 /* C99 says: define this to get the PRI... macros from stdint.h */
 #ifndef __STDC_FORMAT_MACROS

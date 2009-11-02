@@ -261,6 +261,9 @@
 # define _WIN32_WINNT 0x0400
 #endif
 
+// We want to make sure not to ever try to #include heap-checker.h
+#define NO_HEAP_CHECK 1
+
 // TODO(csilvers): include windows/port.h in every relevant source file instead?
 #include "windows/port.h"
 

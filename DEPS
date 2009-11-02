@@ -64,7 +64,7 @@ deps = {
     Var("webkit_trunk") + "/WebKit/chromium@" + Var("webkit_revision"),
 
   "src/third_party/tcmalloc/tcmalloc":
-    "http://google-perftools.googlecode.com/svn/trunk@74",
+    "http://google-perftools.googlecode.com/svn/trunk@77",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",

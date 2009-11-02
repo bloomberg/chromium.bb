@@ -88,6 +88,8 @@
         'tcmalloc/src/google/tcmalloc.h',
         'tcmalloc/src/maybe_threads.cc',
         'tcmalloc/src/maybe_threads.h',
+        'tcmalloc/src/symbolize.cc',
+        'tcmalloc/src/symbolize.h',
         'tcmalloc/src/system-alloc.cc',
         'tcmalloc/src/system-alloc.h',
         'tcmalloc/src/tcmalloc.cc',
@@ -117,8 +119,6 @@
         'system-alloc.h',
         'tcmalloc.cc',
         'win_allocator.cc',        
-
-        'malloc_hook.cc',
 
         # jemalloc files
         'jemalloc/jemalloc.c',
@@ -171,6 +171,8 @@
             'tcmalloc/src/base/vdso_support.h',
             'tcmalloc/src/maybe_threads.cc',
             'tcmalloc/src/maybe_threads.h',
+            'tcmalloc/src/symbolize.cc',
+            'tcmalloc/src/symbolize.h',
             'tcmalloc/src/system-alloc.cc',
             'tcmalloc/src/system-alloc.h',
 
@@ -192,9 +194,6 @@
             'tcmalloc/src/profile-handler.cc',
             'tcmalloc/src/profile-handler.h',
             'tcmalloc/src/profiler.cc',
-
-            # don't use linux forked versions
-            'malloc_hook.cc',
           ],
         }],
         ['OS=="linux"', {
@@ -214,9 +213,6 @@
             'jemalloc/ql.h',
             'jemalloc/qr.h',
             'jemalloc/rb.h',
-
-            # TODO(willchan): Unfork linux.
-            'tcmalloc/src/malloc_hook.cc',
           ],
           'cflags!': [
             '-fvisibility=hidden',
