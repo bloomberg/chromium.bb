@@ -35,7 +35,6 @@
 
 typedef struct _GdkEventButton GdkEventButton;
 typedef struct _GdkEventMotion GdkEventMotion;
-typedef struct _GdkEventCrossing GdkEventCrossing;
 typedef struct _GdkEventScroll GdkEventScroll;
 typedef struct _GdkEventKey GdkEventKey;
 
@@ -51,7 +50,6 @@ namespace WebKit {
         WEBKIT_API static WebKeyboardEvent keyboardEvent(wchar_t character, int state, double timeStampSeconds);
         WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventButton*);
         WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventMotion*);
-        WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventCrossing*);
         WEBKIT_API static WebMouseWheelEvent mouseWheelEvent(const GdkEventScroll*);
     };
 

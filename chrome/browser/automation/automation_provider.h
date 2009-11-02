@@ -173,9 +173,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            int handle,
                            const gfx::Point& click,
                            int flags);
-  void WindowSimulateMouseMove(const IPC::Message& message,
-                               int handle,
-                               const gfx::Point& location);
   void WindowSimulateKeyPress(const IPC::Message& message,
                               int handle,
                               int key,

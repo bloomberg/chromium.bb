@@ -303,7 +303,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
 #endif  // !defined(OS_MACOSX)
 #if defined(OS_WIN) || defined(OS_LINUX)
@@ -844,13 +843,6 @@ void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
     ui_controls::SendMouseMoveNotifyWhenDone(click.x(), click.y(),
                                              new ClickTask(flags));
   }
-}
-
-void AutomationProvider::WindowSimulateMouseMove(const IPC::Message& message,
-                                                 int handle,
-                                                 const gfx::Point& location) {
-  if (window_tracker_->ContainsHandle(handle))
-    ui_controls::SendMouseMove(location.x(), location.y());
 }
 
 void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
