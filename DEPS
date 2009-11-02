@@ -19,7 +19,7 @@ deps = {
     "http://open-vcdiff.googlecode.com/svn/trunk@28",
 
   "src/testing/gtest":
-    "http://googletest.googlecode.com/svn/trunk@329",
+    "http://googletest.googlecode.com/svn/trunk@336",
 
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@27313",
