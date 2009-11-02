@@ -36,25 +36,6 @@
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 
-namespace {
-
-string16 EscapeAmpersands(const string16& text) {
-  string16 ret;
-  ret.reserve(text.length() * 2);
-  for (string16::const_iterator i = text.begin();
-       i != text.end(); ++i) {
-    // The escape for an ampersand is two ampersands.
-    if ('&' == *i)
-      ret.push_back(*i);
-
-    ret.push_back(*i);
-  }
-
-  return ret;
-}
-
-}  // namespace
-
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
@@ -218,33 +199,37 @@ void RenderViewContextMenu::AppendCopyItem() {
 
 void RenderViewContextMenu::AppendSearchProvider() {
   DCHECK(profile_);
-  const TemplateURL* const default_provider =
-      profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
-  if (!default_provider)
-    return;
 
-  string16 selection_text = EscapeAmpersands(WideToUTF16(
-      l10n_util::TruncateString(params_.selection_text, 50)));
-  if (selection_text.empty())
+  if (params_.selection_text.empty())
     return;
 
   bool is_search;
   profile_->GetSearchVersusNavigateClassifier()->Classify(
-      UTF16ToWide(selection_text), std::wstring(), &is_search,
+      params_.selection_text, std::wstring(), &is_search,
       &selection_navigation_url_, &transition_, NULL, NULL);
   if (!selection_navigation_url_.is_valid())
     return;
 
+  string16 printable_selection_text(
+      WideToUTF16(l10n_util::TruncateString(params_.selection_text, 50)));
+  // Escape "&" as "&&".
+  for (size_t i = printable_selection_text.find('&'); i != string16::npos;
+       i = printable_selection_text.find('&', i + 2))
+    printable_selection_text.insert(i, 1, '&');
+
   if (is_search) {
-    string16 label(l10n_util::GetStringFUTF16(
-        IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-        WideToUTF16(default_provider->short_name()),
-        selection_text));
-    AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR, label);
+    const TemplateURL* const default_provider =
+        profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+    if (!default_provider)
+      return;
+    AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+                       WideToUTF16(default_provider->short_name()),
+                       printable_selection_text));
   } else {
-    string16 label(l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
-                                              selection_text));
-    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL, label);
+    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
+                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
+                                              printable_selection_text));
   }
 }
 
