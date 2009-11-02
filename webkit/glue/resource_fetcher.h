@@ -61,8 +61,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
   virtual void didReceiveResponse(
       WebKit::WebURLLoader* loader, const WebKit::WebURLResponse& response);
   virtual void didReceiveData(
-      WebKit::WebURLLoader* loader, const char* data, int data_length,
-      long long total_data_length);
+      WebKit::WebURLLoader* loader, const char* data, int data_length);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader);
   virtual void didFail(
       WebKit::WebURLLoader* loader, const WebKit::WebURLError& error);

@@ -246,6 +246,63 @@ TestSuite.prototype.testEnableResourcesTab = function() {
 
 
 /**
+ * Tests that correct content length is reported for resources.
+ */
+TestSuite.prototype.testResourceContentLength = function() {
+  this.showPanel('resources');
+  var test = this;
+
+  var png = false;
+  var html = false;
+  this.addSniffer(WebInspector, 'updateResource',
+      function(identifier, payload) {
+        if (!payload.didLengthChange)
+          return;
+        var resource = WebInspector.resources[identifier];
+        if (!resource || !resource.url)
+          return;
+        if (resource.url.search('image.html$') != -1) {
+          var expectedLength = 93;
+          test.assertTrue(
+              resource.contentLength <= expectedLength,
+              'image.html content length is greater thatn expected.');
+          if (expectedLength == resource.contentLength) {
+            html = true;
+          }
+        } else if (resource.url.search('image.png') != -1) {
+          var expectedLength = 257796;
+          test.assertTrue(
+              resource.contentLength <= expectedLength,
+              'image.png content length is greater than expected.');
+          if (expectedLength == resource.contentLength) {
+            png = true;
+          }
+        }
+        if (html && png) {
+          // Wait 1 second before releasing control to check that the content
+          // lengths are not updated anymore.
+          setTimeout(function() {
+            test.releaseControl();
+          }, 1000);
+        }
+      }, true);
+
+  // Make sure resource tracking is on.
+  WebInspector.panels.resources._enableResourceTracking();
+  // Reload inspected page to update all resources.
+  test.evaluateInConsole_(
+      'window.location.reload(true);',
+       function(resultText) {
+           test.assertEquals('undefined', resultText,
+                             'Unexpected result of reload().');
+       });
+
+  // We now have some time to report results to controller.
+  this.takeControl();
+};
+
+
+/**
  * Tests resource headers.
  */
 TestSuite.prototype.testResourceHeaders = function() {

@@ -97,7 +97,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
 
   // Receives individual part data from a multipart response.
   virtual void didReceiveData(
-      WebURLLoader*, const char* data, int data_size, long long) {
+      WebURLLoader*, const char* data, int data_size) {
     // TODO(ananta)
     // We should defer further loads on multipart resources on the same lines
     // as regular resources requested by plugins to prevent reentrancy.
@@ -713,7 +713,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
 
 void WebPluginImpl::didReceiveData(WebURLLoader* loader,
                                    const char *buffer,
-                                   int length, long long) {
+                                   int length) {
   WebPluginResourceClient* client = GetClientFromLoader(loader);
   if (!client)
     return;

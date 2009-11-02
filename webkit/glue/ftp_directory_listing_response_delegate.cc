@@ -250,7 +250,7 @@ void FtpDirectoryListingResponseDelegate::Init() {
 void FtpDirectoryListingResponseDelegate::SendResponseBufferToClient() {
   if (!response_buffer_.empty()) {
     client_->didReceiveData(loader_, response_buffer_.data(),
-                            response_buffer_.length(), -1);
+                            response_buffer_.length());
     response_buffer_.clear();
   }
 }

@@ -49,6 +49,7 @@ const wchar_t kConsoleTestPage[] = L"files/devtools/console_test_page.html";
 const wchar_t kDebuggerTestPage[] = L"files/devtools/debugger_test_page.html";
 const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
 const wchar_t kJsPage[] = L"files/devtools/js_page.html";
+const wchar_t kResourceContentLengthTestPage[] = L"files/devtools/image.html";
 const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
 const wchar_t kSyntaxErrorTestPage[] =
@@ -268,6 +269,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
 // Tests resources panel enabling.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
+}
+
+// Tests resources have correct sizes.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceContentLength) {
+  RunTest("testResourceContentLength", kResourceContentLengthTestPage);
 }
 
 // Tests resource headers.

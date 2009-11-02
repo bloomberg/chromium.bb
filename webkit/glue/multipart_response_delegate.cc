@@ -81,10 +81,6 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
   if (stop_sending_)
     return;
 
-  // TODO(tc): Figure out what to use for length_received.  Maybe we can just
-  // pass the value on from our caller.
-  int length_received = -1;
-
   data_.append(data, data_len);
   if (first_received_data_) {
     // Some servers don't send a boundary token before the first chunk of
@@ -132,8 +128,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
       // Send the last data chunk.
       client_->didReceiveData(loader_,
                               data_.data(),
-                              static_cast<int>(boundary_pos),
-                              length_received);
+                              static_cast<int>(boundary_pos));
     }
     size_t boundary_end_pos = boundary_pos + boundary_.length();
     if (boundary_end_pos < data_.length() && '-' == data_[boundary_end_pos]) {
@@ -159,13 +154,9 @@ void MultipartResponseDelegate::OnCompletedRequest() {
   // If we have any pending data and we're not in a header, go ahead and send
   // it to WebCore.
   if (!processing_headers_ && !data_.empty()) {
-    // TODO(tc): Figure out what to use for length_received.  Maybe we can just
-    // pass the value on from our caller.
-    int length_received = -1;
     client_->didReceiveData(loader_,
                             data_.data(),
-                            static_cast<int>(data_.length()),
-                            length_received);
+                            static_cast<int>(data_.length()));
   }
 }
 

@@ -68,8 +68,7 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     data_.clear();
   }
   virtual void didReceiveData(WebURLLoader* loader,
-                              const char* data, int data_length,
-                              long long length_received) {
+                              const char* data, int data_length) {
     ++received_data_;
     data_.append(data, data_length);
   }

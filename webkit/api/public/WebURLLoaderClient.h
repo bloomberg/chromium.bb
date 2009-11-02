@@ -53,7 +53,7 @@ namespace WebKit {
         virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&) = 0;
 
         // Called when a chunk of response data is received.
-        virtual void didReceiveData(WebURLLoader*, const char* data, int dataLength, long long totalDataLength) = 0;
+        virtual void didReceiveData(WebURLLoader*, const char* data, int dataLength) = 0;
 
         // Called when the load completes successfully.
         virtual void didFinishLoading(WebURLLoader*) = 0;

@@ -233,7 +233,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
-  int64 expected_content_length_;
 };
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader)
@@ -432,8 +431,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   PopulateURLResponse(request_.url(), info, &response);
   response.setIsContentFiltered(content_filtered);
 
-  expected_content_length_ = response.expectedContentLength();
-
   if (info.mime_type == "text/vnd.chromium.ftp-dir")
     response.setMIMEType(WebString::fromUTF8("text/html"));
 
@@ -478,7 +475,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
     // client_->didReceiveData and client_->didReceiveResponse.
     multipart_delegate_->OnReceivedData(data, len);
   } else {
-    client_->didReceiveData(loader_, data, len, expected_content_length_);
+    client_->didReceiveData(loader_, data, len);
   }
 }
 

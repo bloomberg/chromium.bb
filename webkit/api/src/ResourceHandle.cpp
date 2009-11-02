@@ -69,8 +69,7 @@ public:
     virtual void didSendData(
         WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
     virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&);
-    virtual void didReceiveData(
-        WebURLLoader*, const char* data, int dataLength, long long totalDataLength);
+    virtual void didReceiveData(WebURLLoader*, const char* data, int dataLength);
     virtual void didFinishLoading(WebURLLoader*);
     virtual void didFail(WebURLLoader*, const WebURLError&);
 
@@ -132,16 +131,14 @@ void ResourceHandleInternal::didReceiveResponse(WebURLLoader*, const WebURLRespo
 }
 
 void ResourceHandleInternal::didReceiveData(
-    WebURLLoader*, const char* data, int dataLength, long long totalDataLength)
+    WebURLLoader*, const char* data, int dataLength)
 {
     ASSERT(m_client);
 
-    // FIXME: ResourceHandleClient::didReceiveData should take a 'long long'
-    int lengthReceived = static_cast<int>(totalDataLength);
-    if (lengthReceived != totalDataLength)  // overflow occurred
-      lengthReceived = -1;
-
-    m_client->didReceiveData(m_owner, data, dataLength, lengthReceived);
+    // FIXME(yurys): it looks like lengthReceived is always the same as
+    // dataLength and that the latter parameter can be eliminated.
+    // See WebKit bug: https://bugs.webkit.org/show_bug.cgi?id=31019
+    m_client->didReceiveData(m_owner, data, dataLength, dataLength);
 }
 
 void ResourceHandleInternal::didFinishLoading(WebURLLoader*)
