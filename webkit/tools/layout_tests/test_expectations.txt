@@ -799,6 +799,9 @@ BUG9798 BUG13907 WIN RELEASE : LayoutTests/media/video-error-abort.html = FAIL P
 // We output an extra playing event and video durations are different.
 BUG13907 SKIP : LayoutTests/media/video-loop.html = FAIL
 
+// This one times out occasionally.
+BUG13907 WIN : LayoutTests/media/video-load-networkState.html = PASS TIMEOUT
+
 // We occasionally fail to perform the third seek.
 BUG13907 MAC WIN : LayoutTests/media/video-seeking.html = PASS FAIL
 BUG13907 LINUX RELEASE : LayoutTests/media/video-seeking.html = PASS FAIL
@@ -2618,6 +2621,7 @@ BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PA
 BUG9798 MAC : LayoutTests/http/tests/misc/xmltokenizer-do-not-crash.pl = PASS TIMEOUT
 // Occasionally times out. Not just slow.
 BUG9798 WIN DEBUG : LayoutTests/http/tests/loading/redirect-methods.html = TIMEOUT PASS
+BUG9798 MAC DEBUG : LayoutTests/plugins/geturl-replace-query.html = TEXT PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -3002,7 +3006,7 @@ BUG21958 MAC : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
-BUG22014 LINUX MAC : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
+BUG22014 : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
 
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
@@ -3047,7 +3051,7 @@ BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PA
 BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
-BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
 
 // WebKit update: 49213:49221
 BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
@@ -3199,6 +3203,7 @@ BUG26195 MAC : chrome/plugins/script-object-invoke.html = TEXT
 
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
+BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size.html = PASS TEXT
 BUG26195 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-single-quote.html = PASS TIMEOUT
 
 // expected test failures (passed in roll to WebKit r50313)
@@ -3263,8 +3268,12 @@ BUG_ROLANDSTEINER MAC : LayoutTests/fast/events/click-focus-anchor.html = TEXT
 BUG_ROLANDSTEINER MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TEXT
 BUG_ROLANDSTEINER WIN : LayoutTests/fast/events/click-focus-anchor.html = TEXT
 BUG_ROLANDSTEINER WIN : LayoutTests/fast/block/float/float-in-float-hit-testing.html = IMAGE
-BUG9798 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
-BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
+BUG9798 WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
+
+// Flaky since at least WebKit 50258.
+BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
+BUG9798 WIN MAC RELEASE : LayoutTests/fast/dom/defaultView.html = TEXT PASS
+BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
 // Turned flaky at WebKit 50325:50358
 BUG_SENORBLANCO WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
