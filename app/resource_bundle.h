@@ -74,13 +74,9 @@ class ResourceBundle {
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
-  // Load the data file that contains theme resources if present.
-  void LoadThemeResources();
-
-  // Gets the bitmap with the specified resource_id, first by looking into the
-  // theme data, then in the current module data if applicable.
-  // Returns a pointer to a shared instance of the SkBitmap. This shared bitmap
-  // is owned by the resource bundle and should not be freed.
+  // Gets the bitmap with the specified resource_id from the current module
+  // data. Returns a pointer to a shared instance of the SkBitmap. This shared
+  // bitmap is owned by the resource bundle and should not be freed.
   //
   // The bitmap is assumed to exist. This function will log in release, and
   // assert in debug mode if it does not. On failure, this will return a
@@ -116,7 +112,7 @@ class ResourceBundle {
   const gfx::Font& GetFont(FontStyle style);
 
 #if defined(OS_WIN)
-  // Loads and returns an icon from the theme dll.
+  // Loads and returns an icon from the app module.
   HICON LoadThemeIcon(int icon_id);
 
   // Loads and returns a cursor from the app module.
@@ -125,10 +121,9 @@ class ResourceBundle {
   // Wrapper for GetBitmapNamed. Converts the bitmap to an autoreleased NSImage.
   NSImage* GetNSImageNamed(int resource_id);
 #elif defined(USE_X11)
-  // Gets the GdkPixbuf with the specified resource_id, first by looking into
-  // the theme data, than in the current module data if applicable.  Returns a
-  // pointer to a shared instance of the GdkPixbuf.  This shared GdkPixbuf is
-  // owned by the resource bundle and should not be freed.
+  // Gets the GdkPixbuf with the specified resource_id from the main data pak
+  // file. Returns a pointer to a shared instance of the GdkPixbuf.  This
+  // shared GdkPixbuf is owned by the resource bundle and should not be freed.
   //
   // The bitmap is assumed to exist. This function will log in release, and
   // assert in debug mode if it does not. On failure, this will return a
@@ -203,7 +198,6 @@ class ResourceBundle {
   // Handles for data sources.
   DataHandle resources_data_;
   DataHandle locale_resources_data_;
-  DataHandle theme_data_;
 
   // Cached images. The ResourceBundle caches all retrieved bitmaps and keeps
   // ownership of the pointers.

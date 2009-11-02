@@ -105,7 +105,6 @@ void FakeExternalTab::Initialize() {
   app::RegisterPathProvider();
 
   ResourceBundle::InitSharedInstance(L"en-US");
-  ResourceBundle::GetSharedInstance().LoadThemeResources();
 
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
   browser_process_.reset(new BrowserProcessImpl(*cmd));

@@ -108,7 +108,6 @@ class ChromeTestSuite : public TestSuite {
     // Force unittests to run using en-US so if we test against string
     // output, it'll pass regardless of the system language.
     ResourceBundle::InitSharedInstance(L"en-US");
-    ResourceBundle::GetSharedInstance().LoadThemeResources();
 
     // initialize the global StatsTable for unit_tests
     std::string statsfile = "unit_tests";

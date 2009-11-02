@@ -42,9 +42,6 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   // the strings avaiable for localization.
   if (!parameters.ui_task) {
     ResourceBundle::InitSharedInstance(std::wstring());
-    // We only load the theme resources in the browser process, since this is
-    // the browser process, load them.
-    ResourceBundle::GetSharedInstance().LoadThemeResources();
   }
   // Now load the nib.
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];

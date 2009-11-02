@@ -36,10 +36,6 @@ ResourceBundle::~ResourceBundle() {
     BOOL rv = FreeLibrary(locale_resources_data_);
     DCHECK(rv);
   }
-  if (theme_data_) {
-    BOOL rv = FreeLibrary(theme_data_);
-    DCHECK(rv);
-  }
 }
 
 void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
@@ -73,18 +69,6 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
   return locale_path.AppendASCII(app_locale + ".dll");
 }
 
-void ResourceBundle::LoadThemeResources() {
-  DCHECK(NULL == theme_data_) << "theme dll already loaded";
-  FilePath theme_data_path;
-  PathService::Get(app::DIR_THEMES, &theme_data_path);
-  theme_data_path = theme_data_path.AppendASCII("default.dll");
-
-  // The dll should only have resources, not executable code.
-  theme_data_ = LoadLibraryEx(theme_data_path.value().c_str(), NULL,
-                              GetDataDllLoadFlags());
-  DCHECK(theme_data_ != NULL) << "unable to load " << theme_data_path.value();
-}
-
 // static
 RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
     DataHandle module, int resource_id) {
@@ -100,7 +84,7 @@ RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
 }
 
 HICON ResourceBundle::LoadThemeIcon(int icon_id) {
-  return ::LoadIcon(theme_data_, MAKEINTRESOURCE(icon_id));
+  return ::LoadIcon(resources_data_, MAKEINTRESOURCE(icon_id));
 }
 
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {

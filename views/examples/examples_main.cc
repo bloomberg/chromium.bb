@@ -45,7 +45,6 @@ void ExamplesMain::Run() {
   // This requires chrome to be built first right now.
   // TODO(oshima): fix build to include resource file.
   ResourceBundle::InitSharedInstance(L"en-US");
-  ResourceBundle::GetSharedInstance().LoadThemeResources();
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 

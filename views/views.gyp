@@ -361,6 +361,8 @@
         'examples/scroll_view_example.h',
         'examples/tabbed_pane_example.h',
         'examples/textfield_example.h',
+
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
       ],
       'conditions': [
         ['OS=="linux"', {

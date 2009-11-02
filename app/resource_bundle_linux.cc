@@ -69,7 +69,6 @@ ResourceBundle::~ResourceBundle() {
   locale_resources_data_ = NULL;
   delete resources_data_;
   resources_data_ = NULL;
-  theme_data_ = NULL;
 }
 
 void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
@@ -105,13 +104,6 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
     return FilePath();
 
   return locale_path.AppendASCII(app_locale + ".pak");
-}
-
-void ResourceBundle::LoadThemeResources() {
-  // The data has been merged with chrome.pak so just set the pointer to be
-  // the same file.
-  DCHECK(resources_data_);
-  theme_data_ = resources_data_;
 }
 
 // static

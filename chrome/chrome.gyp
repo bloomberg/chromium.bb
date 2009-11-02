@@ -4821,9 +4821,11 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
@@ -5525,7 +5527,6 @@
                 'chrome_dll_version',
                 'chrome_resources',
                 'installer/installer.gyp:installer_util_strings',
-                'theme_dll',
                 'worker',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
@@ -5561,9 +5562,11 @@
                 # their various targets (net.gyp:net_resources, etc.),
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
@@ -6567,9 +6570,11 @@
               'test/ui_test_utils_win.cc',
               'test/data/resource.h',
               'test/data/resource.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             ],
             'conditions': [
               # Plugin code.
@@ -6657,9 +6662,11 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_dll_version.rc.version',
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             # browser_tests_sources and browser_tests_source_win_specific are
             # defined in 'variables' at the top of the file.
             '<@(browser_tests_sources)',
@@ -6869,43 +6876,6 @@
             'test/chrome_plugin/test_chrome_plugin.def',
             'test/chrome_plugin/test_chrome_plugin.h',
           ],
-        },
-        {
-          'target_name': 'theme_dll',
-          'type': 'loadable_module',
-          'msvs_guid': 'FD683DD6-D9BF-4B1B-AB6D-A3AC03EDAA4D',
-          'product_name': 'default',
-          'dependencies': [
-            'theme_resources',
-            '../app/app.gyp:app_resources',
-          ],
-          'sources': [
-            '<(grit_out_dir)/theme_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'BaseAddress': '0x3CE00000',
-              'OutputFile': '<(PRODUCT_DIR)/themes/default.dll',
-              'ResourceOnlyDLL': 'true',
-            },
-          },
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-            'Release': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkTimeCodeGeneration': '1',
-                },
-              },
-            }
-          },
         },
       ]},  # 'targets'
     ],  # OS=="win"

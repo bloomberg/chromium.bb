@@ -461,8 +461,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!parameters.ui_task) {
     ResourceBundle::InitSharedInstance(
         local_state->GetString(prefs::kApplicationLocale));
-    // We only load the theme dll in the browser process.
-    ResourceBundle::GetSharedInstance().LoadThemeResources();
   }
 #endif  // !defined(OS_MACOSX)
 

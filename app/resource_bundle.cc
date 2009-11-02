@@ -55,8 +55,7 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 
 ResourceBundle::ResourceBundle()
     : resources_data_(NULL),
-      locale_resources_data_(NULL),
-      theme_data_(NULL) {
+      locale_resources_data_(NULL) {
 }
 
 void ResourceBundle::FreeImages() {
@@ -89,7 +88,7 @@ std::string ResourceBundle::GetDataResource(int resource_id) {
 
 RefCountedStaticMemory* ResourceBundle::LoadImageResourceBytes(
     int resource_id) {
-  return LoadResourceBytes(theme_data_, resource_id);
+  return LoadResourceBytes(resources_data_, resource_id);
 }
 
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
@@ -108,15 +107,10 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
 
   scoped_ptr<SkBitmap> bitmap;
 
-  if (theme_data_)
-    bitmap.reset(LoadBitmap(theme_data_, resource_id));
+  bitmap.reset(LoadBitmap(resources_data_, resource_id));
 
-  // If we did not find the bitmap in the theme DLL, try the current one.
-  if (!bitmap.get())
-    bitmap.reset(LoadBitmap(resources_data_, resource_id));
-
-  // We loaded successfully.  Cache the Skia version of the bitmap.
   if (bitmap.get()) {
+    // We loaded successfully.  Cache the Skia version of the bitmap.
     AutoLock lock_scope(lock_);
 
     // Another thread raced us, and has already cached the skia image.
