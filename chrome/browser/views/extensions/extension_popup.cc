@@ -14,6 +14,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "views/widget/root_view.h"
+#include "views/window/window.h"
 
 using views::Widget;
 
@@ -64,6 +65,10 @@ void ExtensionPopup::Hide() {
 void ExtensionPopup::Show() {
   if (visible())
     return;
+
+#if defined(OS_WIN)
+  frame_->GetWindow()->DisableInactiveRendering();
+#endif
 
   ResizeToView();
 
