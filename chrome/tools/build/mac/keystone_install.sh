@@ -305,9 +305,38 @@ fi
 chmod -R "${CHMOD_MODE}" "${DEST}" >& /dev/null
 
 # On the Mac, or at least on HFS+, symbolic link permissions are significant,
-# but chmod -R and -h can't be used together on the Mac.  Do another pass to
-# fix the permissions on any symbolic links.
-find "${DEST}" -type l -exec chmod -h "${CHMOD_MODE}" {} \; >& /dev/null
+# but chmod -R and -h can't be used together.  Do another pass to fix the
+# permissions on any symbolic links.
+find "${DEST}" -type l -exec chmod -h "${CHMOD_MODE}" {} + >& /dev/null
+
+# Host OS version check, to be able to take advantage of features on newer
+# systems and fall back to slow ways of doing things on older systems.
+OS_VERSION=$(sw_vers -productVersion)
+OS_MAJOR=$(sed -Ene 's/^([0-9]+).*/\1/p' <<< ${OS_VERSION})
+OS_MINOR=$(sed -Ene 's/^([0-9]+)\.([0-9]+).*/\2/p' <<< ${OS_VERSION})
+
+# If an update is triggered from within the application itself, the update
+# process inherits the quarantine bit (LSFileQuarantineEnabled).  Any files or
+# directories created during the update will be quarantined in that case,
+# which may cause Launch Services to display quarantine UI.  That's bad,
+# especially if it happens when the outer .app launches a quarantined inner
+# helper.  If the application is already on the system and is being updated,
+# then it can be assumed that it should not be quarantined.  Use xattr to drop
+# the quarantine attribute.
+#
+# TODO(mark): Instead of letting the quarantine attribute be set and then
+# dropping it here, figure out a way to get the update process to run without
+# LSFileQuarantineEnabled even when triggering an update from within the
+# application.
+QUARANTINE_ATTR=com.apple.quarantine
+if [ ${OS_MAJOR} -gt 10 ] ||
+   ([ ${OS_MAJOR} -eq 10 ] && [ ${OS_MINOR} -ge 6 ]) ; then
+  # On 10.6, xattr supports -r for recursive operation.
+  xattr -d -r "${QUARANTINE_ATTR}" "${DEST}" >& /dev/null
+else
+  # On earlier systems, xattr doesn't support -r, so run xattr via find.
+  find "${DEST}" -exec xattr -d "${QUARANTINE_ATTR}" {} + >& /dev/null
+fi
 
 # Great success!
 exit 0
