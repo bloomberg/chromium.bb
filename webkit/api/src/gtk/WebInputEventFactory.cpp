@@ -381,6 +381,42 @@ WebMouseEvent WebInputEventFactory::mouseEvent(const GdkEventMotion* event)
     return result;
 }
 
+WebMouseEvent WebInputEventFactory::mouseEvent(const GdkEventCrossing* event)
+{
+    WebMouseEvent result;
+
+    result.timeStampSeconds = gdkEventTimeToWebEventTime(event->time);
+    result.modifiers = gdkStateToWebEventModifiers(event->state);
+    result.x = static_cast<int>(event->x);
+    result.y = static_cast<int>(event->y);
+    result.windowX = result.x;
+    result.windowY = result.y;
+    result.globalX = static_cast<int>(event->x_root);
+    result.globalY = static_cast<int>(event->y_root);
+
+    switch (event->type) {
+    case GDK_ENTER_NOTIFY:
+    case GDK_LEAVE_NOTIFY:
+        // Note that if we sent MouseEnter or MouseLeave to WebKit, it
+        // wouldn't work - they don't result in the proper JavaScript events.
+        // MouseMove does the right thing.
+        result.type = WebInputEvent::MouseMove;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    result.button = WebMouseEvent::ButtonNone;
+    if (event->state & GDK_BUTTON1_MASK)
+        result.button = WebMouseEvent::ButtonLeft;
+    else if (event->state & GDK_BUTTON2_MASK)
+        result.button = WebMouseEvent::ButtonMiddle;
+    else if (event->state & GDK_BUTTON3_MASK)
+        result.button = WebMouseEvent::ButtonRight;
+
+    return result;
+}
+
 // WebMouseWheelEvent ---------------------------------------------------------
 
 WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(const GdkEventScroll* event)

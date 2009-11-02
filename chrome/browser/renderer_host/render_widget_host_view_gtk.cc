@@ -60,7 +60,10 @@ class RenderWidgetHostViewGtkWidget {
                                   GDK_BUTTON_PRESS_MASK |
                                   GDK_BUTTON_RELEASE_MASK |
                                   GDK_KEY_PRESS_MASK |
-                                  GDK_KEY_RELEASE_MASK);
+                                  GDK_KEY_RELEASE_MASK |
+                                  GDK_FOCUS_CHANGE_MASK |
+                                  GDK_ENTER_NOTIFY_MASK |
+                                  GDK_LEAVE_NOTIFY_MASK);
     GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
 
     g_signal_connect(widget, "size-allocate",
@@ -83,6 +86,11 @@ class RenderWidgetHostViewGtkWidget {
                      G_CALLBACK(ButtonPressReleaseEvent), host_view);
     g_signal_connect(widget, "motion-notify-event",
                      G_CALLBACK(MouseMoveEvent), host_view);
+    g_signal_connect(widget, "enter-notify-event",
+                     G_CALLBACK(CrossingEvent), host_view);
+    g_signal_connect(widget, "leave-notify-event",
+                     G_CALLBACK(CrossingEvent), host_view);
+
     // Connect after so that we are called after the handler installed by the
     // TabContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
@@ -254,6 +262,14 @@ class RenderWidgetHostViewGtkWidget {
     }
     host_view->GetRenderWidgetHost()->ForwardMouseEvent(
         WebInputEventFactory::mouseEvent(event));
+    return FALSE;
+  }
+
+  static gboolean CrossingEvent(GtkWidget* widget, GdkEventCrossing* event,
+                                RenderWidgetHostViewGtk* host_view) {
+    host_view->GetRenderWidgetHost()->ForwardMouseEvent(
+        WebInputEventFactory::mouseEvent(event));
+
     return FALSE;
   }
 
