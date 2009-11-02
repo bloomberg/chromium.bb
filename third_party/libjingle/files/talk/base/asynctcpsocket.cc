@@ -29,6 +29,8 @@
 #pragma warning(disable:4786)
 #endif
 
+#include <cstring>
+
 #include "talk/base/asynctcpsocket.h"
 #include "talk/base/byteorder.h"
 #include "talk/base/common.h"
