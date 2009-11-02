@@ -22,10 +22,11 @@ const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
 const char* kAllowedSwitches[] = {
   switches::kAutomationClientChannelID,
   switches::kDisableMetrics,
+  switches::kEnableRendererAccessibility,
+  switches::kEnableExperimentalExtensionApis,
+  switches::kNoErrorDialogs,
   switches::kNoFirstRun,
   switches::kUserDataDir,
-  switches::kEnableRendererAccessibility,
-  switches::kNoErrorDialogs,
 };
 
 CommandLine* CreateLaunchCommandLine() {
