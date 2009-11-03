@@ -41,6 +41,7 @@
         '../../webkit.gyp:glue',
         '../../api/WebKit.gyp:webkit',
         '../../webkit.gyp:inspector_resources',
+        'npapi_layout_test_plugin',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
       'sources': [
