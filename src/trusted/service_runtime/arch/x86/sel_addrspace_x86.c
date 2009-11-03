@@ -45,8 +45,7 @@ int NaClAllocateSpace(void **mem, size_t size) {
 }
 
 
-NaClErrorCode NaClMprotectNullRegion(struct NaClApp *nap,
-                                     uintptr_t start_addr) {
+NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
   int err;
 
   NaClLog(3,

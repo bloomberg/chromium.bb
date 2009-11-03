@@ -121,7 +121,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * need to round it to be so.
    */
 
-  err = NaClMprotectNullRegion(nap, start_addr);
+  err = NaClMprotectGuards(nap, start_addr);
   if (err != LOAD_OK) return err;
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
