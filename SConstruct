@@ -491,7 +491,6 @@ base_env.Append(
 if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
       BUILD_SCONSCRIPTS = [
-        'src/trusted/validator_arm/build.scons',
         'src/trusted/validator_arm/v2/build.scons',
       ])
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
