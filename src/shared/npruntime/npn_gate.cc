@@ -297,7 +297,7 @@ void NPN_ReleaseVariantValue(NPVariant* variant) {
     break;
   case NPVariantType_String: {
     const NPString* string = &NPVARIANT_TO_STRING(*variant);
-    NPN_MemFree(const_cast<NPUTF8*>(string->utf8characters));
+    NPN_MemFree(const_cast<NPUTF8*>(string->UTF8Characters));
     break;
   }
   case NPVariantType_Object: {

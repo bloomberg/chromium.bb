@@ -203,6 +203,18 @@ void VideoMap::RedrawAsync(void *platform_parm) {
   sched_yield();
 }
 
+/*
+ * Chrome version of NPAPI headers does not include a complete structure
+ * declaration for this type, but only a typedef.
+ */
+struct NPSetWindowCallbackStruct {
+  int32         type;
+  Display*      display;
+  Visual*       visual;
+  Colormap      colormap;
+  unsigned int  depth;
+};
+
 void VideoMap::Redraw() {
   Display* display =
       static_cast<NPSetWindowCallbackStruct*>(window_->ws_info)->display;

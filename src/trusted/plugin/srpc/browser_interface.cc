@@ -42,7 +42,7 @@
 #include <map>
 #include <string>
 
-#include "native_client/src/include/base/basictypes.h"
+#include "base/basictypes.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
@@ -124,16 +124,16 @@ bool PortablePluginInterface::Alert(
   NPString script;
   const char *command_prefix = "alert('";
   const char *command_postfix = "');";
-  script.utf8length = strlen(command_prefix) + strlen(command_postfix) + length;
-  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(script.utf8length));
+  script.UTF8Length = strlen(command_prefix) + strlen(command_postfix) + length;
+  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(script.UTF8Length));
   SNPRINTF(buffer,
-           script.utf8length,
+           script.UTF8Length,
            "%s%s%s",
            command_prefix,
            text,
            command_postfix);
-  script.utf8characters = buffer;
-  script.utf8length = strlen(script.utf8characters);  // similar to -=2 ?
+  script.UTF8Characters = buffer;
+  script.UTF8Length = strlen(script.UTF8Characters);  // similar to -=2 ?
   NPVariant result;
   bool success = NPN_Evaluate(npp, window, &script, &result);
   NPN_ReleaseVariantValue(&result);
@@ -180,8 +180,8 @@ bool PortablePluginInterface::GetOrigin(
         break;
     }
     std::string *href = new(std::nothrow) std::string(
-      NPVARIANT_TO_STRING(href_value).utf8characters,
-      NPVARIANT_TO_STRING(href_value).utf8length);
+      NPVARIANT_TO_STRING(href_value).UTF8Characters,
+      NPVARIANT_TO_STRING(href_value).UTF8Length);
     dprintf(("GetOrigin: href %s\n", href->c_str()));
 
     *origin = href;

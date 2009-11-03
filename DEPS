@@ -11,6 +11,11 @@ deps = {
     "http://nativeclient.googlecode.com/svn/trunk/src/third_party",
   "native_client_sdk":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client_sdk",
+  # Includes needed for using Chromium NPAPI
+  "third_party/npapi/bindings":
+    "http://src.chromium.org/svn/trunk/src/third_party/npapi/bindings",
+  "base":
+    "http://src.chromium.org/svn/trunk/src/base",
 }
 
 deps_os = {

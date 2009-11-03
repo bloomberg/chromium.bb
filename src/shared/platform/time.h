@@ -50,7 +50,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_TIME_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_TIME_H__
 
-#include "native_client/src/include/base/basictypes.h"
+#include "base/basictypes.h"
 
 namespace NaCl {
 

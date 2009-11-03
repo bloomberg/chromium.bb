@@ -39,7 +39,7 @@
 #include <map>
 #include <string>
 
-#include "native_client/src/include/base/basictypes.h"
+#include "base/basictypes.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"

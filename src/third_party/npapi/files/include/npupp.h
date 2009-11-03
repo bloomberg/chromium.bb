@@ -54,10 +54,10 @@
 #endif
 
 #ifndef _NPAPI_H_
-#include "npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
 #endif
 
-#include "npruntime.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 /******************************************************************************************
    plug-in function table macros
