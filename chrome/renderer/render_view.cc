@@ -1829,6 +1829,10 @@ void RenderView::willClose(WebFrame* frame) {
     if (url.SchemeIs("http") || url.SchemeIs("https"))
       DumpLoadHistograms();
   }
+
+  WebDataSource* ds = frame->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  navigation_state->user_script_idle_scheduler()->Cancel();
 }
 
 void RenderView::loadURLExternally(
@@ -2031,11 +2035,13 @@ void RenderView::didCompleteClientRedirect(
 void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  if (pending_navigation_state_.get()) {
-    ds->setExtraData(pending_navigation_state_.release());
-  } else {
-    ds->setExtraData(NavigationState::CreateContentInitiated());
-  }
+  NavigationState* state = pending_navigation_state_.get() ?
+      pending_navigation_state_.release() : 
+      NavigationState::CreateContentInitiated();
+
+  state->set_user_script_idle_scheduler(
+      new UserScriptIdleScheduler(this, frame));
+  ds->setExtraData(state);
 }
 
 void RenderView::didStartProvisionalLoad(WebFrame* frame) {
@@ -2250,14 +2256,6 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
     ExtensionProcessBindings::SetViewType(webview(), view_type_);
   }
 
-  while (!pending_code_execution_queue_.empty()) {
-    scoped_refptr<CodeExecutionInfo> info =
-        pending_code_execution_queue_.front();
-    OnExecuteCode(info->request_id, info->extension_id, info->is_js_code,
-                  info->code_string);
-    pending_code_execution_queue_.pop();
-  }
-
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
@@ -2292,6 +2290,26 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
     RenderThread::current()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_END);
   }
+
+  navigation_state->user_script_idle_scheduler()->DidFinishDocumentLoad();
+}
+
+void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
+  if (RenderThread::current()) {  // Will be NULL during unit tests.
+    RenderThread::current()->user_script_slave()->InjectScripts(
+        frame, UserScript::DOCUMENT_IDLE);
+  }
+
+  WebFrame* main_frame = webview()->mainFrame();
+  if (frame == main_frame) {
+    while (!pending_code_execution_queue_.empty()) {
+      scoped_refptr<CodeExecutionInfo> info =
+          pending_code_execution_queue_.front();
+      ExecuteCodeImpl(main_frame, info->request_id, info->extension_id,
+                      info->is_js_code, info->code_string);
+      pending_code_execution_queue_.pop();
+    }
+  }
 }
 
 void RenderView::didHandleOnloadEvents(WebFrame* frame) {
@@ -2307,6 +2325,7 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   DCHECK(navigation_state);
   navigation_state->set_finish_load_time(Time::Now());
+  navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 }
 
 void RenderView::didChangeLocationWithinPage(
@@ -3662,28 +3681,40 @@ void RenderView::OnSetEditCommandsForNextKeyEvent(
 void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
                                bool is_js_code,
                                const std::string& code_string) {
-  if (is_loading_) {
-    scoped_refptr<CodeExecutionInfo> info = new CodeExecutionInfo(
-        request_id, extension_id, is_js_code, code_string);
-    pending_code_execution_queue_.push(info);
-    return;
-  }
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
     Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, false));
     return;
   }
 
+  WebDataSource* ds = main_frame->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  if (!navigation_state->user_script_idle_scheduler()->has_run()) {
+    scoped_refptr<CodeExecutionInfo> info = new CodeExecutionInfo(
+        request_id, extension_id, is_js_code, code_string);
+    pending_code_execution_queue_.push(info);
+    return;
+  }
+
+  ExecuteCodeImpl(main_frame, request_id, extension_id, is_js_code,
+                  code_string);
+}
+
+void RenderView::ExecuteCodeImpl(WebFrame* frame,
+                                 int request_id,
+                                 const std::string& extension_id,
+                                 bool is_js_code,
+                                 const std::string& code_string) {
   if (is_js_code) {
     std::vector<WebScriptSource> sources;
     sources.push_back(
         WebScriptSource(WebString::fromUTF8(code_string)));
     UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
-    main_frame->executeScriptInIsolatedWorld(
+    frame->executeScriptInIsolatedWorld(
         UserScriptSlave::GetIsolatedWorldId(extension_id),
         &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
   } else {
-    main_frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
+    frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
   }
 
   Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, true));

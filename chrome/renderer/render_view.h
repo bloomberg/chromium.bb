@@ -435,6 +435,10 @@ class RenderView : public RenderWidget,
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
+  // Called when the "idle" user script state has been reached. See
+  // UserScript::DOCUMENT_IDLE.
+  void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
+
  protected:
   // RenderWidget overrides:
   virtual void Close();
@@ -620,6 +624,11 @@ class RenderView : public RenderWidget,
                      const std::string& extension_id,
                      bool is_js_code,
                      const std::string& code_string);
+  void ExecuteCodeImpl(WebKit::WebFrame* frame,
+                       int request_id,
+                       const std::string& extension_id,
+                       bool is_js_code,
+                       const std::string& code_string);
   void OnUpdateBackForwardListCount(int back_list_count,
                                     int forward_list_count);
   void OnGetAccessibilityInfo(

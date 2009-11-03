@@ -3,28 +3,24 @@ if (typeof(contentWindow) != 'undefined') {
   win = contentWindow;
 }
 
-win.onload = function() {
-  // Do this in an onload handler because I'm not sure if chrome.extension
-  // is available before then.
-  chrome.extension.onConnect.addListener(function(port) {
-    console.log('connected');
-    port.onMessage.addListener(function(msg) {
-      console.log('got ' + msg);
-      if (msg.testPostMessage) {
-        port.postMessage({success: true});
-      } else if (msg.testPostMessageFromTab) {
-        testPostMessageFromTab(port);
-      } else if (msg.testDisconnect) {
-        port.disconnect();
-      } else if (msg.testDisconnectOnClose) {
-        win.location = "about:blank";
-      } else if (msg.testPortName) {
-        port.postMessage({portName:port.name});
-      }
-      // Ignore other messages since they are from us.
-    });
+chrome.extension.onConnect.addListener(function(port) {
+  console.log('connected');
+  port.onMessage.addListener(function(msg) {
+    console.log('got ' + msg);
+    if (msg.testPostMessage) {
+      port.postMessage({success: true});
+    } else if (msg.testPostMessageFromTab) {
+      testPostMessageFromTab(port);
+    } else if (msg.testDisconnect) {
+      port.disconnect();
+    } else if (msg.testDisconnectOnClose) {
+      win.location = "about:blank";
+    } else if (msg.testPortName) {
+      port.postMessage({portName:port.name});
+    }
+    // Ignore other messages since they are from us.
   });
-};
+});
 
 // Tests that postMessage to the extension and its response works.
 function testPostMessageFromTab(origPort) {
