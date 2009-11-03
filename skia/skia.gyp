@@ -579,6 +579,15 @@
         [ 'target_arch == "arm" and armv7 == 1', {
           'defines': [
             '__ARM_HAVE_NEON',
+            '__ARM_ARCH__=7',
+          ],
+          'sources!': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+          ],
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
           ],
         }],
         [ 'OS == "linux" or OS == "freebsd"', {
