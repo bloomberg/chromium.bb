@@ -71,9 +71,13 @@ void BugReportUtil::SetOSVersion(std::string *os_version) {
   } else {
     *os_version = "unknown";
   }
+#elif defined(OS_MACOSX)
+  int32 major;
+  int32 minor;
+  int32 bugFix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugFix);
+  *os_version = StringPrintf("%d.%d.%d", major, minor, bugFix);
 #else
-  // Right now, we only get the OS Version for Windows.
-  // TODO(mirandac): make this cross-platform.
   *os_version = "unknown";
 #endif
 }

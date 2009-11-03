@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
+#include "base/sys_info.h"
 #endif
 #include "base/scoped_ptr.h"
 
@@ -20,7 +21,7 @@ class TabContents;
 class BugReportUtil {
  public:
   // SetOSVersion copies the maj.minor.build + servicePack_string
-  // into a string (for Windows only). We currently have:
+  // into a string. We currently have:
   //   win_util::GetWinVersion returns WinVersion, which is just
   //     an enum of 2000, XP, 2003, or VISTA. Not enough detail for
   //     bug reports.
