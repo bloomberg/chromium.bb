@@ -9,7 +9,6 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -396,15 +395,9 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   host_->PauseRequest(info->child_id(), info->request_id(), true);
 
   // Schedule plugin loading on the file thread.
-  // Note: it's possible that the only reference to this object is the task.  If
-  // If the task executes on the file thread, and before it returns, the task it
-  // posts to the IO thread runs, then this object will get destructed on the
-  // file thread.  This breaks assumptions in other message handlers (i.e. when
-  // unregistering with NotificationService in the destructor).
-  AddRef();
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&BufferedResourceHandler::LoadPlugins, this));
+      NewRunnableMethod(this, &BufferedResourceHandler::LoadPlugins));
   return true;
 }
 
@@ -468,26 +461,23 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       GURL(), type, allow_wildcard, &info, NULL);
 }
 
-void BufferedResourceHandler::LoadPlugins(BufferedResourceHandler* handler) {
+void BufferedResourceHandler::LoadPlugins() {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(&BufferedResourceHandler::OnPluginsLoaded,
-          handler));
+      NewRunnableMethod(this, &BufferedResourceHandler::OnPluginsLoaded));
 }
 
-void BufferedResourceHandler::OnPluginsLoaded(
-    BufferedResourceHandler* handler) {
-  handler->wait_for_plugins_ = false;
-  if (handler->request_) {
-    ResourceDispatcherHostRequestInfo* info =
-        ResourceDispatcherHost::InfoForRequest(handler->request_);
-    handler->host_->PauseRequest(info->child_id(), info->request_id(), false);
-    if (!handler->CompleteResponseStarted(info->request_id(), false))
-      handler->host_->CancelRequest(
-          info->child_id(), info->request_id(), false);
-  }
-  handler->Release();
+void BufferedResourceHandler::OnPluginsLoaded() {
+  wait_for_plugins_ = false;
+  if (!request_)
+    return;
+
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  host_->PauseRequest(info->child_id(), info->request_id(), false);
+  if (!CompleteResponseStarted(info->request_id(), false))
+    host_->CancelRequest(info->child_id(), info->request_id(), false);
 }

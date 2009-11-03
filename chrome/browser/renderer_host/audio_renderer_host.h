@@ -74,6 +74,7 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/chrome_thread.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/audio_output.h"
 #include "media/audio/simple_sources.h"
@@ -82,15 +83,16 @@
 class AudioManager;
 struct ViewHostMsg_Audio_CreateStream;
 
-class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
+class AudioRendererHost
+    : public base::RefCountedThreadSafe<
+          AudioRendererHost, ChromeThread::DeleteOnIOThread> {
  private:
   class IPCAudioSource;
  public:
   // Called from UI thread from the owner of this object.
   AudioRendererHost();
 
-  // Destruction can happen on either UI thread or IO thread, but at destruction
-  // all associated sources are destroyed and streams are closed.
+  // Destruction always happens on the IO thread (see DeleteOnIOThread above).
   virtual ~AudioRendererHost();
 
   // Called from UI thread from the owner of this object to kick start
@@ -314,9 +316,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   // required IPCAudioSource is not found.
   void OnNotifyPacketReady(const IPC::Message& msg, int stream_id,
                            size_t packet_size);
-
-  // Called on IO thread when this object is created and initialized.
-  void OnInitialized();
 
   // Called on IO thread when this object needs to be destroyed and after
   // Destroy() is called from owner of this class in UI thread.

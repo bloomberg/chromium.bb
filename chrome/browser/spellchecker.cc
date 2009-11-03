@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/spellchecker_common.h"
@@ -221,15 +220,12 @@ class ReadDictionaryTask : public Task {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
-            spellchecker_, &SpellChecker::HunspellInited, hunspell_,
+            spellchecker_.get(), &SpellChecker::HunspellInited, hunspell_,
             bdict_file_, file_existed));
   }
 
-  // The SpellChecker we are working for. We are guaranteed to be outlived
-  // by this object because it AddRefs() itself before calling us.
-  // Accessing it is not necessarily thread safe, but are careful to only access
-  // it in ways that are.
-  SpellChecker* spellchecker_;
+  // The SpellChecker we are working for.
+  scoped_refptr<SpellChecker> spellchecker_;
   Hunspell* hunspell_;
   file_util::MemoryMappedFile* bdict_file_;
 
@@ -537,8 +533,6 @@ bool SpellChecker::Initialize() {
   FilePath dictionary_file_name_usr = GetVersionedFileName(language_,
       dict_dir_userdata);
 
-  // Balances Release() in HunspellInited().
-  AddRef();
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       new ReadDictionaryTask(
@@ -560,9 +554,6 @@ void SpellChecker::HunspellInited(Hunspell* hunspell,
       // File didn't exist. We need to download a dictionary.
       DoDictionaryDownload();
     }
-
-    // Balances AddRef() in Initialize().
-    Release();
     return;
   }
 
@@ -574,9 +565,6 @@ void SpellChecker::HunspellInited(Hunspell* hunspell,
     hunspell_->add(custom_words_.front().c_str());
     custom_words_.pop();
   }
-
-  // Balances AddRef() in Initialize().
-  Release();
 }
 
 void SpellChecker::DoDictionaryDownload() {

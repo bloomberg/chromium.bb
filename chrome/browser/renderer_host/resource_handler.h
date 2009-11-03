@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/filter_policy.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -52,7 +53,9 @@ struct ResourceResponse : public base::RefCounted<ResourceResponse> {
 // The resource dispatcher host uses this interface to push load events to the
 // renderer, allowing for differences in the types of IPC messages generated.
 // See the implementations of this interface defined below.
-class ResourceHandler : public base::RefCountedThreadSafe<ResourceHandler> {
+class ResourceHandler
+    : public base::RefCountedThreadSafe<
+          ResourceHandler, ChromeThread::DeleteOnIOThread> {
  public:
   virtual ~ResourceHandler() {}
 

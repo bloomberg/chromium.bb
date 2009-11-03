@@ -62,10 +62,10 @@ class BufferedResourceHandler : public ResourceHandler {
   bool ShouldDownload(bool* need_plugin_list);
 
   // Called on the file thread to load the list of plugins.
-  static void LoadPlugins(BufferedResourceHandler* handler);
+  void LoadPlugins();
 
   // Called on the IO thread once the list of plugins has been loaded.
-  static void OnPluginsLoaded(BufferedResourceHandler* handler);
+  void OnPluginsLoaded();
 
   scoped_refptr<ResourceHandler> real_handler_;
   scoped_refptr<ResourceResponse> response_;

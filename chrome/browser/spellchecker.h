@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/spellcheck_worditerator.h"
@@ -42,8 +42,10 @@ class MemoryMappedFile;
 // This object should also be deleted on the I/O thread only. It owns a
 // reference to URLRequestContext which in turn owns the cache, etc. and must be
 // deleted on the I/O thread itself.
-class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
-                     public URLFetcher::Delegate {
+class SpellChecker
+    : public base::RefCountedThreadSafe<
+          SpellChecker, ChromeThread::DeleteOnIOThread>,
+      public URLFetcher::Delegate {
  public:
   // Creates the spellchecker by reading dictionaries from the given directory,
   // and defaulting to the given language. Both strings must be provided.

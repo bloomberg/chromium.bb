@@ -25,7 +25,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
@@ -335,14 +334,13 @@ AudioRendererHost::AudioRendererHost()
     : process_id_(0),
       process_handle_(0),
       ipc_sender_(NULL) {
-  // Make sure we perform actual initialization operations in the thread where
-  // this object should live.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::OnInitialized));
+  // Increase the ref count of this object so it is active until we do
+  // Release().
+  AddRef();
 }
 
 AudioRendererHost::~AudioRendererHost() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(sources_.empty());
 }
 
@@ -496,13 +494,6 @@ void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
   } else {
     SendErrorMessage(msg.routing_id(), stream_id);
   }
-}
-
-void AudioRendererHost::OnInitialized() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // Increase the ref count of this object so it is active until we do
-  // Release().
-  AddRef();
 }
 
 void AudioRendererHost::OnDestroyed() {
