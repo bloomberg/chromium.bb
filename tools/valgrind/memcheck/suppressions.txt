@@ -330,6 +330,14 @@
    fun:clone
    fun:_ZN7testing8internal13ExecDeathTest10AssumeRoleEv
 }
+{
+   http://sources.redhat.com/bugzilla/show_bug.cgi?id=5171
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.1
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -786,19 +794,6 @@
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:ChromeMain
    fun:main
-}
-{
-   bug_20111
-   Memcheck:Leak
-   fun:calloc
-   fun:allocate_dtv
-   fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_2.1
-   fun:_ZN42_GLOBAL__N__ZN14PlatformThread9CurrentIdEv12CreateThreadEjbPN14PlatformThread8DelegateEPm
-   fun:_ZN14PlatformThread6CreateEjPNS_8DelegateEPm
-   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
-   ...
-   fun:*BrowserProcessImpl*
 }
 {
    bug_20113
