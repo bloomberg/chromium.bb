@@ -331,7 +331,6 @@ def _SendChangeHTTP(options):
     raise NoTryServerAccess('%s is unaccessible.' % url)
   if connection.read() != 'OK':
     raise NoTryServerAccess('%s is unaccessible.' % url)
-  return options.name
 
 
 def _SendChangeSVN(options):
@@ -394,7 +393,6 @@ def _SendChangeSVN(options):
   finally:
     temp_file.close()
     shutil.rmtree(temp_dir, True)
-  return options.name
 
 
 def GuessVCS(options):
@@ -458,7 +456,7 @@ def TryChange(argv,
                    help="Email address where to send the results. Use the "
                         "EMAIL_ADDRESS environment variable to set the default "
                         "email address [default: %default]")
-  group.add_option("-n", "--name", default='Unnamed',
+  group.add_option("-n", "--name",
                    help="Descriptive name of the try job")
   group.add_option("--issue", type='int',
                    help="Update rietveld issue try job status")
@@ -556,7 +554,7 @@ def TryChange(argv,
     # TODO(maruel): It should just try the modified files showing up in a
     # svn status.
     print "Nothing to try, changelist is empty."
-    return
+    return 1
 
   try:
     # Convert options.diff into the content of the diff.
@@ -575,6 +573,9 @@ def TryChange(argv,
 
     # Get try slaves from PRESUBMIT.py files if not specified.
     if not options.bot:
+      if options.url:
+        print('You need to specify which bots to use.')
+        return 1
       root_presubmit = gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
       options.bot = presubmit_support.DoGetTrySlaves(options.scm.GetFileNames(),
                                                      options.scm.GetLocalRoot(),
@@ -582,17 +583,28 @@ def TryChange(argv,
                                                      False,
                                                      sys.stdout)
 
+    if options.name is None:
+      if options.issue:
+        patch_name = 'Issue %s' % options.issue
+      else:
+        options.name = 'Unnamed'
+        print('Note: use --name NAME to change the try job name.')
+    if not options.email:
+      print('Warning: try job email will be sent to %s@google.com or '
+            'something like that. Who knows? Set EMAIL_ADDRESS to override.'
+            % option.user)
+
     # Send the patch.
-    patch_name = options.send_patch(options)
-    print 'Patch \'%s\' sent to try server: %s' % (patch_name,
+    options.send_patch(options)
+    print 'Patch \'%s\' sent to try server: %s' % (options.name,
                                                    ', '.join(options.bot))
-    if patch_name == 'Unnamed':
-      print "Note: use --name NAME to change the try's name."
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
-      return
+      return 1
     print e
+    return 1
+  return 0
 
 
 if __name__ == "__main__":
-  TryChange(None, None, False)
+  sys.exit(TryChange(None, None, False))
