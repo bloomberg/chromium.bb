@@ -1479,7 +1479,7 @@ const wchar_t kChromeFrameAboutVersion[] =
 // with the chrome revision. The test finally checks for success by comparing
 // the URL of the window being opened with cf:about:version, which indicates
 // that the operation succeeded.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AboutChromeFrame) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   TimedMsgLoop loop;
 
   CComObjectStackEx<MockWebBrowserEventSink> mock;
