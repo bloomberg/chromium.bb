@@ -50,13 +50,6 @@ std::wstring GetNewTabUIURLString() {
   return URLFixerUpper::FixupURL(temp, std::wstring());
 }
 
-// Adjusts the views origin so it will be centered if in a given width parent.
-void CenterViewForWidth(NSView* view, CGFloat width) {
-  NSRect frame = [view frame];
-  frame.origin.x = (width - NSWidth(frame)) / 2.0;
-  [view setFrame:frame];
-}
-
 // Helper to remove all but the last view from the view heirarchy.
 void RemoveAllButLastView(NSArray* views) {
   NSArray* toRemove = [views subarrayWithRange:NSMakeRange(0, [views count]-1)];
@@ -425,22 +418,32 @@ class PrefObserverBridge : public NotificationObserver {
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
                                       delta:NSMakeSize(0.0, verticalShift)];
 
-  // Make sure the window is wide enough to fit the the widest view
-  NSRect underTheHoodFrame = [underTheHoodView_ frame];
-  CGFloat widest = std::max(NSWidth([basicsView_ frame]),
-                            NSWidth([personalStuffView_ frame]));
-  widest = std::max(widest, NSWidth(underTheHoodFrame));
+#ifndef NDEBUG
+  // Validate some assumptions in debug builds.
+
+  // "Basics", "Personal Stuff", and "Under the Hood" views should be the same
+  // width.  They should be the same width so they are laid out to look as good
+  // as possible at that width with controls just having to wrap if their text
+  // is too long.
+  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([personalStuffView_ frame]))
+      << "Basics and Personal Stuff should be the same widths";
+  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([underTheHoodView_ frame]))
+      << "Basics and Under the Hood should be the same widths";
+  // "Under the Hood" content should always be skinnier than the scroller it
+  // goes into (we resize it).
+  DCHECK_LE(NSWidth([underTheHoodContentView_ frame]),
+            [underTheHoodScroller_ contentSize].width)
+      << "The Under the Hood content should be narrower than the content "
+         "of the scroller it goes into";
+#endif  // NDEBUG
+
+  // Make the window as wide as the views
   NSWindow* prefsWindow = [self window];
   NSRect frame = [prefsWindow frame];
-  frame.size.width = widest;
+  frame.size.width = NSWidth([basicsView_ frame]);
   [prefsWindow setFrame:frame display:NO];
 
-  // The Under the Hood prefs is a scroller, it shouldn't get any border, so it
-  // gets resized to the as wide as the window ends up.
-  underTheHoodFrame.size.width = widest;
-  [underTheHoodView_ setFrame:underTheHoodFrame];
-
-  // Widen the Under the Hood content so things can rewrap to the full width
+  // Widen the Under the Hood content so things can rewrap to the full width.
   NSSize underTheHoodContentSize = [underTheHoodContentView_ frame].size;
   underTheHoodContentSize.width = [underTheHoodScroller_ contentSize].width;
   [underTheHoodContentView_ setFrameSize:underTheHoodContentSize];
@@ -454,11 +457,6 @@ class PrefObserverBridge : public NotificationObserver {
       resizeViewWithoutAutoResizingSubViews:underTheHoodContentView_
                                       delta:NSMakeSize(0.0, verticalShift)];
   underTheHoodContentSize = [underTheHoodContentView_ frame].size;
-
-  // Adjust the view origins so they show up centered.
-  CenterViewForWidth(basicsView_, widest);
-  CenterViewForWidth(personalStuffView_, widest);
-  CenterViewForWidth(underTheHoodView_, widest);
 
   // Put the Under the Hood content view into the scroller and scroll it to the
   // top.
