@@ -139,9 +139,11 @@
 // Position the off-the-side chevron to the left of the otherBookmarks button.
 - (void)positionOffTheSideButton {
   NSRect frame = [offTheSideButton_ frame];
-  frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
-                    (frame.size.width + bookmarks::kBookmarkHorizontalPadding));
-  [offTheSideButton_ setFrame:frame];
+  if (otherBookmarksButton_.get()) {
+    frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
+                      (frame.size.width + bookmarks::kBookmarkHorizontalPadding));
+    [offTheSideButton_ setFrame:frame];
+  }
 }
 
 // Check if we should enable or disable the off-the-side chevron.
@@ -804,9 +806,7 @@
   [buttonView_ addSubview:button];
 
   // Now that it's here, move the chevron over.
-  NSRect oframe = [offTheSideButton_ frame];
-  oframe.origin.x = frame.origin.x - (oframe.size.width +
-                                      bookmarks::kBookmarkHorizontalPadding);
+  [self positionOffTheSideButton];
 
   // Force it to be the right size, right now.
   [self resizeButtons];
