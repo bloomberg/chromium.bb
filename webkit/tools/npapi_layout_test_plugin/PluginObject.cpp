@@ -501,14 +501,14 @@ static bool testGetIntIdentifier(PluginObject*, const NPVariant* args, uint32_t 
 
     if (NPVARIANT_IS_DOUBLE(args[0])) {
         identifier = browser->getintidentifier((int)NPVARIANT_TO_DOUBLE(args[0]));
+        INT32_TO_NPVARIANT((int32)identifier, *result);
+        return true;
     } else if (NPVARIANT_IS_INT32(args[0])) {
         identifier = browser->getintidentifier((int)NPVARIANT_TO_INT32(args[0]));
-    } else {
-        return false;
+        INT32_TO_NPVARIANT((int32)identifier, *result);
+        return true;
     }
-
-    INT32_TO_NPVARIANT(static_cast<int32>(reinterpret_cast<intptr_t>(identifier)), *result);
-    return true;
+    return false;
 }
 
 static bool testGetProperty(PluginObject* obj, const NPVariant* args, uint32_t argCount, NPVariant* result)
