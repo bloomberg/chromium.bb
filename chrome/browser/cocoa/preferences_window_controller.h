@@ -75,8 +75,8 @@ class Profile;
   BooleanPrefMember formAutofill_;
 
   // Under the hood panel
-  IBOutlet NSView* advancedView_;
-  IBOutlet NSScrollView* advancedScroller_;
+  IBOutlet NSView* underTheHoodContentView_;
+  IBOutlet NSScrollView* underTheHoodScroller_;
   BooleanPrefMember alternateErrorPages_;
   BooleanPrefMember useSuggest_;
   BooleanPrefMember dnsPrefetch_;
@@ -84,6 +84,7 @@ class Profile;
   BooleanPrefMember metricsRecording_;
   IntegerPrefMember cookieBehavior_;
   IBOutlet NSPathControl* downloadLocationControl_;
+  IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
   StringPrefMember currentTheme_;

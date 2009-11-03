@@ -220,6 +220,55 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
   return localVerticalShift + nonLabelShift;
 }
 
+// Compare function for -[NSArray sortedArrayUsingFunction:context:] that
+// sorts the views in Y order bottom up.
+NSInteger CompareFrameY(id view1, id view2, void* context) {
+  CGFloat y1 = NSMinY([view1 frame]);
+  CGFloat y2 = NSMinY([view2 frame]);
+  if (y1 < y2)
+    return NSOrderedAscending;
+  else if (y1 > y2)
+    return NSOrderedDescending;
+  else
+    return NSOrderedSame;
+}
+
+// Helper to tweak the layout of the "Under the Hood" content by autosizing all
+// the views and moving things up vertically.  Special case the two controls for
+// download location as they are horizontal, and should fill the row.
+CGFloat AutoSizeUnderTheHoodContent(NSView* view,
+                                    NSPathControl* downloadLocationControl,
+                                    NSButton* downloadLocationButton) {
+  CGFloat verticalShift = 0.0;
+
+  // Loop bottom up through the views sizing and shifting.
+  NSArray* views =
+      [[view subviews] sortedArrayUsingFunction:CompareFrameY context:NULL];
+  for (NSView* view in views) {
+    NSSize delta = WrapOrSizeToFit(view);
+    DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+    if (verticalShift) {
+      NSPoint origin = [view frame].origin;
+      origin.y += verticalShift;
+      [view setFrameOrigin:origin];
+    }
+    verticalShift += delta.height;
+
+    // The Download Location controls go in a row with the button aligned to the
+    // right edge and the path control using all the rest of the space.
+    if (view == downloadLocationButton) {
+      NSPoint origin = [downloadLocationButton frame].origin;
+      origin.x -= delta.width;
+      [downloadLocationButton setFrameOrigin:origin];
+      NSSize controlSize = [downloadLocationControl frame].size;
+      controlSize.width -= delta.width;
+      [downloadLocationControl setFrameSize:controlSize];
+    }
+  }
+
+  return verticalShift;
+}
+
 }  // namespace
 
 //-------------------------------------------------------------------------
@@ -390,19 +439,32 @@ class PrefObserverBridge : public NotificationObserver {
   // gets resized to the as wide as the window ends up.
   underTheHoodFrame.size.width = widest;
   [underTheHoodView_ setFrame:underTheHoodFrame];
-  // Widen the Under the Hood content so things can rewrap
-  NSSize advancedContentSize = [advancedView_ frame].size;
-  advancedContentSize.width = [advancedScroller_ contentSize].width;
-  [advancedView_ setFrameSize:advancedContentSize];
+
+  // Widen the Under the Hood content so things can rewrap to the full width
+  NSSize underTheHoodContentSize = [underTheHoodContentView_ frame].size;
+  underTheHoodContentSize.width = [underTheHoodScroller_ contentSize].width;
+  [underTheHoodContentView_ setFrameSize:underTheHoodContentSize];
+
+  // Now that Under the Hood is the right width, auto-size to the new width to
+  // get the final height.
+  verticalShift = AutoSizeUnderTheHoodContent(underTheHoodContentView_,
+                                              downloadLocationControl_,
+                                              downloadLocationButton_);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeViewWithoutAutoResizingSubViews:underTheHoodContentView_
+                                      delta:NSMakeSize(0.0, verticalShift)];
+  underTheHoodContentSize = [underTheHoodContentView_ frame].size;
 
   // Adjust the view origins so they show up centered.
   CenterViewForWidth(basicsView_, widest);
   CenterViewForWidth(personalStuffView_, widest);
   CenterViewForWidth(underTheHoodView_, widest);
 
-  // Put the advanced view into the scroller and scroll it to the top.
-  [advancedScroller_ setDocumentView:advancedView_];
-  [advancedView_ scrollPoint:NSMakePoint(0, advancedContentSize.height)];
+  // Put the Under the Hood content view into the scroller and scroll it to the
+  // top.
+  [underTheHoodScroller_ setDocumentView:underTheHoodContentView_];
+  [underTheHoodContentView_ scrollPoint:
+      NSMakePoint(0, underTheHoodContentSize.height)];
 
   // Get the last visited page from local state.
   OptionsPage page = static_cast<OptionsPage>(lastSelectedPage_.GetValue());
