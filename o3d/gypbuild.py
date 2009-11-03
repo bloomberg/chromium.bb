@@ -150,7 +150,7 @@ class GypBuilder(object):
     def CleanTargets(self, targets, options):
       """Cleans the targets."""
       solution = self.GetSolutionPath()
-      self.Execute(['devenv.exe',
+      self.Execute(['devenv.com',
                     solution,
                     '/clean',
                     options.version])
@@ -163,9 +163,15 @@ class GypBuilder(object):
                "or turn off UAC.\nAfter switching to admin run "
                "'gclient runhooks --force'")
       self.CheckVisualStudioVersionVsSolution(solution)
-      self.Execute(['msbuild',
+      self.Execute(['devenv.com',
                     solution,
-                    '/p:Configuration=%s' % options.version])
+                    '/build',
+                    options.version])
+      # TODO(gman): Should I check for devenv and if it does not exist
+      # use msbuild? Msbuild is significantly slower than devenv.
+      #self.Execute(['msbuild',
+      #              solution,
+      #              '/p:Configuration=%s' % options.version])
 
   class LinuxBuilder(Builder):
     """Class for building on Linux."""
