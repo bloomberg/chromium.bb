@@ -1600,7 +1600,7 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
 
 void BrowserWindowGtk::InitWidgets() {
   ConnectHandlersToSignals();
-  bounds_ = GetInitialWindowBounds(window_);
+  bounds_ = restored_bounds_ = GetInitialWindowBounds(window_);
 
   // This vbox encompasses all of the widgets within the browser.  This is
   // everything except the custom frame border.
@@ -1952,7 +1952,7 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
                                             GdkModifierType modifier,
                                             BrowserWindowGtk* browser_window) {
   int command_id = ::GetCommandId(keyval, modifier);
-  DCHECK(command_id != -1);
+  DCHECK_NE(command_id, -1);
   browser_window->ExecuteBrowserCommand(command_id);
 
   return TRUE;
