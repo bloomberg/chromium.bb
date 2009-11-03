@@ -42,6 +42,7 @@
 #include "base/scoped_ptr.h"
 #include "plugin/cross/main.h"
 #include "plugin/cross/out_of_memory.h"
+#include "plugin/linux/envvars.h"
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
@@ -58,6 +59,9 @@ namespace {
 base::AtExitManager g_at_exit_manager;
 
 bool g_xembed_support = false;
+
+// This is a #define set on the build command-line for greater flexibility.
+static const char *kEnvVarsFilePath = O3D_PLUGIN_ENV_VARS_FILE;
 
 static void DrawPlugin(PluginObject *obj) {
   // Limit drawing to no more than once every timer tick.
@@ -623,6 +627,16 @@ NPError InitializePlugin() {
               logging::APPEND_TO_OLD_LOG_FILE);
 
   DLOG(INFO) << "NP_Initialize";
+
+  // Before doing anything more, we first load our environment variables file.
+  // This file is a newline-delimited list of any system-specific environment
+  // variables that need to be set in the browser. Since we are a shared library
+  // and not an executable, we can't set them at browser start time, so we
+  // instead set them in every process that loads our shared library. It is
+  // important that we do this as early as possible so that any relevant
+  // variables are already set when we initialize our shared library
+  // dependencies.
+  o3d::LoadEnvironmentVariablesFile(kEnvVarsFilePath);
 
   // Check for XEmbed support in the browser.
   NPBool xembed_support = 0;

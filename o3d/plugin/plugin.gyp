@@ -194,12 +194,16 @@
             'sources': [
               'linux/main_linux.cc',
               'linux/config.cc',
+              'linux/envvars.cc',
             ],
             'link_settings': {
               'libraries': [
                 '-lGL',
               ],
             },
+            'defines': [
+              'O3D_PLUGIN_ENV_VARS_FILE="/opt/google/o3d/envvars"',
+            ],
           },
         ],
         ['OS == "win"',
@@ -335,12 +339,16 @@
                   'sources': [
                     'linux/main_linux.cc',
                     'linux/config.cc',
+                    'linux/envvars.cc',
                   ],
                   'link_settings': {
                     'libraries': [
                       '-lGL',
                     ],
                   },
+                  'defines': [
+                    'O3D_PLUGIN_ENV_VARS_FILE="/opt/google/o3d/envvars"',
+                  ],
                   # On Linux, shared library targets aren't copied to the
                   # product dir automatically.  Filed GYP issue #74 to address this.
                   # TODO(gspencer): Remove when issue #74 is resolved.
