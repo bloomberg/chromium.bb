@@ -148,6 +148,9 @@ class PrefObserverBridge : public NotificationObserver {
   [pageButton_ setImage:nsimage_cache::ImageNamed(kPageButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
 
+  [pageButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
+
   [self initCommandStatus:commands_];
   bubblePositioner_.reset(new BubblePositionerMac(self));
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
