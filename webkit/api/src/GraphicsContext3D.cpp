@@ -163,6 +163,15 @@ private:
     };
     VertexAttribPointerState m_vertexAttribPointerState[NumTrackedPointerStates];
 
+#if PLATFORM(SKIA)
+    // If the width and height of the Canvas's backing store don't
+    // match those that we were given in the most recent call to
+    // reshape(), then we need an intermediate bitmap to read back the
+    // frame buffer into. This seems to happen when CSS styles are
+    // used to resize the Canvas.
+    SkBitmap* m_resizingBitmap;
+#endif
+
 #if PLATFORM(WIN_OS)
     HWND  m_canvasWindow;
     HDC   m_canvasDC;
@@ -224,6 +233,9 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     , m_scanline(NULL)
 #endif
     , m_boundArrayBuffer(0)
+#if PLATFORM(SKIA)
+    , m_resizingBitmap(0)
+#endif
 #if PLATFORM(WIN_OS)
     , m_canvasWindow(NULL)
     , m_canvasDC(NULL)
@@ -475,6 +487,10 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
 #endif
     glDeleteFramebuffersEXT(1, &m_fbo);
 #endif // !RENDER_TO_DEBUGGING_WINDOW
+#if PLATFORM(SKIA)
+    if (m_resizingBitmap)
+        delete m_resizingBitmap;
+#endif
 #if PLATFORM(WIN_OS)
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(m_contextObj);
@@ -672,16 +688,47 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 
     HTMLCanvasElement* canvas = context->canvas();
     ImageBuffer* imageBuffer = canvas->buffer();
-    unsigned char* pixels = NULL;
+    unsigned char* pixels = 0;
 #if PLATFORM(SKIA)
-    const SkBitmap& bitmap = *imageBuffer->context()->platformContext()->bitmap();
-    ASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
-    ASSERT(bitmap.width() == m_cachedWidth);
-    ASSERT(bitmap.height() == m_cachedHeight);
+    const SkBitmap* canvasBitmap = imageBuffer->context()->platformContext()->bitmap();
+    const SkBitmap* readbackBitmap = 0;
+    ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
+    if (canvasBitmap->width() == m_cachedWidth &&
+        canvasBitmap->height() == m_cachedHeight) {
+        // This is the fastest and most common case. We read back
+        // directly into the canvas's backing store.
+        readbackBitmap = canvasBitmap;
+        if (m_resizingBitmap != NULL) {
+            delete m_resizingBitmap;
+            m_resizingBitmap = 0;
+        }
+    } else {
+        // We need to allocate a temporary bitmap for reading back the
+        // pixel data. We will then use Skia to rescale this bitmap to
+        // the size of the canvas's backing store.
+        if (m_resizingBitmap &&
+            (m_resizingBitmap->width() != m_cachedWidth ||
+             m_resizingBitmap->height() != m_cachedHeight)) {
+            delete m_resizingBitmap;
+            m_resizingBitmap = 0;
+        }
+        if (m_resizingBitmap == 0) {
+            m_resizingBitmap = new SkBitmap();
+            m_resizingBitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                                        m_cachedWidth,
+                                        m_cachedHeight);
+            if (!m_resizingBitmap->allocPixels()) {
+                delete m_resizingBitmap;
+                m_resizingBitmap = 0;
+                return;
+            }
+        }
+        readbackBitmap = m_resizingBitmap;
+    }
 
     // Read back the frame buffer.
-    SkAutoLockPixels bitmapLock(bitmap);
-    pixels = static_cast<unsigned char*>(bitmap.getPixels());
+    SkAutoLockPixels bitmapLock(*readbackBitmap);
+    pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
     glReadPixels(0, 0, m_cachedWidth, m_cachedHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #elif PLATFORM(CG)
     if (m_renderOutput != NULL) {
@@ -700,11 +747,22 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 #endif
 
 #if PLATFORM(SKIA)
-    // No further work necessary
+    if (m_resizingBitmap) {
+        // We need to draw the resizing bitmap into the canvas's backing store.
+        SkCanvas canvas(*canvasBitmap);
+        SkRect dst;
+        dst.set(0, 0, canvasBitmap->width(), canvasBitmap->height());
+        canvas.drawBitmapRect(*m_resizingBitmap, 0, dst);
+    }
 #elif PLATFORM(CG)
     if (m_renderOutput != NULL) {
         CGImageRef cgImage = CGBitmapContextCreateImage(m_cgContext);
-        CGRect rect = CGRectMake(0, 0, m_cachedWidth, m_cachedHeight);
+        // CSS styling may cause the canvas's content to be resized on
+        // the page. Go back to the Canvas to figure out the correct
+        // width and height to draw.
+        CGRect rect = CGRectMake(0, 0,
+                                 context->canvas()->width(),
+                                 context->canvas()->height());
         // We want to completely overwrite the previous frame's
         // rendering results.
         CGContextSetBlendMode(imageBuffer->context()->platformContext(),
