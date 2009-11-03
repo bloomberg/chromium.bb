@@ -369,11 +369,10 @@ TestSuite.prototype.testProfilerTab = function() {
   this.showPanel('profiles');
 
   var test = this;
-  this.addSniffer(WebInspector, 'addProfileHeader',
-      function(type, profile) {
+  this.addSniffer(WebInspector.panels.profiles, 'addProfileHeader',
+      function(typeOrProfile, profile) {
         if (!profile) {
-            profile = type;
-            type = profile.typeId;
+          profile = typeOrProfile;
         }
         var panel = WebInspector.panels.profiles;
         panel.showProfile(profile);
