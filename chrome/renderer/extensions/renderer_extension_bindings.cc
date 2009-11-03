@@ -37,10 +37,18 @@ struct ExtensionData {
   };
   std::map<int, PortData> ports;  // port ID -> data
 };
+bool HasPortData(int port_id) {
+  return Singleton<ExtensionData>::get()->ports.find(port_id) !=
+      Singleton<ExtensionData>::get()->ports.end();
+}
 ExtensionData::PortData& GetPortData(int port_id) {
   return Singleton<ExtensionData>::get()->ports[port_id];
 }
+void ClearPortData(int port_id) {
+  Singleton<ExtensionData>::get()->ports.erase(port_id);
+}
 
+const char kPortClosedError[] = "Attempting to use a disconnected port object";
 const char* kExtensionDeps[] = { EventBindings::kName };
 
 class ExtensionImpl : public ExtensionBase {
@@ -99,6 +107,10 @@ class ExtensionImpl : public ExtensionBase {
 
     if (args.Length() >= 2 && args[0]->IsInt32() && args[1]->IsString()) {
       int port_id = args[0]->Int32Value();
+      if (!HasPortData(port_id)) {
+        return v8::ThrowException(v8::Exception::Error(
+          v8::String::New(kPortClosedError)));
+      }
       std::string message = *v8::String::Utf8Value(args[1]->ToString());
       renderview->Send(new ViewHostMsg_ExtensionPostMessage(
           renderview->routing_id(), port_id, message));
@@ -110,10 +122,13 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
     if (args.Length() >= 1 && args[0]->IsInt32()) {
       int port_id = args[0]->Int32Value();
+      if (!HasPortData(port_id)) {
+        return v8::Undefined();
+      }
       // Send via the RenderThread because the RenderView might be closing.
       EventBindings::GetRenderThread()->Send(
           new ViewHostMsg_ExtensionCloseChannel(port_id));
-      GetPortData(port_id).disconnected = true;
+      ClearPortData(port_id);
     }
     return v8::Undefined();
   }
@@ -134,11 +149,11 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> PortRelease(const v8::Arguments& args) {
     if (args.Length() >= 1 && args[0]->IsInt32()) {
       int port_id = args[0]->Int32Value();
-      if (!GetPortData(port_id).disconnected &&
-          --GetPortData(port_id).ref_count == 0) {
+      if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
         // Send via the RenderThread because the RenderView might be closing.
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionCloseChannel(port_id));
+        ClearPortData(port_id);
       }
     }
     return v8::Undefined();
