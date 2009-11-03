@@ -168,8 +168,6 @@ END_COM_MAP()
 
   static scoped_refptr<ProtocolSinkWrap> InstanceFromProtocol(
       IInternetProtocol* protocol);
-  static HRESULT WebBrowserFromProtocolSink(IInternetProtocolSink* sink,
-      IWebBrowser2** web_browser);
   static ScopedComPtr<IInternetProtocolSink> MaybeWrapSink(
       IInternetProtocol* protocol, IInternetProtocolSink* prot_sink,
       const wchar_t* url);

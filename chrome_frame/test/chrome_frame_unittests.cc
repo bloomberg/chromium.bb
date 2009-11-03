@@ -1281,6 +1281,16 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 
+const wchar_t kSubFrameTestPage[] = L"files/full_tab_sub_frame_main.html";
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubFrame) {
+  SimpleBrowserTest(IE, kSubFrameTestPage, L"sub_frame");
+}
+
+const wchar_t kSubIFrameTestPage[] = L"files/full_tab_sub_iframe_main.html";
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubIFrame) {
+  SimpleBrowserTest(IE, kSubIFrameTestPage, L"sub_frame");
+}
+
 HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   if (!web_browser)
     return E_INVALIDARG;
@@ -1340,7 +1350,7 @@ class MockWebBrowserEventSink : public WebBrowserEventSink {
   }
 
   MOCK_METHOD7_WITH_CALLTYPE(__stdcall, OnBeforeNavigate2,
-                             HRESULT (IDispatch* dispatch,
+                             HRESULT (IDispatch* dispatch,  // NOLINT
                                       VARIANT* url,
                                       VARIANT* flags,
                                       VARIANT* target_frame_name,
@@ -1349,17 +1359,18 @@ class MockWebBrowserEventSink : public WebBrowserEventSink {
                                       VARIANT_BOOL* cancel));
 
   MOCK_METHOD2_WITH_CALLTYPE(__stdcall, OnNavigateComplete2,
-                             void (IDispatch* dispatch, VARIANT* url));
+                             void (IDispatch* dispatch,  // NOLINT
+                                   VARIANT* url));
 
   MOCK_METHOD5_WITH_CALLTYPE(__stdcall, OnNewWindow3,
-                             void (IDispatch** dispatch,
+                             void (IDispatch** dispatch,  // NOLINT
                                    VARIANT_BOOL* Cancel,
                                    DWORD flags,
                                    BSTR url_context,
                                    BSTR url));
 
   MOCK_METHOD5_WITH_CALLTYPE(__stdcall, OnNavigateError,
-                             void (IDispatch* dispatch,
+                             void (IDispatch* dispatch,  // NOLINT
                                    VARIANT* url,
                                    VARIANT* frame_name,
                                    VARIANT* status_code,

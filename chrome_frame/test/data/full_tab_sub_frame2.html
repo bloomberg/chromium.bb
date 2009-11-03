@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <!-- no meta tag here -->
+    <title>ChromeFrame Sub Frame test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function OnLoad() {
+        if (isRunningInChrome()) {
+          onFailure("sub_frame", 1, "Failed");
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="OnLoad();">
+    ChromeFrame full tab mode sub frame test.<br>
+    This is a regular frame (no meta tag).
+  </body>
+</html>

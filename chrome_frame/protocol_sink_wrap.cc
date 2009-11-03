@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <htiframe.h>
+#include <mshtml.h>
 
 #include "chrome_frame/protocol_sink_wrap.h"
 
@@ -609,31 +610,51 @@ scoped_refptr<ProtocolSinkWrap> ProtocolSinkWrap::InstanceFromProtocol(
   return instance;
 }
 
-HRESULT ProtocolSinkWrap::WebBrowserFromProtocolSink(
-    IInternetProtocolSink* sink, IWebBrowser2** web_browser) {
-  // TODO(tommi): GUID_NULL doesn't work when loading from history.
-  //  asking for IID_IHttpNegotiate as the service id works, but
-  //  getting the IWebBrowser2 interface still doesn't work.
-  ScopedComPtr<IHttpNegotiate> http_negotiate;
-  HRESULT hr = DoQueryService(GUID_NULL, sink, http_negotiate.Receive());
-  if (http_negotiate)
-    hr = DoQueryService(IID_ITargetFrame2, http_negotiate, web_browser);
-
-  return hr;
-}
-
 ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::MaybeWrapSink(
     IInternetProtocol* protocol, IInternetProtocolSink* prot_sink,
     const wchar_t* url) {
   ScopedComPtr<IInternetProtocolSink> sink_to_use(prot_sink);
   ScopedComPtr<IWebBrowser2> web_browser;
-  WebBrowserFromProtocolSink(prot_sink, web_browser.Receive());
+
+  // FYI: GUID_NULL doesn't work when the URL is being loaded from history.
+  // asking for IID_IHttpNegotiate as the service id works, but
+  // getting the IWebBrowser2 interface still doesn't work.
+  ScopedComPtr<IHttpNegotiate> http_negotiate;
+  HRESULT hr = DoQueryService(GUID_NULL, prot_sink, http_negotiate.Receive());
+  if (http_negotiate) {
+    hr = DoQueryService(IID_ITargetFrame2, http_negotiate,
+                        web_browser.Receive());
+  }
+
   if (web_browser) {
-    CComObject<ProtocolSinkWrap>* wrap = NULL;
-    CComObject<ProtocolSinkWrap>::CreateInstance(&wrap);
-    DCHECK(wrap);
-    if (wrap->Initialize(protocol, prot_sink, url)) {
-      sink_to_use = wrap;
+    // Do one more check to make sure we don't wrap requests that are
+    // targeted to sub frames.
+    // For a use case, see FullTabModeIE_SubIFrame and FullTabModeIE_SubFrame
+    // unit tests.
+
+    // Default should_wrap to true in case no window is available.
+    // In that case this request is a top level request.
+    bool should_wrap = true;
+
+    ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
+    hr = DoQueryService(IID_IHTMLWindow2, http_negotiate,
+                        current_frame.Receive());
+    if (current_frame) {
+      // Only the top level window will return self when get_parent is called.
+      current_frame->get_parent(parent_frame.Receive());
+      if (parent_frame != current_frame) {
+        DLOG(INFO) << "Sub frame detected";
+        should_wrap = false;
+      }
+    }
+
+    if (should_wrap) {
+      CComObject<ProtocolSinkWrap>* wrap = NULL;
+      CComObject<ProtocolSinkWrap>::CreateInstance(&wrap);
+      DCHECK(wrap);
+      if (wrap->Initialize(protocol, prot_sink, url)) {
+        sink_to_use = wrap;
+      }
     }
   }
 

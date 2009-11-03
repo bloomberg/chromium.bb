@@ -17,10 +17,10 @@ function getXHRObject(){
     http = new XMLHttpRequest();
   } catch(e) {
   }
-  
+
   if (http)
     return http;
-  
+
   for (var i = 0; i < 3; ++i) {
     var progid = XMLHTTP_PROGIDS[i];
     try {
@@ -140,11 +140,16 @@ function reloadUsingCFProtocol() {
   window.location = redirect_location;
 }
 
-function TestIfRunningInChrome() {
+function isRunningInChrome() {
   var is_chrome = /chrome/.test(navigator.userAgent.toLowerCase());
+  return is_chrome;
+}
+
+function TestIfRunningInChrome() {
+  var is_chrome = isRunningInChrome();
   if (!is_chrome) {
     onFailure("ChromeFrameWindowOpen", "Window Open failed :-(",
-                "User agent = " + navigator.userAgent.toLowerCase());
+              "User agent = " + navigator.userAgent.toLowerCase());
   }
   return is_chrome;
 }
