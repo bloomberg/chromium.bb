@@ -19,7 +19,7 @@ import simplejson
 
 # Test expectation and modifier constants.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, TIMEOUT, CRASH, SKIP, WONTFIX,
- DEFER, SLOW, REBASELINE, NONE) = range(13)
+ DEFER, SLOW, REBASELINE, MISSING, NONE) = range(14)
 
 # Test expectation file update action constants
 (NO_CHANGE, REMOVE_TEST, REMOVE_PLATFORM, ADD_PLATFORMS_EXCEPT_THIS) = range(4)
@@ -216,7 +216,8 @@ class TestExpectationsFile:
                    'image': IMAGE,
                    'image+text': IMAGE_PLUS_TEXT,
                    'timeout': TIMEOUT,
-                   'crash': CRASH }
+                   'crash': CRASH,
+                   'missing': MISSING }
 
   PLATFORMS = [ 'mac', 'linux', 'win', 'win-xp', 'win-vista', 'win-7' ]
 

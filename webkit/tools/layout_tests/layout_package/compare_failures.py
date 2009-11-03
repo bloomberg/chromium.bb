@@ -118,7 +118,8 @@ class CompareFailures:
                       'CRASH')
     PrintFilesFromSet(self._missing,
                       "Missing expected results",
-                      output)
+                      output,
+                      'MISSING')
 
   def _CalculateRegressions(self):
     """Calculate regressions from this run through the layout tests."""
@@ -156,7 +157,9 @@ class CompareFailures:
       # expected files.
       elif (is_missing and
             not self._expectations.IsRebaselining(test) and
-            not self._expectations.IsIgnored(test)):
+            not self._expectations.IsIgnored(test) and
+            (test_expectations.MISSING not in
+             self._expectations.GetExpectations(test))):
         missing.add(test)
       elif is_image_failure and is_text_failure:
         if (not test_expectations.FAIL in expectations and
