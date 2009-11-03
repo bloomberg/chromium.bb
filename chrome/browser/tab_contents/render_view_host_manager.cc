@@ -341,7 +341,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     if (curr_instance->HasRelatedSiteInstance(dest_url)) {
       return curr_instance->GetRelatedSiteInstance(dest_url);
     } else {
-      if (entry.restored())
+      if (entry.restore_type() != NavigationEntry::RESTORE_NONE)
         curr_instance->SetSite(dest_url);
       return curr_instance;
     }

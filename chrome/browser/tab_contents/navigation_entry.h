@@ -360,14 +360,26 @@ class NavigationEntry {
     return has_post_data_;
   }
 
-  // Was this entry created from session/tab restore? If so this is true and
-  // gets set to false once we navigate to it.
-  // (See NavigationController::DidNavigateToEntry).
-  void set_restored(bool restored) {
-    restored_ = restored;
+  // Enumerations of the possible restore types.
+  enum RestoreType {
+    // The entry has been restored is from the last session.
+    RESTORE_LAST_SESSION,
+
+    // The entry has been restored from the current session. This is used when
+    // the user issues 'reopen closed tab'.
+    RESTORE_CURRENT_SESSION,
+
+    // The entry was not restored.
+    RESTORE_NONE
+  };
+
+  // The RestoreType for this entry. This is set if the entry was retored. This
+  // is set to RESTORE_NONE once the entry is loaded.
+  void set_restore_type(RestoreType type) {
+    restore_type_ = type;
   }
-  bool restored() const {
-    return restored_;
+  RestoreType restore_type() const {
+    return restore_type_;
   }
 
  private:
@@ -392,7 +404,7 @@ class NavigationEntry {
   PageTransition::Type transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
-  bool restored_;
+  RestoreType restore_type_;
 
   // This is a cached version of the result of GetTitleForDisplay. It prevents
   // us from having to do URL formatting on the URL evey time the title is

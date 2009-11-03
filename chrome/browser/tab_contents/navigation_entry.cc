@@ -43,7 +43,7 @@ NavigationEntry::NavigationEntry()
       page_id_(-1),
       transition_type_(PageTransition::LINK),
       has_post_data_(false),
-      restored_(false) {
+      restore_type_(RESTORE_NONE) {
 }
 
 NavigationEntry::NavigationEntry(SiteInstance* instance,
@@ -61,7 +61,7 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
       page_id_(page_id),
       transition_type_(transition_type),
       has_post_data_(false),
-      restored_(false) {
+      restore_type_(RESTORE_NONE) {
 }
 
 NavigationEntry::~NavigationEntry() {

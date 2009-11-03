@@ -150,10 +150,12 @@ class NavigationController {
 
   // Initializes this NavigationController with the given saved navigations,
   // using selected_navigation as the currently loaded entry. Before this call
-  // the controller should be unused (there should be no current entry). This is
-  // used for session restore.
+  // the controller should be unused (there should be no current entry). If
+  // from_last_session is true, navigations are from the previous session,
+  // otherwise they are from the current session (undo tab close).
+  // This is used for session restore.
   void RestoreFromState(const std::vector<TabNavigation>& navigations,
-                        int selected_navigation);
+                        int selected_navigation, bool from_last_session);
 
   // Active entry --------------------------------------------------------------
 
@@ -441,8 +443,8 @@ class NavigationController {
 
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active
-  // contents.
-  void FinishRestore(int selected_index);
+  // contents. See RestoreFromState for a description of from_last_session.
+  void FinishRestore(int selected_index, bool from_last_session);
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.

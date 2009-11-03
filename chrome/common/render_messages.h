@@ -68,6 +68,21 @@ class SkBitmap;
 // Parameters structure for ViewMsg_Navigate, which has too many data
 // parameters to be reasonably put in a predefined IPC message.
 struct ViewMsg_Navigate_Params {
+  enum NavigationType {
+    // Reload the page.
+    RELOAD,
+
+    // The navigation is the result of session restore and should honor the
+    // page's cache policy while restoring form state. This is set to true if
+    // restoring a tab/session from the previous session and the previous
+    // session did not crash. If this is not set and the page was restored then
+    // the page's cache policy is ignored and we load from the cache.
+    RESTORE,
+
+    // Navigation type not categorized by the other types.
+    NORMAL
+  };
+
   // The page_id for this navigation, or -1 if it is a new navigation.  Back,
   // Forward, and Reload navigations should have a valid page_id.  If the load
   // succeeds, then this page_id will be reflected in the resultant
@@ -87,9 +102,8 @@ struct ViewMsg_Navigate_Params {
   // Opaque history state (received by ViewHostMsg_UpdateState).
   std::string state;
 
-  // Specifies if the URL should be loaded using 'reload' semantics (i.e.,
-  // bypassing any locally cached content).
-  bool reload;
+  // Type of navigation.
+  NavigationType navigation_type;
 
   // The time the request was created
   base::Time request_time;
@@ -675,7 +689,7 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
     WriteParam(m, p.referrer);
     WriteParam(m, p.transition);
     WriteParam(m, p.state);
-    WriteParam(m, p.reload);
+    WriteParam(m, p.navigation_type);
     WriteParam(m, p.request_time);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -685,7 +699,7 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
       ReadParam(m, iter, &p->referrer) &&
       ReadParam(m, iter, &p->transition) &&
       ReadParam(m, iter, &p->state) &&
-      ReadParam(m, iter, &p->reload) &&
+      ReadParam(m, iter, &p->navigation_type) &&
       ReadParam(m, iter, &p->request_time);
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -698,10 +712,46 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
     l->append(L", ");
     LogParam(p.state, l);
     l->append(L", ");
-    LogParam(p.reload, l);
+    LogParam(p.navigation_type, l);
     l->append(L", ");
     LogParam(p.request_time, l);
     l->append(L")");
+  }
+};
+
+template<>
+struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
+  typedef ViewMsg_Navigate_Params::NavigationType param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<ViewMsg_Navigate_Params::NavigationType>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring event;
+    switch (p) {
+      case ViewMsg_Navigate_Params::RELOAD:
+        event = L"NavigationType_RELOAD";
+        break;
+
+      case ViewMsg_Navigate_Params::RESTORE:
+        event = L"NavigationType_RESTORE";
+        break;
+
+      case ViewMsg_Navigate_Params::NORMAL:
+        event = L"NavigationType_NORMAL";
+        break;
+
+      default:
+        event = L"NavigationType_UNKNOWN";
+        break;
+    }
+    LogParam(event, l);
   }
 };
 

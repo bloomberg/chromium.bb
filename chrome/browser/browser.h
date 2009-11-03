@@ -260,12 +260,14 @@ class Browser : public TabStripModelDelegate,
   // system. If select is true, the tab is selected. |tab_index| gives the index
   // to insert the tab at. |selected_navigation| is the index of the
   // TabNavigation in |navigations| to select. If |pin| is true and |tab_index|
-  // is the last pinned tab, then the newly created tab is pinned.
+  // is the last pinned tab, then the newly created tab is pinned. If
+  // |from_last_session| is true, |navigations| are from the previous session.
   TabContents* AddRestoredTab(const std::vector<TabNavigation>& navigations,
                               int tab_index,
                               int selected_navigation,
                               bool select,
-                              bool pin);
+                              bool pin,
+                              bool from_last_session);
   // Creates a new tab with the already-created TabContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
@@ -298,7 +300,8 @@ class Browser : public TabStripModelDelegate,
   // history restored from the SessionRestore system.
   void ReplaceRestoredTab(
       const std::vector<TabNavigation>& navigations,
-      int selected_navigation);
+      int selected_navigation,
+      bool from_last_session);
 
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab();
@@ -626,12 +629,6 @@ class Browser : public TabStripModelDelegate,
   // Notifies the history database of the index for all tabs whose index is
   // >= index.
   void SyncHistoryWithTabs(int index);
-
-  // Called from AddRestoredTab and ReplaceRestoredTab to build a
-  // TabContents from an incoming vector of TabNavigations.
-  // Caller takes ownership of the returned TabContents.
-  TabContents* BuildRestoredTab(const std::vector<TabNavigation>& navigations,
-                                int selected_navigation);
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 

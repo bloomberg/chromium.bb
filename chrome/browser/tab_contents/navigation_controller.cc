@@ -67,12 +67,15 @@ void SetContentStateIfEmpty(NavigationEntry* entry) {
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
-    std::vector<linked_ptr<NavigationEntry> >* entries) {
+    std::vector<linked_ptr<NavigationEntry> >* entries,
+    bool from_last_session) {
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.
     (*entries)[i]->set_transition_type(PageTransition::RELOAD);
-    (*entries)[i]->set_restored(true);
+    (*entries)[i]->set_restore_type(from_last_session ?
+        NavigationEntry::RESTORE_LAST_SESSION :
+        NavigationEntry::RESTORE_CURRENT_SESSION);
     // NOTE(darin): This code is only needed for backwards compat.
     SetContentStateIfEmpty((*entries)[i].get());
   }
@@ -145,7 +148,8 @@ NavigationController::~NavigationController() {
 
 void NavigationController::RestoreFromState(
     const std::vector<TabNavigation>& navigations,
-    int selected_navigation) {
+    int selected_navigation,
+    bool from_last_session) {
   // Verify that this controller is unused and that the input is valid.
   DCHECK(entry_count() == 0 && !pending_entry());
   DCHECK(selected_navigation >= 0 &&
@@ -156,7 +160,7 @@ void NavigationController::RestoreFromState(
   CreateNavigationEntriesFromTabNavigations(navigations, &entries_);
 
   // And finish the restore.
-  FinishRestore(selected_navigation);
+  FinishRestore(selected_navigation, from_last_session);
 }
 
 void NavigationController::Reload(bool check_for_repost) {
@@ -422,8 +426,10 @@ bool NavigationController::RendererDidNavigate(
   // TODO(brettw) this seems slightly bogus as we don't really know if the
   // pending entry is what this navigation is for. There is a similar TODO
   // w.r.t. the pending entry in RendererDidNavigateToNewPage.
-  if (pending_entry_index_ >= 0)
+  if (pending_entry_index_ >= 0) {
     pending_entry_->set_site_instance(tab_contents_->GetSiteInstance());
+    pending_entry_->set_restore_type(NavigationEntry::RESTORE_NONE);
+  }
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(params);
@@ -828,7 +834,7 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
         new NavigationEntry(*source.entries_[i])));
   }
 
-  FinishRestore(source.last_committed_entry_index_);
+  FinishRestore(source.last_committed_entry_index_, false);
 }
 
 void NavigationController::DiscardNonCommittedEntries() {
@@ -958,9 +964,10 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
                                          Details<EntryChangedDetails>(&det));
 }
 
-void NavigationController::FinishRestore(int selected_index) {
+void NavigationController::FinishRestore(int selected_index,
+                                         bool from_last_session) {
   DCHECK(selected_index >= 0 && selected_index < entry_count());
-  ConfigureEntriesForRestore(&entries_);
+  ConfigureEntriesForRestore(&entries_, from_last_session);
 
   set_max_restored_page_id(entry_count());
 

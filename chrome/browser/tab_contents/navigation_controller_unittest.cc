@@ -1146,7 +1146,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
                                       PageTransition::LINK));
   TabContents our_contents(profile(), NULL, MSG_ROUTING_NONE, NULL);
   NavigationController& our_controller = our_contents.controller();
-  our_controller.RestoreFromState(navigations, 0);
+  our_controller.RestoreFromState(navigations, 0, true);
   our_controller.GoToIndex(0);
 
   // We should now have one entry, and it should be "pending".
@@ -1154,6 +1154,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(our_controller.GetEntryAtIndex(0),
             our_controller.pending_entry());
   EXPECT_EQ(0, our_controller.GetEntryAtIndex(0)->page_id());
+  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION,
+            our_controller.GetEntryAtIndex(0)->restore_type());
 
   // Say we navigated to that entry.
   ViewHostMsg_FrameNavigate_Params params = {0};
@@ -1174,6 +1176,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_FALSE(our_controller.pending_entry());
   EXPECT_EQ(url,
             our_controller.GetLastCommittedEntry()->site_instance()->site());
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE,
+            our_controller.GetEntryAtIndex(0)->restore_type());
 }
 
 // Make sure that the page type and stuff is correct after an interstitial.

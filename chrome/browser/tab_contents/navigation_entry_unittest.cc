@@ -174,8 +174,8 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_.get()->has_post_data());
 
   // Restored
-  EXPECT_FALSE(entry1_.get()->restored());
-  EXPECT_FALSE(entry2_.get()->restored());
-  entry2_.get()->set_restored(true);
-  EXPECT_TRUE(entry2_.get()->restored());
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE, entry1_->restore_type());
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE, entry2_->restore_type());
+  entry2_->set_restore_type(NavigationEntry::RESTORE_LAST_SESSION);
+  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION, entry2_->restore_type());
 }

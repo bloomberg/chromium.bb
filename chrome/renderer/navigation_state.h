@@ -10,6 +10,7 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
 
@@ -170,6 +171,25 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     return postponed_data_;
   }
 
+  // Sets the cache policy. The cache policy is only used if explicitly set and
+  // by default is not set. You can mark a NavigationState as not having a cache
+  // state by way of clear_cache_policy_override.
+  void set_cache_policy_override(
+      WebKit::WebURLRequest::CachePolicy cache_policy) {
+    cache_policy_override_ = cache_policy;
+    cache_policy_override_set_ = true;
+  }
+  WebKit::WebURLRequest::CachePolicy cache_policy_override() const {
+    return cache_policy_override_;
+  }
+  void clear_cache_policy_override() {
+    cache_policy_override_set_ = false;
+    cache_policy_override_ = WebKit::WebURLRequest::UseProtocolCachePolicy;
+  }
+  bool is_cache_policy_override_set() const {
+    return cache_policy_override_set_;
+  }
+
  private:
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
@@ -182,6 +202,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         is_content_initiated_(is_content_initiated),
         pending_page_id_(pending_page_id),
         postpone_loading_data_(false),
+        cache_policy_override_set_(false),
+        cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy) {
         user_script_idle_scheduler_(NULL) {
   }
 
@@ -204,6 +226,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   std::string security_info_;
   bool postpone_loading_data_;
   std::string postponed_data_;
+
+  bool cache_policy_override_set_;
+  WebKit::WebURLRequest::CachePolicy cache_policy_override_;
+
   scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);

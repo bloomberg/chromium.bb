@@ -180,14 +180,26 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 }
 #endif
 
-void MakeNavigateParams(const NavigationEntry& entry, bool reload,
-                        ViewMsg_Navigate_Params* params) {
+ViewMsg_Navigate_Params::NavigationType GetNavigationType(
+    Profile* profile, const NavigationEntry& entry, bool reload) {
+  if (reload)
+    return ViewMsg_Navigate_Params::RELOAD;
+
+  if (entry.restore_type() == NavigationEntry::RESTORE_LAST_SESSION &&
+      profile->DidLastSessionExitCleanly())
+    return ViewMsg_Navigate_Params::RESTORE;
+
+  return ViewMsg_Navigate_Params::NORMAL;
+}
+
+void MakeNavigateParams(Profile* profile, const NavigationEntry& entry,
+                        bool reload, ViewMsg_Navigate_Params* params) {
   params->page_id = entry.page_id();
   params->url = entry.url();
   params->referrer = entry.referrer();
   params->transition = entry.transition_type();
   params->state = entry.content_state();
-  params->reload = reload;
+  params->navigation_type = GetNavigationType(profile, entry, reload);
   params->request_time = base::Time::Now();
 }
 
@@ -693,7 +705,7 @@ bool TabContents::NavigateToPendingEntry(bool reload) {
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, reload, &navigate_params);
+  MakeNavigateParams(profile(), entry, reload, &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {

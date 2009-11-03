@@ -604,10 +604,12 @@ TabContents* Browser::AddRestoredTab(
     int tab_index,
     int selected_navigation,
     bool select,
-    bool pin) {
+    bool pin,
+    bool from_last_session) {
   TabContents* new_tab = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  new_tab->controller().RestoreFromState(navigations, selected_navigation);
+  new_tab->controller().RestoreFromState(navigations, selected_navigation,
+                                         from_last_session);
 
   bool really_pin =
       (pin && tab_index == tabstrip_model()->IndexOfFirstNonPinnedTab());
@@ -626,10 +628,12 @@ TabContents* Browser::AddRestoredTab(
 
 void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
-    int selected_navigation) {
+    int selected_navigation,
+    bool from_last_session) {
   TabContents* replacement = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  replacement->controller().RestoreFromState(navigations, selected_navigation);
+  replacement->controller().RestoreFromState(navigations, selected_navigation,
+                                             from_last_session);
 
   tabstrip_model_.ReplaceNavigationControllerAt(
       tabstrip_model_.selected_index(),
@@ -2644,26 +2648,6 @@ void Browser::SyncHistoryWithTabs(int index) {
                                         tabstrip_model_.IsTabPinned(i));
       }
     }
-  }
-}
-
-TabContents* Browser::BuildRestoredTab(
-      const std::vector<TabNavigation>& navigations,
-      int selected_navigation) {
-  if (!navigations.empty()) {
-    DCHECK(selected_navigation >= 0 &&
-           selected_navigation < static_cast<int>(navigations.size()));
-    // Create a NavigationController. This constructor creates the appropriate
-    // set of TabContents.
-    TabContents* new_tab = new TabContents(profile_, NULL,
-        MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-    new_tab->controller().RestoreFromState(navigations, selected_navigation);
-    return new_tab;
-  } else {
-    // No navigations. Create a tab with about:blank.
-    return CreateTabContentsForURL(GURL(chrome::kAboutBlankURL), GURL(),
-                                   profile_, PageTransition::START_PAGE,
-                                   false, NULL);
   }
 }
 

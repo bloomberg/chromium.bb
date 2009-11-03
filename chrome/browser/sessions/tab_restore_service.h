@@ -70,6 +70,11 @@ class TabRestoreService : public BaseSessionService {
 
     // The time when the window or tab was closed.
     base::Time timestamp;
+
+    // Is this entry from the last session? This is set to true for entries that
+    // were closed during the last session, and false for entries that were
+    // closed during this session.
+    bool from_last_session;
   };
 
   // Represents a previously open tab.

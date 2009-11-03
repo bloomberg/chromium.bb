@@ -725,7 +725,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   AboutHandler::MaybeHandle(params.url);
 
-  bool is_reload = params.reload;
+  bool is_reload = (params.navigation_type == ViewMsg_Navigate_Params::RELOAD);
 
   WebFrame* main_frame = webview()->mainFrame();
   if (is_reload && main_frame->currentHistoryItem().isNull()) {
@@ -740,8 +740,17 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   // as a browser initiated event.  Instead, we want it to look as if the page
   // initiated any load resulting from JS execution.
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
-    pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
-        params.page_id, params.transition, params.request_time));
+    NavigationState* state = NavigationState::CreateBrowserInitiated(
+        params.page_id, params.transition, params.request_time);
+    if (params.navigation_type == ViewMsg_Navigate_Params::RESTORE) {
+      // We're doing a load of a page that was restored from the last session.
+      // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
+      // which can result in stale data for pages that are set to expire. We
+      // explicitly override that by setting the policy here so that as
+      // necessary we load from the network.
+      state->set_cache_policy_override(WebURLRequest::UseProtocolCachePolicy);
+    }
+    pending_navigation_state_.reset(state);
   }
 
   // If we are reloading, then WebKit will use the history state of the current
@@ -2358,6 +2367,17 @@ void RenderView::assignIdentifierToRequest(
 void RenderView::willSendRequest(
     WebFrame* frame, unsigned identifier, WebURLRequest& request,
     const WebURLResponse& redirect_response) {
+  WebFrame* top_frame = frame->top();
+  if (!top_frame)
+    top_frame = frame;
+  WebDataSource* data_source = top_frame->provisionalDataSource();
+  if (!data_source)
+    data_source = top_frame->dataSource();
+  if (data_source) {
+    NavigationState* state = NavigationState::FromDataSource(data_source);
+    if (state && state->is_cache_policy_override_set())
+      request.setCachePolicy(state->cache_policy_override());
+  }
   request.setRequestorID(routing_id_);
 }
 

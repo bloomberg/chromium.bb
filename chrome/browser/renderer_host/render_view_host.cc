@@ -274,7 +274,7 @@ void RenderViewHost::NavigateToURL(const GURL& url) {
   params.page_id = -1;
   params.url = url;
   params.transition = PageTransition::LINK;
-  params.reload = false;
+  params.navigation_type = ViewMsg_Navigate_Params::NORMAL;
   Navigate(params);
 }
 

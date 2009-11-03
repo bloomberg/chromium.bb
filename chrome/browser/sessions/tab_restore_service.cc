@@ -26,9 +26,15 @@ using base::Time;
 // ID of the next Entry.
 static SessionID::id_type next_entry_id = 1;
 
-TabRestoreService::Entry::Entry() : id(next_entry_id++), type(TAB) {}
+TabRestoreService::Entry::Entry()
+    : id(next_entry_id++),
+      type(TAB),
+      from_last_session(false) {}
 
-TabRestoreService::Entry::Entry(Type type) : id(next_entry_id++), type(type) {}
+TabRestoreService::Entry::Entry(Type type)
+    : id(next_entry_id++),
+      type(type),
+      from_last_session(false) {}
 
 // TabRestoreService ----------------------------------------------------------
 
@@ -250,7 +256,8 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
     Tab* tab = static_cast<Tab*>(entry);
     if (replace_existing_tab && browser) {
       browser->ReplaceRestoredTab(tab->navigations,
-                                  tab->current_navigation_index);
+                                  tab->current_navigation_index,
+                                  tab->from_last_session);
     } else {
       // Use the tab's former browser and index, if available.
       Browser* tab_browser = NULL;
@@ -273,7 +280,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
         tab_index = tab_browser->tab_count();
       tab_browser->AddRestoredTab(tab->navigations, tab_index,
                                   tab->current_navigation_index, true,
-                                  tab->pinned);
+                                  tab->pinned, tab->from_last_session);
     }
   } else if (entry->type == WINDOW) {
     const Window* window = static_cast<Window*>(entry);
@@ -285,7 +292,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
                                   tab.current_navigation_index,
                                   (static_cast<int>(tab_i) ==
                                    window->selected_tab_index),
-                                  tab.pinned);
+                                  tab.pinned, tab.from_last_session);
       if (restored_tab)
         restored_tab->controller().LoadIfNecessary();
     }
@@ -869,8 +876,10 @@ void TabRestoreService::LoadStateChanged() {
   }
 
   // And add them.
-  for (size_t i = 0; i < staging_entries_.size(); ++i)
+  for (size_t i = 0; i < staging_entries_.size(); ++i) {
+    staging_entries_[i]->from_last_session = true;
     AddEntry(staging_entries_[i], false, false);
+  }
 
   // AddEntry takes ownership of the entry, need to clear out entries so that
   // it doesn't delete them.

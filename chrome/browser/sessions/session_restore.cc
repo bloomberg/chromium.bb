@@ -334,7 +334,8 @@ class SessionRestoreImpl : public NotificationObserver {
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
                                    false,
-                                   tab.pinned)->controller());
+                                   tab.pinned,
+                                   true)->controller());
     }
   }
 
