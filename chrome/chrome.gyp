@@ -1024,6 +1024,8 @@
         'browser/cocoa/about_ipc_dialog.mm',
         'browser/cocoa/about_window_controller.h',
         'browser/cocoa/about_window_controller.mm',
+        'browser/cocoa/animatable_view.h',
+        'browser/cocoa/animatable_view.mm',
         'browser/cocoa/autocomplete_text_field.h',
         'browser/cocoa/autocomplete_text_field.mm',
         'browser/cocoa/autocomplete_text_field_cell.h',
@@ -4454,6 +4456,7 @@
         # exclude them from non-Mac builds.
         'browser/cocoa/about_ipc_controller_unittest.mm',
         'browser/cocoa/about_window_controller_unittest.mm',
+        'browser/cocoa/animatable_view_unittest.mm',
         'browser/cocoa/autocomplete_text_field_cell_unittest.mm',
         'browser/cocoa/autocomplete_text_field_editor_unittest.mm',
         'browser/cocoa/autocomplete_text_field_unittest.mm',
