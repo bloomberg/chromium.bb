@@ -592,7 +592,7 @@ def TryChange(argv,
     if not options.email:
       print('Warning: try job email will be sent to %s@google.com or '
             'something like that. Who knows? Set EMAIL_ADDRESS to override.'
-            % option.user)
+            % options.user)
 
     # Send the patch.
     options.send_patch(options)
