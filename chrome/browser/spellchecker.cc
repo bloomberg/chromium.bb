@@ -765,7 +765,7 @@ void SpellChecker::AddWord(const string16& word) {
   // Add the word to hunspell.
   std::string word_to_add = UTF16ToUTF8(word);
   // Don't attempt to add an empty word, or one larger than Hunspell can handle
-  if (!word_to_add.empty() && word_to_add.length() < MAXWORDUTF8LEN) {
+  if (!word_to_add.empty() && word_to_add.length() < MAXWORDLEN) {
     // Either add the word to |hunspell_|, or, if |hunspell_| is still loading,
     // defer it till after the load completes.
     if (hunspell_.get())
@@ -789,7 +789,7 @@ bool SpellChecker::CheckSpelling(const string16& word_to_check, int tag) {
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
-    if (word_to_check_utf8.length() < MAXWORDUTF8LEN) {
+    if (word_to_check_utf8.length() < MAXWORDLEN) {
       // |hunspell_->spell| returns 0 if the word is spelled correctly and
       // non-zero otherwsie.
       word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
