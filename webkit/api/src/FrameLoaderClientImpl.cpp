@@ -152,6 +152,14 @@ void FrameLoaderClientImpl::registerForIconNotification(bool)
 {
 }
 
+bool FrameLoaderClientImpl::allowJavaScript(bool enabledPerSettings)
+{
+    if (m_webFrame->client())
+        return m_webFrame->client()->allowScript(m_webFrame, enabledPerSettings);
+
+    return enabledPerSettings;
+}
+
 bool FrameLoaderClientImpl::hasWebView() const
 {
     return m_webFrame->viewImpl() != 0;

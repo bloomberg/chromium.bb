@@ -659,14 +659,6 @@ bool GetApplicationDirectory(FilePath* path) {
   return PathService::Get(base::DIR_EXE, path);
 }
 
-GURL GetInspectorURL() {
-  return GURL("test-shell-resource://inspector/inspector.html");
-}
-
-std::string GetUIResourceProtocol() {
-  return "test-shell-resource";
-}
-
 bool GetExeDirectory(FilePath* path) {
   return GetApplicationDirectory(path);
 }

@@ -79,11 +79,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)());
 
-  // These are temporary methods that the WebKit layer can use to call to the
-  // Glue layer.  Once the Glue layer moves entirely into the WebKit layer,
-  // these methods will be deleted.
-  virtual WebCore::String uiResourceProtocol();
-
  private:
   void DoTimeout() {
     if (shared_timer_func_)

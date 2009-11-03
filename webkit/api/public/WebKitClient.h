@@ -36,7 +36,6 @@
 #include "WebCommon.h"
 #include "WebLocalizedString.h"
 #include "WebVector.h"
-#include "webkit/api/src/TemporaryGlue.h"
 
 #ifdef WIN32
 typedef void *HANDLE;
@@ -62,9 +61,7 @@ namespace WebKit {
     struct WebPluginInfo;
     template <typename T> class WebVector;
 
-    // FIXME: Once our webkit api is complete, we should not need to inherit
-    // from TemporaryGlue here.
-    class WebKitClient : public TemporaryGlue {
+    class WebKitClient {
     public:
         // Must return non-null.
         virtual WebClipboard* clipboard() = 0;

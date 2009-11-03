@@ -2036,7 +2036,7 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
   NavigationState* state = pending_navigation_state_.get() ?
-      pending_navigation_state_.release() : 
+      pending_navigation_state_.release() :
       NavigationState::CreateContentInitiated();
 
   state->set_user_script_idle_scheduler(
@@ -2442,6 +2442,31 @@ void RenderView::didRunInsecureContent(
   Send(new ViewHostMsg_DidRunInsecureContent(
       routing_id_,
       origin.toString().utf8()));
+}
+
+bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
+  if (enabled_per_settings)
+    return true;
+
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return false;  // Uninitialized document?
+
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;  // Browser UI elements should still work.
+
+  // If the scheme is ftp: or file:, an empty file name indicates a directory
+  // listing, which requires JavaScript to function properly.
+  GURL frame_url = frame->url();
+  const char* kDirProtocols[] = { "ftp", "file" };
+  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
+    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
+      return frame_url.SchemeIs(kDirProtocols[i]) &&
+             frame_url.ExtractFileName().empty();
+    }
+  }
+
+  return false;  // Other protocols fall through here.
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {

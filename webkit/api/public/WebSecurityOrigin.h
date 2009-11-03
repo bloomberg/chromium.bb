@@ -55,11 +55,21 @@ namespace WebKit {
 
         bool isNull() const { return m_private == 0; }
 
-        // Returns a string representation of this SecurityOrigin that can be used as a file.
-        // Should be used in storage APIs only.
-        WEBKIT_API WebString databaseIdentifier();
+        WEBKIT_API WebString protocol() const;
+        WEBKIT_API WebString host() const;
+        WEBKIT_API unsigned short port() const;
 
+        // The empty WebSecurityOrigin is the least privileged WebSecurityOrigin.
+        WEBKIT_API bool isEmpty() const;
+
+        // Returns a string representation of the WebSecurityOrigin.  The empty
+        // WebSecurityOrigin is represented by "null".  The representation of a
+        // non-empty WebSecurityOrigin resembles a standard URL.
         WEBKIT_API WebString toString() const;
+
+        // Returns a string representation of this WebSecurityOrigin that can
+        // be used as a file.  Should be used in storage APIs only.
+        WEBKIT_API WebString databaseIdentifier();
 
 #if WEBKIT_IMPLEMENTATION
         WebSecurityOrigin(const WTF::PassRefPtr<WebCore::SecurityOrigin>&);

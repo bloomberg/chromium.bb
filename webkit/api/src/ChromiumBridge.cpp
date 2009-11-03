@@ -606,11 +606,6 @@ bool ChromiumBridge::isLinkVisited(LinkHash visitedLinkHash)
 // Glue layer. Once the Glue layer moves entirely into the WebKit layer, these
 // methods will be deleted.
 
-String ChromiumBridge::uiResourceProtocol()
-{
-    return webKitClient()->uiResourceProtocol();
-}
-
 void ChromiumBridge::notifyJSOutOfMemory(Frame* frame)
 {
     if (!frame)

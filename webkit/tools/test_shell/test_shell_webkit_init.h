@@ -48,9 +48,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::initialize(this);
     WebKit::setLayoutTestMode(layout_test_mode);
     WebKit::WebSecurityPolicy::registerURLSchemeAsLocal(
-        ASCIIToUTF16(webkit_glue::GetUIResourceProtocol()));
+        WebKit::WebString::fromUTF8("test-shell-resource"));
     WebKit::WebSecurityPolicy::registerURLSchemeAsNoAccess(
-        ASCIIToUTF16(webkit_glue::GetUIResourceProtocol()));
+        WebKit::WebString::fromUTF8("test-shell-resource"));
     WebKit::WebScriptController::enableV8SingleThreadMode();
     WebKit::WebScriptController::registerExtension(
         extensions_v8::GearsExtension::Get());

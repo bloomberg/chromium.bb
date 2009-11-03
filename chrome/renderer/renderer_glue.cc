@@ -199,15 +199,6 @@ void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url) {
                                                                   markup, url));
 }
 
-GURL GetInspectorURL() {
-  return GURL(std::string(chrome::kChromeUIScheme) +
-              "://inspector/inspector.html");
-}
-
-std::string GetUIResourceProtocol() {
-  return "chrome";
-}
-
 void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;

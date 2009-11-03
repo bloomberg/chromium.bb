@@ -55,18 +55,44 @@ void WebSecurityOrigin::assign(const WebSecurityOrigin& other)
     assign(p);
 }
 
-WebString WebSecurityOrigin::databaseIdentifier()
+WebString WebSecurityOrigin::protocol() const
 {
-    if (m_private)
-        return m_private->databaseIdentifier();
+    ASSERT(m_private);
+    return m_private->protocol();
+}
 
-    return WebString::fromUTF8("null");
+WebString WebSecurityOrigin::host() const
+{
+    ASSERT(m_private);
+    return m_private->host();
+}
+
+unsigned short WebSecurityOrigin::port() const
+{
+    ASSERT(m_private);
+    return m_private->port();
+}
+
+bool WebSecurityOrigin::isEmpty() const
+{
+    ASSERT(m_private);
+    return m_private->isEmpty();
 }
 
 WebString WebSecurityOrigin::toString() const
 {
+    // FIXME: We should not support calling this method when m_private is null.
     if (m_private)
         return m_private->toString();
+
+    return WebString::fromUTF8("null");
+}
+
+WebString WebSecurityOrigin::databaseIdentifier()
+{
+    // FIXME: We should not support calling this method when m_private is null.
+    if (m_private)
+        return m_private->databaseIdentifier();
 
     return WebString::fromUTF8("null");
 }

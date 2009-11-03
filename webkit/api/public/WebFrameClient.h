@@ -90,10 +90,7 @@ namespace WebKit {
         virtual WebNavigationPolicy decidePolicyForNavigation(
             WebFrame*, const WebURLRequest&, WebNavigationType,
             const WebNode& originatingNode,
-            WebNavigationPolicy defaultPolicy, bool isRedirect)
-        {
-            return defaultPolicy;
-        }
+            WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
         // Query if the specified request can be handled.
         virtual bool canHandleRequest(
@@ -109,19 +106,19 @@ namespace WebKit {
 
         // Notify that a URL cannot be handled.
         virtual void unableToImplementPolicyWithError(
-            WebFrame*, const WebURLError&) { };
+            WebFrame*, const WebURLError&) { }
 
 
         // Navigational notifications ------------------------------------------
 
         // A form submission is about to occur.
-        virtual void willSubmitForm(WebFrame*, const WebForm&) { };
+        virtual void willSubmitForm(WebFrame*, const WebForm&) { }
 
         // A client-side redirect will occur.  This may correspond to a <META
         // refresh> or some script activity.
         virtual void willPerformClientRedirect(
             WebFrame*, const WebURL& from, const WebURL& to,
-            double interval, double fireTime) { };
+            double interval, double fireTime) { }
 
         // A client-side redirect was cancelled.
         virtual void didCancelClientRedirect(WebFrame*) { }
@@ -233,6 +230,9 @@ namespace WebKit {
 
 
         // Script notifications ------------------------------------------------
+
+        // Controls whether scripts are allowed to execute for this frame.
+        virtual bool allowScript(WebFrame*, bool enabledPerSettings) { return enabledPerSettings; }
 
         // Script in the page tried to allocate too much memory.
         virtual void didExhaustMemoryAvailableForScript(WebFrame*) { }

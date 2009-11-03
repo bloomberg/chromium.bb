@@ -190,14 +190,6 @@ void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url);
 // Returns true if successful, false otherwise.
 bool GetApplicationDirectory(FilePath* path);
 
-// Gets the URL where the inspector's HTML file resides. It must use the
-// protocol returned by GetUIResourceProtocol.
-GURL GetInspectorURL();
-
-// Gets the protocol that is used for all user interface resources, including
-// the Inspector. It must end with "-resource".
-std::string GetUIResourceProtocol();
-
 // Gets the directory where the launching executable resides on disk.
 // Path is an output parameter to receive the path.
 // Returns true if successful, false otherwise.

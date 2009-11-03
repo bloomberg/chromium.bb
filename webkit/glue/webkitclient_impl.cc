@@ -414,18 +414,4 @@ WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
   return webkit_glue::KURLToWebURL(webkit_glue::GURLToKURL(file_url));
 }
 
-//--------------------------------------------------------------------------
-// BEGIN(TemporaryGlue)
-
-// These are temporary methods that the WebKit layer can use to call to the
-// Glue layer.  Once the Glue layer moves entirely into the WebKit layer, these
-// methods will be deleted.
-
-WebCore::String WebKitClientImpl::uiResourceProtocol() {
-  return StdStringToString(webkit_glue::GetUIResourceProtocol());
-}
-
-// END(TemporaryGlue)
-//--------------------------------------------------------------------------
-
 }  // namespace webkit_glue
