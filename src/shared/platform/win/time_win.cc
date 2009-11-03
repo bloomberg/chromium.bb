@@ -37,7 +37,7 @@
 #include <mmsystem.h>
 
 #include "native_client/src/include/portability.h"
-#include "base/basictypes.h"
+#include "native_client/src/include/base/basictypes.h"
 
 #include "native_client/src/shared/platform/time.h"
 #include "native_client/src/shared/platform/win/lock.h"

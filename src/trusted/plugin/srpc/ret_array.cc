@@ -54,8 +54,8 @@ RetArray::RetArray(NPP npp) : npp_(npp) {
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
 
   NPString script;
-  script.UTF8Characters = "new Array();";
-  script.UTF8Length = strlen(script.UTF8Characters);
+  script.utf8characters = "new Array();";
+  script.utf8length = strlen(script.utf8characters);
 
   if (!NPN_Evaluate(npp, window, &script, &array_) ||
       !NPVARIANT_IS_OBJECT(array_)) {

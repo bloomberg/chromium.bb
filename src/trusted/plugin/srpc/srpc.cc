@@ -278,11 +278,11 @@ NPError SRPC_Plugin::GetValue(NPPVariable variable, void* value) {
     case NPPVformValue:
     case NPPVpluginUrlRequestsDisplayedBool:
     case NPPVpluginWantsAllNetworkStreams:
-    case NPPVpluginCancelSrcStream:
 #ifdef XP_MACOSX
     // Mac has several drawing, event, etc. models in NPAPI that are unique.
     case NPPVpluginDrawingModel:
     case NPPVpluginEventModel:
+    case NPPVpluginTextInputFuncs:
     case NPPVpluginCoreAnimationLayer:
 #endif  // XP_MACOSX
     default:

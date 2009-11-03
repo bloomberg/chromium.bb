@@ -215,8 +215,8 @@ NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
   NPObject* window;
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
   NPString script;
-  script.UTF8Characters = "new Array();";
-  script.UTF8Length = strlen(script.UTF8Characters);
+  script.utf8characters = "new Array();";
+  script.utf8length = strlen(script.utf8characters);
   NPVariant result;
   int success = NPN_Evaluate(npp, window, &script, &result) &&
                 NPVARIANT_IS_OBJECT(result);

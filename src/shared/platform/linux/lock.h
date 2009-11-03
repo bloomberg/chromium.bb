@@ -37,7 +37,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_LOCK_H_
 
 #include <pthread.h>
-#include "base/basictypes.h"
+#include "native_client/src/include/base/basictypes.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
 // This class implements the underlying platform-specific spin-lock mechanism

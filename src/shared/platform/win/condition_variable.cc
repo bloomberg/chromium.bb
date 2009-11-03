@@ -37,7 +37,7 @@
 #include "native_client/src/include/portability.h"
 #include <stack>
 
-#include "base/basictypes.h"
+#include "native_client/src/include/base/basictypes.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"

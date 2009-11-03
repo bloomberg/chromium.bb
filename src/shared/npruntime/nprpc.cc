@@ -69,12 +69,12 @@ const NPVariant* RpcArg::GetVariant(bool copy_strings) {
   }
   fixed_.Consume(sizeof(NPVariant));
   if (NPVARIANT_IS_STRING(*variant)) {
-    if (0 == NPVARIANT_TO_STRING(*variant).UTF8Length &&
-        NULL == NPVARIANT_TO_STRING(*variant).UTF8Characters) {
+    if (0 == NPVARIANT_TO_STRING(*variant).utf8length &&
+        NULL == NPVARIANT_TO_STRING(*variant).utf8characters) {
       // Odd, we were passed a NULL string (length == 0 or characters == NULL).
       STRINGN_TO_NPVARIANT(NULL, 0, *variant);
     } else {
-      size_t length = NPVARIANT_TO_STRING(*variant).UTF8Length;
+      size_t length = NPVARIANT_TO_STRING(*variant).utf8length;
       char* string = reinterpret_cast<char*>(optional_.Request(length));
       if (NULL == string) {
         // Not enough bytes to read string.
@@ -131,13 +131,13 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
   ConvertNPVariants(variant, ptr, peer_npvariant_size, 1);
   // Aid the optional portions.
   if (NPVARIANT_IS_STRING(*ptr)) {
-    if (0 == NPVARIANT_TO_STRING(*ptr).UTF8Length ||
-        NULL == NPVARIANT_TO_STRING(*ptr).UTF8Characters) {
+    if (0 == NPVARIANT_TO_STRING(*ptr).utf8length ||
+        NULL == NPVARIANT_TO_STRING(*ptr).utf8characters) {
       // Something's wrong with this string.
       return false;
     } else {
-      size_t len = NPVARIANT_TO_STRING(*ptr).UTF8Length;
-      const char* npstr = NPVARIANT_TO_STRING(*ptr).UTF8Characters;
+      size_t len = NPVARIANT_TO_STRING(*ptr).utf8length;
+      const char* npstr = NPVARIANT_TO_STRING(*ptr).utf8characters;
       void* str = optional_.Request(len);
       if (NULL == str) {
         // There aren't enough bytes to store the string.
@@ -231,6 +231,20 @@ bool RpcArg::PutCapability(const NPCapability* capability) {
   printf("    consumed the space %p\n", reinterpret_cast<void*>(ptr));
   memcpy(ptr, capability, sizeof(NPCapability));
   printf("    copied %p\n", reinterpret_cast<void*>(ptr));
+  return true;
+}
+
+NPSize* RpcArg::GetSize() {
+  return reinterpret_cast<NPSize*>(fixed_.Request(sizeof(NPSize)));
+}
+
+bool RpcArg::PutSize(const NPSize* size) {
+  NPSize* ptr = reinterpret_cast<NPSize*>(fixed_.Request(sizeof(NPSize)));
+  if (NULL == ptr) {
+    return false;
+  }
+  fixed_.Consume(sizeof(NPSize));
+  memcpy(ptr, size, sizeof(NPSize));
   return true;
 }
 

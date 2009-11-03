@@ -89,6 +89,7 @@ def generate(env):
 
   env.Append(
       HOST_PLATFORMS=['LINUX'],
+      CPPDEFINES=['OS_LINUX=OS_LINUX'],
 
       # Settings for debug
       CCFLAGS_DEBUG=[

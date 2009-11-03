@@ -163,6 +163,7 @@ def generate(env):
 
   env.Append(
       HOST_PLATFORMS=['MAC'],
+      CPPDEFINES=['OS_MACOSX=OS_MACOSX'],
 
       # Mac apps and dylibs have a more strict relationship about where they
       # expect to find each other.  When an app is linked, it stores the

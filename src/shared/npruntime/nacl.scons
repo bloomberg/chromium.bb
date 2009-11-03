@@ -46,8 +46,9 @@ env.ComponentLibrary('google_nacl_npruntime',
 
 headers = [
   'nacl_npapi.h',
-  '$SOURCE_ROOT/third_party/npapi/bindings/npapi.h',
-  '$SOURCE_ROOT/third_party/npapi/bindings/npruntime.h',
+  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npapi.h',
+  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npruntime.h',
+  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/nptypes.h',
   '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npupp.h',
 ]
 

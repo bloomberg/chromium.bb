@@ -43,7 +43,7 @@
 #if XP_WIN
 #include <windows.h>
 #endif
-#include "third_party/npapi/bindings/npapi.h"
+#include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 
 #ifndef HIBYTE

@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <algorithm>
 
-#include "base/basictypes.h"
+#include "native_client/src/include/base/basictypes.h"
 #include "native_client/src/trusted/plugin/origin.h"
 
 #define NACL_SELENIUM_TEST "NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST"
@@ -107,7 +107,7 @@ namespace nacl {
 #endif
     };
     dprintf(("OriginIsInWhitelist(%s)\n", origin.c_str()));
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(allowed_origin); ++i) {
+    for (size_t i = 0; i < ARRAYSIZE(allowed_origin); ++i) {
       if (origin == allowed_origin[i]) {
         dprintf((" found at position %"PRIdS"\n", i));
         return true;

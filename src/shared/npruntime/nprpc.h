@@ -158,6 +158,11 @@ class RpcArg {
   // Puts an NPCapability into the argument vector.
   bool PutCapability(const NPCapability* capability);
 
+  // Reads an NPSize structure from the argument vector.
+  NPSize* GetSize();
+  // Puts an NPSize into the argument vector.
+  bool PutSize(const NPSize* size);
+
   // Reads an NPRect structure from the argument vector.
   NPRect* GetRect();
   // Puts an NPRect into the argument vector.

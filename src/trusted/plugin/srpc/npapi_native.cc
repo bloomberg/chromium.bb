@@ -117,7 +117,7 @@ template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s) {
   if (!NPVARIANT_IS_STRING(*var)) {
     return false;
   }
-  size_t length = NPVARIANT_TO_STRING(*var).UTF8Length;
+  size_t length = NPVARIANT_TO_STRING(*var).utf8length;
   // Allocate a copy.
   NPUTF8* result =
     reinterpret_cast<char*>(malloc(length + 1));
@@ -125,7 +125,7 @@ template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s) {
     return false;
   }
   // Copy to the string .
-  memcpy(result, NPVARIANT_TO_STRING(*var).UTF8Characters, length);
+  memcpy(result, NPVARIANT_TO_STRING(*var).utf8characters, length);
   result[length] = '\0';
   // Make result available to the caller.
   *s = result;

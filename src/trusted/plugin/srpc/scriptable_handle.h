@@ -41,7 +41,7 @@
 #include <set>
 
 #include "native_client/src/include/portability.h"
-#include "third_party/npapi/bindings/npapi.h"
+#include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/ret_array.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"

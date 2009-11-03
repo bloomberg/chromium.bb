@@ -40,7 +40,7 @@
 #include <stdio.h>
 #include <map>
 #include <string>
-#include "base/basictypes.h"
+#include "native_client/src/include/base/basictypes.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 namespace nacl_srpc {
