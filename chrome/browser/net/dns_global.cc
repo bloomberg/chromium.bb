@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/singleton.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/fixed_host_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 
@@ -476,12 +478,21 @@ static void DiscardAllPrefetchState() {
 net::HostResolver* GetGlobalHostResolver() {
   // Called from UI thread.
   if (!global_host_resolver) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+    // The FixedHostResolver allows us to send all network requests through
+    // a designated test server.
+    if (command_line.HasSwitch(switches::kFixedServer)) {
+      std::string host_and_port =
+          WideToASCII(command_line.GetSwitchValue(switches::kFixedServer));
+      global_host_resolver = new net::FixedHostResolver(host_and_port);
+      return global_host_resolver;
+    }
+
     global_host_resolver = net::CreateSystemHostResolver();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIPv6)) {
-      global_host_resolver->SetDefaultAddressFamily(
-          net::ADDRESS_FAMILY_IPV4);
-    }
+    if (command_line.HasSwitch(switches::kDisableIPv6))
+      global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
   }
   return global_host_resolver;
 }

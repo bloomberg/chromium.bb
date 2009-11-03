@@ -33,7 +33,7 @@ class ChromeURLRequestContextFactory;
 // Most methods are expected to be called on the UI thread, except for
 // the destructor and GetURLRequestContext().
 class ChromeURLRequestContextGetter : public URLRequestContextGetter,
-                             public NotificationObserver {
+                                      public NotificationObserver {
  public:
   // Constructs a ChromeURLRequestContextGetter that will use |factory| to
   // create the ChromeURLRequestContext. If |profile| is non-NULL, then the

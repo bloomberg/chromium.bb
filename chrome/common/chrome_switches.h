@@ -161,6 +161,7 @@ extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseFlip[];
+extern const char kFixedServer[];
 extern const char kUseLowFragHeapCrt[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
