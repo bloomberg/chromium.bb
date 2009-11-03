@@ -1441,10 +1441,12 @@
    *     specific expectations.
    * @param {string} path Relative path to the expectation.
    * @param {string} base Base path for the expectation URL.
-   * @param {string} opt_suffix Suffix to place at the end of the path.
+   * @param {string} suffix Suffix to place at the end of the path.
+   * @param {string} opt_builder Builder whose actual results this expectation
+   *     points to.
    */
   function addExpectationItem(expectationsContainers, parentContainer, platform,
-      path, base, opt_suffix) {
+      path, base, suffix, opt_builder) {
     var fileExtension = getExtension(path);
     var container = getExpectationsContainer(expectationsContainers,
           parentContainer, fileExtension);
@@ -1453,7 +1455,6 @@
     // TODO(ojan): Is there any way to do this that doesn't rely on script
     // tags? They spew a lot of errors to the console.
     var dummyNode = document.createElement(isImage ? 'img' : 'script');
-    var suffix = opt_suffix || '';
     var platformPart = platform ? ensureTrailingSlash(platform) : '';
     dummyNode.src = base + platformPart + path + suffix;
 
@@ -1461,7 +1462,8 @@
     childContainer.className = 'unloaded';
 
     dummyNode.onload = function() {
-      childContainer.appendChild(getExpectationsTitle(platform, path));
+      childContainer.appendChild(
+          getExpectationsTitle(platform, path, opt_builder || ''));
       childContainer.className = 'expectations-item';
 
       var item;
@@ -1571,15 +1573,17 @@
     addExpectationItem(expectationsContainers, container, platform, checksum,
         base, textSuffix);
     addExpectationItem(expectationsContainers, container, platform, png,
-        imageBase);
+        imageBase, '');
   }
 
-  function getExpectationsTitle(platform, path) {
+  function getExpectationsTitle(platform, path, builder) {
     var header = document.createElement('h3');
     header.className = 'expectations-title';
 
     var innerHTML;
-    if (platform == LAYOUT_TESTS_PREFIX) {
+    if (builder) {
+      innerHTML = 'ACTUAL RESULTS: ' + builder;
+    } else if (platform == LAYOUT_TESTS_PREFIX) {
       var parts = path.split('/');
       innerHTML = parts[parts.length - 1];
     } else {
@@ -1641,6 +1645,21 @@
             checksum, png, textSuffixChrome);
       }
     }
+
+    var actualResultSuffixes = ['-actual.txt', '-actual.checksum',
+        '-actual.png', '-stack.png'];
+
+    for (var builder in builders) {
+      var actualResultsBase =
+          'http://build.chromium.org/buildbot/layout_test_results/' +
+          builders[builder] + '/results/layout-test-results/';
+      for (var i = 0; i < actualResultSuffixes.length; i++) {
+        addExpectationItem(expectationsContainers, expectationsContainer, null,
+            testWithoutSuffix + actualResultSuffixes[i], actualResultsBase, '',
+            builder);
+      }
+    }
+
 
     // Add a clearing element so floated elements don't bleed out of their
     // containing block.
@@ -1731,6 +1750,15 @@
     return testsHTML.join('<hr>');
   }
 
+  function getHTMLForCanaryLink(html, useWebKitCanary, useV8Canary) {
+    var className = (currentState.useWebKitCanary == useWebKitCanary &&
+        currentState.useV8Canary == useV8Canary) ? 'current-builder' : 'link';
+    return '<span class=' + className +
+        ' onclick="setState(\'useWebKitCanary\',' + useWebKitCanary +
+        ',\'useV8Canary\',' + useV8Canary + ');window.location.reload()">' +
+        html + '</span> | ';
+  }
+
   function getHTMLForNavBar(opt_builderName) {
     var html = '<div id=builders>';
     for (var builder in builders) {
@@ -1739,15 +1767,14 @@
           ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
-    var canaryLink = '<span class=link onClick="setState(\'useWebKitCanary\',' +
-        !currentState.useWebKitCanary + ');window.location.reload()">' +
-        (currentState.useWebKitCanary ? 'Main builders' : 'WebKit.org Canary') +
-        '</span>';
 
     return html + '</div>' +
         '<form id=tests-form ' +
-        'onsubmit="setState(\'tests\', tests.value);return false;">' +
-        '<div>' + canaryLink + ' | <span class=link ' +
+        'onsubmit="setState(\'tests\', tests.value);return false;"><div>' +
+        getHTMLForCanaryLink('Main builders', false, false) +
+        getHTMLForCanaryLink('WebKit.org Canary', true, false) +
+        getHTMLForCanaryLink('V8 Canary', false, true) +
+        '<span class=link ' +
         'onclick="setState(\'tests\', \'allIncorrectExpectations\')">' +
         'All incorrect expectations</span> | '+
         '<span class=link ' +

@@ -78,6 +78,7 @@ function handleValidHashParameterWrapper(key, value) {
       return true;
 
     case 'useWebKitCanary':
+    case 'useV8Canary':
     case 'debug':
       currentState[key] = value == 'true';
 
@@ -91,6 +92,7 @@ function handleValidHashParameterWrapper(key, value) {
 var defaultCrossDashboardStateValues = {
   testType: 'layout_test_results',
   useWebKitCanary: false,
+  useV8Canary: false,
   debug: false
 }
 
@@ -196,6 +198,12 @@ if (currentState.debug) {
       'Webkit Linux (webkit.org)': 'webkit-rel-linux-webkit-org',
       'Webkit Mac (webkit.org)': 'webkit-rel-mac-webkit-org'
     };
+  } else if (currentState.useV8Canary) {
+    builders = {
+      'Webkit (V8-Latest)': 'webkit-rel-v8',
+      'Webkit Mac (V8-Latest)': 'webkit-rel-mac-v8',
+      'Webkit Linux (V8-Latest)': 'webkit-rel-linux-v8'
+    }
   } else {
     builders = {
       'Webkit': 'webkit-rel',
