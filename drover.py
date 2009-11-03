@@ -61,10 +61,19 @@ def clobberDir(dir):
     #TODO(laforge) : Is this correct?
     deltree(dir)
 
+def runGcl(subcommand):
+  gcl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gcl")
+  if not os.path.exists(gcl_path):
+    print "WARNING: gcl not found beside drover.py. Using system gcl instead..."
+    gcl_path = 'gcl'
+
+  command = "%s %s" % (gcl_path, subcommand)
+  return os.system(command)
+
 def gclUpload(revision, author):
-  command = ("gcl upload " + str(revision) +
+  command = ("upload " + str(revision) +
              " --send_mail --no_try --no_presubmit --reviewers=" + author)
-  os.system(command)
+  return runGcl(command)
 
 def getSVNInfo(url, revision):
   command = 'svn info ' + url + "@"+str(revision)
@@ -419,10 +428,10 @@ def main(options, args):
     out.write("TBR=" + author)
   out.close()
 
-  change_cmd = 'gcl change ' + str(revision) + " " + filename
+  change_cmd = 'change ' + str(revision) + " " + filename
   if options.revertbot:
     change_cmd += ' --silent'
-  os.system(change_cmd)
+  runGcl(change_cmd)
   os.unlink(filename)
   print author
   print revision
@@ -440,7 +449,7 @@ def main(options, args):
   else:
     print "Deleting the changelist."
     print "gcl delete " + str(revision)
-    os.system("gcl delete " + str(revision))
+    runGcl("delete " + str(revision))
     sys.exit(0)
 
   # We commit if the reverbot is set to commit automatically, or if this is
@@ -448,7 +457,7 @@ def main(options, args):
   if options.revertbot_commit or (not options.revertbot and
                                   prompt("Would you like to commit?")):
     print "gcl commit " + str(revision) + " --no_presubmit --force"
-    os.system("gcl commit " + str(revision) + " --no_presubmit --force")
+    runGcl("commit " + str(revision) + " --no_presubmit --force")
   else:
     sys.exit(0)
 
