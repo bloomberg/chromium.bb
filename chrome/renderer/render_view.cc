@@ -1235,7 +1235,7 @@ void RenderView::OnQueryFormFieldAutofillAck(
     int query_id,
     const std::vector<string16>& suggestions,
     int default_suggestion_index) {
-  if (webview() && query_id == autofill_query_id_ && !suggestions.empty()) {
+  if (webview() && query_id == autofill_query_id_) {
     webview()->applyAutofillSuggestions(
         autofill_query_node_, suggestions, default_suggestion_index);
   }
