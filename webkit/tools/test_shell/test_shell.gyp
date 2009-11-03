@@ -122,7 +122,6 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64"', {
           'dependencies': [
-            'npapi_layout_test_plugin',
             'npapi_test_plugin',
           ],
         }],
@@ -140,7 +139,7 @@
             ['exclude', '_x11\\.cc$'],
           ],
         }],
-        ['OS=="linux" and target_arch!="x64"', {
+        ['OS=="linux"', {
           # See below TODO in the Windows branch.
           'copies': [
             {
@@ -468,78 +467,81 @@
         }],
       ],
     },
-  ],
-  'conditions': [
-    # http://code.google.com/p/chromium/issues/detail?id=18337
-    ['target_arch!="x64"', {
-      'targets': [
-        {
-          'target_name': 'npapi_layout_test_plugin',
-          'type': 'loadable_module',
-          'mac_bundle': 1,
-          'msvs_guid': 'BE6D5659-A8D5-4890-A42C-090DD10EF62C',
-          'sources': [
-            '../npapi_layout_test_plugin/PluginObject.cpp',
-            '../npapi_layout_test_plugin/TestObject.cpp',
-            '../npapi_layout_test_plugin/main.cpp',
+    {
+      'target_name': 'npapi_layout_test_plugin',
+      'type': 'loadable_module',
+      'mac_bundle': 1,
+      'msvs_guid': 'BE6D5659-A8D5-4890-A42C-090DD10EF62C',
+      'sources': [
+        '../npapi_layout_test_plugin/PluginObject.cpp',
+        '../npapi_layout_test_plugin/TestObject.cpp',
+        '../npapi_layout_test_plugin/main.cpp',
+        '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
+        '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
+      ],
+      'include_dirs': [
+        '../../..',
+      ],
+      'dependencies': [
+        '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../../third_party/WebKit/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp:wtf',
+      ],
+      'msvs_disabled_warnings': [ 4996 ],
+      'mac_bundle_resources': [
+        '../npapi_layout_test_plugin/Info.r',
+      ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': '../npapi_layout_test_plugin/Info.plist',
+      },
+      'conditions': [
+        ['OS!="win"', {
+          'sources!': [
             '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
             '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
           ],
-          'include_dirs': [
-            '../../..',
-          ],
-          'dependencies': [
-            '../../../third_party/npapi/npapi.gyp:npapi',
-            '../../../third_party/WebKit/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp:wtf',
-          ],
-          'msvs_disabled_warnings': [ 4996 ],
-          'mac_bundle_resources': [
-            '../npapi_layout_test_plugin/Info.r',
-          ],
-          'xcode_settings': {
-            'INFOPLIST_FILE': '../npapi_layout_test_plugin/Info.plist',
+        # TODO(bradnelson):
+        # This copy should really live here, as a post-build step,
+        # but it's currently being implemented via
+        # AdditionalDependencies, which tries to do the copy before
+        # the file is built...
+        #
+        }, { # OS == "win"
+        #  # The old VS build would explicitly copy the .dll into the
+        #  # plugins subdirectory like this.  It might be possible to
+        #  # use the 'product_dir' setting to build directly into
+        #  # plugins/ (as is done on Linux), but we'd need to verify
+        #  # that nothing breaks first.
+        #  'copies': [
+        #    {
+        #      'destination': '<(PRODUCT_DIR)/plugins',
+        #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
+        #    },
+        #  ],
+          'link_settings': {
+            'libraries': [
+              "winmm.lib",
+             ],
           },
-          'conditions': [
-            ['OS!="win"', {
-              'sources!': [
-                '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
-                '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
-              ],
-            # TODO(bradnelson):
-            # This copy should really live here, as a post-build step,
-            # but it's currently being implemented via
-            # AdditionalDependencies, which tries to do the copy before
-            # the file is built...
-            #
-            }, { # OS == "win"
-            #  # The old VS build would explicitly copy the .dll into the
-            #  # plugins subdirectory like this.  It might be possible to
-            #  # use the 'product_dir' setting to build directly into
-            #  # plugins/ (as is done on Linux), but we'd need to verify
-            #  # that nothing breaks first.
-            #  'copies': [
-            #    {
-            #      'destination': '<(PRODUCT_DIR)/plugins',
-            #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
-            #    },
-            #  ],
-              'link_settings': {
-                'libraries': [
-                  "winmm.lib",
-                 ],
-              },
-            }],
-            ['OS=="mac"', {
-              'product_name': 'TestNetscapePlugIn',
-              'product_extension': 'plugin',
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-                ],
-              },
-            }],
-          ],
-        },
+        }],
+        ['OS=="mac"', {
+          'product_name': 'TestNetscapePlugIn',
+          'product_extension': 'plugin',
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+            ],
+          },
+        }],
+        ['OS=="linux" and target_arch=="x64"', {
+          # Shared libraries need -fPIC on x86-64
+          'cflags': ['-fPIC']
+        }],
+      ],
+    },
+  ],
+  'conditions': [
+    ['target_arch!="x64"', {
+      'targets': [
         {
           'target_name': 'npapi_test_plugin',
           'type': 'loadable_module',
@@ -604,22 +606,18 @@
             ['OS!="win"', {
               'sources!': [
                 # TODO(port):  Port these.
-
-                # plugin_npobject_lifetime_test.cc has win32-isms
+                 # plugin_npobject_lifetime_test.cc has win32-isms
                 #   (HWND, CALLBACK).
                 '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
-
-                # The windowed/windowless APIs are necessarily
+                 # The windowed/windowless APIs are necessarily
                 # platform-specific.
                 '../../glue/plugins/test/plugin_window_size_test.cc',
                 '../../glue/plugins/test/plugin_windowed_test.cc',
                 '../../glue/plugins/test/plugin_windowless_test.cc',
-
-                # Seems windows specific.
+                 # Seems windows specific.
                 '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
                 '../../glue/plugins/test/plugin_create_instance_in_paint.h',
-
-                # windows-specific resources
+                 # windows-specific resources
                 '../../glue/plugins/test/npapi_test.def',
                 '../../glue/plugins/test/npapi_test.rc',
               ],
@@ -630,6 +628,10 @@
                   '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
                 ],
               },
+            }],
+            ['OS=="linux" and target_arch=="x64"', {
+              # Shared libraries need -fPIC on x86-64
+              'cflags': ['-fPIC']
             }],
           ],
         },
