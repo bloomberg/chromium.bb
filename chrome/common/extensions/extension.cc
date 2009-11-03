@@ -208,8 +208,6 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       result->set_run_location(UserScript::DOCUMENT_START);
     } else if (run_location == values::kRunAtDocumentEnd) {
       result->set_run_location(UserScript::DOCUMENT_END);
-    } else if (run_location == values::kRunAtDocumentIdle) {
-      result->set_run_location(UserScript::DOCUMENT_IDLE);
     } else {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidRunAt,
           IntToString(definition_index));

@@ -3302,8 +3302,6 @@
         'renderer/renderer_web_database_observer.h',
         'renderer/socket_stream_dispatcher.cc',
         'renderer/socket_stream_dispatcher.h',
-        'renderer/user_script_idle_scheduler.cc',
-        'renderer/user_script_idle_scheduler.h',
         'renderer/user_script_slave.cc',
         'renderer/user_script_slave.h',
         'renderer/visitedlink_slave.cc',

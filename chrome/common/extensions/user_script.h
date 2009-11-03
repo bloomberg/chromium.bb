@@ -28,10 +28,6 @@ class UserScript {
                      // anything else happens.
     DOCUMENT_END,  // After the entire document is parsed. Same as
                    // DOMContentLoaded.
-    DOCUMENT_IDLE,  // Sometime after DOMContentLoaded, as soon as the document
-                    // is "idle". Currently this uses the simple heuristic of:
-                    // min(DOM_CONTENT_LOADED + TIMEOUT, ONLOAD), but no
-                    // particular injection point is guaranteed.
 
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
@@ -92,10 +88,9 @@ class UserScript {
 
   typedef std::vector<File> FileList;
 
-  // Constructor. Default the run location to document idle, which is similar
-  // to Greasemonkey but should result in better page load times for fast-
-  // loading pages.
-  UserScript() : run_location_(DOCUMENT_IDLE) {}
+  // Constructor. Default the run location to document end, which is like
+  // Greasemonkey and probably more useful for typical scripts.
+  UserScript() : run_location_(DOCUMENT_END) {}
 
   // The place in the document to run the script.
   RunLocation run_location() const { return run_location_; }

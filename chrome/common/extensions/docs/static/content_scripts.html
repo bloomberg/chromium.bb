@@ -104,24 +104,7 @@ learn about the
   <tr>
     <td>run_at</td>
     <td>string</td>
-    <td>Optional. Controls when the files in <code>js</code> are injected. Can be <code>"document_start"</code>, <code>"document_end"</code>, or <code>"document_idle"</code>. Defaults to <code>"document_idle"</code>.
-    
-    <br><br>
-    
-    In the case of <code>"document_start"</code>, the files are injected after any files from <code>"css"</code>, but before any other DOM is constructed or any other script is run.
-    
-    <br><br>
-    
-    In the case of <code>"document_end"</code>, the files are injected immediately after the DOM is complete, but before subresources like images and frames have loaded.
-    
-    <br><br>
-    
-    In the case of <code>"document_idle"</code>, the browser chooses a time to inject scripts between <code>"document_end"</code> and immediately after the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#handler-onload">window.onload</a></code> event fires. The exact moment of injection depends on how complex the document is and how long it is taking to load, and is optimized for page load speed.
-    
-    <br><br>
-    
-    <b>NOTE:</b> In <code>document_idle</code>, content scripts may not necessarily receive the window.onload event, because they may run after it has
-    already fired. In most cases, listening for the onload event is unnecessary for content scripts running at <code>document_idle</code> because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code> you can check if it has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
+    <td>Optional. Controls when the files in <code>js</code> are injected. Can be <code>"document_start"</code> or <code>"document_end"</code>. Defaults to <code>"document_end"</code>. In the case of <code>"document_start"</code>, the files are injected after any files from <code>"css"</code>, but before any other DOM is constructed or any other script is run. In the case of <code>"document_end"</code>, the files are injected after the DOM is complete, but before subresources like images and frames have necessarily loaded.</td>
   </tr>
 </table>
 

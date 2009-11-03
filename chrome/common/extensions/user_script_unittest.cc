@@ -122,5 +122,5 @@ TEST(UserScriptTest, Pickle) {
 
 TEST(UserScriptTest, Defaults) {
   UserScript script;
-  ASSERT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
+  ASSERT_EQ(UserScript::DOCUMENT_END, script.run_location());
 }

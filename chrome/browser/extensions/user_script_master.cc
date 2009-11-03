@@ -166,11 +166,6 @@ void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
          file = enumerator.Next()) {
       result->push_back(UserScript());
       UserScript& user_script = result->back();
-
-      // We default standalone user scripts to document-end for better
-      // Greasemonkey compatibility.
-      user_script.set_run_location(UserScript::DOCUMENT_END);
-
       // Push single js file in this UserScript.
       GURL url(std::string(chrome::kUserScriptScheme) + ":/" +
           net::FilePathToFileURL(file).ExtractFileName());

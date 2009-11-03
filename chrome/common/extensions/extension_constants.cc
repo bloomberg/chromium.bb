@@ -52,7 +52,6 @@ const wchar_t* kOptionsPage = L"options_page";
 namespace extension_manifest_values {
 const char* kRunAtDocumentStart = "document_start";
 const char* kRunAtDocumentEnd = "document_end";
-const char* kRunAtDocumentIdle = "document_idle";
 const char* kPageActionTypeTab = "tab";
 const char* kPageActionTypePermanent = "permanent";
 }  // namespace extension_manifest_values
