@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_CREATOR_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_CREATOR_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
 
 #include <string>
 #include <vector>
@@ -51,7 +51,8 @@ class ExtensionCreator {
   base::RSAPrivateKey* GenerateKey(const FilePath& private_key_path);
 
   // Creates temporary zip file for the extension.
-  bool CreateZip(const FilePath& extension_dir, FilePath* zip_path);
+  bool CreateZip(const FilePath& extension_dir, const FilePath& temp_path,
+                 FilePath* zip_path);
 
   // Signs the temporary zip and returns the signature.
   bool SignZip(const FilePath& zip_path,
@@ -70,4 +71,4 @@ class ExtensionCreator {
   DISALLOW_COPY_AND_ASSIGN(ExtensionCreator);
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CREATOR_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_

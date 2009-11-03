@@ -11,6 +11,7 @@
 #include "base/crypto/signature_creator.h"
 #include "base/file_util.h"
 #include "base/scoped_handle.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
@@ -119,9 +120,9 @@ base::RSAPrivateKey* ExtensionCreator::GenerateKey(const FilePath&
 }
 
 bool ExtensionCreator::CreateZip(const FilePath& extension_dir,
+                                 const FilePath& temp_path,
                                  FilePath* zip_path) {
-  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_"), zip_path);
-  *zip_path = zip_path->Append(FILE_PATH_LITERAL("extension.zip"));
+  *zip_path = temp_path.Append(FILE_PATH_LITERAL("extension.zip"));
 
   if (!Zip(extension_dir, *zip_path, false)) {  // no hidden files
     error_message_ = "Failed to create temporary zip file during packaging.";
@@ -221,11 +222,15 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
   if (!key_pair.get())
     return false;
 
+  ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir())
+    return false;
+
   // Zip up the extension.
   FilePath zip_path;
   std::vector<uint8> signature;
   bool result = false;
-  if (CreateZip(extension_dir, &zip_path) &&
+  if (CreateZip(extension_dir, temp_dir.path(), &zip_path) &&
       SignZip(zip_path, key_pair.get(), &signature) &&
       WriteCRX(zip_path, key_pair.get(), signature, crx_path)) {
     result = true;
