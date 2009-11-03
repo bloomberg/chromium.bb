@@ -316,9 +316,6 @@ class ChromeURLRequestContextFactory {
 
   FilePath profile_dir_path_;
 
-  // Values extracted from the browser process.
-  MessageLoop* db_loop_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
 };
 

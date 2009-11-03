@@ -594,9 +594,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   ssl_config_service_ = profile->GetSSLConfigService();
 
   profile_dir_path_ = profile->GetPath();
-
-  // Get references to the database and file threads.
-  db_loop_ = g_browser_process->db_thread()->message_loop();
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {
