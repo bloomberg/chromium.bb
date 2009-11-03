@@ -297,7 +297,6 @@ restart_cal:
 			goto restart_cal;
 		nvpb->cal_suffix0 = req.suffix0;
 		nvpb->cal_suffix1 = req.suffix1;
-		assert(ret == 0);
 		if (!nvpb->no_aper_update) {
 			nvdev->base.vm_vram_size = req.vram_available;
 			nvdev->base.vm_gart_size = req.gart_available;
@@ -317,7 +316,6 @@ restart_push:
 				      &req, sizeof(req));
 		if (ret == -EAGAIN)
 			goto restart_push;
-		assert(ret == 0);
 	}
 
 
@@ -340,12 +338,11 @@ restart_push:
 	nvpb->nr_relocs = 0;
 
 	/* Allocate space for next push buffer */
-	ret = nouveau_pushbuf_space(chan, min);
-	assert(!ret);
+	assert(!nouveau_pushbuf_space(chan, min));
 
 	if (chan->flush_notify)
 		chan->flush_notify(chan);
 
-	return 0;
+	return ret;
 }
 
