@@ -312,7 +312,7 @@ bool ConflictResolver::AttemptItemMerge(WriteTransaction* trans,
   server_named->Put(syncable::BASE_VERSION, 0);
   CHECK(SUCCESS ==
         SyncerUtil::AttemptToUpdateEntryWithoutMerge(
-            trans, locally_named, NULL, NULL));
+            trans, locally_named, NULL));
   return true;
 }
 

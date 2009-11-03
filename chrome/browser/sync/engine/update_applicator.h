@@ -16,22 +16,22 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-
-namespace syncable {
-class Id;
-class WriteTransaction;
-}  // namespace syncable
+#include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
 
+class ConflictResolver;
 class SyncerSession;
 
 class UpdateApplicator {
  public:
-  typedef std::vector<int64>::iterator vi64iter;
+  typedef syncable::Directory::UnappliedUpdateMetaHandles::iterator
+      UpdateIterator;
 
-  UpdateApplicator(SyncerSession* session, const vi64iter& begin,
-                   const vi64iter& end);
+  UpdateApplicator(ConflictResolver* resolver,
+                   const UpdateIterator& begin,
+                   const UpdateIterator& end);
+
   // returns true if there's more we can do.
   bool AttemptOneApplication(syncable::WriteTransaction* trans);
   // return true if we've applied all updates.
@@ -41,13 +41,15 @@ class UpdateApplicator {
   // SyncerSession -- to get that to happen, call this method after update
   // application is finished (i.e., when AttemptOneAllocation stops returning
   // true).
-  void SaveProgressIntoSessionState();
+  void SaveProgressIntoSessionState(SyncerSession* session);
 
  private:
-  SyncerSession* const session_;
-  vi64iter const begin_;
-  vi64iter end_;
-  vi64iter pointer_;
+  // Used to resolve conflicts when trying to apply updates.
+  ConflictResolver* const resolver_;
+
+  UpdateIterator const begin_;
+  UpdateIterator end_;
+  UpdateIterator pointer_;
   bool progress_;
 
   // Track the result of the various items.

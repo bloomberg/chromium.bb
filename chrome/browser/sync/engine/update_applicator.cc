@@ -15,10 +15,13 @@ using std::vector;
 
 namespace browser_sync {
 
-UpdateApplicator::UpdateApplicator(SyncerSession* session,
-                                   const vi64iter& begin,
-                                   const vi64iter& end)
-    : session_(session), begin_(begin), end_(end), pointer_(begin),
+UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
+                                   const UpdateIterator& begin,
+                                   const UpdateIterator& end)
+    : resolver_(resolver),
+      begin_(begin),
+      end_(end),
+      pointer_(begin),
       progress_(false) {
     size_t item_count = end - begin;
     LOG(INFO) << "UpdateApplicator created for " << item_count << " items.";
@@ -45,7 +48,7 @@ bool UpdateApplicator::AttemptOneApplication(
   }
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
   UpdateAttemptResponse updateResponse =
-      SyncerUtil::AttemptToUpdateEntry(trans, &entry, session_);
+      SyncerUtil::AttemptToUpdateEntry(trans, &entry, resolver_);
   switch (updateResponse) {
     case SUCCESS:
       --end_;
@@ -76,25 +79,25 @@ bool UpdateApplicator::AllUpdatesApplied() const {
          begin_ == end_;
 }
 
-void UpdateApplicator::SaveProgressIntoSessionState() {
+void UpdateApplicator::SaveProgressIntoSessionState(SyncerSession* session) {
   DCHECK(begin_ == end_ || ((pointer_ == end_) && !progress_))
       << "SaveProgress called before updates exhausted.";
 
   vector<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
-    session_->EraseBlockedItem(*i);
-    session_->AddCommitConflict(*i);
-    session_->AddAppliedUpdate(CONFLICT, *i);
+    session->EraseBlockedItem(*i);
+    session->AddCommitConflict(*i);
+    session->AddAppliedUpdate(CONFLICT, *i);
   }
   for (i = blocked_ids_.begin(); i != blocked_ids_.end(); ++i) {
-    session_->AddBlockedItem(*i);
-    session_->EraseCommitConflict(*i);
-    session_->AddAppliedUpdate(BLOCKED, *i);
+    session->AddBlockedItem(*i);
+    session->EraseCommitConflict(*i);
+    session->AddAppliedUpdate(BLOCKED, *i);
   }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
-    session_->EraseCommitConflict(*i);
-    session_->EraseBlockedItem(*i);
-    session_->AddAppliedUpdate(SUCCESS, *i);
+    session->EraseCommitConflict(*i);
+    session->EraseBlockedItem(*i);
+    session->AddAppliedUpdate(SUCCESS, *i);
   }
 }
 

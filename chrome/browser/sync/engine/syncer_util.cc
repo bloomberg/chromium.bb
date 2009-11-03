@@ -10,7 +10,6 @@
 
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -220,19 +219,16 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
 UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    SyncerSession* const session) {
+    ConflictResolver* resolver) {
 
   syncable::Id conflicting_id;
   UpdateAttemptResponse result =
-     AttemptToUpdateEntryWithoutMerge(trans, entry, session,
-                                      &conflicting_id);
+     AttemptToUpdateEntryWithoutMerge(trans, entry, &conflicting_id);
   if (result != NAME_CONFLICT) {
     return result;
   }
   syncable::MutableEntry same_path(trans, syncable::GET_BY_ID, conflicting_id);
   CHECK(same_path.good());
-
-  ConflictResolver* resolver = session->resolver();
 
   if (resolver &&
       resolver->AttemptItemMerge(trans, &same_path, entry)) {
@@ -247,7 +243,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
 UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    SyncerSession* const session, syncable::Id* const conflicting_id) {
+    syncable::Id* const conflicting_id) {
 
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))

@@ -22,7 +22,6 @@
 
 namespace browser_sync {
 
-class SyncerSession;
 class SyncEntity;
 
 class SyncerUtil {
@@ -55,12 +54,12 @@ class SyncerUtil {
   static UpdateAttemptResponse AttemptToUpdateEntry(
       syncable::WriteTransaction* const trans,
       syncable::MutableEntry* const entry,
-      SyncerSession* const session);
+      ConflictResolver* resolver);
 
   static UpdateAttemptResponse AttemptToUpdateEntryWithoutMerge(
       syncable::WriteTransaction* const trans,
       syncable::MutableEntry* const entry,
-      SyncerSession* const session, syncable::Id* const conflicting_id);
+      syncable::Id* const conflicting_id);
 
   // Pass in name to avoid redundant UTF8 conversion.
   static void UpdateServerFieldsFromUpdate(

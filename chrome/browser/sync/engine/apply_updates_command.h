@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SYNC_ENGINE_APPLY_UPDATES_COMMAND_H_
 
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 namespace syncable {
@@ -16,6 +15,8 @@ class Id;
 }
 
 namespace browser_sync {
+
+class SyncerSession;
 
 class ApplyUpdatesCommand : public ModelChangingSyncerCommand {
  public:

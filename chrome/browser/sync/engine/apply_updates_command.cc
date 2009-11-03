@@ -25,10 +25,10 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncerSession *session) {
   syncable::Directory::UnappliedUpdateMetaHandles handles;
   dir->GetUnappliedUpdateMetaHandles(&trans, &handles);
 
-  UpdateApplicator applicator(session, handles.begin(), handles.end());
-  while (applicator.AttemptOneApplication(&trans)) {
-  }
-  applicator.SaveProgressIntoSessionState();
+  UpdateApplicator applicator(session->resolver(), handles.begin(),
+                              handles.end());
+  while (applicator.AttemptOneApplication(&trans)) {}
+  applicator.SaveProgressIntoSessionState(session);
 }
 
 }  // namespace browser_sync

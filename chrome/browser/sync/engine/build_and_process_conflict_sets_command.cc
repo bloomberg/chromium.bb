@@ -218,7 +218,8 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
 
   // 5. Use the usual apply updates from the special start state we've just
   // prepared.
-  UpdateApplicator applicator(session, handles.begin(), handles.end());
+  UpdateApplicator applicator(session->resolver(), handles.begin(),
+                              handles.end());
   while (applicator.AttemptOneApplication(trans)) {
     // Keep going till all updates are applied.
   }
@@ -236,7 +237,7 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     }
     return false;  // Don't save progress -- we just undid it.
   }
-  applicator.SaveProgressIntoSessionState();
+  applicator.SaveProgressIntoSessionState(session);
   return true;
 }
 
