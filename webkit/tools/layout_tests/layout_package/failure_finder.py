@@ -51,6 +51,7 @@ TEST_SHELL_CRASHED = "Test shell crashed"
 CHROMIUM_WIN = "chromium-win"
 CHROMIUM_WIN_XP = "chromium-win-xp"
 CHROMIUM_WIN_VISTA = "chromium-win-vista"
+CHROMIUM_WIN_7 = "chromium-win-7"
 CHROMIUM_MAC = "chromium-mac"
 CHROMIUM_LINUX = "chromium-linux"
 PLATFORM = "platform"
@@ -63,7 +64,8 @@ LAYOUTTESTS = "LayoutTests"
 WEBKIT_MAC_PLATFORM_DIRS = ["mac-leopard", "mac-snowleopard", "mac"]
 WEBKIT_WIN_PLATFORM_DIRS = ["win", "mac"]
 CHROMIUM_MAC_PLATFORM_DIRS = [CHROMIUM_MAC]
-CHROMIUM_WIN_PLATFORM_DIRS = [CHROMIUM_WIN, CHROMIUM_WIN_XP, CHROMIUM_WIN_VISTA]
+CHROMIUM_WIN_PLATFORM_DIRS = [CHROMIUM_WIN_XP, CHROMIUM_WIN_VISTA,
+                              CHROMIUM_WIN_7, CHROMIUM_WIN]
 CHROMIUM_LINUX_PLATFORM_DIRS = [CHROMIUM_LINUX, CHROMIUM_WIN]
 
 ARCHIVE_URL_REGEX = "last.*change: (\d+)"
