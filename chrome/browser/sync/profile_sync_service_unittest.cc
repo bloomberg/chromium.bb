@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -279,6 +280,9 @@ class ProfileSyncServiceTest : public testing::Test {
     // Kill the service before the profile.
     service_.reset();
     profile_.reset();
+
+    // Ensure that the sync objects destruct to avoid memory leaks.
+    MessageLoop::current()->RunAllPending();
   }
 
   ModelAssociator* associator() {
