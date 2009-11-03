@@ -579,6 +579,15 @@ willPositionSheet:(NSWindow*)sheet
         case IDC_FULLSCREEN:
           enable &= [self supportsFullscreen];
           break;
+        default:
+          // Special handling for the contents of the Text Encoding submenu. On
+          // Mac OS, instead of enabling/disabling the top-level menu item, we
+          // enable/disable the submenu's contents (per Apple's HIG).
+          EncodingMenuController encoding_controller;
+          if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
+            enable &= browser_->command_updater()->IsCommandEnabled(
+                IDC_ENCODING_MENU) ? YES : NO;
+          }
       }
 
       // If the item is toggleable, find its toggle state and
