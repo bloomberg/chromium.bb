@@ -49,9 +49,11 @@ else
   $(error Unable to continue)
 endif
 
+# photo example needs sse option for intrinsics
+CCFLAGS+=-mfpmath=sse -msse3
+
 ifeq (release,$(filter release,$(MAKECMDGOALS)))
-  OPT=-O3 -march=pentium4 -mfpmath=sse -msse3
-  OPT+=-funroll-loops -fomit-frame-pointer
+  OPT=-O3 -funroll-loops -fomit-frame-pointer
 endif
 
 NAME:=photo
