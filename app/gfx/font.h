@@ -73,7 +73,10 @@ class Font {
   Font DeriveFont(int size_delta, int style) const;
 
   // Returns the number of vertical pixels needed to display characters from
-  // the specified font.
+  // the specified font.  This may include some leading, i.e. height may be
+  // greater than just ascent + descent.  Specifically, the Windows and Mac
+  // implementations include leading and the Linux one does not.  This may
+  // need to be revisited in the future.
   int height() const;
 
   // Returns the baseline, or ascent, of the font.

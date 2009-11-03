@@ -7,6 +7,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 
 namespace gfx {
@@ -33,10 +34,9 @@ Font::Font()
 
 void Font::calculateMetrics() {
   NSFont* font = nativeFont();
-  // TODO(akalin): This is the wrong height to use!  Use either the height
-  // of the bounding rect for the font or ascender - descender; this needs
-  // further investigation.  Width may be wrong, too.
-  height_ = [font xHeight];
+  scoped_nsobject<NSLayoutManager> layout_manager(
+      [[NSLayoutManager alloc] init]);
+  height_ = [layout_manager defaultLineHeightForFont:font];
   ascent_ = [font ascender];
   avg_width_ = [font boundingRectForGlyph:[font glyphWithName:@"x"]].size.width;
 }

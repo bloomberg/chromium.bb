@@ -31,11 +31,14 @@ TEST_F(FontTest, LoadArialBold) {
 TEST_F(FontTest, Ascent) {
   Font cf(Font::CreateFont(L"Arial", 16));
   ASSERT_GT(cf.baseline(), 2);
+  ASSERT_LE(cf.baseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
   Font cf(Font::CreateFont(L"Arial", 16));
-  ASSERT_LT(cf.baseline(), 22);
+  ASSERT_GE(cf.height(), 16);
+  // TODO(akalin): Figure out why height is so large on Linux.
+  ASSERT_LE(cf.height(), 26);
 }
 
 TEST_F(FontTest, AvgWidths) {
