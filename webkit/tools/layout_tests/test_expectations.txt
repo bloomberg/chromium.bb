@@ -3360,3 +3360,6 @@ BUG_SENORBLANCO : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
 BUG_SENORBLANCO : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 BUG_SENORBLANCO LINUX WIN : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
+// Started failing on Win, Linux after Webkit 50476:50480, probably 50477
+BUG10442 WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = TEXT
