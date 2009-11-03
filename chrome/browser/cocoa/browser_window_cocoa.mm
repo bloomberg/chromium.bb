@@ -9,6 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
@@ -246,7 +247,14 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
 }
 
 void BrowserWindowCocoa::ShowReportBugDialog() {
-  NOTIMPLEMENTED();
+  TabContents* current_tab = browser_->GetSelectedTabContents();
+  if (current_tab && current_tab->controller().GetActiveEntry()) {
+    BugReportWindowController* controller =
+        [[BugReportWindowController alloc]
+        initWithTabContents:current_tab
+                    profile:browser_->profile()];
+    [controller runModalDialog];
+  }
 }
 
 void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {

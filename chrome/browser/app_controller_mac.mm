@@ -21,6 +21,7 @@
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/history_menu_bridge.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
@@ -528,6 +529,17 @@ static bool g_is_opening_new_window = false;
     case IDC_HELP_PAGE:
       Browser::OpenHelpWindow(defaultProfile);
       break;
+    case IDC_REPORT_BUG: {
+      Browser* browser = BrowserList::GetLastActive();
+      TabContents* current_tab = (browser != NULL) ?
+          browser->GetSelectedTabContents() : NULL;
+      BugReportWindowController* controller =
+          [[BugReportWindowController alloc]
+          initWithTabContents:current_tab
+                      profile:[self defaultProfile]];
+      [controller runModalDialog];
+      break;
+    }
   };
 }
 
@@ -563,6 +575,7 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
+  menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
   // TODO(pinkerton): ...more to come...
 }
 
