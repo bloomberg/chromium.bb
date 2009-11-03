@@ -12,24 +12,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/notification_service.h"
 
-namespace {
-
-// Allocates all normal tab contents views to the size of the passed in
-// |allocation|.
-void ResizeChildren(GtkWidget* widget, void* param) {
-  GtkAllocation* allocation = reinterpret_cast<GtkAllocation*>(param);
-  if (!GTK_WIDGET_VISIBLE(widget))
-    return;
-
-  if (widget->allocation.width != allocation->width ||
-      widget->allocation.height != allocation->height) {
-    gtk_widget_set_size_request(widget, allocation->width,
-                                allocation->height);
-  }
-}
-
-}  // namespace
-
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
     : tab_contents_(NULL),
       status_bubble_(status_bubble) {
@@ -44,7 +26,7 @@ void TabContentsContainerGtk::Init() {
   // A high level overview of the TabContentsContainer:
   //
   // +- GtkFloatingContainer |floating_| -------------------------------+
-  // |+- GtkFixedContainer |fixed_| -----------------------------------+|
+  // |+- GtkVBox |container_| -----------------------------------------+|
   // ||                                                                ||
   // ||                                                                ||
   // ||                                                                ||
@@ -57,10 +39,8 @@ void TabContentsContainerGtk::Init() {
   floating_.Own(gtk_floating_container_new());
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-container");
 
-  fixed_ = gtk_fixed_new();
-  g_signal_connect(fixed_, "size-allocate",
-                   G_CALLBACK(OnFixedSizeAllocate), this);
-  gtk_container_add(GTK_CONTAINER(floating_.get()), fixed_);
+  container_ = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(floating_.get()), container_);
 
   if (status_bubble_) {
     gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
@@ -69,7 +49,7 @@ void TabContentsContainerGtk::Init() {
                      G_CALLBACK(OnSetFloatingPosition), this);
   }
 
-  gtk_widget_show(fixed_);
+  gtk_widget_show(container_);
   gtk_widget_show(floating_.get());
 
   ViewIDUtil::SetDelegateForWidget(widget(), this);
@@ -105,8 +85,8 @@ void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {
 
     gfx::NativeView widget = tab_contents_->GetNativeView();
     if (widget) {
-      if (widget->parent != fixed_)
-        gtk_fixed_put(GTK_FIXED(fixed_), widget, 0, 0);
+      if (widget->parent != container_)
+        gtk_container_add(GTK_CONTAINER(container_), widget);
       gtk_widget_show(widget);
     }
 
@@ -127,8 +107,8 @@ void TabContentsContainerGtk::DetachTabContents(TabContents* tab_contents) {
   // It is possible to detach an unrealized, unparented TabContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.
   if (widget && widget->parent) {
-    DCHECK_EQ(widget->parent, fixed_);
-    gtk_container_remove(GTK_CONTAINER(fixed_), widget);
+    DCHECK_EQ(widget->parent, container_);
+    gtk_container_remove(GTK_CONTAINER(container_), widget);
   }
 }
 
@@ -174,15 +154,6 @@ GtkWidget* TabContentsContainerGtk::GetWidgetForViewID(ViewID view_id) {
 }
 
 // -----------------------------------------------------------------------------
-
-// static
-void TabContentsContainerGtk::OnFixedSizeAllocate(
-    GtkWidget* fixed,
-    GtkAllocation* allocation,
-    TabContentsContainerGtk* container) {
-  // Set all the tab contents GtkWidgets to the size of the allocation.
-  gtk_container_foreach(GTK_CONTAINER(fixed), ResizeChildren, allocation);
-}
 
 // static
 void TabContentsContainerGtk::OnSetFloatingPosition(

@@ -398,8 +398,6 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                             TabContentsViewGtk* view) {
   int width = allocation->width;
   int height = allocation->height;
-  view->requested_size_.set_width(width);
-  view->requested_size_.set_height(height);
   // |delegate()| can be NULL here during browser teardown.
   if (view->tab_contents()->delegate())
     height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();
