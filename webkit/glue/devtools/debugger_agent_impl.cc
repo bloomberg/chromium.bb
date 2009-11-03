@@ -107,10 +107,7 @@ void DebuggerAgentImpl::CreateUtilityContext(
   ASSERT(V8DOMWrapper::convertDOMWrapperToNative<DOMWindow>(window_wrapper) ==
       frame->domWindow());
 
-  // Create a new environment using an empty template for the shadow
-  // object.  Reuse the global object if one has been created earlier.
-  v8::Handle<v8::ObjectTemplate> global_template =
-      V8DOMWindow::GetShadowObjectTemplate();
+  v8::Handle<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
 
   // Install a security handler with V8.
   global_template->SetAccessCheckCallbacks(
