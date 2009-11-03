@@ -5,6 +5,7 @@
 #include "views/controls/label.h"
 
 #include <math.h>
+#include <limits>
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
@@ -264,7 +265,12 @@ const GURL Label::GetURL() const {
 
 gfx::Size Label::GetTextSize() {
   if (!text_size_valid_) {
-    text_size_.SetSize(font_.GetStringWidth(text_), font_.height());
+    // Multi-line labels need a boundary width (see GetHeightForWidth).
+    DCHECK(!is_multi_line_);
+    int h = 0, w = std::numeric_limits<int>::max();
+    gfx::Canvas cc(0, 0, true);
+    cc.SizeStringInt(text_, font_, &w, &h, 0);
+    text_size_.SetSize(w, font_.height());
     if (highlighted_)
       text_size_.Enlarge(1, 1);
     text_size_valid_ = true;
