@@ -80,7 +80,11 @@
         new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
+    NSImage* folder =
+        [[NSWorkspace sharedWorkspace] iconForFileType:
+         NSFileTypeForHFSTypeCode(kGenericFolderIcon)];
+    [folder setSize:NSMakeSize(16, 16)];
+    folderImage_.reset([folder retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
   }
   return self;
