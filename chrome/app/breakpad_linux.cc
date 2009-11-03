@@ -7,8 +7,10 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -34,6 +36,8 @@
 
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
+
+static time_t uptime = 0;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -151,12 +155,17 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   1.2.3.4 \r\n (25, 26)
   //   BOUNDARY \r\n (27, 28)
   //
-  //   zero or more:
+  //   zero or one:
+  //   Content-Disposition: form-data; name="ptime" \r\n \r\n (0..4)
+  //   abcdef \r\n (5, 6)
+  //   BOUNDARY \r\n (7, 8)
+  //
+  //   zero or one:
   //   Content-Disposition: form-data; name="ptype" \r\n \r\n (0..4)
   //   abcdef \r\n (5, 6)
   //   BOUNDARY \r\n (7, 8)
   //
-  //   zero or more:
+  //   zero or one:
   //   Content-Disposition: form-data; name="lsb-release" \r\n \r\n (0..4)
   //   abcdef \r\n (5, 6)
   //   BOUNDARY \r\n (7, 8)
@@ -187,6 +196,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   static const char content_type_msg[] =
       "Content-Type: application/octet-stream";
   static const char url_chunk_msg[] = "url-chunk-";
+  static const char process_time_msg[] = "ptime";
   static const char process_type_msg[] = "ptype";
   static const char distro_msg[] = "lsb-release";
 
@@ -260,6 +270,38 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   iov[28].iov_len = sizeof(rn);
 
   sys_writev(fd, iov, 29);
+
+  if (uptime) {
+    struct timeval tv;
+    if (!gettimeofday(&tv, NULL)) {
+      int time = tv.tv_sec - uptime;
+      char time_str[21];
+      const unsigned time_len = my_int_len(time);
+      my_itos(time_str, time, time_len);
+
+      iov[0].iov_base = const_cast<char*>(form_data_msg);
+      iov[0].iov_len = sizeof(form_data_msg) - 1;
+      iov[1].iov_base = const_cast<char*>(process_time_msg);
+      iov[1].iov_len = sizeof(process_time_msg) - 1;
+      iov[2].iov_base = const_cast<char*>(quote_msg);
+      iov[2].iov_len = sizeof(quote_msg);
+      iov[3].iov_base = const_cast<char*>(rn);
+      iov[3].iov_len = sizeof(rn);
+      iov[4].iov_base = const_cast<char*>(rn);
+      iov[4].iov_len = sizeof(rn);
+
+      iov[5].iov_base = const_cast<char*>(time_str);
+      iov[5].iov_len = time_len;
+      iov[6].iov_base = const_cast<char*>(rn);
+      iov[6].iov_len = sizeof(rn);
+      iov[7].iov_base = mime_boundary;
+      iov[7].iov_len = sizeof(mime_boundary) - 1;
+      iov[8].iov_base = const_cast<char*>(rn);
+      iov[8].iov_len = sizeof(rn);
+
+      sys_writev(fd, iov, 9);
+    }
+  }
 
   if (info.process_type_length) {
     iov[0].iov_base = const_cast<char*>(form_data_msg);
@@ -660,4 +702,11 @@ void InitCrashReporter() {
     }
     EnableRendererCrashDumping();
   }
+
+  // Set the base process uptime value.
+  struct timeval tv;
+  if (!gettimeofday(&tv, NULL))
+    uptime = tv.tv_sec;
+  else
+    uptime = 0;
 }
