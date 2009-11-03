@@ -19,10 +19,8 @@
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
  public:
   ImporterBridge(ProfileWriter* writer,
-                 MessageLoop* delegate_loop,
                  ImporterHost* host)
       : writer_(writer),
-      delegate_loop_(delegate_loop),
       host_(host) {
   }
   virtual ~ImporterBridge() {}
@@ -67,7 +65,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   friend class Toolbar5Importer;
 
   ProfileWriter* writer_;
-  MessageLoop* delegate_loop_;
   ImporterHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterBridge);
@@ -76,7 +73,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 class InProcessImporterBridge : public ImporterBridge {
  public:
   InProcessImporterBridge(ProfileWriter* writer,
-                          MessageLoop* delegate_loop,
                           ImporterHost* host);
 
   // Methods inherited from ImporterBridge.
@@ -104,8 +100,6 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void NotifyEnded();
 
  private:
-  MessageLoop* main_loop_;
-  MessageLoop* delegate_loop_;
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };
 

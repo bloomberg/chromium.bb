@@ -132,7 +132,6 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       original_rvh_id_(tab->render_view_host()->routing_id()),
       should_revert_tab_title_(false),
       resource_dispatcher_host_notified_(false),
-      ui_loop_(MessageLoop::current()),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
           new InterstitialPageRVHViewDelegate(this))) {
   InitInterstitialPageMap();
@@ -484,7 +483,7 @@ void InterstitialPage::Disable() {
 
 void InterstitialPage::TakeActionOnResourceDispatcher(
     ResourceRequestAction action) {
-  DCHECK(MessageLoop::current() == ui_loop_) <<
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI)) <<
       "TakeActionOnResourceDispatcher should be called on the main thread.";
 
   if (action == CANCEL || action == RESUME) {

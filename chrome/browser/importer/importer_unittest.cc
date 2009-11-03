@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
@@ -31,6 +32,9 @@ using webkit_glue::PasswordForm;
 
 class ImporterTest : public testing::Test {
  public:
+  ImporterTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        file_thread_(ChromeThread::FILE, &message_loop_) {}
  protected:
   virtual void SetUp() {
     // Creates a new profile in a new subdirectory in the temp directory.
@@ -84,7 +88,7 @@ class ImporterTest : public testing::Test {
     profile_info.browser_type = FIREFOX3;
     profile_info.app_path = app_path_;
     profile_info.source_path = profile_path_;
-    scoped_refptr<ImporterHost> host = new ImporterHost(loop);
+    scoped_refptr<ImporterHost> host = new ImporterHost();
     host->SetObserver(observer);
     int items = HISTORY | PASSWORDS | FAVORITES;
     if (import_search_plugins)
@@ -96,6 +100,8 @@ class ImporterTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   std::wstring test_path_;
   std::wstring profile_path_;
   std::wstring app_path_;
@@ -378,7 +384,7 @@ TEST_F(ImporterTest, IEImporter) {
 
   // Starts to import the above settings.
   MessageLoop* loop = MessageLoop::current();
-  scoped_refptr<ImporterHost> host = new ImporterHost(loop);
+  scoped_refptr<ImporterHost> host = new ImporterHost();
 
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
@@ -654,7 +660,7 @@ TEST_F(ImporterTest, Firefox2Importer) {
   ASSERT_TRUE(file_util::CopyDirectory(data_path, search_engine_path, false));
 
   MessageLoop* loop = MessageLoop::current();
-  scoped_refptr<ImporterHost> host = new ImporterHost(loop);
+  scoped_refptr<ImporterHost> host = new ImporterHost();
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   ProfileInfo profile_info;

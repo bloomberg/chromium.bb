@@ -15,7 +15,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
-class MessageLoop;
 class SSLCertErrorHandler;
 class TabContents;
 class URLRequest;
@@ -99,19 +98,13 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
                   URLRequest* request,
                   ResourceType::Type resource_type,
                   const std::string& frame_origin,
-                  const std::string& main_frame_origin,
-                  MessageLoop* ui_loop);
+                  const std::string& main_frame_origin);
 
   // The following 2 methods are the methods subclasses should implement.
   virtual void OnDispatchFailed() { TakeNoAction(); }
 
   // Can use the manager_ member.
   virtual void OnDispatched() { TakeNoAction(); }
-
-  // We cache the message loops to be able to proxy events across the thread
-  // boundaries.
-  MessageLoop* ui_loop_;
-  MessageLoop* io_loop_;
 
   // Should only be accessed on the UI thread.
   SSLManager* manager_;  // Our manager.

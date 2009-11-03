@@ -141,8 +141,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
             &BrowsingDataRemover::ClearCacheOnIOThread,
             profile_->GetRequestContext(),
             delete_begin_,
-            delete_end_,
-            MessageLoop::current()));
+            delete_end_));
   }
 
   NotifyAndDeleteIfDone();
@@ -222,8 +221,7 @@ void BrowsingDataRemover::ClearedCache() {
 void BrowsingDataRemover::ClearCacheOnIOThread(
     URLRequestContextGetter* context_getter,
     base::Time delete_begin,
-    base::Time delete_end,
-    MessageLoop* ui_loop) {
+    base::Time delete_end) {
   // This function should be called on the IO thread.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
@@ -256,6 +254,7 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
   }
 
   // Notify the UI thread that we are done.
-  ui_loop->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataRemover::ClearedCache));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
 }

@@ -1048,7 +1048,7 @@ void ResourceDispatcherHost::OnAuthRequired(
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   DCHECK(!info->login_handler()) <<
       "OnAuthRequired called with login_handler pending";
-  info->set_login_handler(CreateLoginPrompt(auth_info, request, ui_loop_));
+  info->set_login_handler(CreateLoginPrompt(auth_info, request));
 }
 
 void ResourceDispatcherHost::OnCertificateRequested(
@@ -1074,7 +1074,7 @@ void ResourceDispatcherHost::OnCertificateRequested(
   DCHECK(!info->ssl_client_auth_handler()) <<
       "OnCertificateRequested called with ssl_client_auth_handler pending";
   info->set_ssl_client_auth_handler(
-      new SSLClientAuthHandler(request, cert_request_info, io_loop_, ui_loop_));
+      new SSLClientAuthHandler(request, cert_request_info));
   info->ssl_client_auth_handler()->SelectCertificate();
 #endif
 }
@@ -1084,7 +1084,7 @@ void ResourceDispatcherHost::OnSSLCertificateError(
     int cert_error,
     net::X509Certificate* cert) {
   DCHECK(request);
-  SSLManager::OnSSLCertificateError(this, request, cert_error, cert, ui_loop_);
+  SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
 void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
@@ -17,11 +17,8 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
                                  URLRequest* request,
                                  ResourceType::Type resource_type,
                                  const std::string& frame_origin,
-                                 const std::string& main_frame_origin,
-                                 MessageLoop* ui_loop)
-    : ui_loop_(ui_loop),
-      io_loop_(MessageLoop::current()),
-      manager_(NULL),
+                                 const std::string& main_frame_origin)
+    : manager_(NULL),
       request_id_(0, 0),
       resource_dispatcher_host_(rdh),
       request_url_(request->url()),
@@ -29,7 +26,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
       frame_origin_(frame_origin),
       main_frame_origin_(main_frame_origin),
       request_has_been_notified_(false) {
-  DCHECK(MessageLoop::current() != ui_loop);
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
@@ -50,7 +47,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
 }
 
 void SSLErrorHandler::Dispatch() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   TabContents* tab_contents = GetTabContents();
   if (!tab_contents) {
@@ -71,49 +68,56 @@ TabContents* SSLErrorHandler::GetTabContents() {
 }
 
 void SSLErrorHandler::CancelRequest() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We need to complete this task on the IO thread.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-       this, &SSLErrorHandler::CompleteCancelRequest,
-       net::ERR_ABORTED));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLErrorHandler::CompleteCancelRequest, net::ERR_ABORTED));
 }
 
 void SSLErrorHandler::DenyRequest() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We need to complete this task on the IO thread.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SSLErrorHandler::CompleteCancelRequest,
-      net::ERR_INSECURE_RESPONSE));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLErrorHandler::CompleteCancelRequest,
+          net::ERR_INSECURE_RESPONSE));
 }
 
 void SSLErrorHandler::ContinueRequest() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We need to complete this task on the IO thread.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SSLErrorHandler::CompleteContinueRequest));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SSLErrorHandler::CompleteContinueRequest));
 }
 
 void SSLErrorHandler::StartRequest(FilterPolicy::Type filter_policy) {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We need to complete this task on the IO thread.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SSLErrorHandler::CompleteStartRequest, filter_policy));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLErrorHandler::CompleteStartRequest, filter_policy));
 }
 
 void SSLErrorHandler::TakeNoAction() {
-  DCHECK(MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // We need to complete this task on the IO thread.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SSLErrorHandler::CompleteTakeNoAction));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SSLErrorHandler::CompleteTakeNoAction));
 }
 
 void SSLErrorHandler::CompleteCancelRequest(int error) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -140,7 +144,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
 }
 
 void SSLErrorHandler::CompleteContinueRequest() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -163,7 +167,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
 }
 
 void SSLErrorHandler::CompleteStartRequest(FilterPolicy::Type filter_policy) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -191,7 +195,7 @@ void SSLErrorHandler::CompleteStartRequest(FilterPolicy::Type filter_policy) {
 }
 
 void SSLErrorHandler::CompleteTakeNoAction() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have

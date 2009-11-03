@@ -10,7 +10,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/common/notification_registrar.h"
 
-class MessageLoop;
 class Profile;
 class URLRequestContextGetter;
 
@@ -89,8 +88,7 @@ class BrowsingDataRemover : public NotificationObserver {
   // Invoked on the IO thread to delete from the cache.
   void ClearCacheOnIOThread(URLRequestContextGetter* context_getter,
                             base::Time delete_begin,
-                            base::Time delete_end,
-                            MessageLoop* ui_loop);
+                            base::Time delete_end);
 
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);

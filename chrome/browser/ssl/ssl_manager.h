@@ -16,7 +16,6 @@
 #include "net/base/net_errors.h"
 
 class LoadFromMemoryCacheDetails;
-class MessageLoop;
 class NavigationController;
 class NavigationEntry;
 class PrefService;
@@ -62,8 +61,7 @@ class SSLManager : public NotificationObserver {
   static void OnSSLCertificateError(ResourceDispatcherHost* resource_dispatcher,
                                     URLRequest* request,
                                     int cert_error,
-                                    net::X509Certificate* cert,
-                                    MessageLoop* ui_loop);
+                                    net::X509Certificate* cert);
 
   // Mixed content entry points.
   void DidDisplayInsecureContent();

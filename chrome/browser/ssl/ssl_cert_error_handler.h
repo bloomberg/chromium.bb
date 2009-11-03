@@ -23,8 +23,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
                       const std::string& frame_origin,
                       const std::string& main_frame_origin,
                       int cert_error,
-                      net::X509Certificate* cert,
-                      MessageLoop* ui_loop);
+                      net::X509Certificate* cert);
 
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler() { return this; }
 

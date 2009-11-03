@@ -19,7 +19,6 @@ struct PasswordForm;
 
 class ConstrainedWindow;
 class GURL;
-class MessageLoop;
 class PasswordManager;
 class TabContents;
 class URLRequest;
@@ -38,7 +37,7 @@ class LoginHandler {
  public:
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
-  static LoginHandler* Create(URLRequest* request, MessageLoop* ui_loop);
+  static LoginHandler* Create(URLRequest* request);
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
@@ -84,15 +83,14 @@ class LoginNotificationDetails {
 // Prompts the user for their username and password.  This is designed to
 // be called on the background (I/O) thread, in response to
 // URLRequest::Delegate::OnAuthRequired.  The prompt will be created
-// on the main UI thread via a call to ui_loop's InvokeLater, and will send the
+// on the main UI thread via a call to UI loop's InvokeLater, and will send the
 // credentials back to the URLRequest on the calling thread.
 // A LoginHandler object (which lives on the calling thread) is returned,
 // which can be used to set or cancel authentication programmatically.  The
 // caller must invoke OnRequestCancelled() on this LoginHandler before
 // destroying the URLRequest.
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                URLRequest* request,
-                                MessageLoop* ui_loop);
+                                URLRequest* request);
 
 // Helper to remove the ref from an URLRequest to the LoginHandler.
 // Should only be called from the IO thread, since it accesses an URLRequest.

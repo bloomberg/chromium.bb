@@ -54,9 +54,6 @@ ChromeThread::~ChromeThread() {
 
 // static
 bool ChromeThread::CurrentlyOn(ID identifier) {
-  // chrome_threads_[identifier] will be NULL if none is running.  This is often
-  // true when running under unit tests.  This behavior actually works out
-  // pretty conveniently but it's worth noting here.
   AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return chrome_threads_[identifier] &&

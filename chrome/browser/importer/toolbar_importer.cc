@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/rand_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -113,14 +114,12 @@ void Toolbar5Importer::Cancel() {
 
   // If we are conducting network operations, post a message to the importer
   // thread for synchronization.
-  if (NULL != bridge_->delegate_loop_) {
-    if (bridge_->delegate_loop_ != MessageLoop::current()) {
-      bridge_->delegate_loop_->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &Toolbar5Importer::Cancel));
-    } else {
-      EndImport();
-    }
+  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    EndImport();
+  } else {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &Toolbar5Importer::Cancel));
   }
 }
 

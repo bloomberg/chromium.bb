@@ -21,7 +21,6 @@
 #include "googleurl/src/gurl.h"
 
 class ImporterBridge;
-class MessageLoop;
 class TemplateURL;
 
 struct IE7PasswordInfo;
@@ -158,10 +157,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   ImporterHost();
   ~ImporterHost();
 
-  // This constructor only be used by unit-tests, where file thread does not
-  // exist.
-  explicit ImporterHost(MessageLoop* file_loop);
-
   // BookmarkModelObserver methods.
   virtual void Loaded(BookmarkModel* model);
   virtual void BookmarkNodeMoved(BookmarkModel* model,
@@ -292,9 +287,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // The importer used in the task;
   Importer* importer_;
-
-  // The message loop for reading the source profiles.
-  MessageLoop* file_loop_;
 
   // True if we're waiting for the model to finish loading.
   bool waiting_for_bookmarkbar_model_;

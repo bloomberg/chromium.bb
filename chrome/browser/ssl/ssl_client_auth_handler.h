@@ -12,7 +12,6 @@
 namespace net {
 class X509Certificate;
 }
-class MessageLoop;
 class URLRequest;
 
 // This class handles the approval and selection of a certificate for SSL client
@@ -23,9 +22,7 @@ class SSLClientAuthHandler :
     public base::RefCountedThreadSafe<SSLClientAuthHandler> {
  public:
   SSLClientAuthHandler(URLRequest* request,
-                       net::SSLCertRequestInfo* cert_request_info,
-                       MessageLoop* io_loop,
-                       MessageLoop* ui_loop);
+                       net::SSLCertRequestInfo* cert_request_info);
   ~SSLClientAuthHandler();
 
   // Asks the user to select a certificate and resumes the URL request with that
@@ -51,9 +48,6 @@ class SSLClientAuthHandler :
 
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-
-  MessageLoop* io_loop_;
-  MessageLoop* ui_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };

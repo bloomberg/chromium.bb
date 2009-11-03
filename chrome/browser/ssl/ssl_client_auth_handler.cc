@@ -10,23 +10,19 @@
 #endif
 
 #include "app/l10n_util.h"
-#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 
 SSLClientAuthHandler::SSLClientAuthHandler(
     URLRequest* request,
-    net::SSLCertRequestInfo* cert_request_info,
-    MessageLoop* io_loop,
-    MessageLoop* ui_loop)
+    net::SSLCertRequestInfo* cert_request_info)
     : request_(request),
-      cert_request_info_(cert_request_info),
-      io_loop_(io_loop),
-      ui_loop_(ui_loop) {
+      cert_request_info_(cert_request_info) {
   // Keep us alive until a cert is selected.
   AddRef();
 }
@@ -40,8 +36,9 @@ void SSLClientAuthHandler::OnRequestCancelled() {
 
 void SSLClientAuthHandler::SelectCertificate() {
   // Let's move the request to the UI thread.
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &SSLClientAuthHandler::DoSelectCertificate));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &SSLClientAuthHandler::DoSelectCertificate));
 }
 
 void SSLClientAuthHandler::DoSelectCertificate() {
@@ -85,8 +82,10 @@ void SSLClientAuthHandler::DoSelectCertificate() {
 #endif
 
   // Notify the IO thread that we have selected a cert.
-  io_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &SSLClientAuthHandler::CertificateSelected, cert));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &SSLClientAuthHandler::CertificateSelected, cert));
 }
 
 void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {

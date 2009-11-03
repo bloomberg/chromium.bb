@@ -7,8 +7,8 @@
 
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
-#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -35,12 +35,10 @@ class LoginHandlerMac : public LoginHandler,
                         public ConstrainedWindowMacDelegateCustomSheet,
                         public LoginModelObserver {
  public:
-  LoginHandlerMac(URLRequest* request, MessageLoop* ui_loop)
+  LoginHandlerMac(URLRequest* request)
       : handled_auth_(false),
         dialog_(NULL),
-        ui_loop_(ui_loop),
         request_(request),
-        request_loop_(MessageLoop::current()),
         password_manager_(NULL),
         sheet_controller_(nil),
         login_model_(NULL) {
@@ -80,7 +78,7 @@ class LoginHandlerMac : public LoginHandler,
   // LoginHandler:
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
                                            std::wstring explanation) {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // Load nib here instead of in constructor.
     sheet_controller_ = [[[LoginHandlerSheet alloc]
@@ -111,7 +109,7 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   virtual TabContents* GetTabContentsForLogin() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     return tab_util::GetTabContentsByID(render_process_host_id_,
                                         tab_contents_id_);
@@ -129,28 +127,35 @@ class LoginHandlerMac : public LoginHandler,
       password_manager_->ProvisionallySavePassword(password_form_);
     }
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::SetAuthDeferred, username, password));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+            NewRunnableMethod(this, &LoginHandlerMac::CloseContentsDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerMac::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this, &LoginHandlerMac::SetAuthDeferred, username, password));
   }
 
   virtual void CancelAuth() {
     if (WasAuthHandled(true))
       return;
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerMac::CancelAuthDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerMac::CloseContentsDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerMac::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerMac::CancelAuthDeferred));
   }
 
   virtual void OnRequestCancelled() {
-    DCHECK(MessageLoop::current() == request_loop_) <<
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
         "Why is OnRequestCancelled called from the UI thread?";
 
     // Reference is no longer valid.
@@ -163,42 +168,44 @@ class LoginHandlerMac : public LoginHandler,
   // Overridden from ConstrainedWindowMacDelegate:
   virtual void DeleteDelegate() {
     if (!WasAuthHandled(true)) {
-      request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &LoginHandlerMac::CancelAuthDeferred));
-      ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &LoginHandlerMac::SendNotifications));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(this, &LoginHandlerMac::CancelAuthDeferred));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &LoginHandlerMac::SendNotifications));
     }
 
     // Close sheet if it's still open, as required by
     // ConstrainedWindowMacDelegate.
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     if (is_sheet_open())
       [NSApp endSheet:sheet()];
 
     SetModel(NULL);
 
     // Delete this object once all InvokeLaters have been called.
-    request_loop_->ReleaseSoon(FROM_HERE, this);
+    ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, this);
   }
 
   void OnLoginPressed(const std::wstring& username,
                       const std::wstring& password) {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     SetAuth(username, password);
   }
 
   void OnCancelPressed() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     CancelAuth();
   }
 
  private:
   friend class LoginPrompt;
 
-  // Calls SetAuth from the request_loop.
+  // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const std::wstring& username,
                        const std::wstring& password) {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->SetAuth(username, password);
@@ -206,9 +213,9 @@ class LoginHandlerMac : public LoginHandler,
     }
   }
 
-  // Calls CancelAuth from the request_loop.
+  // Calls CancelAuth from the IO loop.
   void CancelAuthDeferred() {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->CancelAuth();
@@ -220,7 +227,7 @@ class LoginHandlerMac : public LoginHandler,
 
   // Closes the view_contents from the UI loop.
   void CloseContentsDeferred() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // The hosting ConstrainedWindow may have been freed.
     if (dialog_)
@@ -240,7 +247,7 @@ class LoginHandlerMac : public LoginHandler,
   // Notify observers that authentication is needed or received.  The automation
   // proxy uses this for testing.
   void SendNotifications() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     NotificationService* service = NotificationService::current();
     TabContents* requesting_contents = GetTabContentsForLogin();
@@ -266,28 +273,22 @@ class LoginHandlerMac : public LoginHandler,
   Lock handled_auth_lock_;
 
   // The ConstrainedWindow that is hosting our LoginView.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   ConstrainedWindow* dialog_;
 
-  // The MessageLoop of the thread that the ChromeViewContents lives in.
-  MessageLoop* ui_loop_;
-
   // The request that wants login data.
-  // This should only be accessed on the request_loop_.
+  // This should only be accessed on the IO loop.
   URLRequest* request_;
-
-  // The MessageLoop of the thread that the URLRequest lives in.
-  MessageLoop* request_loop_;
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
   // or rejected.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordForm password_form_;
 
   // Points to the password manager owned by the TabContents requesting auth.
   // Can be null if the TabContents is not a TabContents.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordManager* password_manager_;
 
   // Cached from the URLRequest, in case it goes NULL on us.
@@ -305,8 +306,8 @@ class LoginHandlerMac : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
-  return new LoginHandlerMac(request, ui_loop);
+LoginHandler* LoginHandler::Create(URLRequest* request) {
+  return new LoginHandlerMac(request);
 }
 
 // ----------------------------------------------------------------------------

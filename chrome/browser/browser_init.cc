@@ -9,11 +9,11 @@
 #include "base/event_recorder.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
-#include "base/thread.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/first_run.h"
@@ -174,17 +174,18 @@ class NotifyNotDefaultBrowserTask : public Task {
 
 class CheckDefaultBrowserTask : public Task {
  public:
-  explicit CheckDefaultBrowserTask(MessageLoop* ui_loop) : ui_loop_(ui_loop) {
+  CheckDefaultBrowserTask() {
   }
 
   virtual void Run() {
-    if (!ShellIntegration::IsDefaultBrowser())
-      ui_loop_->PostTask(FROM_HERE, new NotifyNotDefaultBrowserTask());
+    if (ShellIntegration::IsDefaultBrowser())
+      return;
+
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());
   }
 
  private:
-  MessageLoop* ui_loop_;
-
   DISALLOW_COPY_AND_ASSIGN(CheckDefaultBrowserTask);
 };
 
@@ -674,8 +675,8 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       FirstRun::IsChromeFirstRun()) {
     return;
   }
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new CheckDefaultBrowserTask(MessageLoop::current()));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
 }
 
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,

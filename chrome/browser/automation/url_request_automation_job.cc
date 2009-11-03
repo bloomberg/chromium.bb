@@ -331,8 +331,7 @@ void URLRequestAutomationJob::OnRequestEnd(
   // certificate, but I'm not sure if all implementations expect it.
   // if (status.status() == URLRequestStatus::FAILED &&
   //    net::IsCertificateError(status.os_error()) && request_->delegate()) {
-  //  request_->delegate()->OnSSLCertificateError(request_, status.os_error(),
-  //                                              NULL);
+  //  request_->delegate()->OnSSLCertificateError(request_, status.os_error());
   // }
 
   DisconnectFromMessageFilter();

@@ -7,8 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/lock.h"
-#include "base/message_loop.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -141,9 +140,9 @@ class LoginDialogTask : public Task {
 // Public API
 
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                URLRequest* request,
-                                MessageLoop* ui_loop) {
-  LoginHandler* handler = LoginHandler::Create(request, ui_loop);
-  ui_loop->PostTask(FROM_HERE, new LoginDialogTask(auth_info, handler));
+                                URLRequest* request) {
+  LoginHandler* handler = LoginHandler::Create(request);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE, new LoginDialogTask(auth_info, handler));
   return handler;
 }

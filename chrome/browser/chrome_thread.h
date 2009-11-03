@@ -113,12 +113,6 @@ class ChromeThread : public base::Thread {
 
   // Callable on any thread.  Returns whether you're currently on a particular
   // thread.
-  //
-  // WARNING:
-  //   When running under unit-tests, this will return true if you're on the
-  //   main thread and the thread ID you pass in isn't running.  This is
-  //   normally the correct behavior because you want to ignore these asserts
-  //   unless you've specifically spun up the threads, but be mindful of it.
   static bool CurrentlyOn(ID identifier);
 
   // If the current message loop is one of the known threads, returns true and

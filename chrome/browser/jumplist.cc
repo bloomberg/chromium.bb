@@ -22,7 +22,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/win_util.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
@@ -731,12 +731,10 @@ void JumpList::OnFavIconDataAvailable(
   // Finished Loading all fav icons needed by the application JumpList.
   // We create a JumpListUpdateTask that creates icon files, and we post it to
   // the file thread.
-  Task* icon_task = new JumpListUpdateTask(icon_dir_,
-                                           most_visited_pages_,
-                                           recently_closed_pages_);
-  MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
-  if (file_loop)
-    file_loop->PostTask(FROM_HERE, icon_task);
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      new JumpListUpdateTask(
+          icon_dir_, most_visited_pages_, recently_closed_pages_));
 
   // Delete all items in these lists since we don't need these lists any longer.
   most_visited_pages_.clear();

@@ -58,8 +58,7 @@ std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 int TaskManagerModel::goats_teleported_ = 0;
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
-    : ui_loop_(MessageLoop::current()),
-      update_state_(IDLE) {
+    : update_state_(IDLE) {
 
   TaskManagerBrowserProcessResourceProvider* browser_provider =
       new TaskManagerBrowserProcessResourceProvider(task_manager);
@@ -762,13 +761,14 @@ void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {
   // This happens in the IO thread, post it to the UI thread.
   int origin_child_id =
       chrome_browser_net::GetOriginProcessUniqueIDForRequest(job->request());
-  ui_loop_->PostTask(FROM_HERE,
-                     NewRunnableMethod(
-                         this,
-                         &TaskManagerModel::BytesRead,
-                         BytesReadParam(origin_child_id,
-                                        render_process_host_child_id,
-                                        routing_id, byte_count)));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &TaskManagerModel::BytesRead,
+          BytesReadParam(origin_child_id,
+          render_process_host_child_id,
+          routing_id, byte_count)));
 }
 
 bool TaskManagerModel::GetProcessMetricsForRow(

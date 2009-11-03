@@ -173,8 +173,6 @@ class TaskManagerChildProcessResourceProvider
 
   TaskManager* task_manager_;
 
-  MessageLoop* ui_loop_;
-
   // Maps the actual resources (the ChildProcessInfo) to the Task Manager
   // resources.
   std::map<ChildProcessInfo, TaskManagerChildProcessResource*> resources_;

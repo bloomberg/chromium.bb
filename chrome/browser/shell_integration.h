@@ -17,7 +17,6 @@
 #endif
 
 class FilePath;
-class MessageLoop;
 
 class ShellIntegration {
  public:
@@ -125,9 +124,6 @@ class ShellIntegration {
     void UpdateUI(DefaultBrowserState state);
 
     DefaultBrowserObserver* observer_;
-
-    MessageLoop* ui_loop_;
-    MessageLoop* file_loop_;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };

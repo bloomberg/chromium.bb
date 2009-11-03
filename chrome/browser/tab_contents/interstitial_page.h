@@ -15,7 +15,6 @@
 #include "chrome/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
-class MessageLoop;
 class NavigationEntry;
 class TabContents;
 class TabContentsView;
@@ -198,8 +197,6 @@ class InterstitialPage : public NotificationObserver,
   // The original title of the tab that should be reverted to when the
   // interstitial is hidden.
   std::wstring original_tab_title_;
-
-  MessageLoop* ui_loop_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;

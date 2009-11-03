@@ -7,6 +7,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -191,7 +192,9 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 
 class TabContentsTest : public RenderViewHostTestHarness {
  public:
-  TabContentsTest() : RenderViewHostTestHarness() {
+  TabContentsTest()
+      : RenderViewHostTestHarness(),
+        ui_thread_(ChromeThread::UI, &message_loop_) {
   }
 
  private:
@@ -201,6 +204,8 @@ class TabContentsTest : public RenderViewHostTestHarness {
     profile_.reset(new TabContentsTestingProfile());
     RenderViewHostTestHarness::SetUp();
   }
+
+  ChromeThread ui_thread_;
 };
 
 // Test to make sure that title updates get stripped of whitespace.

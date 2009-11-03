@@ -11,8 +11,8 @@
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -394,21 +394,6 @@ ImporterHost::ImporterHost()
       observer_(NULL),
       task_(NULL),
       importer_(NULL),
-      file_loop_(g_browser_process->file_thread()->message_loop()),
-      waiting_for_bookmarkbar_model_(false),
-      installed_bookmark_observer_(false),
-      is_source_readable_(true),
-      headless_(false),
-      parent_window_(NULL) {
-  importer_list_.DetectSourceProfiles();
-}
-
-ImporterHost::ImporterHost(MessageLoop* file_loop)
-    : profile_(NULL),
-      observer_(NULL),
-      task_(NULL),
-      importer_(NULL),
-      file_loop_(file_loop),
       waiting_for_bookmarkbar_model_(false),
       installed_bookmark_observer_(false),
       is_source_readable_(true),
@@ -517,7 +502,7 @@ void ImporterHost::StartImportSettings(const ProfileInfo& profile_info,
   }
   importer_->set_import_to_bookmark_bar(import_to_bookmark_bar);
   scoped_refptr<ImporterBridge> bridge(
-      new InProcessImporterBridge(writer_.get(), file_loop_, this));
+      new InProcessImporterBridge(writer_.get(), this));
   task_ = NewRunnableMethod(importer_, &Importer::StartImport,
       profile_info, items, bridge);
 
@@ -605,7 +590,7 @@ void ImporterHost::InvokeTaskIfDone() {
   if (waiting_for_bookmarkbar_model_ || !registrar_.IsEmpty() ||
       !is_source_readable_)
     return;
-  file_loop_->PostTask(FROM_HERE, task_);
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE, task_);
 }
 
 void ImporterHost::ImportItemStarted(ImportItem item) {

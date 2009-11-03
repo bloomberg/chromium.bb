@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -34,12 +34,10 @@ class LoginHandlerGtk : public LoginHandler,
                         public ConstrainedWindowGtkDelegate,
                         public LoginModelObserver {
  public:
-  LoginHandlerGtk(URLRequest* request, MessageLoop* ui_loop)
+  LoginHandlerGtk(URLRequest* request)
       : handled_auth_(false),
         dialog_(NULL),
-        ui_loop_(ui_loop),
         request_(request),
-        request_loop_(MessageLoop::current()),
         password_manager_(NULL),
         login_model_(NULL) {
     DCHECK(request_) << "LoginHandlerGtk constructed with NULL request";
@@ -83,7 +81,7 @@ class LoginHandlerGtk : public LoginHandler,
   // LoginHandler:
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
                                            std::wstring explanation) {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     root_.Own(gtk_vbox_new(NULL, gtk_util::kContentAreaBorder));
     GtkWidget* label = gtk_label_new(WideToUTF8(explanation).c_str());
@@ -146,7 +144,7 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   virtual TabContents* GetTabContentsForLogin() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     return tab_util::GetTabContentsByID(render_process_host_id_,
                                         tab_contents_id_);
@@ -164,28 +162,35 @@ class LoginHandlerGtk : public LoginHandler,
       password_manager_->ProvisionallySavePassword(password_form_);
     }
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::SetAuthDeferred, username, password));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::CloseContentsDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::SetAuthDeferred, username,
+        password));
   }
 
   virtual void CancelAuth() {
     if (WasAuthHandled(true))
       return;
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerGtk::CancelAuthDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::CloseContentsDeferred));
+    ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::CancelAuthDeferred));
   }
 
   virtual void OnRequestCancelled() {
-    DCHECK(MessageLoop::current() == request_loop_) <<
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
         "Why is OnRequestCancelled called from the UI thread?";
 
     // Reference is no longer valid.
@@ -202,25 +207,27 @@ class LoginHandlerGtk : public LoginHandler,
 
   virtual void DeleteDelegate() {
     if (!WasAuthHandled(true)) {
-      request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &LoginHandlerGtk::CancelAuthDeferred));
-      ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &LoginHandlerGtk::SendNotifications));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(this, &LoginHandlerGtk::CancelAuthDeferred));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
     }
 
     SetModel(NULL);
 
     // Delete this object once all InvokeLaters have been called.
-    request_loop_->ReleaseSoon(FROM_HERE, this);
+    ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, this);
   }
 
  private:
   friend class LoginPrompt;
 
-  // Calls SetAuth from the request_loop.
+  // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const std::wstring& username,
                        const std::wstring& password) {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->SetAuth(username, password);
@@ -228,9 +235,9 @@ class LoginHandlerGtk : public LoginHandler,
     }
   }
 
-  // Calls CancelAuth from the request_loop.
+  // Calls CancelAuth from the IO loop.
   void CancelAuthDeferred() {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->CancelAuth();
@@ -242,7 +249,7 @@ class LoginHandlerGtk : public LoginHandler,
 
   // Closes the view_contents from the UI loop.
   void CloseContentsDeferred() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // The hosting ConstrainedWindow may have been freed.
     if (dialog_)
@@ -262,7 +269,7 @@ class LoginHandlerGtk : public LoginHandler,
   // Notify observers that authentication is needed or received.  The automation
   // proxy uses this for testing.
   void SendNotifications() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     NotificationService* service = NotificationService::current();
     TabContents* requesting_contents = GetTabContentsForLogin();
@@ -284,7 +291,7 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   static void OnOKClicked(GtkButton *button, LoginHandlerGtk* handler) {
-    DCHECK(MessageLoop::current() == handler->ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     handler->SetAuth(
         UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(handler->username_entry_))),
@@ -292,7 +299,7 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   static void OnCancelClicked(GtkButton *button, LoginHandlerGtk* handler) {
-    DCHECK(MessageLoop::current() == handler->ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     handler->CancelAuth();
   }
 
@@ -301,28 +308,22 @@ class LoginHandlerGtk : public LoginHandler,
   Lock handled_auth_lock_;
 
   // The ConstrainedWindow that is hosting our LoginView.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   ConstrainedWindow* dialog_;
 
-  // The MessageLoop of the thread that the ChromeViewContents lives in.
-  MessageLoop* ui_loop_;
-
   // The request that wants login data.
-  // This should only be accessed on the request_loop_.
+  // This should only be accessed on the IO loop.
   URLRequest* request_;
-
-  // The MessageLoop of the thread that the URLRequest lives in.
-  MessageLoop* request_loop_;
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
   // or rejected.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordForm password_form_;
 
   // Points to the password manager owned by the TabContents requesting auth.
   // Can be null if the TabContents is not a TabContents.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordManager* password_manager_;
 
   // Cached from the URLRequest, in case it goes NULL on us.
@@ -345,6 +346,6 @@ class LoginHandlerGtk : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
-  return new LoginHandlerGtk(request, ui_loop);
+LoginHandler* LoginHandler::Create(URLRequest* request) {
+  return new LoginHandlerGtk(request);
 }

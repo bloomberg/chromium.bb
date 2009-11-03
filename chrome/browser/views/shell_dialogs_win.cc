@@ -19,7 +19,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "grit/generated_resources.h"
 
 // Helpers to show certain types of Windows shell dialogs in a way that doesn't
@@ -90,9 +90,6 @@ class BaseShellDialogImpl {
   // returns.
   void DisableOwner(HWND owner);
 
-  // The UI thread's message loop.
-  MessageLoop* ui_loop_;
-
  private:
   // Creates a thread to run a shell dialog on. Each dialog requires its own
   // thread otherwise in some situations where a singleton owns a single
@@ -126,8 +123,7 @@ class BaseShellDialogImpl {
 BaseShellDialogImpl::Owners BaseShellDialogImpl::owners_;
 int BaseShellDialogImpl::instance_count_ = 0;
 
-BaseShellDialogImpl::BaseShellDialogImpl()
-    : ui_loop_(MessageLoop::current()) {
+BaseShellDialogImpl::BaseShellDialogImpl() {
   ++instance_count_;
 }
 
@@ -372,21 +368,27 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     std::vector<FilePath> paths;
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
-      ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &SelectFileDialogImpl::MultiFilesSelected,
-          paths, params.params, params.run_state));
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              this, &SelectFileDialogImpl::MultiFilesSelected, paths,
+              params.params, params.run_state));
       return;
     }
   }
 
   if (success) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFileDialogImpl::FileSelected, path, filter_index,
-        params.params, params.run_state));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &SelectFileDialogImpl::FileSelected, path, filter_index,
+            params.params, params.run_state));
   } else {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFileDialogImpl::FileNotSelected, params.params,
-        params.run_state));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &SelectFileDialogImpl::FileNotSelected, params.params,
+            params.run_state));
   }
 }
 
@@ -657,11 +659,16 @@ void SelectFontDialogImpl::ExecuteSelectFont(RunState run_state, void* params) {
   bool success = !!ChooseFont(&cf);
   DisableOwner(run_state.owner);
   if (success) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFontDialogImpl::FontSelected, logfont, params, run_state));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &SelectFontDialogImpl::FontSelected, logfont, params,
+            run_state));
   } else {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFontDialogImpl::FontNotSelected, params, run_state));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &SelectFontDialogImpl::FontNotSelected, params, run_state));
   }
 }
 
@@ -715,11 +722,16 @@ void SelectFontDialogImpl::ExecuteSelectFontWithNameSize(
   bool success = !!ChooseFont(&cf);
   DisableOwner(run_state.owner);
   if (success) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFontDialogImpl::FontSelected, logfont, params, run_state));
+    ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &SelectFontDialogImpl::FontSelected, logfont, params,
+          run_state));
   } else {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &SelectFontDialogImpl::FontNotSelected, params, run_state));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &SelectFontDialogImpl::FontNotSelected, params,
+        run_state));
   }
 }
 

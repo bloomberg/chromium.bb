@@ -17,7 +17,6 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
-#include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -332,8 +331,7 @@ base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
 TaskManagerChildProcessResourceProvider::
     TaskManagerChildProcessResourceProvider(TaskManager* task_manager)
     : updating_(false),
-      task_manager_(task_manager),
-      ui_loop_(MessageLoop::current()) {
+      task_manager_(task_manager) {
 }
 
 TaskManagerChildProcessResourceProvider::
@@ -466,8 +464,10 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived));
 }
 
 // This is called on the UI thread.

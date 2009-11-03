@@ -24,7 +24,6 @@
 #include "webkit/api/public/WebCache.h"
 
 class Extension;
-class MessageLoop;
 class SkBitmap;
 class TaskManager;
 class TaskManagerModel;
@@ -367,8 +366,6 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   CPUUsageMap cpu_usage_map_;
 
   ObserverList<TaskManagerModelObserver> observer_list_;
-
-  MessageLoop* ui_loop_;
 
   // Whether we are currently in the process of updating.
   UpdateState update_state_;

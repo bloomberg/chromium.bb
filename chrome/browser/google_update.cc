@@ -15,7 +15,7 @@
 #include "base/thread.h"
 #include "base/win_util.h"
 #include "chrome/app/client_util.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -212,10 +212,11 @@ GoogleUpdate::~GoogleUpdate() {
 void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
   // We need to shunt this request over to InitiateGoogleUpdateCheck and have
   // it run in the file thread.
-  MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
-  file_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &GoogleUpdate::InitiateGoogleUpdateCheck,
-      install_if_newer, window, MessageLoop::current()));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &GoogleUpdate::InitiateGoogleUpdateCheck, install_if_newer,
+          window, MessageLoop::current()));
 }
 
 // Adds/removes a listener. Only one listener is maintained at the moment.

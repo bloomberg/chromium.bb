@@ -5,7 +5,7 @@
 #include "chrome/browser/login_prompt.h"
 
 #include "app/l10n_util.h"
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -30,12 +30,10 @@ class LoginHandlerWin : public LoginHandler,
                         public base::RefCountedThreadSafe<LoginHandlerWin>,
                         public views::DialogDelegate {
  public:
-  LoginHandlerWin(URLRequest* request, MessageLoop* ui_loop)
+  LoginHandlerWin(URLRequest* request)
       : dialog_(NULL),
         handled_auth_(false),
         request_(request),
-        request_loop_(MessageLoop::current()),
-        ui_loop_(ui_loop),
         password_manager_(NULL) {
     DCHECK(request_) << "LoginHandler constructed with NULL request";
 
@@ -65,29 +63,30 @@ class LoginHandlerWin : public LoginHandler,
     return l10n_util::GetString(IDS_LOGIN_DIALOG_TITLE);
   }
   virtual void WindowClosing() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // Reference is no longer valid.
     dialog_ = NULL;
 
     if (!WasAuthHandled(true)) {
-      request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &LoginHandlerWin::CancelAuthDeferred));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(this, &LoginHandlerWin::CancelAuthDeferred));
       SendNotifications();
     }
   }
   virtual void DeleteDelegate() {
     // Delete this object once all InvokeLaters have been called.
-    request_loop_->ReleaseSoon(FROM_HERE, this);
+    ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, this);
   }
   virtual bool Cancel() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     DCHECK(dialog_) << "LoginHandler invoked without being attached";
     CancelAuth();
     return true;
   }
   virtual bool Accept() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     DCHECK(dialog_) << "LoginHandler invoked without being attached";
     SetAuth(login_view_->GetUsername(), login_view_->GetPassword());
     return true;
@@ -100,7 +99,7 @@ class LoginHandlerWin : public LoginHandler,
 
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
                                            std::wstring explanation) {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     LoginView* view = new LoginView(explanation);
 
@@ -130,7 +129,7 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   virtual TabContents* GetTabContentsForLogin() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     return tab_util::GetTabContentsByID(render_process_host_id_,
                                         tab_contents_id_);
@@ -148,28 +147,35 @@ class LoginHandlerWin : public LoginHandler,
       password_manager_->ProvisionallySavePassword(password_form_);
     }
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::SetAuthDeferred, username, password));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerWin::CloseContentsDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerWin::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this, &LoginHandlerWin::SetAuthDeferred, username, password));
   }
 
   virtual void CancelAuth() {
     if (WasAuthHandled(true))
       return;
 
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::CloseContentsDeferred));
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::SendNotifications));
-    request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &LoginHandlerWin::CancelAuthDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerWin::CloseContentsDeferred));
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerWin::SendNotifications));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerWin::CancelAuthDeferred));
   }
 
   virtual void OnRequestCancelled() {
-    DCHECK(MessageLoop::current() == request_loop_) <<
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
         "Why is OnRequestCancelled called from the UI thread?";
 
     // Reference is no longer valid.
@@ -182,10 +188,10 @@ class LoginHandlerWin : public LoginHandler,
  private:
   friend class LoginPrompt;
 
-  // Calls SetAuth from the request_loop.
+  // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const std::wstring& username,
                        const std::wstring& password) {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->SetAuth(username, password);
@@ -193,9 +199,9 @@ class LoginHandlerWin : public LoginHandler,
     }
   }
 
-  // Calls CancelAuth from the request_loop.
+  // Calls CancelAuth from the IO loop.
   void CancelAuthDeferred() {
-    DCHECK(MessageLoop::current() == request_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     if (request_) {
       request_->CancelAuth();
@@ -207,7 +213,7 @@ class LoginHandlerWin : public LoginHandler,
 
   // Closes the view_contents from the UI loop.
   void CloseContentsDeferred() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // The hosting ConstrainedWindow may have been freed.
     if (dialog_)
@@ -227,7 +233,7 @@ class LoginHandlerWin : public LoginHandler,
   // Notify observers that authentication is needed or received.  The automation
   // proxy uses this for testing.
   void SendNotifications() {
-    DCHECK(MessageLoop::current() == ui_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     NotificationService* service = NotificationService::current();
     TabContents* requesting_contents = GetTabContentsForLogin();
@@ -253,18 +259,12 @@ class LoginHandlerWin : public LoginHandler,
   Lock handled_auth_lock_;
 
   // The ConstrainedWindow that is hosting our LoginView.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   ConstrainedWindow* dialog_;
 
-  // The MessageLoop of the thread that the ChromeViewContents lives in.
-  MessageLoop* ui_loop_;
-
   // The request that wants login data.
-  // This should only be accessed on the request_loop_.
+  // This should only be accessed on the IO loop.
   URLRequest* request_;
-
-  // The MessageLoop of the thread that the URLRequest lives in.
-  MessageLoop* request_loop_;
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;
@@ -272,12 +272,12 @@ class LoginHandlerWin : public LoginHandler,
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
   // or rejected.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordForm password_form_;
 
   // Points to the password manager owned by the TabContents requesting auth.
   // Can be null if the TabContents is not a TabContents.
-  // This should only be accessed on the ui_loop_.
+  // This should only be accessed on the UI loop.
   PasswordManager* password_manager_;
 
   // Cached from the URLRequest, in case it goes NULL on us.
@@ -288,6 +288,6 @@ class LoginHandlerWin : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
-  return new LoginHandlerWin(request, ui_loop);
+LoginHandler* LoginHandler::Create(URLRequest* request) {
+  return new LoginHandlerWin(request);
 }
