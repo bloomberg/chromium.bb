@@ -243,7 +243,8 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-TEST_F(ShowModalDialogTest, BasicTest) {
+// Flakiness returned. Re-opened crbug.com/17806
+TEST_F(ShowModalDialogTest, FLAKY_BasicTest) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
 
