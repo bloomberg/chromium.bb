@@ -63,6 +63,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebDataSourceImpl.h"
+#include "WebDevToolsAgentPrivate.h"
 #include "WebPluginContainerImpl.h"
 #include "WebPluginLoadObserver.h"
 #include "WindowFeatures.h"
@@ -71,7 +72,6 @@
 
 // FIXME: remove these
 #include "net/base/mime_util.h"
-#include "webkit/glue/webdevtoolsagent_impl.h"
 
 using namespace WebCore;
 
@@ -113,11 +113,8 @@ void FrameLoaderClientImpl::windowObjectCleared()
         m_webFrame->client()->didClearWindowObject(m_webFrame);
 
     WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview) {
-        WebDevToolsAgentImpl* toolsAgent = webview->devToolsAgentImpl();
-        if (toolsAgent)
-            toolsAgent->WindowObjectCleared(m_webFrame);
-    }
+    if (webview->devToolsAgentPrivate())
+        webview->devToolsAgentPrivate()->didClearWindowObject(m_webFrame);
 }
 
 void FrameLoaderClientImpl::documentElementAvailable()
@@ -653,9 +650,8 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad()
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, isNewNavigation);
 
-    WebDevToolsAgentImpl* toolsAgent = webview->devToolsAgentImpl();
-    if (toolsAgent)
-        toolsAgent->DidCommitLoadForFrame(webview, m_webFrame, isNewNavigation);
+    if (webview->devToolsAgentPrivate())
+        webview->devToolsAgentPrivate()->didCommitProvisionalLoad(m_webFrame, isNewNavigation);
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(

@@ -30,6 +30,7 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/src/WebFrameImpl.h"
 #include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
@@ -159,19 +160,18 @@ void WebDevToolsAgentImpl::didNavigate() {
   DebuggerAgentManager::OnNavigate();
 }
 
-void WebDevToolsAgentImpl::DidCommitLoadForFrame(
-    WebViewImpl* webview,
-    WebFrame* frame,
+void WebDevToolsAgentImpl::didCommitProvisionalLoad(
+    WebFrameImpl* webframe,
     bool is_new_navigation) {
   if (!attached_) {
     return;
   }
-  WebDataSource* ds = frame->dataSource();
+  WebDataSource* ds = webframe->dataSource();
   const WebURLRequest& request = ds->request();
   WebURL url = ds->hasUnreachableURL() ?
       ds->unreachableURL() :
       request.url();
-  if (webview->mainFrame() == frame) {
+  if (!webframe->parent()) {
     ResetInspectorFrontendProxy();
     tools_agent_delegate_stub_->FrameNavigate(
         webkit_glue::WebURLToKURL(url).string());
@@ -180,7 +180,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
   }
 }
 
-void WebDevToolsAgentImpl::WindowObjectCleared(WebFrameImpl* webframe) {
+void WebDevToolsAgentImpl::didClearWindowObject(WebFrameImpl* webframe) {
   DebuggerAgentManager::SetHostId(webframe, host_id_);
   if (attached_) {
     // Push context id into the client if it is already attached.
@@ -459,6 +459,12 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged(
 }
 
 namespace WebKit {
+
+// static
+WebDevToolsAgent* WebDevToolsAgent::create(WebView* webview,
+                                           WebDevToolsAgentClient* client) {
+  return new WebDevToolsAgentImpl(static_cast<WebViewImpl*>(webview), client);
+}
 
 // static
 void WebDevToolsAgent::executeDebuggerCommand(

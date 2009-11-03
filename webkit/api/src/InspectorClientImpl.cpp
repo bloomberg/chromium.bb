@@ -44,9 +44,6 @@
 #include "WebViewImpl.h"
 #include <wtf/Vector.h>
 
-// FIXME: Remove this once WebDevToolsAgentImpl and WebViewImpl move out of glue/.
-#include "webkit/glue/webdevtoolsagent_impl.h"
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -76,7 +73,7 @@ Page* InspectorClientImpl::createPage()
 
 void InspectorClientImpl::showWindow()
 {
-    ASSERT(m_inspectedWebView->devToolsAgentImpl());
+    ASSERT(m_inspectedWebView->devToolsAgentPrivate());
     m_inspectedWebView->page()->inspectorController()->setWindowVisible(true);
 }
 
@@ -88,7 +85,7 @@ void InspectorClientImpl::closeWindow()
 
 bool InspectorClientImpl::windowVisible()
 {
-    ASSERT(m_inspectedWebView->devToolsAgentImpl());
+    ASSERT(m_inspectedWebView->devToolsAgentPrivate());
     return false;
 }
 

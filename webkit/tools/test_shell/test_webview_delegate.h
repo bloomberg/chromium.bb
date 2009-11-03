@@ -143,9 +143,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object);
   virtual void didUpdateInspectorSettings() {}
-  virtual WebKit::WebDevToolsAgentClient* devToolsAgentClient() {
-    return NULL;
-  }
   virtual void queryAutofillSuggestions(
       const WebKit::WebNode&, const WebKit::WebString& name,
       const WebKit::WebString& value) {}

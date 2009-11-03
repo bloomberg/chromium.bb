@@ -206,7 +206,10 @@ namespace WebKit {
         virtual WebString inspectorSettings() const = 0;
         virtual void setInspectorSettings(const WebString&) = 0;
 
+        // The embedder may optionally engage a WebDevToolsAgent.  This may only
+        // be set once per WebView.
         virtual WebDevToolsAgent* devToolsAgent() = 0;
+        virtual void setDevToolsAgent(WebDevToolsAgent*) = 0;
 
 
         // Accessibility -------------------------------------------------------

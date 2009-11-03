@@ -40,7 +40,6 @@
 
 namespace WebKit {
     class WebAccessibilityObject;
-    class WebDevToolsAgentClient;
     class WebDragData;
     class WebFileChooserCompletion;
     class WebFrame;
@@ -256,8 +255,6 @@ namespace WebKit {
         // Called to notify the client that the inspector's settings were
         // changed and should be saved.  See WebView::inspectorSettings.
         virtual void didUpdateInspectorSettings() = 0;
-
-        virtual WebDevToolsAgentClient* devToolsAgentClient() = 0;
 
 
         // Autofill ------------------------------------------------------------

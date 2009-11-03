@@ -34,11 +34,17 @@
 #include "WebCommon.h"
 
 namespace WebKit {
+class WebDevToolsAgentClient;
 class WebString;
+class WebView;
 struct WebPoint;
 
 class WebDevToolsAgent {
 public:
+    WEBKIT_API static WebDevToolsAgent* create(WebView*, WebDevToolsAgentClient*);
+
+    virtual ~WebDevToolsAgent() {}
+
     virtual void attach() = 0;
     virtual void detach() = 0;
 
@@ -63,10 +69,7 @@ public:
 
     // Installs dispatch handle that is going to be called periodically
     // while on a breakpoint.
-    static void setMessageLoopDispatchHandler(MessageLoopDispatchHandler);
-
-protected:
-    ~WebDevToolsAgent() {}
+    WEBKIT_API static void setMessageLoopDispatchHandler(MessageLoopDispatchHandler);
 };
 
 } // namespace WebKit

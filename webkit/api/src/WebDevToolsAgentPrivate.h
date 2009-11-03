@@ -28,32 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDevToolsFrontend_h
-#define WebDevToolsFrontend_h
+#ifndef WebDevToolsAgentPrivate_h
+#define WebDevToolsAgentPrivate_h
 
-#include "WebCommon.h"
+// FIXME: This relative path is a temporary hack to support using this
+// header from webkit/glue.
+#include "../public/WebDevToolsAgent.h"
 
 namespace WebKit {
+class WebFrameImpl;
 
-class WebDevToolsFrontendClient;
-class WebString;
-class WebView;
-
-// WebDevToolsFrontend represents DevTools client sitting in the Glue. It provides
-// direct and delegate Apis to the host.
-class WebDevToolsFrontend {
+class WebDevToolsAgentPrivate : public WebDevToolsAgent {
 public:
-    WEBKIT_API static WebDevToolsFrontend* create(WebView* view,
-                                                  WebDevToolsFrontendClient* client,
-                                                  const WebString& applicationLocale);
+    // Notifications from FrameLoaderClientImpl:
 
-    virtual ~WebDevToolsFrontend() {}
+    // The window object for the frame has been cleared of any extra properties
+    // that may have been set by script from the previously loaded document.
+    virtual void didClearWindowObject(WebFrameImpl*) = 0;
 
-    virtual void dispatchMessageFromAgent(const WebString& className,
-                                          const WebString& methodName,
-                                          const WebString& param1,
-                                          const WebString& param2,
-                                          const WebString& param3) = 0;
+    // The provisional datasource is now committed.  The first part of the
+    // response body has been received, and the encoding of the response body
+    // is known.
+    virtual void didCommitProvisionalLoad(WebFrameImpl*, bool isNewNavigation) = 0;
 };
 
 } // namespace WebKit

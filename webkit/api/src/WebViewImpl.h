@@ -61,12 +61,11 @@ class RenderTheme;
 class Widget;
 }
 
-class WebDevToolsAgentImpl;
-
 namespace WebKit {
 class AutocompletePopupMenuClient;
 class ContextMenuClientImpl;
 class WebAccessibilityObject;
+class WebDevToolsAgentPrivate;
 class WebFrameImpl;
 class WebKeyboardEvent;
 class WebMouseEvent;
@@ -149,6 +148,7 @@ public:
     virtual WebString inspectorSettings() const;
     virtual void setInspectorSettings(const WebString& settings);
     virtual WebDevToolsAgent* devToolsAgent();
+    virtual void setDevToolsAgent(WebDevToolsAgent*);
     virtual WebAccessibilityObject accessibilityObject();
     virtual void applyAutofillSuggestions(
         const WebNode&,
@@ -159,7 +159,7 @@ public:
     // WebViewImpl
 
     void setIgnoreInputEvents(bool newValue);
-    WebDevToolsAgentImpl* devToolsAgentImpl();
+    WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
 
     const WebPoint& lastMouseDownPoint() const
     {
@@ -393,7 +393,7 @@ private:
     // The autocomplete client.
     OwnPtr<AutocompletePopupMenuClient> m_autocompletePopupClient;
 
-    OwnPtr<WebDevToolsAgentImpl> m_devToolsAgent;
+    OwnPtr<WebDevToolsAgentPrivate> m_devToolsAgent;
 
     // Whether the webview is rendering transparently.
     bool m_isTransparent;

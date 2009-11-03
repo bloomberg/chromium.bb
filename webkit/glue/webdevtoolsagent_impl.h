@@ -10,7 +10,7 @@
 #include <wtf/OwnPtr.h>
 
 #include "v8.h"
-#include "webkit/api/public/WebDevToolsAgent.h"
+#include "webkit/api/src/WebDevToolsAgentPrivate.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/devtools/apu_agent_delegate.h"
 #include "webkit/glue/devtools/tools_agent.h"
@@ -35,7 +35,7 @@ class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
 class Value;
 
-class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
+class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
                              public ToolsAgent,
                              public DevToolsRpc::Delegate {
  public:
@@ -57,6 +57,11 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
       int call_id,
       int identifier);
 
+  // WebDevToolsAgentPrivate implementation.
+  virtual void didClearWindowObject(WebKit::WebFrameImpl* frame);
+  virtual void didCommitProvisionalLoad(
+      WebKit::WebFrameImpl* frame, bool is_new_navigation);
+
   // WebDevToolsAgent implementation.
   virtual void attach();
   virtual void detach();
@@ -77,14 +82,6 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgent,
                       const WebCore::String& param1,
                       const WebCore::String& param2,
                       const WebCore::String& param3);
-
-  // Methods called by the glue.
-  void SetMainFrameDocumentReady(bool ready);
-  void DidCommitLoadForFrame(WebKit::WebViewImpl* webview,
-                             WebKit::WebFrame* frame,
-                             bool is_new_navigation);
-
-  void WindowObjectCleared(WebKit::WebFrameImpl* webframe);
 
   void ForceRepaint();
 

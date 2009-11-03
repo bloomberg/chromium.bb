@@ -77,6 +77,7 @@
 #include "Settings.h"
 #include "TypingCommand.h"
 #include "WebAccessibilityObject.h"
+#include "WebDevToolsAgentPrivate.h"
 #include "WebDragData.h"
 #include "WebFrameImpl.h"
 #include "WebInputEvent.h"
@@ -98,9 +99,6 @@
 #include "KeyboardCodesPosix.h"
 #include "RenderTheme.h"
 #endif
-
-// FIXME
-#include "webkit/glue/webdevtoolsagent_impl.h"
 
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
@@ -175,12 +173,6 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient) {
     RefPtr<WebFrameImpl> frame = WebFrameImpl::create(frameClient);
 
     frame->initializeAsMainFrame(this);
-
-    if (m_client) {
-        WebDevToolsAgentClient* toolsClient = m_client->devToolsAgentClient();
-        if (toolsClient)
-            m_devToolsAgent.set(new WebDevToolsAgentImpl(this, toolsClient));
-    }
 
     // Restrict the access to the local file system
     // (see WebView.mm WebView::_commonInitializationWithFrameName).
@@ -777,7 +769,7 @@ void WebViewImpl::close()
         m_page.clear();
     }
 
-    // Should happen after m_page.reset().
+    // Should happen after m_page.clear().
     if (m_devToolsAgent.get())
         m_devToolsAgent.clear();
 
@@ -1498,6 +1490,12 @@ WebDevToolsAgent* WebViewImpl::devToolsAgent()
     return m_devToolsAgent.get();
 }
 
+void WebViewImpl::setDevToolsAgent(WebDevToolsAgent* devToolsAgent)
+{
+    ASSERT(!m_devToolsAgent.get()); // May only set once!
+    m_devToolsAgent.set(static_cast<WebDevToolsAgentPrivate*>(devToolsAgent));
+}
+
 WebAccessibilityObject WebViewImpl::accessibilityObject()
 {
     if (!mainFrameImpl())
@@ -1581,11 +1579,6 @@ bool WebViewImpl::setDropEffect(bool accept) {
         return true;
     }
     return false;
-}
-
-WebDevToolsAgentImpl* WebViewImpl::devToolsAgentImpl()
-{
-    return m_devToolsAgent.get();
 }
 
 void WebViewImpl::setIsTransparent(bool isTransparent)

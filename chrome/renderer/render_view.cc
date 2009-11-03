@@ -66,7 +66,7 @@
 #include "skia/ext/image_operations.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDataSource.h"
-#include "webkit/api/public/WebDevToolsAgentClient.h"
+#include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/api/public/WebFrame.h"
@@ -121,7 +121,7 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
 using WebKit::WebData;
 using WebKit::WebDataSource;
-using WebKit::WebDevToolsAgentClient;
+using WebKit::WebDevToolsAgent;
 using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -354,6 +354,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
+  webview()->setDevToolsAgent(
+      WebDevToolsAgent::create(webview(), devtools_agent_.get()));
 
   OnSetRendererPrefs(renderer_prefs);
 
@@ -1705,10 +1707,6 @@ void RenderView::didAddHistoryItem() {
 void RenderView::didUpdateInspectorSettings() {
   Send(new ViewHostMsg_UpdateInspectorSettings(
       routing_id_, webview()->inspectorSettings().utf8()));
-}
-
-WebDevToolsAgentClient* RenderView::devToolsAgentClient() {
-  return devtools_agent_.get();
 }
 
 void RenderView::queryAutofillSuggestions(const WebNode& node,
