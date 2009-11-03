@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/renderer/user_script_idle_scheduler.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
@@ -31,6 +32,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   static NavigationState* FromDataSource(WebKit::WebDataSource* ds) {
     return static_cast<NavigationState*>(ds->extraData());
+  }
+
+  UserScriptIdleScheduler* user_script_idle_scheduler() {
+    return user_script_idle_scheduler_.get();
+  }
+  void set_user_script_idle_scheduler(UserScriptIdleScheduler* scheduler) {
+    user_script_idle_scheduler_.reset(scheduler);
   }
 
   // Contains the page_id for this navigation or -1 if there is none yet.
@@ -173,7 +181,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         request_committed_(false),
         is_content_initiated_(is_content_initiated),
         pending_page_id_(pending_page_id),
-        postpone_loading_data_(false) {
+        postpone_loading_data_(false),
+        user_script_idle_scheduler_(NULL) {
   }
 
   PageTransition::Type transition_type_;
@@ -195,6 +204,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   std::string security_info_;
   bool postpone_loading_data_;
   std::string postponed_data_;
+  scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

@@ -54,6 +54,7 @@ namespace extension_manifest_keys {
 namespace extension_manifest_values {
   extern const char* kRunAtDocumentStart;
   extern const char* kRunAtDocumentEnd;
+  extern const char* kRunAtDocumentIdle;
   extern const char* kPageActionTypeTab;
   extern const char* kPageActionTypePermanent;
 }  // namespace extension_manifest_values
