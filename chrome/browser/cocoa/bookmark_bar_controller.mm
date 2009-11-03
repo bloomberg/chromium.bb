@@ -28,6 +28,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -56,6 +57,7 @@
 - (void)addButtonsToView;
 - (void)resizeButtons;
 - (void)centerNoItemsLabel;
+- (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 @end
 
 @implementation BookmarkBarController
@@ -79,6 +81,7 @@
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
+    defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
   }
   return self;
 }
@@ -357,6 +360,7 @@
                                                  action:nil
                                           keyEquivalent:@""] autorelease];
   [menu addItem:item];
+  [item setImage:[self getFavIconForNode:child]];
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
@@ -375,13 +379,6 @@
                                   base::SysWideToNSString(child->GetTitle()),
                                   url_string.c_str()];
     [item setToolTip:tooltip];
-    const SkBitmap& favicon = bookmarkModel_->GetFavIcon(child);
-    if (!favicon.isNull()) {
-      NSImage* image = gfx::SkBitmapToNSImage(favicon);
-      if (image) {
-        [item setImage:image];
-      }
-    }
   }
 }
 
@@ -595,19 +592,8 @@
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
 
-  NSImage* image = NULL;
-  if (node->is_folder()) {
-    image = folderImage_;
-  } else {
-    const SkBitmap& favicon = bookmarkModel_->GetFavIcon(node);
-    if (!favicon.isNull()) {
-      image = gfx::SkBitmapToNSImage(favicon);
-    }
-  }
-  if (image) {
-    [cell setImage:image];
-    [cell setImagePosition:NSImageLeft];
-  }
+  [cell setImage:[self getFavIconForNode:node]];
+  [cell setImagePosition:NSImageLeft];
   [cell setTitle:title];
   [cell setMenu:buttonContextMenu_];
   return cell;
@@ -873,16 +859,12 @@
     void* pointer = [[cell representedObject] pointerValue];
     const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
     if (cellnode == node) {
-      NSImage* image = gfx::SkBitmapToNSImage(bookmarkModel_->GetFavIcon(node));
-      if (image) {
-        [cell setImage:image];
-        [cell setImagePosition:NSImageLeft];
-        // Adding an image means we might need more room for the
-        // bookmark.  Test for it by growing the button (if needed)
-        // and shifting everything else over.
-        [self checkForBookmarkButtonGrowth:button];
-      }
-      return;
+      [cell setImage:[self getFavIconForNode:node]];
+      [cell setImagePosition:NSImageLeft];
+      // Adding an image means we might need more room for the
+      // bookmark.  Test for it by growing the button (if needed)
+      // and shifting everything else over.
+      [self checkForBookmarkButtonGrowth:button];
     }
   }
 }
@@ -907,6 +889,17 @@
 
 - (NSButton*)otherBookmarksButton {
   return otherBookmarksButton_.get();
+}
+
+- (NSImage*)getFavIconForNode:(const BookmarkNode*)node {
+  if (node->is_folder())
+    return folderImage_;
+
+  const SkBitmap& favIcon = bookmarkModel_->GetFavIcon(node);
+  if (!favIcon.isNull())
+    return gfx::SkBitmapToNSImage(favIcon);
+
+  return defaultImage_;
 }
 
 @end

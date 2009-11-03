@@ -73,6 +73,9 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
   // The folder image so we can use one copy for all buttons
   scoped_nsobject<NSImage> folderImage_;
 
+  // The default image, so we can use one copy for all buttons.
+  scoped_nsobject<NSImage> defaultImage_;
+
   // If the bar is disabled, we hide it and ignore show/hide commands.
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
