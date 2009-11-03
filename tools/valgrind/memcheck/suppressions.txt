@@ -1055,21 +1055,6 @@
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
-   bug_24503
-   Memcheck:Leak
-   fun:calloc
-   fun:allocate_dtv
-   fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_2.1
-   fun:_ZN2v88internal6Thread5StartEv
-   fun:_ZN2v88internal8Profiler6EngageEv
-   fun:_ZN2v88internal6Logger5SetupEv
-   fun:_ZN2v88internal2V810InitializeEPNS0_12DeserializerE
-   fun:_ZN2v88internal8Snapshot11DeserializeEPKhi
-   fun:_ZN2v88internal8Snapshot10InitializeEPKc
-   fun:_ZN2v82V810InitializeEv
-}
-{
    bug_24936
    Memcheck:Free
    fun:_ZdlPv
