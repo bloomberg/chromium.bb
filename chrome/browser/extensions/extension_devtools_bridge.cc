@@ -17,7 +17,6 @@
 ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
                                                  Profile* profile)
     : tab_id_(tab_id),
-      inspected_rvh_(NULL),
       profile_(profile),
       on_page_event_name_(
           ExtensionDevToolsEvents::OnPageEventNameForTab(tab_id)),
@@ -39,10 +38,9 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
   int tab_index;
   if (ExtensionTabUtil::GetTabById(tab_id_, profile_, &browser, &tab_strip,
                                    &contents, &tab_index)) {
-    inspected_rvh_ = contents->render_view_host();
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     devtools_manager->RegisterDevToolsClientHostFor(
-        inspected_rvh_, this);
+        contents->render_view_host(), this);
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_SetApuAgentEnabled(true));
@@ -54,11 +52,7 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
 void ExtensionDevToolsBridge::UnregisterAsDevToolsClientHost() {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  if (inspected_rvh_) {
-    DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(
-        inspected_rvh_);
-    inspected_rvh_ = NULL;
-  }
+  NotifyCloseListener();
 }
 
 // If the tab we are looking at is going away then we fire a closing event at
