@@ -23,10 +23,10 @@
 set -e
 
 # Returns 0 (true) if the parameter exists, is a symbolic link, and appears
-# writeable on the basis of its POSIX permissions.  This is used to determine
+# writable on the basis of its POSIX permissions.  This is used to determine
 # writeability like test's -w primary, but -w resolves symbolic links and this
 # function does not.
-function is_writeable_symlink() {
+function is_writable_symlink() {
   SYMLINK=${1}
   LINKMODE=$(stat -f %Sp "${SYMLINK}" 2> /dev/null || true)
   if [ -z "${LINKMODE}" ] || [ "${LINKMODE:0:1}" != "l" ] ; then
@@ -69,14 +69,14 @@ function is_writeable_symlink() {
   return 1
 }
 
-# If SYMLINK exists and is a symbolic link, but is not writeable according to
-# is_writeable_symlink, this function attempts to replace it with a new
-# writeable symbolic link.  If FROM does not exist, is not a symbolic link, or
-# is already writeable, this function does nothing.  This function always
+# If SYMLINK exists and is a symbolic link, but is not writable according to
+# is_writable_symlink, this function attempts to replace it with a new
+# writable symbolic link.  If FROM does not exist, is not a symbolic link, or
+# is already writable, this function does nothing.  This function always
 # returns 0 (true).
-function ensure_writeable_symlink() {
+function ensure_writable_symlink() {
   SYMLINK=${1}
-  if [ -L "${SYMLINK}" ] && ! is_writeable_symlink "${SYMLINK}" ; then
+  if [ -L "${SYMLINK}" ] && ! is_writable_symlink "${SYMLINK}" ; then
     # If ${SYMLINK} refers to a directory, doing this naively might result in
     # the new link being placed in that directory, instead of replacing the
     # existing link.  ln -fhs is supposed to handle this case, but it does so
@@ -211,7 +211,7 @@ if [ ${EUID} -ne 0 ] ; then
     # ${link} is relative to ${SRC}.  Prepending ${DEST} looks for the same
     # link already on disk.
     DESTLINK="${DEST}/${link}"
-    ensure_writeable_symlink "${DESTLINK}"
+    ensure_writable_symlink "${DESTLINK}"
   done
 
   # Go back to how things were.
@@ -414,14 +414,14 @@ done
 
 # If this script is not running as root (indicating an update driven by a user
 # Keystone ticket) and the application is installed somewhere under
-# /Applications, try to make it writeable by all admin users.  This will allow
+# /Applications, try to make it writable by all admin users.  This will allow
 # other admin users to update the application from their own user Keystone
 # instances.
 #
 # If the script is not running as root and the application is not installed
 # under /Applications, it might not be in a system-wide location, and it
 # probably won't be something that other users on the system are running, so
-# err on the side of safety and don't make it group-writeable.
+# err on the side of safety and don't make it group-writable.
 #
 # If this script is running as root, it's driven by a system Keystone ticket,
 # and future updates can be expected to be applied the same way, so
@@ -432,7 +432,7 @@ done
 # If this script is running as a user that is not a member of the admin group,
 # the chgrp operation will not succeed.  Tolerate that case, because it's
 # better than the alternative, which is to make the application
-# world-writeable.
+# world-writable.
 CHMOD_MODE="a+rX,u+w,go-w"
 if [ ${EUID} -ne 0 ] ; then
   if [ "${DEST:0:14}" = "/Applications/" ] &&
