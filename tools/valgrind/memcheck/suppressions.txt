@@ -797,7 +797,8 @@
    fun:_ZN42_GLOBAL__N__ZN14PlatformThread9CurrentIdEv12CreateThreadEjbPN14PlatformThread8DelegateEPm
    fun:_ZN14PlatformThread6CreateEjPNS_8DelegateEPm
    fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
-   fun:_ZN18BrowserProcessImpl14CreateIOThreadEv
+   ...
+   fun:*BrowserProcessImpl*
 }
 {
    bug_20113
