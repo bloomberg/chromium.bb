@@ -75,6 +75,14 @@
                 ],
               },
             ],
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)/samples/o3djs',
+                'files': [
+                  '<(PRODUCT_DIR)/docs/documentation/base.js',
+                ],
+              },
+            ],
           },
         ],
       },

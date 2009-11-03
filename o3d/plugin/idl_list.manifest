@@ -28,8 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-O3D_IDL_SOURCES = [
-  'idl/bitmap.idl',
+[ 'idl/bitmap.idl',
   'idl/bounding_box.idl',
   'idl/buffer.idl',
   'idl/canvas.idl',
@@ -89,4 +88,4 @@ O3D_IDL_SOURCES = [
   'idl/raw_data.idl',
 ]
 
-Export('O3D_IDL_SOURCES')
+
