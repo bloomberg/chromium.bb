@@ -576,6 +576,11 @@
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
         }],
+        [ 'target_arch == "arm" and armv7 == 1', {
+          'defines': [
+            '__ARM_HAVE_NEON',
+          ],
+        }],
         [ 'OS == "linux" or OS == "freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
