@@ -11,8 +11,8 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
-// A controller for dialog to let the user creating a new folder or
-// renaming an existing folder.  Accessible from a context menu on a
+// A controller for dialog to let the user create a new folder or
+// rename an existing folder.  Accessible from a context menu on a
 // bookmark button or the bookmark bar.
 @interface BookmarkNameFolderController : NSWindowController {
  @private
@@ -24,6 +24,8 @@
   const BookmarkNode* node_;  // weak; owned by the model
   scoped_nsobject<NSString> initialName_;
 }
+// If |node| is NULL, this is an "add folder" request.
+// Else it is a "rename an existing folder" request.
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
                       node:(const BookmarkNode*)node;
@@ -33,6 +35,7 @@
 @end
 
 @interface BookmarkNameFolderController(TestingAPI)
+- (NSString*)folderName;
 - (void)setFolderName:(NSString*)name;
 - (NSButton*)okButton;
 @end

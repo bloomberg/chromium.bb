@@ -161,7 +161,7 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 - (IBAction)openAllBookmarks:(id)sender;
 // Or from a context menu over either the bar or a button.
 - (IBAction)addPage:(id)sender;
-- (IBAction)addOrRenameFolder:(id)sender;
+- (IBAction)addFolder:(id)sender;
 
 @end
 

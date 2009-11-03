@@ -496,11 +496,13 @@
 - (IBAction)editBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
 
-  // TODO(jrg): on windows, folder "buttons" use the bar's context
-  // menu (but with extra items enabled, like Rename).  For now we do
-  // a cheat and redirect so we have the functionality available.
   if (node->is_folder()) {
-    [self addOrRenameFolder:sender];
+    BookmarkNameFolderController* controller =
+        [[BookmarkNameFolderController alloc]
+          initWithParentWindow:[[self view] window]
+                       profile:browser_->profile()
+                          node:node];
+    [controller runAsModalSheet];
     return;
   }
 
@@ -571,19 +573,13 @@
 }
 
 // Might be from the context menu over the bar OR over a button.
-- (IBAction)addOrRenameFolder:(id)sender {
-  // node is NULL if we were invoked from the bar, and that's fine.
-  BookmarkNode* node = [self nodeFromMenuItem:sender];
+- (IBAction)addFolder:(id)sender {
   BookmarkNameFolderController* controller =
     [[BookmarkNameFolderController alloc]
       initWithParentWindow:[[self view] window]
                    profile:browser_->profile()
-                      node:node];
+                      node:NULL];
   [controller runAsModalSheet];
-
-  // runAsModalSheet will run the window as a sheet.  The
-  // BookmarkNameFolderController will release itself when the sheet
-  // ends.
 }
 
 - (BookmarkBarView*)buttonView {

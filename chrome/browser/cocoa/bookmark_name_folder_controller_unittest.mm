@@ -18,7 +18,7 @@ class BookmarkNameFolderControllerTest : public PlatformTest {
 };
 
 
-TEST_F(BookmarkNameFolderControllerTest, AddAndRename) {
+TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   const BookmarkNode* node = NULL;
@@ -45,16 +45,46 @@ TEST_F(BookmarkNameFolderControllerTest, AddAndRename) {
   EXPECT_EQ(1, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
   EXPECT_EQ(L"Bozo", parent->GetChild(0)->GetTitle());
+}
+
+
+// Make sure we are allowed to create a folder named "New Folder".
+TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
+ BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  EXPECT_EQ(0, parent->GetChildCount());
+
+  scoped_nsobject<BookmarkNameFolderController>
+    controller([[BookmarkNameFolderController alloc]
+                 initWithParentWindow:cocoa_helper_.window()
+                              profile:helper_.profile()
+                                 node:NULL]);
+  [controller window];  // force nib load
+
+  // Click OK without changing the name
+  [controller ok:nil];
+  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_TRUE(parent->GetChild(0)->is_folder());
+}
+
+
+TEST_F(BookmarkNameFolderControllerTest, Rename) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
 
   // Rename the folder by creating a controller that originates from
   // the node.
-  node = parent->GetChild(0);
-  controller.reset([[BookmarkNameFolderController alloc]
-                       initWithParentWindow:cocoa_helper_.window()
-                                    profile:helper_.profile()
-                                       node:node]);
+  scoped_nsobject<BookmarkNameFolderController>
+    controller([[BookmarkNameFolderController alloc]
+                 initWithParentWindow:cocoa_helper_.window()
+                              profile:helper_.profile()
+                                 node:folder]);
   [controller window];  // force nib load
 
+  EXPECT_TRUE([[controller folderName] isEqual:@"group"]);
   [controller setFolderName:@"Zobo"];
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());
