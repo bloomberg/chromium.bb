@@ -739,6 +739,7 @@ BUG4359 SKIP : LayoutTests/storage/hash-change-with-xhr.html = PASS
 BUG4359 SKIP : LayoutTests/storage/multiple-databases-garbage-collection.html = PASS
 BUG4359 SKIP : LayoutTests/storage/multiple-transactions.html = PASS
 BUG4359 SKIP : LayoutTests/storage/open-database-empty-version.html = PASS
+BUG4359 SKIP : LayoutTests/storage/open-database-set-empty-version.html = PASS
 BUG4359 SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
 BUG4359 SKIP : LayoutTests/storage/quota-tracking.html = PASS
 BUG4359 SKIP : LayoutTests/storage/sql-data-types.html = PASS
