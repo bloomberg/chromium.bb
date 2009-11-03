@@ -420,9 +420,10 @@ void BrowserActionsContainer::Observe(NotificationType type,
         return;
 
       HidePopup();
+      break;
 
     default:
-      NOTREACHED() << L"Unexpected notification";
+      NOTREACHED() << "Unexpected notification";
   }
 }
 
