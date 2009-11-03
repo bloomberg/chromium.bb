@@ -310,6 +310,17 @@
   return node;
 }
 
+// At this time, the only item which ever gets disabled is "Open All
+// Bookmarks".
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  SEL action = [item action];
+  if ((action == @selector(openAllBookmarks:)) &&
+      (![buttons_ count])) {
+    return NO;
+  }
+  return YES;
+}
+
 - (IBAction)openBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromButton:sender];
   [urlDelegate_ openBookmarkURL:node->GetURL()
