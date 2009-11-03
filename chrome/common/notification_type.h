@@ -703,6 +703,10 @@ class NotificationType {
     // Sent when a background page is ready so other components can load.
     EXTENSION_BACKGROUND_PAGE_READY,
 
+    // Sent when a pop-up extension view is ready, so that notification may
+    // be sent to pending callbacks.
+    EXTENSION_POPUP_VIEW_READY,
+
     // Sent when a browser action's state has changed. The source is the
     // ExtensionAction* that changed. The details are an ExtensionActionState*.
     EXTENSION_BROWSER_ACTION_UPDATED,

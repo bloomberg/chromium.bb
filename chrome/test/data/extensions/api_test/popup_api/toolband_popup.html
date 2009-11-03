@@ -1,0 +1,17 @@
+<head>
+<script>
+function theAnswer() {
+  return 42;
+}
+
+function manipulateHost() {
+  var popupHost = chrome.experimental.popup.getAnchorWindow();
+  if (popupHost && popupHost.globalValue) {
+    popupHost.globalValue = 42;
+  }
+}
+</script>
+</head>
+<body>
+Popup-Contents
+</body>

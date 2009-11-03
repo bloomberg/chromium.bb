@@ -208,7 +208,7 @@ void LocationBarView::Init() {
 #else
                                location_entry_->widget()
 #endif
-                               );
+                               );  // NOLINT
 
   AddChildView(&selected_keyword_view_);
   selected_keyword_view_.SetFont(font_);
@@ -1304,7 +1304,8 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (!browser)
       browser = BrowserList::FindBrowserWithProfile(profile_);
-    ExtensionPopup::Show(page_action_->popup_url(), browser, rect);
+    ExtensionPopup::Show(page_action_->popup_url(), browser, rect,
+                         BubbleBorder::TOP_RIGHT);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),

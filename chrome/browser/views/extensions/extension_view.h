@@ -27,6 +27,7 @@ class ExtensionView : public views::NativeViewHost {
   // (bottom shelf, side bar, etc.)
   class Container {
    public:
+    virtual ~Container() {}
     // Mouse event notifications from the view. (useful for hover UI).
     virtual void OnExtensionMouseEvent(ExtensionView* view) = 0;
     virtual void OnExtensionMouseLeave(ExtensionView* view) = 0;
@@ -61,7 +62,10 @@ class ExtensionView : public views::NativeViewHost {
                                const gfx::Rect& current);
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View *parent, views::View *child);
-  virtual void SetPreferredSize(const gfx::Size& size);
+
+ protected:
+  // Overridden from views::View.
+  virtual void PreferredSizeChanged();
 
  private:
   friend class ExtensionHost;

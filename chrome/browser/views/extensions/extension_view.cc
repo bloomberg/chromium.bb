@@ -155,6 +155,13 @@ void ExtensionView::ViewHierarchyChanged(bool is_add,
     CreateWidgetHostView();
 }
 
+void ExtensionView::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+  if (container_) {
+    container_->OnExtensionPreferredSizeChanged(this);
+  }
+}
+
 void ExtensionView::HandleMouseEvent() {
   if (container_)
     container_->OnExtensionMouseEvent(this);
@@ -170,10 +177,4 @@ void ExtensionView::RenderViewCreated() {
     render_view_host()->view()->SetBackground(pending_background_);
     pending_background_.reset();
   }
-}
-
-void ExtensionView::SetPreferredSize(const gfx::Size& size) {
-  views::NativeViewHost::SetPreferredSize(size);
-  if (container_)
-    container_->OnExtensionPreferredSizeChanged(this);
 }

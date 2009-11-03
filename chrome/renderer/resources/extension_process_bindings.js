@@ -16,6 +16,8 @@ var chrome = chrome || {};
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function GetL10nMessage();
+  native function GetPopupAnchorView();
+  native function GetPopupView();
   native function SetExtensionActionIcon();
 
   if (!chrome)
@@ -187,6 +189,48 @@ var chrome = chrome || {};
     };
   }
 
+  // Helper function for positioning pop-up windows relative to DOM objects.
+  // Returns the absolute position of the given element relative to the hosting
+  // browser frame.
+  function findAbsolutePosition(domElement) {
+    var curleft = curtop = 0;
+    var parentNode = domElement.parentNode
+
+    // Ascend through the parent hierarchy, taking into account object nesting
+    // and scoll positions.
+    if (domElement.offsetParent) {
+      do {
+        if (domElement.offsetLeft) curleft += domElement.offsetLeft;
+        if (domElement.offsetTop) curtop += domElement.offsetTop;
+
+        if (domElement.scrollLeft) curleft -= domElement.scrollLeft;
+        if (domElement.scrollTop) curtop -= domElement.scrollTop;
+
+        if (parentNode != domElement.offsetParent) {
+          while(parentNode != null && parentNode != domElement.offsetParent) {
+            if (parentNode.scrollLeft) curleft -= parentNode.scrollLeft;
+            if (parentNode.scrollTop) curtop -= parentNode.scrollTop;
+            parentNode = parentNode.parentNode;
+          }
+        }
+      } while ((domElement = domElement.offsetParent) != null);
+    }
+
+    return {
+      top: curtop,
+      left: curleft
+    };
+  }
+
+  // Returns the coordiates of the rectangle encompassing the domElement,
+  // in browser coordinates relative to the frame hosting the element.
+  function getAbsoluteRect(domElement) {
+    var rect = findAbsolutePosition(domElement);
+    rect.width = domElement.width || 0;
+    rect.height = domElement.height || 0;
+    return rect;
+  }
+
   // --- Setup additional api's not currently handled in common/extensions/api
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
@@ -219,6 +263,12 @@ var chrome = chrome || {};
         new chrome.Event("toolstrip.onExpanded." + renderViewId);
     chrome.toolstrip.onCollapsed =
         new chrome.Event("toolstrip.onCollapsed." + renderViewId);
+  }
+
+  function setupPopupEvents(renderViewId) {
+    chrome.experimental.popup = chrome.experimental.popup || {};
+    chrome.experimental.popup.onClosed =
+      new chrome.Event("experimental.popup.onClosed." + renderViewId);
   }
 
   chromeHidden.onLoad.addListener(function (extensionId) {
@@ -266,13 +316,23 @@ var chrome = chrome || {};
           apiFunctions[apiFunction.name] = apiFunction;
 
           module[functionDef.name] = bind(apiFunction, function() {
-            chromeHidden.validate(arguments, this.definition.parameters);
+            // If the function is marked with a custom handler, then bypass
+            // validation of the arguments.  This flag is required for
+            // extensions taking DOM objects as arguments.  DOM objects
+            // cannot be described using the type system in extension_api.json,
+            // and so cannot be validated.
+            // A good practice is to extract the primitive data needed to
+            // service the request, and then invoke validate against that data.
+            // See popup.show(...) for an example.
+            if (!functionDef.customHandler) {
+              chromeHidden.validate(arguments, this.definition.parameters);
+            }
 
             if (this.handleRequest)
               return this.handleRequest.apply(this, arguments);
             else
               return sendRequest(this.name, arguments,
-                  this.definition.parameters);
+                                 this.definition.parameters);
           });
         });
       }
@@ -358,6 +418,34 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders);
     }
 
+    apiFunctions["experimental.popup.show"].handleRequest =
+        function(url, showDetails, callback) {
+      if (!showDetails || !showDetails.relativeTo) {
+        throw new Error("showDetails.relativeTo argument missing.");
+      }
+
+      var position = getAbsoluteRect(showDetails.relativeTo);
+      var popUpInfo = {
+        "url": url
+      };
+      var domAnchor = position;
+      var modifiedArgs = [popUpInfo, domAnchor, callback];
+      chromeHidden.validate(modifiedArgs, this.definition.parameters);
+
+      return sendRequest(this.name, modifiedArgs,
+                         this.definition.parameters);
+    }
+
+    apiFunctions["experimental.extension.getPopupView"].handleRequest =
+        function() {
+      return GetPopupView();
+    }
+
+    apiFunctions["experimental.popup.getAnchorWindow"].handleRequest =
+        function() {
+      return GetPopupAnchorView();
+    }
+
     var canvas;
     function setIconCommon(details, name, parameters) {
       var EXTENSION_ACTION_ICON_SIZE = 19;
@@ -425,6 +513,7 @@ var chrome = chrome || {};
     setupBrowserActionEvent(extensionId);
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
+    setupPopupEvents(GetRenderViewId());
   });
 
   if (!chrome.experimental)

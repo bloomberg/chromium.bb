@@ -7,6 +7,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/views/extensions/extension_view.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -21,14 +22,19 @@ class ExtensionPopup : public BrowserBubble,
  public:
   virtual ~ExtensionPopup();
 
-  // Create and show a popup with |url| positioned below |relative_to| in
-  // screen coordinates. This is anchored to the lower middle of the rect,
-  // extending to the left, just like the wrench and page menus.
+  // Create and show a popup with |url| positioned adjacent to |relative_to| in
+  // screen coordinates.
+  // The positioning of the pop-up is determined by |arrow_location| according
+  // to the following logic:  The popup is anchored so that the corner indicated
+  // by value of |arrow_location| remains fixed during popup resizes.
+  // If |arrow_location| is BOTTOM_*, then the popup 'pops up', otherwise
+  // the popup 'drops down'.
   //
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
   static ExtensionPopup* Show(const GURL& url, Browser* browser,
-                              const gfx::Rect& relative_to);
+                              const gfx::Rect& relative_to,
+                              BubbleBorder::ArrowLocation arrow_location);
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
@@ -43,8 +49,8 @@ class ExtensionPopup : public BrowserBubble,
                        const NotificationDetails& details);
 
   // ExtensionView::Container overrides.
-  virtual void OnExtensionMouseEvent(ExtensionView* view) { };
-  virtual void OnExtensionMouseLeave(ExtensionView* view) { };
+  virtual void OnExtensionMouseEvent(ExtensionView* view) { }
+  virtual void OnExtensionMouseLeave(ExtensionView* view) { }
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
   // The min/max height of popups.
@@ -56,7 +62,8 @@ class ExtensionPopup : public BrowserBubble,
  private:
   ExtensionPopup(ExtensionHost* host,
                  views::Widget* frame,
-                 const gfx::Rect& relative_to);
+                 const gfx::Rect& relative_to,
+                 BubbleBorder::ArrowLocation);
 
   // The area on the screen that the popup should be positioned relative to.
   gfx::Rect relative_to_;
@@ -77,4 +84,4 @@ class ExtensionPopup : public BrowserBubble,
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_POPUP_H_
+#endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_

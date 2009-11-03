@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
+#include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
@@ -138,6 +139,9 @@ void FactoryRegistry::ResetFunctions() {
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();
+
+  // Popup API.
+  RegisterFunction<PopupShowFunction>();
 
   // Test.
   RegisterFunction<ExtensionTestPassFunction>();

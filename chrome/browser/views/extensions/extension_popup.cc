@@ -28,12 +28,16 @@ const int ExtensionPopup::kMaxHeight = 600;
 
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                Widget* frame,
-                               const gfx::Rect& relative_to)
-    : BrowserBubble(host->view(), frame, gfx::Point()),
+                               const gfx::Rect& relative_to,
+                               BubbleBorder::ArrowLocation arrow_location)
+    : BrowserBubble(host->view(),
+                    frame,
+                    gfx::Point()),
       relative_to_(relative_to),
       extension_host_(host) {
   host->view()->SetContainer(this);
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                  Source<Profile>(host->profile()));
 
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
@@ -44,8 +48,10 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                              Widget::DeleteOnDestroy);
   gfx::NativeView native_window = frame->GetNativeView();
   border_widget_->Init(native_window, bounds());
+
   border_ = new BubbleBorder;
-  border_->set_arrow_location(BubbleBorder::TOP_RIGHT);
+  border_->set_arrow_location(arrow_location);
+
   border_view_ = new views::View;
   border_view_->set_background(new BubbleBackground(border_));
   border_view_->set_border(border_);
@@ -129,8 +135,10 @@ void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 }
 
 // static
-ExtensionPopup* ExtensionPopup::Show(const GURL& url, Browser* browser,
-                                     const gfx::Rect& relative_to) {
+ExtensionPopup* ExtensionPopup::Show(
+    const GURL& url, Browser* browser,
+    const gfx::Rect& relative_to,
+    BubbleBorder::ArrowLocation arrow_location) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
@@ -140,7 +148,8 @@ ExtensionPopup* ExtensionPopup::Show(const GURL& url, Browser* browser,
   ExtensionHost* host = manager->CreatePopup(url, browser);
   views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeHandle())->GetWidget();
-  ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to);
+  ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to,
+                                             arrow_location);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

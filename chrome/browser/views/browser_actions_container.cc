@@ -275,7 +275,7 @@ void BrowserActionsContainer::AddBrowserAction(Extension* extension) {
   BrowserActionView* view = new BrowserActionView(extension, this);
   browser_action_views_.push_back(view);
   AddChildView(view);
-  if (GetParent()) 
+  if (GetParent())
     GetParent()->SchedulePaint();
 }
 
@@ -289,7 +289,7 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
     if ((*iter)->button()->extension() == extension) {
       RemoveChildView(*iter);
       browser_action_views_.erase(iter);
-      if (GetParent()) 
+      if (GetParent())
         GetParent()->SchedulePaint();
       return;
     }
@@ -362,7 +362,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     rect.set_y(origin.y());
     popup_ = ExtensionPopup::Show(browser_action->popup_url(),
                                   toolbar_->browser(),
-                                  rect);
+                                  rect,
+                                  BubbleBorder::TOP_RIGHT);
     popup_->set_delegate(this);
     popup_button_ = button;
     popup_button_->PopupDidShow();
@@ -414,7 +415,8 @@ void BrowserActionsContainer::Observe(NotificationType type,
       break;
 
     case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      if (Details<ExtensionHost>(popup_->host()) != details)
+      // If we aren't the host of the popup, then disregard the notification.
+      if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
         return;
 
       HidePopup();

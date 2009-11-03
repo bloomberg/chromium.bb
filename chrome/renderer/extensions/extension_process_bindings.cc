@@ -102,6 +102,9 @@ static L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
   }
 }
 
+// A RenderViewVisitor class that iterates through the set of available
+// views, looking for a view of the given type, in the given browser window
+// and within the given extension.
 // Used to accumulate the list of views associated with an extension.
 class ExtensionViewAccumulator : public RenderViewVisitor {
  public:
@@ -114,6 +117,8 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
         views_(v8::Array::New()),
         index_(0) {
   }
+
+  v8::Local<v8::Array> views() { return views_; }
 
   virtual bool Visit(RenderView* render_view) {
     if (!ViewTypeMatches(render_view->view_type(), view_type_))
@@ -135,17 +140,26 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       DCHECK(!window.IsEmpty());
-      views_->Set(v8::Integer::New(index_), window);
-      index_++;
-      if (view_type_ == ViewType::EXTENSION_BACKGROUND_PAGE)
-        return false;  // There can be only one...
+
+      if (!OnMatchedView(window))
+        return false;
     }
     return true;
   }
 
-  v8::Local<v8::Array> views() { return views_; }
-
  private:
+  // Called on each view found matching the search criteria.  Returns false
+  // to terminate the iteration.
+  bool OnMatchedView(const v8::Local<v8::Value>& view_window) {
+    views_->Set(v8::Integer::New(index_), view_window);
+    index_++;
+
+    if (view_type_ == ViewType::EXTENSION_BACKGROUND_PAGE)
+      return false;  // There can be only one...
+
+    return true;
+  }
+
   // Returns true is |type| "isa" |match|.
   static bool ViewTypeMatches(ViewType::Type type, ViewType::Type match) {
     if (type == match)
@@ -215,6 +229,10 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetRenderViewId);
     } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
       return v8::FunctionTemplate::New(GetL10nMessage);
+    } else if (name->Equals(v8::String::New("GetPopupView"))) {
+      return v8::FunctionTemplate::New(GetPopupView);
+    } else if (name->Equals(v8::String::New("GetPopupAnchorView"))) {
+      return v8::FunctionTemplate::New(GetPopupAnchorView);
     } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
       return v8::FunctionTemplate::New(SetExtensionActionIcon);
     }
@@ -226,6 +244,53 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
     return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
+  }
+
+  static v8::Handle<v8::Value> PopupViewFinder(
+      const v8::Arguments& args,
+      ViewType::Type viewtype_to_find) {
+    // TODO(twiz)  Correct the logic that ties the ownership of the pop-up view
+    // to the hosting view.  At the moment we assume that there may only be
+    // a single pop-up view for a given extension.  By doing so, we can find
+    // the pop-up view by simply searching for the only pop-up view present.
+    // We also assume that if the current view is a pop-up, we can find the
+    // hosting view by searching for a TOOLSTRIP view.
+    if (args.Length() != 0)
+      return v8::Undefined();
+
+    if (viewtype_to_find != ViewType::EXTENSION_POPUP &&
+        viewtype_to_find != ViewType::EXTENSION_TOOLSTRIP) {
+      NOTREACHED() << L"Requesting invalid view type.";
+    }
+
+    // Disallow searching for a host view if we are a popup view, and likewise
+    // if we are a toolstrip view.
+    RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
+    if (!render_view ||
+        render_view->view_type() == viewtype_to_find) {
+      return v8::Undefined();
+    }
+
+    int browser_window_id = render_view->browser_window_id();
+    ExtensionViewAccumulator  popup_matcher(ExtensionIdForCurrentContext(),
+                                            browser_window_id,
+                                            viewtype_to_find);
+    RenderView::ForEach(&popup_matcher);
+
+    if (0 == popup_matcher.views()->Length())
+      return v8::Undefined();
+    DCHECK(popup_matcher.views()->Has(0));
+
+    // Return the first view found.
+    return popup_matcher.views()->Get(v8::Integer::New(0));
+  }
+
+  static v8::Handle<v8::Value> GetPopupView(const v8::Arguments& args) {
+    return PopupViewFinder(args, ViewType::EXTENSION_POPUP);
+  }
+
+  static v8::Handle<v8::Value> GetPopupAnchorView(const v8::Arguments& args) {
+    return PopupViewFinder(args, ViewType::EXTENSION_TOOLSTRIP);
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
@@ -242,15 +307,17 @@ class ExtensionImpl : public ExtensionBase {
     std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
     // |view_type| == ViewType::INVALID means getting any type of views.
     ViewType::Type view_type = ViewType::INVALID;
-    if (view_type_string == "TOOLSTRIP") {
+    if (view_type_string == ViewType::kToolstrip) {
       view_type = ViewType::EXTENSION_TOOLSTRIP;
-    } else if (view_type_string == "MOLE") {
+    } else if (view_type_string == ViewType::kMole) {
       view_type = ViewType::EXTENSION_MOLE;
-    } else if (view_type_string == "BACKGROUND") {
+    } else if (view_type_string == ViewType::kBackgroundPage) {
       view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
-    } else if (view_type_string == "TAB") {
+    } else if (view_type_string == ViewType::kTabContents) {
       view_type = ViewType::TAB_CONTENTS;
-    } else if (view_type_string != "ALL") {
+    } else if (view_type_string == ViewType::kPopup) {
+      view_type = ViewType::EXTENSION_POPUP;
+    } else if (view_type_string != ViewType::kAll) {
       return v8::Undefined();
     }
 
@@ -414,7 +481,8 @@ class ExtensionImpl : public ExtensionBase {
   // A special request for setting the extension action icon. This function
   // accepts a canvas ImageData object, so it needs to do extra processing
   // before sending the request to the browser.
-  static v8::Handle<v8::Value> SetExtensionActionIcon(const v8::Arguments& args) {
+  static v8::Handle<v8::Value> SetExtensionActionIcon(
+      const v8::Arguments& args) {
     v8::Local<v8::Object> details = args[1]->ToObject();
     v8::Local<v8::Object> image_data =
         details->Get(v8::String::New("imageData"))->ToObject();

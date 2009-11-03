@@ -21,6 +21,15 @@ class ViewType {
     INTERSTITIAL_PAGE,
   };
 
+  // Constant strings corresponding to the Type enumeration values.  Used
+  // when converting JS arguments.
+  static const char* kTabContents;
+  static const char* kToolstrip;
+  static const char* kMole;
+  static const char* kBackgroundPage;
+  static const char* kPopup;
+  static const char* kAll;
+
  private:
   // This class is for scoping only, so you shouldn't create an instance of it.
   ViewType() {}

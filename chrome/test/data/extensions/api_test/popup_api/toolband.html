@@ -1,0 +1,58 @@
+<script>
+
+var globalValue = "I am not 42.";
+
+window.onload = function() {
+  chrome.test.runTests([
+    function show() {
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere")
+      };
+      chrome.experimental.popup.show("toolband_popup.html",
+                                     showDetails,
+                                     chrome.test.callbackPass(function() {
+        chrome.test.assertTrue(
+            chrome.experimental.extension.getPopupView() != undefined);
+      }));
+    },
+
+    function accessPopup() {
+      var popupView = chrome.experimental.extension.getPopupView();
+      chrome.test.assertTrue(popupView != undefined,
+                             "Unable to access popup view.");
+
+      chrome.test.assertTrue(popupView.theAnswer != undefined,
+                             "Unable to access popup contents.");
+
+      chrome.test.assertEq(42, popupView.theAnswer());
+      chrome.test.succeed();
+    },
+
+    function accessHost() {
+      var popupView = chrome.experimental.extension.getPopupView();
+      chrome.test.assertTrue(popupView != undefined,
+                             "Unable to access popup view.");
+
+      chrome.test.assertTrue(popupView.manipulateHost != undefined,
+                             "Unable to access popup contents.");
+
+      popupView.manipulateHost();
+      chrome.test.assertEq(42, globalValue);
+      chrome.test.succeed();
+    },
+
+    function closePopup() {
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function(){
+        chrome.test.assertTrue(
+            chrome.experimental.extension.getPopupView() == undefined);
+      });
+      chrome.experimental.extension.getPopupView().close();
+    }
+  ]);
+}
+</script>
+<body>
+<div>
+<span id="anchorHere">TEST</span>
+</div>
+</body>

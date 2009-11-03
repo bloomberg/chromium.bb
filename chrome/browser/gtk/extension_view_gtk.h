@@ -38,9 +38,9 @@ class ExtensionViewGtk {
   // connection.
   void RenderViewCreated();
 
- private:
   RenderViewHost* render_view_host() const;
 
+ private:
   void CreateWidgetHostView();
 
   // True if the contents are being displayed inside the extension shelf.
