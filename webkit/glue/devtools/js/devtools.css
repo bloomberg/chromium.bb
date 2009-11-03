@@ -139,17 +139,12 @@ select.status-bar-item:active {
     -webkit-border-image: url(Images/statusbarMenuButtonSelectedChromium.png) 0 17 0 2;
 }
 
-
 #drawer {
     background-image: url(Images/statusbarBottomBackgroundChromium.png);
 }
 
 select.status-bar-item {
     -webkit-border-image: url(Images/statusbarMenuButtonChromium.png) 0 17 0 2;
-}
-
-select.status-bar-item:active {
-    -webkit-border-image: url(Images/statusbarMenuButtonSelectedChromium.png) 0 17 0 2;
 }
 
 .scope-bar li.selected {
