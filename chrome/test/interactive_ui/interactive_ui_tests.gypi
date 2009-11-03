@@ -25,7 +25,6 @@
   'include_dirs': [
     '<(DEPTH)',
   ],
-  # TODO(phajdan.jr): Only temporary, to make transition easier.
   'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
   'sources': [
     '<(DEPTH)/chrome/browser/autocomplete/autocomplete_edit_view_browsertest.cc',
@@ -41,6 +40,12 @@
     '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
+    # TODO(jcampan): we should use in_proc_test_runner on Windows.
+    '<(DEPTH)/chrome/test/test_launcher/out_of_proc_test_runner.cc',
+    '<(DEPTH)/chrome/test/test_launcher/test_runner.cc',
+    '<(DEPTH)/chrome/test/test_launcher/test_runner.h',
+    '<(DEPTH)/chrome/test/test_launcher/run_all_unittests.cc',
+    '<(DEPTH)/chrome/test/unit/chrome_test_suite.h',
   ],
   'conditions': [
     ['OS=="linux"', {
@@ -49,10 +54,6 @@
         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
       ],
       'sources!': [
-        # TODO(jcampan) - Re-enable failing browsertests on linux: (crbug.com/26540).
-        '<(DEPTH)/chrome/browser/autocomplete/autocomplete_edit_view_browsertest.cc',
-        '<(DEPTH)/chrome/browser/browser_focus_uitest.cc',
-        '<(DEPTH)/chrome/browser/debugger/devtools_sanity_unittest.cc',
         # TODO(port)
         '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
         '<(DEPTH)/chrome/browser/views/find_bar_host_interactive_uitest.cc',
