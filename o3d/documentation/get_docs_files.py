@@ -78,7 +78,7 @@ def Import(filename):
 
 
 def GetIdlFiles():
-  idl_list_filename = os.path.join('..', 'plugin', 'idl_list.scons')
+  idl_list_filename = os.path.join('..', 'plugin', 'idl_list.manifest')
   idl_list_basepath = os.path.dirname(idl_list_filename)
   Import(idl_list_filename)
   idl_files = AppendBasePath(idl_list_basepath, GlobalsDict['O3D_IDL_SOURCES'])
@@ -86,18 +86,18 @@ def GetIdlFiles():
 
 
 def GetJsFiles():
-  js_list_filename = os.path.join('..', 'samples', 'o3djs', 'js_list.scons')
+  js_list_filename = os.path.join('..', 'samples', 'o3djs', 'js_list.manifest')
   js_list_basepath = os.path.dirname(js_list_filename)
   Import(js_list_filename)
   o3djs_files = AppendBasePath(js_list_basepath, GlobalsDict['O3D_JS_SOURCES'])
   return o3djs_files
 
 
-# Read in the scons files (which are just really simple python files),
+# Read in the manifest files (which are just really simple python files),
 # and scrape out the file lists.
-# TODO(gspencer): Once we no longer use the scons build, rework this
-# so that the lists are just python lists so we can just do a simple
-# eval instead of having to emulate scons import.
+# TODO(gspencer): Since we no longer use the scons build, we should
+# rework this so that the lists are just python lists so we can just
+# do a simple eval instead of having to emulate scons import.
 def main(argv):
   files = []
   if argv[0] == '--js':

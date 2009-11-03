@@ -346,8 +346,8 @@ def main(argv):
 
   os.environ['PYTHONPATH'] = pythonpath
 
-  js_list_filename = MakePath('..', 'samples', 'o3djs', 'js_list.scons')
-  idl_list_filename = MakePath('..', 'plugin', 'idl_list.scons')
+  js_list_filename = MakePath('..', 'samples', 'o3djs', 'js_list.manifest')
+  idl_list_filename = MakePath('..', 'plugin', 'idl_list.manifest')
   js_list_basepath = os.path.dirname(js_list_filename)
   idl_list_basepath = os.path.dirname(idl_list_filename)
 
