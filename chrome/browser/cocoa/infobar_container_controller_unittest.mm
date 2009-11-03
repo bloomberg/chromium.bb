@@ -63,23 +63,23 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   MockLinkInfoBarDelegate linkDelegate;
   MockConfirmInfoBarDelegate confirmDelegate;
 
-  [controller_ addInfoBar:&alertDelegate];
+  [controller_ addInfoBar:&alertDelegate animate:NO];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ addInfoBar:&linkDelegate];
+  [controller_ addInfoBar:&linkDelegate animate:NO];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ addInfoBar:&confirmDelegate];
+  [controller_ addInfoBar:&confirmDelegate animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   // Just to mix things up, remove them in a different order.
-  [controller_ removeInfoBarsForDelegate:&linkDelegate];
+  [controller_ closeInfoBarsForDelegate:&linkDelegate animate:NO];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ removeInfoBarsForDelegate:&confirmDelegate];
+  [controller_ closeInfoBarsForDelegate:&confirmDelegate animate:NO];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ removeInfoBarsForDelegate:&alertDelegate];
+  [controller_ closeInfoBarsForDelegate:&alertDelegate animate:NO];
   EXPECT_EQ(0U, [[view subviews] count]);
 }
 
@@ -92,9 +92,9 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
   MockLinkInfoBarDelegate linkDelegate;
   MockConfirmInfoBarDelegate confirmDelegate;
 
-  [controller_ addInfoBar:&alertDelegate];
-  [controller_ addInfoBar:&linkDelegate];
-  [controller_ addInfoBar:&confirmDelegate];
+  [controller_ addInfoBar:&alertDelegate animate:NO];
+  [controller_ addInfoBar:&linkDelegate animate:NO];
+  [controller_ addInfoBar:&confirmDelegate animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];

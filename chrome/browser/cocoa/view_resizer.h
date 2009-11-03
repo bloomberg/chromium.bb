@@ -14,7 +14,7 @@
 // than resizing it directly, it sends a message to its parent asking the parent
 // to perform the resize.  This allows the parent to do any re-layout that may
 // become necessary due to the resize.
-@protocol ViewResizer
+@protocol ViewResizer <NSObject>
 - (void)resizeView:(NSView*)view newHeight:(float)height;
 @end
 

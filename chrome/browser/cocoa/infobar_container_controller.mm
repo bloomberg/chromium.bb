@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/mac_util.h"
+#import "chrome/browser/cocoa/animatable_view.h"
 #include "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
@@ -27,11 +28,13 @@ class InfoBarNotificationObserver : public NotificationObserver {
                const NotificationDetails& details) {
     switch (type.value) {
       case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-        [controller_ addInfoBar:Details<InfoBarDelegate>(details).ptr()];
+        [controller_ addInfoBar:Details<InfoBarDelegate>(details).ptr()
+                        animate:YES];
         break;
       case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED:
         [controller_
-          removeInfoBarsForDelegate:Details<InfoBarDelegate>(details).ptr()];
+          closeInfoBarsForDelegate:Details<InfoBarDelegate>(details).ptr()
+                           animate:YES];
         break;
       case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
         typedef std::pair<InfoBarDelegate*, InfoBarDelegate*>
@@ -97,6 +100,16 @@ class InfoBarNotificationObserver : public NotificationObserver {
   currentTabContents_->RemoveInfoBar(delegate);
 }
 
+- (void)removeController:(InfoBarController*)controller {
+  // This code can be executed while InfoBarController is still on the stack, so
+  // we retain and autorelease the controller to prevent it from being
+  // dealloc'ed too early.
+  [[controller retain] autorelease];
+  [[controller view] removeFromSuperview];
+  [infobarControllers_ removeObject:controller];
+  [self positionInfoBarsAndRedraw];
+}
+
 // TabStripModelObserverBridge notifications
 - (void)selectTabWithContents:(TabContents*)newContents
              previousContents:(TabContents*)oldContents
@@ -108,6 +121,13 @@ class InfoBarNotificationObserver : public NotificationObserver {
 - (void)tabDetachedWithContents:(TabContents*)contents
                         atIndex:(NSInteger)index {
   [self changeTabContents:NULL];
+}
+
+- (void)resizeView:(NSView*)view newHeight:(float)height {
+  NSRect frame = [view frame];
+  frame.size.height = height;
+  [view setFrame:frame];
+  [self positionInfoBarsAndRedraw];
 }
 
 @end
@@ -131,7 +151,8 @@ class InfoBarNotificationObserver : public NotificationObserver {
   currentTabContents_ = contents;
   if (currentTabContents_) {
     for (int i = 0; i < currentTabContents_->infobar_delegate_count(); ++i) {
-      [self addInfoBar:currentTabContents_->GetInfoBarDelegateAt(i)];
+      [self addInfoBar:currentTabContents_->GetInfoBarDelegateAt(i)
+               animate:NO];
     }
 
     Source<TabContents> source(currentTabContents_);
@@ -146,37 +167,42 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
-- (void)addInfoBar:(InfoBarDelegate*)delegate {
+- (void)addInfoBar:(InfoBarDelegate*)delegate animate:(BOOL)animate {
   scoped_ptr<InfoBar> infobar(delegate->CreateInfoBar());
   InfoBarController* controller = infobar->controller();
   [controller setContainerController:self];
+  [[controller animatableView] setResizeDelegate:self];
   [[self view] addSubview:[controller view]];
   [infobarControllers_ addObject:[controller autorelease]];
+
+  if (animate)
+    [controller animateOpen];
+  else
+    [controller open];
 }
 
-- (void)removeInfoBarsForDelegate:(InfoBarDelegate*)delegate {
+- (void)closeInfoBarsForDelegate:(InfoBarDelegate*)delegate
+                         animate:(BOOL)animate {
   for (InfoBarController* controller in
        [NSArray arrayWithArray:infobarControllers_.get()]) {
     if ([controller delegate] == delegate) {
-      // This code can be executed while -[InfoBarController closeInfoBar] is
-      // still on the stack, so we retain and autorelease the controller to
-      // prevent it from being dealloc'ed too early.
-      [[controller retain] autorelease];
-      [[controller view] removeFromSuperview];
-      [infobarControllers_ removeObject:controller];
+      if (animate)
+        [controller animateClosed];
+      else
+        [controller close];
     }
   }
 }
 
 - (void)replaceInfoBarsForDelegate:(InfoBarDelegate*)old_delegate
                               with:(InfoBarDelegate*)new_delegate {
-  // TODO(rohitrao): This should avoid animation when we add it.
-  [self removeInfoBarsForDelegate:old_delegate];
-  [self addInfoBar:new_delegate];
+  [self closeInfoBarsForDelegate:old_delegate animate:NO];
+  [self addInfoBar:new_delegate animate:NO];
 }
 
 - (void)removeAllInfoBars {
   for (InfoBarController* controller in infobarControllers_.get()) {
+    [[controller animatableView] stopAnimation];
     [[controller view] removeFromSuperview];
   }
   [infobarControllers_ removeAllObjects];
@@ -198,7 +224,6 @@ class InfoBarNotificationObserver : public NotificationObserver {
     frame.size.width = NSWidth(containerBounds);
     frame.origin.y = minY;
     minY += frame.size.height;
-    // TODO(rohitrao, jrg): Replace with an animator.
     [view setFrame:frame];
   }
 

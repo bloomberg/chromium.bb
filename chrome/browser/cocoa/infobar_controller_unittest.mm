@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
 #include "chrome/browser/cocoa/infobar_test_helper.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -24,6 +25,37 @@
 }
 @end
 
+
+// Calls to removeDelegate: normally start an animation, which removes the
+// infobar completely when finished.  For unittesting purposes, we create a mock
+// container which calls close: immediately, rather than kicking off an
+// animation.
+@interface InfoBarContainerTest : NSObject <InfoBarContainer> {
+  InfoBarController* controller_;
+}
+- (id)initWithController:(InfoBarController*)controller;
+- (void)removeDelegate:(InfoBarDelegate*)delegate;
+- (void)removeController:(InfoBarController*)controller;
+@end
+
+@implementation InfoBarContainerTest
+- (id)initWithController:(InfoBarController*)controller {
+  if ((self = [super init])) {
+    controller_ = controller;
+  }
+  return self;
+}
+
+- (void)removeDelegate:(InfoBarDelegate*)delegate {
+  [controller_ close];
+}
+
+- (void)removeController:(InfoBarController*)controller {
+  DCHECK(controller_ == controller);
+  controller_ = nil;
+}
+@end
+
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////
@@ -36,12 +68,16 @@ class AlertInfoBarControllerTest : public PlatformTest {
 
     controller_.reset(
         [[AlertInfoBarController alloc] initWithDelegate:&delegate_]);
+    container_.reset(
+        [[InfoBarContainerTest alloc] initWithController:controller_]);
+    [controller_ setContainerController:container_];
     [helper_.contentView() addSubview:[controller_ view]];
   }
 
  protected:
   CocoaTestHelper helper_;
   MockAlertInfoBarDelegate delegate_;
+  scoped_nsobject<id> container_;
   scoped_nsobject<AlertInfoBarController> controller_;
 };
 
@@ -52,12 +88,16 @@ class LinkInfoBarControllerTest : public PlatformTest {
 
     controller_.reset(
         [[LinkInfoBarController alloc] initWithDelegate:&delegate_]);
+    container_.reset(
+        [[InfoBarContainerTest alloc] initWithController:controller_]);
+    [controller_ setContainerController:container_];
     [helper_.contentView() addSubview:[controller_ view]];
   }
 
  protected:
   CocoaTestHelper helper_;
   MockLinkInfoBarDelegate delegate_;
+  scoped_nsobject<id> container_;
   scoped_nsobject<LinkInfoBarController> controller_;
 };
 
@@ -68,12 +108,16 @@ class ConfirmInfoBarControllerTest : public PlatformTest {
 
     controller_.reset(
         [[ConfirmInfoBarController alloc] initWithDelegate:&delegate_]);
+    container_.reset(
+        [[InfoBarContainerTest alloc] initWithController:controller_]);
+    [controller_ setContainerController:container_];
     [helper_.contentView() addSubview:[controller_ view]];
   }
 
  protected:
   CocoaTestHelper helper_;
   MockConfirmInfoBarDelegate delegate_;
+  scoped_nsobject<id> container_;
   scoped_nsobject<ConfirmInfoBarController> controller_;
 };
 

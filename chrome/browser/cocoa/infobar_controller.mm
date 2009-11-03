@@ -7,6 +7,7 @@
 #include "base/logging.h"  // for NOTREACHED()
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/animatable_view.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
@@ -16,14 +17,22 @@
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "webkit/glue/window_open_disposition.h"
 
+namespace {
+// Durations set to match the default SlideAnimation duration.
+const float kAnimateOpenDuration = 0.12;
+const float kAnimateCloseDuration = 0.12;
+}
 
 @interface InfoBarController (PrivateMethods)
-// Closes the infobar by calling RemoveDelegate on the container.
-// This will remove the infobar from its associated TabContents as
-// well as trigger the deletion of this InfoBarController.  Once the
-// delegate is removed from the container, it is no longer needed, so
-// we ask it to delete itself.
-- (void)closeInfoBar;
+// Asks the container controller to remove the infobar for this delegate.  This
+// call will trigger a notification that starts the infobar animating closed.
+- (void)removeInfoBar;
+
+// Performs final cleanup after an animation is finished or stopped, including
+// notifying the InfoBarDelegate that the infobar was closed and removing the
+// infobar from its container, if necessary.
+- (void)cleanUpAfterAnimation:(BOOL)finished;
+
 // Removes the ok and cancel buttons, and resizes the textfield to use the
 // space.
 - (void)removeButtons;
@@ -76,7 +85,44 @@
 
 // Called when someone clicks on the close button.
 - (void)dismiss:(id)sender {
-  [self closeInfoBar];
+  [self removeInfoBar];
+}
+
+- (AnimatableView*)animatableView {
+  return static_cast<AnimatableView*>([self view]);
+}
+
+- (void)open {
+  // Simply reset the frame size to its opened size, forcing a relayout.
+  CGFloat finalHeight = [[self view] frame].size.height;
+  [[self animatableView] setHeight:finalHeight];
+}
+
+- (void)animateOpen {
+  // Force the frame size to be 0 and then start an animation.
+  NSRect frame = [[self view] frame];
+  CGFloat finalHeight = frame.size.height;
+  frame.size.height = 0;
+  [[self view] setFrame:frame];
+  [[self animatableView] animateToNewHeight:finalHeight
+                                   duration:kAnimateOpenDuration];
+}
+
+- (void)close {
+  infoBarClosing_ = YES;
+  [self cleanUpAfterAnimation:YES];
+}
+
+- (void)animateClosed {
+  // Start animating closed.  We will receive a notification when the animation
+  // is done, at which point we can remove our view from the hierarchy and
+  // notify the delegate that the infobar was closed.
+  [[self animatableView] animateToNewHeight:0 duration:kAnimateCloseDuration];
+
+  // The above call may trigger an animationDidStop: notification for any
+  // currently-running animations, so do not set |infoBarClosing_| until after
+  // starting the animation.
+  infoBarClosing_ = YES;
 }
 
 - (void)addAdditionalControls {
@@ -87,14 +133,9 @@
 
 @implementation InfoBarController (PrivateMethods)
 
-- (void)closeInfoBar {
-  // Calling RemoveDelegate() triggers notifications which will remove
-  // the infobar view from the infobar container.  At that point it is
-  // safe to ask the delegate to delete itself.
+- (void)removeInfoBar {
   DCHECK(delegate_);
   [containerController_ removeDelegate:delegate_];
-  delegate_->InfoBarClosed();
-  delegate_ = NULL;
 }
 
 - (void)removeButtons {
@@ -105,6 +146,32 @@
   [okButton_ removeFromSuperview];
   [cancelButton_ removeFromSuperview];
   [label_ setFrame:labelFrame];
+}
+
+- (void)cleanUpAfterAnimation:(BOOL)finished {
+  // Don't need to do any cleanup if the bar was animating open.
+  if (!infoBarClosing_)
+    return;
+
+  // Notify the delegate that the infobar was closed.  The delegate may delete
+  // itself as a result of InfoBarClosed(), so we null out its pointer.
+  delegate_->InfoBarClosed();
+  delegate_ = NULL;
+
+  // If the animation ran to completion, then we need to remove ourselves from
+  // the container.  If the animation was interrupted, then the container will
+  // take care of removing us.
+  // TODO(rohitrao): UGH!  This works for now, but should be cleaner.
+  if (finished)
+    [containerController_ removeController:self];
+}
+
+- (void)animationDidStop:(NSAnimation*)animation {
+  [self cleanUpAfterAnimation:NO];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self cleanUpAfterAnimation:YES];
 }
 
 @end
@@ -203,7 +270,7 @@
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
-    [self closeInfoBar];
+    [self removeInfoBar];
 }
 
 @end
@@ -217,13 +284,13 @@
 // Called when someone clicks on the "OK" button.
 - (IBAction)ok:(id)sender {
   if (delegate_->AsConfirmInfoBarDelegate()->Accept())
-    [self closeInfoBar];
+    [self removeInfoBar];
 }
 
 // Called when someone clicks on the "Cancel" button.
 - (IBAction)cancel:(id)sender {
   if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
-    [self closeInfoBar];
+    [self removeInfoBar];
 }
 
 // Confirm infobars can have OK and/or cancel buttons, depending on

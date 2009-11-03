@@ -9,18 +9,27 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/notification_registrar.h"
 
+@class InfoBarController;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
 class TabContents;
 class TabStripModel;
 class TabStripModelObserverBridge;
 
+// Protocol for basic container methods, as needed by an InfoBarController.
+// This protocol exists to make mocking easier in unittests.
+@protocol InfoBarContainer
+- (void)removeDelegate:(InfoBarDelegate*)delegate;
+- (void)removeController:(InfoBarController*)controller;
+@end
+
 // Controller for the infobar container view, which is the superview
 // of all the infobar views.  This class owns zero or more
 // InfoBarControllers, which manage the infobar views.  This class
 // also receives tab strip model notifications and handles
 // adding/removing infobars when needed.
-@interface InfoBarContainerController : NSViewController {
+@interface InfoBarContainerController : NSViewController <ViewResizer,
+                                                          InfoBarContainer> {
  @private
   // Needed to send resize messages when infobars are added or removed.
   id<ViewResizer> resizeDelegate_;  // weak
@@ -51,21 +60,26 @@ class TabStripModelObserverBridge;
 // infobar was closed.
 - (void)removeDelegate:(InfoBarDelegate*)delegate;
 
+// Removes |controller| from the list of controllers in this container and
+// removes its view from the view hierarchy.  This method is safe to call while
+// |controller| is still on the call stack.
+- (void)removeController:(InfoBarController*)controller;
+
 @end
 
 
 @interface InfoBarContainerController (ForTheObserverAndTesting)
 
-// Adds an infobar view for the given delegate.  Callers must call
-// positionInfoBarsAndRedraw after calling this method.
-- (void)addInfoBar:(InfoBarDelegate*)delegate;
+// Adds an infobar view for the given delegate.
+- (void)addInfoBar:(InfoBarDelegate*)delegate animate:(BOOL)animate;
 
-// Removes all the infobar views for a given delegate.  Callers must
-// call positionInfoBarsAndRedraw after calling this method.
-- (void)removeInfoBarsForDelegate:(InfoBarDelegate*)delegate;
+// Closes all the infobar views for a given delegate, either immediately or by
+// starting a close animation.
+- (void)closeInfoBarsForDelegate:(InfoBarDelegate*)delegate
+                         animate:(BOOL)animate;
 
 // Replaces all info bars for the delegate with a new info bar.
-// This simply calls removeInfoBarsForDelegate: and then addInfoBar:.
+// This simply calls closeInfoBarsForDelegate: and then addInfoBar:.
 - (void)replaceInfoBarsForDelegate:(InfoBarDelegate*)old_delegate
                               with:(InfoBarDelegate*)new_delegate;
 
