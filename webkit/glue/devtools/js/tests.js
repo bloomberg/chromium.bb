@@ -371,6 +371,10 @@ TestSuite.prototype.testProfilerTab = function() {
   var test = this;
   this.addSniffer(WebInspector, 'addProfileHeader',
       function(type, profile) {
+        if (!profile) {
+            profile = type;
+            type = profile.typeId;
+        }
         var panel = WebInspector.panels.profiles;
         panel.showProfile(profile);
         var node = panel.visibleView.profileDataGridTree.children[0];

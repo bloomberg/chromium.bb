@@ -662,7 +662,9 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
       },
       function onProfileProcessingFinished(profile) {
         profilesSidebar.removeChild(processingIcon);
-        WebInspector.addProfile(profile);
+        profile.typeId = WebInspector.CPUProfileType.TypeId;
+        InspectorController.addFullProfile(profile);
+        WebInspector.addProfileHeader(profile);
         // If no profile is currently shown, show the new one.
         var profilesPanel = WebInspector.panels.profiles;
         if (!profilesPanel.visibleView) {

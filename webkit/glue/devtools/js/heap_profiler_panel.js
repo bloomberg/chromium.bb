@@ -8,13 +8,17 @@
 
 WebInspector.ProfilesPanel.prototype.addSnapshot = function(snapshot) {
     snapshot.title = WebInspector.UIString("Snapshot %d", snapshot.number);
+    snapshot.typeId = WebInspector.HeapSnapshotProfileType.TypeId;
 
     var snapshots = WebInspector.HeapSnapshotProfileType.snapshots;
     snapshots.push(snapshot);
 
     snapshot.listIndex = snapshots.length - 1;
 
-    this.addProfileHeader(WebInspector.HeapSnapshotProfileType.TypeId, snapshot);
+    if (WebInspector.CPUProfile)
+        this.addProfileHeader(WebInspector.HeapSnapshotProfileType.TypeId, snapshot);
+    else
+        this.addProfileHeader(snapshot);
 
     this.dispatchEventToListeners("snapshot added");
 }

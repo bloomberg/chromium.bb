@@ -248,6 +248,34 @@ devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
 /**
  * @override
  */
+devtools.InspectorControllerImpl.prototype.getProfileHeaders = function(callId) {
+  WebInspector.didGetProfileHeaders(callId, []);
+};
+
+
+/**
+ * Emulate WebKit InspectorController behavior. It stores profiles on renderer side,
+ * and is able to retrieve them by uid using 'getProfile'.
+ */
+devtools.InspectorControllerImpl.prototype.addFullProfile = function(profile) {
+  WebInspector.__fullProfiles = WebInspector.__fullProfiles || {};
+  WebInspector.__fullProfiles[profile.uid] = profile;
+};
+
+
+/**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.getProfile = function(callId, uid) {
+  if (WebInspector.__fullProfiles && (uid in WebInspector.__fullProfiles)) {
+    WebInspector.didGetProfile(callId, WebInspector.__fullProfiles[uid]);
+  }
+};
+
+
+/**
+ * @override
+ */
 devtools.InspectorControllerImpl.prototype.takeHeapSnapshot = function() {
   devtools.tools.getDebuggerAgent().startProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT
