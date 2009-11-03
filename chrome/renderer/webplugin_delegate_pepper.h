@@ -99,6 +99,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
                                           NPRenderContext* context);
   virtual NPError FlushRenderContext(NPRenderContext* context);
 
+  virtual NPError OpenFileInSandbox(const char* file_name, void** handle);
+
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
   void WindowlessSetWindow(bool force_set_window);

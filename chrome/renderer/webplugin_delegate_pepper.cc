@@ -16,6 +16,8 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "chrome/common/render_messages.h"
+#include "chrome/renderer/render_thread.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/pepper/pepper.h"
@@ -36,7 +38,9 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
 namespace {
-  const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
+
+const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
+
 }  // namespace
 
 uint32 WebPluginDelegatePepper::next_buffer_id = 0;
@@ -442,5 +446,32 @@ NPError WebPluginDelegatePepper::FlushRenderContext(NPRenderContext* context) {
     return NPERR_OUT_OF_MEMORY_ERROR;
 
   committed_bitmap_.setIsOpaque(false);
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::OpenFileInSandbox(const char* file_name,
+                                                   void** handle) {
+  *handle = NULL;
+
+#if defined(OS_WIN)
+  FilePath file_path(UTF8ToUTF16(file_name));
+#elif defined(OS_POSIX)
+  FilePath file_path(file_name);
+#endif
+
+  ViewMsg_OpenFileForPluginResponse_Params result;
+  RenderThread::current()->Send(new ViewMsg_OpenFileForPlugin(
+      file_path, &result));
+
+#if defined(OS_WIN)
+  if (!result.file_handle)
+    return NPERR_INVALID_PARAM;
+  *handle = result.file_handle;
+#elif defined(OS_POSIX)
+  if (result.file_handle.fd == -1)
+    return NPERR_INVALID_PARAM;
+  *reinterpret_cast<int*>(handle) = result.file_handle.fd;
+#endif
+
   return NPERR_NO_ERROR;
 }

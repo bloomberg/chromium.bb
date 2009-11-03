@@ -389,8 +389,7 @@ WebKit::WebString WebKitClientImpl::pathByAppendingComponent(
   return webkit_glue::FilePathStringToWebString(combined_path.value());
 }
 
-bool WebKitClientImpl::makeAllDirectories(
-    const WebKit::WebString& path) {
+bool WebKitClientImpl::makeAllDirectories(const WebKit::WebString& path) {
   DCHECK(!sandboxEnabled());
   FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
   return file_util::CreateDirectory(FilePath(file_path));

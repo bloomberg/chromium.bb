@@ -25,6 +25,7 @@
 
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 
+#include <stdio.h>
 #include <string>
 
 #include "base/logging.h"
@@ -223,8 +224,7 @@ void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
   canvas.drawPath(path, paint);
 }
 
-NPInitializeRenderContextPtr initialize_render_context = NULL;
-NPFlushRenderContextPtr flush_render_context = NULL;
+NPPepperExtensions* pepper = NULL;
 
 void FlushCallback(NPRenderContext* context, void* user_data) {
 }
@@ -237,15 +237,10 @@ void FlushCallback(NPRenderContext* context, void* user_data) {
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
       test_object_(browser->createobject(npp, GetTestClass())) {
-  if (!initialize_render_context || !flush_render_context) {
-    NPPepperExtensions* extensions;
+  if (!pepper) {
     browser->getvalue(npp_, NPNVPepperExtensions,
-                      reinterpret_cast<void*>(&extensions));
-    CHECK(extensions);
-    initialize_render_context = extensions->initializeRender;
-    CHECK(initialize_render_context);
-    flush_render_context = extensions->flushRender;
-    CHECK(flush_render_context);
+                      reinterpret_cast<void*>(&pepper));
+    CHECK(pepper);
   }
 }
 
@@ -259,11 +254,26 @@ NPClass* PluginObject::GetPluginClass() {
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
+  // File test
+  /* TODO(brettw): remove this when the file stuff is complete. This code is for
+     testing the OpenFileInSandbox function which is not complete.
+  {
+    void* handle = (void*)112358;
+    NPError err = pepper->openFile(npp_,
+        "q:\\prj\\src2\\src\\webkit\\tools\\pepper_test_plugin\\README",
+        &handle);
+    CHECK(err == NPERR_NO_ERROR);
+
+    char buf[256];
+    sprintf(buf, "Got the handle %d", (int)handle);
+    ::MessageBoxA(NULL, buf, "pepper", 0);
+  }*/
+
   size_.set_width(window.width);
   size_.set_height(window.height);
 
   NPRenderContext context;
-  initialize_render_context(npp_, NPRenderGraphicsRGBA, &context);
+  pepper->initializeRender(npp_, NPRenderGraphicsRGBA, &context);
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
@@ -276,5 +286,5 @@ void PluginObject::SetWindow(const NPWindow& window) {
   // match. Could be a calling convention mismatch?
   NPFlushRenderContextCallbackPtr callback =
       reinterpret_cast<NPFlushRenderContextCallbackPtr>(&FlushCallback);
-  flush_render_context(npp_, &context, callback, NULL);
+  pepper->flushRender(npp_, &context, callback, NULL);
 }

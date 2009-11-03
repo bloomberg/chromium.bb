@@ -437,18 +437,18 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
 
   // The window will be sized and shown later.
   windowed_handle_ = CreateWindowEx(
-    WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-    kNativeWindowClassName,
-    0,
-    WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-    0,
-    0,
-    0,
-    0,
-    parent_,
-    0,
-    GetModuleHandle(NULL),
-    0);
+      WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
+      kNativeWindowClassName,
+      0,
+      WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+      0,
+      0,
+      0,
+      0,
+      parent_,
+      0,
+      GetModuleHandle(NULL),
+      0);
   if (windowed_handle_ == 0)
     return false;
 
@@ -559,10 +559,11 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
     }
   }
 
-  if (throttle_queue->size() > 0)
+  if (throttle_queue->size() > 0) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableFunction(&WebPluginDelegateImpl::OnThrottleMessage),
         kFlashWMUSERMessageThrottleDelayMs);
+  }
 }
 
 // Schedule a windows message for delivery later.
@@ -756,7 +757,7 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
 ATOM WebPluginDelegateImpl::RegisterNativeWindowClass() {
   static bool have_registered_window_class = false;
   if (have_registered_window_class == true)
-      return true;
+    return true;
 
   have_registered_window_class = true;
 
@@ -856,7 +857,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
   delegate->is_calling_wndproc = true;
 
   if (!delegate->user_gesture_message_posted_ &&
-       IsUserGestureMessage(message)) {
+      IsUserGestureMessage(message)) {
     delegate->user_gesture_message_posted_ = true;
 
     delegate->instance()->PushPopupsEnabledState(true);
@@ -874,7 +875,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
 
   if (message == WM_NCDESTROY) {
     RemoveProp(hwnd, kWebPluginDelegateProperty);
-    ATOM plugin_name_atom = reinterpret_cast  <ATOM>(
+    ATOM plugin_name_atom = reinterpret_cast<ATOM>(
         RemoveProp(hwnd, kPluginNameAtomProperty));
     if (plugin_name_atom != 0)
       GlobalDeleteAtom(plugin_name_atom);

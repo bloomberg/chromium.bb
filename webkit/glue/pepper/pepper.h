@@ -149,6 +149,7 @@ typedef NPError (*NPFlushRenderContextPtr)(NPP instance,
                                            void* userData);
 typedef NPError (*NPDestroyRenderContextPtr)(NPP instance,
                                              NPRenderContext* context);
+typedef NPError (*NPOpenFilePtr)(NPP instance, const char* fileName, void** handle);
 
 typedef struct _NPPepperExtensions
 {
@@ -157,6 +158,9 @@ typedef struct _NPPepperExtensions
   NPFlushRenderContextPtr flushRender;
   NPDestroyRenderContextPtr destroyRender;
   /* Shared memory extensions */
+
+  /* I/O extensions */
+  NPOpenFilePtr openFile;
 } NPPepperExtensions;
 
 #endif  /* PEPPER_APIS_ENABLED */

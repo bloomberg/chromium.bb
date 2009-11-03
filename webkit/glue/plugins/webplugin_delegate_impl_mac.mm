@@ -102,12 +102,12 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       parent_(containing_view),
       qd_world_(0),
       quirks_(0),
-      handle_event_depth_(0),
-      user_gesture_message_posted_(this),
-      user_gesture_msg_factory_(this),
       null_event_factory_(this),
       last_mouse_x_(0),
-      last_mouse_y_(0) {
+      last_mouse_y_(0),
+      handle_event_depth_(0),
+      user_gesture_message_posted_(this),
+      user_gesture_msg_factory_(this) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_QUICKDRAW
   memset(&qd_port_, 0, sizeof(qd_port_));

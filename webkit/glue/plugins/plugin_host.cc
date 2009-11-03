@@ -702,6 +702,14 @@ static NPError DestroyRenderContext(NPP id,
   // TODO(sehr) implement render context destruction.
   return NPERR_GENERIC_ERROR;
 }
+
+static NPError OpenFileInSandbox(NPP id, const char* file_name, void** handle) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (!plugin)
+    return NPERR_GENERIC_ERROR;
+  webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
+  return delegate->OpenFileInSandbox(file_name, handle);
+}
 #endif  // defined(PEPPER_APIS_ENABLED)
 
 NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
@@ -862,7 +870,8 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     static const NPPepperExtensions kExtensions = {
       InitializeRenderContext,
       FlushRenderContext,
-      DestroyRenderContext
+      DestroyRenderContext,
+      OpenFileInSandbox,
     };
     // Return a pointer to the canonical function table.
     NPPepperExtensions* extensions =

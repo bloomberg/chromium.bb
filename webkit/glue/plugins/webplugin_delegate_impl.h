@@ -270,7 +270,34 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // a plugin in the course of a NPP_HandleEvent call.
   static LRESULT CALLBACK HandleEventMessageFilterHook(int code, WPARAM wParam,
                                                        LPARAM lParam);
+
+  // TrackPopupMenu interceptor. Parameters are the same as the Win32 function
+  // TrackPopupMenu.
+  static BOOL WINAPI TrackPopupMenuPatch(HMENU menu, unsigned int flags, int x,
+                                         int y, int reserved, HWND window,
+                                         const RECT* rect);
+
+  // SetCursor interceptor for windowless plugins.
+  static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
+
+  // RegEnumKeyExW interceptor.
+  static LONG WINAPI RegEnumKeyExWPatch(
+      HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
+      LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
+
+#elif defined(OS_MACOSX)
+
+  // Indicates that it's time to send the plugin a null event.
+  void OnNullEvent();
+
+  // Runnable Method Factory used to drip null events into the plugin.
+  ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
+
+  // Last mouse position within the plugin's rect (used for null events).
+  int last_mouse_x_;
+  int last_mouse_y_;
 #endif
+
   // Called by the message filter hook when the plugin enters a modal loop.
   void OnModalLoopEntered();
 
@@ -286,11 +313,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #if defined(OS_WIN)
   // Handle to the message filter hook
   HHOOK handle_event_message_filter_hook_;
-#endif
 
   // Event which is set when the plugin enters a modal loop in the course
   // of a NPP_HandleEvent call.
-#if defined(OS_WIN)
   HANDLE handle_event_pump_messages_event_;
 #endif
 
@@ -306,38 +331,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
 #endif
 
-#if defined(OS_WIN)
-  // TrackPopupMenu interceptor. Parameters are the same as the Win32 function
-  // TrackPopupMenu.
-  static BOOL WINAPI TrackPopupMenuPatch(HMENU menu, unsigned int flags, int x,
-                                         int y, int reserved, HWND window,
-                                         const RECT* rect);
-
-  // SetCursor interceptor for windowless plugins.
-  static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
-
-  // RegEnumKeyExW interceptor.
-  static LONG WINAPI RegEnumKeyExWPatch(
-      HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
-      LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
-#endif
-
-#if defined(OS_MACOSX)
-  // Runnable Method Factory used to drip null events into the plugin
-  ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
-
-  // indicates that it's time to send the plugin a null event
-  void OnNullEvent();
-
-  // last mouse position within the plugin's rect (used for null events)
-  int last_mouse_x_;
-  int last_mouse_y_;
-#endif
-
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };
 
-#endif  // #ifndef WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_
+#endif  // WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_

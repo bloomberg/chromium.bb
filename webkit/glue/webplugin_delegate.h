@@ -137,6 +137,10 @@ class WebPluginDelegate {
   virtual NPError FlushRenderContext(NPRenderContext* context) {
     return NPERR_GENERIC_ERROR;
   }
+
+  virtual NPError OpenFileInSandbox(const char* file_name, void** handle) {
+    return NPERR_GENERIC_ERROR;
+  }
 };
 
 }  // namespace webkit_glue
