@@ -188,7 +188,6 @@
             # TODO(ajwong): Statically link these once we resolve the
             # PIC/non-PIC issues on x64.
             '-lz',
-            '-lbz2',
           ],
           'conditions': [
             ['target_arch=="x64"', {
