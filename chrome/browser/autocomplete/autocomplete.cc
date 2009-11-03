@@ -182,8 +182,29 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   url_canon::CanonHostInfo host_info;
   const std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
   if ((host_info.family == url_canon::CanonHostInfo::NEUTRAL) &&
-      !net::IsCanonicalizedHostCompliant(canonicalized_host))
-    return QUERY;
+      !net::IsCanonicalizedHostCompliant(canonicalized_host)) {
+    // Invalid hostname.  There are several possible cases:
+    // * Our checker is too strict and the user pasted in a real-world URL
+    //   that's "invalid" but resolves.  To catch these, we return UNKNOWN when
+    //   the user explicitly typed a scheme, so we'll still search by default
+    //   but we'll show the accidental search infobar if necessary.
+    // * The user is typing a multi-word query.  If we see a space anywhere in
+    //   the hostname we assume this is a search and return QUERY.
+    // * Our checker is too strict and the user is typing a real-world hostname
+    //   that's "invalid" but resolves.  We return UNKNOWN if the TLD is known.
+    //   Note that we explicitly excluded hosts with spaces above so that
+    //   "toys at amazon.com" will be treated as a search.
+    // * The user is typing some garbage string.  Return QUERY.
+    //
+    // Thus we fall down in the following cases:
+    // * Trying to navigate to a hostname with spaces
+    // * Trying to navigate to a hostname with invalid characters and an unknown
+    //   TLD
+    // These are rare, though probably possible in intranets.
+    return (parts->scheme.is_nonempty() ||
+           ((registry_length != 0) && (host.find(' ') == std::wstring::npos))) ?
+        UNKNOWN : QUERY;
+  }
 
   // Presence of a port means this is likely a URL, if the port is really a port
   // number.  If it's just garbage after a colon, this is a query.

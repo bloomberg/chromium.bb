@@ -184,7 +184,7 @@ void HistoryURLProviderTest::RunTest(const std::wstring text,
     MessageLoop::current()->Run();
 
   matches_ = autocomplete_->matches();
-  ASSERT_EQ(num_results, matches_.size());
+  ASSERT_EQ(num_results, matches_.size()) << "Input text: " << text;
   for (size_t i = 0; i < num_results; ++i)
     EXPECT_EQ(expected_urls[i], matches_[i].destination_url.spec());
 }
@@ -320,6 +320,25 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
           arraysize(expected_results));
 }
 
+TEST_F(HistoryURLProviderTest, WhatYouTyped) {
+  // Make sure we suggest a What You Typed match at the right times.
+  RunTest(L"wytmatch", std::wstring(), false, NULL, 0);
+  RunTest(L"wytmatch foo bar", std::wstring(), false, NULL, 0);
+  RunTest(L"wytmatch+foo+bar", std::wstring(), false, NULL, 0);
+  RunTest(L"wytmatch+foo+bar.com", std::wstring(), false, NULL, 0);
+
+  const std::string results_1[] = {"http://www.wytmatch.com/"};
+  RunTest(L"wytmatch", L"com", false, results_1, arraysize(results_1));
+
+  const std::string results_2[] = {"http://wytmatch%20foo%20bar/"};
+  RunTest(L"http://wytmatch foo bar", std::wstring(), false, results_2,
+          arraysize(results_2));
+
+  const std::string results_3[] = {"https://wytmatch%20foo%20bar/"};
+  RunTest(L"https://wytmatch foo bar", std::wstring(), false, results_3,
+          arraysize(results_3));
+}
+
 TEST_F(HistoryURLProviderTest, Fixup) {
   // Test for various past crashes we've had.
   RunTest(L"\\", std::wstring(), false, NULL, 0);
@@ -350,16 +369,16 @@ TEST_F(HistoryURLProviderTest, Fixup) {
 
   // Adding a TLD to a small number like "56" should result in "www.56.com"
   // rather than "0.0.0.56.com".
-  std::string fixup_3[] = {"http://www.56.com/"};
+  const std::string fixup_3[] = {"http://www.56.com/"};
   RunTest(L"56", L"com", true, fixup_3, arraysize(fixup_3));
 
   // An input looks like a IP address like "127.0.0.1" should result in
   // "http://127.0.0.1/".
-  std::string fixup_4[] = {"http://127.0.0.1/"};
+  const std::string fixup_4[] = {"http://127.0.0.1/"};
   RunTest(L"127.0.0.1", std::wstring(), false, fixup_4, arraysize(fixup_4));
 
   // An number "17173" should result in "http://www.17173.com/" in db.
-  std::string fixup_5[] = {"http://www.17173.com/"};
+  const std::string fixup_5[] = {"http://www.17173.com/"};
   RunTest(L"17173", std::wstring(), false, fixup_5, arraysize(fixup_5));
 }
 

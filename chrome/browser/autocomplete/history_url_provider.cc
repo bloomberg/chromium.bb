@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,10 +127,21 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                                         history::URLDatabase* db,
                                         HistoryURLProviderParams* params) {
   // Create a What You Typed match, which we'll need below.
+  //
+  // We display this to the user when there's a reasonable chance they actually
+  // care:
+  // * Their input can be opened as a URL, and
+  // * They hit ctrl-enter, or we parsed the input as a URL, or it starts with
+  //   an explicit "http:" or "https:".
+  // Otherwise, this is just low-quality noise.  In the cases where we've parsed
+  // as UNKNOWN, we'll still show an accidental search infobar if need be.
   bool have_what_you_typed_match =
       params->input.canonicalized_url().is_valid() &&
-      (params->input.type() != AutocompleteInput::UNKNOWN) &&
-      (params->input.type() != AutocompleteInput::QUERY);
+      (params->input.type() != AutocompleteInput::QUERY) &&
+      ((params->input.type() != AutocompleteInput::UNKNOWN) ||
+          !params->trim_http ||
+          url_util::FindAndCompareScheme(WideToUTF8(params->input.text()),
+                                         chrome::kHttpsScheme, NULL));
   AutocompleteMatch what_you_typed_match(SuggestExactInput(params->input,
                                                            params->trim_http));
 
@@ -141,7 +152,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   for (Prefixes::const_iterator i(prefixes_.begin()); i != prefixes_.end();
        ++i) {
     if (params->cancel)
-      return;  // canceled in the middle of a query, give up
+      return;  // Canceled in the middle of a query, give up.
     // We only need max_matches results in the end, but before we get there we
     // need to promote lower-quality matches that are prefixes of
     // higher-quality matches, and remove lower-quality redirects.  So we ask
@@ -184,7 +195,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       history_matches.empty() ||
       !PromoteMatchForInlineAutocomplete(params, history_matches.front())) {
     // Failed to promote any URLs for inline autocompletion.  Use the What You
-    // Typed match, if we have it and the input looked like a URL.
+    // Typed match, if we have it.
     first_match = 0;
     if (have_what_you_typed_match)
       params->matches.push_back(what_you_typed_match);

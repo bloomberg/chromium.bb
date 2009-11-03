@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,11 +212,14 @@ TEST(AutocompleteTest, InputType) {
     { L"foo", AutocompleteInput::UNKNOWN },
     { L"foo.c", AutocompleteInput::UNKNOWN },
     { L"foo.com", AutocompleteInput::URL },
-    { L"-.com", AutocompleteInput::QUERY },
+    { L"-.com", AutocompleteInput::UNKNOWN },
     { L"foo/bar", AutocompleteInput::URL },
     { L"foo/bar baz", AutocompleteInput::UNKNOWN },
+    { L"foo bar.com", AutocompleteInput::QUERY },
     { L"http://foo/bar baz", AutocompleteInput::URL },
     { L"foo bar", AutocompleteInput::QUERY },
+    { L"foo+bar", AutocompleteInput::QUERY },
+    { L"foo+bar.com", AutocompleteInput::UNKNOWN },
     { L"\"foo:bar\"", AutocompleteInput::QUERY },
     { L"link:foo.com", AutocompleteInput::UNKNOWN },
     { L"www.foo.com:81", AutocompleteInput::URL },
@@ -244,8 +247,8 @@ TEST(AutocompleteTest, InputType) {
     { L"http://foo.c", AutocompleteInput::URL },
     { L"http://foo.com", AutocompleteInput::URL },
     { L"http://foo_bar.com", AutocompleteInput::URL },
-    { L"http://-.com", AutocompleteInput::QUERY },
-    { L"http://_foo_.com", AutocompleteInput::QUERY },
+    { L"http://-.com", AutocompleteInput::UNKNOWN },
+    { L"http://_foo_.com", AutocompleteInput::UNKNOWN },
     { L"http://foo.com:abc", AutocompleteInput::QUERY },
     { L"http://foo.com:123456", AutocompleteInput::QUERY },
     { L"http:user@foo.com", AutocompleteInput::URL },
