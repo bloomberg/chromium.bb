@@ -528,6 +528,8 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function() {
   var expectedScriptsCount = 2;
   var parsedScripts = [];
 
+  this.showPanel('scripts');
+
 
   function switchToElementsTab() {
     test.showPanel('elements');
@@ -542,28 +544,31 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function() {
   function checkScriptsPanel() {
     test.assertTrue(!!WebInspector.panels.scripts.visibleView,
                     'No visible script view.');
-    var select = WebInspector.panels.scripts.filesSelectElement;
-    test.assertEquals(expectedScriptsCount, select.options.length,
-                      'Unexpected options count');
+    test.assertTrue(test._scriptsAreParsed(['debugger_test_page.html$']),
+                    'Some scripts are missing.');
+    checkNoDuplicates();
     test.releaseControl();
   }
 
-  this.addSniffer(WebInspector, 'parsedScriptSource',
-      function(sourceID, sourceURL, source, startingLine) {
-        test.assertTrue(
-            parsedScripts.indexOf(sourceURL) == -1,
-            'Duplicated script: ' + sourceURL);
-        test.assertTrue(
-           parsedScripts.length < expectedScriptsCount,
-           'Too many scripts: ' + sourceURL);
-        parsedScripts.push(sourceURL);
+  function checkNoDuplicates() {
+    var scriptSelect = document.getElementById('scripts-files');
+    var options = scriptSelect.options;
+    for (var i = 0; i < options.length; i++) {
+      var scriptName = options[i].text;
+      for (var j = i + 1; j < options.length; j++) {
+        test.assertTrue(scriptName != options[j].text,
+            'Found script duplicates: ' + test.optionsToString_(options));
+      }
+    }
+  }
 
-        if (parsedScripts.length == expectedScriptsCount) {
-          setTimeout(switchToElementsTab, 0);
-        }
-      }, true /* sticky */);
+  test._waitUntilScriptsAreParsed(
+      ['debugger_test_page.html$'],
+      function() {
+        checkNoDuplicates();
+        setTimeout(switchToElementsTab, 0);
+      });
 
-  this.showPanel('scripts');
 
   // Wait until all scripts are added to the debugger.
   this.takeControl();
@@ -574,25 +579,13 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function() {
  * Tests that a breakpoint can be set.
  */
 TestSuite.prototype.testSetBreakpoint = function() {
-  var parsedDebuggerTestPageHtml = false;
-  var parsedDebuggerTestJs = false;
-
+  var test = this;
   this.showPanel('scripts');
 
-  var scriptUrl = null;
   var breakpointLine = 12;
 
-  var test = this;
-  this.addSniffer(devtools.DebuggerAgent.prototype, 'handleScriptsResponse_',
-      function(msg) {
-        var scriptSelect = document.getElementById('scripts-files');
-        var options = scriptSelect.options;
-
-        // There should be console API source (see
-        // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
-        test.assertEquals(2, options.length, 'Unexpected number of scripts(' +
-            test.optionsToString_(options) + ')');
-
+  this._waitUntilScriptsAreParsed(['debugger_test_page.html'],
+      function() {
         test.showMainPageScriptSource_(
             'debugger_test_page.html',
             function(view, url) {
@@ -605,7 +598,6 @@ TestSuite.prototype.testSetBreakpoint = function() {
                   });
             });
       });
-
 
   this.takeControl();
 };
@@ -637,10 +629,7 @@ TestSuite.prototype.showMainPageScriptSource_ = function(scriptName, callback) {
   var scriptSelect = document.getElementById('scripts-files');
   var options = scriptSelect.options;
 
-  // There should be console API source (see
-  // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
-  test.assertEquals(2, options.length,
-      'Unexpected number of scripts(' + test.optionsToString_(options) + ')');
+  test.assertTrue(options.length, 'Scripts list is empty');
 
   // Select page's script if it's not current option.
   var scriptResource;
