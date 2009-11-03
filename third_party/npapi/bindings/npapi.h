@@ -490,7 +490,7 @@ typedef enum {
 #ifndef NP_NO_CARBON
   NPEventModelCarbon = 0,
 #endif
-  NPEventModelCocoa = 1,
+  NPEventModelCocoa = 1
 } NPEventModel;
 
 typedef enum {
