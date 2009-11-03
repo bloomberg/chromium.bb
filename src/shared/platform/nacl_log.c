@@ -147,7 +147,11 @@ void NaClLogLock(void) {
 
 void NaClLogUnlock(void) {
   if (abort_on_unlock) {
+#ifdef __COVERITY__
+    __coverity_panic__();
+#else
     (*gNaClLogAbortBehavior)();
+#endif
   }
   NaClMutexUnlock(&log_mu);
 }

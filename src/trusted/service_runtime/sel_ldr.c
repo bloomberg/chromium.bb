@@ -584,12 +584,14 @@ int NaClAddThread(struct NaClApp        *nap,
 
 void NaClRemoveThreadMu(struct NaClApp  *nap,
                         int             thread_num) {
-  if (NULL == DynArrayGet(&nap->threads, thread_num))
+  if (NULL == DynArrayGet(&nap->threads, thread_num)) {
     NaClLog(LOG_FATAL,
             "NaClRemoveThreadMu:: thread to be removed is not in the table\n");
-  if (nap->num_threads == 0)
+  }
+  if (nap->num_threads == 0) {
     NaClLog(LOG_FATAL,
             "NaClRemoveThreadMu:: num_threads cannot be 0!!!\n");
+  }
   --nap->num_threads;
   if (!DynArraySet(&nap->threads, thread_num, (struct NaClAppThread *) NULL)) {
     NaClLog(LOG_FATAL,
@@ -695,7 +697,9 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
   struct NaClDesc *pair[2];
 
   NaClLog(3, "Entered NaClCreateServiceSocket\n");
-  NaClCommonDescMakeBoundSock(pair);
+  if (0 != NaClCommonDescMakeBoundSock(pair)) {
+    NaClLog(LOG_FATAL, "Cound not create service socket\n");
+  }
   NaClLog(4,
           "got bound socket at 0x%08"PRIxPTR", addr at 0x%08"PRIxPTR"\n",
           (uintptr_t) pair[0],
@@ -733,13 +737,11 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
     NaClLog(LOG_FATAL,
             "NaClSendServiceAddressTo: descriptor %d not in open file table\n",
             desc);
-    /* NOTREACHED */
     return;
   }
   if (NULL == nap->service_address) {
     NaClLog(LOG_FATAL,
             "NaClSendServiceAddressTo: service address not set\n");
-    /* NOTREACHED */
     return;
   }
   /*
@@ -998,7 +1000,6 @@ void NaClDumpServiceAddressTo(struct NaClApp  *nap,
   if (NULL == nap->service_address) {
     NaClLog(LOG_FATAL,
             "NaClDumpServiceAddressTo: service address not set\n");
-    /* NOTREACHED */
     return;
   }
   if (sizeof ((struct NaClDescConnCap *) nap->service_address)->cap.path
