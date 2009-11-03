@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
@@ -24,72 +23,65 @@ struct TestURLInfo {
   std::wstring title;
   int visit_count;
   int typed_count;
-  bool starred;
 };
 
 // Contents of the test database.
 static TestURLInfo test_db[] = {
-  {"http://www.google.com/", L"Google", 3, 3, false},
+  {"http://www.google.com/", L"Google", 3, 3},
 
   // High-quality pages should get a host synthesized as a lower-quality match.
-  {"http://slashdot.org/favorite_page.html", L"Favorite page", 200, 100,
-   false},
+  {"http://slashdot.org/favorite_page.html", L"Favorite page", 200, 100},
 
   // Less popular pages should have hosts synthesized as higher-quality
   // matches.
-  {"http://kerneltrap.org/not_very_popular.html", L"Less popular", 4, 0,
-   false},
+  {"http://kerneltrap.org/not_very_popular.html", L"Less popular", 4, 0},
 
   // Unpopular pages should not appear in the results at all.
-  {"http://freshmeat.net/unpopular.html", L"Unpopular", 1, 1, false},
+  {"http://freshmeat.net/unpopular.html", L"Unpopular", 1, 1},
 
   // If a host has a match, we should pick it up during host synthesis.
-  {"http://news.google.com/?ned=us&topic=n", L"Google News - U.S.", 2, 2,
-   false},
-  {"http://news.google.com/", L"Google News", 1, 1, false},
+  {"http://news.google.com/?ned=us&topic=n", L"Google News - U.S.", 2, 2},
+  {"http://news.google.com/", L"Google News", 1, 1},
 
   // Suggested short URLs must be "good enough" and must match user input.
-  {"http://foo.com/", L"Dir", 5, 5, false},
-  {"http://foo.com/dir/", L"Dir", 2, 2, false},
-  {"http://foo.com/dir/another/", L"Dir", 5, 1, false},
-  {"http://foo.com/dir/another/again/", L"Dir", 10, 0, false},
-  {"http://foo.com/dir/another/again/myfile.html", L"File", 10, 2, false},
+  {"http://foo.com/", L"Dir", 5, 5},
+  {"http://foo.com/dir/", L"Dir", 2, 2},
+  {"http://foo.com/dir/another/", L"Dir", 5, 1},
+  {"http://foo.com/dir/another/again/", L"Dir", 10, 0},
+  {"http://foo.com/dir/another/again/myfile.html", L"File", 10, 2},
 
-  // Starred state is more important than visit count (but less important than
-  // typed count) when sorting URLs.  The order in which the URLs were starred
-  // shouldn't matter.
   // We throw in a lot of extra URLs here to make sure we're testing the
   // history database's query, not just the autocomplete provider.
-  {"http://startest.com/y/a", L"A", 2, 2, true},
-  {"http://startest.com/y/b", L"B", 5, 2, false},
-  {"http://startest.com/x/c", L"C", 5, 2, true},
-  {"http://startest.com/x/d", L"D", 5, 5, false},
-  {"http://startest.com/y/e", L"E", 4, 2, false},
-  {"http://startest.com/y/f", L"F", 3, 2, false},
-  {"http://startest.com/y/g", L"G", 3, 2, false},
-  {"http://startest.com/y/h", L"H", 3, 2, false},
-  {"http://startest.com/y/i", L"I", 3, 2, false},
-  {"http://startest.com/y/j", L"J", 3, 2, false},
-  {"http://startest.com/y/k", L"K", 3, 2, false},
-  {"http://startest.com/y/l", L"L", 3, 2, false},
-  {"http://startest.com/y/m", L"M", 3, 2, false},
+  {"http://startest.com/y/a", L"A", 2, 2},
+  {"http://startest.com/y/b", L"B", 5, 2},
+  {"http://startest.com/x/c", L"C", 5, 2},
+  {"http://startest.com/x/d", L"D", 5, 5},
+  {"http://startest.com/y/e", L"E", 4, 2},
+  {"http://startest.com/y/f", L"F", 3, 2},
+  {"http://startest.com/y/g", L"G", 3, 2},
+  {"http://startest.com/y/h", L"H", 3, 2},
+  {"http://startest.com/y/i", L"I", 3, 2},
+  {"http://startest.com/y/j", L"J", 3, 2},
+  {"http://startest.com/y/k", L"K", 3, 2},
+  {"http://startest.com/y/l", L"L", 3, 2},
+  {"http://startest.com/y/m", L"M", 3, 2},
 
   // A file: URL is useful for testing that fixup does the right thing w.r.t.
   // the number of trailing slashes on the user's input.
-  {"file:///C:/foo.txt", L"", 2, 2, false},
+  {"file:///C:/foo.txt", L"", 2, 2},
 
   // Results with absurdly high typed_counts so that very generic queries like
   // "http" will give consistent results even if more data is added above.
-  {"http://bogussite.com/a", L"Bogus A", 10002, 10000, false},
-  {"http://bogussite.com/b", L"Bogus B", 10001, 10000, false},
-  {"http://bogussite.com/c", L"Bogus C", 10000, 10000, false},
+  {"http://bogussite.com/a", L"Bogus A", 10002, 10000},
+  {"http://bogussite.com/b", L"Bogus B", 10001, 10000},
+  {"http://bogussite.com/c", L"Bogus C", 10000, 10000},
 
   // Domain name with number.
-  {"http://www.17173.com/", L"Domain with number", 3, 3, false},
+  {"http://www.17173.com/", L"Domain with number", 3, 3},
 
   // URLs to test exact-matching behavior.
-  {"http://go/", L"Intranet URL", 1, 1, false},
-  {"http://gooey/", L"Intranet URL 2", 5, 5, false},
+  {"http://go/", L"Intranet URL", 1, 1},
+  {"http://gooey/", L"Intranet URL 2", 5, 5},
 
 };
 
@@ -149,8 +141,6 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 
 void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
-  profile_->CreateBookmarkModel(true);
-  profile_->BlockUntilBookmarkModelLoaded();
   profile_->CreateHistoryService(true, no_db);
   history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
@@ -179,10 +169,6 @@ void HistoryURLProviderTest::FillData() {
     history_service_->AddPageWithDetails(current_url, cur.title,
                                          cur.visit_count, cur.typed_count,
                                          visit_time, false);
-    if (cur.starred) {
-      profile_->GetBookmarkModel()->SetURLStarred(
-          current_url, std::wstring(), true);
-    }
   }
 }
 
@@ -290,26 +276,6 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
   };
   RunTest(L"g", std::wstring(), false, short_5a, arraysize(short_5a));
   RunTest(L"go", std::wstring(), false, short_5b, arraysize(short_5b));
-}
-
-// Bookmarks have been moved out of the history db, resulting in this no longer
-// working. See TODO in URLDatabase::AutocompleteForPrefix.
-TEST_F(HistoryURLProviderTest, DISABLED_Starred) {
-  // Test that starred pages sort properly.
-  const std::string star_1[] = {
-    "http://startest/",
-    "http://startest.com/x/d",
-    "http://startest.com/x/c",
-    "http://startest.com/y/a",
-  };
-  RunTest(L"startest", std::wstring(), true, star_1, arraysize(star_1));
-  const std::string star_2[] = {
-    "http://startest.com/y",
-    "http://startest.com/y/a",
-    "http://startest.com/y/b",
-    "http://startest.com/y/e",
-  };
-  RunTest(L"startest.com/y", std::wstring(), true, star_2, arraysize(star_2));
 }
 
 TEST_F(HistoryURLProviderTest, CullRedirects) {
