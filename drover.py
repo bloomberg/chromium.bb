@@ -282,7 +282,8 @@ def getBestExportPathsMap2(files_info, revision):
   map = dict()
   for file_info in files_info:
     if (file_info[0] == "A"):
-      if(isSVNDirectory("svn://chrome-svn/chrome/" + file_info[1], revision)):
+      if(isSVNDirectory("svn://svn.chromium.org/chrome/" + file_info[1],
+                        revision)):
         map[file_info[2] + "/" + file_info[3]] = ""
 
   export_map_ = map
@@ -301,7 +302,8 @@ def getBestDeletePathsMap2(files_info, revision):
   map = dict()
   for file_info in files_info:
     if (file_info[0] == "D"):
-      if(isSVNDirectory("svn://chrome-svn/chrome/" + file_info[1], revision)):
+      if(isSVNDirectory("svn://svn.chromium.org/chrome/" + file_info[1],
+                        revision)):
         map[file_info[2] + "/" + file_info[3]] = ""
 
   delete_map_ = map
@@ -356,7 +358,7 @@ def main(options, args):
 
   # Initialize some variables used below. They can be overwritten by
   # the drover.properties file.
-  BASE_URL = "svn://chrome-svn/chrome"
+  BASE_URL = "svn://svn.chromium.org/chrome"
   TRUNK_URL = BASE_URL + "/trunk/src"
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
   SKIP_CHECK_WORKING = True
