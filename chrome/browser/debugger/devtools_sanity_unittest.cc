@@ -250,10 +250,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
-
-// Disable all tests on linux: crbug.com/26540
-#ifndef OS_LINUX
-
 // WebInspector opens.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
   RunTest("testHostIsPresent", kSimplePage);
@@ -386,6 +382,5 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
-#endif  // ndef OS_LINUX
 
 }  // namespace

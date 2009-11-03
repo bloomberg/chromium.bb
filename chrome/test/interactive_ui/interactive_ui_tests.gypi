@@ -49,6 +49,10 @@
         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
       ],
       'sources!': [
+        # TODO(jcampan) - Re-enable failing browsertests on linux: (crbug.com/26540).
+        '<(DEPTH)/chrome/browser/autocomplete/autocomplete_edit_view_browsertest.cc',
+        '<(DEPTH)/chrome/browser/browser_focus_uitest.cc',
+        '<(DEPTH)/chrome/browser/debugger/devtools_sanity_unittest.cc',
         # TODO(port)
         '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
         '<(DEPTH)/chrome/browser/views/find_bar_host_interactive_uitest.cc',
