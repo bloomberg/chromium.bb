@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -744,9 +745,10 @@ TEST_F(ExtensionsServiceTest, PackExtension) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  FilePath output_directory;
-  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_"),
-      &output_directory);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath output_directory = temp_dir.path();
+
   FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
   FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
 
@@ -756,9 +758,6 @@ TEST_F(ExtensionsServiceTest, PackExtension) {
 
   ASSERT_TRUE(file_util::PathExists(privkey_path));
   InstallExtension(crx_path, true);
-
-  file_util::Delete(crx_path, false);
-  file_util::Delete(privkey_path, false);
 }
 
 // Test Packaging and installing an extension using an openssl generated key.
@@ -781,9 +780,10 @@ TEST_F(ExtensionsServiceTest, PackExtensionOpenSSLKey) {
       "openssl_privkey_asn1.pem"));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
 
-  FilePath output_directory;
-  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_"),
-      &output_directory);
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath output_directory = temp_dir.path();
+
   FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
@@ -791,8 +791,6 @@ TEST_F(ExtensionsServiceTest, PackExtensionOpenSSLKey) {
       FilePath()));
 
   InstallExtension(crx_path, true);
-
-  file_util::Delete(crx_path, false);
 }
 
 TEST_F(ExtensionsServiceTest, InstallTheme) {
