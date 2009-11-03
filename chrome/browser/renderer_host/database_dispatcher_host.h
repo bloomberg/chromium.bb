@@ -7,7 +7,6 @@
 
 #include "base/file_path.h"
 
-class MessageLoop;
 class ResourceMessageFilter;
 
 namespace IPC {
@@ -23,6 +22,8 @@ class DatabaseDispatcherHost {
   // Returns true iff the message is HTML5 DB related and was processed.
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
+ private:
+  // Message handlers.
   // Processes the request to return a handle to the given DB file.
   void OnDatabaseOpenFile(const FilePath& file_name,
                           int desired_flags,
@@ -41,10 +42,6 @@ class DatabaseDispatcherHost {
   void OnDatabaseGetFileSize(const FilePath& file_name,
                              int32 message_id);
 
- private:
-  // Determines if the message is HTML5 DB related.
-  bool IsDBMessage(const IPC::Message& message);
-
   // Returns the directory where all DB files are stored.
   FilePath GetDBDir();
 
@@ -54,11 +51,10 @@ class DatabaseDispatcherHost {
   // The user data directory.
   FilePath profile_path_;
 
-  // The ResourceMessageFilter instance of this renderer process.
+  // The ResourceMessageFilter instance of this renderer process.  Can't keep
+  // a refptr or else we'll get into a cycle.  It's always ok to use this in
+  // the IO thread since if the RMF goes away, this object is deleted.
   ResourceMessageFilter* resource_message_filter_;
-
-  // The message loop of the file thread.
-  MessageLoop* file_thread_message_loop_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_

@@ -22,11 +22,14 @@ namespace {
 
 class UtilityProcessHostTest : public testing::Test {
  public:
-  UtilityProcessHostTest() : io_thread_(ChromeThread::IO, &message_loop_) {
+  UtilityProcessHostTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        io_thread_(ChromeThread::IO, &message_loop_) {
   }
 
  protected:
   MessageLoopForIO message_loop_;
+  ChromeThread ui_thread_;
   ChromeThread io_thread_;
 };
 
@@ -139,7 +142,7 @@ TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
 
   scoped_refptr<TestUtilityProcessHostClient> client(
       new TestUtilityProcessHostClient());
-  ResourceDispatcherHost rdh(NULL);
+  ResourceDispatcherHost rdh;
   TestUtilityProcessHost* process_host =
       new TestUtilityProcessHost(client.get(), &rdh);
   // process_host will delete itself when it's done.

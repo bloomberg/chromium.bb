@@ -14,8 +14,7 @@
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 #endif
 
-#include "base/thread.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/database/vfs_backend.h"
@@ -61,8 +60,7 @@ static void SendMessage(ResourceMessageFilter* sender,
 // Opens the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the file handle.
-static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
-                             const OpenFileParams& params,
+static void DatabaseOpenFile(const OpenFileParams& params,
                              int32 message_id,
                              ResourceMessageFilter* sender) {
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
@@ -77,7 +75,8 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
   response_params.file_handle = base::FileDescriptor(target_handle, true);
   response_params.dir_handle = base::FileDescriptor(target_dir_handle, true);
 #endif
-  io_thread_message_loop->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseOpenFileResponse(message_id, response_params)));
 }
@@ -86,15 +85,15 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
 // Deletes the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the error code.
-static void DatabaseDeleteFile(MessageLoop* io_thread_message_loop,
-                               const DeleteFileParams& params,
+static void DatabaseDeleteFile(const DeleteFileParams& params,
                                int32 message_id,
                                int reschedule_count,
                                ResourceMessageFilter* sender) {
   // Return an error if the file could not be deleted
   // after kNumDeleteRetries times.
   if (!reschedule_count) {
-    io_thread_message_loop->PostTask(FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
         NewRunnableFunction(SendMessage, sender,
             new ViewMsg_DatabaseDeleteFileResponse(message_id,
                                                    SQLITE_IOERR_DELETE)));
@@ -106,13 +105,14 @@ static void DatabaseDeleteFile(MessageLoop* io_thread_message_loop,
   if (error_code == SQLITE_IOERR_DELETE) {
     // If the file could not be deleted, try again.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableFunction(DatabaseDeleteFile, io_thread_message_loop,
-                            params, message_id, reschedule_count - 1, sender),
+        NewRunnableFunction(DatabaseDeleteFile, params, message_id,
+                            reschedule_count - 1, sender),
         kDelayDeleteRetryMs);
     return;
   }
 
-  io_thread_message_loop->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseDeleteFileResponse(message_id, error_code)));
 }
@@ -121,12 +121,12 @@ static void DatabaseDeleteFile(MessageLoop* io_thread_message_loop,
 // Gets the attributes of the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process.
-static void DatabaseGetFileAttributes(MessageLoop* io_thread_message_loop,
-                                      const FilePath& file_name,
+static void DatabaseGetFileAttributes(const FilePath& file_name,
                                       int32 message_id,
                                       ResourceMessageFilter* sender) {
   uint32 attributes = VfsBackend::GetFileAttributes(file_name);
-  io_thread_message_loop->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseGetFileAttributesResponse(
               message_id, attributes)));
@@ -136,12 +136,12 @@ static void DatabaseGetFileAttributes(MessageLoop* io_thread_message_loop,
 // Gets the size of the given file, then schedules a task
 // on the IO thread's message loop to send an IPC back to
 // the corresponding renderer process.
-static void DatabaseGetFileSize(MessageLoop* io_thread_message_loop,
-                                const FilePath& file_name,
+static void DatabaseGetFileSize(const FilePath& file_name,
                                 int32 message_id,
                                 ResourceMessageFilter* sender) {
   int64 size = VfsBackend::GetFileSize(file_name);
-  io_thread_message_loop->PostTask(FROM_HERE,
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseGetFileSizeResponse(message_id, size)));
 }
@@ -152,28 +152,11 @@ DatabaseDispatcherHost::DatabaseDispatcherHost(
     const FilePath& profile_path,
     ResourceMessageFilter* resource_message_filter)
     : profile_path_(profile_path),
-      resource_message_filter_(resource_message_filter),
-      file_thread_message_loop_(
-      g_browser_process->file_thread()->message_loop()) {
-}
-
-
-bool DatabaseDispatcherHost::IsDBMessage(const IPC::Message& message) {
-  switch (message.type()) {
-    case ViewHostMsg_DatabaseOpenFile::ID:
-    case ViewHostMsg_DatabaseDeleteFile::ID:
-    case ViewHostMsg_DatabaseGetFileAttributes::ID:
-    case ViewHostMsg_DatabaseGetFileSize::ID:
-      return true;
-    default:
-      return false;
-  }
+      resource_message_filter_(resource_message_filter) {
 }
 
 bool DatabaseDispatcherHost::OnMessageReceived(
   const IPC::Message& message, bool* message_was_ok) {
-  if (!IsDBMessage(message))
-    return false;
   *message_was_ok = true;
 
   bool handled = true;
@@ -230,9 +213,10 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(const FilePath& file_name,
   params.desired_flags = desired_flags;
   params.handle = resource_message_filter_->handle();
   resource_message_filter_->AddRef();
-  file_thread_message_loop_->PostTask(FROM_HERE,
-      NewRunnableFunction(DatabaseOpenFile, MessageLoop::current(),
-                          params, message_id, resource_message_filter_));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          DatabaseOpenFile, params, message_id, resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseDeleteFile(
@@ -249,10 +233,11 @@ void DatabaseDispatcherHost::OnDatabaseDeleteFile(
   params.file_name = db_file_name;
   params.sync_dir = sync_dir;
   resource_message_filter_->AddRef();
-  file_thread_message_loop_->PostTask(FROM_HERE,
-      NewRunnableFunction(DatabaseDeleteFile, MessageLoop::current(),
-                          params, message_id, kNumDeleteRetries,
-                          resource_message_filter_));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          DatabaseDeleteFile, params, message_id, kNumDeleteRetries,
+          resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
@@ -265,9 +250,11 @@ void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
   }
 
   resource_message_filter_->AddRef();
-  file_thread_message_loop_->PostTask(FROM_HERE,
-      NewRunnableFunction(DatabaseGetFileAttributes, MessageLoop::current(),
-                          db_file_name, message_id, resource_message_filter_));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          DatabaseGetFileAttributes, db_file_name, message_id,
+          resource_message_filter_));
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileSize(
@@ -280,7 +267,9 @@ void DatabaseDispatcherHost::OnDatabaseGetFileSize(
   }
 
   resource_message_filter_->AddRef();
-  file_thread_message_loop_->PostTask(FROM_HERE,
-      NewRunnableFunction(DatabaseGetFileSize, MessageLoop::current(),
-                          db_file_name, message_id, resource_message_filter_));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          DatabaseGetFileSize, db_file_name, message_id,
+          resource_message_filter_));
 }

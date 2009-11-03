@@ -147,7 +147,6 @@ class ResourceDispatcherHostTest : public testing::Test,
   ResourceDispatcherHostTest()
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
         io_thread_(ChromeThread::IO, &message_loop_),
-        host_(NULL),
         old_factory_(NULL) {
     set_handle(base::GetCurrentProcessHandle());
   }

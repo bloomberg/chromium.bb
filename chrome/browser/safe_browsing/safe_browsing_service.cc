@@ -210,7 +210,6 @@ void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
                                               ResourceType::Type resource_type,
                                               UrlCheckResult result,
                                               Client* client,
-                                              MessageLoop* ui_loop,
                                               int render_process_host_id,
                                               int render_view_id) {
   // Check if the user has already ignored our warning for this render_view
@@ -238,9 +237,10 @@ void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
   resource.render_view_id = render_view_id;
 
   // The blocking page must be created from the UI thread.
-  ui_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &SafeBrowsingService::DoDisplayBlockingPage,
-      resource));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &SafeBrowsingService::DoDisplayBlockingPage, resource));
 }
 
 // Invoked on the UI thread.

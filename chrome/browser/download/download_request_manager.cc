@@ -4,8 +4,7 @@
 
 #include "chrome/browser/download/download_request_manager.h"
 
-#include "base/message_loop.h"
-#include "base/thread.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -152,10 +151,7 @@ void DownloadRequestManager::TabDownloadState::NotifyCallbacks(bool allow) {
 
 // DownloadRequestManager ------------------------------------------------------
 
-DownloadRequestManager::DownloadRequestManager(MessageLoop* io_loop,
-                                               MessageLoop* ui_loop)
-    : io_loop_(io_loop),
-      ui_loop_(ui_loop) {
+DownloadRequestManager::DownloadRequestManager() {
 }
 
 DownloadRequestManager::~DownloadRequestManager() {
@@ -175,8 +171,9 @@ void DownloadRequestManager::CanDownloadOnIOThread(int render_process_host_id,
                                                    Callback* callback) {
   // This is invoked on the IO thread. Schedule the task to run on the UI
   // thread so that we can query UI state.
-  DCHECK(!io_loop_ || io_loop_ == MessageLoop::current());
-  ui_loop_->PostTask(FROM_HERE,
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &DownloadRequestManager::CanDownload,
                         render_process_host_id, render_view_id, callback));
 }
@@ -215,7 +212,7 @@ DownloadRequestManager::TabDownloadState* DownloadRequestManager::
 void DownloadRequestManager::CanDownload(int render_process_host_id,
                                          int render_view_id,
                                          Callback* callback) {
-  DCHECK(!ui_loop_ || MessageLoop::current() == ui_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   TabContents* originating_tab =
       tab_util::GetTabContentsByID(render_process_host_id, render_view_id);
@@ -265,18 +262,15 @@ void DownloadRequestManager::CanDownloadImpl(
 
 void DownloadRequestManager::ScheduleNotification(Callback* callback,
                                                   bool allow) {
-  if (io_loop_) {
-    io_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DownloadRequestManager::NotifyCallback,
-                          callback, allow));
-  } else {
-    NotifyCallback(callback, allow);
-  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &DownloadRequestManager::NotifyCallback, callback, allow));
 }
 
 void DownloadRequestManager::NotifyCallback(Callback* callback, bool allow) {
   // We better be on the IO thread now.
-  DCHECK(!io_loop_ || MessageLoop::current() == io_loop_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (allow)
     callback->ContinueDownload();
   else

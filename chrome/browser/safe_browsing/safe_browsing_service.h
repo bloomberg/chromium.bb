@@ -101,7 +101,6 @@ class SafeBrowsingService
                            ResourceType::Type resource_type,
                            UrlCheckResult result,
                            Client* client,
-                           MessageLoop* ui_loop,
                            int render_process_host_id,
                            int render_view_id);
 

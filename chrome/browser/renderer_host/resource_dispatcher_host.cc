@@ -250,12 +250,10 @@ void PopulateResourceResponse(URLRequest* request,
 
 }  // namespace
 
-ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
-    : ui_loop_(MessageLoop::current()),
-      io_loop_(io_loop),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
+ResourceDispatcherHost::ResourceDispatcherHost()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this))),
-      download_request_manager_(new DownloadRequestManager(io_loop, ui_loop_)),
+      download_request_manager_(new DownloadRequestManager()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(

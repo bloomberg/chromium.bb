@@ -7,7 +7,7 @@
 #include "chrome/browser/renderer_host/cross_site_resource_handler.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -161,10 +161,10 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
         // Here the request was canceled, which happens when selecting "take me
         // back" from an interstitial.  Nothing to do but cancel the pending
         // render view host.
-        CancelPendingRenderViewTask* task =
-            new CancelPendingRenderViewTask(render_process_host_id_,
-                                            render_view_id_);
-        rdh_->ui_loop()->PostTask(FROM_HERE, task);
+        ChromeThread::PostTask(
+            ChromeThread::UI, FROM_HERE,
+            new CancelPendingRenderViewTask(
+                render_process_host_id_, render_view_id_));
         return next_handler_->OnResponseCompleted(request_id, status,
                                                   security_info);
       } else {
@@ -266,9 +266,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // Tell the tab responsible for this request that a cross-site response is
   // starting, so that it can tell its old renderer to run its onunload
   // handler now.  We will wait to hear the corresponding ClosePage_ACK.
-  CrossSiteNotifyTask* task =
-      new CrossSiteNotifyTask(render_process_host_id_,
-                              render_view_id_,
-                              request_id);
-  rdh_->ui_loop()->PostTask(FROM_HERE, task);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new CrossSiteNotifyTask(
+          render_process_host_id_, render_view_id_, request_id));
 }

@@ -31,7 +31,6 @@ class CrossSiteResourceHandler;
 class DownloadFileManager;
 class DownloadRequestManager;
 class LoginHandler;
-class MessageLoop;
 class PluginService;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
@@ -105,8 +104,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     }
   };
 
-  // TODO(jam): take the parameter out once 25354 is done.
-  explicit ResourceDispatcherHost(MessageLoop* io_loop);
+  ResourceDispatcherHost();
   ~ResourceDispatcherHost();
 
   void Initialize();
@@ -192,8 +190,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   WebKitThread* webkit_thread() const {
     return webkit_thread_.get();
   }
-
-  MessageLoop* ui_loop() const { return ui_loop_; }
 
   // Called when the onunload handler for a cross-site request has finished.
   void OnClosePageACK(const ViewMsg_ClosePage_Params& params);
@@ -410,13 +406,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);
 
   PendingRequestList pending_requests_;
-
-  // We cache the UI message loop so we can create new UI-related objects on it.
-  MessageLoop* ui_loop_;
-
-  // We cache the IO loop to ensure that GetURLRequest is only called from the
-  // IO thread.
-  MessageLoop* io_loop_;
 
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.

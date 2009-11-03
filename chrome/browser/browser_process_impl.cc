@@ -298,8 +298,7 @@ void BrowserProcessImpl::CreateResourceDispatcherHost() {
          resource_dispatcher_host_.get() == NULL);
   created_resource_dispatcher_host_ = true;
 
-  resource_dispatcher_host_.reset(
-      new ResourceDispatcherHost(io_thread()->message_loop()));
+  resource_dispatcher_host_.reset(new ResourceDispatcherHost());
   resource_dispatcher_host_->Initialize();
 }
 

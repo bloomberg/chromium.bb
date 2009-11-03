@@ -185,8 +185,8 @@ void SafeBrowsingResourceHandler::OnUrlCheckResult(
   } else {
     displaying_blocking_page_ = true;
     safe_browsing_->DisplayBlockingPage(
-        url, resource_type_, result, this, rdh_->ui_loop(),
-        render_process_host_id_, render_view_id_);
+        url, resource_type_, result, this, render_process_host_id_,
+        render_view_id_);
   }
 }
 

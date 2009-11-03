@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
@@ -152,8 +151,8 @@ bool ChildProcessHost::Send(IPC::Message* msg) {
 }
 
 void ChildProcessHost::Notify(NotificationType type) {
-  resource_dispatcher_host_->ui_loop()->PostTask(
-      FROM_HERE, new ChildNotificationTask(type, this));
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
 void ChildProcessHost::OnChildDied() {
@@ -249,9 +248,7 @@ ChildProcessHost::Iterator::Iterator()
 
 ChildProcessHost::Iterator::Iterator(ProcessType type)
     : all_(false), type_(type) {
-  // IO loop can be NULL in unit tests.
-  DCHECK(!MessageLoop::current() ||
-         ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
   if (!Done() && (*iterator_)->type() != type_)

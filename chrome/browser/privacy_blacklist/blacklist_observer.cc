@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/string16.h"
 #include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -63,11 +64,9 @@ void BlacklistObserver::ContentBlocked(const URLRequest* request) {
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
   const GURL& gurl = request->url();
-  BlockedContentNotice* task = new BlockedContentNotice(gurl, match, info);
 
-  // Notify the UI that something non-visual has been blocked. We can
-  // safely cast the delegate to the ResourceDispatherHost because it
-  // is the only place where Blacklist::Match data is added to requests.
-  static_cast<ResourceDispatcherHost*>(request->delegate())->
-      ui_loop()->PostTask(FROM_HERE, task);
+  // Notify the UI that something non-visual has been blocked.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      new BlockedContentNotice(gurl, match, info));
 }

@@ -65,11 +65,8 @@ class ResourceDispatcherHostTester
       public URLRequest::Interceptor,
       public base::RefCountedThreadSafe<ResourceDispatcherHostTester> {
  public:
-  explicit ResourceDispatcherHostTester(MessageLoop* io_loop)
-      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
-        host_(io_loop),
-        ui_loop_(MessageLoop::current()),
-        io_loop_(io_loop) {
+  explicit ResourceDispatcherHostTester()
+      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1) {
     URLRequest::RegisterRequestInterceptor(this);
   }
   virtual ~ResourceDispatcherHostTester() {
@@ -77,17 +74,20 @@ class ResourceDispatcherHostTester
   }
 
   void MakeTestRequest(int request_id, const GURL& url) {
-    io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ResourceDispatcherHostTester::MakeTestRequestOnIOThread,
-        request_id, url));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this, &ResourceDispatcherHostTester::MakeTestRequestOnIOThread,
+            request_id, url));
     MessageLoop::current()->Run();  // wait for Quit from IO thread
   }
 
   void WaitForScan(MockUserScriptMaster* master) {
     master->TestStartScan();
     MessageLoop::current()->RunAllPending();  // run the scan
-    io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ResourceDispatcherHostTester::RunPending));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &ResourceDispatcherHostTester::RunPending));
     MessageLoop::current()->Run();  // wait for Quit from IO thread
   }
 
@@ -149,7 +149,8 @@ class ResourceDispatcherHostTester
     MessageLoop::current()->SetNestableTasksAllowed(false);
 
     // return control to UI thread.
-    ui_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask());
   }
 
   void MakeTestRequestOnIOThread(int request_id, const GURL& url) {
@@ -172,8 +173,6 @@ class ResourceDispatcherHostTester
   }
 
   ResourceDispatcherHost host_;
-  MessageLoop* ui_loop_;
-  MessageLoop* io_loop_;
 
   // Note: these variables are accessed on both threads, but since we only
   // one thread executes at a time, they are safe.
@@ -195,8 +194,7 @@ class UserScriptListenerTest : public testing::Test {
     FilePath install_dir = profile_.GetPath()
         .AppendASCII(ExtensionsService::kInstallDirectoryName);
 
-    resource_tester_ =
-        new ResourceDispatcherHostTester(io_thread_->message_loop());
+    resource_tester_ = new ResourceDispatcherHostTester();
 
     master_ = new MockUserScriptMaster(install_dir);
 

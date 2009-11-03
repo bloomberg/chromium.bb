@@ -14,7 +14,6 @@
 #include "chrome/common/notification_registrar.h"
 
 class DownloadRequestInfoBarDelegate;
-class MessageLoop;
 class NavigationController;
 class TabContents;
 
@@ -148,7 +147,7 @@ class DownloadRequestManager :
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
 
-  DownloadRequestManager(MessageLoop* io_loop, MessageLoop* ui_loop);
+  DownloadRequestManager();
   ~DownloadRequestManager();
 
   // Returns the download status for a page. This does not change the state in
@@ -214,11 +213,6 @@ class DownloadRequestManager :
   // it. This has the effect of resetting the status for the tab to
   // ALLOW_ONE_DOWNLOAD.
   void Remove(TabDownloadState* state);
-
-  // Two threads we use. NULL during testing, in which case messages are
-  // dispatched immediately.
-  MessageLoop* io_loop_;
-  MessageLoop* ui_loop_;
 
   // Maps from tab to download state. The download state for a tab only exists
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state
