@@ -256,7 +256,6 @@ void VisitDatabase::GetVisitsInRangeForTransition(
 
 void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
                                             base::Time end_time,
-                                            bool most_recent_visit_only,
                                             int max_count,
                                             VisitVector* visits) {
   visits->clear();
@@ -289,12 +288,10 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
   while (statement.Step()) {
     VisitRow visit;
     FillVisitRow(statement, &visit);
-    if (most_recent_visit_only) {
-      // Make sure the URL this visit corresponds to is unique if required.
-      if (found_urls.find(visit.url_id) != found_urls.end())
-        continue;
-      found_urls.insert(visit.url_id);
-    }
+    // Make sure the URL this visit corresponds to is unique.
+    if (found_urls.find(visit.url_id) != found_urls.end())
+      continue;
+    found_urls.insert(visit.url_id);
     visits->push_back(visit);
 
     if (max_count > 0 && static_cast<int>(visits->size()) >= max_count)

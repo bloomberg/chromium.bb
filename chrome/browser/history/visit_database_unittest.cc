@@ -207,33 +207,24 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   visit_info5.visit_id = 5;
   EXPECT_TRUE(AddVisit(&visit_info5));
 
-  // Query the visits for all time, we should get the first 3 in descending
-  // order, but not the redirect & subframe ones later.
+  // Query the visits for all time, we should not get the first (duplicate of
+  // the second) or the redirect or subframe visits.
   VisitVector results;
-  GetVisibleVisitsInRange(Time(), Time(), false, 0, &results);
-  ASSERT_EQ(static_cast<size_t>(3), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4) &&
-              IsVisitInfoEqual(results[1], visit_info2) &&
-              IsVisitInfoEqual(results[2], visit_info1));
-
-  // If we want only the most recent one, it should give us the same results
-  // minus the first (duplicate of the second) one.
-  GetVisibleVisitsInRange(Time(), Time(), true, 0, &results);
+  GetVisibleVisitsInRange(Time(), Time(), 0, &results);
   ASSERT_EQ(static_cast<size_t>(2), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4) &&
               IsVisitInfoEqual(results[1], visit_info2));
 
   // Query a time range and make sure beginning is inclusive and ending is
   // exclusive.
-  GetVisibleVisitsInRange(visit_info2.visit_time, visit_info4.visit_time,
-                          false, 0, &results);
+  GetVisibleVisitsInRange(visit_info2.visit_time, visit_info4.visit_time, 0,
+                          &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info2));
 
   // Query for a max count and make sure we get only that number.
-  GetVisibleVisitsInRange(Time(), Time(), false, 2, &results);
-  ASSERT_EQ(static_cast<size_t>(2), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4) &&
-              IsVisitInfoEqual(results[1], visit_info2));
+  GetVisibleVisitsInRange(Time(), Time(), 1, &results);
+  ASSERT_EQ(static_cast<size_t>(1), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4));
 }
 }  // namespace history

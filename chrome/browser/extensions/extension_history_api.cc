@@ -245,7 +245,6 @@ bool SearchHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kSearchKey, &search_text));
 
   history::QueryOptions options;
-  options.most_recent_visit_only = true;
   options.SetRecentDayRange(1);
   options.max_count = 100;
 

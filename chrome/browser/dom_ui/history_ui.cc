@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,9 +148,6 @@ void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
   options.end_time = base::Time::Now().LocalMidnight();
   options.end_time -= base::TimeDelta::FromDays(day - 1);
 
-  // As we're querying per-day, we can turn entry repeats off.
-  options.most_recent_visit_only = true;
-
   // Need to remember the query string for our results.
   search_text_ = std::wstring();
 
@@ -174,10 +171,8 @@ void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
   // Set the query ranges for the given month.
   history::QueryOptions options = CreateMonthQueryOptions(month);
 
-  // When searching, limit the number of results returned and only show the
-  // most recent matches.
+  // When searching, limit the number of results returned.
   options.max_count = kMaxSearchResults;
-  options.most_recent_visit_only = true;
 
   // Need to remember the query string for our results.
   search_text_ = query;

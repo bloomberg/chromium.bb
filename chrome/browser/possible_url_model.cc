@@ -47,7 +47,6 @@ void PossibleURLModel::Reload(Profile *profile) {
     options.end_time = Time::Now();
     options.begin_time =
         options.end_time - TimeDelta::FromDays(kPossibleURLTimeScope);
-    options.most_recent_visit_only = true;
     options.max_count = 50;
 
     hs->QueryHistory(std::wstring(), options, &consumer_,

@@ -89,10 +89,9 @@ class VisitDatabase {
   // that, the most recent |max_count| will be returned. If 0, all visits in the
   // range will be computed.
   //
-  // When |most_recent_visit_only| is set, only one visit for each URL will be
-  // returned, and it will be the most recent one in the time range.
+  // Only one visit for each URL will be returned, and it will be the most
+  // recent one in the time range.
   void GetVisibleVisitsInRange(base::Time begin_time, base::Time end_time,
-                               bool most_recent_visit_only,
                                int max_count,
                                VisitVector* visits);
 

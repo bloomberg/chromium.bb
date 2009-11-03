@@ -274,10 +274,9 @@ int ExpireHistoryTest::CountTextMatchesForURL(const GURL& url) {
   if (!text_db_.get())
     return 0;
 
-  // "body" should match all pagesx in the example data.
+  // "body" should match all pages in the example data.
   std::vector<TextDatabase::Match> results;
   QueryOptions options;
-  options.most_recent_visit_only = false;
   Time first_time;
   text_db_->GetTextMatches(L"body", options, &results, &first_time);
 

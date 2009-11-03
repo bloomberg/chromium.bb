@@ -121,10 +121,9 @@ class TextDatabase {
   // time considered for the output is in |first_time_searched|
   // (see QueryResults for more).
   //
-  // When |options.most_recent_visit_only|, any URLs found will be added to
-  // |unique_urls|. If a URL is already in the set, additional results will not
-  // be added (giving the ability to uniquify URL results, with the most recent
-  // If |most_recent_visit_only| is not set, |unique_urls| will be untouched.
+  // Any URLs found will be added to |unique_urls|. If a URL is already in the
+  // set, additional results will not be added (giving the ability to uniquify
+  // URL results).
   //
   // Callers must run QueryParser on the user text and pass the results of the
   // QueryParser to this method as the query string.

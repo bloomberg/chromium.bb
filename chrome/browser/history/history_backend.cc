@@ -1056,7 +1056,6 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
   // First get all visits.
   VisitVector visits;
   visit_db->GetVisibleVisitsInRange(options.begin_time, options.end_time,
-                                    options.most_recent_visit_only,
                                     options.max_count, &visits);
   DCHECK(options.max_count == 0 ||
          static_cast<int>(visits.size()) <= options.max_count);

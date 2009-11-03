@@ -326,11 +326,9 @@ void TextDatabase::GetTextMatches(const std::string& query,
     //   break;
 
     GURL url(statement.ColumnString(0));
-    if (options.most_recent_visit_only) {
-      URLSet::const_iterator found_url = found_urls->find(url);
-      if (found_url != found_urls->end())
-        continue;  // Don't add this duplicate when unique URLs are requested.
-    }
+    URLSet::const_iterator found_url = found_urls->find(url);
+    if (found_url != found_urls->end())
+      continue;  // Don't add this duplicate.
 
     // Fill the results into the vector (avoid copying the URL with Swap()).
     results->resize(results->size() + 1);

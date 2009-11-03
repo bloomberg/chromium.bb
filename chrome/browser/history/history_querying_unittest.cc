@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,15 +149,13 @@ TEST_F(HistoryQueryTest, Basic) {
   QueryOptions options;
   QueryResults results;
 
-  // First query for all of them to make sure they are there and in
-  // chronological order, most recent first.
+  // Test duplicate collapsing.
   QueryHistory(std::wstring(), options, &results);
-  ASSERT_EQ(5U, results.size());
+  EXPECT_EQ(4U, results.size());
   EXPECT_TRUE(NthResultIs(results, 0, 4));
   EXPECT_TRUE(NthResultIs(results, 1, 2));
   EXPECT_TRUE(NthResultIs(results, 2, 3));
   EXPECT_TRUE(NthResultIs(results, 3, 1));
-  EXPECT_TRUE(NthResultIs(results, 4, 0));
 
   // Next query a time range. The beginning should be inclusive, the ending
   // should be exclusive.
@@ -182,24 +180,6 @@ TEST_F(HistoryQueryTest, BasicCount) {
   EXPECT_EQ(2U, results.size());
   EXPECT_TRUE(NthResultIs(results, 0, 4));
   EXPECT_TRUE(NthResultIs(results, 1, 2));
-}
-
-// Tests duplicate collapsing and not in non-Full Text Search situations.
-TEST_F(HistoryQueryTest, BasicDupes) {
-  ASSERT_TRUE(history_.get());
-
-  QueryOptions options;
-  QueryResults results;
-
-  // We did the query for no collapsing in the "Basic" test above, so here we
-  // only test collapsing.
-  options.most_recent_visit_only = true;
-  QueryHistory(std::wstring(), options, &results);
-  EXPECT_EQ(4U, results.size());
-  EXPECT_TRUE(NthResultIs(results, 0, 4));
-  EXPECT_TRUE(NthResultIs(results, 1, 2));
-  EXPECT_TRUE(NthResultIs(results, 2, 3));
-  EXPECT_TRUE(NthResultIs(results, 3, 1));
 }
 
 TEST_F(HistoryQueryTest, ReachedBeginning) {
@@ -359,14 +339,6 @@ TEST_F(HistoryQueryTest, FTSDupes) {
   QueryOptions options;
   QueryResults results;
 
-  // First do the search with collapsing.
-  QueryHistory(std::wstring(L"Other"), options, &results);
-  EXPECT_EQ(2, results.urls().size());
-  EXPECT_TRUE(NthResultIs(results, 0, 4));
-  EXPECT_TRUE(NthResultIs(results, 1, 0));
-
-  // Now with collapsing.
-  options.most_recent_visit_only = true;
   QueryHistory(std::wstring(L"Other"), options, &results);
   EXPECT_EQ(1, results.urls().size());
   EXPECT_TRUE(NthResultIs(results, 0, 4));
