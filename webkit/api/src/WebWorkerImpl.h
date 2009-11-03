@@ -73,9 +73,9 @@ public:
     virtual void workerContextDestroyed();
 
     // WebCore::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassRefPtr<WebCore::ScriptExecutionContext::Task>);
+    virtual void postTaskToLoader(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
     virtual void postTaskForModeToWorkerContext(
-        PassRefPtr<WebCore::ScriptExecutionContext::Task>, const WebCore::String& mode);
+        PassOwnPtr<WebCore::ScriptExecutionContext::Task>, const WebCore::String& mode);
 
     // WebWorker methods:
     virtual void startWorkerContext(const WebURL&, const WebString&, const WebString&);
@@ -87,7 +87,7 @@ public:
     WebWorkerClient* client() {return m_client;}
 
     // Executes the given task on the main thread.
-    static void dispatchTaskToMainThread(PassRefPtr<WebCore::ScriptExecutionContext::Task>);
+    static void dispatchTaskToMainThread(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
 
 private:
     virtual ~WebWorkerImpl();

@@ -3191,7 +3191,7 @@ BUG_JORLOW WIN : chrome/fast/forms/basic-selects.html = IMAGE
 // WebKit roll 50248:50258
 BUG26195 : LayoutTests/accessibility/aria-option-role.html = TEXT
 BUG26195 LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
-BUG26195 LINUX : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
+BUG26195 LINUX MAC : LayoutTests/svg/custom/marker-default-width-height.svg = TEXT
 BUG26195 LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = PASS CRASH
 BUG26195 MAC : LayoutTests/css3/css3-modsel-33.html = TEXT
 BUG26195 MAC : chrome/plugins/script-object-invoke.html = TEXT

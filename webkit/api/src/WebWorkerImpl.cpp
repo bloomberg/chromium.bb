@@ -216,9 +216,9 @@ void WebWorkerImpl::clientDestroyed()
     m_client = 0;
 }
 
-void WebWorkerImpl::dispatchTaskToMainThread(PassRefPtr<ScriptExecutionContext::Task> task)
+void WebWorkerImpl::dispatchTaskToMainThread(PassOwnPtr<ScriptExecutionContext::Task> task)
 {
-    return callOnMainThread(invokeTaskMethod, task.releaseRef());
+    return callOnMainThread(invokeTaskMethod, task.release());
 }
 
 void WebWorkerImpl::invokeTaskMethod(void* param)
@@ -226,7 +226,7 @@ void WebWorkerImpl::invokeTaskMethod(void* param)
     ScriptExecutionContext::Task* task =
         static_cast<ScriptExecutionContext::Task*>(param);
     task->performTask(0);
-    task->deref();
+    delete task;
 }
 
 // WorkerObjectProxy -----------------------------------------------------------
@@ -346,14 +346,14 @@ void WebWorkerImpl::workerContextDestroyed()
 
 // WorkerLoaderProxy -----------------------------------------------------------
 
-void WebWorkerImpl::postTaskToLoader(PassRefPtr<ScriptExecutionContext::Task> task)
+void WebWorkerImpl::postTaskToLoader(PassOwnPtr<ScriptExecutionContext::Task> task)
 {
     ASSERT(m_loadingDocument->isDocument());
     m_loadingDocument->postTask(task);
 }
 
 void WebWorkerImpl::postTaskForModeToWorkerContext(
-    PassRefPtr<ScriptExecutionContext::Task> task, const String& mode)
+    PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
 {
     m_workerThread->runLoop().postTaskForMode(task, mode);
 }
