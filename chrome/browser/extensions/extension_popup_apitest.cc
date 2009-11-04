@@ -6,9 +6,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// This test has been disabled because it was crashing 
-// browsertests. crbug.com/26599
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Popup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Popup) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(RunExtensionTest("popup_api")) << message_;

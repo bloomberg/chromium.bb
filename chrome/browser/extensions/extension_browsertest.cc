@@ -185,9 +185,6 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
 
 bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   // Wait for all the extension hosts that exist to finish loading.
-  // NOTE: This assumes that the extension host list is not changing while
-  // this method is running.
-
   NotificationRegistrar registrar;
   registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                 NotificationService::AllSources());
@@ -196,10 +193,16 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
         browser()->profile()->GetExtensionProcessManager();
   for (ExtensionProcessManager::const_iterator iter = manager->begin();
        iter != manager->end();) {
-    if ((*iter)->did_stop_loading())
+    if ((*iter)->did_stop_loading()) {
       ++iter;
-    else
+    } else {
       ui_test_utils::RunMessageLoop();
+
+      // Test activity may have modified the set of extension processes during
+      // message processing, so re-start the iteration to catch added/removed
+      // processes.
+      iter = manager->begin();
+    }
   }
   LOG(INFO) << "All ExtensionHosts loaded";
 
