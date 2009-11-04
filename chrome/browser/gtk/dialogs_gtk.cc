@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
-#include "base/thread.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/shell_dialogs.h"
@@ -81,8 +81,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // |params_map_|.
   void* PopParamsForDialog(GtkWidget* dialog);
 
-  // Removes and returns the parent associated with |dialog| from |parents_|.
-  void RemoveParentForDialog(GtkWidget* dialog);
+  // Take care of internal data structures when a file dialog is destroyed.
+  void FileDialogDestroyed(GtkWidget* dialog);
 
   // Check whether response_id corresponds to the user cancelling/closing the
   // dialog. Used as a helper for the below callbacks.
@@ -106,6 +106,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // Callback for when the user responds to a Open Multiple Files dialog.
   static void OnSelectMultiFileDialogResponse(
       GtkWidget* dialog, gint response_id, SelectFileDialogImpl* dialog_impl);
+
+  // Callback for when the file chooser gets destroyed.
+  static void OnFileChooserDestroy(GtkWidget* dialog,
+                                   SelectFileDialogImpl* dialog_impl);
 
   // Callback for when we update the preview for the selection.
   static void OnUpdatePreview(GtkFileChooser* chooser,
@@ -163,9 +167,8 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
-  for (std::set<GtkWidget*>::iterator iter = dialogs_.begin();
-       iter != dialogs_.end(); ++iter) {
-    gtk_widget_destroy(*iter);
+  while (dialogs_.begin() != dialogs_.end()) {
+    gtk_widget_destroy(*(dialogs_.begin()));
   }
 }
 
@@ -224,6 +227,7 @@ void SelectFileDialogImpl::SelectFile(
   dialogs_.insert(dialog);
 
   preview_ = gtk_image_new();
+  g_signal_connect(dialog, "destroy", G_CALLBACK(OnFileChooserDestroy), this);
   g_signal_connect(dialog, "update-preview", G_CALLBACK(OnUpdatePreview), this);
   gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(dialog), preview_);
 
@@ -302,9 +306,7 @@ void SelectFileDialogImpl::FileSelected(GtkWidget* dialog,
     g_slist_free(filters);
     listener_->FileSelected(path, idx + 1, PopParamsForDialog(dialog));
   }
-  RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
-  dialogs_.erase(dialog);
 }
 
 void SelectFileDialogImpl::MultiFilesSelected(GtkWidget* dialog,
@@ -313,18 +315,14 @@ void SelectFileDialogImpl::MultiFilesSelected(GtkWidget* dialog,
 
   if (listener_)
     listener_->MultiFilesSelected(files, PopParamsForDialog(dialog));
-  RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
-  dialogs_.erase(dialog);
 }
 
 void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
   void* params = PopParamsForDialog(dialog);
   if (listener_)
     listener_->FileSelectionCanceled(params);
-  RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
-  dialogs_.erase(dialog);
 }
 
 GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
@@ -451,9 +449,14 @@ void* SelectFileDialogImpl::PopParamsForDialog(GtkWidget* dialog) {
   return params;
 }
 
-void SelectFileDialogImpl::RemoveParentForDialog(GtkWidget* dialog) {
+void SelectFileDialogImpl::FileDialogDestroyed(GtkWidget* dialog) {
+  dialogs_.erase(dialog);
+
+  // Parent may be NULL on shutdown when AllBrowsersClosed() trigger this
+  // handler after all the browser windows got destroyed.
   GtkWindow* parent = gtk_window_get_transient_for(GTK_WINDOW(dialog));
-  DCHECK(parent);
+  if (!parent)
+    return;
   std::set<GtkWindow*>::iterator iter = parents_.find(parent);
   if (iter != parents_.end())
     parents_.erase(iter);
@@ -549,6 +552,12 @@ void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(
     return;
   }
   dialog_impl->MultiFilesSelected(dialog, filenames_fp);
+}
+
+// static
+void SelectFileDialogImpl::OnFileChooserDestroy(GtkWidget* dialog,
+    SelectFileDialogImpl* dialog_impl) {
+  dialog_impl->FileDialogDestroyed(dialog);
 }
 
 // static
