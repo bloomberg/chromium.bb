@@ -132,7 +132,6 @@ class FindBarHost : public views::AcceleratorTarget,
   // to prevent from drawing onto Chrome's window border.
   void UpdateWindowEdges(const gfx::Rect& new_pos);
 
-
   // Registers this class as the handler for when Escape is pressed. We will
   // unregister once we loose focus. See also: SetFocusChangeListener().
   void RegisterEscAccelerator();

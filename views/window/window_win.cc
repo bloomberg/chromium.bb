@@ -1355,11 +1355,11 @@ void WindowWin::ResetWindowRegion(bool force) {
     gfx::Path window_mask;
     non_client_view_->GetWindowMask(
         gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-    new_region = window_mask.CreateHRGN();
+    new_region = window_mask.CreateNativeRegion();
   }
 
   if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
-    // SetWindowRgn takes ownership of the HRGN created by CreateHRGN.
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
     SetWindowRgn(new_region, TRUE);
   } else {
     DeleteObject(new_region);

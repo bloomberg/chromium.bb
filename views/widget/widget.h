@@ -96,8 +96,8 @@ class Widget {
   // Places the widget in front of the specified widget in z-order.
   virtual void MoveAbove(Widget* widget) = 0;
 
-  // Sets a shape on the widget.
-  virtual void SetShape(const gfx::Path& shape) = 0;
+  // Sets a shape on the widget. This takes ownership of shape.
+  virtual void SetShape(gfx::NativeRegion shape) = 0;
 
   // Hides the widget then closes it after a return to the message loop.
   virtual void Close() = 0;

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/views/find_bar_host.h"
 
+#include "app/gfx/path.h"
 #include "app/slide_animation.h"
 #include "base/keyboard_codes.h"
+#include "base/scoped_handle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -22,6 +24,8 @@
 
 // static
 bool FindBarHost::disable_animations_during_testing_ = false;
+
+using gfx::Path;
 
 namespace browser {
 
@@ -61,6 +65,9 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
 
   // Start the process of animating the opening of the window.
   animation_.reset(new SlideAnimation(this));
+
+
+animation_->SetSlideDuration(5000);
 }
 
 FindBarHost::~FindBarHost() {
@@ -250,6 +257,116 @@ void FindBarHost::GetDialogBounds(gfx::Rect* bounds) {
   // The BrowserView does Layout for the components that we care about
   // positioning relative to, so we ask it to tell us where we should go.
   *bounds = browser_view_->GetFindBarBoundingBox();
+}
+
+void FindBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
+  // |w| is used to make it easier to create the part of the polygon that curves
+  // the right side of the Find window. It essentially keeps track of the
+  // x-pixel position of the right-most background image inside the view.
+  // TODO(finnur): Let the view tell us how to draw the curves or convert
+  // this to a CustomFrameWindow.
+  int w = new_pos.width() - 6;  // -6 positions us at the left edge of the
+                                // rightmost background image of the view.
+
+  // This polygon array represents the outline of the background image for the
+  // dialog. Basically, it encompasses only the visible pixels of the
+  // concatenated find_dlg_LMR_bg images (where LMR = [left | middle | right]).
+  static const Path::Point polygon[] = {
+      {0, 0}, {0, 1}, {2, 3}, {2, 29}, {4, 31},
+        {4, 32}, {w+0, 32},
+      {w+0, 31}, {w+1, 31}, {w+3, 29}, {w+3, 3}, {w+6, 0}
+  };
+
+  // Find the largest x and y value in the polygon.
+  int max_x = 0, max_y = 0;
+  for (size_t i = 0; i < arraysize(polygon); i++) {
+    max_x = std::max(max_x, static_cast<int>(polygon[i].x));
+    max_y = std::max(max_y, static_cast<int>(polygon[i].y));
+  }
+
+  // We then create the polygon and use SetWindowRgn to force the window to draw
+  // only within that area. This region may get reduced in size below.
+  Path path(polygon, arraysize(polygon));
+  ScopedRegion region(path.CreateNativeRegion());
+
+  // Are we animating?
+  if (find_dialog_animation_offset_ > 0) {
+    // The animation happens in two steps: First, we clip the window and then in
+    // GetDialogPosition we offset the window position so that it still looks
+    // attached to the toolbar as it grows. We clip the window by creating a
+    // rectangle region (that gradually increases as the animation progresses)
+    // and find the intersection between the two regions using CombineRgn.
+
+    // |y| shrinks as the animation progresses from the height of the view down
+    // to 0 (and reverses when closing).
+    int y = find_dialog_animation_offset_;
+    // |y| shrinking means the animation (visible) region gets larger. In other
+    // words: the rectangle grows upward (when the dialog is opening).
+    Path animation_path;
+    SkRect animation_rect = { SkIntToScalar(0), SkIntToScalar(y),
+                              SkIntToScalar(max_x), SkIntToScalar(max_y) };
+    animation_path.addRect(animation_rect);
+    ScopedRegion animation_region(animation_path.CreateNativeRegion());
+    region.Set(Path::IntersectRegions(animation_region.Get(), region.Get()));
+
+    // Next, we need to increase the region a little bit to account for the
+    // curved edges that the view will draw to make it look like grows out of
+    // the toolbar.
+    Path::Point left_curve[] = {
+      {0, y+0}, {0, y+1}, {2, y+3}, {2, y+0}, {0, y+0}
+    };
+    Path::Point right_curve[] = {
+      {w+3, y+3}, {w+6, y+0}, {w+3, y+0}, {w+3, y+3}
+    };
+
+    // Combine the region for the curve on the left with our main region.
+    Path left_path(left_curve, arraysize(left_curve));
+    ScopedRegion r(left_path.CreateNativeRegion());
+    region.Set(Path::CombineRegions(r.Get(), region.Get()));
+
+    // Combine the region for the curve on the right with our main region.
+    Path right_path(right_curve, arraysize(right_curve));
+    region.Set(Path::CombineRegions(r.Get(), region.Get()));
+  }
+
+  // Now see if we need to truncate the region because parts of it obscures
+  // the main window border.
+  gfx::Rect dialog_bounds;
+  GetDialogBounds(&dialog_bounds);
+
+  // Calculate how much our current position overlaps our boundaries. If we
+  // overlap, it means we have too little space to draw the whole dialog and
+  // we allow overwriting the scrollbar before we start truncating our dialog.
+  //
+  // TODO(brettw) this constant is evil. This is the amount of room we've added
+  // to the window size, when we set the region, it can change the size.
+  static const int kAddedWidth = 7;
+  int difference = (new_pos.right() - kAddedWidth) -
+                   dialog_bounds.width() -
+                   views::NativeScrollBar::GetVerticalScrollBarWidth() +
+                   1;
+  if (difference > 0) {
+    Path::Point exclude[4];
+    exclude[0].x = max_x - difference;  // Top left corner.
+    exclude[0].y = 0;
+
+    exclude[1].x = max_x;               // Top right corner.
+    exclude[1].y = 0;
+
+    exclude[2].x = max_x;               // Bottom right corner.
+    exclude[2].y = max_y;
+
+    exclude[3].x = max_x - difference;  // Bottom left corner.
+    exclude[3].y = max_y;
+
+    // Subtract this region from the original region.
+    gfx::Path exclude_path(exclude, arraysize(exclude));
+    ScopedRegion exclude_region(exclude_path.CreateNativeRegion());
+    region.Set(Path::SubtractRegion(region.Get(), exclude_region.Get()));
+  }
+
+  // Window takes ownership of the region.
+  host_->SetShape(region.release());
 }
 
 gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {

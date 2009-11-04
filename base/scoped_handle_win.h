@@ -168,6 +168,12 @@ class ScopedGDIObject {
     return *this;
   }
 
+  T release() {
+    T object = object_;
+    object_ = NULL;
+    return object;
+  }
+
   operator T() { return object_; }
 
  private:
@@ -182,7 +188,7 @@ class ScopedGDIObject {
 
 // Typedefs for some common use cases.
 typedef ScopedGDIObject<HBITMAP> ScopedBitmap;
-typedef ScopedGDIObject<HRGN> ScopedHRGN;
+typedef ScopedGDIObject<HRGN> ScopedRegion;
 typedef ScopedGDIObject<HFONT> ScopedHFONT;
 
 

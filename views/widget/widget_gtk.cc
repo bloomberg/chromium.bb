@@ -378,12 +378,10 @@ void WidgetGtk::MoveAbove(Widget* widget) {
   NOTIMPLEMENTED();
 }
 
-void WidgetGtk::SetShape(const gfx::Path& shape) {
+void WidgetGtk::SetShape(gfx::NativeRegion region) {
   DCHECK(widget_);
   DCHECK(widget_->window);
 
-  gdk_window_shape_combine_region(widget_->window, NULL, 0, 0);
-  GdkRegion* region = shape.CreateGdkRegion();
   gdk_window_shape_combine_region(widget_->window, region, 0, 0);
   gdk_region_destroy(region);
 }

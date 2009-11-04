@@ -850,7 +850,7 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
   gfx::Path contents_path;
   MakeContentsPath(&contents_path, contents_rect);
   ScopedGDIObject<HRGN> popup_region;
-  popup_region.Set(contents_path.CreateHRGN());
+  popup_region.Set(contents_path.CreateNativeRegion());
   bb.hRgnBlur = popup_region.Get();
   DwmEnableBlurBehindWindow(GetWidget()->GetNativeView(), &bb);
 #endif
