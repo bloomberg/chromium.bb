@@ -139,7 +139,7 @@ HMODULE MainDllLoader::Load(std::wstring* version, std::wstring* file) {
   }
 
   *file = dir;
-  file->append(*version);
+  file->append(*version).append(L"\\");
   return LoadChromeWithDirectory(file);
 }
 
