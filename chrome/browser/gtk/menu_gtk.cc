@@ -177,14 +177,14 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
       submenus_we_own_.push_back(menu_data->custom_submenu);
     }
 
-    if ((menu_data->only_show || accel_group) && menu_data->accel_key) {
+    if (menu_data->accel_key) {
       // If we ever want to let the user do any key remaping, we'll need to
       // change the following so we make a gtk_accel_map which keeps the actual
       // keys.
       gtk_widget_add_accelerator(menu_item,
                                  "activate",
-                                 menu_data->only_show ? dummy_accel_group_ :
-                                                        accel_group,
+                                 menu_data->only_show || !accel_group ?
+                                     dummy_accel_group_ : accel_group,
                                  menu_data->accel_key,
                                  GdkModifierType(menu_data->accel_modifiers),
                                  GTK_ACCEL_VISIBLE);
