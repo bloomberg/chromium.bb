@@ -41,6 +41,11 @@ void ChromeThread::Initialize() {
 }
 
 ChromeThread::~ChromeThread() {
+  // Stop the thread here, instead of the parent's class destructor.  This is so
+  // that if there are pending tasks that run, code that checks that it's on the
+  // correct ChromeThread succeeds.
+  Stop();
+
   AutoLock lock(lock_);
   chrome_threads_[identifier_] = NULL;
 #ifndef NDEBUG
