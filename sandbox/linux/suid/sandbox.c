@@ -11,6 +11,8 @@
 #include <sched.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,8 +23,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdbool.h>
 
+#include "linux_util.h"
 #include "suid_unsafe_environment_variables.h"
 
 #if !defined(CLONE_NEWPID)
@@ -37,7 +39,7 @@ static const char kMsgChrootMe = 'C';
 static const char kMsgChrootSuccessful = 'O';
 
 static void FatalError(const char *msg, ...)
-    __attribute__((noreturn, format(printf,1,2)));
+    __attribute__((noreturn, format(printf, 1, 2)));
 
 static void FatalError(const char *msg, ...) {
   va_list ap;
@@ -109,7 +111,7 @@ static int CloneChrootHelperProcess() {
   if (pid == 0) {
     // We share our files structure with an untrusted process. As a security in
     // depth measure, we make sure that we can't open anything by mistake.
-    // TODO: drop CAP_SYS_RESOURCE / use SECURE_NOROOT
+    // TODO(agl): drop CAP_SYS_RESOURCE / use SECURE_NOROOT
 
     const struct rlimit nofile = {0, 0};
     if (setrlimit(RLIMIT_NOFILE, &nofile))
@@ -258,7 +260,6 @@ static bool DropRoot() {
 }
 
 static bool SetupChildEnvironment() {
-
   unsigned i;
 
   // ld.so may have cleared several environment variables because we are SUID.
@@ -289,6 +290,32 @@ int main(int argc, char **argv) {
   if (argc <= 1) {
     fprintf(stderr, "Usage: %s <renderer process> <args...>\n", argv[0]);
     return 1;
+  }
+
+  // In the SUID sandbox, if we succeed in calling MoveToNewPIDNamespace()
+  // below, then the zygote and all the renderers are in an alternate PID
+  // namespace and do not know their real PIDs. As such, they report the wrong
+  // PIDs to the task manager.
+  //
+  // To fix this, when the zygote spawns a new renderer, it gives the renderer
+  // a dummy socket, which has a unique inode number. Then it asks the sandbox
+  // host to find the PID of the process holding that fd by searching /proc.
+  //
+  // Since the zygote and renderers are all spawned by this setuid executable,
+  // their entries in /proc are owned by root and only readable by root. In
+  // order to search /proc for the fd we want, this setuid executable has to
+  // double as a helper and perform the search. The code block below does this
+  // when you call it with --find-inode INODE_NUMBER.
+  if (argc == 3 && (0 == strcmp(argv[1], kFindInodeSwitch))) {
+    pid_t pid;
+    char *endptr;
+    ino_t inode = strtoull(argv[2], &endptr, 10);
+    if (inode == ULLONG_MAX || *endptr)
+      return 1;
+    if (!FindProcessHoldingSocket(&pid, inode))
+      return 1;
+    printf("%d\n", pid);
+    return 0;
   }
 
   if (!MoveToNewPIDNamespace())

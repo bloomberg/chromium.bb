@@ -10,7 +10,13 @@
           'target_name': 'chrome_sandbox',
           'type': 'executable',
           'sources': [
+            'linux/suid/linux_util.c',
+            'linux/suid/linux_util.h',
             'linux/suid/sandbox.c',
+          ],
+          'cflags': [
+            # For ULLONG_MAX
+            '-std=gnu99',
           ],
           'include_dirs': [
             '..',
