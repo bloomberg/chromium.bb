@@ -69,7 +69,8 @@ std::wstring ThemeInstalledInfoBarDelegate::GetButtonLabel(
       return l10n_util::GetString(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
     }
     default:
-      NOTREACHED();
+      // The InfoBar will create a default OK button and make it invisible.
+      // TODO(mirandac): remove the default OK button from ConfirmInfoBar.
       return L"";
   }
 }
