@@ -118,7 +118,6 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       model_(NULL),
       instructions_label_(NULL),
       instructions_(NULL),
-      sync_error_button_(NULL),
       sync_service_(NULL),
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
@@ -260,11 +259,6 @@ void BookmarkBarGtk::Init(Profile* profile) {
                      FALSE, FALSE, 0);
   g_signal_connect(vseparator, "expose-event",
                    G_CALLBACK(OnSeparatorExpose), this);
-
-  sync_error_button_ = theme_provider_->BuildChromeButton();
-  ConnectFolderButtonEvents(sync_error_button_);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
-                     FALSE, FALSE, 0);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.

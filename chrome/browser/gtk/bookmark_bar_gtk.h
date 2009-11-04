@@ -316,10 +316,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
 
-  // The sync re-login indicator which appears when the user needs to re-enter
-  // credentials in order to continue syncing.
-  GtkWidget* sync_error_button_;
-
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;
 
