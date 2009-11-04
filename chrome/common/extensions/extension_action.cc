@@ -106,7 +106,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
     text_color = SK_ColorWHITE;
 
   if (SkColorGetA(background_color) == 0x00)
-    background_color = SkColorSetARGB(255, 218, 0, 24);  // default badge color
+    background_color = SkColorSetARGB(255, 218, 0, 24);  // Default badge color.
 
   canvas->save();
 
@@ -118,9 +118,14 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   text_width = SkIntToScalar(
       std::min(kMaxTextWidth, SkScalarFloor(text_width)));
 
-  // Cacluate badge size. It is clamped to a min width just because it looks
+  // Calculate badge size. It is clamped to a min width just because it looks
   // silly if it is too skinny.
   int badge_width = SkScalarFloor(text_width) + kPadding * 2;
+  int icon_width = GetIcon(tab_id).width();
+  // Force the pixel width of badge to be either odd (if the icon width is odd)
+  // or even otherwise. If there is a mismatch you get http://crbug.com/26400.
+  if (icon_width != 0 && (badge_width % 2 != GetIcon(tab_id).width() % 2))
+    badge_width += 1;
   badge_width = std::max(kBadgeHeight, badge_width);
 
   // Paint the badge background color in the right location. It is usually
@@ -129,7 +134,9 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect.fBottom = SkIntToScalar(bounds.bottom() - kBottomMargin);
   rect.fTop = rect.fBottom - SkIntToScalar(kBadgeHeight);
   if (badge_width >= kCenterAlignThreshold) {
-    rect.fLeft = SkIntToScalar(bounds.CenterPoint().x() - badge_width / 2);
+    rect.fLeft = SkIntToScalar(
+                     SkScalarFloor(SkIntToScalar(bounds.width() / 2.0) -
+                                   SkIntToScalar(badge_width / 2.0)));
     rect.fRight = rect.fLeft + SkIntToScalar(badge_width);
   } else {
     rect.fRight = SkIntToScalar(bounds.right());
