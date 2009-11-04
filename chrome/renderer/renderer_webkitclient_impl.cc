@@ -25,6 +25,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebCookie.h"
+#include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebVector.h"
@@ -45,6 +46,7 @@ using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
+using WebKit::WebStorageEventDispatcher;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -199,6 +201,18 @@ WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace();
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION);
+}
+
+void RendererWebKitClientImpl::dispatchStorageEvent(
+    const WebString& key, const WebString& old_value,
+    const WebString& new_value, const WebString& origin,
+    bool is_local_storage) {
+  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+  // Inefficient, but only used in single process mode.
+  scoped_ptr<WebStorageEventDispatcher> event_dispatcher(
+      WebStorageEventDispatcher::create());
+  event_dispatcher->dispatchStorageEvent(key, old_value, new_value, origin,
+                                         is_local_storage);
 }
 
 WebApplicationCacheHost* RendererWebKitClientImpl::createApplicationCacheHost(

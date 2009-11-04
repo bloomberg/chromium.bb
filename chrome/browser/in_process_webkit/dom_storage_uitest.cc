@@ -83,6 +83,7 @@ class DOMStorageTest : public UILayoutTest {
     ASSERT_TRUE(tab.get());
 
     GURL url = GetTestUrl(L"layout_tests", L"clear_dom_storage.html");
+    tab->SetCookie(url, "");
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     WaitUntilCookieNonEmpty(tab.get(), url, "cleared", kTestIntervalMs,
@@ -101,24 +102,15 @@ class DOMStorageTest : public UILayoutTest {
   FilePath test_dir_;
 };
 
-// http://code.google.com/p/chromium/issues/detail?id=24145
-#if defined(OS_WIN)
-#define MAYBE_DOMStorageLayoutTests FLAKY_DOMStorageLayoutTests
-#define MAYBE_SessionStorageLayoutTests FLAKY_SessionStorageLayoutTests
-#else
-#define MAYBE_DOMStorageLayoutTests DOMStorageLayoutTests
-#define MAYBE_SessionStorageLayoutTests SessionStorageLayoutTests
-#endif  // defined(OS_WIN)
 
-
-TEST_F(DOMStorageTest, MAYBE_DOMStorageLayoutTests) {
+TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath(), false);
   AddResources();
   RunTests(kTopLevelFiles);
 }
 
 
-TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
+TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
   AddResources();
@@ -127,7 +119,7 @@ TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
   RunTests(kLocalStorageFiles);
 }
 
-TEST_F(DOMStorageTest, MAYBE_SessionStorageLayoutTests) {
+TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
   AddResources();

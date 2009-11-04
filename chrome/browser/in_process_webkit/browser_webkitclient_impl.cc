@@ -95,7 +95,7 @@ WebKit::WebData BrowserWebKitClientImpl::loadResource(const char* name) {
 
 WebKit::WebStorageNamespace*
 BrowserWebKitClientImpl::createLocalStorageNamespace(
-    const WebKit::WebString& path) {
+    const WebKit::WebString& path, unsigned quota) {
   // The "WebStorage" interface is used for renderer WebKit -> browser WebKit
   // communication only.  "WebStorageClient" will be used for browser WebKit ->
   // renderer WebKit.  So this will never be implemented.

@@ -13,21 +13,22 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
 
-DOMStorageDispatcherHost* DOMStorageDispatcherHost::current_ = NULL;
+DOMStorageDispatcherHost* DOMStorageDispatcherHost::storage_event_host_ = NULL;
 
 DOMStorageDispatcherHost::
-AutoSetCurrentDispatcherHost::AutoSetCurrentDispatcherHost(
+ScopedStorageEventContext::ScopedStorageEventContext(
     DOMStorageDispatcherHost* dispatcher_host) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(!current_);
-  current_ = dispatcher_host;
+  DCHECK(!storage_event_host_);
+  storage_event_host_ = dispatcher_host;
+  DCHECK(storage_event_host_);
 }
 
 DOMStorageDispatcherHost::
-AutoSetCurrentDispatcherHost::~AutoSetCurrentDispatcherHost() {
+ScopedStorageEventContext::~ScopedStorageEventContext() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(current_);
-  current_ = NULL;
+  DCHECK(storage_event_host_);
+  storage_event_host_ = NULL;
 }
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
@@ -76,16 +77,24 @@ void DOMStorageDispatcherHost::Shutdown() {
 }
 
 /* static */
-void DOMStorageDispatcherHost::DispatchStorageEvent(const string16& key,
+void DOMStorageDispatcherHost::DispatchStorageEvent(const NullableString16& key,
     const NullableString16& old_value, const NullableString16& new_value,
     const string16& origin, bool is_local_storage) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(current_);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          current_, &DOMStorageDispatcherHost::OnStorageEvent, key, old_value,
-          new_value, origin, is_local_storage));
+  DCHECK(is_local_storage);  // Only LocalStorage is implemented right now.
+  DCHECK(storage_event_host_);
+  ViewMsg_DOMStorageEvent_Params params;
+  params.key_ = key;
+  params.old_value_ = old_value;
+  params.new_value_ = new_value;
+  params.origin_ = origin;
+  params.storage_type_ = is_local_storage ? DOM_STORAGE_LOCAL
+                                          : DOM_STORAGE_SESSION;
+  // The storage_event_host_ is the DOMStorageDispatcherHost that is up in the
+  // current call stack since it caused the storage event to fire.
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(storage_event_host_,
+          &DOMStorageDispatcherHost::OnStorageEvent, params));
 }
 
 bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
@@ -282,14 +291,14 @@ void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
     return;
   }
 
-  AutoSetCurrentDispatcherHost auto_set(this);
+  ScopedStorageEventContext scope(this);
   storage_area->SetItem(key, value, &quota_exception);
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception);
   Send(reply_msg);
 }
 
-void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
-                                            const string16& key) {
+void DOMStorageDispatcherHost::OnRemoveItem(
+    int64 storage_area_id, const string16& key) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key));
@@ -304,7 +313,7 @@ void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
     return;
   }
 
-  AutoSetCurrentDispatcherHost auto_set(this);
+  ScopedStorageEventContext scope(this);
   storage_area->RemoveItem(key);
 }
 
@@ -323,23 +332,18 @@ void DOMStorageDispatcherHost::OnClear(int64 storage_area_id) {
     return;
   }
 
-  AutoSetCurrentDispatcherHost auto_set(this);
+  ScopedStorageEventContext scope(this);
   storage_area->Clear();
 }
 
-void DOMStorageDispatcherHost::OnStorageEvent(const string16& key,
-    const NullableString16& old_value, const NullableString16& new_value,
-    const string16& origin, bool is_local_storage) {
+void DOMStorageDispatcherHost::OnStorageEvent(
+    const ViewMsg_DOMStorageEvent_Params& params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(is_local_storage);  // Only LocalStorage is implemented right now.
-  DOMStorageType dom_storage_type = is_local_storage ? DOM_STORAGE_LOCAL
-                                                     : DOM_STORAGE_SESSION;
   const DOMStorageContext::DispatcherHostSet* set =
       Context()->GetDispatcherHostSet();
   DOMStorageContext::DispatcherHostSet::const_iterator cur = set->begin();
   while (cur != set->end()) {
-    (*cur)->Send(new ViewMsg_DOMStorageEvent(key, old_value, new_value, origin,
-                                             dom_storage_type));
+    (*cur)->Send(new ViewMsg_DOMStorageEvent(params));
     ++cur;
   }
 }

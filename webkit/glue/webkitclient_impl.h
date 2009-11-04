@@ -24,12 +24,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual WebKit::WebThemeEngine* themeEngine();
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota);
-  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void dispatchStorageEvent(const WebKit::WebString& key,
-      const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
-      const WebKit::WebString& origin, bool isLocalStorage);
   virtual bool fileExists(const WebKit::WebString& path);
   virtual bool deleteFile(const WebKit::WebString& path);
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);

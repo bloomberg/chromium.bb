@@ -34,6 +34,7 @@ class UserScriptSlave;
 class URLPattern;
 
 struct RendererPreferences;
+struct ViewMsg_DOMStorageEvent_Params;
 struct WebPreferences;
 
 namespace WebKit {
@@ -151,9 +152,7 @@ class RenderThread : public RenderThreadBase,
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
-  void OnDOMStorageEvent(const string16& key, const NullableString16& old_value,
-      const NullableString16& new_value, const string16& origin,
-      DOMStorageType dom_storage_type);
+  void OnDOMStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
   void OnExtensionSetAPIPermissions(
       const std::string& extension_id,
       const std::vector<std::string>& permissions);

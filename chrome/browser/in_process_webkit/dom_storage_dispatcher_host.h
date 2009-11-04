@@ -16,6 +16,7 @@
 class DOMStorageContext;
 class Task;
 class WebKitThread;
+struct ViewMsg_DOMStorageEvent_Params;
 
 // This class handles the logistics of DOM Storage within the browser process.
 // It mostly ferries information between IPCs and the WebKit implementations,
@@ -42,7 +43,7 @@ class DOMStorageDispatcherHost :
   void Send(IPC::Message* message);
 
   // Only call on the WebKit thread.
-  static void DispatchStorageEvent(const string16& key,
+  static void DispatchStorageEvent(const NullableString16& key,
       const NullableString16& old_value, const NullableString16& new_value,
       const string16& origin, bool is_local_storage);
 
@@ -60,14 +61,12 @@ class DOMStorageDispatcherHost :
   void OnGetItem(int64 storage_area_id, const string16& key,
                  IPC::Message* reply_msg);
   void OnSetItem(int64 storage_area_id, const string16& key,
-                 const string16& value, IPC::Message* reply_msg);
+      const string16& value, IPC::Message* reply_msg);
   void OnRemoveItem(int64 storage_area_id, const string16& key);
   void OnClear(int64 storage_area_id);
 
   // Only call on the IO thread.
-  void OnStorageEvent(const string16& key, const NullableString16& old_value,
-      const NullableString16& new_value, const string16& origin,
-      bool is_local_storage);
+  void OnStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
 
   // A shortcut for accessing our context.
   DOMStorageContext* Context() {
@@ -79,14 +78,14 @@ class DOMStorageDispatcherHost :
       const tracked_objects::Location& from_here, Task* task);
 
   // Use whenever there's a chance OnStorageEvent will be called.
-  class AutoSetCurrentDispatcherHost {
+  class ScopedStorageEventContext {
    public:
-    AutoSetCurrentDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-    ~AutoSetCurrentDispatcherHost();
+    ScopedStorageEventContext(DOMStorageDispatcherHost* dispatcher_host);
+    ~ScopedStorageEventContext();
   };
 
   // Only access on the WebKit thread!  Used for storage events.
-  static DOMStorageDispatcherHost* current_;
+  static DOMStorageDispatcherHost* storage_event_host_;
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;

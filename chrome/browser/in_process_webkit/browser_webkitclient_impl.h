@@ -31,7 +31,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path);
+      const WebKit::WebString& path, unsigned quota);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& oldValue, const WebKit::WebString& newValue,

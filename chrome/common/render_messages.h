@@ -495,6 +495,24 @@ struct ViewHostMsg_ScriptedPrint_Params {
   bool has_selection;
 };
 
+// Signals a storage event.
+struct ViewMsg_DOMStorageEvent_Params {
+  // The key that generated the storage event.  Null if clear() was called.
+  NullableString16 key_;
+
+  // The old value of this key.  Null on clear() or if it didn't have a value.
+  NullableString16 old_value_;
+
+  // The new value of this key.  Null on removeItem() or clear().
+  NullableString16 new_value_;
+
+  // The origin this is associated with.
+  string16 origin_;
+
+  // The storage type of this event.
+  DOMStorageType storage_type_;
+};
+
 namespace IPC {
 
 template <>
@@ -2201,6 +2219,40 @@ struct ParamTraits<DOMStorageType> {
         break;
     }
     LogParam(control, l);
+  }
+};
+
+// Traits for ViewMsg_DOMStorageEvent_Params.
+template <>
+struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
+  typedef ViewMsg_DOMStorageEvent_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.key_);
+    WriteParam(m, p.old_value_);
+    WriteParam(m, p.new_value_);
+    WriteParam(m, p.origin_);
+    WriteParam(m, p.storage_type_);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->key_) &&
+        ReadParam(m, iter, &p->old_value_) &&
+        ReadParam(m, iter, &p->new_value_) &&
+        ReadParam(m, iter, &p->origin_) &&
+        ReadParam(m, iter, &p->storage_type_);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.key_, l);
+    l->append(L", ");
+    LogParam(p.old_value_, l);
+    l->append(L", ");
+    LogParam(p.new_value_, l);
+    l->append(L", ");
+    LogParam(p.origin_, l);
+    l->append(L", ");
+    LogParam(p.storage_type_, l);
+    l->append(L")");
   }
 };
 

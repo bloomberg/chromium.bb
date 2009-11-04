@@ -44,7 +44,6 @@ using WebKit::WebCookie;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
-using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebSocketStreamHandle;
 using WebKit::WebThemeEngine;
@@ -289,23 +288,6 @@ void WebKitClientImpl::stopSharedTimer() {
 
 void WebKitClientImpl::callOnMainThread(void (*func)()) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func));
-}
-
-WebStorageNamespace* WebKitClientImpl::createLocalStorageNamespace(
-    const WebString& path, unsigned quota) {
-  NOTREACHED();
-  return 0;
-}
-
-WebStorageNamespace* WebKitClientImpl::createSessionStorageNamespace() {
-  NOTREACHED();
-  return 0;
-}
-
-void WebKitClientImpl::dispatchStorageEvent(const WebString& key,
-    const WebString& oldValue, const WebString& newValue,
-    const WebString& origin, bool isLocalStorage) {
-  NOTREACHED();
 }
 
 base::PlatformFile WebKitClientImpl::databaseOpenFile(

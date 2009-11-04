@@ -28,6 +28,13 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
+      const WebKit::WebString& path, unsigned quota);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
+  virtual void dispatchStorageEvent(
+      const WebKit::WebString& key, const WebKit::WebString& old_value,
+      const WebKit::WebString& new_value, const WebKit::WebString& origin,
+      bool is_local_storage);
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 
   // WebMimeRegistry methods:

@@ -15,6 +15,7 @@ using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
 using WebKit::WebSandboxSupport;
 using WebKit::WebSharedWorkerRepository;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
 
@@ -82,8 +83,25 @@ WebString WorkerWebKitClientImpl::defaultLocale() {
   return WebString();
 }
 
-WebSharedWorkerRepository*
-WorkerWebKitClientImpl::sharedWorkerRepository() {
+WebStorageNamespace* WorkerWebKitClientImpl::createLocalStorageNamespace(
+    const WebString& path, unsigned quota) {
+  NOTREACHED();
+  return 0;
+}
+
+WebStorageNamespace* WorkerWebKitClientImpl::createSessionStorageNamespace() {
+  NOTREACHED();
+  return 0;
+}
+
+void WorkerWebKitClientImpl::dispatchStorageEvent(
+    const WebString& key, const WebString& old_value,
+    const WebString& new_value, const WebString& origin,
+    bool is_local_storage) {
+  NOTREACHED();
+}
+
+WebSharedWorkerRepository* WorkerWebKitClientImpl::sharedWorkerRepository() {
     return 0;
 }
 

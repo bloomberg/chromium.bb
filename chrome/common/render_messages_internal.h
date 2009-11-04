@@ -768,12 +768,8 @@ IPC_BEGIN_MESSAGES(View)
                        int64 /* space available to origin */)
 
   // Storage events are broadcast to renderer processes.
-  IPC_MESSAGE_CONTROL5(ViewMsg_DOMStorageEvent,
-                       string16 /* key */,
-                       NullableString16 /* old_value */,
-                       NullableString16 /* new_value */,
-                       string16 /* origin */,
-                       DOMStorageType /* dom_storage_type */)
+  IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
+                       ViewMsg_DOMStorageEvent_Params)
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Tell the renderer process to begin or end IPC message logging.
