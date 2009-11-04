@@ -3180,7 +3180,7 @@ BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size.html = P
 BUG26195 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-single-quote.html = PASS TIMEOUT
 
 // expected test failures (passed in roll to WebKit r50313)
-BUG_HAMAJI : LayoutTests/fast/css/counters/invalidate-cached-counter-node.html = PASS FAIL
+BUG_HAMAJI : LayoutTests/fast/css/counters/invalidate-cached-counter-node.html = FAIL
 
 // ==== WebKit roll 50258:50313 ====
 BUG26291 MAC : LayoutTests/transitions/multiple-mask-transitions.html = TEXT
