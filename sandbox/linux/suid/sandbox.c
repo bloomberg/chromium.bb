@@ -8,6 +8,7 @@
 #include <asm/unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdarg.h>
