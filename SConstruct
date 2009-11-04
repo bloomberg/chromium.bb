@@ -798,7 +798,11 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
-                    CCFLAGS=['-march=armv7a','-pedantic','-Wall','-Werror'],
+                    CCFLAGS=['-march=armv7a',
+                             '-pedantic',
+                             '-Wall',
+                             '-Werror',
+                             '-Wno-long-long'],
                     LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
