@@ -9,9 +9,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/socket_stream.h"
 #include "ipc/ipc_message.h"
+#include "net/websockets/websocket_throttle.h"
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost()
     : sender_(NULL) {
+  net::WebSocketThrottle::Init();
 }
 
 SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
