@@ -47,7 +47,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/password_form_dom_manager.h"
-#include "webkit/glue/webaccessibilitymanager.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webplugin_page_delegate.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -83,6 +83,7 @@ struct FileUploadData;
 }
 
 namespace WebKit {
+class WebAccessibilityCache;
 class WebDataSource;
 class WebDragData;
 class WebMediaPlayer;
@@ -869,7 +870,7 @@ class RenderView : public RenderWidget,
 #if defined(OS_WIN)
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.
-  scoped_ptr<webkit_glue::WebAccessibilityManager> web_accessibility_manager_;
+  scoped_ptr<WebKit::WebAccessibilityCache> accessibility_;
 #endif
 
   // Resource message queue. Used to queue up resource IPCs if we need

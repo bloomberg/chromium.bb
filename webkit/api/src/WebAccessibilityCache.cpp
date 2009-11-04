@@ -28,22 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAccessibilityController_h
-#define WebAccessibilityController_h
+#include "config.h"
+#include "WebAccessibilityCache.h"
 
-#include "WebCommon.h"
+#include "AXObjectCache.h"
+
+using namespace WebCore;
 
 namespace WebKit {
 
-    // FIXME: Move all methods of WebAcessibilityManager here.
-    class WebAccessibilityController {
-    public:
-        WebAccessibilityController() {}
-        virtual ~WebAccessibilityController() {}
+void WebAccessibilityCache::enableAccessibility()
+{
+    AXObjectCache::enableAccessibility();
+}
 
-        static void enableAccessibility();
-    };
-
-} // namespace WebKit
-
-#endif
+}

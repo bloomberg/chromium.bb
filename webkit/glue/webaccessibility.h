@@ -7,6 +7,10 @@
 
 #include "base/string16.h"
 
+namespace WebKit {
+class WebAccessibilityCache;
+}
+
 namespace webkit_glue {
 
 class WebAccessibility {
@@ -165,6 +169,9 @@ class WebAccessibility {
     // input validation.
     bool return_code;
   };
+
+  static bool GetAccObjInfo(WebKit::WebAccessibilityCache* cache,
+      const InParams& in_params, OutParams* out_params);
 };
 
 }  // namespace webkit_glue

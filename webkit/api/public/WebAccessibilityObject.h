@@ -42,6 +42,8 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace WebKit {
     class WebAccessibilityObjectPrivate;
     class WebString;
+    struct WebPoint;
+    struct WebRect;
 
     // A container for passing around a reference to AccessibilityObject.
     class WebAccessibilityObject {
@@ -58,10 +60,39 @@ namespace WebKit {
         bool isNull() const { return m_private == 0; }
 
         WebString accessibilityDescription() const;
-        WebAccessibilityObject childAt(unsigned) const;
+        WebString actionVerb() const;
+        bool canSetFocusAttribute() const;
+
         unsigned childCount() const;
+
+        WebAccessibilityObject childAt(unsigned) const;
+        WebAccessibilityObject firstChild() const;
+        WebAccessibilityObject focusedChild() const;
+        WebAccessibilityObject lastChild() const;
+        WebAccessibilityObject nextSibling() const;
+        WebAccessibilityObject parentObject() const;
+        WebAccessibilityObject previousSibling() const;
+
+        bool isAnchor() const;
+        bool isChecked() const;
+        bool isFocused() const;
         bool isEnabled() const;
+        bool isHovered() const;
+        bool isIndeterminate() const;
+        bool isMultiSelect() const;
+        bool isOffScreen() const;
+        bool isPasswordField() const;
+        bool isPressed() const;
+        bool isReadOnly() const;
+        bool isVisited() const;
+
+        WebRect boundingBoxRect() const;
+        WebString helpText() const;
+        WebAccessibilityObject hitTest(const WebPoint&) const;
+        WebString keyboardShortcut() const;
+        bool performDefaultAction() const;
         WebAccessibilityRole roleValue() const;
+        WebString stringValue() const;
         WebString title() const;
 
 #if WEBKIT_IMPLEMENTATION

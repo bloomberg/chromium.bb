@@ -29,8 +29,14 @@
  */
 
 #include "config.h"
-#include "AccessibilityObject.h"
 #include "WebAccessibilityObject.h"
+
+#include "AccessibilityObject.h"
+#include "EventHandler.h"
+#include "FrameView.h"
+#include "PlatformKeyboardEvent.h"
+#include "WebPoint.h"
+#include "WebRect.h"
 #include "WebString.h"
 
 using namespace WebCore;
@@ -62,6 +68,33 @@ WebString WebAccessibilityObject::accessibilityDescription() const
     return m_private->accessibilityDescription();
 }
 
+WebString WebAccessibilityObject::actionVerb() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    return m_private->actionVerb();
+}
+
+bool WebAccessibilityObject::canSetFocusAttribute() const
+{
+    if (!m_private)
+        return false;
+
+    m_private->updateBackingStore();
+    return m_private->canSetFocusAttribute();
+}
+
+unsigned WebAccessibilityObject::childCount() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->children().size();
+}
+
 WebAccessibilityObject WebAccessibilityObject::childAt(unsigned index) const
 {
     if (!m_private)
@@ -74,13 +107,92 @@ WebAccessibilityObject WebAccessibilityObject::childAt(unsigned index) const
     return WebAccessibilityObject(m_private->children()[index]);
 }
 
-unsigned WebAccessibilityObject::childCount() const
+WebAccessibilityObject WebAccessibilityObject::firstChild() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    return WebAccessibilityObject(m_private->firstChild());
+}
+
+WebAccessibilityObject WebAccessibilityObject::focusedChild() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    RefPtr<AccessibilityObject> focused = m_private->focusedUIElement();
+    if (m_private == focused.get() || focused->parentObject() == m_private)
+        return WebAccessibilityObject(focused);
+
+    return WebAccessibilityObject();
+}
+
+WebAccessibilityObject WebAccessibilityObject::lastChild() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    return WebAccessibilityObject(m_private->lastChild());
+}
+
+
+WebAccessibilityObject WebAccessibilityObject::nextSibling() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    return WebAccessibilityObject(m_private->nextSibling());
+}
+
+WebAccessibilityObject WebAccessibilityObject::parentObject() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    return WebAccessibilityObject(m_private->parentObject());
+}
+
+
+WebAccessibilityObject WebAccessibilityObject::previousSibling() const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    return WebAccessibilityObject(m_private->previousSibling());
+}
+
+bool WebAccessibilityObject::isAnchor() const
 {
     if (!m_private)
         return 0;
 
     m_private->updateBackingStore();
-    return m_private->children().size();
+    return m_private->isAnchor();
+}
+
+bool WebAccessibilityObject::isChecked() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isChecked();
+}
+
+
+bool WebAccessibilityObject::isFocused() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isFocused();
 }
 
 bool WebAccessibilityObject::isEnabled() const
@@ -92,10 +204,168 @@ bool WebAccessibilityObject::isEnabled() const
     return m_private->isEnabled();
 }
 
+bool WebAccessibilityObject::isHovered() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isHovered();
+}
+
+bool WebAccessibilityObject::isIndeterminate() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isIndeterminate();
+}
+
+bool WebAccessibilityObject::isMultiSelect() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isMultiSelect();
+}
+
+bool WebAccessibilityObject::isOffScreen() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isOffScreen();
+}
+
+bool WebAccessibilityObject::isPasswordField() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isPasswordField();
+}
+
+bool WebAccessibilityObject::isPressed() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isPressed();
+}
+
+bool WebAccessibilityObject::isReadOnly() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isReadOnly();
+}
+
+bool WebAccessibilityObject::isVisited() const
+{
+    if (!m_private)
+        return 0;
+
+    m_private->updateBackingStore();
+    return m_private->isVisited();
+}
+
+WebRect WebAccessibilityObject::boundingBoxRect() const
+{
+    if (!m_private)
+        return WebRect();
+
+    m_private->updateBackingStore();
+    return m_private->documentFrameView()->contentsToWindow(m_private->boundingBoxRect());
+}
+
+WebString WebAccessibilityObject::helpText() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    return m_private->helpText();
+}
+
+WebAccessibilityObject WebAccessibilityObject::hitTest(const WebPoint& point) const
+{
+    if (!m_private)
+        return WebAccessibilityObject();
+
+    m_private->updateBackingStore();
+    IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(point);
+    RefPtr<AccessibilityObject> hit = m_private->doAccessibilityHitTest(contentsPoint);
+
+    if (hit.get())
+        return WebAccessibilityObject(hit);
+
+    if (m_private->boundingBoxRect().contains(contentsPoint))
+        return *this;
+
+    return WebAccessibilityObject();
+}
+
+WebString WebAccessibilityObject::keyboardShortcut() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    String accessKey = m_private->accessKey();
+    if (accessKey.isNull())
+        return WebString();
+
+    static String modifierString;
+    if (modifierString.isNull()) {
+        unsigned modifiers = EventHandler::accessKeyModifiers();
+        // Follow the same order as Mozilla MSAA implementation:
+        // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
+        // should not be localized and defines the separator as "+".
+        if (modifiers & PlatformKeyboardEvent::CtrlKey)
+            modifierString += "Ctrl+";
+        if (modifiers & PlatformKeyboardEvent::AltKey)
+            modifierString += "Alt+";
+        if (modifiers & PlatformKeyboardEvent::ShiftKey)
+            modifierString += "Shift+";
+        if (modifiers & PlatformKeyboardEvent::MetaKey)
+            modifierString += "Win+";
+    }
+
+    return modifierString + accessKey;
+}
+
+bool WebAccessibilityObject::performDefaultAction() const
+{
+    if (!m_private)
+        return false;
+
+    m_private->updateBackingStore();
+    return m_private->performDefaultAction();
+}
+
 WebAccessibilityRole WebAccessibilityObject::roleValue() const
 {
+    if (!m_private)
+        return WebKit::WebAccessibilityRoleUnknown;
+
     m_private->updateBackingStore();
     return static_cast<WebAccessibilityRole>(m_private->roleValue());
+}
+
+WebString WebAccessibilityObject::stringValue() const
+{
+    if (!m_private)
+        return WebString();
+
+    m_private->updateBackingStore();
+    return m_private->stringValue();
 }
 
 WebString WebAccessibilityObject::title() const

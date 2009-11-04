@@ -64,6 +64,7 @@
 #include "net/base/net_errors.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
+#include "webkit/api/public/WebAccessibilityCache.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDevToolsAgent.h"
@@ -114,6 +115,7 @@ using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
+using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebColor;
 using WebKit::WebColorName;
@@ -1096,9 +1098,9 @@ void RenderView::UpdateURL(WebFrame* frame) {
   navigation_state->set_transition_type(PageTransition::LINK);
 
 #if defined(OS_WIN)
-  if (web_accessibility_manager_.get()) {
+  if (accessibility_.get()) {
     // Clear accessibility info cache.
-    web_accessibility_manager_->ClearAccObjMap(-1, true);
+    accessibility_->clear();
   }
 #else
   // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
@@ -3140,15 +3142,17 @@ void RenderView::OnGetAccessibilityInfo(
     const webkit_glue::WebAccessibility::InParams& in_params,
     webkit_glue::WebAccessibility::OutParams* out_params) {
 #if defined(OS_WIN)
-  if (!web_accessibility_manager_.get()) {
-    web_accessibility_manager_.reset(
-        webkit_glue::WebAccessibilityManager::Create());
+  if (!accessibility_.get()) {
+    // TODO(dglazkov): Once implemented for all ports, remove lazy
+    // instantiation of accessibility_.
+    accessibility_.reset(WebAccessibilityCache::create());
+    accessibility_->initialize(webview());
   }
 
-  if (!web_accessibility_manager_->GetAccObjInfo(webview(), in_params,
-                                                 out_params)) {
-    return;
-  }
+  webkit_glue::WebAccessibility::GetAccObjInfo(accessibility_.get(),
+                                               in_params,
+                                               out_params);
+
 #else  // defined(OS_WIN)
   // TODO(port): accessibility not yet implemented
   NOTIMPLEMENTED();
@@ -3157,13 +3161,17 @@ void RenderView::OnGetAccessibilityInfo(
 
 void RenderView::OnClearAccessibilityInfo(int acc_obj_id, bool clear_all) {
 #if defined(OS_WIN)
-  if (!web_accessibility_manager_.get()) {
+  if (!accessibility_.get()) {
     // If accessibility is not activated, ignore clearing message.
     return;
   }
 
-  if (!web_accessibility_manager_->ClearAccObjMap(acc_obj_id, clear_all))
+  if (clear_all) {
+    accessibility_->clear();
     return;
+  }
+
+  accessibility_->remove(acc_obj_id);
 
 #else  // defined(OS_WIN)
   // TODO(port): accessibility not yet implemented
@@ -3630,13 +3638,15 @@ void RenderView::LogNavigationState(const NavigationState* state,
 void RenderView::focusAccessibilityObject(
     const WebAccessibilityObject& acc_obj) {
 #if defined(OS_WIN)
-  if (!web_accessibility_manager_.get()) {
-    web_accessibility_manager_.reset(
-        webkit_glue::WebAccessibilityManager::Create());
-  }
+  // TODO(dglazkov): Current logic implies that focus change can only be made
+  // after at least one call to RenderView::OnGetAccessibilityInfo, which is
+  // where accessibility is initialized. We should determine whether that's
+  // right.
+  if (!accessibility_.get())
+    return;
 
   // Retrieve the accessibility object id of the AccessibilityObject.
-  int acc_obj_id = web_accessibility_manager_->FocusAccObj(acc_obj);
+  int acc_obj_id = accessibility_->addOrGetId(acc_obj);
 
   // If id is valid, alert the browser side that an accessibility focus change
   // occurred.

@@ -307,8 +307,6 @@
         'glue/form_field_values.h',
         'glue/ftp_directory_listing_response_delegate.cc',
         'glue/ftp_directory_listing_response_delegate.h',
-        'glue/glue_accessibility_object.cc',
-        'glue/glue_accessibility_object.h',
         'glue/glue_serialize.cc',
         'glue/glue_serialize.h',
         'glue/glue_util.cc',
@@ -334,10 +332,8 @@
         'glue/scoped_clipboard_writer_glue.h',
         'glue/simple_webmimeregistry_impl.cc',
         'glue/simple_webmimeregistry_impl.h',
+        'glue/webaccessibility.cc',
         'glue/webaccessibility.h',
-        'glue/webaccessibilitymanager.h',
-        'glue/webaccessibilitymanager_impl.cc',
-        'glue/webaccessibilitymanager_impl.h',
         'glue/webclipboard_impl.cc',
         'glue/webclipboard_impl.h',
         'glue/webcookie.h',
@@ -430,13 +426,8 @@
           'sources!': [
             # These files are Windows-only now but may be ported to other
             # platforms.
-            'glue/glue_accessibility_object.cc',
-            'glue/glue_accessibility_object.h',
+            'glue/webaccessibility.cc',
             'glue/webaccessibility.h',
-            'glue/webaccessibilitymanager.h',
-            'glue/webaccessibilitymanager_impl.cc',
-            'glue/webaccessibilitymanager_impl.cc',
-            'glue/webaccessibilitymanager_impl.h',
             'glue/webthemeengine_impl_win.cc',
           ],
         }, {  # else: OS=="win"

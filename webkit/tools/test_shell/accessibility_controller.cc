@@ -7,13 +7,13 @@
 #include "webkit/tools/test_shell/accessibility_controller.h"
 
 #include "base/logging.h"
-#include "webkit/api/public/WebAccessibilityController.h"
+#include "webkit/api/public/WebAccessibilityCache.h"
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
-using WebKit::WebAccessibilityController;
+using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebFrame;
 
@@ -35,7 +35,7 @@ AccessibilityController::AccessibilityController(TestShell* shell)
 
 void AccessibilityController::BindToJavascript(
     WebFrame* frame, const std::wstring& classname) {
-  WebAccessibilityController::enableAccessibility();
+  WebAccessibilityCache::enableAccessibility();
   CppBoundClass::BindToJavascript(frame, classname);
 }
 
