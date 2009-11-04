@@ -92,11 +92,11 @@ SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
     webkit_glue::ResourceLoaderBridge::Peer* peer, int os_error) {
   // TODO(jcampan): use a different message when getting a phishing/malware
   // error.
-  std::wstring error_msg = l10n_util::GetString(IDS_UNSAFE_FRAME_MESSAGE);
   std::string html = StringPrintf(
-      "<html><body style='background-color:#990000;color:white;'>"
+      "<html><meta charset='UTF-8'>"
+      "<body style='background-color:#990000;color:white;'>"
       "%s</body></html>",
-      WideToUTF8(error_msg).c_str());
+      l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
   return new ReplaceContentPeer(NULL, peer, "text/html", html);
 }
 
