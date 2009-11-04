@@ -180,13 +180,13 @@
               <a href="#arch">Architecture</a>
               <ol>
                 <li jsinstance="0">
-                  <a href="#background">The background page</a>
+                  <a href="#pages">Pages</a>
                 </li><li jsinstance="*1">
                   <a href="#contentScripts">Content scripts</a>
                 </li>
               </ol>
             </li><li jsinstance="3">
-              <a href="#H2-7">Communication between pages </a>
+              <a href="#pageComm">Communication between pages </a>
               <ol>
                 <li jsinstance="*0" style="display: none; ">
                   <a>h3Name</a>
@@ -248,8 +248,6 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Read this page!
-It has vital information about the extension architecture.
 Once you've finished this page
 and the
 <a href="getstarted.html">Getting Started</a> tutorial,
@@ -273,10 +271,8 @@ from XMLHttpRequest to JSON to HTML5 local storage.
 <p>
 Many extensions add UI to Google Chrome,
 in the form of
-<a href="toolstrip.html">toolstrips</a> (toolbar additions),
-<a href="browserAction.html">browser actions</a>,
-or <a href="pageAction.html">page actions</a>
-(clickable badges in the address bar).
+<a href="browserAction.html">browser actions</a>
+or <a href="pageAction.html">page actions</a>.
 Extensions can also interact programmatically
 with browser features such as
 <a href="bookmarks.html">bookmarks</a>
@@ -288,12 +284,20 @@ extensions can use
 </p>
 
 <p>
+<b>Note:</b>
+Each extension can have at most one browser action or page action.
+Choose a <b>browser action</b> when the extension is relevant to most pages.
+Choose a <b>page action</b> when the extension's icon
+should appear or disappear,
+depending on the page.
+</p>
+
+<p>
 See the <a href="devguide.html">Developer's Guide</a>
 for a complete list of extension features,
 with implementation details
 for each one.
 </p>
-
 
 <h2 id="files">Files</h2>
 <p>
@@ -348,7 +352,7 @@ every file in an extension is also accessible by an absolute URL like this:
 In that URL, the <em>&lt;extensionID&gt;</em> is a unique identifier
 that the extension system generates for each extension.
 You can see the IDs for all your loaded extensions
-by going to the URL <b>chrome://extensions/</b>.
+by going to the URL <b>chrome://extensions</b>.
 The <em>&lt;pathToFile&gt;</em> is the location of the file
 under the extension's top folder;
 it's the same as the relative URL.
@@ -368,7 +372,7 @@ The manifest file, called <code>manifest.json</code>,
 gives information about the extension,
 such as the most important files
 and the capabilities that the extension might use.
-Here's a typical manifest file for a toolstrip
+Here's a typical manifest file for a browser action
 that uses information from google.com:
 </p>
 
@@ -376,9 +380,14 @@ that uses information from google.com:
   "name": "My Extension",
   "version": "2.1",
   "description": "Gets information from Google.",
-  "update_url": "http://example.com/mytestextension/updates.xml",
+  "icons": { "128": "icon_128.png" },
+  "background_page": "bg.html",
   "permissions": ["http://*.google.com/", "https://*.google.com/"],
-  "toolstrips": ["my_toolstrip.html"]
+  "browser_action": {
+    "default_title": "",
+    "default_icon": "icon_19.png",
+    "popup": "popup.html"
+  }
 }</pre>
 
 <p>
@@ -389,87 +398,105 @@ For details, see
 <h2 id="arch">Architecture</h2>
 
 <p>
-Remember that extensions are essentially web pages.
-The following figure shows what
-a simple extension with a toolstrip
-might look like
-when there's a single browser window.
-The toolstrip (T1) is at the bottom of the window.
-The HTML and JavaScript code for T1
-is in a web page
-(<code>toolstrip.html</code>).
+Most extensions have a
+<a href="background_pages.html">background page</a>,
+an invisible page
+that holds the main logic of the extension.
+<span class="comment">
+[PENDING: unnecessary?]
+No matter how many windows or tabs the user opens,
+there's only one copy of the background page.
+</span>
 </p>
 
 <img src="images/arch-1.gif">
 
 <p>
-Each time the user creates a new window,
-the browser creates new toolstrips, page actions, and so on.
-Each new bit of UI gets its own web page,
-which means that toolstrips (for example)
-that are in different windows can have different states.
-In the following figure,
-the two toolstrips (T1 and T2)
-are associated with two separate web pages,
-both of which contain code from <code>toolstrip.html</code>.
-This means that although both toolstrips use the same code,
-one can be blue while the other is green.
+The preceding figure shows a browser
+that has at least two extensions installed:
+a browser action (yellow icon)
+and a page action (blue icon).
+The background page,
+which is defined by an HTML file
+(<code>background.html</code>),
+has JavaScript code that controls both
+the browser action and the page action.
+</p>
+
+
+<h3 id="pages">Pages</h3>
+
+<p>
+The background page isn't the only HTML page
+that an extension can have.
+For example, a browser action can have a popup,
+which is implemented by an HTML file.
+Extensions can also
+use <a href="tabs.html#Method-create"><code>chrome.tabs.create()</code></a>
+or <code>window.open()</code>
+to display HTML files that are in the extension.
+</p>
+
+<p>
+The HTML pages inside an extension
+have complete access to each other's DOMs,
+and they can invoke functions on each other.
+</p>
+
+<p>
+The following figure shows the architecture
+of a browser action's popup.
+The popup's contents are a web page
+defined by an HTML file
+(<code>popup.html</code>).
+The popup doesn't need to duplicate code
+that's in the background page
+(<code>background.html</code>)
+because the popup can invoke functions on the background page.
 </p>
 
 <img src="images/arch-2.gif">
 
-
-<h3 id="background">The background page</h3>
-
 <p>
-If your extension's web pages need to communicate
-or otherwise share information —
-for example, if a browser event
-can affect more than just one window's toolstrip —
-the extension can use a background page.
-The following figure shows a background page
-(<code>background.html</code>)
-that controls
-the toolstrips in an extension.
+See the <a href="browserAction.html">Browser Actions</a> page and
+the <a href="#pageComm">Communication between pages</a> section
+for example code and more details.
 </p>
 
-<img src="images/arch-3.gif">
-
-<p>
-The background page is an invisible page
-where you can put the main logic of the extension.
-The extension's other pages should have
-only the code that's necessary
-to show the state of the extension
-and to get input from the user.</p>
-
-<p>
-For more information, see
-<a href="background_pages.html">Background Pages</a>.
-</p>
 
 <h3 id="contentScripts">Content scripts</h3>
 
 <p>
 If your extension needs to interact with web pages,
 then it needs a <em>content script</em>.
-Content scripts are JavaScript files that run in the context of web pages.
-Using the standard
-<a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document Object Model</a>
-(DOM),
-content scripts can read details of the web pages the browser visits,
-and they can make changes to the pages.
+A content script is some JavaScript
+that executes in the context of a page
+that's been loaded into the browser.
+Think of a content script as part of that loaded page,
+not as part of the extension it was packaged with
+(its <em>parent extension</em>).
 </p>
 
 <p>
+Content scripts can read details of the web pages the browser visits,
+and they can make changes to the pages.
 In the following figure,
 the content script
 can read and modify
-the DOM for the web page displayed in Window 1.
-If the toolstrip's UI needs to change
-to reflect the web page's contents,
-the content script can request that change
-by sending a message to the parent extension.
+the DOM for the displayed web page.
+It cannot, however, modify the DOM of its parent extension's background page.
+</p>
+
+<img src="images/arch-3.gif">
+
+<p>
+Content scripts aren't completely cut off from their parent extensions.
+A content script can exchange messages with its parent extension,
+as the arrows in the following figure show.
+For example, a content script might send a message
+whenever it finds an RSS feed in a browser page.
+Or a background page might send a message
+asking a content script to change the appearance of its browser page.
 </p>
 
 <img src="images/arch-cs.gif">
@@ -484,13 +511,13 @@ see <a href="content_scripts.html">Content Scripts</a>.
 </p>
 
 
-<a name="H2-7"></a><h2>Communication between pages </h2>
+<h2 id="pageComm">Communication between pages </h2>
 
 <p>
 The HTML pages within an extension often need to communicate.
-An example is when the background page tells
-UI pages (such as toolstrips)
-to update their appearance.
+<span class="comment">
+[PENDING: For example, ...]
+</span>
 Because all of an extension's pages
 execute in same process on the same thread,
 the pages can make direct function calls to each other.
@@ -500,38 +527,17 @@ the pages can make direct function calls to each other.
 To find pages in the extension, use
 <a href="extension.html"><code>chrome.extension</code></a>
 methods such as
-<code>getViews()</code>,
-<code>getBackgroundPage()</code>,
-and <code>getToolstrips()</code>.
+<code>getViews()</code> and
+<code>getBackgroundPage()</code>.
 Once a page has a reference to other pages within the extension,
-the first page can invoke functions on the other pages.
-It can even manipulate their DOMs.
+the first page can invoke functions on the other pages,
+and it can manipulate their DOMs.
 </p>
 
-<p>
-Here's an example of
-communication between toolstrips and the background page.
-</p>
-
-<pre>//In background.html:
-function updateUI(checked) {
-  var toolstrips = chrome.extension.getToolstrips();
-  for (var i in toolstrips) {
-    if (toolstrips[i].enableCheckbox)
-      toolstrips[i].enableCheckbox(checked);
-  }
-}
-
-//In toolstrip.html:
-function enableCheckbox(checked) {
-  var cb = document.getElementById('checkbox');
-  cb.checked = checked;
-}
-</pre>
-
-<p>
-A good summary of communication mechanisms is at
-<a href="http://www.chromeplugins.org/google/plugins-development/communication-7883.html">http://www.chromeplugins.org/google/plugins-development/communication-7883.html</a>.
+<p class="comment">
+[PENDING: Here's an example of
+communication between xyz and the background page.
+(code example goes here)]
 </p>
 
 
