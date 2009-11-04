@@ -11,8 +11,7 @@
   if (self) {
     trackingArea_ =
         [[NSTrackingArea alloc] initWithRect:frame
-                                     options:NSTrackingMouseEnteredAndExited |
-                                             NSTrackingMouseMoved |
+                                     options:NSTrackingMouseMoved |
                                              NSTrackingActiveInActiveApp |
                                              NSTrackingInVisibleRect
                                        owner:self
