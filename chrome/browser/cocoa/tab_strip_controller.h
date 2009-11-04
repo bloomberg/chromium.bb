@@ -45,14 +45,17 @@ class ToolbarModel;
   scoped_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabModel_;  // weak
-  // access to the TabContentsControllers (which own the parent view
+  // Access to the TabContentsControllers (which own the parent view
   // for the toolbar and associated tab contents) given an index. This needs
   // to be kept in the same order as the tab strip's model as we will be
   // using its index from the TabStripModelObserver calls.
   scoped_nsobject<NSMutableArray> tabContentsArray_;
-  // an array of TabControllers which manage the actual tab views. As above,
+  // An array of TabControllers which manage the actual tab views. As above,
   // this is kept in the same order as the tab strip model.
   scoped_nsobject<NSMutableArray> tabArray_;
+
+  // Set of TabControllers that are currently animating closed.
+  scoped_nsobject<NSMutableSet> closingControllers_;
 
   // These values are only used during a drag, and override tab positioning.
   TabView* placeholderTab_;  // weak. Tab being dragged
@@ -116,10 +119,13 @@ class ToolbarModel;
 // location when the tab is added to the model.
 - (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame;
 
-// Given a tab view in the strip, return its index. Returns -1 if not present.
-- (NSInteger)indexForTabView:(NSView*)view;
+// Returns the index of the subview |view|. Returns -1 if not present. Takes
+// closing tabs into account such that this index will correctly match the tab
+// model. If |view| is in the process of closing, returns -1, as closing tabs
+// are no longer in the model.
+- (NSInteger)modelIndexForTabView:(NSView*)view;
 
-// return the view at a given index
+// Return the view at a given index.
 - (NSView*)viewAtIndex:(NSUInteger)index;
 
 // Set the placeholder for a dragged tab, allowing the |frame| and |strechiness|
@@ -145,6 +151,10 @@ class ToolbarModel;
 // the user closes tabs)? Needed to overcome missing clicks during rapid tab
 // closure.
 - (BOOL)inRapidClosureMode;
+
+// Returns YES if the user is allowed to drag tabs on the strip at this moment.
+// For example, this returns NO if there are any pending tab close animtations.
+- (BOOL)tabDraggingAllowed;
 
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;

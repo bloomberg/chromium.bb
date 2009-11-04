@@ -718,7 +718,7 @@ willPositionSheet:(NSWindow*)sheet
     DCHECK(isBrowser);
     if (!isBrowser) return;
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
-    int index = [dragBWC->tabStripController_ indexForTabView:view];
+    int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
     TabContents* contents =
         dragBWC->browser_->tabstrip_model()->GetTabContentsAt(index);
     // The tab contents may have gone away if given a window.close() while it
@@ -750,7 +750,7 @@ willPositionSheet:(NSWindow*)sheet
     [tabStripController_ dropTabContents:contents withFrame:destinationFrame];
   } else {
     // Moving within a window.
-    int index = [tabStripController_ indexForTabView:view];
+    int index = [tabStripController_ modelIndexForTabView:view];
     [tabStripController_ moveTabFromIndex:index];
   }
 
@@ -761,7 +761,7 @@ willPositionSheet:(NSWindow*)sheet
 // Tells the tab strip to forget about this tab in preparation for it being
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view {
-  int index = [tabStripController_ indexForTabView:view];
+  int index = [tabStripController_ modelIndexForTabView:view];
   browser_->tabstrip_model()->DetachTabContentsAt(index);
 }
 
@@ -791,7 +791,7 @@ willPositionSheet:(NSWindow*)sheet
   base::ScopedNSDisableScreenUpdates disabler;
 
   // Fetch the tab contents for the tab being dragged
-  int index = [tabStripController_ indexForTabView:tabView];
+  int index = [tabStripController_ modelIndexForTabView:tabView];
   TabContents* contents = browser_->tabstrip_model()->GetTabContentsAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
@@ -851,6 +851,10 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ insertPlaceholderForTab:nil
                                          frame:NSZeroRect
                                  yStretchiness:0];
+}
+
+- (BOOL)tabDraggingAllowed {
+  return [tabStripController_ tabDraggingAllowed];
 }
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {

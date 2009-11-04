@@ -162,6 +162,10 @@
   [self showNewTabButton:YES];
 }
 
+- (BOOL)tabDraggingAllowed {
+  return YES;
+}
+
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   // Subclasses should implement this, but it's not necessary.
   return YES;

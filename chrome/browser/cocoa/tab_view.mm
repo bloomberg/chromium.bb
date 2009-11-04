@@ -21,6 +21,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 @synthesize state = state_;
 @synthesize hoverAlpha = hoverAlpha_;
+@synthesize isClosing = isClosing_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -136,6 +137,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 // Returns |YES| if this tab can be torn away into a new window.
 - (BOOL)canBeDragged {
+  if ([self isClosing])
+    return NO;
   NSWindowController* controller = [sourceWindow_ windowController];
   if ([controller isKindOfClass:[TabWindowController class]]) {
     TabWindowController* realController =
@@ -189,6 +192,9 @@ static const NSTimeInterval kTearDuration = 0.333;
 static const CGFloat kRapidCloseDist = 2.5;
 
 - (void)mouseDown:(NSEvent*)theEvent {
+  if ([self isClosing])
+    return;
+
   NSPoint downLocation = [theEvent locationInWindow];
 
   // During the tab closure animation (in particular, during rapid tab closure),
@@ -232,7 +238,8 @@ static const CGFloat kRapidCloseDist = 2.5;
   NSArray* targets = [self dropTargetsForController:sourceController_];
   moveWindowOnDrag_ =
       ([sourceController_ numberOfTabs] < 2 && ![targets count]) ||
-      ![self canBeDragged];
+      ![self canBeDragged] ||
+      ![sourceController_ tabDraggingAllowed];
   // If we are dragging a tab, a window with a single tab should immediately
   // snap off and not drag within the tab strip.
   if (!moveWindowOnDrag_)
@@ -244,9 +251,9 @@ static const CGFloat kRapidCloseDist = 2.5;
   // ourselves. Ideally we should use the standard event loop.
   while (1) {
     theEvent =
-    [NSApp nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
-                       untilDate:[NSDate distantFuture]
-                          inMode:NSDefaultRunLoopMode dequeue:YES];
+        [NSApp nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
+                           untilDate:[NSDate distantFuture]
+                              inMode:NSDefaultRunLoopMode dequeue:YES];
     NSPoint thisPoint = [NSEvent mouseLocation];
 
     NSEventType type = [theEvent type];
@@ -550,6 +557,9 @@ static const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)otherMouseUp:(NSEvent*)theEvent {
+  if ([self isClosing])
+    return;
+
   // Support middle-click-to-close.
   if ([theEvent buttonNumber] == 2) {
     // |-hitTest:| takes a location in the superview's coordinates.
@@ -718,6 +728,8 @@ static const CGFloat kRapidCloseDist = 2.5;
 // Called when the user hits the right mouse button (or control-clicks) to
 // show a context menu.
 - (void)rightMouseDown:(NSEvent*)theEvent {
+  if ([self isClosing])
+    return;
   [NSMenu popUpContextMenu:[self menu] withEvent:theEvent forView:self];
 }
 

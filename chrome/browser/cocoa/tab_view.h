@@ -22,6 +22,7 @@
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
   IBOutlet NSButton* closeButton_;
+  BOOL isClosing_;
 
   // Tracking area for close button mouseover images.
   scoped_nsobject<NSTrackingArea> closeTrackingArea_;
@@ -56,6 +57,10 @@
 }
 @property(assign) NSCellStateValue state;
 @property(assign, nonatomic)CGFloat hoverAlpha;
+
+// Determines if the tab is in the process of animating closed. It may still
+// be visible on-screen, but should not respond to/initiate any events.
+@property(assign, nonatomic)BOOL isClosing;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_VIEW_H_

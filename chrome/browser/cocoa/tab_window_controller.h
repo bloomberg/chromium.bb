@@ -72,6 +72,11 @@
 // implementation.
 - (void)removePlaceholder;
 
+// Returns YES if tab dragging is currently allowed. Any number of things
+// can choose to disable it, such as pending animations. The default is to
+// always return YES. Subclasses should override as appropriate.
+- (BOOL)tabDraggingAllowed;
+
 // Show or hide the new tab button. The button is hidden immediately, but
 // waits until the next call to |-layoutTabs| to show it again.
 - (void)showNewTabButton:(BOOL)show;
