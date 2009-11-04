@@ -25,9 +25,6 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/extensions/extension_popup.h"
-#endif
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -37,8 +34,12 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
-#include "views/widget/widget.h"
 #include "webkit/glue/context_menu.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/extensions/extension_popup.h"
+#include "views/widget/widget.h"
+#endif
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

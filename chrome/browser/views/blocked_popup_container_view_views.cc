@@ -570,5 +570,5 @@ void BlockedPopupContainerViewViews::UpdateWidgetShape(
   rect.set(0, 0, SkIntToScalar(size.width()), SkIntToScalar(size.height()));
   gfx::Path path;
   path.addRoundRect(rect, kRoundedCornerRad, SkPath::kCW_Direction);
-  widget->SetShape(path);
+  widget->SetShape(path.CreateNativeRegion());
 }

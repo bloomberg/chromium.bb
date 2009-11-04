@@ -115,6 +115,7 @@
         'gfx/native_theme_win.h',
         'gfx/gtk_native_view_id_manager.cc',
         'gfx/gtk_native_view_id_manager.h',
+        'gfx/path.cc',
         'gfx/path_gtk.cc',
         'gfx/path_win.cc',
         'gfx/path.h',
