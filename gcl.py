@@ -157,8 +157,12 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       while True:
         # First, look for a locally modified version of the file.
         local_path = os.path.join(local_dir, local_base)
-        content, rc = RunShellWithReturnCode(["svn", "status", local_path])
-        if not rc and content.startswith('M'):
+        r = gclient_scm.CaptureSVNStatus((local_path,))
+        rc = -1
+        if r:
+          (status, file) = r[0]
+          rc = 0
+        if not rc and status[0] in ('A','M'):
           content = ReadFile(local_path)
           rc = 0
         else:
