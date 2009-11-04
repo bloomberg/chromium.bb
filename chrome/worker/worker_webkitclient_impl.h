@@ -5,9 +5,11 @@
 #ifndef CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_
 #define CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_
 
+#include "webkit/api/public/WebMimeRegistry.h"
 #include "webkit/glue/webkitclient_impl.h"
 
-class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
+class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
+                               public WebKit::WebMimeRegistry {
  public:
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
@@ -27,6 +29,22 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+
+  // WebMimeRegistry methods:
+  virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsImageMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const WebKit::WebString&, const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
+  virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
+  virtual WebKit::WebString preferredExtensionForMIMEType(
+      const WebKit::WebString&);
 };
 
 #endif  // CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_

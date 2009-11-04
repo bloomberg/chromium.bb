@@ -10,17 +10,24 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 
-WebKit::WebClipboard* WorkerWebKitClientImpl::clipboard() {
+using WebKit::WebClipboard;
+using WebKit::WebMessagePortChannel;
+using WebKit::WebMimeRegistry;
+using WebKit::WebSandboxSupport;
+using WebKit::WebSharedWorkerRepository;
+using WebKit::WebString;
+using WebKit::WebURL;
+
+WebClipboard* WorkerWebKitClientImpl::clipboard() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebMimeRegistry* WorkerWebKitClientImpl::mimeRegistry() {
-  NOTREACHED();
-  return NULL;
+WebMimeRegistry* WorkerWebKitClientImpl::mimeRegistry() {
+  return this;
 }
 
-WebKit::WebSandboxSupport* WorkerWebKitClientImpl::sandboxSupport() {
+WebSandboxSupport* WorkerWebKitClientImpl::sandboxSupport() {
   NOTREACHED();
   return NULL;
 }
@@ -43,39 +50,84 @@ bool WorkerWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
-WebKit::WebMessagePortChannel*
+WebMessagePortChannel*
 WorkerWebKitClientImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl();
 }
 
-void WorkerWebKitClientImpl::setCookies(const WebKit::WebURL& url,
-                                        const WebKit::WebURL& policy_url,
-                                        const WebKit::WebString& value) {
+void WorkerWebKitClientImpl::setCookies(const WebURL& url,
+                                        const WebURL& policy_url,
+                                        const WebString& value) {
   NOTREACHED();
 }
 
-WebKit::WebString WorkerWebKitClientImpl::cookies(
-    const WebKit::WebURL& url, const WebKit::WebURL& policy_url) {
+WebString WorkerWebKitClientImpl::cookies(
+    const WebURL& url, const WebURL& policy_url) {
   NOTREACHED();
-  return WebKit::WebString();
+  return WebString();
 }
 
-void WorkerWebKitClientImpl::prefetchHostName(const WebKit::WebString&) {
+void WorkerWebKitClientImpl::prefetchHostName(const WebString&) {
   NOTREACHED();
 }
 
-bool WorkerWebKitClientImpl::getFileSize(const WebKit::WebString& path,
+bool WorkerWebKitClientImpl::getFileSize(const WebString& path,
                                          long long& result) {
   NOTREACHED();
   return false;
 }
 
-WebKit::WebString WorkerWebKitClientImpl::defaultLocale() {
+WebString WorkerWebKitClientImpl::defaultLocale() {
   NOTREACHED();
-  return WebKit::WebString();
+  return WebString();
 }
 
-WebKit::WebSharedWorkerRepository*
+WebSharedWorkerRepository*
 WorkerWebKitClientImpl::sharedWorkerRepository() {
     return 0;
+}
+
+WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMIMEType(
+    const WebString&) {
+  return WebMimeRegistry::IsSupported;
+}
+
+WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsImageMIMEType(
+    const WebString&) {
+  NOTREACHED();
+  return WebMimeRegistry::IsSupported;
+}
+
+WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsJavaScriptMIMEType(
+    const WebString&) {
+  NOTREACHED();
+  return WebMimeRegistry::IsSupported;
+}
+
+WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMediaMIMEType(
+    const WebString&, const WebString&) {
+  NOTREACHED();
+  return WebMimeRegistry::IsSupported;
+}
+
+WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsNonImageMIMEType(
+    const WebString&) {
+  NOTREACHED();
+  return WebMimeRegistry::IsSupported;
+}
+
+WebString WorkerWebKitClientImpl::mimeTypeForExtension(const WebString&) {
+  NOTREACHED();
+  return WebString();
+}
+
+WebString WorkerWebKitClientImpl::mimeTypeFromFile(const WebString&) {
+  NOTREACHED();
+  return WebString();
+}
+
+WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
+    const WebString&) {
+  NOTREACHED();
+  return WebString();
 }
