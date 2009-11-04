@@ -16,7 +16,7 @@
 #if defined(O3D_IN_CHROME)
 #include "webkit/glue/plugins/nphostapi.h"
 #else
-#include "npupp.h"
+#include "o3d/third_party/npapi/include/npupp.h"
 #endif
 
 using testing::_;

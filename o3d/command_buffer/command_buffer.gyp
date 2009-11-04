@@ -191,9 +191,9 @@
         ],
         ['cb_service == "gl"',
           {
-            'include_dirs': [
-              '../../<(glewdir)/include',
-              '../../<(cgdir)/include',
+            'dependencies': [
+              '../build/libs.gyp:gl_libs',
+              '../build/libs.gyp:cg_libs',
             ],
             'sources': [
               'service/cross/gl/effect_gl.cc',

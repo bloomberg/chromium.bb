@@ -7,7 +7,12 @@
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object_factory.h"
+
+#if defined(O3D_IN_CHROME)
 #include "webkit/glue/plugins/nphostapi.h"
+#else
+#include "o3d/third_party/npapi/include/npupp.h"
+#endif
 
 namespace o3d {
 namespace gpu_plugin {
@@ -89,7 +94,7 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
 }
 }
 
-NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
+NPError NP_GetEntryPoints(NPPluginFuncs* funcs) {
   funcs->newp = NPP_New;
   funcs->destroy = NPP_Destroy;
   funcs->setwindow = NPP_SetWindow;
@@ -103,7 +108,7 @@ NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
 NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs,
                                NPPluginFuncs* plugin_funcs) {
 #else
-NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
+NPError NP_Initialize(NPNetscapeFuncs *browser_funcs) {
 #endif
   if (!browser_funcs)
     return NPERR_INVALID_FUNCTABLE_ERROR;
@@ -120,7 +125,7 @@ NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
   return NPERR_NO_ERROR;
 }
 
-NPError API_CALL NP_Shutdown() {
+NPError NP_Shutdown() {
   if (!g_browser)
     return NPERR_GENERIC_ERROR;
 

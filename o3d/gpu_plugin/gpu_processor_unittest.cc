@@ -4,7 +4,6 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
-#include "o3d/command_buffer/common/cross/cmd_buffer_format.h"
 #include "o3d/command_buffer/service/cross/mocks.h"
 #include "o3d/gpu_plugin/command_buffer_mock.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
@@ -47,12 +46,12 @@ class GPUProcessorTest : public testing::Test {
       .WillByDefault(Return(sizeof(buffer_)));
 
 #if defined(OS_WIN)
-    gapi_ = new command_buffer::GAPID3D9;
+    gapi_ = new GPUProcessor::GPUGAPIInterface;
 #endif
 
     async_api_.reset(new StrictMock<command_buffer::AsyncAPIMock>);
 
-    decoder_ = new command_buffer::GAPIDecoder(gapi_);
+    decoder_ = new command_buffer::o3d::GAPIDecoder(gapi_);
 
     parser_ = new command_buffer::CommandParser(buffer_,
                                                 sizeof(buffer_),
@@ -81,13 +80,13 @@ class GPUProcessorTest : public testing::Test {
   NPObjectPointer<MockCommandBuffer> command_buffer_;
   NPObjectPointer<NiceMock<MockSharedMemory> > shared_memory_;
   int32 buffer_[1024 / sizeof(int32)];
-  command_buffer::GAPIDecoder* decoder_;
+  command_buffer::o3d::GAPIDecoder* decoder_;
   command_buffer::CommandParser* parser_;
   scoped_ptr<command_buffer::AsyncAPIMock> async_api_;
   scoped_refptr<GPUProcessor> processor_;
 
 #if defined(OS_WIN)
-  command_buffer::GAPID3D9* gapi_;
+  GPUProcessor::GPUGAPIInterface* gapi_;
 #endif
 };
 

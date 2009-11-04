@@ -47,6 +47,13 @@
             ],
           },
         ],
+        ['renderer=="cb"',
+          {
+            'dependencies': [
+              '../gpu_plugin/gpu_plugin.gyp:*',
+            ],
+          },
+        ],
       ],
     },
   ],

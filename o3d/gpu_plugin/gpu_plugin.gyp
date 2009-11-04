@@ -94,45 +94,9 @@
         '../command_buffer/command_buffer.gyp:command_buffer_service',
         'np_utils',
       ],
-      'conditions': [
-        ['cb_service == "d3d9"',
-          {
-            'include_dirs': [
-              '../..',
-              '$(DXSDK_DIR)/Include',
-            ],
-          }
-        ],
-        ['cb_service == "gl"',
-          {
-            'include_dirs': [
-              '../../<(glewdir)/include',
-              '../../<(cgdir)/include',
-            ],
-          }
-        ],
-      ],
       'all_dependent_settings': {
         'include_dirs': [
           '../..',
-        ],
-        'conditions': [
-          ['cb_service == "d3d9"',
-            {
-              'include_dirs': [
-                '../..',
-                '$(DXSDK_DIR)/Include',
-              ],
-            }
-          ],
-          ['cb_service == "gl"',
-            {
-              'include_dirs': [
-                '../../<(glewdir)/include',
-                '../../<(cgdir)/include',
-              ],
-            }
-          ],
         ],
       },  # 'all_dependent_settings'
       'sources': [
@@ -183,17 +147,6 @@
       ],
       'include_dirs': [
         '../..',
-      ],
-      'conditions': [
-        ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
-          {
-            'link_settings': {
-              'libraries': [
-                '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
-              ],
-            },
-          },
-        ],
       ],
       'sources': [
         'command_buffer_unittest.cc',
