@@ -112,6 +112,7 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-err
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
+BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
@@ -1097,8 +1098,6 @@ BUG3244 LINUX : LayoutTests/fast/backgrounds/animated-svg-as-mask.html = FAIL
 
 BUG10302 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-10-b.svg = FAIL
 
-BUG10303 MAC RELEASE : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-BUG10303 MAC DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG10303 LINUX : LayoutTests/svg/custom/pattern-rotate.svg = FAIL
 
 // I find it hard to care too much about SVG failures.
@@ -3142,13 +3141,6 @@ BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL CRASH
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
 
-// WebKit roll 50101:50158
-BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL CRASH
-BUG_JORLOW : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL CRASH
-BUG_JORLOW RELEASE LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-// passed in roll to 50313
-BUG_JORLOW LINUX DEBUG : LayoutTests/fast/css/getComputedStyle/computed-style-font-family.html = PASS FAIL
-
 // More fallout from the above roll.
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = PASS CRASH
@@ -3156,10 +3148,6 @@ BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS F
 // continued, started to pass again in roll to 50313
 BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = PASS TIMEOUT
 BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = PASS TIMEOUT
-
-// The following should be uncommented when the next line is no longer needed.
-// BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
-BUG_JORLOW WIN LINUX DEBUG SLOW: LayoutTests/svg/css/getComputedStyle-basic.xhtml = CRASH FAIL PASS
 
 // WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
