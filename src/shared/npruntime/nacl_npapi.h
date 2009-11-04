@@ -62,8 +62,8 @@
  * from third_party primarily for tests/npapi_bridge/ which build in a
  * non nacl env
  */
-#include "native_client/src/third_party/npapi/files/include/npapi.h"
-#include "native_client/src/third_party/npapi/files/include/npruntime.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #endif
 

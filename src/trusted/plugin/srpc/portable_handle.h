@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <map>
 #include <string>
-#include "native_client/src/include/base/basictypes.h"
+#include "base/basictypes.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"

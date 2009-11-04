@@ -36,8 +36,8 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include "native_client/src/third_party/npapi/files/include/npapi.h"
-#include "native_client/src/third_party/npapi/files/include/npruntime.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 
 void* dl_handle;

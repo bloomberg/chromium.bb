@@ -429,8 +429,8 @@ Plugin::Plugin(NPP npp, const char* canvas)
                         &title) &&
         NPVARIANT_IS_STRING(title)) {
       printf("title = '%.*s'\n",
-             static_cast<int>(NPVARIANT_TO_STRING(title).utf8length),
-             NPVARIANT_TO_STRING(title).utf8characters);
+             static_cast<int>(NPVARIANT_TO_STRING(title).UTF8Length),
+             NPVARIANT_TO_STRING(title).UTF8Characters);
     }
     NPN_ReleaseVariantValue(&title);
   }

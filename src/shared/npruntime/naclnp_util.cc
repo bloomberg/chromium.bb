@@ -94,8 +94,8 @@ void PrintVariant(const NPVariant* variant) {
   } else if (NPVARIANT_IS_STRING(*variant)) {
     NPString str = NPVARIANT_TO_STRING(*variant);
     printf("NPVariant(string, \"%*s\")",
-           static_cast<int>(str.utf8length),
-           str.utf8characters);
+           static_cast<int>(str.UTF8Length),
+           str.UTF8Characters);
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
     printf("NPVariant(object, %p)",
            reinterpret_cast<void*>(NPVARIANT_TO_OBJECT(*variant)));

@@ -37,7 +37,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_IMPL_H_
 
 #include <Windows.h>
-#include "native_client/src/include/base/basictypes.h"
+#include "base/basictypes.h"
 
 namespace NaCl {
 
