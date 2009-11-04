@@ -203,7 +203,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         pending_page_id_(pending_page_id),
         postpone_loading_data_(false),
         cache_policy_override_set_(false),
-        cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy) {
+        cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
         user_script_idle_scheduler_(NULL) {
   }
 
