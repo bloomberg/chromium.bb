@@ -134,7 +134,8 @@ bool ParseCountOutOfTitle(const std::wstring& title, int* output) {
 
 // Tests that in the window.open() equivalent of a fork bomb, we stop building
 // windows.
-TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
+// Flaky, http://crbug.com/26692.
+TEST_F(BlockedPopupContainerInteractiveTest, FLAKY_DontSpawnEndlessPopups) {
   NavigateMainTabTo("infinite_popups.html");
   SimulateClickInCenterOf(window_);
 
