@@ -145,7 +145,7 @@ for asset in assets:
 # Add in all the MANIFEST files to be copied,
 # Skipping the ones in the assets above (if any).
 items = eval(open("MANIFEST", "r").read())
-if os.path.exists("../../o3d-internal/jscomp/JSCompiler_deploy.jar"):
+if not os.path.exists("../../o3d-internal/jscomp/JSCompiler_deploy.jar"):
   # add in the o3djs files.
   js_files = eval(open("o3djs/js_list.manifest", "r").read())
   js_files = ["o3djs/" + f for f in js_files]
