@@ -40,6 +40,8 @@
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
+#include "sandbox/linux/seccomp/sandbox.h"
+
 #include "unicode/timezone.h"
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
@@ -580,6 +582,21 @@ bool ZygoteMain(const MainFunctionParams& params) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
 #endif
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
+    if (!SupportsSeccompSandbox()) {
+      // There are a good number of users who cannot use the seccomp sandbox
+      // (e.g. because their distribution does not enable seccomp mode by
+      // default). While we would prefer to deny execution in this case, it
+      // seems more realistic to continue in degraded mode.
+      LOG(ERROR) << "WARNING! This machine lacks support needed for the "
+                    "Seccomp sandbox. Running renderers with Seccomp "
+                    "sandboxing disabled.";
+    } else {
+      LOG(INFO) << "Enabling experimental Seccomp sandbox.";
+    }
+  }
 
   if (!EnterSandbox()) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "

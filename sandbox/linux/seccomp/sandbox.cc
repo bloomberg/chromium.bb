@@ -5,12 +5,12 @@
 namespace playground {
 
 // Global variables
+enum Sandbox::SandboxStatus   Sandbox::status_ = STATUS_UNKNOWN;
 int                           Sandbox::pid_;
 int                           Sandbox::processFdPub_;
 int                           Sandbox::cloneFdPub_;
 Sandbox::ProtectedMap         Sandbox::protectedMap_;
 std::vector<SecureMem::Args*> Sandbox::secureMemPool_;
-
 
 bool Sandbox::sendFd(int transport, int fd0, int fd1, const void* buf,
                      size_t len) {
@@ -354,7 +354,56 @@ void Sandbox::snapshotMemoryMappings(int processFd) {
   }
 }
 
+int Sandbox::supportsSeccompSandbox() {
+  if (status_ != STATUS_UNKNOWN) {
+    return status_ != STATUS_UNSUPPORTED;
+  }
+  int fds[2];
+  SysCalls sys;
+  if (sys.pipe(fds)) {
+    status_ = STATUS_UNSUPPORTED;
+    return 0;
+  }
+  pid_t pid;
+  switch ((pid = sys.fork())) {
+    case -1:
+      status_ = STATUS_UNSUPPORTED;
+      return 0;
+    case 0: {
+      int devnull = sys.open("/dev/null", O_RDWR, 0);
+      if (devnull >= 0) {
+        dup2(devnull, 0);
+        dup2(devnull, 1);
+        dup2(devnull, 2);
+      }
+      startSandbox();
+      write(sys, fds[1], "", 1);
+      _exit(0);
+      sys.exit_group(0);
+      sys._exit(0);
+    }
+    default:
+      NOINTR_SYS(sys.close(fds[1]));
+      char ch;
+      if (read(sys, fds[0], &ch, 1) != 1) {
+        status_ = STATUS_UNSUPPORTED;
+      } else {
+        status_ = STATUS_AVAILABLE;
+      }
+      int rc;
+      NOINTR_SYS(sys.waitpid(pid, &rc, 0));
+      NOINTR_SYS(sys.close(fds[0]));
+      return status_ != STATUS_UNSUPPORTED;
+  }
+}
+
 void Sandbox::startSandbox() {
+  if (status_ == STATUS_UNSUPPORTED) {
+    die("The seccomp sandbox is not supported on this computer");
+  } else if (status_ == STATUS_ENABLED) {
+    return;
+  }
+
   SysCalls sys;
 
   // The pid is unchanged for the entire program, so we can retrieve it once
@@ -425,6 +474,11 @@ void Sandbox::startSandbox() {
 
   // Creating the trusted thread enables sandboxing
   createTrustedThread(processFdPub_, cloneFdPub_, secureMem);
+
+  // We can no longer check for sandboxing support at this point, but we also
+  // know for a fact that it is available (as we just turned it on). So update
+  // the status to reflect this information.
+  status_ = STATUS_ENABLED;
 }
 
 } // namespace

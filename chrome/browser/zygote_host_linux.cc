@@ -96,6 +96,9 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                                    browser_command_line.GetSwitchValue(
                                        switches::kEnableLogging));
   }
+  if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox)) {
+    cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
+  }
 
   const char* sandbox_binary = sandbox_cmd.c_str();
   struct stat st;

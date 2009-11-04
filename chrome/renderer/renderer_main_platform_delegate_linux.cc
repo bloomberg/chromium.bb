@@ -38,7 +38,8 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // http://code.google.com/p/seccompsandbox/
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSeccompSandbox)) {
+          switches::kEnableSeccompSandbox) &&
+      SupportsSeccompSandbox()) {
     StartSeccompSandbox();
   }
 #endif

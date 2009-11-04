@@ -44,6 +44,13 @@ class Sandbox {
  public:
   enum { kMaxThreads = 100 };
 
+
+  // There are a lot of reasons why the Seccomp sandbox might not be available.
+  // This could be because the kernel does not support Seccomp mode, or it
+  // could be because we fail to successfully rewrite all system call entry
+  // points.
+  static int supportsSeccompSandbox() asm("SupportsSeccompSandbox");
+
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
   // enters Seccomp mode.
@@ -602,6 +609,9 @@ class Sandbox {
   static void  createTrustedThread(int processFdPub, int cloneFdPub,
                                    SecureMem::Args* secureMem);
 
+  static enum SandboxStatus {
+    STATUS_UNKNOWN, STATUS_UNSUPPORTED, STATUS_AVAILABLE, STATUS_ENABLED
+  }            status_;
   static int   pid_;
   static int   processFdPub_;
   static int   cloneFdPub_;
