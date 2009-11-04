@@ -403,6 +403,14 @@ void TabContentsViewMac::Observe(NotificationType type,
                              forType:type];
 }
 
+- (void)undo:(id)sender {
+  [self tabContents]->render_view_host()->Undo();
+}
+
+- (void)redo:(id)sender {
+  [self tabContents]->render_view_host()->Redo();
+}
+
 - (void)startDragWithDropData:(const WebDropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask {
   dragSource_.reset([[WebDragSource alloc]
