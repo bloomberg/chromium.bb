@@ -3140,11 +3140,7 @@ BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PA
 
 // More fallout from the above roll.
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
-BUG_JORLOW WIN : LayoutTests/fast/parser/remove-node-stack.html = PASS CRASH
 BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS FAIL
-// continued, started to pass again in roll to 50313
-BUG_JORLOW LINUX : LayoutTests/transitions/background-transitions.html = PASS TIMEOUT
-BUG_JORLOW LINUX : LayoutTests/transitions/multiple-background-size-transitions.html = PASS TIMEOUT
 
 // WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
@@ -3211,7 +3207,6 @@ BUG_SENORBLANCO WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html 
 
 // WebKit 50358:50395
 BUG_SENORBLANCO : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
-BUG_SENORBLANCO WIN : LayoutTests/transitions/multiple-background-size-transitions.html = TEXT
 BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = IMAGE
 
 // WebKit 50395:50407
