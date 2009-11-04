@@ -9,16 +9,18 @@
 
 class ExtensionErrorUtils {
 public:
-  // Creates an error messages from a pattern. Places first instance if "*"
-  // with |s1|.
+  // Creates an error messages from a pattern.
   static std::string FormatErrorMessage(const std::string& format,
-    const std::string s1);
+    const std::string& s1);
 
-  // Creates an error messages from a pattern. Places first instance if "*"
-  // with |s1| and second instance of "*" with |s2|.
   static std::string FormatErrorMessage(const std::string& format,
-    const std::string s1,
-    const std::string s2);
+    const std::string& s1,
+    const std::string& s2);
+
+  static std::string FormatErrorMessage(const std::string& format,
+    const std::string& s1,
+    const std::string& s2,
+    const std::string& s3);
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_UTILS_H_

@@ -51,22 +51,9 @@ int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
 
 UserScriptSlave::UserScriptSlave()
     : shared_memory_(NULL),
-      script_deleter_(&scripts_),
-      user_script_start_line_(0) {
+      script_deleter_(&scripts_) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_GREASEMONKEY_API_JS);
-
-  // Count the number of lines that will be injected before the user script.
-  base::StringPiece::size_type pos = 0;
-  while ((pos = api_js_.find('\n', pos)) != base::StringPiece::npos) {
-    user_script_start_line_++;
-    pos++;
-  }
-
-  // NOTE: There is actually one extra line in the injected script because the
-  // function header includes a newline as well. But WebKit expects the
-  // numbering to be one-based, not zero-based, so actually *not* accounting for
-  // this extra line ends us up with the right offset.
 }
 
 bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
@@ -178,13 +165,16 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!sources.empty()) {
       int isolated_world_id = 0;
 
-      if (script->is_standalone()) {
-        // For standalone scripts, we try to emulate the Greasemonkey API.
+      // Emulate Greasemonkey API for scripts that were converted to extensions
+      // and "standalone" user scripts.
+      if (script->is_standalone() || script->emulate_greasemonkey()) {
         sources.insert(sources.begin(),
             WebScriptSource(WebString::fromUTF8(api_js_.as_string())));
-      } else {
-        // Setup chrome.self to contain an Extension object with the correct
-        // ID.
+      }
+
+      // Setup chrome.self to contain an Extension object with the correct
+      // ID.
+      if (!script->extension_id().empty()) {
         InsertInitExtensionCode(&sources, script->extension_id());
         isolated_world_id = GetIsolatedWorldId(script->extension_id());
       }

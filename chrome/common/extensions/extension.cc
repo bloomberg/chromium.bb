@@ -248,6 +248,17 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     result->add_url_pattern(pattern);
   }
 
+  // include/exclude globs (mostly for Greasemonkey compat)
+  if (!LoadGlobsHelper(content_script, definition_index, keys::kIncludeGlobs,
+                       error, &UserScript::add_glob, result)) {
+      return false;
+  }
+
+  if (!LoadGlobsHelper(content_script, definition_index, keys::kExcludeGlobs,
+                       error, &UserScript::add_exclude_glob, result)) {
+      return false;
+  }
+
   // js and css keys
   ListValue* js = NULL;
   if (content_script->HasKey(keys::kJs) &&
@@ -306,6 +317,38 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       result->css_scripts().push_back(UserScript::File(
           resource.extension_root(), resource.relative_path(), url));
     }
+  }
+
+  return true;
+}
+
+bool Extension::LoadGlobsHelper(
+    const DictionaryValue* content_script,
+    int content_script_index,
+    const wchar_t* globs_property_name,
+    std::string* error,
+    void (UserScript::*add_method) (const std::string& glob),
+    UserScript *instance) {
+  if (!content_script->HasKey(globs_property_name))
+    return true;  // they are optional
+
+  ListValue* list = NULL;
+  if (!content_script->GetList(globs_property_name, &list)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidGlobList,
+        IntToString(content_script_index), WideToASCII(globs_property_name));
+    return false;
+  }
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    std::string glob;
+    if (!list->GetString(i, &glob)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidGlob,
+          IntToString(content_script_index), WideToASCII(globs_property_name),
+          IntToString(i));
+      return false;
+    }
+
+    (instance->*add_method)(glob);
   }
 
   return true;
@@ -450,7 +493,8 @@ ExtensionResource Extension::GetResource(const FilePath& extension_path,
 }
 
 Extension::Extension(const FilePath& path)
-    : is_theme_(false), background_page_ready_(false) {
+    : converted_from_user_script_(false), is_theme_(false),
+      background_page_ready_(false) {
   DCHECK(path.IsAbsolute());
   location_ = INVALID;
 
@@ -667,6 +711,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       return false;
     }
   }
+
+  // Initialize converted_from_user_script (if present)
+  source.GetBoolean(keys::kConvertedFromUserScript,
+                    &converted_from_user_script_);
 
   // Initialize icons (if present).
   if (source.HasKey(keys::kIcons)) {
@@ -943,6 +991,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       if (!LoadUserScriptHelper(content_script, i, error, &script))
         return false;  // Failed to parse script context definition
       script.set_extension_id(id());
+      if (converted_from_user_script_)
+        script.set_emulate_greasemonkey(true);
       content_scripts_.push_back(script);
     }
   }

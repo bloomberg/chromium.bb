@@ -51,7 +51,11 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
   static const base::StringPiece kUserScriptBegin("// ==UserScript==");
   static const base::StringPiece kUserScriptEng("// ==/UserScript==");
+  static const base::StringPiece kNamespaceDeclaration("// @namespace ");
+  static const base::StringPiece kNameDeclaration("// @name ");
+  static const base::StringPiece kDescriptionDeclaration("// @description ");
   static const base::StringPiece kIncludeDeclaration("// @include ");
+  static const base::StringPiece kExcludeDeclaration("// @exclude ");
   static const base::StringPiece kMatchDeclaration("// @match ");
   static const base::StringPiece kRunAtDeclaration("// @run-at ");
   static const base::StringPiece kRunAtDocumentStartValue("document-start");
@@ -79,6 +83,16 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
         ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
         ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
         script->add_glob(value);
+      } else if (GetDeclarationValue(line, kExcludeDeclaration, &value)) {
+        ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+        ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+        script->add_exclude_glob(value);
+      } else if (GetDeclarationValue(line, kNamespaceDeclaration, &value)) {
+        script->set_name_space(value);
+      } else if (GetDeclarationValue(line, kNameDeclaration, &value)) {
+        script->set_name(value);
+      } else if (GetDeclarationValue(line, kDescriptionDeclaration, &value)) {
+        script->set_description(value);
       } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
         URLPattern pattern;
         if (!pattern.Parse(value))
@@ -96,10 +110,6 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
     line_start = line_end + 1;
   }
-
-  // It is probably a mistake to declare both @include and @match rules.
-  if (script->globs().size() > 0 && script->url_patterns().size() > 0)
-    return false;
 
   // If no patterns were specified, default to @include *. This is what
   // Greasemonkey does.

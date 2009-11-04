@@ -61,6 +61,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   FRIEND_TEST(UserScriptMasterTest, Parse5);
   FRIEND_TEST(UserScriptMasterTest, Parse6);
 
+ public:
   // We reload user scripts on the file thread to prevent blocking the UI.
   // ScriptReloader lives on the file thread and does the reload
   // work, and then sends a message back to its master with a new SharedMemory*.
@@ -118,6 +119,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     DISALLOW_COPY_AND_ASSIGN(ScriptReloader);
   };
 
+ private:
   // DirectoryWatcher::Delegate implementation.
   virtual void OnDirectoryChanged(const FilePath& path);
 

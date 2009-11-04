@@ -22,6 +22,13 @@ class UserScript {
  public:
   typedef std::vector<URLPattern> PatternList;
 
+  // The file extension for standalone user scripts.
+  static const char kFileExtension[];
+
+  // Check if a file or URL has the user script file extension.
+  static bool HasUserScriptFileExtension(const GURL& url);
+  static bool HasUserScriptFileExtension(const FilePath& path);
+
   // Locations that user scripts can be run inside the document.
   enum RunLocation {
     DOCUMENT_START,  // After the documentElemnet is created, but before
@@ -92,20 +99,45 @@ class UserScript {
 
   typedef std::vector<File> FileList;
 
-  // Constructor. Default the run location to document idle, which is similar
-  // to Greasemonkey but should result in better page load times for fast-
-  // loading pages.
-  UserScript() : run_location_(DOCUMENT_IDLE) {}
+  // Constructor. Default the run location to document end, which is like
+  // Greasemonkey and probably more useful for typical scripts.
+  UserScript()
+    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false) {
+  }
+
+  const std::string& name_space() const { return name_space_; }
+  void set_name_space(const std::string& name_space) {
+    name_space_ = name_space;
+  }
+
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
+
+  const std::string& description() const { return description_; }
+  void set_description(const std::string& description) {
+    description_ = description;
+  }
 
   // The place in the document to run the script.
   RunLocation run_location() const { return run_location_; }
   void set_run_location(RunLocation location) { run_location_ = location; }
+
+  // Whether to emulate greasemonkey when running this script.
+  bool emulate_greasemonkey() const { return emulate_greasemonkey_; }
+  void set_emulate_greasemonkey(bool val) { emulate_greasemonkey_ = val; }
 
   // The globs, if any, that determine which pages this script runs against.
   // These are only used with "standalone" Greasemonkey-like user scripts.
   const std::vector<std::string>& globs() const { return globs_; }
   void add_glob(const std::string& glob) { globs_.push_back(glob); }
   void clear_globs() { globs_.clear(); }
+  const std::vector<std::string>& exclude_globs() const {
+    return exclude_globs_;
+  }
+  void add_exclude_glob(const std::string& glob) {
+    exclude_globs_.push_back(glob);
+  }
+  void clear_exclude_globs() { exclude_globs_.clear(); }
 
   // The URLPatterns, if any, that determine which pages this script runs
   // against.
@@ -145,9 +177,20 @@ class UserScript {
   // The location to run the script inside the document.
   RunLocation run_location_;
 
+  // The namespace of the script. This is used by Greasemonkey in the same way
+  // as XML namespaces. Only used when parsing Greasemonkey-style scripts.
+  std::string name_space_;
+
+  // The script's name. Only used when parsing Greasemonkey-style scripts.
+  std::string name_;
+
+  // A longer description. Only used when parsing Greasemonkey-style scripts.
+  std::string description_;
+
   // Greasemonkey-style globs that determine pages to inject the script into.
   // These are only used with standalone scripts.
   std::vector<std::string> globs_;
+  std::vector<std::string> exclude_globs_;
 
   // URLPatterns that determine pages to inject the script into. These are
   // only used with scripts that are part of extensions.
@@ -162,6 +205,10 @@ class UserScript {
   // The ID of the extension this script is a part of, if any. Can be empty if
   // the script is a "standlone" user script.
   std::string extension_id_;
+
+  // Whether we should try to emulate Greasemonkey's APIs when running this
+  // script.
+  bool emulate_greasemonkey_;
 };
 
 typedef std::vector<UserScript> UserScriptList;

@@ -7,20 +7,58 @@
 #include "base/pickle.h"
 #include "base/string_util.h"
 
-bool UserScript::MatchesUrl(const GURL& url) const {
-  for (std::vector<std::string>::const_iterator glob = globs_.begin();
-       glob != globs_.end(); ++glob) {
-    if (MatchPattern(url.spec(), *glob))
-      return true;
-  }
-
-  for (PatternList::const_iterator pattern = url_patterns_.begin();
-       pattern != url_patterns_.end(); ++pattern) {
+namespace {
+static bool UrlMatchesPatterns(const UserScript::PatternList* patterns,
+                               const GURL& url) {
+  for (UserScript::PatternList::const_iterator pattern = patterns->begin();
+       pattern != patterns->end(); ++pattern) {
     if (pattern->MatchesUrl(url))
       return true;
   }
 
   return false;
+}
+
+static bool UrlMatchesGlobs(const std::vector<std::string>* globs,
+                            const GURL& url) {
+  for (std::vector<std::string>::const_iterator glob = globs->begin();
+       glob != globs->end(); ++glob) {
+    if (MatchPattern(url.spec(), *glob))
+      return true;
+  }
+
+  return false;
+}
+}
+
+const char UserScript::kFileExtension[] = ".user.js";
+
+bool UserScript::HasUserScriptFileExtension(const GURL& url) {
+  return EndsWith(url.ExtractFileName(), kFileExtension, false);
+}
+
+bool UserScript::HasUserScriptFileExtension(const FilePath& path) {
+  static FilePath extension(FilePath().AppendASCII(kFileExtension));
+  return EndsWith(path.BaseName().value(), extension.value(), false);
+}
+
+bool UserScript::MatchesUrl(const GURL& url) const {
+  if (url_patterns_.size() > 0) {
+    if (!UrlMatchesPatterns(&url_patterns_, url))
+      return false;
+  }
+
+  if (globs_.size() > 0) {
+    if (!UrlMatchesGlobs(&globs_, url))
+      return false;
+  }
+
+  if (exclude_globs_.size() > 0) {
+    if (UrlMatchesGlobs(&exclude_globs_, url))
+      return false;
+  }
+
+  return true;
 }
 
 void UserScript::File::Pickle(::Pickle* pickle) const {
@@ -43,10 +81,17 @@ void UserScript::Pickle(::Pickle* pickle) const {
   // Write the extension id.
   pickle->WriteString(extension_id());
 
+  // Write Greasemonkey emulation.
+  pickle->WriteBool(emulate_greasemonkey());
+
   // Write globs.
+  std::vector<std::string>::const_iterator glob;
   pickle->WriteSize(globs_.size());
-  for (std::vector<std::string>::const_iterator glob = globs_.begin();
-       glob != globs_.end(); ++glob) {
+  for (glob = globs_.begin(); glob != globs_.end(); ++glob) {
+    pickle->WriteString(*glob);
+  }
+  pickle->WriteSize(exclude_globs_.size());
+  for (glob = exclude_globs_.begin(); glob != exclude_globs_.end(); ++glob) {
     pickle->WriteString(*glob);
   }
 
@@ -82,15 +127,25 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   // Read the extension ID.
   CHECK(pickle.ReadString(iter, &extension_id_));
 
+  // Read Greasemonkey emulation.
+  CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
+
   // Read globs.
   size_t num_globs = 0;
   CHECK(pickle.ReadSize(iter, &num_globs));
-
   globs_.clear();
   for (size_t i = 0; i < num_globs; ++i) {
     std::string glob;
     CHECK(pickle.ReadString(iter, &glob));
     globs_.push_back(glob);
+  }
+
+  CHECK(pickle.ReadSize(iter, &num_globs));
+  exclude_globs_.clear();
+  for (size_t i = 0; i < num_globs; ++i) {
+    std::string glob;
+    CHECK(pickle.ReadString(iter, &glob));
+    exclude_globs_.push_back(glob);
   }
 
   // Read url patterns.

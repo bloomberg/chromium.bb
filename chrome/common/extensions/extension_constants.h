@@ -11,10 +11,13 @@ namespace extension_manifest_keys {
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kChromeURLOverrides;
   extern const wchar_t* kContentScripts;
+  extern const wchar_t* kConvertedFromUserScript;
   extern const wchar_t* kCss;
   extern const wchar_t* kDefaultLocale;
   extern const wchar_t* kDescription;
+  extern const wchar_t* kExcludeGlobs;
   extern const wchar_t* kIcons;
+  extern const wchar_t* kIncludeGlobs;
   extern const wchar_t* kJs;
   extern const wchar_t* kMatches;
   extern const wchar_t* kName;
@@ -70,6 +73,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidDescription;
   extern const char* kInvalidIcons;
   extern const char* kInvalidIconPath;
+  extern const char* kInvalidGlobList;
+  extern const char* kInvalidGlob;
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;

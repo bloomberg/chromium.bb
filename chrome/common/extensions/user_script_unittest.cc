@@ -21,6 +21,10 @@ TEST(UserScriptTest, Match1) {
   EXPECT_TRUE(script.MatchesUrl(GURL("http://mail.yahoo.com/bar")));
   EXPECT_TRUE(script.MatchesUrl(GURL("http://mail.msn.com/baz")));
   EXPECT_FALSE(script.MatchesUrl(GURL("http://www.hotmail.com")));
+
+  script.add_exclude_glob("*foo*");
+  EXPECT_TRUE(script.MatchesUrl(GURL("http://mail.google.com")));
+  EXPECT_FALSE(script.MatchesUrl(GURL("http://mail.google.com/foo")));
 }
 
 TEST(UserScriptTest, Match2) {
@@ -68,6 +72,36 @@ TEST(UserScriptTest, Match6) {
   EXPECT_FALSE(script.MatchesUrl(GURL("http://monkey.com/hotdog")));
 
   // NOTE: URLPattern is tested more extensively in url_pattern_unittest.cc.
+}
+
+TEST(UserScriptTest, UrlPatternGlobInteraction) {
+  // If there are both, match intersection(union(globs), union(urlpatterns)).
+  UserScript script;
+  
+  URLPattern pattern;
+  ASSERT_TRUE(pattern.Parse("http://www.google.com/*"));
+  script.add_url_pattern(pattern);
+
+  script.add_glob("*bar*");
+
+  // No match, because it doesn't match the glob.
+  EXPECT_FALSE(script.MatchesUrl(GURL("http://www.google.com/foo")));
+
+  script.add_exclude_glob("*baz*");
+
+  // No match, because it matches the exclude glob.
+  EXPECT_FALSE(script.MatchesUrl(GURL("http://www.google.com/baz")));
+
+  // Match, because it matches the glob, doesn't match the exclude glob.
+  EXPECT_TRUE(script.MatchesUrl(GURL("http://www.google.com/bar")));
+
+  // Try with just a single exclude glob.
+  script.clear_globs();
+  EXPECT_TRUE(script.MatchesUrl(GURL("http://www.google.com/foo")));
+
+  // Try with no globs or exclude globs.
+  script.clear_exclude_globs();
+  EXPECT_TRUE(script.MatchesUrl(GURL("http://www.google.com/foo")));
 }
 
 TEST(UserScriptTest, Pickle) {

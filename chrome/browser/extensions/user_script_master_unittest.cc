@@ -213,8 +213,8 @@ TEST_F(UserScriptMasterTest, Parse6) {
     "// @match  \t http://mail.yahoo.com/*\n"
     "// ==/UserScript==\n");
 
-  // Not allowed to mix @include and @value.
+  // Allowed to match @include and @match.
   UserScript script;
-  EXPECT_FALSE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
+  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
 }

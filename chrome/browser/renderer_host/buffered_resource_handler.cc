@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/renderer_host/x509_user_cert_resource_handler.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -440,6 +441,10 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
     if (should_download)
       return true;
   }
+
+  // Special-case user scripts to get downloaded instead of viewed.
+  if (UserScript::HasUserScriptFileExtension(request_->url()))
+    return true;
 
   // MIME type checking.
   if (net::IsSupportedMimeType(type))

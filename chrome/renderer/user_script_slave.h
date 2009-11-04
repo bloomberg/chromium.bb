@@ -50,11 +50,6 @@ class UserScriptSlave {
   // Greasemonkey API source that is injected with the scripts.
   base::StringPiece api_js_;
 
-  // The line number of the first line of the user script among all of the
-  // injected javascript.  This is used to make reported errors correspond with
-  // the proper line in the user script.
-  int user_script_start_line_;
-
   DISALLOW_COPY_AND_ASSIGN(UserScriptSlave);
 };
 

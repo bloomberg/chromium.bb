@@ -10,12 +10,15 @@ const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
 const wchar_t* kContentScripts = L"content_scripts";
+const wchar_t* kConvertedFromUserScript = L"converted_from_user_script";
 const wchar_t* kCss = L"css";
 const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
 const wchar_t* kMatches = L"matches";
+const wchar_t* kIncludeGlobs = L"include_globs";
+const wchar_t* kExcludeGlobs = L"exclude_globs";
 const wchar_t* kName = L"name";
 const wchar_t* kPageActionId = L"id";
 const wchar_t* kPageAction = L"page_action";
@@ -76,6 +79,10 @@ const char* kInvalidCssList =
     "Required value 'content_scripts[*].css is invalid.";
 const char* kInvalidDescription =
     "Invalid value for 'description'.";
+const char* kInvalidGlobList =
+    "Invalid value for 'content_scripts[*].*'.";
+const char* kInvalidGlob =
+    "Invalid value for 'content_scripts[*].*[*]'.";
 const char* kInvalidIcons =
     "Invalid value for 'icons'.";
 const char* kInvalidIconPath =

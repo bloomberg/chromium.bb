@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/platform_util.h"
@@ -1243,14 +1244,25 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
       nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
                        Source<DownloadManager>(this),
                        NotificationService::NoDetails());
-    CrxInstaller::Start(full_path,
-                        service->install_directory(),
-                        Extension::INTERNAL,
-                        "",  // no expected id
-                        true,  // please delete crx on completion
-                        true,  // privilege increase allowed
-                        service,
-                        new ExtensionInstallUI(profile_));
+    if (UserScript::HasUserScriptFileExtension(full_path)) {
+      CrxInstaller::InstallUserScript(
+          full_path,
+          download_url,
+          service->install_directory(),
+          true,  // please delete crx on completion
+          service,
+          new ExtensionInstallUI(profile_));
+    } else {
+      CrxInstaller::Start(
+          full_path,
+          service->install_directory(),
+          Extension::INTERNAL,
+          "",  // no expected id
+          true,  // please delete crx on completion
+          true,  // privilege increase allowed
+          service,
+          new ExtensionInstallUI(profile_));
+    }
   }
 }
 
@@ -1453,11 +1465,23 @@ void DownloadManager::GenerateSafeFilename(const std::string& mime_type,
 }
 
 bool DownloadManager::IsExtensionInstall(const DownloadItem* item) {
-  return item->mime_type() == Extension::kMimeType && !item->save_as();
+  if (item->save_as())
+    return false;
+
+  if (UserScript::HasUserScriptFileExtension(item->original_name()))
+    return true;
+
+  return item->mime_type() == Extension::kMimeType;
 }
 
 bool DownloadManager::IsExtensionInstall(const DownloadCreateInfo* info) {
-  return info->mime_type == Extension::kMimeType && !info->save_as;
+  if (info->save_as)
+    return false;
+
+  if (UserScript::HasUserScriptFileExtension(info->path))
+    return true;
+
+  return info->mime_type == Extension::kMimeType;
 }
 
 // Operations posted to us from the history service ----------------------------

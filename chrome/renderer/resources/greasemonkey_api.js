@@ -67,3 +67,12 @@ function GM_openInTab(url) {
 function GM_log(message) {
   window.console.log(message);
 }
+
+(function() {
+  var apis = ["GM_getValue", "GM_setValue", "GM_registerMenuCommand"];
+  for (var i = 0, api; api = apis[i]; i++) {
+    window[api] = function() {
+      console.log("%s is not supported.", api);
+    }
+  }
+})();

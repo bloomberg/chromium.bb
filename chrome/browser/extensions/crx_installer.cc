@@ -11,6 +11,7 @@
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
@@ -31,41 +32,56 @@ void CrxInstaller::Start(const FilePath& crx_path,
                          const FilePath& install_directory,
                          Extension::Location install_source,
                          const std::string& expected_id,
-                         bool delete_crx,
+                         bool delete_source,
                          bool allow_privilege_increase,
                          ExtensionsService* frontend,
                          ExtensionInstallUI* client) {
   // Note: We don't keep a reference because this object manages its own
   // lifetime.
-  new CrxInstaller(crx_path, install_directory, install_source, expected_id,
-                   delete_crx, allow_privilege_increase, frontend, client);
-}
+  CrxInstaller* installer = new CrxInstaller(crx_path, install_directory,
+                                             delete_source, frontend,
+                                             client);
+  installer->install_source_ = install_source;
+  installer->expected_id_ = expected_id;
+  installer->allow_privilege_increase_ = allow_privilege_increase;
 
-CrxInstaller::CrxInstaller(const FilePath& crx_path,
-                           const FilePath& install_directory,
-                           Extension::Location install_source,
-                           const std::string& expected_id,
-                           bool delete_crx,
-                           bool allow_privilege_increase,
-                           ExtensionsService* frontend,
-                           ExtensionInstallUI* client)
-    : crx_path_(crx_path),
-      install_directory_(install_directory),
-      install_source_(install_source),
-      expected_id_(expected_id),
-      delete_crx_(delete_crx),
-      allow_privilege_increase_(allow_privilege_increase),
-      frontend_(frontend),
-      client_(client) {
-
-  extensions_enabled_ = frontend_->extensions_enabled();
-
-  unpacker_ = new SandboxedExtensionUnpacker(
-      crx_path, g_browser_process->resource_dispatcher_host(), this);
+  installer->unpacker_ = new SandboxedExtensionUnpacker(
+      installer->source_file_, g_browser_process->resource_dispatcher_host(),
+      installer);
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(unpacker_, &SandboxedExtensionUnpacker::Start));
+      NewRunnableMethod(installer->unpacker_, &SandboxedExtensionUnpacker::Start));
+}
+
+void CrxInstaller::InstallUserScript(const FilePath& source_file,
+                                     const GURL& original_url,
+                                     const FilePath& install_directory,
+                                     bool delete_source,
+                                     ExtensionsService* frontend,
+                                     ExtensionInstallUI* client) {
+  CrxInstaller* installer = new CrxInstaller(source_file, install_directory,
+                                             delete_source, frontend, client);
+  installer->original_url_ = original_url;
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(installer, &CrxInstaller::ConvertUserScriptOnFileThread));
+}
+
+CrxInstaller::CrxInstaller(const FilePath& source_file,
+                           const FilePath& install_directory,
+                           bool delete_source,
+                           ExtensionsService* frontend,
+                           ExtensionInstallUI* client)
+    : source_file_(source_file),
+      install_directory_(install_directory),
+      install_source_(Extension::INTERNAL),
+      delete_source_(delete_source),
+      allow_privilege_increase_(false),
+      frontend_(frontend),
+      client_(client) {
+  extensions_enabled_ = frontend_->extensions_enabled();
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -78,11 +94,23 @@ CrxInstaller::~CrxInstaller() {
         NewRunnableFunction(&DeleteFileHelper, temp_dir_, true));
   }
 
-  if (delete_crx_) {
+  if (delete_source_) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteFileHelper, crx_path_, false));
+        NewRunnableFunction(&DeleteFileHelper, source_file_, false));
   }
+}
+
+void CrxInstaller::ConvertUserScriptOnFileThread() {
+  std::string error;
+  Extension* extension = ConvertUserScriptToExtension(source_file_,
+                                                      original_url_, &error);
+  if (!extension) {
+    ReportFailureFromFileThread(error);
+    return;
+  }
+
+  OnUnpackSuccess(extension->path(), extension->path(), extension);
 }
 
 void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
@@ -102,7 +130,6 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // The unpack dir we don't have to delete explicity since it is a child of
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
-  DCHECK(file_util::ContainsPath(temp_dir_, unpacked_extension_root_));
 
   // Determine whether to allow installation. We always allow themes and
   // external installs.

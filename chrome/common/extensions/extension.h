@@ -195,6 +195,9 @@ class Extension {
   const std::string& name() const { return name_; }
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
+  bool converted_from_user_script() const {
+    return converted_from_user_script_;
+  }
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
@@ -290,6 +293,15 @@ class Extension {
                             std::string* error,
                             UserScript* result);
 
+  // Helper method that loads either the include_globs or exclude_globs list
+  // from an entry in the content_script lists of the manifest.
+  bool LoadGlobsHelper(const DictionaryValue* content_script,
+                       int content_script_index,
+                       const wchar_t* globs_property_name,
+                       std::string* error,
+                       void (UserScript::*add_method) (const std::string& glob),
+                       UserScript *instance);
+
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
   ExtensionAction* LoadExtensionActionHelper(
@@ -324,6 +336,10 @@ class Extension {
 
   // An optional longer description of the extension.
   std::string description_;
+
+  // True if the extension was generated from a user script. (We show slightly
+  // different UI if so).
+  bool converted_from_user_script_;
 
   // Paths to the content scripts the extension contains.
   UserScriptList content_scripts_;

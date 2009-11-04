@@ -38,7 +38,7 @@ class CrxInstaller :
     public SandboxedExtensionUnpackerClient,
     public ExtensionInstallUI::Delegate {
  public:
-  // Starts the installation of the crx file in |crx_path| into
+  // Starts the installation of the crx file in |source_file| into
   // |install_directory|.
   //
   // Other params:
@@ -52,14 +52,24 @@ class CrxInstaller :
   //  client: Optional. If specified, will be used to confirm installation and
   //          also notified of success/fail. Note that we hold a reference to
   //          this, so it can outlive its creator (eg the UI).
-  static void Start(const FilePath& crx_path,
+  static void Start(const FilePath& source_file,
                     const FilePath& install_directory,
                     Extension::Location install_source,
                     const std::string& expected_id,
-                    bool delete_crx,
+                    bool delete_source,
                     bool allow_privilege_increase,
                     ExtensionsService* frontend,
                     ExtensionInstallUI* client);
+
+  // Starts the installation of the user script file in |source_file| into
+  // |install_directory|. The script will be converted to an extension.
+  // See Start() for argument descriptions.
+  static void InstallUserScript(const FilePath& source_file,
+                                const GURL& original_url,
+                                const FilePath& install_directory,
+                                bool delete_source,
+                                ExtensionsService* frontend,
+                                ExtensionInstallUI* client);
 
   // Given the path to the large icon from an extension, read it if present and
   // decode it into result.
@@ -71,15 +81,15 @@ class CrxInstaller :
   virtual void AbortInstall();
 
  private:
-  CrxInstaller(const FilePath& crx_path,
+  CrxInstaller(const FilePath& source_file,
                const FilePath& install_directory,
-               Extension::Location install_source,
-               const std::string& expected_id,
-               bool delete_crx,
-               bool allow_privilege_increase,
+               bool delete_source,
                ExtensionsService* frontend,
                ExtensionInstallUI* client);
   ~CrxInstaller();
+
+  // Converts the source user script to an extension.
+  void ConvertUserScriptOnFileThread();
 
   // SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const std::string& error_message);
@@ -103,8 +113,11 @@ class CrxInstaller :
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
 
-  // The crx file we're installing.
-  FilePath crx_path_;
+  // The file we're installing.
+  FilePath source_file_;
+
+  // The URL the file was downloaded from. Only used for user scripts.
+  GURL original_url_;
 
   // The directory extensions are installed to.
   FilePath install_directory_;
@@ -123,8 +136,8 @@ class CrxInstaller :
   // allowed.
   bool extensions_enabled_;
 
-  // Whether we're supposed to delete the source crx file on destruction.
-  bool delete_crx_;
+  // Whether we're supposed to delete the source file on destruction.
+  bool delete_source_;
 
   // Whether privileges should be allowed to silently increaes from any
   // previously installed version of the extension.
