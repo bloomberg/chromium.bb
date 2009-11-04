@@ -76,6 +76,8 @@ unsigned int GLAddressMode(Sampler::AddressMode o3d_mode,
 unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
                          Sampler::FilterType mip_filter) {
   switch (o3d_filter) {
+    case Sampler::NONE:
+      return GL_NEAREST;
     case Sampler::POINT:
       if (mip_filter == Sampler::NONE)
         return GL_NEAREST;
@@ -83,9 +85,8 @@ unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
         return GL_NEAREST_MIPMAP_NEAREST;
       else if (mip_filter == Sampler::LINEAR)
         return GL_NEAREST_MIPMAP_LINEAR;
-    default:
-      DLOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
-      // fall through
+      else if (mip_filter == Sampler::ANISOTROPIC)
+        return GL_NEAREST_MIPMAP_LINEAR;
     case Sampler::ANISOTROPIC:  // Anisotropy is handled in SetTextureAndStates
     case Sampler::LINEAR:
       if (mip_filter == Sampler::NONE)
@@ -94,16 +95,22 @@ unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
         return GL_LINEAR_MIPMAP_NEAREST;
       else if (mip_filter == Sampler::LINEAR)
         return GL_LINEAR_MIPMAP_LINEAR;
+      else if (mip_filter == Sampler::ANISOTROPIC)
+        return GL_LINEAR_MIPMAP_LINEAR;
   }
+  // fall through
+  DLOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
   DCHECK(false);
   return GL_NONE;
 }
 
 unsigned int GLMagFilter(Sampler::FilterType o3d_filter) {
   switch (o3d_filter) {
+    case Sampler::NONE:
     case Sampler::POINT:
       return GL_NEAREST;
     case Sampler::LINEAR:
+    case Sampler::ANISOTROPIC:
       return GL_LINEAR;
     default:
       DLOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
