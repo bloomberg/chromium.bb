@@ -25,6 +25,7 @@ using ::ScopedHandle;
 using ::ScopedFindFileHandle;
 using ::ScopedHDC;
 using ::ScopedBitmap;
+using ::ScopedHRGN;
 
 // Simple scoped memory releaser class for COM allocated memory.
 // Example:

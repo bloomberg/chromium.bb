@@ -11,7 +11,7 @@
 
 namespace gfx {
 
-GdkRegion* Path::CreateNativeRegion() const {
+GdkRegion* Path::CreateGdkRegion() const {
   int point_count = getPoints(NULL, 0);
   if (point_count <= 1) {
     // NOTE: ideally this would return gdk_empty_region, but that returns a
@@ -29,27 +29,6 @@ GdkRegion* Path::CreateNativeRegion() const {
   }
 
   return gdk_region_polygon(gdk_points.get(), point_count, GDK_EVEN_ODD_RULE);
-}
-
-// static
-NativeRegion Path::IntersectRegions(NativeRegion r1, NativeRegion r2) {
-  GdkRegion* copy = gdk_region_copy(r1);
-  gdk_region_intersect(copy, r2);
-  return copy;
-}
-
-// static
-NativeRegion Path::CombineRegions(NativeRegion r1, NativeRegion r2) {
-  GdkRegion* copy = gdk_region_copy(r1);
-  gdk_region_union(copy, r2);
-  return copy;
-}
-
-// static
-NativeRegion Path::SubtractRegion(NativeRegion r1, NativeRegion r2) {
-  GdkRegion* copy = gdk_region_copy(r1);
-  gdk_region_subtract(copy, r2);
-  return copy;
 }
 
 }  // namespace gfx

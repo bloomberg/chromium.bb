@@ -144,8 +144,8 @@ void WidgetWin::MoveAbove(Widget* other) {
                bounds.width(), bounds.height(), SWP_NOACTIVATE);
 }
 
-void WidgetWin::SetShape(gfx::NativeRegion region) {
-  SetWindowRgn(region, TRUE);
+void WidgetWin::SetShape(const gfx::Path& shape) {
+  SetWindowRgn(shape.CreateHRGN(), TRUE);
 }
 
 void WidgetWin::Close() {

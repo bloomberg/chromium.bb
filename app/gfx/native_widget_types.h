@@ -51,7 +51,6 @@ typedef struct _GdkCursor GdkCursor;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 typedef struct _cairo cairo_t;
-typedef struct _GdkRegion GdkRegion;
 #endif
 
 namespace gfx {
@@ -63,7 +62,6 @@ typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
 typedef HCURSOR NativeCursor;
 typedef HMENU NativeMenu;
-typedef HRGN NativeRegion;
 #elif defined(OS_MACOSX)
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
@@ -78,7 +76,6 @@ typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeMenu;
-typedef GdkRegion* NativeRegion;
 #endif
 
 // Note: for test_shell we're packing a pointer into the NativeViewId. So, if

@@ -429,12 +429,14 @@ bool View::HitTest(const gfx::Point& l) const {
     if (HasHitTestMask()) {
       gfx::Path mask;
       GetHitTestMask(&mask);
-      ScopedRegion rgn(mask.CreateNativeRegion());
-      // TODO: can this use SkRegion's contains instead?
 #if defined(OS_WIN)
+      ScopedHRGN rgn(mask.CreateHRGN());
       return !!PtInRegion(rgn, l.x(), l.y());
 #elif defined(OS_LINUX)
-      return gdk_region_point_in(rgn.Get(), l.x(), l.y());
+      GdkRegion* region = mask.CreateGdkRegion();
+      bool result = gdk_region_point_in(region, l.x(), l.y());
+      gdk_region_destroy(region);
+      return result;
 #endif
     }
     // No mask, but inside our bounds.

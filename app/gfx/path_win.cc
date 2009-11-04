@@ -8,7 +8,7 @@
 
 namespace gfx {
 
-HRGN Path::CreateNativeRegion() const {
+HRGN Path::CreateHRGN() const {
   int point_count = getPoints(NULL, 0);
   scoped_array<SkPoint> points(new SkPoint[point_count]);
   getPoints(points.get(), point_count);
@@ -19,27 +19,6 @@ HRGN Path::CreateNativeRegion() const {
   }
 
   return ::CreatePolygonRgn(windows_points.get(), point_count, ALTERNATE);
-}
-
-// static
-NativeRegion Path::IntersectRegions(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_AND);
-  return dest;
-}
-
-// static
-NativeRegion Path::CombineRegions(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_OR);
-  return dest;
-}
-
-// static
-NativeRegion Path::SubtractRegion(NativeRegion r1, NativeRegion r2) {
-  HRGN dest = CreateRectRgn(0, 0, 1, 1);
-  CombineRgn(dest, r1, r2, RGN_DIFF);
-  return dest;
 }
 
 }  // namespace gfx

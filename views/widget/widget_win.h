@@ -184,7 +184,7 @@ class WidgetWin : public app::WindowImpl,
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void MoveAbove(Widget* other);
-  virtual void SetShape(gfx::NativeRegion region);
+  virtual void SetShape(const gfx::Path& shape);
   virtual void Close();
   virtual void CloseNow();
   virtual void Show();

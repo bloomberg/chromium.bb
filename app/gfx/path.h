@@ -5,8 +5,13 @@
 #ifndef APP_GFX_PATH_H_
 #define APP_GFX_PATH_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#elif defined(OS_LINUX)
+typedef struct _GdkRegion GdkRegion;
+#endif
 
 #include "third_party/skia/include/core/SkPath.h"
 
@@ -14,35 +19,17 @@ namespace gfx {
 
 class Path : public SkPath {
  public:
-  // Used by Path(Point,size_t) constructor.
-  struct Point {
-    int x;
-    int y;
-  };
-
   Path() : SkPath() { moveTo(0, 0); }
 
-  // Creates a path populated with the specified points.
-  Path(const Point* points, size_t count);
-
-#if defined(OS_WIN) || defined(USE_X11)
-  // Creates a NativeRegion from the path. The caller is responsible for freeing
-  // resources used by this region. This only supports polygon paths.
-  NativeRegion CreateNativeRegion() const;
-
-  // Returns the intersection of the two regions. The caller owns the returned
-  // object.
-  static gfx::NativeRegion IntersectRegions(gfx::NativeRegion r1,
-                                            gfx::NativeRegion r2);
-
-  // Returns the union of the two regions. The caller owns the returned object.
-  static gfx::NativeRegion CombineRegions(gfx::NativeRegion r1,
-                                          gfx::NativeRegion r2);
-
-  // Returns the difference of the two regions. The caller owns the returned
-  // object.
-  static gfx::NativeRegion SubtractRegion(gfx::NativeRegion r1,
-                                          gfx::NativeRegion r2);
+#if defined(OS_WIN)
+  // Creates a HRGN from the path. The caller is responsible for freeing
+  // resources used by this region.  This only supports polygon paths.
+  HRGN CreateHRGN() const;
+#elif defined(OS_LINUX)
+  // Creates a Gdkregion from the path. The caller is responsible for freeing
+  // resources used by this region.  This only supports polygon paths.
+  // WARNING: this returns NULL for an empty Path.
+  GdkRegion* CreateGdkRegion() const;
 #endif
 
  private:

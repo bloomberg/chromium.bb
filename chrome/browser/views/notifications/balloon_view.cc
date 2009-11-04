@@ -137,7 +137,7 @@ void BalloonViewImpl::SizeContentsWindow() {
 
   gfx::Path path;
   GetContentsMask(contents_rect, &path);
-  html_container_->SetShape(path.CreateNativeRegion());
+  html_container_->SetShape(path);
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
