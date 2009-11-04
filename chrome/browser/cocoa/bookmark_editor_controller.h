@@ -34,7 +34,6 @@
 
   scoped_nsobject<NSString> initialName_;
   scoped_nsobject<NSString> initialUrl_;
-  scoped_nsobject<BookmarkTreeBrowserCell> currentEditCell_;
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow

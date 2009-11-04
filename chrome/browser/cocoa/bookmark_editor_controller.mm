@@ -172,6 +172,19 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   }
 }
 
+- (void)windowWillClose:(NSNotification *)notification {
+  // If a folder name cell is being edited then force it to end editing
+  // so that any changes are recorded.
+  [[self window] makeFirstResponder:nil];
+
+  // This is probably unnecessary but it feels cleaner since the
+  // delegate of a text field can be automatically registered for
+  // notifications.
+  [nameField_ setDelegate:nil];
+  [urlField_ setDelegate:nil];
+  [self autorelease];
+}
+
 /* TODO(jrg):
 // Implementing this informal protocol allows us to open the sheet
 // somewhere other than at the top of the window.  NOTE: this means
@@ -248,7 +261,6 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   [cell setTarget:self];
   [cell setAction:@selector(cellEditingCompleted:)];
   [cell setSendsActionOnEndEditing:YES];
-  currentEditCell_.reset([cell retain]);
   NSMatrix* matrix = [cell matrix];
   // Set the delegate so that we get called when editing wants to complete.
   [matrix setDelegate:self];
@@ -277,7 +289,6 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   BookmarkModel* model = profile_->GetBookmarkModel();
   NSString* newTitle = [cell title];
   model->SetTitle(bookmarkNode, base::SysNSStringToWide(newTitle));
-  currentEditCell_.reset();
 }
 
 - (void)browserDoubleClicked:(id)sender {
@@ -368,24 +379,7 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
 - (void)didEndSheet:(NSWindow*)sheet
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  // If a folder name cell is being edited then force it to end editing
-  // so that any changes are recorded.
-  BookmarkTreeBrowserCell* currentEditCell = currentEditCell_.get();
-  if (currentEditCell) {
-    [self saveFolderNameForCell:currentEditCell];
-    currentEditCell_.reset();
-  }
-  // This is probably unnecessary but it feels cleaner since the
-  // delegate of a text field can be automatically registered for
-  // notifications.
-  [nameField_ setDelegate:nil];
-  [urlField_ setDelegate:nil];
-
-  [[self window] orderOut:self];
-
-  // BookmarkEditor::Show() will create us then run away.  Unusually
-  // for a controller, we are responsible for deallocating ourself.
-  [self autorelease];
+  [sheet close];
 }
 
 #pragma mark For Unit Test Use Only

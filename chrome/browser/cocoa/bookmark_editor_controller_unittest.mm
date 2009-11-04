@@ -12,17 +12,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class BookmarkEditorControllerTest : public PlatformTest {
+class BookmarkEditorControllerTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
   const BookmarkNode* default_node_;
   const BookmarkNode* default_parent_;
   const char* default_name_;
   std::wstring default_title_;
-  scoped_nsobject<BookmarkEditorController> default_controller_;
+  BookmarkEditorController* default_controller_;
 
-  BookmarkEditorControllerTest() {
+  virtual void SetUp() {
+    CocoaTest::SetUp();
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     default_parent_ = model->GetBookmarkBarNode();
     default_name_ = "http://www.zim-bop-a-dee.com/";
@@ -30,14 +30,19 @@ class BookmarkEditorControllerTest : public PlatformTest {
     const BookmarkNode* default_node = model->AddURL(default_parent_, 0,
                                                      default_title_,
                                                      GURL(default_name_));
-    default_controller_.reset([[BookmarkEditorController alloc]
-                                initWithParentWindow:cocoa_helper_.window()
-                                             profile:helper_.profile()
-                                              parent:default_parent_
-                                                node:default_node
-                                       configuration:BookmarkEditor::NO_TREE
-                                             handler:nil]);
+    default_controller_ = [[BookmarkEditorController alloc]
+                              initWithParentWindow:test_window()
+                                           profile:helper_.profile()
+                                            parent:default_parent_
+                                              node:default_node
+                                     configuration:BookmarkEditor::NO_TREE
+                                           handler:nil];
     [default_controller_ window];  // Forces a nib load
+  }
+
+  virtual void TearDown() {
+    [default_controller_ close];
+    CocoaTest::TearDown();
   }
 };
 
@@ -46,19 +51,20 @@ TEST_F(BookmarkEditorControllerTest, NoNodeNoTree) {
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   const BookmarkNode* node = NULL;
 
-  scoped_nsobject<BookmarkEditorController>
-    controller([[BookmarkEditorController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
-                              profile:helper_.profile()
-                               parent:parent
-                                 node:node
-                        configuration:BookmarkEditor::NO_TREE
-                              handler:nil]);
+  BookmarkEditorController* controller =
+      [[BookmarkEditorController alloc]
+          initWithParentWindow:test_window()
+                       profile:helper_.profile()
+                        parent:parent
+                          node:node
+                 configuration:BookmarkEditor::NO_TREE
+                       handler:nil];
 
   EXPECT_NE((NSWindow*)nil, [controller window]);  // Forces a nib load
   EXPECT_EQ(@"", [controller displayName]);
   EXPECT_EQ(@"", [controller displayURL]);
   EXPECT_FALSE([controller okButtonEnabled]);
+  [controller close];
 }
 
 TEST_F(BookmarkEditorControllerTest, YesNodeShowTree) {
@@ -68,14 +74,14 @@ TEST_F(BookmarkEditorControllerTest, YesNodeShowTree) {
   const BookmarkNode* node = model->AddURL(parent, 0, default_title_,
                                            GURL(url_name));
 
-  scoped_nsobject<BookmarkEditorController>
-    controller([[BookmarkEditorController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
-                              profile:helper_.profile()
-                               parent:parent
-                                 node:node
-                        configuration:BookmarkEditor::SHOW_TREE
-                              handler:nil]);
+  BookmarkEditorController* controller =
+    [[BookmarkEditorController alloc]
+        initWithParentWindow:test_window()
+                     profile:helper_.profile()
+                      parent:parent
+                        node:node
+               configuration:BookmarkEditor::SHOW_TREE
+                     handler:nil];
 
   EXPECT_NE((NSWindow*)nil, [controller window]);  // Forces a nib load
   EXPECT_TRUE([base::SysWideToNSString(default_title_)
@@ -83,6 +89,7 @@ TEST_F(BookmarkEditorControllerTest, YesNodeShowTree) {
   EXPECT_TRUE([[NSString stringWithCString:url_name
                                   encoding:NSUTF8StringEncoding]
                 isEqual:[controller displayURL]]);
+  [controller close];
 }
 
 TEST_F(BookmarkEditorControllerTest, NoEdit) {
@@ -141,11 +148,10 @@ TEST_F(BookmarkEditorControllerTest, EditAndConfirmOKButton) {
   EXPECT_FALSE([default_controller_ okButtonEnabled]);
 }
 
-class BookmarkEditorControllerTreeTest : public PlatformTest {
+class BookmarkEditorControllerTreeTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
-  scoped_nsobject<BookmarkEditorController> default_controller_;
+  BookmarkEditorController* default_controller_;
   const BookmarkNode* group_a_;
   const BookmarkNode* group_b_;
   const BookmarkNode* group_bb_;
@@ -189,20 +195,33 @@ class BookmarkEditorControllerTreeTest : public PlatformTest {
     model.AddURL(group_c_, 3, L"c-3", GURL("http://c-3.com"));
 
     model.AddURL(root, 3, L"d", GURL("http://d-0.com"));
+  }
 
-    default_controller_.reset([[BookmarkEditorController alloc]
-                               initWithParentWindow:cocoa_helper_.window()
-                               profile:helper_.profile()
-                               parent:group_bb_
+  virtual BookmarkEditorController* CreateController() {
+    return [[BookmarkEditorController alloc]
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                             parent:group_bb_
                                node:bookmark_bb_3_
-                               configuration:BookmarkEditor::SHOW_TREE
-                               handler:nil]);
-    [default_controller_ window];  // Forces a nib load
+                      configuration:BookmarkEditor::SHOW_TREE
+                            handler:nil];
+  }
+
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    default_controller_ = CreateController();
+    EXPECT_TRUE([default_controller_ window]);
+  }
+
+  virtual void TearDown() {
+    [default_controller_ close];
+    CocoaTest::TearDown();
   }
 };
 
 TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
+  model.root_node();
   const BookmarkNode& root(*model.GetBookmarkBarNode());
   EXPECT_EQ(4, root.GetChildCount());
   const BookmarkNode* child = root.GetChild(0);
@@ -301,17 +320,16 @@ TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
 class BookmarkEditorControllerTreeNoNodeTest :
     public BookmarkEditorControllerTreeTest {
  public:
-  BookmarkEditorControllerTreeNoNodeTest() {
-    // Reset the controller so that we have no |node|.
-    default_controller_.reset([[BookmarkEditorController alloc]
-                               initWithParentWindow:cocoa_helper_.window()
-                               profile:helper_.profile()
-                               parent:group_bb_
+  virtual BookmarkEditorController* CreateController() {
+    return [[BookmarkEditorController alloc]
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                             parent:group_bb_
                                node:nil
-                               configuration:BookmarkEditor::SHOW_TREE
-                               handler:nil]);
-    [default_controller_ window];  // Forces a nib load
+                      configuration:BookmarkEditor::SHOW_TREE
+                            handler:nil];
   }
+
 };
 
 TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
@@ -327,17 +345,15 @@ TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
 class BookmarkEditorControllerTreeNoParentTest :
     public BookmarkEditorControllerTreeTest {
  public:
-  BookmarkEditorControllerTreeNoParentTest() {
-    // Reset the controller so that we have no |node|.
-    default_controller_.reset([[BookmarkEditorController alloc]
-                               initWithParentWindow:cocoa_helper_.window()
-                               profile:helper_.profile()
-                               parent:nil
-                               node:nil
-                               configuration:BookmarkEditor::SHOW_TREE
-                               handler:nil]);
-    [default_controller_ window];  // Forces a nib load
-  }
+  virtual BookmarkEditorController* CreateController() {
+    return [[BookmarkEditorController alloc]
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                            parent:nil
+                              node:nil
+                     configuration:BookmarkEditor::SHOW_TREE
+                           handler:nil];
+      }
 };
 
 TEST_F(BookmarkEditorControllerTreeNoParentTest, AddFolderWithNoGroupSelected) {
