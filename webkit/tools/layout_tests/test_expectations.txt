@@ -432,6 +432,9 @@ BUG21814 WONTFIX SKIP: LayoutTests/fast/encoding/idn-security.html = FAIL
 // these tests are irrelevant.
 BUG23748 WONTFIX : LayoutTests/http/tests/globalhistory = FAIL
 
+// DataGrid was pulled from HTML5 spec, unlikely to re-emerge in the current form.
+BUG17585 WONTFIX : LayoutTests/fast/dom/HTMLDataGridElement = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -2802,12 +2805,6 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 // WebKit merge 42738:45840
 // New tests, need baseline.
 BUG16240 MAC WIN : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
-
-// HTML5 DataGrid bindings are not enabled yet because the feature's not fully implemented.
-BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = FAIL
-BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = FAIL
-BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL
-BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridDataSource-basic.html = FAIL
 
 // Failure since WebKit merge 45873:45916
 BUG16823 MAC : LayoutTests/editing/execCommand/4128080-2.html = FAIL
