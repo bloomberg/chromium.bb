@@ -2588,7 +2588,7 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
         This extension will have full access to your computer and private data, and will autoupdate without further notice or action by you.
       </message>
-      
+
       <!-- chrome://extensions page -->
       <message name="IDS_EXTENSIONS_DEVELOPER_TOOLS_LINK" desc="Text of the link for developer tools.">
         Developer tools
@@ -2676,7 +2676,7 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW" desc="Message shown on successful packing of a new extension.">
         Created the following files:
-        
+
 Extension: <ph name="EXTENSION_FILE">$1<ex>c:\users\aa\myextension.crx</ex></ph>
 Key File: <ph name="KEY_FILE">$2<ex>c:\users\aa\myextension.pem</ex></ph>
 
@@ -4075,7 +4075,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Show Home button
         </message>
       </if>
-      
+
       <if expr="os == 'darwin'">
         <!-- Mac has a Toolbar group (IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON moved in this group) -->
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
@@ -5250,9 +5250,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARK_MANAGER_SEARCH_TITLE" desc="Text shown before the search text field.">
         Search:
       </message>
-
       <message name="IDS_DEFAULT_FILENAME" desc="Default name for saved files when we have no idea what they could be.">
         unknown
+      </message>
+      <message name="IDS_DEFAULT_DOWNLOAD_FILENAME" desc="Default name for downloaded files when we have no idea what they could be.">
+        download
       </message>
       <message name="IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED" desc="Tabs and windows on MacOS with no title use this string.">
         Untitled
@@ -5411,7 +5413,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
         Success!
       </message>
-      
+
       <!-- Sync app menu item strings -->
       <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
         Bookmarks synced...
@@ -5419,7 +5421,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
         Bookmark sync error...
       </message>
-      
+
       <!-- Merge and Sync dialog strings -->
       <message name="IDS_SYNC_MERGE_INTRODUCTION" desc="The header at the top of the merge and sync dialog.">
         Your bookmarks will be merged.

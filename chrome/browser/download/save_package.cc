@@ -5,6 +5,7 @@
 #include "chrome/browser/download/save_package.h"
 
 #include "app/l10n_util.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
@@ -67,7 +68,8 @@ namespace {
 
 // Default name which will be used when we can not get proper name from
 // resource URL.
-const char kDefaultSaveName[] = "saved_resource";
+const FilePath::CharType kDefaultSaveName[] =
+    FILE_PATH_LITERAL("saved_resource");
 
 const FilePath::CharType kDefaultHtmlExtension[] =
 #if defined(OS_WIN)
@@ -339,7 +341,7 @@ bool SavePackage::GenerateFilename(const std::string& disposition,
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GetSuggestedFilename.
   FilePath file_path = net::GetSuggestedFilename(url, disposition, "",
-                                                 kDefaultSaveName);
+                                                 FilePath(kDefaultSaveName));
 
   DCHECK(!file_path.empty());
   FilePath::StringType pure_file_name =

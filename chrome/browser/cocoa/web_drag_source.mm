@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/web_drag_source.h"
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
@@ -52,7 +53,7 @@ FilePath GetFileNameFromDragData(
 
   if (file_name.empty()) {
     // Retrieve the name from the URL.
-    file_name = net::GetSuggestedFilename(drop_data.url, "", "", "");
+    file_name = net::GetSuggestedFilename(drop_data.url, "", "", FilePath());
   }
 
   file_name = file_name.ReplaceExtension([SysUTF16ToNSString(

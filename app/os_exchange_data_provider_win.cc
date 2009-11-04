@@ -6,6 +6,7 @@
 
 #include "app/clipboard/clipboard_util_win.h"
 #include "app/l10n_util.h"
+#include "base/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -703,8 +704,8 @@ static void CreateValidFileNameFromTitle(const GURL& url,
                                          std::wstring* validated) {
   if (title.empty()) {
     if (url.is_valid()) {
-      *validated = net::GetSuggestedFilename(url, std::string(),
-                                             std::string(), "").ToWStringHack();
+      *validated = net::GetSuggestedFilename(
+          url, std::string(), std::string(), FilePath()).ToWStringHack();
     } else {
       // Nothing else can be done, just use a default.
       *validated = l10n_util::GetString(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);

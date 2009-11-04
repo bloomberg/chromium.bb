@@ -1187,10 +1187,19 @@ void DownloadManager::GenerateExtension(
 
 void DownloadManager::GenerateFilename(DownloadCreateInfo* info,
                                        FilePath* generated_name) {
+  std::wstring default_name =
+      l10n_util::GetString(IDS_DEFAULT_DOWNLOAD_FILENAME);
+#if defined(OS_WIN)
+  FilePath default_file_path(default_name);
+#elif defined(OS_POSIX)
+  FilePath default_file_path(base::SysWideToNativeMB(default_name));
+#endif
+
   *generated_name = net::GetSuggestedFilename(GURL(info->url),
                                               info->content_disposition,
                                               info->referrer_charset,
-                                              "download");
+                                              default_file_path);
+
   DCHECK(!generated_name->empty());
 
   GenerateSafeFilename(info->mime_type, generated_name);

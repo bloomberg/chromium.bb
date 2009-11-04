@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/tree_node_iterator.h"
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
@@ -403,7 +404,7 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
 std::string GetNameForURL(const GURL& url) {
   if (url.is_valid()) {
     return WideToUTF8(net::GetSuggestedFilename(
-        url, std::string(), std::string(), "").ToWStringHack());
+        url, std::string(), std::string(), FilePath()).ToWStringHack());
   } else {
     return l10n_util::GetStringUTF8(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
   }

@@ -6,6 +6,7 @@
 
 #include "webkit/glue/weburlloader_impl.h"
 
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -167,13 +168,8 @@ void PopulateURLResponse(
   // pass it to GetSuggestedFilename.
   std::string value;
   if (headers->EnumerateHeader(NULL, "content-disposition", &value)) {
-#if defined(OS_WIN)
-    response->setSuggestedFileName(
-        net::GetSuggestedFilename(url, value, "", "").value());
-#else
-    response->setSuggestedFileName(UTF8ToUTF16(
-        net::GetSuggestedFilename(url, value, "", "").value()));
-#endif
+    response->setSuggestedFileName(webkit_glue::FilePathToWebString(
+        net::GetSuggestedFilename(url, value, "", FilePath())));
   }
 
   Time time_val;

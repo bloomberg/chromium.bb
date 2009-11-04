@@ -9,6 +9,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
+#include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "base/win_util.h"
@@ -138,7 +139,7 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
     file_name = file_name.BaseName().RemoveExtension();
     if (file_name.value().empty()) {
       // Retrieve the name from the URL.
-      file_name = net::GetSuggestedFilename(drop_data.url, "", "", "");
+      file_name = net::GetSuggestedFilename(drop_data.url, "", "", FilePath());
       if (file_name.value().size() + drop_data.file_extension.size() + 1 >
           MAX_PATH) {
         file_name = FilePath(file_name.value().substr(
