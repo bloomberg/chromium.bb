@@ -721,12 +721,6 @@ BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-
 //BUG_JORLOW : LayoutTests/storage/domstorage/quota.html = CRASH PASS
 //BUG_JORLOW DEBUG : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = PASS CRASH
 
-// Depends on URL support in storage events.
-BUG_JORLOW : LayoutTests/storage/domstorage/localstorage/iframe-events.html = FAIL
-
-// TODO(jorlow): Triage.
-BUG_JORLOW MAC : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
-
 // TODO(jorlow): Is this really still slow?  If so, why?
 BUG_JORLOW SLOW DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 
