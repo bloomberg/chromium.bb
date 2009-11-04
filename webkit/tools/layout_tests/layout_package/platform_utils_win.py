@@ -43,12 +43,12 @@ def BaselineSearchPath(all_versions=False):
   """
 
   dirs = []
-  if all_versions or PlatformVersion() in ("-7", "-vista", "-xp"):
-    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-7'))
-  if all_versions or PlatformVersion() in ("-vista", "-xp"):
-    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
   if all_versions or PlatformVersion() == "-xp":
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
+  if all_versions or PlatformVersion() in ("-vista", "-xp"):
+    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
+  if all_versions or PlatformVersion() in ("-7", "-vista", "-xp"):
+    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-7'))
   dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
   dirs.append(path_utils.WebKitBaselinePath('win'))
   dirs.append(path_utils.WebKitBaselinePath('mac'))
