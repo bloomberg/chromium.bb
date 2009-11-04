@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/common/sqlite_utils.h"
 
 using std::numeric_limits;
 using std::string;
@@ -55,26 +56,21 @@ int Exec(sqlite3* dbhandle, const char* query, sqlite3_stmt* statement) {
   return SQLITE_OK == finalize_result ? result : finalize_result;
 }
 
-int SqliteOpen(PathString filename, sqlite3** db) {
-  int result =
-#if PATHSTRING_IS_STD_STRING
-  sqlite3_open
-#else
-  sqlite3_open16
-#endif
-  (filename.c_str(), db);
-  LOG_IF(ERROR, SQLITE_OK != result) << "Error opening " << filename << ": "
+int SqliteOpen(const FilePath& filename, sqlite3** db) {
+  int result = OpenSqliteDb(filename, db);
+  LOG_IF(ERROR, SQLITE_OK != result) << "Error opening "
+                                     << filename.value() << ": "
                                      << result;
 #if defined(OS_WIN)
   if (SQLITE_OK == result) {
     // Make sure we mark the db file as not indexed so since if any other app
     // opens it, it can break our db locking.
-    DWORD attrs = GetFileAttributes(filename.c_str());
+    DWORD attrs = GetFileAttributesW(filename.value().c_str());
     if (FILE_ATTRIBUTE_NORMAL == attrs)
       attrs = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
     else
       attrs = attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-    SetFileAttributes(filename.c_str(), attrs);
+    SetFileAttributesW(filename.value().c_str(), attrs);
   }
 #endif  // defined(OS_WIN)
   // Be patient as we set pragmas.
@@ -86,27 +82,6 @@ int SqliteOpen(PathString filename, sqlite3** db) {
   sqlite3_busy_timeout(*db, 0);
   return SQLITE_OK;
 }
-
-#if !PATHSTRING_IS_STD_STRING
-sqlite3_stmt* BindArg(sqlite3_stmt* statement, const PathString& s, int index) {
-  if (NULL == statement)
-    return statement;
-  CHECK(SQLITE_OK == sqlite3_bind_text16(statement, index, s.data(),
-    CountBytes(s), SQLITE_TRANSIENT));
-  return statement;
-}
-
-sqlite3_stmt* BindArg(sqlite3_stmt* statement, const PathChar* s, int index) {
-  if (NULL == statement)
-    return statement;
-  CHECK(SQLITE_OK == sqlite3_bind_text16(statement,
-                                         index,
-                                         s,
-                                         -1,  // -1 means s is zero-terminated
-                                         SQLITE_TRANSIENT));
-  return statement;
-}
-#endif  // !PATHSTRING_IS_STD_STRING
 
 sqlite3_stmt* BindArg(sqlite3_stmt* statement, const string& s, int index) {
   if (NULL == statement)
@@ -179,17 +154,15 @@ sqlite3_stmt* BindArg(sqlite3_stmt* statement, SqliteNullType, int index) {
   return statement;
 }
 
-#if !PATHSTRING_IS_STD_STRING
-void GetColumn(sqlite3_stmt* statement, int index, PathString* value) {
+void GetColumn(sqlite3_stmt* statement, int index, string16* value) {
   if (sqlite3_column_type(statement, index) == SQLITE_NULL) {
     value->clear();
   } else {
     value->assign(
-        static_cast<const PathChar*>(sqlite3_column_text16(statement, index)),
-        sqlite3_column_bytes16(statement, index) / sizeof(PathChar));
+        static_cast<const char16*>(sqlite3_column_text16(statement, index)),
+        sqlite3_column_bytes16(statement, index) / sizeof(char16));
   }
 }
-#endif  // !PATHSTRING_IS_STD_STRING
 
 void GetColumn(sqlite3_stmt* statement, int index, string* value) {
   if (sqlite3_column_type(statement, index) == SQLITE_NULL) {

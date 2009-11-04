@@ -8,10 +8,3 @@
 #ifndef OS_MACOSX
 #error Compile this file on Mac only.
 #endif
-
-PathString GetFullPath(const PathString& path) {
-  // TODO(sync): Not sure what the base of the relative path should be on
-  // OS X.
-  return path;
-}
-

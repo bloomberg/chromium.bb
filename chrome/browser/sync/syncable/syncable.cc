@@ -26,9 +26,11 @@
 #include <string>
 
 #include "base/hash_tables.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -38,8 +40,6 @@
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
-#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/fast_dump.h"
@@ -90,15 +90,6 @@ int64 Now() {
 // Callback for sqlite3
 int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
                        const void* b) {
-#if defined(OS_WIN)
-  DCHECK_EQ(0, a_bytes % 2);
-  DCHECK_EQ(0, b_bytes % 2);
-  int result = CompareString(LOCALE_INVARIANT, NORM_IGNORECASE,
-    static_cast<const PathChar*>(a), a_bytes / 2,
-    static_cast<const PathChar*>(b), b_bytes / 2);
-  CHECK(0 != result) << "Error comparing strings: " << GetLastError();
-  return result - 2;  // Convert to -1, 0, 1
-#elif defined(OS_LINUX)
   int result = base::strncasecmp(reinterpret_cast<const char *>(a),
                                  reinterpret_cast<const char *>(b),
                                  std::min(a_bytes, b_bytes));
@@ -107,21 +98,6 @@ int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
   } else {
     return a_bytes > b_bytes ? 1 : b_bytes > a_bytes ? -1 : 0;
   }
-#elif defined(OS_MACOSX)
-  CFStringRef a_str;
-  CFStringRef b_str;
-  a_str = CFStringCreateWithBytes(NULL, reinterpret_cast<const UInt8*>(a),
-                                  a_bytes, kCFStringEncodingUTF8, FALSE);
-  b_str = CFStringCreateWithBytes(NULL, reinterpret_cast<const UInt8*>(b),
-                                  b_bytes, kCFStringEncodingUTF8, FALSE);
-  CFComparisonResult res;
-  res = CFStringCompare(a_str, b_str, kCFCompareCaseInsensitive);
-  CFRelease(a_str);
-  CFRelease(b_str);
-  return res;
-#else
-#error no ComparePathNames16() for your OS
-#endif
 }
 
 template <Int64Field field_index>
@@ -177,7 +153,7 @@ Name Name::FromEntryKernel(EntryKernel* kernel) {
 static const DirectoryChangeEvent kShutdownChangesEvent =
     { DirectoryChangeEvent::SHUTDOWN, 0, 0 };
 
-Directory::Kernel::Kernel(const PathString& db_path,
+Directory::Kernel::Kernel(const FilePath& db_path,
                           const PathString& name,
                           const KernelLoadInfo& info)
 : db_path(db_path),
@@ -247,7 +223,7 @@ BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
      ++pathname_ptr, ++pathspec_ptr;
 
   // If we have more inital spaces in the pathspec than in the pathname then the
-  // result from PathMatchSpec will be erronous.
+  // result from PathMatchSpec will be erroneous.
   if (*pathspec_ptr == ' ')
     return FALSE;
 
@@ -257,10 +233,10 @@ BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
   // substituting ';' with ':' which is illegal character in file name and
   // we're not going to see it there. With ':' in path name and spec
   // PathMatchSpec works fine.
-  if ((NULL == wcschr(pathname_ptr, L';')) &&
-      (NULL == wcschr(pathspec_ptr, L';'))) {
+  if ((NULL == strchr(pathname_ptr, ';')) &&
+      (NULL == strchr(pathspec_ptr, ';'))) {
     // No ';' in file name and in spec. Just pass it as it is.
-    return ::PathMatchSpec(pathname_ptr, pathspec_ptr);
+    return ::PathMatchSpecA(pathname_ptr, pathspec_ptr);
   }
 
   // We need to subst ';' with ':' in both, name and spec.
@@ -269,23 +245,23 @@ BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
 
   PathString::size_type index = name_subst.find(L';');
   while (PathString::npos != index) {
-    name_subst[index] = L':';
-    index = name_subst.find(L';', index + 1);
+    name_subst[index] = ':';
+    index = name_subst.find(';', index + 1);
   }
 
   index = spec_subst.find(L';');
   while (PathString::npos != index) {
-    spec_subst[index] = L':';
-    index = spec_subst.find(L';', index + 1);
+    spec_subst[index] = ':';
+    index = spec_subst.find(';', index + 1);
   }
 
-  return ::PathMatchSpec(name_subst.c_str(), spec_subst.c_str());
+  return ::PathMatchSpecA(name_subst.c_str(), spec_subst.c_str());
 #else
   return 0 == ComparePathNames(pathname, pathspec);
 #endif
 }
 
-DirOpenResult Directory::Open(const PathString& file_path,
+DirOpenResult Directory::Open(const FilePath& file_path,
                               const PathString& name) {
   const DirOpenResult result = OpenImpl(file_path, name);
   if (OPENED != result)
@@ -308,18 +284,19 @@ void Directory::InitializeIndices() {
 }
 
 DirectoryBackingStore* Directory::CreateBackingStore(
-    const PathString& dir_name, const PathString& backing_filepath) {
+    const PathString& dir_name, const FilePath& backing_filepath) {
   return new DirectoryBackingStore(dir_name, backing_filepath);
 }
 
-DirOpenResult Directory::OpenImpl(const PathString& file_path,
+DirOpenResult Directory::OpenImpl(const FilePath& file_path,
                                   const PathString& name) {
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
-  const PathString db_path = ::GetFullPath(file_path);
+  FilePath db_path(file_path);
+  file_util::AbsolutePath(&db_path);
   store_ = CreateBackingStore(name, db_path);
 
   KernelLoadInfo info;
-  // Temporary indicies before kernel_ initialized in case Load fails. We 0(1)
+  // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
   // swap these later.
   MetahandlesIndex metas_bucket;
   ExtendedAttributes xattrs_bucket;
@@ -505,62 +482,6 @@ struct ExactPathMatcher : public PathMatcher {
   }
   const PathString pathspec_;
 };
-
-// Matches a pathspec with wildcards.
-struct PartialPathMatcher : public PathMatcher {
-  PartialPathMatcher(const PathString& pathspec,
-                     PathString::size_type wildcard, const Id& parent_id)
-    : PathMatcher(parent_id), pathspec_(pathspec) {
-    if (0 == wildcard)
-      return;
-    lesser_.assign(pathspec_.data(), wildcard);
-    greater_.assign(pathspec_.data(), wildcard);
-    // Increment the last letter of greater so we can then less than
-    // compare to it.
-    PathString::size_type i = greater_.size() - 1;
-    do {
-    if (greater_[i] == std::numeric_limits<PathString::value_type>::max()) {
-        greater_.resize(i);  // Try the preceding character.
-        if (0 == i--)
-          break;
-      } else {
-        greater_[i] += 1;
-      }
-      // Yes, there are cases where incrementing a character
-      // actually decreases its position in the sort.  Example: 9 -> :
-    } while (ComparePathNames(lesser_, greater_) >= 0);
-  }
-
-  virtual MatchType PathMatches(const PathString& path) {
-    return PathNameMatch(path, pathspec_) ? MATCH : NO_MATCH;
-  }
-
-  virtual Index::iterator lower_bound(Index* index) {
-    needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(NAME) = lesser_;
-    return index->lower_bound(&needle_);
-  }
-  virtual Index::iterator upper_bound(Index* index) {
-    if (greater_.empty()) {
-      needle_.ref(PARENT_ID) = parent_id_;
-      needle_.ref(NAME).clear();
-      Index::iterator i = index->upper_bound(&needle_),
-        end = index->end();
-      while (i != end && (*i)->ref(PARENT_ID) == parent_id_)
-        ++i;
-      return i;
-    } else {
-      needle_.ref(PARENT_ID) = parent_id_;
-      needle_.ref(NAME) = greater_;
-      return index->lower_bound(&needle_);
-    }
-  }
-
-  const PathString pathspec_;
-  PathString lesser_;
-  PathString greater_;
-};
-
 
 void Directory::GetChildHandles(BaseTransaction* trans, const Id& parent_id,
                                 Directory::ChildHandles* result) {
@@ -1658,25 +1579,7 @@ static int PathStringToInteger(PathString s) {
     if (PathString::npos == PathString(PSTR("0123456789")).find(*i))
       return -1;
   }
-  return
-#if !PATHSTRING_IS_STD_STRING
-  _wtoi
-#else
-  atoi
-#endif
-  (s.c_str());
-}
-
-static PathString IntegerToPathString(int i) {
-  const size_t kBufSize = 25;
-  PathChar buf[kBufSize];
-#if !PATHSTRING_IS_STD_STRING
-  const int radix = 10;
-  _itow(i, buf, radix);
-#else
-  snprintf(buf, kBufSize, "%d", i);
-#endif
-  return buf;
+  return atoi(s.c_str());
 }
 
 // appends ~1 to the end of 's' unless there is already ~#, in which case
@@ -1690,7 +1593,7 @@ static PathString FixBasenameInCollision(const PathString s) {
   if ((n = PathStringToInteger(s.substr(last_tilde + 1))) != -1) {
     n++;
     PathString pre_number = s.substr(0, last_tilde + 1);
-    return pre_number + IntegerToPathString(n);
+    return pre_number + IntToString(n);
   } else {
     // we have a ~, but not a number following it, so we'll add another
     // ~ and this time, a number
@@ -1722,31 +1625,6 @@ void DBName::MakeNoncollidingForEntry(BaseTransaction* trans,
   // Set our value to the new value.  This invalidates desired_name.
   PathString new_value = basename + dotextension;
   swap(new_value);
-}
-
-PathString GetFullPath(BaseTransaction* trans, const Entry& e) {
-  PathString result;
-#if defined(COMPILER_MSVC)
-  result.reserve(MAX_PATH);
-#endif
-  ReverseAppend(e.Get(NAME), &result);
-  Id id = e.Get(PARENT_ID);
-  while (!id.IsRoot()) {
-    result.push_back(kPathSeparator[0]);
-    Entry ancestor(trans, GET_BY_ID, id);
-    if (!ancestor.good()) {
-      // This can happen if the parent folder got deleted before the entry.
-      LOG(WARNING) << "Cannot get full path of " << e
-                   << "\nbecause an ancestor folder has been deleted.";
-      result.clear();
-      return result;
-    }
-    ReverseAppend(ancestor.Get(NAME), &result);
-    id = ancestor.Get(PARENT_ID);
-  }
-  result.push_back(kPathSeparator[0]);
-  reverse(result.begin(), result.end());
-  return result;
 }
 
 const Blob* GetExtendedAttributeValue(const Entry& e,
@@ -1788,7 +1666,6 @@ inline FastDump& operator<<(FastDump& dump, const DumpColon&) {
 std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
   // Using ostreams directly here is dreadfully slow, because a mutex is
   // acquired for every <<.  Users noticed it spiking CPU.
-  using browser_sync::ToUTF8;
   using syncable::BitField;
   using syncable::BitTemp;
   using syncable::BlobField;
@@ -1823,8 +1700,8 @@ std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
       s << g_metas_columns[i].name << separator;
   }
   for ( ; i < STRING_FIELDS_END; ++i) {
-    ToUTF8 field(kernel->ref(static_cast<StringField>(i)));
-    s << g_metas_columns[i].name << colon << field.get_string() << separator;
+    const PathString& field = kernel->ref(static_cast<StringField>(i));
+    s << g_metas_columns[i].name << colon << field << separator;
   }
   for ( ; i < BLOB_FIELDS_END; ++i) {
     s << g_metas_columns[i].name << colon

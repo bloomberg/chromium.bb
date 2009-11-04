@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 using std::set;
@@ -46,7 +45,7 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
 
 void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
   ClientToServerMessage message;
-  message.set_share(ToUTF8(session->account_name()).get_string());
+  message.set_share(session->account_name());
   message.set_message_contents(ClientToServerMessage::COMMIT);
 
   CommitMessage* commit_message = message.mutable_commit();
@@ -69,15 +68,14 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
 
     Name name = meta_entry.GetName();
     CHECK(!name.value().empty());  // Make sure this isn't an update.
-    sync_entry->set_name(ToUTF8(name.value()).get_string());
+    sync_entry->set_name(name.value());
     // Set the non_unique_name if we have one.  If we do, the server ignores
     // the |name| value (using |non_unique_name| instead), and will return
     // in the CommitResponse a unique name if one is generated.  Even though
     // we could get away with only sending |name|, we send both because it
     // may aid in logging.
     if (name.value() != name.non_unique_value()) {
-      sync_entry->set_non_unique_name(
-        ToUTF8(name.non_unique_value()).get_string());
+      sync_entry->set_non_unique_name(name.non_unique_value());
     }
     // Deleted items with negative parent ids can be a problem so we set the
     // parent to 0. (TODO(sync): Still true in protocol?).
@@ -126,7 +124,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
         ++iter) {
       sync_pb::ExtendedAttributes_ExtendedAttribute *extended_attribute =
           mutable_extended_attributes->add_extendedattribute();
-      extended_attribute->set_key(ToUTF8(iter->key()).get_string());
+      extended_attribute->set_key(iter->key());
       SyncerProtoUtil::CopyBlobIntoProtoBytes(iter->value(),
           extended_attribute->mutable_value());
     }
@@ -143,7 +141,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
       sync_entry->set_insert_after_item_id(prev_string);
 
       if (!meta_entry.Get(syncable::IS_DIR)) {
-        string bookmark_url = ToUTF8(meta_entry.Get(syncable::BOOKMARK_URL));
+        string bookmark_url = meta_entry.Get(syncable::BOOKMARK_URL);
         bookmark->set_bookmark_url(bookmark_url);
         SyncerProtoUtil::CopyBlobIntoProtoBytes(
             meta_entry.Get(syncable::BOOKMARK_FAVICON),

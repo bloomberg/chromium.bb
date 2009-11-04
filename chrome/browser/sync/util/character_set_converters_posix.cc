@@ -10,54 +10,14 @@ using std::string;
 
 namespace browser_sync {
 
-// Converts input_string to UTF8 and appends the result into output_string.
-void AppendPathStringToUTF8(const PathChar *wide, int size,
-                            string* output_string) {
-  output_string->append(wide, size);
+// Returns UTF8 string from the given FilePath.
+std::string FilePathToUTF8(const FilePath& file_path) {
+  return file_path.value();
 }
 
-bool AppendUTF8ToPathString(const char* utf8, size_t size,
-                            PathString* output_string) {
-  output_string->append(utf8, size);
-  return true;
-}
-
-void TrimPathStringToValidCharacter(PathString* string) {
-  // Constants from http://en.wikipedia.org/wiki/UTF-8
-  CHECK(string);
-  if (string->empty())
-    return;
-  if (0 == (string->at(string->length() - 1) & 0x080))
-    return;
-  size_t partial_enc_bytes = 0;
-  for (partial_enc_bytes = 0 ; true ; ++partial_enc_bytes) {
-    if (4 == partial_enc_bytes || partial_enc_bytes == string->length()) {
-      // original string was broken, garbage in, garbage out.
-      return;
-    }
-    PathChar c = string->at(string->length() - 1 - partial_enc_bytes);
-    if ((c & 0x0c0) == 0x080)  // utf continuation char;
-      continue;
-    if ((c & 0x0e0) == 0x0e0) {  // 2-byte encoded char.
-      if (1 == partial_enc_bytes)
-        return;
-      else
-        break;
-    }
-    if ((c & 0x0f0) == 0xc0) {  // 3-byte encoded char.
-      if (2 == partial_enc_bytes)
-        return;
-      else
-        break;
-    }
-    if ((c & 0x0f8) == 0x0f0) {  // 4-byte encoded char.
-      if (3 == partial_enc_bytes)
-        return;
-      else
-        break;
-    }
-  }
-  string->resize(string->length() - 1 - partial_enc_bytes);
+// Returns FilePath from the given UTF8 string.
+FilePath UTF8ToFilePath(const std::string& utf8) {
+  return FilePath(utf8);
 }
 
 }  // namespace browser_sync

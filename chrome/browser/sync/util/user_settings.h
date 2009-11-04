@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/lock.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/signin.h"
@@ -27,7 +28,7 @@ class UserSettings {
   UserSettings();
   ~UserSettings();
   // Returns false (failure) if the db is a newer version.
-  bool Init(const PathString& settings_path);
+  bool Init(const FilePath& settings_path);
   void StoreHashedPassword(const std::string& email,
                            const std::string& password);
   bool VerifyAgainstStoredHash(const std::string& email,
@@ -58,8 +59,6 @@ class UserSettings {
   SignIn RecallSigninType(const std::string& signin, SignIn default_type);
 
   void RemoveAllGuestSettings();
-
-  void RemoveShare(const PathString& share_path);
 
   void StoreEmailForSignin(const std::string& signin,
                            const std::string& primary_email);

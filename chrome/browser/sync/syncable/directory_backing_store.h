@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/file_path.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -45,7 +46,7 @@ typedef Directory::MetahandlesIndex MetahandlesIndex;
 class DirectoryBackingStore {
  public:
   DirectoryBackingStore(const PathString& dir_name,
-                        const PathString& backing_filepath);
+                        const FilePath& backing_filepath);
 
   virtual ~DirectoryBackingStore();
 
@@ -113,7 +114,7 @@ class DirectoryBackingStore {
   sqlite3* save_dbhandle_;
 
   PathString dir_name_;
-  PathString backing_filepath_;
+  FilePath backing_filepath_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };

@@ -9,8 +9,10 @@
 #include <iterator>
 #include <string>
 
-#include "chrome/browser/sync/util/compat_file.h"
+#include "base/file_path.h"
 #include "chrome/browser/sync/util/sync_types.h"
+
+extern const char kPathSeparator[];
 
 template <typename StringType>
 class PathSegmentIterator : public std::iterator<std::forward_iterator_tag,
@@ -65,32 +67,6 @@ class PathSegmentIterator : public std::iterator<std::forward_iterator_tag,
   typename StringType::size_type segment_end_;
   StringType value_;
 };
-
-// NOTE: The functions (Strip)LastPathSegment always return values without a
-// trailing slash.
-PathString LastPathSegment(const PathString& path);
-std::string LastPathSegment(const std::string& path);
-PathString AppendSlash(const PathString& path);
-PathString GetFullPath(const PathString& path);
-PathString ExpandTilde(const PathString& path);
-
-inline bool HasSuffixPathString(const PathString& str,
-                                const PathString& suffix) {
-  return str.find(suffix, str.size() - suffix.size()) != PathString::npos;
-}
-
-inline PathString StripSuffixPathString(const PathString& str,
-                                        const PathString& suffix) {
-  PathString ret(str);
-  if (HasSuffixPathString(str, suffix)) {
-    ret.resize(str.size() - suffix.size());
-  }
-  return ret;
-}
-
-// Returns a string with length or fewer elements, careful to not truncate a
-// string mid-surrogate pair.
-PathString TruncatePathString(const PathString& original, int length);
 
 // Makes a path component legal for your OS, but doesn't handle collisions
 // with other files in the same directory. it can do this by removing

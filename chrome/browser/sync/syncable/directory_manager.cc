@@ -10,13 +10,15 @@
 
 #include "base/logging.h"
 #include "base/port.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 
 namespace syncable {
 
-static const PSTR_CHAR kSyncDataDatabaseFilename[] = PSTR("SyncData.sqlite3");
+static const FilePath::CharType kSyncDataDatabaseFilename[] =
+    FILE_PATH_LITERAL("SyncData.sqlite3");
 
 DirectoryManagerEvent DirectoryManagerShutdownEvent() {
   DirectoryManagerEvent event;
@@ -25,18 +27,16 @@ DirectoryManagerEvent DirectoryManagerShutdownEvent() {
 }
 
 // static
-const PathString DirectoryManager::GetSyncDataDatabaseFilename() {
-  return PathString(kSyncDataDatabaseFilename);
+const FilePath DirectoryManager::GetSyncDataDatabaseFilename() {
+  return FilePath(kSyncDataDatabaseFilename);
 }
 
-const PathString DirectoryManager::GetSyncDataDatabasePath() const {
-  PathString path(root_path_);
-  path.append(kSyncDataDatabaseFilename);
-  return path;
+const FilePath DirectoryManager::GetSyncDataDatabasePath() const {
+  return root_path_.Append(GetSyncDataDatabaseFilename());
 }
 
-DirectoryManager::DirectoryManager(const PathString& path)
-    : root_path_(AppendSlash(path)),
+DirectoryManager::DirectoryManager(const FilePath& path)
+    : root_path_(path),
       managed_directory_(NULL),
       channel_(new Channel(DirectoryManagerShutdownEvent())) {
 }
@@ -68,7 +68,7 @@ bool DirectoryManager::Open(const PathString& name) {
 
 // Opens a directory.  Returns false on error.
 DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
-                                         const PathString& path,
+                                         const FilePath& path,
                                          bool* was_open) {
   bool opened = false;
   {
@@ -85,13 +85,11 @@ DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
     return syncable::OPENED;
   // Otherwise, open it.
 
-  Directory* dir = new Directory;
+  scoped_ptr<Directory> dir(new Directory);
   const DirOpenResult result = dir->Open(path, name);
   if (syncable::OPENED == result) {
     AutoLock lock(lock_);
-    managed_directory_ = dir;
-  } else {
-    delete dir;
+    managed_directory_ = dir.release();
   }
   return result;
 }

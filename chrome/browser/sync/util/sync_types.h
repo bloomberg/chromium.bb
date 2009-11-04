@@ -12,34 +12,11 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 
-// TODO(timsteele): Use base/file_path.h instead of PathString.
-#if defined(OS_WIN)
-#define PATHSTRING_IS_STD_STRING 0
-typedef std::wstring PathString;
-
-// This ugly double define hack is needed to allow the following pattern on
-// Windows:
-//
-//   #define FOO "Foo"
-//   #define FOO_PATH_STRING PSTR("Foo")
-//
-// TODO(sync): find out if we can avoid this.
-#define PSTR_UGLY_DOUBLE_DEFINE_HACK(s) L##s
-#define PSTR(s) PSTR_UGLY_DOUBLE_DEFINE_HACK(s)
-#define PSTR_CHAR wchar_t
-
-inline size_t PathLen(const wchar_t* s) {
-  return wcslen(s);
-}
-
-#else  // Mac and Linux
-#define PATHSTRING_IS_STD_STRING 1
+#define PSTR(s) s
 #define PSTR_CHAR char
 typedef std::string PathString;
-#define PSTR(s) s
-inline size_t PathLen(const char* s) {
-  return strlen(s);
-}
+
+#if !defined(OS_WIN)
 // Mac OS X typedef's BOOL to signed char, so we do that on Linux too.
 typedef signed char BOOL;
 typedef int32 LONG;

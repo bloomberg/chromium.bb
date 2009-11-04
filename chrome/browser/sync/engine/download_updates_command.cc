@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 using syncable::ScopedDirLookup;
@@ -26,8 +25,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncerSession* session) {
   ClientToServerMessage client_to_server_message;
   ClientToServerResponse update_response;
 
-  client_to_server_message.set_share(
-      static_cast<const string&>(ToUTF8(session->account_name())));
+  client_to_server_message.set_share(session->account_name());
   client_to_server_message.set_message_contents(
       ClientToServerMessage::GET_UPDATES);
   GetUpdatesMessage* get_updates =

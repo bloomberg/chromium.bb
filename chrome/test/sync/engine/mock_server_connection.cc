@@ -381,8 +381,7 @@ void MockConnectionManager::AddUpdateExtendedAttributes(SyncEntity* ent,
   for (int i = 0; i < xattr_count; i++) {
     sync_pb::ExtendedAttributes_ExtendedAttribute* extended_attribute =
         mutable_extended_attributes->add_extendedattribute();
-    extended_attribute->set_key(static_cast<const string&>
-        (browser_sync::ToUTF8(xattr_key[i])));
+    extended_attribute->set_key(xattr_key[i]);
     SyncerProtoUtil::CopyBlobIntoProtoBytes(xattr_value[i],
         extended_attribute->mutable_value());
   }

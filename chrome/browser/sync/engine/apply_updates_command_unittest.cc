@@ -9,7 +9,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,12 +45,10 @@ class ApplyUpdatesCommandTest : public testing::Test {
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());
-    PathString name;
-    AppendUTF8ToPathString(item_id, &name);
     entry.Put(syncable::SERVER_VERSION, next_revision_++);
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
-    entry.Put(syncable::SERVER_NAME, name);
-    entry.Put(syncable::SERVER_NON_UNIQUE_NAME, name);
+    entry.Put(syncable::SERVER_NAME, item_id);
+    entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
     entry.Put(syncable::SERVER_PARENT_ID, Id::CreateFromServerId(parent_id));
     entry.Put(syncable::SERVER_IS_DIR, true);
   }

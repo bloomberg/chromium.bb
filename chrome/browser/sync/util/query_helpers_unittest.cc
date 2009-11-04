@@ -7,7 +7,9 @@
 #include <limits>
 #include <string>
 
-#include "chrome/browser/sync/util/compat_file.h"
+#include "base/file_util.h"
+#include "chrome/common/sqlite_utils.h"
+#include "chrome/test/file_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::numeric_limits;
@@ -25,12 +27,19 @@ TEST(QueryHelpers, APEncode) {
 }
 
 TEST(QueryHelpers, TestExecFailure) {
-  sqlite3* database;
-  const PathString test_database(PSTR("queryhelper_test.sqlite3"));
-  PathRemove(test_database);
-  ASSERT_EQ(SQLITE_OK, SqliteOpen(test_database, &database));
-  EXPECT_EQ(SQLITE_DONE, Exec(database, "CREATE TABLE test_table (idx int)"));
-  EXPECT_NE(SQLITE_DONE, Exec(database, "ALTER TABLE test_table ADD COLUMN "
-      "broken int32 default ?", -1));
-  PathRemove(test_database);
+  FilePath test_database;
+  file_util::GetCurrentDirectory(&test_database);
+  test_database = test_database.Append(
+      FILE_PATH_LITERAL("queryhelper_test.sqlite3"));
+  // Cleanup left-over file, if present.
+  file_util::Delete(test_database, true);
+  FileAutoDeleter file_deleter(test_database);
+  {
+    sqlite3* database = NULL;
+    ASSERT_EQ(SQLITE_OK, SqliteOpen(test_database, &database));
+    sqlite_utils::scoped_sqlite_db_ptr database_deleter(database);
+    EXPECT_EQ(SQLITE_DONE, Exec(database, "CREATE TABLE test_table (idx int)"));
+    EXPECT_NE(SQLITE_DONE, Exec(database, "ALTER TABLE test_table ADD COLUMN "
+        "broken int32 default ?", -1));
+  }
 }

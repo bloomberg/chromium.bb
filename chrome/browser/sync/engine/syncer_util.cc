@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -329,15 +328,13 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   local_entry->Put(SERVER_IS_BOOKMARK_OBJECT, server_entry.has_bookmarkdata());
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
   if (server_entry.has_singleton_tag()) {
-    PathString tag;
-    AppendUTF8ToPathString(server_entry.singleton_tag(), &tag);
+    const PathString& tag = server_entry.singleton_tag();
     local_entry->Put(SINGLETON_TAG, tag);
   }
   if (server_entry.has_bookmarkdata() && !server_entry.deleted()) {
     const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
     if (bookmark.has_bookmark_url()) {
-      PathString url;
-      AppendUTF8ToPathString(bookmark.bookmark_url(), &url);
+      const PathString& url = bookmark.bookmark_url();
       local_entry->Put(SERVER_BOOKMARK_URL, url);
     }
     if (bookmark.has_bookmark_favicon()) {
@@ -371,9 +368,8 @@ void SyncerUtil::ApplyExtendedAttributes(
     const sync_pb::ExtendedAttributes & extended_attributes =
       server_entry.extended_attributes();
     for (int i = 0; i < extended_attributes.extendedattribute_size(); i++) {
-      PathString pathstring_key;
-      AppendUTF8ToPathString(
-          extended_attributes.extendedattribute(i).key(), &pathstring_key);
+      const PathString& pathstring_key =
+          extended_attributes.extendedattribute(i).key();
       ExtendedAttributeKey key(local_entry->Get(META_HANDLE), pathstring_key);
       MutableExtendedAttribute local_attribute(local_entry->write_transaction(),
           CREATE, key);

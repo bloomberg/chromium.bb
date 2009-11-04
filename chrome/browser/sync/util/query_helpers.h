@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/logging.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
@@ -21,13 +23,9 @@ enum SqliteNullType {
   SQLITE_NULL_VALUE
 };
 
-int SqliteOpen(PathString filename, sqlite3** ppDb);
+int SqliteOpen(const FilePath& filename, sqlite3** ppDb);
 
 sqlite3_stmt* PrepareQuery(sqlite3* dbhandle, const char* query);
-#if !PATHSTRING_IS_STD_STRING
-sqlite3_stmt* BindArg(sqlite3_stmt*, const PathString&, int index);
-sqlite3_stmt* BindArg(sqlite3_stmt*, const PathChar*, int index);
-#endif
 sqlite3_stmt* BindArg(sqlite3_stmt*, const std::string&, int index);
 sqlite3_stmt* BindArg(sqlite3_stmt*, const char*, int index);
 sqlite3_stmt* BindArg(sqlite3_stmt*, int32, int index);
@@ -37,9 +35,7 @@ sqlite3_stmt* BindArg(sqlite3_stmt*, bool, int index);
 sqlite3_stmt* BindArg(sqlite3_stmt*, const std::vector<uint8>&, int index);
 sqlite3_stmt* BindArg(sqlite3_stmt*, SqliteNullType, int index);
 
-#if !PATHSTRING_IS_STD_STRING
-void GetColumn(sqlite3_stmt*, int index, PathString* value);
-#endif
+void GetColumn(sqlite3_stmt*, int index, string16* value);
 void GetColumn(sqlite3_stmt*, int index, std::string* value);
 void GetColumn(sqlite3_stmt*, int index, int32* value);
 void GetColumn(sqlite3_stmt*, int index, int64* value);

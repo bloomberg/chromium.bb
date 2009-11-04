@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 
 using std::string;
 using std::stringstream;
@@ -246,14 +245,9 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 // static
 syncable::SyncName SyncerProtoUtil::NameFromSyncEntity(
     const SyncEntity& entry) {
-  SyncName result(PSTR(""));
-
-  AppendUTF8ToPathString(entry.name(), &result.value());
+  SyncName result(entry.name());
   if (entry.has_non_unique_name()) {
-    AppendUTF8ToPathString(entry.non_unique_name(),
-                           &result.non_unique_value());
-  } else {
-    result.non_unique_value() = result.value();
+    result.set_non_unique_value(entry.non_unique_name());
   }
   return result;
 }
@@ -261,14 +255,9 @@ syncable::SyncName SyncerProtoUtil::NameFromSyncEntity(
 // static
 syncable::SyncName SyncerProtoUtil::NameFromCommitEntryResponse(
     const CommitResponse_EntryResponse& entry) {
-  SyncName result(PSTR(""));
-
-  AppendUTF8ToPathString(entry.name(), &result.value());
+  SyncName result(entry.name());
   if (entry.has_non_unique_name()) {
-    AppendUTF8ToPathString(entry.non_unique_name(),
-                           &result.non_unique_value());
-  } else {
-    result.non_unique_value() = result.value();
+    result.set_non_unique_value(entry.non_unique_name());
   }
   return result;
 }

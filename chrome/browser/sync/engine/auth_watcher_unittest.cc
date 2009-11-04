@@ -86,7 +86,7 @@ class AuthWatcherTest : public testing::Test {
     allstatus_.reset(new AllStatus());
     user_settings_.reset(new UserSettings());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    PathString user_settings_path = temp_dir_.path().value() + kUserSettingsDB;
+    FilePath user_settings_path = temp_dir_.path().Append(kUserSettingsDB);
     user_settings_->Init(user_settings_path);
     gaia_auth_ = new GaiaAuthMockForAuthWatcher();
     talk_mediator_.reset(new TalkMediatorImpl());

@@ -8,9 +8,3 @@
 #ifndef OS_LINUX
 #error Compile this file on Linux only.
 #endif
-
-PathString GetFullPath(const PathString& path) {
-  // TODO(sync): Not sure what the base of the relative path should be on
-  // linux.
-  return path;
-}

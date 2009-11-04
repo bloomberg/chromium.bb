@@ -12,10 +12,15 @@
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using browser_sync::FilePathToUTF8;
 using browser_sync::UserSettings;
 
-static const PathChar* kV10UserSettingsDB = PSTR("Version10Settings.sqlite3");
-static const PathChar* kOldStyleSyncDataDB = PSTR("OldStyleSyncData.sqlite3");
+static const FilePath::CharType kV10UserSettingsDB[] =
+    FILE_PATH_LITERAL("Version10Settings.sqlite3");
+static const FilePath::CharType kOldStyleSyncDataDB[] =
+    FILE_PATH_LITERAL("OldStyleSyncData.sqlite3");
+static const FilePath::CharType kSyncDataDB[] =
+    FILE_PATH_LITERAL("SyncData.sqlite3");
 
 class UserSettingsTest : public testing::Test {
  public:
@@ -23,7 +28,7 @@ class UserSettingsTest : public testing::Test {
   void SetUpVersion10Databases() {
     CleanUpVersion10Databases();
     sqlite3* primer_handle = NULL;
-    ASSERT_TRUE(SQLITE_OK == SqliteOpen(kV10UserSettingsDB,
+    ASSERT_TRUE(SQLITE_OK == SqliteOpen(FilePath(kV10UserSettingsDB),
         &primer_handle));
     FilePath old_sync_data(kOldStyleSyncDataDB);
 
@@ -45,16 +50,14 @@ class UserSettingsTest : public testing::Test {
               "  PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)");
     // Populate a share.
     ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
-              "foo@foo.com", "foo@foo.com",
-              browser_sync::PathStringToUTF8Quick(kOldStyleSyncDataDB));
+              "foo@foo.com", "foo@foo.com", FilePathToUTF8(old_sync_data));
     sqlite3_close(primer_handle);
   }
 
   void CleanUpVersion10Databases() {
     ASSERT_TRUE(file_util::DieFileDie(FilePath(kV10UserSettingsDB), false));
     ASSERT_TRUE(file_util::DieFileDie(FilePath(kOldStyleSyncDataDB), false));
-    ASSERT_TRUE(file_util::DieFileDie(FilePath(PSTR("SyncData.sqlite3")),
-                                      false));
+    ASSERT_TRUE(file_util::DieFileDie(FilePath(kSyncDataDB), false));
   }
 
   const std::string& sync_data() const { return sync_data_; }
@@ -70,21 +73,22 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
     // inside a scoped block so it closes itself and we can poke around to see
     // what happened later.
     UserSettings settings;
-    settings.Init(kV10UserSettingsDB);
+    settings.Init(FilePath(kV10UserSettingsDB));
   }
 
   // Now poke around using sqlite to see if UserSettings migrated properly.
   sqlite3* handle = NULL;
-  ASSERT_TRUE(SQLITE_OK == SqliteOpen(kV10UserSettingsDB, &handle));
+  ASSERT_TRUE(SQLITE_OK == SqliteOpen(FilePath(kV10UserSettingsDB), &handle));
   ScopedStatement version_query(PrepareQuery(handle,
       "SELECT version FROM db_version"));
   ASSERT_TRUE(SQLITE_ROW == sqlite3_step(version_query.get()));
 
   const int version = sqlite3_column_int(version_query.get(), 0);
-  EXPECT_TRUE(11 == version);
+  EXPECT_EQ(11, version);
   EXPECT_FALSE(file_util::PathExists(FilePath(kOldStyleSyncDataDB)));
 
-  PathString path(syncable::DirectoryManager::GetSyncDataDatabaseFilename());
+  const FilePath& path =
+      syncable::DirectoryManager::GetSyncDataDatabaseFilename();
 
   std::string contents;
   ASSERT_TRUE(file_util::ReadFileToString(FilePath(path), &contents));

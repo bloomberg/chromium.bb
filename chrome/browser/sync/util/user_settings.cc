@@ -84,12 +84,12 @@ void UserSettings::MigrateOldVersionsAsNeeded(sqlite3* const handle,
             "SELECT share_name, file_name FROM shares"));
         int query_result = sqlite3_step(share_query.get());
         CHECK(SQLITE_ROW == query_result);
-        PathString share_name, file_name;
+        FilePath::StringType share_name, file_name;
         GetColumn(share_query.get(), 0, &share_name);
         GetColumn(share_query.get(), 1, &file_name);
 
         if (!file_util::Move(FilePath(file_name),
-            FilePath(DirectoryManager::GetSyncDataDatabaseFilename()))) {
+            DirectoryManager::GetSyncDataDatabaseFilename())) {
           LOG(WARNING) << "Unable to upgrade UserSettings from v10";
           return;
         }
@@ -128,12 +128,12 @@ static void MakeClientIDTable(sqlite3* const dbhandle) {
       Generate128BitRandomHexString());
 }
 
-bool UserSettings::Init(const PathString& settings_path) {
-  {  // Scope the handle
+bool UserSettings::Init(const FilePath& settings_path) {
+  {  // Scope the handle.
     ScopedDBHandle dbhandle(this);
     if (dbhandle_)
       sqlite3_close(dbhandle_);
-    CHECK(SQLITE_OK == SqliteOpen(settings_path.c_str(), &dbhandle_));
+    CHECK(SQLITE_OK == SqliteOpen(settings_path, &dbhandle_));
     // In the worst case scenario, the user may hibernate his computer during
     // one of our transactions.
     sqlite3_busy_timeout(dbhandle_, numeric_limits<int>::max());
@@ -183,9 +183,9 @@ bool UserSettings::Init(const PathString& settings_path) {
 #if defined(OS_WIN)
   // Do not index this file. Scanning can occur every time we close the file,
   // which causes long delays in SQLite's file locking.
-  const DWORD attrs = GetFileAttributes(settings_path.c_str());
+  const DWORD attrs = GetFileAttributes(settings_path.value().c_str());
   const BOOL attrs_set =
-    SetFileAttributes(settings_path.c_str(),
+    SetFileAttributes(settings_path.value().c_str(),
                       attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
 #endif
   return true;

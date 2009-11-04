@@ -71,11 +71,7 @@ static void PathNameMatch16WithEscape(sqlite3_context* context,
 #endif
 
 static void RegisterPathNameCollate(sqlite3* dbhandle) {
-#if defined(OS_WIN)
-  const int collate = SQLITE_UTF16;
-#else
   const int collate = SQLITE_UTF8;
-#endif
   CHECK(SQLITE_OK == sqlite3_create_collation(dbhandle, "PATHNAME", collate,
       NULL, &ComparePathNames16));
 }
@@ -246,7 +242,7 @@ static string ComposeCreateTableColumnSpecs(const ColumnSpec* begin,
 // DirectoryBackingStore implementation.
 
 DirectoryBackingStore::DirectoryBackingStore(const PathString& dir_name,
-    const PathString& backing_filepath)
+                                             const FilePath& backing_filepath)
     : load_dbhandle_(NULL),
       save_dbhandle_(NULL),
       dir_name_(dir_name),
@@ -266,7 +262,7 @@ DirectoryBackingStore::~DirectoryBackingStore() {
 
 bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite3** handle) const {
-  if (SQLITE_OK == SqliteOpen(backing_filepath_.c_str(), handle)) {
+  if (SQLITE_OK == SqliteOpen(backing_filepath_, handle)) {
     sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
     RegisterPathNameCollate(*handle);
     RegisterPathNameMatch(*handle);

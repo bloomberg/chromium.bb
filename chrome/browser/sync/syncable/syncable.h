@@ -15,6 +15,7 @@
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/syncable/blob.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
@@ -319,6 +319,9 @@ class SyncName {
   PathString& value() { return value_; }
   const PathString& non_unique_value() const { return non_unique_value_; }
   PathString& non_unique_value() { return non_unique_value_; }
+  void set_non_unique_value(const PathString& value) {
+    non_unique_value_ = value;
+  }
 
   inline bool operator==(const SyncName& right_hand_side) const {
     return value_ == right_hand_side.value_ &&
@@ -886,7 +889,7 @@ class Directory {
   Directory();
   virtual ~Directory();
 
-  DirOpenResult Open(const PathString& file_path, const PathString& name);
+  DirOpenResult Open(const FilePath& file_path, const PathString& name);
 
   void Close();
 
@@ -895,7 +898,7 @@ class Directory {
   // by the server only.
   Id NextId();
 
-  PathString file_path() const { return kernel_->db_path; }
+  const FilePath& file_path() const { return kernel_->db_path; }
   bool good() const { return NULL != store_; }
 
   // The sync timestamp is an index into the list of changes for an account.
@@ -938,7 +941,7 @@ class Directory {
   // Overridden by tests.
   virtual DirectoryBackingStore* CreateBackingStore(
       const PathString& dir_name,
-      const PathString& backing_filepath);
+      const FilePath& backing_filepath);
 
  private:
   // These private versions expect the kernel lock to already be held
@@ -951,7 +954,7 @@ class Directory {
                                     const PathString& name,
                                     ScopedKernelLock* const lock);
 
-  DirOpenResult OpenImpl(const PathString& file_path, const PathString& name);
+  DirOpenResult OpenImpl(const FilePath& file_path, const PathString& name);
 
   struct DirectoryEventTraits {
     typedef DirectoryEvent EventType;
@@ -1086,12 +1089,12 @@ class Directory {
  private:
 
   struct Kernel {
-    Kernel(const PathString& db_path, const PathString& name,
+    Kernel(const FilePath& db_path, const PathString& name,
            const KernelLoadInfo& info);
 
     ~Kernel();
 
-    PathString const db_path;
+    FilePath const db_path;
     // TODO(timsteele): audit use of the member and remove if possible
     volatile base::subtle::AtomicWord refcount;
     void AddRef();  // For convenience.
@@ -1253,12 +1256,6 @@ int64 Now();
 
 // Does wildcard processing.
 BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec);
-
-PathString GetFullPath(BaseTransaction* trans, const Entry& e);
-
-inline void ReverseAppend(const PathString& s, PathString* target) {
-  target->append(s.rbegin(), s.rend());
-}
 
 class ExtendedAttribute {
  public:

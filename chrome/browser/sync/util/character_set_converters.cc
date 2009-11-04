@@ -4,51 +4,44 @@
 
 #include "chrome/browser/sync/util/character_set_converters.h"
 
-#include <string>
-
-using std::string;
-
 namespace browser_sync {
 
-void PathStringToUTF8(const PathChar* wide, int size,
-                      std::string* output_string) {
-  CHECK(output_string);
-  output_string->clear();
-  AppendPathStringToUTF8(wide, size, output_string);
-}
-
-bool UTF8ToPathString(const char* utf8, size_t size,
-                      PathString* output_string) {
-  CHECK(output_string);
-  output_string->clear();
-  return AppendUTF8ToPathString(utf8, size, output_string);
-};
-
-ToUTF8::ToUTF8(const PathChar* wide, size_t size) {
-  PathStringToUTF8(wide, size, &result_);
-}
-
-ToUTF8::ToUTF8(const PathString& wide) {
-  PathStringToUTF8(wide.data(), wide.length(), &result_);
-}
-
-ToUTF8::ToUTF8(const PathChar* wide) {
-  PathStringToUTF8(wide, PathLen(wide), &result_);
-}
-
-ToPathString::ToPathString(const char* utf8, size_t size) {
-  good_ = UTF8ToPathString(utf8, size, &result_);
-  good_checked_ = false;
-}
-
-ToPathString::ToPathString(const std::string& utf8) {
-  good_ = UTF8ToPathString(utf8.data(), utf8.length(), &result_);
-  good_checked_ = false;
-}
-
-ToPathString::ToPathString(const char* utf8) {
-  good_ = UTF8ToPathString(utf8, strlen(utf8), &result_);
-  good_checked_ = false;
+void TrimPathStringToValidCharacter(PathString* string) {
+  // Constants from http://en.wikipedia.org/wiki/UTF-8
+  CHECK(string);
+  if (string->empty())
+    return;
+  if (0 == (string->at(string->length() - 1) & 0x080))
+    return;
+  size_t partial_enc_bytes = 0;
+  for (partial_enc_bytes = 0 ; true ; ++partial_enc_bytes) {
+    if (4 == partial_enc_bytes || partial_enc_bytes == string->length()) {
+      // original string was broken, garbage in, garbage out.
+      return;
+    }
+    PathChar c = string->at(string->length() - 1 - partial_enc_bytes);
+    if ((c & 0x0c0) == 0x080)  // utf continuation char;
+      continue;
+    if ((c & 0x0e0) == 0x0e0) {  // 2-byte encoded char.
+      if (1 == partial_enc_bytes)
+        return;
+      else
+        break;
+    }
+    if ((c & 0x0f0) == 0xc0) {  // 3-byte encoded char.
+      if (2 == partial_enc_bytes)
+        return;
+      else
+        break;
+    }
+    if ((c & 0x0f8) == 0x0f0) {  // 4-byte encoded char.
+      if (3 == partial_enc_bytes)
+        return;
+      else
+        break;
+    }
+  }
+  string->resize(string->length() - 1 - partial_enc_bytes);
 }
 
 }  // namespace browser_sync

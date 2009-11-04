@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/user_settings.h"
 
@@ -122,8 +121,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
     case Authenticator::SUCCESS:
       {
         status_ = GAIA_AUTHENTICATED;
-        PathString share_name;
-        CHECK(AppendUTF8ToPathString(email.data(), email.size(), &share_name));
+        const PathString& share_name = email;
         user_settings_->SwitchUser(email);
 
         // Set the authentication token for notifications
@@ -165,8 +163,7 @@ bool AuthWatcher::AuthenticateLocally(string email) {
     gaia_->SetUsername(email);
     status_ = LOCALLY_AUTHENTICATED;
     user_settings_->SwitchUser(email);
-    PathString share_name;
-    CHECK(AppendUTF8ToPathString(email.data(), email.size(), &share_name));
+    const PathString& share_name = email;
     LoadDirectoryListAndOpen(share_name);
     NotifyAuthSucceeded(email);
     return true;

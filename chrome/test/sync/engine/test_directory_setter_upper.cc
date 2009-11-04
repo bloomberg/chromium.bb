@@ -4,11 +4,10 @@
 
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
-#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,10 +24,10 @@ TestDirectorySetterUpper::TestDirectorySetterUpper(const PathString& name)
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::Init() {
-  PathString test_data_dir_ = PSTR(".");
+  FilePath test_data_dir_(FILE_PATH_LITERAL("."));
   manager_.reset(new DirectoryManager(test_data_dir_));
   file_path_ = manager_->GetSyncDataDatabasePath();
-  PathRemove(file_path_.c_str());
+  file_util::Delete(file_path_, false);
 }
 
 void TestDirectorySetterUpper::SetUp() {
@@ -54,8 +53,8 @@ void TestDirectorySetterUpper::TearDown() {
   manager()->FinalSaveChangesForAll();
   manager()->Close(name());
   manager_.reset();
-  EXPECT_EQ(0, PathRemove(file_path_.c_str()));
-  file_path_.clear();
+  EXPECT_TRUE(file_util::Delete(file_path_, false));
+  file_path_ = FilePath(FILE_PATH_LITERAL(""));
 }
 
 void TestDirectorySetterUpper::RunInvariantCheck(const ScopedDirLookup& dir) {
@@ -88,7 +87,7 @@ void ManuallyOpenedTestDirectorySetterUpper::TearDown() {
 
 TriggeredOpenTestDirectorySetterUpper::TriggeredOpenTestDirectorySetterUpper(
     const std::string& name)
-    : TestDirectorySetterUpper(UTF8ToPathStringQuick(name)) {
+    : TestDirectorySetterUpper(name) {
 }
 
 void TriggeredOpenTestDirectorySetterUpper::SetUp() {

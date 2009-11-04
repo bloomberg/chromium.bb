@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "base/file_version_info.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -174,13 +175,8 @@ void SyncBackendHost::Core::DoInitialize(
   DCHECK(success);
 
   syncapi_->SetObserver(this);
-  string16 path_str;
-#if defined (OS_WIN)
-  path_str = host_->sync_data_folder_path().value();
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
-  path_str = UTF8ToUTF16(host_->sync_data_folder_path().value());
-#endif
-  success = syncapi_->Init(path_str.c_str(),
+  const FilePath& path_str = host_->sync_data_folder_path();
+  success = syncapi_->Init(path_str,
       (service_url.host() + service_url.path()).c_str(),
       service_url.EffectiveIntPort(),
       kGaiaServiceId,

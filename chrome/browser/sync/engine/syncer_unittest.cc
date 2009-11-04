@@ -27,8 +27,6 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
-#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
@@ -1392,14 +1390,13 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
   // Verify it was correctly renamed.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    PathString expectedFolder;
-    AppendUTF8ToPathString(i18nString, &expectedFolder);
-    AppendUTF8ToPathString("Folder", &expectedFolder);
+    PathString expectedFolder(i18nString);
+    expectedFolder.append("Folder");
     Entry entry_folder(&trans, GET_BY_PATH, expectedFolder);
     ASSERT_TRUE(entry_folder.good());
     PathString expected = expectedFolder + PathString(kPathSeparator);
-    AppendUTF8ToPathString(i18nString, &expected);
-    AppendUTF8ToPathString("new_entry", &expected);
+    expected.append(i18nString);
+    expected.append("new_entry");
 
     Entry entry_new(&trans, GET_BY_PATH, expected);
     ASSERT_TRUE(entry_new.good());

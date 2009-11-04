@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 
 namespace browser_sync {
@@ -355,7 +354,7 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
   string birthday = dir->store_birthday();
   if (!birthday.empty())
     csm->set_store_birthday(birthday);
-  csm->set_share(ToUTF8(share).get_string());
+  csm->set_share(share);
   return true;
 }
 

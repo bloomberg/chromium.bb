@@ -15,117 +15,66 @@ namespace syncable {
 class PathHelpersTest : public testing::Test {
 };
 
-TEST(PathHelpersTest, TruncatePathStringTest) {
-  // Simple case.
-  PathString str = PSTR("12345");
-  EXPECT_EQ(PSTR("123"), TruncatePathString(str, 3));
-  EXPECT_EQ(str, TruncatePathString(str, str.size()));
-
-  // abcg is "abc" + musical g clef U+1D11E
-#if PATHSTRING_IS_STD_STRING
-  // UTF-8
-  PathChar abcg[] = {'a', 'b', 'c', 0xF0, 0x9D, 0x84, 0x9E, '\0'};
-#else  // PATHSTRING_IS_STD_STRING
-  // UTF-16
-  PathChar abcg[] = {'a', 'b', 'c', 0xD834, 0xDD1E, '\0'};
-#endif  // PATHSTRING_IS_STD_STRING
-
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abcg, 4));
-
-  // Further utf-8 tests.
-#if PATHSTRING_IS_STD_STRING
-  // UTF-8
-
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abcg, 4));
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abcg, 5));
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abcg, 6));
-  EXPECT_EQ(PathString(abcg), TruncatePathString(abcg, 7));
-
-  PathChar abc2[] = {'a', 'b', 'c', 0xC3, 0xB1, '\0'};  // abc(n w/ tilde)
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abc2, 3));
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abc2, 4));
-  EXPECT_EQ(PathString(abc2), TruncatePathString(abc2, 5));
-
-  PathChar abc3[] = {'a', 'b', 'c', 0xE2, 0x82, 0xAC, '\0'};  // abc(euro)
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abc3, 3));
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abc3, 4));
-  EXPECT_EQ(PSTR("abc"), TruncatePathString(abc3, 5));
-  EXPECT_EQ(PathString(abc3), TruncatePathString(abc3, 6));
-#endif
-}
-
-TEST(PathHelpersTest, PathStrutil) {
-  PathString big = PSTR("abcdef");
-  PathString suffix = PSTR("def");
-  PathString other = PSTR("x");
-  EXPECT_TRUE(HasSuffixPathString(big, suffix));
-  EXPECT_FALSE(HasSuffixPathString(suffix, big));
-  EXPECT_FALSE(HasSuffixPathString(big, other));
-  EXPECT_EQ(PSTR("abc"), StripSuffixPathString(big, suffix));
-}
-
 TEST(PathHelpersTest, SanitizePathComponent) {
 #if defined(OS_WIN)
-  EXPECT_EQ(MakePathComponentOSLegal(L"bar"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"bar <"), L"bar");
-  EXPECT_EQ(MakePathComponentOSLegal(L"bar.<"), L"bar");
-  EXPECT_EQ(MakePathComponentOSLegal(L"prn"), L"prn~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"pr>n"), L"prn~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"ab:c"), L"abc");
-  EXPECT_EQ(MakePathComponentOSLegal(L"a|bc"), L"abc");
-  EXPECT_EQ(MakePathComponentOSLegal(L"baz~9"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"\007"), L"~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"com1.txt.bat"), L"com1~1.txt.bat");
-  EXPECT_EQ(MakePathComponentOSLegal(L"foo.com1.bat"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"\010gg"), L"gg");
-  EXPECT_EQ(MakePathComponentOSLegal(L"<"), L"~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"col:on"), L"colon");
-  EXPECT_EQ(MakePathComponentOSLegal(L"q\""), L"q");
-  EXPECT_EQ(MakePathComponentOSLegal(L"back\\slAsh"), L"backslAsh");
-  EXPECT_EQ(MakePathComponentOSLegal(L"sla/sh "), L"slash");
-  EXPECT_EQ(MakePathComponentOSLegal(L"s|laSh"), L"slaSh");
-  EXPECT_EQ(MakePathComponentOSLegal(L"CON"), L"CON~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"PRN"), L"PRN~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"AUX"), L"AUX~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"NUL"), L"NUL~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM1"), L"COM1~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM2"), L"COM2~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM3"), L"COM3~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM4"), L"COM4~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM5"), L"COM5~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM6"), L"COM6~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM7"), L"COM7~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM8"), L"COM8~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"COM9"), L"COM9~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT1"), L"LPT1~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT2"), L"LPT2~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT3"), L"LPT3~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT4"), L"LPT4~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT5"), L"LPT5~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT6"), L"LPT6~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT7"), L"LPT7~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT8"), L"LPT8~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"LPT9"), L"LPT9~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"bar~bar"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"adlr~-3"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"tilde~"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"mytext.txt"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"mytext|.txt"), L"mytext.txt");
-  EXPECT_EQ(MakePathComponentOSLegal(L"okay.com1.txt"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"software-3.tar.gz"), L"");
-  EXPECT_EQ(MakePathComponentOSLegal(L"<"), L"~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"<.<"), L"~1");
-  EXPECT_EQ(MakePathComponentOSLegal(L"<.<txt"), L".txt");
-  EXPECT_EQ(MakePathComponentOSLegal(L"txt<.<"), L"txt");
+  EXPECT_EQ(MakePathComponentOSLegal("bar"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("bar <"), "bar");
+  EXPECT_EQ(MakePathComponentOSLegal("bar.<"), "bar");
+  EXPECT_EQ(MakePathComponentOSLegal("prn"), "prn~1");
+  EXPECT_EQ(MakePathComponentOSLegal("pr>n"), "prn~1");
+  EXPECT_EQ(MakePathComponentOSLegal("ab:c"), "abc");
+  EXPECT_EQ(MakePathComponentOSLegal("a|bc"), "abc");
+  EXPECT_EQ(MakePathComponentOSLegal("baz~9"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("\007"), "~1");
+  EXPECT_EQ(MakePathComponentOSLegal("com1.txt.bat"), "com1~1.txt.bat");
+  EXPECT_EQ(MakePathComponentOSLegal("foo.com1.bat"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("\010gg"), "gg");
+  EXPECT_EQ(MakePathComponentOSLegal("<"), "~1");
+  EXPECT_EQ(MakePathComponentOSLegal("col:on"), "colon");
+  EXPECT_EQ(MakePathComponentOSLegal("q\""), "q");
+  EXPECT_EQ(MakePathComponentOSLegal("back\\slAsh"), "backslAsh");
+  EXPECT_EQ(MakePathComponentOSLegal("sla/sh "), "slash");
+  EXPECT_EQ(MakePathComponentOSLegal("s|laSh"), "slaSh");
+  EXPECT_EQ(MakePathComponentOSLegal("CON"), "CON~1");
+  EXPECT_EQ(MakePathComponentOSLegal("PRN"), "PRN~1");
+  EXPECT_EQ(MakePathComponentOSLegal("AUX"), "AUX~1");
+  EXPECT_EQ(MakePathComponentOSLegal("NUL"), "NUL~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM1"), "COM1~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM2"), "COM2~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM3"), "COM3~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM4"), "COM4~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM5"), "COM5~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM6"), "COM6~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM7"), "COM7~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM8"), "COM8~1");
+  EXPECT_EQ(MakePathComponentOSLegal("COM9"), "COM9~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT1"), "LPT1~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT2"), "LPT2~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT3"), "LPT3~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT4"), "LPT4~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT5"), "LPT5~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT6"), "LPT6~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT7"), "LPT7~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT8"), "LPT8~1");
+  EXPECT_EQ(MakePathComponentOSLegal("LPT9"), "LPT9~1");
+  EXPECT_EQ(MakePathComponentOSLegal("bar~bar"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("adlr~-3"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("tilde~"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("mytext.txt"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("mytext|.txt"), "mytext.txt");
+  EXPECT_EQ(MakePathComponentOSLegal("okay.com1.txt"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("software-3.tar.gz"), "");
+  EXPECT_EQ(MakePathComponentOSLegal("<"), "~1");
+  EXPECT_EQ(MakePathComponentOSLegal("<.<"), "~1");
+  EXPECT_EQ(MakePathComponentOSLegal("<.<txt"), ".txt");
+  EXPECT_EQ(MakePathComponentOSLegal("txt<.<"), "txt");
 #else  // !defined(OS_WIN)
-
   EXPECT_EQ(MakePathComponentOSLegal("bar"), "");
   EXPECT_EQ(MakePathComponentOSLegal("b"), "");
   EXPECT_EQ(MakePathComponentOSLegal("A"), "");
   EXPECT_EQ(MakePathComponentOSLegal("<'|"), "");
   EXPECT_EQ(MakePathComponentOSLegal("/"), ":");
   EXPECT_EQ(MakePathComponentOSLegal(":"), "");
-
 #endif  // defined(OS_WIN)
 }
 

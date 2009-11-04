@@ -68,7 +68,7 @@ class TestDirectorySetterUpper {
 
   scoped_ptr<syncable::DirectoryManager> manager_;
   const PathString name_;
-  PathString file_path_;
+  FilePath file_path_;
 };
 
 // A variant of the above where SetUp does not actually open the directory.

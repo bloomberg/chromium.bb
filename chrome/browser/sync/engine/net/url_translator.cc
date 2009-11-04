@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/port.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "net/base/escape.h"
 
 using std::string;

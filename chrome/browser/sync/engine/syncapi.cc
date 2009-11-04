@@ -133,8 +133,8 @@ class AddressWatchTask : public Task {
 namespace sync_api {
 class ModelSafeWorkerBridge;
 
-static const PSTR_CHAR kBookmarkSyncUserSettingsDatabase[] =
-    PSTR("BookmarkSyncSettings.sqlite3");
+static const FilePath::CharType kBookmarkSyncUserSettingsDatabase[] =
+    FILE_PATH_LITERAL("BookmarkSyncSettings.sqlite3");
 static const PSTR_CHAR kDefaultNameForNewNodes[] = PSTR(" ");
 
 // The list of names which are reserved for use by the server.
@@ -171,29 +171,11 @@ static bool EndsWithSpace(const string16& string) {
   return !string.empty() && *string.rbegin() == ' ';
 }
 
-static inline void String16ToPathString(const sync_char16 *in,
-                                        PathString *out) {
-  string16 in_str(in);
-#if defined(OS_WIN)
-  out->assign(in_str);
-#else
-  UTF16ToUTF8(in_str.c_str(), in_str.length(), out);
-#endif
-}
-
-static inline void PathStringToString16(const PathString& in, string16* out) {
-#if defined(OS_WIN)
-  out->assign(in);
-#else
-  UTF8ToUTF16(in.c_str(), in.length(), out);
-#endif
-}
-
 // When taking a name from the syncapi, append a space if it matches the
 // pattern of a server-illegal name followed by zero or more spaces.
 static void SyncAPINameToServerName(const sync_char16 *sync_api_name,
                                     PathString* out) {
-  String16ToPathString(sync_api_name, out);
+  *out = UTF16ToUTF8(sync_api_name);
   string16 sync_api_name_str(sync_api_name);
   if (IsNameServerIllegalAfterTrimming(sync_api_name_str))
     out->append(PSTR(" "));
@@ -204,8 +186,7 @@ static void SyncAPINameToServerName(const sync_char16 *sync_api_name,
 // space.
 static void ServerNameToSyncAPIName(const PathString& server_name,
                                     string16*out) {
-  string16 server_name_str;
-  PathStringToString16(server_name, &server_name_str);
+  string16 server_name_str(UTF8ToUTF16(server_name));
   if (IsNameServerIllegalAfterTrimming(server_name_str) &&
       EndsWithSpace(server_name_str))
     out->assign(server_name_str, 0, server_name_str.size() - 1);
@@ -272,7 +253,7 @@ const sync_char16* BaseNode::GetTitle() const {
 
 const sync_char16* BaseNode::GetURL() const {
   // Store the string in data_ so that the returned pointer is valid.
-  PathStringToString16(GetEntry()->Get(syncable::BOOKMARK_URL), &data_->url);
+  data_->url = UTF8ToUTF16(GetEntry()->Get(syncable::BOOKMARK_URL));
   return data_->url.c_str();
 }
 
@@ -357,8 +338,7 @@ void WriteNode::SetTitle(const sync_char16* title) {
 }
 
 void WriteNode::SetURL(const sync_char16* url) {
-  PathString url_string;
-  String16ToPathString(url, &url_string);
+  PathString url_string(UTF16ToUTF8(url));
   if (url_string == entry_->Get(syncable::BOOKMARK_URL))
     return;  // Skip redundant changes.
 
@@ -543,8 +523,7 @@ const BaseTransaction* ReadNode::GetTransaction() const {
 
 bool ReadNode::InitByTagLookup(const sync_char16* tag) {
   DCHECK(!entry_) << "Init called twice";
-  PathString tag_string;
-  String16ToPathString(tag, &tag_string);
+  PathString tag_string(UTF16ToUTF8(tag));
   if (tag_string.empty())
     return false;
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
@@ -702,7 +681,7 @@ class SyncManager::SyncInternal {
 
   ~SyncInternal() { }
 
-  bool Init(const PathString& database_location,
+  bool Init(const FilePath& database_location,
             const std::string& sync_server_and_path,
             int port,
             const char* gaia_service_id,
@@ -941,7 +920,7 @@ SyncManager::SyncManager() {
   data_ = new SyncInternal(this);
 }
 
-bool SyncManager::Init(const sync_char16* database_location,
+bool SyncManager::Init(const FilePath& database_location,
                        const char* sync_server_and_path,
                        int sync_server_port,
                        const char* gaia_service_id,
@@ -952,13 +931,10 @@ bool SyncManager::Init(const sync_char16* database_location,
                        ModelSafeWorkerInterface* model_safe_worker,
                        bool attempt_last_user_authentication,
                        const char* user_agent) {
-  DCHECK(database_location);
   DCHECK(post_factory);
 
-  PathString db_path;
-  String16ToPathString(database_location, &db_path);
   string server_string(sync_server_and_path);
-  return data_->Init(db_path,
+  return data_->Init(database_location,
                      server_string,
                      sync_server_port,
                      gaia_service_id,
@@ -982,13 +958,12 @@ const char* SyncManager::GetAuthenticatedUsername() {
 }
 
 const char* SyncManager::SyncInternal::GetAuthenticatedUsername() {
-  cached_auth_watcher_email_ = browser_sync::ToUTF8(
-      username_for_share()).get_string();
+  cached_auth_watcher_email_ = username_for_share();
   return cached_auth_watcher_email_.c_str();
 }
 
 bool SyncManager::SyncInternal::Init(
-    const PathString& database_location,
+    const FilePath& database_location,
     const std::string& sync_server_and_path,
     int port,
     const char* gaia_service_id,
@@ -1001,8 +976,8 @@ bool SyncManager::SyncInternal::Init(
 
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
-  PathString settings_db_file = AppendSlash(database_location) +
-                                kBookmarkSyncUserSettingsDatabase;
+  FilePath settings_db_file =
+      database_location.Append(FilePath(kBookmarkSyncUserSettingsDatabase));
   user_settings_.reset(new UserSettings());
   if (!user_settings_->Init(settings_db_file))
     return false;
@@ -1103,8 +1078,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 
 void SyncManager::SyncInternal::Authenticate(const std::string& username,
                                              const std::string& password) {
-  DCHECK(username_for_share().empty() ||
-        (username == browser_sync::ToUTF8(username_for_share()).get_string()))
+  DCHECK(username_for_share().empty() || username == username_for_share())
         << "Username change from valid username detected";
   if (allstatus()->status().authenticated)
     return;
@@ -1127,13 +1101,7 @@ void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
     return;
   }
 
-  browser_sync::ToPathString s(username);
-  if (s.good()) {
-    share_.authenticated_name = s.get_string16();
-  } else {
-    RaiseAuthNeededEvent();
-    return;
-  }
+  share_.authenticated_name = username;
 
   // We optimize by opening the directory before the "fresh" authentication
   // attempt completes so that we can immediately begin processing changes.
@@ -1449,16 +1417,12 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
       // We now know the supplied username and password were valid. If this
       // wasn't the first sync, authenticated_name should already be assigned.
       if (username_for_share().empty()) {
-        browser_sync::ToPathString s(event.user_email);
-        if (s.good())
-          share_.authenticated_name = s.get_string16();
+        share_.authenticated_name = event.user_email;
       }
 
-      DCHECK(LowerCaseEqualsASCII(browser_sync::ToUTF8(
-          username_for_share()).get_string(),
+      DCHECK(LowerCaseEqualsASCII(username_for_share(),
           StringToLowerASCII(event.user_email).c_str()))
-          << "username_for_share= "
-          << browser_sync::ToUTF8(username_for_share())
+          << "username_for_share= " << username_for_share()
           << ", event.user_email= " << event.user_email;
 
       if (observer_)
@@ -1536,7 +1500,7 @@ void SyncManager::SetupForTestMode(const sync_char16* test_username) {
 
 void SyncManager::SyncInternal::SetupForTestMode(
     const sync_char16* test_username) {
-  String16ToPathString(test_username, &share_.authenticated_name);
+  share_.authenticated_name = UTF16ToUTF8(test_username);
 
   if (!dir_manager()->Open(username_for_share()))
     DCHECK(false) << "Could not open directory when running in test mode";

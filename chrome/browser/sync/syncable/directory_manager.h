@@ -15,8 +15,9 @@
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/lock.h"
 #include "base/basictypes.h"
+#include "base/file_path.h"
+#include "base/lock.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -50,11 +51,11 @@ class DirectoryManager {
   typedef EventChannel<DirectoryManagerEvent> Channel;
 
   // root_path specifies where db is stored.
-  explicit DirectoryManager(const PathString& root_path);
+  explicit DirectoryManager(const FilePath& root_path);
   ~DirectoryManager();
 
-  static const PathString GetSyncDataDatabaseFilename();
-  const PathString GetSyncDataDatabasePath() const;
+  static const FilePath GetSyncDataDatabaseFilename();
+  const FilePath GetSyncDataDatabasePath() const;
 
   // Opens a directory.  Returns false on error.
   // Name parameter is the the user's login,
@@ -75,13 +76,13 @@ class DirectoryManager {
   Channel* channel() const { return channel_; }
 
  protected:
-  DirOpenResult OpenImpl(const PathString& name, const PathString& path,
+  DirOpenResult OpenImpl(const PathString& name, const FilePath& path,
                          bool* was_open);
 
   // Helpers for friend class ScopedDirLookup:
   friend class ScopedDirLookup;
 
-  const PathString root_path_;
+  const FilePath root_path_;
 
   // protects managed_directory_
   Lock lock_;

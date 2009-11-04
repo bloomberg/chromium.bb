@@ -30,13 +30,14 @@
 #endif  // !defined(OS_WIN)
 
 #include "base/at_exit.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/closure.h"
-#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
@@ -78,7 +79,8 @@ void ExpectDataFromExtendedAttributeEquals(BaseTransaction* trans,
 TEST(Syncable, General) {
   remove("SimpleTest.sqlite3");
   Directory dir;
-  dir.Open(PSTR("SimpleTest.sqlite3"), PSTR("SimpleTest"));
+  FilePath test_db(FILE_PATH_LITERAL("SimpleTest.sqlite3"));
+  dir.Open(test_db, PSTR("SimpleTest"));
   bool entry_exists = false;
   int64 metahandle;
   const Id id = TestIdFactory::FromNumber(99);
@@ -176,14 +178,14 @@ class TestUnsaveableDirectory : public Directory {
   class UnsaveableBackingStore : public DirectoryBackingStore {
    public:
      UnsaveableBackingStore(const PathString& dir_name,
-                            const PathString& backing_filepath)
+                            const FilePath& backing_filepath)
          : DirectoryBackingStore(dir_name, backing_filepath) { }
      virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) {
        return false;
      }
   };
   virtual DirectoryBackingStore* CreateBackingStore(
-      const PathString& dir_name, const PathString& backing_filepath) {
+      const PathString& dir_name, const FilePath& backing_filepath) {
     return new UnsaveableBackingStore(dir_name, backing_filepath);
   }
 };
@@ -191,18 +193,18 @@ class TestUnsaveableDirectory : public Directory {
 // Test suite for syncable::Directory.
 class SyncableDirectoryTest : public testing::Test {
  protected:
-  static const PathString kFilePath;
+  static const FilePath::CharType kFilePath[];
   static const PathString kName;
-  static const PathChar* kSqlite3File;
   static const Id kId;
 
   // SetUp() is called before each test case is run.
   // The sqlite3 DB is deleted before each test is run.
   virtual void SetUp() {
-    PathRemove(PathString(kSqlite3File));
+    file_path_ = FilePath(kFilePath);
+    file_util::Delete(file_path_, true);
     dir_.reset(new Directory());
     ASSERT_TRUE(dir_.get());
-    ASSERT_TRUE(OPENED == dir_->Open(kFilePath, kName));
+    ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
     ASSERT_TRUE(dir_->good());
   }
 
@@ -210,10 +212,11 @@ class SyncableDirectoryTest : public testing::Test {
     // This also closes file handles.
     dir_->SaveChanges();
     dir_.reset();
-    PathRemove(PathString(kSqlite3File));
+    file_util::Delete(file_path_, true);
   }
 
   scoped_ptr<Directory> dir_;
+  FilePath file_path_;
 
   // Creates an empty entry and sets the ID field to the default kId.
   void CreateEntry(const PathString &entryname) {
@@ -239,8 +242,8 @@ class SyncableDirectoryTest : public testing::Test {
       bool set_server_fields, bool is_dir, bool add_to_lru, int64 *meta_handle);
 };
 
-const PathString SyncableDirectoryTest::kFilePath(PSTR("Test.sqlite3"));
-const PathChar* SyncableDirectoryTest::kSqlite3File(PSTR("Test.sqlite3"));
+const FilePath::CharType SyncableDirectoryTest::kFilePath[] =
+    FILE_PATH_LITERAL("Test.sqlite3");
 const PathString SyncableDirectoryTest::kName(PSTR("Foo"));
 const Id SyncableDirectoryTest::kId(TestIdFactory::FromNumber(-99));
 
@@ -289,27 +292,6 @@ TEST_F(SyncableDirectoryTest, TestDelete) {
   ASSERT_FALSE(e2.Put(IS_DEL, false));
   ASSERT_FALSE(e3.Put(IS_DEL, false));
   ASSERT_TRUE(e1.Put(IS_DEL, true));
-}
-
-TEST_F(SyncableDirectoryTest, TestGetFullPathNeverCrashes) {
-  PathString dirname = PSTR("honey"),
-      childname = PSTR("jelly");
-  WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-  MutableEntry e1(&trans, CREATE, trans.root_id(), dirname);
-  ASSERT_TRUE(e1.good());
-  ASSERT_TRUE(e1.Put(IS_DIR, true));
-  MutableEntry e2(&trans, CREATE, e1.Get(ID), childname);
-  ASSERT_TRUE(e2.good());
-  PathString path = GetFullPath(&trans, e2);
-  ASSERT_FALSE(path.empty());
-  // Give the child a parent that doesn't exist.
-  e2.Put(PARENT_ID, TestIdFactory::FromNumber(42));
-  path = GetFullPath(&trans, e2);
-  ASSERT_TRUE(path.empty());
-  // Done testing, make sure CheckTreeInvariants doesn't choke.
-  e2.Put(PARENT_ID, e1.Get(ID));
-  e2.Put(IS_DEL, true);
-  e1.Put(IS_DEL, true);
 }
 
 TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
@@ -723,7 +705,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
 
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(kFilePath, kName));
+  ASSERT_TRUE(OPENED == dir_->Open(FilePath(kFilePath), kName));
   ASSERT_TRUE(dir_->good());
   int64 handle2 = 0;
   {
@@ -775,13 +757,13 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
 }
 
 TEST(SyncableDirectoryManager, TestFileRelease) {
-  DirectoryManager dm(PSTR("."));
+  DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));
   ASSERT_TRUE(dm.Open(PSTR("ScopeTest")));
   {
     ScopedDirLookup(&dm, PSTR("ScopeTest"));
   }
   dm.Close(PSTR("ScopeTest"));
-  ASSERT_TRUE(0 == PathRemove(dm.GetSyncDataDatabasePath()));
+  ASSERT_TRUE(file_util::Delete(dm.GetSyncDataDatabasePath(), true));
 }
 
 class ThreadOpenTestDelegate : public PlatformThread::Delegate {
@@ -800,7 +782,7 @@ class ThreadOpenTestDelegate : public PlatformThread::Delegate {
 };
 
 TEST(SyncableDirectoryManager, ThreadOpenTest) {
-  DirectoryManager dm(PSTR("."));
+  DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));
   PlatformThreadHandle thread_handle;
   ThreadOpenTestDelegate test_delegate(&dm);
   ASSERT_TRUE(PlatformThread::Create(0, &test_delegate, &thread_handle));
@@ -881,7 +863,7 @@ class ThreadBugDelegate : public PlatformThread::Delegate {
 TEST(SyncableDirectoryManager, ThreadBug1) {
   Step step;
   step.number = 0;
-  DirectoryManager dirman(PSTR("."));
+  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
   ThreadBugDelegate thread_delegate_1(0, &step, &dirman);
   ThreadBugDelegate thread_delegate_2(1, &step, &dirman);
 
@@ -918,7 +900,8 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
       case 0:
         {
           // Clean up remnants of earlier test runs.
-          PathRemove(directory_manager_->GetSyncDataDatabasePath());
+          file_util::Delete(directory_manager_->GetSyncDataDatabasePath(),
+                            true);
           // Test.
           directory_manager_->Open(dirname);
           ScopedDirLookup dir(directory_manager_, dirname);
@@ -974,7 +957,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
 TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
   Step step;
 
-  DirectoryManager dirman(PSTR("."));
+  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
   DirectoryKernelStalenessBugDelegate thread_delegate_1(0, &step, &dirman);
   DirectoryKernelStalenessBugDelegate thread_delegate_2(1, &step, &dirman);
 
@@ -1034,9 +1017,9 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
 };
 
 TEST(SyncableDirectory, StressTransactions) {
-  DirectoryManager dirman(PSTR("."));
+  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
   PathString dirname = PSTR("stress");
-  PathRemove(dirman.GetSyncDataDatabasePath());
+  file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
   dirman.Open(dirname);
 
   const int kThreadCount = 7;
@@ -1055,7 +1038,7 @@ TEST(SyncableDirectory, StressTransactions) {
   }
 
   dirman.Close(dirname);
-  PathRemove(dirman.GetSyncDataDatabasePath());
+  file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
 }
 
 TEST(Syncable, ComparePathNames) {

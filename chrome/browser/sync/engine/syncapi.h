@@ -39,6 +39,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -523,7 +524,7 @@ class SYNC_EXPORT SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
-  bool Init(const sync_char16* database_location,
+  bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
             const char* gaia_service_id,
