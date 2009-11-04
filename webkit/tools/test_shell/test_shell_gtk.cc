@@ -263,7 +263,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
     const char* font = optional_fonts[i];
     if (access(font, R_OK) < 0) {
       LOG(WARNING) << "You are missing " << font << ". "
-                   << "Without this, some layout tests will fail."
+                   << "Without this, some layout tests will fail. "
                    << "It's not a major problem.  See the build instructions "
                    << "for more information on where to get all the data.";
     } else {
