@@ -511,7 +511,7 @@ AutocompleteProvider::~AutocompleteProvider() {
 
 void AutocompleteProvider::SetProfile(Profile* profile) {
   DCHECK(profile);
-  Stop();  // It makes no sense to continue running a query from an old profile.
+  DCHECK(done_);  // The controller should have already stopped us.
   profile_ = profile;
 }
 
@@ -688,6 +688,7 @@ AutocompleteController::~AutocompleteController() {
 }
 
 void AutocompleteController::SetProfile(Profile* profile) {
+  Stop(true);
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->SetProfile(profile);
   input_.Clear();  // Ensure we don't try to do a "minimal_changes" query on a
@@ -756,7 +757,7 @@ void AutocompleteController::Stop(bool clear_result) {
   updated_latest_result_ = false;
   delay_interval_has_passed_ = false;
   done_ = true;
-  if (clear_result) {
+  if (clear_result && !result_.empty()) {
     result_.Reset();
     NotificationService::current()->Notify(
         NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,

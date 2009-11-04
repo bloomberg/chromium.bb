@@ -591,7 +591,8 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       edit_view_(edit_view),
       bubble_positioner_(bubble_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
+      is_open_(false) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
   BubbleBorder* bubble_border = new BubbleBorder;
@@ -619,7 +620,9 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
 // AutocompletePopupContentsView, AutocompletePopupView overrides:
 
 bool AutocompletePopupContentsView::IsOpen() const {
-  return popup_->IsOpen();
+  const bool is_open = popup_->IsOpen();
+  CHECK(is_open == is_open_);
+  return is_open;
 }
 
 void AutocompletePopupContentsView::InvalidateLine(size_t line) {
@@ -633,6 +636,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
       size_animation_.Stop();
       popup_->Hide();
     }
+    is_open_ = false;
     return;
   }
 
@@ -681,6 +685,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
       start_bounds_ = target_bounds_;
     popup_->Show();
   }
+  is_open_ = true;
 
   SchedulePaint();
 }
@@ -737,7 +742,9 @@ void AutocompletePopupContentsView::SetSelectedLine(size_t index,
 
 void AutocompletePopupContentsView::AnimationProgressed(
     const Animation* animation) {
-  popup_->Show();
+  // We should only be running the animation when the popup is already visible.
+  CHECK(IsOpen());
+  popup_->Show();  // Adjusts bounds.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

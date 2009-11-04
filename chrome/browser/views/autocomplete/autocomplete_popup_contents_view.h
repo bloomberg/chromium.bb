@@ -132,6 +132,8 @@ class AutocompletePopupContentsView : public views::View,
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 
+  bool is_open_;  // Used only for sanity-checking.
+
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };
 

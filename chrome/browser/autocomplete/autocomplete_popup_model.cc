@@ -175,7 +175,12 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
     // If there are no results, the popup should be closed (so we should have
     // failed the CHECK above), and URLsForDefaultMatch() should have been
     // called instead.
-    CHECK(!result->empty());
+    if (result->empty()) {
+      // We're going to checkfail, but first see whether
+      // controller_->latest_result() is actually in sync with |result|.
+      CHECK(controller_->latest_result().empty());
+      CHECK(false);
+    }
     CHECK(selected_line_ < result->size());
     match = result->begin() + selected_line_;
   }
