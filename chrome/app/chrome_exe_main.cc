@@ -6,103 +6,46 @@
 #include <tchar.h>
 
 #include "base/at_exit.h"
-#include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug_on_start.h"
-#include "base/process_util.h"
 #include "base/win_util.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
-#include "chrome/app/google_update_client.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
-#include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/dep.h"
+#include "sandbox/src/sandbox_factory.h"
 
-// Generataed header containing the Google Update appid.
-#include "appid.h"
 
-int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
-                      wchar_t* command_line, int) {
+int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   base::EnableTerminationOnHeapCorruption();
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
 
-  win_util::WinVersion win_version = win_util::GetWinVersion();
-  if (win_version < win_util::WINVERSION_VISTA) {
-    // On Vista, this is unnecessary since it is controlled through the
-    // /NXCOMPAT linker flag.
-    // Enforces strong DEP support.
-    sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
+  bool exit_now = true;
+  // We restarted because of a previous crash. Ask user if we should relaunch.
+  if (ShowRestartDialogIfCrashed(&exit_now)) {
+    if (exit_now)
+      return ResultCodes::NORMAL_EXIT;
   }
 
-  // Get the interface pointer to the BrokerServices or TargetServices,
-  // depending who we are.
+  // Initialize the commandline singleton from the environment.
+  CommandLine::Init(0, NULL);
+
+  // Initialize the sandbox services.
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   sandbox_info.broker_services = sandbox::SandboxFactory::GetBrokerServices();
   if (!sandbox_info.broker_services)
     sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
 
-  CommandLine::Init(0, NULL);
-
-  const wchar_t* dll_name = L"chrome.dll";
-  std::wstring dll_full_path;
-  std::wstring versionned_path;
-
-#if defined(GOOGLE_CHROME_BUILD)
-  google_update::GoogleUpdateClient client;
-
-  // TODO(erikkay): verify client.Init() return value for official builds
-  client.Init(google_update::kChromeGuid, dll_name);
-  dll_full_path = client.GetDLLFullPath();
-  versionned_path = client.GetDLLPath();
-#else
-  std::wstring exe_path = client_util::GetExecutablePath();
-  wchar_t *version;
-  if (client_util::GetChromiumVersion(exe_path.c_str(), L"Software\\Chromium",
-                                      &version)) {
-    versionned_path = exe_path;
-    versionned_path.append(version);
-    delete[] version;
+  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+    // Enforces strong DEP support. Vista uses the NXCOMPAT flag in the exe.
+    sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
   }
 
-  dll_full_path = client_util::GetDLLPath(dll_name, versionned_path);
-#endif
+  // Load and launch the chrome dll. *Everything* happens inside.
+  MainDllLoader* loader = MakeMainDllLoader();
+  int rc = loader->Launch(instance, &sandbox_info);
+  delete loader;
 
-  // If the versionned path exists, we set the current directory to this path.
-  if (client_util::FileExists(versionned_path)) {
-    ::SetCurrentDirectory(versionned_path.c_str());
-  }
-
-  HINSTANCE dll_handle = ::LoadLibraryEx(dll_name, NULL,
-                                         LOAD_WITH_ALTERED_SEARCH_PATH);
-
-  // Initialize the crash reporter.
-  InitCrashReporterWithDllPath(dll_full_path);
-
-  bool exit_now = true;
-  if (ShowRestartDialogIfCrashed(&exit_now)) {
-    // We have restarted because of a previous crash. The user might
-    // decide that he does not want to continue.
-    if (exit_now)
-      return ResultCodes::NORMAL_EXIT;
-  }
-
-#if defined(GOOGLE_CHROME_BUILD)
-  int ret = 0;
-  if (client.Launch(instance, &sandbox_info, command_line, "ChromeMain",
-                    &ret)) {
-    return ret;
-  }
-#else
-  if (NULL != dll_handle) {
-    client_util::DLL_MAIN entry = reinterpret_cast<client_util::DLL_MAIN>(
-        ::GetProcAddress(dll_handle, "ChromeMain"));
-    if (NULL != entry)
-      return (entry)(instance, &sandbox_info, command_line);
-  }
-#endif
-
-  return ResultCodes::GOOGLE_UPDATE_LAUNCH_FAILED;
+  return rc;
 }

@@ -16,7 +16,6 @@
 #include "base/registry.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "chrome/app/google_update_client.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
@@ -53,7 +52,6 @@ std::wstring TrimToBreakpadMax(const std::wstring& str) {
 
 // Returns the custom info structure based on the dll in parameter and the
 // process type.
-static google_breakpad::CustomClientInfo* custom_info = NULL;
 google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
                                                  const std::wstring& type) {
   scoped_ptr<FileVersionInfo>

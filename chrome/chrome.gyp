@@ -3436,8 +3436,6 @@
         'app/chrome_exe_resource.h',
         'app/client_util.cc',
         'app/client_util.h',
-        'app/google_update_client.cc',
-        'app/google_update_client.h',
         'app/hard_error_handler_win.cc',
         'app/hard_error_handler_win.h',
         'app/scoped_ole_initializer.h',
@@ -3882,7 +3880,6 @@
           'sources!': [
             'app/chrome_exe_main.cc',
             'app/client_util.cc',
-            'app/google_update_client.cc',
           ]
         }],
         ['OS=="linux" or OS=="freebsd"', {
