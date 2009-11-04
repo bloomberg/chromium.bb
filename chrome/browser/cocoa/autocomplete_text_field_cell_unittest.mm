@@ -21,7 +21,7 @@ const CGFloat kNarrowWidth(5.0);
 
 class AutocompleteTextFieldCellTest : public PlatformTest {
  public:
-  AutocompleteTextFieldCellTest() {
+  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL) {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
@@ -31,11 +31,13 @@ class AutocompleteTextFieldCellTest : public PlatformTest {
     [cell setEditable:YES];
     [cell setBordered:YES];
     [view_ setCell:cell.get()];
+    [cell setSecurityImageView:&security_image_view_];
     [cocoa_helper_.contentView() addSubview:view_.get()];
   }
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSTextField> view_;
+  LocationBarViewMac::SecurityImageView security_image_view_;
 };
 
 // Test adding/removing from the view hierarchy, mostly to ensure nothing
@@ -173,8 +175,11 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
-  // Hint icon takes up space on the right
-  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"] label:nil color:nil];
+  // Security icon takes up space on the right
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetVisible(true);
+
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
@@ -236,7 +241,10 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
-  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"] label:nil color:nil];
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetVisible(true);
+
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
@@ -248,17 +256,19 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
-  scoped_nsobject<NSImage> hintIcon(
-      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
 
-  NSRect iconRect = [cell hintImageFrameForFrame:bounds];
+  security_image_view_.SetVisible(false);
+  NSRect iconRect = [cell securityImageFrameForFrame:bounds];
   EXPECT_TRUE(NSIsEmptyRect(iconRect));
 
   // Save the starting frame for after clear.
   const NSRect originalIconRect(iconRect);
 
-  [cell setHintIcon:hintIcon label:nil color:nil];
-  iconRect = [cell hintImageFrameForFrame:bounds];
+  security_image_view_.SetVisible(true);
+  iconRect = [cell securityImageFrameForFrame:bounds];
+
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
 
@@ -270,9 +280,26 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   NSRect textFrame = [cell textFrameForFrame:bounds];
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
 
+  // Now add a label.
+  NSFont* font = [NSFont controlContentFontOfSize:12.0];
+  NSColor* color = [NSColor blackColor];
+  security_image_view_.SetLabel(@"Label", font, color);
+  iconRect = [cell securityImageFrameForFrame:bounds];
+
+  EXPECT_FALSE(NSIsEmptyRect(iconRect));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
+
+  // Make sure we are right of the |drawingRect|.
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
+
+  // Make sure we're right of the |textFrame|.
+  textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
+
   // Make sure we clear correctly.
-  [cell setHintIcon:nil label:nil color:nil];
-  iconRect = [cell hintImageFrameForFrame:bounds];
+  security_image_view_.SetVisible(false);
+  iconRect = [cell securityImageFrameForFrame:bounds];
   EXPECT_TRUE(NSEqualRects(iconRect, originalIconRect));
   EXPECT_TRUE(NSIsEmptyRect(iconRect));
 }

@@ -143,11 +143,11 @@
     return;
   }
 
-  // Check to see if the user clicked the hint icon in the cell. If so, we need
-  // to display the page info window.
-  const NSRect hintIconFrame = [cell hintImageFrameForFrame:[self bounds]];
+  // Check to see if the user clicked the security hint icon in the cell. If so,
+  // we need to display the page info window.
+  const NSRect hintIconFrame = [cell securityImageFrameForFrame:[self bounds]];
   if (NSMouseInRect(location, hintIconFrame, [self isFlipped])) {
-    observer_->OnSecurityIconClicked();
+    [cell onSecurityIconMousePressed];
     return;
   }
 

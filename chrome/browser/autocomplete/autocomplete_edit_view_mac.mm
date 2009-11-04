@@ -16,10 +16,8 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/event_utils.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 
@@ -630,16 +628,6 @@ void AutocompleteEditViewMac::OnPaste() {
 bool AutocompleteEditViewMac::CanPasteAndGo() {
   return
     model_->CanPasteAndGo(GetClipboardText(g_browser_process->clipboard()));
-}
-
-void AutocompleteEditViewMac::OnSecurityIconClicked() {
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return;
-  }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
 }
 
 int AutocompleteEditViewMac::GetPasteActionStringId() {

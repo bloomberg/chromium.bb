@@ -177,6 +177,7 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   CFRelease(cgimage);
   NSImage* image = [[[NSImage alloc] init] autorelease];
   [image addRepresentation:bitmap];
+  [image setSize:NSMakeSize(skiaBitmap.width(), skiaBitmap.height())];
   return image;
 }
 
