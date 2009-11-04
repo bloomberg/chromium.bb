@@ -42,7 +42,7 @@ h1 {
 
 div.content {
   font-size: 84%;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .section-header {
@@ -90,22 +90,22 @@ body.showDevMode .showInDevMode {
   -webkit-transition: all .1s ease-in;
 }
 
-.wbox-dev-tools {
+.wbox-dev-mode {
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
 }
 
-.developer-tools-image {
+.developer-mode-image {
   margin-top: 2px;
 }
 
-.developer-tools-link {
+.developer-mode-link {
   font-size: 100%;
   margin-right: 3px;
   white-space: nowrap;
 }
 
-.developer-tools {
+.developer-mode {
   background: #f4f6fc;
   border-bottom: 1px solid #edeff5;
   font-size: 85%;
@@ -115,10 +115,20 @@ body.showDevMode .showInDevMode {
   width: 100%;
 }
 
+.extension_disabled td {
+  background: url('gray.png') 0px 0px;
+  color: #a0a0a0;
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
+.extension_enabled td {
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
 .extension {
-  border-bottom: 1px solid #edeff5;
-  margin-bottom: 9px;
-  padding-bottom: 10px;
+  border-bottom: 1px solid #cdcdcd;
 }
 
 .extension-name {
@@ -244,6 +254,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "order": 1,
       "options_url": "options.html",
       "icon": "relative-path-to-icon.png",
       "content_scripts": [
@@ -281,6 +292,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "order": 2,
       "icon": "",
       "content_scripts": [
         {
@@ -305,16 +317,16 @@ var extensionDataFormat = {
   ]
 };
 
-// Keeps track of whether the developer tools subsection has been made visible
+// Keeps track of whether the developer mode subsection has been made visible
 // (expanded) or not.
-var devToolsExpanded = false;
+var devModeExpanded = false;
 
 /**
- * Toggles the devToolsExpanded, and notifies the c++ dom_ui to toggle the
+ * Toggles the devModeExpanded, and notifies the c++ dom_ui to toggle the
  * extensions.ui.developer_mode which saved in the preferences.
  */
-function toggleDevToolsExpanded() {
-  devToolsExpanded = !devToolsExpanded;
+function toggleDevModeExpanded() {
+  devModeExpanded = !devModeExpanded;
   chrome.send('toggleDeveloperMode', []);
 }
 
@@ -325,11 +337,16 @@ function toggleDevToolsExpanded() {
  * @param {Object} extensionsData Detailed info about installed extensions
  */
 function showExtensionsData(extensionsData) {
-  // Sort by extension name (case-insensitive)
+  // Sort by order specified in the data or (if equal) then sort by
+  // extension name (case-insensitive).
   extensionsData.extensions.sort(function(a, b) {
-    a = a.name.toLowerCase();
-    b = b.name.toLowerCase();
-    return a < b ? -1 : (a > b ? 1 : 0);
+    if (a.order == b.order) {
+      a = a.name.toLowerCase();
+      b = b.name.toLowerCase();
+      return a < b ? -1 : (a > b ? 1 : 0);
+    } else {
+      return a.order < b.order ? -1 : 1;
+    }
   });
 
   // This is the javascript code that processes the template:
@@ -354,7 +371,7 @@ window.domui_responded_ = false;
 function returnExtensionsData(extensionsData) {
   window.domui_responded_ = true;
 
-  devToolsExpanded = extensionsData.developerMode;
+  devModeExpanded = extensionsData.developerMode;
 
   showExtensionsData(extensionsData);
 
@@ -364,15 +381,14 @@ function returnExtensionsData(extensionsData) {
   document.getElementById('body-container').style.display = "inline";
 
   // Explicitly set the height for each element that wants to be "slid" in and
-  // out when the devToolsExpanded is toggled.
+  // out when the devModeExpanded is toggled.
   var slidables = document.getElementsByClassName('showInDevMode');
-  for (var i = 0; i < slidables.length; i++) {
+  for (var i = 0; i < slidables.length; i++)
     slidables[i].style.height = slidables[i].offsetHeight + "px";
-  }
 
   // If not in developer mode, hide the developer mode elements without the
   // slide/fade transition.
-  if (!devToolsExpanded) {
+  if (!devModeExpanded) {
     document.getElementsByTagName('body')[0].className = "hideDevModeInitial";
   } else {
     document.getElementById('collapse').style.display = "inline";
@@ -473,18 +489,18 @@ function hidePackDialog() {
 }
 
 /*
- * Toggles visibility of the developer tools.
+ * Toggles visibility of the developer mode.
  */
-function toggleDeveloperTools() {
-  toggleDevToolsExpanded();
+function toggleDeveloperMode() {
+  toggleDevModeExpanded();
 
   document.getElementById('collapse').style.display =
-      devToolsExpanded ? "inline" : "none";
+      devModeExpanded ? "inline" : "none";
   document.getElementById('expand').style.display =
-      devToolsExpanded ? "none" : "inline";
+      devModeExpanded ? "none" : "inline";
 
   document.getElementsByTagName('body')[0].className =
-      devToolsExpanded ? "showDevMode" : "hideDevMode";
+      devModeExpanded ? "showDevMode" : "hideDevMode";
 }
 
 /**
@@ -586,16 +602,16 @@ function autoUpdate() {
                     jscontent="extensions.length"></span>)</span>
             </td>
             <td width="18" padding="">
-              <img id="collapse" class="developer-tools-image"
-                   style="display:none" onclick="toggleDeveloperTools();"
+              <img id="collapse" class="developer-mode-image"
+                   style="display:none" onclick="toggleDeveloperMode();"
                    src="minus.png" />
-              <img id="expand" class="developer-tools-image"
-                   onclick="toggleDeveloperTools();" src="plus.png" />
+              <img id="expand" class="developer-mode-image"
+                   onclick="toggleDeveloperMode();" src="plus.png" />
             </td>
             <td width="50" align="right">
-              <div class="developer-tools-link">
-                <a onclick="toggleDeveloperTools();" style="cursor: default"
-                   i18n-content="devToolsLink">DEVTOOLS</a>
+              <div class="developer-mode-link">
+                <a onclick="toggleDeveloperMode();" style="cursor: default"
+                   i18n-content="devModeLink">DEVMODE</a>
               </div>
             </td>
           </tr>
@@ -603,9 +619,9 @@ function autoUpdate() {
         </div>
 
       </div>
-      <div id="developer_tools" class="wbox-dev-tools showInDevMode">
-        <div class="developer-tools">
-          <span i18n-content="devToolsPrefix">DEVELOPER_TOOLS:</span>
+      <div id="developer_tools" class="wbox-dev-mode showInDevMode">
+        <div class="developer-mode">
+          <span i18n-content="devModePrefix">DEVELOPER_MODE:</span>
           <button onclick="loadExtension()"
                   i18n-content="loadUnpackedButton">LOAD</button>
           <button onclick="showPackDialog()"
@@ -622,9 +638,9 @@ function autoUpdate() {
 
         <div jsdisplay="extensions.length > 0">
         <div class="extension" jsselect="extensions">
-          <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-          <td width="62" align="center" valign="top">
+          <table width="100%" cellpadding="2" cellspacing="0">
+          <tr jsvalues=".className:enabled ? 'extension_enabled' : 'extension_disabled'">
+          <td width="62" height="50" align="center" valign="top">
             <span jsdisplay="icon"
               ><img
               jsvalues=".src:'chrome-extension://' + id + '/' + icon"
@@ -643,6 +659,8 @@ function autoUpdate() {
               <span jscontent="version">x.x.x.x</span>
               <span jsdisplay="!enabled"
                     i18n-content="extensionDisabled">(DISABLED)</span>
+              <span jsdisplay="order == 1"
+                    i18n-content="inDevelopment">(IN DEVELOPMENT)</span>
             </div>
 
             <div class="extension-description" jscontent="description"></div>

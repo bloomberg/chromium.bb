@@ -2590,14 +2590,14 @@ each locale. -->
       </message>
 
       <!-- chrome://extensions page -->
-      <message name="IDS_EXTENSIONS_DEVELOPER_TOOLS_LINK" desc="Text of the link for developer tools.">
-        Developer tools
+      <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
+        Developer mode
       </message>
-      <message name="IDS_EXTENSIONS_DEVELOPER_TOOLS_PREFIX" desc="Text of the prefix for the developer tools buttons.">
-        Developer tools:
+      <message name="IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX" desc="Text of the prefix for the developer mode buttons.">
+        Developer mode:
       </message>
-      <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load unpacked Extension' button.">
-        Load unpacked Extension...
+      <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
+        Load Extension...
       </message>
       <message name="IDS_EXTENSIONS_PACK_BUTTON" desc="Text for the 'Pack Extension' button.">
         Pack Extension...
@@ -2610,6 +2610,9 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSIONS_DISABLED_EXTENSION" desc="Text that signifies that the extension is currently disabled.">
         (Disabled)
+      </message>
+      <message name="IDS_EXTENSIONS_IN_DEVELOPMENT" desc="Text that signifies that the extension is currently in development.">
+        (Development Mode)
       </message>
       <message name="IDS_EXTENSIONS_ID" desc="The ID label in front if the extension ID.">
         ID:
@@ -2634,6 +2637,9 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
         Options
+      </message>
+      <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions.">
+        Get more extensions >>
       </message>
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.

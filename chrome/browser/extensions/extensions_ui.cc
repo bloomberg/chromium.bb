@@ -52,10 +52,10 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_EXTENSIONS_TITLE));
-  localized_strings.SetString(L"devToolsLink",
-      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_TOOLS_LINK));
-  localized_strings.SetString(L"devToolsPrefix",
-      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_TOOLS_PREFIX));
+  localized_strings.SetString(L"devModeLink",
+      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_MODE_LINK));
+  localized_strings.SetString(L"devModePrefix",
+      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX));
   localized_strings.SetString(L"loadUnpackedButton",
       l10n_util::GetString(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
   localized_strings.SetString(L"packButton",
@@ -66,6 +66,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_NONE_INSTALLED));
   localized_strings.SetString(L"extensionDisabled",
       l10n_util::GetString(IDS_EXTENSIONS_DISABLED_EXTENSION));
+  localized_strings.SetString(L"inDevelopment",
+      l10n_util::GetString(IDS_EXTENSIONS_IN_DEVELOPMENT));
   localized_strings.SetString(L"extensionId",
       l10n_util::GetString(IDS_EXTENSIONS_ID));
   localized_strings.SetString(L"extensionVersion",
@@ -468,6 +470,14 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
+
+  // Determine the sort order: Extensions loaded through --load-extensions show
+  // up at the top. Disabled extensions show up at the bottom.
+    if (extension->location() == Extension::LOAD)
+    extension_data->SetInteger(L"order", 1);
+  else
+    extension_data->SetInteger(L"order", 2);
+
   if (!extension->options_url().is_empty())
     extension_data->SetString(L"options_url", extension->options_url().spec());
 
