@@ -87,8 +87,12 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 		domains |= NOUVEAU_GEM_DOMAIN_VRAM;
 	if (flags & NOUVEAU_BO_GART)
 		domains |= NOUVEAU_GEM_DOMAIN_GART;
+
+	if (!(pbbo->valid_domains & domains)) {
+		fprintf(stderr, "no valid domains remain!\n");
+		return -EINVAL;
+	}
 	pbbo->valid_domains &= domains;
-	assert(pbbo->valid_domains);
 
 	assert(flags & NOUVEAU_BO_RDWR);
 	if (flags & NOUVEAU_BO_RD) {
