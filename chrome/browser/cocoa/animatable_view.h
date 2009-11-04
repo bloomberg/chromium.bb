@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 
@@ -18,7 +19,7 @@
 // animation ends normally and an |animationDidStop:| message when the animation
 // was canceled (even when canceled as a result of a new animation starting).
 
-@interface AnimatableView : NSView {
+@interface AnimatableView : NSView<NSAnimationDelegate> {
  @protected
   IBOutlet id delegate_;  // weak, used to send animation ended messages.
 
