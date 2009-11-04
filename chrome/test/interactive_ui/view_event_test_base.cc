@@ -8,12 +8,17 @@
 #include <ole2.h>
 #endif
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "views/view.h"
 #include "views/window/window.h"
 
 namespace {
+
+// Default delay for the time-out at which we stop message loop.
+const int kTimeoutInMS = 20000;
 
 // View subclass that allows you to specify the preferred size.
 class TestView : public views::View {
@@ -47,9 +52,16 @@ const int kMouseMoveDelayMS = 200;
 
 }  // namespace
 
-ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) { }
+ViewEventTestBase::ViewEventTestBase()
+  : window_(NULL),
+    content_view_(NULL),
+    ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+}
 
 void ViewEventTestBase::Done() {
+  // Cancel the pending time-out.
+  method_factory_.RevokeAll();
+
   MessageLoop::current()->Quit();
 
 #if defined(OS_WIN)
@@ -60,8 +72,7 @@ void ViewEventTestBase::Done() {
 
   // If we're in a nested message loop, as is the case with menus, we need
   // to quit twice. The second quit does that for us.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask(), 0);
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 void ViewEventTestBase::SetUp() {
@@ -110,9 +121,14 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
 
   // Schedule a task that starts the test. Need to do this as we're going to
   // run the message loop.
-  MessageLoop::current()->PostDelayedTask(
+  MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ViewEventTestBase::DoTestOnMessageLoop), 0);
+      NewRunnableMethod(this, &ViewEventTestBase::DoTestOnMessageLoop));
+
+  // Start the timeout timer to prevent hangs.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&ViewEventTestBase::TimedOut),
+      kTimeoutInMS);
 
   MessageLoop::current()->Run();
 }
@@ -142,4 +158,14 @@ void ViewEventTestBase::RunTestMethod(Task* task) {
   task->Run();
   if (HasFatalFailure())
     Done();
+}
+
+void ViewEventTestBase::TimedOut() {
+  std::string error_message = "Test timed out. Each test runs for a max of ";
+  error_message += IntToString(kTimeoutInMS);
+  error_message += " ms (kTimeoutInMS).";
+
+  GTEST_NONFATAL_FAILURE_(error_message.c_str());
+
+  Done();
 }

@@ -6,6 +6,7 @@
 #define CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
 
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "base/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/window/window_delegate.h"
@@ -119,6 +120,9 @@ class ViewEventTestBase : public views::WindowDelegate,
   // supplied task and if there are failures invokes Done.
   void RunTestMethod(Task* task);
 
+  // Called when the test has been running for longer than expected.
+  void TimedOut();
+
   // The content of the Window.
   views::View* content_view_;
 
@@ -126,6 +130,9 @@ class ViewEventTestBase : public views::WindowDelegate,
   scoped_ptr<base::Thread> dnd_thread_;
 
   MessageLoopForUI message_loop_;
+
+  // Method factory used for time-outs.
+  ScopedRunnableMethodFactory<ViewEventTestBase> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
 };
