@@ -154,3 +154,7 @@ select.status-bar-item {
 .scope-bar li:active {
     -webkit-box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
 }
+
+.timeline-category-tree-item input {
+    vertical-align: middle;
+}
