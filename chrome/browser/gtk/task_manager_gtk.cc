@@ -634,10 +634,14 @@ void TaskManagerGtk::KillSelectedProcesses() {
   GtkTreeModel* model;
   GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
   for (GList* item = paths; item; item = item->next) {
-    int row = gtk_tree::GetRowNumForPath(
+    GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
+        GTK_TREE_MODEL_SORT(process_list_sort_),
         reinterpret_cast<GtkTreePath*>(item->data));
+    int row = gtk_tree::GetRowNumForPath(path);
+    gtk_tree_path_free(path);
     task_manager_->KillProcess(row);
   }
+  g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
 }
 
@@ -656,10 +660,15 @@ void TaskManagerGtk::ActivateFocusedTab() {
   GtkTreeModel* model;
   GList* selected = gtk_tree_selection_get_selected_rows(selection, &model);
   if (selected) {
-    int row = gtk_tree::GetRowNumForPath(
+    GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
+        GTK_TREE_MODEL_SORT(process_list_sort_),
         reinterpret_cast<GtkTreePath*>(selected->data));
+    int row = gtk_tree::GetRowNumForPath(path);
+    gtk_tree_path_free(path);
     task_manager_->ActivateProcess(row);
   }
+  g_list_foreach(selected, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
+  g_list_free(selected);
 }
 
 void TaskManagerGtk::OnLinkActivated() {
@@ -750,13 +759,17 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection,
   GtkTreeModel* model;
   GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
   for (GList* item = paths; item; item = item->next) {
-    int row = gtk_tree::GetRowNumForPath(
+    GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
+        GTK_TREE_MODEL_SORT(task_manager->process_list_sort_),
         reinterpret_cast<GtkTreePath*>(item->data));
+    int row = gtk_tree::GetRowNumForPath(path);
+    gtk_tree_path_free(path);
     if (task_manager->task_manager_->IsBrowserProcess(row)) {
       selection_contains_browser_process = true;
       break;
     }
   }
+  g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
 
   bool sensitive = (paths != NULL) && !selection_contains_browser_process;

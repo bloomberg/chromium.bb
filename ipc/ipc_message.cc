@@ -99,7 +99,7 @@ bool Message::WriteFileDescriptor(const base::FileDescriptor& descriptor) {
 }
 
 bool Message::ReadFileDescriptor(void** iter,
-                                base::FileDescriptor* descriptor) const {
+                                 base::FileDescriptor* descriptor) const {
   int descriptor_index;
   if (!ReadInt(iter, &descriptor_index))
     return false;
