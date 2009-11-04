@@ -52,6 +52,9 @@ struct nouveau_pushbuf_priv {
 	unsigned *pushbuf;
 	unsigned  size;
 
+	unsigned marker;
+	unsigned marker_relocs;
+
 	struct drm_nouveau_gem_pushbuf_bo *buffers;
 	unsigned nr_buffers;
 	struct drm_nouveau_gem_pushbuf_reloc *relocs;

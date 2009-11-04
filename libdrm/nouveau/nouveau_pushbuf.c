@@ -67,7 +67,6 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 
 	if (nvpb->nr_relocs >= NOUVEAU_GEM_MAX_RELOCS) {
 		fprintf(stderr, "too many relocs!!\n");
-		assert(0);
 		return -ENOMEM;
 	}
 
@@ -79,7 +78,6 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 	pbbo = nouveau_bo_emit_buffer(chan, bo);
 	if (!pbbo) {
 		fprintf(stderr, "buffer emit fail :(\n");
-		assert(0);
 		return -ENOMEM;
 	}
 
@@ -353,6 +351,57 @@ restart_push:
 	if (chan->flush_notify)
 		chan->flush_notify(chan);
 
+	nvpb->marker = 0;
 	return ret;
 }
+
+int
+nouveau_pushbuf_marker_emit(struct nouveau_channel *chan,
+			    unsigned wait_dwords, unsigned wait_relocs)
+{
+	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
+
+	if (AVAIL_RING(chan) < wait_dwords)
+		return nouveau_pushbuf_flush(chan, wait_dwords);
+
+	if (nvpb->nr_relocs + wait_relocs >= NOUVEAU_GEM_MAX_RELOCS)
+		return nouveau_pushbuf_flush(chan, wait_dwords);
+
+	nvpb->marker = nvpb->base.cur - nvpb->pushbuf;
+	nvpb->marker_relocs = nvpb->nr_relocs;
+	return 0;
+}
+
+void
+nouveau_pushbuf_marker_undo(struct nouveau_channel *chan)
+{
+	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
+	unsigned i;
+
+	if (!nvpb->marker)
+		return;
+
+	/* undo any relocs/buffers added to the list since last marker */
+	for (i = nvpb->marker_relocs; i < nvpb->nr_relocs; i++) {
+		struct drm_nouveau_gem_pushbuf_reloc *r = &nvpb->relocs[i];
+		struct drm_nouveau_gem_pushbuf_bo *pbbo =
+			&nvpb->buffers[r->bo_index];
+		struct nouveau_bo *bo = (void *)(unsigned long)pbbo->user_priv;
+		struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
+
+		if (--nvbo->pending_refcnt)
+			continue;
+
+		nvbo->pending = NULL;
+		nouveau_bo_ref(NULL, &bo);
+		nvpb->nr_buffers--;
+	}
+	nvpb->nr_relocs = nvpb->marker_relocs;
+
+	/* reset pushbuf back to last marker */
+	nvpb->base.cur = nvpb->pushbuf + nvpb->marker;
+	nvpb->base.remaining = nvpb->size - nvpb->marker;
+	nvpb->marker = 0;
+}
+
 

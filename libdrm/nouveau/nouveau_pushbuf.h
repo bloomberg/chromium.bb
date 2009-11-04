@@ -40,11 +40,30 @@ int
 nouveau_pushbuf_flush(struct nouveau_channel *, unsigned min);
 
 int
+nouveau_pushbuf_marker_emit(struct nouveau_channel *chan,
+			    unsigned wait_dwords, unsigned wait_relocs);
+
+void
+nouveau_pushbuf_marker_undo(struct nouveau_channel *chan);
+
+int
 nouveau_pushbuf_emit_reloc(struct nouveau_channel *, void *ptr,
 			   struct nouveau_bo *, uint32_t data, uint32_t data2,
 			   uint32_t flags, uint32_t vor, uint32_t tor);
 
 /* Push buffer access macros */
+static __inline__ int
+MARK_RING(struct nouveau_channel *chan, unsigned dwords, unsigned relocs)
+{
+	return nouveau_pushbuf_marker_emit(chan, dwords, relocs);
+}
+
+static __inline__ void
+MARK_UNDO(struct nouveau_channel *chan)
+{
+	nouveau_pushbuf_marker_undo(chan);
+}
+
 static __inline__ void
 OUT_RING(struct nouveau_channel *chan, unsigned data)
 {
@@ -116,62 +135,62 @@ BIND_RING(struct nouveau_channel *chan, struct nouveau_grobj *gr, unsigned sc)
 	OUT_RING  (chan, gr->handle);
 }
 
-static __inline__ void
+static __inline__ int
 OUT_RELOC(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	  unsigned data, unsigned flags, unsigned vor, unsigned tor)
 {
-	nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
-				   data, 0, flags, vor, tor);
+	return nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
+					  data, 0, flags, vor, tor);
 }
 
-static __inline__ void
+static __inline__ int
 OUT_RELOC2(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned data, unsigned data2, unsigned flags,
 	   unsigned vor, unsigned tor)
 {
-	nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
-				   data, data2, flags, vor, tor);
+	return nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
+					  data, data2, flags, vor, tor);
 }
 
 /* Raw data + flags depending on FB/TT buffer */
-static __inline__ void
+static __inline__ int
 OUT_RELOCd(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned data, unsigned flags, unsigned vor, unsigned tor)
 {
-	OUT_RELOC(chan, bo, data, flags | NOUVEAU_BO_OR, vor, tor);
+	return OUT_RELOC(chan, bo, data, flags | NOUVEAU_BO_OR, vor, tor);
 }
 
 /* FB/TT object handle */
-static __inline__ void
+static __inline__ int
 OUT_RELOCo(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned flags)
 {
-	OUT_RELOC(chan, bo, 0, flags | NOUVEAU_BO_OR,
-		  chan->vram->handle, chan->gart->handle);
+	return OUT_RELOC(chan, bo, 0, flags | NOUVEAU_BO_OR,
+			 chan->vram->handle, chan->gart->handle);
 }
 
 /* Low 32-bits of offset */
-static __inline__ void
+static __inline__ int
 OUT_RELOCl(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned delta, unsigned flags)
 {
-	OUT_RELOC(chan, bo, delta, flags | NOUVEAU_BO_LOW, 0, 0);
+	return OUT_RELOC(chan, bo, delta, flags | NOUVEAU_BO_LOW, 0, 0);
 }
 
 /* Low 32-bits of offset + GPU linear access range info */
-static __inline__ void
+static __inline__ int
 OUT_RELOCr(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned delta, unsigned size, unsigned flags)
 {
-	OUT_RELOC2(chan, bo, delta, size, flags | NOUVEAU_BO_LOW, 0, 0);
+	return OUT_RELOC2(chan, bo, delta, size, flags | NOUVEAU_BO_LOW, 0, 0);
 }
 
 /* High 32-bits of offset */
-static __inline__ void
+static __inline__ int
 OUT_RELOCh(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned delta, unsigned flags)
 {
-	OUT_RELOC(chan, bo, delta, flags | NOUVEAU_BO_HIGH, 0, 0);
+	return OUT_RELOC(chan, bo, delta, flags | NOUVEAU_BO_HIGH, 0, 0);
 }
 
 #endif
