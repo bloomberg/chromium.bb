@@ -18,8 +18,8 @@
 #elif defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
@@ -27,6 +27,7 @@
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <string.h>
 #endif
 
@@ -58,6 +59,7 @@
 #if defined(OS_LINUX)
 #include "base/nss_init.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
+#include "chrome/browser/zygote_host_linux.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -385,7 +387,7 @@ int ChromeMain(int argc, char** argv) {
 
     browser_pid =
         static_cast<base::ProcessId>(StringToInt(WideToASCII(channel_name)));
-    DCHECK(browser_pid != 0);
+    DCHECK_NE(browser_pid, 0);
 #else
     browser_pid = base::GetCurrentProcId();
 #endif
@@ -579,8 +581,29 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
-    // Tickle the sandbox host so it forks now.
-    Singleton<RenderSandboxHostLinux>().get();
+    const char* sandbox_binary = NULL;
+    struct stat st;
+
+    // In Chromium branded builds, developers can set an environment variable to
+    // use the development sandbox. See
+    // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+    if (stat("/proc/self/exe", &st) == 0 && st.st_uid == getuid())
+      sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+
+#if defined(LINUX_SANDBOX_PATH)
+    if (!sandbox_binary)
+      sandbox_binary = LINUX_SANDBOX_PATH;
+#endif
+
+    std::string sandbox_cmd;
+    if (sandbox_binary)
+      sandbox_cmd = sandbox_binary;
+
+    // Tickle the sandbox host and zygote host so they fork now.
+    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>().get();
+    shost->Init(sandbox_cmd);
+    ZygoteHost* zhost = Singleton<ZygoteHost>().get();
+    zhost->Init(sandbox_cmd);
 
     // We want to be sure to init NSPR on the main thread.
     base::EnsureNSPRInit();
@@ -595,7 +618,7 @@ int ChromeMain(int argc, char** argv) {
     // gtk_init() can change |argc| and |argv|.
     gtk_init(&argc, &argv);
     SetUpGLibLogHandler();
-#endif
+#endif  // defined(OS_LINUX)
 
     ScopedOleInitializer ole_initializer;
     rv = BrowserMain(main_params);

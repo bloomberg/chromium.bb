@@ -11,12 +11,14 @@
 #include <sys/poll.h>
 #include <time.h>
 
+#include <vector>
+
+#include "base/command_line.h"
 #include "base/eintr_wrapper.h"
-#include "base/platform_file.h"
-#include "base/process_util.h"
-#include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/linux_util.h"
 #include "base/pickle.h"
+#include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 #include "chrome/common/sandbox_methods_linux.h"
@@ -42,7 +44,9 @@ class SandboxIPCProcess  {
   // browser_socket: the browser's end of the sandbox IPC socketpair. From the
   //   point of view of the renderer, it's talking to the browser but this
   //   object actually services the requests.
-  SandboxIPCProcess(int lifeline_fd, int browser_socket)
+  // sandbox_cmd: the path of the sandbox executable
+  SandboxIPCProcess(int lifeline_fd, int browser_socket,
+                    std::string sandbox_cmd)
       : lifeline_fd_(lifeline_fd),
         browser_socket_(browser_socket),
         font_config_(new FontConfigDirect()) {
@@ -51,6 +55,11 @@ class SandboxIPCProcess  {
     multimap.push_back(base::InjectionArc(0, browser_socket, false));
 
     base::CloseSuperfluousFds(multimap);
+
+    if (!sandbox_cmd.empty()) {
+      sandbox_cmd_.push_back(sandbox_cmd);
+      sandbox_cmd_.push_back(base::kFindInodeSwitch);
+    }
   }
 
   void Run() {
@@ -114,6 +123,8 @@ class SandboxIPCProcess  {
       HandleGetFontFamilyForChars(fd, pickle, iter, fds);
     } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
       HandleLocaltime(fd, pickle, iter, fds);
+    } else if (kind == LinuxSandbox::METHOD_GET_CHILD_WITH_INODE) {
+      HandleGetChildWithInode(fd, pickle, iter, fds);
     }
 
   error:
@@ -123,7 +134,7 @@ class SandboxIPCProcess  {
     }
   }
 
-  void HandleFontMatchRequest(int fd, Pickle& pickle, void* iter,
+  void HandleFontMatchRequest(int fd, const Pickle& pickle, void* iter,
                               std::vector<int>& fds) {
     bool fileid_valid;
     uint32_t fileid;
@@ -162,7 +173,7 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, -1);
   }
 
-  void HandleFontOpenRequest(int fd, Pickle& pickle, void* iter,
+  void HandleFontOpenRequest(int fd, const Pickle& pickle, void* iter,
                              std::vector<int>& fds) {
     uint32_t fileid;
     if (!pickle.ReadUInt32(&iter, &fileid))
@@ -182,7 +193,7 @@ class SandboxIPCProcess  {
       close(result_fd);
   }
 
-  void HandleGetFontFamilyForChars(int fd, Pickle& pickle, void* iter,
+  void HandleGetFontFamilyForChars(int fd, const Pickle& pickle, void* iter,
                                    std::vector<int>& fds) {
     // The other side of this call is
     // chrome/renderer/renderer_sandbox_support_linux.cc
@@ -222,7 +233,7 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, -1);
   }
 
-  void HandleLocaltime(int fd, Pickle& pickle, void* iter,
+  void HandleLocaltime(int fd, const Pickle& pickle, void* iter,
                        std::vector<int>& fds) {
     // The other side of this call is in zygote_main_linux.cc
 
@@ -247,6 +258,37 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, -1);
   }
 
+  void HandleGetChildWithInode(int fd, const Pickle& pickle, void* iter,
+                               std::vector<int>& fds) {
+    // The other side of this call is in zygote_main_linux.cc
+    if (sandbox_cmd_.empty()) {
+      LOG(ERROR) << "Not in the sandbox, this should not be called";
+      return;
+    }
+
+    uint64_t inode;
+    if (!pickle.ReadUInt64(&iter, &inode))
+      return;
+
+    base::ProcessId pid = 0;
+    std::string inode_output;
+
+    std::vector<std::string> sandbox_cmd = sandbox_cmd_;
+    sandbox_cmd.push_back(IntToString(inode));
+    CommandLine get_inode_cmd(sandbox_cmd);
+    if (base::GetAppOutput(get_inode_cmd, &inode_output))
+      StringToInt(inode_output, &pid);
+
+    if (!pid) {
+      LOG(ERROR) << "Could not get pid";
+      return;
+    }
+
+    Pickle reply;
+    reply.WriteInt(pid);
+    SendRendererReply(fds, reply, -1);
+  }
+
   void SendRendererReply(const std::vector<int>& fds, const Pickle& reply,
                          int reply_fd) {
     struct msghdr msg;
@@ -266,7 +308,7 @@ class SandboxIPCProcess  {
       cmsg->cmsg_level = SOL_SOCKET;
       cmsg->cmsg_type = SCM_RIGHTS;
       cmsg->cmsg_len = CMSG_LEN(sizeof(int));
-      memcpy(CMSG_DATA(cmsg), &reply_fd, sizeof(int));
+      memcpy(CMSG_DATA(cmsg), &reply_fd, sizeof(reply_fd));
       msg.msg_controllen = cmsg->cmsg_len;
     }
 
@@ -278,12 +320,20 @@ class SandboxIPCProcess  {
   const int lifeline_fd_;
   const int browser_socket_;
   FontConfigDirect* const font_config_;
+  std::vector<std::string> sandbox_cmd_;
 };
 
 // -----------------------------------------------------------------------------
 
 // Runs on the main thread at startup.
-RenderSandboxHostLinux::RenderSandboxHostLinux() {
+RenderSandboxHostLinux::RenderSandboxHostLinux()
+    : init_(false) {
+}
+
+void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
+  DCHECK(!init_);
+  init_ = true;
+
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the renderer from
   // sending datagrams to other sockets on the system. The sandbox may prevent
@@ -303,13 +353,15 @@ RenderSandboxHostLinux::RenderSandboxHostLinux() {
 
   pid_ = fork();
   if (pid_ == 0) {
-    SandboxIPCProcess handler(child_lifeline_fd, browser_socket);
+    SandboxIPCProcess handler(child_lifeline_fd, browser_socket, sandbox_path);
     handler.Run();
     _exit(0);
   }
 }
 
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
-  HANDLE_EINTR(close(renderer_socket_));
-  HANDLE_EINTR(close(childs_lifeline_fd_));
+  if (init_) {
+    HANDLE_EINTR(close(renderer_socket_));
+    HANDLE_EINTR(close(childs_lifeline_fd_));
+  }
 }

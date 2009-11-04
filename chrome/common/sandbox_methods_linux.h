@@ -14,6 +14,7 @@ class LinuxSandbox {
   enum Methods {
     METHOD_GET_FONT_FAMILY_FOR_CHARS = 32,
     METHOD_LOCALTIME = 33,
+    METHOD_GET_CHILD_WITH_INODE = 34,
   };
 };
 

@@ -34,6 +34,28 @@
 #include "chrome/test/ui_test_utils.h"
 #include "sandbox/src/dep.h"
 
+#if defined(OS_LINUX)
+#include "base/singleton.h"
+#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
+#include "chrome/browser/zygote_host_linux.h"
+
+namespace {
+
+// A helper class to do Linux-only initialization only once per process.
+class LinuxHostInit {
+ public:
+  LinuxHostInit() {
+    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>().get();
+    shost->Init("");
+    ZygoteHost* zhost = Singleton<ZygoteHost>().get();
+    zhost->Init("");
+  }
+  ~LinuxHostInit() {}
+};
+
+}  // namespace
+#endif
+
 extern int BrowserMain(const MainFunctionParams&);
 
 const wchar_t kUnitTestShowWindows[] = L"show-windows";
@@ -224,6 +246,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(chrome_browser_net::SetUrlRequestMocksEnabled, true));
+
+#if defined(OS_LINUX)
+  // Initialize the RenderSandbox and Zygote hosts. Apparently they get used
+  // for InProcessBrowserTest, and this is not the normal browser startup path.
+  Singleton<LinuxHostInit>::get();
+#endif
 
   browser_ = CreateBrowser(profile);
 
