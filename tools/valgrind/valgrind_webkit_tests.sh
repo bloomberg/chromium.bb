@@ -14,9 +14,31 @@
 #    tools/valgrind/memcheck/suppressions.txt
 #  to disable any for bugs you're trying to reproduce.
 
+# Copied from valgrind.sh
+if test x"$CHROME_VALGRIND_BIN" = x
+then
+  # Figure out which valgrind is installed.  Use most recent one.
+  # See build-valgrind-for-chromium.sh and its history for these constants.
+  for SVNREV in 10880-redzone 10880 10771 20090715
+  do
+    CHROME_VALGRIND_BIN=/usr/local/valgrind-$SVNREV/bin
+    test -x $CHROME_VALGRIND_BIN/valgrind && break
+  done
+fi
+
+if ! test -x $CHROME_VALGRIND_BIN/valgrind
+then
+  echo "Could not find chromium's version of valgrind."
+  echo "Please run build-valgrind-for-chromium.sh or set CHROME_VALGRIND_BIN."
+  echo "Defaulting to system valgrind."
+else
+  echo "Using ${CHROME_VALGRIND_BIN}/valgrind."
+  PATH="${CHROME_VALGRIND_BIN}:$PATH"
+fi
+
 cat > vlayout-wrapper.sh <<"_EOF_"
 #!/bin/sh
-valgrind --suppressions=tools/valgrind/memcheck/suppressions.txt --tool=memcheck --smc-check=all --num-callers=30 --trace-children=yes --leak-check=full --log-file=vlayout-%p.log --gen-suppressions=all --track-origins=yes "$@"
+valgrind --suppressions=tools/valgrind/memcheck/suppressions.txt --tool=memcheck --smc-check=all --num-callers=30 --trace-children=yes --leak-check=full --show-possible=no --log-file=vlayout-%p.log --gen-suppressions=all --track-origins=yes "$@"
 _EOF_
 chmod +x vlayout-wrapper.sh
 
@@ -30,7 +52,7 @@ sh webkit/tools/layout_tests/run_webkit_tests.sh --run-singly -v --noshow-result
 nfiles=`ls vlayout-*.log | wc -l`
 while true
 do
-  ndone=`grep -l "LEAK SUMMARY" vlayout-*.log | wc -l`
+  ndone=`egrep -l "LEAK SUMMARY|no leaks are possible" vlayout-*.log | wc -l`
   if test $nfiles = $ndone
   then
     break
