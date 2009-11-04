@@ -226,6 +226,43 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
     return NSOrderedSame;
 }
 
+#if !defined(GOOGLE_CHROME_BUILD)
+// Helper to remove a view and move everything above it down to take over the
+// space.
+void RemoveViewFromView(NSView* view, NSView* toRemove) {
+  // Sort bottom up so we can spin over what is above it.
+  NSArray* views =
+      [[view subviews] sortedArrayUsingFunction:CompareFrameY context:NULL];
+
+  // Find where |toRemove| was.
+  NSUInteger idx = [views indexOfObject:toRemove];
+  DCHECK_NE(idx, NSNotFound);
+  if (idx == [views count] - 1)
+    return;  // It was the top item, nothing to do (shouldn't happen).
+
+  // The amount to shift is the bottom of |toRemove| to the bottom of the view
+  // above it.
+  CGFloat shiftDown =
+      NSMinY([[views objectAtIndex:idx + 1] frame]) - NSMinY([toRemove frame]);
+
+  // Now cycle over the views above it moving them down.
+  for (++idx; idx < [views count]; ++idx) {
+    NSView* view = [views objectAtIndex:idx];
+    NSPoint origin = [view frame].origin;
+    origin.y -= shiftDown;
+    [view setFrameOrigin:origin];
+  }
+
+  // Remove |toRemove|.
+  [toRemove removeFromSuperview];
+
+  // Resize the view.
+  [GTMUILocalizerAndLayoutTweaker
+      resizeViewWithoutAutoResizingSubViews:view
+                                      delta:NSMakeSize(0, -shiftDown)];
+}
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
 // the views and moving things up vertically.  Special case the two controls for
 // download location as they are horizontal, and should fill the row.
@@ -378,6 +415,29 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (void)awakeFromNib {
 
+  // Validate some assumptions in debug builds.
+
+  // "Basics", "Personal Stuff", and "Under the Hood" views should be the same
+  // width.  They should be the same width so they are laid out to look as good
+  // as possible at that width with controls just having to wrap if their text
+  // is too long.
+  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([personalStuffView_ frame]))
+      << "Basics and Personal Stuff should be the same widths";
+  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([underTheHoodView_ frame]))
+      << "Basics and Under the Hood should be the same widths";
+  // "Under the Hood" content should always be skinnier than the scroller it
+  // goes into (we resize it).
+  DCHECK_LE(NSWidth([underTheHoodContentView_ frame]),
+            [underTheHoodScroller_ contentSize].width)
+      << "The Under the Hood content should be narrower than the content "
+         "of the scroller it goes into";
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  // "Enable logging" (breakpad and stats) is only in Google Chrome builds,
+  // remove the checkbox and slide everything above it down.
+  RemoveViewFromView(underTheHoodContentView_, enableLoggingCheckbox_);
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
   // Do runtime fixup of the "basics" and "personal stuff" pages for the
   // strings.  Work bottom up shifting views up as needed, and then resize the
   // page.
@@ -417,25 +477,6 @@ class PrefObserverBridge : public NotificationObserver {
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
                                       delta:NSMakeSize(0.0, verticalShift)];
-
-#ifndef NDEBUG
-  // Validate some assumptions in debug builds.
-
-  // "Basics", "Personal Stuff", and "Under the Hood" views should be the same
-  // width.  They should be the same width so they are laid out to look as good
-  // as possible at that width with controls just having to wrap if their text
-  // is too long.
-  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([personalStuffView_ frame]))
-      << "Basics and Personal Stuff should be the same widths";
-  DCHECK_EQ(NSWidth([basicsView_ frame]), NSWidth([underTheHoodView_ frame]))
-      << "Basics and Under the Hood should be the same widths";
-  // "Under the Hood" content should always be skinnier than the scroller it
-  // goes into (we resize it).
-  DCHECK_LE(NSWidth([underTheHoodContentView_ frame]),
-            [underTheHoodScroller_ contentSize].width)
-      << "The Under the Hood content should be narrower than the content "
-         "of the scroller it goes into";
-#endif  // NDEBUG
 
   // Make the window as wide as the views
   NSWindow* prefsWindow = [self window];

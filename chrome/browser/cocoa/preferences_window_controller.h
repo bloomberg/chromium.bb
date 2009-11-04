@@ -88,6 +88,7 @@ class Profile;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
   StringPrefMember currentTheme_;
+  IBOutlet NSButton* enableLoggingCheckbox_;
 }
 
 // Designated initializer. |profile| should not be NULL.
