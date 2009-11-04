@@ -96,7 +96,9 @@
 }
 
 - (void)runModalDialog {
-  [NSApp runModalForWindow:[self window]];
+  NSWindow* bugReportWindow = [self window];
+  [bugReportWindow center];
+  [NSApp runModalForWindow:bugReportWindow];
 }
 
 - (IBAction)sendReport:(id)sender {
