@@ -242,16 +242,26 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
                                 int start,
                                 int count) {
   DCHECK(parent && start >= 0 && count > 0);
-  HTREEITEM parent_tree_item = GetTreeItemForNodeDuringMutation(parent);
-  if (!parent_tree_item)
-    return;
+
+  HTREEITEM tree_item;
+  if (!root_shown_ && parent == model->GetRoot()) {
+    // NOTE: we can't call GetTreeItemForNodeDuringMutation here as in this
+    // configuration the root has no treeitem.
+    tree_item = TreeView_GetRoot(tree_view_);
+  } else {
+    HTREEITEM parent_tree_item = GetTreeItemForNodeDuringMutation(parent);
+    if (!parent_tree_item)
+      return;
+
+    tree_item = TreeView_GetChild(tree_view_, parent_tree_item);
+  }
 
   // Find the last item. Windows doesn't offer a convenient way to get the
   // TREEITEM at a particular index, so we iterate.
-  HTREEITEM tree_item = TreeView_GetChild(tree_view_, parent_tree_item);
   for (int i = 0; i < (start + count - 1); ++i) {
     tree_item = TreeView_GetNextSibling(tree_view_, tree_item);
   }
+
   // NOTE: the direction doesn't matter here. I've made it backwards to
   // reinforce we're deleting from the end forward.
   for (int i = count - 1; i >= 0; --i) {
