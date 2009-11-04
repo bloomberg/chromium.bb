@@ -131,14 +131,16 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
 
   // Notifies the browser that the plugin has selected a window (i.e., brought
   // it to the front and wants it to have keyboard focus).
-  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginSelectWindow,
+  IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_PluginSelectWindow,
                        uint32 /* window ID */,
-                       gfx::Rect /* window rect */)
+                       gfx::Rect /* window rect */,
+                       bool /* modal */)
 
   // Notifies the browser that the plugin has shown a window.
-  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginShowWindow,
+  IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_PluginShowWindow,
                        uint32 /* window ID */,
-                       gfx::Rect /* window rect */)
+                       gfx::Rect /* window rect */,
+                       bool /* modal */)
 
   // Notifies the browser that the plugin has hidden a window.
   IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginHideWindow,

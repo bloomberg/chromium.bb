@@ -178,4 +178,14 @@ void GrabWindowSnapshot(NSWindow* window,
   }
 }
 
+void ActivateProcess(pid_t pid) {
+  ProcessSerialNumber process;
+  OSStatus status = GetProcessForPID(pid, &process);
+  if (status == noErr) {
+    SetFrontProcess(&process);
+  } else {
+    LOG(WARNING) << "Unable to get process for pid " << pid;
+  }
+}
+
 }  // namespace mac_util

@@ -72,6 +72,12 @@ class PluginProcessHost : public ChildProcessHost,
   void OnModalDialogResponse(const std::string& json_retval,
                              IPC::Message* sync_result);
 
+#if defined(OS_MACOSX)
+  // This function is called on the IO thread when the browser becomes the
+  // active application.
+  void OnAppActivation();
+#endif
+
   const WebPluginInfo& info() const { return info_; }
 
 #if defined(OS_WIN)
@@ -113,8 +119,10 @@ class PluginProcessHost : public ChildProcessHost,
 #endif
 
 #if defined(OS_MACOSX)
-  void OnPluginSelectWindow(uint32 window_id, gfx::Rect window_rect);
-  void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginSelectWindow(uint32 window_id, gfx::Rect window_rect,
+                            bool modal);
+  void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect,
+                          bool modal);
   void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
   void OnPluginDisposeWindow(uint32 window_id, gfx::Rect window_rect);
 #endif
@@ -155,6 +163,8 @@ class PluginProcessHost : public ChildProcessHost,
   std::set<uint32> plugin_visible_windows_set_;
   // Tracks full screen windows currently visible
   std::set<uint32> plugin_fullscreen_windows_set_;
+  // Tracks modal windows currently visible
+  std::set<uint32> plugin_modal_windows_set_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);

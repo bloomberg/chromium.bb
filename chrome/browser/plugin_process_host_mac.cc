@@ -14,13 +14,19 @@
 #include "chrome/browser/plugin_process_host.h"
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
-                                             gfx::Rect window_rect) {
+                                             gfx::Rect window_rect,
+                                             bool modal) {
   plugin_visible_windows_set_.insert(window_id);
+  if (modal)
+    plugin_modal_windows_set_.insert(window_id);
 }
 
 void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
-                                           gfx::Rect window_rect) {
+                                           gfx::Rect window_rect,
+                                           bool modal) {
   plugin_visible_windows_set_.insert(window_id);
+  if (modal)
+    plugin_modal_windows_set_.insert(window_id);
   CGRect window_bounds = {
     { window_rect.x(), window_rect.y() },
     { window_rect.width(), window_rect.height() }
@@ -39,6 +45,7 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
 void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
                                            gfx::Rect window_rect) {
   plugin_visible_windows_set_.erase(window_id);
+  plugin_modal_windows_set_.erase(window_id);
   if (plugin_fullscreen_windows_set_.find(window_id) !=
       plugin_fullscreen_windows_set_.end()) {
     plugin_fullscreen_windows_set_.erase(window_id);
@@ -51,4 +58,16 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
 void PluginProcessHost::OnPluginDisposeWindow(uint32 window_id,
                                               gfx::Rect window_rect) {
   OnPluginHideWindow(window_id, window_rect);
+}
+
+void PluginProcessHost::OnAppActivation() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  // If our plugin process has any modal windows up, we need to bring it forward
+  // so that they act more like an in-process modal window would.
+  if (!plugin_modal_windows_set_.empty()) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(mac_util::ActivateProcess, handle()));
+  }
 }

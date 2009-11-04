@@ -35,6 +35,9 @@ class PluginThread : public ChildThread {
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool off_the_record);
   void OnPluginMessage(const std::vector<uint8> &data);
+#if defined(OS_MACOSX)
+  void OnAppActivated();
+#endif
 
   // The plugin module which is preloaded in Init
   base::NativeLibrary preloaded_plugin_module_;

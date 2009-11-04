@@ -166,22 +166,26 @@ bool GetPluginFinderURL(std::string* plugin_finder_url) {
 
 #if defined(OS_MACOSX)
 __attribute__((visibility("default")))
-void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds) {
+void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
+                                       bool modal) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
     gfx::Rect window_bounds(bounds);
     plugin_thread->Send(
-        new PluginProcessHostMsg_PluginSelectWindow(window_id, window_bounds));
+        new PluginProcessHostMsg_PluginSelectWindow(window_id, window_bounds,
+                                                    modal));
   }
 }
 
 __attribute__((visibility("default")))
-void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds) {
+void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
+                                     bool modal) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
     gfx::Rect window_bounds(bounds);
     plugin_thread->Send(
-        new PluginProcessHostMsg_PluginShowWindow(window_id, window_bounds));
+        new PluginProcessHostMsg_PluginShowWindow(window_id, window_bounds,
+                                                  modal));
   }
 }
 

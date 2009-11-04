@@ -205,6 +205,10 @@ class NotificationType {
     // details are passed.
     ALL_APPWINDOWS_CLOSED,
 
+    // This message is sent when the application is made active (Mac OS X only
+    // at present). No source or details are passed.
+    APP_ACTIVATED,
+
     // Indicates that a top window has been closed.  The source is the HWND
     // that was closed, no details are expected.
     WINDOW_CLOSED,

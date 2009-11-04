@@ -75,6 +75,9 @@ void RequestFullScreen();
 // this will show the menu bar.  Must be called on main thread.
 void ReleaseFullScreen();
 
+// Activates the process with the given PID.
+void ActivateProcess(pid_t);
+
 // Pulls a snapshot of the entire browser into png_representation.
 void GrabWindowSnapshot(NSWindow* window,
                         std::vector<unsigned char>* png_representation);

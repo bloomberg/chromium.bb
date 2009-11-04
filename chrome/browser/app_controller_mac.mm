@@ -34,6 +34,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/profile_manager.h"
@@ -331,6 +332,14 @@ static bool g_is_opening_new_window = false;
 
   // Now that we're initialized we can open any URLs we've been holding onto.
   [self openPendingURLs];
+}
+
+// This is called after profiles have been loaded and preferences registered.
+// It is safe to access the default profile here.
+- (void)applicationDidBecomeActive:(NSNotification*)notify {
+  NotificationService::current()->Notify(NotificationType::APP_ACTIVATED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 }
 
 // Helper function for populating and displaying the in progress downloads at

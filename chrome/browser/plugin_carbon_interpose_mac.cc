@@ -9,8 +9,10 @@
 
 namespace webkit_glue {
 
-void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds);
-void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds);
+void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
+                                       bool modal);
+void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
+                                     bool modal);
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
 void NotifyBrowserOfPluginDisposeWindow(uint32 window_id, CGRect bounds);
 
@@ -75,6 +77,14 @@ static void MaybeReactivateSavedProcess() {
     SwitchToSavedProcess();
 }
 
+// Returns true if the given window is modal.
+static bool IsModalWindow(WindowRef window) {
+  WindowModality modality = kWindowModalityNone;
+  WindowRef modal_target = NULL;
+  OSStatus status = GetWindowModality(window, &modality, &modal_target);
+  return (status == noErr) && (modality != kWindowModalityNone);
+}
+
 #pragma mark -
 
 static Boolean ChromePluginIsWindowHilited(WindowRef window) {
@@ -100,14 +110,16 @@ static void ChromePluginSelectWindow(WindowRef window) {
   SwitchToPluginProcess();
   SelectWindow(window);
   webkit_glue::NotifyBrowserOfPluginSelectWindow(HIWindowGetCGWindowID(window),
-                                                 CGRectForWindow(window));
+                                                 CGRectForWindow(window),
+                                                 IsModalWindow(window));
 }
 
 static void ChromePluginShowWindow(WindowRef window) {
   SwitchToPluginProcess();
   ShowWindow(window);
   webkit_glue::NotifyBrowserOfPluginShowWindow(HIWindowGetCGWindowID(window),
-                                               CGRectForWindow(window));
+                                               CGRectForWindow(window),
+                                               IsModalWindow(window));
 }
 
 static void ChromePluginDisposeWindow(WindowRef window) {

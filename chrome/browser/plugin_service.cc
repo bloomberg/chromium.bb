@@ -29,6 +29,18 @@
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+#if defined(OS_MACOSX)
+static void NotifyPluginsOfActivation() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+       !iter.Done(); ++iter) {
+    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
+    plugin->OnAppActivation();
+  }
+}
+#endif
+
 // static
 PluginService* PluginService::GetInstance() {
   return Singleton<PluginService>::get();
@@ -72,6 +84,12 @@ PluginService::PluginService()
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
+#if defined(OS_MACOSX)
+  // We need to know when the browser comes forward so we can bring modal plugin
+  // windows forward too.
+  registrar_.Add(this, NotificationType::APP_ACTIVATED,
+                 NotificationService::AllSources());
+#endif
 }
 
 PluginService::~PluginService() {
@@ -242,6 +260,14 @@ void PluginService::Observe(NotificationType type,
         PurgePluginListCache(false);
       break;
     }
+
+#if defined(OS_MACOSX)
+    case NotificationType::APP_ACTIVATED: {
+      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                             NewRunnableFunction(&NotifyPluginsOfActivation));
+      break;
+    }
+#endif
 
     default:
       DCHECK(false);
