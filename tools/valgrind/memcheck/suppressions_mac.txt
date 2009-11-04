@@ -350,26 +350,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
-   bug_26324a
-   Memcheck:Cond
-   ...
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIlEES3_S3_RSt8ios_basecT_
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecl
-   fun:_ZNSolsEl
-   fun:_ZN26SocketStreamDispatcherHost10InitializeEPN3IPC7Message6SenderEi
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-}
-{
-   bug_26324b
-   Memcheck:Value4
-   ...
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIlEES3_S3_RSt8ios_basecT_
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecl
-   fun:_ZNSolsEl
-   fun:_ZN26SocketStreamDispatcherHost10InitializeEPN3IPC7Message6SenderEi
-   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
-}
-{
    bug_26326
    Memcheck:Addr4
    fun:_ZN7WebCore14ChromiumBridge24suddenTerminationChangedEb

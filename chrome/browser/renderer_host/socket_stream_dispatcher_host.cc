@@ -29,7 +29,7 @@ SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
 void SocketStreamDispatcherHost::Initialize(
     IPC::Message::Sender* sender, int process_id) {
   DLOG(INFO) << "Initialize: SocketStreamDispatcherHost process_id="
-             << process_id_;
+             << process_id;
   DCHECK(sender);
   sender_ = sender;
   process_id_ = process_id;
