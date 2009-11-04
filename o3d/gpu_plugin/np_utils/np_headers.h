@@ -20,8 +20,6 @@
 
 // Deliberately not including a directory name because Chromium and O3D put
 // these headers in different directories.
-//#include "npapi.h"
-//#include "npruntime.h"
 #undef utf8characters
 #undef utf8length
 

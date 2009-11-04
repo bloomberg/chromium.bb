@@ -124,7 +124,7 @@ void* NPBrowser::MapMemory(NPP npp,
   // NPN_MapMemory is an experiment. It only exists in NPNetscapeFuncs in
   // a hacked version of Chromium.
 #if defined(O3D_IN_CHROME)
-  return netscape_funcs_->mapmemory(npp, object, size);
+  return NULL;
 #else
   return NPN_MapMemory(npp, object, size);
 #endif

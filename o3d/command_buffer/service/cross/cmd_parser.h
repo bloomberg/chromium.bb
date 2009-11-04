@@ -35,7 +35,6 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
 
-#include "core/cross/types.h"
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_common.h"
 

@@ -37,7 +37,6 @@
 
 #include <vector>
 #include "base/scoped_ptr.h"
-#include "core/cross/types.h"
 #include "command_buffer/common/cross/resource.h"
 
 namespace o3d {
@@ -259,7 +258,7 @@ template<class T> class ResourceMap {
   }
   // Gets a resource by ID.
   T *Get(ResourceId id) {
-    return down_cast<T*>(container_.Get(id));
+    return static_cast<T*>(container_.Get(id));
   }
  private:
   ResourceMapBase container_;

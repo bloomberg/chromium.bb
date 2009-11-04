@@ -20,36 +20,70 @@
     'seleniumdir': 'third_party/selenium_rc/files',
     'skiadir': 'third_party/skia/include',
     'zlibdir': 'third_party/zlib',
-    # If the DEPS file exists two levels up, then we're in a Chrome tree.
-    'o3d_in_chrome%': '<!(python <(DEPTH)/o3d/build/file_exists.py <(DEPTH)/DEPS)',
+
+    # Hack to ensure that these variables (specifically "renderer" and
+    # "cb_service") are available later in the file. Long term solution is late
+    # evaluation of variables.
+    'variables': {
+      # If the DEPS file exists two levels up, then we're in a Chrome tree.
+      'o3d_in_chrome%': '<!(python <(DEPTH)/o3d/build/file_exists.py <(DEPTH)/DEPS)',
+      'conditions' : [
+        # These have to come first because GYP doesn't like it when
+        # they're part of the same conditional as a conditions clause that
+        # uses them.
+        ['OS == "win"',
+          {
+            'cgdir': 'third_party/cg/files/win',
+            'renderer%': 'd3d9',
+            'cb_service%': 'none',
+            'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
+          },
+        ],
+        ['OS == "mac"',
+          {
+            'cgdir': 'third_party/cg/files/mac',
+            'renderer%': 'gl',
+            'cb_service%': 'none',
+            'swiftshaderdir': '',
+          },
+        ],
+        ['OS == "linux"',
+          {
+            'cgdir': 'third_party/cg/files/linux',
+            'renderer%': 'gl',
+            'cb_service%': 'none',
+            'swiftshaderdir': '',
+          },
+        ],
+      ],
+    },
+    'o3d_in_chrome%': '<(o3d_in_chrome)',
+    'renderer%': '<(renderer)',
+    'cgdir%': '<(cgdir)',
+    'swiftshaderdir%': '<(swiftshaderdir)',
+    'cb_service%': '<(cb_service)',
+
     # We default to building everything only if the assets exist.
     # (and the teapot is the least likely asset to change).
     # This is so that chrome developers get a much reduced dependency set.
     'o3d_developer%': '<!(python <(DEPTH)/o3d/build/file_exists.py '
                       '<(DEPTH)/o3d/o3d_assets/samples/convert_assets/teapot.zip)',
     'selenium_screenshots%': 0,
-    'cb_service%': 'none',
+
     'conditions' : [
-      # These have to come first because GYP doesn't like it when
-      # they're part of the same conditional as a conditions clause that
-      # uses them.
-      ['OS == "win"',
+      ['o3d_in_chrome == "True"',
         {
-          'cgdir': 'third_party/cg/files/win',
-          'renderer%': 'd3d9',
-          'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
-        },
-      ],
-      ['OS == "mac"',
-        {
-          'cgdir': 'third_party/cg/files/mac',
-          'renderer%': 'gl',
-        },
-      ],
-      ['OS == "linux"',
-        {
-          'cgdir': 'third_party/cg/files/linux',
-          'renderer%': 'gl',
+          'renderer': 'cb',
+          'conditions': [
+            ['OS == "win"',
+              {
+                'cb_service': 'd3d9',
+              },
+              {
+                'cb_service': 'gl',
+              },
+            ],
+          ],
         },
       ],
     ],

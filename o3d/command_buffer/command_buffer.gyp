@@ -165,6 +165,11 @@
               'include_dirs': [
                 '$(DXSDK_DIR)/Include',
               ],
+              'link_settings': {
+                'libraries': [
+                  '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
+                ],
+              },
             },  # 'all_dependent_settings'
             'sources': [
               'service/win/d3d9/d3d9_utils.h',

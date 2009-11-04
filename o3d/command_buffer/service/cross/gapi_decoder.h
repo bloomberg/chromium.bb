@@ -35,7 +35,6 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
 
-#include "core/cross/types.h"
 #include "command_buffer/service/cross/common_decoder.h"
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 

@@ -32,7 +32,6 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 
-#include "core/cross/types.h"
 #include "command_buffer/service/cross/cmd_parser.h"
 
 namespace o3d {
