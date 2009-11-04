@@ -381,7 +381,35 @@
     ['OS=="linux" and branding=="Chrome"', {
       # Always google_chrome since this only applies to branding==Chrome.
       'variables': {
-         'branding_dir': '../app/theme/google_chrome',
+        'branding_dir': '../app/theme/google_chrome',
+        'packaging_files_common': [
+          'linux/internal/common/apt.include',
+          'linux/internal/common/default-app.template',
+          'linux/internal/common/default-app-block.template',
+          'linux/internal/common/desktop.template',
+          'linux/internal/common/google-chrome/google-chrome.info',
+          'linux/internal/common/installer.include',
+          'linux/internal/common/postinst.include',
+          'linux/internal/common/prerm.include',
+          'linux/internal/common/repo.cron',
+          'linux/internal/common/rpm.include',
+          'linux/internal/common/rpmrepo.cron',
+          'linux/internal/common/updater',
+          'linux/internal/common/variables.include',
+          'linux/internal/common/wrapper',
+        ],
+        'packaging_files_deb': [
+          'linux/internal/debian/build.sh',
+          'linux/internal/debian/changelog.template',
+          'linux/internal/debian/control.template',
+          'linux/internal/debian/postinst',
+          'linux/internal/debian/postrm',
+          'linux/internal/debian/prerm',
+        ],
+        'packaging_files_rpm': [
+          'linux/internal/rpm/build.sh',
+          'linux/internal/rpm/chrome.spec.template',
+        ],
       },
       'targets': [
         {
@@ -401,37 +429,19 @@
             {
               'destination': '<(PRODUCT_DIR)/installer/debian/',
               'files': [
-                'linux/internal/debian/build.sh',
-                'linux/internal/debian/changelog.template',
-                'linux/internal/debian/control.template',
-                'linux/internal/debian/postinst',
-                'linux/internal/debian/postrm',
-                'linux/internal/debian/prerm',
+                '<@(packaging_files_deb)',
               ]
             },
             {
               'destination': '<(PRODUCT_DIR)/installer/rpm/',
               'files': [
-                'linux/internal/rpm/build.sh',
-                'linux/internal/rpm/chrome.spec.template',
+                '<@(packaging_files_rpm)',
               ]
             },
             {
               'destination': '<(PRODUCT_DIR)/installer/common/',
               'files': [
-                'linux/internal/common/apt.include',
-                'linux/internal/common/default-app.template',
-                'linux/internal/common/default-app-block.template',
-                'linux/internal/common/desktop.template',
-                'linux/internal/common/google-chrome/google-chrome.info',
-                'linux/internal/common/installer.include',
-                'linux/internal/common/postinst.include',
-                'linux/internal/common/prerm.include',
-                'linux/internal/common/repo.cron',
-                'linux/internal/common/rpm.include',
-                'linux/internal/common/rpmrepo.cron',
-                'linux/internal/common/updater',
-                'linux/internal/common/wrapper',
+                '<@(packaging_files_common)',
               ]
             },
             # Additional theme resources needed for package building.
@@ -519,6 +529,8 @@
               'inputs': [
                 '<(deb_build)',
                 '<@(input_files)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
@@ -534,6 +546,8 @@
               'inputs': [
                 '<(deb_build)',
                 '<@(input_files)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
@@ -549,6 +563,8 @@
               'inputs': [
                 '<(deb_build)',
                 '<@(input_files)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
@@ -569,6 +585,8 @@
                     '<(rpm_build)',
                     '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
                     '<@(input_files)',
+                    '<@(packaging_files_common)',
+                    '<@(packaging_files_rpm)',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
@@ -585,6 +603,8 @@
                     '<(rpm_build)',
                     '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
                     '<@(input_files)',
+                    '<@(packaging_files_common)',
+                    '<@(packaging_files_rpm)',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
@@ -601,6 +621,8 @@
                     '<(rpm_build)',
                     '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
                     '<@(input_files)',
+                    '<@(packaging_files_common)',
+                    '<@(packaging_files_rpm)',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
