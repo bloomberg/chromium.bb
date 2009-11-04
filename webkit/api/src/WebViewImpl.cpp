@@ -908,6 +908,29 @@ void WebViewImpl::setFocus(bool enable)
         // Note that we don't call setActive() when disabled as this cause extra
         // focus/blur events to be dispatched.
         m_page->focusController()->setActive(true);
+        RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
+        if (focusedFrame) {
+            Node* focusedNode = focusedFrame->document()->focusedNode();
+            if (focusedNode && focusedNode->isElementNode()
+                && focusedFrame->selection()->selection().isNone()) {
+                // If the selection was cleared while the WebView was not
+                // focused, then the focus element shows with a focus ring but
+                // no caret and does respond to keyboard inputs.
+                Element* element = static_cast<Element*>(focusedNode);
+                if (element->isTextFormControl()) {
+                    element->updateFocusAppearance(true);
+                } else {
+                    // updateFocusAppearance() selects all the text of
+                    // contentseditable DIVs. So we set the selection explicitly
+                    // instead. Note that this has the side effect of moving the
+                    // caret back to the begining of the text.
+                    Position position(focusedNode, 0,
+                                      Position::PositionIsOffsetInAnchor);
+                    focusedFrame->selection()->setSelection(
+                        VisibleSelection(position, SEL_DEFAULT_AFFINITY));
+                }
+            }
+        }
         m_imeAcceptEvents = true;
     } else {
         hideAutoCompletePopup();
