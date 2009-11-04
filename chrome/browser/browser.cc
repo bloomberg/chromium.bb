@@ -2221,7 +2221,10 @@ void Browser::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_UPDATE_DISABLED: {
       // Show the UI.
-      ExtensionsService* service = Source<ExtensionsService>(source).ptr();
+      Profile* profile = Source<Profile>(source).ptr();
+      DCHECK_EQ(profile_, profile);
+      ExtensionsService* service = profile->GetExtensionsService();
+      DCHECK(service);
       Extension* extension = Details<Extension>(details).ptr();
       ShowExtensionDisabledUI(service, profile_, extension);
       break;

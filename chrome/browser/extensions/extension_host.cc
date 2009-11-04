@@ -248,7 +248,7 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
   DCHECK_EQ(render_view_host_, render_view_host);
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_CRASHED,
-      Source<ExtensionsService>(profile_->GetExtensionsService()),
+      Source<Profile>(profile_),
       Details<ExtensionHost>(this));
 }
 

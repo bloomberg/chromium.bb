@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/common/extensions/extension.h"
 
 class Browser;
@@ -51,6 +52,7 @@ class ExtensionUpdateService {
 // Manages installed and running Chromium extensions.
 class ExtensionsService
     : public ExtensionUpdateService,
+      public BlacklistPathProvider,
       public base::RefCountedThreadSafe<ExtensionsService> {
  public:
 
@@ -201,6 +203,8 @@ class ExtensionsService
     return show_extensions_prompts_;
   }
 
+  Profile* profile() { return profile_; }
+
   // Profile calls this when it is destroyed so that we know not to call it.
   void ProfileDestroyed() { profile_ = NULL; }
 
@@ -218,6 +222,10 @@ class ExtensionsService
                                 const std::string& error,
                                 NotificationType type,
                                 bool be_noisy);
+
+  // BlacklistPathProvider:
+  virtual std::vector<FilePath> GetPersistentBlacklistPaths();
+  virtual std::vector<FilePath> GetTransientBlacklistPaths();
 
  private:
   // Look up an extension by ID, optionally including either or both of enabled

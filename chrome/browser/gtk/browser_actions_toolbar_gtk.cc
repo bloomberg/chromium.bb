@@ -201,13 +201,12 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
       hbox_(gtk_hbox_new(FALSE, kBrowserActionButtonPadding)) {
-  ExtensionsService* extension_service = profile_->GetExtensionsService();
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
 
   CreateAllButtons();
 }

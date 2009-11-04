@@ -175,11 +175,12 @@ void ExtensionProcessManager::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
       CreateBackgroundHosts(this,
-          Source<ExtensionsService>(source).ptr()->extensions());
+          Source<Profile>(source).ptr()->GetExtensionsService()->extensions());
       break;
 
     case NotificationType::EXTENSION_LOADED: {
-      ExtensionsService* service = Source<ExtensionsService>(source).ptr();
+      ExtensionsService* service =
+          Source<Profile>(source).ptr()->GetExtensionsService();
       if (service->is_ready()) {
         Extension* extension = Details<Extension>(details).ptr();
         ::CreateBackgroundHost(this, extension);

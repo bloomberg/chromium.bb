@@ -10,6 +10,7 @@
 #include "base/thread.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
   virtual std::vector<FilePath> GetPersistentBlacklistPaths() {
     return persistent_paths_;
   }
-  
+
   virtual std::vector<FilePath> GetTransientBlacklistPaths() {
     return transient_paths_;
   }
@@ -46,12 +47,12 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
     persistent_paths_.push_back(path);
     SendUpdateNotification();
   }
-  
+
   void AddTransientPath(const FilePath& path) {
     transient_paths_.push_back(path);
     SendUpdateNotification();
   }
-  
+
   void clear() {
     persistent_paths_.clear();
     transient_paths_.clear();
@@ -60,12 +61,18 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
 
  private:
   void SendUpdateNotification() {
+#if defined(OS_WIN)
+    FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+#elif defined(OS_POSIX)
+    FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+    Extension extension(path);
     NotificationService::current()->Notify(
-        NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED,
+        NotificationType::EXTENSION_LOADED,
         Source<Profile>(profile_),
-        Details<BlacklistPathProvider>(this));
+        Details<Extension>(&extension));
   }
-  
+
   Profile* profile_;
 
   std::vector<FilePath> persistent_paths_;
@@ -78,7 +85,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
  public:
   BlacklistManagerTest() : path_provider_(&profile_) {
   }
-  
+
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("blacklist_samples");
@@ -103,7 +110,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
                   Source<Profile>(&profile_));
     MessageLoop::current()->Run();
   }
-  
+
   void WaitForBlacklistUpdate() {
     NotificationRegistrar registrar;
     registrar.Add(this,
@@ -111,11 +118,11 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
                   Source<Profile>(&profile_));
     MessageLoop::current()->Run();
   }
-  
+
   FilePath test_data_dir_;
 
   MyTestingProfile profile_;
-  
+
   TestBlacklistPathProvider path_provider_;
 
  private:
@@ -157,24 +164,24 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   path_provider_.AddPersistentPath(
       test_data_dir_.AppendASCII("annoying_ads.pbl"));
   WaitForBlacklistUpdate();
-  
+
   const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
 
   // Added a real blacklist, the manager should recompile.
   EXPECT_NE(blacklist1, blacklist2);
   EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
   EXPECT_FALSE(BlacklistHasMatch(blacklist2, "http://host/other_ads/ad.jpg"));
-  
+
   path_provider_.AddTransientPath(test_data_dir_.AppendASCII("other_ads.pbl"));
   WaitForBlacklistUpdate();
-  
+
   const Blacklist* blacklist3 = manager->GetCompiledBlacklist();
-  
+
   // In theory blacklist2 and blacklist3 could be the same object, so we're
   // not checking for inequality.
   EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/annoying_ads/ad.jpg"));
   EXPECT_TRUE(BlacklistHasMatch(blacklist3, "http://host/other_ads/ad.jpg"));
-  
+
   // Now make sure that transient blacklists don't survive after re-creating
   // the BlacklistManager.
   manager = NULL;
@@ -183,9 +190,9 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
       test_data_dir_.AppendASCII("annoying_ads.pbl"));
   manager = new BlacklistManager(&profile_, &path_provider_, NULL);
   WaitForBlacklistUpdate();
-  
+
   const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
-  
+
   EXPECT_TRUE(BlacklistHasMatch(blacklist4, "http://host/annoying_ads/ad.jpg"));
   EXPECT_FALSE(BlacklistHasMatch(blacklist4, "http://host/other_ads/ad.jpg"));
 }
@@ -222,7 +229,7 @@ TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
   ASSERT_FALSE(file_util::PathExists(bogus_path));
   path_provider_.AddPersistentPath(bogus_path);
   WaitForBlacklistError();
-  
+
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
   EXPECT_TRUE(blacklist);
 }

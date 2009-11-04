@@ -229,11 +229,11 @@ BrowserActionsContainer::BrowserActionsContainer(
     return;
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 Source<ExtensionsService>(extension_service));
+                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(profile_));
 

@@ -35,7 +35,7 @@ class BlacklistManagerTask : public Task {
 
  protected:
   BlacklistManager* blacklist_manager() const { return manager_; }
-  
+
   MessageLoop* original_loop_;
 
  private:
@@ -59,7 +59,7 @@ class BlacklistManager::CompileBlacklistTask : public BlacklistManagerTask {
 
   virtual void Run() {
     bool success = true;
-    
+
     Blacklist blacklist;
     std::string error_string;
 
@@ -107,7 +107,7 @@ class BlacklistManager::ReadBlacklistTask : public BlacklistManagerTask {
       ReportReadResult(NULL);
       return;
     }
-    
+
     std::string error_string;
     std::vector<FilePath>::const_iterator i;
     for (i = transient_blacklists_.begin();
@@ -117,7 +117,7 @@ class BlacklistManager::ReadBlacklistTask : public BlacklistManagerTask {
         return;
       }
     }
-    
+
     ReportReadResult(blacklist.release());
   }
 
@@ -128,7 +128,7 @@ class BlacklistManager::ReadBlacklistTask : public BlacklistManagerTask {
                                      &BlacklistManager::OnBlacklistReadFinished,
                                      blacklist));
   }
-  
+
   FilePath compiled_blacklist_;
   std::vector<FilePath> transient_blacklists_;
 
@@ -145,7 +145,10 @@ BlacklistManager::BlacklistManager(Profile* profile,
       path_provider_(path_provider),
       backend_thread_(backend_thread) {
   registrar_.Add(this,
-                 NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED,
+                 NotificationType::EXTENSION_LOADED,
+                 Source<Profile>(profile));
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile));
   ReadBlacklist();
 }
@@ -153,8 +156,15 @@ BlacklistManager::BlacklistManager(Profile* profile,
 void BlacklistManager::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BLACKLIST_PATH_PROVIDER_UPDATED);
-  CompileBlacklist();
+  switch (type.value) {
+    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_UNLOADED:
+      CompileBlacklist();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void BlacklistManager::CompileBlacklist() {
@@ -167,7 +177,7 @@ void BlacklistManager::CompileBlacklist() {
 
 void BlacklistManager::ReadBlacklist() {
   DCHECK(CalledOnValidThread());
-  
+
   RunTaskOnBackendThread(new ReadBlacklistTask(
       this, compiled_blacklist_path_,
       path_provider_->GetTransientBlacklistPaths()));
@@ -175,7 +185,7 @@ void BlacklistManager::ReadBlacklist() {
 
 void BlacklistManager::OnBlacklistCompilationFinished(bool success) {
   DCHECK(CalledOnValidThread());
-  
+
   if (success) {
     ReadBlacklist();
   } else {
@@ -189,7 +199,7 @@ void BlacklistManager::OnBlacklistCompilationFinished(bool success) {
 
 void BlacklistManager::OnBlacklistReadFinished(Blacklist* blacklist) {
   DCHECK(CalledOnValidThread());
-  
+
   if (!blacklist) {
     if (!first_read_finished_) {
       // If we're loading for the first time, the compiled blacklist could
@@ -207,7 +217,7 @@ void BlacklistManager::OnBlacklistReadFinished(Blacklist* blacklist) {
   }
   first_read_finished_ = true;
   compiled_blacklist_.reset(blacklist);
-  
+
   NotificationService::current()->Notify(
       NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
       Source<Profile>(profile_),

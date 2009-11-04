@@ -632,26 +632,30 @@ class NotificationType {
 
     // Sent when the known installed extensions have all been loaded.  In
     // testing scenarios this can happen multiple times if extensions are
-    // unloaded and reloaded.
+    // unloaded and reloaded. The source is a Profile.
     EXTENSIONS_READY,
 
-    // Sent when a new extension is loaded. The details are an Extension.
+    // Sent when a new extension is loaded. The details are an Extension, and
+    // the source is a Profile.
     EXTENSION_LOADED,
 
     // Sent when attempting to load a new extension, but they are disabled. The
-    // details are an Extension*.
+    // details are an Extension*, and the source is a Profile*.
     EXTENSION_UPDATE_DISABLED,
 
     // Sent when a theme is ready to be installed, so we can alert the user.
     EXTENSION_READY_FOR_INSTALL,
 
-    // Sent on ExtensionOverinstallAttempted when no theme is detected.
+    // Sent on ExtensionOverinstallAttempted when no theme is detected. The
+    // source is a Profile.
     NO_THEME_DETECTED,
 
-    // Sent when a new theme is installed. The details are an Extension.
+    // Sent when a new theme is installed. The details are an Extension, and the
+    // source is a Profile.
     THEME_INSTALLED,
 
-    // Sent when new extensions are installed. The details are an Extension.
+    // Sent when new extensions are installed. The details are an Extension, and
+    // the source is a Profile.
     EXTENSION_INSTALLED,
 
     // An error occured during extension install. The details are a string with
@@ -664,9 +668,10 @@ class NotificationType {
 
     // Sent when an extension is unloaded. This happens when an extension is
     // uninstalled. When we add a disable feature, it will also happen then.
-    // The details are an Extension.  Note that when this notification is sent,
-    // ExtensionsService has already removed the extension from its internal
-    // state.
+    // The details are an Extension, and the source is a Profile.
+    //
+    // Note that when this notification is sent, ExtensionsService has already
+    // removed the extension from its internal state.
     EXTENSION_UNLOADED,
 
     // Same as above, but for a disabled extension.
@@ -694,7 +699,7 @@ class NotificationType {
     EXTENSION_PROCESS_CREATED,
 
     // Sent when extension render process crashes. The details are
-    // an ExtensionHost* and the source is an ExtensionsService*.
+    // an ExtensionHost* and the source is a Profile*.
     EXTENSION_PROCESS_CRASHED,
 
     // Sent when the contents or order of toolstrips in the shelf model change.
@@ -726,11 +731,6 @@ class NotificationType {
     EXTENSION_BOOKMARKS_API_INVOKED,
 
     // Privacy Blacklist -------------------------------------------------------
-
-    // Sent when a privacy blacklist path provider changes the list of its
-    // blacklist paths (like adds/removes items). The details are
-    // a BlacklistPathProvider, and the source is a Profile.
-    BLACKLIST_PATH_PROVIDER_UPDATED,
 
     // Sent when the blacklist manager successfully finishes reading
     // a blacklist. The details are a Blacklist, and the source is a Profile.

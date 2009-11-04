@@ -333,7 +333,7 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
-      Source<ExtensionsService>(this),
+      Source<Profile>(profile_),
       Details<Extension>(extension));
 }
 
@@ -342,7 +342,7 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
-      Source<ExtensionsService>(this),
+      Source<Profile>(profile_),
       Details<Extension>(extension));
 
   if (profile_ && !profile_->IsOffTheRecord()) {
@@ -417,7 +417,7 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
     disabled_extensions_.erase(iter);
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_UNLOADED_DISABLED,
-        Source<ExtensionsService>(this),
+        Source<Profile>(profile_),
         Details<Extension>(extension.get()));
     return;
   }
@@ -463,7 +463,7 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
   }
   NotificationService::current()->Notify(
       NotificationType::EXTENSIONS_READY,
-      Source<ExtensionsService>(this),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
@@ -494,7 +494,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
           extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
           NotificationService::current()->Notify(
               NotificationType::EXTENSION_UPDATE_DISABLED,
-              Source<ExtensionsService>(this),
+              Source<Profile>(profile_),
               Details<Extension>(extension));
         }
       } else {
@@ -528,7 +528,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         if (extension->IsTheme() && extension->location() == Extension::LOAD) {
           NotificationService::current()->Notify(
               NotificationType::THEME_INSTALLED,
-              Source<ExtensionsService>(this),
+              Source<Profile>(profile_),
               Details<Extension>(extension));
         } else {
           ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
@@ -538,7 +538,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
       case Extension::DISABLED:
         NotificationService::current()->Notify(
             NotificationType::EXTENSION_UPDATE_DISABLED,
-            Source<ExtensionsService>(this),
+            Source<Profile>(profile_),
             Details<Extension>(extension));
         disabled_extensions_.push_back(scoped_extension.release());
         break;
@@ -558,12 +558,12 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   if (extension->IsTheme()) {
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
-        Source<ExtensionsService>(this),
+        Source<Profile>(profile_),
         Details<Extension>(extension));
   } else {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_INSTALLED,
-        Source<ExtensionsService>(this),
+        Source<Profile>(profile_),
         Details<Extension>(extension));
   }
 
@@ -576,12 +576,12 @@ void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
   if (extension && extension->IsTheme()) {
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
-        Source<ExtensionsService>(this),
+        Source<Profile>(profile_),
         Details<Extension>(extension));
   } else {
     NotificationService::current()->Notify(
       NotificationType::NO_THEME_DETECTED,
-      Source<ExtensionsService>(this),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
   }
 }
@@ -666,7 +666,7 @@ void ExtensionsService::ReportExtensionLoadError(
     bool be_noisy) {
   NotificationService* service = NotificationService::current();
   service->Notify(type,
-                  Source<ExtensionsService>(this),
+                  Source<Profile>(profile_),
                   Details<const std::string>(&error));
 
   // TODO(port): note that this isn't guaranteed to work properly on Linux.
@@ -674,6 +674,42 @@ void ExtensionsService::ReportExtensionLoadError(
   std::string message = StringPrintf("Could not load extension from '%s'. %s",
                                      path_str.c_str(), error.c_str());
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
+}
+
+std::vector<FilePath> ExtensionsService::GetPersistentBlacklistPaths() {
+  std::vector<FilePath> result;
+  for (ExtensionList::const_iterator extension_iter = extensions()->begin();
+       extension_iter != extensions()->end(); ++extension_iter) {
+    if ((*extension_iter)->location() == Extension::LOAD)
+      continue;
+
+    std::vector<Extension::PrivacyBlacklistInfo> blacklists(
+        (*extension_iter)->privacy_blacklists());
+    std::vector<Extension::PrivacyBlacklistInfo>::const_iterator blacklist_iter;
+    for (blacklist_iter = blacklists.begin();
+         blacklist_iter != blacklists.end(); ++blacklist_iter) {
+      result.push_back(blacklist_iter->path);
+    }
+  }
+  return result;
+}
+
+std::vector<FilePath> ExtensionsService::GetTransientBlacklistPaths() {
+  std::vector<FilePath> result;
+  for (ExtensionList::const_iterator extension_iter = extensions()->begin();
+       extension_iter != extensions()->end(); ++extension_iter) {
+    if ((*extension_iter)->location() != Extension::LOAD)
+      continue;
+
+    std::vector<Extension::PrivacyBlacklistInfo> blacklists(
+        (*extension_iter)->privacy_blacklists());
+    std::vector<Extension::PrivacyBlacklistInfo>::const_iterator blacklist_iter;
+    for (blacklist_iter = blacklists.begin();
+         blacklist_iter != blacklists.end(); ++blacklist_iter) {
+      result.push_back(blacklist_iter->path);
+    }
+  }
+  return result;
 }
 
 // ExtensionsServicesBackend

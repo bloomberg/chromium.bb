@@ -78,6 +78,7 @@
       'browser/gtk/bookmark_manager_browsertest.cc',
       'browser/gtk/view_id_util_browsertest.cc',
       'browser/net/ftp_browsertest.cc',
+      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     'browser_tests_sources_win_specific': [
@@ -117,6 +118,7 @@
       'browser/extensions/extension_toolstrip_apitest.cc',
       'browser/extensions/isolated_world_apitest.cc',
       'browser/extensions/page_action_apitest.cc',
+      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.

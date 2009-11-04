@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -136,7 +137,8 @@ void UserScriptListener::Observe(NotificationType type,
 
       // Clear all our patterns and reregister all the still-loaded extensions.
       URLPatterns new_patterns;
-      ExtensionsService* service = Source<ExtensionsService>(source).ptr();
+      ExtensionsService* service =
+          Source<Profile>(source).ptr()->GetExtensionsService();
       for (ExtensionList::const_iterator it = service->extensions()->begin();
            it != service->extensions()->end(); ++it) {
         if (*it != unloaded_extension)

@@ -180,6 +180,38 @@ class ResourceDispatcherHostTester
   std::vector<int> completed_requests_;
 };
 
+class ExtensionTestingProfile : public TestingProfile {
+ public:
+  ExtensionTestingProfile() {
+  }
+
+  FilePath GetExtensionsInstallDir() {
+    return GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName);
+  }
+
+  void InitializeExtensionsService() {
+    DCHECK(!GetExtensionsService());
+    service_ = new ExtensionsService(this,
+                                     CommandLine::ForCurrentProcess(),
+                                     GetPrefs(),
+                                     GetExtensionsInstallDir(),
+                                     false);
+    service_->set_extensions_enabled(true);
+    service_->set_show_extensions_prompts(false);
+    service_->ClearProvidersForTesting();
+    service_->Init();
+  }
+
+  virtual ExtensionsService* GetExtensionsService() {
+    return service_.get();
+  }
+
+ private:
+  scoped_refptr<ExtensionsService> service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);
+};
+
 class UserScriptListenerTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -196,17 +228,9 @@ class UserScriptListenerTest : public testing::Test {
 
     resource_tester_ = new ResourceDispatcherHostTester();
 
-    master_ = new MockUserScriptMaster(install_dir);
+    master_ = new MockUserScriptMaster(profile_.GetExtensionsInstallDir());
 
-    service_ = new ExtensionsService(&profile_,
-                                     CommandLine::ForCurrentProcess(),
-                                     profile_.GetPrefs(),
-                                     install_dir,
-                                     false);
-    service_->set_extensions_enabled(true);
-    service_->set_show_extensions_prompts(false);
-    service_->ClearProvidersForTesting();
-    service_->Init();
+    profile_.InitializeExtensionsService();
   }
 
   virtual void TearDown() {
@@ -217,14 +241,13 @@ class UserScriptListenerTest : public testing::Test {
   }
 
  protected:
-  TestingProfile profile_;
+  ExtensionTestingProfile profile_;
   MessageLoopForUI loop_;
   scoped_ptr<ChromeThread> ui_thread_;
   scoped_ptr<ChromeThread> file_thread_;
   scoped_ptr<MockIOThread> io_thread_;
   scoped_refptr<ResourceDispatcherHostTester> resource_tester_;
   scoped_refptr<MockUserScriptMaster> master_;
-  scoped_refptr<ExtensionsService> service_;
 };
 
 // Loads a single extension and ensures that requests to URLs with content
@@ -238,9 +261,9 @@ TEST_F(UserScriptListenerTest, SingleExtension) {
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
-  service_->LoadExtension(ext1);
+  profile_.GetExtensionsService()->LoadExtension(ext1);
   loop_.RunAllPending();
-  ASSERT_EQ(1u, service_->extensions()->size());
+  ASSERT_EQ(1u, profile_.GetExtensionsService()->extensions()->size());
 
   // Our extension has a content script on google.com. That request should be
   // delayed.
@@ -271,18 +294,18 @@ TEST_F(UserScriptListenerTest, UnloadExtension) {
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
-  service_->LoadExtension(ext1);
+  profile_.GetExtensionsService()->LoadExtension(ext1);
   loop_.RunAllPending();
-  ASSERT_EQ(1u, service_->extensions()->size());
+  ASSERT_EQ(1u, profile_.GetExtensionsService()->extensions()->size());
 
   FilePath ext2 = extensions_path
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
       .AppendASCII("1.0");
-  service_->LoadExtension(ext2);
+  profile_.GetExtensionsService()->LoadExtension(ext2);
   loop_.RunAllPending();
-  ASSERT_EQ(2u, service_->extensions()->size());
+  ASSERT_EQ(2u, profile_.GetExtensionsService()->extensions()->size());
 
   // Our extension has a content script on google.com. That request should be
   // delayed.
@@ -294,7 +317,8 @@ TEST_F(UserScriptListenerTest, UnloadExtension) {
   EXPECT_TRUE(resource_tester_->IsRequestComplete(1));
 
   // Unload the first extension and run a scan. Request should complete.
-  service_->UnloadExtension("behllobkkfkfnphdnhnkndlbkcpglgmj");
+  profile_.GetExtensionsService()->UnloadExtension(
+      "behllobkkfkfnphdnhnkndlbkcpglgmj");
   resource_tester_->WaitForScan(master_.get());
 
   EXPECT_TRUE(resource_tester_->IsRequestStarted(0));

@@ -88,9 +88,9 @@ class ExtensionDisabledInfobarDelegate
         extension_(extension) {
     // The user might re-enable the extension in other ways, so watch for that.
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                   Source<ExtensionsService>(service));
+                   Source<Profile>(service->profile()));
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                   Source<ExtensionsService>(service));
+                   Source<Profile>(service->profile()));
   }
   virtual ~ExtensionDisabledInfobarDelegate() {
   }
