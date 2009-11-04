@@ -26,16 +26,7 @@
 namespace net {
 
 // static
-scoped_ptr<FlipSessionPool> FlipSession::session_pool_;
 bool FlipSession::use_ssl_ = true;
-
-FlipSession* FlipSession::GetFlipSession(
-    const HostResolver::RequestInfo& info,
-    HttpNetworkSession* session) {
-  if (!session_pool_.get())
-    session_pool_.reset(new FlipSessionPool());
-  return session_pool_->Get(info, session);
-}
 
 FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -70,8 +61,8 @@ FlipSession::~FlipSession() {
     // With Flip we can't recycle sockets.
     connection_.socket()->Disconnect();
   }
-  if (session_pool_.get())
-    session_pool_->Remove(this);
+
+  session_->flip_session_pool()->Remove(this);
 }
 
 net::Error FlipSession::Connect(const std::string& group_name,
@@ -239,7 +230,7 @@ bool FlipSession::CancelStream(int id) {
   return true;
 }
 
-bool FlipSession::IsStreamActive(int id) {
+bool FlipSession::IsStreamActive(int id) const {
   return active_streams_.find(id) != active_streams_.end();
 }
 

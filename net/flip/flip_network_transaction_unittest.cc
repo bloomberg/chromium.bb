@@ -25,11 +25,13 @@
 
 //-----------------------------------------------------------------------------
 
+namespace net {
+
 namespace {
 
 // Create a proxy service which fails on all requests (falls back to direct).
-net::ProxyService* CreateNullProxyService() {
-  return net::ProxyService::CreateNull();
+ProxyService* CreateNullProxyService() {
+  return ProxyService::CreateNull();
 }
 
 // Helper to manage the lifetimes of the dependencies for a
@@ -38,39 +40,41 @@ class SessionDependencies {
  public:
   // Default set of dependencies -- "null" proxy service.
   SessionDependencies()
-      : host_resolver(new net::MockHostResolver),
+      : host_resolver(new MockHostResolver),
         proxy_service(CreateNullProxyService()),
-        ssl_config_service(new net::SSLConfigServiceDefaults) {}
+        ssl_config_service(new SSLConfigServiceDefaults),
+        flip_session_pool(new FlipSessionPool) {}
 
   // Custom proxy service dependency.
-  explicit SessionDependencies(net::ProxyService* proxy_service)
-      : host_resolver(new net::MockHostResolver),
+  explicit SessionDependencies(ProxyService* proxy_service)
+      : host_resolver(new MockHostResolver),
         proxy_service(proxy_service),
-        ssl_config_service(new net::SSLConfigServiceDefaults) {}
+        ssl_config_service(new SSLConfigServiceDefaults),
+        flip_session_pool(new FlipSessionPool) {}
 
-  scoped_refptr<net::MockHostResolverBase> host_resolver;
-  scoped_refptr<net::ProxyService> proxy_service;
-  scoped_refptr<net::SSLConfigService> ssl_config_service;
-  net::MockClientSocketFactory socket_factory;
+  scoped_refptr<MockHostResolverBase> host_resolver;
+  scoped_refptr<ProxyService> proxy_service;
+  scoped_refptr<SSLConfigService> ssl_config_service;
+  MockClientSocketFactory socket_factory;
+  scoped_refptr<FlipSessionPool> flip_session_pool;
 };
 
-net::ProxyService* CreateFixedProxyService(const std::string& proxy) {
-  net::ProxyConfig proxy_config;
+ProxyService* CreateFixedProxyService(const std::string& proxy) {
+  ProxyConfig proxy_config;
   proxy_config.proxy_rules.ParseFromString(proxy);
-  return net::ProxyService::CreateFixed(proxy_config);
+  return ProxyService::CreateFixed(proxy_config);
 }
 
 
-net::HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
-  return new net::HttpNetworkSession(session_deps->host_resolver,
-                                     session_deps->proxy_service,
-                                     &session_deps->socket_factory,
-                                     session_deps->ssl_config_service);
+HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
+  return new HttpNetworkSession(session_deps->host_resolver,
+                                session_deps->proxy_service,
+                                &session_deps->socket_factory,
+                                session_deps->ssl_config_service,
+                                session_deps->flip_session_pool);
 }
 
 }  // namespace
-
-namespace net {
 
 class FlipNetworkTransactionTest : public PlatformTest {
  public:
@@ -323,4 +327,3 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
 
 
 }  // namespace net
-

@@ -302,7 +302,7 @@ int FlipNetworkTransaction::DoInitConnection() {
 
   HostResolver::RequestInfo resolve_info(host, port);
 
-  flip_ = FlipSession::GetFlipSession(resolve_info, session_);
+  flip_ = session_->flip_session_pool()->Get(resolve_info, session_);
   DCHECK(flip_);
 
   int rv = flip_->Connect(connection_group, resolve_info, request_->priority);

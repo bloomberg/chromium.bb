@@ -90,14 +90,10 @@ class FlipDelegate {
 class FlipSession : public base::RefCounted<FlipSession>,
                     public flip::FlipFramerVisitorInterface {
  public:
-  // Factory for finding open sessions.
-  // TODO(mbelshe): Break this out into a connection pool class?
-  static FlipSession* GetFlipSession(const HostResolver::RequestInfo&,
-                                     HttpNetworkSession* session);
   virtual ~FlipSession();
 
   // Get the domain for this FlipSession.
-  std::string domain() { return domain_; }
+  const std::string& domain() const { return domain_; }
 
   // Connect the FLIP Socket.
   // Returns net::Error::OK on success.
@@ -117,11 +113,12 @@ class FlipSession : public base::RefCounted<FlipSession>,
   bool CancelStream(int id);
 
   // Check if a stream is active.
-  bool IsStreamActive(int id);
+  bool IsStreamActive(int id) const;
 
   // The LoadState is used for informing the user of the current network
   // status, such as "resolving host", "connecting", etc.
   LoadState GetLoadState() const;
+
  protected:
   friend class FlipNetworkTransactionTest;
   friend class FlipSessionPool;
@@ -231,12 +228,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // Flip Frame state.
   flip::FlipFramer flip_framer_;
 
-  // This is our weak session pool - one session per domain.
-  static scoped_ptr<FlipSessionPool> session_pool_;
   static bool use_ssl_;
 };
 
 }  // namespace net
 
 #endif  // NET_FLIP_FLIP_SESSION_H_
-

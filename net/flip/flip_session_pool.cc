@@ -10,16 +10,16 @@
 namespace net {
 
 // The maximum number of sessions to open to a single domain.
-const size_t kMaxSessionsPerDomain = 1;
+static const size_t kMaxSessionsPerDomain = 1;
 
-scoped_ptr<FlipSessionPool::FlipSessionsMap> FlipSessionPool::sessions_;
+FlipSessionPool::FlipSessionPool() {}
+FlipSessionPool::~FlipSessionPool() {
+  CloseAllSessions();
+}
 
 FlipSession* FlipSessionPool::Get(const HostResolver::RequestInfo& info,
                                   HttpNetworkSession* session) {
-  if (!sessions_.get())
-    sessions_.reset(new FlipSessionsMap());
-
-  const std::string domain = info.hostname();
+  const std::string& domain = info.hostname();
   FlipSession* flip_session = NULL;
   FlipSessionList* list = GetSessionList(domain);
   if (list) {
@@ -43,48 +43,60 @@ FlipSession* FlipSessionPool::Get(const HostResolver::RequestInfo& info,
   return flip_session;
 }
 
+bool FlipSessionPool::HasSession(const HostResolver::RequestInfo& info) const {
+  const std::string& domain = info.hostname();
+  if (GetSessionList(domain))
+    return true;
+  return false;
+}
+
 void FlipSessionPool::Remove(FlipSession* session) {
   std::string domain = session->domain();
   FlipSessionList* list = GetSessionList(domain);
   if (list == NULL)
     return;
   list->remove(session);
-  if (!list->size())
+  if (list->empty())
     RemoveSessionList(domain);
 }
 
 FlipSessionPool::FlipSessionList*
-    FlipSessionPool::AddSessionList(std::string domain) {
-  DCHECK(sessions_->find(domain) == sessions_->end());
-  return (*sessions_)[domain] = new FlipSessionList();
+    FlipSessionPool::AddSessionList(const std::string& domain) {
+  DCHECK(sessions_.find(domain) == sessions_.end());
+  return sessions_[domain] = new FlipSessionList();
 }
 
-// static
 FlipSessionPool::FlipSessionList*
-    FlipSessionPool::GetSessionList(std::string domain) {
-  FlipSessionsMap::iterator it = sessions_->find(domain);
-  if (it == sessions_->end())
+    FlipSessionPool::GetSessionList(const std::string& domain) {
+  FlipSessionsMap::iterator it = sessions_.find(domain);
+  if (it == sessions_.end())
     return NULL;
   return it->second;
 }
 
-// static
-void FlipSessionPool::RemoveSessionList(std::string domain) {
+const FlipSessionPool::FlipSessionList*
+    FlipSessionPool::GetSessionList(const std::string& domain) const {
+  FlipSessionsMap::const_iterator it = sessions_.find(domain);
+  if (it == sessions_.end())
+    return NULL;
+  return it->second;
+}
+
+void FlipSessionPool::RemoveSessionList(const std::string& domain) {
   FlipSessionList* list = GetSessionList(domain);
   if (list) {
     delete list;
-    sessions_->erase(domain);
+    sessions_.erase(domain);
   } else {
     DCHECK(false) << "removing orphaned session list";
   }
 }
 
-// static
 void FlipSessionPool::CloseAllSessions() {
-  while (sessions_.get() && sessions_->size()) {
-    FlipSessionList* list = sessions_->begin()->second;
+  while (sessions_.size()) {
+    FlipSessionList* list = sessions_.begin()->second;
     DCHECK(list);
-    sessions_->erase(sessions_->begin()->first);
+    sessions_.erase(sessions_.begin()->first);
     while (list->size()) {
       FlipSession* session = list->front();
       list->pop_front();
@@ -96,4 +108,3 @@ void FlipSessionPool::CloseAllSessions() {
 }
 
 }  // namespace net
-

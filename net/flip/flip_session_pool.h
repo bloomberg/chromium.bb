@@ -15,43 +15,60 @@
 
 namespace net {
 
+class ClientSocket;
 class FlipSession;
 class HttpNetworkSession;
 
 // This is a very simple pool for open FlipSessions.
 // TODO(mbelshe): Make this production ready.
-class FlipSessionPool {
+class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
  public:
-  FlipSessionPool() {}
-  virtual ~FlipSessionPool() {}
+  FlipSessionPool();
+  virtual ~FlipSessionPool();
 
-  // Factory for finding open sessions.
+  // Either returns an existing FlipSession or creates a new FlipSession for
+  // use.
   FlipSession* Get(const HostResolver::RequestInfo& info,
                    HttpNetworkSession* session);
 
-  // Close all Flip Sessions; used for debugging.
-  static void CloseAllSessions();
+  // Builds a FlipSession from an existing socket.
+  FlipSession* GetFlipSessionFromSocket(
+      const HostResolver::RequestInfo& info,
+      HttpNetworkSession* session,
+      ClientSocket* socket) {
+    // TODO(willchan): Implement this to allow a HttpNetworkTransaction to
+    // upgrade a TCP connection from HTTP to FLIP.
+    return NULL;
+  }
 
- protected:
-  friend class FlipSession;
+  // TODO(willchan): Consider renaming to HasReusableSession, since perhaps we
+  // should be creating a new session.
+  bool HasSession(const HostResolver::RequestInfo& info) const;
+
+  // Close all Flip Sessions; used for debugging.
+  void CloseAllSessions();
+
+ private:
+  friend class FlipSession;  // Needed for Remove().
+
+  typedef std::list<FlipSession*> FlipSessionList;
+  typedef std::map<std::string, FlipSessionList*> FlipSessionsMap;
 
   // Return a FlipSession to the pool.
   void Remove(FlipSession* session);
 
- private:
-  typedef std::list<FlipSession*> FlipSessionList;
-  typedef std::map<std::string, FlipSessionList*> FlipSessionsMap;
-
   // Helper functions for manipulating the lists.
-  FlipSessionList* AddSessionList(std::string domain);
-  static FlipSessionList* GetSessionList(std::string domain);
-  static void RemoveSessionList(std::string domain);
+  FlipSessionList* AddSessionList(const std::string& domain);
+  FlipSessionList* GetSessionList(const std::string& domain);
+  const FlipSessionList* GetSessionList(const std::string& domain) const;
+  void RemoveSessionList(const std::string& domain);
 
   // This is our weak session pool - one session per domain.
-  static scoped_ptr<FlipSessionsMap> sessions_;
+  FlipSessionsMap sessions_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlipSessionPool);
 };
 
 }  // namespace net
 
 #endif  // NET_FLIP_FLIP_SESSION_POOL_H_
-
