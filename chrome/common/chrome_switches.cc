@@ -166,7 +166,7 @@ const char kEnableDesktopNotifications[]    = "enable-desktop-notifications";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
-    "--enable-experimental-extension-apis";
+    "enable-experimental-extension-apis";
 
 // Enable experimental WebGL support.
 const char kEnableExperimentalWebGL[]       = "enable-webgl";
