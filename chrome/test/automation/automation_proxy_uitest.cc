@@ -1059,7 +1059,7 @@ TEST_F(ExternalTabUITest, TabPostMessage) {
   loop.RunFor(2 * action_max_timeout_ms());
 }
 
-TEST_F(ExternalTabUITest, PostMessageTarget)  {
+TEST_F(ExternalTabUITest, DISABLED_PostMessageTarget)  {
   const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
   scoped_refptr<HTTPTestServer> server(
       HTTPTestServer::CreateServer(kDocRoot, NULL));
