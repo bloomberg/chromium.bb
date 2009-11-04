@@ -80,7 +80,7 @@ class AssertionTest : public UITest {
 };
 
 // Launch the app in assertion test mode, then close the app.
-TEST_F(AssertionTest, Assertion) {
+TEST_F(AssertionTest, DISABLED_Assertion) {
   if (UITest::in_process_renderer()) {
     // in process mode doesn't do the crashing.
     expected_errors_ = 0;
