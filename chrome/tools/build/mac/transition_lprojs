@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Clean up the old .lproj structure, where English was in en_US.lproj, and
+# en.lproj was a symbolic link.
+#
+# TODO(mark): Remove after November 17, 2009, allowing two weeks for the
+# transition.
+
+RESOURCES_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources"
+
+# Always dump en_US.lproj.
+rm -rf "${RESOURCES_DIR}/en_US.lproj"
+
+# Only dump en.lproj if it's a symbolic link.  If it's a directory, then the
+# transition has already been performed.
+if [ -L "${RESOURCES_DIR}/en.lproj" ] ; then
+  rm -f "${RESOURCES_DIR}/en.lproj"
+fi

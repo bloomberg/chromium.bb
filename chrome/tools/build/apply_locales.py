@@ -14,7 +14,8 @@ def main(argv):
   usage = 'usage: %s [options ...] format_string locale_list'
   parser.set_usage(usage.replace('%s', '%prog'))
   parser.add_option('-d', dest='dash_to_underscore', action="store_true",
-                    default=False, help='map "-" to "_" in locales')
+                    default=False,
+                    help='map "en-US" to "en" and "-" to "_" in locales')
 
   (options, arglist) = parser.parse_args(argv)
 
@@ -28,8 +29,11 @@ def main(argv):
   results = []
   for locale in locales:
     # For Cocoa to find the locale at runtime, it needs to use '_' instead
-    # of '-'.  (http://crbug.com/20441)
+    # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
+    # simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
     if options.dash_to_underscore:
+      if locale == 'en-US':
+        locale = 'en'
       locale = locale.replace('-', '_')
     results.append(str_template.replace('ZZLOCALE', locale))
 

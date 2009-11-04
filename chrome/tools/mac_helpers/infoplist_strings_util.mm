@@ -266,12 +266,17 @@ int main(int argc, char* const argv[]) {
       exit(1);
     }
 
-    // Make sure the lproj we write to exists
-    NSString *lproj_name = [NSString stringWithFormat:@"%s.lproj", cur_lang];
     // For Cocoa to find the locale at runtime, it needs to use '_' instead of
-    // '-'.  (http://crbug.com/20441)
-    lproj_name = [lproj_name stringByReplacingOccurrencesOfString:@"-"
-                                                       withString:@"_"];
+    // '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
+    // simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
+    NSString* cur_lang_ns = [NSString stringWithUTF8String:cur_lang];
+    if ([cur_lang_ns isEqualToString:@"en-US"]) {
+      cur_lang_ns = @"en";
+    }
+    cur_lang_ns = [cur_lang_ns stringByReplacingOccurrencesOfString:@"-"
+                                                         withString:@"_"];
+    // Make sure the lproj we write to exists
+    NSString *lproj_name = [NSString stringWithFormat:@"%@.lproj", cur_lang_ns];
     NSString *output_path =
         [[NSString stringWithUTF8String:output_dir]
          stringByAppendingPathComponent:lproj_name];

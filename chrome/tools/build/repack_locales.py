@@ -37,7 +37,10 @@ def calc_output(locale):
   #e.g. '<(INTERMEDIATE_DIR)/repack/da.pak',
   if sys.platform in ('darwin',):
     # For Cocoa to find the locale at runtime, it needs to use '_' instead
-    # of '-'.  (http://crbug.com/20441)
+    # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
+    # simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
+    if locale == 'en-US':
+      locale = 'en'
     return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale.replace('-', '_'))
   else:
     return '%s/repack/%s.pak' % (INT_DIR, locale)
