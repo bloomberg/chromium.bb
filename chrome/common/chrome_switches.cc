@@ -43,6 +43,10 @@ const char kBrowserCrashTest[]              = "crash-test";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// Run Chrome in Chrome Frame mode. This means that Chrome expects to be run
+// as a dependent process of the Chrome Frame plugin.
+const char kChromeFrame[]                   = "chrome-frame";
+
 // The Country we should use.  This is normally obtained from the operating
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.

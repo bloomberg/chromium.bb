@@ -313,6 +313,13 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
       params.append(installer_util::switches::kRegisterChromeBrowserSuffix);
       params.append(L"=\"" + suffix + L"\"");
     }
+
+    CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
+      params.append(L" --");
+      params.append(installer_util::switches::kChromeFrame);
+    }
+
     DWORD ret_val = 0;
     InstallUtil::ExecuteExeAsAdmin(exe_path, params, &ret_val);
     if (ret_val == 0)

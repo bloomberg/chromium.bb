@@ -12,6 +12,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/registry.h"
@@ -22,6 +23,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
 bool InstallUtil::ExecuteExeAsAdmin(const std::wstring& exe,
@@ -125,6 +127,13 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
     NOTREACHED();
   }
   return true;
+}
+
+bool InstallUtil::IsChromeFrameProcess() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  DCHECK(command_line)
+      << "IsChromeFrameProcess() called before ComamandLine::Init()";
+  return command_line->HasSwitch(installer_util::switches::kChromeFrame);
 }
 
 bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,

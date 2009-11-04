@@ -9,20 +9,32 @@
 
 #include "chrome/installer/util/browser_distribution.h"
 
+#include "base/command_line.h"
 #include "base/registry.h"
-#include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
+#include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/installer/util/install_util.h"
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
+  return GetDistribution(InstallUtil::IsChromeFrameProcess());
+}
+
+BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
   static BrowserDistribution* dist = NULL;
   if (dist == NULL) {
-#if defined(CHROME_FRAME_BUILD)
-    dist = new ChromeFrameDistribution();
-#elif defined(GOOGLE_CHROME_BUILD)
-    dist = new GoogleChromeDistribution();
+    if (chrome_frame) {
+      // TODO(robertshield): Make one of these for Google Chrome vs
+      // non Google Chrome builds?
+      dist = new ChromeFrameDistribution();
+    } else {
+#if defined(GOOGLE_CHROME_BUILD)
+      dist = new GoogleChromeDistribution();
 #else
-    dist = new BrowserDistribution();
+      dist = new BrowserDistribution();
 #endif
+    }
   }
   return dist;
 }

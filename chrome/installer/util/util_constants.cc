@@ -8,6 +8,9 @@ namespace installer_util {
 
 namespace switches {
 
+// Run the installer in Chrome Frame mode.
+const wchar_t kChromeFrame[] = L"chrome-frame";
+
 // Create Desktop and QuickLaunch shortcuts
 const wchar_t kCreateAllShortcuts[] = L"create-all-shortcuts";
 

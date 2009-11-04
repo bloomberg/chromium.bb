@@ -598,18 +598,18 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
-#if defined(CHROME_FRAME_BUILD)
-  if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
-    ShowRebootDialog();
-  } else if (parsed_command_line.HasSwitch(
-      installer_util::switches::kUninstall)) {
-    ::MessageBoxW(NULL,
-                  installer_util::GetLocalizedString(
-                      IDS_UNINSTALL_COMPLETE_BASE).c_str(),
-                  dist->GetApplicationName().c_str(),
-                  MB_OK);
+  if (InstallUtil::IsChromeFrameProcess()) {
+    if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
+      ShowRebootDialog();
+    } else if (parsed_command_line.HasSwitch(
+        installer_util::switches::kUninstall)) {
+      ::MessageBoxW(NULL,
+                    installer_util::GetLocalizedString(
+                        IDS_UNINSTALL_COMPLETE_BASE).c_str(),
+                    dist->GetApplicationName().c_str(),
+                    MB_OK);
+    }
   }
-#endif
 
   if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
     install_status = installer_util::UNINSTALL_SUCCESSFUL;

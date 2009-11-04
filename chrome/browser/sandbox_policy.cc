@@ -364,6 +364,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   }
 #endif
 
+  // Propagate the Chrome Frame flag to sandboxed processes if present.
+  if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
+    if (!cmd_line->HasSwitch(switches::kChromeFrame)) {
+      cmd_line->AppendSwitch(switches::kChromeFrame);
+    }
+  }
+
   bool child_needs_help =
       DebugFlags::ProcessDebugFlags(cmd_line, type, in_sandbox);
 

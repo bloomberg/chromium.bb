@@ -525,6 +525,9 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kDisableByteRangeSupport,
     switches::kEnableWebSockets,
     switches::kEnableDesktopNotifications,
+    // We propagate the Chrome Frame command line here as well in case the
+    // renderer is not run in the sandbox.
+    switches::kChromeFrame,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,

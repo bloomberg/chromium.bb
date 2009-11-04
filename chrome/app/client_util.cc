@@ -8,6 +8,7 @@
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -189,7 +190,8 @@ class ChromeDllLoader : public MainDllLoader {
 class ChromiumDllLoader : public MainDllLoader {
  public:
   virtual std::wstring GetRegistryPath() {
-    return L"Software\\Chromium";
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    return dist->GetVersionKey();
   }
 };
 

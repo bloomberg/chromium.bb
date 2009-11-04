@@ -44,6 +44,7 @@ enum InstallStatus {
 };
 
 namespace switches {
+extern const wchar_t kChromeFrame[];
 extern const wchar_t kCreateAllShortcuts[];
 extern const wchar_t kDeleteProfile[];
 extern const wchar_t kDisableLogging[];

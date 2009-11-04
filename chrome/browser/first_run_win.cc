@@ -120,6 +120,12 @@ bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
   base::ProcessHandle ph;
   CommandLine cl(exe_path);
   cl.AppendSwitchWithValue(param, value);
+
+  CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
+  if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
+    cl.AppendSwitch(switches::kChromeFrame);
+  }
+
   if (!base::LaunchApp(cl, false, false, &ph))
     return false;
   DWORD wr = ::WaitForSingleObject(ph, INFINITE);
@@ -580,6 +586,10 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
 
   import_cmd.CommandLine::AppendSwitchWithValue(switches::kImport,
       EncodeImportParams(browser_type, items_to_import, parent_window));
+
+  if (cmdline.HasSwitch(switches::kChromeFrame)) {
+    import_cmd.AppendSwitch(switches::kChromeFrame);
+  }
 
   // Time to launch the process that is going to do the import.
   base::ProcessHandle import_process;

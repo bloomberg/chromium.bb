@@ -67,6 +67,8 @@ class BrowserDistribution {
  protected:
   BrowserDistribution() {}
 
+  static BrowserDistribution* GetDistribution(bool chrome_frame);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserDistribution);
 };

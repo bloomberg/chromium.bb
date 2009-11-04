@@ -28,6 +28,7 @@ extern const char kBookmarkMenu[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];
+extern const char kChromeFrame[];
 extern const char kCountry[];
 extern const char kDebugPrint[];
 extern const char kDiagnostics[];

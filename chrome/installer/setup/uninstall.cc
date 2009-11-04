@@ -179,12 +179,13 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   // Obtain the location of the user profile data. Chrome Frame needs to
   // build this path manually since it doesn't use the Chrome default dir.
   FilePath user_local_state;
-#if defined(CHROME_FRAME_BUILD)
-  bool got_local_state =
-      chrome::GetChromeFrameUserDataDirectory(&user_local_state);
-#else  // if !defined(CHROME_FRAME_BUILD)
-  bool got_local_state = chrome::GetDefaultUserDataDirectory(&user_local_state);
-#endif
+  bool got_local_state = false;
+  if (InstallUtil::IsChromeFrameProcess()) {
+    got_local_state =
+        chrome::GetChromeFrameUserDataDirectory(&user_local_state);
+  } else {
+    got_local_state = chrome::GetDefaultUserDataDirectory(&user_local_state);
+  }
 
   // Move the browser's persisted local state
   if (got_local_state) {
@@ -204,20 +205,20 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   LOG(INFO) << "Deleting install path " << install_path;
   if (!file_util::Delete(install_path, true)) {
     LOG(ERROR) << "Failed to delete folder (1st try): " << install_path;
-#if defined(CHROME_FRAME_BUILD)
-    // We don't try killing Chrome processes for Chrome Frame builds since
-    // that is unlikely to help. Instead, schedule files for deletion and
-    // return a value that will trigger a reboot prompt.
-    ScheduleDirectoryForDeletion(install_path.c_str());
-    result = DELETE_REQUIRES_REBOOT;
-#else
-    // Try closing any running chrome processes and deleting files once again.
-    CloseAllChromeProcesses();
-    if (!file_util::Delete(install_path, true)) {
-      LOG(ERROR) << "Failed to delete folder (2nd try): " << install_path;
-      result = DELETE_FAILED;
+    if (InstallUtil::IsChromeFrameProcess()) {
+      // We don't try killing Chrome processes for Chrome Frame builds since
+      // that is unlikely to help. Instead, schedule files for deletion and
+      // return a value that will trigger a reboot prompt.
+      ScheduleDirectoryForDeletion(install_path.c_str());
+      result = DELETE_REQUIRES_REBOOT;
+    } else {
+      // Try closing any running chrome processes and deleting files once again.
+      CloseAllChromeProcesses();
+      if (!file_util::Delete(install_path, true)) {
+        LOG(ERROR) << "Failed to delete folder (2nd try): " << install_path;
+        result = DELETE_FAILED;
+      }
     }
-#endif
   }
 
   if (delete_profile && got_local_state) {
@@ -225,12 +226,12 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
     if (!file_util::Delete(user_local_state, true)) {
       LOG(ERROR) << "Failed to delete user profile dir: "
                  << user_local_state.value();
-#if defined(CHROME_FRAME_BUILD)
-      ScheduleDirectoryForDeletion(user_local_state.value().c_str());
-      result = DELETE_REQUIRES_REBOOT;
-#else
-      result = DELETE_FAILED;
-#endif
+      if (InstallUtil::IsChromeFrameProcess()) {
+        ScheduleDirectoryForDeletion(user_local_state.value().c_str());
+        result = DELETE_REQUIRES_REBOOT;
+      } else {
+        result = DELETE_FAILED;
+      }
     }
     DeleteEmptyParentDir(user_local_state.value());
   }
@@ -407,9 +408,8 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
     // do silent uninstall. Try to close all running Chrome instances.
-#if !defined(CHROME_FRAME_BUILD)
-    CloseAllChromeProcesses();
-#endif
+    if (!InstallUtil::IsChromeFrameProcess())
+      CloseAllChromeProcesses();
   } else {  // no --force-uninstall so lets show some UI dialog boxes.
     status = IsChromeActiveOrUserCancelled(system_uninstall);
     if (status != installer_util::UNINSTALL_CONFIRMED &&

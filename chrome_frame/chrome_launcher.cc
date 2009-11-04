@@ -21,6 +21,7 @@ const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
 // safe-for-Low-Integrity version of the Chrome command line.
 const char* kAllowedSwitches[] = {
   switches::kAutomationClientChannelID,
+  switches::kChromeFrame,
   switches::kDisableMetrics,
   switches::kEnableRendererAccessibility,
   switches::kEnableExperimentalExtensionApis,

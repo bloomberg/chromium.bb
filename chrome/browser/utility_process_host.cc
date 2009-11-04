@@ -97,6 +97,11 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 
   SetCrashReporterCommandLine(&cmd_line);
 
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
+    cmd_line.AppendSwitch(switches::kChromeFrame);
+  }
+
   base::ProcessHandle process;
 #if defined(OS_WIN)
   if (!UseSandbox()) {
@@ -110,7 +115,6 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 #else
   // TODO(port): Sandbox this on Linux/Mac.  Also, zygote this to work with
   // Linux updating.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   bool has_cmd_prefix = browser_command_line.HasSwitch(
       switches::kUtilityCmdPrefix);
   if (has_cmd_prefix) {

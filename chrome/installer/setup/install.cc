@@ -7,6 +7,7 @@
 
 #include "chrome/installer/setup/install.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -85,6 +86,34 @@ void AddInstallerCopyTasks(const std::wstring& exe_path,
   }
 }
 
+void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
+                                     bool is_system) {
+  DCHECK(uninstall_cmd_line);
+  uninstall_cmd_line->append(L" --");
+  uninstall_cmd_line->append(installer_util::switches::kUninstall);
+
+  if (InstallUtil::IsChromeFrameProcess()) {
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kForceUninstall);
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kDeleteProfile);
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kChromeFrame);
+  }
+
+  // Propagate the verbose logging switch to uninstalls too.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kVerboseLogging);
+  }
+
+  if (is_system) {
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kSystemLevel);
+  }
+}
+
 // This method adds work items to create (or update) Chrome uninstall entry in
 // Control Panel->Add/Remove Programs list.
 void AddUninstallShortcutWorkItems(HKEY reg_root,
@@ -98,20 +127,10 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
                                                               new_version));
   file_util::AppendToPath(&uninstall_cmd,
                           file_util::GetFilenameFromPath(exe_path));
-  uninstall_cmd.append(L"\" --");
-  uninstall_cmd.append(installer_util::switches::kUninstall);
+  uninstall_cmd.append(L"\"");
 
-#if defined(CHROME_FRAME_BUILD)
-  uninstall_cmd.append(L" --");
-  uninstall_cmd.append(installer_util::switches::kForceUninstall);
-  uninstall_cmd.append(L" --");
-  uninstall_cmd.append(installer_util::switches::kDeleteProfile);
-#endif
-
-  if (reg_root == HKEY_LOCAL_MACHINE) {
-    uninstall_cmd.append(L" --");
-    uninstall_cmd.append(installer_util::switches::kSystemLevel);
-  }
+  AppendUninstallCommandLineFlags(&uninstall_cmd,
+                                  reg_root == HKEY_LOCAL_MACHINE);
 
   // Create DisplayName, UninstallString and InstallLocation keys
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -250,20 +269,9 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
                                                                   new_version));
     file_util::AppendToPath(&setup_exe,
                             file_util::GetFilenameFromPath(exe_path));
-    std::wstring arguments(L" --");
-    arguments.append(installer_util::switches::kUninstall);
 
-#if defined(CHROME_FRAME_BUILD)
-    arguments.append(L" --");
-    arguments.append(installer_util::switches::kForceUninstall);
-    arguments.append(L" --");
-    arguments.append(installer_util::switches::kDeleteProfile);
-#endif
-
-    if (system_install) {
-      arguments.append(L" --");
-      arguments.append(installer_util::switches::kSystemLevel);
-    }
+    std::wstring arguments;
+    AppendUninstallCommandLineFlags(&arguments, system_install);
 
     LOG(INFO) << "Creating/updating uninstall link at "
               << uninstall_link.value();
@@ -466,12 +474,12 @@ bool InstallNewVersion(const std::wstring& exe_path,
   if (reg_root != HKEY_LOCAL_MACHINE && reg_root != HKEY_CURRENT_USER)
     return false;
 
-#if defined(CHROME_FRAME_BUILD)
-  // Make sure that we don't end up deleting installed files on next reboot.
-  if (!RemoveFromMovesPendingReboot(install_path.c_str())) {
-    LOG(ERROR) << "Error accessing pending moves value.";
+  if (InstallUtil::IsChromeFrameProcess()) {
+    // Make sure that we don't end up deleting installed files on next reboot.
+    if (!RemoveFromMovesPendingReboot(install_path.c_str())) {
+      LOG(ERROR) << "Error accessing pending moves value.";
+    }
   }
-#endif
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   // A temp directory that work items need and the actual install directory.

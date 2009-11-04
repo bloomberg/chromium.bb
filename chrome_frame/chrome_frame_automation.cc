@@ -165,8 +165,8 @@ ProxyFactory::ProxyFactory()
 
 ProxyFactory::~ProxyFactory() {
   for (size_t i = 0; i < proxies_.container().size(); ++i) {
-    if (WAIT_OBJECT_0 !=
-        WaitForSingleObject(proxies_[i]->thread->thread_handle(), 0))
+    DWORD result = WaitForSingleObject(proxies_[i]->thread->thread_handle(), 0);
+    if (WAIT_OBJECT_0 != result)
       // TODO(stoyan): Don't leak proxies on exit.
       DLOG(ERROR) << "Proxies leaked on exit.";
   }
@@ -244,6 +244,11 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // TODO(robertshield): Figure out why this is. It appears to have something
   // to do with an improperly set up profile...
   command_line->AppendSwitch(switches::kDisableMetrics);
+
+  // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
+  // and registry keys that Chrome looks in via the BrowserDistribution
+  // mechanism.
+  command_line->AppendSwitch(switches::kChromeFrame);
 
   // Chrome Frame never wants Chrome to start up with a First Run UI.
   command_line->AppendSwitch(switches::kNoFirstRun);
