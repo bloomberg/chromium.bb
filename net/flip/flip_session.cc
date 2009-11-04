@@ -28,7 +28,6 @@ namespace net {
 // static
 scoped_ptr<FlipSessionPool> FlipSession::session_pool_;
 bool FlipSession::use_ssl_ = true;
-int PrioritizedIOBuffer::order_ = 0;
 
 FlipSession* FlipSession::GetFlipSession(
     const HostResolver::RequestInfo& info,
@@ -114,37 +113,8 @@ void CreateFlipHeadersFromHttpRequest(
     (*headers)[name] = it.values();
   }
 
-#undef DIVERT_URLS_TO_TEST_SERVER
-#ifdef DIVERT_URLS_TO_TEST_SERVER
-  // TODO(mbelshe): Figure out how to remove this.  This is just for hooking
-  // up to a test server.
-  // For testing content on our test server, we modify the URL.
-  GURL url = info->url;
-  FilePath path(UrlToFilenameEncoder::Encode(url.spec(), FilePath()));
-
-  // We do the unusual conversion from a FilePath::StringType to
-  // an ascii string.  Recognize that StringType is a wstring on windows,
-  // so a failure is technically possible, but this is just used as a test
-  // case, so it's okay.  This code will be deleted.
-  std::string hack_url("/");
-#if defined(OS_WIN)
-  hack_url.append(WideToASCII(path.value()));
-#else
-  hack_url.append(path.value());
-#endif
-
-  // switch backslashes.  HACK
-  std::string::size_type pos(0);
-  while ((pos = hack_url.find('\\', pos)) != std::string::npos) {
-    hack_url.replace(pos, 1, "/");
-    pos += 1;
-  }
-#else
-  std::string hack_url(info->url.PathForRequest());
-#endif  // REWRITE_URLS
-
   (*headers)["method"] = info->method;
-  (*headers)["url"] = hack_url;
+  (*headers)["url"] = info->url.PathForRequest();
   (*headers)["version"] = kHttpProtocolVersion;
   (*headers)["host"] = GetHostAndOptionalPort(info->url);
   if (info->user_agent.length())
@@ -234,7 +204,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
       new IOBufferWithSize(length);
   memcpy(buffer->data(), syn_frame, length);
   delete[] syn_frame;
-  queue_.push(PrioritizedIOBuffer(buffer, priority));
+  queue_.push(FlipIOBuffer(buffer, priority, stream));
 
   static StatsCounter flip_requests("flip.requests");
   flip_requests.Increment();
@@ -377,6 +347,10 @@ void FlipSession::OnWriteComplete(int result) {
   LOG(INFO) << "Flip write complete (result=" << result << ")";
 
   if (result >= 0) {
+    // TODO(mbelshe) Verify that we wrote ALL the bytes we needed to.
+    //               The code current is broken in the case of a partial write.
+    DCHECK_EQ(static_cast<size_t>(result), in_flight_write_.size());
+
     // Cleanup the write which just completed.
     in_flight_write_.release();
 
@@ -437,40 +411,42 @@ void FlipSession::WriteSocket() {
   if (write_pending_)   // Another write is in progress still.
     return;
 
+  // Loop sending frames until we've sent everything or until the write
+  // returns error (or ERR_IO_PENDING).
   while (queue_.size()) {
-    const size_t kMaxSegmentSize = 1430;
-    const size_t kMaxPayload = 4 * kMaxSegmentSize;
-    size_t max_size = std::max(kMaxPayload, queue_.top().size());
+    // Grab the next FlipFrame to send.
+    FlipIOBuffer next_buffer = queue_.top();
+    queue_.pop();
 
-    size_t bytes = 0;
-    // If we have multiple IOs to do, accumulate up to 4 MSS's worth of data
-    // and send them in batch.
-    IOBufferWithSize* buffer = new IOBufferWithSize(max_size);
-    while (queue_.size() && bytes < max_size) {
-      PrioritizedIOBuffer next_buffer = queue_.top();
+    // We've deferred compression until just before we write it to the socket,
+    // which is now.
+    flip::FlipFrame* uncompressed_frame =
+        reinterpret_cast<flip::FlipFrame*>(next_buffer.buffer()->data());
+    scoped_array<flip::FlipFrame> compressed_frame(
+        flip_framer_.CompressFrame(uncompressed_frame));
+    size_t size = compressed_frame.get()->length() + sizeof(flip::FlipFrame);
 
-      // Now that we're outputting the frame, we can finally compress it.
-      flip::FlipFrame* uncompressed_frame =
-          reinterpret_cast<flip::FlipFrame*>(next_buffer.buffer()->data());
-      scoped_array<flip::FlipFrame> compressed_frame(
-          flip_framer_.CompressFrame(uncompressed_frame));
-      size_t size = compressed_frame.get()->length() + sizeof(flip::FlipFrame);
-      if (bytes + size > kMaxPayload)
-        break;
-      memcpy(buffer->data() + bytes, compressed_frame.get(), size);
-      bytes += size;
-      queue_.pop();
-      next_buffer.release();
-    }
-    DCHECK(bytes > 0);
-    in_flight_write_ = PrioritizedIOBuffer(buffer, 0);
+    DCHECK(size > 0);
+
+    // TODO(mbelshe): We have too much copying of data here.
+    IOBufferWithSize* buffer = new IOBufferWithSize(size);
+    memcpy(buffer->data(), compressed_frame.get(), size);
+
+    // Attempt to send the frame.
+    in_flight_write_ = FlipIOBuffer(buffer, 0, next_buffer.stream());
     write_pending_ = true;
-
     int rv = connection_.socket()->Write(in_flight_write_.buffer(),
-                                         bytes, &write_callback_);
+                                         size, &write_callback_);
     if (rv == net::ERR_IO_PENDING)
       break;
+
+    // We sent the frame successfully.
     OnWriteComplete(rv);
+
+    // TODO(mbelshe):  Test this error case.  Maybe we should mark the socket
+    //                 as in an error state.
+    if (rv < 0)
+      break;
   }
 }
 

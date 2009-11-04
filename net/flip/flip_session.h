@@ -18,6 +18,7 @@
 #include "net/base/ssl_config_service.h"
 #include "net/base/upload_data_stream.h"
 #include "net/flip/flip_framer.h"
+#include "net/flip/flip_io_buffer.h"
 #include "net/flip/flip_protocol.h"
 #include "net/flip/flip_session_pool.h"
 #include "net/socket/client_socket.h"
@@ -84,37 +85,6 @@ class FlipDelegate {
   // delegate will be made after this call.
   // |status| is an error code or OK.
   virtual void OnClose(int status) = 0;
-};
-
-class PrioritizedIOBuffer {
- public:
-  PrioritizedIOBuffer() : buffer_(0), priority_(0) {}
-  PrioritizedIOBuffer(IOBufferWithSize* buffer, int priority)
-      : buffer_(buffer),
-        priority_(priority),
-        position_(++order_) {
-  }
-
-  IOBuffer* buffer() const { return buffer_; }
-
-  size_t size() const { return buffer_->size(); }
-
-  void release() { buffer_ = NULL; }
-
-  int priority() { return priority_; }
-
-  // Supports sorting.
-  bool operator<(const PrioritizedIOBuffer& other) const {
-    if (priority_ != other.priority_)
-      return priority_ > other.priority_;
-    return position_ >= other.position_;
-  }
-
- private:
-  scoped_refptr<IOBufferWithSize> buffer_;
-  int priority_;
-  int position_;
-  static int order_;  // Maintains a FIFO order for equal priorities.
 };
 
 class FlipSession : public base::RefCounted<FlipSession>,
@@ -249,12 +219,12 @@ class FlipSession : public base::RefCounted<FlipSession>,
   std::map<std::string, FlipDelegate*> pending_streams_;
 
   // As we gather data to be sent, we put it into the output queue.
-  typedef std::priority_queue<PrioritizedIOBuffer> OutputQueue;
+  typedef std::priority_queue<FlipIOBuffer> OutputQueue;
   OutputQueue queue_;
 
   // TODO(mbelshe): this is ugly!!
   // The packet we are currently sending.
-  PrioritizedIOBuffer in_flight_write_;
+  FlipIOBuffer in_flight_write_;
   bool delayed_write_pending_;
   bool write_pending_;
 

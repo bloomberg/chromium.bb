@@ -302,26 +302,8 @@ int FlipNetworkTransaction::DoInitConnection() {
 
   HostResolver::RequestInfo resolve_info(host, port);
 
-// TODO(mbelshe): Cleanup these testing tricks.
-// If we want to use multiple connections, grab the flip session
-// up front using the original domain name.
-#undef USE_MULTIPLE_CONNECTIONS
-#undef DIVERT_URLS_TO_TEST_SERVER
-#if defined(USE_MULTIPLE_CONNECTIONS) || !defined(DIVERT_URLS_TO_TEST_SERVER)
   flip_ = FlipSession::GetFlipSession(resolve_info, session_);
-#endif
-
-// Use this to divert URLs to a test server.
-#ifdef DIVERT_URLS_TO_TEST_SERVER
-  // Fake out this session to go to our test server.
-  host = "servername";
-  port = 443;
-  resolve_info = HostResolver::RequestInfo(host, port);
-#ifndef USE_MULTIPLE_CONNECTIONS
-  flip_ = FlipSession::GetFlipSession(resolve_info, session_);
-#endif  // USE_MULTIPLE_CONNECTIONS
-
-#endif  // DIVERT_URLS_TO_TEST_SERVER
+  DCHECK(flip_);
 
   int rv = flip_->Connect(connection_group, resolve_info, request_->priority);
   DCHECK(rv == net::OK);  // The API says it will always return OK.

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "net/base/test_completion_callback.h"
+#include "net/flip/flip_io_buffer.h"
+#include "net/flip/flip_session.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/platform_test.h"
-
-#include "net/flip/flip_session.h"
 
 namespace net {
 
@@ -14,14 +14,14 @@ class FlipSessionTest : public PlatformTest {
  public:
 };
 
-// Test the PrioritizedIOBuffer class.
-TEST_F(FlipSessionTest, PrioritizedIOBuffer) {
-  std::priority_queue<PrioritizedIOBuffer> queue_;
+// Test the FlipIOBuffer class.
+TEST_F(FlipSessionTest, FlipIOBuffer) {
+  std::priority_queue<FlipIOBuffer> queue_;
   const size_t kQueueSize = 100;
 
   // Insert 100 items; pri 100 to 1.
   for (size_t index = 0; index < kQueueSize; ++index) {
-    PrioritizedIOBuffer buffer(NULL, kQueueSize - index);
+    FlipIOBuffer buffer(NULL, kQueueSize - index, NULL);
     queue_.push(buffer);
   }
 
@@ -30,14 +30,14 @@ TEST_F(FlipSessionTest, PrioritizedIOBuffer) {
   IOBufferWithSize* buffers[kNumDuplicates];
   for (size_t index = 0; index < kNumDuplicates; ++index) {
     buffers[index] = new IOBufferWithSize(index+1);
-    queue_.push(PrioritizedIOBuffer(buffers[index], 0));
+    queue_.push(FlipIOBuffer(buffers[index], 0, NULL));
   }
 
   EXPECT_EQ(kQueueSize + kNumDuplicates, queue_.size());
 
   // Verify the P0 items come out in FIFO order.
   for (size_t index = 0; index < kNumDuplicates; ++index) {
-    PrioritizedIOBuffer buffer = queue_.top();
+    FlipIOBuffer buffer = queue_.top();
     EXPECT_EQ(0, buffer.priority());
     EXPECT_EQ(index + 1, buffer.size());
     queue_.pop();
@@ -45,7 +45,7 @@ TEST_F(FlipSessionTest, PrioritizedIOBuffer) {
 
   int priority = 1;
   while (queue_.size()) {
-    PrioritizedIOBuffer buffer = queue_.top();
+    FlipIOBuffer buffer = queue_.top();
     EXPECT_EQ(priority++, buffer.priority());
     queue_.pop();
   }
