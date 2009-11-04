@@ -41,10 +41,10 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-#endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 
 #else  //  NACL_STANDALONE
 // Don't include video support in Chrome build
@@ -148,12 +148,12 @@ class VideoMap {
                                            WPARAM wparam,
                                            LPARAM lparam);
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
   static void XEventHandler(Widget widget,
                             VideoMap* video,
                             XEvent* xevent,
                             Boolean* b);
-#endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 #endif  // NACL_STANDALONE
 
  private:

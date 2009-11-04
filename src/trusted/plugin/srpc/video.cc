@@ -37,12 +37,12 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 #include <sched.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
-#endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -85,7 +85,7 @@ void VideoGlobalUnlock() {
 }
 
 
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 static int XKeysymToNaCl(KeySym xsym) {
   if ((xsym & 0xFF00) == 0x0000)
     return xsym;
@@ -329,7 +329,7 @@ void VideoMap::XEventHandler(Widget widget,
       break;
   }
 }
-#endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
 
 #if NACL_OSX
 // convert global mouse coordinate to local space
@@ -1143,7 +1143,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
           reinterpret_cast<WNDPROC>(VideoMap::WindowProcedure));
       SetWindowLong(hwnd, GWL_USERDATA, reinterpret_cast<LONG>(this));
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
       // open X11 display, add X11 event listener
       dprintf(("VideoMap::SetWindow adding X11 display\n"));
       set_platform_specific(XOpenDisplay(NULL));
@@ -1161,7 +1161,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
         XtAddEventHandler(widget, event_mask, False,
             reinterpret_cast<XtEventHandler>(&VideoMap::XEventHandler), this);
       }
-#endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
     }
   }
   return true;
@@ -1405,7 +1405,7 @@ VideoMap::~VideoMap() {
     video_callback_data_ = ReleaseCallbackData(video_callback_data_);
   }
   if (NULL != platform_specific()) {
-#if NACL_LINUX && defined(MOZ_X11)
+#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
     XCloseDisplay(static_cast<Display *>(platform_specific()));
 #endif
     set_platform_specific(NULL);
