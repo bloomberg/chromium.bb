@@ -3299,3 +3299,22 @@ BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 
 // Started failing on Win, Linux after Webkit 50476:50480, probably 50477
 BUG10442 WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = TEXT
+
+// WebKit 50487:50516
+// The following tests need rebaseline.
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-empty-rt.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-length.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-run-break.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-runs-spans.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-runs.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-simple-rp.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-simple.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/ruby-trailing.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-insert-rt.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-insert-text1.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-insert-text2.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-insert-text3.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-remove-rt1.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-remove-rt2.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-remove-text1.html = FAIL
+BUG_HCLAM WIN LINUX : LayoutTests/fast/ruby/rubyDOM-remove-text2.html = FAIL
