@@ -64,7 +64,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 
 static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
   uint32_t *inst = (uint32_t *) start;
-  int i;
+  uint32_t i;
 
   CHECK(0 == size % NACL_HALT_LEN);
   /* check that the region start is 4 bytes alligned */

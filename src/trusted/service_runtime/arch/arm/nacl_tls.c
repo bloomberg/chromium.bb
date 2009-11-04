@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
@@ -133,6 +134,8 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void *tdb,
                          uint32_t size) {
   uint32_t idx = NaClThreadIdxAllocate();
+  UNREFERENCED_PARAMETER(natp);
+
   NaClLog(2,
           "NaClTlsAllocate: tdb %x size %d idx %d\n",
           (uint32_t) tdb, size, idx);

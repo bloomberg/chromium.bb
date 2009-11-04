@@ -798,15 +798,11 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
-                    CCFLAGS=['-march=armv7a',
-                             '-pedantic',
-                             '-Wall',
-                             '-Werror',
-                             '-Wno-long-long'],
                     LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
-  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'])
+  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'],
+                   CCFLAGS=['-march=armv7a'])
 else:
   Banner('Strange platform: %s' % BUILD_NAME)
 
