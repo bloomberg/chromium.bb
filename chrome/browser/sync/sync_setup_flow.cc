@@ -155,13 +155,24 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
       prefs->GetString(prefs::kWebKitSansSerifFontFamily),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
-  gfx::Size s = gfx::GetLocalizedContentsSizeForFont(
+  *size = gfx::GetLocalizedContentsSizeForFont(
       IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
       IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);
 
-  size->set_width(s.width());
-  size->set_height(s.height());
+#if !defined(OS_WIN)
+  // NOTE(akalin): This is a hack to work around a problem with font height on
+  // windows.  Basically font metrics are incorrectly returned in logical units
+  // instead of pixels on Windows.  Logical units are very commonly 96 DPI
+  // so our localized char/line counts are too small by a factor of 96/72.
+  // So we compensate for this on non-windows platform.
+  //
+  // TODO(akalin): Remove this hack once we fix the windows font problem (or at
+  // least work around it in some other place).
+  float scale_hack = 96.f/72.f;
+  size->set_width(size->width() * scale_hack);
+  size->set_height(size->height() * scale_hack);
+#endif
 }
 
 // A callback to notify the delegate that the dialog closed.
