@@ -762,6 +762,9 @@ BUG20226 : LayoutTests/fast/forms/datalist.html = TEXT
 BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 
+// Add support for inspector layout tests.
+BUG26734 SKIP : LayoutTests/inspector = FAIL
+
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
 BUG24205 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.html = FAIL
@@ -3068,9 +3071,6 @@ BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
-
-//WebKit roll 49562:49583
-SKIP BUG_PFELDMAN : LayoutTests/inspector = FAIL
 
 BUG24862 LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
