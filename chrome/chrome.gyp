@@ -5658,11 +5658,11 @@
                 # version numbers.
                 'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
                 'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
-                # See tools/build/mac/copy_framework_unversioned for
                 # The framework is placed within the .app's versioned
                 # directory.
                 'DYLIB_INSTALL_NAME_BASE':
                     '@executable_path/../Versions/<(version_full)',
+                # See tools/build/mac/copy_framework_unversioned for
                 # information on LD_DYLIB_INSTALL_NAME.
                 'LD_DYLIB_INSTALL_NAME':
                     '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
