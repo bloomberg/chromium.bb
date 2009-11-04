@@ -148,7 +148,7 @@ void NaClLogLock(void) {
 void NaClLogUnlock(void) {
   if (abort_on_unlock) {
 #ifdef __COVERITY__
-    __coverity_panic__();
+    abort();  /* help coverity figure out that this is the default behavior */
 #else
     (*gNaClLogAbortBehavior)();
 #endif
