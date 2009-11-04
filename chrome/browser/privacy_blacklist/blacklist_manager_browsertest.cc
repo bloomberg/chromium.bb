@@ -69,24 +69,32 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, Basic) {
+  static const char kTestUrl[] = "http://host/annoying_ads/ad.jpg";
+
   InitializeBlacklistManager();
   ASSERT_TRUE(blacklist_manager_->GetCompiledBlacklist());
   EXPECT_FALSE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                 "http://host/annoying_ads/ad.jpg"));
+                                 kTestUrl));
 
   // Test loading an extension with blacklist.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("privacy_blacklist")));
-  WaitForBlacklistUpdate();
+  if (!BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
+                         kTestUrl)) {
+    WaitForBlacklistUpdate();
+  }
   EXPECT_TRUE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                "http://host/annoying_ads/ad.jpg"));
+                                kTestUrl));
 
   // Make sure that after unloading the extension we update the blacklist.
   ExtensionsService* extensions_service =
       browser()->profile()->GetExtensionsService();
   ASSERT_EQ(1U, extensions_service->extensions()->size());
   UnloadExtension(extensions_service->extensions()->front()->id());
-  WaitForBlacklistUpdate();
+  if (BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
+                        kTestUrl)) {
+    WaitForBlacklistUpdate();
+  }
   EXPECT_FALSE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                 "http://host/annoying_ads/ad.jpg"));
+                                 kTestUrl));
 }
