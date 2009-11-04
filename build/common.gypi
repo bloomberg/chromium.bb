@@ -104,6 +104,9 @@
       ['linux2==1', {
         'defines': ['LINUX2=1'],
       }],
+      ['OS=="win"', {
+        'defines': [ 'NOMINMAX' ]
+      }],
       ['coverage!=0', {
         'conditions': [
           ['OS=="mac"', {
@@ -149,10 +152,11 @@
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
             'msvs_configuration_attributes': {
-              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
+              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
               'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
               'CharacterSet': '1',
             },
+            'msvs_props': ['x86_32.vsprops'],
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'Optimization': '0',
@@ -187,10 +191,11 @@
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
             'msvs_configuration_attributes': {
-              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
+              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
               'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
               'CharacterSet': '1',
             },
+            'msvs_props': ['x86_32.vsprops'],
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'PreprocessorDefinitions': ['NDEBUG'],
@@ -212,13 +217,26 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'Debug_x64': {
-            'inherit_from': ['Debug'],
+          'Common_x64': {
+            'defines!': [
+              'NACL_PLATFORM=x86',
+              'NACL_TARGET_SUBARCH=32',
+              'NACL_BUILD_SUBARCH=32',
+            ],
+            'defines': [
+              'NACL_PLATFORM=x86',
+              'NACL_TARGET_SUBARCH=64',
+              'NACL_BUILD_SUBARCH=64',
+            ],
             'msvs_configuration_platform': 'x64',
+            'msvs_props!': ['x86_32.vsprops'],
+            'msvs_props': ['x86_64.vsprops']
+          },
+          'Debug_x64': {
+            'inherit_from': ['Debug', 'Common_x64'],
           },
           'Release_x64': {
-            'inherit_from': ['Release'],
-            'msvs_configuration_platform': 'x64',
+            'inherit_from': ['Release', 'Common_x64'],
           },
         }],
       ],
@@ -562,7 +580,7 @@
           ],
           'action':
             # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_BUILD_ARCH=x86 /DNACL_BUILD_SUBARCH=32 /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_BUILD_ARCH=$(nacl_build_arch) /DNACL_BUILD_SUBARCH=$(nacl_build_subarch) /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
           'message': 'Building assembly file <(RULE_INPUT_PATH)',
           'process_outputs_as_sources': 1,
         },],
@@ -584,7 +602,7 @@
           'NACL_BLOCK_SIZE=32',
           'NACL_LINUX=0',
           'NACL_OSX=0',
-          'NACL_WINDOWS=1',
+          'NACL_WINDOWS=1'
         ],
         'msvs_system_include_dirs': [
           '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Include',
