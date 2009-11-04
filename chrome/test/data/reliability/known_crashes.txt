@@ -97,9 +97,6 @@ PREFIX : webplugindelegateimpl::flashwindowlesswndproc___webplugindelegateimpl::
 # likely to be related with flash. The top few frames are all in NPSWF.
 REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwithtimeout
 
-# 20793
-PREFIX : webpluginproxy::setwindowlessbuffer___child_process_logging::setactiveurl
-
 # 20915
 REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
 PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
