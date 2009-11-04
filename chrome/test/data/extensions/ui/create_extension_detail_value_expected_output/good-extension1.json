@@ -6,6 +6,7 @@
   "description": "The first extension that I made.",
   "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
   "icon": "icon_128.png",
+  "order": 2,
   "content_scripts": [
     {
       "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],

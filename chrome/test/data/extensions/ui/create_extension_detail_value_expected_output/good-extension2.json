@@ -6,6 +6,7 @@
   "description": "",
   "permissions": [],
   "icon": "",
+  "order": 2,
   "content_scripts": [],
   "views": [
     {
