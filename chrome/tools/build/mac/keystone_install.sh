@@ -10,15 +10,16 @@
 # Return values:
 # 0  Happiness
 # 1  Unknown failure
-# 2  Basic sanity check destination failure (e.g. ticket points to nothing)
-# 3  Could not prepare existing installed version to receive update
-# 4  rsync failed (could not assure presence of Versions directory)
-# 5  rsync failed (could not copy new versioned directory to Versions)
-# 6  rsync failed (could not update outer .app bundle)
-# 7  Could not get the version, update URL, or channel after update
-# 8  Updated application does not have the version number from the update
-# 9  ksadmin failure
-# 10 Basic sanity check source failure (e.g. no app on disk image)
+# 2  Basic sanity check source failure (e.g. no app on disk image)
+# 3  Basic sanity check destination failure (e.g. ticket points to nothing)
+# 4  Update driven by user ticket when a system ticket is also present
+# 5  Could not prepare existing installed version to receive update
+# 6  rsync failed (could not assure presence of Versions directory)
+# 7  rsync failed (could not copy new versioned directory to Versions)
+# 8  rsync failed (could not update outer .app bundle)
+# 9  Could not get the version, update URL, or channel after update
+# 10 Updated application does not have the version number from the update
+# 11 ksadmin failure
 
 set -e
 
@@ -117,7 +118,7 @@ function ensure_writable_symlink() {
 
 # The argument should be the disk image path.  Make sure it exists.
 if [ $# -lt 1 ] || [ ! -d "${1}" ]; then
-  exit 10
+  exit 2
 fi
 
 # Who we are.
@@ -130,7 +131,7 @@ SRC="${1}/${APP_DIR}"
 # Make sure that there's something to copy from, and that it's an absolute
 # path.
 if [ -z "${SRC}" ] || [ "${SRC:0:1}" != "/" ] || [ ! -d "${SRC}" ] ; then
-  exit 10
+  exit 2
 fi
 
 # Figure out where we're going.  Determine the application version to be
@@ -138,13 +139,13 @@ fi
 # framework for the Keystone product ID.
 APP_VERSION_KEY="CFBundleShortVersionString"
 UPD_VERSION_APP=$(defaults read "${SRC}/Contents/Info" "${APP_VERSION_KEY}" ||
-                  exit 10)
+                  exit 2)
 UPD_KS_PLIST="${SRC}/Contents/Versions/${UPD_VERSION_APP}/${FRAMEWORK_DIR}/Resources/Info"
 KS_VERSION_KEY="KSVersion"
-UPD_VERSION_KS=$(defaults read "${UPD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 10)
-PRODUCT_ID=$(defaults read "${UPD_KS_PLIST}" KSProductID || exit 10)
+UPD_VERSION_KS=$(defaults read "${UPD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 2)
+PRODUCT_ID=$(defaults read "${UPD_KS_PLIST}" KSProductID || exit 2)
 if [ -z "${UPD_VERSION_KS}" ] || [ -z "${PRODUCT_ID}" ] ; then
-  exit 2
+  exit 3
 fi
 DEST=$(ksadmin -pP "${PRODUCT_ID}" |
        sed -Ene \
@@ -152,7 +153,29 @@ DEST=$(ksadmin -pP "${PRODUCT_ID}" |
 
 # More sanity checking.
 if [ -z "${DEST}" ] || [ ! -d "${DEST}" ]; then
-  exit 2
+  exit 3
+fi
+
+# If this script is not running as root, it's being driven by a user ticket.
+# If a system ticket is also present, there's a potential for the two to
+# collide.  Both ticket types might be present if another user on the system
+# promoted the ticket to system: the other user could not have removed this
+# user's user ticket.  Handle that case here by deleting the user ticket and
+# exiting early with a discrete exit status.
+#
+# Current versions of ksadmin will exit 1 (false) when asked to print tickets
+# and given a specific product ID to print.  Older versions of ksadmin would
+# exit 0 (true), but those same versions did not support -S (meaning to check
+# the system ticket store) and would exit 1 (false) with this invocation due
+# to not understanding the question.  Therefore, the usage here will only
+# delete the existing user ticket when running as non-root with access to a
+# sufficiently recent ksadmin.  Older ksadmins are tolerated: the update will
+# likely fail for another reason and the user ticket will hang around until
+# something is eventually able to remove it.
+if [ ${EUID} -ne 0 ] &&
+   ksadmin -S --print-tickets -P "${PRODUCT_ID}" >& /dev/null ; then
+  ksadmin --delete -P "${PRODUCT_ID}" || true
+  exit 4
 fi
 
 # Figure out what the existing version is using for its versioned directory.
@@ -249,9 +272,9 @@ RSYNC_FLAGS="-Ilprt"
 # installation from a Keystone skeleton bootstrap.  The mkdir creates
 # ${DEST}/Contents if it doesn't exist; its mode bits will be fixed up in a
 # subsequent rsync.
-mkdir -p "${DEST}/Contents" || exit 3
+mkdir -p "${DEST}/Contents" || exit 5
 rsync ${RSYNC_FLAGS} --exclude "*" "${SRC}/Contents/Versions/" \
-                                   "${DEST}/Contents/Versions" || exit 4
+                                   "${DEST}/Contents/Versions" || exit 6
 
 # Copy the versioned directory.  The new versioned directory will have a
 # different name than any existing one, so this won't harm anything already
@@ -262,7 +285,7 @@ rsync ${RSYNC_FLAGS} --exclude "*" "${SRC}/Contents/Versions/" \
 NEW_VERSIONED_DIR="${DEST}/Contents/Versions/${UPD_VERSION_APP}"
 rsync ${RSYNC_FLAGS} --delete-before \
     "${SRC}/Contents/Versions/${UPD_VERSION_APP}/" \
-    "${NEW_VERSIONED_DIR}" || exit 5
+    "${NEW_VERSIONED_DIR}" || exit 7
 
 # Copy the unversioned files into place, leaving everything in
 # Contents/Versions alone.  If this step is interrupted, the application will
@@ -274,7 +297,7 @@ rsync ${RSYNC_FLAGS} --delete-before \
 # only accounts for around 50 files, most of which are small localized
 # InfoPlist.strings files.
 rsync ${RSYNC_FLAGS} --delete-after --exclude /Contents/Versions \
-    "${SRC}/" "${DEST}" || exit 6
+    "${SRC}/" "${DEST}" || exit 8
 
 # If necessary, touch the outermost .app so that it appears to the outside
 # world that something was done to the bundle.  This will cause LaunchServices
@@ -289,10 +312,10 @@ fi
 # Read the new values (e.g. version).  Get the installed application version
 # to get the path to the framework, where the Keystone keys are stored.
 NEW_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
-                  exit 7)
+                  exit 9)
 NEW_KS_PLIST="${DEST}/Contents/Versions/${NEW_VERSION_APP}/${FRAMEWORK_DIR}/Resources/Info"
-NEW_VERSION_KS=$(defaults read "${NEW_KS_PLIST}" "${KS_VERSION_KEY}" || exit 7)
-URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 7)
+NEW_VERSION_KS=$(defaults read "${NEW_KS_PLIST}" "${KS_VERSION_KEY}" || exit 9)
+URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 9)
 # The channel ID is optional.  Suppress stderr to prevent Keystone from seeing
 # possible error output.
 CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" KSChannelID 2>/dev/null || true)
@@ -300,7 +323,7 @@ CHANNEL_ID=$(defaults read "${NEW_KS_PLIST}" KSChannelID 2>/dev/null || true)
 # Make sure that the update was successful by comparing the version found in
 # the update with the version now on disk.
 if [ "${NEW_VERSION_KS}" != "${UPD_VERSION_KS}" ]; then
-  exit 8
+  exit 10
 fi
 
 # Notify LaunchServices.  This is not considered a critical step, and
@@ -316,7 +339,7 @@ if [ -n "${KSADMIN_VERSION}" ] ; then
           --version "${NEW_VERSION_KS}" \
           --xcpath "${DEST}" \
           --url "${URL}" \
-          --tag "${CHANNEL_ID}" || exit 9
+          --tag "${CHANNEL_ID}" || exit 11
 else
   # Older versions of ksadmin don't recognize --tag.  The application will
   # set the tag when it runs.
@@ -324,7 +347,7 @@ else
           -P "${PRODUCT_ID}" \
           --version "${NEW_VERSION_KS}" \
           --xcpath "${DEST}" \
-          --url "${URL}" || exit 9
+          --url "${URL}" || exit 11
 fi
 
 # The remaining steps are not considered critical.

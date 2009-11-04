@@ -72,6 +72,10 @@ function make_old_dest() {
   defaults write "${DEST}/Contents/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
 #!/bin/sh
+if [ -z "\${FAKE_SYSTEM_TICKET}" ] && [ "\${1}" = "-S" ] ; then
+  echo no system tix! >& 2
+  exit 1
+fi
 echo " xc=<KSPathExistenceChecker:0x45 path=${DEST}>"
 exit 0
 EOF
@@ -89,6 +93,10 @@ function make_new_dest() {
   defaults write "${RSRCDIR}/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
 #!/bin/sh
+if [ -z "\${FAKE_SYSTEM_TICKET}" ] && [ "\${1}" = "-S" ] ; then
+  echo no system tix! >& 2
+  exit 1
+fi
 echo " xc=<KSPathExistenceChecker:0x45 path=${DEST}>"
 exit 0
 EOF
@@ -125,6 +133,14 @@ fail_installer "Writable dest directory"
 
 make_basic_src_and_dest
 fail_installer "Was no KSUpdateURL in dest after copy"
+
+make_basic_src_and_dest
+defaults write \
+    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
+    KSUpdateURL "http://foo.bar"
+export FAKE_SYSTEM_TICKET=1
+fail_installer "User and system ticket both present"
+export -n FAKE_SYSTEM_TICKET
 
 make_src
 make_old_dest
