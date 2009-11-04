@@ -66,8 +66,6 @@ class RenderWidgetHostViewGtkWidget {
                                   GDK_LEAVE_NOTIFY_MASK);
     GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
 
-    g_signal_connect(widget, "size-allocate",
-                     G_CALLBACK(SizeAllocate), host_view);
     g_signal_connect(widget, "expose-event",
                      G_CALLBACK(ExposeEvent), host_view);
     g_signal_connect(widget, "key-press-event",
@@ -100,14 +98,6 @@ class RenderWidgetHostViewGtkWidget {
   }
 
  private:
-  static gboolean SizeAllocate(GtkWidget* widget, GtkAllocation* allocation,
-                               RenderWidgetHostViewGtk* host_view) {
-    host_view->requested_size_ = gfx::Size(allocation->width,
-                                           allocation->height);
-    host_view->GetRenderWidgetHost()->WasResized();
-    return FALSE;
-  }
-
   static gboolean ExposeEvent(GtkWidget* widget, GdkEventExpose* expose,
                               RenderWidgetHostViewGtk* host_view) {
     const gfx::Rect damage_rect(expose->area);
@@ -417,8 +407,11 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
     gtk_widget_set_size_request(view_.get(), width, height);
 #endif
 
-    requested_size_ = gfx::Size(width, height);
-    host_->WasResized();
+    if (requested_size_.width() != width ||
+        requested_size_.height() != height) {
+      requested_size_ = gfx::Size(width, height);
+      host_->WasResized();
+    }
   }
 }
 

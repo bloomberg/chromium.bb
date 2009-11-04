@@ -457,13 +457,13 @@ void InterstitialPage::DontProceed() {
 }
 
 void InterstitialPage::SetSize(const gfx::Size& size) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // When a tab is closed, we might be resized after our view was NULLed
   // (typically if there was an info-bar).
   if (render_view_host_->view())
     render_view_host_->view()->SetSize(size);
 #else
-  // TODO(port): do Mac or Linux need to SetSize?
+  // TODO(port): Does Mac need to SetSize?
   NOTIMPLEMENTED();
 #endif
 }

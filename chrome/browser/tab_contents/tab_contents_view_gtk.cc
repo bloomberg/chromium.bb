@@ -398,14 +398,19 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                             TabContentsViewGtk* view) {
   int width = allocation->width;
   int height = allocation->height;
-  view->requested_size_.set_width(width);
-  view->requested_size_.set_height(height);
   // |delegate()| can be NULL here during browser teardown.
   if (view->tab_contents()->delegate())
     height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
   view->requested_size_ = size;
   gtk_container_foreach(GTK_CONTAINER(widget), SetSizeRequest, &size);
+
+  // We manually tell our RWHV to resize the renderer content.  This avoids
+  // spurious resizes from GTK+.
+  if (view->tab_contents()->render_widget_host_view())
+    view->tab_contents()->render_widget_host_view()->SetSize(size);
+  if (view->tab_contents()->interstitial_page())
+    view->tab_contents()->interstitial_page()->SetSize(size);
 
   return FALSE;
 }
