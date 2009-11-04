@@ -37,10 +37,11 @@ std::string DetectEncoding(const std::string& text) {
 }  // namespace
 
 namespace net {
-  
+
 FtpDirectoryListingBuffer::FtpDirectoryListingBuffer()
     : current_parser_(NULL) {
   parsers_.insert(new FtpLsDirectoryListingParser());
+  parsers_.insert(new FtpVmsDirectoryListingParser());
 }
 
 FtpDirectoryListingBuffer::~FtpDirectoryListingBuffer() {
@@ -66,11 +67,11 @@ int FtpDirectoryListingBuffer::ProcessRemainingData() {
 
   return ParseLines();
 }
-  
+
 bool FtpDirectoryListingBuffer::EntryAvailable() const {
   return (current_parser_ ? current_parser_->EntryAvailable() : false);
 }
-  
+
 FtpDirectoryListingEntry FtpDirectoryListingBuffer::PopEntry() {
   DCHECK(EntryAvailable());
   return current_parser_->PopEntry();
@@ -86,19 +87,24 @@ bool FtpDirectoryListingBuffer::ConvertToDetectedEncoding(
 int FtpDirectoryListingBuffer::ExtractFullLinesFromBuffer() {
   if (encoding_.empty())
     encoding_ = DetectEncoding(buffer_);
-  
+
   int cut_pos = 0;
+  // TODO(phajdan.jr): This code accepts all endlines matching \r*\n. Should it
+  // be more strict, or enforce consistent line endings?
   for (size_t i = 0; i < buffer_.length(); ++i) {
-    if (i >= 1 && buffer_[i - 1] == '\r' && buffer_[i] == '\n') {
-      std::string line(buffer_.substr(cut_pos, i - cut_pos - 1));
-      cut_pos = i + 1;
-      string16 line_converted;
-      if (!ConvertToDetectedEncoding(line, &line_converted)) {
-        buffer_.erase(0, cut_pos);
-        return ERR_ENCODING_CONVERSION_FAILED;
-      }
-      lines_.push_back(line_converted);
+    if (buffer_[i] != '\n')
+      continue;
+    int line_length = i - cut_pos;
+    if (i >= 1 && buffer_[i - 1] == '\r')
+      line_length--;
+    std::string line(buffer_.substr(cut_pos, line_length));
+    cut_pos = i + 1;
+    string16 line_converted;
+    if (!ConvertToDetectedEncoding(line, &line_converted)) {
+      buffer_.erase(0, cut_pos);
+      return ERR_ENCODING_CONVERSION_FAILED;
     }
+    lines_.push_back(line_converted);
   }
   buffer_.erase(0, cut_pos);
   return OK;
@@ -127,7 +133,7 @@ int FtpDirectoryListingBuffer::ParseLines() {
         current_parser_ = *parsers_.begin();
     }
   }
-  
+
   return OK;
 }
 

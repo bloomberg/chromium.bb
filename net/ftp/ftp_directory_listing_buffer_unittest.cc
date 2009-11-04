@@ -18,45 +18,49 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
   const char* test_files[] = {
     "dir-listing-ls-1",
     "dir-listing-ls-2",
+    "dir-listing-vms-1",
+    "dir-listing-vms-2",
+    "dir-listing-vms-3",
+    "dir-listing-vms-4",
   };
-  
+
   FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("net");
   test_dir = test_dir.AppendASCII("data");
   test_dir = test_dir.AppendASCII("ftp");
-  
+
   for (size_t i = 0; i < arraysize(test_files); i++) {
     SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, test_files[i]));
-    
+
     net::FtpDirectoryListingBuffer buffer;
-    
+
     std::string test_listing;
     EXPECT_TRUE(file_util::ReadFileToString(test_dir.AppendASCII(test_files[i]),
                                             &test_listing));
-    
+
     EXPECT_EQ(net::OK, buffer.ConsumeData(test_listing.data(),
                                           test_listing.length()));
     EXPECT_EQ(net::OK, buffer.ProcessRemainingData());
-    
+
     std::string expected_listing;
     ASSERT_TRUE(file_util::ReadFileToString(
         test_dir.AppendASCII(std::string(test_files[i]) + ".expected"),
         &expected_listing));
-    
+
     std::vector<std::string> lines;
     StringTokenizer tokenizer(expected_listing, "\r\n");
     while (tokenizer.GetNext())
       lines.push_back(tokenizer.token());
     ASSERT_EQ(0U, lines.size() % 8);
-    
+
     for (size_t i = 0; i < lines.size() / 8; i++) {
       std::string type(lines[8 * i]);
       std::string name(lines[8 * i + 1]);
       int64 size = StringToInt64(lines[8 * i + 2]);
-      
+
       SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
-      
+
       int year;
       if (lines[8 * i + 3] == "current") {
         base::Time::Exploded now_exploded;
@@ -69,10 +73,10 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       int day_of_month = StringToInt(lines[8 * i + 5]);
       int hour = StringToInt(lines[8 * i + 6]);
       int minute = StringToInt(lines[8 * i + 7]);
-      
+
       ASSERT_TRUE(buffer.EntryAvailable());
       net::FtpDirectoryListingEntry entry = buffer.PopEntry();
-      
+
       if (type == "d") {
         EXPECT_EQ(net::FtpDirectoryListingEntry::DIRECTORY, entry.type);
       } else if (type == "-") {
@@ -82,10 +86,10 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       } else {
         ADD_FAILURE() << "invalid gold test data: " << type;
       }
-      
+
       EXPECT_EQ(UTF8ToUTF16(name), entry.name);
       EXPECT_EQ(size, entry.size);
-      
+
       base::Time::Exploded time_exploded;
       entry.last_modified.LocalExplode(&time_exploded);
       EXPECT_EQ(year, time_exploded.year);
