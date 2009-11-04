@@ -34,10 +34,9 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     length_ = length;
   }
 
-  virtual void OnVolume(double left, double right) {
+  virtual void OnVolume(double volume) {
     volume_received_ = true;
-    left_ = left;
-    right_ = right;
+    volume_ = volume;
   }
 
   void Reset() {
@@ -53,8 +52,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     length_ = 0;
 
     volume_received_ = false;
-    left_ = 0;
-    right_ = 0;
+    volume_ = 0;
   }
 
   bool request_packet_received() { return request_packet_received_; }
@@ -69,8 +67,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   size_t length() { return length_; }
 
   bool volume_received() { return volume_received_; }
-  double left() { return left_; }
-  double right() { return right_; }
+  double volume() { return volume_; }
 
  private:
   bool request_packet_received_;
@@ -85,8 +82,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   size_t length_;
 
   bool volume_received_;
-  double left_;
-  double right_;
+  double volume_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioDelegate);
 };
@@ -139,15 +135,12 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   // ViewMsg_NotifyAudioStreamVolume
-  const double kLeftVolume = 1.0;
-  const double kRightVolume = 2.0;
+  const double kVolume = 1.0;
   EXPECT_FALSE(delegate.volume_received());
   filter->OnMessageReceived(
-      ViewMsg_NotifyAudioStreamVolume(kRouteId, stream_id,
-                                      kLeftVolume, kRightVolume));
+      ViewMsg_NotifyAudioStreamVolume(kRouteId, stream_id, kVolume));
   EXPECT_TRUE(delegate.volume_received());
-  EXPECT_EQ(kLeftVolume, delegate.left());
-  EXPECT_EQ(kRightVolume, delegate.right());
+  EXPECT_EQ(kVolume, delegate.volume());
   delegate.Reset();
 
   message_loop.RunAllPending();

@@ -31,10 +31,10 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
     // Called when notification of stream volume is received from the browser
     // process.
-    virtual void OnVolume(double left, double right) = 0;
+    virtual void OnVolume(double volume) = 0;
   };
 
-  AudioMessageFilter(int32 route_id);
+  explicit AudioMessageFilter(int32 route_id);
   ~AudioMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
@@ -71,7 +71,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnStreamStateChanged(int stream_id, ViewMsg_AudioStreamState state);
 
   // Notification of volume property of an audio output stream.
-  void OnStreamVolume(int stream_id, double left, double right);
+  void OnStreamVolume(int stream_id, double volume);
 
   // A map of stream ids to delegates.
   IDMap<Delegate> delegates_;
@@ -85,4 +85,5 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(AudioMessageFilter);
 };
 
-#endif  // CHROME_RENDERER_AUDIO_MESSAGE_FITLER_H_
+#endif  // CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
+

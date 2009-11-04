@@ -147,10 +147,9 @@ void AudioRendererImpl::SetVolume(float volume) {
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  // TODO(hclam): change this to multichannel if possible.
   io_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(
-          this, &AudioRendererImpl::OnSetVolume, volume, volume));
+          this, &AudioRendererImpl::OnSetVolume, volume));
 }
 
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
@@ -211,7 +210,7 @@ void AudioRendererImpl::OnStateChanged(ViewMsg_AudioStreamState state) {
   }
 }
 
-void AudioRendererImpl::OnVolume(double left, double right) {
+void AudioRendererImpl::OnVolume(double volume) {
   // TODO(hclam): decide whether we need to report the current volume to
   // pipeline.
 }
@@ -259,13 +258,13 @@ void AudioRendererImpl::OnDestroy() {
   filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
 }
 
-void AudioRendererImpl::OnSetVolume(double left, double right) {
+void AudioRendererImpl::OnSetVolume(double volume) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  filter_->Send(new ViewHostMsg_SetAudioVolume(0, stream_id_, left, right));
+  filter_->Send(new ViewHostMsg_SetAudioVolume(0, stream_id_, volume));
 }
 
 void AudioRendererImpl::OnNotifyPacketReady() {

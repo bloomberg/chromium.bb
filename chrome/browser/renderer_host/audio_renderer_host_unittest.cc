@@ -49,8 +49,8 @@ class MockAudioRendererHost : public AudioRendererHost {
                void(int routing_id, int stream_id,
                     ViewMsg_AudioStreamState state));
 
-  MOCK_METHOD4(OnStreamVolume,
-               void(int routing_id, int stream_id, double left, double right));
+  MOCK_METHOD3(OnStreamVolume,
+               void(int routing_id, int stream_id, double volume));
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
@@ -101,9 +101,8 @@ class MockAudioRendererHost : public AudioRendererHost {
     OnStreamStateChanged(msg.routing_id(), stream_id, state);
   }
 
-  void OnStreamVolume(const IPC::Message& msg, int stream_id,
-                      double left, double right) {
-    OnStreamVolume(msg.routing_id(), stream_id, left, right);
+  void OnStreamVolume(const IPC::Message& msg, int stream_id, double volume) {
+    OnStreamVolume(msg.routing_id(), stream_id, volume);
   }
 
   scoped_ptr<base::SharedMemory> shared_memory_;

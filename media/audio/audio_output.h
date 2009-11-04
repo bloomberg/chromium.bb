@@ -91,13 +91,11 @@ class AudioOutputStream {
   // might have locked audio data that is processing.
   virtual void Stop() = 0;
 
-  // Sets the relative volume, with range [0.0, 1.0] inclusive. For mono audio
-  // sources the volume must be the same in both channels.
-  virtual void SetVolume(double left_level, double right_level) = 0;
+  // Sets the relative volume, with range [0.0, 1.0] inclusive.
+  virtual void SetVolume(double volume) = 0;
 
-  // Gets the relative volume, with range [0.0, 1.0] inclusive. For mono audio
-  // sources the level is returned in both channels.
-  virtual void GetVolume(double* left_level, double* right_level) = 0;
+  // Gets the relative volume, with range [0.0, 1.0] inclusive.
+  virtual void GetVolume(double* volume) = 0;
 
   // Close the stream. This also generates AudioSourceCallback::OnClose().
   // After calling this method, the object should not be used anymore.
@@ -113,11 +111,11 @@ class AudioOutputStream {
 class AudioManager {
  public:
   enum Format {
-    AUDIO_PCM_LINEAR = 0, // Pulse code modulation means 'raw' amplitude
-                          // samples.
-    AUDIO_PCM_DELTA,      // Delta-encoded pulse code modulation.
-    AUDIO_MOCK,           // Creates a dummy AudioOutputStream object.
-    AUDIO_LAST_FORMAT     // Only used for validation of format.
+    AUDIO_PCM_LINEAR = 0,  // Pulse code modulation means 'raw' amplitude
+                           // samples.
+    AUDIO_PCM_DELTA,       // Delta-encoded pulse code modulation.
+    AUDIO_MOCK,            // Creates a dummy AudioOutputStream object.
+    AUDIO_LAST_FORMAT      // Only used for validation of format.
   };
 
   // Telephone quality sample rate, mostly for speech-only audio.

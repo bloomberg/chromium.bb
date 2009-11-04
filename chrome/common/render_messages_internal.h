@@ -620,10 +620,9 @@ IPC_BEGIN_MESSAGES(View)
                       int /* stream id */,
                       ViewMsg_AudioStreamState /* new state */)
 
-  IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamVolume,
+  IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamVolume,
                       int /* stream id */,
-                      double /* left channel */,
-                      double /* right channel */)
+                      double /* volume */)
 
   // Notification that a move or resize renderer's containing window has
   // started.
@@ -1675,10 +1674,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Set audio volume of the stream specified by (render_view_id, stream_id).
   // TODO(hclam): change this to vector if we have channel numbers other than 2.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_SetAudioVolume,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetAudioVolume,
                       int /* stream_id */,
-                      double /* left_channel */,
-                      double /* right_channel */)
+                      double /* volume */)
 
   // A renderer sends this message when an extension process starts an API
   // request. The browser will always respond with a ViewMsg_ExtensionResponse.

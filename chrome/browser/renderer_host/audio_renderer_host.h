@@ -191,7 +191,7 @@ class AudioRendererHost
 
     // Sets the volume of the audio output stream. There's no IPC messages
     // sent back to the renderer upon success and failure.
-    void SetVolume(double left, double right);
+    void SetVolume(double volume);
 
     // Gets the volume of the audio output stream.
     // ViewMsg_NotifyAudioStreamVolume is sent back to renderer with volume
@@ -299,8 +299,7 @@ class AudioRendererHost
   // ViewMsg_NotifyAudioStreamStateChanged with
   // AudioOutputStream::AUDIO_STREAM_ERROR is sent back to renderer if the
   // required IPCAudioSource is not found.
-  void OnSetVolume(const IPC::Message& msg, int stream_id,
-                   double left_channel, double right_channel);
+  void OnSetVolume(const IPC::Message& msg, int stream_id, double volume);
 
   // Gets the volume of the stream specified, delegates to corresponding
   // IPCAudioSource::GetVolume(), see the method for more details.

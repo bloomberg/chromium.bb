@@ -211,12 +211,12 @@ void AudioRendererHost::IPCAudioSource::Close() {
   state_ = kClosed;
 }
 
-void AudioRendererHost::IPCAudioSource::SetVolume(double left, double right) {
+void AudioRendererHost::IPCAudioSource::SetVolume(double volume) {
   // TODO(hclam): maybe send an error message back to renderer if this object
   // is in a wrong state.
   if (!stream_)
     return;
-  stream_->SetVolume(left, right);
+  stream_->SetVolume(volume);
 }
 
 void AudioRendererHost::IPCAudioSource::GetVolume() {
@@ -224,10 +224,10 @@ void AudioRendererHost::IPCAudioSource::GetVolume() {
   // is in a wrong state.
   if (!stream_)
     return;
-  double left_channel, right_channel;
-  stream_->GetVolume(&left_channel, &right_channel);
+  double volume;
+  stream_->GetVolume(&volume);
   host_->Send(new ViewMsg_NotifyAudioStreamVolume(route_id_, stream_id_,
-                                                  left_channel, right_channel));
+                                                  volume));
 }
 
 size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
@@ -315,12 +315,12 @@ void AudioRendererHost::IPCAudioSource::SubmitPacketRequest_Locked() {
 }
 
 void AudioRendererHost::IPCAudioSource::SubmitPacketRequest(AutoLock* alock) {
- if (alock) {
-   SubmitPacketRequest_Locked();
- } else {
-   AutoLock auto_lock(lock_);
-   SubmitPacketRequest_Locked();
- }
+  if (alock) {
+    SubmitPacketRequest_Locked();
+  } else {
+    AutoLock auto_lock(lock_);
+    SubmitPacketRequest_Locked();
+  }
 }
 
 void AudioRendererHost::IPCAudioSource::StartBuffering() {
@@ -465,11 +465,11 @@ void AudioRendererHost::OnCloseStream(const IPC::Message& msg, int stream_id) {
 }
 
 void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
-                                    double left_channel, double right_channel) {
+                                    double volume) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
-    source->SetVolume(left_channel, right_channel);
+    source->SetVolume(volume);
   } else {
     SendErrorMessage(msg.routing_id(), stream_id);
   }

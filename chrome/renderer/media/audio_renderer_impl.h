@@ -120,7 +120,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
                        const base::Time& message_timestamp);
   void OnStateChanged(ViewMsg_AudioStreamState state);
   void OnCreated(base::SharedMemoryHandle handle, size_t length);
-  void OnVolume(double left, double right);
+  void OnVolume(double volume);
 
   // Methods called on pipeline thread ----------------------------------------
   // media::MediaFilter implementation.
@@ -159,7 +159,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
                       size_t packet_size, size_t buffer_capacity);
   void OnPlay();
   void OnPause();
-  void OnSetVolume(double left, double right);
+  void OnSetVolume(double volume);
   void OnNotifyPacketReady();
   void OnDestroy();
 
