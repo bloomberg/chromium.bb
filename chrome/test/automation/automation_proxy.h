@@ -214,7 +214,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Wrapper over AutomationHandleTracker::InvalidateHandle. Receives the
   // message from AutomationProxy, unpacks the messages and routes that call to
   // the tracker.
-  void InvalidateHandle(const IPC::Message& message);
+  virtual void InvalidateHandle(const IPC::Message& message);
 
   // Creates a tab that can hosted in an external process. The function
   // returns a TabProxy representing the tab as well as a window handle

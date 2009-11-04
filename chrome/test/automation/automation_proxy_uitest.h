@@ -16,6 +16,17 @@
 #include "googleurl/src/gurl.h"
 
 class TabProxy;
+class ExternalTabUITestMockClient;
+
+class ExternalTabUITest : public UITest {
+ public:
+  // Override UITest's CreateAutomationProxy to provide the unit test
+  // with our special implementation of AutomationProxy.
+  // This function is called from within UITest::LaunchBrowserAndServer.
+  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+ protected:
+  ExternalTabUITestMockClient* mock_;
+};
 
 // Base class for automation proxy testing.
 class AutomationProxyVisibleTest : public UITest {

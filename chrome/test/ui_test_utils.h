@@ -17,6 +17,7 @@ class AppModalDialog;
 class Browser;
 class DownloadManager;
 class GURL;
+class MessageLoop;
 class NavigationController;
 class RenderViewHost;
 class TabContents;
@@ -134,6 +135,34 @@ void ClickOnView(const Browser* browser, ViewID vid);
 void RegisterAndWait(NotificationType::Type type,
                      NotificationObserver* observer,
                      int64 timeout_ms);
+
+// Run a message loop only for the specified amount of time.
+class TimedMessageLoopRunner {
+ public:
+  // Create new MessageLoopForUI and attach to it.
+  TimedMessageLoopRunner();
+
+  // Attach to an existing message loop.
+  explicit TimedMessageLoopRunner(MessageLoop* loop)
+      : loop_(loop), owned_(false) {}
+
+  ~TimedMessageLoopRunner();
+
+  // Run the message loop for ms milliseconds.
+  void RunFor(int ms);
+
+  // Post Quit task to the message loop.
+  void Quit();
+
+  // Post delayed Quit task to the message loop.
+  void QuitAfter(int ms);
+
+ private:
+  MessageLoop* loop_;
+  bool owned_;
+
+  DISALLOW_COPY_AND_ASSIGN(TimedMessageLoopRunner);
+};
 
 }  // namespace ui_test_utils
 

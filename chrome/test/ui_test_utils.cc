@@ -503,4 +503,27 @@ void RegisterAndWait(NotificationType::Type type,
   RunMessageLoop();
 }
 
+TimedMessageLoopRunner::TimedMessageLoopRunner()
+    : loop_(new MessageLoopForUI()),
+      owned_(true) {
+}
+
+TimedMessageLoopRunner::~TimedMessageLoopRunner() {
+  if (owned_)
+    delete loop_;
+}
+
+void TimedMessageLoopRunner::RunFor(int ms) {
+  QuitAfter(ms);
+  loop_->Run();
+}
+
+void TimedMessageLoopRunner::Quit() {
+  loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+}
+
+void TimedMessageLoopRunner::QuitAfter(int ms) {
+  loop_->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, ms);
+}
+
 }  // namespace ui_test_utils
