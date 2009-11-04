@@ -126,6 +126,8 @@ ExtensionMessageService::ExtensionMessageService(Profile* profile)
 }
 
 ExtensionMessageService::~ExtensionMessageService() {
+  STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
+  channels_.clear();
 }
 
 void ExtensionMessageService::ProfileDestroyed() {
@@ -302,12 +304,13 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
   // http://code.google.com/p/chromium/issues/detail?id=19067
   CHECK(receiver.sender);
 
-  linked_ptr<MessageChannel> channel(new MessageChannel);
+  MessageChannel* channel(new MessageChannel);
   channel->opener = MessagePort(source, MSG_ROUTING_CONTROL);
   channel->receiver = receiver;
 
   CHECK(receiver.sender);
 
+  CHECK(channels_.find(GET_CHANNEL_ID(receiver_port_id)) == channels_.end());
   channels_[GET_CHANNEL_ID(receiver_port_id)] = channel;
 
   CHECK(receiver.sender);
@@ -315,9 +318,9 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
   if (source_contents) {
-    DictionaryValue* tab_value =
-        ExtensionTabUtil::CreateTabValue(source_contents);
-    base::JSONWriter::Write(tab_value, false, &tab_json);
+    scoped_ptr<DictionaryValue> tab_value(
+        ExtensionTabUtil::CreateTabValue(source_contents));
+    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
   }
 
   CHECK(receiver.sender);
@@ -343,7 +346,7 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
 
   MessagePort receiver(
       profile_->GetExtensionProcessManager()->
-      GetExtensionProcess(extension_id),
+          GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
   receiver.debug_info = 4;
   if (!OpenChannelOnUIThreadImpl(
@@ -397,6 +400,7 @@ void ExtensionMessageService::CloseChannelImpl(
 
   if (notify_other_port)
     DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id));
+  delete channel_iter->second;
   channels_.erase(channel_iter);
 }
 

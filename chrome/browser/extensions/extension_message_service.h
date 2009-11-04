@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
@@ -130,7 +129,7 @@ class ExtensionMessageService
 
  private:
   // A map of channel ID to its channel object.
-  typedef std::map<int, linked_ptr<MessageChannel> > MessageChannelMap;
+  typedef std::map<int, MessageChannel*> MessageChannelMap;
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.
