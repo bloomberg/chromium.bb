@@ -30,6 +30,7 @@
  */
 
 
+#include "native_client/src/include/nacl_base.h"
 #if NACL_OSX
 #include <Carbon/Carbon.h>
 #endif  // NACL_OSX
@@ -37,12 +38,12 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
 #include <sched.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
-#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#endif  // NACL_LINUX && defined(MOZ_X11)
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -82,10 +83,11 @@ void VideoGlobalLock() {
 
 void VideoGlobalUnlock() {
   globalVideoMutex.Unlock();
+
 }
 
 
-#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
 static int XKeysymToNaCl(KeySym xsym) {
   if ((xsym & 0xFF00) == 0x0000)
     return xsym;
@@ -329,7 +331,7 @@ void VideoMap::XEventHandler(Widget widget,
       break;
   }
 }
-#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#endif  // NACL_LINUX && defined(MOZ_X11)
 
 #if NACL_OSX
 // convert global mouse coordinate to local space
