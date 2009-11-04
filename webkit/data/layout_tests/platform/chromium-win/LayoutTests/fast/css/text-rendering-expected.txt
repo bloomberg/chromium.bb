@@ -17,16 +17,16 @@ layer at (0,0) size 800x600
       RenderText {#text} at (227,253) size 4x19
         text run at (227,253) width 4: " "
       RenderBR {BR} at (231,268) size 0x0
-      RenderInline {SPAN} at (0,0) size 631x139
-        RenderText {#text} at (0,285) size 631x139
-          text run at (0,285) width 631: "fin LYAWA (Kerning and"
+      RenderInline {SPAN} at (0,0) size 603x139
+        RenderText {#text} at (0,285) size 603x139
+          text run at (0,285) width 603: "fin LYAWA (Kerning and"
           text run at (0,356) width 227: "ligatures)"
       RenderText {#text} at (227,395) size 4x19
         text run at (227,395) width 4: " "
       RenderBR {BR} at (231,410) size 0x0
-      RenderInline {SPAN} at (0,0) size 631x139
-        RenderText {#text} at (0,427) size 631x139
-          text run at (0,427) width 631: "fin LYAWA (Kerning and"
+      RenderInline {SPAN} at (0,0) size 603x139
+        RenderText {#text} at (0,427) size 603x139
+          text run at (0,427) width 603: "fin LYAWA (Kerning and"
           text run at (0,498) width 227: "ligatures)"
       RenderText {#text} at (227,537) size 4x19
         text run at (227,537) width 4: " "
