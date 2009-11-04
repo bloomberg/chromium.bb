@@ -2379,9 +2379,6 @@ BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-conte
 BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = FAIL PASS
 BUG10441 : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
 
-// Timing out starting 03/10/09
-BUG10442 MAC : LayoutTests/fast/dom/navigator-detached-no-crash.html = TIMEOUT PASS FAIL
-
 // The text extends outside the selection on linux (was happening before the
 // merge).
 BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
@@ -3281,9 +3278,6 @@ BUG_SENORBLANCO : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
 BUG_SENORBLANCO : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 BUG_SENORBLANCO LINUX WIN : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
-
-// Started failing on Win, Linux after Webkit 50476:50480, probably 50477
-BUG10442 WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = TEXT
 
 // WebKit 50487:50516
 // The following tests need rebaseline.
