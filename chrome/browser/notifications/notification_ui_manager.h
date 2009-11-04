@@ -42,6 +42,9 @@ class NotificationUIManager :
   virtual void Add(const Notification& notification,
                    Profile* profile);
 
+  // Removes a notification.
+  virtual bool Cancel(const Notification& notification);
+
  private:
   // Attempts to display notifications from the show_queue if the user
   // is active.

@@ -831,6 +831,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotificationText,
                         OnShowDesktopNotificationText)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
+                        OnCancelDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestNotificationPermission,
                         OnRequestNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
@@ -1675,6 +1677,13 @@ void RenderViewHost::OnShowDesktopNotificationText(const GURL& source_origin,
   service->ShowDesktopNotificationText(source_origin, icon, title, text,
       process()->id(), routing_id(),
       DesktopNotificationService::PageNotification, notification_id);
+}
+
+void RenderViewHost::OnCancelDesktopNotification(int notification_id) {
+  DesktopNotificationService* service=
+      process()->profile()->GetDesktopNotificationService();
+  service->CancelDesktopNotification(
+      process()->id(), routing_id(), notification_id);
 }
 
 void RenderViewHost::OnRequestNotificationPermission(

@@ -36,8 +36,15 @@ void Balloon::Show() {
   }
 }
 
-void Balloon::Close(bool by_user) {
+void Balloon::OnClose(bool by_user) {
   notification_.Close(by_user);
   if (close_listener_)
     close_listener_->OnBalloonClosed(this);
+}
+
+void Balloon::CloseByScript() {
+  // A user-initiated close begins with the view and then closes this object;
+  // we simulate that with a script-initiated close but pass |by_user|=false.
+  DCHECK(balloon_view_.get());
+  balloon_view_->Close(false);
 }

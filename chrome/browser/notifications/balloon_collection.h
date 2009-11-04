@@ -26,6 +26,10 @@ class BalloonCollection {
   virtual void Add(const Notification& notification,
                    Profile* profile) = 0;
 
+  // Removes a balloon from the collection if present.  Returns
+  // true if anything was removed.
+  virtual bool Remove(const Notification& notification) = 0;
+
   // Is there room to add another notification?
   virtual bool HasSpace() const = 0;
 };
@@ -59,6 +63,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   // BalloonCollectionInterface overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
+  virtual bool Remove(const Notification& notification);
   virtual bool HasSpace() const;
 
   // Balloon::BalloonCloseListener interface

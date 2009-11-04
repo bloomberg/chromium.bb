@@ -45,6 +45,19 @@ void BalloonCollectionImpl::Add(const Notification& notification,
     space_change_listener_->OnBalloonSpaceChanged();
 }
 
+bool BalloonCollectionImpl::Remove(const Notification& notification) {
+  Balloons::iterator iter;
+  for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
+    if (notification.IsSame((*iter)->notification())) {
+      // Balloon.CloseByScript() will cause OnBalloonClosed() to be called on
+      // this object, which will remove it from the collection and free it.
+      (*iter)->CloseByScript();
+      return true;
+    }
+  }
+  return false;
+}
+
 bool BalloonCollectionImpl::HasSpace() const {
   if (count() < kMinAllowedBalloonCount)
     return true;

@@ -267,6 +267,16 @@ void DesktopNotificationService::ShowNotification(
   ui_manager_->Add(notification, profile_);
 }
 
+bool DesktopNotificationService::CancelDesktopNotification(
+    int process_id, int route_id, int notification_id) {
+  scoped_refptr<NotificationObjectProxy> proxy(
+      new NotificationObjectProxy(process_id, route_id, notification_id,
+                                  false));
+  Notification notif(GURL(), GURL(), proxy);
+  return ui_manager_->Cancel(notif);
+}
+
+
 bool DesktopNotificationService::ShowDesktopNotification(
     const GURL& origin, const GURL& url, int process_id, int route_id,
     NotificationSource source, int notification_id) {

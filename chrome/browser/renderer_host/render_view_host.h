@@ -585,6 +585,7 @@ class RenderViewHost : public RenderWidgetHost,
                                      const string16& title,
                                      const string16& text,
                                      int notification_id);
+  void OnCancelDesktopNotification(int notification_id);
   void OnRequestNotificationPermission(const GURL& origin, int callback_id);
 
   void OnExtensionRequest(const std::string& name, const ListValue& args,

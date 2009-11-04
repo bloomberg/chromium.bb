@@ -71,7 +71,7 @@ class BalloonCloseButtonListener : public views::ButtonListener {
 
   // The only button currently is the close button.
   virtual void ButtonPressed(views::Button* sender, const views::Event&) {
-    view_->Close();
+    view_->Close(true);
   }
 
  private:
@@ -110,16 +110,17 @@ BalloonViewImpl::BalloonViewImpl()
 BalloonViewImpl::~BalloonViewImpl() {
 }
 
-void BalloonViewImpl::Close() {
+void BalloonViewImpl::Close(bool by_user) {
   MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&BalloonViewImpl::DelayedClose));
+      method_factory_.NewRunnableMethod(
+          &BalloonViewImpl::DelayedClose, by_user));
 }
 
-void BalloonViewImpl::DelayedClose() {
+void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
   html_container_->CloseNow();
   frame_container_->CloseNow();
-  balloon_->Close(true);
+  balloon_->OnClose(by_user);
 }
 
 void BalloonViewImpl::DidChangeBounds(const gfx::Rect& previous,
@@ -339,8 +340,8 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
 }
 
 void BalloonViewImpl::Observe(NotificationType type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
   if (type != NotificationType::NOTIFY_BALLOON_DISCONNECTED) {
     NOTREACHED();
     return;
@@ -350,5 +351,5 @@ void BalloonViewImpl::Observe(NotificationType type,
   // (e.g., because of a crash), we want to close the balloon.
   notification_registrar_.Remove(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
-  Close();
+  Close(false);
 }

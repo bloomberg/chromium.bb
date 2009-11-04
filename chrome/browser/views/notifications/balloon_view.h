@@ -45,7 +45,7 @@ class BalloonViewImpl : public BalloonView,
   // BalloonView interface.
   void Show(Balloon* balloon);
   void RepositionToBalloon();
-  void Close();
+  void Close(bool by_user);
 
  private:
   // Overridden from views::View.
@@ -72,7 +72,7 @@ class BalloonViewImpl : public BalloonView,
   void SizeContentsWindow();
 
   // Do the delayed close work.
-  void DelayedClose();
+  void DelayedClose(bool by_user);
 
   // The height of the balloon's shelf.
   // The shelf is where is close button is located.

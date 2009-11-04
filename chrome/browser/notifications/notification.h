@@ -37,6 +37,10 @@ class Notification {
   void Error() const { proxy()->Error(); }
   void Close(bool by_user) const { proxy()->Close(by_user); }
 
+  bool IsSame(const Notification& other) const {
+    return (*proxy_).IsSame(*(other.proxy()));
+  }
+
  private:
   NotificationObjectProxy* proxy() const { return proxy_.get(); }
 

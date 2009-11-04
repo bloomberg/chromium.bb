@@ -31,7 +31,7 @@ bool NotificationProvider::show(const WebNotification& notification) {
 void NotificationProvider::cancel(const WebNotification& notification) {
   int id;
   bool id_found = manager_.GetId(notification, id);
-  DCHECK(id_found);
+  // Won't be found if the notification has already been closed by the user.
   if (id_found)
     Send(new ViewHostMsg_CancelDesktopNotification(view_->routing_id(), id));
 }
@@ -40,7 +40,7 @@ void NotificationProvider::objectDestroyed(
     const WebNotification& notification) {
   int id;
   bool id_found = manager_.GetId(notification, id);
-  DCHECK(id_found);
+  // Won't be found if the notification has already been closed by the user.
   if (id_found)
     manager_.UnregisterNotification(id);
 }

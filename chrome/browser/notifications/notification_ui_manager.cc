@@ -58,6 +58,19 @@ void NotificationUIManager::Add(const Notification& notification,
   CheckAndShowNotifications();
 }
 
+bool NotificationUIManager::Cancel(const Notification& notification) {
+  // First look through the notifications that haven't been shown.  If not
+  // found there, call to the active balloon collection to tear it down.
+  NotificationDeque::iterator iter;
+  for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
+    if (notification.IsSame((*iter)->notification())) {
+      show_queue_.erase(iter);
+      return true;
+    }
+  }
+  return balloon_collection_->Remove(notification);
+}
+
 void NotificationUIManager::CheckAndShowNotifications() {
   // TODO(johnnyg): http://crbug.com/25061 - Check for user idle/presentation.
   ShowNotifications();

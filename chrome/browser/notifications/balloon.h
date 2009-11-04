@@ -32,7 +32,7 @@ class BalloonView {
   virtual void RepositionToBalloon() = 0;
 
   // Close the view.
-  virtual void Close() = 0;
+  virtual void Close(bool by_user) = 0;
 };
 
 // Represents a Notification on the screen.
@@ -65,8 +65,15 @@ class Balloon {
   // to this object.
   void set_view(BalloonView* balloon_view);
 
+  // Shows the balloon.
   virtual void Show();
-  virtual void Close(bool by_user);
+
+  // Called when the balloon is closed, either by user (through the UI)
+  // or by a script.
+  virtual void OnClose(bool by_user);
+
+  // Called by script to cause the balloon to close.
+  virtual void CloseByScript();
 
  private:
   // Non-owned pointer to the profile.

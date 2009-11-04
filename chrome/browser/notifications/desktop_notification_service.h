@@ -52,6 +52,13 @@ class DesktopNotificationService {
       const string16& title, const string16& text, int process_id,
       int route_id, NotificationSource source, int notification_id);
 
+  // Cancels a notification.  If it has already been shown, it will be
+  // removed from the screen.  If it hasn't been shown yet, it won't be
+  // shown.
+  bool CancelDesktopNotification(int process_id,
+                                 int route_id,
+                                 int notification_id);
+
   // Methods to setup and modify permission preferences.
   void GrantPermission(const GURL& origin);
   void DenyPermission(const GURL& origin);

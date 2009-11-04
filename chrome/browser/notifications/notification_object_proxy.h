@@ -31,8 +31,16 @@ class NotificationObjectProxy :
   void Error();
 
   // To be called when the desktop notification is closed.  If closed by a
-  // user explicitly (as opposed to timeout), |by_user| should be true.
+  // user explicitly (as opposed to timeout/script), |by_user| should be true.
   void Close(bool by_user);
+
+  // Compares two proxies by ids to decide if they are equal.
+  bool IsSame(const NotificationObjectProxy& other) const {
+    return (notification_id_ == other.notification_id_ &&
+            route_id_ == other.route_id_ &&
+            process_id_ == other.process_id_ &&
+            worker_ == other.worker_);
+  }
 
  private:
   // Called on UI thread to schedule a message for sending.
