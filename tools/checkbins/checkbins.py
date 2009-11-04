@@ -60,8 +60,11 @@ def main(options, args):
 if __name__ == '__main__':
   usage = "Usage: %prog [options] DIRECTORY"
   option_parser = optparse.OptionParser(usage=usage)
+
+  # TODO(scherkus): change the default back to False once I've verified this
+  # tool actually does something on the bots.
   option_parser.add_option("-v", "--verbose", action="store_true",
-                           default=False, help="Print debug logging")
+                           default=True, help="Print debug logging")
   options, args = option_parser.parse_args()
   if not args:
     option_parser.print_help()
