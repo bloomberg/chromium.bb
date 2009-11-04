@@ -14,15 +14,18 @@ class FormField {
  public:
   FormField();
   FormField(const string16& name,
+            const string16& html_input_type,
             const string16& value);
 
   string16 name() const { return name_; }
+  string16 html_input_type() const { return html_input_type_; }
   string16 value() const { return value_; }
 
   void set_value(const string16& value) { value_ = value; }
 
  private:
   string16 name_;
+  string16 html_input_type_;
   string16 value_;
 };
 

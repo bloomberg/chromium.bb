@@ -30,6 +30,9 @@ include_rules = [
   # Allow usage of Google Toolbox for Mac.
   "+third_party/GTM",
 
+  # Allow usage of the libjingle library.
+  "+third_party/libjingle",
+
   # Our Skia extensions.
   "+skia/ext",
 

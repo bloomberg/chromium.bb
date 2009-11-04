@@ -10,8 +10,10 @@ FormField::FormField() {
 }
 
 FormField::FormField(const string16& name,
+                     const string16& html_input_type,
                      const string16& value)
   : name_(name),
+    html_input_type_(html_input_type),
     value_(value) {
 }
 

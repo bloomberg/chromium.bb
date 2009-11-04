@@ -13,6 +13,7 @@ class FormFieldValues;
 }
 
 class AutoFillInfoBarDelegate;
+class FormStructure;
 class TabContents;
 
 // Manages saving and restoring the user's personal information entered into web
@@ -29,6 +30,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   // Saves the form data to the web database.
   void SaveFormData();
 
+  // Uploads the form data to the autofill server.
+  void UploadFormData();
+
   // Resets the stored form data.
   void Reset();
 
@@ -37,7 +41,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   TabContents* tab_contents_;
 
   // Our copy of the form data.
-  scoped_ptr<webkit_glue::FormFieldValues> form_data_;
+  scoped_ptr<FormStructure> form_structure_;
 
   // The infobar asking for permission to store form information.
   scoped_ptr<AutoFillInfoBarDelegate> infobar_;

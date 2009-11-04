@@ -42,6 +42,7 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   FormFieldValues* result = new FormFieldValues();
 
   result->form_name = StringToString16(form->name());
+  result->method = StringToString16(form->method());
   result->source_url = KURLToGURL(document->url());
   result->target_url = KURLToGURL(document->completeURL(form->action()));
   result->ExtractFormFieldValues(webform);
@@ -74,14 +75,18 @@ void FormFieldValues::ExtractFormFieldValues(const WebKit::WebForm& webform) {
     // For each TEXT input field, store the name and value
     string16 value = StringToString16(input_element->value());
     TrimWhitespace(value, TRIM_LEADING, &value);
-    if (value.length() == 0)
+    if (value.empty())
       continue;
 
     string16 name = StringToString16(WebKit::nameOfInputElement(input_element));
-    if (name.length() == 0)
+    if (name.empty())
       continue;  // If we have no name, there is nothing to store.
 
-    elements.push_back(FormField(name, value));
+    string16 type = StringToString16(input_element->formControlType());
+    if (type.empty())
+      continue;
+
+    elements.push_back(FormField(name, type, value));
   }
 }
 

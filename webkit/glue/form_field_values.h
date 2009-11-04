@@ -26,6 +26,9 @@ class FormFieldValues {
   // The name of the form.
   string16 form_name;
 
+  // GET or POST.
+  string16 method;
+
   // The source URL.
   GURL source_url;
 
