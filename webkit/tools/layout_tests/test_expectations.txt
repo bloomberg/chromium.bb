@@ -2922,8 +2922,7 @@ BUG18740 WIN MAC DEBUG : LayoutTests/http/tests/security/credentials-in-referer.
 BUG18896 WIN LINUX DEBUG SLOW : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
-BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
-BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
+BUG26737 : LayoutTests/fast/js/prototypes.html = FAIL
 
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
