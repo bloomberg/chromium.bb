@@ -2531,6 +2531,11 @@
                 'browser/renderer_host/render_crash_handler_host_linux_stub.cc',
               ],
             }],
+            ['linux_sandbox_path != ""', {
+              'defines': [
+                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
+              ],
+            }],
           ],
         }],
         ['OS=="linux" and toolkit_views==0', {
@@ -3778,11 +3783,6 @@
             ['selinux==0', {
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
-              ],
-            }],
-            ['linux_sandbox_path != ""', {
-              'defines': [
-                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
               ],
             }],
           ],

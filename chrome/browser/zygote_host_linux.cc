@@ -4,14 +4,13 @@
 
 #include "chrome/browser/zygote_host_linux.h"
 
+#include <unistd.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
-#include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/process_watcher.h"
 
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
@@ -47,20 +45,7 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
   }
 }
 
-ZygoteHost::ZygoteHost()
-    : pid_(-1),
-      init_(false) {
-}
-
-ZygoteHost::~ZygoteHost() {
-  if (init_)
-    close(control_fd_);
-}
-
-void ZygoteHost::Init(const std::string& sandbox_cmd) {
-  DCHECK(!init_);
-  init_ = true;
-
+ZygoteHost::ZygoteHost() {
   FilePath chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
   CommandLine cmd_line(chrome_path);
@@ -97,15 +82,26 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                                        switches::kEnableLogging));
   }
 
-  const char* sandbox_binary = sandbox_cmd.c_str();
+  const char* sandbox_binary = NULL;
   struct stat st;
 
-  bool using_suid_sandbox = false;
-  if (!sandbox_cmd.empty() && stat(sandbox_binary, &st) == 0) {
+  // In Chromium branded builds, developers can set an environment variable to
+  // use the development sandbox. See
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+  if (stat("/proc/self/exe", &st) == 0 &&
+      st.st_uid == getuid()) {
+    sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+  }
+
+#if defined(LINUX_SANDBOX_PATH)
+  if (!sandbox_binary)
+    sandbox_binary = LINUX_SANDBOX_PATH;
+#endif
+
+  if (sandbox_binary && stat(sandbox_binary, &st) == 0) {
     if (access(sandbox_binary, X_OK) == 0 &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
-      using_suid_sandbox = true;
       cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary));
 
       SaveSUIDUnsafeEnvironmentVariables();
@@ -122,63 +118,22 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   const int sfd = Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
   fds_to_map.push_back(std::make_pair(sfd, 5));
 
-  int dummy_fd = -1;
-  if (using_suid_sandbox) {
-    dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
-    CHECK(dummy_fd >= 0);
-    fds_to_map.push_back(std::make_pair(dummy_fd, 7));
-  }
-
   base::ProcessHandle process;
   base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
-  if (using_suid_sandbox) {
-    // In the SUID sandbox, the real zygote is forked from the sandbox.
-    // We need to look for it.
-    // But first, wait for the zygote to tell us it's running.
-    // The sending code is in chrome/browser/zygote_main_linux.cc.
-    std::vector<int> fds_vec;
-    const int kExpectedLength = sizeof(kZygoteMagic);
-    char buf[kExpectedLength];
-    const ssize_t len = base::RecvMsg(fds[0], buf, sizeof(buf), &fds_vec);
-    CHECK(len == kExpectedLength) << "Incorrect zygote magic length";
-    CHECK(0 == strcmp(buf, kZygoteMagic)) << "Incorrect zygote magic";
-
-    std::string inode_output;
-    ino_t inode = 0;
-    // Figure out the inode for |dummy_fd|, close |dummy_fd| on our end,
-    // and find the zygote process holding |dummy_fd|.
-    if (base::FileDescriptorGetInode(&inode, dummy_fd)) {
-      close(dummy_fd);
-      std::vector<std::string> get_inode_cmdline;
-      get_inode_cmdline.push_back(sandbox_binary);
-      get_inode_cmdline.push_back(base::kFindInodeSwitch);
-      get_inode_cmdline.push_back(IntToString(inode));
-      CommandLine get_inode_cmd(get_inode_cmdline);
-      if (base::GetAppOutput(get_inode_cmd, &inode_output)) {
-        StringToInt(inode_output, &pid_);
-      }
-    }
-    CHECK(pid_ > 0) << "Did not find zygote process";
-
-    if (process != pid_) {
-      // Reap the sandbox.
-      ProcessWatcher::EnsureProcessGetsReaped(process);
-    }
-  } else {
-    // Not using the SUID sandbox.
-    pid_ = process;
-  }
-
+  pid_ = process;
   close(fds[1]);
   control_fd_ = fds[0];
+}
+
+ZygoteHost::~ZygoteHost() {
+  close(control_fd_);
 }
 
 pid_t ZygoteHost::ForkRenderer(
     const std::vector<std::string>& argv,
     const base::GlobalDescriptors::Mapping& mapping) {
-  DCHECK(init_);
   Pickle pickle;
 
   pickle.WriteInt(kCmdFork);
@@ -207,7 +162,6 @@ pid_t ZygoteHost::ForkRenderer(
 }
 
 void ZygoteHost::EnsureProcessTerminated(pid_t process) {
-  DCHECK(init_);
   Pickle pickle;
 
   pickle.WriteInt(kCmdReap);
@@ -218,7 +172,6 @@ void ZygoteHost::EnsureProcessTerminated(pid_t process) {
 
 bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
                                  bool* child_exited) {
-  DCHECK(init_);
   Pickle pickle;
   pickle.WriteInt(kCmdDidProcessCrash);
   pickle.WriteInt(handle);

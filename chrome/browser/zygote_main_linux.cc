@@ -3,25 +3,18 @@
 // found in the LICENSE file.
 
 #include <dlfcn.h>
-#include <sys/epoll.h>
-#include <sys/prctl.h>
-#include <sys/signal.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
-
-#if defined(CHROMIUM_SELINUX)
-#include <selinux/selinux.h>
-#include <selinux/context.h>
-#endif
+#include <sys/epoll.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/signal.h>
+#include <sys/prctl.h>
+#include <sys/wait.h>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/global_descriptors_posix.h"
-#include "base/hash_tables.h"
-#include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
@@ -40,14 +33,16 @@
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
+#if defined(CHROMIUM_SELINUX)
+#include <selinux/selinux.h>
+#include <selinux/context.h>
+#endif
+
 #include "unicode/timezone.h"
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
-static const int kBrowserDescriptor = 3;
 static const int kMagicSandboxIPCDescriptor = 5;
-static const int kZygoteIdDescriptor = 7;
-static bool g_suid_sandbox_active = false;
 
 // This is the object which implements the zygote. The ZygoteMain function,
 // which is called from ChromeMain, at the the bottom and simple constructs one
@@ -57,7 +52,7 @@ class Zygote {
   bool ProcessRequests() {
     // A SOCK_SEQPACKET socket is installed in fd 3. We get commands from the
     // browser on it.
-    // A SOCK_DGRAM is installed in fd 5. This is the sandbox IPC channel.
+    // A SOCK_DGRAM is installed in fd 4. This is the sandbox IPC channel.
     // See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 
     // We need to accept SIGCHLD, even though our handler is a no-op because
@@ -67,17 +62,8 @@ class Zygote {
     action.sa_handler = SIGCHLDHandler;
     CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
-    if (g_suid_sandbox_active) {
-      // Let the ZygoteHost know we are ready to go.
-      // The receiving code is in chrome/browser/zygote_host_linux.cc.
-      std::vector<int> empty;
-      bool r = base::SendMsg(kBrowserDescriptor, kZygoteMagic,
-                             sizeof(kZygoteMagic), empty);
-      CHECK(r) << "Sending zygote magic failed";
-    }
-
     for (;;) {
-      if (HandleRequestFromBrowser(kBrowserDescriptor))
+      if (HandleRequestFromBrowser(3))
         return true;
     }
   }
@@ -136,30 +122,20 @@ class Zygote {
     return false;
   }
 
-  bool HandleReapRequest(int fd, const Pickle& pickle, void* iter) {
-    base::ProcessId child;
-    base::ProcessId actual_child;
+  bool HandleReapRequest(int fd, Pickle& pickle, void* iter) {
+    pid_t child;
 
     if (!pickle.ReadInt(&iter, &child)) {
       LOG(WARNING) << "Error parsing reap request from browser";
       return false;
     }
 
-    if (g_suid_sandbox_active) {
-      actual_child = real_pids_to_sandbox_pids[child];
-      if (!actual_child)
-        return false;
-      real_pids_to_sandbox_pids.erase(child);
-    } else {
-      actual_child = child;
-    }
-
-    ProcessWatcher::EnsureProcessTerminated(actual_child);
+    ProcessWatcher::EnsureProcessTerminated(child);
 
     return false;
   }
 
-  bool HandleDidProcessCrash(int fd, const Pickle& pickle, void* iter) {
+  bool HandleDidProcessCrash(int fd, Pickle& pickle, void* iter) {
     base::ProcessHandle child;
 
     if (!pickle.ReadInt(&iter, &child)) {
@@ -168,13 +144,7 @@ class Zygote {
     }
 
     bool child_exited;
-    bool did_crash;
-    if (g_suid_sandbox_active)
-      child = real_pids_to_sandbox_pids[child];
-    if (child)
-      did_crash = base::DidProcessCrash(&child_exited, child);
-    else
-      did_crash = child_exited = false;
+    bool did_crash = base::DidProcessCrash(&child_exited, child);
 
     Pickle write_pickle;
     write_pickle.WriteBool(did_crash);
@@ -186,14 +156,12 @@ class Zygote {
 
   // Handle a 'fork' request from the browser: this means that the browser
   // wishes to start a new renderer.
-  bool HandleForkRequest(int fd, const Pickle& pickle, void* iter,
+  bool HandleForkRequest(int fd, Pickle& pickle, void* iter,
                          std::vector<int>& fds) {
     std::vector<std::string> args;
     int argc, numfds;
     base::GlobalDescriptors::Mapping mapping;
-    base::ProcessId child;
-    uint64_t dummy_inode = 0;
-    int dummy_fd = -1;
+    pid_t child;
 
     if (!pickle.ReadInt(&iter, &argc))
       goto error;
@@ -218,22 +186,12 @@ class Zygote {
     }
 
     mapping.push_back(std::make_pair(
-        static_cast<uint32_t>(kSandboxIPCChannel), kMagicSandboxIPCDescriptor));
-
-    if (g_suid_sandbox_active) {
-      dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
-      if (dummy_fd < 0)
-        goto error;
-
-      if (!base::FileDescriptorGetInode(&dummy_inode, dummy_fd))
-        goto error;
-    }
+        static_cast<uint32_t>(kSandboxIPCChannel), 5));
 
     child = fork();
 
     if (!child) {
-      close(kBrowserDescriptor);  // our socket from the browser
-      close(kZygoteIdDescriptor);  // another socket from the browser
+      close(3);  // our socket from the browser is in fd 3
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
 
       // Reset the process-wide command line to our new command line.
@@ -242,59 +200,22 @@ class Zygote {
       CommandLine::ForCurrentProcess()->InitFromArgv(args);
       CommandLine::SetProcTitle();
       return true;
-    } else if (child < 0) {
-      LOG(ERROR) << "Zygote could not fork";
-      goto error;
     }
 
-    {
-      base::ProcessId proc_id;
-      if (g_suid_sandbox_active) {
-        close(dummy_fd);
-        dummy_fd = -1;
-        uint8_t reply_buf[512];
-        Pickle request;
-        request.WriteInt(LinuxSandbox::METHOD_GET_CHILD_WITH_INODE);
-        request.WriteUInt64(dummy_inode);
-
-        const ssize_t r = base::SendRecvMsg(kMagicSandboxIPCDescriptor,
-                                            reply_buf, sizeof(reply_buf),
-                                            NULL, request);
-        if (r == -1)
-          goto error;
-
-        Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-        void* iter2 = NULL;
-        if (!reply.ReadInt(&iter2, &proc_id))
-          goto error;
-        real_pids_to_sandbox_pids[proc_id] = child;
-      } else {
-        proc_id = child;
-      }
-
-      for (std::vector<int>::const_iterator
-           i = fds.begin(); i != fds.end(); ++i)
-        close(*i);
-
-      HANDLE_EINTR(write(fd, &proc_id, sizeof(proc_id)));
-      return false;
-    }
-
-   error:
-    LOG(ERROR) << "Error parsing fork request from browser";
     for (std::vector<int>::const_iterator
          i = fds.begin(); i != fds.end(); ++i)
       close(*i);
-    if (dummy_fd >= 0)
-      close(dummy_fd);
+
+    HANDLE_EINTR(write(fd, &child, sizeof(child)));
+    return false;
+
+   error:
+    LOG(WARNING) << "Error parsing fork request from browser";
+    for (std::vector<int>::const_iterator
+         i = fds.begin(); i != fds.end(); ++i)
+      close(*i);
     return false;
   }
-
-  // In the SUID sandbox, we try to use a new PID namespace. Thus the PIDs
-  // fork() returns are not the real PIDs, so we need to map the Real PIDS
-  // into the sandbox PID namespace.
-  typedef base::hash_map<base::ProcessHandle, base::ProcessHandle> ProcessMap;
-  ProcessMap real_pids_to_sandbox_pids;
 };
 
 // With SELinux we can carve out a precise sandbox, so we don't have to play
@@ -480,8 +401,6 @@ static bool EnterSandbox() {
     // The SUID sandbox sets this environment variable to a file descriptor
     // over which we can signal that we have completed our startup and can be
     // chrooted.
-
-    g_suid_sandbox_active = true;
 
     char* endptr;
     const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
