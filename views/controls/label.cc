@@ -418,7 +418,12 @@ gfx::Font Label::GetDefaultFont() {
 }
 
 void Label::UpdateContainsMouse(const MouseEvent& event) {
-  SetContainsMouse(GetTextBounds().Contains(event.x(), event.y()));
+  if (is_multi_line_) {
+    gfx::Rect rect(width(), GetHeightForWidth(width()));
+    SetContainsMouse(rect.Contains(event.x(), event.y()));
+  } else {
+    SetContainsMouse(GetTextBounds().Contains(event.x(), event.y()));
+  }
 }
 
 void Label::SetContainsMouse(bool contains_mouse) {
