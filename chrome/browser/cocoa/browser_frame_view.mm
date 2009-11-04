@@ -12,13 +12,6 @@
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
-// To line up our background pattern with the patterns in the tabs we need
-// to move our background patterns in the window frame up by two pixels.
-// This will make the themes look slightly different than in Windows/Linux
-// because of the differing heights between window top and tab top, but this
-// has been approved by UI.
-static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
-
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;
 - (BOOL)_mouseInGroup:(NSButton*)widget;
@@ -118,9 +111,17 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
   NSColor* color = [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                                    state:state];
   if (color) {
-    // If we have a theme pattern, draw it here.
-    NSPoint phase = NSMakePoint(0, (NSHeight(windowRect) +
-                                    kBrowserFrameViewPatternPhaseOffset));
+    // If there is a theme pattern, draw it here.
+
+    // To line up the background pattern with the patterns in the tabs the
+    // background pattern in the window frame need to be moved up by two
+    // pixels and left by 5.
+    // This will make the themes look slightly different than in Windows/Linux
+    // because of the differing heights between window top and tab top, but this
+    // has been approved by UI.
+    static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 2 };
+    NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
+    phase.y += NSHeight(windowRect);
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [color set];
     NSRectFill(rect);
