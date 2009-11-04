@@ -164,27 +164,3 @@ void PrintWebViewHelper::didStopLoading() {
   DCHECK(print_pages_params_.get() != NULL);
   PrintPages(*print_pages_params_.get(), print_web_view_->mainFrame());
 }
-
-WebString PrintWebViewHelper::autoCorrectWord(const WebString& word) {
-  return word;
-}
-
-WebRect PrintWebViewHelper::windowRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebRect PrintWebViewHelper::windowResizerRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebRect PrintWebViewHelper::rootWindowRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebScreenInfo PrintWebViewHelper::screenInfo() {
-  NOTREACHED();
-  return WebScreenInfo();
-}

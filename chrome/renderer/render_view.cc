@@ -1407,44 +1407,6 @@ void RenderView::didStopLoading() {
       kDelayForCaptureMs);
 }
 
-bool RenderView::shouldBeginEditing(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldEndEditing(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldInsertNode(const WebNode& node, const WebRange& range,
-                                  WebEditingAction action) {
-  return true;
-}
-
-bool RenderView::shouldInsertText(const WebString& text, const WebRange& range,
-                                  WebEditingAction action) {
-  return true;
-}
-
-bool RenderView::shouldChangeSelectedRange(const WebRange& from_range,
-                                           const WebRange& to_range,
-                                           WebTextAffinity affinity,
-                                           bool still_selecting) {
-  return true;
-}
-
-bool RenderView::shouldDeleteRange(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldApplyStyle(const WebString& style,
-                                  const WebRange& range) {
-  return true;
-}
-
-bool RenderView::isSmartInsertDeleteEnabled() {
-  return true;
-}
-
 bool RenderView::isSelectTrailingWhitespaceEnabled() {
 #if defined(OS_WIN)
   return true;

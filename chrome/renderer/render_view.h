@@ -192,28 +192,10 @@ class RenderView : public RenderWidget,
   }
   virtual void didStartLoading();
   virtual void didStopLoading();
-  virtual bool shouldBeginEditing(const WebKit::WebRange& range);
-  virtual bool shouldEndEditing(const WebKit::WebRange& range);
-  virtual bool shouldInsertNode(
-      const WebKit::WebNode& node, const WebKit::WebRange& range,
-      WebKit::WebEditingAction action);
-  virtual bool shouldInsertText(
-      const WebKit::WebString& text, const WebKit::WebRange& range,
-      WebKit::WebEditingAction action);
-  virtual bool shouldChangeSelectedRange(
-      const WebKit::WebRange& from, const WebKit::WebRange& to,
-      WebKit::WebTextAffinity affinity, bool still_selecting);
-  virtual bool shouldDeleteRange(const WebKit::WebRange& range);
-  virtual bool shouldApplyStyle(
-      const WebKit::WebString& style, const WebKit::WebRange& range);
-  virtual bool isSmartInsertDeleteEnabled();
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void setInputMethodEnabled(bool enabled);
-  virtual void didBeginEditing() {}
   virtual void didChangeSelection(bool is_selection_empty);
-  virtual void didChangeContents() {}
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
-  virtual void didEndEditing() {}
   virtual bool handleCurrentKeyboardEvent();
   virtual void spellCheck(
       const WebKit::WebString& text, int& offset, int& length);
