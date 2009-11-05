@@ -680,7 +680,8 @@ BUG21901 : LayoutTests/plugins/netscape-enumerate.html = FAIL
 // This tests the screen's pixel depth, which we don't set on the buildbots
 // so it depends on the users settings.  Making this a broken test for us.
 // The test must be fixed to not depend on user settings and rebaselined.  post-beta.
-BUG10274 WIN LINUX : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL PASS
+BUG10274 WIN RELEASE : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
+BUG10274 LINUX : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
 
 // Expectations for this test changed upstream. We should fix this test, but
 // it doesn't need to block the current release
@@ -2503,10 +2504,8 @@ BUG9798 LINUX DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS TIMEOUT
 BUG9798 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
-BUG9798 WIN : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
 BUG9798 LINUX DEBUG : LayoutTests/fast/forms/input-align-image.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/forms/menulist-separator-painting.html = CRASH PASS
-BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-order.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
@@ -2589,15 +2588,13 @@ BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-minmax.html = PASS CRASH
 BUG9798 WIN DEBUG : LayoutTests/fast/forms/input-appearance-default-bkcolor.html = PASS CRASH
 BUG9798 MAC : LayoutTests/fast/forms/select-reset.html = PASS CRASH
 // This test definitely times out (i.e. is not just slow).
-BUG9798 : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
-BUG9798 : LayoutTests/fast/forms/submit-to-url-fragment.html = PASS CRASH
-BUG9798 : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
+BUG9798 RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
+BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : LayoutTests/transitions/zero-duration-in-list.html = PASS TEXT
 BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
 BUG9798 LINUX DEBUG : LayoutTests/svg/custom/animate-path-discrete.svg = PASS IMAGE+TEXT
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-mask-transitions.html = PASS TEXT
 BUG9798 MAC : LayoutTests/http/tests/security/xssAuditor/faux-script1.html = PASS TIMEOUT
-BUG9798 : LayoutTests/http/tests/misc/text-refresh.html = PASS TIMEOUT
 BUG9798 LINUX MAC : LayoutTests/fast/forms/input-maxlength-ime-completed.html = CRASH PASS
 BUG9798 WIN LINUX DEBUG : LayoutTests/svg/custom/class-baseValue.svg = IMAGE+TEXT PASS
 BUG9798 LINUX : LayoutTests/fast/forms/listbox-scroll-after-options-removed.html = CRASH PASS
@@ -2606,7 +2603,6 @@ BUG9798 MAC : LayoutTests/fast/frames/onload-remove-iframe-crash.html = CRASH PA
 BUG9798 LINUX DEBUG : LayoutTests/transitions/transition-end-event-nested.html = PASS TEXT
 BUG9798 LINUX DEBUG : LayoutTests/fast/multicol/float-multicol.html = IMAGE PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/forms/button-spacebar-click.html = CRASH PASS
-BUG9798 WIN : LayoutTests/animations/change-transform-in-end-event.html = PASS TIMEOUT
 BUG9798 LINUX MAC : LayoutTests/http/tests/navigation/reload-subframe-iframe.html = PASS TIMEOUT
 BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html = CRASH PASS
 BUG9798 WIN LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
@@ -2711,7 +2707,6 @@ BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 BUG11898 : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16le.html = TIMEOUT PASS
-BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
 
 // Need LINUX/Mac rebaselines after WebKit Update 437150:43770
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test1.html = FAIL
@@ -2942,17 +2937,7 @@ BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT TE
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 
-// started crashing at build 5804 then green until 5863 of webkit-dbg-2
-BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
-// started crashing at build 5859 of webkit-dbg-2
-BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
-
 BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = FAIL
-
-// Flakey crashes in js tests. Cause unknown.
-BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
-BUG20886 WIN DEBUG : LayoutTests/fast/js/repeat-cached-vm-reentry.html = CRASH PASS
-BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-non-capturing-groups.html = CRASH PASS
 
 BUG20898 MAC DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL PASS
 
@@ -2987,15 +2972,14 @@ BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PAS
 BUG25616 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
 
 // WK roll 48388:48399 (brettw)
-BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL PASS
+BUG21919 WIN RELEASE : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL PASS
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
-BUG21958 WIN LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
+BUG21958 LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 BUG21958 MAC : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
-BUG22014 : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
 
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
@@ -3037,7 +3021,7 @@ BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRAS
 BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124
-BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
+BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
@@ -3055,12 +3039,7 @@ BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
 // Failing at WebKit Linux (dbg)(3) build 7795
 BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 
-// Flaky failure
-BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
-
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
-
-BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
@@ -3101,9 +3080,6 @@ BUG25378 WIN LINUX : LayoutTests/fast/forms/search-hidden-cancel-button.html = C
 
 // Incorrect baseline removed.
 BUG25433 WIN LINUX : LayoutTests/css2.1/t040103-ident-03-c.html = IMAGE
-
-// Webkit roll 49947:49957
-BUG_JOHNNYG WIN LINUX : LayoutTests/fast/forms/ValidityState-patternMismatch-001.html = CRASH PASS
 
 // Got flaky with Webkit roll 49958:49961
 BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS TEXT
