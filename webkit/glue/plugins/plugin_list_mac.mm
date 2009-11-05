@@ -88,8 +88,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/x-vnd.movenetworks.qm",  // Crashes during initialization.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
-    "application/x-pdf",                  // Force download of PDFs rather than
-    "application/pdf"                     // showing the 1st page through QT.
   };
   // In the case of plugins that share MIME types, we have to blacklist by name.
   const char* blacklisted_plugin_names[] = {
