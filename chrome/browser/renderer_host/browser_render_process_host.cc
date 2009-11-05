@@ -525,7 +525,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kInternalNaCl,
     switches::kEnableDatabases,
     switches::kDisableByteRangeSupport,
-    switches::kEnableWebSockets,
+    switches::kDisableWebSockets,
     switches::kEnableLocalStorage,
     switches::kEnableSessionStorage,
     switches::kEnableDesktopNotifications,

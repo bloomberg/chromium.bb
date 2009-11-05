@@ -130,6 +130,9 @@ const char kDisableWebResources[]           = "disable-web-resources";
 // Don't enforce the same-origin policy.  (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
+// Disable Web Sockets support.
+const char kDisableWebSockets[]             = "disable-web-sockets";
+
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 
@@ -232,9 +235,6 @@ const char kEnableUserScripts[]             = "enable-user-scripts";
 // Usage:   -enable-watchdog=[ui][io]
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
-
-// Enable Web Sockets support.
-const char kEnableWebSockets[] = "enable-web-sockets";
 
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are

@@ -528,7 +528,7 @@ void RenderThread::EnsureWebKitInitialized() {
       RenderProcess::current()->initialized_media_library());
 
   WebRuntimeFeatures::enableSockets(
-      command_line.HasSwitch(switches::kEnableWebSockets));
+      !command_line.HasSwitch(switches::kDisableWebSockets));
 
   WebRuntimeFeatures::enableDatabase(
       command_line.HasSwitch(switches::kEnableDatabases));
