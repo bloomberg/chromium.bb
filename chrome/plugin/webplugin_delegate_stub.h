@@ -38,7 +38,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
  public:
   WebPluginDelegateStub(const std::string& mime_type, int instance_id,
                         PluginChannel* channel);
-  ~WebPluginDelegateStub();
 
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
@@ -50,6 +49,10 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   WebPluginProxy* webplugin() { return webplugin_; }
 
  private:
+  friend class base::RefCounted<WebPluginDelegateStub>;
+
+  ~WebPluginDelegateStub();
+
   // Message handlers for the WebPluginDelegate calls that are proxied from the
   // renderer over the IPC channel.
   void OnInit(const PluginMsg_Init_Params& params, bool* result);

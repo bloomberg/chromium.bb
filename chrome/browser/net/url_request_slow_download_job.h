@@ -16,7 +16,6 @@
 class URLRequestSlowDownloadJob : public URLRequestJob {
  public:
   explicit URLRequestSlowDownloadJob(URLRequest* request);
-  virtual ~URLRequestSlowDownloadJob() { }
 
   // Timer callback, used to check to see if we should finish our download and
   // send the second chunk.
@@ -40,6 +39,8 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   static void AddUrlHandler();
 
  private:
+  virtual ~URLRequestSlowDownloadJob() { }
+
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 
   // Mark all pending requests to be finished.  We keep track of pending

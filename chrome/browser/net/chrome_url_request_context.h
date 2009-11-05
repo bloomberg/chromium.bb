@@ -146,7 +146,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   typedef std::map<std::string, FilePath> ExtensionPaths;
 
   ChromeURLRequestContext();
-  virtual ~ChromeURLRequestContext();
 
   // Gets the path to the directory for the specified extension.
   FilePath GetPathForExtension(const std::string& id);
@@ -192,6 +191,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   // constructor, then you should hold a reference to |other|, as we
   // depend on |other| being alive.
   ChromeURLRequestContext(ChromeURLRequestContext* other);
+  virtual ~ChromeURLRequestContext();
 
  public:
   // Setters to simplify initializing from factory objects.

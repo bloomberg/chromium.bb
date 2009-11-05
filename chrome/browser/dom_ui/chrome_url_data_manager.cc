@@ -38,7 +38,6 @@ static const char kChromeURLScheme[] = "chrome";
 class URLRequestChromeJob : public URLRequestJob {
  public:
   explicit URLRequestChromeJob(URLRequest* request);
-  virtual ~URLRequestChromeJob();
 
   // URLRequestJob implementation.
   virtual void Start();
@@ -55,6 +54,8 @@ class URLRequestChromeJob : public URLRequestJob {
   }
 
  private:
+  virtual ~URLRequestChromeJob();
+
   // Helper for Start(), to let us start asynchronously.
   // (This pattern is shared by most URLRequestJob implementations.)
   void StartAsync();
@@ -82,9 +83,10 @@ class URLRequestChromeJob : public URLRequestJob {
 class URLRequestChromeFileJob : public URLRequestFileJob {
  public:
   URLRequestChromeFileJob(URLRequest* request, const FilePath& path);
-  virtual ~URLRequestChromeFileJob();
 
  private:
+  virtual ~URLRequestChromeFileJob();
+
   DISALLOW_EVIL_CONSTRUCTORS(URLRequestChromeFileJob);
 };
 

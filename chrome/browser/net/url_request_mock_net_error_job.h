@@ -17,7 +17,6 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
                             const std::vector<int>& errors,
                             net::X509Certificate* ssl_cert,
                             const FilePath& file_path);
-  virtual ~URLRequestMockNetErrorJob();
 
   virtual void Start();
   virtual void ContinueDespiteLastError();
@@ -37,6 +36,7 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   static void RemoveMockedURL(const GURL& url);
 
  private:
+  ~URLRequestMockNetErrorJob();
   struct MockInfo {
     MockInfo() : ssl_cert(NULL) { }
     MockInfo(std::wstring base,

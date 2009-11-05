@@ -22,7 +22,6 @@ const char kMetadataScheme[] = "metadata";
 class MetadataRequestHandler : public URLRequestJob {
  public:
   explicit MetadataRequestHandler(URLRequest* request);
-  ~MetadataRequestHandler();
 
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
 
@@ -33,6 +32,8 @@ class MetadataRequestHandler : public URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const;
 
  private:
+  ~MetadataRequestHandler();
+
   void StartAsync();
   std::string result_;
   bool parsed;

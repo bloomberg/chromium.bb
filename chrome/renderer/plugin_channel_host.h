@@ -17,8 +17,6 @@ class PluginChannelHost : public PluginChannelBase {
   static PluginChannelHost* GetPluginChannelHost(
       const std::string& channel_name, MessageLoop* ipc_message_loop);
 
-  ~PluginChannelHost();
-
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
 
   int GenerateRouteID();
@@ -40,6 +38,7 @@ class PluginChannelHost : public PluginChannelBase {
  private:
   // Called on the render thread
   PluginChannelHost();
+  ~PluginChannelHost();
 
   static PluginChannelBase* ClassFactory() { return new PluginChannelHost(); }
 

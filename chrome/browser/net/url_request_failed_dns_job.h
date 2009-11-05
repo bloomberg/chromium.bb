@@ -25,6 +25,8 @@ class URLRequestFailedDnsJob : public URLRequestJob {
   static void AddUrlHandler();
 
  private:
+   ~URLRequestFailedDnsJob() {}
+
   // Simulate a DNS failure.
   void StartAsync();
 };

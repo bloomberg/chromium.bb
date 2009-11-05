@@ -29,6 +29,8 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   virtual void Start();
 
  private:
+  ~URLRequestSlowHTTPJob() {}
+
   void RealStart();
 
   base::OneShotTimer<URLRequestSlowHTTPJob> delay_timer_;

@@ -24,6 +24,7 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
     cookie_store_ = automation_cookie_store;
   }
 
+ private:
   virtual ~AutomationURLRequestContext() {
     // Clear out members before calling base class dtor since we don't
     // own any of them.
@@ -40,7 +41,6 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
     blacklist_ = NULL;
   }
 
- private:
   scoped_refptr<ChromeURLRequestContext> original_context_;
   DISALLOW_COPY_AND_ASSIGN(AutomationURLRequestContext);
 };

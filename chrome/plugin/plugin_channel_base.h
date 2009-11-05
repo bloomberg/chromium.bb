@@ -21,7 +21,6 @@ class PluginChannelBase : public IPC::Channel::Listener,
                           public IPC::Message::Sender,
                           public base::RefCountedThreadSafe<PluginChannelBase> {
  public:
-  virtual ~PluginChannelBase();
 
   // WebPlugin[Delegate] call these on construction and destruction to setup
   // the routing and manage lifetime of this object.  This is also called by
@@ -54,6 +53,10 @@ class PluginChannelBase : public IPC::Channel::Listener,
 
  protected:
   typedef PluginChannelBase* (*PluginChannelFactory)();
+
+  friend class base::RefCountedThreadSafe<PluginChannelBase>;
+
+  virtual ~PluginChannelBase();
 
   // Returns a PluginChannelBase derived object for the given channel name.
   // If an existing channel exists returns that object, otherwise creates a

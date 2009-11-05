@@ -47,7 +47,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // Typically |baseline_context| should be the URLRequestContext of the
     // currently active profile.
     explicit RequestContext(URLRequestContext* baseline_context);
-    virtual ~RequestContext();
 
     // Set the user agent for requests using this context. The default is
     // the browser's UA string.
@@ -65,6 +64,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     }
 
    private:
+    ~RequestContext();
+
     std::string user_agent_;
     URLRequestContext* baseline_context_;
 

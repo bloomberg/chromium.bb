@@ -155,11 +155,11 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
     *destructor_called_ = false;
   }
 
+ private:
   virtual ~CancelTestURLRequestContext() {
     *destructor_called_ = true;
   }
 
- private:
   bool* destructor_called_;
 };
 

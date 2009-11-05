@@ -23,7 +23,6 @@ class URLRequestAutomationJob : public URLRequestJob {
  public:
   URLRequestAutomationJob(
       URLRequest* request, int tab, AutomationResourceMessageFilter* filter);
-  virtual ~URLRequestAutomationJob();
 
   // Register an interceptor for URL requests.
   static bool InitializeInterceptor();
@@ -60,6 +59,8 @@ class URLRequestAutomationJob : public URLRequestJob {
   void OnRequestEnd(int tab, int id, const URLRequestStatus& status);
 
  private:
+  virtual ~URLRequestAutomationJob();
+
   int id_;
   int tab_;
   scoped_refptr<AutomationResourceMessageFilter> message_filter_;

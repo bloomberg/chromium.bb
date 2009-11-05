@@ -27,6 +27,8 @@ class SimpleTestJob : public URLRequestTestJob {
  public:
   explicit SimpleTestJob(URLRequest* request)
     : URLRequestTestJob(request, test_headers(), test_data_1(), true) {}
+ private:
+  ~SimpleTestJob() {}
 };
 
 class MockUserScriptMaster : public UserScriptMaster {

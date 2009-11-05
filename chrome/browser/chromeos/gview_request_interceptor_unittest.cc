@@ -38,6 +38,9 @@ class GViewURLRequestTestJob : public URLRequestTestJob {
     }
     return true;
   }
+
+ private:
+  ~GViewURLRequestTestJob() {}
 };
 
 class GViewRequestInterceptorTest : public testing::Test {

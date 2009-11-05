@@ -38,17 +38,18 @@ class SharedIOBuffer : public net::IOBuffer {
       data_ = reinterpret_cast<char*>(shared_memory_.memory());
     }
   }
-  ~SharedIOBuffer() {
-    // TODO(willchan): Remove after debugging bug 16371.
-    CHECK(g_spare_read_buffer != this);
-    data_ = NULL;
-  }
 
   base::SharedMemory* shared_memory() { return &shared_memory_; }
   bool ok() { return ok_; }
   int buffer_size() { return buffer_size_; }
 
  private:
+  ~SharedIOBuffer() {
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK(g_spare_read_buffer != this);
+    data_ = NULL;
+  }
+
   base::SharedMemory shared_memory_;
   bool ok_;
   int buffer_size_;

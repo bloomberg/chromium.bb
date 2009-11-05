@@ -23,7 +23,6 @@ class DevToolsRemoteListenSocket : public ListenSocket {
       int port,
       ListenSocketDelegate* del,
       DevToolsRemoteListener* message_listener);
-  virtual ~DevToolsRemoteListenSocket();
 
  protected:
   virtual void Listen() { ListenSocket::Listen(); }
@@ -33,6 +32,7 @@ class DevToolsRemoteListenSocket : public ListenSocket {
   virtual void SendInternal(const char* bytes, int len);
 
  private:
+  virtual ~DevToolsRemoteListenSocket();
 
   // The protocol states while reading socket input
   enum State {

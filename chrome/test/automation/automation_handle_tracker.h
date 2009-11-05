@@ -27,7 +27,6 @@ class AutomationResourceProxy
   AutomationResourceProxy(AutomationHandleTracker* tracker,
                           AutomationMessageSender* sender,
                           AutomationHandle handle);
-  virtual ~AutomationResourceProxy();
 
   // Marks this proxy object as no longer valid; this generally means
   // that the corresponding resource on the app side is gone.
@@ -39,6 +38,9 @@ class AutomationResourceProxy
 
  protected:
   friend class AutomationHandleTracker;
+  friend class base::RefCountedThreadSafe<AutomationResourceProxy>;
+
+  virtual ~AutomationResourceProxy();
 
   AutomationHandle handle_;
 

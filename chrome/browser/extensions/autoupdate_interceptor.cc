@@ -18,6 +18,9 @@ class AutoUpdateTestRequestJob : public URLRequestTestJob {
     const std::string& response_data) : URLRequestTestJob(
     request, URLRequestTestJob::test_headers(), response_data, true) {}
   virtual int GetResponseCode() const { return 200; }
+
+ private:
+  ~AutoUpdateTestRequestJob() {}
 };
 
 

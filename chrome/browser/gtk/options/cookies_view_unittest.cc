@@ -23,6 +23,9 @@ class TestURLRequestContext : public URLRequestContext {
   TestURLRequestContext() {
     cookie_store_ = new net::CookieMonster();
   }
+
+ private:
+  ~TestURLRequestContext() {}
 };
 
 class TestURLRequestContextGetter : public URLRequestContextGetter {
