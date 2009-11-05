@@ -620,6 +620,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
   }
 
+  // Create the child threads.  We need to do this since ChromeThread::PostTask
+  // silently deletes a posted task if the target message loop isn't created.
+  // Note: must be done before FirstRun code is started.
+  browser_process->db_thread();
+  browser_process->file_thread();
+  browser_process->io_thread();
+
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
 #if defined(OS_WIN)
@@ -700,12 +707,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize Winsock.
   net::EnsureWinsockInit();
 #endif  // defined(OS_WIN)
-
-  // Create the child threads.  We need to do this since ChromeThread::PostTask
-  // silently deletes a posted task if the target message loop isn't created.
-  browser_process->db_thread();
-  browser_process->file_thread();
-  browser_process->io_thread();
 
   // Initialize and maintain DNS prefetcher module.
   chrome_browser_net::DnsPrefetcherInit dns_prefetch(user_prefs, local_state);
