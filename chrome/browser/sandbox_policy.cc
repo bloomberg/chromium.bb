@@ -163,7 +163,7 @@ void AddDllEvictionPolicy(sandbox::TargetPolicy* policy) {
     // To minimize the list we only add an unload policy if the dll is also
     // loaded in this process. All the injected dlls of interest do this.
     if (::GetModuleHandleW(kTroublesomeDlls[ix])) {
-      LOG(WARNING) << "dll to unload found: " << kTroublesomeDlls[ix];
+      LOG(INFO) << "dll to unload found: " << kTroublesomeDlls[ix];
       policy->AddDllToUnload(kTroublesomeDlls[ix]);
     }
   }
