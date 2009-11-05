@@ -358,9 +358,11 @@ void RenderWidgetHostViewGtk::InitAsPopup(
     parent_host_view->Blur();
   }
 
-  gtk_widget_set_size_request(view_.get(),
-                              std::min(pos.width(), kMaxWindowWidth),
+  requested_size_ = gfx::Size(std::min(pos.width(), kMaxWindowWidth),
                               std::min(pos.height(), kMaxWindowHeight));
+  host_->WasResized();
+  gtk_widget_set_size_request(view_.get(), requested_size_.width(),
+                              requested_size_.height());
 
   gtk_window_set_default_size(GTK_WINDOW(popup), -1, -1);
   // Don't allow the window to be resized. This also forces the window to
