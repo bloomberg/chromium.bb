@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/chrome_application_mac.h"
+#import "chrome/browser/chrome_browser_application_mac.h"
 
 #import "base/histogram.h"
 #import "base/logging.h"
@@ -11,7 +11,6 @@
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
-#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 // The implementation of NSExceptions break various assumptions in the
 // Chrome code.  This category defines a replacement for
@@ -49,7 +48,7 @@ static IMP gOriginalInitIMP = NULL;
 }
 @end
 
-namespace CrApplicationNSException {
+namespace chrome_browser_application_mac {
 
 // Maximum number of known named exceptions we'll support.  There is
 // no central registration, but I only find about 75 possibilities in
@@ -99,7 +98,11 @@ void RecordExceptionWithUma(NSException* exception) {
   histogram.Add(BinForException(exception));
 }
 
-}  // CrApplicationNSException
+void Terminate() {
+  [NSApp terminate:nil];
+}
+
+}  // namespace chrome_browser_application_mac
 
 namespace {
 
@@ -133,12 +136,9 @@ BOOL SwizzleNSExceptionInit() {
 
 }  // namespace
 
-@implementation CrApplication
+@implementation BrowserCrApplication
 
 - init {
-  // TODO(shess): Push this somewhere where it can apply to the plugin
-  // and renderer processes, and where it can intercept uncaught
-  // exceptions.
   DCHECK(SwizzleNSExceptionInit());
   return [super init];
 }
@@ -244,6 +244,7 @@ BOOL SwizzleNSExceptionInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
+  chrome_application_mac::ScopedSendingEvent scoper(self);
   // The superclass's |sendEvent:| sends keyboard events to the menu and the key
   // view loop before dispatching them to |keyDown:|. Since we want to send keys
   // to the renderer before sending them to the menu, and we never want them to
@@ -269,7 +270,7 @@ BOOL SwizzleNSExceptionInit() {
   DCHECK(!reportingException);
   if (!reportingException) {
     reportingException = YES;
-    CrApplicationNSException::RecordExceptionWithUma(anException);
+    chrome_browser_application_mac::RecordExceptionWithUma(anException);
 
     // Store some human-readable information in breakpad keys in case
     // there is a crash.  Since breakpad does not provide infinite
@@ -306,11 +307,3 @@ BOOL SwizzleNSExceptionInit() {
 }
 
 @end
-
-namespace CrApplicationCC {
-
-void Terminate() {
-  [NSApp terminate:nil];
-}
-
-}  // namespace CrApplicationCC

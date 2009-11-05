@@ -5,10 +5,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/histogram.h"
-#import "chrome/browser/chrome_application_mac.h"
+#import "chrome/browser/chrome_browser_application_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace CrApplicationNSException {
+namespace chrome_browser_application_mac {
 
 // Generate an NSException with the given name.
 NSException* ExceptionNamed(NSString* name) {
@@ -78,4 +78,4 @@ TEST(ChromeApplicationMacTest, RecordException) {
   EXPECT_EQ(4, sample.counts(kUnknownNSException));
 }
 
-}  // CrApplicationNSException
+}  // chrome_browser_application_mac

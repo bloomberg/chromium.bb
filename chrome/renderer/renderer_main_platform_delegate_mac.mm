@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_mac.h"
@@ -19,10 +20,14 @@ RendererMainPlatformDelegate::RendererMainPlatformDelegate(
 RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
-// TODO(mac-port): Any code needed to initialize a process for
-// purposes of running a renderer needs to also be reflected in
-// chrome_dll_main.cc for --single-process support.
+// TODO(mac-port): Any code needed to initialize a process for purposes of
+// running a renderer needs to also be reflected in chrome_dll_main.cc for
+// --single-process support.
 void RendererMainPlatformDelegate::PlatformInitialize() {
+  // Initialize NSApplication using the custom subclass. Without this call,
+  // drawing of native UI elements (e.g. buttons) in WebKit will explode.
+  [CrApplication sharedApplication];
+
   // Load WebKit system interfaces.
   InitWebCoreSystemInterface();
 
@@ -32,10 +37,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
                              toTarget:string
                            withObject:nil];
   }
-
-  // Initialize Cocoa.  Without this call, drawing of native UI
-  // elements (e.g. buttons) in WebKit will explode.
-  [NSApplication sharedApplication];
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {

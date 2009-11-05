@@ -13,7 +13,7 @@
 #import "chrome/app/keystone_glue.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_main_win.h"
-#import "chrome/browser/chrome_application_mac.h"
+#import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
@@ -28,15 +28,8 @@ namespace Platform {
 // MessageLoop API, which works out ok for us because it's a wrapper around
 // CFRunLoop.
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-  // Initialize NSApplication using the custom subclass.  Check whether NSApp
-  // was already initialized using another class, because that would break
-  // some things.
-  [CrApplication sharedApplication];
-  if (![NSApp isKindOfClass:[CrApplication class]]) {
-    LOG(ERROR) << "NSApp should be of type CrApplication, not "
-               << [[NSApp className] UTF8String];
-    DCHECK(false) << "NSApp is of wrong type";
-  }
+  // Initialize NSApplication using the custom subclass.
+  [BrowserCrApplication sharedApplication];
 
   // Before we load the nib, we need to start up the resource bundle so we have
   // the strings avaiable for localization.

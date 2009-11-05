@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
-#import "chrome/browser/chrome_application_mac.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"

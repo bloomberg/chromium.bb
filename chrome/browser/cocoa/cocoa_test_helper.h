@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#import "base/chrome_application_mac.h"
 #include "base/debug_util.h"
 #include "base/file_path.h"
 #include "base/mac_util.h"
@@ -138,14 +139,7 @@ class CocoaTest : public PlatformTest {
 class CocoaNoWindowTestHelper {
  public:
   CocoaNoWindowTestHelper() {
-    // Look in the framework bundle for resources.
-    FilePath path;
-    PathService::Get(base::DIR_EXE, &path);
-    path = path.Append(chrome::kFrameworkName);
-    mac_util::SetOverrideAppBundlePath(path);
-
-    // Bootstrap Cocoa. It's very unhappy without this.
-    [NSApplication sharedApplication];
+    CocoaTest::BootstrapCocoa();
 
     // Set the duration of AppKit-evaluated animations (such as frame changes)
     // to zero for testing purposes. That way they take effect immediately.
@@ -155,7 +149,7 @@ class CocoaNoWindowTestHelper {
 
 // DEPRECATED
 // TODO(dmaclach): remove as soon as I can get my other CLs in that get rid
-//                 of any dependencies on this. 10/30/09 at the latest.
+//                 of any dependencies on this. 11/30/09 at the latest.
 class CocoaTestHelper : public CocoaNoWindowTestHelper {
  public:
   CocoaTestHelper() {

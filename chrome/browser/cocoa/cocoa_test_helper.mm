@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/chrome_browser_application_mac.h"
 #import "base/logging.h"
 
 @implementation CocoaTestHelperWindow
@@ -68,7 +69,7 @@ void CocoaTest::BootstrapCocoa() {
   mac_util::SetOverrideAppBundlePath(path);
 
   // Bootstrap Cocoa. It's very unhappy without this.
-  [NSApplication sharedApplication];
+  [CrApplication sharedApplication];
 }
 
 void CocoaTest::TearDown() {
