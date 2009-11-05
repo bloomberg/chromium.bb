@@ -597,8 +597,6 @@
         'common/chrome_plugin_lib.h',
         'common/chrome_plugin_util.cc',
         'common/chrome_plugin_util.h',
-        'common/classfactory.cc',
-        'common/classfactory.h',
         'common/common_glue.cc',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
@@ -760,7 +758,6 @@
           ],
         }, { # else: OS != "win"
           'sources!': [
-            'common/classfactory.cc',
             'common/temp_scaffolding_stubs.h',
           ],
         }],
