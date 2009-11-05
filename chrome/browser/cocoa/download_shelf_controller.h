@@ -9,6 +9,7 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 
+@class AnimatableView;
 class BaseDownloadItemModel;
 class Browser;
 @class BrowserWindowController;
@@ -57,6 +58,9 @@ class DownloadShelf;
 
 - (id)initWithBrowser:(Browser*)browser
        resizeDelegate:(id<ViewResizer>)resizeDelegate;
+
+// Returns our view cast as an AnimatableView.
+- (AnimatableView*)animatableView;
 
 - (DownloadShelf*)bridge;
 - (BOOL)isVisible;

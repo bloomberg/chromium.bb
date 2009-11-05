@@ -7,10 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/cocoa/animatable_view.h"
+
 // A view that handles any special rendering for the download shelf, painting
 // a gradient and managing a set of DownloadItemViews.
 
-@interface DownloadShelfView : NSView {
+@interface DownloadShelfView : AnimatableView {
 }
 @end
 

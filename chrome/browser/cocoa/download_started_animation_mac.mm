@@ -145,8 +145,11 @@ private:
   NSPoint stop = NSMakePoint(0, 0);  // Bottom of the tab.
 
   // Set for the duration of the animation, or we won't see our layer. We reset
-  // this in the completion callback.
+  // this in the completion callback. Layers by default scale their content to
+  // fit, but we need them to clip their content instead, or else renderer
+  // resizes will look janky.
   [view_ setWantsLayer:YES];
+  [[view_ layer] setContentsGravity:kCAGravityTopLeft];
 
   // CALayer initalization.
   layer_.reset([[CALayer layer] retain]);

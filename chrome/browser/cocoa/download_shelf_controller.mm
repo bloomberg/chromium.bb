@@ -9,6 +9,7 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
+#import "chrome/browser/cocoa/animatable_view.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/download_item_controller.h"
@@ -29,6 +30,9 @@ const int kDownloadItemPadding = 0;
 
 // Duration for the open-new-leftmost-item animation, in seconds.
 const NSTimeInterval kDownloadItemOpenDuration = 0.8;
+
+// Duration for download shelf closing animation, in seconds.
+const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
 }  // namespace
 
@@ -67,6 +71,8 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 }
 
 - (void)awakeFromNib {
+  [[self animatableView] setResizeDelegate:resizeDelegate_];
+
   // Initialize "Show all downloads" link.
 
   scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
@@ -101,6 +107,10 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // The controllers will unregister themselves as observers when they are
   // deallocated. No need to do that here.
   [super dealloc];
+}
+
+- (AnimatableView*)animatableView {
+  return static_cast<AnimatableView*>([self view]);
 }
 
 - (void)resizeDownloadLinkToFit {
@@ -163,6 +173,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 // We need to explicitly release our download controllers here since they need
 // to remove themselves as observers before the remaining shutdown happens.
 - (void)exiting {
+  [[self animatableView] stopAnimation];
   downloadItemControllers_.reset();
 }
 
@@ -172,8 +183,17 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   if ([self isVisible] == enable)
     return;
 
-  [resizeDelegate_ resizeView:[self view]
-                    newHeight:(enable ? shelfHeight_ : 0)];
+  // Animate the shelf out, but not in.
+  // TODO(rohitrao): We do not animate on the way in because Cocoa is already
+  // doing a lot of work to set up the download arrow animation.  I've chosen to
+  // do no animation over janky animation.  Find a way to make animating in
+  // smoother.
+  AnimatableView* view = [self animatableView];
+  if (enable)
+    [view setHeight:shelfHeight_];
+  else
+    [view animateToNewHeight:0 duration:kDownloadShelfCloseDuration];
+
   barIsVisible_ = enable;
 }
 
@@ -197,10 +217,11 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
     bridge_->Close();
   else
     [self showDownloadShelf:NO];
+}
 
-  // TODO(port): When closing the shelf is animated, call this only after the
-  // animation has ended:
-  [self closed];
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if (![self isVisible])
+    [self closed];
 }
 
 - (float)height {
