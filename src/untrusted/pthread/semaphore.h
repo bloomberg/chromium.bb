@@ -45,8 +45,11 @@ typedef struct {
   int32_t handle;
 } sem_t;
 
-/* Maximum value the semaphore can have.  */
-#define SEM_VALUE_MAX (2147483647)
+/*
+ * Maximum value the semaphore can have. Using OSX 10.5 value -
+ * the lowest of all platforms.
+ */
+#define SEM_VALUE_MAX (32767)
 
 
 #ifdef __cplusplus

@@ -68,8 +68,8 @@ NaClSyncStatus NaClSemPost(struct NaClSemaphore *sem) {
   if (0 == sem_post(&sem->sem_obj)) {
     return NACL_SYNC_OK;
   }
-  /* TODO(gregoryd): add tests for posting past max value */
-  if (ERANGE == errno) {
+  /* Posting above SEM_MAX_VALUE does not always fail, but sometimes it may */
+  if ((ERANGE == errno) || (EOVERFLOW == errno)) {
     return NACL_SYNC_SEM_RANGE_ERROR;
   }
   return NACL_SYNC_INTERNAL_ERROR;

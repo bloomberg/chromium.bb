@@ -45,7 +45,7 @@
 
 /* Initialize semaphore  */
 int sem_init (sem_t *sem, int pshared, unsigned int value) {
-  if (pshared) {
+  if ((pshared) || (value > SEM_VALUE_MAX)) {
     /* we don's support shared semaphores yet */
     errno = EINVAL;
     return -1;
@@ -67,7 +67,7 @@ int sem_wait (sem_t *sem) {
 int sem_post (sem_t *sem) {
   int32_t rv = NACL_SYSCALL(sem_post)(sem->handle);
   if (0 != rv) {
-    errno = rv;
+    errno = -rv;
     return -1;
   }
   return rv;

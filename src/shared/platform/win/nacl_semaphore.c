@@ -139,8 +139,7 @@ int32_t NaClSemGetValue(struct NaClSemaphore *sem) {
     &ret_length
     );
 
-  if( !NT_SUCCESS(status) )
-  {
+  if (!NT_SUCCESS(status)) {
     count = -1;
   } else {
     count = sem_info.count;
