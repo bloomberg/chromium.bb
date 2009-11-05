@@ -2745,14 +2745,6 @@ BUG14207 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 BUG18733 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 BUG18733 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 
-BUG14752 LINUX RELEASE SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = FAIL PASS
-// Occasionally times out. Not just slow.
-BUG14752 LINUX DEBUG : LayoutTests/http/tests/cache/subresource-expiration.html = TIMEOUT FAIL PASS
-
-// Need investigation: test shell crashers.
-BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH FAIL PASS
-BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH FAIL PASS
-
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
 
 // WebKit 44928:44943
@@ -2797,6 +2789,7 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 // WebKit merge 42738:45840
 // New tests, need baseline.
 BUG16240 MAC WIN : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
+BUG14752 LINUX SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 
 // Failure since WebKit merge 45873:45916
 BUG16823 MAC : LayoutTests/editing/execCommand/4128080-2.html = FAIL
