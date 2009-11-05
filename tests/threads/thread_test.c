@@ -33,6 +33,7 @@
  * Testing suite for NativeClient threads
  */
 
+#include <errno.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>
@@ -252,6 +253,26 @@ void TestSemaphores() {
   }
   sem_destroy(&sem[0]);
   sem_destroy(&sem[1]);
+  TEST_FUNCTION_END;
+}
+
+void TestSemaphoreInitDestroy() {
+  sem_t sem;
+  int rv;
+  TEST_FUNCTION_START;
+  rv = sem_init(&sem, 0, SEM_VALUE_MAX + 1);
+  EXPECT_EQ(-1, rv);  /* failure */
+
+  rv = sem_init(&sem, 0, SEM_VALUE_MAX);
+  EXPECT_EQ(0, rv);  /* success */
+  rv  = sem_destroy(&sem);
+  EXPECT_EQ(0, rv);
+
+  rv = sem_init(&sem, 0, 0);
+  EXPECT_EQ(0, rv);  /* success */
+  rv  = sem_destroy(&sem);
+  EXPECT_EQ(0, rv);
+
   TEST_FUNCTION_END;
 }
 
@@ -506,6 +527,7 @@ int main(int argc, char *argv[]) {
   TestManyThreadsJoinable();
   TestManyThreadsDetached();
   TestSemaphores();
+  TestSemaphoreInitDestroy();
   TestPthreadOnce();
   TestRecursiveMutex();
   TestErrorCheckingMutex();
