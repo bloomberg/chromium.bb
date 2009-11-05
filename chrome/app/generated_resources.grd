@@ -4039,7 +4039,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Open the home page
       </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION" desc="The label of the 'Show the last session' startup option radio button">
-        Restore the pages that were open last
+        Reopen the pages that were open last
       </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Custom home page' startup option radio button">
         Open the following pages:
