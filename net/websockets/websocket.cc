@@ -17,7 +17,7 @@ static const int kWebSocketPort = 80;
 static const int kSecureWebSocketPort = 443;
 
 static const char kServerHandshakeHeader[] =
-    "HTTP/1.1 101 Web Socket Protocol\r\n";
+    "HTTP/1.1 101 Web Socket Protocol Handshake\r\n";
 static const size_t kServerHandshakeHeaderLength =
     sizeof(kServerHandshakeHeader) - 1;
 

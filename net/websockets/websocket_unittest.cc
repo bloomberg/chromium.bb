@@ -128,7 +128,7 @@ class WebSocketTest : public PlatformTest {
 TEST_F(WebSocketTest, Connect) {
   MockClientSocketFactory mock_socket_factory;
   MockRead data_reads[] = {
-    MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
+    MockRead("HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
              "Upgrade: WebSocket\r\n"
              "Connection: Upgrade\r\n"
              "WebSocket-Origin: http://example.com\r\n"
@@ -187,13 +187,13 @@ TEST_F(WebSocketTest, ServerSentData) {
   static const char kFrame[] = "\x00Hello\xff";
   static const int kFrameLen = sizeof(kFrame) - 1;
   MockRead data_reads[] = {
-    MockRead("HTTP/1.1 101 Web Socket Protocol\r\n"
-                  "Upgrade: WebSocket\r\n"
-                  "Connection: Upgrade\r\n"
-                  "WebSocket-Origin: http://example.com\r\n"
-                  "WebSocket-Location: ws://example.com/demo\r\n"
-                  "WebSocket-Protocol: sample\r\n"
-                  "\r\n"),
+    MockRead("HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+             "Upgrade: WebSocket\r\n"
+             "Connection: Upgrade\r\n"
+             "WebSocket-Origin: http://example.com\r\n"
+             "WebSocket-Location: ws://example.com/demo\r\n"
+             "WebSocket-Protocol: sample\r\n"
+             "\r\n"),
     MockRead(true, kFrame, kFrameLen),
     // Server doesn't close the connection after handshake.
     MockRead(true, ERR_IO_PENDING),
