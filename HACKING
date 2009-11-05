@@ -42,9 +42,25 @@ gnulib/m4/gnulib-cache.m4. Given a source checkout of gnulib, you can
 update the files with gnulib-tool --import.
 
 ** How to build
-After getting the CVS sources, and installing the tools above, you can run
-  sh ./autogen.sh
-to do a fresh build.  After that first time, running make should suffice.
+After getting the sources from svn, with 
+
+  svn checkout http://liblouis.googlecode.com/svn/trunk/ liblouis
+
+and installing the tools above, change to the liblouis directory and
+and bootstrap the project with the following command
+
+  ./autogen.sh
+
+to do a fresh build. Then run configure as usual:
+
+  ./configure
+
+You have the choice to compile liblouis for either 16- or 32-bit
+Unicode. By default it is compiled for the former. To get 32-bit
+Unicode run configure with --enable-ucs4 .
+
+After running configure run "make" and then "make install". You must
+have root privileges for the installation step.
 
 * Release Procedure
 These steps describe what a maintainer does to make a release; they
