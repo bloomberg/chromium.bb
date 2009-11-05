@@ -33,10 +33,7 @@ class SandboxInitWrapper {
 
   // Initialize the sandbox for renderer and plug-in processes, depending on
   // the command line flags. The browser process is not sandboxed.
-  // Returns true if the sandbox was initialized succesfully, false if an error
-  // occurred.  If process_type isn't one that needs sandboxing true is always
-  // returned.
-  bool InitializeSandbox(const CommandLine& parsed_command_line,
+  void InitializeSandbox(const CommandLine& parsed_command_line,
                          const std::string& process_type);
  private:
   sandbox::BrokerServices* broker_services_;
@@ -53,11 +50,16 @@ class SandboxInitWrapper {
 
   // Initialize the sandbox for renderer and plug-in processes, depending on
   // the command line flags. The browser process is not sandboxed.
-  // Returns true if the sandbox was initialized succesfully, false if an error
-  // occurred.  If process_type isn't one that needs sandboxing true is always
-  // returned.
-  bool InitializeSandbox(const CommandLine& parsed_command_line,
+  void InitializeSandbox(const CommandLine& parsed_command_line,
                          const std::string& process_type);
+
+#if defined(OS_MACOSX)
+  // We keep the process type so we can configure the sandbox as needed.
+ public:
+  std::string ProcessType() const { return process_type_; }
+ private:
+  std::string process_type_;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxInitWrapper);

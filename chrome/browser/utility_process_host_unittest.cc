@@ -124,8 +124,9 @@ class ProcessClosedObserver : public NotificationObserver {
   bool observed_;
 };
 
-#if !defined(OS_LINUX)
-// We should not run this on linux (crbug.com/22703).
+#if !defined(OS_POSIX)
+// We should not run this on linux (crbug.com/22703) or MacOS (crbug.com/8102)
+// until problems related to autoupdate are fixed.
 TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
   // Copy the test extension into a temp dir and install from the temp dir.
   FilePath extension_file;

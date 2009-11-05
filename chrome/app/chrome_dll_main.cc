@@ -482,11 +482,7 @@ int ChromeMain(int argc, char** argv) {
 #if defined(OS_WIN)
   sandbox_wrapper.SetServices(sandbox_info);
 #endif
-
-  // OS X enables sandboxing later in the startup process.
-#if !defined (OS_MACOSX)
   sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
-#endif  // !OS_MACOSX
 
 #if defined(OS_WIN)
   _Module.Init(NULL, instance);
@@ -539,13 +535,6 @@ int ChromeMain(int argc, char** argv) {
 
   if (!process_type.empty())
     CommonSubprocessInit();
-
-#if defined (OS_MACOSX)
-  // On OS X the renderer sandbox needs to be initialized later in the startup
-  // sequence in RendererMainPlatformDelegate::PlatformInitialize().
-  if (process_type != switches::kRendererProcess)
-    sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
-#endif  // OS_MACOSX
 
   startup_timer.Stop();  // End of Startup Time Measurement.
 

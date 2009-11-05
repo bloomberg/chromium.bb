@@ -6,8 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_mac.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
@@ -25,6 +23,9 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 void RendererMainPlatformDelegate::PlatformInitialize() {
   // Load WebKit system interfaces.
   InitWebCoreSystemInterface();
+
+  // Warmup APIs before turning on the Sandbox.
+  sandbox::SandboxWarmup();
 
   if (![NSThread isMultiThreaded]) {
     NSString* string = @"";
@@ -46,10 +47,7 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
-  SandboxInitWrapper sandbox_wrapper;
-  return sandbox_wrapper.InitializeSandbox(*parsed_command_line,
-                                           switches::kRendererProcess);
+  return sandbox::EnableSandbox();
 }
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
