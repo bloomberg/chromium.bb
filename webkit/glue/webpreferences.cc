@@ -54,7 +54,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setLocalStorageEnabled(local_storage_enabled);
   settings->setDatabasesEnabled(
       WebRuntimeFeatures::isDatabaseEnabled() || databases_enabled);
-  settings->setSessionStorageEnabled(session_storage_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
 
   // This setting affects the behavior of links in an editable region:

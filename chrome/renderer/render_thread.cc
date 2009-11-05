@@ -538,6 +538,11 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableNotifications(
       command_line.HasSwitch(switches::kEnableDesktopNotifications));
 #endif
+
+  WebRuntimeFeatures::enableLocalStorage(
+      command_line.HasSwitch(switches::kEnableLocalStorage));
+  WebRuntimeFeatures::enableSessionStorage(
+      command_line.HasSwitch(switches::kEnableSessionStorage));
 }
 
 void RenderThread::IdleHandler() {
