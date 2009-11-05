@@ -176,9 +176,6 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       "undockWindow",
       WebDevToolsFrontendImpl::JsUndockWindow);
   dev_tools_host_->AddProtoFunction(
-      "toggleInspectElementMode",
-      WebDevToolsFrontendImpl::JsToggleInspectElementMode);
-  dev_tools_host_->AddProtoFunction(
       "getApplicationLocale",
       WebDevToolsFrontendImpl::JsGetApplicationLocale);
   dev_tools_host_->AddProtoFunction(
@@ -385,16 +382,6 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsUndockWindow(
   WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
   frontend->client_->undockWindow();
-  return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsToggleInspectElementMode(
-    const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  int enabled = static_cast<int>(args[0]->BooleanValue());
-  frontend->client_->toggleInspectElementMode(enabled);
   return v8::Undefined();
 }
 

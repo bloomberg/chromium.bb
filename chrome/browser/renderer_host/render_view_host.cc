@@ -117,8 +117,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       is_waiting_for_unload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
-      sudden_termination_allowed_(false),
-      in_inspect_element_mode_(false) {
+      sudden_termination_allowed_(false) {
   DCHECK(instance_);
   DCHECK(delegate_);
 
@@ -806,8 +805,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnDockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UndockDevToolsWindow,
                         OnUndockDevToolsWindow);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleInspectElementMode,
-                        OnToggleInspectElementMode);
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,
                         OnDevToolsRuntimeFeatureStateChanged);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
@@ -1438,10 +1435,6 @@ void RenderViewHost::OnUndockDevToolsWindow() {
   DevToolsManager::GetInstance()->UndockWindow(this);
 }
 
-void RenderViewHost::OnToggleInspectElementMode(bool enabled) {
-  DevToolsManager::GetInstance()->ToggleInspectElementMode(this, enabled);
-}
-
 void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
     const std::string& feature,
     bool enabled) {
@@ -1609,13 +1602,6 @@ gfx::Rect RenderViewHost::GetRootWindowResizerRect() const {
 
 void RenderViewHost::ForwardMouseEvent(
     const WebKit::WebMouseEvent& mouse_event) {
-  if (in_inspect_element_mode_ &&
-      mouse_event.type == WebInputEvent::MouseDown) {
-    in_inspect_element_mode_ = false;
-    DevToolsManager::GetInstance()->InspectElement(this, mouse_event.x,
-        mouse_event.y);
-    return;
-  }
 
   // We make a copy of the mouse event because
   // RenderWidgetHost::ForwardMouseEvent will delete |mouse_event|.

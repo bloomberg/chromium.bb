@@ -74,8 +74,6 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   static v8::Handle<v8::Value> JsCloseWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDockWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsUndockWindow(const v8::Arguments& args);
-  static v8::Handle<v8::Value> JsToggleInspectElementMode(
-      const v8::Arguments& args);
   static v8::Handle<v8::Value> JsGetApplicationLocale(
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsHiddenPanels(

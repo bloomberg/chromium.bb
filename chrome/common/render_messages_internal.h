@@ -1405,10 +1405,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Detaches dev tools window that is inspecting current render_view_host.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_UndockDevToolsWindow)
 
-  // Detaches dev tools window that is inspecting current render_view_host.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_ToggleInspectElementMode,
-                      bool /* enabled */)
-
   // Updates runtime features store in devtools manager in order to support
   // cross-navigation instrumentation.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,

@@ -445,3 +445,11 @@ InjectedScriptAccess.getCompletions = function(expressionString,
 };
 })();
 
+
+(function() {
+WebInspector.ElementsPanel.prototype._nodeSearchButtonClicked = function(
+    event) {
+  InspectorController.toggleNodeSearch();
+  this.nodeSearchButton.toggled = !this.nodeSearchButton.toggled;
+};
+})();

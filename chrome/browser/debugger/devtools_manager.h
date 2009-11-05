@@ -53,7 +53,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void CloseWindow(RenderViewHost* client_rvn);
   void DockWindow(RenderViewHost* client_rvn);
   void UndockWindow(RenderViewHost* client_rvn);
-  void ToggleInspectElementMode(RenderViewHost* client_rvh, bool enabled);
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh);

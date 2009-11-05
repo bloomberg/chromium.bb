@@ -119,15 +119,6 @@ void DevToolsManager::UndockWindow(RenderViewHost* client_rvh) {
   ReopenWindow(client_rvh, false);
 }
 
-void DevToolsManager::ToggleInspectElementMode(RenderViewHost* client_rvh,
-                                               bool enabled) {
-  DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  DCHECK(client_host);
-  RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
-  DCHECK(inspected_rvh);
-  inspected_rvh->set_in_inspect_element_mode(enabled);
-}
-
 void DevToolsManager::OpenDevToolsWindow(RenderViewHost* inspected_rvh) {
   ToggleDevToolsWindow(inspected_rvh, true);
 }

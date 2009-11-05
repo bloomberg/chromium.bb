@@ -50,7 +50,6 @@ public:
     virtual void closeWindow() = 0;
     virtual void dockWindow() = 0;
     virtual void undockWindow() = 0;
-    virtual void toggleInspectElementMode(bool enabled) = 0;
 
 protected:
     virtual ~WebDevToolsFrontendClient() {}

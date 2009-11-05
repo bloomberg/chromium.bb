@@ -95,7 +95,7 @@ devtools.InspectorControllerImpl.prototype.search = function(sourceRow, query) {
  */
 devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
   devtools.InspectorController.prototype.toggleNodeSearch.call(this);
-  DevToolsHost.toggleInspectElementMode(this.searchingForNode());
+  this.callInspectorController_.call(this, 'toggleNodeSearch');
 };
 
 
