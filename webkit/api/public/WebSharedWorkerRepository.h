@@ -43,9 +43,8 @@ namespace WebKit {
         // Unique identifier for the parent document of a worker (unique within a given process).
         typedef unsigned long long DocumentID;
 
-        // Connects the passed SharedWorker object with the specified worker thread.
-        // Caller is responsible for freeing the returned object. Returns null if a SharedWorker with that name already exists but with a different URL.
-        virtual WebSharedWorker* lookup(const WebURL&, const WebString&, DocumentID) = 0;
+        // Tracks a newly-created SharedWorker via the repository.
+        virtual void addSharedWorker(WebSharedWorker*, DocumentID) = 0;
 
         // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
         virtual void documentDetached(DocumentID) = 0;

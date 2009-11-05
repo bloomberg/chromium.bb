@@ -42,18 +42,12 @@
 #include "SecurityOrigin.h"
 #include "SerializedScriptValue.h"
 #include "SubstituteData.h"
-#include <wtf/MainThread.h>
 #include <wtf/Threading.h>
 
 #include "PlatformMessagePortChannel.h"
-#include "WebDataSourceImpl.h"
-#include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "WebMessagePortChannel.h"
-#include "WebScreenInfo.h"
 #include "WebString.h"
 #include "WebURL.h"
-#include "WebView.h"
 #include "WebWorkerClient.h"
 
 using namespace WebCore;
@@ -62,64 +56,24 @@ namespace WebKit {
 
 #if ENABLE(WORKERS)
 
-// Dummy WebViewDelegate - we only need it in Worker process to load a
-// 'shadow page' which will initialize WebCore loader.
-class WorkerWebFrameClient : public WebKit::WebFrameClient {
-public:
-    // Tell the loader to load the data into the 'shadow page' synchronously,
-    // so we can grab the resulting Document right after load.
-    virtual void didCreateDataSource(WebFrame* frame, WebDataSource* ds)
-    {
-        static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
-    }
-
-    // Lazy allocate and leak this instance.
-    static WorkerWebFrameClient* sharedInstance()
-    {
-        static WorkerWebFrameClient client;
-        return &client;
-    }
-
-private:
-    WorkerWebFrameClient()
-    {
-    }
-};
-
 WebWorker* WebWorker::create(WebWorkerClient* client)
 {
     return new WebWorkerImpl(client);
 }
 
-// This function is called on the main thread to force to initialize some static
-// values used in WebKit before any worker thread is started. This is because in
-// our worker processs, we do not run any WebKit code in main thread and thus
-// when multiple workers try to start at the same time, we might hit crash due
-// to contention for initializing static values.
-void initializeWebKitStaticValues()
-{
-    static bool initialized = false;
-    if (!initialized) {
-        initialized = true;
-        // Note that we have to pass a URL with valid protocol in order to follow
-        // the path to do static value initializations.
-        RefPtr<SecurityOrigin> origin =
-            SecurityOrigin::create(KURL(ParsedURLString, "http://localhost"));
-        origin.release();
-    }
-}
 
 WebWorkerImpl::WebWorkerImpl(WebWorkerClient* client)
     : m_client(client)
-    , m_webView(0)
-    , m_askedToTerminate(false)
 {
-    initializeWebKitStaticValues();
 }
 
 WebWorkerImpl::~WebWorkerImpl()
 {
-    m_webView->close();
+}
+
+WebCommonWorkerClient* WebWorkerImpl::commonClient()
+{
+    return m_client;
 }
 
 void WebWorkerImpl::postMessageToWorkerContextTask(WebCore::ScriptExecutionContext* context,
@@ -146,41 +100,17 @@ void WebWorkerImpl::startWorkerContext(const WebURL& scriptUrl,
                                        const WebString& userAgent,
                                        const WebString& sourceCode)
 {
-    // Create 'shadow page'. This page is never displayed, it is used to proxy the
-    // loading requests from the worker context to the rest of WebKit and Chromium
-    // infrastructure.
-    ASSERT(!m_webView);
-    m_webView = WebView::create(0);
-    m_webView->initializeMainFrame(WorkerWebFrameClient::sharedInstance());
-
-    WebFrameImpl* webFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
-
-    // Construct substitute data source for the 'shadow page'. We only need it
-    // to have same origin as the worker so the loading checks work correctly.
-    CString content("");
-    int len = static_cast<int>(content.length());
-    RefPtr<SharedBuffer> buf(SharedBuffer::create(content.data(), len));
-    SubstituteData substData(buf, String("text/html"), String("UTF-8"), KURL());
-    ResourceRequest request(scriptUrl, CString());
-    webFrame->frame()->loader()->load(request, substData, false);
-
-    // This document will be used as 'loading context' for the worker.
-    m_loadingDocument = webFrame->frame()->document();
-
-    m_workerThread = DedicatedWorkerThread::create(scriptUrl, userAgent,
-                                                   sourceCode, *this, *this);
+    initializeLoader(scriptUrl);
+    setWorkerThread(DedicatedWorkerThread::create(scriptUrl, userAgent,
+                                                  sourceCode, *this, *this));
     // Worker initialization means a pending activity.
     reportPendingActivity(true);
-    m_workerThread->start();
+    workerThread()->start();
 }
 
 void WebWorkerImpl::terminateWorkerContext()
 {
-    if (m_askedToTerminate)
-        return;
-    m_askedToTerminate = true;
-    if (m_workerThread)
-        m_workerThread->stop();
+    stopWorkerThread();
 }
 
 void WebWorkerImpl::postMessageToWorkerContext(const WebString& message,
@@ -197,7 +127,7 @@ void WebWorkerImpl::postMessageToWorkerContext(const WebString& message,
         }
     }
 
-    m_workerThread->runLoop().postTask(
+    workerThread()->runLoop().postTask(
         createCallbackTask(&postMessageToWorkerContextTask,
                            this, String(message), channels.release()));
 }
@@ -215,158 +145,6 @@ void WebWorkerImpl::clientDestroyed()
 {
     m_client = 0;
 }
-
-void WebWorkerImpl::dispatchTaskToMainThread(PassOwnPtr<ScriptExecutionContext::Task> task)
-{
-    return callOnMainThread(invokeTaskMethod, task.release());
-}
-
-void WebWorkerImpl::invokeTaskMethod(void* param)
-{
-    ScriptExecutionContext::Task* task =
-        static_cast<ScriptExecutionContext::Task*>(param);
-    task->performTask(0);
-    delete task;
-}
-
-// WorkerObjectProxy -----------------------------------------------------------
-
-void WebWorkerImpl::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message,
-                                              PassOwnPtr<MessagePortChannelArray> channels)
-{
-    dispatchTaskToMainThread(createCallbackTask(&postMessageTask, this,
-                                                message->toString(), channels));
-}
-
-void WebWorkerImpl::postMessageTask(ScriptExecutionContext* context,
-                                    WebWorkerImpl* thisPtr,
-                                    String message,
-                                    PassOwnPtr<MessagePortChannelArray> channels)
-{
-    if (!thisPtr->m_client)
-        return;
-
-    WebMessagePortChannelArray webChannels(channels.get() ? channels->size() : 0);
-    for (size_t i = 0; i < webChannels.size(); ++i) {
-        webChannels[i] = (*channels)[i]->channel()->webChannelRelease();
-        webChannels[i]->setClient(0);
-    }
-
-    thisPtr->m_client->postMessageToWorkerObject(message, webChannels);
-}
-
-void WebWorkerImpl::postExceptionToWorkerObject(const String& errorMessage,
-                                                int lineNumber,
-                                                const String& sourceURL)
-{
-    dispatchTaskToMainThread(createCallbackTask(&postExceptionTask, this,
-                                                errorMessage, lineNumber,
-                                                sourceURL));
-}
-
-void WebWorkerImpl::postExceptionTask(ScriptExecutionContext* context,
-                                      WebWorkerImpl* thisPtr,
-                                      const String& errorMessage,
-                                      int lineNumber, const String& sourceURL)
-{
-    if (!thisPtr->m_client)
-        return;
-
-    thisPtr->m_client->postExceptionToWorkerObject(errorMessage,
-                                                   lineNumber,
-                                                   sourceURL);
-}
-
-void WebWorkerImpl::postConsoleMessageToWorkerObject(MessageDestination destination,
-                                                     MessageSource source,
-                                                     MessageType type,
-                                                     MessageLevel level,
-                                                     const String& message,
-                                                     int lineNumber,
-                                                     const String& sourceURL)
-{
-    dispatchTaskToMainThread(createCallbackTask(&postConsoleMessageTask, this,
-                                                static_cast<int>(destination),
-                                                static_cast<int>(source),
-                                                static_cast<int>(type),
-                                                static_cast<int>(level),
-                                                message, lineNumber, sourceURL));
-}
-
-void WebWorkerImpl::postConsoleMessageTask(ScriptExecutionContext* context,
-                                           WebWorkerImpl* thisPtr,
-                                           int destination, int source,
-                                           int type, int level,
-                                           const String& message,
-                                           int lineNumber,
-                                           const String& sourceURL)
-{
-    if (!thisPtr->m_client)
-        return;
-    thisPtr->m_client->postConsoleMessageToWorkerObject(destination, source,
-                                                        type, level, message,
-                                                        lineNumber, sourceURL);
-}
-
-void WebWorkerImpl::confirmMessageFromWorkerObject(bool hasPendingActivity)
-{
-    dispatchTaskToMainThread(createCallbackTask(&confirmMessageTask, this,
-                                                hasPendingActivity));
-}
-
-void WebWorkerImpl::confirmMessageTask(ScriptExecutionContext* context,
-                                       WebWorkerImpl* thisPtr,
-                                       bool hasPendingActivity)
-{
-    if (!thisPtr->m_client)
-        return;
-    thisPtr->m_client->confirmMessageFromWorkerObject(hasPendingActivity);
-}
-
-void WebWorkerImpl::reportPendingActivity(bool hasPendingActivity)
-{
-    dispatchTaskToMainThread(createCallbackTask(&reportPendingActivityTask,
-                                                this, hasPendingActivity));
-}
-
-void WebWorkerImpl::reportPendingActivityTask(ScriptExecutionContext* context,
-                                              WebWorkerImpl* thisPtr,
-                                              bool hasPendingActivity)
-{
-    if (!thisPtr->m_client)
-        return;
-    thisPtr->m_client->reportPendingActivity(hasPendingActivity);
-}
-
-void WebWorkerImpl::workerContextDestroyed()
-{
-    dispatchTaskToMainThread(createCallbackTask(&workerContextDestroyedTask,
-                                                this));
-}
-
-// WorkerLoaderProxy -----------------------------------------------------------
-
-void WebWorkerImpl::postTaskToLoader(PassOwnPtr<ScriptExecutionContext::Task> task)
-{
-    ASSERT(m_loadingDocument->isDocument());
-    m_loadingDocument->postTask(task);
-}
-
-void WebWorkerImpl::postTaskForModeToWorkerContext(
-    PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
-{
-    m_workerThread->runLoop().postTaskForMode(task, mode);
-}
-
-void WebWorkerImpl::workerContextDestroyedTask(ScriptExecutionContext* context,
-                                               WebWorkerImpl* thisPtr)
-{
-    if (thisPtr->m_client)
-        thisPtr->m_client->workerContextDestroyed();
-    // The lifetime of this proxy is controlled by the worker context.
-    delete thisPtr;
-}
-
 
 #else
 

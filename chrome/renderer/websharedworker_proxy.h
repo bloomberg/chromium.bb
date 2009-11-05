@@ -21,8 +21,8 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
                              private WebWorkerBase {
  public:
   WebSharedWorkerProxy(ChildThread* child_thread,
-                      int route_id,
-                      int render_view_route_id);
+                       int route_id,
+                       int render_view_route_id);
 
   // Implementations of WebSharedWorker APIs
   virtual bool isStarted();
@@ -31,6 +31,8 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
                                   const WebKit::WebString& name,
                                   const WebKit::WebString& user_agent,
                                   const WebKit::WebString& source_code);
+  virtual void terminateWorkerContext();
+  virtual void clientDestroyed();
 
   // IPC::Channel::Listener proxyementation.
   void OnMessageReceived(const IPC::Message& message);

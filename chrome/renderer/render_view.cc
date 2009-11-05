@@ -56,6 +56,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
@@ -148,6 +149,7 @@ using WebKit::WebScriptSource;
 using WebKit::WebSearchableFormData;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSettings;
+using WebKit::WebSharedWorker;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
@@ -1781,6 +1783,17 @@ WebPlugin* RenderView::createPlugin(
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
   return new WebWorkerProxy(client, RenderThread::current(), routing_id_);
+}
+
+WebSharedWorker* RenderView::createSharedWorker(
+    WebFrame* frame, const WebURL& url, const WebString& name,
+    unsigned long long documentId) {
+
+  // TODO(atwilson): Call to the browser process to check if there's an existing
+  // worker (passing MSG_ROUTING_NONE for now, to indicate no existing worker).
+  int worker_route_id = MSG_ROUTING_NONE;
+  return new WebSharedWorkerProxy(
+      RenderThread::current(), worker_route_id, routing_id_);
 }
 
 WebMediaPlayer* RenderView::createMediaPlayer(

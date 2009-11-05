@@ -46,6 +46,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
       const WebKit::WebString& source_url);
   virtual void confirmMessageFromWorkerObject(bool has_pending_activity);
   virtual void reportPendingActivity(bool has_pending_activity);
+  virtual void workerContextClosed();
   virtual void workerContextDestroyed();
   virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client);
 

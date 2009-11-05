@@ -36,14 +36,8 @@
 #if ENABLE(WORKERS)
 
 #include "ScriptExecutionContext.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerObjectProxy.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
 
-namespace WebCore {
-class WorkerThread;
-}
+#include "WebWorkerBase.h"
 
 namespace WebKit {
 class WebView;
@@ -53,29 +47,9 @@ class WebView;
 // class converts the data types.  When the WebCore::Worker object wants to call
 // WebCore::WorkerObjectProxy, this class will conver to Chrome data types first
 // and then call the supplied WebWorkerClient.
-class WebWorkerImpl : public WebCore::WorkerObjectProxy
-                    , public WebCore::WorkerLoaderProxy
-                    , public WebWorker {
+class WebWorkerImpl : public WebWorkerBase, public WebWorker {
 public:
     explicit WebWorkerImpl(WebWorkerClient* client);
-
-    // WebCore::WorkerObjectProxy methods:
-    virtual void postMessageToWorkerObject(
-        PassRefPtr<WebCore::SerializedScriptValue>,
-        PassOwnPtr<WebCore::MessagePortChannelArray>);
-    virtual void postExceptionToWorkerObject(
-        const WebCore::String&, int, const WebCore::String&);
-    virtual void postConsoleMessageToWorkerObject(
-        WebCore::MessageDestination, WebCore::MessageSource, WebCore::MessageType,
-        WebCore::MessageLevel, const WebCore::String&, int, const WebCore::String&);
-    virtual void confirmMessageFromWorkerObject(bool);
-    virtual void reportPendingActivity(bool);
-    virtual void workerContextDestroyed();
-
-    // WebCore::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
-    virtual void postTaskForModeToWorkerContext(
-        PassOwnPtr<WebCore::ScriptExecutionContext::Task>, const WebCore::String& mode);
 
     // WebWorker methods:
     virtual void startWorkerContext(const WebURL&, const WebString&, const WebString&);
@@ -84,10 +58,9 @@ public:
     virtual void workerObjectDestroyed();
     virtual void clientDestroyed();
 
-    WebWorkerClient* client() {return m_client;}
-
-    // Executes the given task on the main thread.
-    static void dispatchTaskToMainThread(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
+    // WebWorkerBase methods:
+    virtual WebWorkerClient* client() { return m_client; }
+    virtual WebCommonWorkerClient* commonClient();
 
 private:
     virtual ~WebWorkerImpl();
@@ -99,51 +72,8 @@ private:
         const WebCore::String& message,
         PassOwnPtr<WebCore::MessagePortChannelArray> channels);
 
-    // Function used to invoke tasks on the main thread.
-    static void invokeTaskMethod(void*);
-
-    // Tasks that are run on the main thread.
-    static void postMessageTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr,
-        WebCore::String message,
-        PassOwnPtr<WebCore::MessagePortChannelArray> channels);
-    static void postExceptionTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr,
-        const WebCore::String& message,
-        int lineNumber,
-        const WebCore::String& sourceURL);
-    static void postConsoleMessageTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr,
-        int destination,
-        int source,
-        int type,
-        int level,
-        const WebCore::String& message,
-        int lineNumber,
-        const WebCore::String& sourceURL);
-    static void confirmMessageTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr,
-        bool hasPendingActivity);
-    static void reportPendingActivityTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr,
-        bool hasPendingActivity);
-    static void workerContextDestroyedTask(
-        WebCore::ScriptExecutionContext* context,
-        WebWorkerImpl* thisPtr);
-
     WebWorkerClient* m_client;
 
-    // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtr<WebCore::ScriptExecutionContext> m_loadingDocument;
-    WebView* m_webView;
-    bool m_askedToTerminate;
-
-    RefPtr<WebCore::WorkerThread> m_workerThread;
 };
 
 } // namespace WebKit

@@ -82,6 +82,7 @@ public:
                                                   int, const WebString&);
     virtual void confirmMessageFromWorkerObject(bool);
     virtual void reportPendingActivity(bool);
+    virtual void workerContextClosed();
     virtual void workerContextDestroyed();
     virtual WebWorker* createWorker(WebWorkerClient*) { return 0; }
     virtual WebNotificationPresenter* notificationPresenter()

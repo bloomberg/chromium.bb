@@ -261,6 +261,9 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame, const WebKit::WebPluginParams& params);
   virtual WebKit::WebWorker* createWorker(
       WebKit::WebFrame* frame, WebKit::WebWorkerClient* client);
+  virtual WebKit::WebSharedWorker* createSharedWorker(
+      WebKit::WebFrame* frame, const WebKit::WebURL& url,
+      const WebKit::WebString& name, unsigned long long documentId);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame, WebKit::WebMediaPlayerClient* client);
   virtual void willClose(WebKit::WebFrame* frame);

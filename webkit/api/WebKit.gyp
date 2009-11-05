@@ -282,6 +282,8 @@
         'src/WebURLError.cpp',
         'src/WebViewImpl.cpp',
         'src/WebViewImpl.h',
+        'src/WebWorkerBase.cpp',
+        'src/WebWorkerBase.h',
         'src/WebWorkerClientImpl.cpp',
         'src/WebWorkerClientImpl.h',
         'src/WebWorkerImpl.cpp',

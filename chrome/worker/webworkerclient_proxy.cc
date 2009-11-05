@@ -91,6 +91,11 @@ void WebWorkerClientProxy::reportPendingActivity(bool has_pending_activity) {
       route_id_, has_pending_activity));
 }
 
+void WebWorkerClientProxy::workerContextClosed() {
+  // TODO(atwilson): Notify WorkerProcessHost that the worker context is closing
+  // (needed for shared workers so we don't allow new connections).
+}
+
 void WebWorkerClientProxy::workerContextDestroyed() {
   Send(new WorkerHostMsg_WorkerContextDestroyed(route_id_));
   // Tell the stub that the worker has shutdown - frees this object.

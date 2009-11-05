@@ -66,6 +66,7 @@ class TestWebWorker : public WebKit::WebWorker,
   }
   virtual void confirmMessageFromWorkerObject(bool has_pending_activity) { }
   virtual void reportPendingActivity(bool has_pending_activity) { }
+  virtual void workerContextClosed() { }
   virtual void workerContextDestroyed() {
     Release();    // Releases the reference held for worker context object.
   }

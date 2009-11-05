@@ -33,8 +33,11 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace WebCore {
     class ScriptExecutionContext;
+}
+
+namespace WebKit {
     class WebString;
     class WebMessagePortChannel;
     class WebCommonWorkerClient;

@@ -4,11 +4,11 @@
 
 #include "chrome/renderer/websharedworkerrepository_impl.h"
 
-WebKit::WebSharedWorker* WebSharedWorkerRepositoryImpl::lookup(
-    const WebKit::WebURL& url,
-    const WebKit::WebString& name,
-    DocumentID document) {
-    return NULL;
+#include "chrome/renderer/websharedworker_proxy.h"
+
+void WebSharedWorkerRepositoryImpl::addSharedWorker(
+    WebKit::WebSharedWorker* worker, DocumentID document) {
+  // TODO(atwilson): Track shared worker creation here.
 }
 
 void WebSharedWorkerRepositoryImpl::documentDetached(

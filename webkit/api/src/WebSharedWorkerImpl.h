@@ -36,23 +36,16 @@
 #if ENABLE(SHARED_WORKERS)
 
 #include "ScriptExecutionContext.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerObjectProxy.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
 
-namespace WebCore {
-class SharedWorkerThread;
-}
+#include "WebWorkerBase.h"
 
 namespace WebKit {
-class WebView;
 
 // This class is used by the worker process code to talk to the WebCore::SharedWorker implementation.
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
 // When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
 // convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
-class WebSharedWorkerImpl : public WebCore::WorkerLoaderProxy {
+class WebSharedWorkerImpl : public WebWorkerBase, public WebSharedWorker {
 public:
     explicit WebSharedWorkerImpl(WebCommonWorkerClient* client);
 
@@ -60,15 +53,19 @@ public:
     virtual bool isStarted();
     virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode);
     virtual void connect(WebMessagePortChannel*);
+    virtual void terminateWorkerContext();
+    virtual void clientDestroyed();
 
-    WebCommonWorkerClient* client() { return m_client; }
+    // WebWorkerBase methods:
+    WebWorkerClient* client();
+    WebCommonWorkerClient* commonClient() { return m_client; }
 
 private:
     virtual ~WebSharedWorkerImpl();
 
-    WebCommonWorkerClient* m_client;
+    static void connectTask(WebCore::ScriptExecutionContext*, WebSharedWorkerImpl*, PassOwnPtr<WebCore::MessagePortChannel>);
 
-    RefPtr<WebCore::SharedWorkerThread> m_workerThread;
+    WebCommonWorkerClient* m_client;
 };
 
 } // namespace WebKit

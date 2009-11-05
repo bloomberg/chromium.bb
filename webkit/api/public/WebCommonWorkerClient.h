@@ -57,6 +57,7 @@ namespace WebKit {
             int lineNumber,
             const WebString& sourceURL) = 0;
 
+        virtual void workerContextClosed() = 0;
         virtual void workerContextDestroyed() = 0;
 
         // Returns the notification presenter for this worker context.  Pointer

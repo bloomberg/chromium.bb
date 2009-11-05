@@ -10,8 +10,8 @@
 #include "webkit/api/public/WebURL.h"
 
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
-                                         int route_id,
-                                         int render_view_route_id)
+                                           int route_id,
+                                           int render_view_route_id)
     : WebWorkerBase(child_thread, route_id, render_view_route_id) {
 }
 
@@ -25,6 +25,16 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebString& user_agent,
     const WebKit::WebString& source_code) {
   CreateWorkerContext(script_url, true, name, user_agent, source_code);
+}
+
+void WebSharedWorkerProxy::terminateWorkerContext() {
+  // This API should only be invoked from worker context.
+  NOTREACHED();
+}
+
+void WebSharedWorkerProxy::clientDestroyed() {
+  // This API should only be invoked from worker context.
+  NOTREACHED();
 }
 
 void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel) {

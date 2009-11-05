@@ -40,6 +40,8 @@
 #include "PlatformMessagePortChannel.h"
 #include "ScriptExecutionContext.h"
 #include "SharedWorker.h"
+#include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMessagePortChannel.h"
@@ -53,6 +55,7 @@
 namespace WebCore {
 
 class Document;
+using WebKit::WebFrameImpl;;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebSharedWorker;
 using WebKit::WebSharedWorkerRepository;
@@ -127,12 +130,16 @@ static WebSharedWorkerRepository::DocumentID getId(void* document)
 
 void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionCode& ec)
 {
-    ScriptExecutionContext* context = worker->scriptExecutionContext();
-    // No nested workers (for now) - connect() should only be called from document context.
-    ASSERT(context->isDocument());
-    OwnPtr<WebSharedWorker> webWorker;
+    // This should not be callable unless there's a SharedWorkerRepository for
+    // this context (since isAvailable() should have returned null).
     ASSERT(WebKit::webKitClient()->sharedWorkerRepository());
-    webWorker = WebKit::webKitClient()->sharedWorkerRepository()->lookup(url, name, getId(context));
+
+    // No nested workers (for now) - connect() should only be called from document context.
+    ASSERT(worker->scriptExecutionContext()->isDocument());
+    Document* document = static_cast<Document*>(worker->scriptExecutionContext());
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+    OwnPtr<WebSharedWorker> webWorker;
+    webWorker = webFrame->client()->createSharedWorker(webFrame, url, name, getId(document));
 
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.

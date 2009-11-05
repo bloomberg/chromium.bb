@@ -139,7 +139,7 @@ void WebWorkerClientImpl::startWorkerContext(const KURL& scriptURL,
     if (m_askedToTerminate)
         return;
     if (!isMainThread()) {
-        WebWorkerImpl::dispatchTaskToMainThread(createCallbackTask(
+        WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(
             &startWorkerContextTask,
             this,
             scriptURL.string(),
@@ -156,7 +156,7 @@ void WebWorkerClientImpl::terminateWorkerContext()
         return;
     m_askedToTerminate = true;
     if (!isMainThread()) {
-        WebWorkerImpl::dispatchTaskToMainThread(createCallbackTask(&terminateWorkerContextTask, this));
+        WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&terminateWorkerContextTask, this));
         return;
     }
     m_webWorker->terminateWorkerContext();
@@ -171,7 +171,7 @@ void WebWorkerClientImpl::postMessageToWorkerContext(
         return;
     ++m_unconfirmedMessageCount;
     if (!isMainThread()) {
-        WebWorkerImpl::dispatchTaskToMainThread(createCallbackTask(&postMessageToWorkerContextTask,
+        WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postMessageToWorkerContextTask,
                                                                    this,
                                                                    message->toString(),
                                                                    channels));
@@ -201,7 +201,7 @@ void WebWorkerClientImpl::workerObjectDestroyed()
     }
     // Even if this is called on the main thread, there could be a queued task for
     // this object, so don't delete it right away.
-    WebWorkerImpl::dispatchTaskToMainThread(createCallbackTask(&workerObjectDestroyedTask,
+    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerObjectDestroyedTask,
                                                                this));
 }
 
@@ -299,6 +299,10 @@ void WebWorkerClientImpl::reportPendingActivity(bool hasPendingActivity)
 }
 
 void WebWorkerClientImpl::workerContextDestroyed()
+{
+}
+
+void WebWorkerClientImpl::workerContextClosed()
 {
 }
 

@@ -12,12 +12,8 @@ namespace WebKit {
 }
 
 class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
-    virtual WebKit::WebSharedWorker* lookup(const WebKit::WebURL& url,
-                                            const WebKit::WebString& name,
-                                            DocumentID document);
-
+    virtual void addSharedWorker(WebKit::WebSharedWorker*, DocumentID document);
     virtual void documentDetached(DocumentID document);
-
     virtual bool hasSharedWorkers(DocumentID document);
 };
 

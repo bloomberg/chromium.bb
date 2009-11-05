@@ -45,6 +45,7 @@ namespace WebKit {
     class WebNode;
     class WebPlugin;
     class WebSecurityOrigin;
+    class WebSharedWorker;
     class WebString;
     class WebURL;
     class WebURLRequest;
@@ -65,6 +66,9 @@ namespace WebKit {
 
         // May return null.
         virtual WebWorker* createWorker(WebFrame*, WebWorkerClient*) { return 0; }
+
+        // May return null.
+        virtual WebSharedWorker* createSharedWorker(WebFrame*, const WebURL&, const WebString&, unsigned long long) { return 0; }
 
         // May return null.
         virtual WebMediaPlayer* createMediaPlayer(WebFrame*, WebMediaPlayerClient*) { return 0; }
