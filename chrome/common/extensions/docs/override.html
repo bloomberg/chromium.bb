@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>New Tab Pages</title></head><body>  <div id="container">
+  <title>Override Pages</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -87,7 +87,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>New Tab Pages</h1>
+        <h1>Override Pages</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -103,8 +103,8 @@
               <li> Browser UI
                 <ul>
                   <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li class="leftNavSelected">New Tab Pages</li>
                   <li><a href="options.html">Options Pages</a></li>
+                  <li class="leftNavSelected">Override Pages</li>
                   <li><a href="pageAction.html">Page Actions</a></li>
                   <li><a href="themes.html">Themes</a></li>
                 </ul>
@@ -212,25 +212,67 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-title" class="pageData">New Tab Pages</div>
+        <div id="static"><style>
+#pics {
+  margin:2em 1em 1.5em;
+}
+
+#pics td {
+  text-align:center;
+  width:50%!important;
+  border:none;
+  padding:0 1em;
+  font-size:90%;
+}
+
+#pics img {
+  width:188;
+  height:246;
+  border:none;
+}
+</style>
+
+<div id="pageData-title" class="pageData">Override Pages</div>
 
 <p>
-The New Tab Page is the page that appears
-when the user creates a new tab or window.
-You can override the default New Tab Page,
-providing an HTML file to be used instead.
-This HTML file usually has CSS and JavaScript code,
-as well as HTML.
+Override pages are a way to replace a page
+that Google Chrome provides
+with an HTML file that your extension provides.
+An override page usually has CSS and JavaScript code,
+in addition to HTML.
 </p>
 
+<p>
+Currently, the only page you can replace is
+the <em>New Tab page</em> —
+the page that appears
+when the user creates a new tab or window.
+</p>
+
+<table id="pics">
+  <tbody><tr>
+    <td> <b>The default New Tab page</b> </td>
+    <td> <b>An alternative New Tab page</b> </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="images/ntp-default.png" alt="default New Tab page">
+    </td>
+    <td>
+      <img src="images/ntp-blank.png" alt="a blank New Tab page">
+    </td>
+  </tr>
+</tbody></table>
+
+
 <p class="comment">
-[PENDING: Show a screenshot here, featuring both the + and the NTP.]
+[PENDING: update these screenshots.]
 </p>
 
 <h2 id="manifest">Manifest</h2>
 
 <p>
-Register your New Tab Page in the
+Register your New Tab page in the
 <a href="manifest.html">extension manifest</a>
 like this:
 </p>
@@ -240,29 +282,67 @@ like this:
 }
 </pre>
 
+<h2 id="tips">Tips</h2>
+
+<p>
+For an effective New Tab page, follow these guidelines:
+</p>
+ 
+<ul>
+  <li>
+    <p>
+    <b>Make your page quick and small.</b> <br>
+    Because the New Tab page appears often,
+    its performance is important.
+    For example, avoid synchronous fetches of network or database resources.
+    </p>
+  </li>
+  <li>
+    <p>
+    <b>Include a title in your page.</b> <br>
+    Otherwise people will see the URL of the page,
+    which might confuse them.
+    Here's an example of specifying the title:
+    <code>&lt;title&gt;New&nbsp;Tab&lt;/title&gt;</code>
+    </p>
+
+  </li><li>
+    <p>
+    <b>Don't rely on the page having the keyboard focus.</b> <br>
+    The address bar always gets the focus first
+    when the user creates a new tab.
+    </p>
+  </li>
+  <li>
+    <p>
+    <b>Don't try to emulate the default New Tab page.</b> <br>
+    The APIs necessary to create
+    a slightly modified version of the default New Tab page —
+    with top pages,
+    recently closed pages,
+    tips,
+    a theme background image,
+    and so on —
+    don't exist yet.
+    Until they do,
+    you're better off trying to make something completely different.
+    </p>
+  </li>
+</ul>
 
 <h2 id="examples">Examples</h2>
 
 <p>
-For an example of specifying a very simple New Tab Page,
+For an example of specifying a very simple New Tab page,
 see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/override_igoogle/">override_igoogle</a> example.
-That example uses a 3-line file named <code>redirect.html</code>
-to implement the New Tab Page.
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/override_igoogle/">override_igoogle</a> sample.
+It uses a 3-line file named <code>redirect.html</code>
+to implement the New Tab page.
 </p>
 
-<div class="comment">
-
-<p class="tbd">
-[PENDING: Could have Tips section with a <b>Do</b>, <b>Do not</b> list
-similar to browser actions.
-</p>
-
-<p class="tbd">
+<p class="comment">
 [PENDING: Maybe have a gallery of NTPs?]
 </p>
-
-</div>
 </div>
 
         <!-- API PAGE -->
