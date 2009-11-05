@@ -35,7 +35,8 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
-      const WebKit::WebString& origin, bool isLocalStorage);
+      const WebKit::WebString& origin, const WebKit::WebURL& url,
+      bool isLocalStorage);
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 };
 

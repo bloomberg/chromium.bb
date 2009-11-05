@@ -36,6 +36,7 @@
 #include "DOMWindow.h"
 #include "EventNames.h"
 #include "Frame.h"
+#include "KURL.h"
 #include "Page.h"
 #include "PageGroup.h"
 #include "SecurityOrigin.h"
@@ -50,8 +51,8 @@ StorageEventDispatcherImpl::StorageEventDispatcherImpl(const String& groupName)
 }
 
 void StorageEventDispatcherImpl::dispatchStorageEvent(const String& key, const String& oldValue,
-                                                      const String& newValue, StorageType storageType,
-                                                      SecurityOrigin* securityOrigin)
+                                                      const String& newValue, SecurityOrigin* securityOrigin,
+                                                      const KURL& url, StorageType storageType)
 {
     // FIXME: Implement
     if (storageType == SessionStorage)
@@ -73,7 +74,7 @@ void StorageEventDispatcherImpl::dispatchStorageEvent(const String& key, const S
     // FIXME: Figure out how to pass in the document URI.
     for (unsigned i = 0; i < frames.size(); ++i) {
         frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key,oldValue, newValue,
-                                                                        String(), frames[i]->domWindow()->localStorage()));
+                                                                        url, frames[i]->domWindow()->localStorage()));
     }
 }
 

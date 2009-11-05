@@ -34,9 +34,13 @@
 #if ENABLE(DOM_STORAGE)
 
 #include "ExceptionCode.h"
+
 #include "WebString.h"
+#include "WebURL.h"
 
 namespace WebKit {
+
+const WebURL* WebStorageAreaImpl::storageEventURL = NULL;
 
 WebStorageAreaImpl::WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea)
     : m_storageArea(storageArea)
@@ -62,11 +66,13 @@ WebString WebStorageAreaImpl::getItem(const WebString& key)
     return m_storageArea->getItem(key);
 }
 
-void WebStorageAreaImpl::setItem(const WebString& key, const WebString& value, bool& quotaException)
+void WebStorageAreaImpl::setItem(const WebString& key, const WebString& value, const WebURL& url, bool& quotaException)
 {
     int exceptionCode = 0;
-    // FIXME: Can we do any better than just passing 0 for the frame?
+
+    ScopedStorageEventURL scope(url);
     m_storageArea->setItem(key, value, exceptionCode, 0);
+
     if (exceptionCode != 0) {
         ASSERT(exceptionCode == WebCore::QUOTA_EXCEEDED_ERR);
         quotaException = true;
@@ -75,15 +81,15 @@ void WebStorageAreaImpl::setItem(const WebString& key, const WebString& value, b
     }
 }
 
-void WebStorageAreaImpl::removeItem(const WebString& key)
+void WebStorageAreaImpl::removeItem(const WebString& key, const WebURL& url)
 {
-    // FIXME: Can we do any better than just passing 0 for the frame?
+    ScopedStorageEventURL scope(url);
     m_storageArea->removeItem(key, 0);
 }
 
-void WebStorageAreaImpl::clear()
+void WebStorageAreaImpl::clear(const WebURL& url)
 {
-    // FIXME: Can we do any better than just passing 0 for the frame?
+    ScopedStorageEventURL scope(url);
     m_storageArea->clear(0);
 }
 

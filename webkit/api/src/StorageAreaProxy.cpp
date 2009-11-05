@@ -28,12 +28,15 @@
 
 #if ENABLE(DOM_STORAGE)
 
+#include "Document.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "SecurityOrigin.h"
 #include "StorageAreaImpl.h"
+
 #include "WebStorageArea.h"
 #include "WebString.h"
+#include "WebURL.h"
 
 namespace WebCore {
 
@@ -61,24 +64,21 @@ String StorageAreaProxy::getItem(const String& key) const
     return m_storageArea->getItem(key);
 }
 
-void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionCode& ec, Frame*)
+void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
 {
-    // FIXME: Is frame any use to us? Probably not.
     bool quotaException = false;
-    m_storageArea->setItem(key, value, quotaException);
+    m_storageArea->setItem(key, value, frame->document()->url(), quotaException);
     ec = quotaException ? QUOTA_EXCEEDED_ERR : 0;
 }
 
-void StorageAreaProxy::removeItem(const String& key, Frame*)
+void StorageAreaProxy::removeItem(const String& key, Frame* frame)
 {
-    // FIXME: Is frame any use to us? Probably not.
-    m_storageArea->removeItem(key);
+    m_storageArea->removeItem(key, frame->document()->url());
 }
 
 void StorageAreaProxy::clear(Frame* frame)
 {
-    // FIXME: Is frame any use to us? Probably not.
-    m_storageArea->clear();
+    m_storageArea->clear(frame->document()->url());
 }
 
 bool StorageAreaProxy::contains(const String& key) const

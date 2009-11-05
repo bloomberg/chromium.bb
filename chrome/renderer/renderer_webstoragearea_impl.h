@@ -20,11 +20,12 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual unsigned length();
   virtual WebKit::WebString key(unsigned index);
   virtual WebKit::WebString getItem(const WebKit::WebString& key);
-  virtual void setItem(const WebKit::WebString& key,
-                       const WebKit::WebString& value,
-                       bool& quota_exception);
-  virtual void removeItem(const WebKit::WebString& key);
-  virtual void clear();
+  virtual void setItem(
+      const WebKit::WebString& key, const WebKit::WebString& value,
+      const WebKit::WebURL& url, bool& quota_exception);
+  virtual void removeItem(const WebKit::WebString& key,
+                          const WebKit::WebURL& url);
+  virtual void clear(const WebKit::WebURL& url);
 
  private:
   // The ID we use for all IPC.

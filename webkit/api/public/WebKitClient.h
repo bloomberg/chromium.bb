@@ -93,7 +93,7 @@ namespace WebKit {
         // Called when storage events fire.
         virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
                                           const WebString& newValue, const WebString& origin,
-                                          bool isLocalStorage) = 0;
+                                          const WebURL& url, bool isLocalStorage) = 0;
 
 
         // File ----------------------------------------------------------------

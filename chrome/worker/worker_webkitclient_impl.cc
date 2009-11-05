@@ -97,7 +97,7 @@ WebStorageNamespace* WorkerWebKitClientImpl::createSessionStorageNamespace() {
 void WorkerWebKitClientImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
-    bool is_local_storage) {
+    const WebKit::WebURL& url, bool is_local_storage) {
   NOTREACHED();
 }
 

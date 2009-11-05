@@ -46,7 +46,7 @@ namespace WebKit {
 
         virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
                                           const WebString& newValue, const WebString& origin,
-                                          bool isLocalStorage);
+                                          const WebURL& url, bool isLocalStorage);
 
     private:
         OwnPtr<WebCore::StorageEventDispatcherImpl> m_eventDispatcher;

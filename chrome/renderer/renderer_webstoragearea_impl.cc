@@ -6,8 +6,10 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#include "webkit/api/public/WebURL.h"
 
 using WebKit::WebString;
+using WebKit::WebURL;
 
 RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
     int64 namespace_id, const WebString& origin) {
@@ -40,20 +42,21 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
   return value;
 }
 
-void RendererWebStorageAreaImpl::setItem(const WebString& key,
-                                         const WebString& value,
-                                         bool& quota_exception) {
+void RendererWebStorageAreaImpl::setItem(
+    const WebString& key, const WebString& value, const WebURL& url,
+    bool& quota_exception) {
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value,
+      new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value, url,
                                         &quota_exception));
 }
 
-void RendererWebStorageAreaImpl::removeItem(const WebString& key) {
+void RendererWebStorageAreaImpl::removeItem(const WebString& key,
+                                            const WebURL& url) {
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageRemoveItem(storage_area_id_, key));
+      new ViewHostMsg_DOMStorageRemoveItem(storage_area_id_, key, url));
 }
 
-void RendererWebStorageAreaImpl::clear() {
+void RendererWebStorageAreaImpl::clear(const WebURL& url) {
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageClear(storage_area_id_));
+      new ViewHostMsg_DOMStorageClear(storage_area_id_, url));
 }

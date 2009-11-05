@@ -509,6 +509,9 @@ struct ViewMsg_DOMStorageEvent_Params {
   // The origin this is associated with.
   string16 origin_;
 
+  // The URL of the page that caused the storage event.
+  GURL url_;
+
   // The storage type of this event.
   DOMStorageType storage_type_;
 };
@@ -2235,6 +2238,7 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
     WriteParam(m, p.old_value_);
     WriteParam(m, p.new_value_);
     WriteParam(m, p.origin_);
+    WriteParam(m, p.url_);
     WriteParam(m, p.storage_type_);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -2243,6 +2247,7 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
         ReadParam(m, iter, &p->old_value_) &&
         ReadParam(m, iter, &p->new_value_) &&
         ReadParam(m, iter, &p->origin_) &&
+        ReadParam(m, iter, &p->url_) &&
         ReadParam(m, iter, &p->storage_type_);
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -2254,6 +2259,8 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
     LogParam(p.new_value_, l);
     l->append(L", ");
     LogParam(p.origin_, l);
+    l->append(L", ");
+    LogParam(p.url_, l);
     l->append(L", ");
     LogParam(p.storage_type_, l);
     l->append(L")");

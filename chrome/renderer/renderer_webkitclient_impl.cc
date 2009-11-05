@@ -206,13 +206,13 @@ WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
 void RendererWebKitClientImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
-    bool is_local_storage) {
+    const WebKit::WebURL& url, bool is_local_storage) {
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   // Inefficient, but only used in single process mode.
   scoped_ptr<WebStorageEventDispatcher> event_dispatcher(
       WebStorageEventDispatcher::create());
   event_dispatcher->dispatchStorageEvent(key, old_value, new_value, origin,
-                                         is_local_storage);
+                                         url, is_local_storage);
 }
 
 WebApplicationCacheHost* RendererWebKitClientImpl::createApplicationCacheHost(

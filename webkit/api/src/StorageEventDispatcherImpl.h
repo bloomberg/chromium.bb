@@ -38,6 +38,7 @@
 
 namespace WebCore {
 
+    class KURL;
     class PageGroup;
     class SecurityOrigin;
 
@@ -46,8 +47,8 @@ namespace WebCore {
         StorageEventDispatcherImpl(const String& groupName);
 
         void dispatchStorageEvent(const String& key, const String& oldValue,
-                                  const String& newValue, StorageType,
-                                  SecurityOrigin*);
+                                  const String& newValue, SecurityOrigin*,
+                                  const KURL&, StorageType);
 
     private:
         PageGroup* m_pageGroup;

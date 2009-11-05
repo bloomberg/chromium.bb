@@ -8,8 +8,10 @@
 #include "chrome/browser/in_process_webkit/storage_namespace.h"
 #include "webkit/api/public/WebStorageArea.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebURL.h"
 
 using WebKit::WebStorageArea;
+using WebKit::WebURL;
 
 StorageArea::StorageArea(const string16& origin,
                          int64 id,
@@ -41,17 +43,17 @@ NullableString16 StorageArea::GetItem(const string16& key) {
 void StorageArea::SetItem(const string16& key, const string16& value,
                           bool* quota_exception) {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->setItem(key, value, *quota_exception);
+  storage_area_->setItem(key, value, WebURL(), *quota_exception);
 }
 
 void StorageArea::RemoveItem(const string16& key) {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->removeItem(key);
+  storage_area_->removeItem(key, WebURL());
 }
 
 void StorageArea::Clear() {
   CreateWebStorageAreaIfNecessary();
-  storage_area_->clear();
+  storage_area_->clear(WebURL());
 }
 
 void StorageArea::PurgeMemory() {

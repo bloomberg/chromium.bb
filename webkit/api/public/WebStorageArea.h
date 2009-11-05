@@ -34,7 +34,9 @@
 #include "WebCommon.h"
 
 namespace WebKit {
+
     class WebString;
+    class WebURL;
 
     // In WebCore, there's one distinct StorageArea per origin per StorageNamespace. This
     // class wraps a StorageArea.  All the methods have obvious connections to the spec:
@@ -57,14 +59,15 @@ namespace WebKit {
 
         // Set the value that corresponds to a specific key. QuotaException is set if we've
         // the StorageArea would have exceeded its quota. The value is NOT set when there's
-        // an exception.
-        virtual void setItem(const WebString& key, const WebString& value, bool& quotaException) = 0;
+        // an exception.  url is the url that should be used if a storage event fires.
+        virtual void setItem(const WebString& key, const WebString& value, const WebURL& url, bool& quotaException) = 0;
 
-        // Remove the value associated with a particular key.
-        virtual void removeItem(const WebString& key) = 0;
+        // Remove the value associated with a particular key.  url is the url that should be used
+        // if a storage event fires.
+        virtual void removeItem(const WebString& key, const WebURL& url) = 0;
 
-        // Clear all key/value pairs.
-        virtual void clear() = 0;
+        // Clear all key/value pairs.  url is the url that should be used if a storage event fires.
+        virtual void clear(const WebURL& url) = 0;
     };
 
 } // namespace WebKit

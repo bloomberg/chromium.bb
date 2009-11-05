@@ -14,6 +14,7 @@
 #include "ipc/ipc_message.h"
 
 class DOMStorageContext;
+class GURL;
 class Task;
 class WebKitThread;
 struct ViewMsg_DOMStorageEvent_Params;
@@ -45,7 +46,7 @@ class DOMStorageDispatcherHost :
   // Only call on the WebKit thread.
   static void DispatchStorageEvent(const NullableString16& key,
       const NullableString16& old_value, const NullableString16& new_value,
-      const string16& origin, bool is_local_storage);
+      const string16& origin, const GURL& url, bool is_local_storage);
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageDispatcherHost>;
@@ -61,9 +62,11 @@ class DOMStorageDispatcherHost :
   void OnGetItem(int64 storage_area_id, const string16& key,
                  IPC::Message* reply_msg);
   void OnSetItem(int64 storage_area_id, const string16& key,
-      const string16& value, IPC::Message* reply_msg);
-  void OnRemoveItem(int64 storage_area_id, const string16& key);
-  void OnClear(int64 storage_area_id);
+                 const string16& value, const GURL& url,
+                 IPC::Message* reply_msg);
+  void OnRemoveItem(int64 storage_area_id, const string16& key,
+                    const GURL& url);
+  void OnClear(int64 storage_area_id, const GURL& url);
 
   // Only call on the IO thread.
   void OnStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
@@ -80,12 +83,14 @@ class DOMStorageDispatcherHost :
   // Use whenever there's a chance OnStorageEvent will be called.
   class ScopedStorageEventContext {
    public:
-    ScopedStorageEventContext(DOMStorageDispatcherHost* dispatcher_host);
+    ScopedStorageEventContext(DOMStorageDispatcherHost* dispatcher_host,
+                              const GURL* url);
     ~ScopedStorageEventContext();
   };
 
   // Only access on the WebKit thread!  Used for storage events.
   static DOMStorageDispatcherHost* storage_event_host_;
+  static const GURL* storage_event_url_;
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;

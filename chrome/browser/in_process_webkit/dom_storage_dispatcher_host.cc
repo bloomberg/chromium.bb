@@ -12,23 +12,30 @@
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
+#include "googleurl/src/gurl.h"
 
 DOMStorageDispatcherHost* DOMStorageDispatcherHost::storage_event_host_ = NULL;
+const GURL* DOMStorageDispatcherHost::storage_event_url_ = NULL;
 
 DOMStorageDispatcherHost::
 ScopedStorageEventContext::ScopedStorageEventContext(
-    DOMStorageDispatcherHost* dispatcher_host) {
+    DOMStorageDispatcherHost* dispatcher_host, const GURL* url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DCHECK(!storage_event_host_);
+  DCHECK(!storage_event_url_);
   storage_event_host_ = dispatcher_host;
+  storage_event_url_ = url;
   DCHECK(storage_event_host_);
+  DCHECK(storage_event_url_);
 }
 
 DOMStorageDispatcherHost::
 ScopedStorageEventContext::~ScopedStorageEventContext() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DCHECK(storage_event_host_);
+  DCHECK(storage_event_url_);
   storage_event_host_ = NULL;
+  storage_event_url_ = NULL;
 }
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
@@ -79,7 +86,7 @@ void DOMStorageDispatcherHost::Shutdown() {
 /* static */
 void DOMStorageDispatcherHost::DispatchStorageEvent(const NullableString16& key,
     const NullableString16& old_value, const NullableString16& new_value,
-    const string16& origin, bool is_local_storage) {
+    const string16& origin, const GURL& url, bool is_local_storage) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DCHECK(is_local_storage);  // Only LocalStorage is implemented right now.
   DCHECK(storage_event_host_);
@@ -88,6 +95,7 @@ void DOMStorageDispatcherHost::DispatchStorageEvent(const NullableString16& key,
   params.old_value_ = old_value;
   params.new_value_ = new_value;
   params.origin_ = origin;
+  params.url_ = *storage_event_url_;  // The url passed in is junk.
   params.storage_type_ = is_local_storage ? DOM_STORAGE_LOCAL
                                           : DOM_STORAGE_SESSION;
   // The storage_event_host_ is the DOMStorageDispatcherHost that is up in the
@@ -273,12 +281,13 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
   Send(reply_msg);
 }
 
-void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
-    const string16& key, const string16& value, IPC::Message* reply_msg) {
+void DOMStorageDispatcherHost::OnSetItem(
+    int64 storage_area_id, const string16& key, const string16& value,
+    const GURL& url, IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value,
-        reply_msg));
+        url, reply_msg));
     return;
   }
 
@@ -291,17 +300,17 @@ void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
     return;
   }
 
-  ScopedStorageEventContext scope(this);
+  ScopedStorageEventContext scope(this, &url);
   storage_area->SetItem(key, value, &quota_exception);
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception);
   Send(reply_msg);
 }
 
 void DOMStorageDispatcherHost::OnRemoveItem(
-    int64 storage_area_id, const string16& key) {
+    int64 storage_area_id, const string16& key, const GURL& url) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key));
+        &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key, url));
     return;
   }
 
@@ -313,14 +322,14 @@ void DOMStorageDispatcherHost::OnRemoveItem(
     return;
   }
 
-  ScopedStorageEventContext scope(this);
+  ScopedStorageEventContext scope(this, &url);
   storage_area->RemoveItem(key);
 }
 
-void DOMStorageDispatcherHost::OnClear(int64 storage_area_id) {
+void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnClear, storage_area_id));
+        &DOMStorageDispatcherHost::OnClear, storage_area_id, url));
     return;
   }
 
@@ -332,7 +341,7 @@ void DOMStorageDispatcherHost::OnClear(int64 storage_area_id) {
     return;
   }
 
-  ScopedStorageEventContext scope(this);
+  ScopedStorageEventContext scope(this, &url);
   storage_area->Clear();
 }
 

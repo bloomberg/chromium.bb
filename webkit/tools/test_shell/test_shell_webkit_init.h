@@ -198,7 +198,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& old_value, const WebKit::WebString& new_value,
-      const WebKit::WebString& origin, bool is_local_storage) {
+      const WebKit::WebString& origin, const WebKit::WebURL& url,
+      bool is_local_storage) {
     // TODO(jorlow): Implement
     if (!is_local_storage)
       return;
@@ -207,8 +208,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       dom_storage_event_dispatcher_.reset(
           WebKit::WebStorageEventDispatcher::create());
     }
-    dom_storage_event_dispatcher_->dispatchStorageEvent(key, old_value,
-        new_value, origin, is_local_storage);
+    dom_storage_event_dispatcher_->dispatchStorageEvent(
+        key, old_value, new_value, origin, url, is_local_storage);
   }
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(

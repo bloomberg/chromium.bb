@@ -53,7 +53,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void dispatchStorageEvent(
       const WebKit::WebString& key, const WebKit::WebString& old_value,
       const WebKit::WebString& new_value, const WebKit::WebString& origin,
-      bool is_local_storage);
+      const WebKit::WebURL& url, bool is_local_storage);
 
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
       const WebKit::WebString& file_name, int desired_flags,
