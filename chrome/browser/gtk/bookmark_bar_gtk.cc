@@ -549,6 +549,7 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
            bookmark_toolbar_.get()->allocation.width +
            bookmark_toolbar_.get()->allocation.x + extra_space);
     }
+    overflow = overflow || tool_item->allocation.x == -1;
     if (overflow)
       break;
 
