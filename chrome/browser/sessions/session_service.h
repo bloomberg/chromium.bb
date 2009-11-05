@@ -154,6 +154,16 @@ class SessionService : public BaseSessionService,
   typedef std::map<SessionID::id_type,SessionTab*> IdToSessionTab;
   typedef std::map<SessionID::id_type,SessionWindow*> IdToSessionWindow;
 
+  // These types mirror Browser::Type, but are re-defined here because these
+  // specific enumeration _values_ are written into the session database and
+  // are needed to maintain forward compatibility.
+  enum WindowType {
+    TYPE_NORMAL = 0,
+    TYPE_POPUP = 1,
+    TYPE_APP = 2,
+    TYPE_APP_POPUP = TYPE_APP + TYPE_POPUP
+  };
+
   void Init();
 
   virtual void Observe(NotificationType type,
@@ -184,7 +194,7 @@ class SessionService : public BaseSessionService,
       int index);
 
   SessionCommand* CreateSetWindowTypeCommand(const SessionID& window_id,
-                                             Browser::Type type);
+                                             WindowType type);
 
   SessionCommand* CreatePinnedStateCommand(const SessionID& tab_id,
                                            bool is_pinned);
@@ -319,6 +329,11 @@ class SessionService : public BaseSessionService,
     return type == Browser::TYPE_NORMAL ||
         (type == Browser::TYPE_POPUP && browser_defaults::kRestorePopups);
   }
+
+  // Convert back/forward between the Browser and SessionService DB window
+  // types.
+  static WindowType WindowTypeForBrowserType(Browser::Type type);
+  static Browser::Type BrowserTypeForWindowType(WindowType type);
 
   NotificationRegistrar registrar_;
 

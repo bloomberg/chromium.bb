@@ -278,7 +278,8 @@ void SessionService::SetWindowType(const SessionID& window_id,
   has_open_trackable_browsers_ = true;
   move_on_new_browser_ = true;
 
-  ScheduleCommand(CreateSetWindowTypeCommand(window_id, type));
+  ScheduleCommand(
+      CreateSetWindowTypeCommand(window_id, WindowTypeForBrowserType(type)));
 }
 
 void SessionService::TabNavigationPathPrunedFromBack(const SessionID& window_id,
@@ -588,7 +589,7 @@ SessionCommand* SessionService::CreateSetSelectedNavigationIndexCommand(
 
 SessionCommand* SessionService::CreateSetWindowTypeCommand(
     const SessionID& window_id,
-    Browser::Type type) {
+    WindowType type) {
   WindowTypePayload payload = { 0 };
   payload.id = window_id.id();
   payload.index = static_cast<int32>(type);
@@ -898,7 +899,8 @@ bool SessionService::CreateTabsAndWindows(
           return true;
         GetWindow(payload.id, windows)->is_constrained = false;
         GetWindow(payload.id, windows)->type =
-            static_cast<Browser::Type>(payload.index);
+            BrowserTypeForWindowType(
+                static_cast<WindowType>(payload.index));
         break;
       }
 
@@ -978,7 +980,7 @@ void SessionService::BuildCommandsForBrowser(
                                    browser->window()->IsMaximized()));
 
   commands->push_back(CreateSetWindowTypeCommand(
-      browser->session_id(), browser->type()));
+      browser->session_id(), WindowTypeForBrowserType(browser->type())));
 
   bool added_to_windows_to_track = false;
   for (int i = 0; i < browser->tab_count(); ++i) {
@@ -1163,3 +1165,36 @@ bool SessionService::HasOpenTrackableBrowsers(const SessionID& window_id) {
 bool SessionService::ShouldTrackChangesToWindow(const SessionID& window_id) {
   return windows_tracking_.find(window_id.id()) != windows_tracking_.end();
 }
+
+
+SessionService::WindowType SessionService::WindowTypeForBrowserType(
+    Browser::Type type) {
+  // We don't support masks here, only discrete types.
+  switch (type) {
+    case Browser::TYPE_POPUP:
+      return TYPE_POPUP;
+    case Browser::TYPE_APP:
+      return TYPE_APP;
+    case Browser::TYPE_APP_POPUP:
+      return TYPE_APP_POPUP;
+    case Browser::TYPE_NORMAL:
+    default:
+      return TYPE_NORMAL;
+  }
+}
+
+Browser::Type SessionService::BrowserTypeForWindowType(
+    SessionService::WindowType type) {
+  switch (type) {
+    case TYPE_POPUP:
+      return Browser::TYPE_POPUP;
+    case TYPE_APP:
+      return Browser::TYPE_APP;
+    case TYPE_APP_POPUP:
+      return Browser::TYPE_APP_POPUP;
+    case TYPE_NORMAL:
+    default:
+      return Browser::TYPE_NORMAL;
+  }
+}
+
