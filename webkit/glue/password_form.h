@@ -10,6 +10,7 @@
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebPasswordFormData.h"
 
 namespace webkit_glue {
 
@@ -136,6 +137,23 @@ struct PasswordForm {
 
   PasswordForm()
       : scheme(SCHEME_HTML),
+        ssl_valid(false),
+        preferred(false),
+        blacklisted_by_user(false) {
+  }
+
+  PasswordForm(const WebKit::WebPasswordFormData& web_password_form)
+      : scheme(SCHEME_HTML),
+        signon_realm(web_password_form.signonRealm.utf8()),
+        origin(web_password_form.origin),
+        action(web_password_form.action),
+        submit_element(web_password_form.submitElement),
+        username_element(web_password_form.userNameElement),
+        username_value(web_password_form.userNameValue),
+        password_element(web_password_form.passwordElement),
+        password_value(web_password_form.passwordValue),
+        old_password_element(web_password_form.oldPasswordElement),
+        old_password_value(web_password_form.oldPasswordValue),
         ssl_valid(false),
         preferred(false),
         blacklisted_by_user(false) {

@@ -28,41 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSearchableFormData_h
-#define WebSearchableFormData_h
+#ifndef WebPasswordFormUtils_h
+#define WebPasswordFormUtils_h
 
-#include "WebString.h"
-#include "WebURL.h"
+#include <wtf/Vector.h>
+
+namespace WebCore {
+class HTMLInputElement;
+class HTMLFormControlElement;
+class HTMLFormElement;
+}
 
 namespace WebKit {
-class WebForm;
 
-// SearchableFormData encapsulates a URL and encoding of an INPUT field that
-// corresponds to a searchable form request.
-class WebSearchableFormData {
-public:
-    // If the provided form is suitable for automated searching, isValid()
-    // will return false.
-    WebSearchableFormData(const WebForm&);
-
-    bool isValid() { return m_url.isValid(); }
-
-    // URL for the searchable form request.
-    const WebURL& url() const
-    {
-        return m_url;
-    }
-
-    // Encoding used to encode the form parameters; never empty.
-    const WebString& encoding() const
-    {
-        return m_encoding;
-    }
-
-private:
-    WebURL m_url;
-    WebString m_encoding;
+// Helper structure to locate username, passwords and submit fields.
+struct PasswordFormFields {
+    WebCore::HTMLInputElement* userName;
+    Vector<WebCore::HTMLInputElement*> passwords;
+    WebCore::HTMLFormControlElement* submit;
+    PasswordFormFields() : userName(0), submit(0) { }
 };
+
+void findPasswordFormFields(WebCore::HTMLFormElement* form,
+                            PasswordFormFields* fields);
 
 } // namespace WebKit
 
