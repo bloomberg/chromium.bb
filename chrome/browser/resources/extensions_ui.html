@@ -85,6 +85,10 @@ body.hideDevMode .showInDevMode {
   -webkit-transition: all .1s ease-out;
 }
 
+body.showDevModeInitial .showInDevMode {
+  opacity: 1;
+}
+
 body.showDevMode .showInDevMode {
   opacity: 1;
   -webkit-transition: all .1s ease-in;
@@ -336,7 +340,7 @@ function toggleDevModeExpanded() {
  * that data. It expects an object structure like the above.
  * @param {Object} extensionsData Detailed info about installed extensions
  */
-function showExtensionsData(extensionsData) {
+function renderTemplate(extensionsData) {
   // Sort by order specified in the data or (if equal) then sort by
   // extension name (case-insensitive).
   extensionsData.extensions.sort(function(a, b) {
@@ -355,7 +359,7 @@ function showExtensionsData(extensionsData) {
   jstProcess(input, output);
 }
 
-/*
+/**
  * Asks the C++ ExtensionDOMHandler to get details about the installed
  * extensions and return detailed data about the configuration. The
  * ExtensionDOMHandler should reply to returnExtensionsData() (below).
@@ -366,19 +370,27 @@ function requestExtensionsData() {
 
 // Used for observing function of the backend datasource for this page by
 // tests.
-window.domui_responded_ = false;
+var domui_responded_ = false;
 
-function returnExtensionsData(extensionsData) {
-  window.domui_responded_ = true;
-
+/**
+ * Called by the dom_ui_ to re-populate the page with data representing
+ * the current state of installed extensions.
+ */
+function returnExtensionsData(extensionsData){
+  domui_responded_ = true;
   devModeExpanded = extensionsData.developerMode;
 
-  showExtensionsData(extensionsData);
+  var bodyContainer = document.getElementById('body-container');
+  var body = document.getElementsByTagName('body')[0];
 
-  // We are currently hiding the body because the first call to jstProcess() to
-  // insert localized strings happens prior to this call which runs during the
-  // body.onload event, causes a flickering.
-  document.getElementById('body-container').style.display = "inline";
+  // Set all page content to be visible so we can measure heights.
+  bodyContainer.style.visibility = "hidden";
+  body.className = "";
+  var slidables = document.getElementsByClassName('showInDevMode');
+  for (var i = 0; i < slidables.length; i++)
+    slidables[i].style.height = "auto";
+
+  renderTemplate(extensionsData);
 
   // Explicitly set the height for each element that wants to be "slid" in and
   // out when the devModeExpanded is toggled.
@@ -386,14 +398,14 @@ function returnExtensionsData(extensionsData) {
   for (var i = 0; i < slidables.length; i++)
     slidables[i].style.height = slidables[i].offsetHeight + "px";
 
-  // If not in developer mode, hide the developer mode elements without the
-  // slide/fade transition.
-  if (!devModeExpanded) {
-    document.getElementsByTagName('body')[0].className = "hideDevModeInitial";
-  } else {
-    document.getElementById('collapse').style.display = "inline";
-    document.getElementById('expand').style.display = "none";
-  }
+  // Reset visibility of page based on the current dev mode.
+  document.getElementById('collapse').style.display =
+     devModeExpanded ? "inline" : "none";
+  document.getElementById('expand').style.display =
+     devModeExpanded ? "none" : "inline";
+  bodyContainer.style.visibility = "visible";
+  body.className = devModeExpanded ?
+     "showDevModeInitial" : "hideDevModeInitial";
 }
 
 /**
@@ -582,7 +594,7 @@ function autoUpdate() {
     </div>
   </div>
 
-  <div id="body-container" style="display:none;">
+  <div id="body-container" style="visibility:hidden">
 
     <div id="header"><h1 i18n-content="title">TITLE</h1></div>
 
