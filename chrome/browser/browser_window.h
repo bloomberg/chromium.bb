@@ -139,6 +139,9 @@ class BrowserWindow {
   // Returns whether the bookmark bar is visible or not.
   virtual bool IsBookmarkBarVisible() const = 0;
 
+  // Returns whether the tool bar is visible or not.
+  virtual bool IsToolbarVisible() const = 0;
+
   // Returns the rect where the resize corner should be drawn by the render
   // widget host view (on top of what the renderer returns). We return an empty
   // rect to identify that there shouldn't be a resize corner (in the cases

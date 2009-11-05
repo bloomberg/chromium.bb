@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/status_area_button.h"
 #if !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#else
+#include "chrome/browser/views/frame/browser_view.h"
 #endif
 #include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
@@ -149,16 +151,29 @@ void StatusAreaView::Init() {
   AddChildView(menu_view_);
 }
 
+void StatusAreaView::Update() {
+#if defined(TOOLKIT_VIEWS)
+  // We only turn on/off the menu for views because
+  // gtk version will not hide the toolbar in compact
+  // navigation bar mode.
+  menu_view_->SetVisible(
+      !browser_->window()->IsToolbarVisible());
+#endif
+}
+
 gfx::Size StatusAreaView::GetPreferredSize() {
   // Start with padding.
   int result_w = kLeftBorder + kClockSeparation;
   int result_h = 0;
   for (int i = 0; i < GetChildViewCount(); i++) {
-    gfx::Size cur_size = GetChildViewAt(i)->GetPreferredSize();
-    // Add each width.
-    result_w += cur_size.width();
-    // Use max height.
-    result_h = std::max(result_h, cur_size.height());
+    views::View* cur = GetChildViewAt(i);
+    if (cur->IsVisible()) {
+      gfx::Size cur_size = cur->GetPreferredSize();
+      // Add each width.
+      result_w += cur_size.width();
+      // Use max height.
+      result_h = std::max(result_h, cur_size.height());
+    }
   }
   return gfx::Size(result_w, result_h);
 }
@@ -167,20 +182,22 @@ void StatusAreaView::Layout() {
   int cur_x = kLeftBorder;
   for (int i = 0; i < GetChildViewCount(); i++) {
     views::View* cur = GetChildViewAt(i);
-    gfx::Size cur_size = cur->GetPreferredSize();
-    int cur_y = (height() - cur_size.height()) / 2;
+    if (cur->IsVisible()) {
+      gfx::Size cur_size = cur->GetPreferredSize();
+      int cur_y = (height() - cur_size.height()) / 2;
 
-    // Handle odd number of pixels.
-    cur_y += (height() - cur_size.height()) % 2;
+      // Handle odd number of pixels.
+      cur_y += (height() - cur_size.height()) % 2;
 
-    // Put next in row horizontally, and center vertically.
-    cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
+      // Put next in row horizontally, and center vertically.
+      cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
 
-    cur_x += cur_size.width();
+      cur_x += cur_size.width();
 
-    // Buttons have built in padding, but clock doesn't.
-    if (cur == clock_view_)
-      cur_x += kClockSeparation;
+      // Buttons have built in padding, but clock doesn't.
+      if (cur == clock_view_)
+        cur_x += kClockSeparation;
+    }
   }
 }
 
@@ -235,6 +252,9 @@ void StatusAreaView::CreateAppMenu() {
                                           IDS_BOOKMARK_MANAGER);
   app_menu_contents_->AddItemWithStringId(IDC_SHOW_DOWNLOADS,
                                           IDS_SHOW_DOWNLOADS);
+  // Create the manage extensions menu item.
+  app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
+                                          IDS_SHOW_EXTENSIONS);
   app_menu_contents_->AddSeparator();
   app_menu_contents_->AddItemWithStringId(IDC_CLEAR_BROWSING_DATA,
                                           IDS_CLEAR_BROWSING_DATA);

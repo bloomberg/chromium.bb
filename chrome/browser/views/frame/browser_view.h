@@ -137,7 +137,6 @@ class BrowserView : public BrowserWindow,
   ExtensionShelf* extension_shelf() const { return extension_shelf_; }
 
   // Returns true if various window components are visible.
-  bool IsToolbarVisible() const;
   bool IsTabStripVisible() const;
 
   // Returns true if the profile associated with this Browser window is
@@ -234,6 +233,7 @@ class BrowserView : public BrowserWindow,
   virtual void FocusToolbar();
   virtual void DestroyBrowser();
   virtual bool IsBookmarkBarVisible() const;
+  virtual bool IsToolbarVisible() const;
   virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void DisableInactiveFrame();
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

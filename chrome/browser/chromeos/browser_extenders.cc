@@ -172,6 +172,7 @@ class NormalExtender : public BrowserExtender,
 
   virtual void ToggleCompactNavigationBar() {
     compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
+    status_area_->Update();
   }
 
   virtual void OnMouseEnteredToTab(Tab* tab) {

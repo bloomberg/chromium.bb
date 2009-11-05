@@ -39,6 +39,10 @@ class StatusAreaView : public views::View,
 
   void Init();
 
+  // Called when the compact navigation bar mode has changed to
+  // toggle the app menu visibility.
+  void Update();
+
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();

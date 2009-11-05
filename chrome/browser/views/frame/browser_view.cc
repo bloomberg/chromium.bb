@@ -567,13 +567,6 @@ gfx::Rect BrowserView::GetTabStripBounds() const {
   return frame_->GetBoundsForTabStrip(tabstrip_);
 }
 
-bool BrowserView::IsToolbarVisible() const {
-  if (browser_extender_->ShouldForceHideToolbar())
-    return false;
-  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
-         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
-}
-
 bool BrowserView::IsTabStripVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
@@ -964,6 +957,13 @@ bool BrowserView::IsBookmarkBarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       active_bookmark_bar_ &&
       (active_bookmark_bar_->GetPreferredSize().height() != 0);
+}
+
+bool BrowserView::IsToolbarVisible() const {
+  if (browser_extender_->ShouldForceHideToolbar())
+    return false;
+  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
 gfx::Rect BrowserView::GetRootWindowResizerRect() const {

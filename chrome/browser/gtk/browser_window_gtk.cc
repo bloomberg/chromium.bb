@@ -1045,6 +1045,10 @@ bool BrowserWindowGtk::IsBookmarkBarVisible() const {
       bookmark_bar_.get();
 }
 
+bool BrowserWindowGtk::IsToolbarVisible() const {
+  return IsToolbarSupported();
+}
+
 gfx::Rect BrowserWindowGtk::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }

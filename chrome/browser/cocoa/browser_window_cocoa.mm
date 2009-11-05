@@ -202,6 +202,11 @@ bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
   return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
+bool BrowserWindowCocoa::IsToolbarVisible() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 // This is called from Browser, which in turn is called directly from
 // a menu option.  All we do here is set a preference.  The act of
 // setting the preference sends notifications to all windows who then
