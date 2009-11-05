@@ -297,7 +297,7 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
 
   // Register for notifications that we need to reload the page.
   registrar_.RemoveAll();
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
       NotificationService::AllSources());
@@ -533,13 +533,12 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_PROCESS_CREATED:
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
       if (dom_ui_->tab_contents())
-        dom_ui_->tab_contents()->controller().Reload(false);
-      registrar_.RemoveAll();
+        HandleRequestExtensionsData(NULL);
       break;
 
     default:
