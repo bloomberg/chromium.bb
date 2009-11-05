@@ -138,7 +138,7 @@ TEST_F(BookmarkEditorControllerTest, EditAndConfirmOKButton) {
   EXPECT_TRUE([default_controller_ okButtonEnabled]);
   // Then test the name.
   [default_controller_ setDisplayName:@""];
-  EXPECT_FALSE([default_controller_ okButtonEnabled]);
+  EXPECT_TRUE([default_controller_ okButtonEnabled]);
   [default_controller_ setDisplayName:@"                   "];
   EXPECT_TRUE([default_controller_ okButtonEnabled]);
   // Then little mix of both.

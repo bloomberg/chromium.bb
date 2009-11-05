@@ -34,6 +34,23 @@
   return size;
 }
 
+- (void)setBookmarkCellText:(NSString*)title
+                      image:(NSImage*)image {
+  title = [title stringByReplacingOccurrencesOfString:@"\n"
+                                           withString:@" "];
+  title = [title stringByReplacingOccurrencesOfString:@"\r"
+                                           withString:@" "];
+  if (image) {
+    [self setImage:image];
+    if ([title length] < 1) {
+      [self setImagePosition:NSImageOnly];
+    } else {
+      [self setImagePosition:NSImageLeft];
+    }
+  }
+  [self setTitle:title];
+}
+
 // We share the context menu among all bookmark buttons.  To allow us
 // to disambiguate when needed (e.g. "open bookmark"), we set the
 // menu's delegate to be us.  We (the cell) have the bookmark encoded

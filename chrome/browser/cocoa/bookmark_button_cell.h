@@ -13,6 +13,11 @@
 
 @interface BookmarkButtonCell : GradientButtonCell<NSMenuDelegate> {
 }
+// |-setBookmarkCellText:image:| is used to set the text and image
+// of a BookmarkButtonCell, and align the image to the left (NSImageLeft)
+// if there is text in the title, and centered (NSImageCenter) if there is
+- (void)setBookmarkCellText:(NSString*)title
+                      image:(NSImage*)image;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BUTTON_CELL_H_

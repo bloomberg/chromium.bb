@@ -328,10 +328,8 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
 // (Yes, setting ourself as a delegate automatically registers us for
 // the notification.)
 - (void)controlTextDidChange:(NSNotification*)aNotification {
-  // Name must not be empty, but it can be whitespace.
-  NSString* name = [nameField_ stringValue];
   GURL newURL = [self GURLFromUrlField];
-  [okButton_ setEnabled:([name length] != 0 && newURL.is_valid()) ? YES : NO];
+  [okButton_ setEnabled:(newURL.is_valid()) ? YES : NO];
 }
 
 // The ok: action is connected to the OK button in the Edit Bookmark window

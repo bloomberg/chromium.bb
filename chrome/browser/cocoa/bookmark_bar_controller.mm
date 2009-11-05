@@ -594,14 +594,13 @@
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSString* title = base::SysWideToNSString(node->GetTitle());
-  NSButtonCell *cell = [[[BookmarkButtonCell alloc] initTextCell:nil]
-                         autorelease];
+  BookmarkButtonCell* cell =
+      [[[BookmarkButtonCell alloc] initTextCell:nil] autorelease];
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
 
-  [cell setImage:[self getFavIconForNode:node]];
-  [cell setImagePosition:NSImageLeft];
-  [cell setTitle:title];
+  NSImage* image = [self getFavIconForNode:node];
+  [cell setBookmarkCellText:title image:image];
   [cell setMenu:buttonContextMenu_];
   return cell;
 }
@@ -862,12 +861,12 @@
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
   for (NSButton* button in buttons_.get()) {
-    NSButtonCell* cell = [button cell];
+    BookmarkButtonCell* cell = [button cell];
     void* pointer = [[cell representedObject] pointerValue];
     const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
     if (cellnode == node) {
-      [cell setImage:[self getFavIconForNode:node]];
-      [cell setImagePosition:NSImageLeft];
+      [cell setBookmarkCellText:[cell title]
+                          image:[self getFavIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
