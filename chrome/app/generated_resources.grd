@@ -4623,7 +4623,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION"
                desc="Notification text shown when a thumbnail has been removed from the most visited section.">
-        The thumbnail for &#x201C;<ph name="THUMBNAIL_TITLE">%s</ph>&#x201D; will no longer appear.
+        Thumbnail removed.
       </message>
       <message name="IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE"
          desc="Action link text to undo removing a thumbnail from the most visited section.">

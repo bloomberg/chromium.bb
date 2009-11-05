@@ -467,15 +467,9 @@ var mostVisited = {
       });
 
       // Now change the DOM.
-      var textPattern = localStrings.getString('thumbnailremovednotification');
-      var parts = textPattern.split('%s');
-      var titleSpan = document.createElement('span');
-      titleSpan.className = 'blacklist-title';
-      titleSpan.textContent = oldItem.title;
+      var removeText = localStrings.getString('thumbnailremovednotification');
       var notifySpan = document.querySelector('#notification > span');
-      notifySpan.appendChild(document.createTextNode(parts[0]));
-      notifySpan.appendChild(titleSpan);
-      notifySpan.appendChild(document.createTextNode(parts[1]));
+      notifySpan.textContent = removeText;
     });
   },
 
