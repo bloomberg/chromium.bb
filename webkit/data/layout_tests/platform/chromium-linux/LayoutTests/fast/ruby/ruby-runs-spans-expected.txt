@@ -1,0 +1,35 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 464x19
+          text run at (0,0) width 464: "The following is a test for having non-text inline elements as base in a <ruby>."
+      RenderBlock {P} at (0,36) size 784x32
+        RenderText {#text} at (0,12) size 64x19
+          text run at (0,12) width 64: "\x{6E96}\x{592A}\x{90CE}\x{306F}"
+        RenderRuby (inline) {RUBY} at (0,0) size 140x19
+          RenderRubyRun (anonymous) at (64,0) size 50x32
+            RenderRubyText {RT} at (0,0) size 50x12
+              RenderText {#text} at (0,0) size 50x12
+                text run at (0,0) width 50: "\x{3068}\x{3046}\x{304D}\x{3087}\x{3046}"
+            RenderRubyBase (anonymous) at (0,12) size 50x20
+              RenderInline {SPAN} at (0,0) size 32x19
+                RenderText {#text} at (9,0) size 32x19
+                  text run at (9,0) width 32: "\x{6771}\x{4EAC}"
+          RenderRubyRun (anonymous) at (114,0) size 90x32
+            RenderRubyText {RT} at (0,0) size 90x12
+              RenderText {#text} at (0,0) size 90x12
+                text run at (0,0) width 90: "\x{3053}\x{3046}\x{304E}\x{3087}\x{3046}\x{3060}\x{3044}\x{304C}\x{304F}"
+            RenderRubyBase (anonymous) at (0,12) size 90x20
+              RenderInline {SPAN} at (0,0) size 32x19
+                RenderText {#text} at (13,0) size 32x19
+                  text run at (13,0) width 32: "\x{5DE5}\x{696D}"
+              RenderInline {SPAN} at (0,0) size 32x19
+                RenderText {#text} at (45,0) size 32x19
+                  text run at (45,0) width 32: "\x{5927}\x{5B66}"
+        RenderText {#text} at (204,12) size 144x19
+          text run at (204,12) width 144: "\x{304B}\x{3089}\x{5352}\x{696D}\x{3057}\x{307E}\x{3057}\x{305F}\x{3002}"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0

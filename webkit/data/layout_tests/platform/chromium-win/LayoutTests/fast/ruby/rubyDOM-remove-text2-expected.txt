@@ -1,0 +1,35 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 690x19
+          text run at (0,0) width 690: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
+      RenderBlock {P} at (0,36) size 784x20
+        RenderText {#text} at (0,0) size 409x19
+          text run at (0,0) width 409: "Both lines should look identical (the first line is the one manipulated)."
+      RenderBlock (anonymous) at (0,72) size 784x40
+        RenderBR {BR} at (0,0) size 0x19
+        RenderBR {BR} at (0,20) size 0x19
+      RenderBlock {P} at (0,128) size 784x20
+        RenderText {#text} at (0,0) size 64x19
+          text run at (0,0) width 64: "\x{6E96}\x{592A}\x{90CE}\x{306F}"
+        RenderRuby (inline) {RUBY} at (0,0) size 34x19
+          RenderRubyRun (anonymous) at (64,5) size 34x12
+            RenderRubyText {RT} at (0,0) size 34x12
+              RenderText {#text} at (0,0) size 34x12
+                text run at (0,0) width 34: "\x{3060}\x{3044}\x{304C}\x{304F}"
+            RenderRubyBase (anonymous) at (0,12) size 34x0
+        RenderText {#text} at (98,0) size 130x19
+          text run at (98,0) width 130: "\x{304B}\x{3089}\x{5352}\x{696D}\x{3057}\x{307E}\x{3057}\x{305F}\x{3002}"
+      RenderBlock {P} at (0,164) size 784x20
+        RenderText {#text} at (0,0) size 64x19
+          text run at (0,0) width 64: "\x{6E96}\x{592A}\x{90CE}\x{306F}"
+        RenderRuby (inline) {RUBY} at (0,0) size 34x19
+          RenderRubyRun (anonymous) at (64,5) size 34x12
+            RenderRubyText {RT} at (0,0) size 34x12
+              RenderText {#text} at (0,0) size 34x12
+                text run at (0,0) width 34: "\x{3060}\x{3044}\x{304C}\x{304F}"
+        RenderText {#text} at (98,0) size 130x19
+          text run at (98,0) width 130: "\x{304B}\x{3089}\x{5352}\x{696D}\x{3057}\x{307E}\x{3057}\x{305F}\x{3002}"

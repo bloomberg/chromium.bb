@@ -1,0 +1,37 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x576
+      RenderBlock {P} at (0,0) size 784x20
+        RenderText {#text} at (0,0) size 421x19
+          text run at (0,0) width 421: "The following is a test for having a <rt> immediately following another."
+      RenderBlock (anonymous) at (0,36) size 784x40
+        RenderBR {BR} at (0,0) size 0x19
+        RenderBR {BR} at (0,20) size 0x19
+      RenderBlock {P} at (0,92) size 784x32
+        RenderText {#text} at (0,12) size 64x19
+          text run at (0,12) width 64: "\x{6E96}\x{592A}\x{90CE}\x{306F}"
+        RenderRuby (inline) {RUBY} at (0,0) size 135x19
+          RenderRubyRun (anonymous) at (64,0) size 37x32
+            RenderRubyText {RT} at (0,0) size 37x12
+              RenderText {#text} at (0,0) size 37x12
+                text run at (0,0) width 37: "\x{3068}\x{3046}\x{304D}\x{3087}\x{3046}"
+            RenderRubyBase (anonymous) at (0,12) size 37x20
+              RenderText {#text} at (2,0) size 32x19
+                text run at (2,0) width 32: "\x{6771}\x{4EAC}"
+          RenderRubyRun (anonymous) at (101,0) size 64x32
+            RenderRubyText {RT} at (0,0) size 64x12
+              RenderText {#text} at (13,0) size 38x12
+                text run at (13,0) width 38: "\x{3053}\x{3046}\x{304E}\x{3087}\x{3046}"
+            RenderRubyBase (anonymous) at (0,12) size 64x20
+              RenderText {#text} at (0,0) size 64x19
+                text run at (0,0) width 64: "\x{5DE5}\x{696D}\x{5927}\x{5B66}"
+          RenderRubyRun (anonymous) at (165,17) size 34x12
+            RenderRubyText {RT} at (0,0) size 34x12
+              RenderText {#text} at (0,0) size 34x12
+                text run at (0,0) width 34: "\x{3060}\x{3044}\x{304C}\x{304F}"
+        RenderText {#text} at (199,12) size 130x19
+          text run at (199,12) width 130: "\x{304B}\x{3089}\x{5352}\x{696D}\x{3057}\x{307E}\x{3057}\x{305F}\x{3002}"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0

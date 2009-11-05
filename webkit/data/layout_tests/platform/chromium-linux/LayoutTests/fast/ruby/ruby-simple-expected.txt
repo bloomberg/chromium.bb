@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderText {#text} at (0,0) size 210x19
+        text run at (0,0) width 210: "This is a initial test for simple ruby. "
+      RenderBR {BR} at (210,15) size 0x0
+      RenderBR {BR} at (0,20) size 0x19
+      RenderText {#text} at (0,52) size 224x19
+        text run at (0,52) width 224: "\x{FF23}\x{FF33}\x{FF33}\x{FF13}\x{FF0F}\x{FF28}\x{FF34}\x{FF2D}\x{FF2C}\x{FF15}\x{306E}\x{30EB}\x{30D3}\x{306F}"
+      RenderRuby (inline) {RUBY} at (0,0) size 48x19
+        RenderRubyRun (anonymous) at (224,40) size 48x32
+          RenderRubyText {RT} at (0,0) size 48x12
+            RenderText {#text} at (4,0) size 40x12
+              text run at (4,0) width 40: "\x{306B}\x{307B}\x{3093}\x{3054}"
+          RenderRubyBase (anonymous) at (0,12) size 48x20
+            RenderText {#text} at (0,0) size 48x19
+              text run at (0,0) width 48: "\x{65E5}\x{672C}\x{8A9E}"
+      RenderText {#text} at (272,52) size 176x19
+        text run at (272,52) width 176: "\x{306B}\x{3088}\x{304F}\x{4F7F}\x{308F}\x{308C}\x{3066}\x{3044}\x{307E}\x{3059}\x{3002}"
+      RenderText {#text} at (0,0) size 0x0
