@@ -601,6 +601,10 @@ const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
 // Causes the process to run as a utility subprocess.
 const char kUtilityProcess[]                = "utility";
 
+// The utility process is sandboxed, with access to one directory. This flag
+// specifies the directory that can be accessed.
+const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
+
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.

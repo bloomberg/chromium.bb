@@ -673,8 +673,10 @@
         'common/resource_dispatcher.cc',
         'common/resource_dispatcher.h',
         'common/result_codes.h',
-        'common/sandbox_init_wrapper.cc',
         'common/sandbox_init_wrapper.h',
+        'common/sandbox_init_wrapper_linux.cc',
+        'common/sandbox_init_wrapper_mac.cc',
+        'common/sandbox_init_wrapper_win.cc',
         'common/sandbox_mac.h',
         'common/sandbox_mac.mm',
         'common/security_filter_peer.cc',
@@ -2612,6 +2614,10 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+            'mac_bundle_resources': [
+              'browser/utility.sb',
+              'browser/worker.sb',
             ],
           },
           'actions': [

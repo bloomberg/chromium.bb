@@ -67,8 +67,8 @@ FilePath UtilityProcessHost::GetUtilityProcessCmd() {
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 #if defined(OS_POSIX)
-  // TODO(port): We should not reach here on linux (crbug.com/22703) or
-  // MacOS (crbug.com/8102) until problems related to autoupdate are fixed.
+  // TODO(port): We should not reach here on Linux (crbug.com/22703).
+  // (crbug.com/23837) covers enabling this on Linux/OS X.
   NOTREACHED();
   return false;
 #endif
@@ -113,7 +113,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
     process = sandbox::StartProcessWithAccess(&cmd_line, exposed_dir);
   }
 #else
-  // TODO(port): Sandbox this on Linux/Mac.  Also, zygote this to work with
+  // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
   // Linux updating.
   bool has_cmd_prefix = browser_command_line.HasSwitch(
       switches::kUtilityCmdPrefix);
@@ -123,6 +123,9 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
     cmd_line.PrependWrapper(browser_command_line.GetSwitchValue(
         switches::kUtilityCmdPrefix));
   }
+
+  cmd_line.AppendSwitchWithValue(switches::kUtilityProcessAllowedDir,
+                                 exposed_dir.value().c_str());
 
   // This code is duplicated with browser_render_process_host.cc and
   // plugin_process_host.cc, but there's not a good place to de-duplicate it.
