@@ -40,7 +40,7 @@ TEST(ParsedCookieTest, TestParseBigCookies) {
 static const GURL kUrlGoogle("http://www.google.izzle");
 
 TEST(CookieMonsterTest, TestAddCookiesOnSingleHost) {
-  net::CookieMonster cm;
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster);
   std::vector<std::string> cookies;
   for (int i = 0; i < kNumCookies; i++) {
     cookies.push_back(StringPrintf("a%03d=b", i));
@@ -50,24 +50,24 @@ TEST(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   PerfTimeLogger timer("Cookie_monster_add_single_host");
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    EXPECT_TRUE(cm.SetCookie(kUrlGoogle, *it));
+    EXPECT_TRUE(cm->SetCookie(kUrlGoogle, *it));
   }
   timer.Done();
 
   PerfTimeLogger timer2("Cookie_monster_query_single_host");
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    cm.GetCookies(kUrlGoogle);
+    cm->GetCookies(kUrlGoogle);
   }
   timer2.Done();
 
   PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
-  cm.DeleteAll(false);
+  cm->DeleteAll(false);
   timer3.Done();
 }
 
 TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
-  net::CookieMonster cm;
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster);
   std::string cookie(kCookieLine);
   std::vector<GURL> gurls;  // just wanna have ffffuunnn
   for (int i = 0; i < kNumCookies; ++i) {
@@ -78,18 +78,18 @@ TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
   PerfTimeLogger timer("Cookie_monster_add_many_hosts");
   for (std::vector<GURL>::const_iterator it = gurls.begin();
        it != gurls.end(); ++it) {
-    EXPECT_TRUE(cm.SetCookie(*it, cookie));
+    EXPECT_TRUE(cm->SetCookie(*it, cookie));
   }
   timer.Done();
 
   PerfTimeLogger timer2("Cookie_monster_query_many_hosts");
   for (std::vector<GURL>::const_iterator it = gurls.begin();
        it != gurls.end(); ++it) {
-    cm.GetCookies(*it);
+    cm->GetCookies(*it);
   }
   timer2.Done();
 
   PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
-  cm.DeleteAll(false);
+  cm->DeleteAll(false);
   timer3.Done();
 }

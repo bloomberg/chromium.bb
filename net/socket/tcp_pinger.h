@@ -115,6 +115,10 @@ class TCPPinger {
     }
 
    private:
+    friend class base::RefCountedThreadSafe<Worker>;
+
+    ~Worker() {}
+
     base::WaitableEvent event_;
     int net_error_;
     net::AddressList addr_;

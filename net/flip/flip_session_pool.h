@@ -24,7 +24,6 @@ class HttpNetworkSession;
 class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
  public:
   FlipSessionPool();
-  virtual ~FlipSessionPool();
 
   // Either returns an existing FlipSession or creates a new FlipSession for
   // use.
@@ -49,7 +48,10 @@ class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
   void CloseAllSessions();
 
  private:
+  friend class base::RefCounted<FlipSessionPool>;
   friend class FlipSession;  // Needed for Remove().
+
+  virtual ~FlipSessionPool();
 
   typedef std::list<FlipSession*> FlipSessionList;
   typedef std::map<std::string, FlipSessionList*> FlipSessionsMap;

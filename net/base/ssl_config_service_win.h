@@ -23,7 +23,6 @@ class SSLConfigServiceWin : public SSLConfigService {
  public:
   SSLConfigServiceWin();
   explicit SSLConfigServiceWin(base::TimeTicks now);  // Used for testing.
-  virtual ~SSLConfigServiceWin() {}
 
   // Get the current SSL configuration settings.  Can be called on any
   // thread.
@@ -45,6 +44,8 @@ class SSLConfigServiceWin : public SSLConfigService {
   void GetSSLConfigAt(SSLConfig* config, base::TimeTicks now);
 
  private:
+  virtual ~SSLConfigServiceWin() {}
+
   void UpdateConfig(base::TimeTicks now);
 
   // We store the IE SSL config and the time that we fetched it.

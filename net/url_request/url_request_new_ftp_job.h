@@ -26,14 +26,14 @@ class URLRequestNewFtpJob : public URLRequestJob {
 
   explicit URLRequestNewFtpJob(URLRequest* request);
 
-  virtual ~URLRequestNewFtpJob();
-
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
 
   // URLRequestJob methods:
   virtual bool GetMimeType(std::string* mime_type) const;
 
  private:
+  virtual ~URLRequestNewFtpJob();
+
   // URLRequestJob methods:
   virtual void Start();
   virtual void Kill();

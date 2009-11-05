@@ -67,6 +67,10 @@ class ListenSocketTester :
     public base::RefCountedThreadSafe<ListenSocketTester> {
 
  protected:
+  friend class base::RefCountedThreadSafe<ListenSocketTester>;
+
+  virtual ~ListenSocketTester() {}
+
   virtual ListenSocket* DoListen();
 
  public:
@@ -75,9 +79,6 @@ class ListenSocketTester :
         loop_(NULL),
         server_(NULL),
         connection_(NULL){
-  }
-
-  virtual ~ListenSocketTester() {
   }
 
   virtual void SetUp();

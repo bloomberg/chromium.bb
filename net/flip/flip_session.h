@@ -90,8 +90,6 @@ class FlipDelegate {
 class FlipSession : public base::RefCounted<FlipSession>,
                     public flip::FlipFramerVisitorInterface {
  public:
-  virtual ~FlipSession();
-
   // Get the domain for this FlipSession.
   const std::string& domain() const { return domain_; }
 
@@ -138,6 +136,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
   static void SetSSLMode(bool enable) { use_ssl_ = enable; }
 
  private:
+  friend class base::RefCounted<FlipSession>;
+  virtual ~FlipSession();
+
   // FlipFramerVisitorInterface
   virtual void OnError(flip::FlipFramer*);
   virtual void OnStreamFrameData(flip::FlipStreamId stream_id,

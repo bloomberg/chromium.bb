@@ -63,7 +63,8 @@ class TestURLRequestContext : public URLRequestContext {
             proxy_service_, ssl_config_service_);
   }
 
-  virtual ~TestURLRequestContext() {
+ protected:
+  ~TestURLRequestContext() {
     delete http_transaction_factory_;
   }
 };
@@ -244,8 +245,6 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
       : launcher_(connection_attempts, connection_timeout) { }
 
  public:
-  virtual ~BaseTestServer() { }
-
   void set_forking(bool forking) {
     launcher_.set_forking(forking);
   }
@@ -295,6 +294,9 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
   }
 
  protected:
+  friend class base::RefCounted<BaseTestServer>;
+  virtual ~BaseTestServer() { }
+
   bool Start(net::TestServerLauncher::Protocol protocol,
              const std::string& host_name, int port,
              const FilePath& document_root,
@@ -355,6 +357,8 @@ class HTTPTestServer : public BaseTestServer {
   explicit HTTPTestServer(int connection_attempts, int connection_timeout)
       : BaseTestServer(connection_attempts, connection_timeout), loop_(NULL) {
   }
+
+  virtual ~HTTPTestServer() {}
 
  public:
   // Creates and returns a new HTTPTestServer. If |loop| is non-null, requests
@@ -560,11 +564,11 @@ class HTTPSTestServer : public HTTPTestServer {
     return test_server;
   }
 
-  virtual ~HTTPSTestServer() {
-  }
-
  protected:
   std::wstring cert_path_;
+
+ private:
+  virtual ~HTTPSTestServer() {}
 };
 
 
@@ -600,6 +604,9 @@ class FTPTestServer : public BaseTestServer {
 
     return true;
   }
+
+ private:
+  ~FTPTestServer() {}
 };
 
 #endif  // NET_URL_REQUEST_URL_REQUEST_UNITTEST_H_

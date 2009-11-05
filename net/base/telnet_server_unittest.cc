@@ -33,6 +33,9 @@ public:
     }
     return false;
   }
+
+private:
+  ~TelnetServerTester() {}
 };
 
 class TelnetServerTest: public PlatformTest {

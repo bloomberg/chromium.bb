@@ -41,6 +41,8 @@ class RequestContext : public URLRequestContext {
             host_resolver_, proxy_service_, ssl_config_service_),
             disk_cache::CreateInMemoryCacheBackend(0));
   }
+
+ private:
   ~RequestContext() {
     delete http_transaction_factory_;
   }

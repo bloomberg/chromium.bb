@@ -18,6 +18,8 @@ class PurgeMemoryTask : public base::RefCountedThreadSafe<PurgeMemoryTask> {
   explicit PurgeMemoryTask(ProxyResolver* resolver) : resolver_(resolver) {}
   void PurgeMemory() { resolver_->PurgeMemory(); }
  private:
+  friend class base::RefCountedThreadSafe<PurgeMemoryTask>;
+  ~PurgeMemoryTask() {}
   ProxyResolver* resolver_;
 };
 
@@ -60,6 +62,11 @@ class SingleThreadedProxyResolver::SetPacScriptTask
   bool was_cancelled() const { return callback_ == NULL; }
 
  private:
+  friend class base::RefCountedThreadSafe<
+        SingleThreadedProxyResolver::SetPacScriptTask>;
+
+  ~SetPacScriptTask() {}
+
   // Runs on the worker thread.
   void DoRequest(ProxyResolver* resolver) {
     int rv = resolver->expects_pac_bytes() ?
@@ -137,6 +144,10 @@ class SingleThreadedProxyResolver::Job
   bool was_cancelled() const { return callback_ == NULL; }
 
  private:
+  friend class base::RefCountedThreadSafe<SingleThreadedProxyResolver::Job>;
+
+  ~Job() {}
+
   // Runs on the worker thread.
   void DoQuery(ProxyResolver* resolver) {
     LoadLog* worker_log = new LoadLog;

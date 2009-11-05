@@ -14,16 +14,15 @@ class HttpServerResponseInfo;
 // Implements a simple HTTP listen socket on top of the raw socket interface.
 class HttpListenSocket : public ListenSocket,
                          public ListenSocket::ListenSocketDelegate {
-public:
+ public:
   class Delegate {
    public:
-    virtual void OnRequest(HttpListenSocket* connection, 
+    virtual void OnRequest(HttpListenSocket* connection,
                            HttpServerRequestInfo* info) = 0;
   };
 
   static HttpListenSocket* Listen(const std::string& ip, int port,
                                   HttpListenSocket::Delegate* delegate);
-  virtual ~HttpListenSocket();
 
   void Listen() { ListenSocket::Listen(); }
   virtual void Accept();
@@ -37,9 +36,12 @@ public:
   virtual void DidRead(ListenSocket* connection, const std::string& data);
   virtual void DidClose(ListenSocket* sock);
 
-private:
+ private:
+  friend class base::RefCountedThreadSafe<ListenSocket>;
+
   static const int kReadBufSize = 16 * 1024;
   HttpListenSocket(SOCKET s, HttpListenSocket::Delegate* del);
+  virtual ~HttpListenSocket();
 
   // Expects the raw data to be stored in recv_data_. If parsing is successful,
   // will remove the data parsed from recv_data_, leaving only the unused

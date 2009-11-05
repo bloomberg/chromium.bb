@@ -24,8 +24,6 @@ class CookieMonster;
 // be thread safe as its methods can be accessed from IO as well as UI threads.
 class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
-   virtual ~CookieStore() {}
-
   // Set a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
   virtual bool SetCookie(const GURL& url, const std::string& cookie_line) = 0;
   virtual bool SetCookieWithOptions(const GURL& url,
@@ -60,6 +58,10 @@ class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   virtual CookieMonster* GetCookieMonster() {
     return NULL;
   };
+
+ protected:
+  friend class base::RefCountedThreadSafe<CookieStore>;
+  virtual ~CookieStore() {}
 };
 
 }  // namespace net

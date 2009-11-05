@@ -14,7 +14,6 @@ class TelnetServer : public ListenSocket {
 public:
   static TelnetServer* Listen(std::string ip, int port,
                               ListenSocketDelegate *del);
-  virtual ~TelnetServer();
 
 protected:
   void Listen() { ListenSocket::Listen(); }
@@ -45,6 +44,7 @@ private:
   };
 
   TelnetServer(SOCKET s, ListenSocketDelegate* del);
+  virtual ~TelnetServer();
 
   // telnet commands
   void SendIAC(int command, int option);

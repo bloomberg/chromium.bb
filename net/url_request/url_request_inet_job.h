@@ -22,7 +22,6 @@ class MessageLoop;
 class URLRequestInetJob : public URLRequestJob {
  public:
   URLRequestInetJob(URLRequest* request);
-  virtual ~URLRequestInetJob();
 
   virtual void SetExtraRequestHeaders(const std::string& headers) {
     extra_request_headers_ = headers;
@@ -57,7 +56,9 @@ class URLRequestInetJob : public URLRequestJob {
 
   HINTERNET request_handle() const { return request_handle_; }
 
-protected:
+ protected:
+  virtual ~URLRequestInetJob();
+
   // Called by this class and subclasses to send or resend this request.
   virtual void SendRequest() = 0;
 

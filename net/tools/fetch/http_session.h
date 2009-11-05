@@ -11,15 +11,15 @@
 
 // An HttpSession encapsulates a server-side HTTP listen socket.
 class HttpSession : HttpListenSocket::Delegate {
-public:
+ public:
   HttpSession(const std::string& ip, int port);
   virtual ~HttpSession();
 
-  virtual void OnRequest(HttpListenSocket* connection, 
+  virtual void OnRequest(HttpListenSocket* connection,
                          HttpServerRequestInfo* info);
 
-private:
-  scoped_ptr<HttpListenSocket> socket_;
+ private:
+  scoped_refptr<HttpListenSocket> socket_;
   DISALLOW_EVIL_CONSTRUCTORS(HttpSession);
 };
 

@@ -59,7 +59,6 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   // accept local connections.
   static ListenSocket* Listen(std::string ip, int port,
                               ListenSocketDelegate* del);
-  virtual ~ListenSocket();
 
   // Send data to the socket.
   void Send(const char* bytes, int len, bool append_linefeed = false);
@@ -72,10 +71,13 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   void ResumeReads();
 
  protected:
+  friend class base::RefCountedThreadSafe<ListenSocket>;
+
   static const SOCKET kInvalidSocket;
   static const int kSocketError;
 
   ListenSocket(SOCKET s, ListenSocketDelegate* del);
+  virtual ~ListenSocket();
   static SOCKET Listen(std::string ip, int port);
   // if valid, returned SOCKET is non-blocking
   static SOCKET Accept(SOCKET s);

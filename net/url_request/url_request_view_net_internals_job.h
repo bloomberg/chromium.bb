@@ -27,6 +27,8 @@ class URLRequestViewNetInternalsJob : public URLRequestSimpleJob {
                        std::string* data) const;
 
  private:
+  ~URLRequestViewNetInternalsJob() {}
+
   URLFormat* url_format_;
 };
 

@@ -106,6 +106,10 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
   void Append(const LoadLog* log);
 
  private:
+  friend class base::RefCountedThreadSafe<LoadLog>;
+
+  ~LoadLog() {}
+
   EventList events_;
 };
 

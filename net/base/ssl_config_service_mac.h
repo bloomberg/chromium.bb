@@ -16,7 +16,6 @@ class SSLConfigServiceMac : public SSLConfigService {
  public:
   SSLConfigServiceMac();
   explicit SSLConfigServiceMac(base::TimeTicks now);  // Used for testing.
-  virtual ~SSLConfigServiceMac() {}
 
   // Get the current SSL configuration settings.  Can be called on any
   // thread.
@@ -40,6 +39,8 @@ class SSLConfigServiceMac : public SSLConfigService {
   void GetSSLConfigAt(SSLConfig* config, base::TimeTicks now);
 
  private:
+  virtual ~SSLConfigServiceMac() {}
+
   void UpdateConfig(base::TimeTicks now);
 
   // We store the system SSL config and the time that we fetched it.

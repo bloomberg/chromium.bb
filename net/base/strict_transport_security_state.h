@@ -66,6 +66,10 @@ class StrictTransportSecurityState :
   bool Deserialise(const std::string& state);
 
  private:
+  friend class base::RefCountedThreadSafe<StrictTransportSecurityState>;
+
+  ~StrictTransportSecurityState() {}
+
   // If we have a callback configured, call it to let our serialiser know that
   // our state is dirty.
   void DirtyNotify();

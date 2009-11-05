@@ -69,8 +69,6 @@ class CookieMonster : public CookieStore {
   }
 #endif
 
-  ~CookieMonster();
-
   // Parse the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
 
@@ -136,6 +134,8 @@ class CookieMonster : public CookieStore {
   static bool enable_file_scheme_;
 
  private:
+  ~CookieMonster();
+
   // Called by all non-static functions to ensure that the cookies store has
   // been initialized. This is not done during creating so it doesn't block
   // the window showing.

@@ -32,6 +32,8 @@ class FixedHostResolver : public HostResolver {
   virtual void Shutdown() {}
 
  private:
+  ~FixedHostResolver() {}
+
   AddressList address_;
   bool initialized_;
 };

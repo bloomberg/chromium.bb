@@ -107,7 +107,7 @@ class Client {
   GURL url_;
   net::HttpRequestInfo request_info_;
   scoped_ptr<net::HttpTransaction> transaction_;
-  scoped_ptr<net::IOBuffer> buffer_;
+  scoped_refptr<net::IOBuffer> buffer_;
   net::CompletionCallbackImpl<Client> connect_callback_;
   net::CompletionCallbackImpl<Client> read_callback_;
   Singleton<Driver> driver_;
