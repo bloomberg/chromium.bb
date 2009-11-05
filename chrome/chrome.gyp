@@ -1747,6 +1747,7 @@
         'browser/jankometer.h',
         'browser/jumplist.cc',
         'browser/jumplist.h',
+        'browser/jsmessage_box_client.h',
         'browser/jsmessage_box_handler.cc',
         'browser/jsmessage_box_handler.h',
         'browser/keychain_mac.cc',

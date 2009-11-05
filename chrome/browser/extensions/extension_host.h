@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #if defined(TOOLKIT_VIEWS)
@@ -45,7 +46,8 @@ class ExtensionHost :  // NOLINT
                       public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
-                      public NotificationObserver {
+                      public NotificationObserver,
+                      public JavaScriptMessageBoxClient {
  public:
   class ProcessCreationQueue;
 
@@ -173,6 +175,16 @@ class ExtensionHost :  // NOLINT
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // JavaScriptMessageBoxClient
+  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
+                                          bool is_alert);
+  virtual gfx::NativeWindow GetMessageBoxRootWindow();
+  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
+                                  bool success,
+                                  const std::wstring& prompt);
+  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
+  virtual TabContents* AsTabContents() { return NULL; }
 
  private:
   friend class ProcessCreationQueue;
