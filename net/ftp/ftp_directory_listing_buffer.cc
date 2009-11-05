@@ -27,6 +27,7 @@ std::string DetectEncoding(const std::string& text) {
                  &status);
   const UCharsetMatch* match = ucsdet_detect(detector, &status);
   const char* encoding = ucsdet_getName(match, &status);
+  ucsdet_close(detector);
   // Should we check the quality of the match? A rather arbitrary number is
   // assigned by ICU and it's hard to come up with a lower limit.
   if (U_FAILURE(status))

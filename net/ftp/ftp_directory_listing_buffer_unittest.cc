@@ -17,6 +17,7 @@ namespace {
 TEST(FtpDirectoryListingBufferTest, Parse) {
   const char* test_files[] = {
     "dir-listing-ls-1",
+    "dir-listing-ls-1-utf8",
     "dir-listing-ls-2",
     "dir-listing-vms-1",
     "dir-listing-vms-2",
