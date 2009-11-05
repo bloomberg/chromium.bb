@@ -312,6 +312,13 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_label_,
                        TRUE, TRUE, 0);
 
+    // Create the nevermind button.
+    GtkWidget* dangerous_decline = gtk_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_DISCARD_DOWNLOAD).c_str());
+    g_signal_connect(dangerous_decline, "clicked",
+                     G_CALLBACK(OnDangerousDecline), this);
+    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_decline, false, 0);
+
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(
@@ -320,13 +327,6 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAccept), this);
     gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_accept, false, 0);
-
-    // Create the nevermind button.
-    GtkWidget* dangerous_decline = gtk_button_new_with_label(
-        l10n_util::GetStringUTF8(IDS_DISCARD_DOWNLOAD).c_str());
-    g_signal_connect(dangerous_decline, "clicked",
-                     G_CALLBACK(OnDangerousDecline), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_decline, false, 0);
 
     // Put it in an alignment so that padding will be added on the left and
     // right.
