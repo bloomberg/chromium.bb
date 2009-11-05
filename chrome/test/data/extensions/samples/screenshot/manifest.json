@@ -1,9 +1,11 @@
 {
   "name": "Test Screenshot Extension",
   "version": "1.0",
-  "description": "Test extension for testing screenshot functionality",
-  "toolstrips": [
-    "toolstrip.html"
-  ],
+  "description": "Demonstrate screenshot functionality in the chrome.tabs api.",
+  "background_page": "background.html",
+  "browser_action": {
+     "default_icon": "camera.png",
+     "default_title": "Take a screen shot!"
+   },
   "permissions": ["tabs"]
 }
