@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Remove obsolete FFmpeg shared libraries.  Previously, there were three
+# prebuilt FFmpeg libraries checked in as binaries, and they were copied into
+# the framework's Libraries directory.  Since trunk 31050, they have been
+# replaced by the single library libffmpegsumo.dylib (love the name), built
+# from source during a normal build.
+#
+# TODO(mark): Remove after November 19, 2009, allowing two weeks for the
+# transition.
+
+LIBRARIES_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Libraries"
+rm -f "${LIBRARIES_DIR}/libavcodec.52.dylib" \
+      "${LIBRARIES_DIR}/libavformat.52.dylib" \
+      "${LIBRARIES_DIR}/libavutil.50.dylib"
