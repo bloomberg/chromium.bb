@@ -95,11 +95,11 @@ bool BrowserMatchesProfileAndType(Browser* browser,
 // scenario, this function will _not_ find it. Fall back to
 // FindBrowserMatching() in that case.
 Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type) {
-  BrowserList::list_type::const_reverse_iterator browser =
-      BrowserList::begin_last_active();
-  for (; browser != BrowserList::end_last_active(); ++browser) {
-    if (BrowserMatchesProfileAndType(*browser, profile, type))
-      return *browser;
+  for (BrowserList::list_type::const_reverse_iterator i =
+       BrowserList::begin_last_active(); i != BrowserList::end_last_active();
+       ++i) {
+    if (BrowserMatchesProfileAndType(*i, profile, type))
+      return *i;
   }
   return NULL;
 }
@@ -110,10 +110,10 @@ Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type) {
 // ever activated. The user experience if this function is relied on is not good
 // since matching browsers will be returned in registration (creation) order.
 Browser* FindBrowserMatching(Profile* profile, Browser::Type type) {
-  BrowserList::const_iterator browser = BrowserList::begin();
-  for (; browser != BrowserList::end(); ++browser) {
-    if (BrowserMatchesProfileAndType(*browser, profile, type))
-      return *browser;
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if (BrowserMatchesProfileAndType(*i, profile, type))
+      return *i;
   }
   return NULL;
 }
@@ -140,8 +140,8 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   // Send out notifications after add has occurred. Do some basic checking to
   // try to catch evil observers that change the list from under us.
-  std::vector<Observer*>::size_type original_count = observers_.size();
-  for (int i = 0; i < static_cast<int>(observers_.size()); i++)
+  size_t original_count = observers_.size();
+  for (size_t i = 0; i < observers_.size(); ++i)
     observers_[i]->OnBrowserAdded(browser);
   DCHECK_EQ(original_count, observers_.size())
       << "observer list modified during notification";
@@ -158,8 +158,8 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
   // Send out notifications before anything changes. Do some basic checking to
   // try to catch evil observers that change the list from under us.
-  std::vector<Observer*>::size_type original_count = observers_.size();
-  for (int i = 0; i < static_cast<int>(observers_.size()); i++)
+  size_t original_count = observers_.size();
+  for (size_t i = 0; i < observers_.size(); ++i)
     observers_[i]->OnBrowserRemoving(browser);
   DCHECK_EQ(original_count, observers_.size())
       << "observer list modified during notification";
@@ -187,13 +187,13 @@ void BrowserList::AddObserver(BrowserList::Observer* observer) {
 
 // static
 void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
-  std::vector<Observer*>::iterator place =
+  std::vector<Observer*>::iterator i =
       std::find(observers_.begin(), observers_.end(), observer);
-  if (place == observers_.end()) {
+  if (i == observers_.end()) {
     NOTREACHED() << "Removing an observer that isn't registered.";
     return;
   }
-  observers_.erase(place);
+  observers_.erase(i);
 }
 
 // static
@@ -202,15 +202,15 @@ void BrowserList::CloseAllBrowsers(bool use_post) {
   // exit can restore all browsers open before exiting.
   ProfileManager::ShutdownSessionServices();
 
-  BrowserList::const_iterator iter;
-  for (iter = BrowserList::begin(); iter != BrowserList::end();) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end();) {
     if (use_post) {
-      (*iter)->window()->Close();
-      ++iter;
+      (*i)->window()->Close();
+      ++i;
     } else {
       // This path is hit during logoff/power-down. In this case we won't get
       // a final message and so we force the browser to be deleted.
-      Browser* browser = *iter;
+      Browser* browser = *i;
       browser->window()->Close();
       // Close doesn't immediately destroy the browser
       // (Browser::TabStripEmpty() uses invoke later) but when we're ending the
@@ -218,8 +218,8 @@ void BrowserList::CloseAllBrowsers(bool use_post) {
       // DestroyBrowser to make sure the browser is deleted and cleanup can
       // happen.
       browser->window()->DestroyBrowser();
-      iter = BrowserList::begin();
-      if (iter != BrowserList::end() && browser == *iter) {
+      i = BrowserList::begin();
+      if (i != BrowserList::end() && browser == *i) {
         // Destroying the browser should have removed it from the browser list.
         // We should never get here.
         NOTREACHED();
@@ -279,9 +279,9 @@ void BrowserList::WindowsSessionEnding() {
 
 // static
 bool BrowserList::HasBrowserWithProfile(Profile* profile) {
-  BrowserList::const_iterator iter;
-  for (size_t i = 0; i < browsers_.size(); ++i) {
-    if (BrowserMatchesProfileAndType(browsers_[i], profile, Browser::TYPE_ANY))
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if (BrowserMatchesProfileAndType(*i, profile, Browser::TYPE_ANY))
       return true;
   }
   return false;
@@ -295,8 +295,10 @@ void BrowserList::SetLastActive(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers_);
   last_active_browsers_.push_back(browser);
 
-  for (int i = 0; i < static_cast<int>(observers_.size()); i++)
-    observers_[i]->OnBrowserSetLastActive(browser);
+  for (std::vector<Observer*>::const_iterator i = observers_.begin();
+       i != observers_.end(); ++i) {
+    (*i)->OnBrowserSetLastActive(browser);
+  }
 }
 
 // static
@@ -330,8 +332,8 @@ Browser* BrowserList::FindBrowserWithProfile(Profile* p) {
 
 // static
 Browser* BrowserList::FindBrowserWithID(SessionID::id_type desired_id) {
-  BrowserList::const_iterator i;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
     if ((*i)->session_id().id() == desired_id)
       return *i;
   }
@@ -340,9 +342,9 @@ Browser* BrowserList::FindBrowserWithID(SessionID::id_type desired_id) {
 
 // static
 size_t BrowserList::GetBrowserCountForType(Profile* p, Browser::Type type) {
-  BrowserList::const_iterator i;
   size_t result = 0;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
     if (BrowserMatchesProfileAndType(*i, p, type))
       ++result;
   }
@@ -351,9 +353,9 @@ size_t BrowserList::GetBrowserCountForType(Profile* p, Browser::Type type) {
 
 // static
 size_t BrowserList::GetBrowserCount(Profile* p) {
-  BrowserList::const_iterator i;
   size_t result = 0;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
     if (BrowserMatchesProfileAndType(*i, p, Browser::TYPE_ANY))
       result++;
   }
@@ -362,8 +364,8 @@ size_t BrowserList::GetBrowserCount(Profile* p) {
 
 // static
 bool BrowserList::IsOffTheRecordSessionActive() {
-  BrowserList::const_iterator i;
-  for (i = BrowserList::begin(); i != BrowserList::end(); ++i) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
     if ((*i)->profile()->IsOffTheRecord())
       return true;
   }
@@ -373,7 +375,7 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 // static
 void BrowserList::RemoveBrowserFrom(Browser* browser, list_type* browser_list) {
   const iterator remove_browser =
-      find(browser_list->begin(), browser_list->end(), browser);
+      std::find(browser_list->begin(), browser_list->end(), browser);
   if (remove_browser != browser_list->end())
     browser_list->erase(remove_browser);
 }
