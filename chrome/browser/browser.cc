@@ -2425,7 +2425,7 @@ void Browser::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
-        normal_window && !profile_->IsOffTheRecord());
+                                          !profile_->IsOffTheRecord());
 
     // Page-related commands
     command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
