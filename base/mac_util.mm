@@ -188,4 +188,53 @@ void ActivateProcess(pid_t pid) {
   }
 }
 
+// Takes a path to an (executable) binary and tries to provide the path to an
+// application bundle containing it. It takes the outermost bundle that it can
+// find (so for "/Foo/Bar.app/.../Baz.app/..." it produces "/Foo/Bar.app").
+//   |exec_name| - path to the binary
+//   returns - path to the application bundle, or empty on error
+FilePath GetAppBundlePath(const FilePath& exec_name) {
+  const char kExt[] = ".app";
+  const size_t kExtLength = arraysize(kExt) - 1;
+
+  // Split the path into components.
+  std::vector<std::string> components;
+  exec_name.GetComponents(&components);
+
+  // It's an error if we don't get any components.
+  if (!components.size())
+    return FilePath();
+
+  // Don't prepend '/' to the first component.
+  std::vector<std::string>::const_iterator it = components.begin();
+  std::string bundle_name = *it;
+  DCHECK(it->length() > 0);
+  // If the first component ends in ".app", we're already done.
+  if (it->length() > kExtLength &&
+      !it->compare(it->length() - kExtLength, kExtLength, kExt, kExtLength))
+    return FilePath(bundle_name);
+
+  // The first component may be "/" or "//", etc. Only append '/' if it doesn't
+  // already end in '/'.
+  if (bundle_name[bundle_name.length() - 1] != '/')
+    bundle_name += '/';
+
+  // Go through the remaining components.
+  for (++it; it != components.end(); ++it) {
+    DCHECK(it->length() > 0);
+
+    bundle_name += *it;
+
+    // If the current component ends in ".app", we're done.
+    if (it->length() > kExtLength &&
+        !it->compare(it->length() - kExtLength, kExtLength, kExt, kExtLength))
+      return FilePath(bundle_name);
+
+    // Separate this component from the next one.
+    bundle_name += '/';
+  }
+
+  return FilePath();
+}
+
 }  // namespace mac_util

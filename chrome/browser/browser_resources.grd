@@ -17,8 +17,10 @@ without changes to the corresponding grd file. ek -->
       <if expr="os == 'linux2'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
       </if>
-
-      <if expr="os != 'linux2'">
+      <if expr="os == 'darwin'">
+        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="BINDATA" />
+      </if>
+      <if expr="os != 'linux2' and os != 'darwin'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
       </if>
 

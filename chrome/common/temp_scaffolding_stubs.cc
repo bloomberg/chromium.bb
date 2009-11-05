@@ -66,21 +66,6 @@ void InstallJankometer(const CommandLine&) {
 void UninstallJankometer() {
   // http://code.google.com/p/chromium/issues/detail?id=8077
 }
-MemoryDetails::MemoryDetails() {
-
-  NOTIMPLEMENTED();
-  process_data_.push_back(ProcessData());
-}
-
-void MemoryDetails::StartFetch() {
-  NOTIMPLEMENTED();
-
-  // Other implementations implicitly own the object by passing it to
-  // IO and UI tasks.  This code is called from AboutMemoryHandler's
-  // constructor, so there is no reference to Release(), yet.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &MemoryDetails::OnDetailsAvailable));
-}
 
 void BrowserList::AllBrowsersClosed() {
   // TODO(port): Close any dependent windows if necessary when the last browser

@@ -81,6 +81,14 @@ void ActivateProcess(pid_t);
 // Pulls a snapshot of the entire browser into png_representation.
 void GrabWindowSnapshot(NSWindow* window,
                         std::vector<unsigned char>* png_representation);
+
+// Takes a path to an (executable) binary and tries to provide the path to an
+// application bundle containing it. It takes the outermost bundle that it can
+// find (so for "/Foo/Bar.app/.../Baz.app/..." it produces "/Foo/Bar.app").
+//   |exec_name| - path to the binary
+//   returns - path to the application bundle, or empty on error
+FilePath GetAppBundlePath(const FilePath& exec_name);
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

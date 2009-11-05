@@ -184,31 +184,34 @@ void MemoryDetails::UpdateHistograms() {
     int sample = static_cast<int>(browser.processes[index].working_set.priv);
     aggregate_memory += sample;
     switch (browser.processes[index].type) {
-     case ChildProcessInfo::BROWSER_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.Browser", sample);
-       break;
-     case ChildProcessInfo::RENDER_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer", sample);
-       break;
-     case ChildProcessInfo::PLUGIN_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
-       plugin_count++;
-       break;
-     case ChildProcessInfo::WORKER_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.Worker", sample);
-       worker_count++;
-       break;
-     case ChildProcessInfo::ZYGOTE_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.Zygote", sample);
-       break;
-     case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
-       break;
-     case ChildProcessInfo::NACL_PROCESS:
-       UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
-       break;
-     default:
-       NOTREACHED();
+      case ChildProcessInfo::BROWSER_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Browser", sample);
+        break;
+      case ChildProcessInfo::RENDER_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer", sample);
+        break;
+      case ChildProcessInfo::PLUGIN_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
+        plugin_count++;
+        break;
+      case ChildProcessInfo::WORKER_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Worker", sample);
+        worker_count++;
+        break;
+      case ChildProcessInfo::UTILITY_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
+        break;
+      case ChildProcessInfo::ZYGOTE_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Zygote", sample);
+        break;
+      case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
+        break;
+      case ChildProcessInfo::NACL_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
+        break;
+      default:
+        NOTREACHED();
     }
   }
   UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
@@ -218,6 +221,8 @@ void MemoryDetails::UpdateHistograms() {
       static_cast<int>(browser.processes.size()));
   UMA_HISTOGRAM_COUNTS_100("Memory.PluginProcessCount", plugin_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.WorkerProcessCount", worker_count);
+  // TODO(viettrungluu): Do we want separate counts for the other
+  // (platform-specific) process types?
 
   int total_sample = static_cast<int>(aggregate_memory / 1000);
   UMA_HISTOGRAM_MEMORY_MB("Memory.Total", total_sample);

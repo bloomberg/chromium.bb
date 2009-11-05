@@ -57,3 +57,47 @@ TEST_F(MacUtilTest, TestGrabWindowSnapshot) {
   [color getRed:&red green:&green blue:&blue alpha:&alpha];
   EXPECT_GE(red + green + blue, 3.0);
 }
+
+TEST_F(MacUtilTest, TestGetAppBundlePath) {
+  FilePath out;
+
+  // Make sure it doesn't crash.
+  out = mac_util::GetAppBundlePath(FilePath());
+  EXPECT_TRUE(out.empty());
+
+  // Some more invalid inputs.
+  const char* invalid_inputs[] = {
+    "/", "/foo", "foo", "/foo/bar.", "foo/bar.", "/foo/bar./bazquux",
+    "foo/bar./bazquux", "foo/.app", "//foo",
+  };
+  for (size_t i = 0; i < arraysize(invalid_inputs); i++) {
+    out = mac_util::GetAppBundlePath(FilePath(invalid_inputs[i]));
+    EXPECT_TRUE(out.empty()) << "loop: " << i;
+  }
+
+  // Some valid inputs; this and |expected_outputs| should be in sync.
+  struct {
+    const char *in;
+    const char *expected_out;
+  } valid_inputs[] = {
+    { "FooBar.app/", "FooBar.app" },
+    { "/FooBar.app", "/FooBar.app" },
+    { "/FooBar.app/", "/FooBar.app" },
+    { "//FooBar.app", "//FooBar.app" },
+    { "/Foo/Bar.app", "/Foo/Bar.app" },
+    { "/Foo/Bar.app/", "/Foo/Bar.app" },
+    { "/F/B.app", "/F/B.app" },
+    { "/F/B.app/", "/F/B.app" },
+    { "/Foo/Bar.app/baz", "/Foo/Bar.app" },
+    { "/Foo/Bar.app/baz/", "/Foo/Bar.app" },
+    { "/Foo/Bar.app/baz/quux.app/quuux", "/Foo/Bar.app" },
+    { "/Applications/Google Foo.app/bar/Foo Helper.app/quux/Foo Helper",
+        "/Applications/Google Foo.app" },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(valid_inputs); i++) {
+    out = mac_util::GetAppBundlePath(FilePath(valid_inputs[i].in));
+    EXPECT_FALSE(out.empty()) << "loop: " << i;
+    EXPECT_STREQ(valid_inputs[i].expected_out,
+        out.value().c_str()) << "loop: " << i;
+  }
+}
