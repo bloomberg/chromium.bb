@@ -1,5 +1,10 @@
 2009-11-05  Christian Egli  <christian.egli@sbszh.ch>
 
+	* COPYING:
+	* COPYING.LIB:
+	* README: Explain that the library is licensed under LGPL and the
+	tools under GPL.
+
 	* HACKING: Mention the use of gnulib and explain how to update it.
 
 2009-11-02  Christian Egli  <christian.egli@sbszh.ch>
