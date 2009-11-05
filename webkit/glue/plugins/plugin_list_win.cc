@@ -328,7 +328,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
         StringToInt(ver[1], &minor) &&
         StringToInt(ver[2], &update)) {
       if (major == 6 && minor == 0 && update < 120)
-        return false;  // Java SE6 Update 12 or older.
+        return false;  // Java SE6 Update 11 or older.
     }
   }
 
