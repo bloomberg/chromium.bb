@@ -16,6 +16,6 @@ find -type f \( -name missing -o -name install-sh -o -name mkinstalldirs \
 	-o -name Makefile.in -o -name aclocal.m4 \) -print0 | xargs -0 rm -f
 
 echo Running autoreconf...
-autoreconf --force --install --verbose --debug
+autoreconf --force --install
 
 exit 0
