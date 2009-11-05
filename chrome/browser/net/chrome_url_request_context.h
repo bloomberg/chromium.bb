@@ -123,7 +123,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
 
   // Access only from the UI thread.
   PrefService* prefs_;
-  NotificationRegistrar registrar_;
 
   // Deferred logic for creating a ChromeURLRequestContext.
   // Access only from the IO thread.

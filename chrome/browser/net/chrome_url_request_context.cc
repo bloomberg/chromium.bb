@@ -504,8 +504,8 @@ ChromeURLRequestContextGetter::CreateOriginalForExtensions(
 }
 
 // static
-ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::CreateOffTheRecord(
-    Profile* profile) {
+ChromeURLRequestContextGetter*
+ChromeURLRequestContextGetter::CreateOffTheRecord(Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       profile, new FactoryForOffTheRecord(profile));
@@ -513,7 +513,8 @@ ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::CreateOffTheRecord
 
 // static
 ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(Profile* profile) {
+ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
+    Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       profile,
@@ -530,10 +531,6 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
     prefs_->RemovePrefObserver(prefs::kDefaultCharset, this);
     prefs_ = NULL;
   }
-
-  // TODO(eroman): Doesn't look like this member is even used...
-  // can probably be deleted.
-  registrar_.RemoveAll();
 }
 
 void ChromeURLRequestContextGetter::OnNewExtensions(const std::string& id,
