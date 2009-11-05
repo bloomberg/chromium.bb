@@ -45,9 +45,9 @@ namespace {
 class LinuxHostInit {
  public:
   LinuxHostInit() {
-    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>().get();
+    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>::get();
     shost->Init("");
-    ZygoteHost* zhost = Singleton<ZygoteHost>().get();
+    ZygoteHost* zhost = Singleton<ZygoteHost>::get();
     zhost->Init("");
   }
   ~LinuxHostInit() {}

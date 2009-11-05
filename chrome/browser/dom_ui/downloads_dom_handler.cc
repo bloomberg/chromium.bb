@@ -49,7 +49,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
   // Create our fileicon data source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         new FileIconSource()));
 }

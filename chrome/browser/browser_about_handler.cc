@@ -571,7 +571,7 @@ AboutSource::AboutSource()
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          Singleton<ChromeURLDataManager>().get(),
+          Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource, this));
 }
 

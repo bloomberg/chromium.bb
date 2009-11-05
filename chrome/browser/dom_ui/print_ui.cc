@@ -30,7 +30,7 @@ PrintUI::PrintUI(TabContents* contents) : DOMUI(contents) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          Singleton<ChromeURLDataManager>().get(),
+          Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           html_source));
 }

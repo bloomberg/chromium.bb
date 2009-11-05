@@ -600,9 +600,9 @@ int ChromeMain(int argc, char** argv) {
       sandbox_cmd = sandbox_binary;
 
     // Tickle the sandbox host and zygote host so they fork now.
-    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>().get();
+    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>::get();
     shost->Init(sandbox_cmd);
-    ZygoteHost* zhost = Singleton<ZygoteHost>().get();
+    ZygoteHost* zhost = Singleton<ZygoteHost>::get();
     zhost->Init(sandbox_cmd);
 
     // We want to be sure to init NSPR on the main thread.

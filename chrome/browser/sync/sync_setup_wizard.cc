@@ -141,7 +141,7 @@ SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
   SyncResourcesSource* sync_source = new SyncResourcesSource();
   bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         sync_source));
   if (!posted) {

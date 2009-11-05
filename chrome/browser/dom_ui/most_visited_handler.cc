@@ -61,7 +61,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
       new DOMUIThumbnailSource(dom_ui->GetProfile());
   bool posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource, thumbnail_src));
   if (!posted) {
     thumbnail_src->AddRef();
@@ -71,7 +71,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   DOMUIFavIconSource* favicon_src = new DOMUIFavIconSource(dom_ui->GetProfile());
   posted = ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>().get(),
+      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource, favicon_src));
   if (!posted) {
     favicon_src->AddRef();
