@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(ajwong): Determine if we want to statically link libz.
+
 {
   'target_defaults': {
     'conditions': [
@@ -38,7 +40,7 @@
     #
     # TODO(ajwong): Per the comment above, reduce this conditional's size and
     # determine if in-tree build in Windows is tractable.
-    ['(OS!="linux" and OS!="freebsd") or use_system_ffmpeg!=0', {
+    ['(OS!="linux" and OS!="freebsd" and OS!="mac") or use_system_ffmpeg!=0', {
       'variables': {
         'target_for_binaries': 'ffmpeg_binaries',
         'ffmpeg_include_root': 'include',
@@ -51,6 +53,7 @@
       'targets': [
         {
           'target_name': 'ffmpegsumo',
+          'product_name': 'libffmpegsumo',
           'type': 'shared_library',
           'dependencies': [
             'make_ffmpeg_asm_lib',
@@ -149,42 +152,14 @@
             'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)',
             'source/patched-ffmpeg-mt',
           ],
+          'defines': [
+            'HAVE_AV_CONFIG_H',
+            '_POSIX_C_SOURCE=200112',
+          ],
           'cflags': [
-            '-DHAVE_AV_CONFIG_H',
-            '-D_ISOC99_SOURCE',
-            '-D_POSIX_C_SOURCE=200112',
-            '-std=c99',
-            '-D_LARGEFILE_SOURCE',
-            '-pthread',
-            '-fno-math-errno',
-            '-fomit-frame-pointer'
-          ],
-          'cflags!': [
-            # Ensure the symbols are exported.
-            '-fvisibility=hidden',
-          ],
-          'ldflags': [
-            '-Wl,-Bsymbolic',
-            '-L<(shared_generated_dir)',
-          ],
-          'libraries': [
-            '-l<(asm_library)',
-            '-lm',
-
-            # TODO(ajwong): Statically link these once we resolve the
-            # PIC/non-PIC issues on x64.
-            '-lz',
+            '-fomit-frame-pointer',
           ],
           'conditions': [
-            ['target_arch=="x64"', {
-              'cflags': [
-                # x64 requires PIC for shared libraries. This is opposite
-                # of ia32 where due to a slew of inline assembly using ebx,
-                # FFmpeg CANNOT be built with PIC.
-                '-fPIC',
-                '-DPIC',
-              ],
-            }],
             ['ffmpeg_branding!="Chrome"', {
               'sources!': [
                 # Exclude files that should only be used if doing a branded
@@ -212,7 +187,87 @@
                 'source/patched-ffmpeg-mt/libavformat/mov.c',
                 'source/patched-ffmpeg-mt/libavformat/mp3.c',
               ],
-            }],
+            }],  # ffmpeg_branding
+            ['target_arch=="x64"', {
+              # x64 requires PIC for shared libraries. This is opposite
+              # of ia32 where due to a slew of inline assembly using ebx,
+              # FFmpeg CANNOT be built with PIC.
+              'defines': [
+                'PIC',
+              ],
+              'cflags': [
+                '-fPIC',
+              ],
+            }],  # target_arch
+            ['OS=="linux" or OS=="freebsd"', {
+              'defines': [
+                '_ISOC99_SOURCE',
+                '_LARGEFILE_SOURCE',
+              ],
+              'cflags': [
+                '-std=c99',
+                '-pthread',
+                '-fno-math-errno',
+              ],
+              'cflags!': [
+                # Ensure the symbols are exported.
+                #
+                # TODO(ajwong): Fix common.gypi to only add this flag for
+                # _type != shared_library.
+                '-fvisibility=hidden',
+              ],
+              'link_settings': {
+                'ldflags': [
+                  '-Wl,-Bsymbolic',
+                  '-L<(shared_generated_dir)',
+                ],
+                'libraries': [
+                  # TODO(ajwong): When scons is dead, collapse this with the
+                  # absolute path entry inside the OS="mac" conditional, and
+                  # move it out of the conditionals block altogether.
+                  '-l<(asm_library)',
+
+                  '-lz',
+                ],
+              },
+            }],  # OS=="linux" or OS=="freebsd"
+            ['OS=="mac"', {
+              'libraries': [
+                # TODO(ajwong): Move into link_settings when this is fixed:
+                #
+                # http://code.google.com/p/gyp/issues/detail?id=108
+                '<(shared_generated_dir)/<(STATIC_LIB_PREFIX)<(asm_library)<(STATIC_LIB_SUFFIX)',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/usr/lib/libz.dylib',
+                ],
+              },
+              'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # No -fvisibility=hidden
+                'GCC_DYNAMIC_NO_PIC': 'YES',         # -mdynamic-no-pic
+                                                     # (equiv -fno-PIC)
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+                'LIBRARY_SEARCH_PATHS': [
+                  '<(shared_generated_dir)'
+                ],
+                'OTHER_LDFLAGS': [
+                  # This is needed because FFmpeg cannot be built as PIC, and
+                  # thus we need to instruct the linker to allow relocations
+                  # for read-only segments for this target to be able to
+                  # generated the shared library on Mac.
+                  #
+                  # This makes Mark sad, but he's okay with it since it is
+                  # isolated to this module. When Mark finds this in the
+                  # future, and has forgotten this conversation, this comment
+                  # should remind him that the world is still nice and
+                  # butterflies still exist...as do rainbows, sunshine,
+                  # tulips, etc., etc...but not kittens. Those went away
+                  # with this flag.
+                  '-Wl,-read_only_relocs,suppress'
+                ],
+              },
+            }],  # OS=="mac"
           ],
           'actions': [
             {
@@ -248,23 +303,54 @@
           'rules': [
             {
               'conditions': [
-                ['target_arch=="ia32"', {
+                ['OS=="linux" or OS=="freebsd"', {
                   'variables': {
-                    'yasm_flags': [
-                      '-DARCH_X86_32',
-                      '-m', 'x86',
-                    ],
+                    'obj_format': 'elf',
                   },
-                },],
-                ['target_arch=="x64"', {
+                  'conditions': [
+                    ['target_arch=="ia32"', {
+                      'variables': {
+                        'yasm_flags': [
+                          '-DARCH_X86_32',
+                          '-m', 'x86',
+                        ],
+                      },
+                    }],
+                    ['target_arch=="x64"', {
+                      'variables': {
+                        'yasm_flags': [
+                          '-DARCH_X86_64',
+                          '-m', 'amd64',
+                          '-DPIC',
+                        ],
+                      },
+                    }],
+                  ],
+                }], ['OS=="mac"', {
                   'variables': {
-                    'yasm_flags': [
-                      '-DARCH_X86_64',
-                      '-m', 'amd64',
-                      '-DPIC',
-                    ],
+                    'obj_format': 'macho',
+                    'yasm_flags': [ '-DPREFIX', ],
                   },
-                },],
+                  'conditions': [
+                    ['target_arch=="ia32"', {
+                      'variables': {
+                        'yasm_flags': [
+                          '-DARCH_X86_32',
+                          '-m', 'x86',
+                        ],
+                      },
+                    }],
+                    ['target_arch=="x64"', {
+                      'variables': {
+                        'yasm_flags': [
+                          '-DARCH_X86_64',
+                          '-m', 'amd64',
+                          '-DPIC',
+                        ],
+                      },
+                    }],
+                  ],
+                }],
               ],
               'rule_name': 'assemble',
               'extension': 'asm',
@@ -274,7 +360,7 @@
               ],
               'action': [
                 '<(PRODUCT_DIR)/yasm',
-                '-f', 'elf',
+                '-f', '<(obj_format)',
                 '<@(yasm_flags)',
                 '-I', 'source/patched-ffmpeg-mt/libavcodec/x86/',
                 '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).o',
@@ -303,7 +389,7 @@
                   '<(shared_generated_dir)/dsputil_yasm.o',
                   '<(shared_generated_dir)/fft_mmx.o',
                 ],
-                'library_path': '<(shared_generated_dir)/lib<(asm_library)<(STATIC_LIB_SUFFIX)',
+                'library_path': '<(shared_generated_dir)/<(STATIC_LIB_PREFIX)<(asm_library)<(STATIC_LIB_SUFFIX)',
               },
               'inputs': [ '<@(asm_objects)', ],
               'outputs': [ '<(library_path)', ],
@@ -549,9 +635,6 @@
               # Need to consolidate the copies in one place. (BUG=23602)
               'variables': {
                 'source_files': [
-                  'binaries/<(ffmpeg_bin_dir)/libavcodec.52.dylib',
-                  'binaries/<(ffmpeg_bin_dir)/libavformat.52.dylib',
-                  'binaries/<(ffmpeg_bin_dir)/libavutil.50.dylib',
                 ],
               },
         }],

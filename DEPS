@@ -130,6 +130,13 @@ deps_os = {
     "src/third_party/WebKit/WebKitLibraries":
       Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
 
+    # TODO(ajwong): Move this into the OS-independent block.
+    "src/third_party/yasm/source/patched-yasm":
+      "/trunk/deps/third_party/yasm/patched-yasm@29937",
+    "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
+      "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
+      Var("ffmpeg_revision"),
+
     "src/third_party/ffmpeg/binaries/chromium/mac/ia32":
       "/trunk/deps/third_party/ffmpeg/binaries/mac@" + Var("ffmpeg_revision"),
     "src/third_party/ffmpeg/binaries/chromium/mac/ia32_dbg":
@@ -141,9 +148,9 @@ deps_os = {
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@29103",
 
+    # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":
       "/trunk/deps/third_party/yasm/patched-yasm@29937",
-
     "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
       "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
       Var("ffmpeg_revision"),

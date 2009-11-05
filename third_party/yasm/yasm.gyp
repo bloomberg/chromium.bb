@@ -32,7 +32,7 @@
 {
   'variables': {
     'yasm_include_dirs': [
-      'source/config/linux',
+      'source/config/<(OS)',
       'source/patched-yasm',
     ],
 
@@ -41,8 +41,8 @@
     # it would probably be safe to use these flags there as well, the
     # ./configure based build does not use the same flags between the main
     # yasm executable, and its subprograms.
-    'yasm_c_flags': [
-      '-DHAVE_CONFIG_H',
+    'yasm_defines': ['HAVE_CONFIG_H'],
+    'yasm_cflags': [
       '-std=gnu99',
       '-ansi',
       '-pedantic',
@@ -61,6 +61,7 @@
       'target_name': 'yasm',
       'type': 'executable',
       'dependencies': [
+        'config_sources',
         'genmacro',
         'genmodule',
         'genperf',
@@ -153,9 +154,8 @@
         '<(shared_generated_dir)',
         '<(generated_dir)',
       ],
-      'cflags': [
-        '<@(yasm_c_flags)',
-      ],
+      'defines': [ '<@(yasm_defines)' ],
+      'cflags': [ '<@(yasm_cflags)', ],
       'rules': [
         {
           'rule_name': 'generate_gperf',
@@ -313,7 +313,7 @@
         {
           'action_name': 'generate_module',
           'variables': {
-            'makefile': 'source/config/linux/Makefile',
+            'makefile': 'source/config/<(OS)/Makefile',
             'module_in': 'source/patched-yasm/libyasm/module.in',
             'outfile': '<(generated_dir)/module.c',
           },
@@ -416,8 +416,9 @@
       'include_dirs': [
         '<@(yasm_include_dirs)',
       ],
+      'defines': [ '<@(yasm_defines)' ],
       'cflags': [
-        '<(yasm_c_flags)',
+        '<@(yasm_cflags)',
       ],
     },
     {

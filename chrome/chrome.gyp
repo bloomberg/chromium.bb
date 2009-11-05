@@ -5877,6 +5877,15 @@
                     }],
                   ],
                 },
+                {
+                  'destination':
+                      '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                  'files': [
+                    # TODO(ajwong): Find a way to share this path with
+                    # ffmpeg.gyp so they don't diverge. (BUG=23602)
+                    '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                  ],
+                },
               ],
               'conditions': [
                 ['mac_breakpad==1', {
@@ -5919,32 +5928,6 @@
                     },
                   ],
                 }],  # mac_keystone
-                ['branding=="Chrome"', {
-                  'copies': [
-                    {
-                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
-                      # TODO(ajwong): This, and the parallel chromium stanza
-                      # below really should find a way to share file paths with
-                      # ffmpeg.gyp so they don't diverge. (BUG=23602)
-                      'files': [
-                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavcodec.52.dylib',
-                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavformat.52.dylib',
-                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavutil.50.dylib',
-                      ],
-                    },
-                  ],
-                }, {  # else: 'branding!="Chrome"
-                  'copies': [
-                    {
-                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
-                      'files': [
-                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
-                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
-                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
-                      ],
-                    },
-                  ],
-                }],  # branding
               ],  # conditions
             }],  # OS=="mac"
           ],  # conditions

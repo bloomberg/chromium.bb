@@ -1,13 +1,14 @@
 See also the yasm.gyp file for a description of the yasm build process.
 
 Instructions for recreating the yasm.gyp file.
-  1) Get a clean version of the yasm source tree and copy it somewhere. The
-     clean tree can be found at:
+  1) Get a clean version of the yasm source tree. The clean tree can be found
+     at:
 
        src/third_party/yasm/source/yasm
 
-  2) Run ./autogen.sh in your copy of the pristine source. Unlike ./configure,
-     autogen.sh will dirty the tree regardless of where it is called from.
+  2) Run configure on the pristine source from a different directory (eg.,
+     /tmp/yasm_build).  Running configure from another directory will keep
+     the source tree clean.
 
   3) Next, capture all the output from a build of yasm.  We will use the build
      log as a reference for making the yasm.gyp file.

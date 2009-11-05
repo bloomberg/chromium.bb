@@ -130,6 +130,8 @@ Detailed Directions:
        make libavcodec/libavcodec.so libavformat/libavformat.so \
           > ffmpeg_build_log 2> ffmpeg_build_err
 
+     For Mac, replace the ".so" in the files above with ".dylib".
+
   5) Check ffmpeg_build_err to see if there are any significant
      anomalies.  FFmpeg source generates a lot of compiler warnings; it
      is safe to ignore those.

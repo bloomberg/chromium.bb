@@ -335,9 +335,7 @@
             {
               'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/MacOS/',
               'files': [
-                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
-                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
-                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
+                '<(PRODUCT_DIR)/libffmpegsumo.dylib',
               ],
             },
           ],
