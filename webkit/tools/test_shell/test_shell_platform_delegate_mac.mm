@@ -10,6 +10,7 @@
 #import <objc/objc-runtime.h>
 #include <mach/task.h>
 
+#include "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -149,10 +150,10 @@ static void SwizzleNSPasteboard(void) {
 TestShellPlatformDelegate::TestShellPlatformDelegate(
     const CommandLine &command_line)
     : command_line_(command_line) {
+  // Force AppKit to init itself, but don't start the runloop yet
+  [CrApplication sharedApplication];
   gTestShellAutoreleasePool = [[NSAutoreleasePool alloc] init];
   InitWebCoreSystemInterface();
-  // Force AppKit to init itself, but don't start the runloop yet
-  [NSApplication sharedApplication];
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
 }
 
