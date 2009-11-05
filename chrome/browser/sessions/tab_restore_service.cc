@@ -283,6 +283,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
                                   tab->pinned, tab->from_last_session);
     }
   } else if (entry->type == WINDOW) {
+    Browser* current_browser = browser;
     const Window* window = static_cast<Window*>(entry);
     browser = Browser::Create(profile());
     for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
@@ -302,6 +303,11 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
                           browser->session_id().id());
     }
     browser->window()->Show();
+
+    if (replace_existing_tab && current_browser &&
+        current_browser->GetSelectedTabContents()) {
+      current_browser->CloseTab();
+    }
   } else {
     NOTREACHED();
   }
