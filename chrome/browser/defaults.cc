@@ -47,4 +47,10 @@ const bool kRestorePopups = false;
 
 #endif
 
+#if defined(OS_MACOSX)
+const bool kBrowserAliveWithNoWindows = true;
+#else
+const bool kBrowserAliveWithNoWindows = false;
+#endif
+
 }  // namespace browser_defaults

@@ -37,6 +37,9 @@ extern const int kPinnedTabWidth;
 // Should session restore restore popup windows?
 extern const bool kRestorePopups;
 
+// Can the browser be alive without any browser windows?
+extern const bool kBrowserAliveWithNoWindows;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

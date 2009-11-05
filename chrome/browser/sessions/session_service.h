@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -329,6 +330,18 @@ class SessionService : public BaseSessionService,
     return type == Browser::TYPE_NORMAL ||
         (type == Browser::TYPE_POPUP && browser_defaults::kRestorePopups);
   }
+
+  // Returns true if we should record a window close as pending.
+  // |has_open_trackable_browsers_| must be up-to-date before calling this.
+  bool should_record_close_as_pending() const {
+    // When this is called, the browser window being closed is still open, hence
+    // still in the browser list. If there is a browser window other than the
+    // one being closed but no trackable windows, then the others must be App
+    // windows or similar. In this case, we record the close as pending.
+    return !has_open_trackable_browsers_ &&
+        (!browser_defaults::kBrowserAliveWithNoWindows ||
+         BrowserList::size() > 1);
+    }
 
   // Convert back/forward between the Browser and SessionService DB window
   // types.
