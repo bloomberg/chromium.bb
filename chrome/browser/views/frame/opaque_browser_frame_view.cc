@@ -634,7 +634,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      browser_view_->IsBrowserTypeNormal()) {
+      browser_view_->IsBrowserTypeNormal() &&
+      !browser_view_->IsOffTheRecord()) {
     SkBitmap* theme_overlay;
     if (ShouldPaintAsActive())
       theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY);
