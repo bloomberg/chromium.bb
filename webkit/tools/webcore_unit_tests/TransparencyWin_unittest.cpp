@@ -308,7 +308,7 @@ TEST(TransparencyWin, WhiteLayerPixelTest)
 
 TEST(TransparencyWin, OpaqueCompositeLayerPixel)
 {
-    Color red(0xFFFF0000), darkRed(0xFFC00000);
+    Color red(0xFFFF0000), darkRed(0xFFBF0000);
     Color green(0xFF00FF00);
 
     // Make a red bottom layer, followed by a half green next layer @ 50%.
@@ -352,11 +352,11 @@ TEST(TransparencyWin, OpaqueCompositeLayerPixel)
     // The dark result is:
     //   (black @ 50% atop green) @ 50% atop red = 0xFF804000
     // which is 0xFFA02000 (Skia computes 0xFFA11F00 due to rounding).
-    Color darkGreenRed(0xFF813f00);
+    Color darkGreenRed(0xFF803f00);
     EXPECT_EQ(darkGreenRed, getPixelAt(src->context(), 13, 13));
 
     // 50% green on top of red = FF808000 (rounded to what Skia will produce).
-    Color greenRed(0xFF817E00);
+    Color greenRed(0xFF807F00);
     EXPECT_EQ(greenRed, getPixelAt(src->context(), 14, 14));
     EXPECT_EQ(greenRed, getPixelAt(src->context(), 15, 15));
 }
@@ -454,7 +454,7 @@ TEST(TransparencyWin, RotateOpaqueCompositeLayer)
     EXPECT_EQ(white, getPixelAt(src->context(), 0, 0));
 
     // Check the stripe down the middle, first at the top...
-    Color gray(0xFF818181);
+    Color gray(0xFF808080);
     EXPECT_EQ(white, getPixelAt(src->context(), 6, 0));
     EXPECT_EQ(gray, getPixelAt(src->context(), 7, 0));
     EXPECT_EQ(gray, getPixelAt(src->context(), 8, 0));
@@ -467,8 +467,8 @@ TEST(TransparencyWin, RotateOpaqueCompositeLayer)
     EXPECT_EQ(white, getPixelAt(src->context(), 9, 15));
 
     // Our red square should be 25% red over the top of those two.
-    Color redwhite(0xFFdfc0c0);
-    Color redgray(0xFFa08181);
+    Color redwhite(0xFFdfbfbf);
+    Color redgray(0xFF9f8080);
     EXPECT_EQ(white, getPixelAt(src->context(), 0, 1));
     EXPECT_EQ(redwhite, getPixelAt(src->context(), 1, 1));
     EXPECT_EQ(redwhite, getPixelAt(src->context(), 6, 1));
@@ -621,20 +621,20 @@ TEST(TransparencyWin, ScaleTransparency)
     src->context()->restore();
     src->context()->endTransparencyLayer();
 
-    Color redBackground(0xFFFF8181);  // 50% red composited on white.
+    Color redBackground(0xFFFF8080);  // 50% red composited on white.
     EXPECT_EQ(redBackground, getPixelAt(src->context(), 0, 0));
     EXPECT_EQ(redBackground, getPixelAt(src->context(), 1, 1));
 
     // Top half (minus two pixel border) should be 50% gray atop opaque
     // red = 0xFF804141. Then that's composited with 50% transparency on solid
     // white = 0xFFC0A1A1.
-    Color darkRed(0xFFC08181);
+    Color darkRed(0xFFBF8080);
     EXPECT_EQ(darkRed, getPixelAt(src->context(), 2, 2));
     EXPECT_EQ(darkRed, getPixelAt(src->context(), 7, 7));
 
     // Bottom half (minus a two pixel border) should be a layer with 5% gray
     // with another 50% opacity composited atop white.
-    Color darkWhite(0xFFC0C0C0);
+    Color darkWhite(0xFFBFBFBF);
     EXPECT_EQ(darkWhite, getPixelAt(src->context(), 8, 8));
     EXPECT_EQ(darkWhite, getPixelAt(src->context(), 13, 13));
 

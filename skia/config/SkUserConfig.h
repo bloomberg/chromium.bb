@@ -203,10 +203,6 @@ typedef unsigned uint32_t;
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
 
-// For now (and to avoid rebaselining 1700+ tests), we'll use the old version
-// of SkAlpha255To256.
-#define SK_USE_OLD_255_TO_256
-
 // ===== End Chrome-specific definitions =====
 
 #endif
