@@ -29,13 +29,16 @@ def IsPEFile(path):
 
 def main(options, args):
   directory = args[0]
-  success = True
+  pe_total = 0
+  pe_passed = 0
 
   for file in os.listdir(directory):
     path = os.path.abspath(os.path.join(directory, file))
     if not IsPEFile(path):
       continue
     pe = pefile.PE(path, fast_load=True)
+    pe_total = pe_total + 1
+    success = True
 
     # Check for /DYNAMICBASE.
     if pe.OPTIONAL_HEADER.DllCharacteristics & DYNAMICBASE_FLAG:
@@ -53,18 +56,20 @@ def main(options, args):
       success = False
       print "Checking %s for /NXCOMPAT... FAIL" % path
 
-  if not success:
+    # Update tally.
+    if success:
+      pe_passed = pe_passed + 1
+
+  print "Result: %d files found, %d files passed" % (pe_total, pe_passed)
+  if pe_passed != pe_total:
     # TODO(scherkus): change this back to 1 once I've fixed failing builds.
     sys.exit(0)
 
 if __name__ == '__main__':
   usage = "Usage: %prog [options] DIRECTORY"
   option_parser = optparse.OptionParser(usage=usage)
-
-  # TODO(scherkus): change the default back to False once I've verified this
-  # tool actually does something on the bots.
   option_parser.add_option("-v", "--verbose", action="store_true",
-                           default=True, help="Print debug logging")
+                           default=False, help="Print debug logging")
   options, args = option_parser.parse_args()
   if not args:
     option_parser.print_help()
