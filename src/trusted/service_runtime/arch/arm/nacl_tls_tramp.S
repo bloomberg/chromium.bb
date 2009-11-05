@@ -57,7 +57,7 @@ IDENTIFIER(NaClReadTP_start):
   mov r0, r9, lsr #NACL_PAGESHIFT
   lsl r0, #NACL_PAGESHIFT
 #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
-  bic lr, lr, #0xF000000F
+  bic lr, lr, #NACL_CONTROL_FLOW_MASK
 #endif
   bx lr
 

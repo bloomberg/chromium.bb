@@ -151,9 +151,13 @@
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 #define NACL_HALT         mov pc, #0
-#define NACL_CF_MASK      0xF000000F /* assumes 16-byte bundles */
-#define NACL_USERRET_FIX  0x4
+/* 16-byte bundles, 256MB code segment*/
+#define NACL_CONTROL_FLOW_MASK      0xF000000F
 
+#define NACL_USERRET_FIX  0x4
+/* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
+/* 16 byte bundles */
+#define  NACL_ARM_BUNDLE_SIZE_LOG 4
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 #error Unknown platform!
@@ -163,4 +167,3 @@
 #define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */
-

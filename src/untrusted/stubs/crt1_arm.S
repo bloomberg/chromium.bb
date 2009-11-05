@@ -43,14 +43,14 @@
  */
 
 /*  TODO(robertm): find a header to put this in/get it from, e.g. nacl_config */
-     .set ARM_BUNDLE_SIZE, 4
-     .set NACL_PAGESHIFT, 12
+
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
     .data
     .globl environ
 
     .text
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
 
     .global _start
 _start:
@@ -106,10 +106,11 @@ _start:
 /* ====================================================================== */
 /* Access to tls. We also have an unused trampoline version of this */
 /* ====================================================================== */
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     .global __aeabi_read_tp
 
 __aeabi_read_tp:
+    /* the low order bits of r9 are for service runtime use only */
     mov r0, r9, lsr #NACL_PAGESHIFT
     lsl r0, #NACL_PAGESHIFT
     /* NOTE: for gcc/llvm generated code there is an implicit offset of 8/16 */
@@ -119,16 +120,16 @@ __aeabi_read_tp:
    /* sub r0, r0, #8 */   /* gcc flavor */
 
 
-    .align ARM_BUNDLE_SIZE
-    bic lr, lr, #0xF000000F
+    .align NACL_ARM_BUNDLE_SIZE_LOG
+    bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
 
 /* ====================================================================== */
 /* NOTE: this is only here to make c++ programs link */
 /* ====================================================================== */
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     .global __aeabi_unwind_cpp_pr0
 
 __aeabi_unwind_cpp_pr0:
-    bic lr, lr, #0xF000000F
+    bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr

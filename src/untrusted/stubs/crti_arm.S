@@ -44,8 +44,8 @@
 * NaClSrpcDefaultServerLoop
 */
 
-/* TODO(robertm): find a header to put this in */
-    .set ARM_BUNDLE_SIZE, 4
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
 /* TODO(robertm): this should really by sizeof(nc_thread_descriptor_t) */
     .set TBD_SIZE, 128
 /* ====================================================================== */
@@ -54,7 +54,7 @@
 
 
     .section .init
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     .global _init
 _init:
     /* TODO(robertm): check whether r4 needs to be saved */
@@ -63,7 +63,7 @@ _init:
      * The code that follows will be appended by the linker, and will not
      * be aligned individually, so we need to align it.
      */
-     .align ARM_BUNDLE_SIZE
+     .align NACL_ARM_BUNDLE_SIZE_LOG
 
     /*
      * contained in crtn_arm.S (properly sandboxed, of course)
@@ -75,12 +75,12 @@ _init:
 /* BEGIN .fini section */
 /* ====================================================================== */
     .section .fini
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     .global _fini
 _fini:
     /* c.f. init section comment */
     push    {r4, lr}
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
 
 
 /* ====================================================================== */
@@ -99,7 +99,7 @@ __tdb:
 /* ====================================================================== */
     /* TODO: check proper .section syntax for arm */
     .section .nacl_rpc_methods  /* , "aw", @progbits */
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     .global __kNaClSrpcHandlers
 __kNaClSrpcHandlers:
 

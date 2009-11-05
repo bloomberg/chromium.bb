@@ -31,27 +31,27 @@
 
 /* NOTE: for comments see: crti_arm.S */
 
-/* TODO(robertm): find a header to put this in */
-    .set ARM_BUNDLE_SIZE, 4
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
 
 /* ====================================================================== */
 /* END .init section */
 /* ====================================================================== */
     .section .init
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     pop {r4, lr}
     nop
-    bic lr, lr, #0xf000000f
+    bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
 
 /* ====================================================================== */
 /* END .fini section */
 /* ====================================================================== */
     .section .fini
-    .align ARM_BUNDLE_SIZE
+    .align NACL_ARM_BUNDLE_SIZE_LOG
     pop {r4, lr}
     nop
-    bic lr, lr, #0xf000000f
+    bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
 
 /* ====================================================================== */
