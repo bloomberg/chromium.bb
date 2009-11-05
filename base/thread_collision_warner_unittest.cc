@@ -238,7 +238,7 @@ TEST(ThreadCollisionTest, MTScopedBookCriticalSectionTest) {
 }
 
 TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
-  // Queue with a 5 seconds push execution time, hopefuly the two used threads
+  // Queue with a 2 seconds push execution time, hopefuly the two used threads
   // in the test will enter the push at same time.
   class NonThreadSafeQueue {
    public:
@@ -248,7 +248,7 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
 
     void push(int value) {
       DFAKE_SCOPED_LOCK(push_pop_);
-      PlatformThread::Sleep(5000);
+      PlatformThread::Sleep(2000);
     }
 
     int pop() {
@@ -307,7 +307,7 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
 }
 
 TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
-  // Queue with a 5 seconds push execution time, hopefuly the two used threads
+  // Queue with a 2 seconds push execution time, hopefuly the two used threads
   // in the test will enter the push at same time.
   class NonThreadSafeQueue {
    public:
@@ -318,7 +318,7 @@ TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
     void push(int) {
       DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
       bar();
-      PlatformThread::Sleep(5000);
+      PlatformThread::Sleep(2000);
     }
 
     int pop() {
