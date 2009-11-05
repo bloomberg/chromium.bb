@@ -335,7 +335,7 @@ void BookmarkBarGtk::EnterFullscreen() {
 }
 
 int BookmarkBarGtk::GetHeight() {
-  return event_box_->allocation.height;
+  return event_box_->allocation.height - kBookmarkBarMinimumHeight;
 }
 
 bool BookmarkBarGtk::IsAnimating() {
