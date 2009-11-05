@@ -19,8 +19,20 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-const char* kTestExtensionPath1 = "c:\\testextension1";
-const char* kTestExtensionPath2 = "c:\\testextension2";
+const FilePath::CharType kTestExtensionPath1[] = 
+#if defined(OS_POSIX)
+    FILE_PATH_LITERAL("/testextension1");
+#elif defined(OS_WIN)
+    FILE_PATH_LITERAL("c:\\testextension1");
+#endif
+
+const FilePath::CharType kTestExtensionPath2[] = 
+#if defined(OS_POSIX)
+    FILE_PATH_LITERAL("/testextension2");
+#elif defined(OS_WIN)
+    FILE_PATH_LITERAL("c:\\testextension2");
+#endif
+
 const char* kTestExtensionVersion = "1.0.0.0";
 const char* kTestExtensionName = "foo extension";
 
@@ -53,13 +65,9 @@ class BookmarkAPIEventGenerator {
   BookmarkAPIEventGenerator() {}
   virtual ~BookmarkAPIEventGenerator() {}
   template <class T>
-  void NewEvent(const std::string& extension_path,
+  void NewEvent(const FilePath::StringType& extension_path,
       T* bookmarks_function, size_t repeats) {
-#if defined(OS_WIN)
-    FilePath path(UTF8ToWide(extension_path));
-#elif defined(OS_POSIX)
     FilePath path(extension_path);
-#endif
     Extension* extension = new Extension(path);
     std::string error;
     DictionaryValue input;
@@ -116,13 +124,10 @@ class ExtensionsActivityMonitorTest : public testing::Test {
 
   MessageLoop* ui_loop() { return ui_thread_.message_loop(); }
 
-  static std::string GetExtensionIdForPath(const std::string& extension_path) {
+  static std::string GetExtensionIdForPath(
+      const FilePath::StringType& extension_path) {
     std::string error;
-#if defined(OS_WIN)
-    FilePath path(UTF8ToWide(extension_path));
-#elif defined(OS_POSIX)
     FilePath path(extension_path);
-#endif
     Extension e(path);
     DictionaryValue input;
     input.SetString(keys::kVersion, kTestExtensionVersion);
