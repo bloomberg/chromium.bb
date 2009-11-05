@@ -516,4 +516,8 @@ devtools.InspectorController.prototype.setting =
 };
 
 
+devtools.InspectorController.prototype.port = function() {
+  return "undefined";
+};
+
 var InspectorController = new devtools.InspectorController();
