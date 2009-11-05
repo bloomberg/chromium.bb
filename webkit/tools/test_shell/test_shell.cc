@@ -76,8 +76,6 @@ const int kSVGTestWindowHeight = 360;
 // URLRequestTestShellFileJob is used to serve the inspector
 class URLRequestTestShellFileJob : public URLRequestFileJob {
  public:
-  virtual ~URLRequestTestShellFileJob() { }
-
   static URLRequestJob* InspectorFactory(URLRequest* request,
                                          const std::string& scheme) {
     FilePath path;
@@ -92,6 +90,7 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
   URLRequestTestShellFileJob(URLRequest* request, const FilePath& path)
       : URLRequestFileJob(request, path) {
   }
+  virtual ~URLRequestTestShellFileJob() { }
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestTestShellFileJob);
 };

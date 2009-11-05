@@ -32,7 +32,6 @@ class AppCacheResponseInfo
   // AppCacheResponseInfo takes ownership of the http_info.
   AppCacheResponseInfo(AppCacheService* service, int64 response_id,
                        net::HttpResponseInfo* http_info);
-  ~AppCacheResponseInfo();
   // TODO(michaeln): should the ctor/dtor be hidden from public view?
 
   int64 response_id() const { return response_id_; }
@@ -42,6 +41,9 @@ class AppCacheResponseInfo
   }
 
  private:
+  friend class base::RefCounted<AppCacheResponseInfo>;
+  ~AppCacheResponseInfo();
+
   const int64 response_id_;
   const scoped_ptr<net::HttpResponseInfo> http_response_info_;
   const AppCacheService* service_;
@@ -55,6 +57,11 @@ struct HttpResponseInfoIOBuffer
 
   HttpResponseInfoIOBuffer() {}
   HttpResponseInfoIOBuffer(net::HttpResponseInfo* info) : http_info(info) {}
+
+ private:
+  friend class base::RefCountedThreadSafe<HttpResponseInfoIOBuffer>;
+
+  ~HttpResponseInfoIOBuffer() {}
 };
 
 // Common base class for response reader and writer.

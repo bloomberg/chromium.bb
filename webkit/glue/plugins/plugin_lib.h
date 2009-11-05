@@ -28,7 +28,6 @@ class PluginInstance;
 class PluginLib : public base::RefCounted<PluginLib> {
  public:
   static PluginLib* CreatePluginLib(const FilePath& filename);
-  virtual ~PluginLib();
 
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".
@@ -77,10 +76,14 @@ class PluginLib : public base::RefCounted<PluginLib> {
   int instance_count() const { return instance_count_; }
 
  private:
+  friend class base::RefCounted<PluginLib>;
+
   // Creates a new PluginLib.
   // |entry_points| is non-NULL for internal plugins.
   PluginLib(const WebPluginInfo& info,
             const PluginEntryPoints* entry_points);
+
+  virtual ~PluginLib();
 
   // Attempts to load the plugin from the library.
   // Returns true if it is a legitimate plugin, false otherwise

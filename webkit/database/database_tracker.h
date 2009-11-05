@@ -47,7 +47,6 @@ class DatabaseTracker
   };
 
   explicit DatabaseTracker(const FilePath& profile_path);
-  ~DatabaseTracker();
 
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
@@ -70,6 +69,10 @@ class DatabaseTracker
                              const string16& database_name) const;
 
  private:
+  friend class base::RefCountedThreadSafe<DatabaseTracker>;
+
+  ~DatabaseTracker();
+
   class CachedOriginInfo {
    public:
     CachedOriginInfo() : total_size_(0) { }

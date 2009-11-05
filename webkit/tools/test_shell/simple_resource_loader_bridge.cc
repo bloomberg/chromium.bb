@@ -118,12 +118,6 @@ class RequestProxy : public URLRequest::Delegate,
         last_upload_position_(0) {
   }
 
-  virtual ~RequestProxy() {
-    // If we have a request, then we'd better be on the io thread!
-    DCHECK(!request_.get() ||
-           MessageLoop::current() == io_thread->message_loop());
-  }
-
   void DropPeer() {
     peer_ = NULL;
   }
@@ -144,6 +138,14 @@ class RequestProxy : public URLRequest::Delegate,
   }
 
  protected:
+  friend class base::RefCountedThreadSafe<RequestProxy>;
+
+  virtual ~RequestProxy() {
+    // If we have a request, then we'd better be on the io thread!
+    DCHECK(!request_.get() ||
+           MessageLoop::current() == io_thread->message_loop());
+  }
+
   // --------------------------------------------------------------------------
   // The following methods are called on the owner's thread in response to
   // various URLRequest callbacks.  The event hooks, defined below, trigger
@@ -583,6 +585,11 @@ class CookieSetter : public base::RefCountedThreadSafe<CookieSetter> {
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     request_context->cookie_store()->SetCookie(url, cookie);
   }
+
+ private:
+  friend class base::RefCountedThreadSafe<CookieSetter>;
+
+  ~CookieSetter() {}
 };
 
 class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
@@ -602,6 +609,10 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<CookieGetter>;
+
+  ~CookieGetter() {}
+
   base::WaitableEvent event_;
   std::string result_;
 };

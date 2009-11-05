@@ -38,7 +38,6 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   };
 
   AppCacheGroup(AppCacheService* service, const GURL& manifest_url);
-  ~AppCacheGroup();
 
   // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
@@ -77,7 +76,10 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  private:
   friend class AppCacheUpdateJob;
   friend class AppCacheUpdateJobTest;
+  friend class base::RefCounted<AppCacheGroup>;
   friend class MockAppCacheStorage;  // for old_caches()
+
+  ~AppCacheGroup();
 
   typedef std::vector<AppCache*> Caches;
 

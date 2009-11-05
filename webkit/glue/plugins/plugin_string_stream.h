@@ -23,13 +23,14 @@ class PluginStringStream : public PluginStream {
                      const GURL& url,
                      bool notify_needed,
                      void* notify_data);
-  virtual ~PluginStringStream();
 
   // Initiates the sending of data to the plugin.
   void SendToPlugin(const std::string& data,
                     const std::string& mime_type);
 
  private:
+  virtual ~PluginStringStream();
+
   DISALLOW_COPY_AND_ASSIGN(PluginStringStream);
 };
 

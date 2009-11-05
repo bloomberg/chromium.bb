@@ -78,6 +78,10 @@ class TestWebWorker : public WebKit::WebWorker,
   }
 
  private:
+  friend class base::RefCounted<TestWebWorker>;
+
+  ~TestWebWorker() {}
+
   DISALLOW_COPY_AND_ASSIGN(TestWebWorker);
 };
 

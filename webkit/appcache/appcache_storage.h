@@ -177,15 +177,18 @@ class AppCacheStorage {
         DelegateReferenceMap::value_type(delegate, this));
     }
 
-    ~DelegateReference() {
-      if (delegate)
-        storage->delegate_references_.erase(delegate);
-    }
-
     void CancelReference() {
       storage->delegate_references_.erase(delegate);
       storage = NULL;
       delegate = NULL;
+    }
+
+   private:
+    friend class base::RefCounted<DelegateReference>;
+
+    ~DelegateReference() {
+      if (delegate)
+        storage->delegate_references_.erase(delegate);
     }
   };
   typedef std::map<Delegate*, DelegateReference*> DelegateReferenceMap;

@@ -33,9 +33,6 @@ class UnittestTestServer : public HTTPTestServer {
     return test_server;
   }
 
-  virtual ~UnittestTestServer() {
-  }
-
   virtual bool MakeGETRequest(const std::string& page_name) {
     GURL url(TestServerPage(page_name));
     scoped_ptr<ResourceLoaderBridge> loader(
@@ -57,6 +54,9 @@ class UnittestTestServer : public HTTPTestServer {
     loader->SyncLoad(&resp);
     return resp.status.is_success();
   }
+
+ private:
+  virtual ~UnittestTestServer() {}
 };
 
 #endif  // WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__

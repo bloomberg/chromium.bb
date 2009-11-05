@@ -47,7 +47,6 @@ class BufferedResourceLoader :
       const GURL& url,
       int64 first_byte_position,
       int64 last_byte_position);
-  virtual ~BufferedResourceLoader();
 
   // Start the resource loading with the specified URL and range.
   // This method operates in asynchronous mode. Once there's a response from the
@@ -120,11 +119,16 @@ class BufferedResourceLoader :
   GURL GetURLForDebugging() const { return url_; }
 
  protected:
+  friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
+
   // An empty constructor so mock classes can be constructed.
   BufferedResourceLoader() {
   }
 
+  virtual ~BufferedResourceLoader();
+
  private:
+
   // Defer the resource loading if the buffer is full.
   void EnableDeferIfNeeded();
 

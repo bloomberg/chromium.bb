@@ -30,7 +30,6 @@ class PluginStream : public base::RefCounted<PluginStream> {
                const char *url,
                bool need_notify,
                void *notify_data);
-  virtual ~PluginStream();
 
   // In case of a redirect, this can be called to update the url.  But it must
   // be called before Open().
@@ -81,11 +80,16 @@ class PluginStream : public base::RefCounted<PluginStream> {
   void* notify_data() const { return notify_data_; }
 
  protected:
+  friend class base::RefCounted<PluginStream>;
+
+  virtual ~PluginStream();
+
   PluginInstance* instance() { return instance_.get(); }
   // Check if the stream is open.
   bool open() { return opened_; }
 
  private:
+
   // Open a temporary file for this stream.
   // If successful, will set temp_file_name_, temp_file_handle_, and
   // return true.

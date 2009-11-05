@@ -32,7 +32,6 @@ class AppCache : public base::RefCounted<AppCache> {
   typedef std::set<AppCacheHost*> AppCacheHosts;
 
   AppCache(AppCacheService *service, int64 cache_id);
-  ~AppCache();
 
   int64 cache_id() const { return cache_id_; }
 
@@ -80,6 +79,9 @@ class AppCache : public base::RefCounted<AppCache> {
   friend class AppCacheGroup;
   friend class AppCacheHost;
   friend class AppCacheUpdateJobTest;
+  friend class base::RefCounted<AppCache>;
+
+  ~AppCache();
 
   // Use AppCacheGroup::Add/RemoveCache() to manipulate owning group.
   void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }

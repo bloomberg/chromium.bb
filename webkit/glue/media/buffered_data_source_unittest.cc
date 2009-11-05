@@ -377,7 +377,9 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   MOCK_METHOD0(GetBufferedFirstBytePosition, int64());
   MOCK_METHOD0(GetBufferedLastBytePosition, int64());
 
- private:
+ protected:
+  ~MockBufferedResourceLoader() {}
+
   DISALLOW_COPY_AND_ASSIGN(MockBufferedResourceLoader);
 };
 

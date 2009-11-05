@@ -22,11 +22,11 @@ class TestShellRequestContext : public URLRequestContext {
                           net::HttpCache::Mode cache_mode,
                           bool no_proxy);
 
-  ~TestShellRequestContext();
-
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
  private:
+  ~TestShellRequestContext();
+
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
 };

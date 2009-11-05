@@ -72,6 +72,10 @@ class SimpleFrontendProxy
   }
 
  private:
+  friend class base::RefCountedThreadSafe<SimpleFrontendProxy>;
+
+  ~SimpleFrontendProxy() {}
+
   SimpleAppCacheSystem* system_;
 };
 
@@ -215,6 +219,10 @@ class SimpleBackendProxy
   }
 
  private:
+  friend class base::RefCountedThreadSafe<SimpleBackendProxy>;
+
+  ~SimpleBackendProxy() {}
+
   SimpleAppCacheSystem* system_;
   base::WaitableEvent event_;
   bool bool_result_;

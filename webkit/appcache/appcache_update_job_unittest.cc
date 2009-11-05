@@ -118,6 +118,8 @@ class RetryRequestTestJob : public URLRequestTestJob {
   virtual int GetResponseCode() const { return response_code_; }
 
  private:
+  ~RetryRequestTestJob() {}
+
   static std::string retry_headers() {
     const char no_retry_after[] =
         "HTTP/1.1 503 BOO HOO\0"

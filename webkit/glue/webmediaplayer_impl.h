@@ -91,7 +91,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
    public:
     Proxy(MessageLoop* render_loop,
           WebMediaPlayerImpl* webmediaplayer);
-    virtual ~Proxy();
 
     // Public methods called from the video renderer.
     void Repaint();
@@ -111,6 +110,10 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void NetworkEventCallback();
 
    private:
+    friend class base::RefCountedThreadSafe<Proxy>;
+
+    virtual ~Proxy();
+
     // Invoke |webmediaplayer_| to perform a repaint.
     void RepaintTask();
 

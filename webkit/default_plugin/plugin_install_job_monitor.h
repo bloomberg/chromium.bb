@@ -21,7 +21,6 @@ class PluginInstallationJobMonitorThread :
 
  public:
   PluginInstallationJobMonitorThread();
-  virtual ~PluginInstallationJobMonitorThread();
 
   // Initializes the plugin install job. This involves creating the job object
   // and starting the thread which monitors the job completion port.
@@ -62,6 +61,10 @@ class PluginInstallationJobMonitorThread :
   virtual void WaitForJobThread();
 
  private:
+  friend class base::RefCountedThreadSafe<PluginInstallationJobMonitorThread>;
+
+  virtual ~PluginInstallationJobMonitorThread();
+
   // The install job completion port. Created in Init.
   HANDLE install_job_completion_port_;
   // Indicates that job monitoring is to be stopped

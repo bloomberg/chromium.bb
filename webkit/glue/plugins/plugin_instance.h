@@ -44,7 +44,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Create a new instance of a plugin.  The PluginInstance
   // will hold a reference to the plugin.
   PluginInstance(PluginLib *plugin, const std::string &mime_type);
-  virtual ~PluginInstance();
 
   // Activates the instance by calling NPP_New.
   // This should be called after our instance is all
@@ -199,6 +198,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void RequestRead(NPStream* stream, NPByteRange* range_list);
 
  private:
+  friend class base::RefCountedThreadSafe<PluginInstance>;
+
+  virtual ~PluginInstance();
+
   void OnPluginThreadAsyncCall(void (*func)(void *),
                                void *userData);
   void OnTimerCall(void (*func)(NPP id, uint32 timer_id),

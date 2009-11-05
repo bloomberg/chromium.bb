@@ -30,7 +30,6 @@ class PluginHost : public base::RefCounted<PluginHost> {
   // Access the single PluginHost instance.  Callers
   // must call deref() when finished with the object.
   static PluginHost *Singleton();
-  virtual ~PluginHost();
 
   // The table of functions provided to the plugin.
   NPNetscapeFuncs *host_functions() { return &host_funcs_; }
@@ -48,6 +47,10 @@ class PluginHost : public base::RefCounted<PluginHost> {
   void PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides);
 
  private:
+  friend class base::RefCounted<PluginHost>;
+
+  virtual ~PluginHost();
+
   PluginHost();
   void InitializeHostFuncs();
   static scoped_refptr<PluginHost> singleton_;
