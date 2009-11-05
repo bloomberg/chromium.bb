@@ -162,6 +162,6 @@ int main(int argc, const char** argv) {
     LOG(ERROR) << "could not write wav header.";
     return 1;
   }
-
+  CommandLine::Reset();
   return 0;
 }
