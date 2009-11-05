@@ -224,7 +224,7 @@ class ThreadTester : public EventListener<TestEvent>,
     remove_event_mutex_.Release();
     remove_event_.Broadcast();
 
-    PlatformThread::Sleep(1);
+    PlatformThread::YieldCurrentThread();
 
     for (size_t i = 0; i < threads_.size(); i++) {
       if (threads_[i].completed)
