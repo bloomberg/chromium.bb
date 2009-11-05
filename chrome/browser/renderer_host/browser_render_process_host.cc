@@ -528,6 +528,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kDisableWebSockets,
     switches::kEnableLocalStorage,
     switches::kEnableSessionStorage,
+    switches::kEnableSharedWorkers,
     switches::kEnableDesktopNotifications,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.

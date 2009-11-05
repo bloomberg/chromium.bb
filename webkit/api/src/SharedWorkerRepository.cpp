@@ -116,10 +116,8 @@ void SharedWorkerScriptLoader::notifyFinished()
 
 bool SharedWorkerRepository::isAvailable()
 {
-    // SharedWorkers are disabled for now until the implementation is further along.
-    // FIXME(atwilson): Add code to check for a runtime flag like so:
-    // return commandLineFlag && WebKit::webKitClient()->sharedWorkerRepository();
-    return false;
+    // Allow the WebKitClient to determine if SharedWorkers are available.
+    return WebKit::webKitClient()->sharedWorkerRepository();
 }
 
 static WebSharedWorkerRepository::DocumentID getId(void* document)

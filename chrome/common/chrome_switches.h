@@ -77,6 +77,7 @@ extern const char kEnableRemoteFonts[];
 extern const char kEnableRendererAccessibility[];
 extern const char kEnableSeccompSandbox[];
 extern const char kEnableSessionStorage[];
+extern const char kEnableSharedWorkers[];
 extern const char kEnableStatsTable[];
 extern const char kEnableTabtastic2[];
 extern const char kEnableUserDataDirProfiles[];
