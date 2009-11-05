@@ -1,0 +1,35 @@
+;;
+;; Copyright (c) 2009 The Chromium Authors. All rights reserved.
+;; Use of this source code is governed by a BSD-style license that can be
+;; found in the LICENSE file.
+;;
+; This is the Sandbox configuration file used for safeguarding the worker
+; process which is used to run web workers in a sandboxed environment.
+;
+; This is the most restrictive sandbox profile and only enables just enough
+; to allow basic use of Cocoa.
+(version 1)
+(deny default)
+; Support for programmatically enabling verbose debugging.
+;ENABLE_LOGGING (debug deny)
+
+; Allow sending signals to self - http://crbug.com/20370
+(allow signal (target self))
+
+; Needed for full-page-zoomed controls - http://crbug.com/11325
+(allow sysctl-read)
+
+; Each line is marked with the System version that needs it.
+; This profile is tested with the following system versions:
+;     10.5.6, 10.6
+
+; Allow following symlinks
+(allow file-read-metadata)  ; 10.5.6
+
+; Loading System Libraries.
+(allow file-read-data (regex #"^/System/Library/Frameworks"))  ; 10.5.6
+(allow file-read-data (regex #"^/System/Library/PrivateFrameworks"))  ; 10.5.6
+(allow file-read-data (regex #"^/System/Library/CoreServices"))  ; 10.5.6
+
+; Needed for IPC on 10.6
+;10.6_ONLY (allow ipc-posix-shm)

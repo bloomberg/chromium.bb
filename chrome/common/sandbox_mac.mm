@@ -84,11 +84,42 @@ void SandboxWarmup() {
 }
 
 // Turns on the OS X sandbox for this process.
-bool EnableSandbox() {
-  // For the renderer, we give it a custom sandbox to lock things down as
-  // tightly as possible, while still enabling drawing.
+bool EnableSandbox(SandboxProcessType sandbox_type,
+                   const FilePath& allowed_dir) {
+  // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
+  // passed in.
+  if (sandbox_type != SANDBOX_TYPE_UTILITY) {
+    DCHECK(allowed_dir.empty())
+        << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
+  } else {
+    DCHECK(!allowed_dir.empty())
+        << "SANDBOX_TYPE_UTILITY "
+        << "needs a custom directory parameter, but an empty one was provided.";
+  }
+
+  // We use a custom sandbox definition file to lock things down as
+  // tightly as possible.
+  // TODO(jeremy): Look at using include syntax to unify common parts of sandbox
+  // definition files.
+  NSString* sandbox_config_filename = nil;
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_RENDERER:
+      sandbox_config_filename = @"renderer";
+      break;
+    case SANDBOX_TYPE_WORKER:
+      sandbox_config_filename = @"worker";
+      break;
+    case SANDBOX_TYPE_UTILITY:
+      sandbox_config_filename = @"utility";
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
   NSString* sandbox_profile_path =
-      [mac_util::MainAppBundle() pathForResource:@"renderer" ofType:@"sb"];
+      [mac_util::MainAppBundle() pathForResource:sandbox_config_filename
+                                          ofType:@"sb"];
   NSString* sandbox_data = [NSString
       stringWithContentsOfFile:sandbox_profile_path
       encoding:NSUTF8StringEncoding
@@ -106,6 +137,13 @@ bool EnableSandbox() {
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@";ENABLE_LOGGING"
                                   withString:@""];
+  }
+
+  if (!allowed_dir.empty()) {
+    NSString* allowed_dir_ns = base::SysUTF8ToNSString(allowed_dir.value());
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@"DIR_TO_ALLOW_ACCESS"
+                                  withString:allowed_dir_ns];
   }
 
   int32 major_version, minor_version, bugfix_version;
