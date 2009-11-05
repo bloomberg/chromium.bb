@@ -113,7 +113,7 @@ using WebKit::WebDragOperationsMask;
                               view:(NSView*)view {
   DCHECK(currentRVH_);
   if (currentRVH_ != tabContents_->render_view_host())
-    [self draggingEntered:info];
+    [self draggingEntered:info view:view];
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -138,7 +138,7 @@ using WebKit::WebDragOperationsMask;
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
   if (currentRVH_ != tabContents_->render_view_host())
-    [self draggingEntered:info];
+    [self draggingEntered:info view:view];
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
   if ([self onlyAllowsNavigation]) {
