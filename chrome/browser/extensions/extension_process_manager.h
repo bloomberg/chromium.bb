@@ -83,6 +83,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // Called just after |host| is created so it can be registered in our lists.
   void OnExtensionHostCreated(ExtensionHost* host, bool is_background);
 
+  // Called on browser shutdown to close our extension hosts.
+  void CloseBackgroundHosts();
+
   NotificationRegistrar registrar_;
 
   // The set of all ExtensionHosts managed by this process manager.

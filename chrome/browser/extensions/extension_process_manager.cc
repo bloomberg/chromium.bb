@@ -44,15 +44,12 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+                 NotificationService::AllSources());
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
-  // Copy all_hosts_ to avoid iterator invalidation issues.
-  ExtensionHostSet to_delete(background_hosts_.begin(),
-                             background_hosts_.end());
-  ExtensionHostSet::iterator iter;
-  for (iter = to_delete.begin(); iter != to_delete.end(); ++iter)
-    delete *iter;
+  DCHECK(background_hosts_.empty());
 }
 
 ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
@@ -217,6 +214,16 @@ void ExtensionProcessManager::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::BROWSER_CLOSED: {
+      // Close background hosts when the last browser is closed so that they
+      // have time to shutdown various objects on different threads. Our
+      // destructor is called too late in the shutdown sequence.
+      bool app_closing = *Details<bool>(details).ptr();
+      if (app_closing)
+        CloseBackgroundHosts();
+      break;
+    }
+
     default:
       NOTREACHED();
   }
@@ -231,4 +238,12 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
       NotificationType::EXTENSION_HOST_CREATED,
       Source<ExtensionProcessManager>(this),
       Details<ExtensionHost>(host));
+}
+
+void ExtensionProcessManager::CloseBackgroundHosts() {
+  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
+       iter != background_hosts_.end(); ) {
+    ExtensionHostSet::iterator current = iter++;
+    delete *current;
+  }
 }
