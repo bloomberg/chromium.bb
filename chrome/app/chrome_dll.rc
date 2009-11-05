@@ -169,7 +169,7 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
+// Icons
 //
 // This is duplicated from the .exe file to make ATL happy (it tries to load
 // the icon from the current module). We can perhaps work around this in the
@@ -180,6 +180,34 @@ IDR_MAINFRAME       ICON                        "theme\google_chrome\chrome.ico"
 #else
 IDR_MAINFRAME       ICON                        "theme\chromium\chromium.ico"
 #endif
+
+// We include these resources because all ICON types need to be in the
+// same .rc file.  See:
+// http://www.technewsgroups.net/group/microsoft.public.dotnet.general/topic2111.aspx
+IDI_THROBBER_01     ICON                        "theme\vista_frame_throbber_01.ico"
+IDI_THROBBER_02     ICON                        "theme\vista_frame_throbber_02.ico"
+IDI_THROBBER_03     ICON                        "theme\vista_frame_throbber_03.ico"
+IDI_THROBBER_04     ICON                        "theme\vista_frame_throbber_04.ico"
+IDI_THROBBER_05     ICON                        "theme\vista_frame_throbber_05.ico"
+IDI_THROBBER_06     ICON                        "theme\vista_frame_throbber_06.ico"
+IDI_THROBBER_07     ICON                        "theme\vista_frame_throbber_07.ico"
+IDI_THROBBER_08     ICON                        "theme\vista_frame_throbber_08.ico"
+IDI_THROBBER_09     ICON                        "theme\vista_frame_throbber_09.ico"
+IDI_THROBBER_10     ICON                        "theme\vista_frame_throbber_10.ico"
+IDI_THROBBER_11     ICON                        "theme\vista_frame_throbber_11.ico"
+IDI_THROBBER_12     ICON                        "theme\vista_frame_throbber_12.ico"
+IDI_THROBBER_13     ICON                        "theme\vista_frame_throbber_13.ico"
+IDI_THROBBER_14     ICON                        "theme\vista_frame_throbber_14.ico"
+IDI_THROBBER_15     ICON                        "theme\vista_frame_throbber_15.ico"
+IDI_THROBBER_16     ICON                        "theme\vista_frame_throbber_16.ico"
+IDI_THROBBER_17     ICON                        "theme\vista_frame_throbber_17.ico"
+IDI_THROBBER_18     ICON                        "theme\vista_frame_throbber_18.ico"
+IDI_THROBBER_19     ICON                        "theme\vista_frame_throbber_19.ico"
+IDI_THROBBER_20     ICON                        "theme\vista_frame_throbber_20.ico"
+IDI_THROBBER_21     ICON                        "theme\vista_frame_throbber_21.ico"
+IDI_THROBBER_22     ICON                        "theme\vista_frame_throbber_22.ico"
+IDI_THROBBER_23     ICON                        "theme\vista_frame_throbber_23.ico"
+IDI_THROBBER_24     ICON                        "theme\vista_frame_throbber_24.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

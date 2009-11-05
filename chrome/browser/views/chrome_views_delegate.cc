@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_service.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,7 +77,7 @@ bool ChromeViewsDelegate::GetSavedMaximizedState(
 
 #if defined(OS_WIN)
 HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
-  return LoadIcon(GetModuleHandle(L"chrome.dll"),
+  return LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
                   MAKEINTRESOURCE(IDR_MAINFRAME));
 }
 #endif

@@ -118,30 +118,6 @@
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
       <include name="IDR_LOCK" file="lock_small.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
-      <include name="IDR_THROBBER_01" file="vista_frame_throbber_01.ico" type="ICON" />
-      <include name="IDR_THROBBER_02" file="vista_frame_throbber_02.ico" type="ICON" />
-      <include name="IDR_THROBBER_03" file="vista_frame_throbber_03.ico" type="ICON" />
-      <include name="IDR_THROBBER_04" file="vista_frame_throbber_04.ico" type="ICON" />
-      <include name="IDR_THROBBER_05" file="vista_frame_throbber_05.ico" type="ICON" />
-      <include name="IDR_THROBBER_06" file="vista_frame_throbber_06.ico" type="ICON" />
-      <include name="IDR_THROBBER_07" file="vista_frame_throbber_07.ico" type="ICON" />
-      <include name="IDR_THROBBER_08" file="vista_frame_throbber_08.ico" type="ICON" />
-      <include name="IDR_THROBBER_09" file="vista_frame_throbber_09.ico" type="ICON" />
-      <include name="IDR_THROBBER_10" file="vista_frame_throbber_10.ico" type="ICON" />
-      <include name="IDR_THROBBER_11" file="vista_frame_throbber_11.ico" type="ICON" />
-      <include name="IDR_THROBBER_12" file="vista_frame_throbber_12.ico" type="ICON" />
-      <include name="IDR_THROBBER_13" file="vista_frame_throbber_13.ico" type="ICON" />
-      <include name="IDR_THROBBER_14" file="vista_frame_throbber_14.ico" type="ICON" />
-      <include name="IDR_THROBBER_15" file="vista_frame_throbber_15.ico" type="ICON" />
-      <include name="IDR_THROBBER_16" file="vista_frame_throbber_16.ico" type="ICON" />
-      <include name="IDR_THROBBER_17" file="vista_frame_throbber_17.ico" type="ICON" />
-      <include name="IDR_THROBBER_18" file="vista_frame_throbber_18.ico" type="ICON" />
-      <include name="IDR_THROBBER_19" file="vista_frame_throbber_19.ico" type="ICON" />
-      <include name="IDR_THROBBER_20" file="vista_frame_throbber_20.ico" type="ICON" />
-      <include name="IDR_THROBBER_21" file="vista_frame_throbber_21.ico" type="ICON" />
-      <include name="IDR_THROBBER_22" file="vista_frame_throbber_22.ico" type="ICON" />
-      <include name="IDR_THROBBER_23" file="vista_frame_throbber_23.ico" type="ICON" />
-      <include name="IDR_THROBBER_24" file="vista_frame_throbber_24.ico" type="ICON" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
       <include name="IDR_STOP_NOBORDER" file="stop_noborder.png" type="BINDATA" />
       <include name="IDR_STOP_NOBORDER_CENTER" file="stop_noborder_center.png" type="BINDATA" />

@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip_wrapper.h"
@@ -429,7 +430,7 @@ void GlassBrowserFrameView::InitThrobberIcons() {
   if (!initialized) {
     ResourceBundle &rb = ResourceBundle::GetSharedInstance();
     for (int i = 0; i < kThrobberIconCount; ++i) {
-      throbber_icons_[i] = rb.LoadThemeIcon(IDR_THROBBER_01 + i);
+      throbber_icons_[i] = rb.LoadThemeIcon(IDI_THROBBER_01 + i);
       DCHECK(throbber_icons_[i]);
     }
     initialized = true;
