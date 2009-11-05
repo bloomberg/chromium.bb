@@ -99,14 +99,6 @@
 }
 
 {
-  bug_24724 (WebKit)
-  ThreadSanitizer:Race
-  fun:*WTF*RefCountedBase*ref*
-  ...
-  fun:*WebCore*WorkerRunLoop*Task*
-}
-
-{
   bug_25645 (WebKit)
   ThreadSanitizer:Race
   fun:*WTF*RefCountedBase*ref*
