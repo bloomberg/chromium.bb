@@ -4,7 +4,6 @@
 
 #include "chrome/browser/tab_contents/tab_contents.h"
 
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
@@ -1113,6 +1112,21 @@ void TabContents::StopFinding(bool clear_selection) {
 
 void TabContents::GetPageLanguage() {
   render_view_host()->GetPageLanguage();
+}
+
+void TabContents::OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
+                                               bool success,
+                                               const std::wstring& prompt) {
+  last_javascript_message_dismissal_ = base::TimeTicks::Now();
+  if (is_showing_before_unload_dialog_ && !success) {
+    // If a beforeunload dialog is canceled, we need to stop the throbber from
+    // spinning, since we forced it to start spinning in Navigate.
+    DidStopLoading();
+
+    tab_close_start_time_ = base::TimeTicks();
+  }
+  is_showing_before_unload_dialog_ = false;
+  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
 }
 
 void TabContents::OnSavePage() {
@@ -2319,7 +2333,7 @@ void TabContents::RunJavaScriptMessage(
   } else {
     // If we are suppressing messages, just reply as is if the user immediately
     // pressed "Cancel".
-    OnMessageBoxClosed(reply_msg, false, std::wstring());
+    OnJavaScriptMessageBoxClosed(reply_msg, false, std::wstring());
   }
 }
 
@@ -2632,58 +2646,6 @@ void TabContents::Observe(NotificationType type,
     default:
       NOTREACHED();
   }
-}
-
-std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
-                                             bool is_alert) {
-  if (!frame_url.has_host())
-    return l10n_util::GetString(
-        is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
-                 : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
-
-  // We really only want the scheme, hostname, and port.
-  GURL::Replacements replacements;
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-  replacements.ClearPath();
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  GURL clean_url = frame_url.ReplaceComponents(replacements);
-
-  // TODO(brettw) it should be easier than this to do the correct language
-  // handling without getting the accept language from the profile.
-  std::wstring base_address = gfx::ElideUrl(clean_url, gfx::Font(), 0,
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  // Force URL to have LTR directionality.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&base_address);
-
-  return l10n_util::GetStringF(
-      is_alert ? IDS_JAVASCRIPT_ALERT_TITLE : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-      base_address);
-}
-
-gfx::NativeWindow TabContents::GetMessageBoxRootWindow() {
-  return view_->GetTopLevelNativeWindow();
-}
-
-void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
-                                     bool success,
-                                     const std::wstring& prompt) {
-  last_javascript_message_dismissal_ = base::TimeTicks::Now();
-  if (is_showing_before_unload_dialog_ && !success) {
-    // If a beforeunload dialog is canceled, we need to stop the throbber from
-    // spinning, since we forced it to start spinning in Navigate.
-    DidStopLoading();
-
-    tab_close_start_time_ = base::TimeTicks();
-  }
-  is_showing_before_unload_dialog_ = false;
-  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
-}
-
-void TabContents::SetSuppressMessageBoxes(bool suppress_message_boxes) {
-  set_suppress_javascript_messages(suppress_message_boxes);
 }
 
 void TabContents::set_encoding(const std::string& encoding) {

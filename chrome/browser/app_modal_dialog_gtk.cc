@@ -122,7 +122,7 @@ void AppModalDialog::CreateAndShowDialog() {
   }
   g_object_unref(window_group);
 
-  gfx::NativeWindow window = client_->GetMessageBoxRootWindow();
+  GtkWindow* window = tab_contents_->view()->GetTopLevelNativeWindow();
   dialog_ = gtk_message_dialog_new(window, GTK_DIALOG_MODAL,
       message_type, buttons, "%s", WideToUTF8(message_text_).c_str());
   gtk_window_set_title(GTK_WINDOW(dialog_), WideToUTF8(title_).c_str());

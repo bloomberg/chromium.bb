@@ -10,7 +10,7 @@
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_message.h"
 
-AppModalDialog::AppModalDialog(JavaScriptMessageBoxClient* client,
+AppModalDialog::AppModalDialog(TabContents* tab_contents,
                                const std::wstring& title,
                                int dialog_flags,
                                const std::wstring& message_text,
@@ -19,8 +19,7 @@ AppModalDialog::AppModalDialog(JavaScriptMessageBoxClient* client,
                                bool is_before_unload_dialog,
                                IPC::Message* reply_msg)
     : dialog_(NULL),
-      client_(client),
-      skip_this_dialog_(false),
+      tab_contents_(tab_contents),
       title_(title),
       dialog_flags_(dialog_flags),
       message_text_(message_text),
@@ -34,20 +33,20 @@ AppModalDialog::AppModalDialog(JavaScriptMessageBoxClient* client,
 void AppModalDialog::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  const TabContents* tab_contents = client_->AsTabContents();
-  if (!tab_contents)
+  if (!tab_contents_)
     return;
 
   if (type == NotificationType::NAV_ENTRY_COMMITTED &&
       Source<NavigationController>(source).ptr() ==
-          &tab_contents->controller())
-    skip_this_dialog_ = true;
+          &tab_contents_->controller())
+    tab_contents_ = NULL;
 
   if (type == NotificationType::TAB_CONTENTS_DESTROYED &&
-      Source<TabContents>(source).ptr() == tab_contents)
-    skip_this_dialog_ = true;
+      Source<TabContents>(source).ptr() ==
+      static_cast<TabContents*>(tab_contents_))
+    tab_contents_ = NULL;
 
-  if (skip_this_dialog_)
+  if (!tab_contents_)
     CloseModalDialog();
 }
 
@@ -61,26 +60,22 @@ void AppModalDialog::SendCloseNotification() {
 void AppModalDialog::InitNotifications() {
   // Make sure we get navigation notifications so we know when our parent
   // contents will disappear or navigate to a different page.
-  if (client_->AsTabContents()) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   NotificationService::AllSources());
-  }
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
 }
 
 void AppModalDialog::ShowModalDialog() {
   // If the TabContents that created this dialog navigated away before this
   // dialog became visible, simply show the next dialog if any.
-  if (skip_this_dialog_) {
+  if (!tab_contents_) {
     Singleton<AppModalDialogQueue>()->ShowNextDialog();
     delete this;
     return;
   }
-  TabContents* tab_contents = client_->AsTabContents();
-  if (tab_contents)
-    tab_contents->Activate();
 
+  tab_contents_->Activate();
   CreateAndShowDialog();
 
   NotificationService::current()->Notify(
@@ -91,15 +86,16 @@ void AppModalDialog::ShowModalDialog() {
 
 void AppModalDialog::OnCancel() {
   // We need to do this before WM_DESTROY (WindowClosing()) as any parent frame
-  // will receive its activation messages before this dialog receives
+  // will receive it's activation messages before this dialog receives
   // WM_DESTROY. The parent frame would then try to activate any modal dialogs
   // that were still open in the ModalDialogQueue, which would send activation
   // back to this one. The framework should be improved to handle this, so this
   // is a temporary workaround.
   Singleton<AppModalDialogQueue>()->ShowNextDialog();
 
-  if (!skip_this_dialog_) {
-    client_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
+  if (tab_contents_) {
+    tab_contents_->OnJavaScriptMessageBoxClosed(reply_msg_, false,
+                                                std::wstring());
   }
 
   SendCloseNotification();
@@ -109,10 +105,12 @@ void AppModalDialog::OnAccept(const std::wstring& prompt_text,
                               bool suppress_js_messages) {
   Singleton<AppModalDialogQueue>()->ShowNextDialog();
 
-  if (!skip_this_dialog_) {
-    client_->OnMessageBoxClosed(reply_msg_, true, prompt_text);
+  if (tab_contents_) {
+    tab_contents_->OnJavaScriptMessageBoxClosed(reply_msg_, true,
+                                                prompt_text);
+
     if (suppress_js_messages)
-      client_->SetSuppressMessageBoxes(true);
+      tab_contents()->set_suppress_javascript_messages(true);
   }
 
   SendCloseNotification();
