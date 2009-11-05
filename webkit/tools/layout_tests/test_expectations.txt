@@ -54,11 +54,6 @@
 // -If a test is included twice, then the more precise path wins.
 // -CRASH tests cannot be WONTFIX
 
-// SENORBLANCO:  This is a temporary section; these are all to be rebaselined
-// after the removal of SK_USE_OLD_255_TO_256 (lsb change).
-
-
-
 // -----------------------------------------------------------------
 // SLOW TESTS
 // -----------------------------------------------------------------
