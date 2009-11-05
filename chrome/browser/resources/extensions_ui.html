@@ -653,16 +653,9 @@ function autoUpdate() {
           <table width="100%" cellpadding="2" cellspacing="0">
           <tr jsvalues=".className:enabled ? 'extension_enabled' : 'extension_disabled'">
           <td width="62" height="50" align="center" valign="top">
-            <span jsdisplay="icon"
-              ><img
-              jsvalues=".src:'chrome-extension://' + id + '/' + icon"
-              width="48" height="48" />
-            </span>
-            <span jsdisplay="icon == ''"
-              ><img
-              width="48" height="48"
-              src="../../app/theme/infobar_plugin.png" /></span>
-            </td>
+            <span jsdisplay="icon"><img jsvalues=".src:icon" width="48"
+                height="48" />
+          </td>
           <td valign="top">
             <div>
               <span class="extension-name"

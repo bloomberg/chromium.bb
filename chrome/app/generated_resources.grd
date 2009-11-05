@@ -2008,7 +2008,7 @@ each locale. -->
       </message>
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
          desc="Message shown to the user to validate the download of an extension file.">
-        Extensions and themes can harm your computer. Are you sure you want to continue?
+        Extensions can harm your computer. Are you sure you want to continue?
       </message>
       <message name="IDS_SAVE_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">

@@ -4,8 +4,12 @@
 
 #include "chrome/browser/extensions/extensions_ui.h"
 
+#include "app/gfx/codec/png_codec.h"
+#include "app/gfx/color_utils.h"
+#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
@@ -31,11 +35,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/net_util.h"
-
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/base64.h"
+#include "net/base/net_util.h"
+#include "webkit/glue/image_decoder.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -115,6 +120,97 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// ExtensionsDOMHandler::IconLoader
+//
+////////////////////////////////////////////////////////////////////////////////
+
+ExtensionsDOMHandler::IconLoader::IconLoader(ExtensionsDOMHandler* handler)
+    : handler_(handler) {
+}
+
+void ExtensionsDOMHandler::IconLoader::LoadIcons(
+    std::vector<ExtensionResource>* icons, DictionaryValue* json) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &IconLoader::LoadIconsOnFileThread, icons, json));
+}
+
+void ExtensionsDOMHandler::IconLoader::Cancel() {
+  handler_ = NULL;
+}
+
+void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
+    std::vector<ExtensionResource>* icons, DictionaryValue* json) {
+  scoped_ptr<std::vector<ExtensionResource> > icons_deleter(icons);
+  scoped_ptr<DictionaryValue> json_deleter(json);
+
+  ListValue* extensions = NULL;
+  CHECK(json->GetList(L"extensions", &extensions));
+
+  for (size_t i = 0; i < icons->size(); ++i) {
+    DictionaryValue* extension = NULL;
+    CHECK(extensions->GetDictionary(static_cast<int>(i), &extension));
+
+    // Read the file.
+    std::string file_contents;
+    if (icons->at(i).relative_path().empty() ||
+        !file_util::ReadFileToString(icons->at(i).GetFilePath(),
+                                     &file_contents)) {
+      // If there's no icon, default to the puzzle icon. This is safe to do from
+      // the file thread.
+      file_contents = ResourceBundle::GetSharedInstance().GetDataResource(
+          IDR_INFOBAR_PLUGIN_INSTALL);
+    }
+
+    // If the extension is disabled, we desaturate the icon to add to the
+    // disabledness effect.
+    bool enabled = false;
+    CHECK(extension->GetBoolean(L"enabled", &enabled));
+    if (!enabled) {
+      const unsigned char* data =
+          reinterpret_cast<const unsigned char*>(file_contents.data());
+      webkit_glue::ImageDecoder decoder;
+      scoped_ptr<SkBitmap> decoded(new SkBitmap());
+      *decoded = decoder.Decode(data, file_contents.length());
+
+      // Desaturate the icon and lighten it a bit.
+      color_utils::HSL shift = {-1, 0, 0.6};
+      *decoded = SkBitmapOperations::CreateHSLShiftedBitmap(*decoded, shift);
+
+      std::vector<unsigned char> output;
+      gfx::PNGCodec::EncodeBGRASkBitmap(*decoded, false, &output);
+
+      // Lame, but we must make a copy of this now, because base64 doesn't take
+      // the same input type.
+      file_contents.assign(reinterpret_cast<char*>(&output.front()),
+                           output.size());
+    }
+
+    // Create a data URL (all icons are converted to PNGs during unpacking).
+    std::string base64_encoded;
+    net::Base64Encode(file_contents, &base64_encoded);
+    GURL icon_url("data:image/png;base64," + base64_encoded);
+
+    extension->SetString(L"icon", icon_url.spec());
+  }
+
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &IconLoader::ReportResultOnUIThread,
+                        json_deleter.release()));
+}
+
+void ExtensionsDOMHandler::IconLoader::ReportResultOnUIThread(
+    DictionaryValue* json) {
+  if (handler_)
+    handler_->OnIconsLoaded(json);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // ExtensionsDOMHandler
@@ -151,10 +247,17 @@ void ExtensionsDOMHandler::RegisterMessages() {
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
-  DictionaryValue results;
+  DictionaryValue* results = new DictionaryValue();
 
   // Add the extensions to the results structure.
   ListValue *extensions_list = new ListValue();
+
+  // Stores the icon resource for each of the extensions in extensions_list. We
+  // build up a list of them here, then load them on the file thread in
+  // ::LoadIcons().
+  std::vector<ExtensionResource>* extension_icons =
+      new std::vector<ExtensionResource>();
+
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
@@ -163,6 +266,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
     if (!(*extension)->IsTheme()) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension, GetActivePagesForExtension((*extension)->id()), true));
+      extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
   extensions = extensions_service_->disabled_extensions();
@@ -171,15 +275,25 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
     if (!(*extension)->IsTheme()) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension, GetActivePagesForExtension((*extension)->id()), false));
+      extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
-  results.Set(L"extensions", extensions_list);
+  results->Set(L"extensions", extensions_list);
 
   bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results.SetBoolean(L"developerMode", developer_mode);
+  results->SetBoolean(L"developerMode", developer_mode);
 
-  dom_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
+  if (icon_loader_.get())
+    icon_loader_->Cancel();
+
+  icon_loader_ = new IconLoader(this);
+  icon_loader_->LoadIcons(extension_icons, results);
+}
+
+void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
+  dom_ui_->CallJavascriptFunction(L"returnExtensionsData", *json);
+  delete json;
 
   // Register for notifications that we need to reload the page.
   registrar_.RemoveAll();
@@ -191,6 +305,20 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
       NotificationService::AllSources());
+}
+
+ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
+    Extension* extension) {
+  // Try to fetch the medium sized icon, then (if missing) go for the large one.
+  const std::map<int, std::string>& icons = extension->icons();
+  std::map<int, std::string>::const_iterator iter =
+      icons.find(Extension::EXTENSION_ICON_MEDIUM);
+  if (iter == icons.end())
+    iter = icons.find(Extension::EXTENSION_ICON_LARGE);
+  if (iter != icons.end())
+    return extension->GetResource(iter->second);
+  else
+    return ExtensionResource();
 }
 
 void ExtensionsDOMHandler::HandleToggleDeveloperMode(const Value* value) {
@@ -481,17 +609,6 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   if (!extension->options_url().is_empty())
     extension_data->SetString(L"options_url", extension->options_url().spec());
 
-  // Try to fetch the medium sized icon, then (if missing) go for the large one.
-  const std::map<int, std::string>& icons = extension->icons();
-  std::map<int, std::string>::const_iterator iter =
-      icons.find(Extension::EXTENSION_ICON_MEDIUM);
-  if (iter == icons.end())
-    iter = icons.find(Extension::EXTENSION_ICON_LARGE);
-  if (iter != icons.end())
-    extension_data->SetString(L"icon", iter->second);
-  else
-    extension_data->SetString(L"icon", "");
-
   // Add list of content_script detail DictionaryValues
   ListValue *content_script_list = new ListValue();
   UserScriptList content_scripts = extension->content_scripts();
@@ -550,6 +667,9 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
 ExtensionsDOMHandler::~ExtensionsDOMHandler() {
   if (pack_job_.get())
     pack_job_->ClearClient();
+
+  if (icon_loader_.get())
+    icon_loader_->Cancel();
 }
 
 // ExtensionsDOMHandler, public: -----------------------------------------------
