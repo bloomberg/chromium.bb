@@ -33,14 +33,13 @@
 // This file declares the VertexBufferGL, IndexBufferGL and VertexStructGL
 // classes.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_
 
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/cross/resource.h"
 #include "command_buffer/service/cross/gl/gl_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -141,6 +140,5 @@ class VertexStructGL : public VertexStruct {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GEOMETRY_GL_H_

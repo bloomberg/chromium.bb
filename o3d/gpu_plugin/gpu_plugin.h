@@ -10,7 +10,6 @@
 typedef struct _NPPluginFuncs NPPluginFuncs;
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Declarations of NPAPI plugin entry points.
@@ -27,6 +26,5 @@ NPError NP_Initialize(NPNetscapeFuncs* browser_funcs);
 NPError NP_Shutdown();
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_GPU_PLUGIN_H_

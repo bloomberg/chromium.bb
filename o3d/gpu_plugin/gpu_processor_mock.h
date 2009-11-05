@@ -8,7 +8,6 @@
 #include "o3d/gpu_plugin/gpu_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class MockGPUProcessor : public GPUProcessor {
@@ -38,6 +37,5 @@ class MockGPUProcessor : public GPUProcessor {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_GPU_PROCESSOR_MOCK_H_

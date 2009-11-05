@@ -8,7 +8,6 @@
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // This mocks certain member functions of the stub browser. Those relating
@@ -43,6 +42,5 @@ class MockNPBrowser : public StubNPBrowser {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_BROWSER_MOCK_H_

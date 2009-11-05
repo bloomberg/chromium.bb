@@ -32,15 +32,14 @@
 
 // This file contains the command buffer helper class.
 
-#ifndef O3D_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
-#define O3D_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
 
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_common.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Command buffer helper class. This class simplifies ring buffer management:
@@ -207,6 +206,5 @@ class CommandBufferHelper {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_CMD_BUFFER_HELPER_H_

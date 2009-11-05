@@ -34,7 +34,6 @@
 
 #include "command_buffer/client/cross/id_allocator.h"
 
-namespace o3d {
 namespace command_buffer {
 
 IdAllocator::IdAllocator() : bitmap_(1) { bitmap_[0] = 0; }
@@ -84,4 +83,3 @@ bool IdAllocator::GetBit(unsigned int bit) const {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

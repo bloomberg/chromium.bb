@@ -9,7 +9,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Mockable factory used to create instances of PluginObject based on plugin
@@ -20,6 +19,5 @@ class MockPluginObjectFactory : public NPPluginObjectFactory {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_PLUGIN_OBJECT_FACTORY_MOCK_H_

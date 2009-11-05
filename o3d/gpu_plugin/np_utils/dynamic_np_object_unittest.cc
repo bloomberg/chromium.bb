@@ -13,7 +13,6 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class NPDynamicNPObjectTest : public testing::Test {
@@ -82,4 +81,3 @@ TEST_F(NPDynamicNPObjectTest, InvalidateNullsObjectProperties) {
   NPBrowser::get()->ReleaseObject(object_.Get());
 }
 }  // namespace gpu_plugin
-}  // namespace o3d

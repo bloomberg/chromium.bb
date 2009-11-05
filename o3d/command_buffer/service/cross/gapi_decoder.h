@@ -32,13 +32,12 @@
 
 // This file contains the GAPI decoder class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
 
 #include "command_buffer/service/cross/common_decoder.h"
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -64,20 +63,19 @@ class GAPIDecoder : public CommonDecoder {
  private:
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
-  #define O3D_COMMAND_BUFFER_CMD_OP(name) \
+  #define GPU_COMMAND_BUFFER_CMD_OP(name) \
      ParseError Handle ## name(           \
        unsigned int arg_count,            \
        const o3d::name& args);            \
 
-  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
+  O3D_COMMAND_BUFFER_CMDS(GPU_COMMAND_BUFFER_CMD_OP)
 
-  #undef O3D_COMMAND_BUFFER_CMD_OP
+  #undef GPU_COMMAND_BUFFER_CMD_OP
 
   GAPIInterface *gapi_;
 };
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_

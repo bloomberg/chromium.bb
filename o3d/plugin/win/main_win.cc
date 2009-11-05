@@ -63,8 +63,8 @@ using o3d::DisplayWindowWindows;
 using o3d::Event;
 
 #if defined(RENDERER_CB)
-using o3d::gpu_plugin::CommandBuffer;
-using o3d::gpu_plugin::NPObjectPointer;
+using gpu_plugin::CommandBuffer;
+using gpu_plugin::NPObjectPointer;
 #endif
 
 namespace {
@@ -75,7 +75,7 @@ HINSTANCE g_module_instance;
 //    move over to gyp. This is just to avoid having to write scons files for
 //    np_utils.
 #if defined(RENDERER_CB)
-o3d::gpu_plugin::NPBrowser* g_browser;
+gpu_plugin::NPBrowser* g_browser;
 #endif
 }  // namespace anonymous
 
@@ -738,7 +738,7 @@ NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
   HANDLE_CRASHES;
 
 #if defined(RENDERER_CB)
-  g_browser = new o3d::gpu_plugin::NPBrowser(browserFuncs);
+  g_browser = new gpu_plugin::NPBrowser(browserFuncs);
 #endif
 
   NPError retval = InitializeNPNApi(browserFuncs);

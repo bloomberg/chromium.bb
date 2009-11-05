@@ -8,7 +8,6 @@
 #include "o3d/gpu_plugin/system_services/shared_memory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class MockSharedMemory : public SharedMemory {
@@ -24,6 +23,5 @@ class MockSharedMemory : public SharedMemory {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_SYSTEM_SERVICES_SHARED_MEMORY_MOCK_H_

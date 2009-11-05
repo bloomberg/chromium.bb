@@ -14,7 +14,6 @@
 #include "o3d/third_party/npapi/include/npupp.h"
 #endif
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Definitions of NPAPI plugin entry points.
@@ -135,4 +134,3 @@ NPError NP_Shutdown() {
   return NPERR_NO_ERROR;
 }
 }  // namespace gpu_plugin
-}  // namespace o3d

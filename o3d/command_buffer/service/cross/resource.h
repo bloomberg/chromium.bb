@@ -32,14 +32,13 @@
 
 // This file contains the definition for resource classes and the resource map.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
 
 #include <vector>
 #include "base/scoped_ptr.h"
 #include "command_buffer/common/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Base class for resources, just providing a common Destroy function.
@@ -265,6 +264,5 @@ template<class T> class ResourceMap {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_

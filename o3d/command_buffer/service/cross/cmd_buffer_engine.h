@@ -33,12 +33,11 @@
 // This file defines the CommandBufferEngine class, providing the main loop for
 // the service, exposing the RPC API, managing the command parser.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
 
 #include "base/basictypes.h"
 
-namespace o3d {
 namespace command_buffer {
 
 class CommandBufferEngine {
@@ -67,6 +66,5 @@ class CommandBufferEngine {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_

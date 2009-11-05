@@ -40,16 +40,18 @@
 #include "core/cross/renderer.h"
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/resource.h"
+#include "command_buffer/client/cross/fenced_allocator.h"
 #include "command_buffer/client/cross/id_allocator.h"
 #include "gpu_plugin/command_buffer.h"
 #include "gpu_plugin/np_utils/np_object_pointer.h"
 
-namespace o3d {
 namespace command_buffer {
 class O3DCmdHelper;
 class BufferSyncInterface;
 class FencedAllocatorWrapper;
 }  // namespace command_buffer
+
+namespace o3d {
 
 class Material;
 
@@ -60,8 +62,8 @@ class Win32CBServer;
 // This is the implementation of the Renderer interface for command buffers.
 class RendererCB : public Renderer {
  public:
-  typedef command_buffer::IdAllocator IdAllocator;
-  typedef command_buffer::FencedAllocatorWrapper FencedAllocatorWrapper;
+  typedef ::command_buffer::IdAllocator IdAllocator;
+  typedef ::command_buffer::FencedAllocatorWrapper FencedAllocatorWrapper;
 
   virtual ~RendererCB();
 
@@ -178,7 +180,7 @@ class RendererCB : public Renderer {
   // Overridden from Renderer.
   virtual const int* GetRGBAUByteNSwizzleTable();
 
-  command_buffer::parse_error::ParseError GetParseError();
+  ::command_buffer::parse_error::ParseError GetParseError();
 
  protected:
   // Protected so that callers are forced to call the factory method.
@@ -260,8 +262,8 @@ class RendererCB : public Renderer {
   void *transfer_shm_address_;
   NPP npp_;
   gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
-  command_buffer::O3DCmdHelper *helper_;
-  FencedAllocatorWrapper *allocator_;
+  ::command_buffer::O3DCmdHelper *helper_;
+  ::command_buffer::FencedAllocatorWrapper *allocator_;
 
   IdAllocator vertex_buffer_ids_;
   IdAllocator index_buffer_ids_;

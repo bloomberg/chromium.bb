@@ -33,8 +33,8 @@
 // This file contains the GAPIGL class, implementing the GAPI interface for
 // GL.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
 
 #include <build/build_config.h>
 #include <GL/glew.h>
@@ -48,7 +48,6 @@
 #include "command_buffer/service/cross/gl/sampler_gl.h"
 #include "command_buffer/service/cross/gl/texture_gl.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 #if defined(OS_LINUX)
@@ -462,6 +461,5 @@ class GAPIGL : public GAPIInterface {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GAPI_GL_H_

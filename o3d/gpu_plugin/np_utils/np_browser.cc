@@ -14,7 +14,6 @@
 #include "o3d/gpu_plugin/system_services/shared_memory.h"
 #endif
 
-namespace o3d {
 namespace gpu_plugin {
 
 NPBrowser* NPBrowser::browser_;
@@ -131,4 +130,3 @@ void* NPBrowser::MapMemory(NPP npp,
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

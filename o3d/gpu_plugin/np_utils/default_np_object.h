@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "o3d/gpu_plugin/np_utils/np_headers.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class BaseNPDispatcher;
@@ -81,6 +80,5 @@ class DefaultNPObject : public RootClass {
   DISALLOW_COPY_AND_ASSIGN(DefaultNPObject);
 };
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_DEFAULT_NP_OBJECT_H_

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 StubNPBrowser::StubNPBrowser() : NPBrowser(NULL) {
@@ -121,4 +120,3 @@ void* StubNPBrowser::MapMemory(NPP npp,
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

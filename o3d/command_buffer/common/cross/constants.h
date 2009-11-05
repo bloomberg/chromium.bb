@@ -35,7 +35,6 @@
 
 #include "base/basictypes.h"
 
-namespace o3d {
 namespace command_buffer {
 
 typedef int32 CommandBufferOffset;
@@ -68,6 +67,5 @@ namespace parse_error {
 const int32 kInvalidSharedMemoryId = -1;
 
 }  // namespace command_buffer
-}  // namespace o3d
 
 #endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_CONSTANTS_H_

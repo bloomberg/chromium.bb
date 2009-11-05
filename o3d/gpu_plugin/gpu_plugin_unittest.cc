@@ -28,7 +28,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class GPUPluginTest : public testing::Test {
@@ -56,11 +55,11 @@ class GPUPluginTest : public testing::Test {
 
 TEST_F(GPUPluginTest, GetEntryPointsSetsNeededFunctionPointers) {
 #if defined(OS_LINUX)
-  NPError error = o3d::gpu_plugin::NP_Initialize(&browser_funcs_,
+  NPError error = gpu_plugin::NP_Initialize(&browser_funcs_,
                                                  &plugin_funcs_);
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 #else
-  NPError error = o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  NPError error = gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
 #endif
 
   EXPECT_EQ(NPERR_NO_ERROR, error);
@@ -74,74 +73,74 @@ TEST_F(GPUPluginTest, GetEntryPointsSetsNeededFunctionPointers) {
 
 TEST_F(GPUPluginTest, CanInitializeAndShutdownPlugin) {
   EXPECT_EQ(NPERR_NO_ERROR,
-      o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
-  EXPECT_EQ(NPERR_NO_ERROR, o3d::gpu_plugin::NP_Shutdown());
+      gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
+  EXPECT_EQ(NPERR_NO_ERROR, gpu_plugin::NP_Shutdown());
 }
 
 TEST_F(GPUPluginTest, InitializeFailsIfBrowserFuncsIsNull) {
   EXPECT_EQ(NPERR_INVALID_FUNCTABLE_ERROR,
-      o3d::gpu_plugin::NP_Initialize(NULL INITIALIZE_PLUGIN_FUNCS));
+      gpu_plugin::NP_Initialize(NULL INITIALIZE_PLUGIN_FUNCS));
 }
 
 TEST_F(GPUPluginTest, InitializeFailsIfAlreadyInitialized) {
   EXPECT_EQ(NPERR_NO_ERROR,
-      o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
+      gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
   EXPECT_EQ(NPERR_GENERIC_ERROR,
-      o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
-  EXPECT_EQ(NPERR_NO_ERROR, o3d::gpu_plugin::NP_Shutdown());
+      gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS));
+  EXPECT_EQ(NPERR_NO_ERROR, gpu_plugin::NP_Shutdown());
 }
 
 TEST_F(GPUPluginTest, ShutdownFailsIfNotInitialized) {
-  EXPECT_EQ(NPERR_GENERIC_ERROR, o3d::gpu_plugin::NP_Shutdown());
+  EXPECT_EQ(NPERR_GENERIC_ERROR, gpu_plugin::NP_Shutdown());
 }
 
 TEST_F(GPUPluginTest, NewReturnsErrorForInvalidInstance) {
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_INVALID_INSTANCE_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
       NULL, 0, 0, NULL, NULL, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, GetValueReturnsErrorForInvalidInstance) {
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   int* result = NULL;
   EXPECT_EQ(NPERR_INVALID_INSTANCE_ERROR, plugin_funcs_.getvalue(
       NULL, NPPVjavaClass, &result));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, DestroyReturnsErrorForInvalidInstance) {
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_INVALID_INSTANCE_ERROR, plugin_funcs_.destroy(NULL, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, SetWindowReturnsErrorForInvalidInstance) {
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_INVALID_INSTANCE_ERROR, plugin_funcs_.setwindow(NULL, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, HandleEventReturnsFalseForInvalidInstance) {
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(0, plugin_funcs_.event(NULL, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
@@ -166,8 +165,8 @@ TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
 
   EXPECT_CALL(plugin_object, Release());
 
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
@@ -180,7 +179,7 @@ TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.destroy(&npp_, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, NewFailsIfPluginObjectFactoryFails) {
@@ -188,14 +187,14 @@ TEST_F(GPUPluginTest, NewFailsIfPluginObjectFactoryFails) {
       &npp_, const_cast<NPMIMEType>(GPUPluginObject::kPluginType)))
     .WillOnce(Return(static_cast<PluginObject*>(NULL)));
 
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_GENERIC_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
       &npp_, 0, 0, NULL, NULL, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, SetWindowForwardsToPluginObject) {
@@ -220,8 +219,8 @@ TEST_F(GPUPluginTest, SetWindowForwardsToPluginObject) {
 
   EXPECT_CALL(plugin_object, Release());
 
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
@@ -231,7 +230,7 @@ TEST_F(GPUPluginTest, SetWindowForwardsToPluginObject) {
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.destroy(&npp_, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, HandleEventForwardsToPluginObject) {
@@ -256,8 +255,8 @@ TEST_F(GPUPluginTest, HandleEventForwardsToPluginObject) {
 
   EXPECT_CALL(plugin_object, Release());
 
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
@@ -267,7 +266,7 @@ TEST_F(GPUPluginTest, HandleEventForwardsToPluginObject) {
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.destroy(&npp_, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 TEST_F(GPUPluginTest, GetValueReturnsErrorForUnknownVariable) {
@@ -287,8 +286,8 @@ TEST_F(GPUPluginTest, GetValueReturnsErrorForUnknownVariable) {
 
   EXPECT_CALL(plugin_object, Release());
 
-  o3d::gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
-  o3d::gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
+  gpu_plugin::NP_GetEntryPoints(&plugin_funcs_);
+  gpu_plugin::NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.newp(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
@@ -300,8 +299,7 @@ TEST_F(GPUPluginTest, GetValueReturnsErrorForUnknownVariable) {
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.destroy(&npp_, NULL));
 
-  o3d::gpu_plugin::NP_Shutdown();
+  gpu_plugin::NP_Shutdown();
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

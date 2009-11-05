@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/command_buffer.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 CommandBuffer::CommandBuffer(NPP npp)
@@ -150,4 +149,3 @@ void CommandBuffer::SetParseError(int32 parse_error) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

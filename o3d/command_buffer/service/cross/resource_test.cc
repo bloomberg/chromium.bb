@@ -35,7 +35,6 @@
 #include "tests/common/win/testing_common.h"
 #include "command_buffer/service/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Mock resource implementation that checks for leaks.
@@ -125,4 +124,3 @@ TEST_F(ResourceMapTest, TestMap) {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

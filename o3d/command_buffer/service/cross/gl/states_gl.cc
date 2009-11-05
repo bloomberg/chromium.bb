@@ -35,7 +35,6 @@
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -344,4 +343,3 @@ void GAPIGL::SetBlendingColor(const RGBA &color) {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

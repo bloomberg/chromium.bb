@@ -44,7 +44,6 @@
 
 // TODO: remove link-dependency on D3DX.
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -676,4 +675,3 @@ bool GAPID3D9::ValidateEffect() {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

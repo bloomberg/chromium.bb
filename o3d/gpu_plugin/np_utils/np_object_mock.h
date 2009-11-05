@@ -8,7 +8,6 @@
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class MockNPObject : public NPObject {
@@ -33,6 +32,5 @@ class MockNPObject : public NPObject {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_MOCK_H_

@@ -8,7 +8,6 @@
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // An NPObject that implements a shared memory command buffer and a synchronous
@@ -40,6 +39,5 @@ class MockCommandBuffer : public CommandBuffer {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_COMMAND_BUFFER_MOCK_H_

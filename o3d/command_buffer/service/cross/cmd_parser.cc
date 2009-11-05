@@ -36,7 +36,6 @@
 // TODO(gman): remove this so we can use this code for different formats.
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 
-namespace o3d {
 namespace command_buffer {
 
 CommandParser::CommandParser(void *shm_address,
@@ -110,4 +109,3 @@ parse_error::ParseError CommandParser::ProcessAllCommands() {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

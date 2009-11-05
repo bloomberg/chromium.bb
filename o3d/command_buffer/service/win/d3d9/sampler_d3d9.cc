@@ -36,7 +36,6 @@
 #include "command_buffer/service/win/d3d9/sampler_d3d9.h"
 #include "command_buffer/service/win/d3d9/texture_d3d9.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -197,4 +196,3 @@ parse_error::ParseError GAPID3D9::SetSamplerTexture(
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

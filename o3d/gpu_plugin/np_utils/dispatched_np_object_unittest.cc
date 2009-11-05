@@ -14,7 +14,6 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 // This mock class has a dispatcher chain with an entry for each mocked
@@ -402,4 +401,3 @@ TEST_F(DispatchedNPObjectTest, EnumeratesAllAvailableMethods) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

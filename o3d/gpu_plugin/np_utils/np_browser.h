@@ -10,7 +10,6 @@
 
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 
-namespace o3d {
 namespace gpu_plugin {
 
 // This class exposes the functions provided by the browser to a plugin (the
@@ -88,6 +87,5 @@ class NPBrowser {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_BROWSER_H_

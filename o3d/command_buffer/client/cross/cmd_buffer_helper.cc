@@ -35,7 +35,6 @@
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 
 using gpu_plugin::NPBrowser;
@@ -216,4 +215,3 @@ parse_error::ParseError CommandBufferHelper::GetParseError() {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

@@ -7,7 +7,6 @@
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 namespace {
@@ -61,4 +60,3 @@ NPError GPUPluginObject::PlatformSpecificSetWindow(NPWindow* new_window) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

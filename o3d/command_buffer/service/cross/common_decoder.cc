@@ -32,7 +32,6 @@
 #include "command_buffer/service/cross/common_decoder.h"
 #include "command_buffer/service/cross/cmd_buffer_engine.h"
 
-namespace o3d {
 namespace command_buffer {
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
@@ -120,7 +119,3 @@ parse_error::ParseError CommonDecoder::HandleSetToken(
 }
 
 }  // namespace command_buffer
-}  // namespace o3d
-
-
-

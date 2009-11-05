@@ -38,7 +38,6 @@
 #include "command_buffer/service/win/d3d9/texture_d3d9.h"
 
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -228,5 +227,3 @@ void GAPID3D9::SetBackSurfaces() {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
-

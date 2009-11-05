@@ -32,8 +32,8 @@
 
 // This file contains the common parts of command buffer formats.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
+#define GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
 
 #include "base/basictypes.h"
 #include "command_buffer/common/cross/types.h"
@@ -41,7 +41,6 @@
 #include "command_buffer/common/cross/logging.h"
 #include "core/cross/packing.h"
 
-namespace o3d {
 namespace command_buffer {
 
 namespace cmd {
@@ -244,7 +243,6 @@ COMPILE_ASSERT(offsetof(SetToken, token) == 4,
 O3D_POP_STRUCTURE_PACKING;
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_COMMON_H_
 

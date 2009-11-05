@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 bool NPVariantToValue(bool* value, const NPVariant& variant) {
@@ -169,4 +168,3 @@ bool NPRemoveProperty(NPP npp,
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

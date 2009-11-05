@@ -12,7 +12,6 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class DerivedNPObject : public MockNPObject {
@@ -219,4 +218,3 @@ TEST_F(NPObjectPointerTest, NULLPointerCanBeReturnedAsARawNPObject) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

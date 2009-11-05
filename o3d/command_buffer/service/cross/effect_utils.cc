@@ -34,7 +34,6 @@
 
 #include "command_buffer/service/cross/effect_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 
 bool ParseEffectData(unsigned int size,
@@ -67,4 +66,3 @@ bool ParseEffectData(unsigned int size,
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

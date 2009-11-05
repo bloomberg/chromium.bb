@@ -33,15 +33,14 @@
 // This file contains the definition of the D3D9 versions of effect-related
 // resource classes.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_
-#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_
+#define GPU_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_
 
 #include <vector>
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/win/d3d9/d3d9_utils.h"
 #include "command_buffer/service/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -136,6 +135,5 @@ class EffectD3D9 : public Effect {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_WIN_D3D9_EFFECT_D3D9_H_

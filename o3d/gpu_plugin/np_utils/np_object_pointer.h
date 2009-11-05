@@ -9,7 +9,6 @@
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "o3d/gpu_plugin/np_utils/np_headers.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Smart pointer for NPObjects that automatically handles reference counting.
@@ -116,6 +115,5 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << pointer.Get();
 }
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_POINTER_H_

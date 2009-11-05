@@ -21,7 +21,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class GPUProcessorTest : public testing::Test {
@@ -308,4 +307,3 @@ TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

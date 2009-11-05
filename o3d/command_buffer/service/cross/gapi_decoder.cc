@@ -37,7 +37,6 @@
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/cross/gapi_decoder.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -515,7 +514,7 @@ parse_error::ParseError GAPIDecoder::HandleCreateTexture2d(
   unsigned int format = CreateTexture2d::Format::Get(levels_format_flags);
   unsigned int flags = CreateTexture2d::Flags::Get(levels_format_flags);
   unsigned int max_levels =
-      1 + base::bits::Log2Ceiling(std::max(width, height));
+      1 + ::o3d::base::bits::Log2Ceiling(std::max(width, height));
   if ((width == 0) || (height == 0) || (levels > max_levels) ||
       (unused != 0) || (format == texture::kUnknown) || (levels == 0))
     return parse_error::kParseInvalidArguments;
@@ -540,7 +539,7 @@ parse_error::ParseError GAPIDecoder::HandleCreateTexture3d(
   unsigned int format = CreateTexture3d::Format::Get(levels_format_flags);
   unsigned int flags = CreateTexture3d::Flags::Get(levels_format_flags);
   unsigned int max_levels =
-      1 + base::bits::Log2Ceiling(std::max(depth, std::max(width, height)));
+      1 + ::o3d::base::bits::Log2Ceiling(std::max(depth, std::max(width, height)));
   if ((width == 0) || (height == 0) || (depth == 0) ||
       (levels > max_levels) || (unused1 != 0) || (unused2 != 0) ||
       (format == texture::kUnknown) || (levels == 0))
@@ -562,7 +561,7 @@ parse_error::ParseError GAPIDecoder::HandleCreateTextureCube(
   unsigned int unused2 = CreateTextureCube::Unused2::Get(levels_format_flags);
   unsigned int format = CreateTextureCube::Format::Get(levels_format_flags);
   unsigned int flags = CreateTextureCube::Flags::Get(levels_format_flags);
-  unsigned int max_levels = 1 + base::bits::Log2Ceiling(side);
+  unsigned int max_levels = 1 + ::o3d::base::bits::Log2Ceiling(side);
   if ((side == 0) || (levels > max_levels) || (unused1 != 0) ||
       (unused2 != 0) || (format == texture::kUnknown) || (levels == 0))
     return parse_error::kParseInvalidArguments;
@@ -937,4 +936,3 @@ parse_error::ParseError GAPIDecoder::HandleSetBackSurfaces(
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

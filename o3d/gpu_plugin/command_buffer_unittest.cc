@@ -18,7 +18,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class CommandBufferTest : public testing::Test {
@@ -216,4 +215,3 @@ TEST_F(CommandBufferTest, CanRaiseErrorStatus) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

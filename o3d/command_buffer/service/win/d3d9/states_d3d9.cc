@@ -37,7 +37,6 @@
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "command_buffer/service/win/d3d9/gapi_d3d9.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -351,4 +350,3 @@ void GAPID3D9::SetBlendingColor(const RGBA &color) {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

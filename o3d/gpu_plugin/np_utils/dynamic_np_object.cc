@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 DynamicNPObject::DynamicNPObject(NPP npp) {
@@ -58,4 +57,3 @@ bool DynamicNPObject::Enumerate(NPIdentifier** names, uint32_t* count) {
   return true;
 }
 }  // namespace gpu_plugin
-}  // namespace o3d

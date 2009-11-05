@@ -32,8 +32,8 @@
 
 // This file contains the o3d command buffer helper class.
 
-#ifndef O3D_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
-#define O3D_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
 
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/common/cross/constants.h"
@@ -41,7 +41,6 @@
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // A helper for O3D command buffers.
@@ -631,7 +630,6 @@ class O3DCmdHelper : public CommandBufferHelper {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
 

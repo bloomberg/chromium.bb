@@ -37,7 +37,6 @@
 #include "command_buffer/service/cross/mocks.h"
 #include "base/scoped_ptr.h"
 
-namespace o3d {
 namespace command_buffer {
 
 using testing::Return;
@@ -313,4 +312,3 @@ TEST_F(CommandParserTest, TestError) {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

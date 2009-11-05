@@ -36,7 +36,6 @@
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 #include "command_buffer/service/linux/x_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 
 String *g_program_path = NULL;
@@ -47,7 +46,6 @@ bool ProcessSystemMessages() {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d
 
 using o3d::String;
 using o3d::command_buffer::g_program_path;

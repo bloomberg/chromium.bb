@@ -35,7 +35,6 @@
 #include "gtest/gtest.h"
 #include "command_buffer/common/cross/bitfield_helpers.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Tests that BitField<>::Get returns the right bits.
@@ -65,4 +64,3 @@ TEST(BitFieldTest, TestSet) {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

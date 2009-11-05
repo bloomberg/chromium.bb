@@ -22,7 +22,6 @@
 #error command buffer service not defined
 #endif
 
-namespace o3d {
 namespace gpu_plugin {
 
 // This class processes commands in a command buffer. It is event driven and
@@ -93,13 +92,12 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 // Callbacks to the GPUProcessor hold a reference count.
 template <typename Method>
-class CallbackStorage<o3d::gpu_plugin::GPUProcessor, Method> {
+class CallbackStorage<gpu_plugin::GPUProcessor, Method> {
  public:
-  CallbackStorage(o3d::gpu_plugin::GPUProcessor* obj, Method method)
+  CallbackStorage(gpu_plugin::GPUProcessor* obj, Method method)
       : obj_(obj),
         meth_(method) {
     DCHECK(obj_);
@@ -111,7 +109,7 @@ class CallbackStorage<o3d::gpu_plugin::GPUProcessor, Method> {
   }
 
  protected:
-  o3d::gpu_plugin::GPUProcessor* obj_;
+  gpu_plugin::GPUProcessor* obj_;
   Method meth_;
 
  private:

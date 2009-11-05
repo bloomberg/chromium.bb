@@ -36,7 +36,6 @@
 #include <algorithm>
 #include "command_buffer/client/cross/cmd_buffer_helper.h"
 
-namespace o3d {
 namespace command_buffer {
 
 #ifndef COMPILER_MSVC
@@ -213,4 +212,3 @@ FencedAllocator::BlockIndex FencedAllocator::GetBlockByOffset(Offset offset) {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

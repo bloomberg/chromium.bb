@@ -9,7 +9,6 @@
 
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class NPClassTest : public testing::Test {
@@ -142,4 +141,3 @@ TEST_F(NPClassTest, ConstructForwards) {
   np_class->deallocate(object);
 }
 }  // namespace gpu_plugin
-}  // namespace o3d

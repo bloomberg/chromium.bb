@@ -35,7 +35,6 @@
 
 #include "command_buffer/common/cross/cmd_buffer_common.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace cmd {
 
@@ -54,6 +53,5 @@ const char* GetCommandName(CommandId command_id) {
 
 }  // namespace cmd
 }  // namespace command_buffer
-}  // namespace o3d
 
 

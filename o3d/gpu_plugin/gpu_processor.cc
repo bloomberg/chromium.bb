@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/gpu_processor.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 GPUProcessor::~GPUProcessor() {
@@ -74,4 +73,3 @@ void GPUProcessor::set_token(int32 token) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

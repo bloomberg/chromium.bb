@@ -40,7 +40,6 @@
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 #include "command_buffer/service/cross/effect_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -849,4 +848,3 @@ bool GAPIGL::ValidateEffect() {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

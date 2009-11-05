@@ -5,7 +5,6 @@
 #include "o3d/gpu_plugin/np_utils/np_class.h"
 #include "o3d/gpu_plugin/system_services/shared_memory.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 SharedMemory::SharedMemory(NPP npp)
@@ -37,19 +36,18 @@ int32 SharedMemory::GetSize() {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 void* NPN_MapMemory(NPP npp, NPObject* object, size_t* size) {
   *size = 0;
 
   // Check that the object really is shared memory.
   if (object->_class !=
-      o3d::gpu_plugin::NPGetClass<o3d::gpu_plugin::SharedMemory>()) {
+      gpu_plugin::NPGetClass<gpu_plugin::SharedMemory>()) {
     return NULL;
   }
 
-  o3d::gpu_plugin::SharedMemory* shared_memory_object =
-      static_cast<o3d::gpu_plugin::SharedMemory*>(object);
+  gpu_plugin::SharedMemory* shared_memory_object =
+      static_cast<gpu_plugin::SharedMemory*>(object);
   base::SharedMemory* shared_memory =
       shared_memory_object->shared_memory();
   if (!shared_memory) {

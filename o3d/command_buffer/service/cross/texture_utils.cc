@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include "command_buffer/service/cross/texture_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 
 void MakeTransferInfo(TransferInfo *transfer_info,
@@ -101,4 +100,3 @@ void TransferVolume(const Volume &volume,
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

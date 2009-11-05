@@ -12,7 +12,6 @@
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "o3d/gpu_plugin/np_utils/np_headers.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // An NPObject holding a shared memory handle.
@@ -41,7 +40,6 @@ class SharedMemory : public DefaultNPObject<NPObject> {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 void* NPN_MapMemory(NPP npp, NPObject* object, size_t* size);
 

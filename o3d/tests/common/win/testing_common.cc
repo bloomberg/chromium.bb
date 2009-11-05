@@ -61,9 +61,9 @@ using o3d::DisplayWindowWindows;
 
 #if defined(RENDERER_CB)
 using o3d::DisplayWindowCB;
-using o3d::gpu_plugin::CommandBuffer;
-using o3d::gpu_plugin::NPObjectPointer;
-using o3d::gpu_plugin::StubNPBrowser;
+using gpu_plugin::CommandBuffer;
+using gpu_plugin::NPObjectPointer;
+using gpu_plugin::StubNPBrowser;
 using o3d::RendererCBLocal;
 #endif
 

@@ -27,7 +27,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class MockSystemNPObject : public DefaultNPObject<NPObject> {
@@ -385,4 +384,3 @@ TEST_F(GPUPluginObjectTest, SendsResizeEventOnSetWindow) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

@@ -17,7 +17,6 @@
 #include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // The scriptable object for the GPU plugin.
@@ -129,6 +128,5 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_GPU_PLUGIN_OBJECT_H_

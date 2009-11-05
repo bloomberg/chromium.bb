@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 bool DispatcherHasMethodHelper(BaseNPDispatcher* chain,
@@ -84,4 +83,3 @@ BaseNPDispatcher::~BaseNPDispatcher() {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

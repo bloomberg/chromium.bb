@@ -33,8 +33,8 @@
 // This file includes all the necessary GL/Cg headers and implements some useful
 // utilities.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
 
 #include <GL/glew.h>
 #if defined(OS_WIN)
@@ -57,4 +57,4 @@
 #define CHECK_GL_ERROR() void(0)
 #endif  // GL_ERROR_DEBUGGING
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_

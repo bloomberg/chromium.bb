@@ -39,7 +39,6 @@
 #include "command_buffer/service/win/d3d9/geometry_d3d9.h"
 #include "command_buffer/service/win/d3d9/gapi_d3d9.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -435,4 +434,3 @@ parse_error::ParseError GAPID3D9::SetVertexInput(
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

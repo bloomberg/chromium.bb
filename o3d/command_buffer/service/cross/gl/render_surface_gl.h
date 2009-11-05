@@ -30,8 +30,8 @@
  */
 
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_RENDER_SURFACE_GL_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_RENDER_SURFACE_GL_H__
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_RENDER_SURFACE_GL_H__
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_GL_RENDER_SURFACE_GL_H__
 
 // This file contains the definition of the OpenGL versions of
 // render surface-related resource classes.
@@ -39,7 +39,6 @@
 #include "command_buffer/service/cross/gl/texture_gl.h"
 #include "command_buffer/service/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -113,7 +112,6 @@ class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_GL_RENDER_SURFACE_GL_H__
+#endif  // GPU_COMMAND_BUFFER_SERVICE_WIN_GL_RENDER_SURFACE_GL_H__
 

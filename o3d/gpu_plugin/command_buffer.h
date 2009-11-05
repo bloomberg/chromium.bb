@@ -13,7 +13,6 @@
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // An NPObject that implements a shared memory command buffer and a synchronous
@@ -134,6 +133,5 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_COMMAND_BUFFER_H_

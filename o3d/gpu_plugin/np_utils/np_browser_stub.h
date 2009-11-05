@@ -10,7 +10,6 @@
 
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Simple implementation of subset of the NPN functions for testing.
@@ -77,6 +76,5 @@ class StubNPBrowser : public NPBrowser {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_BROWSER_STUB_H_

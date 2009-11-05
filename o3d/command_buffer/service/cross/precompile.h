@@ -33,8 +33,8 @@
 // This file contains includes for common headers used by command buffer server
 // files.  It is used for pre-compiled header support.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H_
 
 #include <build/build_config.h>
 

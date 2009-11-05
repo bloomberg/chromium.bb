@@ -56,13 +56,12 @@
 // constructors, destructors, virtual functions or inheritance and they can only
 // use other POD types or intrinsics as members.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
+#define GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
 
 #include "command_buffer/common/cross/cmd_buffer_common.h"
 #include "command_buffer/common/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -141,11 +140,11 @@ namespace o3d {
 // GAPI commands.
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All O3D commands start after this.
-  #define O3D_COMMAND_BUFFER_CMD_OP(name) k ## name,
+  #define GPU_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
-  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
+  O3D_COMMAND_BUFFER_CMDS(GPU_COMMAND_BUFFER_CMD_OP)
 
-  #undef O3D_COMMAND_BUFFER_CMD_OP
+  #undef GPU_COMMAND_BUFFER_CMD_OP
 
   kNumCommands,
 };
@@ -3152,6 +3151,5 @@ O3D_POP_STRUCTURE_PACKING;
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_CMD_BUFFER_FORMAT_H_

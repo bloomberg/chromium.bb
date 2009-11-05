@@ -35,7 +35,6 @@
 #include "tests/common/win/testing_common.h"
 #include "command_buffer/client/cross/id_allocator.h"
 
-namespace o3d {
 namespace command_buffer {
 
 using command_buffer::ResourceId;
@@ -111,4 +110,3 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

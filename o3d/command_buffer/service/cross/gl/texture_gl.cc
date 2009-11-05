@@ -35,7 +35,6 @@
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 #include "command_buffer/service/cross/gl/texture_gl.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -765,4 +764,3 @@ parse_error::ParseError GAPIGL::GetTextureData(
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d

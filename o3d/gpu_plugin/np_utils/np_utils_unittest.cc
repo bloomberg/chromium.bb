@@ -17,7 +17,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class NPUtilsTest : public testing::Test {
@@ -423,4 +422,3 @@ TEST_F(NPUtilsTest, CanRemovePropertyValue) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

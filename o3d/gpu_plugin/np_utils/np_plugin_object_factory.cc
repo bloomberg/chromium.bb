@@ -5,7 +5,6 @@
 #include "o3d/gpu_plugin/gpu_plugin_object_factory.h"
 #include "base/logging.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 NPPluginObjectFactory* NPPluginObjectFactory::factory_;
@@ -29,4 +28,3 @@ NPPluginObjectFactory::~NPPluginObjectFactory() {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

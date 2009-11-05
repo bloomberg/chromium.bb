@@ -6,7 +6,6 @@
 #include "o3d/gpu_plugin/gpu_plugin_object_factory.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 GPUPluginObjectFactory::GPUPluginObjectFactory() {
@@ -26,4 +25,3 @@ PluginObject* GPUPluginObjectFactory::CreatePluginObject(
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

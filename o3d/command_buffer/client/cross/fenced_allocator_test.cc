@@ -43,7 +43,6 @@
 #include "gpu_plugin/np_utils/np_object_pointer.h"
 #include "gpu_plugin/system_services/shared_memory.h"
 
-namespace o3d {
 namespace command_buffer {
 
 using gpu_plugin::CommandBuffer;
@@ -498,6 +497,4 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   }
 }
 
-
 }  // namespace command_buffer
-}  // namespace o3d

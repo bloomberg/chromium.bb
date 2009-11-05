@@ -12,7 +12,6 @@
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "o3d/gpu_plugin/np_utils/np_headers.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Convert NPVariant to C++ type. Returns whether the conversion was successful.
@@ -268,6 +267,5 @@ NPObjectPointer<NPObjectType> NPCreateObject(NPP npp) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_UTILS_H_

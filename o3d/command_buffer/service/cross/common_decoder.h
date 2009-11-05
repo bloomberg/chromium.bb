@@ -29,12 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 
 #include "command_buffer/service/cross/cmd_parser.h"
 
-namespace o3d {
 namespace command_buffer {
 
 class CommandBufferEngine;
@@ -103,7 +102,6 @@ class CommonDecoder : public AsyncAPIInterface {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 

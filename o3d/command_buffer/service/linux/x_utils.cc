@@ -35,7 +35,6 @@
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/service/linux/x_utils.h"
 
-namespace o3d {
 namespace command_buffer {
 
 bool XWindowWrapper::Initialize() {
@@ -90,4 +89,3 @@ void XWindowWrapper::SwapBuffers() {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

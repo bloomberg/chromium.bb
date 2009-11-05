@@ -13,7 +13,6 @@
 // function pointers will invoke the most derived corresponding member
 // functions in T.
 
-namespace o3d {
 namespace gpu_plugin {
 
 namespace np_class_impl {
@@ -122,6 +121,5 @@ const NPClass* NPGetClass() {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_CLASS_H_

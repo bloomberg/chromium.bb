@@ -36,15 +36,14 @@
 // would be definitely preferable, unfortunately it doesn't work on Windows
 // yet.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
 
 #include <vector>
 #include "gmock/gmock.h"
 #include "command_buffer/service/cross/cmd_parser.h"
 #include "command_buffer/service/cross/cmd_buffer_engine.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Mocks an AsyncAPIInterface, using GMock.
@@ -105,6 +104,5 @@ class AsyncAPIMock : public AsyncAPIInterface {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_MOCKS_H_

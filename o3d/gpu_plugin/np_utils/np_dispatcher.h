@@ -75,7 +75,6 @@
                                      num_names);                               \
   }                                                                            \
 
-namespace o3d {
 namespace gpu_plugin {
 
 class BaseNPDispatcher {
@@ -219,6 +218,5 @@ struct NPDispatcher {
 #undef TO_NPVARIANT
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_DISPATCHER_H_

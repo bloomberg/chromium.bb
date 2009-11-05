@@ -7,7 +7,6 @@
 
 #include "o3d/gpu_plugin/np_utils/np_plugin_object_factory.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // Plugin object factory for creating the GPUPluginObject.
@@ -23,6 +22,5 @@ class GPUPluginObjectFactory : public NPPluginObjectFactory {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_GPU_PLUGIN_OBJECT_FACTORY_H_

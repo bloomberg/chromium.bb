@@ -35,7 +35,6 @@
 
 #include "command_buffer/common/cross/o3d_cmd_format.h"
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -53,8 +52,6 @@ const char* GetCommandName(CommandId command_id) {
       names[id - kStartPoint - 1] : "*unknown-command*";
 }
 
-}  // namespace cmd
-}  // namespace command_buffer
 }  // namespace o3d
-
+}  // namespace command_buffer
 

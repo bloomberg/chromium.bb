@@ -32,14 +32,13 @@
 
 // This file declares the XWindowWrapper class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_
-#define O3D_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_
 
 #include <GL/glx.h>
 #include "base/basictypes.h"
 #include "command_buffer/common/cross/logging.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // This class is a wrapper around an X Window and associated GL context. It is
@@ -73,6 +72,5 @@ class XWindowWrapper {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_LINUX_X_UTILS_H_

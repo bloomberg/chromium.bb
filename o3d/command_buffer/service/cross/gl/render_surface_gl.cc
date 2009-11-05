@@ -37,7 +37,6 @@
 #include "command_buffer/service/cross/gl/render_surface_gl.h"
 
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -259,5 +258,4 @@ void GAPIGL::SetBackSurfaces() {
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
 

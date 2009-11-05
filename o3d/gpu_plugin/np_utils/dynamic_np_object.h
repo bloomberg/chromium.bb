@@ -10,7 +10,6 @@
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 // NPObjects of this type have a dictionary of property name / variant pairs
@@ -32,6 +31,5 @@ class DynamicNPObject : public DefaultNPObject<NPObject> {
   DISALLOW_COPY_AND_ASSIGN(DynamicNPObject);
 };
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_DYNAMIC_NP_OBJECT_H_

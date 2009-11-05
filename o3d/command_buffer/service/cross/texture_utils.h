@@ -33,13 +33,12 @@
 // This file declares some utilities for textures, in particular to deal with
 // in-memory texture data and layout.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_
 
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/common/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Structure describing a volume of pixels.
@@ -153,6 +152,5 @@ void TransferVolume(const Volume &volume,
                     const void *src_data);
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_TEXTURE_UTILS_H_

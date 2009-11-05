@@ -34,7 +34,6 @@
 
 #include "command_buffer/service/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Assigns a resource to a resource ID, by setting it at the right location
@@ -99,4 +98,3 @@ void ResourceMapBase::DestroyAllResources() {
 }
 
 }  // namespace command_buffer
-}  // namespace o3d

@@ -34,7 +34,6 @@
 
 #include "command_buffer/common/cross/resource.h"
 
-namespace o3d {
 namespace command_buffer {
 
 namespace texture {
@@ -119,4 +118,3 @@ unsigned int GetDataSize(DataType type) {
 }  // namespace effect_param
 
 }  // namespace command_buffer
-}  // namespace o3d

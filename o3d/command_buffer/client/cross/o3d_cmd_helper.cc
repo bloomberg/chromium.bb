@@ -34,11 +34,9 @@
 
 #include "command_buffer/client/cross/o3d_cmd_helper.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // Currently this is a place holder.
 
 }  // namespace command_buffer
-}  // namespace o3d
 

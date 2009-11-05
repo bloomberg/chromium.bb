@@ -9,7 +9,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class MockPluginObject : public PluginObject {
@@ -23,6 +22,5 @@ class MockPluginObject : public PluginObject {
 };
 
 }  // namespace gpu_plugin
-}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_PLUGIN_OBJECT_MOCK_H_

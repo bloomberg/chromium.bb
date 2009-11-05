@@ -32,14 +32,13 @@
 
 // This file contains the definition of the FencedAllocator class.
 
-#ifndef O3D_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
-#define O3D_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
+#define GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
 
 #include <vector>
 #include "base/basictypes.h"
 #include "command_buffer/common/cross/logging.h"
 
-namespace o3d {
 namespace command_buffer {
 class CommandBufferHelper;
 
@@ -263,7 +262,5 @@ class FencedAllocatorWrapper {
 };
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-
-#endif  // O3D_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_CROSS_FENCED_ALLOCATOR_H_

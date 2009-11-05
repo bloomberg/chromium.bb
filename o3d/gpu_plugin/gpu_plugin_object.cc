@@ -9,7 +9,6 @@
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 const NPUTF8 GPUPluginObject::kPluginType[] =
@@ -135,4 +134,3 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

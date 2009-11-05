@@ -32,12 +32,11 @@
 
 // This file declares some effect related utilities.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_
+#define GPU_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_
 
 #include "command_buffer/common/cross/types.h"
 
-namespace o3d {
 namespace command_buffer {
 
 // This function parses the data passed to the CreateEffect commands, which
@@ -51,6 +50,5 @@ bool ParseEffectData(unsigned int size,
                      String *effect_code);
 
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_CROSS_EFFECT_UTILS_H_

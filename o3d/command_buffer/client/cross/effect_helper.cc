@@ -40,7 +40,6 @@
 
 // TODO: write a unit test.
 
-namespace o3d {
 namespace command_buffer {
 
 bool EffectHelper::CreateEffectParameters(ResourceId effect_id,
@@ -249,4 +248,3 @@ bool EffectHelper::GetEffectStreams(ResourceId effect_id,
   return true;
 }
 }  // namespace command_buffer
-}  // namespace o3d

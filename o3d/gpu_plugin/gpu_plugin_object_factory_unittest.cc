@@ -8,7 +8,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace o3d {
 namespace gpu_plugin {
 
 class PluginObjectFactoryTest : public testing::Test {
@@ -38,4 +37,3 @@ TEST_F(PluginObjectFactoryTest, CreatesGPUPlugin) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

@@ -32,8 +32,8 @@
 
 // This file contains cross-platform basic type definitions
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
+#define GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
 
 #include <build/build_config.h>
 #if !defined(COMPILER_MSVC)
@@ -41,7 +41,6 @@
 #endif
 #include <string>
 
-namespace o3d {
 namespace command_buffer {
 #if defined(COMPILER_MSVC)
 typedef short Int16;
@@ -57,6 +56,5 @@ typedef uint32_t Uint32;
 
 typedef std::string String;
 }  // namespace command_buffer
-}  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_CROSS_TYPES_H_

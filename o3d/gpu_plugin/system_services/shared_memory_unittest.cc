@@ -14,7 +14,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace o3d {
 namespace gpu_plugin {
 
 class SharedMemoryTest : public testing::Test {
@@ -102,4 +101,3 @@ TEST_F(SharedMemoryTest, SecondMapDoesNothing) {
 }
 
 }  // namespace gpu_plugin
-}  // namespace o3d

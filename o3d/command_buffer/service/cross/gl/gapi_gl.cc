@@ -39,7 +39,6 @@
 #include "command_buffer/service/linux/x_utils.h"
 #endif  // OS_LINUX
 
-namespace o3d {
 namespace command_buffer {
 namespace o3d {
 
@@ -416,4 +415,3 @@ void GAPIGL::Clear(unsigned int buffers,
 
 }  // namespace o3d
 }  // namespace command_buffer
-}  // namespace o3d
