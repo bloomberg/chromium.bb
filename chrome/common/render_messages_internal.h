@@ -1712,17 +1712,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // A renderer sends this to the browser process when it wants to create a
   // worker.  The browser will create the worker process if necessary, and
   // will return the route id on success.  On error returns MSG_ROUTING_NONE.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateDedicatedWorker,
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_CreateWorker,
                               GURL /* url */,
-                              int /* render_view_route_id */,
-                              int /* route_id */)
-
-  // A renderer sends this to the browser process when it wants to create a
-  // shared worker.  The browser will create the worker process if necessary,
-  // and will return the route id on success.  On error returns
-  // MSG_ROUTING_NONE.
-  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_CreateSharedWorker,
-                              GURL /* url */,
+                              bool /* is_shared */,
                               string16 /* name */,
                               int /* render_view_route_id */,
                               int /* route_id */)

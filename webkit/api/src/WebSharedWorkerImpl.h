@@ -28,33 +28,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWorkerClient_h
-#define WebWorkerClient_h
+#ifndef WebSharedWorkerImpl_h
+#define WebSharedWorkerImpl_h
 
-#include "WebMessagePortChannel.h"
-#include "WebCommonWorkerClient.h"
+#include "WebSharedWorker.h"
+
+#if ENABLE(SHARED_WORKERS)
+
+#include "ScriptExecutionContext.h"
+#include "WorkerLoaderProxy.h"
+#include "WorkerObjectProxy.h"
+#include <wtf/PassOwnPtr.h>
+#include <wtf/RefPtr.h>
+
+namespace WebCore {
+class SharedWorkerThread;
+}
 
 namespace WebKit {
-    class WebNotificationPresenter;
-    class WebString;
-    class WebWorker;
+class WebView;
 
-    // Provides an interface back to the in-page script object for a worker.
-    // All functions are expected to be called back on the thread that created
-    // the Worker object, unless noted.
-    class WebWorkerClient : public WebCommonWorkerClient {
-    public:
-        virtual void postMessageToWorkerObject(
-            const WebString&,
-            const WebMessagePortChannelArray&) = 0;
+// This class is used by the worker process code to talk to the WebCore::SharedWorker implementation.
+// It can't use it directly since it uses WebKit types, so this class converts the data types.
+// When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
+// convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
+class WebSharedWorkerImpl : public WebCore::WorkerLoaderProxy {
+public:
+    explicit WebSharedWorkerImpl(WebCommonWorkerClient* client);
 
-        virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-        virtual void reportPendingActivity(bool hasPendingActivity) = 0;
+    // WebSharedWorker methods:
+    virtual bool isStarted();
+    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode);
+    virtual void connect(WebMessagePortChannel*);
 
-    protected:
-        ~WebWorkerClient() { }
-    };
+    WebCommonWorkerClient* client() { return m_client; }
+
+private:
+    virtual ~WebSharedWorkerImpl();
+
+    WebCommonWorkerClient* m_client;
+
+    RefPtr<WebCore::SharedWorkerThread> m_workerThread;
+};
 
 } // namespace WebKit
+
+#endif // ENABLE(SHARED_WORKERS)
 
 #endif

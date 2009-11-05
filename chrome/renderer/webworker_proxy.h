@@ -46,6 +46,7 @@ class WebWorkerProxy : public WebKit::WebWorker, private WebWorkerBase {
   virtual void Disconnect();
 
   void OnWorkerCreated();
+  void OnWorkerContextDestroyed();
   void OnPostMessage(const string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);

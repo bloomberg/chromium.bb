@@ -21,7 +21,8 @@ class WorkerThread : public ChildThread {
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
-  void OnCreateWorker(const GURL& url, int route_id);
+  void OnCreateWorker(
+      const GURL& url, bool is_shared, const string16& name, int route_id);
 
   scoped_ptr<WorkerWebKitClientImpl> webkit_client_;
 
