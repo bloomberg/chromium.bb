@@ -105,6 +105,9 @@
       'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|'\
         'chrome/browser/nacl_process_host.*|chrome/common/nacl.*',
     },
+    'appcache': {
+      'filepath': 'appcache/.*',
+    },
 
   },
 
@@ -148,5 +151,6 @@
     'automation': ['phajdan.jr@chromium.org'],
     'chrome_frame' : ['amit@chromium.org'],
     'nacl' : ['native-client-reviews@googlegroups.com'],
+    'appcache': ['michaeln@chromium.org'],
   },
 }
