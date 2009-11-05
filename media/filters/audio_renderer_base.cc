@@ -131,6 +131,13 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   DCHECK_GT(pending_reads_, 0u);
   --pending_reads_;
 
+  // TODO(scherkus): this happens due to a race, primarily because Stop() is a
+  // synchronous call when it should be asynchronous and accept a callback.
+  // Refer to http://crbug.com/16059
+  if (state_ == kStopped) {
+    return;
+  }
+
   // Don't enqueue an end-of-stream buffer because it has no data.
   if (buffer_in->IsEndOfStream()) {
     recieved_end_of_stream_ = true;

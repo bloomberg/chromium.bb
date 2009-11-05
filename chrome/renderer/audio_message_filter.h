@@ -49,6 +49,9 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   MessageLoop* message_loop() { return message_loop_; }
 
  private:
+  // For access to |message_loop_|.
+  friend class AudioRendererImplTest;
+
   FRIEND_TEST(AudioMessageFilterTest, Basic);
   FRIEND_TEST(AudioMessageFilterTest, Delegates);
 

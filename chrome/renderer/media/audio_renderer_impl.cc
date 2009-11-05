@@ -95,6 +95,8 @@ void AudioRendererImpl::OnStop() {
     return;
   stopped_ = true;
 
+  // We should never touch |io_loop_| after being stopped, so post our final
+  // task to clean up.
   io_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::OnDestroy));
 }
@@ -117,10 +119,16 @@ void AudioRendererImpl::OnReadComplete(media::Buffer* buffer_in) {
 void AudioRendererImpl::SetPlaybackRate(float rate) {
   DCHECK(rate >= 0.0f);
 
+  AutoLock auto_lock(lock_);
+  // Handle the case where we stopped due to |io_loop_| dying.
+  if (stopped_) {
+    AudioRendererBase::SetPlaybackRate(rate);
+    return;
+  }
+
   // We have two cases here:
   // Play: GetPlaybackRate() == 0.0 && rate != 0.0
   // Pause: GetPlaybackRate() != 0.0 && rate == 0.0
-  AutoLock auto_lock(lock_);
   if (GetPlaybackRate() == 0.0f && rate != 0.0f) {
     // Play is a bit tricky, we can only play if we have done prerolling.
     // TODO(hclam): I should check for end of streams status here.
@@ -227,6 +235,7 @@ void AudioRendererImpl::OnCreateStream(
   // Make sure we don't call create more than once.
   DCHECK_EQ(0, stream_id_);
   stream_id_ = filter_->AddDelegate(this);
+  io_loop_->AddDestructionObserver(this);
 
   ViewHostMsg_Audio_CreateStream params;
   params.format = format;
@@ -254,8 +263,24 @@ void AudioRendererImpl::OnPause() {
 void AudioRendererImpl::OnDestroy() {
   DCHECK(MessageLoop::current() == io_loop_);
 
+  // Make sure we don't call destroy more than once.
+  DCHECK_NE(0, stream_id_);
   filter_->RemoveDelegate(stream_id_);
   filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  io_loop_->RemoveDestructionObserver(this);
+  stream_id_ = 0;
+}
+
+void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
+  DCHECK(MessageLoop::current() == io_loop_);
+
+  // We treat the IO loop going away the same as stopping.
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  stopped_ = true;
+  OnDestroy();
 }
 
 void AudioRendererImpl::OnSetVolume(double volume) {

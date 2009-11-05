@@ -100,11 +100,13 @@
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioMessageFilter;
 
 class AudioRendererImpl : public media::AudioRendererBase,
-                          public AudioMessageFilter::Delegate {
+                          public AudioMessageFilter::Delegate,
+                          public MessageLoop::DestructionObserver {
  public:
   // Methods called on render thread ------------------------------------------
   // Methods called during construction.
@@ -142,6 +144,11 @@ class AudioRendererImpl : public media::AudioRendererBase,
   friend class media::FilterFactoryImpl1<AudioRendererImpl,
                                          AudioMessageFilter*>;
 
+  // For access to constructor and IO thread methods.
+  friend class AudioRendererImplTest;
+  FRIEND_TEST(AudioRendererImplTest, Stop);
+  FRIEND_TEST(AudioRendererImplTest, DestroyedMessageLoop_OnReadComplete);
+
   explicit AudioRendererImpl(AudioMessageFilter* filter);
   virtual ~AudioRendererImpl();
 
@@ -162,6 +169,9 @@ class AudioRendererImpl : public media::AudioRendererBase,
   void OnSetVolume(double volume);
   void OnNotifyPacketReady();
   void OnDestroy();
+
+  // Called on IO thread when message loop is dying.
+  virtual void WillDestroyCurrentMessageLoop();
 
   // Information about the audio stream.
   int channels_;
