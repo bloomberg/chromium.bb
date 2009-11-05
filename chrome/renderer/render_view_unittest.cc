@@ -59,7 +59,7 @@ TEST_F(RenderViewTest, OnNavStateChanged) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
 
   LoadHTML("<input type=\"text\" id=\"elt_text\"></input>");
 
@@ -83,7 +83,7 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
   view_->OnImeSetInputMode(true);
 
   // Load an HTML page consisting of two input fields.
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -211,7 +211,7 @@ TEST_F(RenderViewTest, ImeComposition) {
         // and move the input focus to the <div> element, where we can use
         // IMEs.
         view_->OnImeSetInputMode(ime_message->enable);
-        view_->set_delay_seconds_for_form_state_sync(0);
+        view_->set_send_content_state_immediately(true);
         LoadHTML("<html>"
                 "<head>"
                 "</head>"
@@ -266,7 +266,7 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
   // This test changes the text direction of the <textarea> element, and
   // writes the values of its 'dir' attribute and its 'direction' property to
   // verify that the text direction is changed.
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -559,7 +559,7 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
   // TODO(hbono): <http://crbug.com/2215> Our WebKit port set |ev.metaKey| to
   // true when pressing an alt key, i.e. the |ev.metaKey| value is not
   // trustworthy. We will check the |ev.metaKey| value when this issue is fixed.
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "<title></title>"
@@ -818,7 +818,7 @@ TEST_F(RenderViewTest, InsertCharacters) {
     // This <div> element is used by the EditorClientImpl class to insert
     // characters received through the RenderWidget::OnHandleInputEvent()
     // function.
-    view_->set_delay_seconds_for_form_state_sync(0);
+    view_->set_send_content_state_immediately(true);
     LoadHTML("<html>"
              "<head>"
              "<title></title>"

@@ -162,6 +162,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // state.
   void SetHidden(bool hidden);
 
+  bool is_hidden() const { return is_hidden_; }
+
   // True if a PaintRect_ACK message is pending.
   bool paint_reply_pending() const {
     return paint_reply_pending_;

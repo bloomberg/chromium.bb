@@ -392,11 +392,11 @@ class RenderView : public RenderWidget,
                  const std::string& css,
                  const std::string& id);
 
-  int delay_seconds_for_form_state_sync() const {
-    return delay_seconds_for_form_state_sync_;
-  }
-  void set_delay_seconds_for_form_state_sync(int delay_in_seconds) {
-    delay_seconds_for_form_state_sync_ = delay_in_seconds;
+  // Whether content state (such as form state and scroll position) should be
+  // sent to the browser immediately. This is normally false, but set to true
+  // by some tests.
+  void set_send_content_state_immediately(bool value) {
+    send_content_state_immediately_ = value;
   }
 
   AudioMessageFilter* audio_message_filter() { return audio_message_filter_; }
@@ -735,6 +735,9 @@ class RenderView : public RenderWidget,
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
 
+  // Starts nav_state_sync_timer_ if it isn't already running.
+  void StartNavStateSyncTimerIfNecessary();
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
@@ -897,11 +900,8 @@ class RenderView : public RenderWidget,
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;
 
-  // Time in seconds of the delay between syncing page state such as form
-  // elements and scroll position. This timeout allows us to avoid spamming the
-  // browser process with every little thing that changes. This normally doesn't
-  // change but is overridden by tests.
-  int delay_seconds_for_form_state_sync_;
+  // See description above setter.
+  bool send_content_state_immediately_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 

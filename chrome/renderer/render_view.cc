@@ -187,9 +187,16 @@ static const int kDelayForCaptureMs = 500;
 // delay.
 static const int kDelayForForcedCaptureMs = 6000;
 
-// The default value for RenderView.delay_seconds_for_form_state_sync_, see
-// that variable for more.
-const int kDefaultDelaySecondsForFormStateSync = 5;
+// Time, in seconds, we delay before sending content state changes (such as form
+// state and scroll position) to the browser. We delay sending changes to avoid
+// spamming the browser.
+// To avoid having tab/session restore require sending a message to get the
+// current content state during tab closing we use a shorter timeout for the
+// foreground renderer. This means there is a small window of time from which
+// content state is modified and not sent to session restore, but this is
+// better than having to wake up all renderers during shutdown.
+static const int kDelaySecondsForContentStateSyncHidden = 5;
+static const int kDelaySecondsForContentStateSync = 1;
 
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
@@ -234,7 +241,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       autofill_query_id_(0),
       popup_notification_visible_(false),
       spelling_panel_visible_(false),
-      delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
+      send_content_state_immediately_(false),
       send_preferred_size_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
@@ -1610,6 +1617,28 @@ void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
   }
 }
 
+void RenderView::StartNavStateSyncTimerIfNecessary() {
+  int delay;
+  if (send_content_state_immediately_)
+    delay = 0;
+  else if (is_hidden())
+    delay = kDelaySecondsForContentStateSyncHidden;
+  else
+    delay = kDelaySecondsForContentStateSync;
+
+  if (nav_state_sync_timer_.IsRunning()) {
+    // The timer is already running. If the delay of the timer maches the amount
+    // we want to delay by, then return. Otherwise stop the timer so that it
+    // gets started with the right delay.
+    if (nav_state_sync_timer_.GetCurrentDelay().InSeconds() == delay)
+      return;
+    nav_state_sync_timer_.Stop();
+  }
+
+  nav_state_sync_timer_.Start(
+      TimeDelta::FromSeconds(delay), this, &RenderView::SyncNavigationState);
+}
+
 void RenderView::setMouseOverURL(const WebURL& url) {
   mouse_over_url_ = GURL(url);
   UpdateTargetURL(mouse_over_url_, focus_url_);
@@ -2316,11 +2345,7 @@ void RenderView::didChangeLocationWithinPage(
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {
-  if (!nav_state_sync_timer_.IsRunning()) {
-    nav_state_sync_timer_.Start(
-        TimeDelta::FromSeconds(delay_seconds_for_form_state_sync_), this,
-        &RenderView::SyncNavigationState);
-  }
+  StartNavStateSyncTimerIfNecessary();
 }
 
 void RenderView::assignIdentifierToRequest(

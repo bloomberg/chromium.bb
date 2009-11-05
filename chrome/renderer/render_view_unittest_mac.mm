@@ -89,7 +89,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
 
   // First test when javascript does not eat keypresses -- should scroll.
   sprintf(htmlBuffer, kRawHtml, "true");
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
   LoadHTML(htmlBuffer);
   render_thread_.sink().ClearMessages();
 
@@ -112,7 +112,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
 
   // Now let javascript eat the key events -- no scrolling should happen
   sprintf(htmlBuffer, kRawHtml, "false");
-  view_->set_delay_seconds_for_form_state_sync(0);
+  view_->set_send_content_state_immediately(true);
   LoadHTML(htmlBuffer);
   render_thread_.sink().ClearMessages();
 
