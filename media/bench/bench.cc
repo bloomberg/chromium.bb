@@ -539,5 +539,6 @@ int main(int argc, const char** argv) {
     return 1;
   }
 #endif
+  CommandLine::Reset();
   return 0;
 }
