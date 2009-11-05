@@ -3254,3 +3254,7 @@ BUG_SENORBLANCO : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
 BUG_SENORBLANCO : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 BUG_SENORBLANCO LINUX WIN : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
+// WebKit 50517:50527
+// This is a new test, just need rebaselining.
+BUG_HCLAM : LayoutTests/accessibility/aria-combobox.html = TEXT
