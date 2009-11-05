@@ -5273,10 +5273,6 @@
       ],
       'conditions': [
         ['OS=="linux"', {
-          'defines': [
-            'POSIX',
-            'OS_LINUX',
-          ],
           'sources!': [
             'browser/sync/notifier/base/network_status_detector_task_mt.cc',
           ],
@@ -5361,9 +5357,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'defines': [
-            'POSIX',
-          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],
@@ -5520,9 +5513,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'defines': [
-            'POSIX',
-          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],
