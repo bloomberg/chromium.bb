@@ -394,7 +394,7 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
   }
   Browser* browser = Browser::GetOrCreateTabbedBrowser(dom_ui_->GetProfile());
   CHECK(browser);
-  browser->OpenURL(extension->options_url(), GURL(), NEW_FOREGROUND_TAB,
+  browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
                    PageTransition::LINK);
 }
 
