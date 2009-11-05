@@ -29,7 +29,8 @@ void AutocompletePopupWin::Show() {
   // Move the popup to the place appropriate for the window's current position -
   // it may have been moved since it was last shown.
   SetBounds(contents_->GetPopupBounds());
-  WidgetWin::Show();
+  if (!IsVisible())
+    WidgetWin::Show();
   is_open_ = true;
 }
 

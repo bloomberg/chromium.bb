@@ -17,11 +17,28 @@ AutocompletePopupGtk::AutocompletePopupGtk(
     AutocompletePopupContentsView* contents)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
       contents_(contents),
-      edit_view_(NULL) {
+      edit_view_(NULL),
+      is_open_(false) {
   set_delete_on_destroy(false);
 }
 
 AutocompletePopupGtk::~AutocompletePopupGtk() {
+}
+
+void AutocompletePopupGtk::Show() {
+  // Move the popup to the place appropriate for the window's current position -
+  // it may have been moved since it was last shown.
+  SetBounds(contents_->GetPopupBounds());
+  if (!IsVisible()) {
+    WidgetGtk::Show();
+    StackWindow();
+  }
+  is_open_ = true;
+}
+
+void AutocompletePopupGtk::Hide() {
+  WidgetGtk::Hide();
+  is_open_ = false;
 }
 
 void AutocompletePopupGtk::Init(AutocompleteEditView* edit_view,
@@ -35,20 +52,14 @@ void AutocompletePopupGtk::Init(AutocompleteEditView* edit_view,
   SetContentsView(contents_);
 
   edit_view_ = edit_view;
-}
 
-void AutocompletePopupGtk::Show() {
-  // Move the popup to the place appropriate for the window's current position -
-  // it may have been moved since it was last shown.
-  SetBounds(contents_->GetPopupBounds());
-  if (!IsVisible()) {
-    WidgetGtk::Show();
-    StackWindow();
-  }
+  Show();
 }
 
 bool AutocompletePopupGtk::IsOpen() const {
-  return IsCreated() && IsVisible();
+  const bool is_open = IsCreated() && IsVisible();
+  CHECK(is_open == is_open_);
+  return is_open;
 }
 
 bool AutocompletePopupGtk::IsCreated() const {
