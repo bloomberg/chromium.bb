@@ -23,6 +23,8 @@ class BrowserDistribution {
                                          const std::wstring& local_data_path,
                                          const std::wstring& distribution_data);
 
+  virtual std::wstring GetAppGuid();
+
   virtual std::wstring GetApplicationName();
 
   virtual std::wstring GetAlternateApplicationName();

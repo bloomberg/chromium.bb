@@ -173,9 +173,11 @@ void ChromeMiniInstaller::InstallMetaInstaller() {
   std::wstring chrome_google_update_state_key(
       google_update::kRegPathClients);
   chrome_google_update_state_key.append(L"\\");
-  chrome_google_update_state_key.append(google_update::kChromeGuid);
-  ASSERT_TRUE(CheckRegistryKey(chrome_google_update_state_key));
+
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  chrome_google_update_state_key.append(dist->GetAppGuid());
+
+  ASSERT_TRUE(CheckRegistryKey(chrome_google_update_state_key));
   ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey()));
   FindChromeShortcut();
   LaunchAndCloseChrome(false);
@@ -404,7 +406,10 @@ void ChromeMiniInstaller::DeleteUserDataFolder() {
 void ChromeMiniInstaller::DeletePvRegistryKey() {
   std::wstring pv_key(google_update::kRegPathClients);
   pv_key.append(L"\\");
-  pv_key.append(google_update::kChromeGuid);
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  pv_key.append(dist->GetAppGuid());
+
   RegKey key;
   if (key.Open(GetRootRegistryKey(), pv_key.c_str(), KEY_ALL_ACCESS))
     ASSERT_TRUE(key.DeleteValue(L"pv"));

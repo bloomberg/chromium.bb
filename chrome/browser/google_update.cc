@@ -15,6 +15,7 @@
 #include "base/thread.h"
 #include "base/win_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -287,10 +288,11 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   if (hr != S_OK)
     return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND, main_loop);
 
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!install_if_newer)
-    hr = on_demand->CheckForUpdate(google_update::kChromeGuid, job_observer);
+    hr = on_demand->CheckForUpdate(dist->GetAppGuid().c_str(), job_observer);
   else
-    hr = on_demand->Update(google_update::kChromeGuid, job_observer);
+    hr = on_demand->Update(dist->GetAppGuid().c_str(), job_observer);
 
   if (hr != S_OK)
     return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR,

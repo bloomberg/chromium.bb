@@ -15,6 +15,8 @@
 
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
+  virtual std::wstring GetAppGuid();
+
   virtual std::wstring GetApplicationName();
 
   virtual std::wstring GetAlternateApplicationName();

@@ -44,6 +44,10 @@ void BrowserDistribution::DoPostUninstallOperations(
     const std::wstring& distribution_data) {
 }
 
+std::wstring BrowserDistribution::GetAppGuid() {
+  return L"";
+}
+
 std::wstring BrowserDistribution::GetApplicationName() {
   return L"Chromium";
 }

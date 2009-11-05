@@ -20,6 +20,14 @@
 
 #include "installer_util_strings.h"
 
+namespace {
+const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
+}
+
+std::wstring ChromeFrameDistribution::GetAppGuid() {
+  return kChromeFrameGuid;
+}
+
 std::wstring ChromeFrameDistribution::GetApplicationName() {
   // TODO(robertshield): localize
   return L"Google Chrome Frame";
@@ -48,14 +56,14 @@ std::wstring ChromeFrameDistribution::GetAppDescription() {
 std::wstring ChromeFrameDistribution::GetStateKey() {
   std::wstring key(google_update::kRegPathClientState);
   key.append(L"\\");
-  key.append(google_update::kChromeGuid);
+  key.append(kChromeFrameGuid);
   return key;
 }
 
 std::wstring ChromeFrameDistribution::GetStateMediumKey() {
   std::wstring key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
-  key.append(google_update::kChromeGuid);
+  key.append(kChromeFrameGuid);
   return key;
 }
 
@@ -76,7 +84,7 @@ std::wstring ChromeFrameDistribution::GetUninstallRegPath() {
 std::wstring ChromeFrameDistribution::GetVersionKey() {
   std::wstring key(google_update::kRegPathClients);
   key.append(L"\\");
-  key.append(google_update::kChromeGuid);
+  key.append(kChromeFrameGuid);
   return key;
 }
 
@@ -100,7 +108,7 @@ void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
   std::wstring ap_key_value;
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
-  reg_key.append(google_update::kChromeGuid);
+  reg_key.append(kChromeFrameGuid);
   if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
       !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
     LOG(INFO) << "Application key not found.";

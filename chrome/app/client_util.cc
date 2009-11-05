@@ -176,12 +176,14 @@ class ChromeDllLoader : public MainDllLoader {
  public:
   virtual std::wstring GetRegistryPath() {
     std::wstring key(google_update::kRegPathClients);
-    key.append(L"\\").append(google_update::kChromeGuid);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    key.append(L"\\").append(dist->GetAppGuid());
     return key;
   }
 
   virtual void OnBeforeLaunch(const std::wstring& version) {
-    RecordDidRun(google_update::kChromeGuid);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    RecordDidRun(dist->GetAppGuid().c_str());
   }
 };
 

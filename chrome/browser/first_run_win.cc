@@ -96,7 +96,8 @@ bool InvokeGoogleUpdateForRename() {
   if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
     ULONG_PTR phandle = NULL;
     DWORD id = GetCurrentProcessId();
-    if (!FAILED(ipl->LaunchCmdElevated(google_update::kChromeGuid,
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    if (!FAILED(ipl->LaunchCmdElevated(dist->GetAppGuid().c_str(),
                                        google_update::kRegRenameCmdField,
                                        id, &phandle))) {
       HANDLE handle = HANDLE(phandle);

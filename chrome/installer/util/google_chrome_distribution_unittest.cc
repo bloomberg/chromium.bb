@@ -46,7 +46,9 @@ class GoogleChromeDistributionTest : public testing::Test {
   std::wstring GetApKeyPath() {
     std::wstring reg_key(google_update::kRegPathClientState);
     reg_key.append(L"\\");
-    reg_key.append(google_update::kChromeGuid);
+
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    reg_key.append(dist->GetAppGuid());
     return reg_key;
   }
 
