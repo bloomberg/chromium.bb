@@ -317,6 +317,21 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   if (filename == kWanWangProtocolHandlerPlugin)
     return false;
 
+  // We only work with newer versions of the Java plugin which use NPAPI only
+  // and don't depend on XPCOM.
+  if (filename == kJavaPlugin1 || filename == kJavaPlugin2) {
+    std::vector<std::wstring> ver;
+    SplitString(info.version, '.', &ver);
+    int major, minor, update;
+    if (ver.size() == 4 &&
+        StringToInt(ver[0], &major) &&
+        StringToInt(ver[1], &minor) &&
+        StringToInt(ver[2], &update)) {
+      if (major == 6 && minor == 0 && update < 120)
+        return false;  // Java SE6 Update 12 or older.
+    }
+  }
+
   // Special WMP handling
 
   // If both the new and old WMP plugins exist, only load the new one.
