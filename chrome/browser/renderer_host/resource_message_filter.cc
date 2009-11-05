@@ -308,8 +308,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
-                          OnCreateDedicatedWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
                           OnCancelCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
@@ -647,12 +646,14 @@ void ResourceMessageFilter::OnLaunchNaCl(const std::wstring& url,
                     nacl_process_id);
 }
 
-void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,
-                                                    int render_view_route_id,
-                                                    int* route_id) {
+void ResourceMessageFilter::OnCreateWorker(const GURL& url,
+                                           bool is_shared,
+                                           const string16& name,
+                                           int render_view_route_id,
+                                           int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
-  WorkerService::GetInstance()->CreateDedicatedWorker(
-      url, id(), render_view_route_id, this, id(), *route_id);
+  WorkerService::GetInstance()->CreateWorker(
+      url, is_shared, name, id(), render_view_route_id, this, id(), *route_id);
 }
 
 void ResourceMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {

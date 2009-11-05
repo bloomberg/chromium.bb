@@ -954,9 +954,9 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN13WorkerService21CreateDedicatedWorkerERK4GURLiiPN3IPC7Message6SenderEii
-   fun:_ZN21ResourceMessageFilter23OnCreateDedicatedWorkerERK4GURLiPi
-   fun:_Z16DispatchToMethodI21ResourceMessageFilterMS0_FvRK4GURLiPiES1_iiEvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+   fun:_ZN13WorkerService12CreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter14OnCreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPi
+   fun:_Z16DispatchToMethodI21ResourceMessageFilterMS0_FvRK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPiES1_bS7_iiEvPT_T0_RK6Tuple4IT1_T2_T3_T4_EP6Tuple1IT5_E
 }
 {
    bug_22932

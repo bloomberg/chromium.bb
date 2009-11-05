@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/api/public/WebWorkerClient.h"
 
@@ -17,15 +16,17 @@ namespace WebKit {
 class WebWorker;
 }
 
+class WebWorkerStubBase;
+
 // This class receives IPCs from the renderer and calls the WebCore::Worker
 // implementation (after the data types have been converted by glue code).  It
 // is also called by the worker code and converts these function calls into
 // IPCs that are sent to the renderer, where they're converted back to function
 // calls by WebWorkerProxy.
-class WebWorkerClientProxy : public WebKit::WebWorkerClient,
-                             public IPC::Channel::Listener {
+class WebWorkerClientProxy : public WebKit::WebWorkerClient {
  public:
-  WebWorkerClientProxy(const GURL& url, int route_id);
+  WebWorkerClientProxy(int route_id, WebWorkerStubBase* stub);
+  ~WebWorkerClientProxy();
 
   // WebWorkerClient implementation.
   virtual void postMessageToWorkerObject(
@@ -55,26 +56,13 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
     return NULL;
   }
 
-  // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  void EnsureWorkerContextTerminates();
 
  private:
-  ~WebWorkerClientProxy();
-
   bool Send(IPC::Message* message);
 
-  void OnTerminateWorkerContext();
-  void OnPostMessage(const string16& message,
-                     const std::vector<int>& sent_message_port_ids,
-                     const std::vector<int>& new_routing_ids);
-
-  // The source url for this worker.
-  GURL url_;
-
   int route_id_;
-
-  WebKit::WebWorker* impl_;
-
+  WebWorkerStubBase* stub_;
   ScopedRunnableMethodFactory<WebWorkerClientProxy> kill_process_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerClientProxy);

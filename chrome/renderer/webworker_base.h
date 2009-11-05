@@ -26,8 +26,9 @@ class WebWorkerBase : public IPC::Channel::Listener {
   virtual ~WebWorkerBase();
 
   // Creates and initializes a new worker context.
-  void CreateWorkerContext(IPC::Message* create_message,
-                           const GURL& script_url,
+  void CreateWorkerContext(const GURL& script_url,
+                           bool is_shared,
+                           const string16& name,
                            const string16& user_agent,
                            const string16& source_code);
 

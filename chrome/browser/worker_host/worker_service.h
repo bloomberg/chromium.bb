@@ -26,12 +26,14 @@ class WorkerService : public NotificationObserver {
   void Initialize(ResourceDispatcherHost* rdh);
 
   // Creates a dedicated worker.  Returns true on success.
-  bool CreateDedicatedWorker(const GURL &url,
-                             int renderer_pid,
-                             int render_view_route_id,
-                             IPC::Message::Sender* sender,
-                             int sender_id,
-                             int sender_route_id);
+  bool CreateWorker(const GURL &url,
+                    bool is_shared,
+                    const string16& name,
+                    int renderer_pid,
+                    int render_view_route_id,
+                    IPC::Message::Sender* sender,
+                    int sender_id,
+                    int sender_route_id);
 
   // Cancel creation of a dedicated worker that hasn't started yet.
   void CancelCreateDedicatedWorker(int sender_id, int sender_route_id);

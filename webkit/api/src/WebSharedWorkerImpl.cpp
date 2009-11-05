@@ -28,33 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWorkerClient_h
-#define WebWorkerClient_h
+#include "config.h"
+#include "WebSharedWorkerImpl.h"
 
-#include "WebMessagePortChannel.h"
-#include "WebCommonWorkerClient.h"
+using namespace WebCore;
 
 namespace WebKit {
-    class WebNotificationPresenter;
-    class WebString;
-    class WebWorker;
 
-    // Provides an interface back to the in-page script object for a worker.
-    // All functions are expected to be called back on the thread that created
-    // the Worker object, unless noted.
-    class WebWorkerClient : public WebCommonWorkerClient {
-    public:
-        virtual void postMessageToWorkerObject(
-            const WebString&,
-            const WebMessagePortChannelArray&) = 0;
+#if ENABLE(SHARED_WORKERS)
 
-        virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-        virtual void reportPendingActivity(bool hasPendingActivity) = 0;
+WebSharedWorker* WebSharedWorker::create(WebCommonWorkerClient* client)
+{
+    // FIXME: Return an instance of WebSharedWorkerImpl once the implementation is complete.
+    ASSERT_NOT_REACHED();
+    return NULL;
+}
 
-    protected:
-        ~WebWorkerClient() { }
-    };
+#endif // ENABLE(SHARED_WORKERS)
 
 } // namespace WebKit
-
-#endif
