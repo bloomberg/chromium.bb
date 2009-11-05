@@ -8,6 +8,9 @@
 namespace {
 
 class SelfAssign : public base::RefCounted<SelfAssign> {
+  friend class base::RefCounted<SelfAssign>;
+
+  ~SelfAssign() {}
 };
 
 class CheckDerivedMemberAccess : public scoped_refptr<SelfAssign> {

@@ -46,9 +46,13 @@ class DirectoryWatcher {
   // Used internally to encapsulate different members on different platforms.
   class PlatformDelegate : public base::RefCounted<PlatformDelegate> {
    public:
-    virtual ~PlatformDelegate() {}
     virtual bool Watch(const FilePath& path, Delegate* delegate,
                        MessageLoop* backend_loop, bool recursive) = 0;
+
+   protected:
+    friend class base::RefCounted<PlatformDelegate>;
+
+    virtual ~PlatformDelegate() {}
   };
 
  private:

@@ -93,6 +93,8 @@ class FilterFactoryCollection : public FilterFactory {
   }
 
  private:
+  ~FilterFactoryCollection() {}
+
   typedef std::vector< scoped_refptr<FilterFactory> > FactoryVector;
   FactoryVector factories_;
 
@@ -123,6 +125,8 @@ class FilterFactoryImpl0 : public FilterFactory {
   }
 
  private:
+  ~FilterFactoryImpl0() {}
+
   DISALLOW_COPY_AND_ASSIGN(FilterFactoryImpl0);
 };
 
@@ -152,6 +156,8 @@ class FilterFactoryImpl1 : public FilterFactory {
   }
 
  private:
+   ~FilterFactoryImpl1() {}
+
   A const a_;
   DISALLOW_COPY_AND_ASSIGN(FilterFactoryImpl1);
 };
@@ -173,6 +179,8 @@ class FilterFactoryImpl2 : public FilterFactory {
   }
 
  private:
+  ~FilterFactoryImpl2() {}
+
   A const a_;
   B const b_;
 
@@ -214,6 +222,8 @@ class InstanceFilterFactory : public FilterFactory {
   }
 
  private:
+  ~InstanceFilterFactory() {}
+
   scoped_refptr<Filter> filter_;
   bool create_called_;
 

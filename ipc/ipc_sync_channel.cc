@@ -51,9 +51,6 @@ class SyncChannel::ReceivedSyncMsgQueue :
     return rv;
   }
 
-  ~ReceivedSyncMsgQueue() {
-  }
-
   // Called on IPC thread when a synchronous message or reply arrives.
   void QueueMessage(const Message& msg, SyncChannel::SyncContext* context) {
     bool was_task_pending;
@@ -157,6 +154,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ReceivedSyncMsgQueue>;
+
   // See the comment in SyncChannel::SyncChannel for why this event is created
   // as manual reset.
   ReceivedSyncMsgQueue() :
@@ -166,6 +165,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
       listener_count_(0),
       top_send_done_watcher_(NULL) {
   }
+
+  ~ReceivedSyncMsgQueue() {}
 
   // Holds information about a queued synchronous message or reply.
   struct QueuedMessage {

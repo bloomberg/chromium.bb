@@ -116,6 +116,10 @@ class FieldTrial : public base::RefCounted<FieldTrial> {
                               const std::string& trial_name);
 
  private:
+  friend class base::RefCounted<FieldTrial>;
+
+  ~FieldTrial() {}
+
   // The name of the field trial, as can be found via the FieldTrialList.
   // This is empty of the trial is not in the experiment.
   const std::string name_;

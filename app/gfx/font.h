@@ -169,7 +169,6 @@ class Font {
              int ave_char_width,
              int style,
              int dlu_base_x);
-    ~HFontRef();
 
     // Accessors
     HFONT hfont() const { return hfont_; }
@@ -181,6 +180,10 @@ class Font {
     const std::wstring& font_name() const { return font_name_; }
 
    private:
+    friend class  base::RefCounted<HFontRef>;
+
+    ~HFontRef();
+
     const HFONT hfont_;
     const int height_;
     const int baseline_;

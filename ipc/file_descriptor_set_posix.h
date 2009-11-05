@@ -19,7 +19,6 @@
 class FileDescriptorSet : public base::RefCountedThreadSafe<FileDescriptorSet> {
  public:
   FileDescriptorSet();
-  ~FileDescriptorSet();
 
   // This is the maximum number of descriptors per message. We need to know this
   // because the control message kernel interface has to be given a buffer which
@@ -90,6 +89,10 @@ class FileDescriptorSet : public base::RefCountedThreadSafe<FileDescriptorSet> {
   // ---------------------------------------------------------------------------
 
  private:
+  friend class base::RefCountedThreadSafe<FileDescriptorSet>;
+
+  ~FileDescriptorSet();
+
   // A vector of descriptors and close flags. If this message is sent, then
   // these descriptors are sent as control data. After sending, any descriptors
   // with a true flag are closed. If this message has been received, then these

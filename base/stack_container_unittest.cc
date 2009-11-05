@@ -16,10 +16,14 @@ class Dummy : public base::RefCounted<Dummy> {
   Dummy(int* alive) : alive_(alive) {
     ++*alive_;
   }
+
+ private:
+  friend class base::RefCounted<Dummy>;
+
   ~Dummy() {
     --*alive_;
   }
- private:
+
   int* const alive_;
 };
 

@@ -15,7 +15,6 @@ class DirectoryWatcherImpl : public DirectoryWatcher::PlatformDelegate,
                              public base::ObjectWatcher::Delegate {
  public:
   DirectoryWatcherImpl() : delegate_(NULL), handle_(INVALID_HANDLE_VALUE) {}
-  virtual ~DirectoryWatcherImpl();
 
   virtual bool Watch(const FilePath& path, DirectoryWatcher::Delegate* delegate,
                      MessageLoop* backend_loop, bool recursive);
@@ -24,6 +23,8 @@ class DirectoryWatcherImpl : public DirectoryWatcher::PlatformDelegate,
   virtual void OnObjectSignaled(HANDLE object);
 
  private:
+  virtual ~DirectoryWatcherImpl();
+
   // Delegate to notify upon changes.
   DirectoryWatcher::Delegate* delegate_;
   // Path we're watching (passed to delegate).

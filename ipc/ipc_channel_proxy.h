@@ -47,10 +47,7 @@ class SendTask;
 class ChannelProxy : public Message::Sender {
  public:
 
-  class MessageFilter;
-  struct MessageFilterTraits {
-    static void Destruct(MessageFilter* filter);
-  };
+  struct MessageFilterTraits;
 
   // A class that receives messages on the thread where the IPC channel is
   // running.  It can choose to prevent the default action for an IPC message.
@@ -92,6 +89,12 @@ class ChannelProxy : public Message::Sender {
     // on etc.
     virtual void OnDestruct() {
       delete this;
+    }
+  };
+
+  struct MessageFilterTraits {
+    static void Destruct(MessageFilter* filter) {
+      filter->OnDestruct();
     }
   };
 
@@ -158,7 +161,6 @@ class ChannelProxy : public Message::Sender {
    public:
     Context(Channel::Listener* listener, MessageFilter* filter,
             MessageLoop* ipc_thread);
-    virtual ~Context() { }
     void ClearIPCMessageLoop() { ipc_message_loop_ = NULL; }
     MessageLoop* ipc_message_loop() const { return ipc_message_loop_; }
     const std::string& channel_id() const { return channel_id_; }
@@ -167,6 +169,9 @@ class ChannelProxy : public Message::Sender {
     void OnDispatchMessage(const Message& message);
 
    protected:
+    friend class base::RefCountedThreadSafe<Context>;
+    virtual ~Context() { }
+
     // IPC::Channel::Listener methods:
     virtual void OnMessageReceived(const Message& message);
     virtual void OnChannelConnected(int32 peer_pid);
@@ -191,6 +196,7 @@ class ChannelProxy : public Message::Sender {
    private:
     friend class ChannelProxy;
     friend class SendTask;
+
     // Create the Channel
     void CreateChannel(const std::string& id, const Channel::Mode& mode);
 

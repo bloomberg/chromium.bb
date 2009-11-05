@@ -71,8 +71,13 @@ class RefCountedThreadSafeBase {
 //
 //   class MyFoo : public base::RefCounted<MyFoo> {
 //    ...
+//    private:
+//     friend class base::RefCounted<MyFoo>;
+//     ~MyFoo();
 //   };
 //
+// You should always make your destructor private, to avoid any code deleting
+// the object accidently while there are references to it.
 template <class T>
 class RefCounted : public subtle::RefCountedBase {
  public:
@@ -115,10 +120,10 @@ struct DefaultRefCountedThreadSafeTraits {
 //    ...
 //   };
 //
-// If you're using the default trait, then you may choose to add compile time
+// If you're using the default trait, then you should add compile time
 // asserts that no one else is deleting your object.  i.e.
 //    private:
-//     friend struct base::RefCountedThreadSafe<MyFoo>;
+//     friend class base::RefCountedThreadSafe<MyFoo>;
 //     ~MyFoo();
 template <class T, typename Traits = DefaultRefCountedThreadSafeTraits<T> >
 class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {

@@ -39,7 +39,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   PrintedDocument(const PrintSettings& settings,
                   PrintedPagesSource* source,
                   int cookie);
-  ~PrintedDocument();
 
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
@@ -106,6 +105,10 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   static const std::wstring& debug_dump_path();
 
  private:
+  friend class base::RefCountedThreadSafe<PrintedDocument>;
+
+  ~PrintedDocument();
+
   // Array of data for each print previewed page.
   typedef std::map<int, scoped_refptr<PrintedPage> > PrintedPages;
 

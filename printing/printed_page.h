@@ -24,7 +24,6 @@ class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
   PrintedPage(int page_number,
               NativeMetafile* native_metafile,
               const gfx::Size& page_size);
-  ~PrintedPage();
 
   // Getters
   int page_number() const { return page_number_; }
@@ -32,6 +31,10 @@ class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
   const gfx::Size& page_size() const { return page_size_; }
 
  private:
+  friend class base::RefCountedThreadSafe<PrintedPage>;
+
+  ~PrintedPage();
+
   // Page number inside the printed document.
   const int page_number_;
 

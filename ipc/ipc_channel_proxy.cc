@@ -10,12 +10,6 @@
 
 namespace IPC {
 
-// static
-void ChannelProxy::MessageFilterTraits::Destruct(
-    ChannelProxy::MessageFilter* filter) {
-  filter->OnDestruct();
-}
-
 //------------------------------------------------------------------------------
 
 // This task ensures the message is deleted if the task is deleted without

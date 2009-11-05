@@ -61,8 +61,6 @@ class SyncChannel : public ChannelProxy,
                 MessageLoop* ipc_thread,
                 base::WaitableEvent* shutdown_event);
 
-    ~SyncContext();
-
     // Adds information about an outgoing sync message to the context so that
     // we know how to deserialize the reply.
     void Push(IPC::SyncMessage* sync_msg);
@@ -97,10 +95,11 @@ class SyncChannel : public ChannelProxy,
     }
 
    private:
+    ~SyncContext();
     // IPC::ChannelProxy methods that we override.
 
     // Called on the listener thread.
-   virtual void Clear();
+    virtual void Clear();
 
     // Called on the IPC thread.
     virtual void OnMessageReceived(const Message& msg);

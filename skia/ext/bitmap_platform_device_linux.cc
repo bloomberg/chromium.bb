@@ -55,10 +55,6 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData
   void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
 
  protected:
-  friend class base::RefCounted<BitmapPlatformDeviceData>;
-
-  ~BitmapPlatformDeviceData();
-
   void LoadConfig();
 
   // The Cairo surface inside this DC.
@@ -82,6 +78,11 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData
   BitmapPlatformDeviceData(const BitmapPlatformDeviceData&);
   BitmapPlatformDeviceData& operator=(
       const BitmapPlatformDeviceData&);
+
+ private:
+  friend class base::RefCounted<BitmapPlatformDeviceData>;
+
+  ~BitmapPlatformDeviceData();
 };
 
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
