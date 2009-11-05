@@ -47,7 +47,7 @@ class MemoryTest : public UITest {
 
   // Called from RunTest() to determine the set of URLs to retrieve.
   // Returns the length of the list.
-  virtual size_t GetUrlList(std::string** list) const = 0;
+  virtual size_t GetUrlList(std::string** list) = 0;
 
   static FilePath GetReferenceBrowserDirectory() {
     FilePath dir;
@@ -72,23 +72,37 @@ class MemoryTest : public UITest {
 
     launch_arguments_.AppendSwitch(switches::kEnableLogging);
 
-    // Use the playback cache, but don't use playback events.
-    launch_arguments_.AppendSwitch(switches::kPlaybackMode);
-    launch_arguments_.AppendSwitch(switches::kNoEvents);
+    // In order to record a dataset to cache for future playback,
+    // set the |playback| to false and run the test. The source user data dir
+    // will be populated with an appropriate cache set.  If any of source
+    // urls are particularly slow, setting |kMaxWaitTime| higher while record
+    // may be useful.
+    bool playback = true;
+    if (playback) {
+      // Use the playback cache, but don't use playback events.
+      launch_arguments_.AppendSwitch(switches::kPlaybackMode);
+      launch_arguments_.AppendSwitch(switches::kNoEvents);
 
-    // Get the specified user data dir (optional)
-    FilePath profile_dir = FilePath::FromWStringHack(
-      CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kUserDataDir));
+      // Get the specified user data dir (optional)
+      FilePath profile_dir = FilePath::FromWStringHack(
+          CommandLine::ForCurrentProcess()->GetSwitchValue(
+          switches::kUserDataDir));
 
-    if (profile_dir.empty()) {
-      if (!SetupTempDirectory(GetUserDataDirSource())) {
-        // There isn't really a way to fail gracefully here.
-        // Neither this constructor nor the SetUp() method return
-        // status to the caller.  So, just fall through using the
-        // default profile and log this.  The failure will be
-        // obvious.
-        LOG(ERROR) << "Error preparing temp directory for test";
+      if (profile_dir.empty()) {
+        if (!SetupTempDirectory(GetUserDataDirSource())) {
+          // There isn't really a way to fail gracefully here.
+          // Neither this constructor nor the SetUp() method return
+          // status to the caller.  So, just fall through using the
+          // default profile and log this.  The failure will be
+          // obvious.
+          LOG(ERROR) << "Error preparing temp directory for test";
+        }
       }
+    } else {  // Record session.
+      launch_arguments_.AppendSwitch(switches::kRecordMode);
+      launch_arguments_.AppendSwitch(switches::kNoEvents);
+
+      user_data_dir_ = GetUserDataDirSource();
     }
 
     FilePath browser_dir = GetBrowserDirectory();
@@ -125,6 +139,7 @@ class MemoryTest : public UITest {
 
     // Cycle through the URLs.
     scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+    int active_window = 0;  // The index of the window we are currently using.
     scoped_refptr<TabProxy> tab(window->GetActiveTab());
     int expected_tab_count = 1;
     for (unsigned counter = 0; counter < urls_length; ++counter) {
@@ -150,6 +165,47 @@ class MemoryTest : public UITest {
 
         int tab_index = counter % num_target_tabs;  // A pseudo-random tab.
         tab = window->GetTab(tab_index);
+      }
+
+      if (url == "<NEXTTAB>") {  // Special command to select the next tab.
+        int tab_index, tab_count;
+        window->GetActiveTabIndex(&tab_index);
+        window->GetTabCount(&tab_count);
+        tab_index = (tab_index + 1) % tab_count;
+        tab = window->GetTab(tab_index);
+        continue;
+      }
+
+      if (url == "<NEWWINDOW>") {  // Special command to create a new window.
+        if (counter + 1 >= urls_length)
+          continue;  // Newwindows was specified at end of list.  ignore.
+
+        int window_count;
+        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+        EXPECT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
+                                                       show_window_));
+        int expected_window_count = window_count + 1;
+        automation()->WaitForWindowCountToBecome(expected_window_count, 500);
+        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+        EXPECT_EQ(expected_window_count, window_count);
+
+        // A new window will not load a url if requested too soon. The window
+        // stays on the new tab page instead.
+        PlatformThread::Sleep(200);
+
+        active_window = window_count - 1;
+        window = automation()->GetBrowserWindow(active_window);
+        tab = window->GetActiveTab();
+        continue;
+      }
+
+      if (url == "<NEXTWINDOW>") {  // Select the next window.
+        int window_count;
+        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+        active_window = (active_window + 1) % window_count;
+        window = automation()->GetBrowserWindow(active_window);
+        tab = window->GetActiveTab();
+        continue;
       }
 
       const int kMaxWaitTime = 5000;
@@ -326,7 +382,7 @@ class GeneralMixMemoryTest : public MemoryTest {
     return profile_dir;
   }
 
-  virtual size_t GetUrlList(std::string** list) const {
+  virtual size_t GetUrlList(std::string** list) {
     *list = urls_;
     return urls_length_;
   }
@@ -462,7 +518,9 @@ std::string GeneralMixMemoryTest::urls_[] = {
   "<NEWTAB>",
   "http://www.google.com/translate_t?hl=en&text=This%20Is%20A%20Test%20Of%20missspellingsdfdf&sl=en&tl=ja"
 };
-size_t GeneralMixMemoryTest::urls_length_ = arraysize(GeneralMixMemoryTest::urls_);
+
+size_t GeneralMixMemoryTest::urls_length_ =
+    arraysize(GeneralMixMemoryTest::urls_);
 
 class GenerlMixReferenceMemoryTest : public GeneralMixMemoryTest {
  public:
@@ -470,6 +528,95 @@ class GenerlMixReferenceMemoryTest : public GeneralMixMemoryTest {
     return GetReferenceBrowserDirectory();
   }
 };
+
+class MembusterMemoryTest : public MemoryTest {
+ public:
+  MembusterMemoryTest() : test_urls_(NULL) {}
+
+  virtual ~MembusterMemoryTest() {
+    delete[] test_urls_;
+  }
+
+  virtual FilePath GetUserDataDirSource() const {
+    FilePath profile_dir;
+    PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
+    profile_dir = profile_dir.AppendASCII("data");
+    profile_dir = profile_dir.AppendASCII("memory_test");
+    profile_dir = profile_dir.AppendASCII("membuster");
+    return profile_dir;
+  }
+
+  virtual size_t GetUrlList(std::string** list) {
+    size_t total_url_entries = urls_length_ * kIterations_ * 2 - 1;
+    if (!test_urls_) {
+      test_urls_ = new std::string[total_url_entries];
+
+      // Open url_length_ + 1 windows as we access urls. We start with one
+      // open window.
+      test_urls_[0] = source_urls_[0];
+      size_t fill_position = 1;
+      size_t source_url_index = 1;
+      for (; fill_position <= urls_length_ * 2; fill_position += 2) {
+        test_urls_[fill_position] = "<NEWWINDOW>";
+        test_urls_[fill_position + 1] = source_urls_[source_url_index];
+        source_url_index = (source_url_index + 1) % urls_length_;
+      }
+
+      // Then cycle through all the urls to fill out the list.
+      for (; fill_position < total_url_entries; fill_position += 2) {
+        test_urls_[fill_position] = "<NEXTWINDOW>";
+        test_urls_[fill_position + 1] = source_urls_[source_url_index];
+        source_url_index = (source_url_index + 1) % urls_length_;
+      }
+    }
+    *list = test_urls_;
+    return total_url_entries;
+  }
+
+ private:
+  static const int kIterations_ = 11;
+
+  static std::string source_urls_[];
+  static size_t urls_length_;
+
+  std::string* test_urls_;
+};
+
+// membuster traverses the list in reverse order.  We just list them that way.
+std::string MembusterMemoryTest::source_urls_[] = {
+  "http://joi.ito.com/archives/email/",
+  "http://joi.ito.com/jp/",
+  "http://forums.studentdoctor.net/showthread.php?t=469342",
+  "http://forums.studentdoctor.net/forumdisplay.php?s=718b9d0e8692d7c3f4cc7c64faffd17b&f=10",
+  "http://de.wikipedia.org/wiki/Hauptseite",
+  "http://zh.wikipedia.org/wiki/",
+  "http://ru.wikipedia.org/wiki/",
+  "http://ja.wikipedia.org/wiki/",
+  "http://en.wikipedia.org/wiki/Main_Page",
+  "http://wikitravel.org/ru/",
+  "http://wikitravel.org/hi/",
+  "http://wikitravel.org/he/",
+  "http://wikitravel.org/ja/",
+  "http://wikitravel.org/en/Main_Page",
+  "http://wikitravel.org/en/China",
+  "http://www.vodcars.com/",
+  "http://en.wikinews.org/wiki/Main_Page",
+  "http://creativecommons.org/",
+  "http://pushingdaisies.wikia.com/wiki/Pushing_Daisies",
+  "http://www.wowwiki.com/Main_Page",
+  "http://spademanns.wikia.com/wiki/Forside",
+  "http://ja.uncyclopedia.info/wiki/",
+  "http://uncyclopedia.org/wiki/Babel:Vi",
+  "http://uncyclopedia.org/wiki/Main_Page",
+  "http://en.marveldatabase.com/Main_Page",
+  "http://bioshock.wikia.com/wiki/Main_Page",
+  "http://www.armchairgm.com/Special:ImageRating",
+  "http://www.armchairgm.com/Anderson_Continues_to_Thrive_for_Cleveland",
+  "http://www.armchairgm.com/Main_Page"
+};
+
+size_t MembusterMemoryTest::urls_length_ =
+    arraysize(MembusterMemoryTest::source_urls_);
 
 TEST_F(GeneralMixMemoryTest, SingleTabTest) {
   RunTest("1t", 1);
@@ -482,5 +629,10 @@ TEST_F(GeneralMixMemoryTest, FiveTabTest) {
 TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
   RunTest("12t", 12);
 }
+
+// Commented out until the recorded cache data is added.
+//TEST_F(MembusterMemoryTest, Windows) {
+//  RunTest("membuster", 0);
+//}
 
 }  // namespace
