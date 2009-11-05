@@ -58,28 +58,6 @@
 // after the removal of SK_USE_OLD_255_TO_256 (lsb change).
 
 
-BUG_SENORBLANCO WIN : LayoutTests/editing/pasteboard/block-wrappers-necessary.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/css/css2-system-fonts.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/forms/search-styled.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/atsui-kerning-and-ligatures.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/basic/006.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/complex-text-opacity.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/stroking-decorations.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/stroking.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/batik/text/textFeatures.svg = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/custom/js-late-gradient-and-object-creation.svg = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/custom/js-late-pattern-and-object-creation.svg = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/custom/text-linking.svg = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
-
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/js-late-mask-and-object-creation.svg = IMAGE
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/js-late-mask-creation.svg = IMAGE
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/mask-changes.svg = IMAGE
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/mask-child-changes.svg = IMAGE
-
 
 // -----------------------------------------------------------------
 // SLOW TESTS
