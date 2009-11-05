@@ -186,7 +186,9 @@ function animateFlip() {
   } else {
     rotation = 0;
     drawIconAtRotation();
-    chrome.browserAction.setBadgeText({text:unreadCount});
+    chrome.browserAction.setBadgeText({
+      text: unreadCount != "0" ? unreadCount : ""
+    });
     chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
   }
 }
