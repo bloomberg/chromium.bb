@@ -3123,6 +3123,10 @@ BUG_JORLOW : LayoutTests/http/tests/ssl/referer-303.html = FAIL
 BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = PASS FAIL
 BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = PASS FAIL
 
+// WebKit roll 50235:50245
+BUG_VICTORW LINUX WIN : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE+TEXT
+BUG_VICTORW WIN : chrome/fast/forms/basic-selects.html = IMAGE
+
 // WebKit roll 50248:50258
 BUG26195 : LayoutTests/accessibility/aria-option-role.html = TEXT
 BUG26195 LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
