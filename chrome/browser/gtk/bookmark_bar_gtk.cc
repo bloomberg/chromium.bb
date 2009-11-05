@@ -103,6 +103,12 @@ void SetToolBarStyle() {
       "widget \"*chrome-bookmark-toolbar\" style \"chrome-bookmark-toolbar\"");
 }
 
+void GtkToolItemSetChildState(GtkWidget* widget, gpointer userdata) {
+  GtkStateType* state = reinterpret_cast<GtkStateType*>(userdata);
+  GtkWidget* button = gtk_bin_get_child(GTK_BIN(widget));
+  gtk_widget_set_state(button, *state);
+}
+
 }  // namespace
 
 const int BookmarkBarGtk::kBookmarkBarNTPHeight = 57;
@@ -603,6 +609,18 @@ void BookmarkBarGtk::UpdateFloatingState() {
   // |window_| can be NULL during testing.
   if (window_) {
     window_->BookmarkBarIsFloating(floating_);
+
+    // If the bookmark bar is floating, then clicking a button on it will
+    // (almost certainly) cause it to stop floating. When this happens, it
+    // never gets a leave-notify event, so the button gets stuck in the prelight
+    // state. This hacks around that.
+    // http://crbug.com/26299
+    if (!floating_) {
+      GtkStateType state = GTK_STATE_NORMAL;
+      gtk_container_foreach(GTK_CONTAINER(bookmark_toolbar_.get()),
+                            GtkToolItemSetChildState, &state);
+    }
+
     // Listen for parent size allocations.
     if (floating_ && widget()->parent) {
       // Only connect once.
