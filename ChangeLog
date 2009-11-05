@@ -1,3 +1,7 @@
+2009-11-05  Christian Egli  <christian.egli@sbszh.ch>
+
+	* HACKING: Mention the use of gnulib and explain how to update it.
+
 2009-10-13  Christian Egli  <christian.egli@sbszh.ch>
 
 	* man/Makefile.am: When generating the man pages at distribution
