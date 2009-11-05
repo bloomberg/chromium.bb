@@ -1010,10 +1010,18 @@ each locale. -->
                 desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
         &lt;enter query&gt;
       </message>
-      <message name="IDS_EDIT_SEARCH_ENGINES"
-               desc="Title of the popup menu item for editing search engines">
-        &amp;Edit search engines...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_EDIT_SEARCH_ENGINES"
+                 desc="Title of the popup menu item for editing search engines">
+          &amp;Edit search engines...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_EDIT_SEARCH_ENGINES"
+                 desc="In Title Case: Title of the popup menu item for editing search engines">
+          &amp;Edit Search Engines...
+        </message>
+      </if>
 
       <!-- Search Engine Preferences-->
       <message name="IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE"
@@ -2823,12 +2831,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Omnibox -->
-      <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
-        Pa&amp;ste and go
-      </message>
-      <message name="IDS_PASTE_AND_SEARCH" desc="The text label of the Paste And Go menu item when the clipboard contains a string to search for">
-        Pa&amp;ste and search
-    </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
+          Pa&amp;ste and go
+        </message>
+        <message name="IDS_PASTE_AND_SEARCH" desc="The text label of the Paste And Go menu item when the clipboard contains a string to search for">
+          Pa&amp;ste and search
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PASTE_AND_GO" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a URL">
+          Pa&amp;ste and Go
+        </message>
+        <message name="IDS_PASTE_AND_SEARCH" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a string to search for">
+          Pa&amp;ste and Search
+        </message>
+      </if>
       <message name="IDS_OMNIBOX_EMPTY_TEXT" desc="Text shown if omnibox is empty">
         Type to search
       </message>
@@ -3869,41 +3887,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         (empty)
       </message>
 
-      <!-- Scroll Bar Context Menu Labels -->
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLHERE" desc="The label for the 'Scroll Here' item">
-        Scroll to Here
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLLEFTEDGE" desc="The label for the 'Left Edge' item">
-        Left Edge
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLRIGHTEDGE" desc="The label for the 'Right Edge' item">
-        Right Edge
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLHOME" desc="The label for the 'Top' item">
-        Top
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLEND" desc="The label for the 'Bottom' item">
-        Bottom
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLPAGEUP" desc="The label for the 'Page Up' item">
-        Page Up
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLPAGEDOWN" desc="The label for the 'Page Down' item">
-        Page Down
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLLEFT" desc="The label for the 'Scroll Left' item">
-        Scroll Left
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLRIGHT" desc="The label for the 'Scroll Left' item">
-        Scroll Right
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLUP" desc="The label for the 'Scroll Up' item">
-        Scroll Up
-      </message>
-      <message name="IDS_SCROLLBAR_CXMENU_SCROLLDOWN" desc="The label for the 'Scroll Down' item">
-        Scroll Down
-      </message>
-
       <!-- Mac First-run dialog messages -->
       <if expr="os == 'darwin'">
         <message name="IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE" desc="Window title of First Run Title on OS X - displayed in Window title bar">
@@ -4038,9 +4021,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Privacy
       </message>
 
-      <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
-        On startup:
-      </message>
+      <!-- Views displays group titles and their contents side-by-side -->
+      <!-- and includes a colon as a result (Mac needs this too).  GTK -->
+      <!-- uses title case and displays the titles above the contents, -->
+      <!-- so we omit the colon. -->
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
+          On startup:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the startup group">
+          On Startup
+        </message>
+      </if>
       <message name="IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB" desc="The label of the 'Show default page and new tab page' startup option radio button">
         Open the home page
       </message>
@@ -4060,9 +4054,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use Current
       </message>
 
-      <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home pages group">
-        Home page:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home pages group">
+          Home page:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the home pages group">
+          Home Page
+        </message>
+      </if>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
         Use the New Tab page
       </message>
@@ -4092,9 +4093,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
-        Default search:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
+          Default search:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the default search engine group">
+          Default Search
+        </message>
+      </if>
       <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_DESCRIPTION" desc="The description of the default search engine group">
         Set the search engine used in the omnibox.
       </message>
@@ -4103,9 +4111,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Manage
       </message>
 
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
-        Default browser:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
+          Default browser:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the default browser group">
+          Default Browser
+        </message>
+      </if>
       <message name="IDS_OPTIONS_DEFAULTBROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
         The default browser is currently <ph name="BROWSER_NAME">$1<ex>Firefox</ex></ph>.
       </message>
@@ -4157,9 +4172,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Manage certificates
       </message>
 
-      <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
-        Passwords:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
+          Passwords:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Passwords' group">
+          Passwords
+        </message>
+      </if>
       <message name="IDS_OPTIONS_PASSWORDS_ASKTOSAVE" desc="The label of the 'Ask me to save passwords' radio button">
         Offer to save passwords
       </message>
@@ -4173,9 +4195,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Show saved passwords
       </message>
 
-      <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form autofill group">
-        Form autofill:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form autofill group">
+          Form autofill:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form autofill group">
+          Form Autofill
+        </message>
+      </if>
       <message name="IDS_OPTIONS_AUTOFILL_SAVE" desc="The label of the 'Ask me to save autofill' radio button">
         Save text from forms to make them easier to fill out
       </message>
@@ -4193,8 +4222,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Themes:
       </message>
       <if expr="os == 'linux2'">
-        <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the themes group">
-          Appearance:
+        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the themes group">
+          Appearance
         </message>
         <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
           Use GTK+ theme
@@ -4284,9 +4313,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow all content to load
       </message>
 
-      <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
-        Browsing data:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
+          Browsing data:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Browsing data' group.">
+          Browsing Data
+        </message>
+      </if>
       <message name="IDS_OPTIONS_BROWSING_DATA_INFO" desc="Information text about browsing data options.">
         You can import your bookmarks and settings from other browsers or clear your browsing data from this computer.
       </message>
@@ -5038,11 +5074,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
       </message>
 
-      <!-- Report Phishing website -->
-      <message name="IDS_PAGE_MENU_REPORT_PHISHING_WEBSITE" desc="The menu label for the menu item that allows the user to report the current page as a phishing website.">
-        Report phishing website...
-      </message>
-
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
         Show suggestions for navigation errors
       </message>
@@ -5169,9 +5200,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTICE_TITLE_FORMAT" desc="Order of URL - Reason">
         <ph name="URL">$1</ph> - <ph name="REASON">$2</ph>
       </message>
-      <message name="IDS_POPUP_HOST_FORMAT" desc="Checkable menu item to always allow popups from a particular hostname">
-        Always show pop-ups from <ph name="URL">$1</ph>
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_POPUP_HOST_FORMAT" desc="Checkable menu item to always allow popups from a particular hostname">
+          Always show pop-ups from <ph name="URL">$1</ph>
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_POPUP_HOST_FORMAT" desc="In Title Case: Checkable menu item to always allow popups from a particular hostname">
+          Always Show Pop-ups From <ph name="URL">$1</ph>
+        </message>
+      </if>
       <message name="IDS_BLOCKED_NOTICE_COUNT" desc="Message shown in the corner of the content window when there are blocked items.">
         Blocked Items: <ph name="COUNT">$1<ex>2</ex></ph>
       </message>
@@ -5223,30 +5261,48 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOKMARK_MANAGER" desc="The label of the menu item that shows the bookmark manager">
           &amp;Bookmark manager
         </message>
+        <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
+          Show in folder
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_SORT" desc="The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
+          Reorder by title
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
+          Organize
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="Title of the tools menu in the bookmark manager.">
+          Tools
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="Title of the import menu item in the bookmark manager.">
+          Import bookmarks...
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="Title of the export menu item in the bookmark manager.">
+          Export bookmarks...
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
           &amp;Bookmark Manager
         </message>
+        <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="In Title Case: The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
+          Show in Folder
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_SORT" desc="In Title Case: The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
+          Reorder by Title
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="In Title Case: Title of the organize menu in the bookmark manager.">
+          Organize
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="In Title Case: Title of the tools menu in the bookmark manager.">
+          Tools
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="In Title Case: Title of the import menu item in the bookmark manager.">
+          Import Bookmarks...
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="In Title Case: Title of the export menu item in the bookmark manager.">
+          Export Bookmarks...
+        </message>
       </if>
-      <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
-        Show in folder
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_SORT" desc="The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
-        Reorder by title
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
-        Organize
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="Title of the tools menu in the bookmark manager.">
-        Tools
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="Title of the import menu item in the bookmark manager.">
-        Import bookmarks...
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="Title of the export menu item in the bookmark manager.">
-        Export bookmarks...
-      </message>
       <message name="IDS_BOOKMARK_MANAGER_NO_SEARCH_TEXT" desc="Text shown in the bookmark table if the user clicks on the search folder without typing in any text in the search text field.">
         Enter a query in the text field above to search your bookmarks.
       </message>
@@ -5421,12 +5477,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Sync app menu item strings -->
-      <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
-        Bookmarks synced...
-      </message>
-      <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
-        Bookmark sync error...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
+          Bookmarks synced...
+        </message>
+        <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
+          Bookmark sync error...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="In Title Case: The text for the sync app menu item when bookmark sync has been enabled">
+          Bookmarks Synced...
+        </message>
+        <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occured">
+          Bookmark Sync Error...
+        </message>
+      </if>
 
       <!-- Merge and Sync dialog strings -->
       <message name="IDS_SYNC_MERGE_INTRODUCTION" desc="The header at the top of the merge and sync dialog.">
