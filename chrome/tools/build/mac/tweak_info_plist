@@ -64,8 +64,6 @@ TOP="${SRCROOT}/.."
 BUILD_BRANDING=$1
 IDENTIFIER=$2
 
-set -x
-
 if [ "${USE_SVN}" = "1" ] ; then
   # Visible in the about:version page.
   SVN_INFO=$(svn info "${TOP}" 2>/dev/null || true)
@@ -112,12 +110,12 @@ if [ ! -z "${SVN_REVISION}" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
       SVNRevision -string "${SVN_REVISION}"
 else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNRevision || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNRevision 2> /dev/null || true
 fi
 if [ ! -z "${SVN_PATH}" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" SVNPath -string "${SVN_PATH}"
 else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNPath || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNPath 2> /dev/null || true
 fi
 
 # Add public version info so "Get Info" works
@@ -148,13 +146,20 @@ if [ "${USE_BREAKPAD}" = "1" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm "YES"
 else
   # Make sure the keys aren't there, || true to avoid errors if they aren't.
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadURL || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadReportInterval || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProduct || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProductDisplay || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadVersion || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSendAndExit || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadURL \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadReportInterval \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProduct \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadProductDisplay \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadVersion \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSendAndExit \
+      2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm \
+      2> /dev/null || true
 fi
 
 # Add or remove the Keystone keys (only supported in release builds).
@@ -167,9 +172,9 @@ if [ "${USE_KEYSTONE}" = "1" ] && [ "${CONFIGURATION}" = "Release" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" KSUpdateURL "${KEYSTONE_URL}"
 else
   # Make sure the keys aren't there, || true to avoid errors if they aren't.
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSVersion || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSProductID || true
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSUpdateURL || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSVersion 2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSProductID 2> /dev/null || true
+  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" KSUpdateURL 2> /dev/null || true
 fi
 
 # Info.plist will work perfectly well in any plist format, but traditionally
