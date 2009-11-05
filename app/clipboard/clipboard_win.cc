@@ -329,29 +329,6 @@ void Clipboard::WriteBitmapFromHandle(HBITMAP source_hbitmap,
   WriteToClipboard(CF_BITMAP, hbitmap);
 }
 
-// Write a file or set of files to the clipboard in HDROP format. When the user
-// invokes a paste command (in a Windows explorer shell, for example), the files
-// will be copied to the paste location.
-void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
-  // Calculate the amount of space we'll need store the strings and
-  // a DROPFILES struct.
-  size_t bytes = sizeof(DROPFILES) + file_len;
-
-  HANDLE hdata = ::GlobalAlloc(GMEM_MOVEABLE, bytes);
-  if (!hdata)
-    return;
-
-  char* data = static_cast<char*>(::GlobalLock(hdata));
-  DROPFILES* drop_files = reinterpret_cast<DROPFILES*>(data);
-  drop_files->pFiles = sizeof(DROPFILES);
-  drop_files->fWide = TRUE;
-
-  memcpy(data + sizeof(DROPFILES), file_data, file_len);
-
-  ::GlobalUnlock(hdata);
-  WriteToClipboard(CF_HDROP, hdata);
-}
-
 void Clipboard::WriteData(const char* format_name, size_t format_len,
                           const char* data_data, size_t data_len) {
   std::string format(format_name, format_len);

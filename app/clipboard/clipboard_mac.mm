@@ -98,31 +98,6 @@ void Clipboard::WriteBookmark(const char* title_data,
   [pb setString:title forType:kUTTypeURLName];
 }
 
-void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
-  NSMutableArray* fileList = [NSMutableArray arrayWithCapacity:1];
-
-  // Offset of current filename from start of file_data array.
-  size_t current_filename_offset = 0;
-
-  // file_data is double null terminated (see table at top of clipboard.h).
-  // So this loop can ignore the second null terminator, thus file_len - 1.
-  // TODO(playmobil): If we need a loop like this on other platforms then split
-  // this out into a common function that outputs a std::vector<const char*>.
-  for (size_t i = 0; i < file_len - 1; ++i) {
-    if (file_data[i] == '\0') {
-      const char* filename = &file_data[current_filename_offset];
-      [fileList addObject:[NSString stringWithUTF8String:filename]];
-
-      current_filename_offset = i + 1;
-      continue;
-    }
-  }
-
-  NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
-  [pb setPropertyList:fileList forType:NSFilenamesPboardType];
-}
-
 void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
 

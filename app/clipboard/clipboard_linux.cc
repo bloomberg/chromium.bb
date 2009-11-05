@@ -204,10 +204,6 @@ void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
   InsertMapping(kMimeURI, data, url_len + 1);
 }
 
-void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
-  NOTIMPLEMENTED();
-}
-
 void Clipboard::WriteData(const char* format_name, size_t format_len,
                           const char* data_data, size_t data_len) {
   char* data = new char[data_len];

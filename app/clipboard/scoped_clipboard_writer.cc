@@ -79,44 +79,6 @@ void ScopedClipboardWriter::WriteHyperlink(const std::string& anchor_text,
   WriteHTML(UTF8ToUTF16(html), std::string());
 }
 
-void ScopedClipboardWriter::WriteFile(const FilePath& file) {
-  WriteFiles(std::vector<FilePath>(1, file));
-}
-
-// Save the filenames as a string separated by nulls and terminated with an
-// extra null.
-void ScopedClipboardWriter::WriteFiles(const std::vector<FilePath>& files) {
-  if (files.empty())
-    return;
-
-  Clipboard::ObjectMapParam parameter;
-
-  for (std::vector<FilePath>::const_iterator iter = files.begin();
-       iter != files.end(); ++iter) {
-    FilePath filepath = *iter;
-    FilePath::StringType filename = filepath.value();
-
-    size_t data_length = filename.length() * sizeof(FilePath::CharType);
-    const char* data = reinterpret_cast<const char*>(filename.data());
-    const char* data_end = data + data_length;
-
-    for (const char* ch = data; ch < data_end; ++ch)
-      parameter.push_back(*ch);
-
-    // NUL-terminate the string.
-    for (size_t i = 0; i < sizeof(FilePath::CharType); ++i)
-      parameter.push_back('\0');
-  }
-
-  // NUL-terminate the string list.
-  for (size_t i = 0; i < sizeof(FilePath::CharType); ++i)
-    parameter.push_back('\0');
-
-  Clipboard::ObjectMapParams parameters;
-  parameters.push_back(parameter);
-  objects_[Clipboard::CBF_FILES] = parameters;
-}
-
 void ScopedClipboardWriter::WriteWebSmartPaste() {
   objects_[Clipboard::CBF_WEBKIT] = Clipboard::ObjectMapParams();
 }

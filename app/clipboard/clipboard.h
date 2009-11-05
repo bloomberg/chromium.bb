@@ -191,8 +191,6 @@ class Clipboard {
 
   void WriteWebSmartPaste();
 
-  void WriteFiles(const char* file_data, size_t file_len);
-
   void WriteBitmap(const char* pixel_data, const char* size_data);
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)

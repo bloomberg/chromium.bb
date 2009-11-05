@@ -50,10 +50,6 @@ class ScopedClipboardWriter {
   // be escaped prior to being passed in.
   void WriteHyperlink(const std::string& anchor_text, const std::string& url);
 
-  // Adds a file or group of files to the clipboard.
-  void WriteFile(const FilePath& file);
-  void WriteFiles(const std::vector<FilePath>& files);
-
   // Used by WebKit to determine whether WebKit wrote the clipboard last
   void WriteWebSmartPaste();
 

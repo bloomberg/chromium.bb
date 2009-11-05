@@ -170,63 +170,6 @@ TEST_F(ClipboardTest, MultiFormatTest) {
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
-// TODO(estade): Port the following tests (decide what targets we use for files)
-#if !defined(OS_LINUX)
-// Files for this test don't actually need to exist on the file system, just
-// don't try to use a non-existent file you've retrieved from the clipboard.
-TEST_F(ClipboardTest, FileTest) {
-  Clipboard clipboard;
-#if defined(OS_WIN)
-  FilePath file(L"C:\\Downloads\\My Downloads\\A Special File.txt");
-#elif defined(OS_MACOSX)
-  // OS X will print a warning message if we stick a non-existant file on the
-  // clipboard.
-  FilePath file("/usr/bin/make");
-#endif  // defined(OS_MACOSX)
-
-  {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
-    clipboard_writer.WriteFile(file);
-  }
-
-  FilePath out_file;
-  clipboard.ReadFile(&out_file);
-  EXPECT_EQ(file.value(), out_file.value());
-}
-
-TEST_F(ClipboardTest, MultipleFilesTest) {
-  Clipboard clipboard;
-
-#if defined(OS_WIN)
-  FilePath file1(L"C:\\Downloads\\My Downloads\\File 1.exe");
-  FilePath file2(L"C:\\Downloads\\My Downloads\\File 2.pdf");
-  FilePath file3(L"C:\\Downloads\\My Downloads\\File 3.doc");
-#elif defined(OS_MACOSX)
-  // OS X will print a warning message if we stick a non-existant file on the
-  // clipboard.
-  FilePath file1("/usr/bin/make");
-  FilePath file2("/usr/bin/man");
-  FilePath file3("/usr/bin/perl");
-#endif  // defined(OS_MACOSX)
-  std::vector<FilePath> files;
-  files.push_back(file1);
-  files.push_back(file2);
-  files.push_back(file3);
-
-  {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
-    clipboard_writer.WriteFiles(files);
-  }
-
-  std::vector<FilePath> out_files;
-  clipboard.ReadFiles(&out_files);
-
-  EXPECT_EQ(files.size(), out_files.size());
-  for (size_t i = 0; i < out_files.size(); ++i)
-    EXPECT_EQ(files[i].value(), out_files[i].value());
-}
-#endif  // !defined(OS_LINUX)
-
 TEST_F(ClipboardTest, URLTest) {
   Clipboard clipboard;
 
