@@ -2565,28 +2565,28 @@ each locale. -->
       </message>
 
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
-        This extension will have access to your browsing history and will autoupdate without further notice or action by you.
+        This extension will have access to your browsing history.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST" desc="Warning displayed in body of extension dialog when the extension requires access to a single host.">
-        This extension will have access to your private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph> and will autoupdate without further notice or action by you.
+        This extension will have access to your private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to a single host and browser APIs.">
-        This extension will have access to your browsing history and private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>, and will autoupdate without further notice or action by you.
+        This extension will have access to your browsing history and private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host.">
-        This extension will have access to your private data on multiple websites, and will autoupdate without further notice or action by you.
+        This extension will have access to your private data on multiple websites.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host, and browser APIs.">
-        This extension will have access to your browsing history and private data on multiple websites, and will autoupdate without further notice or action by you.
+        This extension will have access to your browsing history and private data on multiple websites.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts.">
-        This extension will have access to your private data on all websites and will autoupdate without further notice or action by you.
+        This extension will have access to your private data on all websites.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts and browser APIs.">
-        This extension will have access to your browsing history and private data on all websites, and will autoupdate without further notice or action by you.
+        This extension will have access to your browsing history and private data on all websites.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
-        This extension will have full access to your computer and private data, and will autoupdate without further notice or action by you.
+        This extension will have full access to your computer and private data.
       </message>
 
       <!-- chrome://extensions page -->
