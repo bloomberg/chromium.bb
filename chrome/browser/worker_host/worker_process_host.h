@@ -19,8 +19,6 @@ class WorkerProcessHost : public ChildProcessHost {
   // between the renderer and worker processes.
   struct WorkerInstance {
     GURL url;
-    bool is_shared;
-    string16 name;
     int renderer_id;
     int render_view_route_id;
     int worker_route_id;
@@ -75,11 +73,9 @@ class WorkerProcessHost : public ChildProcessHost {
   // Updates the title shown in the task manager.
   void UpdateTitle();
 
-  void OnCreateWorker(const GURL& url,
-                      bool is_shared,
-                      const string16& name,
-                      int render_view_route_id,
-                      int* route_id);
+  void OnCreateDedicatedWorker(const GURL& url,
+                               int render_view_route_id,
+                               int* route_id);
   void OnCancelCreateDedicatedWorker(int route_id);
   void OnForwardToWorker(const IPC::Message& message);
 

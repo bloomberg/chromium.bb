@@ -11,7 +11,6 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorkerClient.h"
 
-using WebKit::WebCommonWorkerClient;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;
 using WebKit::WebString;
@@ -42,7 +41,9 @@ void WebWorkerProxy::startWorkerContext(
     const WebURL& script_url,
     const WebString& user_agent,
     const WebString& source_code) {
-  CreateWorkerContext(script_url, false, string16(), user_agent, source_code);
+  IPC::Message* create_message = new ViewHostMsg_CreateDedicatedWorker(
+      script_url, render_view_route_id_, &route_id_);
+  CreateWorkerContext(create_message, script_url, user_agent, source_code);
 }
 
 void WebWorkerProxy::terminateWorkerContext() {
@@ -96,8 +97,8 @@ void WebWorkerProxy::OnMessageReceived(const IPC::Message& message) {
                         client_,
                         WebWorkerClient::reportPendingActivity)
     IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerContextDestroyed,
-                        static_cast<WebCommonWorkerClient*>(client_),
-                        WebCommonWorkerClient::workerContextDestroyed)
+                        client_,
+                        WebWorkerClient::workerContextDestroyed)
   IPC_END_MESSAGE_MAP()
 }
 

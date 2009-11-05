@@ -60,32 +60,28 @@ using WebKit::WebSharedWorkerRepository;
 // Callback class that keeps the Worker object alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : public RefCounted<SharedWorkerScriptLoader>, private WorkerScriptLoaderClient {
 public:
-  SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
-      : m_worker(worker),
-        m_url(url),
-        m_name(name),
-        m_webWorker(webWorker),
-        m_port(port)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
+        : m_worker(worker)
+        , m_webWorker(webWorker)
+        , m_port(port)
     {
     }
 
-    void load();
+    void load(const KURL&);
 
 private:
     // WorkerScriptLoaderClient callback
     virtual void notifyFinished();
 
     RefPtr<SharedWorker> m_worker;
-    KURL m_url;
-    String m_name;
     OwnPtr<WebSharedWorker> m_webWorker;
     OwnPtr<MessagePortChannel> m_port;
     WorkerScriptLoader m_scriptLoader;
 };
 
-void SharedWorkerScriptLoader::load()
+void SharedWorkerScriptLoader::load(const KURL& url)
 {
-    m_scriptLoader.loadAsynchronously(m_worker->scriptExecutionContext(), m_url, DenyCrossOriginRequests, this);
+    m_scriptLoader.loadAsynchronously(m_worker->scriptExecutionContext(), url, DenyCrossOriginRequests, this);
 }
 
 // Extracts a WebMessagePortChannel from a MessagePortChannel.
@@ -103,7 +99,7 @@ void SharedWorkerScriptLoader::notifyFinished()
     if (m_scriptLoader.failed())
         m_worker->dispatchEvent(Event::create(eventNames().errorEvent, false, true));
     else {
-        m_webWorker->startWorkerContext(m_url, m_name, m_worker->scriptExecutionContext()->userAgent(m_url), m_scriptLoader.script());
+        m_webWorker->startWorkerContext(m_scriptLoader.url(), m_worker->scriptExecutionContext()->userAgent(m_scriptLoader.url()), m_scriptLoader.script());
         m_webWorker->connect(getWebPort(m_port.release()));
     }
 
@@ -142,8 +138,8 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr
 
     if (!webWorker->isStarted()) {
         // Need to kick off a load for the worker. The loader will connect to the worker once the script has been loaded, then free itself.
-        SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, url, name, port.release(), webWorker.release());
-        loader->load();
+        SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, port.release(), webWorker.release());
+        loader->load(url);
     } else
         webWorker->connect(getWebPort(port.release()));
 }

@@ -166,11 +166,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                     nacl::FileDescriptor* handle,
                     base::ProcessHandle* nacl_process_handle,
                     base::ProcessId* nacl_process_id);
-  void OnCreateWorker(const GURL& url,
-                      bool is_shared,
-                      const string16& name,
-                      int render_view_route_id,
-                      int* route_id);
+  void OnCreateDedicatedWorker(const GURL& url,
+                               int render_view_route_id,
+                               int* route_id);
   void OnCancelCreateDedicatedWorker(int route_id);
   void OnForwardToWorker(const IPC::Message& msg);
   void OnDownloadUrl(const IPC::Message& message,

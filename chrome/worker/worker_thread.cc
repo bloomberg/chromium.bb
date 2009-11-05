@@ -7,8 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/thread_local.h"
 #include "chrome/common/worker_messages.h"
-#include "chrome/worker/webworker_stub.h"
-#include "chrome/worker/websharedworker_stub.h"
+#include "chrome/worker/webworkerclient_proxy.h"
 #include "chrome/worker/worker_webkitclient_impl.h"
 #include "webkit/api/public/WebKit.h"
 
@@ -38,13 +37,7 @@ void WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void WorkerThread::OnCreateWorker(const GURL& url,
-                                  bool is_shared,
-                                  const string16& name,
-                                  int route_id) {
-  // WebWorkerStub and WebSharedWorkerStub own themselves.
-  if (is_shared)
-    new WebSharedWorkerStub(name, route_id);
-  else
-    new WebWorkerStub(url, route_id);
+void WorkerThread::OnCreateWorker(const GURL& url, int route_id) {
+  // WebWorkerClientProxy owns itself.
+  new WebWorkerClientProxy(url, route_id);
 }

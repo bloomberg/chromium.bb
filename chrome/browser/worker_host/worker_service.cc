@@ -44,28 +44,24 @@ void WorkerService::Initialize(ResourceDispatcherHost* rdh) {
 WorkerService::~WorkerService() {
 }
 
-bool WorkerService::CreateWorker(const GURL &url,
-                                 bool is_shared,
-                                 const string16& name,
-                                 int renderer_id,
-                                 int render_view_route_id,
-                                 IPC::Message::Sender* sender,
-                                 int sender_id,
-                                 int sender_route_id) {
+bool WorkerService::CreateDedicatedWorker(const GURL &url,
+                                          int renderer_id,
+                                          int render_view_route_id,
+                                          IPC::Message::Sender* sender,
+                                          int sender_id,
+                                          int sender_route_id) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
   // a wrapped IPC message through us, we know which WorkerProcessHost to give
   // it to.
   WorkerProcessHost::WorkerInstance instance;
   instance.url = url;
-  instance.name = name;
   instance.renderer_id = renderer_id;
   instance.render_view_route_id = render_view_route_id;
   instance.worker_route_id = next_worker_route_id();
   instance.sender = sender;
   instance.sender_id = sender_id;
   instance.sender_route_id = sender_route_id;
-  instance.is_shared = is_shared;
 
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(

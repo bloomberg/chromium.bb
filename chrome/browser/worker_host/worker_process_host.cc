@@ -139,10 +139,8 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
       id(), instance.url);
 
   instances_.push_back(instance);
-  Send(new WorkerProcessMsg_CreateWorker(instance.url,
-                                         instance.is_shared,
-                                         instance.name,
-                                         instance.worker_route_id));
+  Send(new WorkerProcessMsg_CreateWorker(
+      instance.url, instance.worker_route_id));
 
   UpdateTitle();
   instances_.back().sender->Send(
@@ -177,7 +175,8 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (!handled) {
     handled = true;
     IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
+                          OnCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
                           OnCancelCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
@@ -322,15 +321,13 @@ void WorkerProcessHost::UpdateTitle() {
   set_name(ASCIIToWide(display_title));
 }
 
-void WorkerProcessHost::OnCreateWorker(const GURL& url,
-                                       bool is_shared,
-                                       const string16& name,
-                                       int render_view_route_id,
-                                       int* route_id) {
+void WorkerProcessHost::OnCreateDedicatedWorker(const GURL& url,
+                                                int render_view_route_id,
+                                                int* route_id) {
   DCHECK(instances_.size() == 1);  // Only called when one process per worker.
   *route_id = WorkerService::GetInstance()->next_worker_route_id();
-  WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, name, instances_.front().renderer_id,
+  WorkerService::GetInstance()->CreateDedicatedWorker(
+      url, instances_.front().renderer_id,
       instances_.front().render_view_route_id, this, id(), *route_id);
 }
 

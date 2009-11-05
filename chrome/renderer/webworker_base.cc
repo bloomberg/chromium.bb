@@ -48,14 +48,12 @@ void WebWorkerBase::Disconnect() {
   route_id_ = MSG_ROUTING_NONE;
 }
 
-void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
-                                        bool is_shared,
-                                        const string16& name,
+void WebWorkerBase::CreateWorkerContext(IPC::Message* create_message,
+                                        const GURL& script_url,
                                         const string16& user_agent,
                                         const string16& source_code) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
-  IPC::Message* create_message = new ViewHostMsg_CreateWorker(
-      script_url, is_shared, name, render_view_route_id_, &route_id_);
+  // create_message is a sync message that sets route_id_
   child_thread_->Send(create_message);
   if (route_id_ == MSG_ROUTING_NONE)
     return;

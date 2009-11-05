@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
-#define CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
+#ifndef CHROME_RENDERER_WEBSHAREDWORKER_IMPL_H_
+#define CHROME_RENDERER_WEBSHAREDWORKER_IMPL_H_
 
 #include "base/basictypes.h"
 #include "chrome/renderer/webworker_base.h"
@@ -17,10 +17,12 @@ class ChildThread;
 // thread. Once the connect event has been sent, all future communication will
 // happen via the WebMessagePortChannel, and the WebSharedWorker instance will
 // be freed.
-class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
-                             private WebWorkerBase {
+class WebSharedWorkerImpl : public WebKit::WebSharedWorker,
+                            private WebWorkerBase {
  public:
-  WebSharedWorkerProxy(ChildThread* child_thread,
+  WebSharedWorkerImpl(const GURL& url,
+                      const string16& name,
+                      ChildThread* child_thread,
                       int route_id,
                       int render_view_route_id);
 
@@ -28,17 +30,20 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual bool isStarted();
   virtual void connect(WebKit::WebMessagePortChannel* channel);
   virtual void startWorkerContext(const WebKit::WebURL& script_url,
-                                  const WebKit::WebString& name,
                                   const WebKit::WebString& user_agent,
                                   const WebKit::WebString& source_code);
 
-  // IPC::Channel::Listener proxyementation.
+  // IPC::Channel::Listener implementation.
   void OnMessageReceived(const IPC::Message& message);
 
  private:
   void OnWorkerCreated();
 
-  DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
+  // The name and URL that uniquely identify this worker.
+  GURL url_;
+  string16 name_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerImpl);
 };
 
-#endif  // CHROME_RENDERER_WEBSHAREDWORKER_PROXY_H_
+#endif  // CHROME_RENDERER_WEBSHAREDWORKER_IMPL_H_
