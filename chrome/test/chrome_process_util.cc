@@ -116,3 +116,15 @@ ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir) {
 
   return result;
 }
+
+#if !defined(OS_MACOSX)
+
+size_t ChromeTestProcessMetrics::GetPagefileUsage() {
+  return process_metrics_->GetPagefileUsage();
+}
+
+size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
+  return process_metrics_->GetWorkingSetSize();
+}
+
+#endif  // !defined(OS_MACOSX)

@@ -245,16 +245,23 @@ class MemoryTest : public UITest {
 
     ChromeProcessList::const_iterator it;
     for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      scoped_ptr<base::ProcessMetrics> process_metrics;
       IoCounters io_counters;
       base::ProcessHandle process_handle;
       if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
         NOTREACHED();
       }
-      process_metrics.reset(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle));
-      bzero(&io_counters, sizeof(io_counters));
 
+      // TODO(sgk):  if/when base::ProcessMetrics can return real memory
+      // stats on mac, convert to:
+      //
+      // scoped_ptr<base::ProcessMetrics> process_metrics;
+      // process_metrics.reset(
+      //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+      scoped_ptr<ChromeTestProcessMetrics> process_metrics;
+      process_metrics.reset(
+          ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+
+      bzero(&io_counters, sizeof(io_counters));
       if (process_metrics.get()->GetIOCounters(&io_counters)) {
         std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
 
@@ -297,23 +304,32 @@ class MemoryTest : public UITest {
     size_t browser_working_set_size = 0;
     size_t virtual_size = 0;
     size_t working_set_size = 0;
-    size_t num_chrome_processes = 0;
     ChromeProcessList::const_iterator it;
     for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      size_t peak_virtual_size;
-      size_t current_virtual_size;
-      size_t peak_working_set_size;
-      size_t current_working_set_size;
-      if (GetMemoryInfo(*it, &peak_virtual_size, &current_virtual_size,
-                        &peak_working_set_size, &current_working_set_size)) {
-        if (*it == browser_process_pid) {
-          browser_virtual_size = current_virtual_size;
-          browser_working_set_size = current_working_set_size;
-        }
-        virtual_size += current_virtual_size;
-        working_set_size += current_working_set_size;
-        num_chrome_processes++;
+      base::ProcessHandle process_handle;
+      if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
+        NOTREACHED();
       }
+
+      // TODO(sgk):  if/when base::ProcessMetrics can return real memory
+      // stats on mac, convert to:
+      //
+      // scoped_ptr<base::ProcessMetrics> process_metrics;
+      // process_metrics.reset(
+      //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+      scoped_ptr<ChromeTestProcessMetrics> process_metrics;
+      process_metrics.reset(
+          ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+
+      size_t current_virtual_size = process_metrics->GetPagefileUsage();
+      size_t current_working_set_size = process_metrics->GetWorkingSetSize();
+
+      if (*it == browser_process_pid) {
+        browser_virtual_size = current_virtual_size;
+        browser_working_set_size = current_working_set_size;
+      }
+      virtual_size += current_virtual_size;
+      working_set_size += current_working_set_size;
     }
 
     std::string trace_name(test_name);
@@ -330,7 +346,7 @@ class MemoryTest : public UITest {
                 working_set_size / 1024, "kb",
                 true /* important */);
     PrintResult("processes", "", trace_name + "_proc",
-                num_chrome_processes, "",
+                chrome_processes.size(), "",
                 false /* not important */);
   }
 

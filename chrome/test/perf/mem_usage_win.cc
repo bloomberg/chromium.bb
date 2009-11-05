@@ -10,39 +10,10 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/chrome_process_util.h"
-
-bool GetMemoryInfo(uint32 process_id,
-                   size_t* peak_virtual_size,
-                   size_t* current_virtual_size,
-                   size_t* peak_working_set_size,
-                   size_t* current_working_set_size) {
-  if (!peak_virtual_size || !current_virtual_size)
-    return false;
-
-  HANDLE process_handle = OpenProcess(PROCESS_QUERY_INFORMATION |
-                                      PROCESS_VM_READ,
-                                      FALSE, process_id);
-  if (!process_handle)
-    return false;
-
-  PROCESS_MEMORY_COUNTERS_EX pmc;
-  bool result = false;
-  if (GetProcessMemoryInfo(process_handle,
-                           reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc),
-                           sizeof(pmc))) {
-    *peak_virtual_size = pmc.PeakPagefileUsage;
-    *current_virtual_size = pmc.PagefileUsage;
-    *peak_working_set_size = pmc.PeakWorkingSetSize;
-    *current_working_set_size = pmc.WorkingSetSize;
-    result = true;
-  }
-
-  CloseHandle(process_handle);
-  return result;
-}
 
 // GetPerformanceInfo is not available on WIN2K.  So we'll
 // load it on-the-fly.
@@ -91,23 +62,36 @@ void PrintChromeMemoryUsageInfo() {
 
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-    size_t peak_virtual_size;
-    size_t current_virtual_size;
-    size_t peak_working_set_size;
-    size_t current_working_set_size;
-    if (GetMemoryInfo(*it, &peak_virtual_size, &current_virtual_size,
-                      &peak_working_set_size, &current_working_set_size)) {
-      if (*it == browser_process_pid) {
-        wprintf(L"browser_vm_peak = %d\n", peak_virtual_size);
-        wprintf(L"browser_vm_current = %d\n", current_virtual_size);
-        wprintf(L"browser_ws_peak = %d\n", peak_working_set_size);
-        wprintf(L"browser_ws_final = %d\n", current_working_set_size);
-      } else {
-        wprintf(L"render_vm_peak = %d\n", peak_virtual_size);
-        wprintf(L"render_vm_current = %d\n", current_virtual_size);
-        wprintf(L"render_ws_peak = %d\n", peak_working_set_size);
-        wprintf(L"render_ws_final = %d\n", current_working_set_size);
-      }
+    base::ProcessHandle process_handle;
+    if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
+      NOTREACHED();
+    }
+
+    // TODO(sgk):  if/when base::ProcessMetrics can return real memory
+    // stats on mac, convert to:
+    //
+    // scoped_ptr<base::ProcessMetrics> process_metrics;
+    // process_metrics.reset(
+    //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    scoped_ptr<ChromeTestProcessMetrics> process_metrics;
+    process_metrics.reset(
+        ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+
+    size_t peak_virtual_size = process_metrics->GetPeakPagefileUsage();
+    size_t current_virtual_size = process_metrics->GetPagefileUsage();
+    size_t peak_working_set_size = process_metrics->GetPeakWorkingSetSize();
+    size_t current_working_set_size = process_metrics->GetWorkingSetSize();
+
+    if (*it == browser_process_pid) {
+      wprintf(L"browser_vm_peak = %d\n", peak_virtual_size);
+      wprintf(L"browser_vm_current = %d\n", current_virtual_size);
+      wprintf(L"browser_ws_peak = %d\n", peak_working_set_size);
+      wprintf(L"browser_ws_final = %d\n", current_working_set_size);
+    } else {
+      wprintf(L"render_vm_peak = %d\n", peak_virtual_size);
+      wprintf(L"render_vm_current = %d\n", current_virtual_size);
+      wprintf(L"render_ws_peak = %d\n", peak_working_set_size);
+      wprintf(L"render_ws_final = %d\n", current_working_set_size);
     }
   };
 }

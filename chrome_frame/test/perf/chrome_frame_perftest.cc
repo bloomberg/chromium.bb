@@ -12,6 +12,7 @@
 #include "chrome_tab.h"  // Generated from chrome_tab.idl.
 
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_bstr_win.h"
@@ -488,9 +489,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     // Added to enable us to add ProcessMemoryInfo instances to a map.
     ProcessMemoryInfo()
         : process_id_(0),
-          peak_virtual_size_(0),
           virtual_size_(0),
-          peak_working_set_size_(0),
           working_set_size_(0),
           chrome_browser_process_(false),
           chrome_frame_memory_test_instance_(NULL) {}
@@ -498,19 +497,31 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     ProcessMemoryInfo(base::ProcessId process_id, bool chrome_browser_process,
                      ChromeFrameMemoryTest* memory_test_instance)
         : process_id_(process_id),
-          peak_virtual_size_(0),
           virtual_size_(0),
-          peak_working_set_size_(0),
           working_set_size_(0),
           chrome_browser_process_(chrome_browser_process),
           chrome_frame_memory_test_instance_(memory_test_instance) {}
 
     bool GetMemoryConsumptionDetails() {
-      return GetMemoryInfo(process_id_,
-                           &peak_virtual_size_,
-                           &virtual_size_,
-                           &peak_working_set_size_,
-                           &working_set_size_);
+      base::ProcessHandle process_handle;
+      if (!base::OpenPrivilegedProcessHandle(process_id_, &process_handle)) {
+        NOTREACHED();
+      }
+
+      // TODO(sgk):  if/when base::ProcessMetrics can return real memory
+      // stats on mac, convert to:
+      //
+      // scoped_ptr<base::ProcessMetrics> process_metrics;
+      // process_metrics.reset(
+      //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
+      scoped_ptr<ChromeTestProcessMetrics> process_metrics;
+      process_metrics.reset(
+          ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
+
+      virtual_size_ = process_metrics->GetPagefileUsage();
+      working_set_size_ = process_metrics->GetWorkingSetSize();
+
+      return true;
     }
 
     void Print(const char* test_name) {
@@ -538,9 +549,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     }
 
     int process_id_;
-    size_t peak_virtual_size_;
     size_t virtual_size_;
-    size_t peak_working_set_size_;
     size_t working_set_size_;
     // Set to true if this is the chrome browser process.
     bool chrome_browser_process_;

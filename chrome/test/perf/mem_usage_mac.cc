@@ -12,43 +12,6 @@
 #include "base/process_util.h"
 #include "chrome/test/chrome_process_util.h"
 
-bool GetMemoryInfo(uint32 process_id,
-                   size_t* peak_virtual_size,
-                   size_t* current_virtual_size,
-                   size_t* peak_working_set_size,
-                   size_t* current_working_set_size) {
-  DCHECK(current_virtual_size && current_working_set_size);
-
-  // Mac doesn't support retrieving peak sizes.
-  if (peak_virtual_size)
-    *peak_virtual_size = 0;
-  if (peak_working_set_size)
-    *peak_working_set_size = 0;
-
-  std::vector<base::ProcessId> processes;
-  processes.push_back(process_id);
-
-  MacChromeProcessInfoList process_info = GetRunningMacProcessInfo(processes);
-  if (process_info.empty())
-    return false;
-
-  bool found_process = false;
-  *current_virtual_size = 0;
-  *current_working_set_size = 0;
-
-  MacChromeProcessInfoList::iterator it = process_info.begin();
-  for (; it != process_info.end(); ++it) {
-    if (it->pid != static_cast<base::ProcessId>(process_id))
-      continue;
-    found_process = true;
-    *current_virtual_size = it->vsz_in_kb * 1024;
-    *current_working_set_size = it->rsz_in_kb * 1024;
-    break;
-  }
-
-  return found_process;
-}
-
 // Bytes committed by the system.
 size_t GetSystemCommitCharge() {
   host_name_port_t host = mach_host_self();

@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 
 typedef std::vector<base::ProcessId> ChromeProcessList;
 
@@ -22,6 +23,48 @@ ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir);
 
 // Attempts to terminate all chrome processes associated with |data_dir|.
 void TerminateAllChromeProcesses(const FilePath& data_dir);
+
+// A wrapper class for tests to use in fetching process metrics.
+// Delegates everything we need to base::ProcessMetrics, except
+// memory stats on Mac (which have to parse ps output due to privilege
+// restrictions, behavior we don't want in base).  Long-term, if
+// the production base::ProcessMetrics gets updated to return
+// acceptable metrics on Mac, this class should disappear.
+class ChromeTestProcessMetrics {
+ public:
+  static ChromeTestProcessMetrics* CreateProcessMetrics(
+        base::ProcessHandle process) {
+    return new ChromeTestProcessMetrics(process);
+  }
+
+  size_t GetPagefileUsage();
+
+  size_t GetWorkingSetSize();
+
+  size_t GetPeakPagefileUsage() {
+    return process_metrics_->GetPeakPagefileUsage();
+  }
+
+  size_t GetPeakWorkingSetSize() {
+    return process_metrics_->GetPeakWorkingSetSize();
+  }
+
+  bool GetIOCounters(IoCounters* io_counters) {
+    return process_metrics_->GetIOCounters(io_counters);
+  }
+
+  base::ProcessHandle process_handle_;
+
+ private:
+  explicit ChromeTestProcessMetrics(base::ProcessHandle process) {
+    process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(process));
+    process_handle_ = process;
+  }
+
+  scoped_ptr<base::ProcessMetrics> process_metrics_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeTestProcessMetrics);
+};
 
 #if defined(OS_MACOSX)
 

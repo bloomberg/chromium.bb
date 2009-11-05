@@ -25,25 +25,6 @@ const size_t kMemCacheIndex = 10;
 
 }  // namespace
 
-bool GetMemoryInfo(uint32 process_id,
-                   size_t* peak_virtual_size,
-                   size_t* current_virtual_size,
-                   size_t* peak_working_set_size,
-                   size_t* current_working_set_size) {
-  if (!peak_virtual_size || !current_virtual_size)
-    return false;
-
-  base::ProcessMetrics* metrics =
-      base::ProcessMetrics::CreateProcessMetrics(process_id);
-  *peak_virtual_size = metrics->GetPeakPagefileUsage();
-  *current_virtual_size = metrics->GetPagefileUsage();
-  *peak_working_set_size = metrics->GetPeakWorkingSetSize();
-  *current_working_set_size = metrics->GetWorkingSetSize();
-  delete metrics;
-
-  return true;
-}
-
 size_t GetSystemCommitCharge() {
   // Used memory is: total - free - buffers - caches
   FilePath meminfo_file("/proc/meminfo");

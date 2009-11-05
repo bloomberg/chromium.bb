@@ -100,3 +100,50 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
 
   return result;
 }
+
+// Common interface for fetching memory values from parsed ps output.
+// We fill in both values we may get called for, even though our
+// callers typically only care about one, just to keep the code
+// simple and because this is a test.
+static bool GetMemoryValuesHack(uint32 process_id,
+                          size_t* virtual_size,
+                          size_t* working_set_size) {
+  DCHECK(virtual_size && working_set_size);
+
+  std::vector<base::ProcessId> processes;
+  processes.push_back(process_id);
+
+  MacChromeProcessInfoList process_info = GetRunningMacProcessInfo(processes);
+  if (process_info.empty())
+    return false;
+
+  bool found_process = false;
+  *virtual_size = 0;
+  *working_set_size = 0;
+
+  MacChromeProcessInfoList::iterator it = process_info.begin();
+  for (; it != process_info.end(); ++it) {
+    if (it->pid != static_cast<base::ProcessId>(process_id))
+      continue;
+    found_process = true;
+    *virtual_size = it->vsz_in_kb * 1024;
+    *working_set_size = it->rsz_in_kb * 1024;
+    break;
+  }
+
+  return found_process;
+}
+
+size_t ChromeTestProcessMetrics::GetPagefileUsage() {
+  size_t virtual_size;
+  size_t working_set_size;
+  GetMemoryValuesHack(process_handle_, &virtual_size, &working_set_size);
+  return virtual_size;
+}
+
+size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
+  size_t virtual_size;
+  size_t working_set_size;
+  GetMemoryValuesHack(process_handle_, &virtual_size, &working_set_size);
+  return working_set_size;
+}
