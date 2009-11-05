@@ -26,14 +26,16 @@
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
+#endif  // OS_LINUX
 
-// This is defined in chrome/browser/google_update_settings_linux.cc.  It's the
+#if defined(OS_POSIX)
+// This is defined in chrome/browser/google_update_settings_posix.cc.  It's the
 // static string containing the user's unique GUID.  We send this in the crash
 // report.
 namespace google_update {
-extern std::string linux_guid;
+extern std::string posix_guid;
 }  // namespace google_update
-#endif  // OS_LINUX
+#endif  // OS_POSIX
 
 
 namespace {
@@ -111,13 +113,14 @@ void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
   const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
   if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
-                                        ASCIIToWide(google_update::linux_guid +
+                                        ASCIIToWide(google_update::posix_guid +
                                                     "," +
                                                     base::GetLinuxDistro()));
   }
 #elif defined(OS_MACOSX)
   if (GoogleUpdateSettings::GetCollectStatsConsent())
-    command_line->AppendSwitch(switches::kEnableCrashReporter);
+    command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
+                                        ASCIIToWide(google_update::posix_guid));
 #endif  // OS_MACOSX
 }
 

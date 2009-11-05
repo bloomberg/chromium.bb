@@ -14,6 +14,9 @@ namespace child_process_logging {
 // the URL.
 void SetActiveURL(const GURL& url);
 
+// Sets the Client ID that is used as GUID if a Chrome process crashes.
+void SetClientId(const std::string& client_id);
+
 // Simple wrapper class that sets the active URL in it's constructor and clears
 // the active URL in the destructor.
 class ScopedActiveURLSetter {

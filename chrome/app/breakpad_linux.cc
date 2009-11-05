@@ -522,11 +522,11 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   return child;
 }
 
-// This is defined in chrome/browser/google_update_settings_linux.cc, it's the
+// This is defined in chrome/browser/google_update_settings_posix.cc, it's the
 // static string containing the user's unique GUID. We send this in the crash
 // report.
 namespace google_update {
-extern std::string linux_guid;
+extern std::string posix_guid;
 }
 
 // This is defined in base/linux_util.cc, it's the static string containing the
@@ -562,8 +562,8 @@ static bool CrashDone(const char* dump_path,
   info.process_type_length = 7;
   info.crash_url = NULL;
   info.crash_url_length = 0;
-  info.guid = google_update::linux_guid.data();
-  info.guid_length = google_update::linux_guid.length();
+  info.guid = google_update::posix_guid.data();
+  info.guid_length = google_update::posix_guid.length();
   info.distro = base::linux_distro.data();
   info.distro_length = base::linux_distro.length();
   info.upload = upload;
@@ -617,13 +617,13 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   char guid[kGuidSize + 1] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
-  const size_t guid_len = std::min(google_update::linux_guid.size(),
+  const size_t guid_len = std::min(google_update::posix_guid.size(),
                                    kGuidSize);
   const size_t crash_url_len =
       std::min(child_process_logging::active_url.size(), kMaxActiveURLSize);
   const size_t distro_len =
       std::min(base::linux_distro.size(), kDistroSize);
-  memcpy(guid, google_update::linux_guid.data(), guid_len);
+  memcpy(guid, google_update::posix_guid.data(), guid_len);
   memcpy(crash_url, child_process_logging::active_url.data(), crash_url_len);
   memcpy(distro, base::linux_distro.data(), distro_len);
 
@@ -636,7 +636,7 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
   iov[1].iov_base = guid;
-  iov[1].iov_len = kGuidSize + 1;
+  iov[1].iov_len = guid_len + 1;
   iov[2].iov_base = crash_url;
   iov[2].iov_len = kMaxActiveURLSize + 1;
   iov[3].iov_base = distro;
@@ -695,10 +695,10 @@ void InitCrashReporter() {
         parsed_command_line.GetSwitchValue(switches::kEnableCrashReporter));
     size_t separator = switch_value.find(",");
     if (separator != std::string::npos) {
-      google_update::linux_guid = switch_value.substr(0, separator);
+      google_update::posix_guid = switch_value.substr(0, separator);
       base::linux_distro = switch_value.substr(separator + 1);
     } else {
-      google_update::linux_guid = switch_value;
+      google_update::posix_guid = switch_value;
     }
     EnableRendererCrashDumping();
   }

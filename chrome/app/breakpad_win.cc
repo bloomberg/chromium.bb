@@ -35,6 +35,10 @@ google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
 std::vector<wchar_t*>* g_url_chunks = NULL;
 
+// A string containing the user's unique metric services id. We send this
+// in the crash report.
+wchar_t* g_client_id = NULL;
+
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
   if (g_breakpad)
@@ -76,6 +80,13 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
   google_breakpad::CustomInfoEntry type_entry(L"ptype", type.c_str());
 
+  // Read the id from registry. If reporting has never been enabled
+  // the result will be empty string. Its OK since when user enables reporting
+  // we will insert the new value at this location.
+  std::wstring guid;
+  GoogleUpdateSettings::GetMetricsId(&guid);
+  google_breakpad::CustomInfoEntry guid_entry(L"guid", guid.c_str());
+
   if (type == L"renderer" || type == L"plugin") {
     // Create entries for the URL. Currently we only allow each chunk to be 64
     // characters, which isn't enough for a URL. As a hack we create 8 entries
@@ -90,13 +101,15 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
     google_breakpad::CustomInfoEntry url8(L"url-chunk-8", L"");
 
     static google_breakpad::CustomInfoEntry entries[] =
-        { ver_entry, prod_entry, plat_entry, type_entry,
+        { ver_entry, prod_entry, plat_entry, type_entry, guid_entry,
           url1, url2, url3, url4, url5, url6, url7, url8 };
 
     std::vector<wchar_t*>* tmp_url_chunks = new std::vector<wchar_t*>(8);
     for (size_t i = 0; i < 8; ++i)
-      (*tmp_url_chunks)[i] = entries[4 + i].value;
+      (*tmp_url_chunks)[i] = entries[5 + i].value;
     g_url_chunks = tmp_url_chunks;
+
+    g_client_id = entries[4].value;
 
     static google_breakpad::CustomClientInfo custom_info_renderer
         = {entries, arraysize(entries)};
@@ -119,7 +132,9 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   }
 
   static google_breakpad::CustomInfoEntry entries[] =
-      {ver_entry, prod_entry, plat_entry, type_entry, switch1, switch2};
+      {ver_entry, prod_entry, plat_entry, type_entry, guid_entry,
+       switch1, switch2};
+  g_client_id = entries[4].value;
   static google_breakpad::CustomClientInfo custom_info_browser =
       {entries, arraysize(entries)};
   return &custom_info_browser;
@@ -215,6 +230,16 @@ extern "C" void __declspec(dllexport) __cdecl SetActiveURL(
   // And null terminate any unneeded chunks.
   for (; chunk_index < num_chunks; ++chunk_index)
     (*g_url_chunks)[chunk_index][0] = L'\0';
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetClientId(
+    const wchar_t* client_id) {
+  if (client_id == NULL)
+    return;
+
+  wcscpy_s(g_client_id,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           client_id);
 }
 
 }  // namespace

@@ -27,6 +27,7 @@ extern const wchar_t kRegClientField[];
 extern const wchar_t kRegDidRunField[];
 extern const wchar_t kRegLangField[];
 extern const wchar_t kRegLastCheckedField[];
+extern const wchar_t kRegMetricsId[];
 extern const wchar_t kRegNameField[];
 extern const wchar_t kRegOldVersionField[];
 extern const wchar_t kRegRenameCmdField[];

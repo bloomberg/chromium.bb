@@ -67,6 +67,14 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   return key_hkcu.WriteValue(google_update::kRegUsageStatsField, value);
 }
 
+bool GoogleUpdateSettings::GetMetricsId(std::wstring* metrics_id) {
+  return ReadGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id);
+}
+
+bool GoogleUpdateSettings::SetMetricsId(const std::wstring& metrics_id) {
+  return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id);
+}
+
 bool GoogleUpdateSettings::SetEULAConsent(bool consented) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateMediumKey();

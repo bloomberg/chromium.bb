@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
@@ -19,4 +21,14 @@ void SetActiveURL(const GURL& url) {
   active_url = url.possibly_invalid_spec();
 }
 
+void SetClientId(const std::string& client_id) {
+  std::string str(client_id);
+  ReplaceSubstringsAfterOffset(&str, 0, "-", "");
+
+  if (str.empty())
+    return;
+
+  std::wstring wstr = ASCIIToWide(str);
+  GoogleUpdateSettings::SetMetricsId(wstr);
+}
 }  // namespace child_process_logging

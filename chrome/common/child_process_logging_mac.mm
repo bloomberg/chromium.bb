@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/string_util.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
@@ -14,6 +15,7 @@ namespace child_process_logging {
 const int kMaxNumCrashURLChunks = 8;
 const int kMaxNumURLChunkValueLength = 255;
 const char *kUrlChunkFormatStr = "url-chunk-%d";
+const char *kGuidParamName = "guid";
 
 static SetCrashKeyValueFuncPtr g_set_key_func;
 static ClearCrashKeyValueFuncPtr g_clear_key_func;
@@ -67,9 +69,26 @@ void SetActiveURLImpl(const GURL& url,
   }
 }
 
+void SetClientIdImpl(const std::string& client_id,
+                     SetCrashKeyValueFuncPtr set_key_func) {
+  NSString *key = [NSString stringWithUTF8String:kGuidParamName];
+  NSString *value = [NSString stringWithUTF8String:client_id.c_str()];
+  set_key_func(key, value);
+}
+
 void SetActiveURL(const GURL& url) {
   if (g_set_key_func && g_clear_key_func)
     SetActiveURLImpl(url, g_set_key_func, g_clear_key_func);
 }
 
+void SetClientId(const std::string& client_id) {
+  std::string str(client_id);
+  ReplaceSubstringsAfterOffset(&str, 0, "-", "");
+
+  if (g_set_key_func)
+    SetClientIdImpl(str, g_set_key_func);
+
+  std::wstring wstr = ASCIIToWide(str);
+  GoogleUpdateSettings::SetMetricsId(wstr);
+}
 }  // namespace child_process_logging

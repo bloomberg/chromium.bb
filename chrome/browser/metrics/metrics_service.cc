@@ -177,6 +177,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/notification_service.h"
@@ -462,6 +463,7 @@ void MetricsService::SetRecording(bool enabled) {
                         Int64ToWString(Time::Now().ToTimeT()));
       }
     }
+    child_process_logging::SetClientId(client_id_);
     StartRecording();
 
     registrar_.Add(this, NotificationType::BROWSER_OPENED,

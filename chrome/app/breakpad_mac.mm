@@ -131,6 +131,12 @@ void InitCrashReporter() {
   // TODO: Should this only be done for certain process types?
   child_process_logging::SetCrashKeyFunctions(SetCrashKeyValue,
                                               ClearCrashKeyValue);
+  if (!is_browser) {
+    // Get the guid from the command line switch.
+    std::string guid = WideToASCII(
+        parsed_command_line.GetSwitchValue(switches::kEnableCrashReporter));
+    child_process_logging::SetClientId(guid);
+   }
 }
 
 void InitCrashProcessInfo() {

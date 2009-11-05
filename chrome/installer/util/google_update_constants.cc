@@ -19,6 +19,7 @@ const wchar_t kRegClientField[] = L"client";
 const wchar_t kRegDidRunField[] = L"dr";
 const wchar_t kRegLangField[] = L"lang";
 const wchar_t kRegLastCheckedField[] = L"LastChecked";
+const wchar_t kRegMetricsId[] = L"metricsid";
 const wchar_t kRegNameField[] = L"name";
 const wchar_t kRegOldVersionField[] = L"opv";
 const wchar_t kRegRenameCmdField[] = L"cmd";
