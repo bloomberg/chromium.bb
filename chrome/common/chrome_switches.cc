@@ -655,6 +655,8 @@ const char kAutoSSLClientAuth[]             = "auto-ssl-client-auth";
 // command lines on Linux and Mac.  It tells the helper process to enable crash
 // dumping and reporting, because helpers cannot access the profile or other
 // files needed to make this decision.
+// If passed to the browser, it'll be passed on to all the helper processes
+// as well, thereby force-enabling the crash reporter.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
 // This switch is used during automated testing.

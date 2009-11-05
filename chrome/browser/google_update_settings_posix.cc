@@ -4,12 +4,14 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 
 #if !defined(OS_MACOSX)
 namespace google_update {
@@ -23,6 +25,8 @@ static const int kGuidLen = sizeof(uint64) * 4;  // 128 bits -> 32 bytes hex.
 
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
+  bool forced_enable = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableCrashReporter);
 #if defined(OS_MACOSX)
   std::string linux_guid;
 #else
@@ -31,10 +35,9 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   FilePath consent_file;
   PathService::Get(chrome::DIR_USER_DATA, &consent_file);
   consent_file = consent_file.Append(kConsentToSendStats);
-  bool r = file_util::ReadFileToString(consent_file,
-                                       &linux_guid);
+  bool consented = file_util::ReadFileToString(consent_file, &linux_guid);
   linux_guid.resize(kGuidLen, '0');
-  return r;
+  return forced_enable || consented;
 }
 
 // static
