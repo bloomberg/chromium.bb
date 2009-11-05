@@ -2,6 +2,22 @@
 
 	* HACKING: Mention the use of gnulib and explain how to update it.
 
+2009-11-02  Christian Egli  <christian.egli@sbszh.ch>
+
+	* tables/Makefile.am (table_files):
+	* tables/sv-1996.ctb:
+	* tables/sv-1989.ctb: Added two more tables for Swedish that were
+	ported from brltty by Samuel Thibault.
+
+2009-10-16  Christian Egli  <christian.egli@sbszh.ch>
+
+	* tests/table_test_corpuses/README:
+	* tests/table_test_corpuses/Makefile.am:
+	* tests/table_test_corpuses/test_de-de-g0.utb:
+	* tests/table_test_corpuses/test_en-us-g2.ctb:
+	* tests/check_tables_against_corpus.pl:
+	* tests/Makefile.am: Added a framework for corpus based table tests.
+
 2009-10-13  Christian Egli  <christian.egli@sbszh.ch>
 
 	* man/Makefile.am: When generating the man pages at distribution
