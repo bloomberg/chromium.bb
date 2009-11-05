@@ -3143,12 +3143,7 @@ BUG26291 MAC : LayoutTests/fast/text/drawBidiText.html = IMAGE
 BUG26291 MAC : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
 
 // WebKit roll 50313:50324
-BUG_ROLANDSTEINER MAC LINUX : LayoutTests/fast/block/float/float-in-float-hit-testing.html = IMAGE
-BUG_ROLANDSTEINER LINUX : LayoutTests/fast/events/click-focus-anchor.html = TEXT
-BUG_ROLANDSTEINER MAC : LayoutTests/fast/events/click-focus-anchor.html = TEXT
 BUG_ROLANDSTEINER MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TEXT
-BUG_ROLANDSTEINER WIN : LayoutTests/fast/events/click-focus-anchor.html = TEXT
-BUG_ROLANDSTEINER WIN : LayoutTests/fast/block/float/float-in-float-hit-testing.html = IMAGE
 BUG9798 WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 
 // Flaky since at least WebKit 50258.
