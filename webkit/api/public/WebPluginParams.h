@@ -37,13 +37,13 @@
 
 namespace WebKit {
 
-    struct WebPluginParams {
-        WebURL url;
-        WebString mimeType;
-        WebVector<WebString> attributeNames;
-        WebVector<WebString> attributeValues;
-        bool loadManually;
-    };
+struct WebPluginParams {
+    WebURL url;
+    WebString mimeType;
+    WebVector<WebString> attributeNames;
+    WebVector<WebString> attributeValues;
+    bool loadManually;
+};
 
 } // namespace WebKit
 

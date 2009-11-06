@@ -34,27 +34,28 @@
 #include "WebCommon.h"
 
 namespace WebKit {
-    class WebView;
-    class WebAccessibilityObject;
 
-    class WebAccessibilityCache {
-    public:
-        WebAccessibilityCache() {}
-        virtual ~WebAccessibilityCache() {}
+class WebView;
+class WebAccessibilityObject;
 
-        static WebAccessibilityCache* create();
-        static void enableAccessibility();
+class WebAccessibilityCache {
+public:
+    WebAccessibilityCache() {}
+    virtual ~WebAccessibilityCache() {}
 
-        virtual void initialize(WebView* view) = 0;
-        virtual bool isInitialized() const = 0;
+    static WebAccessibilityCache* create();
+    static void enableAccessibility();
 
-        virtual WebAccessibilityObject getObjectById(int) = 0;
-        virtual bool isValidId(int) const = 0;
-        virtual int addOrGetId(const WebAccessibilityObject& object) = 0;
+    virtual void initialize(WebView* view) = 0;
+    virtual bool isInitialized() const = 0;
 
-        virtual void remove(int) = 0;
-        virtual void clear() = 0;
-    };
+    virtual WebAccessibilityObject getObjectById(int) = 0;
+    virtual bool isValidId(int) const = 0;
+    virtual int addOrGetId(const WebAccessibilityObject& object) = 0;
+
+    virtual void remove(int) = 0;
+    virtual void clear() = 0;
+};
 
 } // namespace WebKit
 

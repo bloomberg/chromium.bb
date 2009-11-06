@@ -34,23 +34,24 @@
 #include "WebCommon.h"
 
 namespace WebKit {
-    class WebData;
-    class WebSocketStreamHandleClient;
-    class WebURL;
 
-    class WebSocketStreamHandle {
-    public:
-        virtual ~WebSocketStreamHandle() { }
+class WebData;
+class WebSocketStreamHandleClient;
+class WebURL;
 
-        // Connect new socket stream asynchronously.
-        virtual void connect(const WebURL&, WebSocketStreamHandleClient*) = 0;
+class WebSocketStreamHandle {
+public:
+    virtual ~WebSocketStreamHandle() { }
 
-        // Send web socket frame data on the socket stream.
-        virtual bool send(const WebData&) = 0;
+    // Connect new socket stream asynchronously.
+    virtual void connect(const WebURL&, WebSocketStreamHandleClient*) = 0;
 
-        // Close the socket stream.
-        virtual void close() = 0;
-    };
+    // Send web socket frame data on the socket stream.
+    virtual bool send(const WebData&) = 0;
+
+    // Close the socket stream.
+    virtual void close() = 0;
+};
 
 } // namespace WebKit
 

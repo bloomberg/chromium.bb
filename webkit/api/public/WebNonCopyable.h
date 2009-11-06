@@ -33,16 +33,16 @@
 
 namespace WebKit {
 
-    // A base class to extend from if you do not support copying.
-    class WebNonCopyable {
-    protected:
-        WebNonCopyable() { }
-        ~WebNonCopyable() { }
+// A base class to extend from if you do not support copying.
+class WebNonCopyable {
+protected:
+    WebNonCopyable() { }
+    ~WebNonCopyable() { }
 
-    private:
-        WebNonCopyable(const WebNonCopyable&);
-        WebNonCopyable& operator=(const WebNonCopyable&);
-    };
+private:
+    WebNonCopyable(const WebNonCopyable&);
+    WebNonCopyable& operator=(const WebNonCopyable&);
+};
 
 } // namespace WebKit
 

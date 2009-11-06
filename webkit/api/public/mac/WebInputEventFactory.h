@@ -43,17 +43,17 @@ class NSView;
 
 namespace WebKit {
 
-    class WebKeyboardEvent;
-    class WebMouseEvent;
-    class WebMouseWheelEvent;
+class WebKeyboardEvent;
+class WebMouseEvent;
+class WebMouseWheelEvent;
 
-    class WebInputEventFactory {
-    public:
-        WEBKIT_API static WebKeyboardEvent keyboardEvent(NSEvent*);
-        WEBKIT_API static WebKeyboardEvent keyboardEvent(wchar_t character, int modifiers, double timeStampSeconds);
-        WEBKIT_API static WebMouseEvent mouseEvent(NSEvent*, NSView*);
-        WEBKIT_API static WebMouseWheelEvent mouseWheelEvent(NSEvent*, NSView*);
-    };
+class WebInputEventFactory {
+public:
+    WEBKIT_API static WebKeyboardEvent keyboardEvent(NSEvent*);
+    WEBKIT_API static WebKeyboardEvent keyboardEvent(wchar_t character, int modifiers, double timeStampSeconds);
+    WEBKIT_API static WebMouseEvent mouseEvent(NSEvent*, NSView*);
+    WEBKIT_API static WebMouseWheelEvent mouseWheelEvent(NSEvent*, NSView*);
+};
 
 } // namespace WebKit
 

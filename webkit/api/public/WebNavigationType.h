@@ -33,14 +33,14 @@
 
 namespace WebKit {
 
-    enum WebNavigationType {
-        WebNavigationTypeLinkClicked,
-        WebNavigationTypeFormSubmitted,
-        WebNavigationTypeBackForward,
-        WebNavigationTypeReload,
-        WebNavigationTypeFormResubmitted,
-        WebNavigationTypeOther
-    };
+enum WebNavigationType {
+    WebNavigationTypeLinkClicked,
+    WebNavigationTypeFormSubmitted,
+    WebNavigationTypeBackForward,
+    WebNavigationTypeReload,
+    WebNavigationTypeFormResubmitted,
+    WebNavigationTypeOther
+};
 
 } // namespace WebKit
 

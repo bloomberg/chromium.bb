@@ -33,11 +33,11 @@
 
 namespace WebKit {
 
-    enum WebCompositionCommand {
-        WebCompositionCommandDiscard,
-        WebCompositionCommandSet,
-        WebCompositionCommandConfirm,
-    };
+enum WebCompositionCommand {
+    WebCompositionCommandDiscard,
+    WebCompositionCommandSet,
+    WebCompositionCommandConfirm,
+};
 
 } // namespace WebKit
 

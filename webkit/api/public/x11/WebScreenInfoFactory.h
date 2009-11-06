@@ -36,12 +36,13 @@
 typedef struct _XDisplay Display;
 
 namespace WebKit {
-    struct WebScreenInfo;
 
-    class WebScreenInfoFactory {
-    public:
-        WEBKIT_API static WebScreenInfo screenInfo(Display*, int screenNumber);
-    };
+struct WebScreenInfo;
+
+class WebScreenInfoFactory {
+public:
+    WEBKIT_API static WebScreenInfo screenInfo(Display*, int screenNumber);
+};
 
 } // namespace WebKit
 

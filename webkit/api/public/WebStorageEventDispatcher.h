@@ -35,21 +35,21 @@
 
 namespace WebKit {
 
-    class WebURL;
+class WebURL;
 
-    // This is used to dispatch storage events to all pages.
-    // FIXME: Make this (or something) work for SessionStorage!
-    class WebStorageEventDispatcher {
-    public:
-        static WebStorageEventDispatcher* create();
+// This is used to dispatch storage events to all pages.
+// FIXME: Make this (or something) work for SessionStorage!
+class WebStorageEventDispatcher {
+public:
+    static WebStorageEventDispatcher* create();
 
-        virtual ~WebStorageEventDispatcher() { }
+    virtual ~WebStorageEventDispatcher() { }
 
-        // Dispatch the actual event.  Doesn't yet work for SessionStorage.
-        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
-                                          const WebString& newValue, const WebString& origin,
-                                          const WebURL& url, bool isLocalStorage) = 0;
-    };
+    // Dispatch the actual event.  Doesn't yet work for SessionStorage.
+    virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                      const WebString& newValue, const WebString& origin,
+                                      const WebURL& url, bool isLocalStorage) = 0;
+};
 
 } // namespace WebKit
 

@@ -33,15 +33,15 @@
 
 namespace WebKit {
 
-    enum WebNavigationPolicy {
-        WebNavigationPolicyIgnore,
-        WebNavigationPolicyDownload,
-        WebNavigationPolicyCurrentTab,
-        WebNavigationPolicyNewBackgroundTab,
-        WebNavigationPolicyNewForegroundTab,
-        WebNavigationPolicyNewWindow,
-        WebNavigationPolicyNewPopup,
-    };
+enum WebNavigationPolicy {
+    WebNavigationPolicyIgnore,
+    WebNavigationPolicyDownload,
+    WebNavigationPolicyCurrentTab,
+    WebNavigationPolicyNewBackgroundTab,
+    WebNavigationPolicyNewForegroundTab,
+    WebNavigationPolicyNewWindow,
+    WebNavigationPolicyNewPopup,
+};
 
 } // namespace WebKit
 

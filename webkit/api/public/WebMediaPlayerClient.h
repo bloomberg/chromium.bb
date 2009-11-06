@@ -33,24 +33,24 @@
 
 namespace WebKit {
 
-    class WebRequest;
-    class WebURL;
+class WebRequest;
+class WebURL;
 
-    class WebMediaPlayerClient {
-    public:
-        virtual void networkStateChanged() = 0;
-        virtual void readyStateChanged() = 0;
-        virtual void volumeChanged() = 0;
-        virtual void timeChanged() = 0;
-        virtual void repaint() = 0;
-        virtual void durationChanged() = 0;
-        virtual void rateChanged() = 0;
-        virtual void sizeChanged() = 0;
-        virtual void sawUnsupportedTracks() = 0;
+class WebMediaPlayerClient {
+public:
+    virtual void networkStateChanged() = 0;
+    virtual void readyStateChanged() = 0;
+    virtual void volumeChanged() = 0;
+    virtual void timeChanged() = 0;
+    virtual void repaint() = 0;
+    virtual void durationChanged() = 0;
+    virtual void rateChanged() = 0;
+    virtual void sizeChanged() = 0;
+    virtual void sawUnsupportedTracks() = 0;
 
-    protected:
-        ~WebMediaPlayerClient() { }
-    };
+protected:
+    ~WebMediaPlayerClient() { }
+};
 
 } // namespace WebKit
 

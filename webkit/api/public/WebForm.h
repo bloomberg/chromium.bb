@@ -39,36 +39,37 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
-    class WebFormPrivate;
 
-    // A container for passing around a reference to a form element.  Provides
-    // some information about the form.
-    class WebForm {
-    public:
-        ~WebForm() { reset(); }
+class WebFormPrivate;
 
-        WebForm() : m_private(0) { }
-        WebForm(const WebForm& f) : m_private(0) { assign(f); }
-        WebForm& operator=(const WebForm& f) { assign(f); return *this; }
+// A container for passing around a reference to a form element.  Provides
+// some information about the form.
+class WebForm {
+public:
+    ~WebForm() { reset(); }
 
-        WEBKIT_API void reset();
-        WEBKIT_API void assign(const WebForm&);
+    WebForm() : m_private(0) { }
+    WebForm(const WebForm& f) : m_private(0) { assign(f); }
+    WebForm& operator=(const WebForm& f) { assign(f); return *this; }
 
-        bool isNull() const { return m_private == 0; }
+    WEBKIT_API void reset();
+    WEBKIT_API void assign(const WebForm&);
 
-        // Returns true if the form does not have "autocomplete=off" specified.
-        WEBKIT_API bool isAutoCompleteEnabled() const;
+    bool isNull() const { return !m_private; }
+
+    // Returns true if the form does not have "autocomplete=off" specified.
+    WEBKIT_API bool isAutoCompleteEnabled() const;
 
 #if WEBKIT_IMPLEMENTATION
-        WebForm(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        WebForm& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
+    WebForm(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+    WebForm& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+    operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
 #endif
 
-    private:
-        void assign(WebFormPrivate*);
-        WebFormPrivate* m_private;
-    };
+private:
+    void assign(WebFormPrivate*);
+    WebFormPrivate* m_private;
+};
 
 } // namespace WebKit
 

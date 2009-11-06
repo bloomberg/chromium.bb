@@ -40,71 +40,72 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
-    class WebAccessibilityObjectPrivate;
-    class WebString;
-    struct WebPoint;
-    struct WebRect;
 
-    // A container for passing around a reference to AccessibilityObject.
-    class WebAccessibilityObject {
-    public:
-        ~WebAccessibilityObject() { reset(); }
+class WebAccessibilityObjectPrivate;
+class WebString;
+struct WebPoint;
+struct WebRect;
 
-        WebAccessibilityObject() : m_private(0) { }
-        WebAccessibilityObject(const WebAccessibilityObject& o) : m_private(0) { assign(o); }
-        WebAccessibilityObject& operator=(const WebAccessibilityObject& o) { assign(o); return *this; }
+// A container for passing around a reference to AccessibilityObject.
+class WebAccessibilityObject {
+public:
+    ~WebAccessibilityObject() { reset(); }
 
-        WEBKIT_API void reset();
-        WEBKIT_API void assign(const WebAccessibilityObject&);
+    WebAccessibilityObject() : m_private(0) { }
+    WebAccessibilityObject(const WebAccessibilityObject& o) : m_private(0) { assign(o); }
+    WebAccessibilityObject& operator=(const WebAccessibilityObject& o) { assign(o); return *this; }
 
-        bool isNull() const { return m_private == 0; }
+    WEBKIT_API void reset();
+    WEBKIT_API void assign(const WebAccessibilityObject&);
 
-        WebString accessibilityDescription() const;
-        WebString actionVerb() const;
-        bool canSetFocusAttribute() const;
+    bool isNull() const { return !m_private; }
 
-        unsigned childCount() const;
+    WebString accessibilityDescription() const;
+    WebString actionVerb() const;
+    bool canSetFocusAttribute() const;
 
-        WebAccessibilityObject childAt(unsigned) const;
-        WebAccessibilityObject firstChild() const;
-        WebAccessibilityObject focusedChild() const;
-        WebAccessibilityObject lastChild() const;
-        WebAccessibilityObject nextSibling() const;
-        WebAccessibilityObject parentObject() const;
-        WebAccessibilityObject previousSibling() const;
+    unsigned childCount() const;
 
-        bool isAnchor() const;
-        bool isChecked() const;
-        bool isFocused() const;
-        bool isEnabled() const;
-        bool isHovered() const;
-        bool isIndeterminate() const;
-        bool isMultiSelect() const;
-        bool isOffScreen() const;
-        bool isPasswordField() const;
-        bool isPressed() const;
-        bool isReadOnly() const;
-        bool isVisited() const;
+    WebAccessibilityObject childAt(unsigned) const;
+    WebAccessibilityObject firstChild() const;
+    WebAccessibilityObject focusedChild() const;
+    WebAccessibilityObject lastChild() const;
+    WebAccessibilityObject nextSibling() const;
+    WebAccessibilityObject parentObject() const;
+    WebAccessibilityObject previousSibling() const;
 
-        WebRect boundingBoxRect() const;
-        WebString helpText() const;
-        WebAccessibilityObject hitTest(const WebPoint&) const;
-        WebString keyboardShortcut() const;
-        bool performDefaultAction() const;
-        WebAccessibilityRole roleValue() const;
-        WebString stringValue() const;
-        WebString title() const;
+    bool isAnchor() const;
+    bool isChecked() const;
+    bool isFocused() const;
+    bool isEnabled() const;
+    bool isHovered() const;
+    bool isIndeterminate() const;
+    bool isMultiSelect() const;
+    bool isOffScreen() const;
+    bool isPasswordField() const;
+    bool isPressed() const;
+    bool isReadOnly() const;
+    bool isVisited() const;
+
+    WebRect boundingBoxRect() const;
+    WebString helpText() const;
+    WebAccessibilityObject hitTest(const WebPoint&) const;
+    WebString keyboardShortcut() const;
+    bool performDefaultAction() const;
+    WebAccessibilityRole roleValue() const;
+    WebString stringValue() const;
+    WebString title() const;
 
 #if WEBKIT_IMPLEMENTATION
-        WebAccessibilityObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
-        WebAccessibilityObject& operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
-        operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const;
+    WebAccessibilityObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
+    WebAccessibilityObject& operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
+    operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const;
 #endif
 
-    private:
-        void assign(WebAccessibilityObjectPrivate*);
-        WebAccessibilityObjectPrivate* m_private;
-    };
+private:
+    void assign(WebAccessibilityObjectPrivate*);
+    WebAccessibilityObjectPrivate* m_private;
+};
 
 } // namespace WebKit
 

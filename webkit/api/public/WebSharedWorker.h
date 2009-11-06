@@ -34,42 +34,44 @@
 #include "WebCommon.h"
 
 namespace WebCore {
-    class ScriptExecutionContext;
+class ScriptExecutionContext;
 }
 
 namespace WebKit {
-    class WebString;
-    class WebMessagePortChannel;
-    class WebCommonWorkerClient;
-    class WebURL;
 
-    // This is the interface to a SharedWorker thread.
-    // Since SharedWorkers communicate entirely through MessagePorts this interface only contains APIs for starting up a SharedWorker.
-    class WebSharedWorker {
-    public:
-        // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
-        WEBKIT_API static WebSharedWorker* create(WebCommonWorkerClient*);
+class WebString;
+class WebMessagePortChannel;
+class WebCommonWorkerClient;
+class WebURL;
 
-        virtual ~WebSharedWorker() {};
+// This is the interface to a SharedWorker thread.
+// Since SharedWorkers communicate entirely through MessagePorts this interface only contains APIs for starting up a SharedWorker.
+class WebSharedWorker {
+public:
+    // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
+    WEBKIT_API static WebSharedWorker* create(WebCommonWorkerClient*);
 
-        // Returns false if the thread hasn't been started yet (script loading has not taken place).
-        // FIXME(atwilson): Remove this when we move the initial script loading into the worker process.
-        virtual bool isStarted() = 0;
+    virtual ~WebSharedWorker() {};
 
-        virtual void startWorkerContext(const WebURL& scriptURL,
-                                        const WebString& name,
-                                        const WebString& userAgent,
-                                        const WebString& sourceCode) = 0;
+    // Returns false if the thread hasn't been started yet (script loading has not taken place).
+    // FIXME(atwilson): Remove this when we move the initial script loading into the worker process.
+    virtual bool isStarted() = 0;
 
-        // Sends a connect event to the SharedWorker context.
-        virtual void connect(WebMessagePortChannel*) = 0;
+    virtual void startWorkerContext(const WebURL& scriptURL,
+                                    const WebString& name,
+                                    const WebString& userAgent,
+                                    const WebString& sourceCode) = 0;
 
-        // Invoked to shutdown the worker when there are no more associated documents.
-        virtual void terminateWorkerContext() = 0;
+    // Sends a connect event to the SharedWorker context.
+    virtual void connect(WebMessagePortChannel*) = 0;
 
-        // Notification when the WebCommonWorkerClient is destroyed.
-        virtual void clientDestroyed() = 0;
-    };
+    // Invoked to shutdown the worker when there are no more associated documents.
+    virtual void terminateWorkerContext() = 0;
+
+    // Notification when the WebCommonWorkerClient is destroyed.
+    virtual void clientDestroyed() = 0;
+};
+
 } // namespace WebKit
 
 #endif

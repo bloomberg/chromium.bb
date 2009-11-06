@@ -36,10 +36,10 @@
 
 namespace WebKit {
 
-    typedef unsigned WebColor;  // RGBA quad. Equivalent to SkColor.
+typedef unsigned WebColor;  // RGBA quad. Equivalent to SkColor.
 
-    // Sets the values of a set of named colors.
-    WEBKIT_API void setNamedColors(const WebColorName*, const WebColor*, size_t length);
+// Sets the values of a set of named colors.
+WEBKIT_API void setNamedColors(const WebColorName*, const WebColor*, size_t length);
 
 } // namespace WebKit
 

@@ -31,229 +31,229 @@
 #ifndef WebInputEvent_h
 #define WebInputEvent_h
 
-#include <string.h>
-
 #include "WebCommon.h"
+
+#include <string.h>
 
 namespace WebKit {
 
-    // The classes defined in this file are intended to be used with
-    // WebWidget's handleInputEvent method.  These event types are cross-
-    // platform and correspond closely to WebCore's Platform*Event classes.
-    //
-    // WARNING! These classes must remain PODs (plain old data).  They are
-    // intended to be "serializable" by copying their raw bytes, so they must
-    // not contain any non-bit-copyable member variables!
+// The classes defined in this file are intended to be used with
+// WebWidget's handleInputEvent method.  These event types are cross-
+// platform and correspond closely to WebCore's Platform*Event classes.
+//
+// WARNING! These classes must remain PODs (plain old data).  They are
+// intended to be "serializable" by copying their raw bytes, so they must
+// not contain any non-bit-copyable member variables!
 
-    // WebInputEvent --------------------------------------------------------------
+// WebInputEvent --------------------------------------------------------------
 
-    class WebInputEvent {
-    public:
-        WebInputEvent(unsigned sizeParam = sizeof(WebInputEvent))
-            : size(sizeParam)
-            , type(Undefined)
-            , modifiers(0)
-            , timeStampSeconds(0.0) { }
+class WebInputEvent {
+public:
+    WebInputEvent(unsigned sizeParam = sizeof(WebInputEvent))
+        : size(sizeParam)
+        , type(Undefined)
+        , modifiers(0)
+        , timeStampSeconds(0.0) { }
 
-        // When we use an input method (or an input method editor), we receive
-        // two events for a keypress. The former event is a keydown, which
-        // provides a keycode, and the latter is a textinput, which provides
-        // a character processed by an input method. (The mapping from a
-        // keycode to a character code is not trivial for non-English
-        // keyboards.)
-        // To support input methods, Safari sends keydown events to WebKit for
-        // filtering. WebKit sends filtered keydown events back to Safari,
-        // which sends them to input methods.
-        // Unfortunately, it is hard to apply this design to Chrome because of
-        // our multiprocess architecture. An input method is running in a
-        // browser process. On the other hand, WebKit is running in a renderer
-        // process. So, this design results in increasing IPC messages.
-        // To support input methods without increasing IPC messages, Chrome
-        // handles keyboard events in a browser process and send asynchronous
-        // input events (to be translated to DOM events) to a renderer
-        // process.
-        // This design is mostly the same as the one of Windows and Mac Carbon.
-        // So, for what it's worth, our Linux and Mac front-ends emulate our
-        // Windows front-end. To emulate our Windows front-end, we can share
-        // our back-end code among Windows, Linux, and Mac.
-        // TODO(hbono): Issue 18064: remove the KeyDown type since it isn't
-        // used in Chrome any longer.
+    // When we use an input method (or an input method editor), we receive
+    // two events for a keypress. The former event is a keydown, which
+    // provides a keycode, and the latter is a textinput, which provides
+    // a character processed by an input method. (The mapping from a
+    // keycode to a character code is not trivial for non-English
+    // keyboards.)
+    // To support input methods, Safari sends keydown events to WebKit for
+    // filtering. WebKit sends filtered keydown events back to Safari,
+    // which sends them to input methods.
+    // Unfortunately, it is hard to apply this design to Chrome because of
+    // our multiprocess architecture. An input method is running in a
+    // browser process. On the other hand, WebKit is running in a renderer
+    // process. So, this design results in increasing IPC messages.
+    // To support input methods without increasing IPC messages, Chrome
+    // handles keyboard events in a browser process and send asynchronous
+    // input events (to be translated to DOM events) to a renderer
+    // process.
+    // This design is mostly the same as the one of Windows and Mac Carbon.
+    // So, for what it's worth, our Linux and Mac front-ends emulate our
+    // Windows front-end. To emulate our Windows front-end, we can share
+    // our back-end code among Windows, Linux, and Mac.
+    // TODO(hbono): Issue 18064: remove the KeyDown type since it isn't
+    // used in Chrome any longer.
 
-        enum Type {
-            Undefined = -1,
+    enum Type {
+        Undefined = -1,
 
-            // WebMouseEvent
-            MouseDown,
-            MouseUp,
-            MouseMove,
-            MouseEnter,
-            MouseLeave,
+        // WebMouseEvent
+        MouseDown,
+        MouseUp,
+        MouseMove,
+        MouseEnter,
+        MouseLeave,
 
-            // WebMouseWheelEvent
-            MouseWheel,
+        // WebMouseWheelEvent
+        MouseWheel,
 
-            // WebKeyboardEvent
-            RawKeyDown,
-            KeyDown,
-            KeyUp,
-            Char
-        };
-
-        enum Modifiers {
-            // modifiers for all events:
-            ShiftKey         = 1 << 0,
-            ControlKey       = 1 << 1,
-            AltKey           = 1 << 2,
-            MetaKey          = 1 << 3,
-
-            // modifiers for keyboard events:
-            IsKeyPad         = 1 << 4,
-            IsAutoRepeat     = 1 << 5,
-
-            // modifiers for mouse events:
-            LeftButtonDown   = 1 << 6,
-            MiddleButtonDown = 1 << 7,
-            RightButtonDown  = 1 << 8,
-        };
-
-        unsigned size;   // The size of this structure, for serialization.
-        Type type;
-        int modifiers;
-        double timeStampSeconds;   // Seconds since epoch.
-
-        // Returns true if the WebInputEvent |type| is a keyboard event.
-        static bool isKeyboardEventType(int type)
-        {
-            return type == RawKeyDown
-                || type == KeyDown
-                || type == KeyUp
-                || type == Char;
-        }
+        // WebKeyboardEvent
+        RawKeyDown,
+        KeyDown,
+        KeyUp,
+        Char
     };
 
-    // WebKeyboardEvent -----------------------------------------------------------
+    enum Modifiers {
+        // modifiers for all events:
+        ShiftKey         = 1 << 0,
+        ControlKey       = 1 << 1,
+        AltKey           = 1 << 2,
+        MetaKey          = 1 << 3,
 
-    class WebKeyboardEvent : public WebInputEvent {
-    public:
-        // Caps on string lengths so we can make them static arrays and keep
-        // them PODs.
-        static const size_t textLengthCap = 4;
+        // modifiers for keyboard events:
+        IsKeyPad         = 1 << 4,
+        IsAutoRepeat     = 1 << 5,
 
-        // http://www.w3.org/TR/DOM-Level-3-Events/keyset.html lists the
-        // identifiers.  The longest is 18 characters, so we round up to the
-        // next multiple of 4.
-        static const size_t keyIdentifierLengthCap = 20;
-
-        // |windowsKeyCode| is the Windows key code associated with this key
-        // event.  Sometimes it's direct from the event (i.e. on Windows),
-        // sometimes it's via a mapping function.  If you want a list, see
-        // WebCore/platform/chromium/KeyboardCodes* .
-        int windowsKeyCode;
-
-        // The actual key code genenerated by the platform.  The DOM spec runs
-        // on Windows-equivalent codes (thus |windowsKeyCode| above) but it
-        // doesn't hurt to have this one around.
-        int nativeKeyCode;
-
-        // |text| is the text generated by this keystroke.  |unmodifiedText| is
-        // |text|, but unmodified by an concurrently-held modifiers (except
-        // shift).  This is useful for working out shortcut keys.  Linux and
-        // Windows guarantee one character per event.  The Mac does not, but in
-        // reality that's all it ever gives.  We're generous, and cap it a bit
-        // longer.
-        WebUChar text[textLengthCap];
-        WebUChar unmodifiedText[textLengthCap];
-
-        // This is a string identifying the key pressed.
-        char keyIdentifier[keyIdentifierLengthCap];
-
-        // This identifies whether this event was tagged by the system as being
-        // a "system key" event (see
-        // http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx for
-        // details).  Other platforms don't have this concept, but it's just
-        // easier to leave it always false than ifdef.
-        // int is used instead of bool to ensure the size of this structure is
-        // strictly aligned to a factor of 4 bytes, otherwise memory check tools
-        // like valgrind may complain about uninitialized memory usage when
-        // transfering it over the wire.
-        int isSystemKey;
-
-        WebKeyboardEvent(unsigned sizeParam = sizeof(WebKeyboardEvent))
-            : WebInputEvent(sizeParam)
-            , windowsKeyCode(0)
-            , nativeKeyCode(0)
-            , isSystemKey(false)
-        {
-            memset(&text, 0, sizeof(text));
-            memset(&unmodifiedText, 0, sizeof(unmodifiedText));
-            memset(&keyIdentifier, 0, sizeof(keyIdentifier));
-        }
-
-        // Sets keyIdentifier based on the value of windowsKeyCode.  This is
-        // handy for generating synthetic keyboard events.
-        WEBKIT_API void setKeyIdentifierFromWindowsKeyCode();
+        // modifiers for mouse events:
+        LeftButtonDown   = 1 << 6,
+        MiddleButtonDown = 1 << 7,
+        RightButtonDown  = 1 << 8,
     };
 
-    // WebMouseEvent --------------------------------------------------------------
+    unsigned size;   // The size of this structure, for serialization.
+    Type type;
+    int modifiers;
+    double timeStampSeconds;   // Seconds since epoch.
 
-    class WebMouseEvent : public WebInputEvent {
-    public:
-        // These values defined for WebCore::MouseButton
-        enum Button {
-            ButtonNone = -1,
-            ButtonLeft,
-            ButtonMiddle,
-            ButtonRight
-        };
+    // Returns true if the WebInputEvent |type| is a keyboard event.
+    static bool isKeyboardEventType(int type)
+    {
+        return type == RawKeyDown
+            || type == KeyDown
+            || type == KeyUp
+            || type == Char;
+    }
+};
 
-        Button button;
-        int x;
-        int y;
-        int windowX;
-        int windowY;
-        int globalX;
-        int globalY;
-        int clickCount;
+// WebKeyboardEvent -----------------------------------------------------------
 
-        WebMouseEvent(unsigned sizeParam = sizeof(WebMouseEvent))
-            : WebInputEvent(sizeParam)
-            , button(ButtonNone)
-            , x(0)
-            , y(0)
-            , windowX(0)
-            , windowY(0)
-            , globalX(0)
-            , globalY(0)
-            , clickCount(0)
-        {
-        }
+class WebKeyboardEvent : public WebInputEvent {
+public:
+    // Caps on string lengths so we can make them static arrays and keep
+    // them PODs.
+    static const size_t textLengthCap = 4;
+
+    // http://www.w3.org/TR/DOM-Level-3-Events/keyset.html lists the
+    // identifiers.  The longest is 18 characters, so we round up to the
+    // next multiple of 4.
+    static const size_t keyIdentifierLengthCap = 20;
+
+    // |windowsKeyCode| is the Windows key code associated with this key
+    // event.  Sometimes it's direct from the event (i.e. on Windows),
+    // sometimes it's via a mapping function.  If you want a list, see
+    // WebCore/platform/chromium/KeyboardCodes* .
+    int windowsKeyCode;
+
+    // The actual key code genenerated by the platform.  The DOM spec runs
+    // on Windows-equivalent codes (thus |windowsKeyCode| above) but it
+    // doesn't hurt to have this one around.
+    int nativeKeyCode;
+
+    // |text| is the text generated by this keystroke.  |unmodifiedText| is
+    // |text|, but unmodified by an concurrently-held modifiers (except
+    // shift).  This is useful for working out shortcut keys.  Linux and
+    // Windows guarantee one character per event.  The Mac does not, but in
+    // reality that's all it ever gives.  We're generous, and cap it a bit
+    // longer.
+    WebUChar text[textLengthCap];
+    WebUChar unmodifiedText[textLengthCap];
+
+    // This is a string identifying the key pressed.
+    char keyIdentifier[keyIdentifierLengthCap];
+
+    // This identifies whether this event was tagged by the system as being
+    // a "system key" event (see
+    // http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx for
+    // details).  Other platforms don't have this concept, but it's just
+    // easier to leave it always false than ifdef.
+    // int is used instead of bool to ensure the size of this structure is
+    // strictly aligned to a factor of 4 bytes, otherwise memory check tools
+    // like valgrind may complain about uninitialized memory usage when
+    // transfering it over the wire.
+    int isSystemKey;
+
+    WebKeyboardEvent(unsigned sizeParam = sizeof(WebKeyboardEvent))
+        : WebInputEvent(sizeParam)
+        , windowsKeyCode(0)
+        , nativeKeyCode(0)
+        , isSystemKey(false)
+    {
+        memset(&text, 0, sizeof(text));
+        memset(&unmodifiedText, 0, sizeof(unmodifiedText));
+        memset(&keyIdentifier, 0, sizeof(keyIdentifier));
+    }
+
+    // Sets keyIdentifier based on the value of windowsKeyCode.  This is
+    // handy for generating synthetic keyboard events.
+    WEBKIT_API void setKeyIdentifierFromWindowsKeyCode();
+};
+
+// WebMouseEvent --------------------------------------------------------------
+
+class WebMouseEvent : public WebInputEvent {
+public:
+    // These values defined for WebCore::MouseButton
+    enum Button {
+        ButtonNone = -1,
+        ButtonLeft,
+        ButtonMiddle,
+        ButtonRight
     };
 
-    // WebMouseWheelEvent ---------------------------------------------------------
+    Button button;
+    int x;
+    int y;
+    int windowX;
+    int windowY;
+    int globalX;
+    int globalY;
+    int clickCount;
 
-    class WebMouseWheelEvent : public WebMouseEvent {
-    public:
-        float deltaX;
-        float deltaY;
-        float wheelTicksX;
-        float wheelTicksY;
+    WebMouseEvent(unsigned sizeParam = sizeof(WebMouseEvent))
+        : WebInputEvent(sizeParam)
+        , button(ButtonNone)
+        , x(0)
+        , y(0)
+        , windowX(0)
+        , windowY(0)
+        , globalX(0)
+        , globalY(0)
+        , clickCount(0)
+    {
+    }
+};
 
-        // int is used instead of bool to ensure the size of this structure is
-        // strictly aligned to a factor of 4 bytes, otherwise memory check tools
-        // like valgrind may complain about uninitialized memory usage when
-        // transfering it over the wire.
-        int scrollByPage;
+// WebMouseWheelEvent ---------------------------------------------------------
 
-        WebMouseWheelEvent(unsigned sizeParam = sizeof(WebMouseWheelEvent))
-            : WebMouseEvent(sizeParam)
-            , deltaX(0.0f)
-            , deltaY(0.0f)
-            , wheelTicksX(0.0f)
-            , wheelTicksY(0.0f)
-            , scrollByPage(false)
-        {
-        }
-    };
+class WebMouseWheelEvent : public WebMouseEvent {
+public:
+    float deltaX;
+    float deltaY;
+    float wheelTicksX;
+    float wheelTicksY;
+
+    // int is used instead of bool to ensure the size of this structure is
+    // strictly aligned to a factor of 4 bytes, otherwise memory check tools
+    // like valgrind may complain about uninitialized memory usage when
+    // transfering it over the wire.
+    int scrollByPage;
+
+    WebMouseWheelEvent(unsigned sizeParam = sizeof(WebMouseWheelEvent))
+        : WebMouseEvent(sizeParam)
+        , deltaX(0.0f)
+        , deltaY(0.0f)
+        , wheelTicksX(0.0f)
+        , wheelTicksY(0.0f)
+        , scrollByPage(false)
+    {
+    }
+};
 
 } // namespace WebKit
 

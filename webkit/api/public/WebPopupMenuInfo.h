@@ -38,23 +38,23 @@
 
 namespace WebKit {
 
-    // Describes the contents of a popup menu.
-    struct WebPopupMenuInfo {
-        struct Item {
-            enum Type {
-                Option,
-                Group,
-                Separator,
-            };
-            WebString label;
-            Type type;
-            bool enabled;
+// Describes the contents of a popup menu.
+struct WebPopupMenuInfo {
+    struct Item {
+        enum Type {
+            Option,
+            Group,
+            Separator,
         };
-
-        int itemHeight;
-        int selectedIndex;
-        WebVector<Item> items;
+        WebString label;
+        Type type;
+        bool enabled;
     };
+
+    int itemHeight;
+    int selectedIndex;
+    WebVector<Item> items;
+};
 
 } // namespace WebKit
 

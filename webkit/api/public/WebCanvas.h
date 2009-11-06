@@ -40,13 +40,15 @@ struct CGContext;
 #endif
 
 namespace WebKit {
+
 #if WEBKIT_USING_SKIA
-    typedef skia::PlatformCanvas WebCanvas;
+typedef skia::PlatformCanvas WebCanvas;
 #elif WEBKIT_USING_CG
-    typedef struct CGContext WebCanvas;
+typedef struct CGContext WebCanvas;
 #else
-    #error "Need to define WebCanvas"
+#error "Need to define WebCanvas"
 #endif
-}
+
+} // namespace WebKit
 
 #endif

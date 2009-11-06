@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -35,39 +35,39 @@
 
 namespace WebKit {
 
-    struct WebScreenInfo {
-        // The screen depth in bits per pixel
-        int depth;
+struct WebScreenInfo {
+    // The screen depth in bits per pixel
+    int depth;
 
-        // The bits per colour component. This assumes that the colours are balanced
-        // equally.
-        int depthPerComponent;
+    // The bits per colour component. This assumes that the colours are balanced
+    // equally.
+    int depthPerComponent;
 
-        // This can be true for black and white printers
-        bool isMonochrome;
+    // This can be true for black and white printers
+    bool isMonochrome;
 
-        // This is set from the rcMonitor member of MONITORINFOEX, to whit:
-        //   "A RECT structure that specifies the display monitor rectangle,
-        //   expressed in virtual-screen coordinates. Note that if the monitor
-        //   is not the primary display monitor, some of the rectangle's
-        //   coordinates may be negative values."
-        WebRect rect;
+    // This is set from the rcMonitor member of MONITORINFOEX, to whit:
+    //   "A RECT structure that specifies the display monitor rectangle,
+    //   expressed in virtual-screen coordinates. Note that if the monitor
+    //   is not the primary display monitor, some of the rectangle's
+    //   coordinates may be negative values."
+    WebRect rect;
 
-        // This is set from the rcWork member of MONITORINFOEX, to whit:
-        //   "A RECT structure that specifies the work area rectangle of the
-        //   display monitor that can be used by applications, expressed in
-        //   virtual-screen coordinates. Windows uses this rectangle to
-        //   maximize an application on the monitor. The rest of the area in
-        //   rcMonitor contains system windows such as the task bar and side
-        //   bars. Note that if the monitor is not the primary display monitor,
-        //   some of the rectangle's coordinates may be negative values".
-        WebRect availableRect;
+    // This is set from the rcWork member of MONITORINFOEX, to whit:
+    //   "A RECT structure that specifies the work area rectangle of the
+    //   display monitor that can be used by applications, expressed in
+    //   virtual-screen coordinates. Windows uses this rectangle to
+    //   maximize an application on the monitor. The rest of the area in
+    //   rcMonitor contains system windows such as the task bar and side
+    //   bars. Note that if the monitor is not the primary display monitor,
+    //   some of the rectangle's coordinates may be negative values".
+    WebRect availableRect;
 
-        WebScreenInfo()
-            : depth(0)
-            , depthPerComponent(0)
-            , isMonochrome(false) { }
-    };
+    WebScreenInfo()
+        : depth(0)
+        , depthPerComponent(0)
+        , isMonochrome(false) { }
+};
 
 } // namespace WebKit
 

@@ -33,11 +33,11 @@
 
 namespace WebKit {
 
-    // These constants specify the preferred direction of selection.
-    enum WebTextAffinity {
-        WebTextAffinityUpstream,   // The selection is moving toward the top of the document.
-        WebTextAffinityDownstream, // The selection is moving toward the bottom of the document.
-    };
+// These constants specify the preferred direction of selection.
+enum WebTextAffinity {
+    WebTextAffinityUpstream,   // The selection is moving toward the top of the document.
+    WebTextAffinityDownstream, // The selection is moving toward the bottom of the document.
+};
 
 } // namespace WebKit
 

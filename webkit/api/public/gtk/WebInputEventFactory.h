@@ -41,19 +41,19 @@ typedef struct _GdkEventKey GdkEventKey;
 
 namespace WebKit {
 
-    class WebKeyboardEvent;
-    class WebMouseEvent;
-    class WebMouseWheelEvent;
+class WebKeyboardEvent;
+class WebMouseEvent;
+class WebMouseWheelEvent;
 
-    class WebInputEventFactory {
-    public:
-        WEBKIT_API static WebKeyboardEvent keyboardEvent(const GdkEventKey*);
-        WEBKIT_API static WebKeyboardEvent keyboardEvent(wchar_t character, int state, double timeStampSeconds);
-        WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventButton*);
-        WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventMotion*);
-        WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventCrossing*);
-        WEBKIT_API static WebMouseWheelEvent mouseWheelEvent(const GdkEventScroll*);
-    };
+class WebInputEventFactory {
+public:
+    WEBKIT_API static WebKeyboardEvent keyboardEvent(const GdkEventKey*);
+    WEBKIT_API static WebKeyboardEvent keyboardEvent(wchar_t character, int state, double timeStampSeconds);
+    WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventButton*);
+    WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventMotion*);
+    WEBKIT_API static WebMouseEvent mouseEvent(const GdkEventCrossing*);
+    WEBKIT_API static WebMouseWheelEvent mouseWheelEvent(const GdkEventScroll*);
+};
 
 } // namespace WebKit
 

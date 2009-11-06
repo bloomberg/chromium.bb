@@ -40,6 +40,7 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
+
 class WebDatabaseObserver;
 class WebDatabasePrivate;
 class WebString;
@@ -54,7 +55,7 @@ public:
 
     WEBKIT_API void reset();
     WEBKIT_API void assign(const WebDatabase&);
-    bool isNull() const { return m_private == 0; }
+    bool isNull() const { return !m_private; }
 
     WEBKIT_API WebString name() const;
     WEBKIT_API WebString displayName() const;

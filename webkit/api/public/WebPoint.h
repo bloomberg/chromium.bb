@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -41,70 +41,70 @@
 
 namespace WebKit {
 
-    struct WebPoint {
-        int x;
-        int y;
+struct WebPoint {
+    int x;
+    int y;
 
-        WebPoint()
-            : x(0)
-            , y(0)
-        {
-        }
+    WebPoint()
+        : x(0)
+        , y(0)
+    {
+    }
 
-        WebPoint(int x, int y)
-            : x(x)
-            , y(y)
-        {
-        }
-        
+    WebPoint(int x, int y)
+        : x(x)
+        , y(y)
+    {
+    }
+
 #if WEBKIT_IMPLEMENTATION
-        WebPoint(const WebCore::IntPoint& p)
-            : x(p.x())
-            , y(p.y())
-        {
-        }
+    WebPoint(const WebCore::IntPoint& p)
+        : x(p.x())
+        , y(p.y())
+    {
+    }
 
-        WebPoint& operator=(const WebCore::IntPoint& p)
-        {
-            x = p.x();
-            y = p.y();
-            return *this;
-        }
+    WebPoint& operator=(const WebCore::IntPoint& p)
+    {
+        x = p.x();
+        y = p.y();
+        return *this;
+    }
 
-        operator WebCore::IntPoint() const
-        {
-            return WebCore::IntPoint(x, y);
-        }
+    operator WebCore::IntPoint() const
+    {
+        return WebCore::IntPoint(x, y);
+    }
 #else
-        WebPoint(const gfx::Point& p)
-            : x(p.x())
-            , y(p.y())
-        {
-        }
+    WebPoint(const gfx::Point& p)
+        : x(p.x())
+        , y(p.y())
+    {
+    }
 
-        WebPoint& operator=(const gfx::Point& p)
-        {
-            x = p.x();
-            y = p.y();
-            return *this;
-        }
+    WebPoint& operator=(const gfx::Point& p)
+    {
+        x = p.x();
+        y = p.y();
+        return *this;
+    }
 
-        operator gfx::Point() const
-        {
-            return gfx::Point(x, y);
-        }
+    operator gfx::Point() const
+    {
+        return gfx::Point(x, y);
+    }
 #endif
-    };
+};
 
-    inline bool operator==(const WebPoint& a, const WebPoint& b)
-    {
-        return a.x == b.x && a.y == b.y;
-    }
+inline bool operator==(const WebPoint& a, const WebPoint& b)
+{
+    return a.x == b.x && a.y == b.y;
+}
 
-    inline bool operator!=(const WebPoint& a, const WebPoint& b)
-    {
-        return !(a == b);
-    }
+inline bool operator!=(const WebPoint& a, const WebPoint& b)
+{
+    return !(a == b);
+}
 
 } // namespace WebKit
 

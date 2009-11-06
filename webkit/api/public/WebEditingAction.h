@@ -33,11 +33,11 @@
 
 namespace WebKit {
 
-    enum WebEditingAction {
-        WebEditingActionTyped,
-        WebEditingActionPasted,
-        WebEditingActionDropped,
-    };
+enum WebEditingAction {
+    WebEditingActionTyped,
+    WebEditingActionPasted,
+    WebEditingActionDropped,
+};
 
 } // namespace WebKit
 

@@ -35,10 +35,10 @@
 
 namespace WebKit {
 
-    class WebSocketStreamError {
-    public:
-        // FIXME: Define SocketStream Error codes and accessor methods.
-    };
+class WebSocketStreamError {
+public:
+    // FIXME: Define SocketStream Error codes and accessor methods.
+};
 
 } // namespace WebKit
 

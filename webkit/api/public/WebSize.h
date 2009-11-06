@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -41,72 +41,72 @@
 
 namespace WebKit {
 
-    struct WebSize {
-        int width;
-        int height;
+struct WebSize {
+    int width;
+    int height;
 
-        bool isEmpty() const { return width <= 0 || height <= 0; }
+    bool isEmpty() const { return width <= 0 || height <= 0; }
 
-        WebSize()
-            : width(0)
-            , height(0)
-        {
-        }
+    WebSize()
+        : width(0)
+        , height(0)
+    {
+    }
 
-        WebSize(int width, int height)
-            : width(width)
-            , height(height)
-        {
-        }
-        
+    WebSize(int width, int height)
+        : width(width)
+        , height(height)
+    {
+    }
+
 #if WEBKIT_IMPLEMENTATION
-        WebSize(const WebCore::IntSize& s)
-            : width(s.width())
-            , height(s.height())
-        {
-        }
+    WebSize(const WebCore::IntSize& s)
+        : width(s.width())
+        , height(s.height())
+    {
+    }
 
-        WebSize& operator=(const WebCore::IntSize& s)
-        {
-            width = s.width();
-            height = s.height();
-            return *this;
-        }
+    WebSize& operator=(const WebCore::IntSize& s)
+    {
+        width = s.width();
+        height = s.height();
+        return *this;
+    }
 
-        operator WebCore::IntSize() const
-        {
-            return WebCore::IntSize(width, height);
-        }
+    operator WebCore::IntSize() const
+    {
+        return WebCore::IntSize(width, height);
+    }
 #else
-        WebSize(const gfx::Size& s)
-            : width(s.width())
-            , height(s.height())
-        {
-        }
+    WebSize(const gfx::Size& s)
+        : width(s.width())
+        , height(s.height())
+    {
+    }
 
-        WebSize& operator=(const gfx::Size& s)
-        {
-            width = s.width();
-            height = s.height();
-            return *this;
-        }
+    WebSize& operator=(const gfx::Size& s)
+    {
+        width = s.width();
+        height = s.height();
+        return *this;
+    }
 
-        operator gfx::Size() const
-        {
-            return gfx::Size(width, height);
-        }
+    operator gfx::Size() const
+    {
+        return gfx::Size(width, height);
+    }
 #endif
-    };
+};
 
-    inline bool operator==(const WebSize& a, const WebSize& b)
-    {
-        return a.width == b.width && a.height == b.height;
-    }
+inline bool operator==(const WebSize& a, const WebSize& b)
+{
+    return a.width == b.width && a.height == b.height;
+}
 
-    inline bool operator!=(const WebSize& a, const WebSize& b)
-    {
-        return !(a == b);
-    }
+inline bool operator!=(const WebSize& a, const WebSize& b)
+{
+    return !(a == b);
+}
 
 } // namespace WebKit
 

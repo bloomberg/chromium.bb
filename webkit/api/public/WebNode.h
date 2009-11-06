@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -40,35 +40,40 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
-    class WebNodePrivate;
 
-    // Provides readonly access to some properties of a DOM node.
-    class WebNode {
-    public:
-        ~WebNode() { reset(); }
+class WebNodePrivate;
 
-        WebNode() : m_private(0) { }
-        WebNode(const WebNode& n) : m_private(0) { assign(n); }
-        WebNode& operator=(const WebNode& n) { assign(n); return *this; }
+// Provides readonly access to some properties of a DOM node.
+class WebNode {
+public:
+    ~WebNode() { reset(); }
 
-        WEBKIT_API void reset();
-        WEBKIT_API void assign(const WebNode&);
+    WebNode() : m_private(0) { }
+    WebNode(const WebNode& n) : m_private(0) { assign(n); }
+    WebNode& operator=(const WebNode& n)
+    {
+        assign(n);
+        return *this;
+    }
 
-        bool isNull() const { return m_private == 0; }
+    WEBKIT_API void reset();
+    WEBKIT_API void assign(const WebNode&);
 
-        WEBKIT_API WebNode parentNode() const;
-        WEBKIT_API WebString nodeName() const;
+    bool isNull() const { return !m_private; }
+
+    WEBKIT_API WebNode parentNode() const;
+    WEBKIT_API WebString nodeName() const;
 
 #if WEBKIT_IMPLEMENTATION
-        WebNode(const WTF::PassRefPtr<WebCore::Node>&);
-        WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
-        operator WTF::PassRefPtr<WebCore::Node>() const;
+    WebNode(const WTF::PassRefPtr<WebCore::Node>&);
+    WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
+    operator WTF::PassRefPtr<WebCore::Node>() const;
 #endif
 
-    private:
-        void assign(WebNodePrivate*);
-        WebNodePrivate* m_private;
-    };
+private:
+    void assign(WebNodePrivate*);
+    WebNodePrivate* m_private;
+};
 
 } // namespace WebKit
 

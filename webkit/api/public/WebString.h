@@ -34,117 +34,121 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-namespace WebCore { class String; class AtomicString; }
+namespace WebCore {
+class String;
+class AtomicString;
+}
 #else
 #include <base/nullable_string16.h>
 #include <base/string16.h>
 #endif
 
 namespace WebKit {
-    class WebCString;
-    class WebStringPrivate;
 
-    // A UTF-16 string container.  It is inexpensive to copy a WebString
-    // object.
-    //
-    // WARNING: It is not safe to pass a WebString across threads!!!
-    //
-    class WebString {
-    public:
-        ~WebString() { reset(); }
+class WebCString;
+class WebStringPrivate;
 
-        WebString() : m_private(0) { }
+// A UTF-16 string container.  It is inexpensive to copy a WebString
+// object.
+//
+// WARNING: It is not safe to pass a WebString across threads!!!
+//
+class WebString {
+public:
+    ~WebString() { reset(); }
 
-        WebString(const WebUChar* data, size_t len) : m_private(0)
-        {
-            assign(data, len);
-        }
+    WebString() : m_private(0) { }
 
-        WebString(const WebString& s) : m_private(0) { assign(s); }
+    WebString(const WebUChar* data, size_t len) : m_private(0)
+    {
+        assign(data, len);
+    }
 
-        WebString& operator=(const WebString& s)
-        {
-            assign(s);
-            return *this;
-        }
+    WebString(const WebString& s) : m_private(0) { assign(s); }
 
-        WEBKIT_API void reset();
-        WEBKIT_API void assign(const WebString&);
-        WEBKIT_API void assign(const WebUChar* data, size_t len);
+    WebString& operator=(const WebString& s)
+    {
+        assign(s);
+        return *this;
+    }
 
-        WEBKIT_API size_t length() const;
-        WEBKIT_API const WebUChar* data() const;
+    WEBKIT_API void reset();
+    WEBKIT_API void assign(const WebString&);
+    WEBKIT_API void assign(const WebUChar* data, size_t len);
 
-        bool isEmpty() const { return length() == 0; }
-        bool isNull() const { return m_private == 0; }
+    WEBKIT_API size_t length() const;
+    WEBKIT_API const WebUChar* data() const;
 
-        WEBKIT_API WebCString utf8() const;
+    bool isEmpty() const { return !length(); }
+    bool isNull() const { return !m_private; }
 
-        WEBKIT_API static WebString fromUTF8(const char* data, size_t length);
-        WEBKIT_API static WebString fromUTF8(const char* data);
+    WEBKIT_API WebCString utf8() const;
+
+    WEBKIT_API static WebString fromUTF8(const char* data, size_t length);
+    WEBKIT_API static WebString fromUTF8(const char* data);
 
 #if WEBKIT_IMPLEMENTATION
-        WebString(const WebCore::String&);
-        WebString& operator=(const WebCore::String&);
-        operator WebCore::String() const;
+    WebString(const WebCore::String&);
+    WebString& operator=(const WebCore::String&);
+    operator WebCore::String() const;
 
-        WebString(const WebCore::AtomicString&);
-        WebString& operator=(const WebCore::AtomicString&);
-        operator WebCore::AtomicString() const;
+    WebString(const WebCore::AtomicString&);
+    WebString& operator=(const WebCore::AtomicString&);
+    operator WebCore::AtomicString() const;
 #else
-        WebString(const string16& s) : m_private(0)
-        {
-            assign(s.data(), s.length());
-        }
+    WebString(const string16& s) : m_private(0)
+    {
+        assign(s.data(), s.length());
+    }
 
-        WebString& operator=(const string16& s)
-        {
-            assign(s.data(), s.length());
-            return *this;
-        }
+    WebString& operator=(const string16& s)
+    {
+        assign(s.data(), s.length());
+        return *this;
+    }
 
-        operator string16() const
-        {
-            size_t len = length();
-            return len ? string16(data(), len) : string16();
-        }
+    operator string16() const
+    {
+        size_t len = length();
+        return len ? string16(data(), len) : string16();
+    }
 
-        WebString(const NullableString16& s) : m_private(0)
-        {
-            if (s.is_null())
-                assign(0);
-            else
-                assign(s.string().data(), s.string().length());
-        }
+    WebString(const NullableString16& s) : m_private(0)
+    {
+        if (s.is_null())
+            assign(0);
+        else
+            assign(s.string().data(), s.string().length());
+    }
 
-        WebString& operator=(const NullableString16& s)
-        {
-            if (s.is_null())
-                assign(0);
-            else
-                assign(s.string().data(), s.string().length());
-            return *this;
-        }
+    WebString& operator=(const NullableString16& s)
+    {
+        if (s.is_null())
+            assign(0);
+        else
+            assign(s.string().data(), s.string().length());
+        return *this;
+    }
 
-        operator NullableString16() const
-        {
-            if (!m_private)
-                return NullableString16(string16(), true);
-            size_t len = length();
-            return NullableString16(len ? string16(data(), len) : string16(), false);
-        }
+    operator NullableString16() const
+    {
+        if (!m_private)
+            return NullableString16(string16(), true);
+        size_t len = length();
+        return NullableString16(len ? string16(data(), len) : string16(), false);
+    }
 
-        template <class UTF8String>
-        static WebString fromUTF8(const UTF8String& s)
-        {
-            return fromUTF8(s.data(), s.length());
-        }
+    template <class UTF8String>
+    static WebString fromUTF8(const UTF8String& s)
+    {
+        return fromUTF8(s.data(), s.length());
+    }
 #endif
 
-    private:
-        void assign(WebStringPrivate*);
-        WebStringPrivate* m_private;
-    };
+private:
+    void assign(WebStringPrivate*);
+    WebStringPrivate* m_private;
+};
 
 } // namespace WebKit
 
