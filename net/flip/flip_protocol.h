@@ -12,10 +12,10 @@
 #else
 #include <arpa/inet.h>
 #endif
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "flip_bitmasks.h"  // cross-google3 directory naming.
-
 
 //  Data Frame Format
 //  +----------------------------------+
@@ -116,29 +116,22 @@ typedef uint32 FlipStreamId;
 #define FLIP_PRIORITY_LOWEST 3
 #define FLIP_PRIORITY_HIGHEST 0
 
+// -------------------------------------------------------------------------
+// These structures mirror the protocol structure definitions.
+
+// For the control data structures, we pack so that sizes match the
+// protocol over-the-wire sizes.
+#pragma pack(push)
+#pragma pack(1)
+
 // A special structure for the 8 bit flags and 24 bit length fields.
 union FlagsAndLength {
-  uint8 flags_[4]; // 8 bits
-  uint32 length_;  // 24 bits
+  uint8 flags_[4];  // 8 bits
+  uint32 length_;   // 24 bits
 };
 
-// All Flip Frame types derive from the FlipFrame struct.
-typedef struct {
-  uint8 flags() const { return flags_length_.flags_[0]; }
-  void set_flags(uint8 flags) { flags_length_.flags_[0] = flags; }
-
-  uint32 length() const { return ntohl(flags_length_.length_) & kLengthMask; }
-  void set_length(uint32 length) {
-    DCHECK((length & ~kLengthMask) == 0);
-    length = htonl(length & kLengthMask);
-    flags_length_.length_ = (flags() << 6) | length;
-  }
-
-  bool is_control_frame() const {
-    return (ntohs(control_.version_) & kControlFlagMask) == kControlFlagMask;
-  }
-
- protected:
+// The basic FLIP Frame.
+struct FlipFrameBlock {
   union {
     struct {
       uint16 version_;
@@ -149,74 +142,229 @@ typedef struct {
     } data_;
   };
   FlagsAndLength flags_length_;
-} FlipFrame;
-
-// A Data Frame.
-typedef struct : public FlipFrame {
-  FlipStreamId stream_id() const {
-      return ntohl(data_.stream_id_) & kStreamIdMask;
-  }
-  void set_stream_id(FlipStreamId id) { data_.stream_id_ = htonl(id); }
-} FlipDataFrame;
+};
 
 // A Control Frame.
-typedef struct : public FlipFrame {
+struct FlipControlFrameBlock : FlipFrameBlock {
+  FlipStreamId stream_id_;
+};
+
+// A SYN_STREAM Control Frame.
+struct FlipSynStreamControlFrameBlock : FlipControlFrameBlock {
+  uint8 priority_;
+  uint8 unused_;
+};
+
+// A SYN_REPLY Control Frame.
+struct FlipSynReplyControlFrameBlock : FlipControlFrameBlock {
+  uint16 unused_;
+};
+
+// A FNI_STREAM Control Frame.
+struct FlipFinStreamControlFrameBlock : FlipControlFrameBlock {
+  uint32 status_;
+};
+
+#pragma pack(pop)
+
+// -------------------------------------------------------------------------
+// Wrapper classes for various FLIP frames.
+
+// All Flip Frame types derive from this FlipFrame class.
+class FlipFrame {
+ public:
+  // Create a FlipFrame for a given sized buffer.
+  explicit FlipFrame(size_t size) : frame_(NULL), needs_delete_(true) {
+    DCHECK_GE(size, sizeof(struct FlipFrameBlock));
+    char* buffer = new char[size];
+    memset(buffer, 0, size);
+    frame_ = reinterpret_cast<struct FlipFrameBlock*>(buffer);
+  }
+
+  // Create a FlipFrame using a pre-created buffer.
+  // If |needs_delete| is true, this class takes ownership of the buffer
+  // and will delete it on cleanup.  The buffer must have been created using
+  // new char[].
+  // If |needs_delete| is false, the caller retains ownership
+  // of the buffer and will keep the buffer alive longer than |this|.  In other
+  // words, this class does NOT create a copy of the buffer.
+  FlipFrame(char* data, bool needs_delete)
+      : frame_(reinterpret_cast<struct FlipFrameBlock*>(data)),
+        needs_delete_(needs_delete) {
+    DCHECK(frame_);
+  }
+
+  virtual ~FlipFrame() {
+    if (needs_delete_) {
+      char* buffer = reinterpret_cast<char*>(frame_);
+      delete [] buffer;
+    }
+    frame_ = NULL;
+  }
+
+  // Provide access to the frame bytes
+  char* data() const { return reinterpret_cast<char*>(frame_); }
+
+  uint8 flags() const { return frame_->flags_length_.flags_[0]; }
+  void set_flags(uint8 flags) { frame_->flags_length_.flags_[0] = flags; }
+
+  uint32 length() const {
+    return ntohl(frame_->flags_length_.length_) & kLengthMask;
+  }
+
+  void set_length(uint32 length) {
+    DCHECK_EQ(0u, (length & ~kLengthMask));
+    length = htonl(length & kLengthMask);
+    frame_->flags_length_.length_ = flags() | length;
+  }
+
+  bool is_control_frame() const {
+    return (ntohs(frame_->control_.version_) & kControlFlagMask) ==
+        kControlFlagMask;
+  }
+
+  static size_t size() { return sizeof(struct FlipFrameBlock); }
+
+ protected:
+  FlipFrameBlock* frame_;
+
+ private:
+  bool needs_delete_;
+  DISALLOW_COPY_AND_ASSIGN(FlipFrame);
+};
+
+// A Data Frame.
+class FlipDataFrame : public FlipFrame {
+ public:
+  FlipDataFrame() : FlipFrame(size()) {}
+  FlipDataFrame(char* data, bool needs_delete)
+      : FlipFrame(data, needs_delete) {}
+  virtual ~FlipDataFrame() {}
+
+  FlipStreamId stream_id() const {
+    return ntohl(frame_->data_.stream_id_) & kStreamIdMask;
+  }
+
+  // Note that setting the stream id sets the control bit to false.
+  // As stream id should always be set, this means the control bit
+  // should always be set correctly.
+  void set_stream_id(FlipStreamId id) {
+    DCHECK_EQ(0u, (id & ~kStreamIdMask));
+    frame_->data_.stream_id_ = htonl(id & kStreamIdMask);
+  }
+
+  static size_t size() { return FlipFrame::size(); }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FlipDataFrame);
+};
+
+// A Control Frame.
+class FlipControlFrame : public FlipFrame {
+ public:
+  explicit FlipControlFrame(size_t size) : FlipFrame(size) {}
+  FlipControlFrame(char* data, bool needs_delete)
+      : FlipFrame(data, needs_delete) {}
+  virtual ~FlipControlFrame() {}
+
   uint16 version() const {
     const int kVersionMask = 0x7fff;
-    return ntohs(control_.version_) & kVersionMask;
+    return ntohs(block()->control_.version_) & kVersionMask;
   }
   FlipControlType type() const {
-    uint16 type = ntohs(control_.type_);
+    uint16 type = ntohs(block()->control_.type_);
     DCHECK(type >= SYN_STREAM && type <= NOOP);
     return static_cast<FlipControlType>(type);
   }
-  FlipStreamId stream_id() const { return ntohl(stream_id_) & kStreamIdMask; }
+  FlipStreamId stream_id() const {
+    return ntohl(block()->stream_id_) & kStreamIdMask;
+  }
+
+  void set_stream_id(FlipStreamId id) {
+    block()->stream_id_ = htonl(id & kStreamIdMask);
+  }
+
+  static size_t size() { return sizeof(FlipControlFrameBlock); }
 
  private:
-  FlipStreamId stream_id_;
-} FlipControlFrame;
+  struct FlipControlFrameBlock* block() const {
+    return static_cast<FlipControlFrameBlock*>(frame_);
+  }
+  DISALLOW_COPY_AND_ASSIGN(FlipControlFrame);
+};
 
 // A SYN_STREAM frame.
-typedef struct FlipSynStreamControlFrame : public FlipControlFrame {
-  uint8 priority() const { return (priority_ & kPriorityMask) >> 6; }
+class FlipSynStreamControlFrame : public FlipControlFrame {
+ public:
+  FlipSynStreamControlFrame() : FlipControlFrame(size()) {}
+  FlipSynStreamControlFrame(char* data, bool needs_delete)
+      : FlipControlFrame(data, needs_delete) {}
+  virtual ~FlipSynStreamControlFrame() {}
+
+  uint8 priority() const { return (block()->priority_ & kPriorityMask) >> 6; }
+
   // The number of bytes in the header block beyond the frame header length.
-  int header_block_len() const { return length() - kHeaderBlockOffset; }
-  const char* header_block() const {
-    return reinterpret_cast<const char*>(this) +
-        sizeof(FlipFrame) + kHeaderBlockOffset;
+  int header_block_len() const {
+    return length() - (size() - FlipFrame::size());
   }
+
+  const char* header_block() const {
+    return reinterpret_cast<const char*>(block()) + size();
+  }
+
+  static size_t size() { return sizeof(FlipSynStreamControlFrameBlock); }
+
  private:
-  // Offset from the end of the FlipControlFrame to the FlipHeaderBlock.
-  static const int kHeaderBlockOffset = 6;
-  uint8 priority_;
-  uint8 unused_;
-  // Variable FlipHeaderBlock here.
-} FlipSynStreamControlFrame;
+  struct FlipSynStreamControlFrameBlock* block() const {
+    return static_cast<FlipSynStreamControlFrameBlock*>(frame_);
+  }
+  DISALLOW_COPY_AND_ASSIGN(FlipSynStreamControlFrame);
+};
 
 // A SYN_REPLY frame.
-typedef struct FlipSynReplyControlFrame : public FlipControlFrame {
-  int header_block_len() const { return length() - kHeaderBlockOffset; }
-  const char* header_block() const {
-    return reinterpret_cast<const char*>(this) +
-        sizeof(FlipFrame) + kHeaderBlockOffset;
+class FlipSynReplyControlFrame : public FlipControlFrame {
+ public:
+  FlipSynReplyControlFrame() : FlipControlFrame(size()) {}
+  FlipSynReplyControlFrame(char* data, bool needs_delete)
+      : FlipControlFrame(data, needs_delete) {}
+  virtual ~FlipSynReplyControlFrame() {}
+
+  int header_block_len() const {
+    return length() - (size() - FlipFrame::size());
   }
 
+  const char* header_block() const {
+    return reinterpret_cast<const char*>(block()) + size();
+  }
+
+  static size_t size() { return sizeof(FlipSynReplyControlFrameBlock); }
+
  private:
-  // Offset from the end of the FlipControlFrame to the FlipHeaderBlock.
-  static const int kHeaderBlockOffset = 6;
-  uint16 unused_;
-  // Variable FlipHeaderBlock here.
-} FlipSynReplyControlFrame;
+  struct FlipSynReplyControlFrameBlock* block() const {
+    return static_cast<FlipSynReplyControlFrameBlock*>(frame_);
+  }
+  DISALLOW_COPY_AND_ASSIGN(FlipSynReplyControlFrame);
+};
 
 // A FIN_STREAM frame.
-typedef struct FlipFinStreamControlFrame : public FlipControlFrame {
-  uint32 status() const { return ntohl(status_); }
-  void set_status(int id) { status_ = htonl(id); }
+class FlipFinStreamControlFrame : public FlipControlFrame {
+ public:
+  FlipFinStreamControlFrame() : FlipControlFrame(size()) {}
+  FlipFinStreamControlFrame(char* data, bool needs_delete)
+      : FlipControlFrame(data, needs_delete) {}
+  virtual ~FlipFinStreamControlFrame() {}
+
+  uint32 status() const { return ntohl(block()->status_); }
+  void set_status(uint32 status) { block()->status_ = htonl(status); }
+
+  static size_t size() { return sizeof(FlipFinStreamControlFrameBlock); }
+
  private:
-  uint32 status_;
-} FlipFinStreamControlFrame;
+  struct FlipFinStreamControlFrameBlock* block() const {
+    return static_cast<FlipFinStreamControlFrameBlock*>(frame_);
+  }
+  DISALLOW_COPY_AND_ASSIGN(FlipFinStreamControlFrame);
+};
 
 }  // namespace flip
 
 #endif  // NET_FLIP_FLIP_PROTOCOL_H_
-

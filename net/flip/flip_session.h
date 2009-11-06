@@ -143,7 +143,6 @@ class FlipSession : public base::RefCounted<FlipSession>,
                                  const char* data,
                                  size_t len);
   virtual void OnControl(const flip::FlipControlFrame* frame);
-  virtual void OnLameDuck();
 
   // Control frame handlers.
   void OnSyn(const flip::FlipSynStreamControlFrame* frame,
