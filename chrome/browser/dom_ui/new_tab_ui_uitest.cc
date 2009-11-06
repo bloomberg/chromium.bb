@@ -59,6 +59,29 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   EXPECT_EQ(0, filler_thumbnails_count);
 }
 
+TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  int tab_count = -1;
+  ASSERT_TRUE(window->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
+
+  // Go to the "new tab page" using its old url, rather than chrome://newtab.
+  scoped_refptr<TabProxy> tab = window->GetTab(0);
+  tab->NavigateToURLAsync(GURL("chrome-internal:"));
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
+
+  // Ensure there are some thumbnails loaded in the page.
+  int thumbnails_count = -1;
+  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
+      L"window.domAutomationController.send("
+      L"document.getElementsByClassName('thumbnail-container').length)",
+      &thumbnails_count));
+  EXPECT_GT(thumbnails_count, 0);
+}
+
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   PrefService prefs((FilePath()));
 

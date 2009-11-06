@@ -1296,7 +1296,8 @@ void Browser::RegisterPrefs(PrefService* prefs) {
 
 // static
 void Browser::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kHomePage, L"chrome-internal:");
+  prefs->RegisterStringPref(prefs::kHomePage,
+                            ASCIIToWide(chrome::kChromeUINewTabURL));
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
                              net::CookiePolicy::ALLOW_ALL_COOKIES);
