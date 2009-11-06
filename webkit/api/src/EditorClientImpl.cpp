@@ -665,6 +665,9 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
         return;
 
     WebFrameImpl* webframe = WebFrameImpl::fromFrame(inputElement->document()->frame());
+    if (!webframe)
+        return;
+
     PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (!listener)
         return;
@@ -753,6 +756,8 @@ void EditorClientImpl::doAutofill(Timer<EditorClientImpl>* timer)
     // We won't trigger form autofill in that case, as having both behavior on
     // a node would be confusing.
     WebFrameImpl* webframe = WebFrameImpl::fromFrame(inputElement->document()->frame());
+    if (!webframe)
+        return;
     PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (listener) {
         if (args->autofillFormOnly)
@@ -782,6 +787,9 @@ void EditorClientImpl::cancelPendingAutofill()
 void EditorClientImpl::onAutofillSuggestionAccepted(HTMLInputElement* textField)
 {
     WebFrameImpl* webframe = WebFrameImpl::fromFrame(textField->document()->frame());
+    if (!webframe)
+        return;
+
     PasswordAutocompleteListener* listener = webframe->getPasswordListener(textField);
     // Password listeners need to autocomplete other fields that depend on the
     // input element with autofill suggestions.
