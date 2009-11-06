@@ -22,6 +22,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
-#include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
 #pragma comment(lib, "iphlpapi.lib")
@@ -138,8 +138,7 @@ static const FilePath::CharType kBookmarkSyncUserSettingsDatabase[] =
 static const PSTR_CHAR kDefaultNameForNewNodes[] = PSTR(" ");
 
 // The list of names which are reserved for use by the server.
-static const char16* kForbiddenServerNames[] =
-    { STRING16(""), STRING16("."), STRING16("..") };
+static const char* kForbiddenServerNames[] = { "", ".", ".." };
 
 //////////////////////////////////////////////////////////////////////////
 // Static helper functions.
@@ -158,7 +157,7 @@ static int64 IdToMetahandle(syncable::BaseTransaction* trans,
 // characters.  The three server-illegal names are the empty string, dot, and
 // dot-dot.  Very long names (>255 bytes in UTF-8 Normalization Form C) are
 // also illegal, but are not considered here.
-static bool IsNameServerIllegalAfterTrimming(const string16& name) {
+static bool IsNameServerIllegalAfterTrimming(const std::string& name) {
   size_t untrimmed_count = name.find_last_not_of(' ') + 1;
   for (size_t i = 0; i < arraysize(kForbiddenServerNames); ++i) {
     if (name.compare(0, untrimmed_count, kForbiddenServerNames[i]) == 0)
@@ -167,31 +166,31 @@ static bool IsNameServerIllegalAfterTrimming(const string16& name) {
   return false;
 }
 
-static bool EndsWithSpace(const string16& string) {
+static bool EndsWithSpace(const std::string& string) {
   return !string.empty() && *string.rbegin() == ' ';
 }
 
 // When taking a name from the syncapi, append a space if it matches the
 // pattern of a server-illegal name followed by zero or more spaces.
-static void SyncAPINameToServerName(const sync_char16 *sync_api_name,
-                                    PathString* out) {
-  *out = UTF16ToUTF8(sync_api_name);
-  string16 sync_api_name_str(sync_api_name);
-  if (IsNameServerIllegalAfterTrimming(sync_api_name_str))
-    out->append(PSTR(" "));
+static void SyncAPINameToServerName(const std::wstring& sync_api_name,
+                                    std::string* out) {
+  *out = WideToUTF8(sync_api_name);
+  if (IsNameServerIllegalAfterTrimming(*out))
+    out->append(" ");
 }
 
 // In the reverse direction, if a server name matches the pattern of a
 // server-illegal name followed by one or more spaces, remove the trailing
 // space.
-static void ServerNameToSyncAPIName(const PathString& server_name,
-                                    string16*out) {
-  string16 server_name_str(UTF8ToUTF16(server_name));
-  if (IsNameServerIllegalAfterTrimming(server_name_str) &&
-      EndsWithSpace(server_name_str))
-    out->assign(server_name_str, 0, server_name_str.size() - 1);
-  else
-    out->assign(server_name_str);
+static void ServerNameToSyncAPIName(const std::string& server_name,
+                                    std::wstring* out) {
+  int length_to_copy = server_name.length();
+  if (IsNameServerIllegalAfterTrimming(server_name) &&
+      EndsWithSpace(server_name))
+    --length_to_copy;
+  if (!UTF8ToWide(server_name.c_str(), length_to_copy, out)) {
+    NOTREACHED() << "Could not convert server name from UTF8 to wide";
+  }
 }
 
 // A UserShare encapsulates the syncable pieces that represent an authenticated
@@ -208,9 +207,7 @@ struct UserShare {
   // on first-run it is empty until an AUTH_SUCCEEDED event and on future runs
   // it is set as soon as the client instructs us to authenticate for the last
   // known valid user (AuthenticateForLastKnownUser()).
-  // Stored as a PathString to avoid string conversions each time a transaction
-  // is created.
-  PathString authenticated_name;
+  std::string authenticated_name;
 };
 
 ////////////////////////////////////
@@ -219,8 +216,8 @@ struct UserShare {
 // BaseNode::BaseNodeInternal provides storage for member Get() functions that
 // need to return pointers (e.g. strings).
 struct BaseNode::BaseNodeInternal {
-  string16 url;
-  string16 title;
+  GURL url;
+  std::wstring title;
   Directory::ChildHandles child_handles;
   syncable::Blob favicon;
 };
@@ -244,17 +241,16 @@ bool BaseNode::GetIsFolder() const {
   return GetEntry()->Get(syncable::IS_DIR);
 }
 
-const sync_char16* BaseNode::GetTitle() const {
-  // Store the string in data_ so that the returned pointer is valid.
+const std::wstring& BaseNode::GetTitle() const {
   ServerNameToSyncAPIName(GetEntry()->GetName().non_unique_value(),
                          &data_->title);
-  return data_->title.c_str();
+  return data_->title;
 }
 
-const sync_char16* BaseNode::GetURL() const {
-  // Store the string in data_ so that the returned pointer is valid.
-  data_->url = UTF8ToUTF16(GetEntry()->Get(syncable::BOOKMARK_URL));
-  return data_->url.c_str();
+const GURL& BaseNode::GetURL() const {
+  GURL url(GetEntry()->Get(syncable::BOOKMARK_URL));
+  url.Swap(&data_->url);
+  return data_->url;
 }
 
 const int64* BaseNode::GetChildIds(size_t* child_count) const {
@@ -314,8 +310,8 @@ void WriteNode::SetIsFolder(bool folder) {
   MarkForSyncing();
 }
 
-void WriteNode::SetTitle(const sync_char16* title) {
-  PathString server_legal_name;
+void WriteNode::SetTitle(const std::wstring& title) {
+  std::string server_legal_name;
   SyncAPINameToServerName(title, &server_legal_name);
 
   syncable::Name old_name = entry_->GetName();
@@ -337,8 +333,8 @@ void WriteNode::SetTitle(const sync_char16* title) {
   MarkForSyncing();
 }
 
-void WriteNode::SetURL(const sync_char16* url) {
-  PathString url_string(UTF16ToUTF8(url));
+void WriteNode::SetURL(const GURL& url) {
+  const std::string& url_string = url.spec();
   if (url_string == entry_->Get(syncable::BOOKMARK_URL))
     return;  // Skip redundant changes.
 
@@ -521,13 +517,12 @@ const BaseTransaction* ReadNode::GetTransaction() const {
   return transaction_;
 }
 
-bool ReadNode::InitByTagLookup(const sync_char16* tag) {
+bool ReadNode::InitByTagLookup(const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
-  PathString tag_string(UTF16ToUTF8(tag));
-  if (tag_string.empty())
+  if (tag.empty())
     return false;
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
-  entry_ = new syncable::Entry(trans, syncable::GET_BY_TAG, tag_string);
+  entry_ = new syncable::Entry(trans, syncable::GET_BY_TAG, tag);
   if (!entry_->good())
     return false;
   if (entry_->Get(syncable::IS_DEL))
@@ -745,15 +740,11 @@ class SyncManager::SyncInternal {
   void set_observer(Observer* observer) { observer_ = observer; }
   UserShare* GetUserShare() { return &share_; }
 
-  // Return the currently active (validated) username as a PathString for
-  // use with syncable types.
-  const PathString& username_for_share() const {
+  // Return the currently active (validated) username for use with syncable
+  // types.
+  const std::string& username_for_share() const {
     return share_.authenticated_name;
   }
-
-  // Returns the authenticated username from our AuthWatcher in UTF8.
-  // See SyncManager::GetAuthenticatedUsername for details.
-  const char* GetAuthenticatedUsername();
 
   // Note about SyncManager::Status implementation: Status is a trimmed
   // down AllStatus::Status, augmented with authentication failure information
@@ -767,7 +758,7 @@ class SyncManager::SyncInternal {
   Status::Summary ComputeAggregatedStatusSummary();
 
   // See SyncManager::SetupForTestMode for information.
-  void SetupForTestMode(const sync_char16* test_username);
+  void SetupForTestMode(const std::wstring& test_username);
 
   // See SyncManager::Shutdown for information.
   void Shutdown();
@@ -838,12 +829,6 @@ class SyncManager::SyncInternal {
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
   UserShare share_;
-
-  // A cached string for callers of GetAuthenticatedUsername. We just store the
-  // last result of auth_watcher_->email() here and change it on future calls,
-  // because callers of GetAuthenticatedUsername are supposed to copy the value
-  // if they need it for longer than the scope of the call.
-  std::string cached_auth_watcher_email_;
 
   // A wrapper around a sqlite store used for caching authentication data,
   // last user information, current sync-related URLs, and more.
@@ -951,15 +936,9 @@ void SyncManager::Authenticate(const char* username, const char* password) {
   data_->Authenticate(std::string(username), std::string(password));
 }
 
-const char* SyncManager::GetAuthenticatedUsername() {
-  if (!data_)
-    return NULL;
-  return data_->GetAuthenticatedUsername();
-}
-
-const char* SyncManager::SyncInternal::GetAuthenticatedUsername() {
-  cached_auth_watcher_email_ = username_for_share();
-  return cached_auth_watcher_email_.c_str();
+const std::string& SyncManager::GetAuthenticatedUsername() {
+  DCHECK(data_);
+  return data_->username_for_share();
 }
 
 bool SyncManager::SyncInternal::Init(
@@ -1493,14 +1472,14 @@ void SyncManager::SyncInternal::SaveChanges() {
   lookup->SaveChanges();
 }
 
-void SyncManager::SetupForTestMode(const sync_char16* test_username) {
+void SyncManager::SetupForTestMode(const std::wstring& test_username) {
   DCHECK(data_) << "SetupForTestMode requires initialization";
   data_->SetupForTestMode(test_username);
 }
 
 void SyncManager::SyncInternal::SetupForTestMode(
-    const sync_char16* test_username) {
-  share_.authenticated_name = UTF16ToUTF8(test_username);
+    const std::wstring& test_username) {
+  share_.authenticated_name = WideToUTF8(test_username);
 
   if (!dir_manager()->Open(username_for_share()))
     DCHECK(false) << "Could not open directory when running in test mode";

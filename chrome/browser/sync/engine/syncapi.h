@@ -38,15 +38,12 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "build/build_config.h"
-
-#if defined(OS_WIN)
-typedef wchar_t sync_char16;
-#else
-typedef uint16 sync_char16;
-#endif
+#include "googleurl/src/gurl.h"
 
 // The MSVC compiler for Windows requires that any classes exported by, or
 // imported from, a dynamic library be marked with an appropriate
@@ -106,19 +103,13 @@ class SYNC_EXPORT BaseNode {
   // of syncable::Entry.
   bool GetIsFolder() const;
 
-  // Returns the title of the object as a C string.  The memory is owned by
-  // BaseNode and becomes invalid if GetTitle() is called a second time on this
-  // node, or when the node is destroyed.  A caller should convert this
-  // immediately into e.g. a std::string.  Uniqueness of the title is not
-  // enforced on siblings -- it is not an error for two children to share
-  // a title.
-  const sync_char16* GetTitle() const;
+  // Returns the title of the object.
+  // Uniqueness of the title is not enforced on siblings -- it is not an error
+  // for two children to share a title.
+  const std::wstring& GetTitle() const;
 
-  // Returns the URL of a bookmark object as a C string.  The memory is owned
-  // by BaseNode and becomes invalid if GetURL() is called a second time on
-  // this node, or when the node is destroyed.  A caller should convert this
-  // immediately into e.g. a std::string.
-  const sync_char16* GetURL() const;
+  // Returns the URL of a bookmark object.
+  const GURL& GetURL() const;
 
   // Return a pointer to the byte data of the favicon image for this node.
   // Will return NULL if there is no favicon data associated with this node.
@@ -192,8 +183,8 @@ class SYNC_EXPORT WriteNode : public BaseNode {
 
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);
-  void SetTitle(const sync_char16* title);
-  void SetURL(const sync_char16* url);
+  void SetTitle(const std::wstring& title);
+  void SetURL(const GURL& url);
   void SetFaviconBytes(const unsigned char* bytes, size_t size_in_bytes);
   // External ID is a client-only field, so setting it doesn't cause the item to
   // be synced again.
@@ -253,8 +244,8 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // Each server-created permanent node is tagged with a unique string.
   // Look up the node with the particular tag.  If it does not exist,
   // return false.  Since these nodes are special, lookup is only
-  // provided only through ReadNode.
-  bool InitByTagLookup(const sync_char16* tag);
+  // provided through ReadNode.
+  bool InitByTagLookup(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
@@ -536,10 +527,9 @@ class SYNC_EXPORT SyncManager {
             bool attempt_last_user_authentication,
             const char* user_agent);
 
-  // Returns the username last used for a successful authentication as a
-  // null-terminated string. Returns empty if there is no such username.
-  // The memory is not owned by the caller and should be copied.
-  const char* GetAuthenticatedUsername();
+  // Returns the username last used for a successful authentication.
+  // Returns empty if there is no such username.
+  const std::string& GetAuthenticatedUsername();
 
   // Submit credentials to GAIA for verification and start the
   // syncing process on success. On success, both |username| and the obtained
@@ -580,7 +570,7 @@ class SYNC_EXPORT SyncManager {
   // communication will take place).
   // Note: The SyncManager precondition that you must first call Init holds;
   // this will fail unless we're initialized.
-  void SetupForTestMode(const sync_char16* test_username);
+  void SetupForTestMode(const std::wstring& test_username);
 
   // Issue a final SaveChanges, close sqlite handles, and stop running threads.
   // Must be called from the same thread that called Init().

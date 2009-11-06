@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using std::string;
+using std::wstring;
+
 // static
 void BookmarkModelVerifier::ExpectBookmarkInfoMatch(
     const BookmarkNode* expected, const BookmarkNode* actual) {
@@ -126,7 +129,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
 }
 
 const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const string16& title) {
+    const BookmarkNode* parent, int index, const wstring& title) {
   const BookmarkNode* v_parent = NULL;
   FindNodeInVerifier(model, parent, &v_parent);
   const BookmarkNode* result = model->AddGroup(parent, index, title);
@@ -143,7 +146,7 @@ const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
 
 const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
     BookmarkModel* model, const BookmarkNode* parent, int index,
-    const string16& title, int children_count) {
+    const wstring& title, int children_count) {
   const BookmarkNode* bm_folder = AddGroup(model, parent, index, title);
   EXPECT_TRUE(bm_folder);
   if (!bm_folder)
@@ -152,21 +155,19 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
     int random_int = base::RandInt(1, 100);
     // To create randomness in order, 60% of time add bookmarks
     if (random_int > 40) {
-      string16 child_bm_title(bm_folder->GetTitle());
+      wstring child_bm_title(bm_folder->GetTitle());
       child_bm_title.append(L"-ChildBM");
-      string16 url(L"http://www.nofaviconurl");
-      string16 index_str = IntToString16(child_index);
-      child_bm_title.append(index_str);
-      url.append(index_str);
-      url.append(L".com");
+      child_bm_title.append(IntToWString(index));
+      string url("http://www.nofaviconurl");
+      url.append(IntToString(index));
+      url.append(".com");
       const BookmarkNode* child_nofavicon_bm =
          AddURL(model, bm_folder, child_index, child_bm_title, GURL(url));
     } else {
       // Remaining % of time - Add Bookmark folders
-      string16 child_bmfolder_title(bm_folder->GetTitle());
+      wstring child_bmfolder_title(bm_folder->GetTitle());
       child_bmfolder_title.append(L"-ChildBMFolder");
-      string16 index_str = IntToString16(child_index);
-      child_bmfolder_title.append(index_str);
+      child_bmfolder_title.append(IntToWString(index));
       const BookmarkNode* child_bm_folder =
           AddGroup(model, bm_folder, child_index, child_bmfolder_title);
     }
@@ -175,7 +176,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
 }
 
 const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const string16& title,
+    const BookmarkNode* parent, int index, const wstring& title,
     const GURL& url) {
   const BookmarkNode* v_parent = NULL;
   FindNodeInVerifier(model, parent, &v_parent);
@@ -193,7 +194,7 @@ const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
 
 void BookmarkModelVerifier::SetTitle(BookmarkModel* model,
                                      const BookmarkNode* node,
-                                     const string16& title) {
+                                     const wstring& title) {
   const BookmarkNode* v_node = NULL;
   FindNodeInVerifier(model, node, &v_node);
   model->SetTitle(node, title);

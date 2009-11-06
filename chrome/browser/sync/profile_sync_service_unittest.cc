@@ -34,7 +34,13 @@ class TestModelAssociator : public ModelAssociator {
       : ModelAssociator(service) {
   }
 
-  virtual bool GetSyncIdForTaggedNode(const string16& tag, int64* sync_id) {
+  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
+    std::wstring tag_wide;
+    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
+      NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
+      return false;
+    }
+
     sync_api::WriteTransaction trans(
         sync_service()->backend()->GetUserShareHandle());
     sync_api::ReadNode root(&trans);
@@ -48,7 +54,7 @@ class TestModelAssociator : public ModelAssociator {
       sync_api::ReadNode child(&trans);
       child.InitByIdLookup(id);
       last_child_id = id;
-      if (tag == child.GetTitle()) {
+      if (tag_wide == child.GetTitle()) {
         *sync_id = id;
         return true;
       }
@@ -65,7 +71,7 @@ class TestModelAssociator : public ModelAssociator {
     // Create new fake tagged nodes at the end of the ordering.
     node.InitByCreation(root, predecessor);
     node.SetIsFolder(true);
-    node.SetTitle(tag.c_str());
+    node.SetTitle(tag_wide);
     node.SetExternalId(0);
     *sync_id = node.GetId();
     return true;
@@ -118,7 +124,7 @@ class FakeServerChange {
 
   // Pretend that the server told the syncer to add a bookmark object.
   int64 Add(const std::wstring& title,
-            const std::wstring& url,
+            const std::string& url,
             bool is_folder,
             int64 parent_id,
             int64 predecessor_id) {
@@ -136,12 +142,9 @@ class FakeServerChange {
     EXPECT_EQ(node.GetPredecessorId(), predecessor_id);
     EXPECT_EQ(node.GetParentId(), parent_id);
     node.SetIsFolder(is_folder);
-    node.SetTitle(WideToUTF16(title).c_str());
-    if (!is_folder) {
-      string16 url16(WideToUTF16(url));
-      GURL gurl(url16);
-      node.SetURL(url16.c_str());
-    }
+    node.SetTitle(title);
+    if (!is_folder)
+      node.SetURL(GURL(url));
     sync_api::SyncManager::ChangeRecord record;
     record.action = sync_api::SyncManager::ChangeRecord::ACTION_ADD;
     record.id = node.GetId();
@@ -153,12 +156,12 @@ class FakeServerChange {
   int64 AddFolder(const std::wstring& title,
                   int64 parent_id,
                   int64 predecessor_id) {
-    return Add(title, std::wstring(), true, parent_id, predecessor_id);
+    return Add(title, std::string(), true, parent_id, predecessor_id);
   }
 
   // Add a bookmark.
   int64 AddURL(const std::wstring& title,
-               const std::wstring& url,
+               const std::string& url,
                int64 parent_id,
                int64 predecessor_id) {
     return Add(title, url, false, parent_id, predecessor_id);
@@ -194,22 +197,10 @@ class FakeServerChange {
   std::wstring ModifyTitle(int64 id, const std::wstring& new_title) {
     sync_api::WriteNode node(trans_);
     EXPECT_TRUE(node.InitByIdLookup(id));
-    std::wstring old_title = UTF16ToWide(node.GetTitle());
-    node.SetTitle(WideToUTF16(new_title).c_str());
+    std::wstring old_title = node.GetTitle();
+    node.SetTitle(new_title);
     SetModified(id);
     return old_title;
-  }
-
-  // Set a new URL value, and return the old value.
-  // TODO(ncarter): Determine if URL modifications are even legal.
-  std::wstring ModifyURL(int64 id, const std::wstring& new_url) {
-    sync_api::WriteNode node(trans_);
-    EXPECT_TRUE(node.InitByIdLookup(id));
-    EXPECT_FALSE(node.GetIsFolder());
-    std::wstring old_url = UTF16ToWide(node.GetURL());
-    node.SetURL(WideToUTF16(new_url).c_str());
-    SetModified(id);
-    return old_url;
   }
 
   // Set a new parent and predecessor value.  Return the old parent id.
@@ -332,13 +323,13 @@ class ProfileSyncServiceTest : public testing::Test {
     // Non-root node titles and parents must match.
     if (bnode != model_->GetBookmarkBarNode() &&
         bnode != model_->other_node()) {
-      EXPECT_EQ(bnode->GetTitle(), UTF16ToWide(gnode.GetTitle()));
+      EXPECT_EQ(bnode->GetTitle(), gnode.GetTitle());
       EXPECT_EQ(associator()->GetBookmarkNodeFromSyncId(gnode.GetParentId()),
         bnode->GetParent());
     }
     EXPECT_EQ(bnode->is_folder(), gnode.GetIsFolder());
     if (bnode->is_url())
-      EXPECT_EQ(bnode->GetURL(), GURL(gnode.GetURL()));
+      EXPECT_EQ(bnode->GetURL(), gnode.GetURL());
 
     // Check for position matches.
     int browser_index = bnode->GetParent()->IndexOfChild(bnode);
@@ -414,8 +405,7 @@ class ProfileSyncServiceTest : public testing::Test {
     const BookmarkNode* bnode =
         associator()->GetBookmarkNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-    GURL url2(url);
-    EXPECT_EQ(url2, bnode->GetURL());
+    EXPECT_EQ(GURL(url), bnode->GetURL());
   }
 
   void ExpectBrowserNodeParent(int64 sync_id, int64 parent_sync_id) {
@@ -544,19 +534,19 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   FakeServerChange adds(&trans);
   int64 f1 = adds.AddFolder(L"Server Folder B", bookmark_bar_id(), 0);
   int64 f2 = adds.AddFolder(L"Server Folder A", bookmark_bar_id(), f1);
-  int64 u1 = adds.AddURL(L"Some old site", L"ftp://nifty.andrew.cmu.edu/",
+  int64 u1 = adds.AddURL(L"Some old site", "ftp://nifty.andrew.cmu.edu/",
                          bookmark_bar_id(), f2);
-  int64 u2 = adds.AddURL(L"Nifty", L"ftp://nifty.andrew.cmu.edu/", f1, 0);
+  int64 u2 = adds.AddURL(L"Nifty", "ftp://nifty.andrew.cmu.edu/", f1, 0);
   // u3 is a duplicate URL
-  int64 u3 = adds.AddURL(L"Nifty2", L"ftp://nifty.andrew.cmu.edu/", f1, u2);
+  int64 u3 = adds.AddURL(L"Nifty2", "ftp://nifty.andrew.cmu.edu/", f1, u2);
   // u4 is a duplicate title, different URL.
-  adds.AddURL(L"Some old site", L"http://slog.thestranger.com/",
+  adds.AddURL(L"Some old site", "http://slog.thestranger.com/",
               bookmark_bar_id(), u1);
   // u5 tests an empty-string title.
-  std::wstring javascript_url(L"javascript:(function(){var w=window.open(" \
-                         L"'about:blank','gnotesWin','location=0,menubar=0," \
-                         L"scrollbars=0,status=0,toolbar=0,width=300," \
-                         L"height=300,resizable');});");
+  std::string javascript_url("javascript:(function(){var w=window.open(" \
+                             "'about:blank','gnotesWin','location=0,menubar=0," \
+                             "scrollbars=0,status=0,toolbar=0,width=300," \
+                             "height=300,resizable');});");
   adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
 
   vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
@@ -631,7 +621,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
 
   // Stress the immediate children of other_node because that's where
   // ApplyModelChanges puts a temporary foster parent node.
-  std::wstring url(L"http://dev.chromium.org/");
+  std::string url("http://dev.chromium.org/");
   FakeServerChange adds(&trans);
   int64 f0 = other_bookmarks_id();                 // + other_node
   int64 f1 = adds.AddFolder(L"f1",      f0, 0);    //   + f1
@@ -681,7 +671,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
     FakeServerChange adds(&trans);
     std::string url("http://dev.chromium.org");
     EXPECT_NE(GURL(url).spec(), url);
-    adds.AddURL(L"u1", UTF8ToWide(url), other_bookmarks_id(), 0);
+    adds.AddURL(L"u1", url, other_bookmarks_id(), 0);
 
     adds.ApplyPendingChanges(change_processor());
 
@@ -710,8 +700,9 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
     sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
 
     FakeServerChange adds(&trans);
-    EXPECT_FALSE(GURL("x").is_valid());
-    adds.AddURL(L"u1", L"x", other_bookmarks_id(), 0);
+    std::string url("x");
+    EXPECT_FALSE(GURL(url).is_valid());
+    adds.AddURL(L"u1", url, other_bookmarks_id(), 0);
 
     adds.ApplyPendingChanges(change_processor());
 

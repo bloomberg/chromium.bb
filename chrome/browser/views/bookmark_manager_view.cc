@@ -822,8 +822,7 @@ void BookmarkManagerView::UpdateSyncStatus() {
       &status_label, &link_label) == SyncStatusUIHelper::SYNCED;
 
   if (sync_service_->HasSyncSetupCompleted()) {
-    std::wstring username = UTF16ToWide(
-        sync_service_->GetAuthenticatedUsername());
+    std::wstring username = sync_service_->GetAuthenticatedUsername();
     status_label = l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, username);
   } else if (!sync_service_->SetupInProgress() && !synced) {
     status_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);

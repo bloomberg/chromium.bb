@@ -33,8 +33,8 @@ namespace browser_sync {
 //
 // TODO(ncarter): Pull these tags from an external protocol specification
 // rather than hardcoding them here.
-static const wchar_t* kOtherBookmarksTag = L"other_bookmarks";
-static const wchar_t* kBookmarkBarTag = L"bookmark_bar";
+static const char kBookmarkBarTag[] = "bookmark_bar";
+static const char kOtherBookmarksTag[] = "other_bookmarks";
 
 // Bookmark comparer for map of bookmark nodes.
 class BookmarkComparer {
@@ -54,11 +54,7 @@ class BookmarkComparer {
     if (result != 0)
       return result < 0;
 
-    result = node1->GetURL().spec().compare(node2->GetURL().spec());
-    if (result != 0)
-      return result < 0;
-
-    return false;
+    return node1->GetURL() < node2->GetURL();
   }
 };
 
@@ -93,8 +89,8 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const sync_api::BaseNode& sync_node) {
   // Create a bookmark node from the given sync node.
-  BookmarkNode temp_node(GURL(sync_node.GetURL()));
-  temp_node.SetTitle(UTF16ToWide(sync_node.GetTitle()));
+  BookmarkNode temp_node(sync_node.GetURL());
+  temp_node.SetTitle(sync_node.GetTitle());
   if (sync_node.GetIsFolder())
     temp_node.set_type(BookmarkNode::FOLDER);
   else
@@ -230,14 +226,12 @@ bool ModelAssociator::BookmarkModelHasUserCreatedNodes() const {
 
 bool ModelAssociator::SyncModelHasUserCreatedNodes() {
   int64 bookmark_bar_sync_id;
-  if (!GetSyncIdForTaggedNode(WideToUTF16(kBookmarkBarTag),
-                              &bookmark_bar_sync_id)) {
+  if (!GetSyncIdForTaggedNode(kBookmarkBarTag,&bookmark_bar_sync_id)) {
     sync_service_->OnUnrecoverableError();
     return false;
   }
   int64 other_bookmarks_sync_id;
-  if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
-                              &other_bookmarks_sync_id)) {
+  if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_sync_id)) {
     sync_service_->OnUnrecoverableError();
     return false;
   }
@@ -265,12 +259,12 @@ bool ModelAssociator::SyncModelHasUserCreatedNodes() {
 
 bool ModelAssociator::NodesMatch(const BookmarkNode* bookmark,
                                  const sync_api::BaseNode* sync_node) const {
-  if (bookmark->GetTitle() != UTF16ToWide(sync_node->GetTitle()))
+  if (bookmark->GetTitle() != sync_node->GetTitle())
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;
   if (bookmark->is_url()) {
-    if (bookmark->GetURL() != GURL(sync_node->GetURL()))
+    if (bookmark->GetURL() != sync_node->GetURL())
       return false;
   }
   // Don't compare favicons here, because they are not really
@@ -280,8 +274,7 @@ bool ModelAssociator::NodesMatch(const BookmarkNode* bookmark,
 }
 
 bool ModelAssociator::AssociateTaggedPermanentNode(
-    const BookmarkNode* permanent_node,
-    const string16 &tag) {
+    const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
   int64 sync_id = GetSyncIdFromBookmarkId(permanent_node->id());
   if (sync_id != sync_api::kInvalidId)
@@ -293,7 +286,7 @@ bool ModelAssociator::AssociateTaggedPermanentNode(
   return true;
 }
 
-bool ModelAssociator::GetSyncIdForTaggedNode(const string16& tag,
+bool ModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                              int64* sync_id) {
   sync_api::ReadTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
@@ -340,15 +333,14 @@ bool ModelAssociator::BuildAssociations() {
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.
-  if (!AssociateTaggedPermanentNode(model->other_node(),
-                                    WideToUTF16(kOtherBookmarksTag))) {
+  if (!AssociateTaggedPermanentNode(model->other_node(), kOtherBookmarksTag)) {
     sync_service_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
     return false;
   }
   if (!AssociateTaggedPermanentNode(model->GetBookmarkBarNode(),
-                                    WideToUTF16(kBookmarkBarTag))) {
+                                    kBookmarkBarTag)) {
     sync_service_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
@@ -489,14 +481,13 @@ bool ModelAssociator::LoadAssociations() {
   // create the tagged nodes on demand, and the order in which we probe for
   // them here will impact their positional ordering in that case.
   int64 bookmark_bar_id;
-  if (!GetSyncIdForTaggedNode(WideToUTF16(kBookmarkBarTag), &bookmark_bar_id)) {
+  if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_id)) {
     // We should always be able to find the permanent nodes.
     sync_service_->OnUnrecoverableError();
     return false;
   }
   int64 other_bookmarks_id;
-  if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
-      &other_bookmarks_id)) {
+  if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_id)) {
     // We should always be able to find the permanent nodes.
     sync_service_->OnUnrecoverableError();
     return false;

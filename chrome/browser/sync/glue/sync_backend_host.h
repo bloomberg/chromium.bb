@@ -198,7 +198,7 @@ class SyncBackendHost {
                              sync_api::HttpPostProviderFactory* auth_factory) {
         DoInitialize(GURL(), bookmark_model_worker, false, factory,
                      auth_factory);
-        syncapi_->SetupForTestMode(WideToUTF16(test_user).c_str());
+        syncapi_->SetupForTestMode(test_user);
     }
 #endif
 

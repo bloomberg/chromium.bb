@@ -73,11 +73,10 @@ const BookmarkNode* LiveBookmarksSyncTest::GetByUniqueURL(BookmarkModel* m,
 }
 
 // static
-Profile* LiveBookmarksSyncTest::MakeProfile(const string16& name) {
-  string16 path_string;
-  PathService::Get(chrome::DIR_USER_DATA, &path_string);
-  file_util::AppendToPath(&path_string, name);
-  FilePath path(path_string);
+Profile* LiveBookmarksSyncTest::MakeProfile(const std::wstring& name) {
+  FilePath path;
+  PathService::Get(chrome::DIR_USER_DATA, &path);
+  path.Append(FilePath::FromWStringHack(name));
   return ProfileManager::CreateProfile(path, name, L"", L"");
 }
 

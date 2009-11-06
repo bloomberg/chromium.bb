@@ -31,14 +31,14 @@ class BookmarkModelVerifier {
   const BookmarkNode* AddGroup(BookmarkModel* model,
                                const BookmarkNode* parent,
                                int index,
-                               const string16& title);
+                               const std::wstring& title);
 
   // Adds the same non-empty folder to |model| and |verifier|.
   // It also adds specified number of childern (mix of bm and folder).
   const BookmarkNode* AddNonEmptyGroup(BookmarkModel* model,
                                const BookmarkNode* parent,
                                int index,
-                               const string16& title,
+                               const std::wstring& title,
                                int children_count);
 
   // Adds the same bookmark to |model| and |verifier|.
@@ -46,13 +46,13 @@ class BookmarkModelVerifier {
   const BookmarkNode* AddURL(BookmarkModel* model,
                              const BookmarkNode* parent,
                              int index,
-                             const string16& title,
+                             const std::wstring& title,
                              const GURL& url);
 
   // Sets the title of the same node in |model| and |verifier|.
   // See BookmarkModel::SetTitle for details.
   void SetTitle(BookmarkModel* model, const BookmarkNode* node,
-                const string16& title);
+                const std::wstring& title);
 
   // Moves the same node to the same position in both |model| and |verifier|.
   // See BookmarkModel::Move for details.

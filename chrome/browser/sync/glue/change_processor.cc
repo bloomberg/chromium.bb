@@ -40,11 +40,8 @@ void ChangeProcessor::UpdateSyncNodeProperties(const BookmarkNode* src,
                                                sync_api::WriteNode* dst) {
   // Set the properties of the item.
   dst->SetIsFolder(src->is_folder());
-  dst->SetTitle(WideToUTF16(src->GetTitle()).c_str());
-  // URL is passed as a C string here because this interface avoids
-  // string16. SetURL copies the data into its own memory.
-  string16 url = UTF8ToUTF16(src->GetURL().spec());
-  dst->SetURL(url.c_str());
+  dst->SetTitle(src->GetTitle());
+  dst->SetURL(src->GetURL());
   SetSyncNodeFavicon(src, model, dst);
 }
 
@@ -461,8 +458,8 @@ const BookmarkNode* ChangeProcessor::CreateOrUpdateBookmarkNode(
     const BookmarkNode* old_dst = dst;
     dst = bookmark_utils::ApplyEditsWithNoGroupChange(model, parent,
         BookmarkEditor::EditDetails(dst),
-        UTF16ToWide(src->GetTitle()),
-        src->GetIsFolder() ? GURL() : GURL(src->GetURL()),
+        src->GetTitle(),
+        src->GetIsFolder() ? GURL() : src->GetURL(),
         NULL);  // NULL because we don't need a BookmarkEditor::Handler.
     if (dst != old_dst) {  // dst was replaced with a new node with new URL.
       model_associator_->DisassociateIds(src->GetId());
@@ -487,11 +484,10 @@ const BookmarkNode* ChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddGroup(parent, index, UTF16ToWide(sync_node->GetTitle()));
+    node = model->AddGroup(parent, index, sync_node->GetTitle());
   } else {
-    GURL url(sync_node->GetURL());
     node = model->AddURL(parent, index,
-                         UTF16ToWide(sync_node->GetTitle()), url);
+                         sync_node->GetTitle(), sync_node->GetURL());
     SetBookmarkFavicon(sync_node, node, model->profile());
   }
   return node;

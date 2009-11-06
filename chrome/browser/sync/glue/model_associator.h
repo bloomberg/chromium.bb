@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/string16.h"
 
 class BookmarkNode;
 
@@ -86,7 +85,7 @@ class ModelAssociator
   // Stores the id of the node with the given tag in |sync_id|.
   // Returns of that node was found successfully.
   // Tests override this.
-  virtual bool GetSyncIdForTaggedNode(const string16& tag, int64* sync_id);
+   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
@@ -116,7 +115,7 @@ class ModelAssociator
   // user's share.  For example, "other_bookmarks" is the tag for the Other
   // Bookmarks folder.  The sync nodes are server-created.
   bool AssociateTaggedPermanentNode(const BookmarkNode* permanent_node,
-                                    const string16& tag);
+                                    const std::string& tag);
 
   // Compare the properties of a pair of nodes from either domain.
   bool NodesMatch(const BookmarkNode* bookmark,
