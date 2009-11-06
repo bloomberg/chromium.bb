@@ -43,10 +43,10 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
  protected:
-  void GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) {
+  bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) {
     FindBarTesting* find_bar =
         browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
-    find_bar->GetFindBarWindowInfo(position, fully_visible);
+    return find_bar->GetFindBarWindowInfo(position, fully_visible);
   }
 };
 
@@ -474,19 +474,19 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   bool fully_visible = false;
 
   // Make sure it is open.
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
   browser()->Reload();
 
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Navigate and make sure the Find window goes away.
   ui_test_utils::NavigateToURL(browser(), url2);
 
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_FALSE(fully_visible);
 }
 
@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   bool fully_visible = false;
 
   // Make sure it is open.
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Open another tab (tab B).
@@ -516,20 +516,20 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Make sure Find box is closed.
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_FALSE(fully_visible);
 
   // Close tab B.
   browser()->CloseTab();
 
   // Make sure Find window appears again.
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   browser()->ShowHistoryTab();
 
   // Make sure Find box is closed.
-  GetFindBarWindowInfo(&position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_FALSE(fully_visible);
 }
 
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   bool fully_visible = false;
 
   // Make sure it is open.
-  GetFindBarWindowInfo(&start_position, &fully_visible);
+  EXPECT_TRUE(GetFindBarWindowInfo(&start_position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Search for 'dream' which the Find box is obscuring.
@@ -562,10 +562,24 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(1, ordinal);
 
   // Make sure Find box has moved.
-  GetFindBarWindowInfo(&position, &fully_visible);
-  EXPECT_EQ(start_position.y(), position.y());
-  EXPECT_NE(start_position.x(), position.x());
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
+  EXPECT_EQ(start_position.y(), position.y());
+  if (start_position.x() == position.x()) {
+    // Failure case. Try to gather more data.
+    std::string debug_msg = "Position check failed once. ";
+    if (!GetFindBarWindowInfo(&position, &fully_visible)) {
+      debug_msg += "Get failed. ";
+    } else {
+      if (start_position.x() == position.x())
+        debug_msg += "Still the same. ";
+      else
+        debug_msg += "They now differ. ";
+    }
+    // Force the failure.
+    EXPECT_STREQ("", debug_msg.c_str());
+  }
+  EXPECT_NE(start_position.x(), position.x());
 
   // Search for 'Too much' which the Find box is not obscuring.
   EXPECT_EQ(1, ui_test_utils::FindInPage(tab, L"Too much",
@@ -573,9 +587,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(1, ordinal);
 
   // Make sure Find box has moved back to its original location.
-  GetFindBarWindowInfo(&position, &fully_visible);
-  EXPECT_EQ(start_position, position);
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
+  EXPECT_EQ(start_position, position);
 }
 
 // Make sure F3 in a new tab works if Find has previous string to search for.
