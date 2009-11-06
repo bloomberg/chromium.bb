@@ -3018,12 +3018,6 @@ BUG26107 WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.htm
 BUG26344 LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG26344 LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH
 
-// WebKit roll 49992:49997
-// hclam to add expected results.
-// Update:  failing in an odd way since the WebKit 50417:50432 roll; does
-// not seem to be finding fallback results; skipping for now.
-WIN LINUX MAC BUG_HCLAM : LayoutTests/media/video-volume-slider.html = FAIL CRASH
-
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
 BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
