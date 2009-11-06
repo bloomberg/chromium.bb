@@ -36,6 +36,9 @@ class TabContents;
   // We keep a pointer to this button so we can change its title.
   NSButton* sendReportButton_;  // Weak.
 
+  // This button must be moved when the send report button changes title.
+  NSButton* cancelButton_;  // Weak.
+
   BOOL sendScreenshot_;
 
   // Disable screenshot if no browser window is open.
@@ -78,6 +81,7 @@ class TabContents;
 @property (copy, nonatomic) NSString* pageTitle;
 @property (copy, nonatomic) NSString* pageURL;
 @property (assign, nonatomic) IBOutlet NSButton* sendReportButton;
+@property (assign, nonatomic) IBOutlet NSButton* cancelButton;
 @property BOOL sendScreenshot;
 @property BOOL disableScreenshot;
 @property (readonly, nonatomic) NSArray* bugTypeList;

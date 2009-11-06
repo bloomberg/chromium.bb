@@ -21,6 +21,7 @@
 @synthesize pageURL = pageURL_;
 @synthesize pageTitle = pageTitle_;
 @synthesize sendReportButton = sendReportButton_;
+@synthesize cancelButton = cancelButton_;
 @synthesize sendScreenshot = sendScreenshot_;
 @synthesize disableScreenshot = disableScreenshot_;
 @synthesize bugTypeList = bugTypeList_;
@@ -137,9 +138,12 @@
     [sendReportButton_ setTitle:buttonTitle];
     CGFloat deltaWidth =
         [GTMUILocalizerAndLayoutTweaker sizeToFitView:sendReportButton_].width;
-    NSRect newButtonFrame = [sendReportButton_ frame];
-    newButtonFrame.origin.x -= deltaWidth;
-    [sendReportButton_ setFrame:newButtonFrame];
+    NSRect newSendButtonFrame = [sendReportButton_ frame];
+    newSendButtonFrame.origin.x -= deltaWidth;
+    NSRect newCancelButtonFrame = [cancelButton_ frame];
+    newCancelButtonFrame.origin.x -= deltaWidth;
+    [sendReportButton_ setFrame:newSendButtonFrame];
+    [cancelButton_ setFrame:newCancelButtonFrame];
   }
 }
 
