@@ -140,8 +140,8 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
   switch (behavior) {
     case kAutoSizeGroupBehaviorVerticalToFit: {
       // Walk bottom up doing the sizing and moves.
-      for (NSUInteger idx = [views count] - 1; idx > 0; --idx) {
-        NSView* view = [views objectAtIndex:idx];
+      for (NSUInteger index = [views count] - 1; index > 0; --index) {
+        NSView* view = [views objectAtIndex:index];
         NSSize delta = WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         if (localVerticalShift) {
@@ -165,8 +165,9 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
       // Walk left to right doing the sizing and moves.
       // NOTE: Don't worry about vertical, assume it always fits.
       CGFloat horizontalShift = 0.0;
-      for (NSUInteger idx = 1; idx < [views count]; ++idx) {
-        NSView* view = [views objectAtIndex:idx];
+      NSUInteger count = [views count];
+      for (NSUInteger index = 1; index < count; ++index) {
+        NSView* view = [views objectAtIndex:index];
         NSSize delta = WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         if (horizontalShift) {
@@ -183,8 +184,8 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
       // collected into the first.
       // NOTE: Don't worry about vertical, assume it always all fits.
       CGFloat horizontalShift = 0.0;
-      for (NSUInteger idx = [views count] - 1; idx > 1; --idx) {
-        NSView* view = [views objectAtIndex:idx];
+      for (NSUInteger index = [views count] - 1; index > 1; --index) {
+        NSView* view = [views objectAtIndex:index];
         NSSize delta = WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         horizontalShift -= delta.width;
@@ -256,19 +257,21 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
       [[view subviews] sortedArrayUsingFunction:CompareFrameY context:NULL];
 
   // Find where |toRemove| was.
-  NSUInteger idx = [views indexOfObject:toRemove];
-  DCHECK_NE(idx, NSNotFound);
-  if (idx == [views count] - 1)
+  NSUInteger index = [views indexOfObject:toRemove];
+  DCHECK_NE(index, NSNotFound);
+  NSUInteger count = [views count];
+  if (index == (count - 1))
     return;  // It was the top item, nothing to do (shouldn't happen).
 
   // The amount to shift is the bottom of |toRemove| to the bottom of the view
   // above it.
   CGFloat shiftDown =
-      NSMinY([[views objectAtIndex:idx + 1] frame]) - NSMinY([toRemove frame]);
+      NSMinY([[views objectAtIndex:index + 1] frame]) -
+      NSMinY([toRemove frame]);
 
   // Now cycle over the views above it moving them down.
-  for (++idx; idx < [views count]; ++idx) {
-    NSView* view = [views objectAtIndex:idx];
+  for (++index; index < count; ++index) {
+    NSView* view = [views objectAtIndex:index];
     NSPoint origin = [view frame].origin;
     origin.y -= shiftDown;
     [view setFrameOrigin:origin];
