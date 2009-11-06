@@ -39,6 +39,11 @@ int WorkerMain(const MainFunctionParams& parameters) {
   target_services->LowerToken();
 #endif
 
+  const CommandLine& parsed_command_line = parameters.command_line_;
+  if (parsed_command_line.HasSwitch(switches::kWorkerStartupDialog)) {
+    ChildProcess::WaitForDebugger(L"Worker");
+  }
+
   // Load the accelerator table from the browser executable and tell the
   // message loop to use it when translating messages.
   MessageLoop::current()->Run();

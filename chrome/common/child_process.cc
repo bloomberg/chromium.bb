@@ -4,8 +4,18 @@
 
 #include "chrome/common/child_process.h"
 
+#include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
+#include "base/string_util.h"
 #include "chrome/common/child_thread.h"
+#include "grit/chromium_strings.h"
+
+#if defined(OS_POSIX)
+#include <signal.h>
+
+static void SigUSR1Handler(int signal) { }
+#endif
 
 ChildProcess* ChildProcess::child_process_;
 
@@ -56,4 +66,32 @@ void ChildProcess::ReleaseProcess() {
 base::WaitableEvent* ChildProcess::GetShutDownEvent() {
   DCHECK(child_process_);
   return &child_process_->shutdown_event_;
+}
+
+void ChildProcess::WaitForDebugger(const std::wstring& label) {
+#if defined(OS_WIN)
+    std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
+    std::wstring message = label;
+    message += L" starting with pid: ";
+    message += IntToWString(base::GetCurrentProcId());
+    title += L" ";
+    title += label;  // makes attaching to process easier
+    ::MessageBox(NULL, message.c_str(), title.c_str(),
+                 MB_OK | MB_SETFOREGROUND);
+#elif defined(OS_POSIX)
+    // TODO(playmobil): In the long term, overriding this flag doesn't seem
+    // right, either use our own flag or open a dialog we can use.
+    // This is just to ease debugging in the interim.
+    LOG(WARNING) << label
+                 << " ("
+                 << getpid()
+                 << ") paused waiting for debugger to attach @ pid";
+    // Install a signal handler so that pause can be woken.
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SigUSR1Handler;
+    sigaction(SIGUSR1, &sa, NULL);
+
+    pause();
+#endif  // defined(OS_POSIX)
 }

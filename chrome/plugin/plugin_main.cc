@@ -111,22 +111,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   }
 #endif
   if (parsed_command_line.HasSwitch(switches::kPluginStartupDialog)) {
-#if defined(OS_WIN)
-    std::wstring title = chrome::kBrowserAppName;
-    title += L" plugin";  // makes attaching to process easier
-    win_util::MessageBox(NULL, L"plugin starting...", title,
-                         MB_OK | MB_SETFOREGROUND);
-#elif defined(OS_MACOSX)
-    // TODO(playmobil): In the long term, overriding this flag doesn't seem
-    // right, either use our own flag or open a dialog we can use.
-    // This is just to ease debugging in the interim.
-    LOG(WARNING) << "Plugin ("
-    << getpid()
-    << ") paused waiting for debugger to attach @ pid";
-    pause();
-#else
-  NOTIMPLEMENTED() << " non-windows startup, plugin startup dialog etc.";
-#endif
+    ChildProcess::WaitForDebugger(L"Plugin");
   }
 
   {

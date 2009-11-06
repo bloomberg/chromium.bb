@@ -111,6 +111,11 @@ bool WorkerProcessHost::Init() {
     cmd_line.AppendSwitch(switches::kWebWorkerShareProcesses);
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWorkerStartupDialog)) {
+    cmd_line.AppendSwitch(switches::kWorkerStartupDialog);
+  }
+
   base::ProcessHandle process;
 #if defined(OS_WIN)
   process = sandbox::StartProcess(&cmd_line);

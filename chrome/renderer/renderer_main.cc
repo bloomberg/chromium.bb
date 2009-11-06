@@ -24,18 +24,11 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
-#endif
-
-#if defined(OS_POSIX)
-#include <signal.h>
-
-static void SigUSR1Handler(int signal) { }
 #endif
 
 // This function provides some ways to test crash and assertion handling
@@ -53,28 +46,7 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
   }
 
   if (command_line.HasSwitch(switches::kRendererStartupDialog)) {
-#if defined(OS_WIN)
-    std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
-    std::wstring message = L"renderer starting with pid: ";
-    message += IntToWString(base::GetCurrentProcId());
-    title += L" renderer";  // makes attaching to process easier
-    ::MessageBox(NULL, message.c_str(), title.c_str(),
-                 MB_OK | MB_SETFOREGROUND);
-#elif defined(OS_POSIX)
-    // TODO(playmobil): In the long term, overriding this flag doesn't seem
-    // right, either use our own flag or open a dialog we can use.
-    // This is just to ease debugging in the interim.
-    LOG(WARNING) << "Renderer ("
-                 << getpid()
-                 << ") paused waiting for debugger to attach @ pid";
-    // Install a signal handler so that pause can be woken.
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = SigUSR1Handler;
-    sigaction(SIGUSR1, &sa, NULL);
-
-    pause();
-#endif  // defined(OS_POSIX)
+    ChildProcess::WaitForDebugger(L"Renderer");
   }
 }
 

@@ -630,6 +630,9 @@ const char kWininetFtp[]                    = "wininet-ftp";
 // Causes the process to run as a worker subprocess.
 const char kWorkerProcess[]                 = "worker";
 
+// Causes the worker process to display a dialog on launch
+const char kWorkerStartupDialog[]           = "worker-startup-dialog";
+
 // The prefix used when starting the zygote process. (i.e. 'gdb --args')
 const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 

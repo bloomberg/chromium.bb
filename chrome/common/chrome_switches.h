@@ -177,6 +177,7 @@ extern const char kWebWorkerShareProcesses[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWininetFtp[];
 extern const char kWorkerProcess[];
+extern const char kWorkerStartupDialog[];
 extern const char kZygoteCmdPrefix[];
 extern const char kZygoteProcess[];
 

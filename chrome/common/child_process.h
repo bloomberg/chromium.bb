@@ -46,6 +46,7 @@ class ChildProcess {
   // Getter for the one ChildProcess object for this process.
   static ChildProcess* current() { return child_process_; }
 
+  static void WaitForDebugger(const std::wstring& label);
  private:
   int ref_count_;
 
