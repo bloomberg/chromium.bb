@@ -55,7 +55,7 @@ class VersionLoader : public CancelableRequestProvider {
    private:
     friend class base::RefCountedThreadSafe<Backend>;
 
-    ~Backend();
+    ~Backend() {}
 
     DISALLOW_COPY_AND_ASSIGN(Backend);
   };
