@@ -55,6 +55,8 @@ class FtpLsDirectoryListingParser : public FtpDirectoryListingParser {
   virtual FtpDirectoryListingEntry PopEntry();
 
  private:
+  bool received_nonempty_line_;
+
   std::queue<FtpDirectoryListingEntry> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(FtpLsDirectoryListingParser);

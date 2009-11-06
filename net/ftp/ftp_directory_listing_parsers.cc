@@ -236,10 +236,18 @@ namespace net {
 FtpDirectoryListingParser::~FtpDirectoryListingParser() {
 }
 
-FtpLsDirectoryListingParser::FtpLsDirectoryListingParser() {
+FtpLsDirectoryListingParser::FtpLsDirectoryListingParser()
+    : received_nonempty_line_(false) {
 }
 
 bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
+  // Allow empty lines only at the beginning of the listing. For example VMS
+  // systems in Unix emulation mode add an empty line before the first listing
+  // entry.
+  if (line.empty() && !received_nonempty_line_)
+    return true;
+  received_nonempty_line_ = true;
+
   std::vector<string16> columns;
   SplitString(CollapseWhitespace(line, false), ' ', &columns);
   if (columns.size() == 11) {

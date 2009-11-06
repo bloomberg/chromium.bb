@@ -76,7 +76,6 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
   }
 
   const char* bad_cases[] = {
-    "",
     "garbage",
     "-rw-r--r-- 1 ftp ftp",
     "-rw-r--rgb 1 ftp ftp 528 Nov 01 2007 README",
