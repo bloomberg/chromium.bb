@@ -100,7 +100,8 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   // Set up the text_object_model_.
   ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
   ole_interface.Attach(GetOleInterface());
-  text_object_model_.QueryFrom(ole_interface);
+  if (ole_interface)
+    text_object_model_.QueryFrom(ole_interface);
 }
 
 NativeTextfieldWin::~NativeTextfieldWin() {
@@ -871,7 +872,8 @@ ITextDocument* NativeTextfieldWin::GetTextObjectModel() const {
   if (!text_object_model_) {
     ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
     ole_interface.Attach(GetOleInterface());
-    text_object_model_.QueryFrom(ole_interface);
+    if (ole_interface)
+      text_object_model_.QueryFrom(ole_interface);
   }
   return text_object_model_;
 }
