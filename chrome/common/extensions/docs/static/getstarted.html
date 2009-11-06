@@ -8,8 +8,8 @@ that, when clicked, displays an automatically generated page.
 The button and page will look something like this:
 </p>
 
-<img src="images/hello_world-page-small.gif"
-  width="291" height="184"
+<img src="images/hello-world-small.png"
+  width="300" height="199"
   alt="a window with a grid of images related to HELLO WORLD" />
 
 <p class="comment">
@@ -20,7 +20,7 @@ The button and page will look something like this:
 
 <p>To develop extensions for Google Chrome,
 you need to <a href="http://dev.chromium.org/getting-involved/dev-channel">subscribe
-to the dev channel</a> of Google Chrome for Windows.
+to the dev or beta channel</a> of Google Chrome for Windows. Extensions aren't yet available in the stable channel.
 </p>
 
 <p>
@@ -32,10 +32,9 @@ We're working hard to bring them up to speed.
 
 <h2 id="load">Create and load an extension</h2>
 <p>
-In this section, you'll write a <em>toolstrip</em> &mdash;
-an extension
-that puts a bit of UI into the <em>toolbar</em>
-at the bottom of the Google Chrome window.
+In this section, you'll write an extension
+that adds a <em>browser action</em>
+to the toolbar of Google Chrome.
 </p>
 
 <ol>
@@ -53,33 +52,35 @@ at the bottom of the Google Chrome window.
   &quot;name&quot;: &quot;My First Extension&quot;,
   &quot;version&quot;: &quot;1.0&quot;,
   &quot;description&quot;: &quot;The first extension that I made.&quot;,
-  &quot;toolstrips&quot;: [
-    &quot;my_toolstrip.html&quot;
-  ],
+  &quot;browser_action&quot;: {
+    &quot;"default_icon": "icon.png"&quot;
+  },
   &quot;permissions&quot;: [
     &quot;http://api.flickr.com/&quot;
   ]
 }</pre>
   </li>
   <li>
-    In the same folder, create a text file called
-    <strong><code>my_toolstrip.html</code></strong>,
-    and put this in it:
-<pre>&lt;div class=&quot;toolstrip-button&quot;&gt;
-  &lt;span&gt;Hello, World!&lt;/span&gt;
-&lt;/div&gt;</pre>
+    Copy this icon to the same folder:<br>
+    <table cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="text-align:center; border:0;"><a
+          href="samples/hello_world/icon.png"
+            ><img src="samples/hello_world/icon.png"
+              width="19" height="19" border="0"></a><br>
+          <a href="samples/hello_world/icon.png"
+            >Download icon.png</a></td>
+      </tr>
+    </table>
   </li>
   <li> Load the extension.
     <ol type="a">
       <li>
-      Bring up the Extensions management page by going to this URL:
-      <blockquote>
-      <b>chrome://extensions</b>
-      </blockquote>
+      Bring up the Extensions management page by clicking the wrench icon, and selecting the "Extensions" menu item.
       </li>
 
       <li>
-      Click the <b>Load unpacked extension</b> button.
+      Click the <b>Load extension...</b> button.
       A file dialog appears.
       </li>
 
@@ -101,78 +102,44 @@ as the following screenshot shows.
 </p>
 
 <p>
-<a href="images/load_after.gif"><img
-  src="images/load_after-small.gif"
-  width="327" height="196" /></a>
+<a href="images/load_after.png"><img
+  src="images/load_after_small.png"
+  width="327" height="206" /></a>
 </p>
-
-<p>
-You should see the UI for your extension at the bottom left of the browser,
-looking something like this:
-</p>
-
-<table class="imagelayout">
-    <tbody>
-      <tr class="images">
-        <td width="33%"><img src="images/hw-1.gif"
-                                        alt="" /></td>
-        <td width="33%"><img src="images/hw-2.gif"
-                                        alt="" /></td>
-        <td width="33%"><img src="images/hw-3.gif"
-                                        alt="" /></td>
-      </tr>
-      <tr>
-        <td width="33%"> default appearance</td>
-        <td width="33%"> initial onhover appearance</td>
-        <td width="33%"> final onhover appearance</td>
-      </tr>
-    </tbody>
-</table>
-
-  <p>
-  Your extension's button is automatically styled
-  to look like it belongs in the browser.
-  If you put the cursor over the button,
-  the button gets a nice, rounded edge,
-  just like the buttons in the bookmark bar.
-  After a while, a tooltip comes up, identifying the extension.
-  </p>
-  <p class="comment">
-  [PENDING: troubleshooting info should go here.
-  what are symptoms of common typos, including misnamed files?
-  what are the symptoms if you don't have the dev channel?]
-  </p>
 
 <h2 id="code">Add code to the extension</h2>
 <p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
 <ol>
   <li>
+    <p> Edit <code>manifest.json</code> to add the following line:</p>
+<pre>
+  ...
+  "browser_action": {
+    "default_icon": "icon.png",
+    <b style="background:yellow">"popup": "popup.html"</b>
+  },
+  ...
+</pre>
     <p> Inside your extension's folder,
-    create a text file called <strong><code>hello_world.html</code></strong>,
+    create a text file called <strong><code>popup.html</code></strong>,
     and add the following code to it:</p>
-    <blockquote> <a href="samples/hello_world.txt">CSS
+    <blockquote> <a href="samples/hello_world/popup.html" onclick="window.open('view-source:' + this.href); return false;">CSS
     and JavaScript code for hello_world</a></blockquote>
-  </li>
-  <li>
-    <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
-    <pre>&lt;div class=&quot;toolstrip-button&quot;<b> onclick=&quot;window.open('hello_world.html')&quot;</b>&gt;
-  &lt;span&gt;Hello, World!&lt;/span&gt;
-&lt;/div&gt;</pre>
   </li>
   <li>
     Return to <b>chrome://extensions</b>,
     and click the <b>Reload</b> button
     to load the new version of the extension.</li>
   <li>Click the button.
-  A window should come up that displays <code>hello_world.html</code>. </li>
+  A popup bubble should come up that displays <code>popup.html</code>. </li>
 </ol>
 <p> It should look something like this:</p>
 
-<img src="images/hello_world-page.gif"
-  width="583" height="368"
-  alt="a window with a grid of images related to HELLO WORLD" />
+<img src="images/hello-world.png"
+  width="583" height="387"
+  alt="a popup with a grid of images related to HELLO WORLD" />
 
-<p> If you don't see that page,
+<p> If you don't see the popup,
 try the instructions again,
 following them exactly.
 Don't try loading an HTML file that isn't in the extension's folder &mdash;
