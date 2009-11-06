@@ -33,7 +33,12 @@ class OutOfProcTestRunner : public tests::TestRunner {
   // Returns true if the test succeeded, false if it failed.
   bool RunTest(const std::string& test_name) {
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+#if defined(OS_WIN)
+    CommandLine new_cmd_line =
+        CommandLine::FromString(cmd_line->command_line_string());
+#else
     CommandLine new_cmd_line(cmd_line->argv());
+#endif
     // Always enable disabled tests.  This method is not called with disabled
     // tests unless this flag was specified to the browser test executable.
     new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
