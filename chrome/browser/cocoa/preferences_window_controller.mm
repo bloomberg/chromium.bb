@@ -58,6 +58,27 @@ void RemoveAllButLastView(NSArray* views) {
   }
 }
 
+// Helper that sizes two buttons to fit in a row keeping their spacing, returns
+// the total horizontal size change.
+CGFloat SizeToFitButtonPair(NSButton* leftButton, NSButton* rightButton) {
+  CGFloat widthShift = 0.0;
+
+  NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:leftButton];
+  DCHECK_EQ(delta.height, 0.0) << "Height changes unsupported";
+  widthShift += delta.width;
+
+  if (widthShift != 0.0) {
+    NSPoint origin = [rightButton frame].origin;
+    origin.x += widthShift;
+    [rightButton setFrameOrigin:origin];
+  }
+  delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:rightButton];
+  DCHECK_EQ(delta.height, 0.0) << "Height changes unsupported";
+  widthShift += delta.width;
+
+  return widthShift;
+}
+
 // Helper for tweaking the prefs window, if view is a:
 //   checkbox, radio group or label: it gets a forced wrap at current size
 //   editable field: left as is
@@ -357,10 +378,10 @@ class PrefObserverBridge : public NotificationObserver {
   DCHECK(profile);
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString *nibpath = [mac_util::MainAppBundle()
+  NSString* nibPath = [mac_util::MainAppBundle()
                         pathForResource:@"Preferences"
                                  ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+  if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     profile_ = profile;
     prefs_ = profile->GetPrefs();
     DCHECK(prefs_);
@@ -438,9 +459,69 @@ class PrefObserverBridge : public NotificationObserver {
   RemoveViewFromView(underTheHoodContentView_, enableLoggingCheckbox_);
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
-  // Do runtime fixup of the "basics" and "personal stuff" pages for the
-  // strings.  Work bottom up shifting views up as needed, and then resize the
-  // page.
+  // There are three problem children within the groups:
+  //   Bascis - Default Browser
+  //   Personal Stuff - Themes
+  //   Personal Stuff - Browser Data
+  // These three have buttons that with some localizations are wider then the
+  // view.  So the three get manually laid out before doing the general work so
+  // the views/window can be made wide enough to fit them.  The layout in the
+  // general pass is a noop for these buttons (since they are already sized).
+
+  // Size the default browser button.
+  const NSUInteger kDefaultBrowserGroupCount = 3;
+  const NSUInteger kDefaultBrowserButtonIndex = 1;
+  DCHECK_EQ([basicsGroupDefaultBrowser_ count], kDefaultBrowserGroupCount)
+      << "Expected only two items in Default Browser group";
+  NSButton* defaultBrowserButton =
+      [basicsGroupDefaultBrowser_ objectAtIndex:kDefaultBrowserButtonIndex];
+  NSSize defaultBrowserChange =
+      [GTMUILocalizerAndLayoutTweaker sizeToFitView:defaultBrowserButton];
+  DCHECK_EQ(defaultBrowserChange.height, 0.0)
+      << "Button should have been right height in nib";
+
+  // Size the themes row.
+  const NSUInteger kThemeGroupCount = 3;
+  const NSUInteger kThemeResetButtonIndex = 1;
+  const NSUInteger kThemeThemesButtonIndex = 2;
+  DCHECK_EQ([personalStuffGroupThemes_ count], kThemeGroupCount)
+      << "Expected only two items in Themes group";
+  CGFloat themeRowChange = SizeToFitButtonPair(
+      [personalStuffGroupThemes_ objectAtIndex:kThemeResetButtonIndex],
+      [personalStuffGroupThemes_ objectAtIndex:kThemeThemesButtonIndex]);
+
+  // Size the import buttons row.
+  const NSUInteger kBrowserDataGroupCount = 4;
+  const NSUInteger kBrowserDataImportButtonIndex = 1;
+  const NSUInteger kBrowserDataClearButtonIndex = 2;
+  DCHECK_EQ([personalStuffGroupBrowserData_ count], kBrowserDataGroupCount)
+      << "Expected only two items in Browser Data group";
+  CGFloat browserDataRowChange = SizeToFitButtonPair(
+      [personalStuffGroupBrowserData_
+          objectAtIndex:kBrowserDataImportButtonIndex],
+      [personalStuffGroupBrowserData_
+          objectAtIndex:kBrowserDataClearButtonIndex]);
+
+  // Find the most any row changed in size.
+  CGFloat maxWidthChange = std::max(defaultBrowserChange.width, themeRowChange);
+  maxWidthChange = std::max(maxWidthChange, browserDataRowChange);
+
+  // If any grew wider, make the views wider. If they all shrank, they fit the
+  // existing view widths, so no change is needed//.
+  if (maxWidthChange > 0.0) {
+    NSSize viewSize = [basicsView_ frame].size;
+    viewSize.width += maxWidthChange;
+    [basicsView_ setFrameSize:viewSize];
+    viewSize = [personalStuffView_ frame].size;
+    viewSize.width += maxWidthChange;
+    [personalStuffView_ setFrameSize:viewSize];
+  }
+
+  // Now that we have the width needed for Basics and Personal Stuff, lay out
+  // those pages bottom up making sure the strings fit and moving things up as
+  // needed.
+
+  CGFloat newWidth = NSWidth([basicsView_ frame]);
   CGFloat verticalShift = 0.0;
   verticalShift += AutoSizeGroup(basicsGroupDefaultBrowser_,
                                  kAutoSizeGroupBehaviorVerticalFirstToFit,
@@ -472,17 +553,23 @@ class PrefObserverBridge : public NotificationObserver {
                                  kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);
   verticalShift += AutoSizeGroup(personalStuffGroupPasswords_,
-                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
                                       delta:NSMakeSize(0.0, verticalShift)];
 
-  // Make the window as wide as the views
+  // Make the window as wide as the views.
   NSWindow* prefsWindow = [self window];
   NSRect frame = [prefsWindow frame];
-  frame.size.width = NSWidth([basicsView_ frame]);
+  frame.size.width = newWidth;
   [prefsWindow setFrame:frame display:NO];
+
+  // The Under the Hood prefs is a scroller, it shouldn't get any border, so it
+  // gets resized to the as wide as the window ended up.
+  NSSize underTheHoodSize = [underTheHoodView_ frame].size;
+  underTheHoodSize.width = newWidth;
+  [underTheHoodView_ setFrameSize:underTheHoodSize];
 
   // Widen the Under the Hood content so things can rewrap to the full width.
   NSSize underTheHoodContentSize = [underTheHoodContentView_ frame].size;
@@ -768,7 +855,7 @@ class PrefObserverBridge : public NotificationObserver {
 // Called when the selection in the table changes. If a flag is set indicating
 // that we're waiting for a special select message, edit the cell. Otherwise
 // just ignore it, we don't normally care.
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
+- (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
   if (pendingSelectForEdit_) {
     NSTableView* table = [aNotification object];
     NSUInteger selectedRow = [table selectedRow];
@@ -1443,7 +1530,7 @@ const int kDisabledIndex = 1;
 // Called when the window is being closed. Send out a notification that the user
 // is done editing preferences. Make sure there are no pending field editors
 // by clearing the first responder.
-- (void)windowWillClose:(NSNotification *)notification {
+- (void)windowWillClose:(NSNotification*)notification {
   // Setting the first responder to the window ends any in-progress field
   // editor. This will update the model appropriately so there's nothing left
   // to do.
