@@ -96,6 +96,10 @@ devtools.InspectorControllerImpl.prototype.search = function(sourceRow, query) {
 devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
   devtools.InspectorController.prototype.toggleNodeSearch.call(this);
   this.callInspectorController_.call(this, 'toggleNodeSearch');
+  if (!this.searchingForNode()) {
+    // This is called from ElementsPanel treeOutline's focusNodeChanged().
+    DevToolsHost.activateWindow();
+  }
 };
 
 
