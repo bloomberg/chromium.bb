@@ -82,8 +82,10 @@ size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   for (size_t i = 0; i < count; ++i)
     handles[i] = events[i]->handle();
 
+  // The cast is safe because count is small - see the CHECK above.
   DWORD result =
-      WaitForMultipleObjects(count, handles,
+      WaitForMultipleObjects(static_cast<DWORD>(count),
+                             handles,
                              FALSE,      // don't wait for all the objects
                              INFINITE);  // no timeout
   if (result >= WAIT_OBJECT_0 + count) {
