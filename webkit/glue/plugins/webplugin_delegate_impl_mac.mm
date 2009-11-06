@@ -74,6 +74,24 @@ int g_current_y_offset = 0;
 
 }  // namespace
 
+WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
+    const FilePath& filename,
+    const std::string& mime_type,
+    gfx::PluginWindowHandle containing_view) {
+  scoped_refptr<NPAPI::PluginLib> plugin =
+      NPAPI::PluginLib::CreatePluginLib(filename);
+  if (plugin.get() == NULL)
+    return NULL;
+
+  NPError err = plugin->NP_Initialize();
+  if (err != NPERR_NO_ERROR)
+    return NULL;
+
+  scoped_refptr<NPAPI::PluginInstance> instance =
+      plugin->CreateInstance(mime_type);
+  return new WebPluginDelegateImpl(containing_view, instance.get());
+}
+
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
@@ -95,7 +113,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 #ifndef NP_NO_QUICKDRAW
   memset(&qd_port_, 0, sizeof(qd_port_));
 #endif
-  instance->set_windowless(true);
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
@@ -114,9 +131,35 @@ void WebPluginDelegateImpl::PluginDestroyed() {
   delete this;
 }
 
-void WebPluginDelegateImpl::PlatformInitialize() {
+bool WebPluginDelegateImpl::Initialize(const GURL& url,
+                                       const std::vector<std::string>& arg_names,
+                                       const std::vector<std::string>& arg_values,
+                                       WebPlugin* plugin,
+                                       bool load_manually) {
+  plugin_ = plugin;
+
+  instance_->set_web_plugin(plugin);
+
+  int argc = 0;
+  scoped_array<char*> argn(new char*[arg_names.size()]);
+  scoped_array<char*> argv(new char*[arg_names.size()]);
+  for (size_t i = 0; i < arg_names.size(); ++i) {
+    if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
+        LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
+      continue;
+    }
+    argn[argc] = const_cast<char*>(arg_names[i].c_str());
+    argv[argc] = const_cast<char*>(arg_values[i].c_str());
+    argc++;
+  }
+
+  bool start_result = instance_->Start(
+      url, argn.get(), argv.get(), argc, load_manually);
+  if (!start_result)
+    return false;
+
   FakePluginWindowTracker* window_tracker =
-  FakePluginWindowTracker::SharedInstance();
+      FakePluginWindowTracker::SharedInstance();
   cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
   cg_context_.context = NULL;
   Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
@@ -139,17 +182,44 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       break;
   }
 
+  plugin->SetWindow(NULL);
+  plugin_url_ = url.spec();
+
   // If the plugin wants Carbon events, fire up a source of idle events.
   if (instance_->event_model() == NPEventModelCarbon) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         null_event_factory_.NewRunnableMethod(
             &WebPluginDelegateImpl::OnNullEvent), kPluginIdleThrottleDelayMs);
   }
-  plugin_->SetWindow(NULL);
+  return true;
+}
+
+void WebPluginDelegateImpl::DestroyInstance() {
+  if (instance_ && (instance_->npp()->ndata != NULL)) {
+    // Shutdown all streams before destroying so that
+    // no streams are left "in progress".  Need to do
+    // this before calling set_web_plugin(NULL) because the
+    // instance uses the helper to do the download.
+    instance_->CloseStreams();
+    instance_->NPP_Destroy();
+    instance_->set_web_plugin(NULL);
+    instance_ = 0;
+  }
+}
+
+void WebPluginDelegateImpl::PlatformInitialize() {
+  // TODO(port): implement these after unforking.
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
   // TODO(port): implement these after unforking.
+}
+
+void WebPluginDelegateImpl::UpdateGeometry(
+    const gfx::Rect& window_rect,
+    const gfx::Rect& clip_rect) {
+  DCHECK(windowless_);
+  WindowlessUpdateGeometry(window_rect, clip_rect);
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
@@ -202,27 +272,52 @@ void WebPluginDelegateImpl::Print(CGContextRef context) {
   // in .01 mm units.
 }
 
+NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
+  return instance_->GetPluginScriptableObject();
+}
+
+void WebPluginDelegateImpl::DidFinishLoadWithReason(
+    const GURL& url, NPReason reason, intptr_t notify_data) {
+  instance()->DidFinishLoadWithReason(
+      url, reason, reinterpret_cast<void*>(notify_data));
+}
+
+int WebPluginDelegateImpl::GetProcessId() {
+  // We are in process, so the plugin pid is this current process pid.
+  return getpid();
+}
+
+void WebPluginDelegateImpl::SendJavaScriptStream(const GURL& url,
+                                                 const std::string& result,
+                                                 bool success,
+                                                 bool notify_needed,
+                                                 intptr_t notify_data) {
+  instance()->SendJavaScriptStream(url, result, success, notify_needed,
+                                   notify_data);
+}
+
+void WebPluginDelegateImpl::DidReceiveManualResponse(
+    const GURL& url, const std::string& mime_type,
+    const std::string& headers, uint32 expected_length, uint32 last_modified) {
+  instance()->DidReceiveManualResponse(url, mime_type, headers,
+                                       expected_length, last_modified);
+}
+
+void WebPluginDelegateImpl::DidReceiveManualData(const char* buffer,
+                                                 int length) {
+  instance()->DidReceiveManualData(buffer, length);
+}
+
+void WebPluginDelegateImpl::DidFinishManualLoading() {
+  instance()->DidFinishManualLoading();
+}
+
+void WebPluginDelegateImpl::DidManualLoadFail() {
+  instance()->DidManualLoadFail();
+}
+
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NOTIMPLEMENTED();
-}
-
-bool WebPluginDelegateImpl::WindowedCreatePlugin() {
-  NOTREACHED();
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedDestroyWindow() {
-  NOTREACHED();
-}
-
-bool WebPluginDelegateImpl::WindowedReposition(const gfx::Rect& window_rect,
-                                               const gfx::Rect& clip_rect) {
-  NOTREACHED();
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedSetWindow() {
-  NOTREACHED();
 }
 
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
@@ -688,6 +783,27 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
       break;
   }
   return ret;
+}
+
+WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
+    int resource_id, const GURL& url, bool notify_needed,
+    intptr_t notify_data, intptr_t existing_stream) {
+  // Stream already exists. This typically happens for range requests
+  // initiated via NPN_RequestRead.
+  if (existing_stream) {
+    NPAPI::PluginStream* plugin_stream =
+        reinterpret_cast<NPAPI::PluginStream*>(existing_stream);
+
+    plugin_stream->CancelRequest();
+
+    return plugin_stream->AsResourceClient();
+  }
+
+  std::string mime_type;
+  NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
+      resource_id, url, mime_type, notify_needed,
+      reinterpret_cast<void*>(notify_data));
+  return stream;
 }
 
 void WebPluginDelegateImpl::OnNullEvent() {
