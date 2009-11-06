@@ -139,33 +139,33 @@ int main(int argc, const char** argv) {
 
   // Determine number of threads to use for video decoding (optional).
   int video_threads = 0;
-  std::wstring threads(cmd_line->GetSwitchValue(switches::kVideoThreads));
+  std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
   if (!threads.empty() &&
-      !StringToInt(WideToUTF16Hack(threads), &video_threads)) {
+      !StringToInt(threads, &video_threads)) {
     video_threads = 0;
   }
 
   // FFmpeg verbosity.  See libavutil/log.h for values: -8 quiet..48 verbose.
   int verbose_level = AV_LOG_FATAL;
-  std::wstring verbose(cmd_line->GetSwitchValue(switches::kVerbose));
+  std::string verbose(cmd_line->GetSwitchValueASCII(switches::kVerbose));
   if (!verbose.empty() &&
-      !StringToInt(WideToUTF16Hack(verbose), &verbose_level)) {
+      !StringToInt(verbose, &verbose_level)) {
     verbose_level = AV_LOG_FATAL;
   }
 
   // Determine number of frames to decode (optional).
   int max_frames = 0;
-  std::wstring frames_opt(cmd_line->GetSwitchValue(switches::kFrames));
+  std::string frames_opt(cmd_line->GetSwitchValueASCII(switches::kFrames));
   if (!frames_opt.empty() &&
-      !StringToInt(WideToUTF16Hack(frames_opt), &max_frames)) {
+      !StringToInt(frames_opt, &max_frames)) {
     max_frames = 0;
   }
 
   // Determine number of times to loop (optional).
   int max_loops = 0;
-  std::wstring loop_opt(cmd_line->GetSwitchValue(switches::kLoop));
+  std::string loop_opt(cmd_line->GetSwitchValueASCII(switches::kLoop));
   if (!loop_opt.empty() &&
-      !StringToInt(WideToUTF16Hack(loop_opt), &max_loops)) {
+      !StringToInt(loop_opt, &max_loops)) {
     max_loops = 0;
   }
 
@@ -194,8 +194,8 @@ int main(int argc, const char** argv) {
 
   int skip = 0;
   if (cmd_line->HasSwitch(switches::kSkip)) {
-    std::wstring skip_opt(cmd_line->GetSwitchValue(switches::kSkip));
-    if (!StringToInt(WideToUTF16Hack(skip_opt), &skip)) {
+    std::string skip_opt(cmd_line->GetSwitchValueASCII(switches::kSkip));
+    if (!StringToInt(skip_opt, &skip)) {
       skip = 0;
     }
   }

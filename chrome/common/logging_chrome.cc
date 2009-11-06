@@ -117,7 +117,7 @@ void InitChromeLogging(const CommandLine& command_line,
   if (enable_logging) {
     // Let --enable-logging=stderr force only stderr, particularly useful for
     // non-debug builds where otherwise you can't get logs to stderr at all.
-    if (command_line.GetSwitchValue(switches::kEnableLogging) == L"stderr")
+    if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr")
       log_mode = logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG;
     else
       log_mode = kDefaultLoggingMode;
@@ -141,15 +141,16 @@ void InitChromeLogging(const CommandLine& command_line,
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
 
-  std::wstring log_filter_prefix =
-      command_line.GetSwitchValue(switches::kLogFilterPrefix);
-  logging::SetLogFilterPrefix(WideToUTF8(log_filter_prefix).c_str());
+  std::string log_filter_prefix =
+      command_line.GetSwitchValueASCII(switches::kLogFilterPrefix);
+  logging::SetLogFilterPrefix(log_filter_prefix.c_str());
 
   // Use a minimum log level if the command line has one, otherwise set the
   // default to LOG_WARNING.
-  std::wstring log_level = command_line.GetSwitchValue(switches::kLoggingLevel);
+  std::string log_level = command_line.GetSwitchValueASCII(
+      switches::kLoggingLevel);
   int level = 0;
-  if (StringToInt(WideToUTF16Hack(log_level), &level)) {
+  if (StringToInt(log_level, &level)) {
     if ((level >= 0) && (level < LOG_NUM_SEVERITIES))
       logging::SetMinLogLevel(level);
   } else {

@@ -87,13 +87,13 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   }
   if (browser_command_line.HasSwitch(switches::kLoggingLevel)) {
     cmd_line.AppendSwitchWithValue(switches::kLoggingLevel,
-                                   browser_command_line.GetSwitchValue(
+                                   browser_command_line.GetSwitchValueASCII(
                                        switches::kLoggingLevel));
   }
   if (browser_command_line.HasSwitch(switches::kEnableLogging)) {
     // Append with value to support --enable-logging=stderr.
     cmd_line.AppendSwitchWithValue(switches::kEnableLogging,
-                                   browser_command_line.GetSwitchValue(
+                                   browser_command_line.GetSwitchValueASCII(
                                        switches::kEnableLogging));
   }
   if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox)) {

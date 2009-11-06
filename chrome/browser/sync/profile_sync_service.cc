@@ -74,9 +74,10 @@ void ProfileSyncService::InitSettings() {
   // Override the sync server URL from the command-line, if sync server
   // command-line argument exists.
   if (command_line.HasSwitch(switches::kSyncServiceURL)) {
-    std::wstring value(command_line.GetSwitchValue(switches::kSyncServiceURL));
+    std::string value(command_line.GetSwitchValueASCII(
+        switches::kSyncServiceURL));
     if (!value.empty()) {
-      GURL custom_sync_url(WideToUTF8(value));
+      GURL custom_sync_url(value);
       if (custom_sync_url.is_valid()) {
         sync_service_url_ = custom_sync_url;
       } else {

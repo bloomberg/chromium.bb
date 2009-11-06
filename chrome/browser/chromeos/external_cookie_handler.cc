@@ -20,7 +20,7 @@ void ExternalCookieHandler::GetCookies(const CommandLine& parsed_command_line,
   // If there are Google External SSO cookies, add them to the cookie store.
   if (parsed_command_line.HasSwitch(switches::kCookiePipe)) {
     std::string pipe_name =
-        WideToASCII(parsed_command_line.GetSwitchValue(switches::kCookiePipe));
+        parsed_command_line.GetSwitchValueASCII(switches::kCookiePipe);
     ExternalCookieHandler cookie_handler(new PipeReader(pipe_name));
     cookie_handler.HandleCookies(
         profile->GetRequestContext()->GetCookieStore());

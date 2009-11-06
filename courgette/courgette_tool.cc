@@ -364,9 +364,9 @@ int main(int argc, const char* argv[]) {
   // '-repeat=N' is for debugging.  Running many iterations can reveal leaks and
   // bugs in cleanup.
   int repeat_count = 1;
-  std::wstring repeat_switch = command_line.GetSwitchValue("repeat");
+  std::string repeat_switch = command_line.GetSwitchValueASCII("repeat");
   if (!repeat_switch.empty())
-    if (!WideStringToInt(repeat_switch, &repeat_count))
+    if (!StringToInt(repeat_switch, &repeat_count))
       repeat_count = 1;
 
   if (cmd_dis + cmd_asm + cmd_disadj + cmd_make_patch + cmd_apply_patch +

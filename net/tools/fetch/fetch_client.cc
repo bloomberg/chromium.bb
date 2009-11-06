@@ -120,13 +120,12 @@ int main(int argc, char**argv) {
 
   CommandLine::Init(argc, argv);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  std::string url = WideToASCII(parsed_command_line.GetSwitchValue("url"));
+  std::string url = parsed_command_line.GetSwitchValueASCII("url");
   if (!url.length())
     usage(argv[0]);
   int client_limit = 1;
   if (parsed_command_line.HasSwitch("n"))
-    StringToInt(WideToASCII(parsed_command_line.GetSwitchValue("n")),
-                &client_limit);
+    StringToInt(parsed_command_line.GetSwitchValueASCII("n"), &client_limit);
   bool use_cache = parsed_command_line.HasSwitch("use-cache");
 
   // Do work here.

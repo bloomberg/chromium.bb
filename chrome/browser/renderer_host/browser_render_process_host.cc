@@ -479,7 +479,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   FieldTrialList::StatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
     command_line->AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
-        ASCIIToWide(field_trial_states));
+        field_trial_states);
   }
 
   // A command prefix is something prepended to the command line of the spawned
@@ -499,8 +499,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   ChildProcessHost::SetCrashReporterCommandLine(command_line);
 
-  const std::wstring& profile_path =
-      browser_command_line.GetSwitchValue(switches::kUserDataDir);
+  const std::string& profile_path =
+      browser_command_line.GetSwitchValueASCII(switches::kUserDataDir);
   if (!profile_path.empty())
     command_line->AppendSwitchWithValue(switches::kUserDataDir, profile_path);
 }
@@ -566,7 +566,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_cmd.HasSwitch(switch_names[i])) {
       renderer_cmd->AppendSwitchWithValue(switch_names[i],
-          browser_cmd.GetSwitchValue(switch_names[i]));
+          browser_cmd.GetSwitchValueASCII(switch_names[i]));
     }
   }
 }

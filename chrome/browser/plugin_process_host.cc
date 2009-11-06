@@ -402,7 +402,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     if (browser_command_line.HasSwitch(switch_names[i])) {
       cmd_line.AppendSwitchWithValue(
           switch_names[i],
-          browser_command_line.GetSwitchValue(switch_names[i]));
+          browser_command_line.GetSwitchValueASCII(switch_names[i]));
     }
   }
 

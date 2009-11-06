@@ -54,10 +54,9 @@ PluginService::PluginService()
   ChromePluginLib::RegisterPluginsWithNPAPI();
   // Load the one specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  std::wstring path = command_line->GetSwitchValue(switches::kLoadPlugin);
+  FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty()) {
-    NPAPI::PluginList::Singleton()->AddExtraPluginPath(
-        FilePath::FromWStringHack(path));
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 #ifndef DISABLE_NACL
   if (command_line->HasSwitch(switches::kInternalNaCl))

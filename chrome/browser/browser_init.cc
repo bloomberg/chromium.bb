@@ -407,9 +407,9 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
 
   if (command_line_.HasSwitch(switches::kRemoteShellPort)) {
     if (!RenderProcessHost::run_renderer_in_process()) {
-      std::wstring port_str =
-          command_line_.GetSwitchValue(switches::kRemoteShellPort);
-      int64 port = StringToInt64(WideToUTF16Hack(port_str));
+      std::string port_str =
+          command_line_.GetSwitchValueASCII(switches::kRemoteShellPort);
+      int64 port = StringToInt64(port_str);
       if (port > 0 && port < 65535) {
         g_browser_process->InitDebuggerWrapper(static_cast<int>(port));
       } else {
@@ -419,8 +419,8 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
   }
 
   if (command_line_.HasSwitch(switches::kUserAgent)) {
-    webkit_glue::SetUserAgent(WideToUTF8(
-        command_line_.GetSwitchValue(switches::kUserAgent)));
+    webkit_glue::SetUserAgent(command_line_.GetSwitchValueASCII(
+        switches::kUserAgent));
   }
 
   // Open the required browser windows and tabs.
@@ -479,7 +479,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
   if (!command_line_.HasSwitch(switches::kApp))
     return false;
 
-  GURL url(WideToUTF8(command_line_.GetSwitchValue(switches::kApp)));
+  GURL url(command_line_.GetSwitchValueASCII(switches::kApp));
   if (!url.is_empty() && url.is_valid()) {
     Browser::OpenApplicationWindow(profile, url);
     return true;
@@ -551,10 +551,10 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
 
   int pin_count = 0;
   if (!browser) {
-    std::wstring pin_count_string =
-        command_line_.GetSwitchValue(switches::kPinnedTabCount);
+    std::string pin_count_string =
+        command_line_.GetSwitchValueASCII(switches::kPinnedTabCount);
     if (!pin_count_string.empty())
-      pin_count = StringToInt(WideToUTF16Hack(pin_count_string));
+      pin_count = StringToInt(pin_count_string);
   }
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
     browser = Browser::Create(profile_);
@@ -687,11 +687,11 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                      BrowserInit* browser_init) {
   DCHECK(profile);
   if (process_startup) {
-    const std::wstring popup_count_string =
-        command_line.GetSwitchValue(switches::kOmniBoxPopupCount);
+    const std::string popup_count_string =
+        command_line.GetSwitchValueASCII(switches::kOmniBoxPopupCount);
     if (!popup_count_string.empty()) {
       int count = 0;
-      if (StringToInt(WideToUTF16Hack(popup_count_string), &count)) {
+      if (StringToInt(popup_count_string, &count)) {
         const int popup_count = std::max(0, count);
         AutocompleteResult::set_max_matches(popup_count);
         AutocompleteProvider::set_max_matches(popup_count / 2);
@@ -701,11 +701,11 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       NavigationController::DisablePromptOnRepost();
 
-    const std::wstring tab_count_string =
-        command_line.GetSwitchValue(switches::kTabCountToLoadOnSessionRestore);
+    const std::string tab_count_string = command_line.GetSwitchValueASCII(
+        switches::kTabCountToLoadOnSessionRestore);
     if (!tab_count_string.empty()) {
       int count = 0;
-      if (StringToInt(WideToUTF16Hack(tab_count_string), &count)) {
+      if (StringToInt(tab_count_string, &count)) {
         const int tab_count = std::max(0, count);
         SessionRestore::num_tabs_to_load_ = static_cast<size_t>(tab_count);
       }
@@ -713,18 +713,17 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
     // Look for the testing channel ID ONLY during process startup
     if (command_line.HasSwitch(switches::kTestingChannelID)) {
-      std::string testing_channel_id = WideToASCII(
-          command_line.GetSwitchValue(switches::kTestingChannelID));
+      std::string testing_channel_id = command_line.GetSwitchValueASCII(
+          switches::kTestingChannelID);
       // TODO(sanjeevr) Check if we need to make this a singleton for
       // compatibility with the old testing code
       // If there are any loose parameters, we expect each one to generate a
       // new tab; if there are none then we get one homepage tab.
       int expected_tab_count = 1;
       if (command_line.HasSwitch(switches::kRestoreLastSession)) {
-        std::wstring restore_session_value(
-            command_line.GetSwitchValue(switches::kRestoreLastSession));
-        StringToInt(WideToUTF16Hack(restore_session_value),
-                    &expected_tab_count);
+        std::string restore_session_value(
+            command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
+        StringToInt(restore_session_value, &expected_tab_count);
       } else {
         expected_tab_count =
             std::max(1, static_cast<int>(command_line.GetLooseValues().size()));
@@ -741,8 +740,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
           switches::kPackExtension));
       FilePath private_key_path;
       if (command_line.HasSwitch(switches::kPackExtensionKey)) {
-        private_key_path = FilePath::FromWStringHack(
-            command_line.GetSwitchValue(switches::kPackExtensionKey));
+        private_key_path = command_line.GetSwitchValuePath(
+            switches::kPackExtensionKey);
       }
 
       // Output Paths.
@@ -792,8 +791,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
   bool silent_launch = false;
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {
-    std::string automation_channel_id = WideToASCII(
-        command_line.GetSwitchValue(switches::kAutomationClientChannelID));
+    std::string automation_channel_id = command_line.GetSwitchValueASCII(
+        switches::kAutomationClientChannelID);
     // If there are any loose parameters, we expect each one to generate a
     // new tab; if there are none then we have no tabs
     size_t expected_tabs =

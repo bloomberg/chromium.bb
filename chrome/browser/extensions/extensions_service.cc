@@ -103,8 +103,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
   if (autoupdate_enabled) {
     int update_frequency = kDefaultUpdateFrequencySeconds;
     if (command_line->HasSwitch(switches::kExtensionsUpdateFrequency)) {
-      update_frequency = StringToInt(WideToASCII(command_line->GetSwitchValue(
-          switches::kExtensionsUpdateFrequency)));
+      update_frequency = StringToInt(command_line->GetSwitchValueASCII(
+          switches::kExtensionsUpdateFrequency));
     }
     updater_ = new ExtensionUpdater(this, prefs, update_frequency);
   }

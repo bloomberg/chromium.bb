@@ -504,7 +504,7 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
   HWND owner_window_;
   base::ProcessHandle import_process_;
   WorkerThreadTicker ticker_;
-  DISALLOW_EVIL_CONSTRUCTORS(HungImporterMonitor);
+  DISALLOW_COPY_AND_ASSIGN(HungImporterMonitor);
 };
 
 // This class is used by FirstRun::ImportNow to get notified of the outcome of
@@ -541,7 +541,7 @@ class FirstRunImportObserver : public ImportObserver {
 
   bool loop_running_;
   int import_result_;
-  DISALLOW_EVIL_CONSTRUCTORS(FirstRunImportObserver);
+  DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
 };
 
 std::wstring EncodeImportParams(int browser_type, int options, HWND window) {
@@ -575,7 +575,7 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   if (cmdline.HasSwitch(switches::kUserDataDir)) {
     import_cmd.AppendSwitchWithValue(
         switches::kUserDataDir,
-        cmdline.GetSwitchValue(switches::kUserDataDir));
+        cmdline.GetSwitchValueASCII(switches::kUserDataDir));
   }
 
   // Since ImportSettings is called before the local state is stored on disk

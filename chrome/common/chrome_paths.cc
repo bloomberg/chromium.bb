@@ -23,11 +23,10 @@ namespace chrome {
 bool GetGearsPluginPathFromCommandLine(FilePath* path) {
 #ifndef NDEBUG
   // for debugging, support a cmd line based override
-  std::wstring plugin_path = CommandLine::ForCurrentProcess()->GetSwitchValue(
-      switches::kGearsPluginPathOverride);
-  // TODO(tc): After GetSwitchNativeValue lands, we don't need to use
-  // FromWStringHack.
-  *path = FilePath::FromWStringHack(plugin_path);
+  FilePath plugin_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kGearsPluginPathOverride);
+  *path = plugin_path;
   return !plugin_path.empty();
 #else
   return false;

@@ -365,11 +365,11 @@ class SessionRestoreImpl : public NotificationObserver {
                            bool pin_tabs) {
     int pin_count = 0;
     if (pin_tabs) {
-      std::wstring pin_count_string =
-          CommandLine::ForCurrentProcess()->GetSwitchValue(
+      std::string pin_count_string =
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kPinnedTabCount);
       if (!pin_count_string.empty())
-        pin_count = StringToInt(WideToUTF16Hack(pin_count_string));
+        pin_count = StringToInt(pin_count_string);
     }
 
     for (size_t i = 0; i < urls.size(); ++i) {

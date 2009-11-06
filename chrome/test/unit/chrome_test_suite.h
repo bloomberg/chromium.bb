@@ -86,9 +86,9 @@ class ChromeTestSuite : public TestSuite {
     // user data directory that lives alongside the current app.
     // NOTE: The user data directory will be erased before each UI test that
     //       uses it, in order to ensure consistency.
-    FilePath user_data_dir = FilePath::FromWStringHack(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(
-            switches::kUserDataDir));
+    FilePath user_data_dir =
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kUserDataDir);
     if (user_data_dir.empty() &&
         file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_test_"),
                                           &user_data_dir)) {
