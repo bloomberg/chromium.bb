@@ -45,6 +45,9 @@ class WebSocketDelegate {
 
   // Called when |socket| is closed.
   virtual void OnClose(WebSocket* socket) = 0;
+
+  // Called when an error occured on |socket|.
+  virtual void OnError(const WebSocket* socket, int error) {}
 };
 
 class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
@@ -110,6 +113,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   // |delegate| must be alive while this object is alive.
   WebSocket(Request* req, WebSocketDelegate* delegate);
 
+  const Request* request() const { return request_.get(); }
   WebSocketDelegate* delegate() const { return delegate_; }
 
   State ready_state() const { return ready_state_; }
@@ -132,6 +136,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   virtual void OnReceivedData(SocketStream* socket_stream,
                               const char* data, int len);
   virtual void OnClose(SocketStream* socket);
+  virtual void OnError(const SocketStream* socket, int error);
 
  private:
   enum Mode {
@@ -182,6 +187,9 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
 
   // Handles closed connection.
   void DoClose();
+
+  // Handles error report.
+  void DoError(int error);
 
   State ready_state_;
   Mode mode_;

@@ -141,6 +141,11 @@ void WebSocket::OnClose(SocketStream* socket_stream) {
                          NewRunnableMethod(this, &WebSocket::DoClose));
 }
 
+void WebSocket::OnError(const SocketStream* socket_stream, int error) {
+  origin_loop_->PostTask(FROM_HERE,
+                         NewRunnableMethod(this, &WebSocket::DoError, error));
+}
+
 IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
   std::string msg;
   msg = "GET ";
@@ -176,6 +181,7 @@ IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
   }
   // TODO(ukai): Add cookie if necessary.
   msg += "\r\n";
+  DLOG(INFO) << "ClientHandshakeMsg=" << msg;
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
   memcpy(buf->data(), msg.data(), msg.size());
   return buf;
@@ -188,6 +194,7 @@ int WebSocket::CheckHandshake() {
   const char *start = current_read_buf_->StartOfBuffer() + read_consumed_len_;
   const char *p = start;
   size_t len = current_read_buf_->offset() - read_consumed_len_;
+  DLOG(INFO) << "CheckHandshake response=" << std::string(start, len);
   if (len < kServerHandshakeHeaderLength) {
     return -1;
   }
@@ -199,7 +206,7 @@ int WebSocket::CheckHandshake() {
       return -1;
     scoped_refptr<HttpResponseHeaders> headers(
         new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(p, eoh)));
-    if (headers->response_code() == 401) {
+    if (headers->response_code() == 407) {
       mode_ = MODE_AUTHENTICATE;
       // TODO(ukai): Implement authentication handlers.
     }
@@ -444,6 +451,12 @@ void WebSocket::DoClose() {
     return;
   socket_stream_ = NULL;
   delegate->OnClose(this);
+}
+
+void WebSocket::DoError(int error) {
+  DCHECK(MessageLoop::current() == origin_loop_);
+  if (delegate_)
+    delegate_->OnError(this, error);
 }
 
 }  // namespace net
