@@ -182,7 +182,7 @@ void LanguagesPageGtk::Init() {
 
   language_order_table_model_.reset(new LanguageOrderTableModel);
   language_order_table_adapter_.reset(
-      new gtk_tree::ModelAdapter(this, language_order_store_,
+      new gtk_tree::TableAdapter(this, language_order_store_,
                                  language_order_table_model_.get()));
 
   // Languages order buttons.

@@ -143,7 +143,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
 
   // Loading data, showing dialog.
   url_table_model_.reset(new PossibleURLModel());
-  url_table_adapter_.reset(new gtk_tree::ModelAdapter(this, history_list_store_,
+  url_table_adapter_.reset(new gtk_tree::TableAdapter(this, history_list_store_,
                                                       url_table_model_.get()));
   url_table_model_->Reload(profile_);
 

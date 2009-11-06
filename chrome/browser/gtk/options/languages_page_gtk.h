@@ -27,7 +27,7 @@ class LanguageOrderTableModel;
 
 class LanguagesPageGtk
     : public OptionsPageBase,
-      public gtk_tree::ModelAdapter::Delegate {
+      public gtk_tree::TableAdapter::Delegate {
  public:
   explicit LanguagesPageGtk(Profile* profile);
   virtual ~LanguagesPageGtk();
@@ -36,7 +36,7 @@ class LanguagesPageGtk
     return page_;
   }
 
-  // gtk_tree::ModelAdapter::Delegate implementation.
+  // gtk_tree::TableAdapter::Delegate implementation.
   virtual void OnAnyModelUpdate();
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
@@ -101,7 +101,7 @@ class LanguagesPageGtk
 
   // The model for |language_order_store_|.
   scoped_ptr<LanguageOrderTableModel> language_order_table_model_;
-  scoped_ptr<gtk_tree::ModelAdapter> language_order_table_adapter_;
+  scoped_ptr<gtk_tree::TableAdapter> language_order_table_adapter_;
 
   // Accept languages pref.
   StringPrefMember accept_languages_;

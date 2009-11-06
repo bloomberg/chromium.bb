@@ -51,21 +51,21 @@ void SelectAndFocusRowNum(int row, GtkTreeView* tree_view) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//  ModelAdapter
+//  TableAdapter
 
-ModelAdapter::ModelAdapter(Delegate* delegate, GtkListStore* list_store,
+TableAdapter::TableAdapter(Delegate* delegate, GtkListStore* list_store,
                            TableModel* table_model)
     : delegate_(delegate), list_store_(list_store), table_model_(table_model) {
   if (table_model)
     table_model->SetObserver(this);
 }
 
-void ModelAdapter::SetModel(TableModel* table_model) {
+void TableAdapter::SetModel(TableModel* table_model) {
   table_model_ = table_model;
   table_model_->SetObserver(this);
 }
 
-void ModelAdapter::AddNodeToList(int row) {
+void TableAdapter::AddNodeToList(int row) {
   GtkTreeIter iter;
   if (row == 0) {
     gtk_list_store_prepend(list_store_, &iter);
@@ -79,7 +79,7 @@ void ModelAdapter::AddNodeToList(int row) {
   delegate_->SetColumnValues(row, &iter);
 }
 
-void ModelAdapter::OnModelChanged() {
+void TableAdapter::OnModelChanged() {
   delegate_->OnAnyModelUpdateStart();
   gtk_list_store_clear(list_store_);
   delegate_->OnModelChanged();
@@ -88,7 +88,7 @@ void ModelAdapter::OnModelChanged() {
   delegate_->OnAnyModelUpdate();
 }
 
-void ModelAdapter::OnItemsChanged(int start, int length) {
+void TableAdapter::OnItemsChanged(int start, int length) {
   delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;
   bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
@@ -104,7 +104,7 @@ void ModelAdapter::OnItemsChanged(int start, int length) {
   delegate_->OnAnyModelUpdate();
 }
 
-void ModelAdapter::OnItemsAdded(int start, int length) {
+void TableAdapter::OnItemsAdded(int start, int length) {
   delegate_->OnAnyModelUpdateStart();
   for (int i = 0; i < length; ++i) {
     AddNodeToList(start + i);
@@ -112,7 +112,7 @@ void ModelAdapter::OnItemsAdded(int start, int length) {
   delegate_->OnAnyModelUpdate();
 }
 
-void ModelAdapter::OnItemsRemoved(int start, int length) {
+void TableAdapter::OnItemsRemoved(int start, int length) {
   delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;
   bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,

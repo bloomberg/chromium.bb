@@ -16,7 +16,7 @@ class GURL;
 class Profile;
 class PossibleURLModel;
 
-class UrlPickerDialogGtk : public gtk_tree::ModelAdapter::Delegate {
+class UrlPickerDialogGtk : public gtk_tree::TableAdapter::Delegate {
  public:
   typedef Callback1<const GURL&>::Type UrlPickerCallback;
 
@@ -26,7 +26,7 @@ class UrlPickerDialogGtk : public gtk_tree::ModelAdapter::Delegate {
 
   ~UrlPickerDialogGtk();
 
-  // gtk_tree::ModelAdapter::Delegate implementation.
+  // gtk_tree::TableAdapter::Delegate implementation.
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
  private:
@@ -87,7 +87,7 @@ class UrlPickerDialogGtk : public gtk_tree::ModelAdapter::Delegate {
 
   // The table model.
   scoped_ptr<PossibleURLModel> url_table_model_;
-  scoped_ptr<gtk_tree::ModelAdapter> url_table_adapter_;
+  scoped_ptr<gtk_tree::TableAdapter> url_table_adapter_;
 
   // Called if the user selects an url.
   UrlPickerCallback* callback_;

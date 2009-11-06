@@ -231,7 +231,7 @@ void CookiesView::Init() {
   // Initialize model.
   cookies_table_model_.reset(new CookiesTableModel(profile_));
   cookies_table_adapter_.reset(
-      new gtk_tree::ModelAdapter(this, list_store_,
+      new gtk_tree::TableAdapter(this, list_store_,
                                  cookies_table_model_.get()));
   cookies_table_adapter_->OnModelChanged();
 

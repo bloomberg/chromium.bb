@@ -475,7 +475,7 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   right_store_ = gtk_list_store_new(RIGHT_PANE_NUM,
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_INT64);
-  right_tree_adapter_.reset(new gtk_tree::ModelAdapter(this, right_store_,
+  right_tree_adapter_.reset(new gtk_tree::TableAdapter(this, right_store_,
                                                        NULL));
 
   title_column_ = gtk_tree_view_column_new();

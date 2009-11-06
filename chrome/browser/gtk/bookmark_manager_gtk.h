@@ -23,7 +23,7 @@ class BookmarkTableModel;
 class Profile;
 
 class BookmarkManagerGtk : public BookmarkModelObserver,
-                           public gtk_tree::ModelAdapter::Delegate,
+                           public gtk_tree::TableAdapter::Delegate,
                            public SelectFileDialog::Listener {
  public:
   virtual ~BookmarkManagerGtk();
@@ -60,7 +60,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
-  // gtk_tree::ModelAdapter::Delegate implementation.
+  // gtk_tree::TableAdapter::Delegate implementation.
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
   virtual void OnModelChanged();
 
@@ -316,7 +316,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   GtkTreeViewColumn* url_column_;
   GtkTreeViewColumn* path_column_;
   scoped_ptr<BookmarkTableModel> right_tree_model_;
-  scoped_ptr<gtk_tree::ModelAdapter> right_tree_adapter_;
+  scoped_ptr<gtk_tree::TableAdapter> right_tree_adapter_;
 
   // |window_|'s current position and size.
   gfx::Rect window_bounds_;

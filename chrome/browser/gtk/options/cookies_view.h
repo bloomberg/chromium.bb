@@ -25,14 +25,14 @@ class Profile;
 // Once the CookiesView is shown, it is responsible for deleting itself when the
 // user closes the dialog.
 
-class CookiesView : public gtk_tree::ModelAdapter::Delegate {
+class CookiesView : public gtk_tree::TableAdapter::Delegate {
  public:
   virtual ~CookiesView();
 
   // Create (if necessary) and show the cookie manager window.
   static void Show(Profile* profile);
 
-  // gtk_tree::ModelAdapter::Delegate implementation.
+  // gtk_tree::TableAdapter::Delegate implementation.
   virtual void OnAnyModelUpdateStart();
   virtual void OnAnyModelUpdate();
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
@@ -132,7 +132,7 @@ class CookiesView : public gtk_tree::ModelAdapter::Delegate {
 
   // The Cookies Table model.
   scoped_ptr<CookiesTableModel> cookies_table_model_;
-  scoped_ptr<gtk_tree::ModelAdapter> cookies_table_adapter_;
+  scoped_ptr<gtk_tree::TableAdapter> cookies_table_adapter_;
 
   // A factory to construct Runnable Methods so that we can be called back to
   // re-evaluate the model after the search query string changes.

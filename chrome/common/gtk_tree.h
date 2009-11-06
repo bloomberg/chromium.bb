@@ -29,7 +29,7 @@ gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
 void SelectAndFocusRowNum(int row, GtkTreeView* tree_view);
 
 // A helper class for populating a GtkListStore from a TableModel.
-class ModelAdapter : public TableModelObserver {
+class TableAdapter : public TableModelObserver {
  public:
   class Delegate {
    public:
@@ -49,9 +49,9 @@ class ModelAdapter : public TableModelObserver {
   };
 
   // |table_model| may be NULL.
-  explicit ModelAdapter(Delegate* delegate, GtkListStore* list_store,
+  explicit TableAdapter(Delegate* delegate, GtkListStore* list_store,
                         TableModel* table_model);
-  virtual ~ModelAdapter() {}
+  virtual ~TableAdapter() {}
 
   // Replace the TableModel with a different one.  If the list store currenty
   // has items this would cause weirdness, so this should generally only be
@@ -73,7 +73,7 @@ class ModelAdapter : public TableModelObserver {
   GtkListStore* list_store_;
   TableModel* table_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModelAdapter);
+  DISALLOW_COPY_AND_ASSIGN(TableAdapter);
 };
 
 }  // namespace gtk_tree
