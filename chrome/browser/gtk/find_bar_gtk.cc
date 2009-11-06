@@ -15,6 +15,7 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
@@ -167,8 +168,7 @@ FindBarGtk::FindBarGtk(Browser* browser)
       container_width_(-1),
       container_height_(-1),
       match_label_failure_(false),
-      ignore_changed_signal_(false),
-      current_fixed_width_(-1) {
+      ignore_changed_signal_(false) {
   InitWidgets();
   ViewIDUtil::SetID(text_entry_, VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 
@@ -190,14 +190,11 @@ FindBarGtk::FindBarGtk(Browser* browser)
   gtk_widget_add_events(text_entry_, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(text_entry_, "button-press-event",
                    G_CALLBACK(OnButtonPress), this);
-  g_signal_connect(widget(), "size-allocate",
-                   G_CALLBACK(OnFixedSizeAllocate), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
 
 FindBarGtk::~FindBarGtk() {
-  fixed_.Destroy();
 }
 
 void FindBarGtk::InitWidgets() {
@@ -217,16 +214,6 @@ void FindBarGtk::InitWidgets() {
   slide_widget_.reset(new SlideAnimatorGtk(container_,
                                            SlideAnimatorGtk::DOWN,
                                            0, false, false, NULL));
-
-  // |fixed_| has to be at least one pixel tall. We color this pixel the same
-  // color as the border that separates the toolbar from the tab contents.
-  fixed_.Own(gtk_fixed_new());
-  border_ = gtk_event_box_new();
-  gtk_widget_set_size_request(border_, 1, 1);
-
-  gtk_fixed_put(GTK_FIXED(widget()), border_, 0, 0);
-  gtk_fixed_put(GTK_FIXED(widget()), slide_widget(), 0, 0);
-  gtk_widget_set_size_request(widget(), -1, 0);
 
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
@@ -303,18 +290,16 @@ void FindBarGtk::InitWidgets() {
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 
+  g_signal_connect(widget(), "parent-set", G_CALLBACK(OnParentSet), this);
+
   // We take care to avoid showing the slide animator widget.
   gtk_widget_show_all(container_);
   gtk_widget_show(widget());
-  gtk_widget_show(border_);
-}
-
-GtkWidget* FindBarGtk::slide_widget() {
-  return slide_widget_->widget();
 }
 
 void FindBarGtk::Show() {
   slide_widget_->Open();
+  selection_rect = gfx::Rect();
   Reposition();
   if (container_->window)
     gdk_window_raise(container_->window);
@@ -360,9 +345,10 @@ void FindBarGtk::SetFindText(const string16& find_text) {
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
   if (!result.selection_rect().IsEmpty()) {
+    selection_rect = result.selection_rect();
     int xposition = GetDialogPosition(result.selection_rect()).x();
-    if (xposition != slide_widget()->allocation.x)
-      gtk_fixed_move(GTK_FIXED(widget()), slide_widget(), xposition, 0);
+    if (xposition != widget()->allocation.x)
+      Reposition();
   }
 
   // Once we find a match we no longer want to keep track of what had
@@ -417,9 +403,7 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   // At very low browser widths we can wind up with a negative |dialog_bounds|
   // width, so clamp it to 0.
   gfx::Rect dialog_bounds = gfx::Rect(ltr ? 0 : 15, 0,
-                                      std::max(0, widget()->allocation.width -
-                                                  (ltr ? 15 : 0)),
-                                      0);
+      std::max(0, widget()->parent->allocation.width - (ltr ? 15 : 0)), 0);
 
   GtkRequisition req;
   gtk_widget_size_request(container_, &req);
@@ -435,12 +419,11 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
 }
 
 void FindBarGtk::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
-  gtk_fixed_move(GTK_FIXED(widget()), slide_widget(), new_pos.x(), 0);
   slide_widget_->OpenWithoutAnimation();
 }
 
 bool FindBarGtk::IsFindBarVisible() {
-  return GTK_WIDGET_VISIBLE(slide_widget());
+  return GTK_WIDGET_VISIBLE(widget());
 }
 
 void FindBarGtk::RestoreSavedFocus() {
@@ -467,10 +450,6 @@ void FindBarGtk::Observe(NotificationType type,
   // Force reshapings of the find bar window.
   container_width_ = -1;
   container_height_ = -1;
-  current_fixed_width_ = -1;
-
-  GdkColor color = theme_provider_->GetBorderColor();
-  gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
 
   if (theme_provider_->UseGtkTheme()) {
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
@@ -585,12 +564,9 @@ void FindBarGtk::Reposition() {
   if (!IsFindBarVisible())
     return;
 
-  int xposition = GetDialogPosition(gfx::Rect()).x();
-  if (xposition == slide_widget()->allocation.x) {
-    return;
-  } else {
-    gtk_fixed_move(GTK_FIXED(widget()), slide_widget(), xposition, 0);
-  }
+  // This will trigger an allocate, which allows us to reposition.
+  if (widget()->parent)
+    gtk_widget_queue_resize(widget()->parent);
 }
 
 void FindBarGtk::StoreOutsideFocus() {
@@ -633,6 +609,37 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
   NativeWebKeyboardEvent wke(event);
   render_view_host->ForwardKeyboardEvent(wke);
   return true;
+}
+
+// static
+void FindBarGtk::OnParentSet(GtkWidget* widget, GtkObject* old_parent,
+                             FindBarGtk* find_bar) {
+  if (!widget->parent)
+    return;
+
+  g_signal_connect(widget->parent, "set-floating-position",
+                   G_CALLBACK(OnSetFloatingPosition), find_bar);
+}
+
+// static
+void FindBarGtk::OnSetFloatingPosition(
+    GtkFloatingContainer* floating_container,
+    GtkAllocation* allocation,
+    FindBarGtk* find_bar) {
+  GtkWidget* findbar = find_bar->widget();
+
+  int xposition = find_bar->GetDialogPosition(find_bar->selection_rect).x();
+
+  GValue value = { 0, };
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, xposition);
+  gtk_container_child_set_property(GTK_CONTAINER(floating_container),
+                                   findbar, "x", &value);
+
+  g_value_set_int(&value, 0);
+  gtk_container_child_set_property(GTK_CONTAINER(floating_container),
+                                   findbar, "y", &value);
+  g_value_unset(&value);
 }
 
 // static
@@ -699,28 +706,12 @@ gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
   return FALSE;
 }
 
-// static
-void FindBarGtk::OnFixedSizeAllocate(GtkWidget* fixed,
-                                     GtkAllocation* allocation,
-                                     FindBarGtk* findbar) {
-  // Do nothing if our width hasn't changed.
-  if (findbar->current_fixed_width_ == allocation->width)
-    return;
-  findbar->current_fixed_width_ = allocation->width;
-
-  // Set the background widget to the size of |fixed|.
-  gtk_widget_set_size_request(findbar->border_,
-                              allocation->width, allocation->height);
-
-  findbar->Reposition();
-}
-
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
   GtkRequisition req;
   gtk_widget_size_request(widget, &req);
-  gtk_widget_set_size_request(bar->slide_widget(), req.width, -1);
+  gtk_widget_set_size_request(bar->widget(), req.width, -1);
 
   if (bar->theme_provider_->UseGtkTheme()) {
     if (bar->container_width_ != widget->allocation.width ||

@@ -293,15 +293,13 @@ void BookmarkBarGtk::Show(bool animate) {
     AnimationProgressed(slide_animation_.get());
   }
 
+  // Hide out behind the findbar. This is rather fragile code, it could
+  // probably be improved.
   if (floating_) {
-    // Hide out behind the findbar.
-    if (GTK_WIDGET_REALIZED(paint_box_)) {
-      // We toggle the above_child property so that the event window will
-      // get lowered after we lower the window of |paint_box_|.
-      gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), TRUE);
-      gdk_window_lower(paint_box_->window);
-      gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), FALSE);
-    }
+    if (GTK_WIDGET_REALIZED(event_box_->parent))
+      gdk_window_lower(event_box_->parent->window);
+    if (GTK_WIDGET_REALIZED(event_box_.get()))
+      gdk_window_lower(event_box_->window);
   }
 
   // Maybe show the instructions

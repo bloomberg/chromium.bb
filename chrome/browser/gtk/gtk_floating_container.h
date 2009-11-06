@@ -14,7 +14,7 @@
 // that interface. The GtkBin portion contains normal content and is given the
 // same allocation that this container has.
 //
-// In addition, any number of widgets can be through the
+// In addition, any number of widgets can be added through the
 // gtk_floating_container_add_floating() method, which provides functionality
 // similar to a GtkFixed. Unlike a GtkFixed, coordinates are not set when you
 // gtk_fixed_put(). The location of the floating widgets is determined while

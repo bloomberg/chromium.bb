@@ -46,6 +46,7 @@
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/find_bar_gtk.h"
+#include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
@@ -1419,6 +1420,7 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
         bookmark_bar_->EnterFullscreen();
+      gtk_widget_hide(toolbar_border_);
 #if defined(OS_CHROMEOS)
       if (main_menu_button_)
         gtk_widget_hide(main_menu_button_->widget());
@@ -1430,6 +1432,9 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
     } else {
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
+
+      gtk_widget_show(toolbar_border_);
+      gdk_window_lower(toolbar_border_->window);
     }
   }
 
@@ -1486,11 +1491,9 @@ bool BrowserWindowGtk::ShouldShowWindowIcon() const {
 }
 
 void BrowserWindowGtk::AddFindBar(FindBarGtk* findbar) {
-  gtk_box_pack_start(GTK_BOX(render_area_vbox_), findbar->widget(),
-                     FALSE, FALSE, 0);
-  gtk_box_reorder_child(GTK_BOX(render_area_vbox_), findbar->widget(), 0);
-
-  gtk_widget_hide(toolbar_border_);
+  gtk_floating_container_add_floating(
+      GTK_FLOATING_CONTAINER(render_area_floating_container_),
+      findbar->widget());
 }
 
 void BrowserWindowGtk::ResetCustomFrameCursor() {
@@ -1700,6 +1703,9 @@ void BrowserWindowGtk::InitWidgets() {
   // |render_area_vbox_| is packed in |render_area_event_box_|.
   render_area_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_set_name(render_area_vbox_, "chrome-render-area-vbox");
+  render_area_floating_container_ = gtk_floating_container_new();
+  gtk_container_add(GTK_CONTAINER(render_area_floating_container_),
+                    render_area_vbox_);
 
   toolbar_border_ = gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
@@ -1732,14 +1738,15 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_widget_set_size_request(devtools_container_->widget(), -1,
                                 kDefaultDevToolsHeight);
   }
-  gtk_widget_show_all(render_area_vbox_);
+  gtk_widget_show_all(render_area_floating_container_);
   gtk_widget_hide(devtools_container_->widget());
   render_area_event_box_ = gtk_event_box_new();
   // Set a white background so during startup the user sees white in the
   // content area before we get a TabContents in place.
   gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
                        &gfx::kGdkWhite);
-  gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
+  gtk_container_add(GTK_CONTAINER(render_area_event_box_),
+                    render_area_floating_container_);
   gtk_widget_show(render_area_event_box_);
   gtk_box_pack_end(GTK_BOX(window_vbox_), render_area_event_box_,
                    TRUE, TRUE, 0);
@@ -2286,7 +2293,7 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
   } else {
     // Place the bookmark bar at the end of the render area; this happens after
     // the tab contents container has been placed there so we will be
-    // above the webpage.
+    // above the webpage (in terms of y).
     gtk_box_pack_end(GTK_BOX(render_area_vbox_), bookmark_bar_->widget(),
                      FALSE, FALSE, 0);
   }

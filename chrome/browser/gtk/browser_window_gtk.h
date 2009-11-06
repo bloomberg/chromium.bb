@@ -213,7 +213,10 @@ class BrowserWindowGtk : public BrowserWindow,
   GtkWidget* window_vbox_;
   // VBox that holds everything below the toolbar.
   GtkWidget* render_area_vbox_;
-  // EventBox that holds render_area_vbox_.
+  // Floating container that holds the render area. It is needed to position
+  // the findbar.
+  GtkWidget* render_area_floating_container_;
+  // EventBox that holds render_area_floating_container_.
   GtkWidget* render_area_event_box_;
   // Border between toolbar and render area. This is hidden when the find bar
   // is added because thereafter the findbar will draw the border for us.

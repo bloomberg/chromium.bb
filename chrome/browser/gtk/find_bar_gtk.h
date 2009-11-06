@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
+#include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -24,6 +25,8 @@ class NineBox;
 class SlideAnimatorGtk;
 class TabContentsContainerGtk;
 
+typedef struct _GtkFloatingContainer GtkFloatingContainer;
+
 // Currently this class contains both a model and a view.  We may want to
 // eventually pull out the model specific bits and share with Windows.
 class FindBarGtk : public FindBar,
@@ -33,7 +36,7 @@ class FindBarGtk : public FindBar,
   explicit FindBarGtk(Browser* browser);
   virtual ~FindBarGtk();
 
-  GtkWidget* widget() const { return fixed_.get(); }
+  GtkWidget* widget() const { return slide_widget_->widget(); }
 
   // Methods from FindBar.
   virtual FindBarController* GetFindBarController() const {
@@ -81,18 +84,21 @@ class FindBarGtk : public FindBar,
   // See similar function in FindBarWin.
   bool MaybeForwardKeyEventToRenderer(GdkEventKey* event);
 
-  // Returns the child of |fixed_| that holds what the user perceives as the
-  // findbar.
-  GtkWidget* slide_widget();
-
   // Searches for another occurrence of the entry text, moving forward if
   // |forward_search| is true.
   void FindEntryTextInContents(bool forward_search);
 
   void UpdateMatchLabelAppearance(bool failure);
 
-  // Repositions the dialog without worrying about overlapping search results.
+  // Asynchronously repositions the dialog.
   void Reposition();
+
+  static void OnParentSet(GtkWidget* widget, GtkObject* old_parent,
+                          FindBarGtk* find_bar);
+
+  static void OnSetFloatingPosition(GtkFloatingContainer* floating_container,
+                                    GtkAllocation* allocation,
+                                    FindBarGtk* find_bar);
 
   // Callback when the entry text changes.
   static gboolean OnChanged(GtkWindow* window, FindBarGtk* find_bar);
@@ -104,12 +110,6 @@ class FindBarGtk : public FindBar,
 
   // Callback for previous, next, and close button.
   static void OnClicked(GtkWidget* button, FindBarGtk* find_bar);
-
-  // Called when |fixed_| changes sizes. Used to position the dialog (the
-  // "dialog" is the widget hierarchy rooted at |slide_widget_|).
-  static void OnFixedSizeAllocate(GtkWidget* fixed,
-                                  GtkAllocation* allocation,
-                                  FindBarGtk* findbar);
 
   // Handles shapping and drawing the find bar background.
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event,
@@ -131,14 +131,6 @@ class FindBarGtk : public FindBar,
 
   // Provides colors and information about GTK.
   GtkThemeProvider* theme_provider_;
-
-  // GtkFixed containing the find bar widgets.
-  OwnedWidgetGtk fixed_;
-
-  // An event box which shows the background for |fixed_|. We could just set
-  // |fixed_| to have its own GdkWindow and draw the background directly, but
-  // then |container_| would clip to the bounds of |fixed_|.
-  GtkWidget* border_;
 
   // The widget that animates the slide-in and -out of the findbar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
@@ -193,6 +185,10 @@ class FindBarGtk : public FindBar,
   int current_fixed_width_;
 
   scoped_ptr<NineBox> dialog_background_;
+
+  // The selection rect we are currently showing. We cache it to avoid covering
+  // it up.
+  gfx::Rect selection_rect;
 
   NotificationRegistrar registrar_;
 
