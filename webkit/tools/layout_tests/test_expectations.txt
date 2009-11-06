@@ -2223,7 +2223,7 @@ BUG23460 MAC : LayoutTests/tables/mozilla/bugs/bug28341.html = IMAGE
 BUG12030 MAC : LayoutTests/plugins/embed-attributes-style.html = IMAGE
 
 // Missing baselines
-BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
+// BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
 
 // Failing on the bots but not locally; need investigation
 BUG23560 MAC : LayoutTests/fast/images/animated-svg-as-image.html = FAIL PASS
