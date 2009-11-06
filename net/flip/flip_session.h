@@ -42,12 +42,12 @@ class FlipDelegate {
 
   // The delegate provides access to the HttpRequestInfo for use by the flip
   // session.
-  virtual const HttpRequestInfo* request() = 0;
+  virtual const HttpRequestInfo* request() const = 0;
 
   // The delegate provides access to an UploadDataStream for use by the
   // flip session.  If the delegate is not uploading content, this call
   // must return NULL.
-  virtual const UploadDataStream* data() = 0;
+  virtual const UploadDataStream* data() const = 0;
 
   // Callbacks.
 
@@ -117,10 +117,11 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // status, such as "resolving host", "connecting", etc.
   LoadState GetLoadState() const;
 
+  // Enable or disable SSL.
+  static void SetSSLMode(bool enable) { use_ssl_ = enable; }
+
  protected:
-  friend class FlipNetworkTransactionTest;
   friend class FlipSessionPool;
-  friend class HttpNetworkLayer;  // Temporary for server.
 
   // Provide access to the framer for testing.
   flip::FlipFramer* GetFramer() { return &flip_framer_; }
@@ -131,9 +132,6 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Closes all open streams.  Used as part of shutdown.
   void CloseAllStreams(net::Error code);
-
-  // Enable or disable SSL.  This is only to be used for testing.
-  static void SetSSLMode(bool enable) { use_ssl_ = enable; }
 
  private:
   friend class base::RefCounted<FlipSession>;

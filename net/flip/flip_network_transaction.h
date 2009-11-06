@@ -8,46 +8,96 @@
 #include <string>
 #include <deque>
 
+#include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "net/base/address_list.h"
-#include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
-#include "net/base/load_flags.h"
 #include "net/base/load_states.h"
-#include "net/base/ssl_config_service.h"
 #include "net/flip/flip_session.h"
-#include "net/http/http_auth.h"
-#include "net/http/http_auth_handler.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
-#include "net/proxy/proxy_service.h"
-#include "net/socket/client_socket_handle.h"
-#include "net/socket/client_socket_pool.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace net {
 
-class ClientSocketFactory;
+class FlipSession;
 class HttpNetworkSession;
 class UploadDataStream;
 
-// A FlipNetworkTransaction can be used to fetch HTTP conent.
-// The FlipDelegate is the consumer of events from the FlipSession.
-class FlipNetworkTransaction : public HttpTransaction, public FlipDelegate {
+// FlipStreamParser is a class to encapsulate the IO of a FLIP
+// stream on top of a FlipSession.  All read/writes go through
+// the FlipStreamParser.
+class FlipStreamParser : public FlipDelegate {
  public:
-  explicit FlipNetworkTransaction(HttpNetworkSession* session);
-  virtual ~FlipNetworkTransaction();
+  FlipStreamParser();
+  ~FlipStreamParser();
+
+  // Creates a FLIP stream from |flip| and send the HTTP request over it.
+  // |request|'s lifetime must persist longer than |this|.  This always
+  // completes asynchronously, so |callback| must be non-NULL.  Returns a net
+  // error code.
+  int SendRequest(FlipSession* flip, const HttpRequestInfo* request,
+                  CompletionCallback* callback);
+
+  // Reads the response headers.  Returns a net error code.
+  int ReadResponseHeaders(CompletionCallback* callback);
+
+  // Reads the response body.  Returns a net error code or the number of bytes
+  // read.
+  int ReadResponseBody(
+      IOBuffer* buf, int buf_len, CompletionCallback* callback);
+
+  // Returns the number of bytes uploaded.
+  uint64 GetUploadProgress() const;
+
+  const HttpResponseInfo* GetResponseInfo() const;
 
   // FlipDelegate methods:
-  virtual const HttpRequestInfo* request();
-  virtual const UploadDataStream* data();
+  virtual const HttpRequestInfo* request() const;
+  virtual const UploadDataStream* data() const;
   virtual void OnRequestSent(int status);
   virtual void OnUploadDataSent(int result);
   virtual void OnResponseReceived(HttpResponseInfo* response);
   virtual void OnDataReceived(const char* buffer, int bytes);
   virtual void OnClose(int status);
+
+ private:
+  friend class FlipStreamParserPeer;
+
+  void DoCallback(int rv);
+
+  // The Flip request id for this request.
+  scoped_refptr<FlipSession> flip_;
+  flip::FlipStreamId flip_stream_id_;
+
+  const HttpRequestInfo* request_;
+  scoped_ptr<HttpResponseInfo> response_;
+  scoped_ptr<UploadDataStream> request_body_stream_;
+
+  bool response_complete_;
+  // We buffer the response body as it arrives asynchronously from the stream.
+  // TODO(mbelshe):  is this infinite buffering?
+  std::deque<scoped_refptr<IOBufferWithSize> > response_body_;
+
+  // Since we buffer the response, we also buffer the response status.
+  // Not valid until response_complete_ is true.
+  int response_status_;
+
+  CompletionCallback* user_callback_;
+
+  // User provided buffer for the ReadResponseBody() response.
+  scoped_refptr<IOBuffer> user_buffer_;
+  int user_buffer_len_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlipStreamParser);
+};
+
+// A FlipNetworkTransaction can be used to fetch HTTP conent.
+// The FlipDelegate is the consumer of events from the FlipSession.
+class FlipNetworkTransaction : public HttpTransaction {
+ public:
+  explicit FlipNetworkTransaction(HttpNetworkSession* session);
+  virtual ~FlipNetworkTransaction();
 
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
@@ -84,8 +134,8 @@ class FlipNetworkTransaction : public HttpTransaction, public FlipDelegate {
     STATE_NONE
   };
 
-  // Used to callback an HttpTransaction call.
-  void DoHttpTransactionCallback(int result);
+  void DoCallback(int result);
+  void OnIOComplete(int result);
 
   // Runs the state transition loop.
   int DoLoop(int result);
@@ -103,40 +153,32 @@ class FlipNetworkTransaction : public HttpTransaction, public FlipDelegate {
   int DoReadBody();
   int DoReadBodyComplete(int result);
 
-  // The Flip request id for this request.
-  int flip_request_id_;
-
   // The Flip session servicing this request.  If NULL, the request has not
   // started.
   scoped_refptr<FlipSession> flip_;
 
+  CompletionCallbackImpl<FlipNetworkTransaction> io_callback_;
   CompletionCallback* user_callback_;
+
+  // Used to pass onto the FlipStreamParser.
   scoped_refptr<IOBuffer> user_buffer_;
-  int user_buffer_bytes_remaining_;
+  int user_buffer_len_;
 
   scoped_refptr<HttpNetworkSession> session_;
 
   const HttpRequestInfo* request_;
-  HttpResponseInfo response_;
-
-  scoped_ptr<UploadDataStream> request_body_stream_;
-
-  // We buffer the response body as it arrives asynchronously from the stream.
-  // TODO(mbelshe):  is this infinite buffering?
-  std::deque<scoped_refptr<IOBufferWithSize> > response_body_;
-  bool response_complete_;
-  // Since we buffer the response, we also buffer the response status.
-  // Not valid until response_complete_ is true.
-  int response_status_;
 
   // The time the Start method was called.
-  base::Time start_time_;
+  base::TimeTicks start_time_;
 
   // The next state in the state machine.
   State next_state_;
+
+  scoped_ptr<FlipStreamParser> flip_stream_parser_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlipNetworkTransaction);
 };
 
 }  // namespace net
 
 #endif  // NET_HTTP_NETWORK_TRANSACTION_H_
-

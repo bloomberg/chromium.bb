@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <math.h>  // ceil
+#include "net/flip/flip_network_transaction.h"
 
-#include "base/compiler_specific.h"
 #include "net/base/completion_callback.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
-#include "net/base/ssl_info.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_data.h"
-#include "net/flip/flip_network_transaction.h"
 #include "net/flip/flip_protocol.h"
-#include "net/http/http_auth_handler_ntlm.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_network_transaction.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/proxy/proxy_config_service_fixed.h"
-#include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
-#include "net/socket/ssl_client_socket.h"
 #include "testing/platform_test.h"
 
 //-----------------------------------------------------------------------------
 
 namespace net {
+
+class FlipStreamParserPeer {
+ public:
+  explicit FlipStreamParserPeer(FlipStreamParser* flip_stream_parser)
+      : flip_stream_parser_(flip_stream_parser) {}
+
+  int flip_stream_id() const { return flip_stream_parser_->flip_stream_id_; }
+
+ private:
+  FlipStreamParser* const flip_stream_parser_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlipStreamParserPeer);
+};
 
 namespace {
 
@@ -35,7 +41,7 @@ ProxyService* CreateNullProxyService() {
 }
 
 // Helper to manage the lifetimes of the dependencies for a
-// HttpNetworkTransaction.
+// FlipNetworkTransaction.
 class SessionDependencies {
  public:
   // Default set of dependencies -- "null" proxy service.
@@ -74,10 +80,51 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
                                 session_deps->flip_session_pool);
 }
 
+class FlipStreamParserTest : public PlatformTest {
+ protected:
+  FlipStreamParserTest()
+      : session_(CreateSession(&session_deps_)),
+        parser_peer_(&parser_) {}
+
+  FlipSession* CreateFlipSession() {
+    HostResolver::RequestInfo resolve_info("www.google.com", 80);
+    FlipSession* session = session_->flip_session_pool()->Get(
+        resolve_info, session_);
+    return session;
+  }
+
+  virtual void TearDown() {
+    MessageLoop::current()->RunAllPending();
+    PlatformTest::TearDown();
+  }
+
+  SessionDependencies session_deps_;
+  scoped_refptr<HttpNetworkSession> session_;
+  FlipStreamParser parser_;
+  FlipStreamParserPeer parser_peer_;
+};
+
+// TODO(willchan): Look into why TCPConnectJobs are still alive when this test
+// goes away.  They're calling into the ClientSocketFactory which doesn't exist
+// anymore, so it crashes.
+TEST_F(FlipStreamParserTest, DISABLED_SendRequest) {
+  scoped_refptr<FlipSession> flip(CreateFlipSession());
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  TestCompletionCallback callback;
+
+  EXPECT_EQ(ERR_IO_PENDING, parser_.SendRequest(flip, &request, &callback));
+  EXPECT_TRUE(flip->IsStreamActive(parser_peer_.flip_stream_id()));
+}
+
+// TODO(willchan): Write a longer test for FlipStreamParser that exercises all
+// methods.
+
 }  // namespace
 
 class FlipNetworkTransactionTest : public PlatformTest {
- public:
+ protected:
   virtual void SetUp() {
     // Disable compression on this test.
     flip::FlipFramer::set_enable_compression_default(false);
@@ -89,7 +136,6 @@ class FlipNetworkTransactionTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
- protected:
   void KeepAliveConnectionResendRequestTest(const MockRead& read_failure);
 
   struct TransactionHelperResult {
@@ -143,7 +189,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
 // Verify FlipNetworkTransaction constructor.
 TEST_F(FlipNetworkTransactionTest, Constructor) {
   SessionDependencies session_deps;
-  scoped_refptr<net::HttpNetworkSession> session =
+  scoped_refptr<HttpNetworkSession> session =
       CreateSession(&session_deps);
   scoped_ptr<HttpTransaction> trans(new FlipNetworkTransaction(session));
 }
@@ -197,10 +243,10 @@ TEST_F(FlipNetworkTransactionTest, Get) {
 
   MockRead reads[] = {
     MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
-    MockWrite(true, reinterpret_cast<const char*>(body_frame),
-              sizeof(body_frame)),
-    MockWrite(true, reinterpret_cast<const char*>(fin_frame),
-              sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(body_frame),
+             sizeof(body_frame)),
+    MockRead(true, reinterpret_cast<const char*>(fin_frame),
+             sizeof(fin_frame)),
     MockRead(true, 0, 0)  // EOF
   };
 
@@ -325,5 +371,78 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
+// TODO(willchan): Look into why TCPConnectJobs are still alive when this test
+// goes away.  They're calling into the ClientSocketFactory which doesn't exist
+// anymore, so it crashes.
+TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,                                        // header
+    0x01, 0x00, 0x00, 0x46,                                        // FIN, len
+    0x00, 0x00, 0x00, 0x01,                                        // stream id
+    0xc0, 0x00, 0x00, 0x04,                                        // 4 headers
+    0x00, 0x04, 'h', 'o', 's', 't',
+    0x00, 0x0e, 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e',
+                '.', 'c', 'o', 'm',
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+    0x00, 0x03, 'G', 'E', 'T',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x01, '/',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  static const unsigned char syn_reply[] = {
+    0x80, 0x01, 0x00, 0x02,                                        // header
+    0x00, 0x00, 0x00, 0x45,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
+    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
+    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
+    0x00, 0x03, '2', '0', '0',                                     // "200"
+    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "HTTP/1.1"
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
+  };
+
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
+    // This following read isn't used by the test, except during the
+    // RunAllPending() call at the end since the FlipSession survives the
+    // FlipNetworkTransaction and still tries to continue Read()'ing.  Any
+    // MockRead will do here.
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  // We disable SSL for this test.
+  FlipSession::SetSSLMode(false);
+
+  SessionDependencies session_deps;
+  scoped_ptr<FlipNetworkTransaction> trans(
+      new FlipNetworkTransaction(CreateSession(&session_deps)));
+
+  StaticMockSocket data(reads, writes);
+  session_deps.socket_factory.AddMockSocket(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, &callback, NULL);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  trans.reset();  // Cancel the transaction.
+
+  // Flush the MessageLoop while the SessionDependencies (in particular, the
+  // MockClientSocketFactory) are still alive.
+  MessageLoop::current()->RunAllPending();
+}
 
 }  // namespace net
