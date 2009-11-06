@@ -27,6 +27,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::wstring GetAppDescription();
 
+  virtual std::string GetSafeBrowsingName();
+
   virtual std::wstring GetStateKey();
 
   virtual std::wstring GetStateMediumKey();

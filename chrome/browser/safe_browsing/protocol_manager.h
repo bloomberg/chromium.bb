@@ -49,6 +49,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
 
  public:
   SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
+                              const std::string& client_name,
                               const std::string& client_key,
                               const std::string& wrapped_key);
   ~SafeBrowsingProtocolManager();
@@ -231,6 +232,9 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
 
   // Track outstanding malware report fetchers for clean up.
   std::set<const URLFetcher*> malware_reports_;
+
+  // The safe browsing client name sent in each request.
+  std::string client_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
 };

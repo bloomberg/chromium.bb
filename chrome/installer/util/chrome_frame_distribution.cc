@@ -53,6 +53,10 @@ std::wstring ChromeFrameDistribution::GetAppDescription() {
   return L"Chrome in a Frame.";
 }
 
+std::string ChromeFrameDistribution::GetSafeBrowsingName() {
+  return "googlechromeframe";
+}
+
 std::wstring ChromeFrameDistribution::GetStateKey() {
   std::wstring key(google_update::kRegPathClientState);
   key.append(L"\\");

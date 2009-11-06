@@ -302,6 +302,10 @@ int GoogleChromeDistribution::GetInstallReturnCode(
   }
 }
 
+std::string GoogleChromeDistribution::GetSafeBrowsingName() {
+  return "googlechrome";
+}
+
 std::wstring GoogleChromeDistribution::GetStateKey() {
   std::wstring key(google_update::kRegPathClientState);
   key.append(L"\\");

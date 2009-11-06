@@ -73,6 +73,10 @@ int BrowserDistribution::GetInstallReturnCode(
   return install_status;
 }
 
+std::string BrowserDistribution::GetSafeBrowsingName() {
+  return "chromium";
+}
+
 std::wstring BrowserDistribution::GetStateKey() {
   return L"Software\\Chromium";
 }

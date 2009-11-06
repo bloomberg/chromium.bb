@@ -25,6 +25,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
+#if defined(OS_WIN)
+#include "chrome/installer/util/browser_distribution.h"
+#endif
 #include "net/base/registry_controlled_domain.h"
 
 using base::Time;
@@ -91,7 +94,23 @@ void SafeBrowsingService::OnIOInitialize(const std::string& client_key,
                                          const std::string& wrapped_key) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   enabled_ = true;
+
+  // On Windows, get the safe browsing client name from the browser
+  // distribution classes in installer util. These classes don't yet have
+  // an analog on non-Windows builds so just keep the name specified here.
+#if defined(OS_WIN)
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::string client_name(dist->GetSafeBrowsingName());
+#else
+#if defined(GOOGLE_CHROME_BUILD)
+  std::string client_name("googlechrome");
+#else
+  std::string client_name("chromium");
+#endif
+#endif
+
   protocol_manager_ = new SafeBrowsingProtocolManager(this,
+                                                      client_name,
                                                       client_key,
                                                       wrapped_key);
   // We want to initialize the protocol manager only after the database has

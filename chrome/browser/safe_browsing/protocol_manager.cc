@@ -51,14 +51,6 @@ static const char* const kSbMalwareReportUrl =
     "http://safebrowsing.clients.google.com/safebrowsing/report?evts=malblhit"
     "&evtd=%s&evtr=%s&evhr=%s&client=%s&appver=%s";
 
-#if defined(CHROME_FRAME_BUILD)
-static const char* const kSbClientName = "googlechromeframe";
-#elif defined(GOOGLE_CHROME_BUILD)
-static const char* const kSbClientName = "googlechrome";
-#else
-static const char* const kSbClientName = "chromium";
-#endif
-
 // Maximum back off multiplier.
 static const int kSbMaxBackOff = 8;
 
@@ -67,6 +59,7 @@ static const int kSbMaxBackOff = 8;
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
+    const std::string& client_name,
     const std::string& client_key,
     const std::string& wrapped_key)
     : sb_service_(sb_service),
@@ -81,7 +74,8 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       chunk_pending_to_write_(false),
       client_key_(client_key),
       wrapped_key_(wrapped_key),
-      update_size_(0) {
+      update_size_(0),
+      client_name_(client_name) {
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
 
@@ -125,7 +119,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   }
 
   std::string url = StringPrintf(kSbGetHashUrl,
-                                 kSbClientName,
+                                 client_name_.c_str(),
                                  version_.c_str());
   if (!client_key_.empty()) {
     url.append("&wrkey=");
@@ -524,7 +518,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
 
 void SafeBrowsingProtocolManager::IssueKeyRequest() {
   GURL key_url(StringPrintf(kSbNewKeyUrl,
-                            kSbClientName,
+                            client_name_.c_str(),
                             version_.c_str()));
   request_type_ = GETKEY_REQUEST;
   request_.reset(new URLFetcher(key_url, URLFetcher::GET, this));
@@ -569,7 +563,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
         SBListChunkRanges(safe_browsing_util::kMalwareList), use_mac));
 
   std::string url = StringPrintf(kSbUpdateUrl,
-                                 kSbClientName,
+                                 client_name_.c_str(),
                                  version_.c_str());
   if (use_mac) {
     url.append("&wrkey=");
@@ -616,7 +610,7 @@ void SafeBrowsingProtocolManager::ReportMalware(const GURL& malware_url,
       EscapeQueryParamValue(malware_url.spec()).c_str(),
       EscapeQueryParamValue(page_url.spec()).c_str(),
       EscapeQueryParamValue(referrer_url.spec()).c_str(),
-      kSbClientName,
+      client_name_.c_str(),
       version_.c_str());
   GURL report_url(report_str);
   URLFetcher* report = new URLFetcher(report_url, URLFetcher::GET, this);
