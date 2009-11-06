@@ -5,36 +5,18 @@
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_
 
-#import <Cocoa/Cocoa.h>
-
-#import "base/cocoa_protocols_mac.h"
-#include "base/scoped_ptr.h"
-#include "base/scoped_nsobject.h"
-#include "chrome/browser/bookmarks/bookmark_editor.h"
-
-@class BookmarkTreeBrowserCell;
+#import "chrome/browser/cocoa/bookmark_editor_base_controller.h"
 
 // A controller for the bookmark editor, opened with Edit... from the
 // context menu of a bookmark button.
-@interface BookmarkEditorController : NSWindowController<NSMatrixDelegate,
-                                                         NSTextFieldDelegate> {
+@interface BookmarkEditorController : BookmarkEditorBaseController {
  @private
-  IBOutlet NSTextField* nameField_;
-  IBOutlet NSTextField* urlField_;
-  IBOutlet NSBrowser* folderBrowser_;
-  IBOutlet NSButton* okButton_;
-  IBOutlet NSButton* newFolderButton_;
-
-  NSWindow* parentWindow_;
-  Profile* profile_;  // weak
-  const BookmarkNode* parentNode_;  // weak; owned by the model
   const BookmarkNode* node_;  // weak; owned by the model
-  BookmarkEditor::Configuration configuration_;
-  scoped_ptr<BookmarkEditor::Handler> handler_;  // we take ownership
-
-  scoped_nsobject<NSString> initialName_;
   scoped_nsobject<NSString> initialUrl_;
+  NSString* displayURL_;  // Bound to a text field in the dialog.
 }
+
+@property (copy) NSString* displayURL;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile
@@ -43,23 +25,6 @@
              configuration:(BookmarkEditor::Configuration)configuration
                    handler:(BookmarkEditor::Handler*)handler;
 
-// Run the bookmark editor as a modal sheet.  Does not block.
-- (void)runAsModalSheet;
-
-// Create a new folder at the end of the selected parent folder, give it
-// an untitled name, and put it into editing mode.
-- (IBAction)newFolder:(id)sender;
-
-// Actions for the buttons at the bottom of the window.
-- (IBAction)cancel:(id)sender;
-- (IBAction)ok:(id)sender;
-@end
-
-@interface BookmarkEditorController(TestingAPI)
-@property (assign) NSString* displayName;
-@property (assign) NSString* displayURL;
-@property (readonly) BOOL okButtonEnabled;
-- (void)selectTestNodeInBrowser:(const BookmarkNode*)node;
 @end
 
 #endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_ */

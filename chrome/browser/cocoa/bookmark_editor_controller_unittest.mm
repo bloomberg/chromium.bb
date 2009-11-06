@@ -183,9 +183,9 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     model.AddURL(group_bb_, 1, L"bb-1", GURL("http://bb-1.com"));
     model.AddURL(group_bb_, 2, L"bb-2", GURL("http://bb-2.com"));
     bookmark_bb_3_ =
-      model.AddURL(group_bb_, 3, L"bb-3", GURL("http://bb-3.com"));
+    model.AddURL(group_bb_, 3, L"bb-3", GURL("http://bb-3.com"));
     model.AddURL(group_bb_, 4, L"bb-4", GURL("http://bb-4.com"));
-    model.AddURL(group_b_, 2, L"b-2", GURL("http://b-2.com"));
+    model.AddURL(group_b_, 2, L"b-1", GURL("http://b-2.com"));
     model.AddURL(group_b_, 3, L"b-2", GURL("http://b-3.com"));
 
     group_c_ = model.AddGroup(root, 2, L"c");
@@ -365,4 +365,3 @@ TEST_F(BookmarkEditorControllerTreeNoParentTest, AddFolderWithNoGroupSelected) {
   const BookmarkNode* folderChild = bookmarkBar->GetChild(4);
   EXPECT_EQ(folderChild->GetTitle(), L"New folder");
 }
-
