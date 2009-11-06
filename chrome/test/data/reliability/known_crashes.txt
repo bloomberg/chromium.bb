@@ -133,9 +133,3 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
-# bug 23780
-PREFIX : v8::internal::mayaccessprecheck
-
-# 26506
-PREFIX : webcore::eventtarget::fireeventlisteners___webcore::node::handlelocalevents___webcore::node::dispatchgenericevent___webcore::node::dispatchevent
-
