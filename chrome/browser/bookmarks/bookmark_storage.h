@@ -92,7 +92,6 @@ class BookmarkStorage : public NotificationObserver,
 
   // Creates a BookmarkStorage for the specified model
   BookmarkStorage(Profile* profile, BookmarkModel* model);
-  ~BookmarkStorage();
 
   // Loads the bookmarks into the model, notifying the model when done. This
   // takes ownership of |details|. See LoadDetails for details.
@@ -109,6 +108,10 @@ class BookmarkStorage : public NotificationObserver,
   virtual bool SerializeData(std::string* output);
 
  private:
+  friend class base::RefCountedThreadSafe<BookmarkStorage>;
+
+  ~BookmarkStorage();
+
   class LoadTask;
 
   // Callback from backend with the results of the bookmark file.

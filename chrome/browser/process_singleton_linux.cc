@@ -402,10 +402,6 @@ class ProcessSingleton::LinuxWatcher
         parent_(parent) {
   }
 
-  virtual ~LinuxWatcher() {
-    STLDeleteElements(&readers_);
-  }
-
   // Start listening for connections on the socket.  This method should be
   // called from the IO thread.
   void StartListening(int socket);
@@ -430,6 +426,12 @@ class ProcessSingleton::LinuxWatcher
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ProcessSingleton::LinuxWatcher>;
+
+  virtual ~LinuxWatcher() {
+    STLDeleteElements(&readers_);
+  }
+
   // Removes and deletes the SocketReader.
   void RemoveSocketReader(SocketReader* reader);
 

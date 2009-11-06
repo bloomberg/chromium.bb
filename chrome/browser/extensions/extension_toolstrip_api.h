@@ -17,6 +17,7 @@ namespace extension_toolstrip_api_events {
 
 class ToolstripFunction : public SyncExtensionFunction {
  protected:
+  virtual ~ToolstripFunction() {}
   virtual bool RunImpl();
 
   ExtensionShelfModel* model_;
@@ -24,11 +25,13 @@ class ToolstripFunction : public SyncExtensionFunction {
 };
 
 class ToolstripExpandFunction : public ToolstripFunction {
+  ~ToolstripExpandFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("toolstrip.expand")
 };
 
 class ToolstripCollapseFunction : public ToolstripFunction {
+  ~ToolstripCollapseFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("toolstrip.collapse")
 };

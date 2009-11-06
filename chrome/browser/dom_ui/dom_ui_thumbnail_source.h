@@ -40,6 +40,8 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource,
                                 scoped_refptr<RefCountedBytes> data);
 
  private:
+  ~DOMUIThumbnailSource() {}
+
   // NotificationObserver implementation
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

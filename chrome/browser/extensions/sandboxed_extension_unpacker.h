@@ -20,9 +20,6 @@ class ResourceDispatcherHost;
 class SandboxedExtensionUnpackerClient
     : public base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient> {
  public:
-  virtual ~SandboxedExtensionUnpackerClient(){
-  }
-
   // temp_dir - A temporary directoy containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
   //
@@ -34,6 +31,11 @@ class SandboxedExtensionUnpackerClient
                                const FilePath& extension_root,
                                Extension* extension) = 0;
   virtual void OnUnpackFailure(const std::string& error) = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient>;
+
+  virtual ~SandboxedExtensionUnpackerClient() {}
 };
 
 // SandboxedExtensionUnpacker unpacks extensions from the CRX format into a

@@ -29,6 +29,8 @@ class HistoryUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
+  ~HistoryUIHTMLSource() {}
+
   DISALLOW_COPY_AND_ASSIGN(HistoryUIHTMLSource);
 };
 

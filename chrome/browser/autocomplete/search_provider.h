@@ -75,6 +75,8 @@ class SearchProvider : public AutocompleteProvider,
   static const int kKeywordProviderURLFetcherID;
 
  private:
+  ~SearchProvider() {}
+
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers
   // may be used:
   // . The default provider. This corresponds to the user's default search

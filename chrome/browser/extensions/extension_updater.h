@@ -44,8 +44,6 @@ class ExtensionUpdater
                    PrefService* prefs,
                    int frequency_seconds);
 
-  virtual ~ExtensionUpdater();
-
   // Starts the updater running.
   void Start();
 
@@ -63,10 +61,12 @@ class ExtensionUpdater
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionUpdater>;
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
   friend class SafeManifestParser;
 
+  virtual ~ExtensionUpdater();
 
   // We need to keep track of some information associated with a url
   // when doing a fetch.

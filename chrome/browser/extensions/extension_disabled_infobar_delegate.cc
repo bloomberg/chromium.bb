@@ -37,9 +37,6 @@ class ExtensionDisabledDialogDelegate
         NewRunnableMethod(this, &ExtensionDisabledDialogDelegate::Start));
   }
 
-  virtual ~ExtensionDisabledDialogDelegate() {
-  }
-
   // ExtensionInstallUI::Delegate
   virtual void ContinueInstall() {
     service_->EnableExtension(extension_->id());
@@ -51,6 +48,10 @@ class ExtensionDisabledDialogDelegate
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate>;
+
+  virtual ~ExtensionDisabledDialogDelegate() {}
+
   void Start() {
     // We start on the file thread so we can decode the install icon.
     FilePath install_icon_path = install_icon_resource_.GetFilePath();
