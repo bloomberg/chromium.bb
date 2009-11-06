@@ -5764,6 +5764,8 @@
                 'app/theme/menu_page_Template.pdf',
                 'app/theme/nav.pdf',
                 'app/theme/newtab.pdf',
+                'app/theme/newtab_h.pdf',
+                'app/theme/newtab_p.pdf',
                 'app/theme/otr_icon.pdf',
                 'app/theme/reload_Template.pdf',
                 'app/theme/star_Template.pdf',

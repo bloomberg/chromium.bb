@@ -230,6 +230,13 @@ static const NSTimeInterval kAnimationDuration = 0.2;
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
+    newTabTrackingArea_.reset(
+        [[NSTrackingArea alloc] initWithRect:[newTabButton_ bounds]
+                                     options:(NSTrackingMouseEnteredAndExited |
+                                              NSTrackingActiveAlways)
+                                       owner:self
+                                    userInfo:nil]);
+    [newTabButton_ addTrackingArea:newTabTrackingArea_.get()];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
     dragBlockingView_.reset(
         [[TabStripControllerDragBlockingView alloc] initWithFrame:NSZeroRect
@@ -267,6 +274,7 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 - (void)dealloc {
   if (trackingArea_.get())
     [tabView_ removeTrackingArea:trackingArea_.get()];
+  [newTabButton_ removeTrackingArea:newTabTrackingArea_.get()];
   // Invalidate all closing animations so they don't call back to us after
   // we're gone.
   for (TabController* controller in closingControllers_.get()) {
@@ -672,6 +680,18 @@ static const NSTimeInterval kAnimationDuration = 0.2;
       [newTabButton_ setHidden:NO];
 
     if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
+      // Set the new tab button image correctly based on where the cursor is.
+      NSWindow* window = [tabView_ window];
+      NSPoint currentMouse = [window mouseLocationOutsideOfEventStream];
+      currentMouse = [tabView_ convertPoint:currentMouse fromView:nil];
+      NSString* imageName = nil;
+      if (NSPointInRect(currentMouse, newTabNewFrame)) {
+        imageName = @"newtab_h";
+      } else {
+        imageName = @"newtab";
+      }
+      [newTabButton_ setImage:nsimage_cache::ImageNamed(imageName)];
+
       // Move the new tab button into place. We want to animate the new tab
       // button if it's moving to the left (closing a tab), but not when it's
       // moving to the right (inserting a new tab). If moving right, we need
@@ -1156,18 +1176,28 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 }
 
 - (void)mouseEntered:(NSEvent*)event {
-  [self mouseMoved:event];
+  NSTrackingArea* area = [event trackingArea];
+  if ([area isEqual:trackingArea_]) {
+    [self mouseMoved:event];
+  } else if ([area isEqual:newTabTrackingArea_]) {
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab_h.pdf")];
+  }
 }
 
 // Called when the tracking area is in effect which means we're tracking to
 // see if the user leaves the tab strip with their mouse. When they do,
 // reset layout to use all available width.
 - (void)mouseExited:(NSEvent*)event {
-  availableResizeWidth_ = kUseFullAvailableWidth;
+  NSTrackingArea* area = [event trackingArea];
+  if ([area isEqual:trackingArea_]) {
+    availableResizeWidth_ = kUseFullAvailableWidth;
 
-  [hoveredTab_ mouseExited:event];
-  hoveredTab_ = nil;
-  [self layoutTabs];
+    [hoveredTab_ mouseExited:event];
+    hoveredTab_ = nil;
+    [self layoutTabs];
+  } else if ([area isEqual:newTabTrackingArea_]) {
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab.pdf")];
+  }
 }
 
 // Adds the given subview to (the end of) the list of permanent subviews

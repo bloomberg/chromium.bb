@@ -42,6 +42,9 @@ class ToolbarModel;
   NSView* switchView_;  // weak
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NSButton* newTabButton_;  // weak, obtained from the nib.
+
+  // Tracks the newTabButton_ for rollovers.
+  scoped_nsobject<NSTrackingArea> newTabTrackingArea_;
   scoped_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
   TabStripModel* tabModel_;  // weak
