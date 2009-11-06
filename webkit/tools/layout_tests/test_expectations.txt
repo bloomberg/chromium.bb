@@ -3093,7 +3093,7 @@ BUG26344 LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete
 // hclam to add expected results.
 // Update:  failing in an odd way since the WebKit 50417:50432 roll; does
 // not seem to be finding fallback results; skipping for now.
-BUG_HCLAM SKIP : LayoutTests/media/video-volume-slider.html = FAIL CRASH
+LINUX MAC BUG_HCLAM : LayoutTests/media/video-volume-slider.html = FAIL CRASH
 
 // WebKit roll 50073:50101
 // Test added by Ryosuke: http://trac.webkit.org/changeset/50090
