@@ -188,12 +188,13 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
     flags = flip::CONTROL_FLAG_FIN;
 
   // Create a SYN_STREAM packet and add to the output queue.
-  scoped_ptr<flip::FlipSynStreamControlFrame> syn_frame(
-      flip_framer_.CreateSynStream(stream_id, priority, flags, false,
-                                   &headers));
-  int length = flip::FlipFrame::size() + syn_frame->length();
-  IOBufferWithSize* buffer = new IOBufferWithSize(length);
-  memcpy(buffer->data(), syn_frame->data(), length);
+  flip::FlipSynStreamControlFrame* syn_frame =
+      flip_framer_.CreateSynStream(stream_id, priority, flags, false, &headers);
+  int length = sizeof(flip::FlipFrame) + syn_frame->length();
+  IOBufferWithSize* buffer =
+      new IOBufferWithSize(length);
+  memcpy(buffer->data(), syn_frame, length);
+  delete[] syn_frame;
   queue_.push(FlipIOBuffer(buffer, priority, stream));
 
   static StatsCounter flip_requests("flip.requests");
@@ -410,16 +411,17 @@ void FlipSession::WriteSocket() {
 
     // We've deferred compression until just before we write it to the socket,
     // which is now.
-    flip::FlipFrame uncompressed_frame(next_buffer.buffer()->data(), false);
-    scoped_ptr<flip::FlipFrame> compressed_frame(
-        flip_framer_.CompressFrame(&uncompressed_frame));
-    size_t size = compressed_frame.get()->length() + flip::FlipFrame::size();
+    flip::FlipFrame* uncompressed_frame =
+        reinterpret_cast<flip::FlipFrame*>(next_buffer.buffer()->data());
+    scoped_array<flip::FlipFrame> compressed_frame(
+        flip_framer_.CompressFrame(uncompressed_frame));
+    size_t size = compressed_frame.get()->length() + sizeof(flip::FlipFrame);
 
     DCHECK(size > 0);
 
     // TODO(mbelshe): We have too much copying of data here.
     IOBufferWithSize* buffer = new IOBufferWithSize(size);
-    memcpy(buffer->data(), compressed_frame->data(), size);
+    memcpy(buffer->data(), compressed_frame.get(), size);
 
     // Attempt to send the frame.
     in_flight_write_ = FlipIOBuffer(buffer, 0, next_buffer.stream());
@@ -643,7 +645,8 @@ void FlipSession::OnControl(const flip::FlipControlFrame* frame) {
   flip::FlipHeaderBlock headers;
   uint32 type = frame->type();
   if (type == flip::SYN_STREAM || type == flip::SYN_REPLY) {
-    if (!flip_framer_.ParseHeaderBlock(frame, &headers)) {
+    if (!flip_framer_.ParseHeaderBlock(
+        reinterpret_cast<const flip::FlipFrame*>(frame), &headers)) {
       LOG(WARNING) << "Could not parse Flip Control Frame Header";
       return;
     }
@@ -693,6 +696,10 @@ void FlipSession::OnFin(const flip::FlipFinStreamControlFrame* frame) {
     DeactivateStream(stream_id);
     delete stream;
   }
+}
+
+void FlipSession::OnLameDuck() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace net

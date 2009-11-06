@@ -43,9 +43,14 @@ class FlipFrameBuilder {
   // Returns the size of the FlipFrameBuilder's data.
   int length() const { return length_; }
 
+  // Returns the data for this FlipFrameBuilder.
+  const FlipFrame* data() const {
+    return reinterpret_cast<FlipFrame*>(buffer_);
+  }
+
   // Takes the buffer from the FlipFrameBuilder.
   FlipFrame* take() {
-    FlipFrame* rv = new FlipFrame(buffer_, true);
+    FlipFrame* rv = reinterpret_cast<FlipFrame*>(buffer_);
     buffer_ = NULL;
     capacity_ = 0;
     length_ = 0;

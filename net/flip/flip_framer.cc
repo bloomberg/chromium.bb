@@ -105,8 +105,8 @@ size_t FlipFramer::BytesSafeToRead() const {
     case FLIP_RESET:
       return 0;
     case FLIP_READING_COMMON_HEADER:
-      DCHECK(current_frame_len_ < FlipFrame::size());
-      return FlipFrame::size() - current_frame_len_;
+      DCHECK(current_frame_len_ < sizeof(FlipFrame));
+      return sizeof(FlipFrame) - current_frame_len_;
     case FLIP_INTERPRET_CONTROL_FRAME_COMMON_HEADER:
       return 0;
     case FLIP_CONTROL_FRAME_PAYLOAD:
@@ -151,6 +151,11 @@ size_t FlipFramer::ProcessInput(const char* data, size_t len) {
 
   size_t original_len = len;
   while (len != 0) {
+    FlipControlFrame* current_control_frame =
+        reinterpret_cast<FlipControlFrame*>(current_frame_buffer_);
+    FlipDataFrame* current_data_frame =
+        reinterpret_cast<FlipDataFrame*>(current_frame_buffer_);
+
     switch (state_) {
       case FLIP_ERROR:
       case FLIP_DONE:
@@ -173,7 +178,52 @@ size_t FlipFramer::ProcessInput(const char* data, size_t len) {
       // I felt it was a nice partitioning, however (which probably indicates
       // that it should be refactored into its own function!)
       case FLIP_INTERPRET_CONTROL_FRAME_COMMON_HEADER:
-        ProcessControlFrameHeader();
+        DCHECK(error_code_ == 0);
+        DCHECK(current_frame_len_ >= sizeof(FlipFrame));
+        // Do some sanity checking on the control frame sizes.
+        switch (current_control_frame->type()) {
+          case SYN_STREAM:
+            // NOTE: sizeof(FlipSynStreamControlFrame) is not accurate.
+            if (current_control_frame->length() <
+                sizeof(FlipSynStreamControlFrame) - sizeof(FlipControlFrame))
+              set_error(FLIP_INVALID_CONTROL_FRAME);
+            break;
+          case SYN_REPLY:
+            if (current_control_frame->length() <
+                sizeof(FlipSynReplyControlFrame) - sizeof(FlipControlFrame))
+              set_error(FLIP_INVALID_CONTROL_FRAME);
+            break;
+          case FIN_STREAM:
+            if (current_control_frame->length() !=
+                sizeof(FlipFinStreamControlFrame) - sizeof(FlipFrame))
+              set_error(FLIP_INVALID_CONTROL_FRAME);
+            break;
+          case NOOP:
+            // NOP.  Swallow it.
+            CHANGE_STATE(FLIP_AUTO_RESET);
+            continue;
+          default:
+            set_error(FLIP_UNKNOWN_CONTROL_TYPE);
+            break;
+        }
+
+        // We only support version 1 of this protocol.
+        if (current_control_frame->version() != kFlipProtocolVersion)
+          set_error(FLIP_UNSUPPORTED_VERSION);
+
+        if (error_code_) {
+          CHANGE_STATE(FLIP_ERROR);
+          goto bottom;
+        }
+
+        remaining_control_payload_ = current_control_frame->length();
+        if (remaining_control_payload_ > kControlFrameBufferMaxSize) {
+          set_error(FLIP_CONTROL_PAYLOAD_TOO_LARGE);
+          CHANGE_STATE(FLIP_ERROR);
+          goto bottom;
+        }
+        ExpandControlFrameBuffer(remaining_control_payload_);
+        CHANGE_STATE(FLIP_CONTROL_FRAME_PAYLOAD);
         continue;
 
       case FLIP_CONTROL_FRAME_PAYLOAD: {
@@ -185,12 +235,60 @@ size_t FlipFramer::ProcessInput(const char* data, size_t len) {
       case FLIP_IGNORE_REMAINING_PAYLOAD:
         // control frame has too-large payload
         // intentional fallthrough
-      case FLIP_FORWARD_STREAM_FRAME: {
-        int bytes_read = ProcessDataFramePayload(data, len);
-        len -= bytes_read;
-        data += bytes_read;
+      case FLIP_FORWARD_STREAM_FRAME:
+        if (remaining_payload_) {
+          size_t amount_to_forward = std::min(remaining_payload_, len);
+          if (amount_to_forward && state_ != FLIP_IGNORE_REMAINING_PAYLOAD) {
+            const FlipDataFrame* data_frame =
+                reinterpret_cast<const FlipDataFrame*>(current_data_frame);
+            if (data_frame->flags() & DATA_FLAG_COMPRESSED) {
+              // TODO(mbelshe): Assert that the decompressor is init'ed.
+              if (!InitializeDecompressor())
+                return NULL;
+
+              size_t decompressed_max_size = amount_to_forward * 100;
+              scoped_array<char> decompressed(new char[decompressed_max_size]);
+              decompressor_->next_in = reinterpret_cast<Bytef*>(
+                  const_cast<char*>(data));
+              decompressor_->avail_in = amount_to_forward;
+              decompressor_->next_out =
+                  reinterpret_cast<Bytef*>(decompressed.get());
+              decompressor_->avail_out = decompressed_max_size;
+
+              int rv = inflate(decompressor_.get(), Z_SYNC_FLUSH);
+              if (rv != Z_OK) {
+                set_error(FLIP_DECOMPRESS_FAILURE);
+                goto bottom;
+              }
+              size_t decompressed_size = decompressed_max_size -
+                                      decompressor_->avail_out;
+              // Only inform the visitor if there is data.
+              if (decompressed_size)
+                visitor_->OnStreamFrameData(current_data_frame->stream_id(),
+                                            decompressed.get(),
+                                            decompressed_size);
+              amount_to_forward -= decompressor_->avail_in;
+            } else {
+              // The data frame was not compressed.
+              // Only inform the visitor if there is data.
+              if (amount_to_forward)
+                visitor_->OnStreamFrameData(current_data_frame->stream_id(),
+                                            data, amount_to_forward);
+            }
+          }
+          data += amount_to_forward;
+          len -= amount_to_forward;
+          remaining_payload_ -= amount_to_forward;
+          // If the FIN flag is set, and there is no more data in this data
+          // frame, inform the visitor of EOF via a 0-length data frame.
+          if (!remaining_payload_ &&
+              current_data_frame->flags() & DATA_FLAG_FIN)
+            visitor_->OnStreamFrameData(current_data_frame->stream_id(), NULL,
+                                       0);
+        } else {
+          CHANGE_STATE(FLIP_AUTO_RESET);
+        }
         continue;
-      }
       default:
         break;
     }
@@ -205,11 +303,12 @@ size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
   DCHECK(state_ == FLIP_READING_COMMON_HEADER);
 
   int original_len = len;
-  FlipFrame current_frame(current_frame_buffer_, false);
+  FlipDataFrame* current_frame =
+      reinterpret_cast<FlipDataFrame*>(current_frame_buffer_);
 
   do {
-    if (current_frame_len_ < FlipFrame::size()) {
-      size_t bytes_desired = FlipFrame::size() - current_frame_len_;
+    if (current_frame_len_ < sizeof(FlipFrame)) {
+      size_t bytes_desired = sizeof(FlipFrame) - current_frame_len_;
       size_t bytes_to_append = std::min(bytes_desired, len);
       char* header_buffer = current_frame_buffer_;
       memcpy(&header_buffer[current_frame_len_], data, bytes_to_append);
@@ -217,75 +316,24 @@ size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
       data += bytes_to_append;
       len -= bytes_to_append;
       // Check for an empty data frame.
-      if (current_frame_len_ == FlipFrame::size() &&
-          !current_frame.is_control_frame() &&
-          current_frame.length() == 0) {
-        if (current_frame.flags() & CONTROL_FLAG_FIN) {
-          FlipDataFrame data_frame(current_frame_buffer_, false);
-          visitor_->OnStreamFrameData(data_frame.stream_id(), NULL, 0);
-        }
+      if (current_frame_len_ == sizeof(FlipFrame) &&
+          !current_frame->is_control_frame() &&
+          current_frame->length() == 0) {
+        if (current_frame->flags() & CONTROL_FLAG_FIN)
+          visitor_->OnStreamFrameData(current_frame->stream_id(), NULL, 0);
         CHANGE_STATE(FLIP_RESET);
       }
       break;
     }
-    remaining_payload_ = current_frame.length();
+    remaining_payload_ = current_frame->length();
     // if we're here, then we have the common header all received.
-    if (!current_frame.is_control_frame())
+    if (!current_frame->is_control_frame())
       CHANGE_STATE(FLIP_FORWARD_STREAM_FRAME);
     else
       CHANGE_STATE(FLIP_INTERPRET_CONTROL_FRAME_COMMON_HEADER);
   } while (false);
 
   return original_len - len;
-}
-
-void FlipFramer::ProcessControlFrameHeader() {
-  FlipControlFrame current_control_frame(current_frame_buffer_, false);
-  DCHECK_EQ(FLIP_NO_ERROR, error_code_);
-  DCHECK_LE(FlipFrame::size(), current_frame_len_);
-  // Do some sanity checking on the control frame sizes.
-  switch (current_control_frame.type()) {
-    case SYN_STREAM:
-      if (current_control_frame.length() <
-          FlipSynStreamControlFrame::size() - FlipControlFrame::size())
-        set_error(FLIP_INVALID_CONTROL_FRAME);
-      break;
-    case SYN_REPLY:
-      if (current_control_frame.length() <
-          FlipSynReplyControlFrame::size() - FlipControlFrame::size())
-        set_error(FLIP_INVALID_CONTROL_FRAME);
-      break;
-    case FIN_STREAM:
-      if (current_control_frame.length() !=
-          FlipFinStreamControlFrame::size() - FlipFrame::size())
-        set_error(FLIP_INVALID_CONTROL_FRAME);
-      break;
-    case NOOP:
-      // NOP.  Swallow it.
-      CHANGE_STATE(FLIP_AUTO_RESET);
-      return;
-    default:
-      set_error(FLIP_UNKNOWN_CONTROL_TYPE);
-      break;
-  }
-
-  // We only support version 1 of this protocol.
-  if (current_control_frame.version() != kFlipProtocolVersion)
-    set_error(FLIP_UNSUPPORTED_VERSION);
-
-  if (error_code_) {
-    CHANGE_STATE(FLIP_ERROR);
-    return;
-  }
-
-  remaining_control_payload_ = current_control_frame.length();
-  if (remaining_control_payload_ > kControlFrameBufferMaxSize) {
-    set_error(FLIP_CONTROL_PAYLOAD_TOO_LARGE);
-    CHANGE_STATE(FLIP_ERROR);
-    return;
-  }
-  ExpandControlFrameBuffer(remaining_control_payload_);
-  CHANGE_STATE(FLIP_CONTROL_FRAME_PAYLOAD);
 }
 
 size_t FlipFramer::ProcessControlFramePayload(const char* data, size_t len) {
@@ -303,76 +351,17 @@ size_t FlipFramer::ProcessControlFramePayload(const char* data, size_t len) {
       if (remaining_control_payload_)
         break;
     }
-    FlipControlFrame control_frame(current_frame_buffer_, false);
-    visitor_->OnControl(&control_frame);
+    FlipControlFrame* control_frame =
+        reinterpret_cast<FlipControlFrame*>(current_frame_buffer_);
+    visitor_->OnControl(control_frame);
 
     // If this is a FIN, tell the caller.
-    if (control_frame.type() == SYN_REPLY &&
-        control_frame.flags() & CONTROL_FLAG_FIN)
-      visitor_->OnStreamFrameData(control_frame.stream_id(), NULL, 0);
+    if (control_frame->type() == SYN_REPLY &&
+        control_frame->flags() & CONTROL_FLAG_FIN)
+      visitor_->OnStreamFrameData(control_frame->stream_id(), NULL, 0);
 
     CHANGE_STATE(FLIP_IGNORE_REMAINING_PAYLOAD);
   } while (false);
-  return original_len - len;
-}
-
-size_t FlipFramer::ProcessDataFramePayload(const char* data, size_t len) {
-  size_t original_len = len;
-
-  FlipDataFrame current_data_frame(current_frame_buffer_, false);
-  if (remaining_payload_) {
-    size_t amount_to_forward = std::min(remaining_payload_, len);
-    if (amount_to_forward && state_ != FLIP_IGNORE_REMAINING_PAYLOAD) {
-      if (current_data_frame.flags() & DATA_FLAG_COMPRESSED) {
-        // TODO(mbelshe): Assert that the decompressor is init'ed.
-        if (!InitializeDecompressor())
-          return NULL;
-
-        size_t decompressed_max_size = amount_to_forward * 100;
-        scoped_ptr<char> decompressed(new char[decompressed_max_size]);
-        decompressor_->next_in = reinterpret_cast<Bytef*>(
-            const_cast<char*>(data));
-        decompressor_->avail_in = amount_to_forward;
-        decompressor_->next_out =
-            reinterpret_cast<Bytef*>(decompressed.get());
-        decompressor_->avail_out = decompressed_max_size;
-
-        int rv = inflate(decompressor_.get(), Z_SYNC_FLUSH);
-        if (rv != Z_OK) {
-          set_error(FLIP_DECOMPRESS_FAILURE);
-          goto bottom;
-        }
-        size_t decompressed_size = decompressed_max_size -
-                                   decompressor_->avail_out;
-        // Only inform the visitor if there is data.
-        if (decompressed_size)
-          visitor_->OnStreamFrameData(current_data_frame.stream_id(),
-                                      decompressed.get(),
-                                      decompressed_size);
-        amount_to_forward -= decompressor_->avail_in;
-      } else {
-        // The data frame was not compressed.
-        // Only inform the visitor if there is data.
-        if (amount_to_forward)
-          visitor_->OnStreamFrameData(current_data_frame.stream_id(),
-                                      data, amount_to_forward);
-      }
-    }
-    data += amount_to_forward;
-    len -= amount_to_forward;
-    remaining_payload_ -= amount_to_forward;
-
-    // If the FIN flag is set, and there is no more data in this data
-    // frame, inform the visitor of EOF via a 0-length data frame.
-    if (!remaining_payload_ &&
-        current_data_frame.flags() & DATA_FLAG_FIN)
-      visitor_->OnStreamFrameData(current_data_frame.stream_id(), NULL,
-                                  0);
-  } else {
-    CHANGE_STATE(FLIP_AUTO_RESET);
-  }
-
- bottom:
   return original_len - len;
 }
 
@@ -381,7 +370,7 @@ void FlipFramer::ExpandControlFrameBuffer(size_t size) {
   if (size < current_frame_capacity_)
     return;
 
-  int alloc_size = size + FlipFrame::size();
+  int alloc_size = size + sizeof(FlipFrame);
   char* new_buffer = new char[alloc_size];
   memcpy(new_buffer, current_frame_buffer_, current_frame_len_);
   current_frame_capacity_ = alloc_size;
@@ -390,18 +379,17 @@ void FlipFramer::ExpandControlFrameBuffer(size_t size) {
 
 bool FlipFramer::ParseHeaderBlock(const FlipFrame* frame,
                                   FlipHeaderBlock* block) {
-  FlipControlFrame control_frame(frame->data(), false);
-  uint32 type = control_frame.type();
+  uint32 type = reinterpret_cast<const FlipControlFrame*>(frame)->type();
   if (type != SYN_STREAM && type != SYN_REPLY)
     return false;
 
   // Find the header data within the control frame.
-  scoped_ptr<FlipFrame> decompressed_frame(DecompressFrame(frame));
-  if (!decompressed_frame.get())
+  scoped_array<FlipSynStreamControlFrame> control_frame(
+    reinterpret_cast<FlipSynStreamControlFrame*>(DecompressFrame(frame)));
+  if (!control_frame.get())
     return false;
-  FlipSynStreamControlFrame syn_frame(decompressed_frame->data(), false);
-  const char *header_data = syn_frame.header_block();
-  int header_length = syn_frame.header_block_len();
+  const char *header_data = control_frame.get()->header_block();
+  int header_length = control_frame.get()->header_block_len();
 
   FlipFrameBuilder builder(header_data, header_length);
   void* iter = NULL;
@@ -450,18 +438,21 @@ FlipSynStreamControlFrame* FlipFramer::CreateSynStream(
   }
 
   // Write the length and flags.
-  size_t length = frame.length() - FlipFrame::size();
+  size_t length = frame.length() - sizeof(FlipFrame);
   DCHECK(length < static_cast<size_t>(kLengthMask));
   FlagsAndLength flags_length;
   flags_length.length_ = htonl(static_cast<uint32>(length));
   flags_length.flags_[0] = flags;
   frame.WriteBytesToOffset(4, &flags_length, sizeof(flags_length));
 
-  scoped_ptr<FlipFrame> syn_frame(frame.take());
-  if (compressed)
-    return reinterpret_cast<FlipSynStreamControlFrame*>(
-        CompressFrame(syn_frame.get()));
-  return reinterpret_cast<FlipSynStreamControlFrame*>(syn_frame.release());
+  if (compressed) {
+    FlipSynStreamControlFrame* new_frame =
+        reinterpret_cast<FlipSynStreamControlFrame*>(
+        CompressFrame(frame.data()));
+    return new_frame;
+  }
+
+  return reinterpret_cast<FlipSynStreamControlFrame*>(frame.take());
 }
 
 /* static */
@@ -496,18 +487,17 @@ FlipSynReplyControlFrame* FlipFramer::CreateSynReply(FlipStreamId stream_id,
   }
 
   // Write the length
-  size_t length = frame.length() - FlipFrame::size();
+  size_t length = frame.length() - sizeof(FlipFrame);
   DCHECK(length < static_cast<size_t>(kLengthMask));
   FlagsAndLength flags_length;
   flags_length.length_ = htonl(static_cast<uint32>(length));
   flags_length.flags_[0] = flags;
   frame.WriteBytesToOffset(4, &flags_length, sizeof(flags_length));
 
-  scoped_ptr<FlipFrame> reply_frame(frame.take());
   if (compressed)
     return reinterpret_cast<FlipSynReplyControlFrame*>(
-        CompressFrame(reply_frame.get()));
-  return reinterpret_cast<FlipSynReplyControlFrame*>(reply_frame.release());
+        CompressFrame(frame.data()));
+  return reinterpret_cast<FlipSynReplyControlFrame*>(frame.take());
 }
 
 FlipDataFrame* FlipFramer::CreateDataFrame(FlipStreamId stream_id,
@@ -524,10 +514,9 @@ FlipDataFrame* FlipFramer::CreateDataFrame(FlipStreamId stream_id,
   frame.WriteBytes(&flags_length, sizeof(flags_length));
 
   frame.WriteBytes(data, len);
-  scoped_ptr<FlipFrame> data_frame(frame.take());
   if (flags & DATA_FLAG_COMPRESSED)
-    return reinterpret_cast<FlipDataFrame*>(CompressFrame(data_frame.get()));
-  return reinterpret_cast<FlipDataFrame*>(data_frame.release());
+    return reinterpret_cast<FlipDataFrame*>(CompressFrame(frame.data()));
+  return reinterpret_cast<FlipDataFrame*>(frame.take());
 }
 
 /* static */
@@ -600,7 +589,7 @@ bool FlipFramer::InitializeDecompressor() {
 bool FlipFramer::GetFrameBoundaries(const FlipFrame* frame,
                                     int* payload_length,
                                     int* header_length,
-                                    const char** payload) const {
+                                    const unsigned char** payload) const {
   if (frame->is_control_frame()) {
     const FlipControlFrame* control_frame =
         reinterpret_cast<const FlipControlFrame*>(frame);
@@ -611,8 +600,10 @@ bool FlipFramer::GetFrameBoundaries(const FlipFrame* frame,
           const FlipSynStreamControlFrame *syn_frame =
               reinterpret_cast<const FlipSynStreamControlFrame*>(frame);
           *payload_length = syn_frame->header_block_len();
-          *header_length = syn_frame->size();
-          *payload = frame->data() + *header_length;
+          *header_length = sizeof(FlipFrame) + syn_frame->length() -
+              syn_frame->header_block_len();
+          *payload = reinterpret_cast<const unsigned char*>(frame) +
+              *header_length;
         }
         break;
       default:
@@ -620,12 +611,13 @@ bool FlipFramer::GetFrameBoundaries(const FlipFrame* frame,
         return false;  // We can't compress this frame!
     }
   } else {
-    *header_length = FlipFrame::size();
+    *header_length = sizeof(FlipFrame);
     *payload_length = frame->length();
-    *payload = frame->data() + FlipFrame::size();
+    *payload = reinterpret_cast<const unsigned char*>(frame) +
+        sizeof(FlipFrame);
   }
   DCHECK(static_cast<size_t>(*header_length) <=
-      FlipFrame::size() + *payload_length);
+      sizeof(FlipFrame) + *payload_length);
   return true;
 }
 
@@ -633,7 +625,7 @@ bool FlipFramer::GetFrameBoundaries(const FlipFrame* frame,
 FlipFrame* FlipFramer::CompressFrame(const FlipFrame* frame) {
   int payload_length;
   int header_length;
-  const char* payload;
+  const unsigned char* payload;
 
   static StatsCounter pre_compress_bytes("flip.PreCompressSize");
   static StatsCounter post_compress_bytes("flip.PostCompressSize");
@@ -652,13 +644,13 @@ FlipFrame* FlipFramer::CompressFrame(const FlipFrame* frame) {
   // Create an output frame.
   int compressed_max_size = deflateBound(compressor_.get(), payload_length);
   int new_frame_size = header_length + compressed_max_size;
-  FlipFrame* new_frame = new FlipFrame(new_frame_size);
-  memcpy(new_frame->data(), frame->data(), frame->length() + FlipFrame::size());
+  FlipFrame* new_frame =
+      reinterpret_cast<FlipFrame*>(new char[new_frame_size]);
+  memcpy(new_frame, frame, header_length);
 
-  compressor_->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(payload));
+  compressor_->next_in = const_cast<Bytef*>(payload);
   compressor_->avail_in = payload_length;
-  compressor_->next_out = reinterpret_cast<Bytef*>(new_frame->data()) +
-                          header_length;
+  compressor_->next_out = reinterpret_cast<Bytef*>(new_frame) + header_length;
   compressor_->avail_out = compressed_max_size;
 
   // Data packets have a 'compressed flag
@@ -675,7 +667,7 @@ FlipFrame* FlipFramer::CompressFrame(const FlipFrame* frame) {
   }
 
   int compressed_size = compressed_max_size - compressor_->avail_out;
-  new_frame->set_length(header_length + compressed_size - FlipFrame::size());
+  new_frame->set_length(header_length + compressed_size - sizeof(FlipFrame));
 
   pre_compress_bytes.Add(payload_length);
   post_compress_bytes.Add(new_frame->length());
@@ -686,7 +678,7 @@ FlipFrame* FlipFramer::CompressFrame(const FlipFrame* frame) {
 FlipFrame* FlipFramer::DecompressFrame(const FlipFrame* frame) {
   int payload_length;
   int header_length;
-  const char* payload;
+  const unsigned char* payload;
 
   static StatsCounter pre_decompress_bytes("flip.PreDeCompressSize");
   static StatsCounter post_decompress_bytes("flip.PostDeCompressSize");
@@ -713,12 +705,13 @@ FlipFrame* FlipFramer::DecompressFrame(const FlipFrame* frame) {
   // the input data.
   int decompressed_max_size = kControlFrameBufferInitialSize;
   int new_frame_size = header_length + decompressed_max_size;
-  FlipFrame* new_frame = new FlipFrame(new_frame_size);
-  memcpy(new_frame->data(), frame->data(), frame->length() + FlipFrame::size());
+  FlipFrame* new_frame =
+      reinterpret_cast<FlipFrame*>(new char[new_frame_size]);
+  memcpy(new_frame, frame, header_length);
 
-  decompressor_->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(payload));
+  decompressor_->next_in = const_cast<Bytef*>(payload);
   decompressor_->avail_in = payload_length;
-  decompressor_->next_out = reinterpret_cast<Bytef*>(new_frame->data()) +
+  decompressor_->next_out = reinterpret_cast<Bytef*>(new_frame) +
       header_length;
   decompressor_->avail_out = decompressed_max_size;
 
@@ -744,7 +737,7 @@ FlipFrame* FlipFramer::DecompressFrame(const FlipFrame* frame) {
   }
 
   int decompressed_size = decompressed_max_size - decompressor_->avail_out;
-  new_frame->set_length(header_length + decompressed_size - FlipFrame::size());
+  new_frame->set_length(header_length + decompressed_size - sizeof(FlipFrame));
 
   pre_decompress_bytes.Add(frame->length());
   post_decompress_bytes.Add(new_frame->length());
@@ -753,10 +746,10 @@ FlipFrame* FlipFramer::DecompressFrame(const FlipFrame* frame) {
 }
 
 FlipFrame* FlipFramer::DuplicateFrame(const FlipFrame* frame) {
-  int size = FlipFrame::size() + frame->length();
-  FlipFrame* new_frame = new FlipFrame(size);
-  memcpy(new_frame->data(), frame->data(), size);
-  return new_frame;
+  int size = sizeof(FlipFrame) + frame->length();
+  char* new_frame = new char[size];
+  memcpy(new_frame, frame, size);
+  return reinterpret_cast<FlipFrame*>(new_frame);
 }
 
 void FlipFramer::set_enable_compression(bool value) {
