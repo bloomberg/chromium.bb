@@ -22,6 +22,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_notification_details.h"
+#include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -97,7 +98,8 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostDelegate::Resource,
                     public RenderViewHostManager::Delegate,
-                    public SelectFileDialog::Listener {
+                    public SelectFileDialog::Listener,
+                    public JavaScriptMessageBoxClient {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
@@ -533,11 +535,6 @@ class TabContents : public PageNavigator,
     suppress_javascript_messages_ = suppress_javascript_messages;
   }
 
-  // AppModalDialog calls this when the dialog is closed.
-  void OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
-                                    bool success,
-                                    const std::wstring& prompt);
-
   // Prepare for saving the current web page to disk.
   void OnSavePage();
 
@@ -957,6 +954,17 @@ class TabContents : public PageNavigator,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+
+  // JavaScriptMessageBoxClient ------------------------------------------------
+  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
+                                          bool is_alert);
+  virtual gfx::NativeWindow GetMessageBoxRootWindow();
+  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
+                                  bool success,
+                                  const std::wstring& prompt);
+  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
+  virtual TabContents* AsTabContents() { return this; }
 
   // Data for core operation ---------------------------------------------------
 

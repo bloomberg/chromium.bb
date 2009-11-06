@@ -11,7 +11,7 @@
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
-class TabContents;
+class JavaScriptMessageBoxClient;
 namespace views {
 class Window;
 }
@@ -47,8 +47,8 @@ class JavascriptMessageBoxDialog : public views::DialogDelegate {
   virtual void OnClose();
 
  private:
-  TabContents* tab_contents() {
-    return parent_->tab_contents();
+  JavaScriptMessageBoxClient* client() {
+    return parent_->client();
   }
 
   // A pointer to the AppModalDialog that owns us.

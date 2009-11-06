@@ -21,6 +21,7 @@ typedef GtkWidget* NativeDialog;
 typedef void* NativeDialog;
 #endif
 
+class JavaScriptMessageBoxClient;
 class TabContents;
 namespace IPC {
 class Message;
@@ -33,7 +34,7 @@ class AppModalDialog : public NotificationObserver {
  public:
   // A union of data necessary to determine the type of message box to
   // show.  |dialog_flags| is a MessageBox flag.
-  AppModalDialog(TabContents* tab_contents,
+  AppModalDialog(JavaScriptMessageBoxClient* client,
                  const std::wstring& title,
                  int dialog_flags,
                  const std::wstring& message_text,
@@ -63,8 +64,8 @@ class AppModalDialog : public NotificationObserver {
 
   /////////////////////////////////////////////////////////////////////////////
   // Getters so NativeDialog can get information about the message box.
-  TabContents* tab_contents() {
-    return tab_contents_;
+  JavaScriptMessageBoxClient* client() {
+    return client_;
   }
   int dialog_flags() {
     return dialog_flags_;
@@ -103,8 +104,15 @@ class AppModalDialog : public NotificationObserver {
   // A reference to the platform native dialog box.
   NativeDialog dialog_;
 
+  // An implementation of the client interface to provide supporting methods
+  // and receive results.
+  JavaScriptMessageBoxClient* client_;
+
+  // True if the dialog should no longer be shown, e.g. because the underlying
+  // tab navigated away while the dialog was queued.
+  bool skip_this_dialog_;
+
   // Information about the message box is held in the following variables.
-  TabContents* tab_contents_;
   std::wstring title_;
   int dialog_flags_;
   std::wstring message_text_;

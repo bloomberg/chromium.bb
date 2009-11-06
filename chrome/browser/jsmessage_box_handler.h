@@ -10,6 +10,7 @@
 #include "ipc/ipc_message.h"
 
 class GURL;
+class JavaScriptMessageBoxClient;
 class TabContents;
 
 // Creates and runs a Javascript Message Box dialog.
@@ -18,7 +19,7 @@ class TabContents;
 // a user input prompt() box, the default text for the text field is in
 // |default_prompt_text|. The result of the operation is returned using
 // |reply_msg|.
-void RunJavascriptMessageBox(TabContents* tab_contents,
+void RunJavascriptMessageBox(JavaScriptMessageBoxClient* client,
                              const GURL& frame_url,
                              int dialog_flags,
                              const std::wstring& message_text,

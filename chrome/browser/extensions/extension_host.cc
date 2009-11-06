@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -25,6 +27,8 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -34,6 +38,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/context_menu.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -397,10 +402,37 @@ void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
                                          const int flags,
                                          IPC::Message* reply_msg,
                                          bool* did_suppress_message) {
-  // Automatically cancel the javascript alert (otherwise the renderer hangs
-  // indefinitely).
-  *did_suppress_message = true;
-  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true, L"");
+  *did_suppress_message = false;
+  // Unlike for page alerts, navigations aren't a good signal for when to
+  // resume showing alerts, so we can't reasonably stop showing them even if
+  // the extension is spammy.
+  RunJavascriptMessageBox(this, frame_url, flags, message, default_prompt,
+                          false, reply_msg);
+}
+
+std::wstring ExtensionHost::GetMessageBoxTitle(const GURL& frame_url,
+                                               bool is_alert) {
+  if (extension_->name().empty())
+    return l10n_util::GetString(
+        is_alert ? IDS_EXTENSION_ALERT_DEFAULT_TITLE
+                 : IDS_EXTENSION_MESSAGEBOX_DEFAULT_TITLE);
+
+  return l10n_util::GetStringF(
+      is_alert ? IDS_EXTENSION_ALERT_TITLE : IDS_EXTENSION_MESSAGEBOX_TITLE,
+      UTF8ToWide(extension_->name()));
+}
+
+gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
+  TabContents* active_tab = GetBrowser()->GetSelectedTabContents();
+  if (active_tab)
+    return active_tab->view()->GetTopLevelNativeWindow();
+  return NULL;
+}
+
+void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
+                                       bool success,
+                                       const std::wstring& prompt) {
+  render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
 }
 
 void ExtensionHost::Close(RenderViewHost* render_view_host) {

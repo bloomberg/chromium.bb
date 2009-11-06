@@ -37,10 +37,15 @@ JavascriptMessageBoxDialog::~JavascriptMessageBoxDialog() {
 }
 
 void JavascriptMessageBoxDialog::ShowModalDialog() {
-  HWND root_hwnd = GetAncestor(tab_contents()->GetNativeView(),
-                               GA_ROOT);
-  dialog_ = views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this);
-  dialog_->Show();
+  gfx::NativeWindow root_hwnd = client()->GetMessageBoxRootWindow();
+  // GetMessageBoxRootWindow() will be NULL if there's no selected tab (e.g.,
+  // during shutdown), in which case we simply skip showing this dialog.
+  if (!root_hwnd) {
+    Cancel();
+  } else {
+    dialog_ = views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this);
+    dialog_->Show();
+  }
 }
 
 void JavascriptMessageBoxDialog::ActivateModalDialog() {
@@ -72,13 +77,12 @@ int JavascriptMessageBoxDialog::GetDialogButtons() const {
 }
 
 std::wstring JavascriptMessageBoxDialog::GetWindowTitle() const {
-  return parent_->title();;
+  return parent_->title();
 }
 
 
 void JavascriptMessageBoxDialog::WindowClosing() {
   dialog_ = NULL;
-
 }
 
 void JavascriptMessageBoxDialog::DeleteDelegate() {
