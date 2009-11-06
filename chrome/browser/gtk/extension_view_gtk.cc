@@ -40,6 +40,7 @@ void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
   // If we are showing in a shelf, then the shelf sets our height.
   int height = is_toolstrip() ? -1 : new_size.height();
 
+  render_widget_host_view_->SetSize(gfx::Size(new_size.width(), height));
   gtk_widget_set_size_request(native_view(), new_size.width(), height);
 }
 
