@@ -805,7 +805,8 @@ static const wchar_t* jscript_click_option_button =
 // Test that an extension with an options page makes an 'Options' button appear
 // on chrome://extensions, and that clicking the button opens a new tab with the
 // extension's options page.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OptionsPage) {
+// Disabled.  See http://crbug.com/26948 for details.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   // Install an extension with an options page.
   ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1));
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
@@ -829,4 +830,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OptionsPage) {
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             tab_strip->GetTabContentsAt(1)->GetURL());
 }
-
