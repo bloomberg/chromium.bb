@@ -142,7 +142,14 @@ For more information, see
 <p>
 One to four dot-separated integers
 identifying the version of this extension.
-Examples:
+A couple of rules apply to the integers:
+they must be between 0 and 65535, inclusive,
+and non-zero integers can't start with 0.
+For example, 99999 and 032 are both invalid.
+</p>
+
+<p>
+Here are some examples of valid versions:
 </p>
 
 <ul>
@@ -166,12 +173,12 @@ The comparison starts with the leftmost integers.
 If those integers are equal,
 the integers to the right are compared,
 and so on.
-For example, 1.2.0 is a newer version than 1.1.9.99999.
+For example, 1.2.0 is a newer version than 1.1.9.9999.
 </p>
 
 <p>
 A missing integer is equal to zero.
-For example, 1.1.9.99999 is newer than 1.1.
+For example, 1.1.9.9999 is newer than 1.1.
 </p>
 
 <p>
