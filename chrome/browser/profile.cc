@@ -1315,7 +1315,6 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
     spellcheck_host_ = new SpellCheckHost(this,
         WideToASCII(prefs->GetString(prefs::kSpellCheckDictionary)),
         GetRequestContext());
-    spellcheck_host_->AddRef();
   } else if (notify) {
     // The spellchecker has been disabled.
     SpellCheckHostInitialized();
