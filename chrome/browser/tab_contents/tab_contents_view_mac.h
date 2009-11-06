@@ -44,6 +44,7 @@ class TabContentsViewMac : public TabContentsView,
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
   explicit TabContentsViewMac(TabContents* web_contents);
+  virtual ~TabContentsViewMac();
 
   // TabContentsView implementation --------------------------------------------
 
@@ -66,6 +67,8 @@ class TabContentsViewMac : public TabContentsView,
                                                         bool activatable);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
+  virtual bool IsEventTracking() const;
+  virtual void CloseTabAfterEventTracking();
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
@@ -81,6 +84,10 @@ class TabContentsViewMac : public TabContentsView,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // A helper method for closing the tab in the
+  // CloseTabAfterEventTracking() implementation.
+  void CloseTab();
 
  private:
   // The Cocoa NSView that lives in the view hierarchy.

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#import "base/chrome_application_mac.h"
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
@@ -51,6 +52,8 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask;
+- (void)cancelDeferredClose;
+- (void)closeTabAfterEvent;
 @end
 
 // static
@@ -62,6 +65,14 @@ TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
     : TabContentsView(tab_contents) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
+}
+
+TabContentsViewMac::~TabContentsViewMac() {
+  // This handles the case where a renderer close call was deferred
+  // while the user was operating a UI control which resulted in a
+  // close.  In that case, the Cocoa view outlives the
+  // TabContentsViewMac instance due to Cocoa retain count.
+  [cocoa_view_ cancelDeferredClose];
 }
 
 void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
@@ -255,6 +266,29 @@ void TabContentsViewMac::ShowCreatedWidgetInternal(
   [widget_view_mac->native_view() release];
 }
 
+bool TabContentsViewMac::IsEventTracking() const {
+  if ([NSApp isKindOfClass:[CrApplication class]] &&
+      [static_cast<CrApplication*>(NSApp) isHandlingSendEvent]) {
+    return true;
+  }
+  return false;
+}
+
+// Arrange to call CloseTab() after we're back to the main event loop.
+// The obvious way to do this would be PostNonNestableTask(), but that
+// will fire when the event-tracking loop polls for events.  So we
+// need to bounce the message via Cocoa, instead.
+void TabContentsViewMac::CloseTabAfterEventTracking() {
+  [cocoa_view_ cancelDeferredClose];
+  [cocoa_view_ performSelector:@selector(closeTabAfterEvent)
+                    withObject:nil
+                    afterDelay:0.0];
+}
+
+void TabContentsViewMac::CloseTab() {
+  tab_contents()->Close(tab_contents()->render_view_host());
+}
+
 void TabContentsViewMac::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -289,6 +323,9 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 - (void)dealloc {
+  // Cancel any deferred tab closes, just in case.
+  [self cancelDeferredClose];
+
   // This probably isn't strictly necessary, but can't hurt.
   [self unregisterDraggedTypes];
   [super dealloc];
@@ -472,6 +509,17 @@ void TabContentsViewMac::Observe(NotificationType type,
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
   return [dropTarget_ performDragOperation:sender view:self];
+}
+
+- (void)cancelDeferredClose {
+  SEL aSel = @selector(closeTabAfterEvent);
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                           selector:aSel
+                                             object:nil];
+}
+
+- (void)closeTabAfterEvent {
+  tabContentsView_->CloseTab();
 }
 
 // Tons of stuff goes here, where we grab events going on in Cocoaland and send

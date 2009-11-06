@@ -136,6 +136,16 @@ class TabContentsView : public RenderViewHostDelegate::View {
   }
   virtual void CancelDragAndCloseTab() {}
 
+  // If we close the tab while a UI control is in an event-tracking
+  // loop, the control may message freed objects and crash.
+  // TabContents::Close() calls IsEventTracking(), and if it returns
+  // true CloseTabAfterEventTracking() is called and the close is not
+  // completed.
+  virtual bool IsEventTracking() const {
+    return false;
+  }
+  virtual void CloseTabAfterEventTracking() {}
+
  protected:
   TabContentsView() {}  // Abstract interface.
 
