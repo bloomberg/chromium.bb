@@ -127,7 +127,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Called by DestroyInstance(), used for platform-specific destruction.
   void PlatformDestroyInstance();
 
-#if !defined(OS_MACOSX)
   //--------------------------
   // used for windowed plugins
   void WindowedUpdateGeometry(const gfx::Rect& window_rect,
@@ -148,7 +147,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
   void WindowedSetWindow();
-#endif
 
 #if defined(OS_WIN)
   // Registers the window class for our window
@@ -190,9 +188,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #if !defined(OS_MACOSX)
   // used for windowed plugins
   gfx::PluginWindowHandle windowed_handle_;
-  bool windowed_did_set_window_;
   gfx::Rect windowed_last_pos_;
 #endif
+  bool windowed_did_set_window_;
 
   // TODO(dglazkov): No longer used by Windows, make sure the removal
   // causes no regressions and eliminate from other platforms.

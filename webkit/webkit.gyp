@@ -415,11 +415,6 @@
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']]
-        }, { # else: OS=="mac"
-          'sources!': [
-            # TODO(port): Unfork webplugin_delegate_impl_mac and this file.
-            'glue/plugins/webplugin_delegate_impl.cc',
-          ],
         }],
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
