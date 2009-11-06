@@ -26,7 +26,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    chromeIsVisible_ = YES;
     [self setShowsDivider:NO];
     // TODO(alcor): register for theming, either here or the cell
     // [self gtm_registerForThemeNotifications];
@@ -178,6 +177,31 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   targetController_ = nil;
 }
 
+// Sets whether the window background should be visible or invisible when
+// dragging a tab. The background should be invisible when the mouse is over a
+// potential drop target for the tab (the tab strip). It should be visible when
+// there's no drop target so the window looks more fully realized and ready to
+// become a stand-alone window.
+- (void)setWindowBackgroundVisibility:(BOOL)shouldBeVisible {
+  if (chromeIsVisible_ == shouldBeVisible)
+    return;
+
+  // TODO(pinkerton): There appears to be a race-condition in CoreAnimation
+  // where if we use animators to set the alpha values, we can't guarantee
+  // that we cancel them. This has the side effect of sometimes leaving
+  // the dragged window translucent or invisible. We should re-visit this,
+  // but for now, don't animate the alpha change.
+  [[draggedController_ overlayWindow] setAlphaValue:1.0];
+  if (targetController_) {
+    [dragWindow_ setAlphaValue:0.0];
+    [[draggedController_ overlayWindow] setHasShadow:YES];
+  } else {
+    [dragWindow_ setAlphaValue:0.5];
+    [[draggedController_ overlayWindow] setHasShadow:NO];
+  }
+  chromeIsVisible_ = shouldBeVisible;
+}
+
 // Handle clicks and drags in this button. We get here because we have
 // overridden acceptsFirstMouse: and the click is within our bounds.
 // TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
@@ -229,6 +253,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   tabWasDragged_ = NO;
   tearTime_ = 0.0;
   draggingWithinTabStrip_ = YES;
+  chromeIsVisible_ = NO;
 
   // If there's more than one potential window to be a drop target, we want to
   // treat a drag of a tab just like dragging around a tab that's already
@@ -396,14 +421,13 @@ static const CGFloat kRapidCloseDist = 2.5;
     // so that sheets stay on top of the window.
     // Bring the target window to the front and make sure it has a border.
     [dragWindow_ setLevel:NSFloatingWindowLevel];
+    [dragWindow_ setHasShadow:YES];
     [dragWindow_ orderFront:nil];
     [dragWindow_ makeMainWindow];
     [draggedController_ showOverlay];
     dragOverlay_ = [draggedController_ overlayWindow];
     // Force the new tab button to be hidden. We'll reset it on mouse up.
     [draggedController_ showNewTabButton:NO];
-    //if (![targets count])
-    //  [dragOverlay_ setHasShadow:NO];
     tearTime_ = [NSDate timeIntervalSinceReferenceDate];
     tearOrigin_ = sourceWindowFrame_.origin;
   }
@@ -483,25 +507,13 @@ static const CGFloat kRapidCloseDist = 2.5;
   } else {
     [dragWindow_ makeKeyAndOrderFront:nil];
   }
-  BOOL chromeShouldBeVisible = targetController_ == nil;
 
-  if (chromeIsVisible_ != chromeShouldBeVisible) {
-    // TODO(pinkerton): There appears to be a race-condition in CoreAnimation
-    // where if we use animators to set the alpha values, we can't guarantee
-    // that we cancel them. This has the side effect of sometimes leaving
-    // the dragged window translucent or invisible. We should re-visit this,
-    // but for now, don't animate the alpha change.
-    [dragWindow_ setHasShadow:YES];
-    [[draggedController_ overlayWindow] setAlphaValue:1.0];
-    if (targetController_) {
-      [dragWindow_ setAlphaValue:0.0];
-      [[draggedController_ overlayWindow] setHasShadow:YES];
-    } else {
-      [dragWindow_ setAlphaValue:0.5];
-      [[draggedController_ overlayWindow] setHasShadow:NO];
-    }
-    chromeIsVisible_ = chromeShouldBeVisible;
-  }
+  // Adjust the visibility of the window background. If there is a drop target,
+  // we want to hide the window background so the tab stands out for
+  // positioning. If not, we want to show it so it looks like a new window will
+  // be realized.
+  BOOL chromeShouldBeVisible = targetController_ == nil;
+  [self setWindowBackgroundVisibility:chromeShouldBeVisible];
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
