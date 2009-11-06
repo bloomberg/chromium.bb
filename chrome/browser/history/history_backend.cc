@@ -117,6 +117,10 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   }
 
  private:
+  friend class base::RefCounted<CommitLaterTask>;
+
+  ~CommitLaterTask() {}
+
   scoped_refptr<HistoryBackend> history_backend_;
 };
 

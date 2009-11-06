@@ -85,6 +85,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     virtual URLRequestContext* GetURLRequestContext();
 
    private:
+    ~RequestContextGetter() {}
+
     // User agent to apply to the URLRequestContext.
     std::string user_agent_;
 

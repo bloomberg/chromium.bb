@@ -69,7 +69,6 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   };
 
   explicit ProfileWriter(Profile* profile) : profile_(profile) { }
-  virtual ~ProfileWriter() { }
 
   virtual bool BookmarkModelIsLoaded() const;
   virtual bool TemplateURLModelIsLoaded() const;
@@ -128,6 +127,11 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
 
   Profile* GetProfile() const { return profile_; }
 
+ protected:
+  friend class base::RefCountedThreadSafe<ProfileWriter>;
+
+  virtual ~ProfileWriter() { }
+
  private:
   // Generates a unique folder name. If folder_name is not unique, then this
   // repeatedly tests for '|folder_name| + (i)' until a unique name is found.
@@ -155,7 +159,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                      public NotificationObserver {
  public:
   ImporterHost();
-  ~ImporterHost();
 
   // BookmarkModelObserver methods.
   virtual void Loaded(BookmarkModel* model);
@@ -270,6 +273,10 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
 
  private:
+  friend class base::RefCountedThreadSafe<ImporterHost>;
+
+  ~ImporterHost();
+
   // If we're not waiting on any model to finish loading, invokes the task_.
   void InvokeTaskIfDone();
 
@@ -332,7 +339,10 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   bool cancelled() const { return cancelled_; }
 
  protected:
+  friend class base::RefCountedThreadSafe<Importer>;
+
   Importer();
+  virtual ~Importer();
 
   // Given raw image data, decodes the icon, re-sampling to the correct size as
   // necessary, and re-encodes as PNG data in the given output vector. Returns

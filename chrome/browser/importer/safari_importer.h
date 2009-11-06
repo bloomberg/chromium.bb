@@ -27,7 +27,6 @@ class SafariImporter : public Importer {
   // |library_dir| is the full path to the ~/Library directory,
   // We pass it in as a parameter for testing purposes.
   explicit SafariImporter(const FilePath& library_dir);
-  virtual ~SafariImporter();
 
   // Importer methods.
   virtual void StartImport(ProfileInfo profile_info,
@@ -45,6 +44,8 @@ class SafariImporter : public Importer {
   FRIEND_TEST(SafariImporterTest, BookmarkImport);
   FRIEND_TEST(SafariImporterTest, FavIconImport);
   FRIEND_TEST(SafariImporterTest, HistoryImport);
+
+  virtual ~SafariImporter();
 
   // Multiple URLs can share the same FavIcon, this is a map
   // of URLs -> IconIDs that we load as a temporary step before

@@ -33,7 +33,6 @@ bool IsGoogleGAIACookieInstalled();
 class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
  public:
   Toolbar5Importer();
-  virtual ~Toolbar5Importer();
 
   // Importer view calls this method to begin the process.  The items parameter
   // should only either be NONE or FAVORITES, since as of right now these are
@@ -58,6 +57,8 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
 
  private:
   FRIEND_TEST(Toolbar5ImporterTest, BookmarkParse);
+
+  virtual ~Toolbar5Importer();
 
   // Internal states of the toolbar importer.
   enum InternalStateEnum {

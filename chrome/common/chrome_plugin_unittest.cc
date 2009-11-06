@@ -32,6 +32,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
     return context_;
   }
  private:
+  ~TestURLRequestContextGetter() {}
   scoped_refptr<URLRequestContext> context_;
 };
 

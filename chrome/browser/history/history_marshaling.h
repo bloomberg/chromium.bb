@@ -52,6 +52,10 @@ class HistoryAddPageArgs
   bool did_replace_entry;
 
  private:
+  friend class base::RefCountedThreadSafe<HistoryAddPageArgs>;
+
+  ~HistoryAddPageArgs() {}
+
   DISALLOW_EVIL_CONSTRUCTORS(HistoryAddPageArgs);
 };
 

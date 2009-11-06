@@ -44,7 +44,6 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // |host_resolver| instance.
   DnsMaster(net::HostResolver* host_resolver,
             TimeDelta max_queue_delay_ms, size_t max_concurrent);
-  ~DnsMaster();
 
   // Cancel pending requests and prevent new ones from being made.
   void Shutdown();
@@ -101,6 +100,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   size_t max_concurrent_lookups() const { return max_concurrent_lookups_; }
 
  private:
+  friend class base::RefCountedThreadSafe<DnsMaster>;
   FRIEND_TEST(DnsMasterTest, BenefitLookupTest);
   FRIEND_TEST(DnsMasterTest, ShutdownWhenResolutionIsPendingTest);
   FRIEND_TEST(DnsMasterTest, SingleLookupTest);
@@ -109,6 +109,8 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   FRIEND_TEST(DnsMasterTest, PriorityQueuePushPopTest);
   FRIEND_TEST(DnsMasterTest, PriorityQueueReorderTest);
   friend class WaitForResolutionHelper;  // For testing.
+
+  ~DnsMaster();
 
   class LookupRequest;
 

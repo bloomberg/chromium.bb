@@ -65,10 +65,10 @@ class TestPrintJob : public printing::PrintJob {
  public:
   explicit TestPrintJob(volatile bool* check) : check_(check) {
   }
+ private:
   ~TestPrintJob() {
     *check_ = true;
   }
- private:
   volatile bool* check_;
 };
 

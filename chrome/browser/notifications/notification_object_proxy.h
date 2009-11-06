@@ -43,6 +43,10 @@ class NotificationObjectProxy :
   }
 
  private:
+  friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
+
+  ~NotificationObjectProxy() {}
+
   // Called on UI thread to schedule a message for sending.
   void DeliverMessage(IPC::Message* message);
 

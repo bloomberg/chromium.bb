@@ -25,7 +25,6 @@ class PasswordStoreDefault : public PasswordStore,
                              public WebDataServiceConsumer {
  public:
   explicit PasswordStoreDefault(WebDataService* web_data_service);
-  virtual ~PasswordStoreDefault();
 
   // Overridden to bypass the threading logic in PasswordStore, since
   // WebDataService's API is not threadsafe.
@@ -41,6 +40,8 @@ class PasswordStoreDefault : public PasswordStore,
   virtual void CancelLoginsQuery(int handle);
 
  protected:
+  virtual ~PasswordStoreDefault();
+
   // Implements PasswordStore interface.
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);

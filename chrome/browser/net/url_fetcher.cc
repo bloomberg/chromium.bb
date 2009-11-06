@@ -53,6 +53,10 @@ class URLFetcher::Core
   URLFetcher::Delegate* delegate() const { return delegate_; }
 
  private:
+  friend class base::RefCountedThreadSafe<URLFetcher::Core>;
+
+  ~Core() {}
+
   // Wrapper functions that allow us to ensure actions happen on the right
   // thread.
   void StartURLRequest();

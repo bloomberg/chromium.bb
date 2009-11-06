@@ -94,8 +94,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                  Delegate* delegate,
                  BookmarkService* bookmark_service);
 
-  ~HistoryBackend();
-
   // Must be called after creation but before any objects are created. If this
   // fails, all other functions will fail as well. (Since this runs on another
   // thread, we don't bother returning failure.)
@@ -274,12 +272,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 #endif
 
  private:
+  friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
   friend class HistoryTest;  // So the unit tests can poke our innards.
   FRIEND_TEST(HistoryBackendTest, DeleteAll);
   FRIEND_TEST(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST(HistoryBackendTest, URLsNoLongerBookmarked);
   friend class ::TestingProfile;
+
+  ~HistoryBackend();
 
   // Computes the name of the specified database on disk.
   FilePath GetThumbnailFileName() const;

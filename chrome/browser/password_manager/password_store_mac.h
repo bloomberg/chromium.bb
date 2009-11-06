@@ -23,9 +23,10 @@ class PasswordStoreMac : public PasswordStore {
   // Takes ownership of |keychain| and |login_db|, both of which must be
   // non-NULL.
   PasswordStoreMac(MacKeychain* keychain, LoginDatabaseMac* login_db);
-  virtual ~PasswordStoreMac();
 
  private:
+  virtual ~PasswordStoreMac();
+
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
   void RemoveLoginImpl(const webkit_glue::PasswordForm& form);

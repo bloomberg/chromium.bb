@@ -30,7 +30,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   };
 
   PrinterQuery();
-  virtual ~PrinterQuery();
 
   // PrintJobWorkerOwner
   virtual void GetSettingsDone(const PrintSettings& new_settings,
@@ -68,6 +67,8 @@ class PrinterQuery : public PrintJobWorkerOwner {
   bool is_valid() const;
 
  private:
+  virtual ~PrinterQuery();
+
   // Main message loop reference. Used to send notifications in the right
   // thread.
   MessageLoop* const ui_message_loop_;

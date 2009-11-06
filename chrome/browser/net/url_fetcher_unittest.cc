@@ -30,6 +30,8 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
     return context_;
   }
  private:
+  ~TestURLRequestContextGetter() {}
+
   scoped_refptr<URLRequestContext> context_;
 };
 
@@ -176,6 +178,8 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
   }
 
  private:
+  ~CancelTestURLRequestContextGetter() {}
+
   scoped_refptr<URLRequestContext> context_;
   bool* destructor_called_;
 };

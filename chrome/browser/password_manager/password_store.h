@@ -31,7 +31,6 @@ class PasswordStoreConsumer {
 class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
  public:
   PasswordStore();
-  virtual ~PasswordStore() {}
 
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init();
@@ -73,6 +72,10 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void CancelLoginsQuery(int handle);
 
  protected:
+  friend class base::RefCountedThreadSafe<PasswordStore>;
+
+  virtual ~PasswordStore() {}
+
   // Simple container class that represents a login lookup request.
   class GetLoginsRequest {
    public:

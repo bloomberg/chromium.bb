@@ -19,11 +19,12 @@ class Task;
 class PasswordStoreGnome : public PasswordStore {
  public:
   PasswordStoreGnome();
-  virtual ~PasswordStoreGnome();
 
   virtual bool Init();
 
  private:
+  virtual ~PasswordStoreGnome();
+
   void AddLoginImpl(const PasswordForm& form);
   void UpdateLoginImpl(const PasswordForm& form);
   void RemoveLoginImpl(const PasswordForm& form);

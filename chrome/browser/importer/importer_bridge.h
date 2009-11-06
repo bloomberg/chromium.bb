@@ -23,7 +23,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
       : writer_(writer),
       host_(host) {
   }
-  virtual ~ImporterBridge() {}
 
   virtual void AddBookmarkEntries(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
@@ -58,11 +57,13 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void NotifyEnded() = 0;
 
  protected:
-
+  friend class base::RefCountedThreadSafe<ImporterBridge>;
   // TODO: In order to run Toolbar5Importer OOP we need to cut this
   // connection, but as an interim step we allow Toolbar5Import to break
   // the abstraction here and assume import is in-process.
   friend class Toolbar5Importer;
+
+  virtual ~ImporterBridge() {}
 
   ProfileWriter* writer_;
   ImporterHost* host_;
@@ -100,6 +101,8 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void NotifyEnded();
 
  private:
+  ~InProcessImporterBridge() {}
+
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };
 

@@ -32,12 +32,6 @@ class SQLitePersistentCookieStore::Backend
     DCHECK(db_) << "Database must exist.";
   }
 
-  // You should call Close() before destructing this object.
-  ~Backend() {
-    DCHECK(!db_) << "Close should have already been called.";
-    DCHECK(num_pending_ == 0 && pending_.empty());
-  }
-
   // Batch a cookie addition.
   void AddCookie(const std::string& key,
                  const net::CookieMonster::CanonicalCookie& cc);
@@ -53,6 +47,14 @@ class SQLitePersistentCookieStore::Backend
   void Close();
 
  private:
+  friend class base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend>;
+
+  // You should call Close() before destructing this object.
+  ~Backend() {
+    DCHECK(!db_) << "Close should have already been called.";
+    DCHECK(num_pending_ == 0 && pending_.empty());
+  }
+
   class PendingOperation {
    public:
     typedef enum {

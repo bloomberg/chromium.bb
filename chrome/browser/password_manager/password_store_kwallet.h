@@ -23,12 +23,13 @@ class Task;
 class PasswordStoreKWallet : public PasswordStore {
  public:
   PasswordStoreKWallet();
-  virtual ~PasswordStoreKWallet();
 
   bool Init();
 
  private:
   typedef std::vector<PasswordForm*> PasswordFormList;
+
+  virtual ~PasswordStoreKWallet();
 
   // Implements PasswordStore interface.
   void AddLoginImpl(const PasswordForm& form);

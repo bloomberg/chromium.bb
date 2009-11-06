@@ -10,7 +10,6 @@
 class IEImporter : public Importer {
  public:
   IEImporter() {}
-  virtual ~IEImporter() {}
 
   // Importer methods.
   virtual void StartImport(ProfileInfo browser_info,
@@ -19,6 +18,8 @@ class IEImporter : public Importer {
 
  private:
   FRIEND_TEST(ImporterTest, IEImporter);
+
+  virtual ~IEImporter() {}
 
   void ImportFavorites();
   void ImportHistory();

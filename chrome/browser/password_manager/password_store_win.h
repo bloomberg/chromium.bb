@@ -21,7 +21,6 @@ class PasswordStoreWin : public PasswordStoreDefault {
  public:
   // FilePath specifies path to WebDatabase.
   explicit PasswordStoreWin(WebDataService* web_data_service);
-  virtual ~PasswordStoreWin() {}
 
   // Overridden so that we can save the form for later use.
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
@@ -29,6 +28,8 @@ class PasswordStoreWin : public PasswordStoreDefault {
   virtual void CancelLoginsQuery(int handle);
 
  private:
+  virtual ~PasswordStoreWin() {}
+
   // See PasswordStoreDefault.
   void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                    const WDTypedResult* result);

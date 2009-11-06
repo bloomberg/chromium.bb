@@ -258,6 +258,8 @@ class TestObserver : public ProfileWriter,
   }
 
  private:
+  ~TestObserver() {}
+
   int bookmark_count_;
   int history_count_;
   int password_count_;
@@ -630,6 +632,8 @@ class FirefoxObserver : public ProfileWriter,
   }
 
  private:
+  ~FirefoxObserver() {}
+
   int bookmark_count_;
   int history_count_;
   int password_count_;
@@ -735,9 +739,6 @@ class Firefox3Observer : public ProfileWriter,
         import_search_engines_(import_search_engines) {
   }
 
-  ~Firefox3Observer(){
-  }
-
   virtual void ImportItemStarted(ImportItem item) {}
   virtual void ImportItemEnded(ImportItem item) {}
   virtual void ImportStarted() {}
@@ -834,6 +835,8 @@ class Firefox3Observer : public ProfileWriter,
   }
 
  private:
+  ~Firefox3Observer() {}
+
   int bookmark_count_;
   int history_count_;
   int password_count_;

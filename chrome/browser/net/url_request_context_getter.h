@@ -17,13 +17,16 @@ class URLRequestContext;
 class URLRequestContextGetter
     : public base::RefCountedThreadSafe<URLRequestContextGetter> {
  public:
-  virtual ~URLRequestContextGetter() {}
-
   virtual URLRequestContext* GetURLRequestContext() = 0;
 
   // Defaults to GetURLRequestContext()->cookie_store(), but
   // implementations can override it.
   virtual net::CookieStore* GetCookieStore();
+
+ protected:
+  friend class base::RefCountedThreadSafe<URLRequestContextGetter>;
+
+  virtual ~URLRequestContextGetter() {}
 };
 
 #endif  // CHROME_BROWSER_NET_URL_REQUEST_CONTEXT_GETTER_H_

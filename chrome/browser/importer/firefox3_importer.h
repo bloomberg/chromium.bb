@@ -21,7 +21,6 @@ struct sqlite3;
 class Firefox3Importer : public Importer {
  public:
   Firefox3Importer() { }
-  virtual ~Firefox3Importer() { }
 
   // Importer methods.
   virtual void StartImport(ProfileInfo profile_info,
@@ -30,6 +29,8 @@ class Firefox3Importer : public Importer {
 
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;
+
+  virtual ~Firefox3Importer() { }
 
   void ImportBookmarks();
   void ImportPasswords();

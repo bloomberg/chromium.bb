@@ -364,6 +364,9 @@ Importer::Importer()
       import_to_bookmark_bar_(false) {
 }
 
+Importer::~Importer() {
+}
+
 // static
 bool Importer::ReencodeFavicon(const unsigned char* src_data, size_t src_len,
                                std::vector<unsigned char>* png_data) {

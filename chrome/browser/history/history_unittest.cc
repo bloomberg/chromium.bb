@@ -785,7 +785,6 @@ class HistoryDBTaskImpl : public HistoryDBTask {
   static const int kWantInvokeCount;
 
   HistoryDBTaskImpl() : invoke_count(0), done_invoked(false) {}
-  virtual ~HistoryDBTaskImpl() {}
 
   virtual bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) {
     return (++invoke_count == kWantInvokeCount);
@@ -800,6 +799,8 @@ class HistoryDBTaskImpl : public HistoryDBTask {
   bool done_invoked;
 
  private:
+  virtual ~HistoryDBTaskImpl() {}
+
   DISALLOW_EVIL_CONSTRUCTORS(HistoryDBTaskImpl);
 };
 

@@ -13,7 +13,6 @@ class TemplateURL;
 class Firefox2Importer : public Importer {
  public:
   Firefox2Importer();
-  virtual ~Firefox2Importer();
 
   // Importer methods.
   virtual void StartImport(ProfileInfo profile_info,
@@ -47,6 +46,8 @@ class Firefox2Importer : public Importer {
  private:
   FRIEND_TEST(FirefoxImporterTest, Firefox2BookmarkParse);
   FRIEND_TEST(FirefoxImporterTest, Firefox2CookesParse);
+
+  virtual ~Firefox2Importer();
 
   void ImportBookmarks();
   void ImportPasswords();

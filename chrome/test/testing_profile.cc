@@ -36,6 +36,8 @@ class QuittingHistoryDBTask : public HistoryDBTask {
   }
 
  private:
+  ~QuittingHistoryDBTask() {}
+
   DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
 };
 

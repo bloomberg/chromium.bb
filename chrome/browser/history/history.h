@@ -59,8 +59,6 @@ class URLDatabase;
 // on the main thread.
 class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
  public:
-  virtual ~HistoryDBTask() {}
-
   // Invoked on the database thread. The return value indicates whether the
   // task is done. A return value of true signals the task is done and
   // RunOnDBThread should NOT be invoked again. A return value of false
@@ -73,6 +71,11 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
   // only invoked if the request was not canceled and returned true from
   // RunOnDBThread.
   virtual void DoneRunOnMainThread() = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<HistoryDBTask>;
+
+  virtual ~HistoryDBTask() {}
 };
 
 // The history service records page titles, and visit times, as well as
@@ -95,7 +98,6 @@ class HistoryService : public CancelableRequestProvider,
   explicit HistoryService(Profile* profile);
   // The empty constructor is provided only for testing.
   HistoryService();
-  ~HistoryService();
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
@@ -521,6 +523,7 @@ class HistoryService : public CancelableRequestProvider,
 
  private:
   class BackendDelegate;
+  friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
   friend class FaviconService;
   friend class history::HistoryBackend;
@@ -533,6 +536,8 @@ class HistoryService : public CancelableRequestProvider,
   friend class RedirectRequest;
   friend class FavIconRequest;
   friend class TestingProfile;
+
+  ~HistoryService();
 
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.

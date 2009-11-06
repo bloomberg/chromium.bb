@@ -43,9 +43,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   ChromeURLRequestContextGetter(Profile* profile,
                                 ChromeURLRequestContextFactory* factory);
 
-  // Must be called on the IO thread.
-  virtual ~ChromeURLRequestContextGetter();
-
   // Note that GetURLRequestContext() can only be called from the IO
   // thread (it will assert otherwise). GetCookieStore() however can
   // be called from any thread.
@@ -100,6 +97,9 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
                        const NotificationDetails& details);
 
  private:
+  // Must be called on the IO thread.
+  virtual ~ChromeURLRequestContextGetter();
+
   // Registers an observer on |profile|'s preferences which will be used
   // to update the context when the default language and charset change.
   void RegisterPrefsObserver(Profile* profile);

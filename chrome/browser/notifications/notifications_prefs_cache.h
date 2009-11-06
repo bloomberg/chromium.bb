@@ -31,6 +31,10 @@ class NotificationsPrefsCache :
   void CacheDeniedOrigin(const GURL& origin);
 
  private:
+  friend class base::RefCountedThreadSafe<NotificationsPrefsCache>;
+
+  ~NotificationsPrefsCache() {}
+
   // Helper functions which read preferences.
   bool IsOriginAllowed(const GURL& origin);
   bool IsOriginDenied(const GURL& origin);
