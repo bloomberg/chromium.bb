@@ -62,7 +62,7 @@ WebStorageNamespaceImpl::~WebStorageNamespaceImpl()
 WebStorageArea* WebStorageNamespaceImpl::createStorageArea(const WebString& originString)
 {
     RefPtr<WebCore::SecurityOrigin> origin = WebCore::SecurityOrigin::createFromString(originString);
-    return new WebStorageAreaImpl(m_storageNamespace->storageArea(origin.get()));
+    return new WebStorageAreaImpl(m_storageNamespace->storageArea(origin.release()));
 }
 
 WebStorageNamespace* WebStorageNamespaceImpl::copy()
