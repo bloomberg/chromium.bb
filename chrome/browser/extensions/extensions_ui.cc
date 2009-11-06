@@ -297,13 +297,15 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
 
   // Register for notifications that we need to reload the page.
   registrar_.RemoveAll();
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+      NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
-      NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+      NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
       NotificationService::AllSources());
 }
 
@@ -533,10 +535,19 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   switch (type.value) {
+    // We listen to both EXTENSION_LOADED and EXTENSION_PROCESS_CREATED because
+    // we don't know about the views for an extension at EXTENSION_LOADED, but
+    // if we only listen to EXTENSION_PROCESS_CREATED, we'll miss extensions
+    // that don't have a process at startup.
+    //
+    // Doing it this way gets everything, but it means that we will actually
+    // render the page twice. This doesn't seem to result in any noticeable
+    // flicker, though.
+    case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_PROCESS_CREATED:
     case NotificationType::EXTENSION_UNLOADED:
-    case NotificationType::EXTENSION_UPDATE_DISABLED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
       if (dom_ui_->tab_contents())
         HandleRequestExtensionsData(NULL);
       break;
