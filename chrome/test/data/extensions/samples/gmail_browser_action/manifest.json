@@ -1,6 +1,6 @@
 {
-  "name": "Gmail Checker 2",
-  "description": "This extension adds a Gmail button to the toolbar which notifies when new email comes",
+  "name": "Google Mail Checker",
+  "description": "This extension adds a Google Mail button to the toolbar which displays the number of unread messages in your inbox. You can also click the button to open your inbox.",
   "version": "1.0",
   "background_page": "background.html",
   "permissions": [
