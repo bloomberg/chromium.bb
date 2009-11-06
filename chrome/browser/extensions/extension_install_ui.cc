@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/extensions/extension_installed_bubble.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
@@ -114,35 +113,19 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_EXTENSIONS_SECTION);
   }
-  icon_ = *install_icon;
 
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
                   Source<ExtensionInstallUI>(this),
                   NotificationService::NoDetails());
 
-  ShowExtensionInstallPrompt(profile_, delegate, extension, &icon_,
+  ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon,
                              GetInstallWarning(extension));
+
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
-  if (extension->IsTheme()) {
-    ShowThemeInfoBar(extension);
-    return;
-  }
-
-#if defined(TOOLKIT_VIEWS)
-  // GetLastActiveWithProfile will fail on the build bots. This needs to
-  // implemented differently if any test is created which depends on
-  // ExtensionInstalledBubble showing.
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser)
-    return;
-
-  ExtensionInstalledBubble::Show(extension, browser, icon_);
-#else
-// TODO(port) crbug.com/26973 (linux) crbug.com/26974 (mac)
-#endif  // TOOLKIT_VIEWS
+  ShowThemeInfoBar(extension);
 }
 
 void ExtensionInstallUI::OnInstallFailure(const std::string& error) {

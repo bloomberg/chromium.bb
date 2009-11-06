@@ -74,12 +74,6 @@ class InfoBubbleDelegate {
 
   // Whether the InfoBubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
-
-  // Whether the default placement of the anchor is on the origin side of the 
-  // text direction. For example: if true (the default) in LTR text direction,
-  // the ArrowLocation will be TOP_LEFT, if false it will be TOP_RIGHT.
-  // RTL is the reverse.
-  virtual bool PreferOriginSideAnchor() { return true; }
 };
 
 // TODO: this code is ifdef-tastic. It might be cleaner to refactor the
@@ -98,13 +92,9 @@ class InfoBubble
   // screen coordinates at which the InfoBubble will point.  Show() takes
   // ownership of |contents| and deletes the created InfoBubble when another
   // window is activated.  You can explicitly close the bubble by invoking
-  // Close().  You may provide an optional |delegate| to:
-  //     - Be notified when the InfoBubble is closed.
-  //     - Prevent the InfoBubble from being closed when the Escape key is
-  //       pressed (the default behavior).
-  //     - Have the InfoBubble prefer to anchor its arrow to the non-origin
-  //       side of text direction. (see comment above
-  //       InfoBubbleDelegate::PreferOriginSideAnchor); .
+  // Close().  You may provide an optional |delegate| to be notified when the
+  // InfoBubble is closed and/or to prevent the InfoBubble from being closed
+  // when the Escape key is pressed (the default behavior).
   static InfoBubble* Show(views::Window* parent,
                           const gfx::Rect& position_relative_to,
                           views::View* contents,

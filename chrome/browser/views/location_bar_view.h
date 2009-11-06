@@ -95,17 +95,6 @@ class LocationBarView : public LocationBar,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
-  // Sets |preview_enabled| for the PageAction View associated with this
-  // |page_action|. If |preview_enabled| is true, the view will display the
-  // PageActions icon even though it has not been activated by the extension.
-  // This is used by the ExtensionInstalledBubble to preview what the icon
-  // will look like for the user upon installation of the extension. 
-  void SetPreviewEnabledPageAction(ExtensionAction *page_action,
-                                   bool preview_enabled);
-  
-  // Retrieves the PageAction View which is associated with |page_action|
-  views::View* GetPageActionView(ExtensionAction* page_action);
-
   // Sizing functions
   virtual gfx::Size GetPreferredSize();
 
@@ -371,10 +360,6 @@ class LocationBarView : public LocationBar,
 
     int current_tab_id() { return current_tab_id_; }
 
-    void set_preview_enabled(bool preview_enabled) {
-      preview_enabled_ = preview_enabled;
-    }
-
     // Overridden from view.
     virtual void OnMouseMoved(const views::MouseEvent& event);
     virtual bool OnMousePressed(const views::MouseEvent& event);
@@ -420,10 +405,6 @@ class LocationBarView : public LocationBar,
 
     // The string to show for a tooltip;
     std::string tooltip_;
-
-    // This is used for post-install visual feedback. The page_action icon
-    // is briefly shown even if it hasn't been enabled by it's extension.
-    bool preview_enabled_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };
