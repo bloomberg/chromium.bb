@@ -2879,6 +2879,17 @@ void Browser::OpenURLAtIndex(TabContents* source,
   } else if ((disposition == CURRENT_TAB) && current_tab) {
     tabstrip_model_.TabNavigating(current_tab, transition);
 
+    bool user_initiated = (PageTransition::StripQualifier(transition) ==
+                           PageTransition::AUTO_BOOKMARK);
+
+    if (user_initiated && source_tab_was_frontmost &&
+        window_->GetLocationBar()) {
+      // Forcibly reset the location bar if the url is going to change in the
+      // current tab, since otherwise it won't discard any ongoing user edits,
+      // since it doesn't realize this is a user-initiated action.
+      window_->GetLocationBar()->Revert();
+    }
+
     current_tab->controller().LoadURL(url, referrer, transition);
     new_contents = current_tab;
     if (GetStatusBubble())

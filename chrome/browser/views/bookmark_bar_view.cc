@@ -1168,12 +1168,6 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   WindowOpenDisposition disposition_from_event_flags =
       event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
 
-  // Forcibly reset the location bar if the url is going to change in the
-  // current tab, since otherwise it won't discard any ongoing user edits,
-  // since it doesn't realize this is a user-initiated action.
-  if (disposition_from_event_flags == CURRENT_TAB)
-    browser()->window()->GetLocationBar()->Revert();
-
   if (node->is_url()) {
     page_navigator_->OpenURL(node->GetURL(), GURL(),
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
