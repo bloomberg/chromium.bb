@@ -48,6 +48,7 @@ class CompareFailures:
   CRASH_TYPES = (test_failures.FailureCrash,)
   HANG_TYPES = (test_failures.FailureTimeout,)
   MISSING_TYPES = (test_failures.FailureMissingResult,
+                   test_failures.FailureMissingImage,
                    test_failures.FailureMissingImageHash)
 
 

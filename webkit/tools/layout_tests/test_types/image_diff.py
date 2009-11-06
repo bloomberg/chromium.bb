@@ -138,6 +138,7 @@ class ImageDiff(test_type_base.TestTypeBase):
     if not os.path.isfile(expected_png_file):
       # Report a missing expected PNG file.
       failures.append(test_failures.FailureMissingImage(self))
+      return failures
     elif test_args.hash == expected_hash:
       return failures
 
