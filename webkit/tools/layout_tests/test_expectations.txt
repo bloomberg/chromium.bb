@@ -637,6 +637,7 @@ BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
 BUG8630 WIN LINUX RELEASE : pending/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 WIN LINUX DEBUG SLOW : pending/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
+BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL
 
 // Need to implement layoutTestController.addUserScript.
 BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
@@ -2588,7 +2589,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/inline-block/contenteditable-baseline.html 
 BUG9798 WIN LINUX : LayoutTests/svg/custom/js-update-transform-addition.svg = CRASH PASS
 BUG9798 MAC : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 WIN LINUX : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = FAIL PASS
-BUG9798 LINUX DEBUG : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PASS
+BUG9798 LINUX : LayoutTests/svg/custom/js-update-transform-changes.svg = FAIL PASS
 // Occasionally times out. Not just slow.
 BUG9798 MAC : LayoutTests/http/tests/misc/xmltokenizer-do-not-crash.pl = PASS TIMEOUT
 // Occasionally times out. Not just slow.
@@ -2714,6 +2715,8 @@ BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS 
 
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
+
+BUG14207 LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
 BUG18733 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
@@ -3071,6 +3074,7 @@ BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PA
 
 // More fallout from the above roll.
 BUG25955 LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
+BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS FAIL
 
 // WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
