@@ -5,6 +5,7 @@
   "enabled": true,
   "description": "The first extension that I made.",
   "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
+  "allow_reload": false,
   "order": 2,
   "content_scripts": [
     {

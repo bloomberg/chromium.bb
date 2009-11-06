@@ -5,6 +5,7 @@
   "enabled": true,
   "description": "",
   "permissions": [],
+  "allow_reload": false,
   "order": 2,
   "content_scripts": [
     {

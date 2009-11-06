@@ -597,6 +597,8 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
+  extension_data->SetBoolean(L"allow_reload",
+                             extension->location() == Extension::LOAD);
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.

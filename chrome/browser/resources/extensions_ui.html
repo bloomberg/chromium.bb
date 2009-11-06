@@ -258,6 +258,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "allow_reload": true,
       "order": 1,
       "options_url": "options.html",
       "icon": "relative-path-to-icon.png",
@@ -296,6 +297,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "allow_reload": false,
       "order": 2,
       "icon": "",
       "content_scripts": [
@@ -694,6 +696,14 @@ function autoUpdate() {
               <span class="extension-actions">
                 <a
                   jsvalues=".extensionId:id"
+                  jsdisplay="enabled && allow_reload"
+                  onclick="handleReloadExtension(this)"
+                  href="javascript:void();"
+                  i18n-content="reload"
+                  >RELOAD</a>
+                <span jsdisplay="enabled && allow_reload">-</span>
+                <a
+                  jsvalues=".extensionId:id"
                   jsdisplay="enabled"
                   onclick="handleEnableExtension(this, false)"
                   href="javascript:void();"
@@ -706,14 +716,6 @@ function autoUpdate() {
                   href="javascript:void();"
                   i18n-content="enable"
                   >ENABLE</a> -
-                <a
-                  jsvalues=".extensionId:id"
-                  jsdisplay="enabled"
-                  onclick="handleReloadExtension(this)"
-                  href="javascript:void();"
-                  i18n-content="reload"
-                  >RELOAD</a>
-                <span jsdisplay="enabled">-</span>
                 <a
                   jsvalues=".extensionId:id"
                   onclick="handleUninstallExtension(this)"

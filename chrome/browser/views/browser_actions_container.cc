@@ -294,8 +294,6 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
       return;
     }
   }
-
-  NOTREACHED() << "Asked to remove a browser action view that doesn't exist.";
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
