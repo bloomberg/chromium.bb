@@ -33,7 +33,10 @@ class DesktopNotificationService {
   // Requests permission (using an info-bar) for a given origin.
   // |callback_context| contains an opaque value to pass back to the
   // requesting process when the info-bar finishes.
-  void RequestPermission(const GURL& origin, int callback_context);
+  void RequestPermission(const GURL& origin,
+                         int process_id,
+                         int route_id,
+                         int callback_context);
 
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);

@@ -100,12 +100,14 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   NotificationPermissionInfoBarDelegate(TabContents* contents,
                                         const GURL& origin,
+                                        int process_id,
+                                        int route_id,
                                         int callback_context)
       : ConfirmInfoBarDelegate(contents),
         origin_(origin),
         profile_(contents->profile()),
-        process_id_(contents->process()->id()),
-        route_id_(contents->render_view_host()->routing_id()),
+        process_id_(process_id),
+        route_id_(route_id),
         callback_context_(callback_context),
         action_taken_(false) {
   }
@@ -247,7 +249,7 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
 }
 
 void DesktopNotificationService::RequestPermission(
-    const GURL& origin, int callback_context) {
+    const GURL& origin, int process_id, int route_id, int callback_context) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Show an info bar requesting permission.
   Browser* browser = BrowserList::GetLastActive();
@@ -258,8 +260,8 @@ void DesktopNotificationService::RequestPermission(
   TabContents* tab = browser->GetSelectedTabContents();
   if (!tab)
     return;
-  tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(tab, origin,
-                                                            callback_context));
+  tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+      tab, origin, process_id, route_id, callback_context));
 }
 
 void DesktopNotificationService::ShowNotification(

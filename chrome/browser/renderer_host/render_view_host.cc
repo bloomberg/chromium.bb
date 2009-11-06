@@ -1676,7 +1676,8 @@ void RenderViewHost::OnRequestNotificationPermission(
     const GURL& source_origin, int callback_context) {
   DesktopNotificationService* service =
       process()->profile()->GetDesktopNotificationService();
-  service->RequestPermission(source_origin, callback_context);
+  service->RequestPermission(
+      source_origin, process()->id(), routing_id(), callback_context);
 }
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,
