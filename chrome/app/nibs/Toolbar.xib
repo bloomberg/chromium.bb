@@ -2,13 +2,12 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="48"/>
 			<integer value="42"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -643,28 +642,6 @@
 						<reference key="NSOnImage" ref="610745052"/>
 						<reference key="NSMixedImage" ref="1070349142"/>
 					</object>
-					<object class="NSMenuItem" id="141550343">
-						<reference key="NSMenu" ref="558188039"/>
-						<bool key="NSIsDisabled">YES</bool>
-						<bool key="NSIsHidden">YES</bool>
-						<string key="NSTitle">^IDS_SYNC_START_SYNC_BUTTON_LABEL</string>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="610745052"/>
-						<reference key="NSMixedImage" ref="1070349142"/>
-						<int key="NSTag">41108</int>
-					</object>
-					<object class="NSMenuItem" id="892721848">
-						<reference key="NSMenu" ref="558188039"/>
-						<bool key="NSIsDisabled">YES</bool>
-						<bool key="NSIsSeparator">YES</bool>
-						<bool key="NSIsHidden">YES</bool>
-						<string key="NSTitle"/>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="610745052"/>
-						<reference key="NSMixedImage" ref="1070349142"/>
-					</object>
 					<object class="NSMenuItem" id="510846575">
 						<reference key="NSMenu" ref="558188039"/>
 						<string key="NSTitle">^IDS_PREFERENCES_MAC</string>
@@ -1053,14 +1030,6 @@
 					</object>
 					<int key="connectionID">139</int>
 				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1003"/>
-						<reference key="destination" ref="141550343"/>
-					</object>
-					<int key="connectionID">142</int>
-				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1292,8 +1261,6 @@
 							<reference ref="922630377"/>
 							<reference ref="510846575"/>
 							<reference ref="306298564"/>
-							<reference ref="141550343"/>
-							<reference ref="892721848"/>
 						</object>
 						<reference key="parent" ref="465075988"/>
 					</object>
@@ -1514,16 +1481,6 @@
 						<reference key="object" ref="306232897"/>
 						<reference key="parent" ref="465075988"/>
 					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">140</int>
-						<reference key="object" ref="141550343"/>
-						<reference key="parent" ref="558188039"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">141</int>
-						<reference key="object" ref="892721848"/>
-						<reference key="parent" ref="558188039"/>
-					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1552,8 +1509,6 @@
 					<string>13.IBPluginDependency</string>
 					<string>14.CustomClassName</string>
 					<string>14.IBPluginDependency</string>
-					<string>140.IBPluginDependency</string>
-					<string>141.IBPluginDependency</string>
 					<string>15.CustomClassName</string>
 					<string>15.IBPluginDependency</string>
 					<string>2.CustomClassName</string>
@@ -1649,8 +1604,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ToolbarButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ClickHoldButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>DelayedMenuButton</string>
@@ -1710,12 +1663,12 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>AutocompleteTextField</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1454, 785}, {235, 293}}</string>
+					<string>{{979, 432}, {235, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{362, 493}, {335, 263}}</string>
+					<string>{{362, 523}, {306, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1793,7 +1746,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">142</int>
+			<int key="maxID">139</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2029,7 +1982,6 @@
 							<string>customPagesArrayController_</string>
 							<string>downloadLocationButton_</string>
 							<string>downloadLocationControl_</string>
-							<string>enableLoggingCheckbox_</string>
 							<string>personalStuffGroupAutofill_</string>
 							<string>personalStuffGroupBrowserData_</string>
 							<string>personalStuffGroupPasswords_</string>
@@ -2051,7 +2003,6 @@
 							<string>NSArrayController</string>
 							<string>NSButton</string>
 							<string>NSPathControl</string>
-							<string>NSButton</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
