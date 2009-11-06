@@ -19,6 +19,7 @@
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/view_resizer.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 class Browser;
@@ -183,6 +184,12 @@ class TabStripModelObserverBridge;
 
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;
+
+// Updates a bookmark sync UI item (expected to be a menu item).  This is
+// called every time the menu containing the sync UI item is displayed.
+- (void)updateSyncItem:(id)syncItem
+           syncEnabled:(BOOL)syncEnabled
+                status:(SyncStatusUIHelper::MessageType)status;
 
 @end  // BrowserWindowController(TestingAPI)
 
