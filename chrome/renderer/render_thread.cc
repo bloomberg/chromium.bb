@@ -560,7 +560,7 @@ void RenderThread::EnsureWebKitInitialized() {
 #endif
 
   WebRuntimeFeatures::enableLocalStorage(
-      command_line.HasSwitch(switches::kEnableLocalStorage));
+      !command_line.HasSwitch(switches::kDisableLocalStorage));
   WebRuntimeFeatures::enableSessionStorage(
       command_line.HasSwitch(switches::kEnableSessionStorage));
 }

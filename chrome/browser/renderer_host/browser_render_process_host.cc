@@ -307,10 +307,8 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   CommandLine cmd_line(renderer_path);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
-  if (is_extensions_process) {
+  if (is_extensions_process)
     cmd_line.AppendSwitch(switches::kEnableDatabases);
-    cmd_line.AppendSwitch(switches::kEnableLocalStorage);
-  }
   bool has_cmd_prefix;
   AppendRendererCommandLine(&cmd_line, &has_cmd_prefix);
 
@@ -552,7 +550,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kEnableDatabases,
     switches::kDisableByteRangeSupport,
     switches::kDisableWebSockets,
-    switches::kEnableLocalStorage,
+    switches::kDisableLocalStorage,
     switches::kEnableSessionStorage,
     switches::kEnableSharedWorkers,
     switches::kEnableDesktopNotifications,

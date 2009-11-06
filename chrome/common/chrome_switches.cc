@@ -188,8 +188,8 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
-// Enable local storage.  Still buggy.
-const char kEnableLocalStorage[]            = "enable-local-storage";
+// Disable LocalStorage.
+const char kDisableLocalStorage[]            = "disable-local-storage";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
