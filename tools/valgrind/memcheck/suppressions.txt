@@ -242,14 +242,6 @@
    fun:openDatabase
 }
 {
-   libevent does not provide a way to clean up unused oneshot timers at exit
-   Memcheck:Leak
-   fun:calloc
-   fun:event_base_once
-   fun:event_base_loopexit
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-}
-{
    # array of weak references freed but not processed?
    bug_16576
    Memcheck:Leak
