@@ -955,7 +955,9 @@ void Browser::BookmarkCurrentPage() {
                                            &title);
   bool was_bookmarked = model->IsBookmarked(url);
   model->SetURLStarred(url, title, true);
-  if (window_->IsActive()) {
+  // Make sure the model actually added a bookmark before showing the star. A
+  // bookmark isn't created if the url is invalid.
+  if (window_->IsActive() && model->IsBookmarked(url)) {
     // Only show the bubble if the window is active, otherwise we may get into
     // weird situations were the bubble is deleted as soon as it is shown.
     window_->ShowBookmarkBubble(url, was_bookmarked);
