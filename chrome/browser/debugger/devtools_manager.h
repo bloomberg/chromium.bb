@@ -71,6 +71,14 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
                                   RenderViewHost* dest_rvh,
                                   const GURL& gurl);
 
+  // Detaches client host and returns cookie that can be used in
+  // AttachClientHost.
+  int DetachClientHost(RenderViewHost* from_rvh);
+
+  // Attaches dangling client host to new render view host.
+  void AttachClientHost(int client_host_cookie,
+                        RenderViewHost* to_rvh);
+
 private:
   // DevToolsClientHost::CloseListener override.
   // This method will remove all references from the manager to the
@@ -114,12 +122,18 @@ private:
       ClientHostToInspectedRvhMap;
   ClientHostToInspectedRvhMap client_host_to_inspected_rvh_;
 
-  typedef std::map<RenderViewHost*, std::set<std::string> >
+  typedef std::set<std::string> RuntimeFeatures;
+  typedef std::map<RenderViewHost*, RuntimeFeatures>
       RuntimeFeaturesMap;
   RuntimeFeaturesMap runtime_features_;
 
   RenderViewHost* inspected_rvh_for_reopen_;
   bool in_initial_show_;
+
+  typedef std::map<int, std::pair<DevToolsClientHost*, RuntimeFeatures> >
+      DanglingClientHosts;
+  DanglingClientHosts dangling_client_hosts_;
+  int last_dangling_cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };

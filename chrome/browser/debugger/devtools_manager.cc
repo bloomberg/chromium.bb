@@ -33,12 +33,18 @@ void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
 
 DevToolsManager::DevToolsManager()
     : inspected_rvh_for_reopen_(NULL),
-      in_initial_show_(false) {
+      in_initial_show_(false),
+      last_dangling_cookie_(0) {
 }
 
 DevToolsManager::~DevToolsManager() {
   DCHECK(inspected_rvh_to_client_host_.empty());
   DCHECK(client_host_to_inspected_rvh_.empty());
+  for (DanglingClientHosts::iterator it = dangling_client_hosts_.begin();
+       it != dangling_client_hosts_.end(); ++it) {
+    it->second.first->InspectedTabClosing();
+  }
+  dangling_client_hosts_.clear();
 }
 
 DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
@@ -207,16 +213,11 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
     // Mute this even in case it is caused by the initial show routines.
     return;
   }
-  DevToolsClientHost* client_host =
-      GetDevToolsClientHostFor(rvh);
-  if (client_host) {
+
+  int cookie = DetachClientHost(rvh);
+  if (cookie != -1) {
     // Navigating to URL in the inspected window.
-    std::set<std::string> runtime_features = runtime_features_[rvh];
-    inspected_rvh_to_client_host_.erase(rvh);
-    runtime_features_.erase(rvh);
-    inspected_rvh_to_client_host_[dest_rvh] = client_host;
-    client_host_to_inspected_rvh_[client_host] = dest_rvh;
-    SendAttachToAgent(dest_rvh, runtime_features);
+    AttachClientHost(cookie, dest_rvh);
     return;
   }
 
@@ -235,6 +236,37 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
       return;
     }
   }
+}
+
+int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
+  int cookie = last_dangling_cookie_++;
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(from_rvh);
+  if (!client_host)
+    return -1;
+
+  dangling_client_hosts_[cookie] =
+      std::pair<DevToolsClientHost*, RuntimeFeatures>(
+          client_host, runtime_features_[from_rvh]);
+
+  inspected_rvh_to_client_host_.erase(from_rvh);
+  runtime_features_.erase(from_rvh);
+  return cookie;
+}
+
+void DevToolsManager::AttachClientHost(int client_host_cookie,
+                                       RenderViewHost* to_rvh) {
+  DanglingClientHosts::iterator it = dangling_client_hosts_.find(
+      client_host_cookie);
+  DCHECK(it != dangling_client_hosts_.end());
+  if (it == dangling_client_hosts_.end())
+    return;
+
+  DevToolsClientHost* client_host = (*it).second.first;
+  inspected_rvh_to_client_host_[to_rvh] = client_host;
+  client_host_to_inspected_rvh_[client_host] = to_rvh;
+  SendAttachToAgent(to_rvh, (*it).second.second);
+
+  dangling_client_hosts_.erase(client_host_cookie);
 }
 
 void DevToolsManager::SendAttachToAgent(
