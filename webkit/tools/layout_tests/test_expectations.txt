@@ -2130,6 +2130,7 @@ BUG23482 MAC : LayoutTests/svg/text/text-align-05-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-align-06-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-altglyph-01-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-deco-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-fonts-01-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-fonts-02-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-intro-05-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-path-01-b.svg = IMAGE
@@ -2200,9 +2201,6 @@ BUG23466 MAC : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
 // SVG marker changes
 BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = FAIL
 BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = FAIL
-
-// SVG failure to use the same fonts
-BUG23462 MAC : LayoutTests/svg/W3C-SVG-1.1/text-fonts-01-t.svg = IMAGE
 
 // Plugin drawing off
 BUG12030 MAC : LayoutTests/plugins/embed-attributes-style.html = IMAGE
