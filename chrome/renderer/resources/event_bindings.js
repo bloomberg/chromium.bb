@@ -23,7 +23,7 @@ var chrome = chrome || {};
     this.eventName_ = opt_eventName;
     this.listeners_ = [];
 
-    // Validate event parameters if we are in debug.     
+    // Validate event parameters if we are in debug.
     if (opt_argSchemas &&
         chromeHidden.validateCallbacks &&
         chromeHidden.validate) {
@@ -181,8 +181,11 @@ var chrome = chrome || {};
 
   chromeHidden.dispatchOnUnload = function() {
     chromeHidden.onUnload.dispatch();
-    for (var i in allAttachedEvents)
-      allAttachedEvents[i].detach_();
+    for (var i = 0; i < allAttachedEvents.length; ++i) {
+      var event = allAttachedEvents[i];
+      if (event)
+        event.detach_();
+    }
   }
 
   chromeHidden.dispatchError = function(msg) {
