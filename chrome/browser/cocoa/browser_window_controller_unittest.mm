@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
+#include "grit/generated_resources.h"
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.
@@ -427,6 +431,77 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
 
   EXPECT_GT(findBar_index, toolbar_index);
   EXPECT_GT(findBar_index, bookmark_index);
+}
+
+TEST_F(BrowserWindowControllerTest, TestSyncMenuItem) {
+  scoped_nsobject<NSMenuItem> syncMenuItem(
+      [[NSMenuItem alloc] initWithTitle:@""
+                                 action:@selector(commandDispatch)
+                          keyEquivalent:@""]);
+  [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
+
+  NSString* bookmarksSynced =
+      l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL);
+  NSString* bookmarkSyncError =
+      l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL);
+  NSString* startSync =
+      l10n_util::GetNSStringWithFixup(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+
+  [syncMenuItem setTitle:@""];
+  [syncMenuItem setHidden:NO];
+  [controller_ updateSyncItem:syncMenuItem
+                  syncEnabled:NO
+                       status:SyncStatusUIHelper::PRE_SYNCED];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSync]);
+  EXPECT_TRUE([syncMenuItem isHidden]);
+
+  [syncMenuItem setTitle:@""];
+  [syncMenuItem setHidden:YES];
+  [controller_ updateSyncItem:syncMenuItem
+                  syncEnabled:YES
+                       status:SyncStatusUIHelper::SYNC_ERROR];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:bookmarkSyncError]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+
+  [syncMenuItem setTitle:@""];
+  [syncMenuItem setHidden:NO];
+  [controller_ updateSyncItem:syncMenuItem
+                  syncEnabled:NO
+                       status:SyncStatusUIHelper::SYNCED];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:bookmarksSynced]);
+  EXPECT_TRUE([syncMenuItem isHidden]);
+}
+
+TEST_F(BrowserWindowControllerTest, TestSyncMenuItemWithSeparator) {
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* syncMenuItem =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch)
+               keyEquivalent:@""];
+  [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
+  NSMenuItem* following_separator = [NSMenuItem separatorItem];
+  [menu addItem:following_separator];
+
+  const SyncStatusUIHelper::MessageType kStatus =
+      SyncStatusUIHelper::PRE_SYNCED;
+
+  [syncMenuItem setHidden:NO];
+  [following_separator setHidden:NO];
+  [controller_ updateSyncItem:syncMenuItem
+                  syncEnabled:NO
+                       status:kStatus];
+  EXPECT_FALSE([following_separator isEnabled]);
+  EXPECT_TRUE([syncMenuItem isHidden]);
+  EXPECT_TRUE([following_separator isHidden]);
+
+  [syncMenuItem setHidden:YES];
+  [following_separator setHidden:YES];
+  [controller_ updateSyncItem:syncMenuItem
+                  syncEnabled:YES
+                       status:kStatus];
+  EXPECT_FALSE([following_separator isEnabled]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+  EXPECT_FALSE([following_separator isHidden]);
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
