@@ -120,7 +120,7 @@ void DevToolsManager::UndockWindow(RenderViewHost* client_rvh) {
 }
 
 void DevToolsManager::OpenDevToolsWindow(RenderViewHost* inspected_rvh) {
-  ToggleDevToolsWindow(inspected_rvh, true);
+  ToggleDevToolsWindow(inspected_rvh, true, false);
 }
 
 void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,

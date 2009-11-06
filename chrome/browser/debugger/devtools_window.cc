@@ -221,8 +221,10 @@ void DevToolsWindow::Observe(NotificationType type,
             L"", docked_ ? L"WebInspector.setAttachedWindow(true);" :
                            L"WebInspector.setAttachedWindow(false);");
     is_loaded_ = true;
-    if (open_console_on_load_)
+    if (open_console_on_load_) {
       OpenConsole();
+      open_console_on_load_ = false;
+    }
   } else if (type == NotificationType::TAB_CLOSING) {
     if (Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
