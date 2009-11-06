@@ -111,6 +111,7 @@ AC_CONFIG_FILES([Makefile
 		 python/Makefile
 		 python/louis/Makefile
                  tools/Makefile
-		 gnulib/Makefile])
+		 gnulib/Makefile
+		 m4/Makefile])
 AC_OUTPUT
 
