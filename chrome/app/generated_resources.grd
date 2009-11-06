@@ -5804,6 +5804,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_DEV_TOOLS_MAC" desc="The Mac menu item for the developer tools in the developer submenu of the view menu.">
           Developer Tools
         </message>
+        <message name="IDS_DEV_TOOLS_CONSOLE_MAC" desc="The Mac menu item for the JavaScript console in the developer submenu of the view menu.">
+          JavaScript Console
+        </message>
         <message name="IDS_TASK_MANAGER_MAC" desc="The Mac menu item for task manager in the developer submenu of the view menu.">
           Task Manager
         </message>
