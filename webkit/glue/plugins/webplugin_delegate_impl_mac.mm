@@ -418,12 +418,14 @@ static void UpdateDummyWindowBoundsWithOffset(WindowRef window,
   int target_y = g_current_y_offset + y_offset;
   Rect window_bounds;
   GetWindowBounds(window, kWindowContentRgn, &window_bounds);
-  if ((window_bounds.left != target_x) ||
-      (window_bounds.top != target_y)) {
-    int height = new_height ? new_height
-                            : window_bounds.bottom - window_bounds.top;
-    int width = new_width ? new_width
-                          : window_bounds.right - window_bounds.left;
+  int old_width = window_bounds.right - window_bounds.left;
+  int old_height = window_bounds.bottom - window_bounds.top;
+  if (window_bounds.left != target_x ||
+      window_bounds.top != target_y ||
+      (new_width && new_width != old_width) ||
+      (new_height && new_height != old_height)) {
+    int height = new_height ? new_height : old_height;
+    int width = new_width ? new_width : old_width;
     window_bounds.left = target_x;
     window_bounds.top = target_y;
     window_bounds.right = window_bounds.left + width;
