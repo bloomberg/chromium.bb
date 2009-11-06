@@ -134,12 +134,23 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     // Invoke ClearBrowsingDataView::ClearCache on the IO thread.
     waiting_for_clear_cache_ = true;
     UserMetrics::RecordAction(L"ClearBrowsingData_Cache", profile_);
+
+    URLRequestContextGetter* main_context_getter =
+        profile_->GetRequestContext();
+    URLRequestContextGetter* media_context_getter =
+        profile_->GetRequestContextForMedia();
+
+    // Balanced in ClearCacheOnIOThread().
+    main_context_getter->AddRef();
+    media_context_getter->AddRef();
+
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &BrowsingDataRemover::ClearCacheOnIOThread,
-            profile_->GetRequestContext(),
+            main_context_getter,
+            media_context_getter,
             delete_begin_,
             delete_end_));
   }
@@ -219,7 +230,8 @@ void BrowsingDataRemover::ClearedCache() {
 }
 
 void BrowsingDataRemover::ClearCacheOnIOThread(
-    URLRequestContextGetter* context_getter,
+    URLRequestContextGetter* main_context_getter,
+    URLRequestContextGetter* media_context_getter,
     base::Time delete_begin,
     base::Time delete_end) {
   // This function should be called on the IO thread.
@@ -227,7 +239,7 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
 
   // Get a pointer to the cache.
   net::HttpTransactionFactory* factory =
-      context_getter->GetURLRequestContext()->http_transaction_factory();
+      main_context_getter->GetURLRequestContext()->http_transaction_factory();
   disk_cache::Backend* cache = factory->GetCache()->disk_cache();
 
   // |cache| can be null since it is lazily initialized, in this case we do
@@ -240,7 +252,7 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
   }
 
   // Get a pointer to the media cache.
-  factory = profile_->GetRequestContextForMedia()->GetURLRequestContext()->
+  factory = media_context_getter->GetURLRequestContext()->
       http_transaction_factory();
   cache = factory->GetCache()->disk_cache();
 
@@ -252,6 +264,10 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
     else
       cache->DoomEntriesBetween(delete_begin, delete_end);
   }
+
+  // Balance the AddRef()s done on the UI thread by Remove().
+  main_context_getter->Release();
+  media_context_getter->Release();
 
   // Notify the UI thread that we are done.
   ChromeThread::PostTask(

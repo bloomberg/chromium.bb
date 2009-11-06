@@ -86,7 +86,8 @@ class BrowsingDataRemover : public NotificationObserver {
   void ClearedCache();
 
   // Invoked on the IO thread to delete from the cache.
-  void ClearCacheOnIOThread(URLRequestContextGetter* context_getter,
+  void ClearCacheOnIOThread(URLRequestContextGetter* main_context_getter,
+                            URLRequestContextGetter* media_context_getter,
                             base::Time delete_begin,
                             base::Time delete_end);
 
