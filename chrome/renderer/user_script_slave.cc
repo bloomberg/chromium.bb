@@ -140,9 +140,11 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     if (location == UserScript::DOCUMENT_START) {
       num_css += script->css_scripts().size();
       for (size_t j = 0; j < script->css_scripts().size(); ++j) {
+        PerfTimer insert_timer;
         UserScript::File& file = script->css_scripts()[j];
         frame->insertStyleText(
             WebString::fromUTF8(file.GetContent().as_string()), WebString());
+        UMA_HISTOGRAM_TIMES("Extensions.InjectCssTime", insert_timer.Elapsed());
       }
     }
     if (script->run_location() == location) {
@@ -179,9 +181,11 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
         isolated_world_id = GetIsolatedWorldId(script->extension_id());
       }
 
+      PerfTimer exec_timer;
       frame->executeScriptInIsolatedWorld(
           isolated_world_id, &sources.front(), sources.size(),
           EXTENSION_GROUP_CONTENT_SCRIPTS);
+      UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
     }
   }
 
@@ -189,10 +193,18 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   if (location == UserScript::DOCUMENT_START) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount", num_css);
     UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount", num_scripts);
-    UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time", timer.Elapsed());
-  } else {
+    if (num_css || num_scripts)
+      UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time", timer.Elapsed());
+  } else if (location == UserScript::DOCUMENT_END) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", num_scripts);
-    UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", timer.Elapsed());
+    if (num_scripts)
+      UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", timer.Elapsed());
+  } else if (location == UserScript::DOCUMENT_IDLE) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_ScriptCount", num_scripts);
+    if (num_scripts)
+      UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", timer.Elapsed());
+  } else {
+    NOTREACHED();
   }
 
   LOG(INFO) << "Injected " << num_scripts << " scripts and " << num_css <<

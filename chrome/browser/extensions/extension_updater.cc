@@ -462,6 +462,21 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
 void ExtensionUpdater::TimerFired() {
   CheckNow();
 
+  // If the user has overridden the update frequency, don't bother reporting
+  // this.
+  if (frequency_seconds_ == ExtensionsService::kDefaultUpdateFrequencySeconds) {
+    Time last = Time::FromInternalValue(prefs_->GetInt64(
+        kLastExtensionsUpdateCheck));
+    if (last.ToInternalValue() != 0) {
+      // Use counts rather than time so we can use minutes rather than millis.
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.UpdateCheckGap", 
+          (Time::Now() - last).InMinutes(),
+          base::TimeDelta::FromSeconds(kStartupWaitSeconds).InMinutes(),
+          base::TimeDelta::FromDays(40).InMinutes(),
+          50);  // 50 buckets seems to be the default.
+    }
+  }
+
   // Save the last check time, and schedule the next check.
   int64 now = Time::Now().ToInternalValue();
   prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
@@ -477,14 +492,32 @@ void ExtensionUpdater::CheckNow() {
         prefs_->GetString(kExtensionBlacklistUpdateVersion)));
   }
 
+  int no_url_count = 0;
+  int google_url_count = 0;
+  int other_url_count = 0;
+  int theme_count = 0;
+
   const ExtensionList* extensions = service_->extensions();
   for (ExtensionList::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     Extension* extension = (*iter);
     const GURL& update_url = extension->update_url();
-    if (update_url.is_empty() || extension->id().empty()) {
+    const std::string google_suffix = ".google.com";
+    size_t suffix_index = update_url.host().length() - google_suffix.length();
+    if (update_url.host().find(google_suffix) == suffix_index) {
+      google_url_count++;
+    } else if (update_url.is_empty() || extension->id().empty()) {
+      // TODO(asargent) when a default URL is added, make sure to update
+      // the total histogram below.  Also, make sure to skip extensions that
+      // are "converted_from_user_script".
+      if (!extension->converted_from_user_script())
+        no_url_count++;
       continue;
+    } else {
+      other_url_count++;
     }
+    if (extension->IsTheme())
+      theme_count++;
 
     DCHECK(update_url.is_valid());
     DCHECK(!update_url.has_ref());
@@ -509,6 +542,17 @@ void ExtensionUpdater::CheckNow() {
     // scheduled, so we don't need to check before calling it.
     StartUpdateCheck(*iter);
   }
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckExtensions",
+                           google_url_count + other_url_count - theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckTheme",
+                           theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckGoogleUrl",
+                           google_url_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckOtherUrl",
+                           other_url_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckNoUrl",
+                           no_url_count);
 }
 
 

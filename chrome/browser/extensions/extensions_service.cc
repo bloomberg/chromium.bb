@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/histogram.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -265,12 +267,55 @@ void ExtensionsService::LoadExtension(const FilePath& extension_path) {
 }
 
 void ExtensionsService::LoadAllExtensions() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   // Load the previously installed extensions.
   scoped_ptr<InstalledExtensions> installed(
       new InstalledExtensions(extension_prefs_.get()));
   installed->VisitInstalledExtensions(
       NewCallback(this, &ExtensionsService::LoadInstalledExtension));
   OnLoadedInstalledExtensions();
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAll", extensions_.size());
+  UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled", disabled_extensions_.size());
+
+  if (extensions_.size()) {
+    UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
+                        base::TimeTicks::Now() - start_time);
+
+    int user_script_count = 0;
+    int extension_count = 0;
+    int theme_count = 0;
+    int external_count = 0;
+    int page_action_count = 0;
+    int browser_action_count = 0;
+    ExtensionList::iterator ex;
+    for (ex = extensions_.begin(); ex != extensions_.end(); ++ex) {
+      if ((*ex)->IsTheme()) {
+        theme_count++;
+      } else if ((*ex)->converted_from_user_script()) {
+        user_script_count++;
+      } else {
+        extension_count++;
+      }
+      if (Extension::IsExternalLocation((*ex)->location())) {
+        external_count++;
+      }
+      if ((*ex)->page_action() != NULL) {
+        page_action_count++;
+      }
+      if ((*ex)->browser_action() != NULL) {
+        browser_action_count++;
+      }
+    }
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension", extension_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExternal", external_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
+                             browser_action_count);
+  }
 }
 
 void ExtensionsService::LoadInstalledExtension(

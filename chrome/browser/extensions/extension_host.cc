@@ -373,6 +373,16 @@ void ExtensionHost::DidStopLoading() {
         NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
+    if (extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE) {
+      UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
+                          since_created_.Elapsed());
+    } else if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
+      UMA_HISTOGRAM_TIMES("Extensions.PopupLoadTime",
+                          since_created_.Elapsed());
+    } else if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP) {
+      UMA_HISTOGRAM_TIMES("Extensions.ToolstripLoadTime",
+                          since_created_.Elapsed());
+    }
   }
 }
 

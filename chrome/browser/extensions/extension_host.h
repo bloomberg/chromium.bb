@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/jsmessage_box_client.h"
@@ -250,6 +251,9 @@ class ExtensionHost :  // NOLINT
   // Only EXTENSION_TOOLSTRIP, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
   // are used here, others are not hosted by ExtensionHost.
   ViewType::Type extension_host_type_;
+
+  // Used to measure how long it's been since the host was created.
+  PerfTimer since_created_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };
