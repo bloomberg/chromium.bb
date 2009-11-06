@@ -129,13 +129,22 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
 
 void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations) {
-  // The drag invokes a nested event loop, but we need to continue processing
-  // events.
+  // By allowing nested tasks, the code below also allows Close(),
+  // which would deallocate |this|.  The same problem can occur while
+  // processing -sendEvent:, so Close() is deferred in that case.
+  // Drags from web content do not come via -sendEvent:, this sets the
+  // same flag -sendEvent: would.
+  chrome_application_mac::ScopedSendingEvent sendingEventScoper(
+      static_cast<CrApplication*>([CrApplication sharedApplication]));
+
+  // The drag invokes a nested event loop, arrange to continue
+  // processing events.
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
   [cocoa_view_ startDragWithDropData:drop_data
                    dragOperationMask:mask];
-  MessageLoop::current()->SetNestableTasksAllowed(false);
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
