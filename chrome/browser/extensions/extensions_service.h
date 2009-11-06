@@ -83,7 +83,6 @@ class ExtensionsService
                     PrefService* prefs,
                     const FilePath& install_directory,
                     bool autoupdate_enabled);
-  virtual ~ExtensionsService();
 
   // Gets the list of currently installed extensions.
   virtual const ExtensionList* extensions() const { return &extensions_; }
@@ -228,6 +227,10 @@ class ExtensionsService
   virtual std::vector<FilePath> GetTransientBlacklistPaths();
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionsService>;
+
+  virtual ~ExtensionsService();
+
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   Extension* GetExtensionByIdInternal(const std::string& id,
@@ -290,8 +293,6 @@ class ExtensionsServiceBackend
   // preferences.
   ExtensionsServiceBackend(const FilePath& install_directory);
 
-  virtual ~ExtensionsServiceBackend();
-
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
   // Errors are reported through ExtensionErrorReporter. On success,
@@ -327,6 +328,10 @@ class ExtensionsServiceBackend
                                         const FilePath& path,
                                         Extension::Location location);
  private:
+  friend class base::RefCountedThreadSafe<ExtensionsServiceBackend>;
+
+  virtual ~ExtensionsServiceBackend();
+
   // Finish installing the extension in |crx_path| after it has been unpacked to
   // |unpacked_path|.  If |expected_id| is not empty, it's verified against the
   // extension's manifest before installation. If |silent| is true, there will

@@ -34,7 +34,6 @@ class ExtensionDevToolsManager
  public:
   // UI thread only:
   explicit ExtensionDevToolsManager(Profile* profile);
-  ~ExtensionDevToolsManager();
 
   void AddEventListener(const std::string& event_name,
                         int render_process_id);
@@ -45,6 +44,9 @@ class ExtensionDevToolsManager
   void BridgeClosingForTab(int tab_id);
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionDevToolsManager>;
+
+  ~ExtensionDevToolsManager();
 
   // Map of tab IDs to the ExtensionDevToolsBridge connected to the tab
   std::map<int, linked_ptr<ExtensionDevToolsBridge> > tab_id_to_bridge_;

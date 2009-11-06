@@ -14,6 +14,7 @@ class ExtensionActionState;
 class BrowserActionFunction : public SyncExtensionFunction {
  protected:
   BrowserActionFunction() : tab_id_(ExtensionAction::kDefaultTabId) {}
+  virtual ~BrowserActionFunction() {}
   virtual bool RunImpl();
   virtual bool RunBrowserAction() = 0;
 
@@ -30,22 +31,26 @@ class BrowserActionFunction : public SyncExtensionFunction {
 };
 
 class BrowserActionSetIconFunction : public BrowserActionFunction {
+  ~BrowserActionSetIconFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
 class BrowserActionSetTitleFunction : public BrowserActionFunction {
+  ~BrowserActionSetTitleFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
 class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
+  ~BrowserActionSetBadgeTextFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
 };
 
 class BrowserActionSetBadgeBackgroundColorFunction
     : public BrowserActionFunction {
+  ~BrowserActionSetBadgeBackgroundColorFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
 };

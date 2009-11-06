@@ -34,6 +34,10 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ClearClient();
 
  private:
+  friend class base::RefCountedThreadSafe<PackExtensionJob>;
+
+  ~PackExtensionJob() {}
+
   void RunOnFileThread();
   void ReportSuccessOnUIThread();
   void ReportFailureOnUIThread(const std::string& error);

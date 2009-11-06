@@ -51,66 +51,81 @@ class ExtensionTabUtil {
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
+  ~GetWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.get")
 };
 class GetCurrentWindowFunction : public SyncExtensionFunction {
+  ~GetCurrentWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getCurrent")
 };
 class GetLastFocusedWindowFunction : public SyncExtensionFunction {
+  ~GetLastFocusedWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getLastFocused")
 };
 class GetAllWindowsFunction : public SyncExtensionFunction {
+  ~GetAllWindowsFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getAll")
 };
 class CreateWindowFunction : public SyncExtensionFunction {
+  ~CreateWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.create")
 };
 class UpdateWindowFunction : public SyncExtensionFunction {
+  ~UpdateWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.update")
 };
 class RemoveWindowFunction : public SyncExtensionFunction {
+  ~RemoveWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("windows.remove")
 };
 
 // Tabs
 class GetTabFunction : public SyncExtensionFunction {
+  ~GetTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.get")
 };
 class GetSelectedTabFunction : public SyncExtensionFunction {
+  ~GetSelectedTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getSelected")
 };
 class GetAllTabsInWindowFunction : public SyncExtensionFunction {
+  ~GetAllTabsInWindowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getAllInWindow")
 };
 class CreateTabFunction : public SyncExtensionFunction {
+  ~CreateTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
 };
 class UpdateTabFunction : public SyncExtensionFunction {
+  ~UpdateTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabFunction : public SyncExtensionFunction {
+  ~MoveTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
 class RemoveTabFunction : public SyncExtensionFunction {
+  ~RemoveTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
  private:
+  ~DetectTabLanguageFunction() {}
   virtual bool RunImpl();
 
   virtual void Observe(NotificationType type,
@@ -120,6 +135,7 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
 };
 class CaptureVisibleTabFunction : public SyncExtensionFunction {
+  ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.captureVisibleTab")
 };

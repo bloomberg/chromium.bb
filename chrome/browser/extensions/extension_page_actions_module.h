@@ -12,6 +12,7 @@ class ExtensionAction;
 
 class PageActionFunction : public SyncExtensionFunction {
  protected:
+  virtual ~PageActionFunction() {}
   bool SetPageActionEnabled(bool enable);
 
   bool InitCommon(int tab_id);
@@ -22,46 +23,55 @@ class PageActionFunction : public SyncExtensionFunction {
 };
 
 class EnablePageActionFunction : public PageActionFunction {
+  ~EnablePageActionFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageActions.enableForTab")
 };
 
 class DisablePageActionFunction : public PageActionFunction {
+  ~DisablePageActionFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageActions.disableForTab")
 };
 
 class PageActionShowFunction : public PageActionFunction {
+  ~PageActionShowFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.show")
 };
 
 class PageActionHideFunction : public PageActionFunction {
+  ~PageActionHideFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.hide")
 };
 
 class PageActionSetIconFunction : public PageActionFunction {
+  ~PageActionSetIconFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setIcon")
 };
 
 class PageActionSetTitleFunction : public PageActionFunction {
+  ~PageActionSetTitleFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setTitle")
 };
 
 class PageActionSetBadgeBackgroundColorFunction : public PageActionFunction {
+  ~PageActionSetBadgeBackgroundColorFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeBackgroundColor")
 };
 
 class PageActionSetBadgeTextColorFunction : public PageActionFunction {
+  ~PageActionSetBadgeTextColorFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeTextColor")
 };
 
 class PageActionSetBadgeTextFunction : public PageActionFunction {
+  ~PageActionSetBadgeTextFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeText")
 };

@@ -36,7 +36,11 @@ class UserScriptListener
   bool ShouldStartRequest(URLRequest* request);
 
  private:
+  friend class base::RefCountedThreadSafe<UserScriptListener>;
+
   typedef std::list<URLPattern> URLPatterns;
+
+  ~UserScriptListener() {}
 
   // Resume any requests that we delayed in order to wait for user scripts.
   void StartDelayedRequests();

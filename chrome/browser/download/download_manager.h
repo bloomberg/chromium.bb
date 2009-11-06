@@ -311,7 +311,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
  public:
   DownloadManager();
-  ~DownloadManager();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -465,6 +464,10 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                                       int request_id);
 
  private:
+  friend class base::RefCountedThreadSafe<DownloadManager>;
+
+  ~DownloadManager();
+
   // Opens a download via the Windows shell.
   void OpenDownloadInShell(const DownloadItem* download,
                            gfx::NativeView parent_window);

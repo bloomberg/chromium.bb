@@ -148,7 +148,6 @@ class DownloadRequestManager :
   };
 
   DownloadRequestManager();
-  ~DownloadRequestManager();
 
   // Returns the download status for a page. This does not change the state in
   // anyway.
@@ -169,8 +168,11 @@ class DownloadRequestManager :
   void OnUserGesture(TabContents* tab);
 
  private:
+  friend class base::RefCountedThreadSafe<DownloadRequestManager>;
   friend class DownloadRequestManagerTest;
   friend class TabDownloadState;
+
+  ~DownloadRequestManager();
 
   // For unit tests. If non-null this is used instead of creating a dialog.
   class TestingDelegate {
