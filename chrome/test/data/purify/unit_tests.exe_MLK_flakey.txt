@@ -224,3 +224,75 @@ Alloc Location
    base/tuple.h  ?DispatchToMethod@VContext@ChannelProxy@IPC@@P8123@AEXPAVMessageFilter@23@@ZPAV423@@@YAXPAVContext@ChannelProxy@IPC@@P8012@AEXPAVMessageFilter@12@@ZABU?$Tuple1@PAVMessageFilter@ChannelProxy@IPC@@@@@Z
    ^^^  
 
+Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string<char,char_traits<char>::std,allocator<char>::std>::std *) [unit_tests.exe]
+Alloc Location
+   ...
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   build/release/unit_tests.exe  ExtensionAction::ExtensionAction(void)
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   build/release/unit_tests.exe  ExtensionAction::ExtensionAction(void)
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   build/release/unit_tests.exe  ExtensionAction::ExtensionAction(void)
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   build/release/unit_tests.exe  ExtensionAction::ExtensionAction(void)
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   build/release/unit_tests.exe  ExtensionAction::ExtensionAction(void)
+   chrome/common/extensions/extension.cc:359  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@H_NU?$less@H@std@@V?$allocator@U?$pair@$$CBH_N@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   chrome/common/extensions/extension_action.h:139  ExtensionAction::_N::SetValue(class std::map *,int,bool)
+   chrome/common/extensions/extension_action.h:117  ExtensionAction::SetIsVisible(int,bool)
+   chrome/common/extensions/extension.cc:364  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
+
+?_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@$0A@@std@@@0@IPAU120@@Z [unit_tests.exe]
+Alloc Location
+   ...
+   chrome/common/extensions/extension_action.h:139  ?SetValue@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ExtensionAction@@AAEXPAV?$map@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@@std@@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z
+   chrome/common/extensions/extension_action.h:55  ExtensionAction::SetTitle(int,basic_string::std const&)
+   chrome/common/extensions/extension.cc:418  Extension::LoadExtensionActionHelper(DictionaryValue const*,basic_string::std *)
+   chrome/common/extensions/extension_unittest.cc:306  ExtensionTest_LoadPageActionHelper_Test::TestBody(void)
+   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
+   ^^^
