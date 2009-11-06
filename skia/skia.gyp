@@ -562,6 +562,12 @@
           'sources/': [
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
             ['exclude', '/mac/'] ],
+            'sources!': [
+              '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            ],
+            'sources': [
+              '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
+            ],
         }],
         [ 'OS != "linux"', {
           'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],
