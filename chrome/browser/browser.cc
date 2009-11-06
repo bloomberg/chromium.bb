@@ -1216,6 +1216,11 @@ void Browser::ShowDownloadsTab() {
   ShowSingleDOMUITab(GURL(chrome::kChromeUIDownloadsURL));
 }
 
+void Browser::ShowExtensionsTab() {
+  UserMetrics::RecordAction(L"ShowExtensions", profile_);
+  ShowSingleDOMUITab(GURL(chrome::kChromeUIExtensionsURL));
+}
+
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(L"ClearBrowsingData_ShowDlg", profile_);
   window_->ShowClearBrowsingDataDialog();
@@ -1265,11 +1270,6 @@ void Browser::OpenHelpTab() {
   GURL help_url(WideToASCII(l10n_util::GetString(IDS_HELP_CONTENT_URL)));
   AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, true, -1,
                 false, NULL);
-}
-
-void Browser::OpenExtensionsTab() {
-  AddTabWithURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
-      PageTransition::AUTO_BOOKMARK, true, -1, false, NULL);
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -1504,10 +1504,11 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();        break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
-    case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
-    case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                 break;
     case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                break;
+    case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
+    case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
+    case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();           break;
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
     case IDC_OPTIONS:               OpenOptionsDialog();           break;
     case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();           break;
@@ -1516,7 +1517,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();    break;
     case IDC_ABOUT:                 OpenAboutChromeDialog();       break;
     case IDC_HELP_PAGE:             OpenHelpTab();                 break;
-    case IDC_MANAGE_EXTENSIONS:     OpenExtensionsTab();           break;
 #if defined(OS_CHROMEOS)
     case IDC_CONTROL_PANEL:         ShowControlPanel();            break;
 #endif

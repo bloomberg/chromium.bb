@@ -410,6 +410,7 @@ class Browser : public TabStripModelDelegate,
   void ShowPageMenu();
   void ShowHistoryTab();
   void ShowDownloadsTab();
+  void ShowExtensionsTab();
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenKeywordEditor();
@@ -418,7 +419,6 @@ class Browser : public TabStripModelDelegate,
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
   void OpenHelpTab();
-  void OpenExtensionsTab();
   // Used by the "Get themes" link in the options dialog.
   void OpenThemeGalleryTabAndActivate();
 #if defined(OS_CHROMEOS)
