@@ -147,7 +147,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   gboolean HandleKeyRelease(GtkWidget* widget, GdkEventKey* event);
 
-#if defined(OS_CHROMEOS)
   static gboolean HandleViewButtonPressThunk(GtkWidget* view,
                                              GdkEventButton* event,
                                              gpointer self) {
@@ -163,7 +162,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
         HandleViewButtonRelease(event);
   }
   gboolean HandleViewButtonRelease(GdkEventButton* event);
-#endif
 
   static gboolean HandleViewFocusInThunk(GtkWidget* view,
                                           GdkEventFocus* event,

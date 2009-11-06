@@ -194,12 +194,10 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleKeyPressThunk), this);
   g_signal_connect(text_view_, "key-release-event",
                    G_CALLBACK(&HandleKeyReleaseThunk), this);
-#if defined(OS_CHROMEOS)
   g_signal_connect(text_view_, "button-press-event",
                    G_CALLBACK(&HandleViewButtonPressThunk), this);
   g_signal_connect(text_view_, "button-release-event",
                    G_CALLBACK(&HandleViewButtonReleaseThunk), this);
-#endif
   g_signal_connect(text_view_, "focus-in-event",
                    G_CALLBACK(&HandleViewFocusInThunk), this);
   g_signal_connect(text_view_, "focus-out-event",
@@ -726,19 +724,20 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
   return FALSE;  // Propagate into GtkTextView.
 }
 
-#if defined(OS_CHROMEOS)
 gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
   // We don't need to care about double and triple clicks.
   if (event->type != GDK_BUTTON_PRESS)
     return FALSE;
 
   if (event->button == 1) {
+#if defined(OS_CHROMEOS)
     // When the first button is pressed, track some stuff that will help us
     // determine whether we should select all of the text when the button is
     // released.
     button_1_pressed_ = true;
     text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
     text_selected_during_click_ = false;
+#endif
 
     // Button press event may change the selection, we need to record the change
     // and report it to |model_| later when button is released.
@@ -757,13 +756,16 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
   if (event->button != 1)
     return FALSE;
 
+#if defined(OS_CHROMEOS)
   button_1_pressed_ = false;
+#endif
 
   // Call the GtkTextView default handler, ignoring the fact that it will
   // likely have told us to stop propagating.  We want to handle selection.
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
   klass->button_release_event(text_view_, event);
 
+#if defined(OS_CHROMEOS)
   if (!text_view_focused_before_button_press_ && !text_selected_during_click_) {
     // If this was a focusing click and the user didn't drag to highlight any
     // text, select the full input and update the PRIMARY selection.
@@ -777,13 +779,13 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
     gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
     gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
   }
+#endif
 
   // Inform |model_| about possible text selection change.
   OnAfterPossibleChange();
 
   return TRUE;  // Don't continue, we called the default handler already.
 }
-#endif
 
 gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
   GdkModifierType modifiers;
