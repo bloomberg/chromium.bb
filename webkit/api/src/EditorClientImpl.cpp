@@ -470,11 +470,6 @@ static const KeyDownEntry keyDownEntries[] = {
     // FIXME: Remove (crbug.com/25205).
     { 'V',         CommandKey | ShiftKey,
         "PasteAndMatchStyle"                                                  },
-    // FIXME: Remove once undo and redo are hooked up correctly in the menu
-    // and are validated correctly.
-    { 'Z',         CommandKey,         "Undo"                                 },
-    { 'Z',         CommandKey | ShiftKey,
-        "Redo"                                                                },
 #else
     { 'C',         CtrlKey,            "Copy"                                 },
     { 'V',         CtrlKey,            "Paste"                                },
