@@ -39,7 +39,7 @@ class DevToolsWindow :
   virtual void SendMessageToClient(const IPC::Message& message);
   virtual void InspectedTabClosing();
 
-  void Show();
+  void Show(bool open_console);
   void Activate();
   void SetDocked(bool docked);
   RenderViewHost* GetRenderViewHost();
@@ -56,6 +56,8 @@ class DevToolsWindow :
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  void OpenConsole();
 
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
@@ -85,6 +87,8 @@ class DevToolsWindow :
   Browser* browser_;
   BrowserWindow* inspected_window_;
   bool docked_;
+  bool is_loaded_;
+  bool open_console_on_load_;
   NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };

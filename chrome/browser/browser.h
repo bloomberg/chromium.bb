@@ -396,7 +396,7 @@ class Browser : public TabStripModelDelegate,
   // Show various bits of UI
   void OpenFile();
   void OpenCreateShortcutsDialog();
-  void ToggleDevToolsWindow();
+  void ToggleDevToolsWindow(bool open_console);
   void OpenTaskManager();
   void OpenSelectProfileDialog();
   void OpenNewProfileDialog();

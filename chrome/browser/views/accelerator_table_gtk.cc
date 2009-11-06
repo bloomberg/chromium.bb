@@ -108,6 +108,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_F11, false, false, false, IDC_FULLSCREEN },
   { base::VKEY_U, false, true, false, IDC_VIEW_SOURCE },
   { base::VKEY_J, true, true, false, IDC_DEV_TOOLS },
+  { base::VKEY_C, true, true, false, IDC_DEV_TOOLS_CONSOLE },
   { base::VKEY_P, false, true, false, IDC_PRINT},
   { base::VKEY_ESCAPE, true, false, false, IDC_TASK_MANAGER },
   { base::VKEY_F11, false, true, true, IDC_FULLSCREEN },

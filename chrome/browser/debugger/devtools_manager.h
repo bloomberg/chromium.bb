@@ -55,7 +55,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void UndockWindow(RenderViewHost* client_rvn);
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
-  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh);
+  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh, bool open_console);
   void RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
                                   const std::string& feature,
                                   bool enabled);
@@ -90,7 +90,9 @@ private:
 
   DevToolsClientHost* FindOnwerDevToolsClientHost(RenderViewHost* client_rvh);
 
-  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh, bool force_open);
+  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
+                            bool force_open,
+                            bool open_console);
 
   void ReopenWindow(RenderViewHost* client_rvh, bool docked);
 

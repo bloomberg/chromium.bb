@@ -49,7 +49,9 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
     : profile_(profile),
       browser_(NULL),
       inspected_window_(NULL),
-      docked_(docked) {
+      docked_(docked),
+      is_loaded_(false),
+      open_console_on_load_(false) {
   // Create TabContents with devtools.
   tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
   GURL url(std::string(chrome::kChromeUIDevToolsURL) + "devtools.html");
@@ -104,7 +106,7 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
-void DevToolsWindow::Show() {
+void DevToolsWindow::Show(bool open_console) {
   if (docked_) {
     // Just tell inspected browser to update splitter.
     inspected_window_ = GetInspectedBrowserWindow();
@@ -119,11 +121,18 @@ void DevToolsWindow::Show() {
     }
   }
 
-  if (!browser_) {
+  if (!browser_)
     CreateDevToolsBrowser();
-  }
+
   browser_->window()->Show();
   tab_contents_->view()->SetInitialFocus();
+
+  if (open_console) {
+    if (is_loaded_)
+      OpenConsole();
+    else
+      open_console_on_load_ = true;
+  }
 }
 
 void DevToolsWindow::Activate() {
@@ -154,7 +163,7 @@ void DevToolsWindow::SetDocked(bool docked) {
     inspected_window_->UpdateDevTools();
     inspected_window_ = NULL;
   }
-  Show();
+  Show(false);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -211,6 +220,9 @@ void DevToolsWindow::Observe(NotificationType type,
         ExecuteJavascriptInWebFrame(
             L"", docked_ ? L"WebInspector.setAttachedWindow(true);" :
                            L"WebInspector.setAttachedWindow(false);");
+    is_loaded_ = true;
+    if (open_console_on_load_)
+      OpenConsole();
   } else if (type == NotificationType::TAB_CLOSING) {
     if (Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
@@ -222,4 +234,9 @@ void DevToolsWindow::Observe(NotificationType type,
       delete this;
     }
   }
+}
+
+void DevToolsWindow::OpenConsole() {
+  tab_contents_->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
 }

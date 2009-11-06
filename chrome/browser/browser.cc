@@ -1134,10 +1134,13 @@ void Browser::OpenCreateShortcutsDialog() {
 #endif
 }
 
-void Browser::ToggleDevToolsWindow() {
-  UserMetrics::RecordAction(L"ShowJSConsole", profile_);
+void Browser::ToggleDevToolsWindow(bool open_console) {
+  if (open_console)
+    UserMetrics::RecordAction(L"ToggleDevToolsConsole", profile_);
+  else
+    UserMetrics::RecordAction(L"ToggleDevTools", profile_);
   DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-      GetSelectedTabContents()->render_view_host());
+      GetSelectedTabContents()->render_view_host(), open_console);
 }
 
 void Browser::OpenTaskManager() {
@@ -1482,7 +1485,8 @@ void Browser::ExecuteCommandWithDisposition(
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                    break;
     case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();   break;
-    case IDC_DEV_TOOLS:             ToggleDevToolsWindow();        break;
+    case IDC_DEV_TOOLS:             ToggleDevToolsWindow(false);   break;
+    case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(true);    break;
     case IDC_TASK_MANAGER:          OpenTaskManager();             break;
     case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();     break;
     case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;
@@ -2385,6 +2389,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, true);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);

@@ -1130,6 +1130,9 @@ void ToolbarView::CreateDevToolsMenuContents() {
   if (g_browser_process->have_inspector_files()) {
     devtools_menu_contents_->AddItem(IDC_DEV_TOOLS,
                                      l10n_util::GetString(IDS_DEV_TOOLS));
+    devtools_menu_contents_->AddItem(
+        IDC_DEV_TOOLS_CONSOLE,
+        l10n_util::GetString(IDS_DEV_TOOLS_CONSOLE));
   }
   devtools_menu_contents_->AddItem(IDC_TASK_MANAGER,
                                    l10n_util::GetString(IDS_TASK_MANAGER));

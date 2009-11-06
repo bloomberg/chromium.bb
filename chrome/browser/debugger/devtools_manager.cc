@@ -123,8 +123,9 @@ void DevToolsManager::OpenDevToolsWindow(RenderViewHost* inspected_rvh) {
   ToggleDevToolsWindow(inspected_rvh, true);
 }
 
-void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh) {
-  ToggleDevToolsWindow(inspected_rvh, false);
+void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
+                                           bool open_console) {
+  ToggleDevToolsWindow(inspected_rvh, false, open_console);
 }
 
 void DevToolsManager::RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
@@ -297,7 +298,8 @@ void DevToolsManager::ReopenWindow(RenderViewHost* client_rvh, bool docked) {
 }
 
 void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                                           bool force_open) {
+                                           bool force_open,
+                                           bool open_console) {
   bool do_open = force_open;
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
   if (!host) {
@@ -323,7 +325,7 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
   // undocked, we show (activate) it.
   if (!window->is_docked() || do_open) {
     in_initial_show_ = true;
-    window->Show();
+    window->Show(open_console);
     in_initial_show_ = false;
   } else {
     CloseWindow(host);
