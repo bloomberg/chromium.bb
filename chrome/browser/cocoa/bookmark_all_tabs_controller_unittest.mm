@@ -33,7 +33,6 @@
 
 class BookmarkAllTabsControllerTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
   const BookmarkNode* parent_node_;
   BookmarkAllTabsControllerOverride* controller_;
@@ -50,7 +49,7 @@ class BookmarkAllTabsControllerTest : public CocoaTest {
 
   virtual BookmarkAllTabsControllerOverride* CreateController() {
     return [[BookmarkAllTabsControllerOverride alloc]
-            initWithParentWindow:cocoa_helper_.window()
+            initWithParentWindow:test_window()
                          profile:helper_.profile()
                           parent:group_a_
                    configuration:BookmarkEditor::SHOW_TREE

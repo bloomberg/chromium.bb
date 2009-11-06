@@ -14,7 +14,6 @@
 
 class BookmarkEditorBaseControllerTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
   BookmarkEditorBaseController* controller_;
   const BookmarkNode* group_a_;
