@@ -48,14 +48,13 @@ void InitCrashReporter() {
   // process, so the browser passes the consent preference to them on the
   // command line.
   NSBundle* main_bundle = mac_util::MainAppBundle();
-  NSDictionary* info_dictionary = [main_bundle infoDictionary];
   bool is_browser = !mac_util::IsBackgroundOnlyProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool enable_breakpad =
       is_browser ? GoogleUpdateSettings::GetCollectStatsConsent() :
-                   CommandLine::ForCurrentProcess()->
-                       HasSwitch(switches::kEnableCrashReporter);
+                   command_line->HasSwitch(switches::kEnableCrashReporter);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableBreakpad)) {
+  if (command_line->HasSwitch(switches::kDisableBreakpad)) {
     enable_breakpad = false;
   }
 
@@ -73,6 +72,7 @@ void InitCrashReporter() {
   NSString *reporter_location =
       [[NSBundle bundleWithPath:reporter_bundle_location] executablePath];
 
+  NSDictionary* info_dictionary = [main_bundle infoDictionary];
   NSMutableDictionary *breakpad_config =
       [[info_dictionary mutableCopy] autorelease];
   [breakpad_config setObject:inspector_location
@@ -131,10 +131,11 @@ void InitCrashReporter() {
   // TODO: Should this only be done for certain process types?
   child_process_logging::SetCrashKeyFunctions(SetCrashKeyValue,
                                               ClearCrashKeyValue);
+
   if (!is_browser) {
     // Get the guid from the command line switch.
     std::string guid = WideToASCII(
-        parsed_command_line.GetSwitchValue(switches::kEnableCrashReporter));
+        command_line->GetSwitchValue(switches::kEnableCrashReporter));
     child_process_logging::SetClientId(guid);
    }
 }
