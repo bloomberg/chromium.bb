@@ -11,6 +11,7 @@
 
 class BrowserWindowCocoa;
 class FindBarBridge;
+@class FindBarTextField;
 class FindNotificationDetails;
 @class FocusTracker;
 
@@ -23,8 +24,7 @@ class FindNotificationDetails;
 @interface FindBarCocoaController : NSViewController {
  @private
   IBOutlet NSView* findBarView_;
-  IBOutlet NSTextField* findText_;
-  IBOutlet NSTextField* resultsLabel_;
+  IBOutlet FindBarTextField* findText_;
   IBOutlet NSButton* nextButton_;
   IBOutlet NSButton* previousButton_;
 

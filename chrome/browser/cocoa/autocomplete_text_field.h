@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_
 
 #import <Cocoa/Cocoa.h>
+#import "chrome/browser/cocoa/styled_text_field.h"
 
 @class AutocompleteTextFieldCell;
 
@@ -25,10 +26,8 @@
 
 // Provides a hook so that we can call directly down to
 // AutocompleteEditViewMac rather than traversing the delegate chain.
-
 class AutocompleteTextFieldObserver {
  public:
-
   // Called when the control-key state changes while the field is
   // first responder.
   virtual void OnControlKeyChanged(bool pressed) = 0;
@@ -54,7 +53,7 @@ class AutocompleteTextFieldObserver {
   virtual void OnFrameChanged() = 0;
 };
 
-@interface AutocompleteTextField : NSTextField {
+@interface AutocompleteTextField : StyledTextField {
  @private
   AutocompleteTextFieldObserver* observer_;  // weak, owned by location bar.
 }
@@ -63,15 +62,6 @@ class AutocompleteTextFieldObserver {
 
 // Convenience method to return the cell, casted appropriately.
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell;
-
-// If the keyword, keyword hint, or search hint changed, then the
-// field editor may need to be repositioned.
-- (void)resetFieldEditorFrameIfNeeded;
-
-// Returns the amount of the field's width which is not being taken up
-// by the text contents.  May be negative if the contents are large
-// enough to scroll.
-- (CGFloat)availableDecorationWidth;
 
 // Superclass aborts editing before changing the string, which causes
 // problems for undo.  This version modifies the field editor's

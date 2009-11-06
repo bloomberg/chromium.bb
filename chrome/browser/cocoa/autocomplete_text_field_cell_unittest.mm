@@ -19,43 +19,42 @@ const CGFloat kWidth(300.0);
 // A narrow width for tests which test things that don't fit.
 const CGFloat kNarrowWidth(5.0);
 
-class AutocompleteTextFieldCellTest : public PlatformTest {
+class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
   AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL) {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
-    view_.reset([[NSTextField alloc] initWithFrame:frame]);
+
+    scoped_nsobject<NSTextField> view(
+        [[NSTextField alloc] initWithFrame:frame]);
+    view_ = view.get();
+
     scoped_nsobject<AutocompleteTextFieldCell> cell(
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
     [cell setBordered:YES];
-    [view_ setCell:cell.get()];
     [cell setSecurityImageView:&security_image_view_];
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    [view_ setCell:cell.get()];
+
+    [[test_window() contentView] addSubview:view_];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<NSTextField> view_;
+  NSTextField* view_;
   LocationBarViewMac::SecurityImageView security_image_view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(AutocompleteTextFieldCellTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
+// Basic view tests (AddRemove, Display).
+TEST_VIEW(AutocompleteTextFieldCellTest, view_);
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(AutocompleteTextFieldCellTest, Display) {
+TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   [view_ display];
 
-  // Test focussed drawing.
-  cocoa_helper_.makeFirstResponder(view_);
+  // Test focused drawing.
+  [test_window() makePretendKeyWindowAndSetFirstResponder:view_];
   [view_ display];
-  cocoa_helper_.clearFirstResponder();
+  [test_window() clearPretendKeyWindowAndFirstResponder];
 
   // Test display of various cell configurations.
   AutocompleteTextFieldCell* cell =

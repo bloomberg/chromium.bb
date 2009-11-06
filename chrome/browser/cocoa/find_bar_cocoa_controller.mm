@@ -4,14 +4,14 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "grit/generated_resources.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/find_bar_bridge.h"
+#import "chrome/browser/cocoa/find_bar_text_field.h"
+#import "chrome/browser/cocoa/find_bar_text_field_cell.h"
 #import "chrome/browser/cocoa/find_pasteboard.h"
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
@@ -276,33 +276,20 @@ static float kFindBarCloseDuration = 0.15;
                     result.number_of_matches() != -1;
   NSString* searchString = [findText_ stringValue];
   if ([searchString length] > 0 && validRange) {
-    [resultsLabel_ setStringValue:base::SysWideToNSString(
-          l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
-                                IntToWString(result.active_match_ordinal()),
-                                IntToWString(result.number_of_matches())))];
+    [[findText_ findBarTextFieldCell]
+        setActiveMatch:result.active_match_ordinal()
+                    of:result.number_of_matches()];
   } else {
-    // If there was no text entered, we don't show anything in the result count
-    // area.
-    [resultsLabel_ setStringValue:@""];
+    // If there was no text entered, we don't show anything in the results area.
+    [[findText_ findBarTextFieldCell] clearResults];
   }
+
+  [findText_ resetFieldEditorFrameIfNeeded];
 
   // If we found any results, reset the focus tracker, so we always
   // restore focus to the tab contents.
   if (result.number_of_matches() > 0)
     focusTracker_.reset(nil);
-
-  // Resize |resultsLabel_| to completely contain its string and right-justify
-  // it within |findText_|.  sizeToFit may shrink the frame vertically, which we
-  // don't want, so we save the original vertical positioning.
-  NSRect labelFrame = [resultsLabel_ frame];
-  [resultsLabel_ sizeToFit];
-  labelFrame.size.width = [resultsLabel_ frame].size.width;
-  labelFrame.origin.x = NSMaxX([findText_ frame]) - labelFrame.size.width;
-  [resultsLabel_ setFrame:labelFrame];
-
-  // TODO(rohitrao): If the search string is too long, then it will overlap with
-  // the results label. Fix. Perhaps use the code that fades out the tab titles
-  // if they are too long.
 }
 
 - (BOOL)isFindBarVisible {

@@ -6,12 +6,12 @@
 
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
-#import "base/logging.h"
+#include "base/logging.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 
-const NSInteger kBaselineAdjust = 2;
+const CGFloat kBaselineAdjust = 2.0;
 
 // How far to offset the keyword token into the field.
 const NSInteger kKeywordXOffset = 3;
@@ -35,11 +35,6 @@ const NSInteger kKeywordYInset = 4;
 // above the lowercase ascender as below the baseline.  A better
 // technique would be nice to have, though.
 const NSInteger kKeywordHintImageBaseline = -6;
-
-// Offset from the bottom of the field for drawing decoration text.
-// TODO(shess): Somehow determine the baseline for the text field and
-// use that.
-const NSInteger kBaselineOffset = 4;
 
 // The amount of padding on either side reserved for drawing an icon.
 const NSInteger kIconHorizontalPad = 3;
@@ -72,6 +67,10 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return hintString_.get();
 }
 
+- (CGFloat)baselineAdjust {
+  return kBaselineAdjust;
+}
+
 - (void)setKeywordString:(NSString*)fullString
            partialString:(NSString*)partialString
           availableWidth:(CGFloat)width {
@@ -94,7 +93,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   }
   keywordString_.reset(
       [[NSAttributedString alloc] initWithString:s attributes:attributes]);
-
 }
 
 // Convenience for the attributes used in the right-justified info
@@ -204,52 +202,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   security_image_view_->OnMousePressed();
 }
 
-// TODO(shess): This code is manually drawing the cell's border area,
-// but otherwise the cell assumes -setBordered:YES for purposes of
-// calculating things like the editing area.  This is probably
-// incorrect.  I know that this affects -drawingRectForBounds:.
-
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  DCHECK([controlView isFlipped]);
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
-  NSFrameRectWithWidthUsingOperation(cellFrame,  1, NSCompositeSourceOver);
-
-  // TODO(shess): This inset is also reflected in ToolbarController
-  // -autocompletePopupPosition.
-  NSRect frame = NSInsetRect(cellFrame, 0, 1);
-  [[self backgroundColor] setFill];
-  NSRect innerFrame = NSInsetRect(frame, 1, 1);
-  NSRectFill(innerFrame);
-
-  NSRect shadowFrame, restFrame;
-  NSDivideRect(innerFrame, &shadowFrame, &restFrame, 1, NSMinYEdge);
-
-  BOOL isMainWindow = [[controlView window] isMainWindow];
-  GTMTheme *theme = [controlView gtm_theme];
-  NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
-                                         state:isMainWindow];
-  [stroke set];
-  NSFrameRectWithWidthUsingOperation(frame, 1.0, NSCompositeSourceOver);
-
-  // Draw the shadow.
-  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.05] setFill];
-  NSRectFillUsingOperation(shadowFrame, NSCompositeSourceOver);
-
-  if ([self showsFirstResponder]) {
-    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5] set];
-    NSFrameRectWithWidthUsingOperation(NSInsetRect(frame, 0, 0), 2,
-                                       NSCompositeSourceOver);
-  }
-
-  [self drawInteriorWithFrame:cellFrame inView:controlView];
-}
-
-- (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
-  return NSInsetRect(cellFrame, 0, kBaselineAdjust);
-}
-
+// Overriden to account for the hint strings and hint icons.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
-  NSRect textFrame([self textCursorFrameForFrame:cellFrame]);
+  NSRect textFrame([super textFrameForFrame:cellFrame]);
 
   if (hintString_) {
     DCHECK(!keywordString_);
@@ -321,13 +276,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
     return NSZeroRect;
   }
   return [self imageFrameForFrame:cellFrame withImageView:security_image_view_];
-}
-
-// For NSTextFieldCell this is the area within the borders.  For our
-// purposes, we count the info decorations as being part of the
-// border.
-- (NSRect)drawingRectForBounds:(NSRect)theRect {
-  return [super drawingRectForBounds:[self textFrameForFrame:theRect]];
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -411,11 +359,6 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   }
 
   [super drawInteriorWithFrame:cellFrame inView:controlView];
-}
-
-- (void)resetCursorRect:(NSRect)cellFrame inView:(NSView *)controlView {
-  [super resetCursorRect:[self textCursorFrameForFrame:cellFrame]
-                  inView:controlView];
 }
 
 @end

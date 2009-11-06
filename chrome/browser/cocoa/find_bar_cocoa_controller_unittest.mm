@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/find_pasteboard.h"
+#import "chrome/browser/cocoa/find_bar_text_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -20,8 +21,7 @@
 @interface FindBarCocoaController(Testing)
 - (NSView*)findBarView;
 - (NSString*)findText;
-- (NSTextField*)findTextField;
-- (NSTextField*)resultsLabel;
+- (FindBarTextField*)findTextField;
 @end
 
 @implementation FindBarCocoaController(Testing)
@@ -35,10 +35,6 @@
 
 - (NSTextField*)findTextField {
   return findText_;
-}
-
-- (NSTextField*)resultsLabel {
-  return resultsLabel_;
 }
 @end
 

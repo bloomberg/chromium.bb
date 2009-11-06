@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/autocomplete_text_field.h"
 
 #include "base/logging.h"
-#include "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 
 @implementation AutocompleteTextField
 
@@ -27,48 +27,6 @@
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
   return static_cast<AutocompleteTextFieldCell*>([self cell]);
-}
-
-// Cocoa text fields are edited by placing an NSTextView as subview,
-// positioned by the cell's -editWithFrame:inView:... method.  Using
-// the standard -makeFirstResponder: machinery to reposition the field
-// editor results in resetting the field editor's editing state, which
-// AutocompleteEditViewMac monitors.  This causes problems because
-// editing can require the field editor to be repositioned, which
-// could disrupt editing.  This code repositions the subview directly,
-// which causes no editing-state changes.
-- (void)resetFieldEditorFrameIfNeeded {
-  // No action if not editing.
-  NSText* editor = [self currentEditor];
-  if (!editor) {
-    return;
-  }
-
-  // When editing, we should have exactly one subview, which is a
-  // clipview containing the editor (for purposes of scrolling).
-  NSArray* subviews = [self subviews];
-  DCHECK_EQ([subviews count], 1U);
-  DCHECK([editor isDescendantOf:self]);
-  if ([subviews count] == 0) {
-    return;
-  }
-
-  // If the frame is already right, don't make any visible changes.
-  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  const NSRect frame([cell drawingRectForBounds:[self bounds]]);
-  NSView* subview = [subviews objectAtIndex:0];
-  if (NSEqualRects(frame, [subview frame])) {
-    return;
-  }
-
-  [subview setFrame:frame];
-
-  // Make sure the selection remains visible.
-  // TODO(shess) This could be janky if it jerks the visible region
-  // around too much.  I believe that text fields only scroll in
-  // response to selection movement (continuing the selection past the
-  // edge, or arrowing the cursor around).
-  [editor scrollRangeToVisible:[editor selectedRange]];
 }
 
 // Reroute events for the decoration area to the field editor.  This
@@ -104,7 +62,7 @@
   const NSPoint locationInWindow = [theEvent locationInWindow];
   const NSPoint location = [self convertPoint:locationInWindow fromView:nil];
 
-  AutocompleteTextFieldCell* cell = [self cell];
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
   const NSRect textFrame([cell textFrameForFrame:[self bounds]]);
 
   // A version of the textFrame which extends across the field's
@@ -174,13 +132,7 @@
   [editor mouseDown:theEvent];
 }
 
-- (CGFloat)availableDecorationWidth {
-  NSAttributedString* as = [self attributedStringValue];
-  const NSSize size([as size]);
-  const NSRect bounds([self bounds]);
-  return NSWidth(bounds) - size.width;
-}
-
+// Overriden to pass OnFrameChanged() notifications to |observer_|.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (observer_) {
