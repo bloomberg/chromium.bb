@@ -103,7 +103,9 @@ TEST_F(KeyboardTest, TestCtrlReturn) {
 }
 
 TEST_F(KeyboardTest, TestOSModifierZ) {
+#if !defined(OS_MACOSX)
   EXPECT_STREQ("Undo", InterpretOSModifierKeyPress('Z'));
+#endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierY) {
