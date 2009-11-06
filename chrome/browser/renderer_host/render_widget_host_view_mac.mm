@@ -22,9 +22,19 @@
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
+using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
+
+static inline int ToWebKitModifiers(NSUInteger flags) {
+  int modifiers = 0;
+  if (flags & NSControlKeyMask) modifiers |= WebInputEvent::ControlKey;
+  if (flags & NSShiftKeyMask) modifiers |= WebInputEvent::ShiftKey;
+  if (flags & NSAlternateKeyMask) modifiers |= WebInputEvent::AltKey;
+  if (flags & NSCommandKeyMask) modifiers |= WebInputEvent::MetaKey;
+  return modifiers;
+}
 
 @interface RenderWidgetHostViewCocoa (Private)
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
@@ -652,8 +662,21 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   // closure.  Were it not for that single reference, this object would
   // already be deallocated.  In that case, there's no point in calling
   // -interpretKeyEvents:.
-  if ([self retainCount] > 1 && [theEvent type] == NSKeyDown)
+  if ([self retainCount] > 1 && [theEvent type] == NSKeyDown) {
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+
+    // We don't get insertText: calls if ctrl is down, so synthesize a keypress
+    // event for that case. Note that this makes our behavior deviate from the
+    // windows and linux versions of chrome (however, see http://crbug.com/13891
+    // ), but it makes us similar to how Safari behaves.
+    if ([theEvent modifierFlags] & (NSControlKeyMask | NSCommandKeyMask) &&
+        lastKeyPressedEvent_.get() != theEvent) {
+      NativeWebKeyboardEvent event([[theEvent characters] characterAtIndex:0],
+                                   ToWebKitModifiers([theEvent modifierFlags]),
+                                   base::Time::Now().ToDoubleT());
+      renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+    }
+  }
 
   // Possibly autohide the cursor.
   if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
@@ -1284,6 +1307,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // character to onkeypress() event handlers.
   // TODO(hbono): need to handle more commands?
   if (selector == @selector(insertNewline:)) {
+    lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
     NativeWebKeyboardEvent event('\r', renderWidgetHostView_->im_modifiers_,
                                  base::Time::Now().ToDoubleT());
     renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
@@ -1304,6 +1328,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   if (!renderWidgetHostView_->im_composing_ && [im_text length] == 1) {
+    lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
     NativeWebKeyboardEvent event([im_text characterAtIndex:0],
                                  renderWidgetHostView_->im_modifiers_,
                                  base::Time::Now().ToDoubleT());

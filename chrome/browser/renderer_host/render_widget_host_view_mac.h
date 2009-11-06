@@ -44,6 +44,7 @@ class RWHVMEditCommandHelper;
   NSString* toolTip_;
 
   BOOL ignoreKeyEvents_;
+  scoped_nsobject<NSEvent> lastKeyPressedEvent_;
 }
 
 - (void)setCanBeKeyView:(BOOL)can;
