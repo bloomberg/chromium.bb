@@ -128,6 +128,11 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   // Closes the WebSocket connection.
   void Close();
 
+  // Detach delegate.  Call before delegate is deleted.
+  // Once delegate is detached, close the WebSocket connection and never call
+  // delegate back.
+  void DetachDelegate();
+
   // SocketStream::Delegate methods.
   // Called on IO thread.
   virtual void OnConnected(SocketStream* socket_stream,

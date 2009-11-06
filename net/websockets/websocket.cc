@@ -50,6 +50,7 @@ WebSocket::WebSocket(Request* request, WebSocketDelegate* delegate)
 WebSocket::~WebSocket() {
   DCHECK(ready_state_ == INITIALIZED || !delegate_);
   DCHECK(!socket_stream_);
+  DCHECK(!delegate_);
 }
 
 void WebSocket::Connect() {
@@ -67,6 +68,7 @@ void WebSocket::Connect() {
   if (request_->client_socket_factory())
     socket_stream_->SetClientSocketFactory(request_->client_socket_factory());
 
+  AddRef();  // Release in DoClose().
   ready_state_ = CONNECTING;
   socket_stream_->Connect();
 }
@@ -97,6 +99,13 @@ void WebSocket::Close() {
     socket_stream_->Close();
     return;
   }
+}
+
+void WebSocket::DetachDelegate() {
+  if (!delegate_)
+    return;
+  delegate_ = NULL;
+  Close();
 }
 
 void WebSocket::OnConnected(SocketStream* socket_stream,
@@ -181,7 +190,7 @@ IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
   }
   // TODO(ukai): Add cookie if necessary.
   msg += "\r\n";
-  DLOG(INFO) << "ClientHandshakeMsg=" << msg;
+  DLOG(INFO) << "ClientHandshake request=" << msg;
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
   memcpy(buf->data(), msg.data(), msg.size());
   return buf;
@@ -194,7 +203,7 @@ int WebSocket::CheckHandshake() {
   const char *start = current_read_buf_->StartOfBuffer() + read_consumed_len_;
   const char *p = start;
   size_t len = current_read_buf_->offset() - read_consumed_len_;
-  DLOG(INFO) << "CheckHandshake response=" << std::string(start, len);
+  DLOG(INFO) << "ClientHandshake response=" << std::string(start, len);
   if (len < kServerHandshakeHeaderLength) {
     return -1;
   }
@@ -210,6 +219,9 @@ int WebSocket::CheckHandshake() {
       mode_ = MODE_AUTHENTICATE;
       // TODO(ukai): Implement authentication handlers.
     }
+    DLOG(INFO) << "non-normal websocket connection. "
+               << "response_code=" << headers->response_code()
+               << " mode=" << mode_;
     // Invalid response code.
     ready_state_ = CLOSED;
     return eoh;
@@ -222,6 +234,8 @@ int WebSocket::CheckHandshake() {
     if (header_size < kUpgradeHeaderLength)
       return -1;
     if (memcmp(p, kUpgradeHeader, kUpgradeHeaderLength)) {
+      DLOG(INFO) << "Bad Upgrade Header "
+                 << std::string(p, kUpgradeHeaderLength);
       ready_state_ = CLOSED;
       return p - start;
     }
@@ -231,6 +245,8 @@ int WebSocket::CheckHandshake() {
     if (header_size < kConnectionHeaderLength)
       return -1;
     if (memcmp(p, kConnectionHeader, kConnectionHeaderLength)) {
+      DLOG(INFO) << "Bad Upgrade Header "
+                 << std::string(p, kConnectionHeaderLength);
       ready_state_ = CLOSED;
       return p - start;
     }
@@ -242,6 +258,7 @@ int WebSocket::CheckHandshake() {
   scoped_refptr<HttpResponseHeaders> headers(
       new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(start, eoh)));
   if (!ProcessHeaders(*headers)) {
+    DLOG(INFO) << "Process Headers failed";
     ready_state_ = CLOSED;
     return eoh;
   }
@@ -257,6 +274,9 @@ int WebSocket::CheckHandshake() {
       ready_state_ = CLOSED;
       break;
   }
+  DLOG(INFO) << "CheckHandshake mode=" << mode_
+             << " ready_state=" << ready_state_
+             << " eoh=" << eoh;
   return eoh;
 }
 
@@ -340,7 +360,8 @@ void WebSocket::DoReceivedData() {
         socket_stream_->Close();
         return;
       }
-      delegate_->OnOpen(this);
+      if (delegate_)
+        delegate_->OnOpen(this);
       if (current_read_buf_->offset() == read_consumed_len_) {
         // No remaining data after handshake message.
         break;
@@ -394,7 +415,7 @@ void WebSocket::ProcessFrameData() {
       while (p < end && *p != '\xff')
         ++p;
       if (p < end && *p == '\xff') {
-        if (frame_byte == 0x00)
+        if (frame_byte == 0x00 && delegate_)
           delegate_->OnMessage(this, std::string(msg_start, p - msg_start));
         ++p;
         next_frame = p;
@@ -450,7 +471,9 @@ void WebSocket::DoClose() {
   if (!socket_stream_)
     return;
   socket_stream_ = NULL;
-  delegate->OnClose(this);
+  if (delegate)
+    delegate->OnClose(this);
+  Release();
 }
 
 void WebSocket::DoError(int error) {

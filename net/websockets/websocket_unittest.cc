@@ -274,6 +274,8 @@ TEST_F(WebSocketTest, ProcessFrameDataForLengthCalculation) {
   // No onmessage event expected.
   const std::vector<WebSocketEvent>& events = delegate->GetSeenEvents();
   EXPECT_EQ(0U, events.size());
+
+  websocket->DetachDelegate();
 }
 
 TEST_F(WebSocketTest, ProcessFrameDataForUnterminatedString) {
@@ -320,6 +322,8 @@ TEST_F(WebSocketTest, ProcessFrameDataForUnterminatedString) {
     EXPECT_EQ(WebSocketEvent::EVENT_MESSAGE, events[0].event_type);
     EXPECT_EQ(kExpectedMsg, events[0].msg);
   }
+
+  websocket->DetachDelegate();
 }
 
 }  // namespace net
