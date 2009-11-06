@@ -53,7 +53,7 @@ devtools.DebuggerAgent = function() {
    * Whether to stop in the debugger on the exceptions.
    * @type {boolean}
    */
-  this.pauseOnExceptions_ = true;
+  this.pauseOnExceptions_ = false;
 
   /**
    * Mapping: request sequence number->callback.
