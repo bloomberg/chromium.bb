@@ -1253,7 +1253,7 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
       nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
                        Source<DownloadManager>(this),
                        NotificationService::NoDetails());
-    if (UserScript::HasUserScriptFileExtension(full_path)) {
+    if (UserScript::HasUserScriptFileExtension(download_url)) {
       CrxInstaller::InstallUserScript(
           full_path,
           download_url,
@@ -1477,7 +1477,7 @@ bool DownloadManager::IsExtensionInstall(const DownloadItem* item) {
   if (item->save_as())
     return false;
 
-  if (UserScript::HasUserScriptFileExtension(item->original_name()))
+  if (UserScript::HasUserScriptFileExtension(item->url()))
     return true;
 
   return item->mime_type() == Extension::kMimeType;
@@ -1487,7 +1487,7 @@ bool DownloadManager::IsExtensionInstall(const DownloadCreateInfo* info) {
   if (info->save_as)
     return false;
 
-  if (UserScript::HasUserScriptFileExtension(info->path))
+  if (UserScript::HasUserScriptFileExtension(info->url))
     return true;
 
   return info->mime_type == Extension::kMimeType;
