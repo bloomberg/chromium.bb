@@ -184,11 +184,18 @@ using WebKit::WebDragOperationsMask;
   NSArray* titles = nil;
   [pboard getURLs:&urls andTitles:&titles];
   NSString* urlString = [urls objectAtIndex:0];
-  NSURL* url = [NSURL URLWithString:urlString];
-  if (![url scheme])
-    urlString = [[NSURL fileURLWithPath:urlString] absoluteString];
-  data->url = GURL([urlString UTF8String]);
-  data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
+  if ([urlString length]) {
+    NSURL* url = [NSURL URLWithString:urlString];
+    if (![url scheme])
+      urlString = [[NSURL fileURLWithPath:urlString] absoluteString];
+    // Check again just to make sure to not assign NULL into a std::string,
+    // which throws an exception.
+    const char* utf8Url = [urlString UTF8String];
+    if (utf8Url) {
+      data->url = GURL(utf8Url);
+      data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
+    }
+  }
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the
