@@ -4,8 +4,10 @@
 
 #include "chrome/browser/views/first_run_bubble.h"
 
+#include "app/gfx/font_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/win_util.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -334,9 +336,28 @@ void FirstRunOEMBubbleView::Layout() {
 }
 
 gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS,
-      IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES));
+  // Calculate width based on font and text.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  const gfx::Font& font = rb.GetFont(
+      ResourceBundle::MediumFont).DeriveFont(3, gfx::Font::BOLD);
+  gfx::Size size = gfx::Size(
+      gfx::GetLocalizedContentsWidthForFont(
+          IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS, font),
+      gfx::GetLocalizedContentsHeightForFont(
+          IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES, font));
+
+  // WARNING: HACK. Vista and XP calculate font size differently; this means
+  // that a dialog box correctly proportioned for XP will appear too large in
+  // Vista. The correct thing to do is to change font size calculations in
+  // XP or Vista so that the length of a string is calculated properly. For
+  // now, we force Vista to show a correctly-sized box by taking account of
+  // the difference in font size calculation. The coefficient should not be
+  // stored in a variable because it's a hack and should go away.
+  if (win_util::ShouldUseVistaFrame()) {
+    size.set_width(static_cast<int>(size.width() * 0.85));
+    size.set_height(static_cast<int>(size.height() * 0.85));
+  }
+  return size;
 }
 
 void FirstRunOEMBubbleView::FocusWillChange(View* focused_before,
