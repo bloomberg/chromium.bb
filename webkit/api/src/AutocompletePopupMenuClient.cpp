@@ -31,8 +31,8 @@
 #include "config.h"
 #include "AutocompletePopupMenuClient.h"
 
-#include "CSSValueKeywords.h"
 #include "CSSStyleSelector.h"
+#include "CSSValueKeywords.h"
 #include "FrameView.h"
 #include "HTMLInputElement.h"
 #include "RenderTheme.h"

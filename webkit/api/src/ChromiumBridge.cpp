@@ -48,8 +48,8 @@
 #include "WebPluginListBuilderImpl.h"
 #include "WebScreenInfo.h"
 #include "WebString.h"
-#include "WebVector.h"
 #include "WebURL.h"
+#include "WebVector.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWorkerClientImpl.h"
@@ -71,9 +71,9 @@
 
 #include "BitmapImage.h"
 #include "Cookie.h"
+#include "FrameView.h"
 #include "GraphicsContext.h"
 #include "KURL.h"
-#include "FrameView.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "PluginData.h"
@@ -258,7 +258,7 @@ String ChromiumBridge::pathByAppendingComponent(const String& path, const String
 
 bool ChromiumBridge::makeAllDirectories(const String& path)
 {
-  return webKitClient()->makeAllDirectories(path);
+    return webKitClient()->makeAllDirectories(path);
 }
 
 String ChromiumBridge::getAbsolutePath(const String& path)
@@ -294,13 +294,12 @@ String ChromiumBridge::getFontFamilyForCharacters(const UChar* characters, size_
 {
     if (webKitClient()->sandboxSupport())
         return webKitClient()->sandboxSupport()->getFontFamilyForCharacters(characters, numCharacters);
-    else {
-        WebCString family = WebFontInfo::familyForChars(characters, numCharacters);
-        if (family.data())
-            return WebString::fromUTF8(family.data());
-        else
-            return WebString();
-    }
+
+    WebCString family = WebFontInfo::familyForChars(characters, numCharacters);
+    if (family.data())
+        return WebString::fromUTF8(family.data());
+
+    return WebString();
 }
 #endif
 

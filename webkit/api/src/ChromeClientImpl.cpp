@@ -36,11 +36,11 @@
 #include "CharacterNames.h"
 #include "Console.h"
 #include "Cursor.h"
+#include "DatabaseTracker.h"
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "DatabaseTracker.h"
-#include "FloatRect.h"
 #include "FileChooser.h"
+#include "FloatRect.h"
 #include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "HitTestResult.h"
@@ -194,17 +194,17 @@ void ChromeClientImpl::takeFocus(FocusDirection direction)
 
 void ChromeClientImpl::focusedNodeChanged(Node* node)
 {
-  WebURL focus_url;
-  if (node && node->isLink()) {
-    // This HitTestResult hack is the easiest way to get a link URL out of a
-    // WebCore::Node.
-    HitTestResult hit_test(IntPoint(0, 0));
-    // This cast must be valid because of the isLink() check.
-    hit_test.setURLElement(reinterpret_cast<Element*>(node));
-    if (hit_test.isLiveLink())
-      focus_url = hit_test.absoluteLinkURL();
-  }
-  m_webView->client()->setKeyboardFocusURL(focus_url);
+    WebURL focus_url;
+    if (node && node->isLink()) {
+        // This HitTestResult hack is the easiest way to get a link URL out of a
+        // WebCore::Node.
+        HitTestResult hit_test(IntPoint(0, 0));
+        // This cast must be valid because of the isLink() check.
+        hit_test.setURLElement(reinterpret_cast<Element*>(node));
+        if (hit_test.isLiveLink())
+            focus_url = hit_test.absoluteLinkURL();
+    }
+    m_webView->client()->setKeyboardFocusURL(focus_url);
 }
 
 Page* ChromeClientImpl::createWindow(
@@ -272,12 +272,11 @@ void ChromeClientImpl::show()
     // If our default configuration was modified by a script or wasn't
     // created by a user gesture, then show as a popup. Else, let this
     // new window be opened as a toplevel window.
-    bool asPopup =
-        !m_toolbarsVisible ||
-        !m_statusbarVisible ||
-        !m_scrollbarsVisible ||
-        !m_menubarVisible ||
-        !m_resizable;
+    bool asPopup = !m_toolbarsVisible
+        || !m_statusbarVisible
+        || !m_scrollbarsVisible
+        || !m_menubarVisible
+        || !m_resizable;
 
     WebNavigationPolicy policy = WebNavigationPolicyNewForegroundTab;
     if (asPopup)
@@ -290,7 +289,7 @@ void ChromeClientImpl::show()
 
 bool ChromeClientImpl::canRunModal()
 {
-    return m_webView->client() != 0;
+    return !!m_webView->client();
 }
 
 void ChromeClientImpl::runModal()
@@ -364,7 +363,7 @@ void ChromeClientImpl::addMessageToConsole(MessageSource source,
 
 bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
 {
-    return m_webView->client() != 0;
+    return !!m_webView->client();
 }
 
 bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
@@ -491,7 +490,8 @@ IntPoint ChromeClientImpl::screenToWindow(const IntPoint&) const
     return IntPoint();
 }
 
-IntRect ChromeClientImpl::windowToScreen(const IntRect& rect) const {
+IntRect ChromeClientImpl::windowToScreen(const IntRect& rect) const
+{
     IntRect screenRect(rect);
 
     if (m_webView->client()) {
