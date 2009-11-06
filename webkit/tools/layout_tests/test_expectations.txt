@@ -3082,7 +3082,6 @@ BUG_SENORBLANCO WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html 
 
 // WebKit 50358:50395
 BUG3273 : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = IMAGE
 
 // WebKit 50395:50407
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/editing/execCommand/find-after-replace.html = IMAGE+TEXT
