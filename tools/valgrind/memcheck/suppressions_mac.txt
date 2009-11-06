@@ -350,13 +350,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
-   bug_26326
-   Memcheck:Addr4
-   fun:_ZN7WebCore14ChromiumBridge24suddenTerminationChangedEb
-   fun:_ZN7WebCore23enableSuddenTerminationEv
-   fun:_ZN7WebCore15StorageAreaSync11performSyncEv
-}
-{
    bug_26964
    Memcheck:Addr4
    fun:findElementGivenHash
