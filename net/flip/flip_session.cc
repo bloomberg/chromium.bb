@@ -460,7 +460,8 @@ void FlipSession::CloseAllStreams(net::Error code) {
 
     // Issue the aborts.
     for (--index; index >= 0; index--) {
-      LOG(ERROR) << "ABANDONED: " << list[index]->path();
+      LOG(ERROR) << "ABANDONED (stream_id=" << list[index]->stream_id()
+                 << "): " << list[index]->path();
       list[index]->OnError(ERR_ABORTED);
       delete list[index];
     }
