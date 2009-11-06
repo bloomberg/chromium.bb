@@ -35,7 +35,6 @@
 #define O3D_CORE_CROSS_MESSAGE_COMMANDS_H_
 
 #include "core/cross/types.h"
-#include "core/cross/packing.h"
 
 namespace o3d {
 
@@ -45,7 +44,7 @@ namespace o3d {
 
 // Make sure the compiler does not add extra padding to any of the message
 // structures.
-O3D_PUSH_STRUCTURE_PACKING_1;
+#pragma pack(push, 1)
 
 // This macro is used to safely and convienently expand the list of possible IMC
 // messages in to various lists and never have them get out of sync. To add a
@@ -395,8 +394,7 @@ struct MessageGetVersion {
   Msg msg;
 };
 
-
-O3D_POP_STRUCTURE_PACKING;
+#pragma pack(pop)
 
 }  // namespace o3d
 

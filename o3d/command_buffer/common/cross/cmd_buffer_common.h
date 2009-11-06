@@ -39,7 +39,6 @@
 #include "command_buffer/common/cross/types.h"
 #include "command_buffer/common/cross/bitfield_helpers.h"
 #include "command_buffer/common/cross/logging.h"
-#include "core/cross/packing.h"
 
 namespace command_buffer {
 
@@ -105,7 +104,7 @@ COMPILE_ASSERT(sizeof(CommandBufferEntry) == 4,
 
 // Make sure the compiler does not add extra padding to any of the command
 // structures.
-O3D_PUSH_STRUCTURE_PACKING_1;
+#pragma pack(push, 1)
 
 // Gets the address of memory just after a structure in a typesafe way. This is
 // used for IMMEDIATE commands to get the address of the place to put the data.
@@ -240,7 +239,7 @@ COMPILE_ASSERT(offsetof(SetToken, token) == 4,
 
 }  // namespace cmd
 
-O3D_POP_STRUCTURE_PACKING;
+#pragma pack(pop)
 
 }  // namespace command_buffer
 

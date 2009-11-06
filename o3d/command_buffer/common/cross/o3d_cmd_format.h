@@ -242,7 +242,7 @@ const char* GetCommandName(CommandId id);
 
 // Make sure the compiler does not add extra padding to any of the command
 // structures.
-O3D_PUSH_STRUCTURE_PACKING_1;
+#pragma pack(push, 1)
 
 struct BeginFrame {
   typedef BeginFrame ValueType;
@@ -3147,7 +3147,7 @@ COMPILE_ASSERT(sizeof(SetBackSurfaces) == 4,
 COMPILE_ASSERT(offsetof(SetBackSurfaces, header) == 0,
                OffsetOf_SetBackSurfaces_header_not_0);
 
-O3D_POP_STRUCTURE_PACKING;
+#pragma pack(pop)
 
 }  // namespace o3d
 }  // namespace command_buffer
