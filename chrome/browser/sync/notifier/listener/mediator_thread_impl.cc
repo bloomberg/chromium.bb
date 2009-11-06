@@ -205,7 +205,12 @@ void MediatorThreadImpl::DoDisconnect() {
 }
 
 void MediatorThreadImpl::DoSubscribeForUpdates() {
-  SubscribeTask* subscription = new SubscribeTask(xmpp_client());
+  buzz::XmppClient* client = xmpp_client();
+  // If there isn't an active xmpp client, return.
+  if (!client) {
+    return;
+  }
+  SubscribeTask* subscription = new SubscribeTask(client);
   subscription->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnSubscriptionStateChange);
@@ -213,7 +218,12 @@ void MediatorThreadImpl::DoSubscribeForUpdates() {
 }
 
 void MediatorThreadImpl::DoListenForUpdates() {
-  ListenTask* listener = new ListenTask(xmpp_client());
+  buzz::XmppClient* client = xmpp_client();
+  // If there isn't an active xmpp client, return.
+  if (!client) {
+    return;
+  }
+  ListenTask* listener = new ListenTask(client);
   listener->SignalUpdateAvailable.connect(
       this,
       &MediatorThreadImpl::OnUpdateListenerMessage);
@@ -221,7 +231,12 @@ void MediatorThreadImpl::DoListenForUpdates() {
 }
 
 void MediatorThreadImpl::DoSendNotification() {
-  SendUpdateTask* task = new SendUpdateTask(xmpp_client());
+  buzz::XmppClient* client = xmpp_client();
+  // If there isn't an active xmpp client, return.
+  if (!client) {
+    return;
+  }
+  SendUpdateTask* task = new SendUpdateTask(client);
   task->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnUpdateNotificationSent);
