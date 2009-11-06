@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-// This test is disabled. See bug 25746
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Storage) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Storage) {
   ASSERT_TRUE(RunExtensionTest("storage")) << message_;
 }

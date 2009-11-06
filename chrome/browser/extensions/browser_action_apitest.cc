@@ -140,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabSpecificBrowserActionState) {
   ASSERT_EQ(L"hi!", text);
 }
 
-// This test is disabled. See bug 25746
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_BrowserActionPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("popup")));
 
   ResultCatcher catcher;
