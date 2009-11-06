@@ -182,6 +182,7 @@ public:
     virtual WebCore::String overrideMediaType() const;
     virtual void didPerformFirstNavigation() const;
     virtual void registerForIconNotification(bool listen = true);
+    virtual void didChangeScrollOffset();
     virtual bool allowJavaScript(bool enabledPerSettings);
 
 private:

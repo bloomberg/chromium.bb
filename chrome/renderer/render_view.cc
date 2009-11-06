@@ -2546,6 +2546,10 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   }
 }
 
+void RenderView::didChangeScrollOffset(WebFrame* frame) {
+  StartNavStateSyncTimerIfNecessary();
+}
+
 void RenderView::reportFindInPageMatchCount(int request_id, int count,
                                             bool final_update) {
   // If we have a message that has been queued up, then we should just replace

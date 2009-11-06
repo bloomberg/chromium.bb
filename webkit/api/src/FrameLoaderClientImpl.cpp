@@ -147,6 +147,12 @@ void FrameLoaderClientImpl::registerForIconNotification(bool)
 {
 }
 
+void FrameLoaderClientImpl::didChangeScrollOffset()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didChangeScrollOffset(m_webFrame);
+}
+
 bool FrameLoaderClientImpl::allowJavaScript(bool enabledPerSettings)
 {
     if (m_webFrame->client())

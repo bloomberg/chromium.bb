@@ -259,6 +259,9 @@ namespace WebKit {
         // The size of the content area changed.
         virtual void didChangeContentsSize(WebFrame*, const WebSize&) { }
 
+        // The main frame scrolled.
+        virtual void didChangeScrollOffset(WebFrame*) { }
+
 
         // Find-in-page notifications ------------------------------------------
 

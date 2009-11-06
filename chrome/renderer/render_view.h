@@ -342,6 +342,7 @@ class RenderView : public RenderWidget,
   virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);
+  virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void reportFindInPageMatchCount(
       int request_id, int count, bool final_update);
   virtual void reportFindInPageSelection(
