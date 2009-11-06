@@ -49,7 +49,7 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
   def testDir(self):
     members = [
       'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
-      'pack', 'relpath', 'revert', 'runhooks', 'scm_name', 'status',
+      'pack', 'relpath', 'revert', 'revinfo', 'runhooks', 'scm_name', 'status',
       'update', 'url',
     ]
 
@@ -323,6 +323,39 @@ class SVNWrapperTestCase(gclient_test.GClientBaseTestCase):
     }
     self.assertEqual(file_info, expected)
 
+  def testRevinfo(self):
+    options = self.Options(verbose=False)
+    xml_text = """<?xml version="1.0"?>
+<info>
+<entry
+   kind="dir"
+   path="."
+   revision="35">
+<url>%s</url>
+<repository>
+<root>%s</root>
+<uuid>7b9385f5-0452-0410-af26-ad4892b7a1fb</uuid>
+</repository>
+<wc-info>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+</wc-info>
+<commit
+   revision="35">
+<author>maruel</author>
+<date>2008-12-04T20:12:19.685120Z</date>
+</commit>
+</entry>
+</info>
+""" % (self.url, self.root_dir)
+    gclient_scm.CaptureSVN(['info', '--xml',
+                            self.url], os.getcwd()).AndReturn(xml_text)
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    rev_info = scm.revinfo(options, self.args, None)
+    self.assertEqual(rev_info, '35')
+
 
 class GitWrapperTestCase(gclient_test.GClientBaseTestCase):
   class OptionsObject(object):
@@ -396,12 +429,6 @@ from :3
                      stderr=subprocess.STDOUT, cwd=path).communicate()
     return True
 
-  def GetGitRev(self, path):
-    return subprocess.Popen(['git', 'rev-parse', 'HEAD'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            cwd=path).communicate()[0].strip()
-
   def setUp(self):
     gclient_test.BaseTestCase.setUp(self)
     self.args = self.Args()
@@ -418,7 +445,8 @@ from :3
   def testDir(self):
     members = [
       'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
-      'relpath', 'revert', 'runhooks', 'scm_name', 'status', 'update', 'url',
+      'relpath', 'revert', 'revinfo', 'runhooks', 'scm_name', 'status',
+      'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -448,7 +476,7 @@ from :3
     file_list = []
     scm.revert(options, self.args, file_list)
     self.assertEquals(file_list, [])
-    self.assertEquals(self.GetGitRev(self.base_path),
+    self.assertEquals(scm.revinfo(options, self.args, None),
                       '069c602044c5388d2d15c3f875b057c852003458')
 
 
@@ -466,7 +494,7 @@ from :3
     file_list = []
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
-    self.assertEquals(self.GetGitRev(self.base_path),
+    self.assertEquals(scm.revinfo(options, self.args, None),
                       '069c602044c5388d2d15c3f875b057c852003458')
 
   def testRevertNew(self):
@@ -487,7 +515,7 @@ from :3
     file_list = []
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
-    self.assertEquals(self.GetGitRev(self.base_path),
+    self.assertEquals(scm.revinfo(options, self.args, None),
                       '069c602044c5388d2d15c3f875b057c852003458')
 
   def testStatusNew(self):
@@ -533,7 +561,7 @@ from :3
       scm.update(options, (), file_list)
       self.assertEquals(len(file_list), 2)
       self.assert_(os.path.isfile(os.path.join(base_path, 'a')))
-      self.assertEquals(self.GetGitRev(base_path),
+      self.assertEquals(scm.revinfo(options, (), None),
                         '069c602044c5388d2d15c3f875b057c852003458')
     finally:
       shutil.rmtree(root_dir)
@@ -547,8 +575,18 @@ from :3
                                 relpath=self.relpath)
     file_list = []
     scm.update(options, (), file_list)
-    self.assertEquals(self.GetGitRev(self.base_path),
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
+
+  def testRevinfo(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    rev_info = scm.revinfo(options, (), None)
+    self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
 
 
 class RunSVNTestCase(gclient_test.BaseTestCase):

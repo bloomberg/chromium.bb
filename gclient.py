@@ -813,9 +813,8 @@ class GClient(object):
         if revision_overrides.has_key(name):
           return (original_url, revision_overrides[name])
         else:
-          # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-          return (original_url,
-                  gclient_scm.CaptureSVNHeadRevision(original_url))
+          scm = gclient_scm.CreateSCM(solution["url"], self._root_dir, name)
+          return (original_url, scm.revinfo(self._options, [], None))
       else:
         url_components = original_url.split("@")
         if revision_overrides.has_key(name):

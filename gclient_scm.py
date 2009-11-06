@@ -78,7 +78,7 @@ class SCMWrapper(object):
     if file_list is None:
       file_list = []
 
-    commands = ['cleanup', 'export', 'update', 'revert',
+    commands = ['cleanup', 'export', 'update', 'revert', 'revinfo',
                 'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
@@ -166,6 +166,10 @@ class GitWrapper(SCMWrapper):
     files = self._RunGit(['diff', merge_base, '--name-only']).split()
     self._RunGit(['reset', '--hard', merge_base], redirect_stdout=False)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+
+  def revinfo(self, options, args, file_list):
+    """Display revision"""
+    return self._RunGit(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -394,6 +398,10 @@ class SVNWrapper(SCMWrapper):
       # Maybe the directory disapeared meanwhile. We don't want it to throw an
       # exception.
       logging.error('Failed to update:\n%s' % str(e))
+
+  def revinfo(self, options, args, file_list):
+    """Display revision"""
+    return CaptureSVNHeadRevision(self.url)
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
