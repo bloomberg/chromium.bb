@@ -670,10 +670,15 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     // windows and linux versions of chrome (however, see http://crbug.com/13891
     // ), but it makes us similar to how Safari behaves.
     if ([theEvent modifierFlags] & (NSControlKeyMask | NSCommandKeyMask) &&
-        lastKeyPressedEvent_.get() != theEvent) {
+        lastKeyPressedEvent_.get() != theEvent &&
+        [[theEvent characters] length] > 0 &&
+        renderWidgetHostView_->render_widget_host_) {
       NativeWebKeyboardEvent event([[theEvent characters] characterAtIndex:0],
                                    ToWebKitModifiers([theEvent modifierFlags]),
                                    base::Time::Now().ToDoubleT());
+      // We fire menu items on keydown, we don't want to activate menu items
+      // twice.
+      event.skip_in_browser = true;
       renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
     }
   }
