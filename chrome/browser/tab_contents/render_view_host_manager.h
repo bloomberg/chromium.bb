@@ -161,6 +161,9 @@ class RenderViewHostManager
                                    int new_request_id);
   virtual void OnCrossSiteNavigationCanceled();
 
+  // Called when a RenderViewHost is about to be deleted.
+  void RenderViewDeleted(RenderViewHost* rvh);
+
  private:
   friend class TestTabContents;
 

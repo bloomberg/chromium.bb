@@ -589,3 +589,17 @@ void RenderViewHostManager::CancelPending() {
 
   pending_dom_ui_.reset();
 }
+
+void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
+  // We are doing this in order to work around and to track a crasher
+  // (http://crbug.com/23411) where it seems that pending_render_view_host_ is
+  // deleted (not sure from where) but not NULLed.
+  if (rvh == pending_render_view_host_) {
+    // If you hit this NOTREACHED, please report it in the following bug
+    // http://crbug.com/23411 Make sure to include what you were doing when it
+    // happened  (navigating to a new page, closing a tab...) and if you can
+    // reproduce.
+    NOTREACHED();
+    pending_render_view_host_ = NULL;
+  }
+}

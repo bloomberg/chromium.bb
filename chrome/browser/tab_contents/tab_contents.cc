@@ -2030,6 +2030,7 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
       NotificationType::RENDER_VIEW_HOST_DELETED,
       Source<TabContents>(this),
       Details<RenderViewHost>(rvh));
+  render_manager_.RenderViewDeleted(rvh);
 }
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
