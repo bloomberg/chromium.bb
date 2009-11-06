@@ -104,14 +104,14 @@
 - (IBAction)sendReport:(id)sender {
   if ([self isPhishingReport]) {
     BugReportUtil::ReportPhishing(currentTab_,
-                                  base::SysNSStringToUTF8(pageURL_));
+        pageURL_ ? base::SysNSStringToUTF8(pageURL_) : "");
   } else {
     BugReportUtil::SendReport(
         profile_,
-        base::SysNSStringToUTF8(pageTitle_),
+        pageTitle_ ? base::SysNSStringToUTF8(pageTitle_) : "",
         bugType_,
-        base::SysNSStringToUTF8(pageURL_),
-        base::SysNSStringToUTF8(bugDescription_),
+        pageURL_ ? base::SysNSStringToUTF8(pageURL_) : "",
+        bugDescription_ ? base::SysNSStringToUTF8(bugDescription_) : "",
         sendScreenshot_ && !pngData_.empty() ?
             reinterpret_cast<const char *>(&(pngData_[0])) : NULL,
         pngData_.size());
