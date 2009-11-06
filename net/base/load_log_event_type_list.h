@@ -9,10 +9,6 @@
 // General pseudo-events
 // --------------------------------------------------------------------------
 
-// If a log is terminated by a kLogTruncated event, then it grew too large
-// and any subsequent events logged to it were discarded.
-EVENT_TYPE(LOG_TRUNCATED)
-
 // Something got cancelled (we determine what is cancelled based on the
 // log context around it.)
 EVENT_TYPE(CANCELLED)

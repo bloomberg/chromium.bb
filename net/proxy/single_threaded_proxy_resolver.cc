@@ -125,9 +125,12 @@ class SingleThreadedProxyResolver::Job
   void Start() {
     is_started_ = true;
 
+    size_t load_log_bound = load_log_ ? load_log_->max_num_entries() : 0;
+
     coordinator_->thread()->message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &Job::DoQuery,
-        coordinator_->resolver_.get()));
+        coordinator_->resolver_.get(),
+        load_log_bound));
   }
 
   bool is_started() const { return is_started_; }
@@ -149,9 +152,12 @@ class SingleThreadedProxyResolver::Job
   ~Job() {}
 
   // Runs on the worker thread.
-  void DoQuery(ProxyResolver* resolver) {
-    LoadLog* worker_log = new LoadLog;
-    worker_log->AddRef();  // Balanced in QueryComplete.
+  void DoQuery(ProxyResolver* resolver, size_t load_log_bound) {
+    LoadLog* worker_log = NULL;
+    if (load_log_bound > 0) {
+      worker_log = new LoadLog(load_log_bound);
+      worker_log->AddRef();  // Balanced in QueryComplete.
+    }
 
     int rv = resolver->GetProxyForURL(url_, &results_buf_, NULL, NULL,
                                       worker_log);
@@ -165,9 +171,11 @@ class SingleThreadedProxyResolver::Job
   void QueryComplete(int result_code, LoadLog* worker_log) {
     // Merge the load log that was generated on the worker thread, into the
     // main log.
-    if (load_log_)
-      load_log_->Append(worker_log);
-    worker_log->Release();
+    if (worker_log) {
+      if (load_log_)
+        load_log_->Append(worker_log);
+      worker_log->Release();
+    }
 
     // The Job may have been cancelled after it was started.
     if (!was_cancelled()) {

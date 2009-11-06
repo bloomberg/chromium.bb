@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "net/base/load_log.h"
+#include "base/logging.h"
 
 namespace net {
 
-LoadLog::LoadLog() {
+LoadLog::LoadLog(size_t max_num_entries)
+    : num_entries_truncated_(0), max_num_entries_(max_num_entries) {
+  DCHECK_GT(max_num_entries, 0u);
 }
 
 // static
@@ -22,20 +25,24 @@ const char* LoadLog::EventTypeToString(EventType event) {
 void LoadLog::Add(const Event& event) {
   // Minor optimization. TODO(eroman): use StackVector instead.
   if (events_.empty())
-    events_.reserve(kMaxNumEntries / 2);
+    events_.reserve(10);  // It is likely we will have at least 10 entries.
 
-  // Enforce a bound of kMaxNumEntries -- when we reach it, make it so the
-  // final entry in the list is |TYPE_LOG_TRUNCATED|.
+  // Enforce a bound of |max_num_entries_| -- once we reach it, keep overwriting
+  // the final entry in the log.
 
-  if (events_.size() + 1 == kMaxNumEntries)
-    events_.push_back(Event(event.time, TYPE_LOG_TRUNCATED, PHASE_NONE));
-  else if (events_.size() < kMaxNumEntries)
+  if (events_.size() + 1 <= max_num_entries_ ||
+      max_num_entries_ == kUnbounded) {
     events_.push_back(event);
+  } else {
+    num_entries_truncated_ += 1;
+    events_[max_num_entries_ - 1] = event;
+  }
 }
 
 void LoadLog::Append(const LoadLog* log) {
   for (size_t i = 0; i < log->events().size(); ++i)
     Add(log->events()[i]);
+  num_entries_truncated_ += log->num_entries_truncated();
 }
 
 }  // namespace net

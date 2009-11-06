@@ -10,7 +10,7 @@ namespace net {
 namespace {
 
 TEST(LoadLogUtilTest, Basic) {
-  scoped_refptr<LoadLog> log(new LoadLog);
+  scoped_refptr<LoadLog> log(new LoadLog(10));
 
   log->Add(MakeTime(1), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_BEGIN);
   log->Add(MakeTime(5), LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
@@ -30,7 +30,7 @@ TEST(LoadLogUtilTest, Basic) {
 }
 
 TEST(LoadLogUtilTest, UnmatchedOpen) {
-  scoped_refptr<LoadLog> log(new LoadLog);
+  scoped_refptr<LoadLog> log(new LoadLog(10));
 
   log->Add(MakeTime(3), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_BEGIN);
   // Note that there is no matching call to PHASE_END for all of the following.
@@ -50,6 +50,27 @@ TEST(LoadLogUtilTest, UnmatchedOpen) {
     "t= 8:       +HOST_RESOLVER_IMPL_OBSERVER_ONSTART   [dt= 8]\n"
     "t=10:          CANCELLED\n"
     "t=16: -HOST_RESOLVER_IMPL",
+    LoadLogUtil::PrettyPrintAsEventTree(log));
+}
+
+TEST(LoadLogUtilTest, DisplayOfTruncated) {
+  size_t kMaxNumEntries = 5;
+  scoped_refptr<LoadLog> log(new LoadLog(kMaxNumEntries));
+
+  // Add a total of 10 events. This means that 5 will be truncated.
+  log->Add(MakeTime(0), LoadLog::TYPE_TCP_CONNECT, LoadLog::PHASE_BEGIN);
+  for (size_t i = 1; i < 8; ++i) {
+    log->Add(MakeTime(i), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  }
+  log->Add(MakeTime(9), LoadLog::TYPE_TCP_CONNECT, LoadLog::PHASE_END);
+
+  EXPECT_EQ(
+    "t=0: +TCP_CONNECT   [dt=9]\n"
+    "t=1:    CANCELLED\n"
+    "t=2:    CANCELLED\n"
+    "t=3:    CANCELLED\n"
+    " ... Truncated 4 entries ...\n"
+    "t=9: -TCP_CONNECT",
     LoadLogUtil::PrettyPrintAsEventTree(log));
 }
 

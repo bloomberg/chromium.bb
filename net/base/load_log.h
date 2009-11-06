@@ -19,7 +19,6 @@ namespace net {
 // that it can be AddRef() / Release() across threads.
 class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
  public:
-
   enum EventType {
 #define EVENT_TYPE(label) TYPE_ ## label,
 #include "net/base/load_log_event_type_list.h"
@@ -48,18 +47,20 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
     EventPhase phase;
   };
 
-  // The maximum size of |events_|.
-  enum { kMaxNumEntries = 40 };
-
   // Ordered set of events that were logged.
   // TODO(eroman): use a StackVector or array to avoid allocations.
   typedef std::vector<Event> EventList;
 
-  // Create a log, which can hold up to |kMaxNumEntries| Events.
+  // Value for max_num_entries to indicate the LoadLog has no size limit.
+  static const size_t kUnbounded = static_cast<size_t>(-1);
+
+  // Creates a log, which can hold up to |max_num_entries| Events.
+  // If |max_num_entries| is |kUnbounded|, then the log can grow arbitrarily
+  // large.
   //
-  // If events are dropped because the log has grown too large, the final
-  // entry will be of type kLogTruncated.
-  LoadLog();
+  // If events are dropped because the log has grown too large, the final entry
+  // will be overwritten.
+  explicit LoadLog(size_t max_num_entries);
 
   // --------------------------------------------------------------------------
 
@@ -93,6 +94,17 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
     return events_;
   }
 
+  // Returns the number of entries that were dropped from the log because the
+  // maximum size had been reached.
+  size_t num_entries_truncated() const {
+    return num_entries_truncated_;
+  }
+
+  // Returns the bound on the size of the log.
+  size_t max_num_entries() const {
+    return max_num_entries_;
+  }
+
   // Returns a C-String symbolic name for |event|.
   static const char* EventTypeToString(EventType event);
 
@@ -111,6 +123,8 @@ class LoadLog : public base::RefCountedThreadSafe<LoadLog> {
   ~LoadLog() {}
 
   EventList events_;
+  size_t num_entries_truncated_;
+  size_t max_num_entries_;;
 };
 
 }  // namespace net

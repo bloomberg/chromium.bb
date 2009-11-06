@@ -33,6 +33,11 @@ class FormatHelper {
       if (i > 0)
         result += "\n";
 
+      if (log->num_entries_truncated() > 0 && i + 1 == entries_.size()) {
+        result += StringPrintf(" ... Truncated %d entries ...\n",
+                               log->num_entries_truncated());
+      }
+
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
       std::string event_str = GetEventString(i);
 

@@ -155,7 +155,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   // Start request 0.
   TestCompletionCallback callback0;
-  scoped_refptr<LoadLog> log0(new LoadLog);
+  scoped_refptr<LoadLog> log0(new LoadLog(LoadLog::kUnbounded));
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
       GURL("http://request0"), &results0, &callback0, NULL, log0);
