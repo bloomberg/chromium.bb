@@ -9,7 +9,6 @@
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
-#import "chrome/browser/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
 
 // The implementation of NSExceptions break various assumptions in the
@@ -241,22 +240,6 @@ BOOL SwizzleNSExceptionInit() {
 
   ScopedCrashKey key(kActionKey, value);
   return [super sendAction:anAction to:aTarget from:sender];
-}
-
-- (void)sendEvent:(NSEvent*)event {
-  chrome_application_mac::ScopedSendingEvent scoper(self);
-  // The superclass's |sendEvent:| sends keyboard events to the menu and the key
-  // view loop before dispatching them to |keyDown:|. Since we want to send keys
-  // to the renderer before sending them to the menu, and we never want them to
-  // the kev view loop when the web is focussed, we change this behavior.
-  if ([[self keyWindow]
-      isKindOfClass:[ChromeEventProcessingWindow class]]) {
-    if ([static_cast<ChromeEventProcessingWindow*>([self keyWindow])
-        shortcircuitEvent:event])
-      return;
-  }
-
-  [super sendEvent:event];
 }
 
 // NSExceptions which are caught by the event loop are logged here.

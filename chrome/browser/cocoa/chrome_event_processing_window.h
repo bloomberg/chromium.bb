@@ -18,10 +18,6 @@
   BOOL eventHandled_;
 }
 
-// Returns |YES| if |event| has been shortcircuited and should not be processed
-// further.
-- (BOOL)shortcircuitEvent:(NSEvent*)event;
-
 // Sends an event to |NSApp sendEvent:|, but also makes sure that it's not
 // short-circuited to the RWHV. This is used to send keyboard events to the menu
 // and the cmd-` handler if a keyboard event comes back unhandled from the

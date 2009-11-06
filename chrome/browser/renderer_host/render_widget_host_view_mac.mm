@@ -29,6 +29,7 @@ using WebKit::WebMouseWheelEvent;
 @interface RenderWidgetHostViewCocoa (Private)
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
+- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 @end
 
@@ -557,15 +558,56 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if (ignoreKeyEvents_)
     return NO;
 
-  // We have some magic in |CrApplication sendEvent:| that always sends key
-  // events to |keyEvent:| so that cocoa doesn't have a chance to intercept it.
-  DCHECK([[self window] firstResponder] != self);
-  return NO;
+  // |performKeyEquivalent:| is sent to all views of a window, not only down the
+  // responder chain (cf. "Handling Key Equivalents" in
+  // http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/EventOverview/HandlingKeyEvents/HandlingKeyEvents.html
+  // ). We only want to handle key equivalents if we're first responder.
+  if ([[self window] firstResponder] != self)
+    return NO;	
+
+  // If we return |NO| from this function, cocoa will send the key event to	
+  // the menu and only if the menu does not process the event to |keyDown:|. We	
+  // want to send the event to a renderer _before_ sending it to the menu, so	
+  // we need to return |YES| for all events that might be swallowed by the menu.	
+  // We do not return |YES| for every keypress because we don't get |keyDown:|	
+  // events for keys that we handle this way.	
+  NSUInteger modifierFlags = [theEvent modifierFlags];	
+  if ((modifierFlags & NSCommandKeyMask) == 0) {	
+    // Make sure the menu does not contain key equivalents that don't	
+    // contain cmd.	
+    DCHECK(![[NSApp mainMenu] performKeyEquivalent:theEvent]);	
+    return NO;	
+  }
+
+  // Command key combinations are sent via performKeyEquivalent rather than	
+  // keyDown:. We just forward this on and if WebCore doesn't want to handle	
+  // it, we let the TabContentsView figure out how to reinject it.	
+  [self keyEvent:theEvent wasKeyEquivalent:YES];	
+  return YES;
+}
+
+- (BOOL)_wantsKeyDownForEvent:(NSEvent*)event {
+  // This is a SPI that AppKit apparently calls after |performKeyEquivalent:|
+  // returned NO. If this function returns |YES|, Cocoa sends the event to
+  // |keyDown:| instead of doing other things with it. Ctrl-tab will be sent
+  // to us instead of doing key view loop control, ctrl-left/right get handled
+  // correctly, etc.
+  // (However, there are still some keys that Cocoa swallows, e.g. the key
+  // equivalent that Cocoa uses for toggling the input langauge. In this case,
+  // that's actually a good thing, though -- see http://crbug.com/26115 .)
+  return YES;
 }
 
 - (void)keyEvent:(NSEvent*)theEvent {
+  [self keyEvent:theEvent wasKeyEquivalent:NO];	
+}	
+
+- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv {	
   if (ignoreKeyEvents_)
     return;
+
+  DCHECK([theEvent type] != NSKeyDown ||	
+         !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 
   scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
 

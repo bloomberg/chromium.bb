@@ -49,37 +49,19 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
                                  fromTable:CommandForBrowserKeyboardShortcut];
 }
 
-- (BOOL)shortcircuitEvent:(NSEvent*)event {
-  if (!redispatchingEvent_ &&
-      ([event type] == NSKeyDown || [event type] == NSKeyUp)) {
-    if ([[self firstResponder]
-        isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
-      // No other mac browser sends keyup() for keyboard equivalents, so let's
-      // suppress this.
-      if (([event modifierFlags] & NSCommandKeyMask) && [event type] == NSKeyUp)
-        return YES;
-
-      RenderWidgetHostViewCocoa* rwhv = static_cast<RenderWidgetHostViewCocoa*>(
-          [self firstResponder]);
-      [rwhv keyEvent:event];
-      return YES;
-    }
-  }
-  return NO;
-}
-
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
   if (redispatchingEvent_)
     return NO;
 
-  // |shortcircuitEvent:| should handle all events directed to the RWHV.
-  DCHECK(![[self firstResponder]
-      isKindOfClass:[RenderWidgetHostViewCocoa class]]);
+  // Give the web site a chance to handle the event. If it doesn't want to
+  // handle it, it will call us back with one of the |handle*| methods above.
+  NSResponder* r = [self firstResponder];
+  if ([r isKindOfClass:[RenderWidgetHostViewCocoa class]])
+    return [r performKeyEquivalent:event];
 
   // Handle per-window shortcuts like cmd-1, but do not handle browser-level
   // shortcuts like cmd-left (else, cmd-left would do history navigation even
-  // if e.g. the Omnibox has focus). If the web has focus, don't do this here,
-  // since the web needs to get a chance at swallowing the event first.
+  // if e.g. the Omnibox has focus).
   if ([self handleExtraWindowKeyboardShortcut:event])
     return YES;
   return [super performKeyEquivalent:event];
