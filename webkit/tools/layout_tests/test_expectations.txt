@@ -3218,3 +3218,6 @@ BUG_SENORBLANCO WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 // WebKit 50517:50527
 // This is a new test, just need rebaselining.
 BUG_HCLAM : LayoutTests/accessibility/aria-combobox.html = TEXT
+
+BUG_26969 MAC : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = MISSING
+BUG_26969 MAC : LayoutTests/fast/text/text-letter-spacing.html = MISSING
