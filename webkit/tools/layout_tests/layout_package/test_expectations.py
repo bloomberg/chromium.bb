@@ -106,7 +106,10 @@ class TestExpectations:
                 include_skips=False))
 
   def GetRebaseliningFailures(self):
-    return self._expected_failures.GetTestSet(REBASELINE, FAIL)
+    return (self._expected_failures.GetTestSet(REBASELINE, FAIL) |
+            self._expected_failures.GetTestSet(REBASELINE, IMAGE) |
+            self._expected_failures.GetTestSet(REBASELINE, TEXT) |
+            self._expected_failures.GetTestSet(REBASELINE, IMAGE_PLUS_TEXT))
 
   def GetExpectations(self, test):
     if self._expected_failures.Contains(test):
