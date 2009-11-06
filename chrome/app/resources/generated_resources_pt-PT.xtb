@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Introduza uma consulta no campo de texto acima para pesquisar os marcadores.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ficheiros</translation>
 <translation id="1291121346508216435">Corrigir ortografia automaticamente:</translation>
-<translation id="6805291412499505360">Restringir o modo como os cookies de terceiros podem ser utilizados</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="370665806235115550">A carregar...</translation>
 <translation id="6592392877063354583">A página em <ph name="SECURE_PAGE_URL"/> contém conteúdos não seguros de <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> horas</translation>
 <translation id="3678156199662914018">Extensão: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Diversão</translation>
-<translation id="6740650473366653433">Definir como tema GTK+</translation>
 <translation id="3577682619813191010">Copiar &amp;ficheiro</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> min. restantes</translation>
 <translation id="2192505247865591433">De:</translation>
@@ -770,7 +768,6 @@
 <translation id="436869212180315161">Premir</translation>
 <translation id="8241707690549784388">A página que procura utilizou informações introduzidas por si. Regressar a essa página poderá originar a repetição de qualquer acção que tenha efectuado. Pretende continuar?</translation>
 <translation id="486595306984036763">Abrir relatório de phishing</translation>
-<translation id="1568162916422682473">Ocorreu uma falha no seguinte plug-in: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Há <ph name="NUMBER_FEW"/> seg.</translation>
 <translation id="7335974883498105858">Extras em destaque</translation>
 <translation id="1248790313843954917">Não foi encontrada nenhuma feed correspondente à consulta de pesquisa</translation>

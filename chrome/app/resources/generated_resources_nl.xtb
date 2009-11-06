@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Geef een zoekopdracht op in het bovenstaande tekstveld om uw bladwijzers te doorzoeken.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> van <ph name="TOTAL_FILES"/> bestanden</translation>
 <translation id="1291121346508216435">Spelling automatisch corrigeren:</translation>
-<translation id="6805291412499505360">Het gebruik van cookies van derden beperken</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="370665806235115550">Laden...</translation>
 <translation id="6592392877063354583">De pagina op <ph name="SECURE_PAGE_URL"/> bevat onveilige inhoud van <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> uur</translation>
 <translation id="3678156199662914018">Extensie: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Fun</translation>
-<translation id="6740650473366653433">Instellen op GTK+ thema</translation>
 <translation id="3577682619813191010">&amp;Bestand kopiëren</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minuten resterend</translation>
 <translation id="2192505247865591433">Van:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Drukken</translation>
 <translation id="8241707690549784388">De pagina die u zoekt, heeft informatie gebruikt die u heeft opgegeven Als u terugkeert naar deze pagina, worden acties die u heeft uitgevoerd, mogelijk herhaald. Wilt u doorgaan?</translation>
 <translation id="486595306984036763">Phishingmelding openen</translation>
-<translation id="1568162916422682473">De volgende plug-in is vastgelopen: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> seconden geleden</translation>
 <translation id="7335974883498105858">Aanbevolen extra's</translation>
 <translation id="1248790313843954917">Er zijn geen feeds die overeenkomen met uw zoekopdracht.</translation>

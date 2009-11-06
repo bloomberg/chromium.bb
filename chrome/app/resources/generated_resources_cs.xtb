@@ -296,7 +296,6 @@
 <translation id="8211437954284917092">Chcete-li vyhledávat v záložkách, zadejte dotaz do pole výše.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> souborů</translation>
 <translation id="1291121346508216435">Automaticky opravovat pravopis:</translation>
-<translation id="6805291412499505360">Omezit možnosti použití souborů cookie třetích stran</translation>
 <translation id="1201402288615127009">Další</translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="6592392877063354583">Stránka na <ph name="SECURE_PAGE_URL"/> obsahuje nezabezpečený obsah od <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -480,7 +479,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> hod</translation>
 <translation id="3678156199662914018">Rozšíření: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Zábavné</translation>
-<translation id="6740650473366653433">Nastavit motiv GTK+</translation>
 <translation id="3577682619813191010">Kopírovat soubor</translation>
 <translation id="5260878308685146029">Zbývá: <ph name="NUMBER_TWO"/> min</translation>
 <translation id="2192505247865591433">Odesílatel:</translation>
@@ -767,7 +765,6 @@
 <translation id="436869212180315161">Tisk</translation>
 <translation id="8241707690549784388">Stránka, kterou hledáte, používala vámi zadané informace. Návrat na tuto stránku by mohl způsobit, že akce, kterou jste provedli, bude opakována. Přejete si pokračovat?</translation>
 <translation id="486595306984036763">Otevřít hlášení o phishingu</translation>
-<translation id="1568162916422682473">Následující plugin selhal: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Před <ph name="NUMBER_FEW"/> sekundami</translation>
 <translation id="7335974883498105858">Doporučené doplňky</translation>
 <translation id="1248790313843954917">Vyhledávacímu dotazu neodpovídají žádné zdroje.</translation>

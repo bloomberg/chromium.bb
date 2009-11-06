@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Masukkan kueri dalam bidang teks di atas untuk menelusuri bookmark.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> dari <ph name="TOTAL_FILES"/> berkas</translation>
 <translation id="1291121346508216435">Perbaiki ejaan secara otomatis:</translation>
-<translation id="6805291412499505360">Batasi cara penggunaan cookie pihak ketiga</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="6592392877063354583">Laman di <ph name="SECURE_PAGE_URL"/> berisi konten tidak aman dari <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> jam</translation>
 <translation id="3678156199662914018">Ekstensi: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Ceria</translation>
-<translation id="6740650473366653433">Setel ke tema GTK+</translation>
 <translation id="3577682619813191010">Salin &amp;berkas</translation>
 <translation id="5260878308685146029">Tersisa <ph name="NUMBER_TWO"/> menit</translation>
 <translation id="2192505247865591433">Dari:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Tekan</translation>
 <translation id="8241707690549784388">Laman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke laman tersebut dapat menyebabkan pengulangan tindakan apapun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="486595306984036763">Buka laporan phishing</translation>
-<translation id="1568162916422682473">Plug-in berikut rusak: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> dtk. yang lalu</translation>
 <translation id="7335974883498105858">Ekstra unggulan</translation>
 <translation id="1248790313843954917">Tidak ada umpan yang cocok dengan kueri penelusuran Anda.</translation>

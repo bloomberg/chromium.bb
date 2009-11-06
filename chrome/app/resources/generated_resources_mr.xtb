@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">आपले बुकमार्क शोधण्यासाठी उपरोक्त मजकूर फील्डमध्ये क्वेरी प्रविष्ट करा.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> फाइल्स</translation>
 <translation id="1291121346508216435">स्वयंचलितरित्या शब्दलेखन सुधारा:</translation>
-<translation id="6805291412499505360">तृतीय-पक्ष कुकीज कशा वापरल्‍या जाऊ शकतात हे प्रतिबंधित करा</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> येथील पृष्ठामध्ये <ph name="INSECURE_RESOURCE_URL"/> वरील असुरक्षित सामग्री आहे.</translation>
@@ -491,7 +490,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> तास</translation>
 <translation id="3678156199662914018">विस्तारः <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">मनोरंजन</translation>
-<translation id="6740650473366653433">GTK+ थीम वर सेट करा</translation>
 <translation id="3577682619813191010">&amp;फाइल कॉपी करा</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> मि बाकी</translation>
 <translation id="2192505247865591433">द्वारा:</translation>
@@ -779,7 +777,6 @@
 <translation id="436869212180315161">दाबा</translation>
 <translation id="8241707690549784388">आपण जे पृष्ठ शोधत आहत ते आपण प्रविष्ट केलेली माहिती वापरत आहे. त्या पृष्ठाकडे परत गेल्यास कदाचित आपण केलेल्या कोणत्याही क्रियेची पुनरावृत्ती होईल. आपण सुरू ठेवू इच्छिता?</translation>
 <translation id="486595306984036763">फिशिंग अहवाल उघडा</translation>
-<translation id="1568162916422682473">निम्नलिखित प्लग-इन क्रॅश झाला आहे: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">अधिक वैशिष्ट्यीकृत</translation>
 <translation id="1248790313843954917">आपल्या शोध क्वेरीशी कोणतेही फीड जुळत नाही.</translation>

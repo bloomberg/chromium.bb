@@ -296,7 +296,6 @@
 <translation id="8211437954284917092">Etsi kirjanmerkkejä kirjoittamalla kysely yllä olevaan tekstikenttään.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> tiedostoa</translation>
 <translation id="1291121346508216435">Korjaa oikeinkirjoitus automaattisesti:</translation>
-<translation id="6805291412499505360">Rajaa, kuinka ulkopuolisten evästeitä voidaan käyttää</translation>
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="370665806235115550">Ladataan...</translation>
 <translation id="6592392877063354583">Sivu osoitteessa <ph name="SECURE_PAGE_URL"/> sisältää suojaamatonta sisältöä osoitteesta <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -480,7 +479,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> tuntia</translation>
 <translation id="3678156199662914018">Laajennus: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Hupi</translation>
-<translation id="6740650473366653433">Valitse teemaksi GTK+</translation>
 <translation id="3577682619813191010">Kopioi tied&amp;osto</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minuuttia jäljellä</translation>
 <translation id="2192505247865591433">Lähettäjä:</translation>
@@ -768,7 +766,6 @@
 <translation id="436869212180315161">Paina</translation>
 <translation id="8241707690549784388">Etsimäsi sivu käytti antamiasi tietoja. Sivulle palaaminen voi johtaa jokaisen tekemäsi toiminnon toistamiseen. Haluatko jatkaa?</translation>
 <translation id="486595306984036763">Avaa tietojenkalasteluraportti</translation>
-<translation id="1568162916422682473">Seuraavassa laajennuksessa on virheitä: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Lisätoimintoesittelyt</translation>
 <translation id="1248790313843954917">Yksikään syöte ei vastaa hakukyselyäsi.</translation>

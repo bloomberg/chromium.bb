@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Magpasok ng query sa field ng teksto sa itaas upang maghanap sa iyong mga bookmark.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> mga file</translation>
 <translation id="1291121346508216435">Awtomatikong itama ang spelling:</translation>
-<translation id="6805291412499505360">Paghigpitan kung paano maaaring magamit ang third party cookies</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="370665806235115550">Kumakarga...</translation>
 <translation id="6592392877063354583">Ang pahina sa <ph name="SECURE_PAGE_URL"/> ay naglalaman ng hindi secure na nilalaman mula sa <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> mga oras</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Nakakatuwa</translation>
-<translation id="6740650473366653433">Itakda sa temang GTK+</translation>
 <translation id="3577682619813191010">Kopyahin &amp;file</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> natitirang minuto</translation>
 <translation id="2192505247865591433">Mula:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Pindutin</translation>
 <translation id="8241707690549784388">Ang pahina na hinahanap mo para sa paggamit ng impormasyon na ipinasok mo. Ang pagbalik sa pahinang iyon maaaring magsanhi ng anumang aksyon na akalo mo ay naulit. Nais mo bang ipagpatuloy?</translation>
 <translation id="486595306984036763">Buksan ang ulat sa phishing</translation>
-<translation id="1568162916422682473">Ang sumusunod na plug-in ay may crash : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> segundo ang nakalipas</translation>
 <translation id="7335974883498105858">Mga itinampok na karagdagan</translation>
 <translation id="1248790313843954917">Walang mga feed na tumugma sa iyong query sa paghahanap.</translation>

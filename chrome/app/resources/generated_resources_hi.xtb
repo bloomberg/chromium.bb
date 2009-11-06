@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">अपने बुकमार्क खोजने के लिए उपरोक्त पाठ फ़ील्ड में कोई क्वेरी दर्ज करें.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/><ph name="TOTAL_FILES"/> फ़ाइलें</translation>
 <translation id="1291121346508216435">स्वचालित रूप से वर्तनी सुधारें:</translation>
-<translation id="6805291412499505360">तीसरे पक्ष के कुकीज़ के उपयोग का तरीका सीमित करें</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="370665806235115550">लोड हो रहा है ...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> पर मौजूद पृष्ठ में <ph name="INSECURE_RESOURCE_URL"/> से असुरक्षित सामग्री शामिल है.</translation>
@@ -483,7 +482,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/>घंटे</translation>
 <translation id="3678156199662914018">विस्तार: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">मनोरंजन</translation>
-<translation id="6740650473366653433">GTK+ थीम पर सेट करें</translation>
 <translation id="3577682619813191010">&amp;फ़ाइल की प्रतिलिपि बनाएँ</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/>मिनट शेष</translation>
 <translation id="2192505247865591433">प्रेषक :</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">दबाएँ</translation>
 <translation id="8241707690549784388">आपके द्वारा खोजे जा रहे पृष्ठ ने आपके द्वारा प्रविष्ट की गई जानकारी का उपयोग किया है. उस पृष्ठ पर वापिस जाने से संभवत: आपके द्वारा की गई कोई क्रिया दोहराने की आवश्यकता हो सकती है. क्या आप आगे बढ़ना चाहते हैं ?</translation>
 <translation id="486595306984036763">फ़िशिंग रिपोर्ट खोलें</translation>
-<translation id="1568162916422682473">निम्न प्लग-इन क्रैशा हो गया है : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> सेकंड पहले</translation>
 <translation id="7335974883498105858">फ़ीचर किए गए अतिरिक्त</translation>
 <translation id="1248790313843954917">आपकी खोज क्वेरी से कोई फ़ीड मेल नहीं खाते.</translation>

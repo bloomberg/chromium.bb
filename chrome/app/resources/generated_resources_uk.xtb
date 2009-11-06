@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Щоб здійснити пошук у закладках, введіть запит у текстове поле вище.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> файлів</translation>
 <translation id="1291121346508216435">Виправляти орфографічні помилки автоматично:</translation>
-<translation id="6805291412499505360">Обмежити можливість використання cookie-файлів третьої сторони</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="370665806235115550">Завантаження...</translation>
 <translation id="6592392877063354583">Сторінка за адресою <ph name="SECURE_PAGE_URL"/> містить незахищений вміст із <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -483,7 +482,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> hours</translation>
 <translation id="3678156199662914018">Розширення: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Розваги</translation>
-<translation id="6740650473366653433">Налаштувати тему GTK+</translation>
 <translation id="3577682619813191010">Копіювати &amp;файл</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> mins left</translation>
 <translation id="2192505247865591433">Від:</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">Натиснути</translation>
 <translation id="8241707690549784388">Сторінка, яку ви шукаєте, використовувала інформацію, введену вами. Повернення до такої сторінки може призвести до повторення ваших попередніх дій. Ви дійсно бажаєте продовжити?</translation>
 <translation id="486595306984036763">Відкрити звіт про фішинг</translation>
-<translation id="1568162916422682473">Такий модуль аварійно завершив роботу: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> сек. тому</translation>
 <translation id="7335974883498105858">Популярні доповнення</translation>
 <translation id="1248790313843954917">Пошуковому запиту не відповідає жоден канал.</translation>

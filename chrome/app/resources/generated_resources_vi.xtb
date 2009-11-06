@@ -296,7 +296,6 @@
 <translation id="8211437954284917092">Nhập truy vấn vào trường văn bản ở trên để tìm dấu trang của bạn.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> tệp</translation>
 <translation id="1291121346508216435">Tự động sửa lỗi chính tả:</translation>
-<translation id="6805291412499505360">Hạn chế cách bên thứ ba có thể sử dụng cookie</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="370665806235115550">Đang tải...</translation>
 <translation id="6592392877063354583">Trang tại <ph name="SECURE_PAGE_URL"/> có chứa nội dung không an toàn từ <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -483,7 +482,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> giờ</translation>
 <translation id="3678156199662914018">Tiện ích mở rộng: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Hài hước</translation>
-<translation id="6740650473366653433">Đặt về chủ đề GTK+</translation>
 <translation id="3577682619813191010">Sa&amp;o chép tệp</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> phút còn lại</translation>
 <translation id="2192505247865591433">Từ:</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">Nhấp vào</translation>
 <translation id="8241707690549784388">Trang mà bạn đang tìm sử dụng thông tin bạn đã nhập vào. Việc quay lại trang đó có thể lặp lại bất kỳ tác vụ nào bạn đã thực hiện. Bạn có muốn tiếp tục không?</translation>
 <translation id="486595306984036763">Mở báo cáo lừa đảo trực tuyến</translation>
-<translation id="1568162916422682473">Các plug-in sau đã hỏng: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Nội dung nổi bật khác</translation>
 <translation id="1248790313843954917">Không có nguồn cấp dữ liệu nào phù hợp với truy vấn tìm kiếm của bạn.</translation>

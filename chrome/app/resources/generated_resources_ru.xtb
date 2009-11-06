@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Чтобы выполнить поиск по закладкам, введите запрос в текстовом поле выше.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> файла(ов)</translation>
 <translation id="1291121346508216435">Исправлять орфографические ошибки автоматически:</translation>
-<translation id="6805291412499505360">Ограничить способы использования файлов cookie независимых разработчиков</translation>
 <translation id="1201402288615127009">Вперед</translation>
 <translation id="370665806235115550">Загрузка...</translation>
 <translation id="6592392877063354583">Страница по адресу <ph name="SECURE_PAGE_URL"/> содержит небезопасные элементы с <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> час.</translation>
 <translation id="3678156199662914018">Расширение: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Развлечения</translation>
-<translation id="6740650473366653433">Установить тему GTK+</translation>
 <translation id="3577682619813191010">Копировать &amp;файл</translation>
 <translation id="5260878308685146029">Осталось <ph name="NUMBER_TWO"/> мин.</translation>
 <translation id="2192505247865591433">От:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Нажать</translation>
 <translation id="8241707690549784388">На странице, которую вы ищете, использовалась введенная вами информация. При возврате на эту страницу может потребоваться повторить выполненные ранее действия. Продолжить?</translation>
 <translation id="486595306984036763">Открыть отчет о фишинге</translation>
-<translation id="1568162916422682473">Обнаружен неустранимый сбой следующих плагинов: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> с. назад</translation>
 <translation id="7335974883498105858">Самые популярные</translation>
 <translation id="1248790313843954917">Ни один фид не соответствует вашему поисковому запросу.</translation>

@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Introduïu una consulta al camp de text anterior per cercar els preferits.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fitxers</translation>
 <translation id="1291121346508216435">Corregeix l'ortografia automàticament:</translation>
-<translation id="6805291412499505360">Restringeix el mode en què es poden utilitzar les galetes de tercers</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="370665806235115550">S'està carregant...</translation>
 <translation id="6592392877063354583">La pàgina de  <ph name="SECURE_PAGE_URL"/> inclou contingut no segur de <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> hores</translation>
 <translation id="3678156199662914018">Extensió: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Divertits</translation>
-<translation id="6740650473366653433">Estableix com a GTK i tema</translation>
 <translation id="3577682619813191010">Copia el &amp;fitxer</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minuts restants</translation>
 <translation id="2192505247865591433">De:</translation>
@@ -770,7 +768,6 @@
 <translation id="436869212180315161">Prem</translation>
 <translation id="8241707690549784388">La pàgina que busques utilitzava informació que vas introduir. Tornar a aquesta pàgina podria provocar una repetició de qualsevol acció realitzada. Vols continuar?</translation>
 <translation id="486595306984036763">Obre una denúncia de pesca</translation>
-<translation id="1568162916422682473">El complement següent s'ha espatllat: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Fa <ph name="NUMBER_FEW"/> segons</translation>
 <translation id="7335974883498105858">Extres destacats</translation>
 <translation id="1248790313843954917">No hi ha cap canal d'informació que coincideixi amb la vostra consulta de cerca.</translation>

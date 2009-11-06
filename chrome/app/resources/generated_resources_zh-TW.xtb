@@ -307,7 +307,6 @@
 <translation id="8211437954284917092">請在上方文字欄位中輸入查詢以搜尋您的書籤。</translation>
 <translation id="5958418293370246440">已儲存 <ph name="SAVED_FILES"/> 個檔案，全部 <ph name="TOTAL_FILES"/> 個檔案</translation>
 <translation id="1291121346508216435">自動修正拼字錯誤：</translation>
-<translation id="6805291412499505360">限制第三方 Cookie 的使用方式</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="370665806235115550">載入中...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> 的網頁包含了來自 <ph name="INSECURE_RESOURCE_URL"/> 的不安全內容。</translation>
@@ -400,6 +399,7 @@
 <translation id="6449085810994685586">檢查此欄位的拼字(&amp;C)</translation>
 <translation id="8789544147407756448">下列擴充功能已損毀：<ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478">剩下 <ph name="NUMBER_FEW"/> 分鐘</translation>
+<translation id="2022540532491530427">複製檔案(&amp;F)</translation>
 <translation id="5966654788342289517">個人化設定</translation>
 <translation id="2576802705154232609">網頁剪輯</translation>
 <translation id="8664389313780386848">檢視網頁原始碼(&amp;V)</translation>
@@ -448,6 +448,7 @@
 <translation id="5256138355144269748">已封鎖彈出式視窗</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> 秒</translation>
 <translation id="3122496702278727796">無法建立資料目錄</translation>
+<translation id="8888930795132369495">複製檔案路徑(&amp;P)</translation>
 <translation id="4517036173149081027">關閉並取消下載作業</translation>
 <translation id="8446970197849314122">您可以從這台電腦的其他瀏覽器和使用者帳號匯入書籤和設定。</translation>
 <translation id="6281636957902664775">前往 <ph name="URL"/></translation>
@@ -499,7 +500,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> 小時</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">趣味娛樂</translation>
-<translation id="6740650473366653433">設為 GTK+ 主題</translation>
 <translation id="3577682619813191010">複製檔案(&amp;F)</translation>
 <translation id="5260878308685146029">剩下 <ph name="NUMBER_TWO"/> 分鐘</translation>
 <translation id="2192505247865591433">自:</translation>
@@ -796,7 +796,6 @@
 <translation id="436869212180315161">按下</translation>
 <translation id="8241707690549784388">您尋找的網頁使用了您輸入的資料。返回該頁會重複您剛才的行動。您確定要繼續嗎？</translation>
 <translation id="486595306984036763">開啟網路釣魚報告</translation>
-<translation id="1568162916422682473">下列外掛程式已損毀: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> 秒前</translation>
 <translation id="7335974883498105858">特別精選內容</translation>
 <translation id="1248790313843954917">找不到與您的搜尋條件相符的資訊提供。</translation>

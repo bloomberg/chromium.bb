@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Įveskite užklausą į anksčiau pateiktą teksto lauką, jei norite ieškoti žymių.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> failai (-ų)</translation>
 <translation id="1291121346508216435">Automatiškai taisyti rašybos klaidas:</translation>
-<translation id="6805291412499505360">Apriboti trečiųjų šalių slaptukų panaudojimo galimybes</translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="370665806235115550">Įkeliama...</translation>
 <translation id="6592392877063354583">Puslapyje adresu <ph name="SECURE_PAGE_URL"/> yra nesaugaus turinio iš <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> valandos (-ų)</translation>
 <translation id="3678156199662914018">Plėtinys: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Linksmybės</translation>
-<translation id="6740650473366653433">Nustatyti kaip GTK+ temą</translation>
 <translation id="3577682619813191010">Nukopijuoti &amp;failą</translation>
 <translation id="5260878308685146029">liko <ph name="NUMBER_TWO"/> min.</translation>
 <translation id="2192505247865591433">Nuo:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Spustelėti</translation>
 <translation id="8241707690549784388">Jūsų ieškomas puslapis ieškojo informacijos, kurią įvedėte. Grįžus į tą puslapį bet kokie jūsų atliekami veiksmai gali būti kartojami. Ar norite tęsti?</translation>
 <translation id="486595306984036763">Atidaryti sukčiavimų ataskaitą</translation>
-<translation id="1568162916422682473">Šis papildinys sugedo: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Prieš <ph name="NUMBER_FEW"/> sek.</translation>
 <translation id="7335974883498105858">Papildomos ypatybės</translation>
 <translation id="1248790313843954917">Nė viena informacijos santrauka neatitiko paieškos užklausos.</translation>

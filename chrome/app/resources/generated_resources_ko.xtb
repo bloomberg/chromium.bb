@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">북마크를 검색하려면 위의 입력란에 검색어를 입력하세요.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> 파일</translation>
 <translation id="1291121346508216435">자동으로 맞춤법 검사:</translation>
-<translation id="6805291412499505360">제3자 쿠키 사용 방식 제한</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/>의 페이지에는 안전하지 못한 <ph name="INSECURE_RESOURCE_URL"/>의 콘텐츠가 포함되어 있습니다.</translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/>시간</translation>
 <translation id="3678156199662914018">확장 프로그램: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">엔터테인먼트</translation>
-<translation id="6740650473366653433">GTK+ 테마로 설정</translation>
 <translation id="3577682619813191010">파일 복사(&amp;F)</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/>분 남음</translation>
 <translation id="2192505247865591433">웹 브라우저</translation>
@@ -768,7 +766,6 @@
 <translation id="436869212180315161">누르기</translation>
 <translation id="8241707690549784388">찾고 있는 페이지에서 사용자가 입력한 정보를 사용했습니다. 해당 페이지로 돌아가면 기존 작업을 반복할 수 있습니다. 계속하시겠습니까?</translation>
 <translation id="486595306984036763">피싱 보고서 열기</translation>
-<translation id="1568162916422682473">다음 플러그인이 작동을 멈췄습니다. : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/>초 전</translation>
 <translation id="7335974883498105858">추가 추천 기능</translation>
 <translation id="1248790313843954917">검색어와 일치하는 피드가 없습니다.</translation>

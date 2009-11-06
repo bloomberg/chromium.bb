@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">ป้อนข้อความค้นหาลงในฟิลด์ข้อความด้านบนเพื่อค้นหาบุ๊คมาร์คของคุณ</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ไฟล์</translation>
 <translation id="1291121346508216435">แก้ไขการสะกดคำโดยอัตโนมัติ:</translation>
-<translation id="6805291412499505360">จำกัดวิธีการใช้งานคุกกี้ของบุคคลที่สาม</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="370665806235115550">กำลังโหลด...</translation>
 <translation id="6592392877063354583">หน้าใน <ph name="SECURE_PAGE_URL"/> มีเนื้อหาที่ไม่ปลอดภัยจาก <ph name="INSECURE_RESOURCE_URL"/></translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ชั่วโมง</translation>
 <translation id="3678156199662914018">ส่วนขยาย: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">เรื่องสนุก</translation>
-<translation id="6740650473366653433">ตั้งค่าเป็นธีม GTK+</translation>
 <translation id="3577682619813191010">คัดลอกไ&amp;ฟล์</translation>
 <translation id="5260878308685146029">เหลือ <ph name="NUMBER_TWO"/> นาที</translation>
 <translation id="2192505247865591433">จาก:</translation>
@@ -770,7 +768,6 @@
 <translation id="436869212180315161">กด</translation>
 <translation id="8241707690549784388">หน้าที่คุณกำลังมองหาใช้ข้อมูลที่คุณได้ป้อนไว้แล้ว การกลับไปสู่หน้านั้นอาจทำให้คุณต้องทำซ้ำการดำเนินการใดๆ ที่คุณทำแล้ว คุณต้องการดำเนินการต่อหรือไม่</translation>
 <translation id="486595306984036763">เปิดรายงานฟิชชิ่ง</translation>
-<translation id="1568162916422682473">ปลั๊กอินต่อไปนี้ไม่สามารถใช้งานได้ : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> วินาทีที่ผ่านมา</translation>
 <translation id="7335974883498105858">ข้อมูลเพิ่มเติมที่แสดง</translation>
 <translation id="1248790313843954917">ไม่มีฟีดที่ตรงกับคำค้นหาของคุณ</translation>

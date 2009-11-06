@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Adjon meg egy lekérdezést a fenti szöveges mezőben a könyvjelzőkben történő kereséshez.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> fájl</translation>
 <translation id="1291121346508216435">Helyesírás automatikus kijavítása:</translation>
-<translation id="6805291412499505360">Korlátozza a harmadik féltől származó cookie-k használatának módját</translation>
 <translation id="1201402288615127009">Következő</translation>
 <translation id="370665806235115550">Betöltés…</translation>
 <translation id="6592392877063354583">A <ph name="SECURE_PAGE_URL"/> címen található oldal nem biztonságos elemeket is tartalmaz a <ph name="INSECURE_RESOURCE_URL"/> címről.</translation>
@@ -485,7 +484,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> óra</translation>
 <translation id="3678156199662914018">Bővítmény: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Szórakozás</translation>
-<translation id="6740650473366653433">GTK + téma beállítása</translation>
 <translation id="3577682619813191010">&amp;Fájl másolása</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> perc van hátra</translation>
 <translation id="2192505247865591433">Innen:</translation>
@@ -774,7 +772,6 @@
 <translation id="436869212180315161">Sajtó</translation>
 <translation id="8241707690549784388">A keresett oldal a megadott információt használta. Ha visszatér arra az oldalra, akkor lehet, hogy az egyszer már megtett mozdulatok ismétlésre kerülnek. Mégis továbblép?</translation>
 <translation id="486595306984036763">Nyílt adathalászat-jelentés</translation>
-<translation id="1568162916422682473">Az alábbi plugin összeomlott: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Kiemelt extrák</translation>
 <translation id="1248790313843954917">Nincsenek a keresési lekérdezésnek megfelelő feedek</translation>

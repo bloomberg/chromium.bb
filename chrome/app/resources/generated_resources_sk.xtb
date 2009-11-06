@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Ak chcete hľadať vo svojich záložkách, zadajte dopyt do vyššie uvedeného textového poľa.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> z <ph name="TOTAL_FILES"/> súborov</translation>
 <translation id="1291121346508216435">Automatická oprava pravopisných chýb:</translation>
-<translation id="6805291412499505360">Obmedziť spôsob použitia súborov cookie tretích strán</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="370665806235115550">Načítava sa...</translation>
 <translation id="6592392877063354583">Stránka na adrese <ph name="SECURE_PAGE_URL"/> obsahuje nezabezpečený obsah z adresy <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208">Počet hodín: <ph name="NUMBER_TWO"/></translation>
 <translation id="3678156199662914018">Rozšírenie: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Zábava</translation>
-<translation id="6740650473366653433">Nastaviť na motív GTK+</translation>
 <translation id="3577682619813191010">Kopírovať &amp;súbor</translation>
 <translation id="5260878308685146029">Počet zvyšných minút: <ph name="NUMBER_TWO"/></translation>
 <translation id="2192505247865591433">Od:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Stlačiť</translation>
 <translation id="8241707690549784388">Vami hľadaná stránka použila informácie, ktoré ste zadali. Návrat na túto stránku môže spôsobiť zopakovanie akcie, ktorú ste vykonali. Chcete pokračovať?</translation>
 <translation id="486595306984036763">Otvoriť prehľad phishingu</translation>
-<translation id="1568162916422682473">Zlyhal tento doplnkový modul: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Pred <ph name="NUMBER_FEW"/> s</translation>
 <translation id="7335974883498105858">Vybrané položky extra</translation>
 <translation id="1248790313843954917">Pre vyhľadávací dopyt sa nenašli žiadne informačné kanály.</translation>

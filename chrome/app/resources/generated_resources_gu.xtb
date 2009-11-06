@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">તમારા બુકમાર્ક્સને શોધવા માટે ઉપરનાં ટેક્સ્ટ ફીલ્ડમાં એક ક્વેરી દાખલ કરો.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ફાઇલ્સ</translation>
 <translation id="1291121346508216435">જોડણી આપમેળે સુધારો:</translation>
-<translation id="6805291412499505360">તૃતીય-પક્ષ કૂકીઝનો ઉપયોગ કેવી રીતે થાય તે નિયંત્રિત કરો</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="6592392877063354583"><ph name="INSECURE_RESOURCE_URL"/> તરફથી <ph name="SECURE_PAGE_URL"/> પર પૃષ્ઠમાં અસુરક્ષિત સામગ્રી આવી છે.</translation>
@@ -494,7 +493,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> કલાક</translation>
 <translation id="3678156199662914018">એક્સ્ટેંશન: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">મજા</translation>
-<translation id="6740650473366653433">GTK+ થીમ પર સેટ કરો</translation>
 <translation id="3577682619813191010">&amp;ફાઇલ કૉપિ કરો</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> મિનિટ બાકી</translation>
 <translation id="2192505247865591433">તરફથી:</translation>
@@ -784,7 +782,6 @@
 <translation id="436869212180315161">દબાવો</translation>
 <translation id="8241707690549784388">તમારા દ્વારા દાખલ કરાયેલી વપરાયેલી માહિતી માટે આ પાનું તમે જોઈ રહ્યા છો. તે પૃષ્ઠ પર પાછા જવાથી એવી કોઈપણ ક્રિયા ફરીથી થઈ શકે છે જે તમે પહેલા કરી હતી. શું તમે ચાલુ રાખવા માંગો છો?</translation>
 <translation id="486595306984036763">ફિશીંગ રીપોર્ટ ખોલો</translation>
-<translation id="1568162916422682473">નીચેનું પ્લગ-ઇન ક્રેશ થયું છે: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">ફીચર્ડ અતિરિક્ત</translation>
 <translation id="1248790313843954917">તમારી શોધ ક્વેરી સાથે કોઈ ફીડ્સ મેળ ખાતા નથી.</translation>

@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Geben Sie in das obige Textfeld eine Suchanfrage ein, um Lesezeichen zu suchen.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> Dateien</translation>
 <translation id="1291121346508216435">Rechtschreibung automatisch korrigieren:</translation>
-<translation id="6805291412499505360">Verwendung von Cookies von Drittanbietern beschränken</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="370665806235115550">Ladevorgang läuft...</translation>
 <translation id="6592392877063354583">Die Seite unter <ph name="SECURE_PAGE_URL"/> enthält nicht sicheren Content von <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> Stunden</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Spaß</translation>
-<translation id="6740650473366653433">&quot;GTK+&quot;-Design einstellen</translation>
 <translation id="3577682619813191010">&amp;Datei kopieren</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> Minuten übrig</translation>
 <translation id="2192505247865591433">Von:</translation>
@@ -769,7 +767,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="436869212180315161">Klicken</translation>
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="486595306984036763">Phishing-Bericht öffnen</translation>
-<translation id="1568162916422682473">Das folgende Plug-in ist abgestürzt: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Vorgestellte Extras</translation>
 <translation id="1248790313843954917">Es wurden keine Feeds gefunden, die Ihrer Suchanfrage entsprechen.</translation>

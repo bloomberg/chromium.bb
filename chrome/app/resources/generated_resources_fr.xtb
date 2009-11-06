@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Entrez votre requête dans la zone de texte ci-dessus pour lancer une recherche dans les favoris.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fichiers</translation>
 <translation id="1291121346508216435">Corriger l'orthographe automatiquement :</translation>
-<translation id="6805291412499505360">Limiter l'utilisation des cookies tiers</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="370665806235115550">Chargement...</translation>
 <translation id="6592392877063354583">La page à l'adresse <ph name="SECURE_PAGE_URL"/> présente un contenu non sécurisé provenant de <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -481,7 +480,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> heures</translation>
 <translation id="3678156199662914018">Extension : <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Amusant</translation>
-<translation id="6740650473366653433">Choisir le thème GTK+</translation>
 <translation id="3577682619813191010">Copier le &amp;fichier</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minutes restantes</translation>
 <translation id="2192505247865591433">De :</translation>
@@ -770,7 +768,6 @@
 <translation id="436869212180315161">Cliquer</translation>
 <translation id="8241707690549784388">La page que vous recherchez a utilisé des informations que vous avez envoyées. Si vous revenez sur cette page, chaque action précédemment effectuée sera répétée. Souhaitez-vous continuer ?</translation>
 <translation id="486595306984036763">Ouvrir un rapport de phishing</translation>
-<translation id="1568162916422682473">Le plug-in suivant est bloqué : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Extraits supplémentaires disponibles</translation>
 <translation id="1248790313843954917">Aucun flux ne correspond à votre requête de recherche.</translation>

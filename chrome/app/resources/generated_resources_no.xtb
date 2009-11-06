@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Skriv inn et søk i tekstfeltet ovenfor for å søke i bokmerkene dine.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> filer</translation>
 <translation id="1291121346508216435">Korriger staving automatisk:</translation>
-<translation id="6805291412499505360">Begrens hvordan informasjonskapsler fra tredjeparter kan brukes</translation>
 <translation id="1201402288615127009">Neste</translation>
 <translation id="370665806235115550">Laster inn...</translation>
 <translation id="6592392877063354583">Siden på <ph name="SECURE_PAGE_URL"/> inneholder usikkert innhold fra <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -482,7 +481,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> timer</translation>
 <translation id="3678156199662914018">Utvidelse: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Moro</translation>
-<translation id="6740650473366653433">Velg GTK + tema</translation>
 <translation id="3577682619813191010">Kopier &amp;fil</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minutter igjen</translation>
 <translation id="2192505247865591433">Fra:</translation>
@@ -775,7 +773,6 @@ Midlertidig stanset</translation>
 <translation id="436869212180315161">Trykk</translation>
 <translation id="8241707690549784388">Siden du ser etter, brukte informasjon som du angav. Hvis du går tilbake til denne siden, kan det føre til at handlinger som er utført, blir gjentatt. Vil du fortsette?</translation>
 <translation id="486595306984036763">Åpne rapport om nettfisking</translation>
-<translation id="1568162916422682473">Følgende programtillegg har stoppet: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Aktuelt ekstra</translation>
 <translation id="1248790313843954917">Ingen innmatinger samsvarte med søket.</translation>

@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">V zgornje besedilno polje vnesite poizvedbo za iskanje po zaznamkih.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> datotek</translation>
 <translation id="1291121346508216435">Samodejno popravi črkovanje:</translation>
-<translation id="6805291412499505360">Omejite uporabo drugih piškotkov</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="370665806235115550">Nalagam ...</translation>
 <translation id="6592392877063354583">Stran na naslovu <ph name="SECURE_PAGE_URL"/> vsebuje nevarno vsebino z naslova <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> uri</translation>
 <translation id="3678156199662914018">Razširitev: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Zabava</translation>
-<translation id="6740650473366653433">Nastavi na temo GTK+</translation>
 <translation id="3577682619813191010">Kopiraj &amp;datoteko</translation>
 <translation id="5260878308685146029">še <ph name="NUMBER_TWO"/> min</translation>
 <translation id="2192505247865591433">Od:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Pritisnite</translation>
 <translation id="8241707690549784388">Stran, ki jo iščete, je uporabila informacije, ki ste jih vnesli. Z vrnitvijo na to stran se bodo morda ponovila vsa vaša dejanja, ki ste jih opravili. Ali želite nadaljevati?</translation>
 <translation id="486595306984036763">Odpri poročilo o lažnem predstavljanju</translation>
-<translation id="1568162916422682473">Naslednji vtičnik se je zrušil: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Pred <ph name="NUMBER_FEW"/> s</translation>
 <translation id="7335974883498105858">Priljubljeni dodatki</translation>
 <translation id="1248790313843954917">Noben vir se ne ujema z iskalno poizvedbo.</translation>

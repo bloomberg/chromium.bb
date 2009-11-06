@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Unesite upit u gornje polje teksta da biste pretražili oznake.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> datoteka</translation>
 <translation id="1291121346508216435">Automatski ispravi pravopis:</translation>
-<translation id="6805291412499505360">Ograničite korištenje kolačića trećih strana</translation>
 <translation id="1201402288615127009">Sljedeće</translation>
 <translation id="370665806235115550">Učitavanje...</translation>
 <translation id="6592392877063354583">Stranica na <ph name="SECURE_PAGE_URL"/> sadrži nesiguran sadržaj s <ph name="INSECURE_RESOURCE_URL"/></translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208">Broj sati: <ph name="NUMBER_TWO"/></translation>
 <translation id="3678156199662914018">Proširenje: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Zabava</translation>
-<translation id="6740650473366653433">Postavi na GTK+ tema</translation>
 <translation id="3577682619813191010">Kopiraj &amp;datoteku</translation>
 <translation id="5260878308685146029">Preostalo minuta: <ph name="NUMBER_TWO"/></translation>
 <translation id="2192505247865591433">Šalje:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Pritisnite</translation>
 <translation id="8241707690549784388">Stranica koju ste tražili koristila je podatke koje ste unijeli. Vraćanje na tu stranicu može dovesti do ponavljanja poduzete radnje. Želite li nastaviti?</translation>
 <translation id="486595306984036763">Otvori izvješće o krađi identiteta</translation>
-<translation id="1568162916422682473">Ovaj se dodatak srušio: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Prije <ph name="NUMBER_FEW"/> sek</translation>
 <translation id="7335974883498105858">Istaknuti dodatni sadržaji</translation>
 <translation id="1248790313843954917">Nema feedova koji odgovaraju vašem upitu pretraživanja.</translation>

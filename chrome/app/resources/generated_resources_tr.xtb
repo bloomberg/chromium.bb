@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Yer işaretlerinizde arama yapmak için yukarıdaki metin kutusuna bir sorgu girin.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> dosya</translation>
 <translation id="1291121346508216435">Yazım hatalarını otomatik olarak düzelt</translation>
-<translation id="6805291412499505360">Üçüncü taraf çerezlerinin kullanım şeklini kısıtla</translation>
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> URL'sindeki sayfa, <ph name="INSECURE_RESOURCE_URL"/> URL'sinden güvenli olmayan içerik barındırıyor.</translation>
@@ -483,7 +482,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> saat</translation>
 <translation id="3678156199662914018">Uzantı: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Eğlence</translation>
-<translation id="6740650473366653433">GTK+ temasına ayarla</translation>
 <translation id="3577682619813191010">&amp;Dosyayı kopyala</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> dakika kaldı</translation>
 <translation id="2192505247865591433">Nereden:</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">Basın</translation>
 <translation id="8241707690549784388">Aradığınız sayfa, girdiğiniz bilgileri kullandı. O sayfaya dönmeniz, gerçekleştirdiğiniz işlemlerin tekrarlanmasına yol açabilir. Devam etmek istiyor musunuz?</translation>
 <translation id="486595306984036763">Phishing raporunu aç</translation>
-<translation id="1568162916422682473">Şu eklenti çöktü: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> saniye önce</translation>
 <translation id="7335974883498105858">Seçilen ekstralar</translation>
 <translation id="1248790313843954917">Sorgunuzla eşleşen yayın yok.</translation>

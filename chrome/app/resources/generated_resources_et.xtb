@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Sisestage oma järjehoidjate otsimiseks ülalolevasse tekstivälja päring.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> failid</translation>
 <translation id="1291121346508216435">Paranda õigekiri automaatselt:</translation>
-<translation id="6805291412499505360">Määra kolmandate osapoolte küpsiste kasutamisele piirangud</translation>
 <translation id="1201402288615127009">Järgmine</translation>
 <translation id="370665806235115550">Laadimine...</translation>
 <translation id="6592392877063354583">Lehekülg aadressil <ph name="SECURE_PAGE_URL"/> sisaldab <ph name="INSECURE_RESOURCE_URL"/> ebaturvalist sisu.</translation>
@@ -483,7 +482,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> tundi</translation>
 <translation id="3678156199662914018">Laiend: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Lõbus</translation>
-<translation id="6740650473366653433">Sea GTK ja teema</translation>
 <translation id="3577682619813191010">Kopeeri &amp;fail</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minutit jäänud</translation>
 <translation id="2192505247865591433">Saatja:</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">Vajuta</translation>
 <translation id="8241707690549784388">Teie poolt otsitav lehekülg kasutas teie sisestatud andmeid. Sellele leheküljele naasmine võib kaasa tuua kõikide sooritatud tegevuste kordamise. Soovite jätkata?</translation>
 <translation id="486595306984036763">Ava andmepüügi aruanne</translation>
-<translation id="1568162916422682473">Järgmine lisandmoodul ei toimi: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> sekundit tagasi</translation>
 <translation id="7335974883498105858">Esiletoodud lisad</translation>
 <translation id="1248790313843954917">Teie otsingupäringule ei vasta ükski voog.</translation>

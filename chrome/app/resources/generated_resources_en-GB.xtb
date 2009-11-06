@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Enter a query in the text field above to search your bookmarks.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> files</translation>
 <translation id="1291121346508216435">Correct spelling automatically:</translation>
-<translation id="6805291412499505360">Restrict how third-party cookies can be used</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="6592392877063354583">The page at <ph name="SECURE_PAGE_URL"/> contains insecure content from <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -386,7 +385,7 @@
 <translation id="290414493736480793">Acknowledgements</translation>
 <translation id="6261915643960475695">Business</translation>
 <translation id="6449085810994685586">&amp;Check the spelling of this field</translation>
-<translation id="8789544147407756448">The following extension has crashed: <ph name="EXTENSION_NAME"/></translation>
+<translation id="8789544147407756448">The following extension has crashed : <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> mins left</translation>
 <translation id="5966654788342289517">Personal Stuff</translation>
 <translation id="2576802705154232609">Web Clips</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> hours</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Fun</translation>
-<translation id="6740650473366653433">Set to GTK+ theme</translation>
 <translation id="3577682619813191010">Copy &amp;file</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> mins left</translation>
 <translation id="2192505247865591433">From:</translation>
@@ -772,7 +770,6 @@
 <translation id="436869212180315161">Press</translation>
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="486595306984036763">Open phishing report</translation>
-<translation id="1568162916422682473">The following plug-in has crashed: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Featured extras</translation>
 <translation id="1248790313843954917">No feeds matched your search query.</translation>

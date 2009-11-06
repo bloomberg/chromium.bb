@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">在上面的文本字段中输入查询内容后才能搜索您的书签。</translation>
 <translation id="5958418293370246440">已保存 <ph name="SAVED_FILES"/> 个文件(共 <ph name="TOTAL_FILES"/> 个)</translation>
 <translation id="1291121346508216435">自动校正拼写错误：</translation>
-<translation id="6805291412499505360">限制对第三方 Cookie 的使用方式</translation>
 <translation id="1201402288615127009">下一个</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> 的网页包含了来自 <ph name="INSECURE_RESOURCE_URL"/> 的不安全内容。</translation>
@@ -498,7 +497,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> 小时</translation>
 <translation id="3678156199662914018">扩展程序：<ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">娱乐</translation>
-<translation id="6740650473366653433">设置为 GTK+ 主题</translation>
 <translation id="3577682619813191010">复制文件(&amp;F)</translation>
 <translation id="5260878308685146029">剩下 <ph name="NUMBER_TWO"/> 分钟</translation>
 <translation id="2192505247865591433">从：</translation>
@@ -787,7 +785,6 @@
 <translation id="436869212180315161">按下</translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。 返回此页可能需要重复已进行的所有操作。 是否继续？</translation>
 <translation id="486595306984036763">打开网络欺诈报告</translation>
-<translation id="1568162916422682473">下列插件已崩溃: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> 秒前</translation>
 <translation id="7335974883498105858">精选附加功能</translation>
 <translation id="1248790313843954917">没有与您的搜索查询匹配的供稿。</translation>

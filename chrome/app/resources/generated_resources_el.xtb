@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Εισαγάγετε ένα ερώτημα στο παραπάνω πεδίο κειμένου για να κάνετε αναζήτηση στους σελιδοδείκτες σας.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> αρχεία</translation>
 <translation id="1291121346508216435">Αυτόματη διόρθωση ορθογραφίας:</translation>
-<translation id="6805291412499505360">Περιορισμός του τρόπου χρήσης cookies τρίτων</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="6592392877063354583">Η σελίδα στη διεύθυνση <ph name="SECURE_PAGE_URL"/> περιέχει μη ασφαλές περιεχόμενο από τη διεύθυνση <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ώρες</translation>
 <translation id="3678156199662914018">Επέκταση: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Αστεία</translation>
-<translation id="6740650473366653433">Ορισμός θέματος GTK+</translation>
 <translation id="3577682619813191010">Αντιγραφή &amp;αρχείου</translation>
 <translation id="5260878308685146029">Υπολείπονται <ph name="NUMBER_TWO"/> λεπτά</translation>
 <translation id="2192505247865591433">Από:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Πιέστε</translation>
 <translation id="8241707690549784388">Στη σελίδα που αναζητάτε χρησιμοποποιήθηκαν πληροφορίες που καταχωρίσατε. Αν επιστρέψετε σε αυτή τη σελίδα ίσως επαναληφθούν ενέργειες που εκτελέσατε. Θέλετε να συνεχίσετε;</translation>
 <translation id="486595306984036763">Άνοιγμα αναφοράς ηλεκτρονικού &quot;ψαρέματος&quot;</translation>
-<translation id="1568162916422682473">Παρουσιάστηκε σφάλμα στην ακόλουθη προσθήκη: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Πριν από <ph name="NUMBER_FEW"/> δευτερόλεπτα</translation>
 <translation id="7335974883498105858">Επιπλέον προτεινόμενα</translation>
 <translation id="1248790313843954917">Δεν υπάρχουν ροές που να αντιστοιχούν στο ερώτημα αναζήτησής σας.</translation>

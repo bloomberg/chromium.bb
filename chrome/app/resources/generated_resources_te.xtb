@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">మీ బుక్‌మార్క్‌లను శోధించడానికి పైన ఉన్న టెక్స్ట్ ఫీల్డ్‌లో ఒక ప్రశ్నను ఎంటర్ చెయ్యండి.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ఫైళ్ళు</translation>
 <translation id="1291121346508216435">స్పెల్లింగ్‌ని స్వయంచాలకంగా సరిచెయ్యి:</translation>
-<translation id="6805291412499505360">మూడవ పార్టీ కుక్కీలను ఉపయోగించగల విధానాన్ని నిరోధించండి</translation>
 <translation id="1201402288615127009">తదుపరి</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> వద్ద పేజీ <ph name="INSECURE_RESOURCE_URL"/> నుండి. అసురక్షిత కంటెంట్‌ను కలిగి ఉంది.</translation>
@@ -494,7 +493,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> గంటలు</translation>
 <translation id="3678156199662914018">పొడిగింపు: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">వినోదం</translation>
-<translation id="6740650473366653433">GTK+ థీమ్కు సెట్ చెయ్యి</translation>
 <translation id="3577682619813191010">&amp;ఫైల్‌ను కాపీ చెయ్యి</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> నిమిషాలు మిగిలాయి</translation>
 <translation id="2192505247865591433">నుండి:</translation>
@@ -783,7 +781,6 @@
 <translation id="436869212180315161">నొక్కు</translation>
 <translation id="8241707690549784388">మీరు వెతికే పేజీ మీరు ఎంటర్ చేసిన సమాచారాన్ని ఉపయోగించుకుంది. ఆ పేజీకి తిరిగి వెళ్ళడం ద్వారా మీరు చేసిన ఏ చర్య అయినా పునరావృతం చెయ్యవలసి వస్తుంది. మీరు కొనసాగాలనుకుంటున్నారా?</translation>
 <translation id="486595306984036763">ఫిషింగ్ నివేదికను తెరువు</translation>
-<translation id="1568162916422682473">ఈ క్రింది  ప్లగ్-ఇన్‌ క్రాష్  అయ్యింది : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">అదనాలు ఫీచర్ చెయ్యబడ్డాయి</translation>
 <translation id="1248790313843954917">మీ శోధన ప్రశ్నకు సరిపోలే ఫీడ్లు ఏవీ లేవు.</translation>

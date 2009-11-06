@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Aby wyszukać zakładkę, wpisz zapytanie w polu tekstowym powyżej.</translation>
 <translation id="5958418293370246440">Liczba plików: <ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/></translation>
 <translation id="1291121346508216435">Sprawdzaj pisownię automatycznie:</translation>
-<translation id="6805291412499505360">Ogranicz używanie plików cookie innych firm</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="370665806235115550">Ładowanie...</translation>
 <translation id="6592392877063354583">Strona <ph name="SECURE_PAGE_URL"/> zawiera niezabezpieczoną treść z witryny <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> godz.</translation>
 <translation id="3678156199662914018">Rozszerzenie: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Zabawa</translation>
-<translation id="6740650473366653433">Ustaw na motyw GTK+</translation>
 <translation id="3577682619813191010">Kopiuj &amp;plik</translation>
 <translation id="5260878308685146029">Pozostało minut: <ph name="NUMBER_TWO"/></translation>
 <translation id="2192505247865591433">Z:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Kliknij</translation>
 <translation id="8241707690549784388">Strona, na której wyszukiwane są wprowadzone przez Ciebie informacje. Powrót do tej strony może spowodować konieczność powtórzenia wykonanych czynności. Czy chcesz kontynuować?</translation>
 <translation id="486595306984036763">Otwórz raport dotyczący wyłudzania danych (phishingu)</translation>
-<translation id="1568162916422682473">Następujący dodatek plug-in uległ awarii: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> s temu</translation>
 <translation id="7335974883498105858">Dodatkowo polecane</translation>
 <translation id="1248790313843954917">Żaden kanał nie pasuje do zapytania.</translation>

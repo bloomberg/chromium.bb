@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">உங்கள் புக்மார்க்குகளைத் தேடுவதற்கு, மேலே உள்ள உரைப் புலத்தில் வினவலை உள்ளிடுக.</translation>
 <translation id="5958418293370246440"><ph name="TOTAL_FILES"/> இல் <ph name="SAVED_FILES"/> கோப்புகள்</translation>
 <translation id="1291121346508216435">எழுத்துப்பிழையைத் தானாகவே திருத்து:</translation>
-<translation id="6805291412499505360">மூன்றாம் தரப்பு குக்கீகள் பயன்படுத்தப்படும் முறையை வரையறு</translation>
 <translation id="1201402288615127009">அடுத்தது</translation>
 <translation id="370665806235115550">நினைவேறுகிறது...</translation>
 <translation id="6592392877063354583"><ph name="SECURE_PAGE_URL"/> இல் உள்ள பக்கமானது, <ph name="INSECURE_RESOURCE_URL"/> இலிருந்து பாதுகாப்பற்ற உள்ளடக்கத்தைக் கொண்டுள்ளது.</translation>
@@ -494,7 +493,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> மணி நேரம்</translation>
 <translation id="3678156199662914018">நீட்டிப்பு: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">வேடிக்கை</translation>
-<translation id="6740650473366653433">GTK+ தீம் –க்கு அமை</translation>
 <translation id="3577682619813191010">&amp;கோப்பை நகலெடு</translation>
 <translation id="5260878308685146029">இன்னும் <ph name="NUMBER_TWO"/> நிமிடங்கள் உள்ளன</translation>
 <translation id="2192505247865591433">அனுப்புநர்:</translation>
@@ -783,7 +781,6 @@
 <translation id="436869212180315161">அழுத்து</translation>
 <translation id="8241707690549784388">நீங்கள் தேடும் பக்கமானது நீங்கள் உள்ளிட்ட தகவலைப் பயன்படுத்தியது. மீண்டும் அந்த பக்கத்திற்கு திரும்பினால், நீங்கள் செய்த ஏதேனும் செயலை மீண்டும் செய்ய வேண்டியிருக்கலாம். தொடர விரும்புகிறீர்களா?</translation>
 <translation id="486595306984036763">ஃபிஷிங் புகாரைத் திற</translation>
-<translation id="1568162916422682473">பின்வரும் செருகுநிரல் சிதைந்துவிட்டது : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">கூடுதலாகச் சேர்க்கப்பட்டவை</translation>
 <translation id="1248790313843954917">உங்கள் தேடல் வினவலுடன் பொருந்துகின்ற ஊட்டங்கள் எதுவும் இல்லை</translation>

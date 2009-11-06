@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">أدخل طلب البحث في حقل النص أعلاه للبحث عن إشاراتك.</translation>
 <translation id="5958418293370246440">عدد الملفّات المحفوظة/ إجماليّ الملفّات: <ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/></translation>
 <translation id="1291121346508216435">التصحيح الإملائي تلقائيًا:</translation>
-<translation id="6805291412499505360">تقييد استخدام ملفّات تعريف الارتباط الخارجية</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="370665806235115550">تحميل...</translation>
 <translation id="6592392877063354583">تحتوي الصفحة <ph name="SECURE_PAGE_URL"/> على محتوىً غير آمن مصدره <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -491,7 +490,6 @@
 <translation id="6690744523875189208">عدد الساعات: <ph name="NUMBER_TWO"/></translation>
 <translation id="3678156199662914018">الإضافة: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">مرحة</translation>
-<translation id="6740650473366653433">تعيين المظهر على GTK+</translation>
 <translation id="3577682619813191010">&amp;نسخ الملف</translation>
 <translation id="5260878308685146029">عدد الدقائق المتبقية: <ph name="NUMBER_TWO"/></translation>
 <translation id="2192505247865591433">من:</translation>
@@ -780,7 +778,6 @@
 <translation id="436869212180315161">اضغط</translation>
 <translation id="8241707690549784388">استخدمت الصفحة التي تبحث عنها المعلومات التي أدخلتها وقد يؤدّي الرجوع إليها  إلى تكرار  جميع الإجراءات السابقة. هل تريد المتابعة؟</translation>
 <translation id="486595306984036763">إعداد تقرير تصيّد</translation>
-<translation id="1568162916422682473">لقد طرأ عطل على المكوّن الإضافي التالي: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">قبل <ph name="NUMBER_FEW"/> ثانية</translation>
 <translation id="7335974883498105858">مقتطفات مميزة إضافية</translation>
 <translation id="1248790313843954917">لم يتم العثور على أية خلاصات مطابقة لطلب البحث.</translation>

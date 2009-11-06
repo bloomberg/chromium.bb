@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಹುಡುಕಲು ಮೇಲಿನ ಪಠ್ಯ ಕ್ಷೇತ್ರದಲ್ಲಿ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ಫೈಲ್‌ಗಳು</translation>
 <translation id="1291121346508216435">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಾಗುಣಿತವನ್ನು ಪರೀಕ್ಷಿಸಿ:</translation>
-<translation id="6805291412499505360">ಮೂರನೆಯ-ವ್ಯಕ್ತಿ ಕುಕೀಸ್‌ಅನ್ನು ಹೇಗೆ ಬಳಸಬಹುದು ಎಂಬುದನ್ನು ನಿಯಮಿತಗೊಳಿಸಿ</translation>
 <translation id="1201402288615127009">ಮುಂದಿನದು</translation>
 <translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6592392877063354583">ಪುಟವು <ph name="SECURE_PAGE_URL"/> ನಲ್ಲಿ  <ph name="INSECURE_RESOURCE_URL"/> ರಿಂದ ಅಸುರಕ್ಷಿತ ವಿಷಯವನ್ನು ಒಳಗೊಂಡಿದೆ.</translation>
@@ -493,7 +492,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ಗಂಟೆಗಳು</translation>
 <translation id="3678156199662914018">ವಿಸ್ತರಣೆ: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">ವಿನೋದ</translation>
-<translation id="6740650473366653433">GTK+ ಥೀಮ್‌ಗೆ ಹೊಂದಿಸಿ</translation>
 <translation id="3577682619813191010">&amp;ಫೈಲ್ ಅನ್ನು ನಕಲಿಸಿ</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> ನಿಮಿಷಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="2192505247865591433">ಇವರಿಂದ:</translation>
@@ -782,7 +780,6 @@
 <translation id="436869212180315161">ಒತ್ತಿರಿ</translation>
 <translation id="8241707690549784388">ನೀವು ಎದುರು ನೋಡುತ್ತಿರುವ ಪುಟ ನೀವು ನಮೂದಿಸಿದ ಮಾಹಿತಿಯನ್ನು ಬಳಸಿದೆ. ಆ ಪುಟಕ್ಕೆ ಹಿಂದಿರುಗುವುದರಿಂದ ನೀವು ಮಾಡಿದ ಯಾವುದೇ ಕ್ರಿಯೆ ಪುನರಾವರ್ತಿಸುವಂತೆ ಮಾಡುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="486595306984036763">ಫಿಶಿಂಗ್ ವರದಿಯನ್ನು ತೆರೆಯಿರಿ</translation>
-<translation id="1568162916422682473">ಕೆಳಗಿನ ಪ್ಲಗ್-ಇನ್ ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">ವೈಶಿಷ್ಟ್ಯ ಹೊಂದಿರುವ ಇನ್ನಷ್ಟು</translation>
 <translation id="1248790313843954917">ನಿಮ್ಮ ಹುಡುಕಾಟ ಪ್ರಶ್ನೆಗೆ ಯಾವುದೇ ಫೀಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ.</translation>

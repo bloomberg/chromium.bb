@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Ingresa una consulta en el campo de texto de arriba para buscar tus favoritos.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> archivos</translation>
 <translation id="1291121346508216435">Corregir ortografía automáticamente:</translation>
-<translation id="6805291412499505360">Restringir el modo en que pueden utilizarse las cookies de terceros</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="6592392877063354583">La página de <ph name="SECURE_PAGE_URL"/> incluye contenido no seguro de <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> horas</translation>
 <translation id="3678156199662914018">Extensión: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Diversión</translation>
-<translation id="6740650473366653433">Establecer GTK + tema</translation>
 <translation id="3577682619813191010">Copiar &amp;archivo</translation>
 <translation id="5260878308685146029">Faltan <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="2192505247865591433">De:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Hacer clic</translation>
 <translation id="8241707690549784388">La página que buscas ha utilizado la información que has especificado. Volver a la página podría provocar la repetición de alguna acción. ¿Deseas continuar?</translation>
 <translation id="486595306984036763">Abrir informe de phishing</translation>
-<translation id="1568162916422682473">El siguiente plug-in ha fallado: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Hace <ph name="NUMBER_FEW"/> segundos</translation>
 <translation id="7335974883498105858">Adicionales destacados</translation>
 <translation id="1248790313843954917">No se han encontrado canales que coincidan con tu consulta de búsqueda.</translation>

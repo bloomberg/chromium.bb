@@ -307,7 +307,6 @@
 <translation id="8211437954284917092">Angiv en forespørgsel i tekstfeltet ovenfor for at søge i dine bogmærker.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> filer</translation>
 <translation id="1291121346508216435">Ret stavefejl automatisk:</translation>
-<translation id="6805291412499505360">Begræns, hvordan tredjeparts-cookies kan bruges</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="370665806235115550">Indlæser ...</translation>
 <translation id="6592392877063354583">Siden ved <ph name="SECURE_PAGE_URL"/> indeholder usikkert indhold fra <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -400,6 +399,7 @@
 <translation id="6449085810994685586">&amp;Stavekontroller dette felt</translation>
 <translation id="8789544147407756448">Følgende udvidelse er brudt ned: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minutter tilbage</translation>
+<translation id="2022540532491530427">Kopier &amp;fil</translation>
 <translation id="5966654788342289517">Personlige ting</translation>
 <translation id="2576802705154232609">Webudklip</translation>
 <translation id="8664389313780386848">&amp;Vis kildetekst</translation>
@@ -448,6 +448,7 @@
 <translation id="5256138355144269748">Blokeret popup</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sek.</translation>
 <translation id="3122496702278727796">Oprettelsen af datamappe mislykkedes</translation>
+<translation id="8888930795132369495">Kopier fil&amp;stien</translation>
 <translation id="4517036173149081027">Luk, og annuller download</translation>
 <translation id="8446970197849314122">Du kan importere dine bogmærker og indstillinger fra andre browsere og brugerkonti på denne computer.</translation>
 <translation id="6281636957902664775">Gå til <ph name="URL"/></translation>
@@ -500,7 +501,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> timer</translation>
 <translation id="3678156199662914018">Udvidelse: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Sjov</translation>
-<translation id="6740650473366653433">Opsæt som GTK+-tema</translation>
 <translation id="3577682619813191010">Kopier &amp;fil</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minutter tilbage</translation>
 <translation id="2192505247865591433">Fra:</translation>
@@ -797,7 +797,6 @@
 <translation id="436869212180315161">Tryk</translation>
 <translation id="8241707690549784388">Siden, du søger, benyttede oplysninger, du har indtastet. Vender du tilbage til denne side kan det betyde, at enhver handling, du har foretaget, skal gentages. Vil du fortsætte?</translation>
 <translation id="486595306984036763">Åbn phishing-rapport</translation>
-<translation id="1568162916422682473">Følgende plugin er brudt ned: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> sekunder siden</translation>
 <translation id="7335974883498105858">Fremhævede ekstra</translation>
 <translation id="1248790313843954917">Der var ingen feeds, som svarede til din søgeforespørgsel.</translation>

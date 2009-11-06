@@ -307,7 +307,6 @@
 <translation id="8211437954284917092">הזן שאילתה בשדה הטקסט שלמעלה, כדי לחפש את הסימניות שלך.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / קבצי <ph name="TOTAL_FILES"/></translation>
 <translation id="1291121346508216435">תקן איות באופן אוטומטי:</translation>
-<translation id="6805291412499505360">הגבל שימוש צד-שלישי בקבצי cookie</translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="6592392877063354583">הדף בכתובת <ph name="SECURE_PAGE_URL"/> מכיל תוכן לא בטוח מאת <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -399,6 +398,7 @@
 <translation id="6449085810994685586">&amp;בדוק איות בשדה זה</translation>
 <translation id="8789544147407756448">ההרחבה הבאה קרסה: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478">נותרו <ph name="NUMBER_FEW"/> דקות</translation>
+<translation id="2022540532491530427">העתק קובץ</translation>
 <translation id="5966654788342289517">דברים אישיים</translation>
 <translation id="2576802705154232609">קטעי אינטרנט</translation>
 <translation id="8664389313780386848">&amp;צפה במקור הדף</translation>
@@ -447,6 +447,7 @@
 <translation id="5256138355144269748">חלונות קופצים חסומים</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> שניה</translation>
 <translation id="3122496702278727796">יצירת ספריית נתונים נכשלה</translation>
+<translation id="8888930795132369495">העתק קובץ נתיב</translation>
 <translation id="4517036173149081027">סגור ובטל הורדה</translation>
 <translation id="8446970197849314122">אתה יכול לייבא את הסימניות וההגדרות מדפדפנים ומחשבונות משתמש אחרים שבמחשב זה.</translation>
 <translation id="6281636957902664775">עבור אל <ph name="URL"/></translation>
@@ -498,7 +499,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> שעות</translation>
 <translation id="3678156199662914018">הרחבה: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">בשביל הכיף</translation>
-<translation id="6740650473366653433">הגדר ל-‏GTK + נושא</translation>
 <translation id="3577682619813191010">העתק &amp;קובץ</translation>
 <translation id="5260878308685146029">נותרו <ph name="NUMBER_TWO"/> דקות</translation>
 <translation id="2192505247865591433">מ:</translation>
@@ -799,7 +799,6 @@
 <translation id="436869212180315161">לחץ</translation>
 <translation id="8241707690549784388">הדף שאתה מחפש השתמש במידע שהזנת. החזרה לדף זה עלולה לגרום לכפילות בפעולות שביצעת. האם ברצונך להמשיך?</translation>
 <translation id="486595306984036763">פתח דוח התחזות</translation>
-<translation id="1568162916422682473">התוסף הבא קרס: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">לפני <ph name="NUMBER_FEW"/> שניות</translation>
 <translation id="7335974883498105858">תוספות מוצגות</translation>
 <translation id="1248790313843954917">אין עדכונים שתואמים את שאילתת החיפוש שלך.</translation>

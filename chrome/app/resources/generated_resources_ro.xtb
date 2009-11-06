@@ -297,7 +297,6 @@
 <translation id="8211437954284917092">Introduceţi o interogare în câmpul text de mai sus pentru a căuta în marcajele proprii.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fişiere</translation>
 <translation id="1291121346508216435">Corectaţi automat erorile de scriere:</translation>
-<translation id="6805291412499505360">Restricţionaţi modul de utilizare a cookie-urilor de la terţe părţi</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="370665806235115550">Se încarcă...</translation>
 <translation id="6592392877063354583">Pagina de la <ph name="SECURE_PAGE_URL"/> are şi conţinut nesigur de la <ph name="INSECURE_RESOURCE_URL"/>.</translation>
@@ -484,7 +483,6 @@
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ore</translation>
 <translation id="3678156199662914018">Extensie: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Distracţie</translation>
-<translation id="6740650473366653433">Setaţi tema GTK+</translation>
 <translation id="3577682619813191010">Copiaţi &amp;fişierul</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minute rămase</translation>
 <translation id="2192505247865591433">Din:</translation>
@@ -773,7 +771,6 @@
 <translation id="436869212180315161">Apăsaţi</translation>
 <translation id="8241707690549784388">Pagina pe care o căutaţi a utilizat informaţiile pe care le-aţi introdus. Întoarcerea la acea pagină ar putea duce la repetarea oricărei acţiuni pe care aţi realizat-o. Doriţi să continuaţi?</translation>
 <translation id="486595306984036763">Deschideţi raportul de phishing</translation>
-<translation id="1568162916422682473">Următorul plug-in s-a închis cu o eroare : <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172">Cu <ph name="NUMBER_FEW"/> secunde în urmă</translation>
 <translation id="7335974883498105858">Module speciale</translation>
 <translation id="1248790313843954917">Interogarea dvs. de căutare nu a returnat niciun feed.</translation>
