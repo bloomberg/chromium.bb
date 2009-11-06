@@ -4305,6 +4305,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES" desc="The label of the 'Show Cookies' button">
         Show cookies
       </message>
+      <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS" desc="The label of the 'Show Cookies and Website Permissions' button. Website Permissions means you can set permissions for individual websites, such as google.com can do this, yahoo.com can do that.">
+        Show cookies and website permissions
+      </message>
       <message name="IDS_OPTIONS_PLUGINS_IN_SANDBOX" desc="The label for the 'run plugins in sandbox' option">
         Runs plug-ins in a sandbox with no privileges. Will cause some plug-ins to not work properly.
       </message>
@@ -4395,6 +4398,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_WINDOW_TITLE" desc="The title of the Cookies Window">
         Cookies
       </message>
+      <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
+        Cookies and Website Permissions
+      </message>
       <message name="IDS_COOKIES_SEARCH_LABEL" desc="The label of the 'Search:' label in the Cookies window">
         Search:
       </message>
@@ -4449,7 +4455,49 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_NAME_COLUMN_HEADER" desc="The label of the Cookie Name header in the Cookies table">
         Cookie Name
       </message>
-
+      <message name="IDS_COOKIES_SIZE_TAKEN" desc="Amount of storage space taken up by something (database, application cache, etc) in megabytes">
+        <ph name="SIZE_TAKEN">$1<ex>2.5</ex></ph>MB
+      </message>
+      <message name="IDS_COOKIES_SIZE_SUFFIX_MEGABYTES" desc="Abbreviation for megabytes, shown after a dialog box in which user can type in a size">
+        MB
+      </message>
+      <message name="IDS_COOKIES_COOKIES" desc="Label for folder under which a list of cookies appear">
+        Cookies
+      </message>
+      <message name="IDS_COOKIES_APPLICATION_CACHES" desc="Label for folder under which a list of application caches (that's the name of a HTML standard, have yet to see it translated) are stored">
+        Application Caches
+      </message>
+      <message name="IDS_COOKIES_APPLICATION_CACHE" desc="Label to denote an application cache in the list of things being stored on your computer (application cache is the name of a HTML standard I have yet to see translated)">
+        Application Cache
+      </message>
+      <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
+        Manifest:
+      </message>
+      <message name="IDS_COOKIES_SIZE_LABEL" desc="The Size label, to indicate how much space is taken by a database or application cache">
+        Size:
+      </message>
+      <message name="IDS_COOKIES_QUOTA_LABEL" desc="The Quota label (how much storage space a site is allowed to use)">
+        Quota:
+      </message>
+      <message name="IDS_COOKIES_QUOTA_SET_BUTTON" desc="The Set button, to set the storage quota allowed for a site">
+        Set
+      </message>
+      <message name="IDS_COOKIES_OVERALL_LABEL" desc="Displayed to set settings for a site overall, as opposed to a particular database in the site">
+        Overall for this site:
+      </message>
+      <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of a HTML standard) are displayed">
+        Web Databases
+      </message>
+      <message name="IDS_COOKIES_WEB_DATABASE" desc="Label for an individual web databases (name of a HTML standard) are displayed">
+        Web Database
+      </message>
+      <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of a HTML standard) are displayed">
+        Database Name:
+      </message>
+      <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of a HTML standard)">
+        Local Storage
+      </message>
+      
       <!-- New Tab -->
       <message name="IDS_NEW_TAB_TITLE"
                desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">

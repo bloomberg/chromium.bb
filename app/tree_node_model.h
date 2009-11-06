@@ -109,7 +109,7 @@ class TreeNode : public TreeModelNode {
   int GetTotalNodeCount() const {
     int count = 1;  // Start with one to include the node itself.
     for (size_t i = 0; i < children_->size(); ++i) {
-      TreeNode<NodeType>* child = children_[i];
+      const TreeNode<NodeType>* child = children_[i];
       count += child->GetTotalNodeCount();
     }
     return count;
@@ -245,7 +245,7 @@ class TreeNodeModel : public TreeModel {
   }
 
   NodeType* AsNode(TreeModelNode* model_node) {
-    return reinterpret_cast<NodeType*>(model_node);
+    return static_cast<NodeType*>(model_node);
   }
 
   // Sets the title of the specified node.

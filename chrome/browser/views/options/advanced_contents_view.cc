@@ -656,7 +656,8 @@ void PrivacySection::InitControlLayout() {
       allow_cookies_model_.get());
   cookie_behavior_combobox_->set_listener(this);
   show_cookies_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_COOKIES_SHOWCOOKIES));
+      this, l10n_util::GetString(
+      IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);

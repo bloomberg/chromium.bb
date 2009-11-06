@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include "app/gfx/canvas.h"
 #include "app/gfx/canvas_paint.h"
+#include "app/gfx/favicon_size.h"
 #include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
@@ -653,7 +655,24 @@ HIMAGELIST TreeView::CreateImageList() {
     DestroyIcon(h_closed_icon);
     DestroyIcon(h_opened_icon);
     for (size_t i = 0; i < model_images.size(); ++i) {
-      HICON model_icon = IconUtil::CreateHICONFromSkBitmap(model_images[i]);
+      HICON model_icon;
+
+      // Need to resize the provided icons to be the same size as
+      // IDR_FOLDER_CLOSED if they aren't already.
+      if (model_images[i].width() != width ||
+          model_images[i].height() != height) {
+        gfx::Canvas canvas(width, height, false);
+        // Make the background completely transparent.
+        canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+
+        // Draw our icons into this canvas.
+        int height_offset = (height - model_images[i].height()) / 2;
+        int width_offset = (width - model_images[i].width()) / 2;
+        canvas.DrawBitmapInt(model_images[i], width_offset, height_offset);
+        model_icon = IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap());
+      } else {
+        model_icon = IconUtil::CreateHICONFromSkBitmap(model_images[i]);
+      }
       ImageList_AddIcon(image_list, model_icon);
       DestroyIcon(model_icon);
     }
