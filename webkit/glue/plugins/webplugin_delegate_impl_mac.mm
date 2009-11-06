@@ -42,6 +42,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebMouseWheelEvent;
 
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the
@@ -184,10 +185,12 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   plugin->SetWindow(NULL);
   plugin_url_ = url.spec();
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      null_event_factory_.NewRunnableMethod(
-          &WebPluginDelegateImpl::OnNullEvent),
-      kPluginIdleThrottleDelayMs);
+  // If the plugin wants Carbon events, fire up a source of idle events.
+  if (instance_->event_model() == NPEventModelCarbon) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        null_event_factory_.NewRunnableMethod(
+            &WebPluginDelegateImpl::OnNullEvent), kPluginIdleThrottleDelayMs);
+  }
   return true;
 }
 
@@ -314,8 +317,7 @@ void WebPluginDelegateImpl::DidManualLoadFail() {
 }
 
 void WebPluginDelegateImpl::InstallMissingPlugin() {
-  NPEvent evt;
-  instance()->NPP_HandleEvent(&evt);
+  NOTIMPLEMENTED();
 }
 
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
@@ -347,8 +349,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
 
   switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
-    case NPDrawingModelQuickDraw:
-    {
+    case NPDrawingModelQuickDraw: {
       // Plugins using the QuickDraw drawing model do not restrict their
       // drawing to update events the way that CoreGraphics-based plugins
       // do.  When we are asked to paint, we therefore just copy from the
@@ -376,29 +377,31 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
       break;
     }
 #endif
-    case NPDrawingModelCoreGraphics:
-    {
-      NPEvent paint_event;
-
-      // Save and restore the NSGraphicsContext state in case the plugin uses
-      // Cocoa drawing.
-      [NSGraphicsContext saveGraphicsState];
-      [NSGraphicsContext setCurrentContext:
-           [NSGraphicsContext graphicsContextWithGraphicsPort:context
-                                                      flipped:YES]];
+    case NPDrawingModelCoreGraphics: {
       CGContextSaveGState(context);
-
-      paint_event.what = updateEvt;
-      paint_event.message = reinterpret_cast<uint32>(cg_context_.window);
-      paint_event.when = TickCount();
-      paint_event.where.h = 0;
-      paint_event.where.v = 0;
-      paint_event.modifiers = 0;
-      instance()->NPP_HandleEvent(&paint_event);
-
+      switch (instance()->event_model()) {
+        case NPEventModelCarbon: {
+          NPEvent paint_event = { 0 };
+          paint_event.what = updateEvt;
+          paint_event.message = reinterpret_cast<uint32>(cg_context_.window);
+          paint_event.when = TickCount();
+          instance()->NPP_HandleEvent(&paint_event);
+          break;
+        }
+        case NPEventModelCocoa: {
+          NPCocoaEvent paint_event;
+          memset(&paint_event, 0, sizeof(NPCocoaEvent));
+          paint_event.type = NPCocoaEventDrawRect;
+          paint_event.data.draw.context = context;
+          paint_event.data.draw.x = damage_rect.x();
+          paint_event.data.draw.y = damage_rect.y();
+          paint_event.data.draw.width = damage_rect.width();
+          paint_event.data.draw.height = damage_rect.height();
+          instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&paint_event));
+          break;
+        }
+      }
       CGContextRestoreGState(context);
-      [NSGraphicsContext restoreGraphicsState];
-      break;
     }
   }
 }
@@ -455,10 +458,23 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 }
 
 void WebPluginDelegateImpl::SetFocus() {
-  NPEvent focus_event = { 0 };
-  focus_event.what = NPEventType_GetFocusEvent;
-  focus_event.when = TickCount();
-  instance()->NPP_HandleEvent(&focus_event);
+  switch (instance()->event_model()) {
+    case NPEventModelCarbon: {
+      NPEvent focus_event = { 0 };
+      focus_event.what = NPEventType_GetFocusEvent;
+      focus_event.when = TickCount();
+      instance()->NPP_HandleEvent(&focus_event);
+      break;
+    }
+    case NPEventModelCocoa: {
+      NPCocoaEvent focus_event;
+      memset(&focus_event, 0, sizeof(focus_event));
+      focus_event.type = NPCocoaEventFocusChanged;
+      focus_event.data.focus.hasFocus = true;
+      instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+      break;
+    }
+  }
 }
 
 static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
@@ -583,6 +599,114 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
   return false;
 }
 
+
+static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
+                                          NPCocoaEvent *np_cocoa_event) {
+  np_cocoa_event->data.mouse.pluginX = event.x;
+  np_cocoa_event->data.mouse.pluginY = event.y;
+
+  if (event.modifiers & WebInputEvent::ControlKey)
+    np_cocoa_event->data.mouse.modifierFlags |= controlKey;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    np_cocoa_event->data.mouse.modifierFlags |= shiftKey;
+
+  np_cocoa_event->data.mouse.clickCount = event.clickCount;
+  switch (event.button) {
+    case WebMouseEvent::ButtonLeft:
+      np_cocoa_event->data.mouse.buttonNumber = 0;
+      break;
+    case WebMouseEvent::ButtonMiddle:
+      np_cocoa_event->data.mouse.buttonNumber = 2;
+      break;
+    case WebMouseEvent::ButtonRight:
+      np_cocoa_event->data.mouse.buttonNumber = 1;
+      break;
+    default:
+      np_cocoa_event->data.mouse.buttonNumber = event.button;
+      break;
+  }
+  switch (event.type) {
+    case WebInputEvent::MouseDown:
+      np_cocoa_event->type = NPCocoaEventMouseDown;
+      return true;
+    case WebInputEvent::MouseUp:
+      np_cocoa_event->type = NPCocoaEventMouseUp;
+      return true;
+    case WebInputEvent::MouseMove:
+      np_cocoa_event->type = NPCocoaEventMouseMoved;
+      return true;
+    case WebInputEvent::MouseEnter:
+      np_cocoa_event->type = NPCocoaEventMouseEntered;
+      return true;
+    case WebInputEvent::MouseLeave:
+      np_cocoa_event->type = NPCocoaEventMouseExited;
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+static bool NPCocoaEventFromWebMouseWheelEvent(const WebMouseWheelEvent& event,
+                                               NPCocoaEvent *np_cocoa_event) {
+  np_cocoa_event->type = NPCocoaEventScrollWheel;
+  np_cocoa_event->data.mouse.pluginX = event.x;
+  np_cocoa_event->data.mouse.pluginY = event.y;
+  if (event.modifiers & WebInputEvent::ControlKey)
+    np_cocoa_event->data.mouse.modifierFlags |= controlKey;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    np_cocoa_event->data.mouse.modifierFlags |= shiftKey;
+  np_cocoa_event->data.mouse.deltaX = event.deltaX;
+  np_cocoa_event->data.mouse.deltaY = event.deltaY;
+  return true;
+}
+
+static bool NPCocoaEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
+                                             NPCocoaEvent *np_cocoa_event) {
+  np_cocoa_event->data.key.keyCode = event.nativeKeyCode;
+
+  if (event.modifiers & WebInputEvent::ControlKey)
+    np_cocoa_event->data.key.modifierFlags |= controlKey;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    np_cocoa_event->data.key.modifierFlags |= shiftKey;
+  if (event.modifiers & WebInputEvent::AltKey)
+    np_cocoa_event->data.key.modifierFlags |= cmdKey;
+  if (event.modifiers & WebInputEvent::MetaKey)
+    np_cocoa_event->data.key.modifierFlags |= optionKey;
+
+  if (event.modifiers & WebInputEvent::IsAutoRepeat)
+    np_cocoa_event->data.key.isARepeat = true;
+
+  switch (event.type) {
+    case WebInputEvent::KeyDown:
+      np_cocoa_event->type = NPCocoaEventKeyDown;
+      return true;
+    case WebInputEvent::KeyUp:
+      np_cocoa_event->type = NPCocoaEventKeyUp;
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
+                                          NPCocoaEvent *np_cocoa_event) {
+  memset(np_cocoa_event, 0, sizeof(NPCocoaEvent));
+  if (event.type == WebInputEvent::MouseWheel) {
+    return NPCocoaEventFromWebMouseWheelEvent(
+        *static_cast<const WebMouseWheelEvent*>(&event), np_cocoa_event);
+  } else if (WebInputEventIsWebMouseEvent(event)) {
+    return NPCocoaEventFromWebMouseEvent(
+        *static_cast<const WebMouseEvent*>(&event), np_cocoa_event);
+  } else if (WebInputEventIsWebKeyboardEvent(event)) {
+    return NPCocoaEventFromWebKeyboardEvent(
+        *static_cast<const WebKeyboardEvent*>(&event), np_cocoa_event);
+  }
+  DLOG(WARNING) << "unknown event type " << event.type;
+  return false;
+}
+
 static void UpdateWindowLocation(WindowRef window, const WebMouseEvent& event) {
   // TODO: figure out where the vertical offset of 22 comes from (and if 22 is
   // exactly right) and replace with an appropriate calculation. It feels like
@@ -602,6 +726,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   DCHECK(windowless_) << "events should only be received in windowless mode";
   DCHECK(cursor != NULL);
 
+#ifndef NP_NO_CARBON
   NPEvent np_event = {0};
   if (!NPEventFromWebInputEvent(event, &np_event)) {
     LOG(WARNING) << "NPEventFromWebInputEvent failed";
@@ -611,18 +736,21 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   if (np_event.what == nullEvent) {
     last_mouse_x_ = np_event.where.h;
     last_mouse_y_ = np_event.where.v;
-    return true;  // Let the recurring task actually send the event.
+    if (instance()->event_model() == NPEventModelCarbon)
+      return true;  // Let the recurring task actually send the event.
+  } else {
+    // If this is a mouse event, we need to make sure our dummy window
+    // has the correct location before we send the event to the plugin,
+    // so that any coordinate conversion the plugin does will work out.
+    if (WebInputEventIsWebMouseEvent(event)) {
+      const WebMouseEvent* mouse_event =
+          static_cast<const WebMouseEvent*>(&event);
+      UpdateWindowLocation(reinterpret_cast<WindowRef>(cg_context_.window),
+                           *mouse_event);
+    }
   }
+#endif
 
-  // If this is a mouse event, we need to make sure our dummy window has the
-  // correct location before we send the event to the plugin, so that any
-  // coordinate conversion the plugin does will work out.
-  if (WebInputEventIsWebMouseEvent(event)) {
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(&event);
-    UpdateWindowLocation(reinterpret_cast<WindowRef>(cg_context_.window),
-                         *mouse_event);
-  }
   bool ret = false;
   switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
@@ -633,7 +761,24 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 #endif
     case NPDrawingModelCoreGraphics:
       CGContextSaveGState(cg_context_.context);
-      ret = instance()->NPP_HandleEvent(&np_event) != 0;
+      switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
+        case NPEventModelCarbon:
+          // Send the event to the plugin.
+          ret = instance()->NPP_HandleEvent(&np_event) != 0;
+          break;
+#endif
+        case NPEventModelCocoa: {
+          NPCocoaEvent np_cocoa_event;
+          if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event)) {
+            LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
+            return false;
+          }
+          ret = instance()->NPP_HandleEvent(
+              reinterpret_cast<NPEvent*>(&np_cocoa_event)) != 0;
+          break;
+        }
+      }
       CGContextRestoreGState(cg_context_.context);
       break;
   }
@@ -662,6 +807,7 @@ WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
 }
 
 void WebPluginDelegateImpl::OnNullEvent() {
+#ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
     switch (instance_->event_model()) {
       case NPEventModelCarbon:
@@ -680,16 +826,19 @@ void WebPluginDelegateImpl::OnNullEvent() {
     }
   }
 
-  // Send an idle event so that the plugin can do background work
-  NPEvent np_event = {0};
-  np_event.what = nullEvent;
-  np_event.when = TickCount();
-  np_event.modifiers = GetCurrentKeyModifiers();
-  if (!Button())
-    np_event.modifiers |= btnState;
-  np_event.where.h = last_mouse_x_;
-  np_event.where.v = last_mouse_y_;
-  instance()->NPP_HandleEvent(&np_event);
+  if (instance_->event_model() == NPEventModelCarbon) {
+    // Send an idle event so that the plugin can do background work
+    NPEvent np_event = {0};
+    np_event.what = nullEvent;
+    np_event.when = TickCount();
+    np_event.modifiers = GetCurrentKeyModifiers();
+    if (!Button())
+      np_event.modifiers |= btnState;
+    np_event.where.h = last_mouse_x_;
+    np_event.where.v = last_mouse_y_;
+    instance()->NPP_HandleEvent(&np_event);
+  }
+#endif
 
 #ifndef NP_NO_QUICKDRAW
   // Quickdraw-based plugins can draw at any time, so tell the renderer to
@@ -700,8 +849,12 @@ void WebPluginDelegateImpl::OnNullEvent() {
     instance()->webplugin()->Invalidate();
 #endif
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      null_event_factory_.NewRunnableMethod(
-          &WebPluginDelegateImpl::OnNullEvent),
-      kPluginIdleThrottleDelayMs);
+#ifndef NP_NO_CARBON
+  if (instance_->event_model() == NPEventModelCarbon) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        null_event_factory_.NewRunnableMethod(
+            &WebPluginDelegateImpl::OnNullEvent),
+        kPluginIdleThrottleDelayMs);
+  }
+#endif
 }
