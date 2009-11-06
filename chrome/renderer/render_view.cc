@@ -78,6 +78,7 @@
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebSearchableFormData.h"
@@ -2835,6 +2836,10 @@ void RenderView::OnFind(int request_id, const string16& search_text,
   WebRect selection_rect;
   bool result = false;
 
+  // If something is selected when we start searching it means we cannot just
+  // increment the current match ordinal; we need to re-generate it.
+  WebRange current_selection = focused_frame->selectionRange();
+
   do {
     result = search_frame->find(
         request_id, search_text, options, wrap_within_frame, &selection_rect);
@@ -2871,7 +2876,7 @@ void RenderView::OnFind(int request_id, const string16& search_text,
     webview()->setFocusedFrame(search_frame);
   } while (!result && search_frame != focused_frame);
 
-  if (options.findNext) {
+  if (options.findNext && current_selection.isNull()) {
     // Force the main_frame to report the actual count.
     main_frame->increaseMatchCount(0, request_id);
   } else {

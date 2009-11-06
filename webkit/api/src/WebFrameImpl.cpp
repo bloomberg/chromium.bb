@@ -1106,7 +1106,8 @@ bool WebFrameImpl::find(int identifier,
     // to start from there. Otherwise, we start searching from where the last Find
     // operation left off (either a Find or a FindNext operation).
     VisibleSelection selection(frame()->selection()->selection());
-    if (selection.isNone() && m_activeMatch) {
+    bool activeSelection = !selection.isNone();
+    if (!activeSelection && m_activeMatch) {
         selection = VisibleSelection(m_activeMatch.get());
         frame()->selection()->setSelection(selection);
     }
@@ -1141,8 +1142,9 @@ bool WebFrameImpl::find(int identifier,
             executeCommand(WebString::fromUTF8("Unselect"));
         }
 
-        if (!options.findNext) {
-            // This is a Find operation, so we set the flag to ask the scoping effort
+        if (!options.findNext || activeSelection) {
+            // This is either a Find operation or a Find-next from a new start point
+            // due to a selection, so we set the flag to ask the scoping effort
             // to find the active rect for us so we can update the ordinal (n of m).
             m_locatingActiveRect = true;
         } else {

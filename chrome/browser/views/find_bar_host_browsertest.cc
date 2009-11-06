@@ -27,6 +27,8 @@ const std::wstring kEndState = L"files/find_in_page/end_state.html";
 const std::wstring kPrematureEnd = L"files/find_in_page/premature_end.html";
 const std::wstring kMoveIfOver = L"files/find_in_page/move_if_obscuring.html";
 const std::wstring kBitstackCrash = L"files/find_in_page/crash_14491.html";
+const std::wstring kSelectChangesOrdinal =
+    L"files/find_in_page/select_changes_ordinal.html";
 
 const bool kBack = false;
 const bool kFwd = true;
@@ -223,6 +225,43 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
   EXPECT_EQ(3, ui_test_utils::FindInPage(tab, L"o",
                                          kBack, kIgnoreCase, &ordinal));
   EXPECT_EQ(3, ordinal);
+}
+
+// This tests that the ordinal is correctly adjusted after a selection
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       SelectChangesOrdinal_Issue20883) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to our test content.
+  GURL url = server->TestServerPageW(kSelectChangesOrdinal);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(NULL != tab_contents);
+
+  // Search for a text that exists within a link on the page.
+  TabContents* tab = browser()->GetSelectedTabContents();
+  int ordinal = 0;
+  EXPECT_EQ(4, ui_test_utils::FindInPage(tab_contents, L"google",
+                                         kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+
+  // Move the selection to link 1, after searching.
+  std::string result;
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      tab_contents->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(selectLink1());",
+      &result);
+
+  // Do a find-next after the selection.  This should move forward
+  // from there to the 3rd instance of 'google'.
+  EXPECT_EQ(4, ui_test_utils::FindInPage(tab, L"google",
+                                         kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(3, ordinal);
+
+  // End the find session.
+  tab_contents->StopFinding(false);
 }
 
 // This test loads a page with frames and makes sure the ordinal returned makes
