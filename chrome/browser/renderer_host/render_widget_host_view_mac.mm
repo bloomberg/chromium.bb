@@ -364,6 +364,19 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     NativeWebKeyboardEvent keyboard_event(event);
     render_widget_host_->ForwardKeyboardEvent(keyboard_event);
   }
+
+  // From the renderer's perspective, the pop-up menu is represented by a
+  // RenderWidget.  The actual Mac implementation uses a native pop-up menu
+  // and doesn't actually make use of the RenderWidgetHostViewCocoa that
+  // was allocated to own it in its constructor.  When the pop-up menu goes
+  // away, shut down the RenderWidgetHost (and RenderWidget), and then free
+  // the RenderWidgetHostViewCocoa, which will result in the destruction of
+  // this object.
+  //
+  // TODO(mark): This is a little bit dirty.  Figure out a more proper
+  // ownership model.  http://crbug.com/26876
+  ShutdownHost();
+  [cocoa_view_ release];
 }
 
 void RenderWidgetHostViewMac::KillSelf() {
