@@ -88,6 +88,9 @@ class ToolbarModel;
   // such as the new-tab button, but *not* the tabs themselves.
   scoped_nsobject<NSMutableArray> permanentSubviews_;
 
+  // The default favicon, so we can use one copy for all buttons.
+  scoped_nsobject<NSImage> defaultFavIcon_;
+
   // Manages per-tab sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
 }

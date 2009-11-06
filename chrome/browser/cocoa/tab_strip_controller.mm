@@ -217,6 +217,9 @@ static const NSTimeInterval kAnimationDuration = 0.2;
     tabArray_.reset([[NSMutableArray alloc] init]);
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    defaultFavIcon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+
     // Take the only child view present in the nib as the new tab button. For
     // some reason, if the view is present in the nib apriori, it draws
     // correctly. If we create it in code and add it to the tab view, it draws
@@ -935,9 +938,8 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 
   // Either we don't have a valid favicon or there was some issue converting it
   // from an SkBitmap. Either way, just show the default.
-  if (!image) {
-    image = nsimage_cache::ImageNamed(@"nav.pdf");
-  }
+  if (!image)
+    image = defaultFavIcon_.get();
 
   [view setImage:image];
   return view;
