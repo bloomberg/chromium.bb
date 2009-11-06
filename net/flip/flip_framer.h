@@ -30,7 +30,11 @@ namespace flip {
 
 class FlipFramer;
 class FlipFramerTest;
+
+namespace test {
 class TestFlipVisitor;
+void FramerSetEnableCompressionHelper(FlipFramer* framer, bool compress);
+}  // namespace test
 
 // A datastructure for holding a set of headers from either a
 // SYN_STREAM or SYN_REPLY frame.
@@ -58,9 +62,6 @@ class FlipFramerVisitorInterface {
   virtual void OnStreamFrameData(flip::FlipStreamId stream_id,
                                  const char* data,
                                  size_t len) = 0;
-
-  // TODO(fenix): Implement me!
-  virtual void OnLameDuck() = 0;
 };
 
 class FlipFramer {
@@ -200,9 +201,11 @@ class FlipFramer {
 
  protected:
   FRIEND_TEST(FlipFramerTest, HeaderBlockBarfsOnOutOfOrderHeaders);
-  friend class flip::TestFlipVisitor;
   friend class net::FlipNetworkTransactionTest;
   friend class net::HttpNetworkLayer;  // This is temporary for the server.
+  friend class test::TestFlipVisitor;
+  friend void test::FramerSetEnableCompressionHelper(FlipFramer* framer,
+                                                     bool compress);
 
   // For ease of testing we can tweak compression on/off.
   void set_enable_compression(bool value);
@@ -212,7 +215,9 @@ class FlipFramer {
   // Internal breakout from ProcessInput.  Returns the number of bytes
   // consumed from the data.
   size_t ProcessCommonHeader(const char* data, size_t len);
+  void ProcessControlFrameHeader();
   size_t ProcessControlFramePayload(const char* data, size_t len);
+  size_t ProcessDataFramePayload(const char* data, size_t len);
 
   // Initialize the ZLib state.
   bool InitializeCompressor();
@@ -230,8 +235,7 @@ class FlipFramer {
   // Given a frame, breakdown the variable payload length, the static header
   // header length, and variable payload pointer.
   bool GetFrameBoundaries(const FlipFrame* frame, int* payload_length,
-                          int* header_length,
-                          const unsigned char** payload) const;
+                          int* header_length, const char** payload) const;
 
   FlipState state_;
   FlipError error_code_;
