@@ -777,13 +777,19 @@ void Browser::OpenCurrentURL() {
   LocationBar* location_bar = window_->GetLocationBar();
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
+  GURL url(WideToUTF8(location_bar->GetInputString()));
   if (open_disposition == CURRENT_TAB &&
       tabstrip_model()->IsTabPinned(selected_index())) {
     // To make pinned tabs feel more permanent any requests from the omnibox
-    // to open a url in the current tab result in creating a new tab.
-    open_disposition = NEW_FOREGROUND_TAB;
+    // to open a url in the current tab with a host different from the current
+    // host of the pinned tab result in creating a new tab. We allow changes to
+    // the path so that the user can trigger reloads or fix up parts of the url
+    // without spawning a new tab.
+    TabContents* selected_contents = GetSelectedTabContents();
+    if (!selected_contents || url.host() != selected_contents->GetURL().host())
+      open_disposition = NEW_FOREGROUND_TAB;
   }
-  OpenURLAtIndex(NULL, GURL(WideToUTF8(location_bar->GetInputString())), GURL(),
+  OpenURLAtIndex(NULL, url, GURL(),
                  open_disposition,
                  location_bar->GetPageTransition(), -1, true);
 }
