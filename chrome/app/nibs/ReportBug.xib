@@ -56,7 +56,7 @@
 								<object class="NSButton" id="89080441">
 									<reference key="NSNextResponder" ref="97454414"/>
 									<int key="NSvFlags">301</int>
-									<string key="NSFrame">{{349, 12}, {96, 32}}</string>
+									<string key="NSFrame">{{253, 12}, {96, 32}}</string>
 									<reference key="NSSuperview" ref="97454414"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="100321947">
@@ -72,7 +72,7 @@
 										<int key="NSButtonFlags">-2038284033</int>
 										<int key="NSButtonFlags2">129</int>
 										<string key="NSAlternateContents"/>
-										<string key="NSKeyEquivalent"/>
+										<string type="base64-UTF8" key="NSKeyEquivalent">Gw</string>
 										<int key="NSPeriodicDelay">200</int>
 										<int key="NSPeriodicInterval">25</int>
 									</object>
@@ -80,7 +80,7 @@
 								<object class="NSButton" id="833160383">
 									<reference key="NSNextResponder" ref="97454414"/>
 									<int key="NSvFlags">297</int>
-									<string key="NSFrame">{{253, 12}, {96, 32}}</string>
+									<string key="NSFrame">{{349, 12}, {96, 32}}</string>
 									<reference key="NSSuperview" ref="97454414"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="629834119">
@@ -92,7 +92,7 @@
 										<int key="NSButtonFlags">-2038284033</int>
 										<int key="NSButtonFlags2">129</int>
 										<string key="NSAlternateContents"/>
-										<string key="NSKeyEquivalent"/>
+										<string type="base64-UTF8" key="NSKeyEquivalent">DQ</string>
 										<int key="NSPeriodicDelay">200</int>
 										<int key="NSPeriodicInterval">25</int>
 									</object>
@@ -673,8 +673,8 @@
 						<reference key="object" ref="97454414"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="89080441"/>
 							<reference ref="833160383"/>
+							<reference ref="89080441"/>
 						</object>
 						<reference key="parent" ref="1006"/>
 					</object>
