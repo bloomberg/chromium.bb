@@ -78,6 +78,8 @@ class NewTabUI : public DOMUI,
     static bool first_run() { return first_run_; }
 
    private:
+    ~NewTabHTMLSource() {}
+
     // In case a file path to the new tab page was provided this tries to load
     // the file and returns the file content if successful. This returns an
     // empty string in case of failure.

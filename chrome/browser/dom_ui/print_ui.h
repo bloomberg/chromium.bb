@@ -31,6 +31,8 @@ class PrintUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
+  ~PrintUIHTMLSource() {}
+
   DISALLOW_COPY_AND_ASSIGN(PrintUIHTMLSource);
 };
 

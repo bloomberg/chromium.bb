@@ -23,7 +23,6 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
   SyncResourcesSource()
       : DataSource(chrome::kSyncResourcesHost, MessageLoop::current()) {
   }
-  virtual ~SyncResourcesSource() { }
 
   virtual void StartDataRequest(const std::string& path, int request_id);
 
@@ -33,7 +32,10 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
     else
       return "text/html";
   }
+
  private:
+  virtual ~SyncResourcesSource() {}
+
   DISALLOW_COPY_AND_ASSIGN(SyncResourcesSource);
 };
 
