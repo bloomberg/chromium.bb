@@ -1071,7 +1071,8 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
       gclient.sys.stdout.write(i)
     gclient_utils.subprocess.Popen(command, bufsize=0, cwd=in_directory,
       shell=(gclient.sys.platform == 'win32'),
-      stdout=gclient_utils.subprocess.PIPE).AndReturn(kid)
+      stdout=gclient_utils.subprocess.PIPE,
+      stderr=gclient_utils.subprocess.STDOUT).AndReturn(kid)
     self.mox.ReplayAll()
     compiled_pattern = re.compile(pattern)
     line_list = []
