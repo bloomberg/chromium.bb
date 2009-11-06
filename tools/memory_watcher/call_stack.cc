@@ -33,16 +33,13 @@ typedef DWORD64 (__stdcall *t_SymLoadModule64)(HANDLE, HANDLE, PCSTR,
 typedef BOOL (__stdcall *t_SymGetModuleInfo64)(HANDLE, DWORD64,
                                                PIMAGEHLP_MODULE64);
 
-// According to http://msdn2.microsoft.com/en-us/library/ms680650(VS.85).aspx
-// "All DbgHelp functions, such as this one, are single threaded.  Therefore,
-// calls from more than one thread to this function will likely result in
-// unexpected behavior or memory corruption.  To avoid this, you must
-// synchromize all concurrent calls from one thread to this function."
-//
-// dbghelp_lock_ is used to serialize access across all calls to the DbgHelp
-// library.  This may be overly conservative (serializing them all together),
-// but does guarantee correctness.
-static Lock dbghelp_lock_;
+// static
+Lock CallStack::dbghelp_lock_;
+// static
+bool CallStack::dbghelp_loaded_ = false;
+// static
+DWORD CallStack::active_thread_id_ = 0;
+
 
 static t_StackWalk64 pStackWalk64 = NULL;
 static t_SymCleanup pSymCleanup = NULL;
@@ -62,15 +59,21 @@ static t_SymLoadModule64 pSymLoadModule64 = NULL;
   if (p##name == NULL) return false;                                    \
 } while (0)
 
-// Dynamically load the DbgHelp library and supporting routines that we
-// will use.
-static bool LoadDbgHelp() {
-  static bool loaded = false;
-  if (!loaded) {
+// This code has to be VERY careful to not induce any allocations, as memory
+// watching code may cause recursion, which may obscure the stack for the truly
+// offensive issue.  We use this function to break into a debugger, and it
+// is guaranteed to not do any allocations (in fact, not do anything).
+static void UltraSafeDebugBreak() {
+  _asm int(3);
+}
+
+// static
+bool CallStack::LoadDbgHelp() {
+  if (!dbghelp_loaded_) {
     AutoLock Lock(dbghelp_lock_);
 
     // Re-check if we've loaded successfully now that we have the lock.
-    if (loaded)
+    if (dbghelp_loaded_)
       return true;
 
     // Load dbghelp.dll, and obtain pointers to the exported functions that we
@@ -89,12 +92,13 @@ static bool LoadDbgHelp() {
       LOADPROC(dbghelp_module, SymGetModuleInfo64);
       LOADPROC(dbghelp_module, SymGetSearchPath);
       LOADPROC(dbghelp_module, SymLoadModule64);
-      loaded = true;
+      dbghelp_loaded_ = true;
     } else {
+      UltraSafeDebugBreak();
       return false;
     }
   }
-  return loaded;
+  return dbghelp_loaded_;
 }
 
 // Load the symbols for generating stack traces.
@@ -168,9 +172,14 @@ CallStack::CallStack() {
   frame_count_ = 0;
   hash_ = 0;
   id_ = InterlockedIncrement(&callstack_id);
+  valid_ = false;
 
-  LoadDbgHelp();
-  CHECK(GetStackTrace());
+  if (!dbghelp_loaded_) {
+    UltraSafeDebugBreak();  // Initialize should have been called.
+    return;
+  }
+
+  GetStackTrace();
 }
 
 bool CallStack::IsEqual(const CallStack &target) {
@@ -202,7 +211,17 @@ void CallStack::AddFrame(DWORD_PTR pc) {
   hash_ = hash_ ^ (pc >> 16);
 }
 
+bool CallStack::LockedRecursionDetected() const {
+  if (!active_thread_id_) return false;
+  DWORD thread_id = GetCurrentThreadId();
+  // TODO(jar): Perchance we should use atomic access to member.
+  return thread_id == active_thread_id_;
+}
+
 bool CallStack::GetStackTrace() {
+  if (LockedRecursionDetected())
+    return false;
+
   // Initialize the context record.
   CONTEXT context;
   memset(&context, 0, sizeof(context));
@@ -234,7 +253,7 @@ bool CallStack::GetStackTrace() {
   // Walk the stack.
   unsigned int count = 0;
   {
-    AutoLock lock(dbghelp_lock_);
+    AutoDbgHelpLock thread_monitoring_lock;
 
     while (count < kMaxTraceFrames) {
       count++;
@@ -255,11 +274,12 @@ bool CallStack::GetStackTrace() {
       // Push this frame's program counter onto the provided CallStack.
       AddFrame((DWORD_PTR)frame.AddrPC.Offset);
     }
+    valid_ = true;
   }
   return true;
 }
 
-void CallStack::ToString(std::string* output) {
+void CallStack::ToString(PrivateAllocatorString* output) {
   static const int kStackWalkMaxNameLen = MAX_SYM_NAME;
   HANDLE current_process = GetCurrentProcess();
 
@@ -272,12 +292,12 @@ void CallStack::ToString(std::string* output) {
 
   // Iterate through each frame in the call stack.
   for (int32 index = 0; index < frame_count_; index++) {
-    std::string line;
+    PrivateAllocatorString line;
 
     DWORD_PTR intruction_pointer = frame(index);
 
     SymbolCache::iterator it;
-    it = symbol_cache_->find( intruction_pointer );
+    it = symbol_cache_->find(intruction_pointer);
     if (it != symbol_cache_->end()) {
       line = it->second;
     } else {
@@ -311,14 +331,17 @@ void CallStack::ToString(std::string* output) {
               strstr(symbol->Name, "Perftools_") ||
               strstr(symbol->Name, "MemoryHook::") ) {
             // Just record a blank string.
-            (*symbol_cache_)[intruction_pointer] = std::string("");
+            (*symbol_cache_)[intruction_pointer] = "";
             continue;
           }
 
           line += "    ";
           line += static_cast<char*>(Line.FileName);
           line += " (";
-          line += IntToString(Line.LineNumber);
+          // TODO(jar): get something like this template to work :-/
+          // line += IntToCustomString<PrivateAllocatorString>(Line.LineNumber);
+          // ...and then delete this line, which uses std::string.
+          line += IntToString(Line.LineNumber).c_str();
           line += "): ";
           line += symbol->Name;
           line += "\n";

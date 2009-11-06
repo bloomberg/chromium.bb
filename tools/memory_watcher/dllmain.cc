@@ -60,9 +60,8 @@ DWORD WINAPI ThreadMain(LPVOID) {
       case WAIT_OBJECT_0:
         if (g_memory_watcher) {
           g_memory_watcher->DumpLeaks();
-          // After dumping, we teardown.
-          ExitProcess(0);
         }
+        stopping = true;
         break;
       case WAIT_OBJECT_0 + 1:
         stopping = true;

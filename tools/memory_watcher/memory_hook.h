@@ -35,7 +35,7 @@ class PrivateHookAllocator {
 
   // Allocate memory for STL.
   pointer allocate(size_type n, const void * = 0) {
-   return reinterpret_cast<T*>(MemoryHook::Alloc(n * sizeof(T)));
+    return reinterpret_cast<T*>(MemoryHook::Alloc(n * sizeof(T)));
   }
 
   // Deallocate memory for STL.
@@ -65,6 +65,8 @@ class PrivateHookAllocator {
 // the MemoryObserver interface.
 class MemoryObserver {
  public:
+  virtual ~MemoryObserver() {}
+
   // Track a pointer.  Will capture the current StackTrace.
   virtual void OnTrack(HANDLE heap, int32 id, int32 size) = 0;
 

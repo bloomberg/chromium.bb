@@ -25,13 +25,11 @@ static StatsCounter mem_in_use_frees("MemoryInUse.Frees");
 MemoryWatcher::MemoryWatcher()
   : file_(NULL),
     hooked_(false),
-    in_track_(false),
-    block_map_size_(0) {
+    active_thread_id_(0) {
   MemoryHook::Initialize();
   CallStack::Initialize();
 
   block_map_ = new CallStackMap();
-  stack_map_ = new CallStackIdMap();
 
   // Register last - only after we're ready for notifications!
   Hook();
@@ -87,41 +85,56 @@ void MemoryWatcher::CloseLogFile() {
   }
 }
 
+bool MemoryWatcher::LockedRecursionDetected() const {
+  if (!active_thread_id_) return false;
+  DWORD thread_id = GetCurrentThreadId();
+  // TODO(jar): Perchance we should use atomic access to member.
+  return thread_id == active_thread_id_;
+}
+
 void MemoryWatcher::OnTrack(HANDLE heap, int32 id, int32 size) {
   // Don't track zeroes.  It's a waste of time.
   if (size == 0)
     return;
 
+  if (LockedRecursionDetected())
+    return;
+
   // AllocationStack overrides new/delete to not allocate
   // from the main heap.
-  AllocationStack* stack = new AllocationStack();
+  AllocationStack* stack = new AllocationStack(size);
+  if (!stack->Valid()) return;  // Recursion blocked generation of stack.
+
   {
     AutoLock lock(block_map_lock_);
 
     // Ideally, we'd like to verify that the block being added
     // here is not already in our list of tracked blocks.  However,
     // the lookup in our hash table is expensive and slows us too
-    // much.  Uncomment this line if you think you need it.
-    //DCHECK(block_map_->find(id) == block_map_->end());
+    // much.
+    CallStackMap::iterator block_it = block_map_->find(id);
+    if (block_it != block_map_->end()) {
+#if 0  // Don't do this until stack->ToString() uses ONLY our heap.
+      active_thread_id_ = GetCurrentThreadId();
+      PrivateAllocatorString output;
+      block_it->second->ToString(&output);
+     // LOG(INFO) << "First Stack size " << stack->size() << "was\n" << output;
+      stack->ToString(&output);
+     // LOG(INFO) << "Second Stack size " << stack->size() << "was\n" << output;
+#endif  // 0
+
+      // TODO(jar): We should delete one stack, and keep the other, perhaps
+      // based on size.
+      // For now, just delete the first, and keep the second?
+      delete block_it->second;
+    }
+    // TODO(jar): Perchance we should use atomic access to member.
+    active_thread_id_ = 0;  // Note: Only do this AFTER exiting above scope!
 
     (*block_map_)[id] = stack;
-
-    CallStackIdMap::iterator it = stack_map_->find(stack->hash());
-    if (it != stack_map_->end()) {
-      it->second.size += size;
-      it->second.count++;
-    } else {
-      StackTrack tracker;
-      tracker.count = 1;
-      tracker.size = size;
-      tracker.stack = stack;
-      (*stack_map_)[stack->hash()] = tracker;
-    }
-
-    block_map_size_ += size;
   }
 
-  mem_in_use.Set(block_map_size_);
+  mem_in_use.Add(size);
   mem_in_use_blocks.Increment();
   mem_in_use_allocs.Increment();
 }
@@ -133,46 +146,31 @@ void MemoryWatcher::OnUntrack(HANDLE heap, int32 id, int32 size) {
   if (size == 0)
     return;
 
+  if (LockedRecursionDetected())
+    return;
+
   {
     AutoLock lock(block_map_lock_);
+    active_thread_id_ = GetCurrentThreadId();
 
     // First, find the block in our block_map.
     CallStackMap::iterator it = block_map_->find(id);
     if (it != block_map_->end()) {
       AllocationStack* stack = it->second;
-      CallStackIdMap::iterator id_it = stack_map_->find(stack->hash());
-      DCHECK(id_it != stack_map_->end());
-      id_it->second.size -= size;
-      id_it->second.count--;
-      DCHECK_GE(id_it->second.count, 0);
-
-      // If there are no more callstacks with this stack, then we
-      // have cleaned up all instances, and can safely delete the
-      // StackTracker in the stack_map.
-      bool safe_to_delete = true;
-      if (id_it->second.count != 0) {
-        // See if our |StackTracker| is also using |stack|.
-        if (id_it->second.stack == stack)
-          safe_to_delete = false;  // We're still using |stack|.
-      } else {
-        // See if we skipped deleting our |StackTracker|'s |stack| earlier.
-        if (id_it->second.stack != stack)
-          delete id_it->second.stack;  // We skipped it earlier.
-        stack_map_->erase(id_it);  // Discard our StackTracker.
-      }
-
-      block_map_size_ -= size;
+      DCHECK(stack->size() == size);
       block_map_->erase(id);
-      if (safe_to_delete)
-        delete stack;
+      delete stack;
     } else {
       // Untracked item.  This happens a fair amount, and it is
       // normal.  A lot of time elapses during process startup
       // before the allocation routines are hooked.
+      size = 0;  // Ignore size in tallies.
     }
+    // TODO(jar): Perchance we should use atomic access to member.
+    active_thread_id_ = 0;
   }
 
-  mem_in_use.Set(block_map_size_);
+  mem_in_use.Add(-size);
   mem_in_use_blocks.Decrement();
   mem_in_use_frees.Increment();
 }
@@ -184,28 +182,72 @@ void MemoryWatcher::SetLogName(char* log_name) {
   log_name_ = log_name;
 }
 
+// Help sort lists of stacks based on allocation cost.
+// Note: Sort based on allocation count is interesting too!
+static bool CompareCallStackIdItems(MemoryWatcher::StackTrack* left,
+                                    MemoryWatcher::StackTrack* right) {
+  return left->size > right->size;
+}
+
+
 void MemoryWatcher::DumpLeaks() {
   // We can only dump the leaks once.  We'll cleanup the hooks here.
-  DCHECK(hooked_);
+  if (!hooked_)
+    return;
   Unhook();
 
   AutoLock lock(block_map_lock_);
+  active_thread_id_ = GetCurrentThreadId();
 
   OpenLogFile();
 
-  // Dump the stack map.
-  CallStackIdMap::iterator it = stack_map_->begin();
-  while (it != stack_map_->end()) {
-    fwprintf(file_, L"%d bytes, %d items (0x%x)\n",
-             it->second.size, it->second.count, it->first);
-    CallStack* stack = it->second.stack;
-    std::string output;
+  // Aggregate contributions from each allocated block on per-stack basis.
+  CallStackIdMap stack_map;
+  for (CallStackMap::iterator block_it = block_map_->begin();
+      block_it != block_map_->end(); ++block_it) {
+    AllocationStack* stack = block_it->second;
+    int32 stack_hash = stack->hash();
+    int32 alloc_block_size = stack->size();
+    CallStackIdMap::iterator it = stack_map.find(stack_hash);
+    if (it == stack_map.end()) {
+      StackTrack tracker;
+      tracker.count = 1;
+      tracker.size = alloc_block_size;
+      tracker.stack = stack;  // Temporary pointer into block_map_.
+      stack_map[stack_hash] = tracker;
+    } else {
+      it->second.count++;
+      it->second.size += alloc_block_size;
+    }
+  }
+  // Don't release lock yet, as block_map_ is still pointed into.
+
+  // Put references to StrackTracks into array for sorting.
+  std::vector<StackTrack*, PrivateHookAllocator<int32> >
+      stack_tracks(stack_map.size());
+  CallStackIdMap::iterator it = stack_map.begin();
+  for (size_t i = 0; i < stack_tracks.size(); ++i) {
+    stack_tracks[i] = &(it->second);
+    ++it;
+  }
+  sort(stack_tracks.begin(), stack_tracks.end(), CompareCallStackIdItems);
+
+  int32 total_bytes = 0;
+  int32 total_blocks = 0;
+  for (size_t i = 0; i < stack_tracks.size(); ++i) {
+    StackTrack* stack_track = stack_tracks[i];
+    fwprintf(file_, L"%d bytes, %d allocs, #%d\n",
+             stack_track->size, stack_track->count, i);
+    total_bytes += stack_track->size;
+    total_blocks += stack_track->count;
+
+    CallStack* stack = stack_track->stack;
+    PrivateAllocatorString output;
     stack->ToString(&output);
     fprintf(file_, "%s", output.c_str());
-    it++;
   }
-  fprintf(file_, "Total Leaks:  %d\n", block_map_->size());
-  fprintf(file_, "Total Stacks: %d\n", stack_map_->size());
-  fprintf(file_, "Total Bytes:  %d\n", block_map_size_);
+  fprintf(file_, "Total Leaks:  %d\n", total_blocks);
+  fprintf(file_, "Total Stacks: %d\n", stack_tracks.size());
+  fprintf(file_, "Total Bytes:  %d\n", total_bytes);
   CloseLogFile();
 }

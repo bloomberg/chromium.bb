@@ -23,6 +23,19 @@ class AllocationStack;
 // allocations and frees.
 class MemoryWatcher : MemoryObserver {
  public:
+  struct StackTrack {
+    CallStack* stack;
+    int count;
+    int size;
+  };
+
+  typedef std::map<int32, AllocationStack*, std::less<int32>,
+                   PrivateHookAllocator<int32> > CallStackMap;
+  typedef std::map<int32, StackTrack, std::less<int32>,
+                   PrivateHookAllocator<int32> > CallStackIdMap;
+  typedef std::basic_string<char, std::char_traits<char>,
+                            PrivateHookAllocator<char> > PrivateAllocatorString;
+
   MemoryWatcher();
   virtual ~MemoryWatcher();
 
@@ -49,32 +62,24 @@ class MemoryWatcher : MemoryObserver {
   // Unhooks our memory hooks.
   void Unhook();
 
+  // Check to see if this thread is already processing a block, and should not
+  // recurse.
+  bool LockedRecursionDetected() const;
+
   // This is for logging.
   FILE* file_;
 
-  struct StackTrack {
-    CallStack* stack;
-    int count;
-    int size;
-  };
-
   bool hooked_;  // True when this class has the memory_hooks hooked.
 
-  bool in_track_;
+  // Either 0, or else the threadID for a thread that is actively working on
+  // a stack track.  Used to avoid recursive tracking.
+  DWORD active_thread_id_;
+
   Lock block_map_lock_;
-  typedef std::map<int32, AllocationStack*, std::less<int32>,
-                   PrivateHookAllocator<int32>> CallStackMap;
-  typedef std::map<int32, StackTrack, std::less<int32>,
-                   PrivateHookAllocator<int32>> CallStackIdMap;
   // The block_map provides quick lookups based on the allocation
   // pointer.  This is important for having fast round trips through
   // malloc/free.
   CallStackMap *block_map_;
-  // The stack_map keeps track of the known CallStacks based on the
-  // hash of the CallStack.  This is so that we can quickly aggregate
-  // like-CallStacks together.
-  CallStackIdMap *stack_map_;
-  int32 block_map_size_;
 
   // The file name for that log.
   std::string file_name_;

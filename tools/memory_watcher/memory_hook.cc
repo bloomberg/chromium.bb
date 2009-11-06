@@ -217,6 +217,7 @@ static LPVOID WINAPI Perftools_HeapReAlloc(HANDLE hHeap, DWORD dwFlags,
   // block via Perftools_HeapAlloc.
 
   LPVOID rv = Perftools_HeapAlloc(hHeap, dwFlags, dwBytes);
+  DCHECK_EQ((HEAP_REALLOC_IN_PLACE_ONLY & dwFlags), 0);
 
   // If there was an old buffer, now copy the data to the new buffer.
   if (lpMem != 0) {
@@ -237,8 +238,10 @@ static LPVOID WINAPI Perftools_VirtualAllocEx(HANDLE process, LPVOID address,
   if (address != NULL) {
     MEMORY_BASIC_INFORMATION info;
     CHECK(VirtualQuery(address, &info, sizeof(info)));
-    if (info.State & MEM_COMMIT)
+    if (info.State & MEM_COMMIT) {
       already_committed = true;
+      CHECK(size >= info.RegionSize);
+    }
   }
   bool reserving = (address == NULL) || (type & MEM_RESERVE);
   bool committing = !already_committed && (type & MEM_COMMIT);
@@ -355,6 +358,7 @@ static HGLOBAL WINAPI Perftools_GlobalFree(HGLOBAL hMem) {
 
 static HGLOBAL WINAPI Perftools_GlobalReAlloc(HGLOBAL hMem, SIZE_T dwBytes,
                                               UINT uFlags) {
+  // TODO(jar): [The following looks like a copy/paste typo from LocalRealloc.]
   // GlobalDiscard is a macro which calls LocalReAlloc with size 0.
   if (dwBytes == 0) {
     return patch_GlobalReAlloc()(hMem, dwBytes, uFlags);
@@ -515,6 +519,9 @@ bool MemoryHook::RegisterWatcher(MemoryObserver* watcher) {
 bool MemoryHook::UnregisterWatcher(MemoryObserver* watcher) {
   DCHECK(hooked_);
   DCHECK(global_hook_->watcher_ == watcher);
+  // TODO(jar): changing watcher_ here is very racy.  Other threads may (without
+  // a lock) testing, and then calling through this value.  We probably can't
+  // remove this until we are single threaded.
   global_hook_->watcher_ = NULL;
 
   // For now, since there are no more watchers, unhook memory.
