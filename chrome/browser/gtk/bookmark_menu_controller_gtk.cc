@@ -188,8 +188,10 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 
     gtk_drag_source_set(menu_item, GDK_BUTTON1_MASK,
                         NULL, 0, GDK_ACTION_MOVE);
-    GtkDndUtil::SetSourceTargetListFromCodeMask(
-        menu_item, GtkDndUtil::CHROME_BOOKMARK_ITEM);
+    int target_mask = GtkDndUtil::CHROME_BOOKMARK_ITEM;
+    if (node->is_url())
+      target_mask |= GtkDndUtil::TEXT_URI_LIST;
+    GtkDndUtil::SetSourceTargetListFromCodeMask(menu_item, target_mask);
     g_signal_connect(G_OBJECT(menu_item), "drag-begin",
                      G_CALLBACK(&OnMenuItemDragBegin), this);
     g_signal_connect(G_OBJECT(menu_item), "drag-end",
