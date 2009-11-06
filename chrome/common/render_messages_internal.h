@@ -829,6 +829,28 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_SocketStream_Closed,
                        int /* socket_id */)
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // SpellChecker messages.
+
+  // Passes some initialization params to the renderer's spellchecker. This can
+  // be called directly after startup or in (async) response to a
+  // RequestDictionary ViewHost message.
+  IPC_MESSAGE_CONTROL4(ViewMsg_SpellChecker_Init,
+                       base::FileDescriptor /* bdict_file */,
+                       std::vector<std::string> /* custom_dict_words */,
+                       std::string /* language */,
+                       bool /* auto spell correct */)
+
+  // A word has been added to the custom dictionary; update the local custom
+  // word list.
+  IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_WordAdded,
+                       std::string /* word */)
+
+  // Toggle the auto spell correct functionality.
+  IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
+                       bool /* enable */)
+#endif
+
 IPC_END_MESSAGES(View)
 
 
@@ -1980,4 +2002,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::string /* challenge string */,
                               GURL /* URL of requestor */,
                               std::string /* signed public key and challenge */)
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // The renderer has tried to spell check a word, but couldn't because no
+  // dictionary was available to load. Request that the browser find an
+  // appropriate dictionary and return it.
+  IPC_MESSAGE_CONTROL0(ViewHostMsg_SpellChecker_RequestDictionary)
+#endif
+
 IPC_END_MESSAGES(ViewHost)

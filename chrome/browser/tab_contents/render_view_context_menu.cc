@@ -20,6 +20,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#if defined(SPELLCHECKER_IN_RENDERER)
+#include "chrome/browser/spellcheck_host.h"
+#endif
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -291,7 +294,7 @@ void RenderViewContextMenu::AppendEditableItems() {
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
 
-  // Add option for showing the spelling panel if the platfrom spellchecker
+  // Add option for showing the spelling panel if the platform spellchecker
   // supports it.
   if (SpellCheckerPlatform::SpellCheckerAvailable() &&
       SpellCheckerPlatform::SpellCheckerProvidesPanel()) {
@@ -720,10 +723,20 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       source_tab_contents_->render_view_host()->ToggleSpellCheck();
       break;
-    case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY:
+    case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY: {
+#if defined(SPELLCHECKER_IN_RENDERER)
+      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
+      if (!spellcheck_host) {
+        NOTREACHED();
+        break;
+      }
+      spellcheck_host->AddWord(UTF16ToUTF8(params_.misspelled_word));
+#else
       source_tab_contents_->render_view_host()->AddToDictionary(
           params_.misspelled_word);
+#endif
       break;
+    }
 
     case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       ShowFontsLanguagesWindow(

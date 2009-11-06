@@ -2528,6 +2528,8 @@
           ],
           'sources': [
             'browser/net/ssl_config_service_manager_pref.cc',
+            'browser/spellcheck_host.cc',
+            'browser/spellcheck_host.h',
           ],
           'sources/': [
             # Exclude most of printing.
@@ -3228,6 +3230,7 @@
         'chrome_strings',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
+        '../third_party/hunspell/hunspell.gyp:hunspell',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
@@ -3365,6 +3368,12 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'sources': [
+            'renderer/spellchecker/spellcheck.cc',
+            'renderer/spellchecker/spellcheck.h',
+            'renderer/spellchecker/spellcheck_worditerator.cc',
+            'renderer/spellchecker/spellcheck_worditerator.h',
           ],
         }],
         # Windows-specific rules.

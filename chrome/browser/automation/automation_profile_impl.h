@@ -204,6 +204,14 @@ class AutomationProfileImpl : public Profile {
   virtual void DeleteSpellChecker() {
     return original_profile_->DeleteSpellChecker();
   }
+#if defined(SPELLCHECKER_IN_RENDERER)
+  virtual SpellCheckHost* GetSpellCheckHost() {
+    return original_profile_->GetSpellCheckHost();
+  }
+  virtual void ReinitializeSpellCheckHost(bool force) {
+    return original_profile_->ReinitializeSpellCheckHost(force);
+  }
+#endif
   virtual WebKitContext* GetWebKitContext() {
     return original_profile_->GetWebKitContext();
   }

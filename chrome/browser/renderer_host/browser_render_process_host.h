@@ -146,6 +146,25 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Returns true if the priority is backgrounded; false otherwise.
   void SetBackgrounded(bool boost);
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // The renderer has requested that we initialize its spellchecker. This should
+  // generally only be called once per session, as after the first call, all
+  // future renderers will be passed the initialization information on startup
+  // (or when the dictionary changes in some way).
+  void OnSpellCheckerRequestDictionary();
+
+  // Tell the renderer of a new word that has been added to the custom
+  // dictionary.
+  void AddSpellCheckWord(const std::string& word);
+
+  // Pass the renderer some basic intialization information. Note that the
+  // renderer will not load Hunspell until it needs to.
+  void InitSpellChecker();
+
+  // Tell the renderer that auto spell correction has been enabled/disabled.
+  void EnableAutoSpellCorrect(bool enable);
+#endif
+
   NotificationRegistrar registrar_;
 
   // The count of currently visible widgets.  Since the host can be a container

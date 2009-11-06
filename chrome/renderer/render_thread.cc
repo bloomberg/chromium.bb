@@ -51,6 +51,9 @@
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/renderer_web_database_observer.h"
 #include "chrome/renderer/socket_stream_dispatcher.h"
+#if defined(SPELLCHECKER_IN_RENDERER)
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#endif
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
@@ -152,6 +155,9 @@ void RenderThread::Init() {
   AddFilter(devtools_agent_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
+#if defined(SPELLCHECKER_IN_RENDERER)
+  spellchecker_.reset(new SpellCheck());
+#endif
 
 #if defined(OS_POSIX)
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
@@ -331,6 +337,14 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
+#if defined(SPELLCHECKER_IN_RENDERER)
+    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_Init,
+                        OnInitSpellChecker)
+    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_WordAdded,
+                        OnSpellCheckWordAdded)
+    IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
+                        OnSpellCheckEnableAutoSpellCorrect)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -429,6 +443,12 @@ void RenderThread::CloseIdleConnections() {
 void RenderThread::SetCacheMode(bool enabled) {
   Send(new ViewHostMsg_SetCacheMode(enabled));
 }
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+void RenderThread::RequestSpellCheckDictionary() {
+  Send(new ViewHostMsg_SpellChecker_RequestDictionary);
+}
+#endif
 
 static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
@@ -580,6 +600,10 @@ void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
 }
 
 void RenderThread::OnPurgeMemory() {
+#if defined(SPELLCHECKER_IN_RENDERER)
+  spellchecker_.reset(new SpellCheck());
+#endif
+
   EnsureWebKitInitialized();
 
   // Clear the object cache (as much as possible; some live objects cannot be
@@ -620,3 +644,22 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   WebKit::resetPluginCache(reload_pages);
   plugin_refresh_allowed_ = true;
 }
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+void RenderThread::OnInitSpellChecker(
+    const base::FileDescriptor& bdict_fd,
+    const std::vector<std::string>& custom_words,
+    const std::string& language,
+    bool auto_spell_correct) {
+  spellchecker_->Init(bdict_fd, custom_words, language);
+  spellchecker_->EnableAutoSpellCorrect(auto_spell_correct);
+}
+
+void RenderThread::OnSpellCheckWordAdded(const std::string& word) {
+  spellchecker_->WordAdded(word);
+}
+
+void RenderThread::OnSpellCheckEnableAutoSpellCorrect(bool enable) {
+  spellchecker_->EnableAutoSpellCorrect(enable);
+}
+#endif

@@ -52,6 +52,9 @@
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
+#if defined(SPELLCHECKER_IN_RENDERER)
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#endif
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
@@ -1498,8 +1501,16 @@ void RenderView::spellCheck(const WebString& text,
                             int& misspelled_offset,
                             int& misspelled_length) {
   EnsureDocumentTag();
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+  string16 word(text);
+  RenderThread::current()->spellchecker()->SpellCheckWord(
+      word.c_str(), word.size(), document_tag_,
+      &misspelled_offset, &misspelled_length, NULL);
+#else
   Send(new ViewHostMsg_SpellCheck(routing_id_, text, document_tag_,
                                   &misspelled_offset, &misspelled_length));
+#endif
 }
 
 WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
@@ -1507,8 +1518,14 @@ WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
+#if defined(SPELLCHECKER_IN_RENDERER)
+    autocorrect_word =
+        RenderThread::current()->spellchecker()->GetAutoCorrectionWord(
+            word, document_tag_);
+#else
     Send(new ViewHostMsg_GetAutoCorrectWord(
         routing_id_, word, document_tag_, &autocorrect_word));
+#endif
   }
   return autocorrect_word;
 }

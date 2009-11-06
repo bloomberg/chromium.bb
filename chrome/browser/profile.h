@@ -14,6 +14,9 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
+#if defined(SPELLCHECKER_IN_RENDERER)
+#include "chrome/browser/spellcheck_host.h"
+#endif
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -351,6 +354,16 @@ class Profile {
   // memory.
   virtual void DeleteSpellChecker() = 0;
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // May return NULL.
+  virtual SpellCheckHost* GetSpellCheckHost() = 0;
+
+  // If |force| is false, and the spellchecker is already initialized (or is in
+  // the process of initializing), then do nothing. Otherwise clobber the
+  // current spellchecker and replace it with a new one.
+  virtual void ReinitializeSpellCheckHost(bool force) = 0;
+#endif
+
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
 
@@ -394,6 +407,9 @@ class OffTheRecordProfileImpl;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
+#if defined(SPELLCHECKER_IN_RENDERER)
+                    public SpellCheckHost::Observer,
+#endif
                     public NotificationObserver {
  public:
   virtual ~ProfileImpl();
@@ -454,6 +470,10 @@ class ProfileImpl : public Profile,
   virtual void ReinitializeSpellChecker();
   virtual SpellChecker* GetSpellChecker();
   virtual void DeleteSpellChecker() { DeleteSpellCheckerImpl(true); }
+#if defined(SPELLCHECKER_IN_RENDERER)
+  virtual SpellCheckHost* GetSpellCheckHost();
+  virtual void ReinitializeSpellCheckHost(bool force);
+#endif
   virtual WebKitContext* GetWebKitContext();
   virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual void MarkAsCleanShutdown();
@@ -466,6 +486,11 @@ class ProfileImpl : public Profile,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // SpellCheckHost::Observer implementation.
+  virtual void SpellCheckHostInitialized();
+#endif
 
  private:
   friend class Profile;
@@ -557,6 +582,14 @@ class ProfileImpl : public Profile,
   // This can not be a scoped_refptr because we must release it on the I/O
   // thread.
   SpellChecker* spellchecker_;
+
+#if defined(SPELLCHECKER_IN_RENDERER)
+  scoped_refptr<SpellCheckHost> spellcheck_host_;
+
+  // Indicates whether |spellcheck_host_| has told us initialization is
+  // finished.
+  bool spellcheck_host_ready_;
+#endif
 
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.

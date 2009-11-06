@@ -483,6 +483,16 @@ class OffTheRecordProfileImpl : public Profile,
     profile_->DeleteSpellChecker();
   }
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+  virtual SpellCheckHost* GetSpellCheckHost() {
+    return profile_->GetSpellCheckHost();
+  }
+
+  virtual void ReinitializeSpellCheckHost(bool force) {
+    profile_->ReinitializeSpellCheckHost(force);
+  }
+#endif
+
   virtual WebKitContext* GetWebKitContext() {
   if (!webkit_context_.get())
     webkit_context_ = new WebKitContext(GetPath(), true);
@@ -574,6 +584,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       created_theme_provider_(false),
       start_time_(Time::Now()),
       spellchecker_(NULL),
+#if defined(OS_LINUX)
+      spellcheck_host_(NULL),
+      spellcheck_host_ready_(false),
+#endif
       shutdown_session_service_(false) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
@@ -745,6 +759,10 @@ ProfileImpl::~ProfileImpl() {
   if (history_service_.get())
     history_service_->Cleanup();
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+  if (spellcheck_host_.get())
+    spellcheck_host_->UnsetObserver();
+#endif
   DeleteSpellCheckerImpl(false);
 
   if (default_request_context_ == request_context_) {
@@ -1272,6 +1290,47 @@ void ProfileImpl::ReinitializeSpellChecker() {
   }
 }
 
+#if defined(SPELLCHECKER_IN_RENDERER)
+SpellCheckHost* ProfileImpl::GetSpellCheckHost() {
+  return spellcheck_host_ready_ ? spellcheck_host_.get() : NULL;
+}
+
+void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
+  // If we are already loading the spellchecker, and this is just a hint to
+  // load the spellchecker, do nothing.
+  if (!force && spellcheck_host_.get())
+    return;
+
+  bool notify = false;
+  if (spellcheck_host_.get()) {
+    spellcheck_host_->UnsetObserver();
+    spellcheck_host_.release();
+    spellcheck_host_ready_ = false;
+    notify = true;
+  }
+
+  PrefService* prefs = GetPrefs();
+  if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
+    // Retrieve the (perhaps updated recently) dictionary name from preferences.
+    spellcheck_host_ = new SpellCheckHost(this,
+        WideToASCII(prefs->GetString(prefs::kSpellCheckDictionary)),
+        GetRequestContext());
+    spellcheck_host_->AddRef();
+  } else if (notify) {
+    // The spellchecker has been disabled.
+    SpellCheckHostInitialized();
+  }
+}
+
+void ProfileImpl::SpellCheckHostInitialized() {
+  spellcheck_host_ready_ =
+      spellcheck_host_ && spellcheck_host_->bdict_fd().fd != -1;
+  NotificationService::current()->Notify(
+      NotificationType::SPELLCHECK_HOST_REINITIALIZED,
+          Source<Profile>(this), NotificationService::NoDetails());
+}
+#endif
+
 void ProfileImpl::NotifySpellCheckerChanged() {
   SpellcheckerReinitializedDetails scoped_spellchecker;
   scoped_spellchecker.spellchecker = spellchecker_;
@@ -1340,9 +1399,14 @@ void ProfileImpl::Observe(NotificationType type,
     PrefService* prefs = Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kSpellCheckDictionary ||
-        *pref_name_in == prefs::kEnableSpellCheck ||
-        *pref_name_in == prefs::kEnableAutoSpellCorrect) {
+#if !defined(SPELLCHECKER_IN_RENDERER)
+        *pref_name_in == prefs::kEnableAutoSpellCorrect ||
+#endif
+        *pref_name_in == prefs::kEnableSpellCheck) {
       ReinitializeSpellChecker();
+#if defined(SPELLCHECKER_IN_RENDERER)
+      ReinitializeSpellCheckHost(true);
+#endif
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
     Extension* extension = Details<Extension>(details).ptr();

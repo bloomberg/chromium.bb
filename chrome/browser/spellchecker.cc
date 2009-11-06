@@ -312,6 +312,7 @@ std::string SpellChecker::GetCorrespondingSpellCheckLanguage(
   return std::string();
 }
 
+// static
 int SpellChecker::GetSpellCheckLanguages(
     Profile* profile,
     std::vector<std::string>* languages) {
