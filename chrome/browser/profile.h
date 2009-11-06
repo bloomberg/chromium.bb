@@ -41,6 +41,7 @@ class FaviconService;
 class HistoryService;
 class NavigationController;
 class PasswordStore;
+class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
 class SearchVersusNavigateClassifier;
@@ -236,9 +237,12 @@ class Profile {
   // profile.
   virtual TemplateURLFetcher* GetTemplateURLFetcher() = 0;
 
-  // Returns the DownloadManager associated with this profile
+  // Returns the DownloadManager associated with this profile.
   virtual DownloadManager* GetDownloadManager() = 0;
   virtual bool HasCreatedDownloadManager() const = 0;
+
+  // Returns the PersonalDataManager associated with this profile.
+  virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Init our themes system.
   virtual void InitThemes() = 0;
@@ -420,6 +424,7 @@ class ProfileImpl : public Profile,
   virtual TemplateURLModel* GetTemplateURLModel();
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
+  virtual PersonalDataManager* GetPersonalDataManager();
   virtual void InitThemes();
   virtual void SetTheme(Extension* extension);
   virtual void SetNativeTheme();
@@ -530,6 +535,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
+  scoped_ptr<PersonalDataManager> personal_data_manager_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_
 
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
@@ -14,6 +16,7 @@ class FormFieldValues;
 
 class AutoFillInfoBarDelegate;
 class FormStructure;
+class PersonalDataManager;
 class TabContents;
 
 // Manages saving and restoring the user's personal information entered into web
@@ -40,10 +43,15 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   // The TabContents hosting this AutoFillManager.
   TabContents* tab_contents_;
 
-  // Our copy of the form data.
-  scoped_ptr<FormStructure> form_structure_;
+  // The personal data manager, used to save and load personal data to/from the
+  // web database.
+  PersonalDataManager* personal_data_;
 
-  // The infobar asking for permission to store form information.
+  // Our copy of the form data.
+  std::vector<FormStructure*> form_structures_;
+  scoped_ptr<FormStructure> upload_form_structure_;
+
+  // The infobar that asks for permission to store form information.
   scoped_ptr<AutoFillInfoBarDelegate> infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);

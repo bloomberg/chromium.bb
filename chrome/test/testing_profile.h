@@ -129,6 +129,7 @@ class TestingProfile : public Profile {
   virtual ThumbnailStore* GetThumbnailStore() { return NULL; }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
+  virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
   virtual void InitThemes();
   virtual void SetTheme(Extension* extension) {}
   virtual void SetNativeTheme() {}

@@ -851,6 +851,8 @@
         'browser/autofill/field_types.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',
+        'browser/autofill/personal_data_manager.cc',
+        'browser/autofill/personal_data_manager.h',
         'browser/automation/automation_autocomplete_edit_tracker.h',
         'browser/automation/automation_browser_tracker.h',
         'browser/automation/extension_automation_constants.h',

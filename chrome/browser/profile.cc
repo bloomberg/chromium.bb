@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -350,6 +351,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual bool HasCreatedDownloadManager() const {
     return (download_manager_.get() != NULL);
+  }
+
+  virtual PersonalDataManager* GetPersonalDataManager() {
+    return NULL;
   }
 
   virtual void InitThemes() {
@@ -1083,6 +1088,13 @@ DownloadManager* ProfileImpl::GetDownloadManager() {
 
 bool ProfileImpl::HasCreatedDownloadManager() const {
   return created_download_manager_;
+}
+
+PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
+  if (!personal_data_manager_.get()) {
+    personal_data_manager_.reset(new PersonalDataManager);
+  }
+  return personal_data_manager_.get();
 }
 
 void ProfileImpl::InitThemes() {

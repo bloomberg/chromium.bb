@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "webkit/glue/form_field_values.h"
@@ -16,6 +18,7 @@
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       infobar_(NULL) {
+  personal_data_ = tab_contents_->profile()->GetPersonalDataManager();
 }
 
 AutoFillManager::~AutoFillManager() {
@@ -29,9 +32,14 @@ void AutoFillManager::FormFieldValuesSubmitted(
     return;
 
   // Grab a copy of the form data.
-  form_structure_.reset(new FormStructure(form));
+  upload_form_structure_.reset(new FormStructure(form));
 
-  if (!form_structure_->IsAutoFillable())
+  if (!upload_form_structure_->IsAutoFillable())
+    return;
+
+  // TODO(jhawkins): Determine possible field types.
+
+  if (!personal_data_->ImportFormData(form_structures_, this))
     return;
 
   // Ask the user for permission to save form information.
@@ -46,12 +54,12 @@ void AutoFillManager::SaveFormData() {
 
 void AutoFillManager::UploadFormData() {
   std::string xml;
-  bool ok = form_structure_->EncodeUploadRequest(false, &xml);
+  bool ok = upload_form_structure_->EncodeUploadRequest(false, &xml);
   DCHECK(ok);
 
   // TODO(jhawkins): Initiate the upload request thread.
 }
 
 void AutoFillManager::Reset() {
-  form_structure_.reset();
+  upload_form_structure_.reset();
 }

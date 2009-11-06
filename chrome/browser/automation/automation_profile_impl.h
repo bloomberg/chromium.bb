@@ -111,6 +111,9 @@ class AutomationProfileImpl : public Profile {
   virtual bool HasCreatedDownloadManager() const {
     return original_profile_->HasCreatedDownloadManager();
   }
+  virtual PersonalDataManager* GetPersonalDataManager() {
+    return original_profile_->GetPersonalDataManager();
+  }
   virtual void InitThemes() {
     return original_profile_->InitThemes();
   }
