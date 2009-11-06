@@ -28,10 +28,10 @@ void RenderViewContextMenuGtk::DoInit() {
   gtk_menu_.reset(new MenuGtk(this, menu_.data(), NULL));
 }
 
-void RenderViewContextMenuGtk::Popup() {
+void RenderViewContextMenuGtk::Popup(const gfx::Point& point) {
   if (source_tab_contents_->render_widget_host_view())
     source_tab_contents_->render_widget_host_view()->ShowingContextMenu(true);
-  gtk_menu_->PopupAsContext(triggering_event_time_);
+  gtk_menu_->PopupAsContextAt(triggering_event_time_, point);
 }
 
 bool RenderViewContextMenuGtk::IsCommandEnabled(int id) const {

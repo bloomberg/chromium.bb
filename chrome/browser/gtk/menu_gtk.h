@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gfx/point.h"
 #include "base/task.h"
 #include "chrome/common/owned_widget_gtk.h"
 
@@ -79,9 +80,10 @@ class MenuGtk {
 
   // Displays the menu as a context menu, i.e. at the current cursor location.
   // |event_time| is the time of the event that triggered the menu's display.
-  // In the future we may need to modify this to act differently based on the
-  // triggering event (e.g. right mouse click, context menu key, etc.).
   void PopupAsContext(guint32 event_time);
+
+  // Displays the menu at the given coords. |point| is intentionally not const.
+  void PopupAsContextAt(guint32 event_time, gfx::Point point);
 
   // Displays the menu following a keyboard event (such as selecting |widget|
   // and pressing "enter").
@@ -96,11 +98,18 @@ class MenuGtk {
   // button. Otherwise it aligns the right side of the menu with the right side
   // of the button. Public since some menus have odd requirements that don't
   // belong in a public class.
-  static void MenuPositionFunc(GtkMenu* menu,
-                               int* x,
-                               int* y,
-                               gboolean* push_in,
-                               void* void_widget);
+  static void WidgetMenuPositionFunc(GtkMenu* menu,
+                                     int* x,
+                                     int* y,
+                                     gboolean* push_in,
+                                     void* void_widget);
+
+  // Positions the menu to appear at the gfx::Point represented by |userdata|.
+  static void PointMenuPositionFunc(GtkMenu* menu,
+                                    int* x,
+                                    int* y,
+                                    gboolean* push_in,
+                                    gpointer userdata);
 
   GtkWidget* widget() const { return menu_.get(); }
 

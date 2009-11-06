@@ -103,7 +103,7 @@ void MenuGtk::Popup(GtkWidget* widget, GdkEvent* event) {
 
 void MenuGtk::Popup(GtkWidget* widget, gint button_type, guint32 timestamp) {
   gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL,
-                 MenuPositionFunc,
+                 WidgetMenuPositionFunc,
                  widget,
                  button_type, timestamp);
 }
@@ -112,6 +112,11 @@ void MenuGtk::PopupAsContext(guint32 event_time) {
   // TODO(estade): |button| value of 3 (6th argument) is not strictly true,
   // but does it matter?
   gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL, NULL, NULL, 3, event_time);
+}
+
+void MenuGtk::PopupAsContextAt(guint32 event_time, gfx::Point point) {
+  gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL,
+                 PointMenuPositionFunc, &point, 3, event_time);
 }
 
 void MenuGtk::PopupAsFromKeyEvent(GtkWidget* widget) {
@@ -264,11 +269,11 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
 }
 
 // static
-void MenuGtk::MenuPositionFunc(GtkMenu* menu,
-                               int* x,
-                               int* y,
-                               gboolean* push_in,
-                               void* void_widget) {
+void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
+                                     int* x,
+                                     int* y,
+                                     gboolean* push_in,
+                                     void* void_widget) {
   GtkWidget* widget = GTK_WIDGET(void_widget);
   GtkRequisition menu_req;
 
@@ -304,6 +309,19 @@ void MenuGtk::MenuPositionFunc(GtkMenu* menu,
   }
 
   *push_in = FALSE;
+}
+
+// static
+void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
+                                    int* x,
+                                    int* y,
+                                    gboolean* push_in,
+                                    gpointer userdata) {
+  *push_in = TRUE;
+
+  gfx::Point* point = reinterpret_cast<gfx::Point*>(userdata);
+  *x = point->x();
+  *y = point->y();
 }
 
 void MenuGtk::UpdateMenu() {

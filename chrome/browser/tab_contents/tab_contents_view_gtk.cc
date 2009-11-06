@@ -368,7 +368,12 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuGtk(tab_contents(), params,
                                                    last_mouse_down_.time));
   context_menu_->Init();
-  context_menu_->Popup();
+
+  gfx::Rect bounds;
+  GetContainerBounds(&bounds);
+  gfx::Point point = bounds.origin();
+  point.Offset(params.x, params.y);
+  context_menu_->Popup(point);
 }
 
 // Render view DnD -------------------------------------------------------------

@@ -121,7 +121,7 @@ void BookmarkMenuController::Popup(GtkWidget* widget, gint button_type,
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget),
                                     GTK_STATE_ACTIVE);
   gtk_menu_popup(GTK_MENU(menu_), NULL, NULL,
-                 &MenuGtk::MenuPositionFunc,
+                 &MenuGtk::WidgetMenuPositionFunc,
                  widget, button_type, timestamp);
 }
 

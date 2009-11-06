@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gfx/point.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
@@ -27,8 +28,8 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
 
   ~RenderViewContextMenuGtk();
 
-  // Show the menu at the current cursor location.
-  void Popup();
+  // Show the menu at the given location.
+  void Popup(const gfx::Point& point);
 
   // Menu::Delegate implementation ---------------------------------------------
   virtual bool IsCommandEnabled(int id) const;
