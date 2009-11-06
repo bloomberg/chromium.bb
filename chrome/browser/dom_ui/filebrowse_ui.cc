@@ -50,8 +50,6 @@ class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~FileBrowseUIHTMLSource() {}
-
   DISALLOW_COPY_AND_ASSIGN(FileBrowseUIHTMLSource);
 };
 

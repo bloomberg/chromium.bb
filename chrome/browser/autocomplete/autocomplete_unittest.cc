@@ -35,8 +35,6 @@ class TestProvider : public AutocompleteProvider {
   }
 
  private:
-  ~TestProvider() {}
-
   void Run();
 
   void AddResults(int start_at, int num);

@@ -94,6 +94,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
+  ~SavePackage();
+
   // Initialize the SavePackage. Returns true if it initializes properly.
   // Need to make sure that this method must be called in the UI thread because
   // using g_browser_process on a non-UI thread can cause crashes during
@@ -195,13 +197,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   virtual void FileSelectionCanceled(void* params);
 
  private:
-  friend class base::RefCountedThreadSafe<SavePackage>;
-
   // For testing only.
   SavePackage(const FilePath& file_full_path,
               const FilePath& directory_full_path);
-
-  ~SavePackage();
 
   // Notes from Init() above applies here as well.
   void InternalInit();

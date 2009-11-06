@@ -112,6 +112,7 @@ class AboutSource : public ChromeURLDataManager::DataSource {
  public:
   // Creates our datasource.
   AboutSource();
+  virtual ~AboutSource();
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -125,8 +126,6 @@ class AboutSource : public ChromeURLDataManager::DataSource {
   void FinishDataRequest(const std::string& html, int request_id);
 
  private:
-  virtual ~AboutSource();
-
   DISALLOW_COPY_AND_ASSIGN(AboutSource);
 };
 

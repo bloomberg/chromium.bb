@@ -24,6 +24,8 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
  public:
   InputDispatcher(Task* task, WPARAM message_waiting_for);
 
+  ~InputDispatcher();
+
   // Invoked from the hook. If mouse_message matches message_waiting_for_
   // MatchingMessageFound is invoked.
   void DispatchedMessage(WPARAM mouse_message);
@@ -33,10 +35,6 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   void MatchingMessageFound();
 
  private:
-  friend class base::RefCounted<InputDispatcher>;
-
-  ~InputDispatcher();
-
    // Notifies the task and release this (which should delete it).
   void NotifyTask();
 

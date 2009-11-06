@@ -56,6 +56,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            public IPC::Message::Sender {
  public:
   explicit AutomationProvider(Profile* profile);
+  virtual ~AutomationProvider();
 
   Profile* profile() const { return profile_; }
 
@@ -129,10 +130,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Adds the external tab passed in to the tab tracker.
   bool AddExternalTab(ExternalTabContainer* external_tab);
-
- protected:
-  friend class base::RefCounted<AutomationProvider>;
-  virtual ~AutomationProvider();
 
  private:
   // IPC Message callbacks.
@@ -570,6 +567,7 @@ class TestingAutomationProvider : public AutomationProvider,
                                   public NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
+  virtual ~TestingAutomationProvider();
 
   // BrowserList::Observer implementation
   // Called immediately after a browser is added to the list
@@ -582,8 +580,6 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnChannelError();
 
  private:
-  virtual ~TestingAutomationProvider();
-
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);

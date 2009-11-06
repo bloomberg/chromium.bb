@@ -37,15 +37,9 @@ class ExtensionFunctionDispatcher {
 
   // The peer object allows us to notify ExtensionFunctions when we are
   // destroyed.
-  // TODO: this should use WeakPtr
   struct Peer : public base::RefCounted<Peer> {
     Peer(ExtensionFunctionDispatcher* dispatcher) : dispatcher_(dispatcher) {}
     ExtensionFunctionDispatcher* dispatcher_;
-
-  private:
-   friend class base::RefCounted<Peer>;
-
-   ~Peer() {}
   };
 
   // Gets a list of all known extension function names.

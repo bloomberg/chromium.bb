@@ -168,6 +168,7 @@ class DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
   DownloadFileManager(ResourceDispatcherHost* rdh);
+  ~DownloadFileManager();
 
   // Called on shutdown on the UI thread.
   void Shutdown();
@@ -233,10 +234,6 @@ class DownloadFileManager
   static void DeleteFile(const FilePath& path);
 
  private:
-  friend class base::RefCountedThreadSafe<DownloadFileManager>;
-
-  ~DownloadFileManager();
-
   // Timer helpers for updating the UI about the current progress of a download.
   void StartUpdateTimer();
   void StopUpdateTimer();

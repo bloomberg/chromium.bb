@@ -177,8 +177,6 @@ class HistoryURLProvider : public AutocompleteProvider {
   void QueryComplete(HistoryURLProviderParams* params_gets_deleted);
 
  private:
-  ~HistoryURLProvider() {}
-
   struct Prefix {
     Prefix(std::wstring prefix, int num_components)
         : prefix(prefix),

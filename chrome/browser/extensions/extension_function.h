@@ -33,6 +33,7 @@ class Profile;
 class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
  public:
   ExtensionFunction() : request_id_(-1), name_(""), has_callback_(false) {}
+  virtual ~ExtensionFunction() {}
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
@@ -68,10 +69,6 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   virtual void Run() = 0;
 
  protected:
-  friend class base::RefCounted<ExtensionFunction>;
-
-  virtual ~ExtensionFunction() {}
-
   // Gets the extension that called this function. This can return NULL for
   // async functions.
   Extension* GetExtension() {
@@ -94,6 +91,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   // of this call.
   bool has_callback_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
 
@@ -106,6 +104,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
 class AsyncExtensionFunction : public ExtensionFunction {
  public:
   AsyncExtensionFunction() : args_(NULL), bad_message_(false) {}
+  virtual ~AsyncExtensionFunction() {}
 
   virtual void SetArgs(const Value* args);
   virtual const std::string GetResult();
@@ -120,8 +119,6 @@ class AsyncExtensionFunction : public ExtensionFunction {
   virtual bool RunImpl() = 0;
 
  protected:
-  virtual ~AsyncExtensionFunction() {}
-
   void SendResponse(bool success);
 
   // Note: After Run() returns, dispatcher() can be NULL.  Since these getters
@@ -144,6 +141,7 @@ class AsyncExtensionFunction : public ExtensionFunction {
   // returning.  The calling renderer process will be killed.
   bool bad_message_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AsyncExtensionFunction);
 };
 
@@ -165,9 +163,6 @@ class SyncExtensionFunction : public AsyncExtensionFunction {
   virtual void Run() {
     SendResponse(RunImpl());
   }
-
- protected:
-  virtual ~SyncExtensionFunction() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);

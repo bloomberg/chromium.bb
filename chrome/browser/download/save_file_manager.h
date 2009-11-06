@@ -80,6 +80,7 @@ class SaveFileManager
     : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
   SaveFileManager(ResourceDispatcherHost* rdh);
+  ~SaveFileManager();
 
   // Lifetime management.
   void Shutdown();
@@ -143,10 +144,6 @@ class SaveFileManager
   void RemoveSavedFileFromFileMap(const SaveIDList & save_ids);
 
  private:
-  friend class base::RefCountedThreadSafe<SaveFileManager>;
-
-  ~SaveFileManager();
-
   // A cleanup helper that runs on the file thread.
   void OnShutdown();
 

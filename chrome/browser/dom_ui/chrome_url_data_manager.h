@@ -44,6 +44,7 @@ class ChromeURLDataManager {
     DataSource(const std::string& source_name,
                MessageLoop* message_loop)
         : source_name_(source_name), message_loop_(message_loop) {}
+    virtual ~DataSource() {}
 
     // Sent by the DataManager to request data at |path|.  The source should
     // call SendResponse() when the data is available or if the request could
@@ -74,11 +75,6 @@ class ChromeURLDataManager {
     const std::string& source_name() const { return source_name_; }
 
     static void SetFontAndTextDirection(DictionaryValue* localized_strings);
-
-   protected:
-    friend class base::RefCountedThreadSafe<DataSource>;
-
-    virtual ~DataSource() {}
 
    private:
     // The name of this source.

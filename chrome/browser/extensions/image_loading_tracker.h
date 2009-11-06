@@ -37,6 +37,7 @@ class ImageLoadingTracker
                // get deleted until we get a response from image loading (see
                // ImageLoadingDone).
   }
+  ~ImageLoadingTracker() {}
 
   // If there are remaining images to be loaded, the observing object should
   // call this method on its destruction, so that the tracker will not attempt
@@ -54,10 +55,6 @@ class ImageLoadingTracker
 
  private:
   class LoadImageTask;
-
-  friend class base::RefCountedThreadSafe<ImageLoadingTracker>;
-
-  ~ImageLoadingTracker() {}
 
   // When an image has finished loaded and scaled on the file thread, it is
   // posted back to this method on the original thread.  This method then calls

@@ -20,6 +20,7 @@ class Profile;
 class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
  public:
   explicit DOMUIFavIconSource(Profile* profile);
+  virtual ~DOMUIFavIconSource() { }
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -39,8 +40,6 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
                               GURL url);
 
  private:
-  virtual ~DOMUIFavIconSource() {}
-
   Profile* profile_;
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 

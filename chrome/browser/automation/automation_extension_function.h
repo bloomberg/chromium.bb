@@ -46,8 +46,6 @@ class AutomationExtensionFunction : public ExtensionFunction {
                                                const std::string& target);
 
  private:
-  ~AutomationExtensionFunction() {}
-
   static bool enabled_;
   std::string args_;
   DISALLOW_COPY_AND_ASSIGN(AutomationExtensionFunction);

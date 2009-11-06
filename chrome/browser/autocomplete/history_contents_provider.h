@@ -49,8 +49,6 @@ class HistoryContentsProvider : public AutocompleteProvider {
   static const size_t kMaxMatchCount = 50;
 
  private:
-  ~HistoryContentsProvider() {}
-
   void QueryComplete(HistoryService::Handle handle,
                      history::QueryResults* results);
 

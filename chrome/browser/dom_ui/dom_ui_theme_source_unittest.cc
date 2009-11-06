@@ -26,9 +26,6 @@ class MockThemeSource : public DOMUIThemeSource {
 
   int result_request_id_;
   size_t result_data_size_;
-
- private:
-  ~MockThemeSource() {}
 };
 
 class DOMUISourcesTest : public testing::Test {

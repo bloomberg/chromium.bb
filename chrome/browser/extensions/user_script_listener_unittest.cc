@@ -42,9 +42,6 @@ class MockUserScriptMaster : public UserScriptMaster {
   void TestStartScan() {
     UserScriptMaster::StartScan();
   }
-
- private:
-  ~MockUserScriptMaster() {}
 };
 
 class MockIOThread : public ChromeThread {

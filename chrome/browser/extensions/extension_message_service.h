@@ -62,6 +62,7 @@ class ExtensionMessageService
   // --- UI thread only:
 
   explicit ExtensionMessageService(Profile* profile);
+  ~ExtensionMessageService();
 
   // Notification that our owning profile is going away.
   void ProfileDestroyed();
@@ -127,12 +128,8 @@ class ExtensionMessageService
                        ResourceMessageFilter* source);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionMessageService>;
-
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
-
-  ~ExtensionMessageService();
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.

@@ -48,8 +48,6 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~ExtensionsUIHTMLSource() {}
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUIHTMLSource);
 };
 

@@ -26,9 +26,6 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
 
   virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
- protected:
-  virtual ~DOMUIThemeSource() {}
-
  private:
   // Populate new_tab_css_ and new_incognito_tab_css.  These must be called
   // from the UI thread because they involve profile and theme access.

@@ -41,8 +41,6 @@ class DownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~DownloadsUIHTMLSource() {}
-
   DISALLOW_COPY_AND_ASSIGN(DownloadsUIHTMLSource);
 };
 

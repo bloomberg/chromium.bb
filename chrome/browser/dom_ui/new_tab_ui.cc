@@ -144,8 +144,6 @@ class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~IncognitoTabHTMLSource() {}
-
   // Populate full_html_.  This must be called from the UI thread because it
   // involves profile access.
   //

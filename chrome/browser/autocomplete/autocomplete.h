@@ -483,6 +483,8 @@ class AutocompleteProvider
         name_(name) {
   }
 
+  virtual ~AutocompleteProvider();
+
   // Invoked when the profile changes.
   // NOTE: Do not access any previous Profile* at this point as it may have
   // already been deleted.
@@ -536,10 +538,6 @@ class AutocompleteProvider
   static size_t max_matches() { return max_matches_; }
 
  protected:
-  friend class base::RefCountedThreadSafe<AutocompleteProvider>;
-
-  virtual ~AutocompleteProvider();
-
   // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
   // number of characters that were trimmed.
   static size_t TrimHttpPrefix(std::wstring* url);

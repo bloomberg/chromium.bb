@@ -69,8 +69,6 @@ class KeywordProvider : public AutocompleteProvider {
                      bool minimal_changes);
 
  private:
-  ~KeywordProvider() {}
-
   // Extracts the keyword from |input| into |keyword|. Any remaining characters
   // after the keyword are placed in |remaining_input|. Returns true if |input|
   // is valid and has a keyword. This makes use of SplitKeywordFromInput to

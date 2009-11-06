@@ -53,10 +53,6 @@ class VersionLoader : public CancelableRequestProvider {
     void GetVersion(scoped_refptr<GetVersionRequest> request);
 
    private:
-    friend class base::RefCountedThreadSafe<Backend>;
-
-    ~Backend() {}
-
     DISALLOW_COPY_AND_ASSIGN(Backend);
   };
 

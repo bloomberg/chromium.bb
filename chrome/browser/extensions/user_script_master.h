@@ -29,6 +29,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // For testability, the constructor takes the path the scripts live in.
   // This is normally a directory inside the profile.
   UserScriptMaster(const FilePath& script_dir);
+  virtual ~UserScriptMaster();
 
   // Add a watched directory. All scripts will be reloaded when any file in
   // this directory changes.
@@ -51,11 +52,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
   // Returns the path to the directory user scripts are stored in.
   FilePath user_script_dir() const { return user_script_dir_; }
-
- protected:
-  friend class base::RefCountedThreadSafe<UserScriptMaster>;
-
-  virtual ~UserScriptMaster();
 
  private:
   FRIEND_TEST(UserScriptMasterTest, Parse1);
@@ -95,10 +91,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     }
 
    private:
-    friend class base::RefCountedThreadSafe<UserScriptMaster::ScriptReloader>;
-
-    ~ScriptReloader() {}
-
     // Where functions are run:
     //    master          file
     //   StartScan   ->  RunScan

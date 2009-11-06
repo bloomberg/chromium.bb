@@ -95,11 +95,6 @@ class ExtensionUpdaterFileHandler
       LOG(WARNING) << "Failed to delete temp file " << path.value();
     }
   }
-
- private:
-  friend class base::RefCountedThreadSafe<ExtensionUpdaterFileHandler>;
-
-  ~ExtensionUpdaterFileHandler() {}
 };
 
 

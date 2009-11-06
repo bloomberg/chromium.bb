@@ -29,10 +29,6 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
   void Start();
 
  private:
-  friend class base::RefCountedThreadSafe<FileReader>;
-
-  ~FileReader() {}
-
   void ReadFileOnBackgroundThread();
   void RunCallback(bool success, const std::string& data);
 

@@ -8,21 +8,19 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class ExtensionTestPassFunction : public SyncExtensionFunction {
-  ~ExtensionTestPassFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 };
 
 class ExtensionTestFailFunction : public SyncExtensionFunction {
-  ~ExtensionTestFailFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 };
 
 class ExtensionTestLogFunction : public SyncExtensionFunction {
-  ~ExtensionTestLogFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
+
