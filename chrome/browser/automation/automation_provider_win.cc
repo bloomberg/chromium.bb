@@ -346,7 +346,6 @@ void AutomationProvider::CreateExternalTab(
   if (AddExternalTab(external_tab_container)) {
     TabContents* tab_contents = external_tab_container->tab_contents();
     *tab_handle = external_tab_container->tab_handle();
-    external_tab_container->set_tab_handle(*tab_handle);
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
   } else {

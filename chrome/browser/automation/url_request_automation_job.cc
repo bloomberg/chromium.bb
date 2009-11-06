@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -14,7 +15,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
 using base::Time;
@@ -41,51 +41,13 @@ static const char* kFilteredHeaderStrings[] = {
   "via"
 };
 
-// This class manages the interception of network requests for automation.
-// It looks at the request, and creates an intercept job if it indicates
-// that it should use automation channel.
-// NOTE: All methods must be called on the IO thread.
-class AutomationRequestInterceptor : public URLRequest::Interceptor {
- public:
-  AutomationRequestInterceptor() {
-    URLRequest::RegisterRequestInterceptor(this);
-  }
-
-  virtual ~AutomationRequestInterceptor() {
-    URLRequest::UnregisterRequestInterceptor(this);
-  }
-
-  // URLRequest::Interceptor
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutomationRequestInterceptor);
-};
-
-URLRequestJob* AutomationRequestInterceptor::MaybeIntercept(
-    URLRequest* request) {
-  if (request->url().SchemeIs("http") || request->url().SchemeIs("https")) {
-    ResourceDispatcherHostRequestInfo* request_info =
-        ResourceDispatcherHost::InfoForRequest(request);
-    if (request_info) {
-      AutomationResourceMessageFilter::AutomationDetails details;
-      if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
-              request_info->child_id(), request_info->route_id(), &details)) {
-        URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
-            details.tab_handle, details.filter);
-        return job;
-      }
-    }
-  }
-
-  return NULL;
-}
-
-static URLRequest::Interceptor* GetAutomationRequestInterceptor() {
-  return Singleton<AutomationRequestInterceptor>::get();
-}
-
 int URLRequestAutomationJob::instance_count_ = 0;
+bool URLRequestAutomationJob::is_protocol_factory_registered_ = false;
+
+URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
+    = NULL;
+URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
+    = NULL;
 
 URLRequestAutomationJob::URLRequestAutomationJob(
     URLRequest* request, int tab, AutomationResourceMessageFilter* filter)
@@ -105,11 +67,47 @@ URLRequestAutomationJob::~URLRequestAutomationJob() {
   Cleanup();
 }
 
-bool URLRequestAutomationJob::InitializeInterceptor() {
-  // AutomationRequestInterceptor will register itself when it
-  // is first created.
-  URLRequest::Interceptor* interceptor = GetAutomationRequestInterceptor();
-  return (interceptor != NULL);
+bool URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  if (!is_protocol_factory_registered_) {
+    old_http_factory_ =
+        URLRequest::RegisterProtocolFactory("http",
+                                            &URLRequestAutomationJob::Factory);
+    old_https_factory_ =
+        URLRequest::RegisterProtocolFactory("https",
+                                            &URLRequestAutomationJob::Factory);
+    is_protocol_factory_registered_ = true;
+  }
+
+  return true;
+}
+
+URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
+                                                const std::string& scheme) {
+  bool scheme_is_http = request->url().SchemeIs("http");
+  bool scheme_is_https = request->url().SchemeIs("https");
+
+  // Returning null here just means that the built-in handler will be used.
+  if (scheme_is_http || scheme_is_https) {
+    ResourceDispatcherHostRequestInfo* request_info =
+        ResourceDispatcherHost::InfoForRequest(request);
+    if (request_info) {
+      AutomationResourceMessageFilter::AutomationDetails details;
+      if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
+              request_info->child_id(), request_info->route_id(), &details)) {
+        URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
+            details.tab_handle, details.filter);
+        return job;
+      }
+    }
+
+    if (scheme_is_http && old_http_factory_)
+      return old_http_factory_(request, scheme);
+    else if (scheme_is_https && old_https_factory_)
+      return old_https_factory_(request, scheme);
+  }
+  return NULL;
 }
 
 // URLRequestJob Implementation.

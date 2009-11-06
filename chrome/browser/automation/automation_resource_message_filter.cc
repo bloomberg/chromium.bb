@@ -24,7 +24,10 @@ int AutomationResourceMessageFilter::unique_request_id_ = 1;
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {
-  URLRequestAutomationJob::InitializeInterceptor();
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          URLRequestAutomationJob::EnsureProtocolFactoryRegistered));
 }
 
 AutomationResourceMessageFilter::~AutomationResourceMessageFilter() {
