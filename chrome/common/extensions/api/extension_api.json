@@ -69,7 +69,14 @@
           {
             "type": "function",
             "name": "responseCallback",
-            "optional": true
+            "optional": true,
+            "parameters": [
+              {
+                "name": "response",
+                "type": "any",
+                "description": "The JSON response object sent by the handler of the request."
+              }
+            ]
           }
         ]
       },
@@ -461,7 +468,14 @@
           {
             "type": "function",
             "name": "responseCallback",
-            "optional": true
+            "optional": true,
+            "parameters": [
+              {
+                "name": "response",
+                "type": "any",
+                "description": "The JSON response object sent by the handler of the request."
+              }
+            ]
           }
         ]
       },

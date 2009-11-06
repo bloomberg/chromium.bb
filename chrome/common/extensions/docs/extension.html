@@ -121,6 +121,7 @@
                 <ul>
                   <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
+                  <li><a href="messaging.html">Message Passing</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
                 </ul>
@@ -1357,11 +1358,49 @@ For details, see
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>null</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>any response</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
-                    <div style="display: none; ">
+                    <div jsinstance="*0">
                       <div>
-                      </div>
+          <dt>
+            <var>response</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>any</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The JSON response object sent by the handler of the request.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                     </div>
                   </dl>
                   </div>

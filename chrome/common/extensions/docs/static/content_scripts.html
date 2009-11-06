@@ -47,7 +47,7 @@ These limitations aren't as bad as they sound.
 Content scripts can <em>indirectly</em> use the chrome.* APIs,
 get access to extension data,
 and request extension actions
-by exchanging <a href="#messaging">messages</a>
+by exchanging <a href="messaging.html">messages</a>
 with their parent extension.
 Content scripts can also
 <a href="#host-page-communication">communicate with web pages</a>
@@ -162,68 +162,6 @@ document.getElementById("button").onclick = function() {
 
 <p>Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
 
-<h2 id="messaging">Messaging</h2>
-
-<p>Content scripts can communicate with their parent extension using message passing. A message channel can be opened by either the content script or an extension page. Each side of the channel has a <a href="extension.html#type-Port">Port</a> object which can be used to send messages to the other side. The messages can contain any valid JSON object (null, boolean, number, string, array, or object).
-
-<p>The content script opens a channel to the extension using the <a href="extension.html#method-connect">chrome.extension.connect()</a> method. The parent extension can also open a channel to a content script in a given tab by calling <a href="tabs.html#method-connect">chrome.tabs.connect(tabId)</a>. In either case, the <a href="extension.html#event-onConnect">onConnect</a> event is fired in the targeted page(s), and a connection is established.
-
-<p>When a channel is opened from a content script to an extension, the event is
-fired in all views in the extension. Any view can receive the event.
-
-<p>For example, suppose you want to write a simple login manager. You want a toolstrip button that lights up when a content script detects a "login" element in a page, and fills in the login info when you press the button.
-
-<p>Your content script would look like this:
-
-<pre>
-contentscript.js
-================
-var e = document.getElementById("login");
-
-// Create a short-lived named channel to the extension and send a single
-// message through it.
-var port = chrome.extension.connect({name: "notifyChannel"});
-port.postMessage({found: (e != undefined)});
-
-// Also listen for new channels from the extension for when the button is
-// pressed.
-chrome.extension.onConnect.addListener(function(port) {
-  console.assert(port.name == "buttonClickedChannel");
-  port.onMessage.addListener(function(msg) {
-    if (msg.buttonClicked) {
-      e.value = msg.passwordValue;
-    }
-  });
-});
-</pre>
-
-<p>with a toolstrip that looks like:
-
-<pre>
-toolstrip.html
-==============
-&lt;div class="toolstrip-button" id="btn" onclick="onClick()"&gt;
-  Fill Password
-&lt;/div&gt;
-&lt;script&gt;
-// Listen for notifications from the content script.
-chrome.extension.onConnect.addListener(function(port) {
-  console.assert(port.name == "notifyChannel");
-  port.onMessage.addListener(function(msg) {
-    // Color our button based on whether a login element was found.
-    var color = msg.found ? "blue" : "grey";
-    document.getElementById("btn").style.backgroundColor = color;
-  });
-});
-function onClick() {
-  // Send our password to the current tab when clicked.
-  chrome.tabs.getSelected(null, function(tab) {
-    var port = chrome.tabs.connect(tab.id, {name: "buttonClickedChannel"});
-    port.postMessage({buttonClicked: true});
-  });
-}
-&lt;/script&gt;
-</pre>
 
 <h2 id="host-page-communication">Communication with the embedding page</h2>
 
