@@ -1,17 +1,13 @@
 <html>
 <head>
 <script>
-  // The Page Action ID.
-  var pageActionId = "RssPageAction";
-
-  // The icon to use. This corresponds to the icon listed in the manifest.
-  var subscribeId = 0;
-
   // A dictionary keyed off of tabId that keeps track of data per tab (for
   // example what feedUrl was detected in the tab).
   var feedData = {};
 
   chrome.extension.onConnect.addListener(function(port) {
+    var tab = port.sender.tab;
+
     // This will get called from the content script using PostMessage.
     // |feedUrls| is a list of URL feeds found on the page. We only need 1 to
     // enable the PageAction icon in the Omnibox.
@@ -20,34 +16,29 @@
       // Let Chrome know that the PageAction needs to be enabled for this tabId
       // and for the url of this page.
       if (feedUrl) {
-        feedData[port.tab.id] = {pageUrl: port.tab.url,
-                                 feedUrl: feedUrl};
+        feedData[tab.id] = { pageUrl: tab.url,
+                             feedUrl: feedUrl };
 
-        chrome.pageActions.enableForTab(
-            pageActionId, {tabId: port.tab.id,
-                           url: port.tab.url,
-                           title: "Click to subscribe...",
-                           iconId: subscribeId});
+        chrome.pageAction.setTitle({ tabId: tab.id,
+                                     title: "Click to subscribe..." });
+        chrome.pageAction.show(tab.id);
       }
     });
   });
 
   // Chrome will call into us when the user clicks on the icon in the OmniBox.
-  chrome.pageActions["RssPageAction"].addListener(function(pageActionId,
-      pageActionInfo) {
-    chrome.windows.getCurrent(function(window) {
-      chrome.tabs.get(pageActionInfo.tabId, function(tab) {
-        // We need to know if we are the active window, because the tab may
-        // have moved to another window and we don't want to execute this
-        // action multiple times.
-        if (window.focused) {
-          // Create a new tab showing the subscription page with the right
-          // feed URL.
-          var url = "subscribe.html?" +
-              encodeURIComponent(feedData[pageActionInfo.tabId].feedUrl);
-          chrome.tabs.create({url: url, windowId: window.windowId});
-        }
-      });
+  chrome.pageAction.onClicked.addListener(function(tab) {
+    chrome.windows.get(tab.windowId, function(window) {
+      // We need to know if we are the active window, because the tab may
+      // have moved to another window and we don't want to execute this
+      // action multiple times.
+      if (window.focused) {
+        // Create a new tab showing the subscription page with the right
+        // feed URL.
+        var url = "subscribe.html?" +
+            encodeURIComponent(feedData[tab.id].feedUrl);
+        chrome.tabs.create({url: url, windowId: window.id});
+      }
     });
   });
 

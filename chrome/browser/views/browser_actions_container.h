@@ -152,6 +152,9 @@ class BrowserActionsContainer : public views::View,
     return browser_action_views_[index];
   }
 
+  // Retrieve the BrowserActionView for |extension|.
+  BrowserActionView* GetBrowserActionView(Extension* extension);
+
   // Update the views to reflect the state of the browser action icons.
   void RefreshBrowserActionViews();
 

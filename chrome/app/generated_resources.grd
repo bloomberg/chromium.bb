@@ -2603,6 +2603,19 @@ each locale. -->
         This extension will have full access to your computer and private data.
       </message>
 
+      <!-- Extension installed bubble -->
+      <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
+        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed
+      </message>
+
+      <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
+        This icon will be visible when the extension can act on the current page.
+      </message>
+
+      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructives on how to find the chrome://extensions/ management page">
+        You can manage your installed extensions by clicking on the wrench menu, and then "Extensions".
+      </message>
+
       <!-- chrome://extensions page -->
       <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
         Developer mode

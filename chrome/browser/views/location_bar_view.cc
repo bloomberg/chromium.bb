@@ -338,6 +338,36 @@ void LocationBarView::SetProfile(Profile* profile) {
   }
 }
 
+void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction *page_action,
+                                                  bool preview_enabled) {
+  DCHECK(page_action);
+  TabContents* contents = delegate_->GetTabContents();
+
+  RefreshPageActionViews();
+  PageActionWithBadgeView* page_action_view =
+      static_cast<PageActionWithBadgeView*>(GetPageActionView(page_action));
+  DCHECK(page_action_view);
+  if (!page_action_view)
+    return;
+
+  page_action_view->image_view()->set_preview_enabled(preview_enabled);
+  page_action_view->UpdateVisibility(contents,
+      GURL(WideToUTF8(model_->GetText())));
+  Layout();
+  SchedulePaint();
+}
+
+views::View* LocationBarView::GetPageActionView(
+    ExtensionAction *page_action) {
+  DCHECK(page_action);
+  for (std::vector<PageActionWithBadgeView*>::iterator iter =
+      page_action_views_.begin(); iter != page_action_views_.end();
+      ++iter) {
+    if ((*iter)->image_view()->page_action() == page_action)
+      return *iter;
+  }
+  return NULL;
+}
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0,
       (popup_window_mode_ ? kPopupBackground : kBackground)->height());
@@ -1263,7 +1293,8 @@ LocationBarView::PageActionImageView::PageActionImageView(
       owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      current_tab_id_(-1) {
+      current_tab_id_(-1),
+      preview_enabled_(false) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id());
   DCHECK(extension);
@@ -1370,7 +1401,8 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  bool visible = page_action_->GetIsVisible(current_tab_id_);
+  bool visible = preview_enabled_ ||
+                 page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
     tooltip_ = page_action_->GetTitle(current_tab_id_);

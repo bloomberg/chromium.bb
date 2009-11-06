@@ -8,6 +8,8 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #include <string>
 
@@ -17,7 +19,6 @@ class MessageLoop;
 class Profile;
 class InfoBarDelegate;
 class SandboxedExtensionUnpacker;
-class SkBitmap;
 class TabContents;
 
 // Displays all the UI around extension installation.
@@ -42,7 +43,7 @@ class ExtensionInstallUI {
                                          const std::wstring& warning_text);
   static void ShowExtensionInstallError(const std::string& error);
 
-  ExtensionInstallUI(Profile* profile);
+  explicit ExtensionInstallUI(Profile* profile);
 
   // This is called by the installer to verify whether the installation should
   // proceed.
@@ -75,6 +76,7 @@ class ExtensionInstallUI {
   Profile* profile_;
   MessageLoop* ui_loop_;
   std::string previous_theme_id_;  // Used to undo theme installation.
+  SkBitmap icon_;  // The extensions installation icon.
 
 #if defined(TOOLKIT_GTK)
   // Also needed to undo theme installation in the linux UI.
