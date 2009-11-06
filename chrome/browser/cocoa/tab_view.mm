@@ -432,8 +432,11 @@ static const CGFloat kRapidCloseDist = 2.5;
     tearOrigin_ = sourceWindowFrame_.origin;
   }
 
-  DCHECK(draggedController_);
-  DCHECK(sourceController_);
+  // TODO(pinkerton): http://crbug.com/25682 demonstrates a way to get here by
+  // some weird circumstance that doesn't first go through mouseDown:. We
+  // really shouldn't go any farther.
+  if (!draggedController_ || !sourceController_)
+    return;
 
   // When the user first tears off the window, we want slide the window to
   // the current mouse location (to reduce the jarring appearance). We do this
@@ -526,6 +529,12 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   // Cancel any delayed -mouseDragged: requests that may still be pending.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+  // TODO(pinkerton): http://crbug.com/25682 demonstrates a way to get here by
+  // some weird circumstance that doesn't first go through mouseDown:. We
+  // really shouldn't go any farther.
+  if (!sourceController_)
+    return;
 
   // We are now free to re-display the new tab button in the window we're
   // dragging. It will show when the next call to -layoutTabs (which happens
