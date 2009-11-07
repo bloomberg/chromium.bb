@@ -31,8 +31,8 @@
 #ifndef WebBindings_h
 #define WebBindings_h
 
-#include <bindings/npruntime.h>
 #include "WebCommon.h"
+#include <bindings/npruntime.h>
 
 namespace WebKit {
 

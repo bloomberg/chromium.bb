@@ -32,9 +32,8 @@
 #define WebFontRendering_h
 
 #include "../WebCommon.h"
-
-#include <SkPaint.h>
 #include <SkFontHost.h>
+#include <SkPaint.h>
 
 namespace WebKit {
 

@@ -68,7 +68,11 @@ public:
 
     WebURLRequest() : m_private(0) { }
     WebURLRequest(const WebURLRequest& r) : m_private(0) { assign(r); }
-    WebURLRequest& operator=(const WebURLRequest& r) { assign(r); return *this; }
+    WebURLRequest& operator=(const WebURLRequest& r)
+    {
+        assign(r);
+        return *this;
+    }
 
     explicit WebURLRequest(const WebURL& url) : m_private(0)
     {

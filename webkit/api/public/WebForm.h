@@ -50,7 +50,11 @@ public:
 
     WebForm() : m_private(0) { }
     WebForm(const WebForm& f) : m_private(0) { assign(f); }
-    WebForm& operator=(const WebForm& f) { assign(f); return *this; }
+    WebForm& operator=(const WebForm& f)
+    {
+        assign(f);
+        return *this;
+    }
 
     WEBKIT_API void reset();
     WEBKIT_API void assign(const WebForm&);

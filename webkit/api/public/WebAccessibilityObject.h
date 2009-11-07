@@ -31,8 +31,8 @@
 #ifndef WebAccessibilityObject_h
 #define WebAccessibilityObject_h
 
-#include "WebCommon.h"
 #include "WebAccessibilityRole.h"
+#include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class AccessibilityObject; }
@@ -53,7 +53,11 @@ public:
 
     WebAccessibilityObject() : m_private(0) { }
     WebAccessibilityObject(const WebAccessibilityObject& o) : m_private(0) { assign(o); }
-    WebAccessibilityObject& operator=(const WebAccessibilityObject& o) { assign(o); return *this; }
+    WebAccessibilityObject& operator=(const WebAccessibilityObject& o)
+    {
+        assign(o);
+        return *this;
+    }
 
     WEBKIT_API void reset();
     WEBKIT_API void assign(const WebAccessibilityObject&);

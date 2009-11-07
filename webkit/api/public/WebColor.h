@@ -31,8 +31,8 @@
 #ifndef WebColor_h
 #define WebColor_h
 
-#include "WebCommon.h"
 #include "WebColorName.h"
+#include "WebCommon.h"
 
 namespace WebKit {
 

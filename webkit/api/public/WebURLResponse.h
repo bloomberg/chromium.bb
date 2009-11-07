@@ -51,7 +51,11 @@ public:
 
     WebURLResponse() : m_private(0) { }
     WebURLResponse(const WebURLResponse& r) : m_private(0) { assign(r); }
-    WebURLResponse& operator=(const WebURLResponse& r) { assign(r); return *this; }
+    WebURLResponse& operator=(const WebURLResponse& r)
+    {
+        assign(r);
+        return *this;
+    }
 
     explicit WebURLResponse(const WebURL& url) : m_private(0)
     {

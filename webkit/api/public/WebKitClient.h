@@ -134,7 +134,7 @@ public:
     typedef int FileHandle;
 #endif
 
-    // Opens a database file; dirHandle should be NULL if the caller does not need
+    // Opens a database file; dirHandle should be 0 if the caller does not need
     // a handle to the directory containing this file
     virtual FileHandle databaseOpenFile(
         const WebString& fileName, int desiredFlags, FileHandle* dirHandle) = 0;

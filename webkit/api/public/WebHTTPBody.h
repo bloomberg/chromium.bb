@@ -56,7 +56,11 @@ public:
 
     WebHTTPBody() : m_private(0) { }
     WebHTTPBody(const WebHTTPBody& b) : m_private(0) { assign(b); }
-    WebHTTPBody& operator=(const WebHTTPBody& b) { assign(b); return *this; }
+    WebHTTPBody& operator=(const WebHTTPBody& b)
+    {
+        assign(b);
+        return *this;
+    }
 
     WEBKIT_API void initialize();
     WEBKIT_API void reset();

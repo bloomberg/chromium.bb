@@ -57,7 +57,11 @@ public:
 
     WebHistoryItem() : m_private(0) { }
     WebHistoryItem(const WebHistoryItem& h) : m_private(0) { assign(h); }
-    WebHistoryItem& operator=(const WebHistoryItem& h) { assign(h); return *this; }
+    WebHistoryItem& operator=(const WebHistoryItem& h)
+    {
+        assign(h);
+        return *this;
+    }
 
     WEBKIT_API void initialize();
     WEBKIT_API void reset();

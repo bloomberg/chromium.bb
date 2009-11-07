@@ -54,7 +54,11 @@ public:
 
     WebDragData() : m_private(0) { }
     WebDragData(const WebDragData& d) : m_private(0) { assign(d); }
-    WebDragData& operator=(const WebDragData& d) { assign(d); return *this; }
+    WebDragData& operator=(const WebDragData& d)
+    {
+        assign(d);
+        return *this;
+    }
 
     WEBKIT_API void initialize();
     WEBKIT_API void reset();

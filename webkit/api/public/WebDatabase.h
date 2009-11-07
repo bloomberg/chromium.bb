@@ -51,7 +51,11 @@ public:
     WebDatabase(const WebDatabase& d) : m_private(0) { assign(d); }
     ~WebDatabase() { reset(); }
 
-    WebDatabase& operator=(const WebDatabase& d) { assign(d); return *this; }
+    WebDatabase& operator=(const WebDatabase& d)
+    {
+        assign(d);
+        return *this;
+    }
 
     WEBKIT_API void reset();
     WEBKIT_API void assign(const WebDatabase&);

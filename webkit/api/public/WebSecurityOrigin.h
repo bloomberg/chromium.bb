@@ -49,7 +49,11 @@ public:
 
     WebSecurityOrigin() : m_private(0) { }
     WebSecurityOrigin(const WebSecurityOrigin& s) : m_private(0) { assign(s); }
-    WebSecurityOrigin& operator=(const WebSecurityOrigin& s) { assign(s); return *this; }
+    WebSecurityOrigin& operator=(const WebSecurityOrigin& s)
+    {
+        assign(s);
+        return *this;
+    }
 
     WEBKIT_API void reset();
     WEBKIT_API void assign(const WebSecurityOrigin&);
