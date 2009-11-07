@@ -4,25 +4,22 @@
 <p>
 A common need for extensions is to have
 a single long-running script to manage some task or state.
-Toolstrips don't quite fit this need,
-because multiple toolstrips can be active at any one time
-(one per browser window).
 Background pages to the rescue.
 </p>
 
 <p>
-The background page is similar to a toolstrip,
-in that it is an HTML page that runs in the extension process.
-The difference is that the background page exists
-for the lifetime of your extension,
+As the <a href="overview.html#arch">architecture overview</a> explains,
+the background page is an HTML page that runs in the extension process.
+It exists for the lifetime of your extension,
 and only one instance of it at a time is active.
 </p>
 
 <p>
 In a typical extension with a background page,
 the UI &mdash;
-toolstrips, page actions, and so on &mdash;
-is implemented with dumb views.
+for example, the browser action or page action
+and any options page &mdash;
+is implemented by dumb views.
 When the view needs some state,
 it requests the state from the background page.
 When the background page notices a state change,
@@ -32,43 +29,98 @@ the background page tells the views to update.
 <h2 id="manifest">Manifest</h2>
 
 <p>
-Register your background page in the extension manifest, like this:
+Register your background page in the
+<a href="manifest.html">extension manifest</a>
+like this:
 </p>
 
-<pre>{
-  "name": "My First Extension",
-  "version": "1.0",
-  "description": "The first extension that I made.",
-  <b>"background_page": "background.html",</b>
-  "toolstrips": ["toolstrip.html"]
-}</pre>
+<pre>
+"background_page": "background.html"
+</pre>
 
 <h2>Details</h2>
 
 <p>
-Your toolstrip will likely contain
-only the necessary code to display the toolstrip UI,
-with all your extension logic contained in the background page.
 You can communicate between your various pages using direct script calls,
 similar to how frames can communicate.
-The chrome.extension.getViews() function
+The <a href="extension.html#method-getViews"><code>chrome.extension.getViews()</code></a> method
 returns a list of window objects
-for every active page belonging to your extension.
+for every active page belonging to your extension,
+and the
+<a href="extension.html#method-getBackgroundPage"><code>chrome.extension.getBackgroundPage()</code></a> method
+returns the background page.
 </p>
 
-<h2>Example</h2>
+<h2 id="example">Example</h2>
 
-<pre>background_page.html (snippet):
-  function updateUI(checked) {
-    var views = chrome.extension.getViews();
-    for (var i in views) {
-      if (views[i].enableCheckbox)
-        views[i].enableCheckbox(checked);
+<p>
+The following code snippet demonstrates
+how the background page
+can interact with other pages in the extension.
+It also shows how you can use
+the background page to handle events
+such as user clicks.
+</p>
+
+<p>
+The extension in this example
+has a background page
+and multiple pages created
+(with
+<a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>)
+from a file named <code>image.html</code>.
+<span class="comment">
+[PENDING: Once we have our set of samples,
+we should point to the example this is from
+and to other relevant examples.
+This is currently untested code derived from
+the screenshot sample.]
+</span>
+</p>
+
+<pre>
+<em>//In the background page:</em>
+&lt;html>
+  &lt;script>
+    //React when a browser action's icon is clicked.
+    chrome.browserAction.onClicked.addListener(function(tab) {
+      var viewTabUrl = chrome.extension.getURL('image.html');
+      var imageUrl = <em>/* an image's URL */</em>;
+
+      //Look through all the pages in this extension to find one we can use.
+      var views = chrome.extension.getViews();
+      for (var i = 0; i < views.length; i++) {
+        var view = views[i];
+
+        //If this view has the right URL and hasn't been used yet...
+        if (view.location.href == viewTabUrl && !view.imageAlreadySet) {
+
+          //...call one of its functions and set a property.
+          view.setImageUrl(imageUrl);
+          view.imageAlreadySet = true;
+          break; //we're done
+        }
+      }
+    });
+  &lt;/script>
+&lt;/html>
+
+<em>//In image.html:</em>
+&lt;html>
+  &lt;script>
+    function setImageUrl(url) {
+      document.getElementById('target').src = url;
     }
-  }
+  &lt;/script>
 
-toolstrip.html (snippet):
-  function enableCheckbox(checked) {
-    var elm = document.getElementById('checkbox');
-    elm.checked = checked;
-  }</pre>
+  &lt;body>
+    &lt;p>
+    Image here:
+    &lt;/p>
+
+    &lt;img id="target" src="white.png" width="640" height="480">
+
+  &lt;/body>
+&lt;/html>
+</pre>
+
