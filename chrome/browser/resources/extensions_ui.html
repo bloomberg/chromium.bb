@@ -139,6 +139,10 @@ body.showDevMode .showInDevMode {
   font-weight: bold;
 }
 
+.no-extensions {
+  margin: 1em 0.5;
+}
+
 .extension-description {
   margin-top: 0.4em;
 }
@@ -647,7 +651,7 @@ function autoUpdate() {
       </div>
 
       <div class="content">
-        <div class="extension-name" jsdisplay="extensions.length === 0"
+        <div class="extension-name no-extensions" jsdisplay="extensions.length === 0"
              i18n-content="noExtensions">NO_EXTENSIONS_ARE_INSTALLED</div>
 
         <div jsdisplay="extensions.length > 0">

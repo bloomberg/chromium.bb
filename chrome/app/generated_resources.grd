@@ -2620,7 +2620,7 @@ each locale. -->
         Update Extensions now
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
-        No extensions installed
+        Boo... No extensions installed :-(
       </message>
       <message name="IDS_EXTENSIONS_DISABLED_EXTENSION" desc="Text that signifies that the extension is currently disabled.">
         (Disabled)
