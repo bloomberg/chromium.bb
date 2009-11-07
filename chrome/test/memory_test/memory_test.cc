@@ -128,8 +128,7 @@ class MemoryTest : public UITest {
   // new tab.
   // <PAUSE> is a special URL that informs the loop to pause before proceeding
   // to the next URL.
-  void RunTest(const char* test_name, int num_target_tabs,
-               bool print_progressive_memory_stats) {
+  void RunTest(const char* test_name, int num_target_tabs) {
     std::string* urls;
     size_t urls_length = GetUrlList(&urls);
 
@@ -143,7 +142,6 @@ class MemoryTest : public UITest {
     int active_window = 0;  // The index of the window we are currently using.
     scoped_refptr<TabProxy> tab(window->GetActiveTab());
     int expected_tab_count = 1;
-    int navigation_count = 0;
     for (unsigned counter = 0; counter < urls_length; ++counter) {
       std::string url = urls[counter];
 
@@ -221,19 +219,19 @@ class MemoryTest : public UITest {
       // The automation crashes periodically if we cycle too quickly.
       // To make these tests more reliable, slowing them down a bit.
       PlatformThread::Sleep(100);
-
-      if (print_progressive_memory_stats) {
-        char buf[10];
-        snprintf(buf, sizeof(buf), "%d", navigation_count);
-        size_t cur_size = GetSystemCommitCharge();
-        PrintMemoryUsageInfo(test_name, buf, cur_size - start_size);
-      }
-
-      navigation_count++;
     }
 
     size_t stop_size = GetSystemCommitCharge();
-    PrintMemoryUsageInfo(test_name, "final", stop_size - start_size);
+    PrintResults(test_name, stop_size - start_size);
+  }
+
+  void PrintResults(const char* test_name, size_t commit_size) {
+    PrintMemoryUsageInfo(test_name);
+    std::string trace_name(test_name);
+    trace_name.append("_cc");
+
+    PrintResult("commit_charge", "", trace_name,
+                commit_size / 1024, "kb", true /* important */);
   }
 
   void PrintIOPerfInfo(const char* test_name) {
@@ -293,9 +291,7 @@ class MemoryTest : public UITest {
     }
   }
 
-  void PrintMemoryUsageInfo(const std::string& test_name,
-                            const std::string& trace_name,
-                            size_t commit_size) {
+  void PrintMemoryUsageInfo(const char* test_name) {
     printf("\n");
 
     int browser_process_pid = ChromeBrowserProcessId(user_data_dir_);
@@ -336,24 +332,22 @@ class MemoryTest : public UITest {
       working_set_size += current_working_set_size;
     }
 
-    PrintResult("browser_vm_", test_name, trace_name,
+    std::string trace_name(test_name);
+    PrintResult("vm_final_browser", "", trace_name + "_vm_b",
                 browser_virtual_size / 1024, "kb",
                 false /* not important */);
-    PrintResult("browser_ws_", test_name, trace_name,
+    PrintResult("ws_final_browser", "", trace_name + "_ws_b",
                 browser_working_set_size / 1024, "kb",
                 false /* not important */);
-    PrintResult("total_vm_", test_name, trace_name,
+    PrintResult("vm_final_total", "", trace_name + "_vm",
                 virtual_size / 1024, "kb",
                 false /* not important */);
-    PrintResult("total_ws_", test_name, trace_name,
+    PrintResult("ws_final_total", "", trace_name + "_ws",
                 working_set_size / 1024, "kb",
                 true /* important */);
-    PrintResult("processes_", test_name, trace_name,
+    PrintResult("processes", "", trace_name + "_proc",
                 chrome_processes.size(), "",
                 false /* not important */);
-    PrintResult("commit_charge_", test_name, trace_name,
-                commit_size / 1024, "kb",
-                true /* important */);
   }
 
  private:
@@ -641,19 +635,20 @@ size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
 TEST_F(GeneralMixMemoryTest, SingleTabTest) {
-  RunTest("1t", 1, false);
+  RunTest("1t", 1);
 }
 
 TEST_F(GeneralMixMemoryTest, FiveTabTest) {
-  RunTest("5t", 5, false);
+  RunTest("5t", 5);
 }
 
 TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
-  RunTest("12t", 12, false);
+  RunTest("12t", 12);
 }
 
-TEST_F(MembusterMemoryTest, Windows) {
-  RunTest("membuster", 0, true);
-}
+// Commented out until the recorded cache data is added.
+//TEST_F(MembusterMemoryTest, Windows) {
+//  RunTest("membuster", 0);
+//}
 
 }  // namespace
