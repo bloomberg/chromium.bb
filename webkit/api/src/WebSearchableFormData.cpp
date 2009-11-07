@@ -43,7 +43,7 @@
 #include "HTMLOptionsCollection.h"
 #include "HTMLSelectElement.h"
 #include "TextEncoding.h"
-#include "WebForm.h"
+#include "WebFormElement.h"
 
 using namespace WebCore;
 
@@ -217,7 +217,7 @@ bool HasSuitableTextElement(const HTMLFormElement* form, Vector<char>* encodedSt
 
 namespace WebKit {
 
-WebSearchableFormData::WebSearchableFormData(const WebForm& form)
+WebSearchableFormData::WebSearchableFormData(const WebFormElement& form)
 {
     RefPtr<HTMLFormElement> formElement = form.operator PassRefPtr<HTMLFormElement>();
     const Frame* frame = formElement->document()->frame();

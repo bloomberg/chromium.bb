@@ -31,20 +31,24 @@ MSVC_POP_WARNING();
 #undef LOG
 
 #include "base/string_util.h"
+#include "webkit/api/public/WebVector.h"
+#include "webkit/api/public/WebView.h"
 // TODO(yaar) Eventually should not depend on api/src.
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener_impl.h"
+#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using WebCore::String;
 using WebKit::FrameLoaderClientImpl;
+using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebFrameImpl;
+using WebKit::WebNode;
+using WebKit::WebVector;
 using WebKit::WebView;
 
 namespace {
@@ -173,8 +177,8 @@ namespace webkit_glue {
 
 // Map element name to a list of pointers to corresponding elements to simplify
 // form filling.
-typedef std::map<string16, RefPtr<WebCore::HTMLInputElement> >
-    FormElementRefMap;
+typedef std::map<string16, WebKit::WebInputElement >
+    FormInputElementMap;
 
 // Utility struct for form lookup and autofill. When we parse the DOM to lookup
 // a form, in addition to action and origin URL's we have to compare all
@@ -182,9 +186,9 @@ typedef std::map<string16, RefPtr<WebCore::HTMLInputElement> >
 // to fill the form, the FindFormElements function stores the pointers
 // in a FormElements* result, referenced to ensure they are safe to use.
 struct FormElements {
-  RefPtr<WebCore::HTMLFormElement> form_element;
-  FormElementRefMap input_elements;
-  FormElements() : form_element(NULL) {
+  WebFormElement form_element;
+  FormInputElementMap input_elements;
+  FormElements() {
   }
 };
 
@@ -192,7 +196,7 @@ typedef std::vector<FormElements*> FormElementsList;
 
 // Internal implementation of FillForm API.
 static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
-  if (!fe->form_element->autoComplete())
+  if (!fe->form_element.autoComplete())
     return false;
 
   std::map<string16, string16> data_map;
@@ -201,22 +205,22 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
   }
 
   bool submit_found = false;
-  for (FormElementRefMap::iterator it = fe->input_elements.begin();
+  for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
     if (it->first == data.submit) {
-      it->second->setActivatedSubmit(true);
+      it->second.setActivatedSubmit(true);
       submit_found = true;
       continue;
     }
-    if (!it->second->value().isEmpty())  // Don't overwrite pre-filled values.
+    if (!it->second.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
-    it->second->setValue(String16ToString(data_map[it->first]));
-    it->second->setAutofilled(true);
-    it->second->dispatchFormControlChangeEvent();
+    it->second.setValue(data_map[it->first]);
+    it->second.setAutofilled(true);
+    it->second.dispatchFormControlChangeEvent();
   }
 
   if (submit && submit_found) {
-    fe->form_element->submit();
+    fe->form_element.submit();
     return true;
   }
   return false;
@@ -224,15 +228,15 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
 
 // Helper to search the given form element for the specified input elements
 // in |data|, and add results to |result|.
-static bool FindFormInputElements(WebCore::HTMLFormElement* fe,
+static bool FindFormInputElements(WebFormElement& fe,
                                   const FormData& data,
                                   FormElements* result) {
-  Vector<RefPtr<WebCore::Node> > temp_elements;
   // Loop through the list of elements we need to find on the form in
   // order to autofill it. If we don't find any one of them, abort
   // processing this form; it can't be the right one.
-  for (size_t j = 0; j < data.elements.size(); j++, temp_elements.clear()) {
-    fe->getNamedElements(String16ToString(data.elements[j]), temp_elements);
+  for (size_t j = 0; j < data.elements.size(); j++) {
+    WebVector<WebNode> temp_elements;
+    fe.getNamedElements(data.elements[j], temp_elements);
     if (temp_elements.isEmpty()) {
       // We didn't find a required element. This is not the right form.
       // Make sure no input elements from a partially matched form
@@ -247,8 +251,7 @@ static bool FindFormInputElements(WebCore::HTMLFormElement* fe,
     // matching elements it can get at them through the FormElement*.
     // Note: This assignment adds a reference to the InputElement.
     result->input_elements[data.elements[j]] =
-        WebKit::toHTMLInputElement(temp_elements[0].get());
-    DCHECK(result->input_elements[data.elements[j]].get());
+        temp_elements[0].toElement<WebInputElement>();
   }
   return true;
 }
@@ -285,11 +288,12 @@ static void FindFormElements(WebView* view,
 
     PassRefPtr<WebCore::HTMLCollection> forms = doc->forms();
     for (size_t i = 0; i < forms->length(); ++i) {
-      WebCore::HTMLFormElement* fe =
-          static_cast<WebCore::HTMLFormElement*>(forms->item(i));
-
+      // FIXME: docs->forms should return an array of WebFormElements
+      WebFormElement fe = HTMLFormElementToWebFormElement(
+          static_cast<WebCore::HTMLFormElement*>(forms->item(i)));
       // Action URL must match.
-      GURL full_action(KURLToGURL(loader->completeURL(fe->action())));
+      GURL full_action(
+          KURLToGURL(loader->completeURL(WebStringToString(fe.action()))));
       if (data.action != full_action.ReplaceComponents(rep))
         continue;
 
@@ -339,23 +343,19 @@ void FillPasswordForm(WebView* view,
 
     // Attach autocomplete listener to enable selecting alternate logins.
     // First, get pointers to username element.
-    WebCore::HTMLInputElement* username_element =
-        form_elements->input_elements[data.basic_data.elements[0]].get();
+    WebInputElement username_element =
+        form_elements->input_elements[data.basic_data.elements[0]];
 
     // Get pointer to password element. (We currently only support single
     // password forms).
-    WebCore::HTMLInputElement* password_element =
-        form_elements->input_elements[data.basic_data.elements[1]].get();
+    WebInputElement password_element =
+        form_elements->input_elements[data.basic_data.elements[1]];
 
-    FrameLoaderClientImpl* frame_loader_client =
-        static_cast<FrameLoaderClientImpl*>(username_element->document()->
-                                            frame()->loader()->client());
-    WebFrameImpl* webframe_impl = frame_loader_client->webFrame();
-    webframe_impl->registerPasswordListener(
+    username_element.frame()->registerPasswordListener(
         username_element,
-        new PasswordAutocompleteListenerImpl(
-            new HTMLInputDelegate(username_element),
-            new HTMLInputDelegate(password_element),
+        new WebPasswordAutocompleteListenerImpl(
+            new WebInputElementDelegate(username_element),
+            new WebInputElementDelegate(password_element),
             data));
   }
 }

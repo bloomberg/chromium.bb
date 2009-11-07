@@ -147,7 +147,7 @@ void assemblePasswordFormResult(const KURL& fullOrigin,
 
 } // namespace
 
-WebPasswordFormData::WebPasswordFormData(const WebForm& webForm)
+WebPasswordFormData::WebPasswordFormData(const WebFormElement& webForm)
 {
     RefPtr<HTMLFormElement> form = webForm.operator PassRefPtr<HTMLFormElement>();
 

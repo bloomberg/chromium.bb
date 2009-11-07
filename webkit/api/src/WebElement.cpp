@@ -28,24 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PasswordAutocompleteListener_h
-#define PasswordAutocompleteListener_h
+#include "config.h"
+#include "WebElement.h"
+
+#include "Element.h"
+#include <wtf/PassRefPtr.h>
+
+using namespace WebCore;
 
 namespace WebKit {
 
-class PasswordAutocompleteListener {
-public:
-    virtual ~PasswordAutocompleteListener() {}
+WebElement::WebElement(const WTF::PassRefPtr<WebCore::Element>& elem)
+    : WebNode(elem.releaseRef())
+{
+}
 
-    virtual void didBlurInputElement(
-        const WebCore::String& userInput) = 0;
+WebElement& WebElement::operator=(const WTF::PassRefPtr<WebCore::Element>& elem)
+{
+    WebNode::assign(elem.releaseRef());
+    return *this;
+}
 
-    virtual void performInlineAutocomplete(
-        const WebCore::String& userInput,
-        bool backSpaceOrDeletePressed,
-        bool showSuggestions) = 0;
-};
+WebElement::operator WTF::PassRefPtr<Element>() const
+{
+    return PassRefPtr<Element>(static_cast<Element*>(m_private));
+}
 
 } // namespace WebKit
 
-#endif

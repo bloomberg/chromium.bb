@@ -28,78 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef WebElement_h
+#define WebElement_h
+
 #include "WebNode.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "Node.h"
-
-#include "FrameLoaderClientImpl.h"
-#include "WebFrameImpl.h"
-#include "WebString.h"
-#include <wtf/PassRefPtr.h>
-
-using namespace WebCore;
+#if WEBKIT_IMPLEMENTATION
+namespace WebCore { class Element; }
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
 
 namespace WebKit {
 
-class WebNodePrivate : public Node {
-};
+    // Provides readonly access to some properties of a DOM element node.
+    class WebElement : public WebNode {
+    public:
+        WebElement() : WebNode() { }
+        WebElement(const WebElement& e) : WebNode(e) { }
 
-void WebNode::reset()
-{
-    assign(0);
-}
+        WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
+        WEBKIT_API void assign(const WebElement& e) { WebNode::assign(e); }
 
-void WebNode::assign(const WebNode& other)
-{
-    WebNodePrivate* p = const_cast<WebNodePrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
+#if WEBKIT_IMPLEMENTATION
+        WebElement(const WTF::PassRefPtr<WebCore::Element>&);
+        WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);
+        operator WTF::PassRefPtr<WebCore::Element>() const;
+#endif
 
-WebNode WebNode::parentNode() const
-{
-    return PassRefPtr<Node>(const_cast<Node*>(m_private->parentNode()));
-}
-
-WebString WebNode::nodeName() const
-{
-    return m_private->nodeName();
-}
-
-WebNode::WebNode(const WTF::PassRefPtr<WebCore::Node>& node)
-    : m_private(static_cast<WebNodePrivate*>(node.releaseRef()))
-{
-}
-
-WebNode& WebNode::operator=(const WTF::PassRefPtr<WebCore::Node>& node)
-{
-    assign(static_cast<WebNodePrivate*>(node.releaseRef()));
-    return *this;
-}
-
-WebNode::operator WTF::PassRefPtr<WebCore::Node>() const
-{
-    return PassRefPtr<Node>(const_cast<WebNodePrivate*>(m_private));
-}
-
-void WebNode::assign(WebNodePrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
-
-WebFrame* WebNode::frame()
-{
-    FrameLoaderClientImpl* frame_loader_client =
-        static_cast<FrameLoaderClientImpl*>(m_private->document()->
-                                            frame()->loader()->client());
-    return static_cast<WebFrame*>(frame_loader_client->webFrame());
-}
+    };
 
 } // namespace WebKit
+
+#endif

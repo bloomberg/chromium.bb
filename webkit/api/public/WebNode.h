@@ -34,19 +34,18 @@
 #include "WebCommon.h"
 #include "WebString.h"
 
-#if WEBKIT_IMPLEMENTATION
 namespace WebCore { class Node; }
+#if WEBKIT_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
-
-class WebNodePrivate;
+class WebFrame;
 
 // Provides readonly access to some properties of a DOM node.
 class WebNode {
 public:
-    ~WebNode() { reset(); }
+    virtual ~WebNode() { reset(); }
 
     WebNode() : m_private(0) { }
     WebNode(const WebNode& n) : m_private(0) { assign(n); }
@@ -61,18 +60,37 @@ public:
 
     bool isNull() const { return !m_private; }
 
-    WEBKIT_API WebNode parentNode() const;
-    WEBKIT_API WebString nodeName() const;
-
 #if WEBKIT_IMPLEMENTATION
     WebNode(const WTF::PassRefPtr<WebCore::Node>&);
     WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
     operator WTF::PassRefPtr<WebCore::Node>() const;
 #endif
 
-private:
+    WEBKIT_API WebNode parentNode() const;
+    WEBKIT_API WebString nodeName() const;
+    WebFrame* frame();
+
+    template<typename T> T toElement()
+    {
+        T res;
+        res.m_private = m_private;
+        return res;
+    }
+
+protected:
+    typedef WebCore::Node WebNodePrivate;
     void assign(WebNodePrivate*);
     WebNodePrivate* m_private;
+    
+    template<typename T> T* unwrap()
+    {
+        return static_cast<T*>(m_private);
+    }
+
+    template<typename T> const T* constUnwrap() const
+    {
+        return static_cast<const T*>(m_private);
+    }
 };
 
 } // namespace WebKit

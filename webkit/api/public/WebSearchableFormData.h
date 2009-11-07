@@ -35,7 +35,7 @@
 #include "WebURL.h"
 
 namespace WebKit {
-class WebForm;
+class WebFormElement;
 
 // SearchableFormData encapsulates a URL and encoding of an INPUT field that
 // corresponds to a searchable form request.
@@ -43,7 +43,7 @@ class WebSearchableFormData {
 public:
     // If the provided form is suitable for automated searching, isValid()
     // will return false.
-    WebSearchableFormData(const WebForm&);
+    WebSearchableFormData(const WebFormElement&);
 
     bool isValid() { return m_url.isValid(); }
 

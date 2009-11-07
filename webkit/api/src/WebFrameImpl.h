@@ -50,9 +50,10 @@ struct WindowFeatures;
 
 namespace WebKit {
 class ChromePrintContext;
-class PasswordAutocompleteListener;
 class WebDataSourceImpl;
+class WebInputElement;
 class WebFrameClient;
+class WebPasswordAutocompleteListener;
 class WebView;
 class WebViewImpl;
 
@@ -80,7 +81,7 @@ public:
     virtual WebFrame* traversePrevious(bool wrap) const;
     virtual WebFrame* findChildByName(const WebString&) const;
     virtual WebFrame* findChildByExpression(const WebString&) const;
-    virtual void forms(WebVector<WebForm>&) const;
+    virtual void forms(WebVector<WebFormElement>&) const;
     virtual WebSecurityOrigin securityOrigin() const;
     virtual void grantUniversalAccess();
     virtual NPObject* windowObject() const;
@@ -149,6 +150,9 @@ public:
     virtual void cancelPendingScopingEffort();
     virtual void increaseMatchCount(int count, int identifier);
     virtual void resetMatchCount();
+    virtual void registerPasswordListener(
+        WebInputElement, WebPasswordAutocompleteListener*);
+
     virtual WebURL completeURL(const WebString& url) const;
     virtual WebString contentAsText(size_t maxChars) const;
     virtual WebString contentAsMarkup() const;
@@ -202,19 +206,11 @@ public:
     // Otherwise, disallow scrolling.
     void setAllowsScrolling(bool);
 
-    // Registers a listener for the specified user name input element.  The
-    // listener will receive notifications for blur and when autocomplete should
-    // be triggered.
-    // The WebFrameImpl becomes the owner of the passed listener.
-    void registerPasswordListener(
-        PassRefPtr<WebCore::HTMLInputElement>,
-        PasswordAutocompleteListener*);
-
     // Returns the password autocomplete listener associated with the passed
     // user name input element, or NULL if none available.
     // Note that the returned listener is owner by the WebFrameImpl and should not
     // be kept around as it is deleted when the page goes away.
-    PasswordAutocompleteListener* getPasswordListener(WebCore::HTMLInputElement*);
+    WebPasswordAutocompleteListener* getPasswordListener(WebCore::HTMLInputElement*);
 
     WebFrameClient* client() const { return m_clientHandle->client(); }
     void dropClient() { m_clientHandle->dropClient(); }
@@ -367,7 +363,7 @@ private:
     // The input fields that are interested in edit events and their associated
     // listeners.
     typedef HashMap<RefPtr<WebCore::HTMLInputElement>,
-                    PasswordAutocompleteListener*> PasswordListenerMap;
+                    WebPasswordAutocompleteListener*> PasswordListenerMap;
     PasswordListenerMap m_passwordListeners;
 };
 

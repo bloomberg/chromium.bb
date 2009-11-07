@@ -41,7 +41,7 @@ class PasswordFormDomManager {
   // custom metadata to DOM nodes, so we have to do this every time an event
   // happens with a given form and compare against previously Create'd forms
   // to identify..which sucks.
-  static PasswordForm* CreatePasswordForm(const WebKit::WebForm& form);
+  static PasswordForm* CreatePasswordForm(const WebKit::WebFormElement& form);
 
   // Create a FillData structure in preparation for autofilling a form,
   // from basic_data identifying which form to fill, and a collection of

@@ -5,77 +5,71 @@
 // This file provides the implementaiton of the password manager's autocomplete
 // component.
 
-#include "config.h"
-
-#include "HTMLInputElement.h"
-#undef LOG
-
 #include "base/string_util.h"
+
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebVector.h"
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "webkit/api/public/WebView.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_autocomplete_listener_impl.h"
+#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
-using WebKit::WebFrameImpl;
-using WebKit::WebViewImpl;
+using namespace WebKit;
 
 namespace webkit_glue {
 
-HTMLInputDelegate::HTMLInputDelegate(WebCore::HTMLInputElement* element)
+WebInputElementDelegate::WebInputElementDelegate() {
+}
+    
+WebInputElementDelegate::WebInputElementDelegate(WebInputElement& element)
     : element_(element) {
 }
 
-HTMLInputDelegate::~HTMLInputDelegate() {
+WebInputElementDelegate::~WebInputElementDelegate() {
 }
 
-void HTMLInputDelegate::SetValue(const string16& value) {
-  element_->setValue(String16ToString(value));
+void WebInputElementDelegate::SetValue(const string16& value) {
+  element_.setValue(value);
 }
 
-void HTMLInputDelegate::SetSelectionRange(size_t start, size_t end) {
-  element_->setSelectionRange(start, end);
+void WebInputElementDelegate::SetSelectionRange(size_t start, size_t end) {
+  element_.setSelectionRange(start, end);
 }
 
-void HTMLInputDelegate::OnFinishedAutocompleting() {
+void WebInputElementDelegate::OnFinishedAutocompleting() {
   // This sets the input element to an autofilled state which will result in it
   // having a yellow background.
-  element_->setAutofilled(true);
+  element_.setAutofilled(true);
   // Notify any changeEvent listeners.
-  element_->dispatchFormControlChangeEvent();
+  element_.dispatchFormControlChangeEvent();
 }
 
-void HTMLInputDelegate::RefreshAutofillPopup(
+void WebInputElementDelegate::RefreshAutofillPopup(
     const std::vector<string16>& suggestions,
     int default_suggestion_index) {
-  WebFrameImpl* webframe =
-      WebFrameImpl::fromFrame(element_->document()->frame());
-  WebViewImpl* webview = webframe->viewImpl();
-  if (!webview)
-    return;
-
-  webview->applyAutofillSuggestions(
-      webkit_glue::NodeToWebNode(element_), suggestions, 0);
+  WebView* webview = element_.frame()->view();
+  if (webview)
+    webview->applyAutofillSuggestions(element_, suggestions, 0);  
 }
 
-PasswordAutocompleteListenerImpl::PasswordAutocompleteListenerImpl(
-    HTMLInputDelegate* username_delegate,
-    HTMLInputDelegate* password_delegate,
+
+WebPasswordAutocompleteListenerImpl::WebPasswordAutocompleteListenerImpl(
+    WebInputElementDelegate* username_delegate,
+    WebInputElementDelegate* password_delegate,
     const PasswordFormDomManager::FillData& data)
     : password_delegate_(password_delegate),
       username_delegate_(username_delegate),
       data_(data) {
 }
 
-void PasswordAutocompleteListenerImpl::didBlurInputElement(
-    const WebCore::String& user_input) {
+void WebPasswordAutocompleteListenerImpl::didBlurInputElement(
+    const WebString& user_input) {
   // If this listener exists, its because the password manager had more than
   // one match for the password form, which implies it had at least one
   // [preferred] username/password pair.
-  ASSERT(data_.basic_data.values.size() == 2);
+//  DCHECK(data_.basic_data.values.size() == 2);
 
-  string16 user_input16 = webkit_glue::StringToString16(user_input);
+  string16 user_input16 = user_input;
 
   // Set the password field to match the current username.
   if (data_.basic_data.values[0] == user_input16) {
@@ -89,8 +83,8 @@ void PasswordAutocompleteListenerImpl::didBlurInputElement(
   password_delegate_->OnFinishedAutocompleting();
 }
 
-void PasswordAutocompleteListenerImpl::performInlineAutocomplete(
-    const WebCore::String& user_input,
+void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
+    const WebString& user_input,
     bool backspace_or_delete_pressed,
     bool show_suggestions) {
   // If wait_for_username is true, we only autofill the password when
@@ -99,7 +93,7 @@ void PasswordAutocompleteListenerImpl::performInlineAutocomplete(
   if (data_.wait_for_username)
     return;
 
-  string16 user_input16 = webkit_glue::StringToString16(user_input);
+  string16 user_input16 = user_input;
 
   if (show_suggestions) {
     std::vector<string16> suggestions;
@@ -133,9 +127,9 @@ void PasswordAutocompleteListenerImpl::performInlineAutocomplete(
   }
 }
 
-bool PasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
-                                                  const string16& username,
-                                                  const string16& password) {
+bool WebPasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
+                                                     const string16& username,
+                                                     const string16& password) {
   if (!StartsWith(username, input, false))
     return false;
 
@@ -148,7 +142,7 @@ bool PasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
   return true;
 }
 
-void PasswordAutocompleteListenerImpl::GetSuggestions(
+void WebPasswordAutocompleteListenerImpl::GetSuggestions(
     const string16& input, std::vector<string16>* suggestions) {
   if (StartsWith(data_.basic_data.values[0], input, false))
     suggestions->push_back(data_.basic_data.values[0]);

@@ -12,7 +12,7 @@
 #include "webkit/glue/form_field.h"
 
 namespace WebKit {
-class WebForm;
+class WebFormElement;
 }
 
 namespace webkit_glue {
@@ -21,7 +21,7 @@ namespace webkit_glue {
 // values entered in the fields.
 class FormFieldValues {
  public:
-  static FormFieldValues* Create(const WebKit::WebForm& webform);
+  static FormFieldValues* Create(const WebKit::WebFormElement&);
 
   // The name of the form.
   string16 form_name;
@@ -39,7 +39,7 @@ class FormFieldValues {
   std::vector<FormField> elements;
 
  private:
-  void ExtractFormFieldValues(const WebKit::WebForm& webform);
+  void ExtractFormFieldValues(const WebKit::WebFormElement&);
 };
 
 }  // namespace webkit_glue

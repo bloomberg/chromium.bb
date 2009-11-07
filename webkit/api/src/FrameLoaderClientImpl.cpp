@@ -48,7 +48,7 @@
 #include "PlatformString.h"
 #include "PluginData.h"
 #include "StringExtras.h"
-#include "WebForm.h"
+#include "WebFormElement.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
@@ -908,7 +908,7 @@ void FrameLoaderClientImpl::dispatchWillSubmitForm(FramePolicyFunction function,
     PassRefPtr<FormState> formState)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willSubmitForm(m_webFrame, WebForm(formState->form()));
+        m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(formState->form()));
     (m_webFrame->frame()->loader()->policyChecker()->*function)(PolicyUse);
 }
 

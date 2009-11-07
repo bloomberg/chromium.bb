@@ -29,14 +29,9 @@
  */
 
 #include "config.h"
-#include "WebNode.h"
+#include "WebInputElement.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "Node.h"
-
-#include "FrameLoaderClientImpl.h"
-#include "WebFrameImpl.h"
+#include "HTMLInputElement.h"
 #include "WebString.h"
 #include <wtf/PassRefPtr.h>
 
@@ -44,62 +39,51 @@ using namespace WebCore;
 
 namespace WebKit {
 
-class WebNodePrivate : public Node {
-};
-
-void WebNode::reset()
-{
-    assign(0);
-}
-
-void WebNode::assign(const WebNode& other)
-{
-    WebNodePrivate* p = const_cast<WebNodePrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
-
-WebNode WebNode::parentNode() const
-{
-    return PassRefPtr<Node>(const_cast<Node*>(m_private->parentNode()));
-}
-
-WebString WebNode::nodeName() const
-{
-    return m_private->nodeName();
-}
-
-WebNode::WebNode(const WTF::PassRefPtr<WebCore::Node>& node)
-    : m_private(static_cast<WebNodePrivate*>(node.releaseRef()))
+WebInputElement::WebInputElement(const WTF::PassRefPtr<HTMLInputElement>& elem)
+    : WebElement(elem.releaseRef())
 {
 }
 
-WebNode& WebNode::operator=(const WTF::PassRefPtr<WebCore::Node>& node)
+WebInputElement& WebInputElement::operator=(const WTF::PassRefPtr<HTMLInputElement>& elem)
 {
-    assign(static_cast<WebNodePrivate*>(node.releaseRef()));
+    WebNode::assign(elem.releaseRef());
     return *this;
 }
 
-WebNode::operator WTF::PassRefPtr<WebCore::Node>() const
+WebInputElement::operator WTF::PassRefPtr<HTMLInputElement>() const
 {
-    return PassRefPtr<Node>(const_cast<WebNodePrivate*>(m_private));
+    return PassRefPtr<HTMLInputElement>(static_cast<HTMLInputElement*>(m_private));
 }
 
-void WebNode::assign(WebNodePrivate* p)
+void WebInputElement::setActivatedSubmit(bool activated)
 {
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    unwrap<HTMLInputElement>()->setActivatedSubmit(activated);
 }
 
-WebFrame* WebNode::frame()
+
+void WebInputElement::setValue(const WebString& value)
 {
-    FrameLoaderClientImpl* frame_loader_client =
-        static_cast<FrameLoaderClientImpl*>(m_private->document()->
-                                            frame()->loader()->client());
-    return static_cast<WebFrame*>(frame_loader_client->webFrame());
+    unwrap<HTMLInputElement>()->setValue(value);
 }
 
+WebString WebInputElement::value()
+{
+    return unwrap<HTMLInputElement>()->value();
+}
+
+
+void WebInputElement::setAutofilled(bool autoFilled)
+{
+    unwrap<HTMLInputElement>()->setAutofilled(autoFilled);
+}
+
+void WebInputElement::dispatchFormControlChangeEvent()
+{
+    unwrap<HTMLInputElement>()->dispatchFormControlChangeEvent();
+} // namespace WebKit
+
+void WebInputElement::setSelectionRange(size_t start, size_t end)
+{
+    unwrap<HTMLInputElement>()->setSelectionRange(start, end);
+}
 } // namespace WebKit

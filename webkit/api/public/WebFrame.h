@@ -47,8 +47,10 @@ namespace WebKit {
 
 class WebData;
 class WebDataSource;
-class WebForm;
+class WebFormElement;
 class WebHistoryItem;
+class WebInputElement;
+class WebPasswordAutocompleteListener;
 class WebRange;
 class WebSecurityOrigin;
 class WebString;
@@ -157,7 +159,7 @@ public:
 
     // Content ------------------------------------------------------------
 
-    virtual void forms(WebVector<WebForm>&) const = 0;
+    virtual void forms(WebVector<WebFormElement>&) const = 0;
 
 
     // Scripting ----------------------------------------------------------
@@ -421,6 +423,15 @@ public:
     // of matches found during the scoping effort.
     virtual void resetMatchCount() = 0;
 
+    // Password autocompletion ---------------------------------------------
+
+    // Registers a listener for the specified user name input element. The
+    // listener will receive notifications for blur and when autocomplete
+    // should be triggered.
+    // The WebFrame becomes the owner of the passed listener.
+    virtual void registerPasswordListener(
+        WebInputElement,
+        WebPasswordAutocompleteListener*) = 0;
 
     // Utility -------------------------------------------------------------
 

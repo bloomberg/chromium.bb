@@ -74,7 +74,7 @@ using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
-using WebKit::WebForm;
+using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebMediaPlayer;

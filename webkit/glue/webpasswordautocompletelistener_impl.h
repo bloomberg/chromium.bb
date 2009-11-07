@@ -5,26 +5,28 @@
 // A concrete definition of the DOM autocomplete framework defined by
 // autocomplete_input_listener.h, for the password manager.
 
-#ifndef WEBKIT_GLUE_PASSWORD_AUTOCOMPLETE_LISTENER_H_
-#define WEBKIT_GLUE_PASSWORD_AUTOCOMPLETE_LISTENER_H_
+#ifndef WEBKIT_GLUE_PASSWORDAUTOCOMPLETELISTENER_IMPL_H_
+#define WEBKIT_GLUE_PASSWORDAUTOCOMPLETELISTENER_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "webkit/api/src/PasswordAutocompleteListener.h"
+#include "webkit/api/public/WebInputElement.h"
+#include "webkit/api/public/WebPasswordAutocompleteListener.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
-namespace WebCore {
-class HTMLInputElement;
-}
+using WebKit::WebInputElement;
+using WebKit::WebString;
 
 namespace webkit_glue {
 
-// A proxy interface to a WebCore::HTMLInputElement for inline autocomplete.
-// The delegate does not own the WebCore element; it only interfaces it.
-class HTMLInputDelegate {
+
+// A proxy interface to a WebInputElement for inline autocomplete. The proxy
+// is overridden by webpasswordautocompletelistener_unittest.
+class WebInputElementDelegate {
  public:
-  explicit HTMLInputDelegate(WebCore::HTMLInputElement* element);
-  virtual ~HTMLInputDelegate();
+  WebInputElementDelegate();
+  WebInputElementDelegate(WebInputElement& element);
+  virtual ~WebInputElementDelegate();
 
   // These are virtual to support unit testing.
   virtual void SetValue(const string16& value);
@@ -35,27 +37,25 @@ class HTMLInputDelegate {
       int default_suggestion_index);
 
  private:
-  // The underlying DOM element we're wrapping. We reference the underlying
-  // HTMLInputElement for its lifetime to ensure it does not get freed by
-  // WebCore while in use by the delegate instance.
-  RefPtr<WebCore::HTMLInputElement> element_;
+  // The underlying DOM element we're wrapping.
+  WebInputElement element_;
 
-  DISALLOW_COPY_AND_ASSIGN(HTMLInputDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebInputElementDelegate);
 };
 
-class PasswordAutocompleteListenerImpl :
-    public WebKit::PasswordAutocompleteListener {
+class WebPasswordAutocompleteListenerImpl :
+    public WebKit::WebPasswordAutocompleteListener {
  public:
-  PasswordAutocompleteListenerImpl(
-      HTMLInputDelegate* username_delegate,
-      HTMLInputDelegate* password_delegate,
+  WebPasswordAutocompleteListenerImpl(
+      WebInputElementDelegate* username_element,
+      WebInputElementDelegate* password_element,
       const PasswordFormDomManager::FillData& data);
-  ~PasswordAutocompleteListenerImpl() {
+  ~WebPasswordAutocompleteListenerImpl() {
   }
 
   // WebKit::PasswordAutocompleteListener methods:
-  virtual void didBlurInputElement(const WebCore::String& user_input);
-  virtual void performInlineAutocomplete(const WebCore::String& user_input,
+  virtual void didBlurInputElement(const WebString& user_input);
+  virtual void performInlineAutocomplete(const WebString& user_input,
                                          bool backspace_or_delete_pressed,
                                          bool show_suggestions);
 
@@ -72,13 +72,13 @@ class PasswordAutocompleteListenerImpl :
                       std::vector<string16>* suggestions);
 
   // Access to password field to autocomplete on blur/username updates.
-  scoped_ptr<HTMLInputDelegate> password_delegate_;
-  scoped_ptr<HTMLInputDelegate> username_delegate_;
+  scoped_ptr<WebInputElementDelegate> password_delegate_;
+  scoped_ptr<WebInputElementDelegate> username_delegate_;
 
   // Contains the extra logins for matching on delta/blur.
   PasswordFormDomManager::FillData data_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteListenerImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebPasswordAutocompleteListenerImpl);
 };
 
 }  // webkit_glue

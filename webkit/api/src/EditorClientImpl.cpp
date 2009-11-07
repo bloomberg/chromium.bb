@@ -42,11 +42,11 @@
 #include "RenderObject.h"
 
 #include "DOMUtilitiesPrivate.h"
-#include "PasswordAutocompleteListener.h"
 #include "WebEditingAction.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebNode.h"
+#include "WebPasswordAutocompleteListener.h"
 #include "WebRange.h"
 #include "WebTextAffinity.h"
 #include "WebViewClient.h"
@@ -661,7 +661,7 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
     if (!webframe)
         return;
 
-    PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
+    WebPasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (!listener)
         return;
 
@@ -751,7 +751,7 @@ void EditorClientImpl::doAutofill(Timer<EditorClientImpl>* timer)
     WebFrameImpl* webframe = WebFrameImpl::fromFrame(inputElement->document()->frame());
     if (!webframe)
         return;
-    PasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
+    WebPasswordAutocompleteListener* listener = webframe->getPasswordListener(inputElement);
     if (listener) {
         if (args->autofillFormOnly)
             return;
@@ -783,7 +783,7 @@ void EditorClientImpl::onAutofillSuggestionAccepted(HTMLInputElement* textField)
     if (!webframe)
         return;
 
-    PasswordAutocompleteListener* listener = webframe->getPasswordListener(textField);
+    WebPasswordAutocompleteListener* listener = webframe->getPasswordListener(textField);
     // Password listeners need to autocomplete other fields that depend on the
     // input element with autofill suggestions.
     if (listener)

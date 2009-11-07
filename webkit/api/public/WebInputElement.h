@@ -28,52 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebForm_h
-#define WebForm_h
+#ifndef WebInputElement_h
+#define WebInputElement_h
 
-#include "WebCommon.h"
+#include "WebElement.h"
 
 #if WEBKIT_IMPLEMENTATION
-namespace WebCore { class HTMLFormElement; }
+namespace WebCore { class HTMLInputElement; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
 
-class WebFormPrivate;
+    // Provides readonly access to some properties of a DOM input element node.
+    class WebInputElement : public WebElement {
+    public:
+        WebInputElement() : WebElement() { }
+        WebInputElement(const WebInputElement& n) : WebElement(n) { }
 
-// A container for passing around a reference to a form element.  Provides
-// some information about the form.
-class WebForm {
-public:
-    ~WebForm() { reset(); }
-
-    WebForm() : m_private(0) { }
-    WebForm(const WebForm& f) : m_private(0) { assign(f); }
-    WebForm& operator=(const WebForm& f)
-    {
-        assign(f);
-        return *this;
-    }
-
-    WEBKIT_API void reset();
-    WEBKIT_API void assign(const WebForm&);
-
-    bool isNull() const { return !m_private; }
-
-    // Returns true if the form does not have "autocomplete=off" specified.
-    WEBKIT_API bool isAutoCompleteEnabled() const;
+        WebInputElement& operator=(const WebInputElement& n) { WebElement::assign(n); return *this; }
+        WEBKIT_API void assign(const WebInputElement& n) { WebElement::assign(n); }
 
 #if WEBKIT_IMPLEMENTATION
-    WebForm(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-    WebForm& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-    operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
+        WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
+        WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
+        operator WTF::PassRefPtr<WebCore::HTMLInputElement>() const;
 #endif
 
-private:
-    void assign(WebFormPrivate*);
-    WebFormPrivate* m_private;
-};
+        void setActivatedSubmit(bool);
+        void setValue(const WebString& value);
+        WebString value();
+        void setAutofilled(bool);
+        void dispatchFormControlChangeEvent();
+        void setSelectionRange(size_t, size_t);
+    };
 
 } // namespace WebKit
 

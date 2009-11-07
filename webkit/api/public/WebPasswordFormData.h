@@ -31,7 +31,7 @@
 #ifndef WebPasswordFormData_h
 #define WebPasswordFormData_h
 
-#include "WebForm.h"
+#include "WebFormElement.h"
 #include "WebString.h"
 #include "WebURL.h"
 
@@ -40,7 +40,7 @@ namespace WebKit {
 struct WebPasswordFormData {
     // If the provided form is suitable for password completion, isValid() will
     // return true;
-    WebPasswordFormData(const WebForm&);
+    WebPasswordFormData(const WebFormElement&);
 
     // If creation failed, return false.
     bool isValid() const { return action.isValid(); }

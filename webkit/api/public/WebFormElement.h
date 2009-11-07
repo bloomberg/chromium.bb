@@ -28,60 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebForm.h"
+#ifndef WebFormElement_h
+#define WebFormElement_h
 
-#include "HTMLFormElement.h"
-#include <wtf/PassRefPtr.h>
+#include "WebElement.h"
+#include "WebVector.h"
 
-using namespace WebCore;
+#if WEBKIT_IMPLEMENTATION
+namespace WebCore { class HTMLFormElement; }
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
 
 namespace WebKit {
+    // A container for passing around a reference to a form element.  Provides
+    // some information about the form.
+    class WebFormElement : public WebElement {
+    public:
+        ~WebFormElement() { reset(); }
 
-class WebFormPrivate : public HTMLFormElement {
-};
+        WebFormElement() : WebElement() { }
+        WebFormElement(const WebFormElement& e) : WebElement(e) { }
 
-void WebForm::reset()
-{
-    assign(0);
-}
+        WebElement& operator=(const WebFormElement& e) { WebElement::assign(e); return *this; }
+        WEBKIT_API void assign(const WebFormElement& e) { WebElement::assign(e); }
 
-void WebForm::assign(const WebForm& other)
-{
-    WebFormPrivate* p = const_cast<WebFormPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
+#if WEBKIT_IMPLEMENTATION
+        WebFormElement(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+        WebFormElement& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+        operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
+#endif
 
-bool WebForm::isAutoCompleteEnabled() const
-{
-    ASSERT(!isNull());
-    return m_private->autoComplete();
-}
-
-WebForm::WebForm(const WTF::PassRefPtr<WebCore::HTMLFormElement>& element)
-    : m_private(static_cast<WebFormPrivate*>(element.releaseRef()))
-{
-}
-
-WebForm& WebForm::operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>& element)
-{
-    assign(static_cast<WebFormPrivate*>(element.releaseRef()));
-    return *this;
-}
-
-WebForm::operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const
-{
-    return PassRefPtr<HTMLFormElement>(const_cast<WebFormPrivate*>(m_private));
-}
-
-void WebForm::assign(WebFormPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
+        bool autoComplete() const;
+        WebString action();
+        void submit();
+        void getNamedElements(const WebString&, WebVector<WebNode>&);
+    };
 
 } // namespace WebKit
+
+#endif

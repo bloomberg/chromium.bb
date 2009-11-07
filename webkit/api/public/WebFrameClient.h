@@ -39,7 +39,7 @@
 namespace WebKit {
 
 class WebDataSource;
-class WebForm;
+class WebFormElement;
 class WebFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -117,7 +117,7 @@ public:
     // Navigational notifications ------------------------------------------
 
     // A form submission is about to occur.
-    virtual void willSubmitForm(WebFrame*, const WebForm&) { }
+    virtual void willSubmitForm(WebFrame*, const WebFormElement&) { }
 
     // A client-side redirect will occur.  This may correspond to a <META
     // refresh> or some script activity.

@@ -29,77 +29,57 @@
  */
 
 #include "config.h"
-#include "WebNode.h"
+#include "WebFormElement.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "Node.h"
-
-#include "FrameLoaderClientImpl.h"
-#include "WebFrameImpl.h"
+#include "HTMLFormElement.h"
 #include "WebString.h"
+#include "WebURL.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;
 
 namespace WebKit {
 
-class WebNodePrivate : public Node {
+class WebFormPrivate : public HTMLFormElement {
 };
 
-void WebNode::reset()
-{
-    assign(0);
-}
-
-void WebNode::assign(const WebNode& other)
-{
-    WebNodePrivate* p = const_cast<WebNodePrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
-
-WebNode WebNode::parentNode() const
-{
-    return PassRefPtr<Node>(const_cast<Node*>(m_private->parentNode()));
-}
-
-WebString WebNode::nodeName() const
-{
-    return m_private->nodeName();
-}
-
-WebNode::WebNode(const WTF::PassRefPtr<WebCore::Node>& node)
-    : m_private(static_cast<WebNodePrivate*>(node.releaseRef()))
+WebFormElement::WebFormElement(const WTF::PassRefPtr<HTMLFormElement>& e)
+    : WebElement(e.releaseRef())
 {
 }
 
-WebNode& WebNode::operator=(const WTF::PassRefPtr<WebCore::Node>& node)
+WebFormElement& WebFormElement::operator=(const WTF::PassRefPtr<HTMLFormElement>& e)
 {
-    assign(static_cast<WebNodePrivate*>(node.releaseRef()));
+    WebNode::assign(e.releaseRef());
     return *this;
 }
 
-WebNode::operator WTF::PassRefPtr<WebCore::Node>() const
+WebFormElement::operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const
 {
-    return PassRefPtr<Node>(const_cast<WebNodePrivate*>(m_private));
+    return PassRefPtr<HTMLFormElement>(static_cast<HTMLFormElement*>(m_private));
 }
 
-void WebNode::assign(WebNodePrivate* p)
+bool WebFormElement::autoComplete() const
 {
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    return constUnwrap<HTMLFormElement>()->autoComplete();
 }
 
-WebFrame* WebNode::frame()
+WebString WebFormElement::action()
 {
-    FrameLoaderClientImpl* frame_loader_client =
-        static_cast<FrameLoaderClientImpl*>(m_private->document()->
-                                            frame()->loader()->client());
-    return static_cast<WebFrame*>(frame_loader_client->webFrame());
+    return unwrap<HTMLFormElement>()->action();
+}
+
+void WebFormElement::submit()
+{
+    unwrap<HTMLFormElement>()->submit();
+}
+
+void WebFormElement::getNamedElements(const WebString& name,
+                                      WebVector<WebNode>& result)
+{
+    Vector<RefPtr<Node> > temp_vector;
+    unwrap<HTMLFormElement>()->getNamedElements(name, temp_vector);
+    result.assign(temp_vector);
 }
 
 } // namespace WebKit

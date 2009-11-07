@@ -73,7 +73,7 @@
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDevToolsAgent.h"
 #include "webkit/api/public/WebDragData.h"
-#include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFormElement.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebNode.h"
@@ -134,7 +134,7 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebFindOptions;
-using WebKit::WebForm;
+using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebMediaPlayer;
@@ -2024,7 +2024,7 @@ void RenderView::unableToImplementPolicyWithError(
   NOTREACHED();  // Since we said we can handle all requests.
 }
 
-void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
+void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
 
@@ -2039,7 +2039,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
   navigation_state->set_password_form_data(
       PasswordFormDomManager::CreatePasswordForm(form));
 
-  if (form.isAutoCompleteEnabled()) {
+  if (form.autoComplete()) {
     scoped_ptr<FormFieldValues> form_values(FormFieldValues::Create(form));
     if (form_values.get())
       Send(new ViewHostMsg_FormFieldValuesSubmitted(routing_id_,
@@ -3724,15 +3724,15 @@ void RenderView::focusAccessibilityObject(
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame) {
-  WebVector<WebForm> forms;
+  WebVector<WebFormElement> forms;
   frame->forms(forms);
 
   std::vector<PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {
-    const WebForm& form = forms[i];
+    const WebFormElement& form = forms[i];
 
     // Respect autocomplete=off.
-    if (form.isAutoCompleteEnabled()) {
+    if (form.autoComplete()) {
       scoped_ptr<PasswordForm> password_form(
           PasswordFormDomManager::CreatePasswordForm(form));
       if (password_form.get())

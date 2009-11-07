@@ -39,7 +39,7 @@
 #include "webkit/api/public/WebAccessibilityObject.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebDragData.h"
-#include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFormElement.h"
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
@@ -259,13 +259,13 @@ PassRefPtr<WebCore::ChromiumDataObject> WebDragDataToChromiumDataObject(
 
 // WebForm conversions ---------------------------------------------------------
 
-WebKit::WebForm HTMLFormElementToWebForm(
+WebKit::WebFormElement HTMLFormElementToWebFormElement(
     const WTF::PassRefPtr<WebCore::HTMLFormElement>& form) {
   return form;
 }
 
-WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormToHTMLFormElement(
-    const WebKit::WebForm& form) {
+WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormElementToHTMLFormElement(
+    const WebKit::WebFormElement& form) {
   return form;
 }
 

@@ -8,12 +8,13 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
-using WebKit::WebForm;
+using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;
 
 namespace webkit_glue {
 
-PasswordForm* PasswordFormDomManager::CreatePasswordForm(const WebForm& webform)
+PasswordForm* PasswordFormDomManager::CreatePasswordForm(
+    const WebFormElement& webform)
 {
   WebPasswordFormData web_password_form(webform);
   if (web_password_form.isValid())

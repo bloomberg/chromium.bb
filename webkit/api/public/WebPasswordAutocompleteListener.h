@@ -28,78 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebNode.h"
-
-#include "Document.h"
-#include "Frame.h"
-#include "Node.h"
-
-#include "FrameLoaderClientImpl.h"
-#include "WebFrameImpl.h"
-#include "WebString.h"
-#include <wtf/PassRefPtr.h>
-
-using namespace WebCore;
+#ifndef WebPasswordAutocompleteListener_h
+#define WebPasswordAutocompleteListener_h
 
 namespace WebKit {
+class WebString;
 
-class WebNodePrivate : public Node {
+class WebPasswordAutocompleteListener {
+public:
+    virtual ~WebPasswordAutocompleteListener() {}
+
+    virtual void didBlurInputElement(
+        const WebString& userInput) = 0;
+
+    virtual void performInlineAutocomplete(
+        const WebString& userInput,
+        bool backSpaceOrDeletePressed,
+        bool showSuggestions) = 0;
 };
 
-void WebNode::reset()
-{
-    assign(0);
-}
-
-void WebNode::assign(const WebNode& other)
-{
-    WebNodePrivate* p = const_cast<WebNodePrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
-}
-
-WebNode WebNode::parentNode() const
-{
-    return PassRefPtr<Node>(const_cast<Node*>(m_private->parentNode()));
-}
-
-WebString WebNode::nodeName() const
-{
-    return m_private->nodeName();
-}
-
-WebNode::WebNode(const WTF::PassRefPtr<WebCore::Node>& node)
-    : m_private(static_cast<WebNodePrivate*>(node.releaseRef()))
-{
-}
-
-WebNode& WebNode::operator=(const WTF::PassRefPtr<WebCore::Node>& node)
-{
-    assign(static_cast<WebNodePrivate*>(node.releaseRef()));
-    return *this;
-}
-
-WebNode::operator WTF::PassRefPtr<WebCore::Node>() const
-{
-    return PassRefPtr<Node>(const_cast<WebNodePrivate*>(m_private));
-}
-
-void WebNode::assign(WebNodePrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
-
-WebFrame* WebNode::frame()
-{
-    FrameLoaderClientImpl* frame_loader_client =
-        static_cast<FrameLoaderClientImpl*>(m_private->document()->
-                                            frame()->loader()->client());
-    return static_cast<WebFrame*>(frame_loader_client->webFrame());
-}
-
 } // namespace WebKit
+
+
+#endif

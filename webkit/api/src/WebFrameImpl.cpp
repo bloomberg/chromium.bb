@@ -103,7 +103,6 @@
 #include "InspectorController.h"
 #include "markup.h"
 #include "Page.h"
-#include "PasswordAutocompleteListener.h"
 #include "PlatformContextSkia.h"
 #include "PrintContext.h"
 #include "RenderFrame.h"
@@ -127,9 +126,11 @@
 #include "WebConsoleMessage.h"
 #include "WebDataSourceImpl.h"
 #include "WebFindOptions.h"
-#include "WebForm.h"
+#include "WebFormElement.h"
 #include "WebFrameClient.h"
 #include "WebHistoryItem.h"
+#include "WebInputElement.h"
+#include "WebPasswordAutocompleteListener.h"
 #include "WebRange.h"
 #include "WebRect.h"
 #include "WebScriptSource.h"
@@ -507,7 +508,7 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
     return fromFrame(frameElement->contentFrame());
 }
 
-void WebFrameImpl::forms(WebVector<WebForm>& results) const
+void WebFrameImpl::forms(WebVector<WebFormElement>& results) const
 {
     if (!m_frame)
         return;
@@ -515,7 +516,7 @@ void WebFrameImpl::forms(WebVector<WebForm>& results) const
     RefPtr<HTMLCollection> forms = m_frame->document()->forms();
     size_t formCount = forms->length();
 
-    WebVector<WebForm> temp(formCount);
+    WebVector<WebFormElement> temp(formCount);
     for (size_t i = 0; i < formCount; ++i) {
         Node* node = forms->item(i);
         // Strange but true, sometimes item can be 0.
@@ -1688,15 +1689,15 @@ void WebFrameImpl::setAllowsScrolling(bool flag)
 }
 
 void WebFrameImpl::registerPasswordListener(
-    PassRefPtr<HTMLInputElement> inputElement,
-    PasswordAutocompleteListener* listener)
+    WebInputElement inputElement,
+    WebPasswordAutocompleteListener* listener)
 {
-    RefPtr<HTMLInputElement> element = inputElement;
+    RefPtr<HTMLInputElement> element = inputElement.operator PassRefPtr<HTMLInputElement>();
     ASSERT(m_passwordListeners.find(element) == m_passwordListeners.end());
     m_passwordListeners.set(element, listener);
 }
 
-PasswordAutocompleteListener* WebFrameImpl::getPasswordListener(
+WebPasswordAutocompleteListener* WebFrameImpl::getPasswordListener(
     HTMLInputElement* inputElement)
 {
     return m_passwordListeners.get(RefPtr<HTMLInputElement>(inputElement));

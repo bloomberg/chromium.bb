@@ -36,7 +36,7 @@ class WebAccessibilityObject;
 class WebCString;
 class WebData;
 class WebDragData;
-class WebForm;
+class WebFormElement;
 class WebHistoryItem;
 class WebNode;
 class WebRange;
@@ -139,10 +139,10 @@ WTF::PassRefPtr<WebCore::ChromiumDataObject> WebDragDataToChromiumDataObject(
     const WebKit::WebDragData&);
 
 // WebForm <-> HTMLFormElement
-WebKit::WebForm HTMLFormElementToWebForm(
+WebKit::WebFormElement HTMLFormElementToWebFormElement(
     const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormToHTMLFormElement(
-    const WebKit::WebForm&);
+WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormElementToHTMLFormElement(
+    const WebKit::WebFormElement&);
 
 // WebHistoryItem <-> HistoryItem
 WebKit::WebHistoryItem HistoryItemToWebHistoryItem(

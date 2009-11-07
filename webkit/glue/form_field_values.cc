@@ -15,18 +15,18 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFormElement.h"
 #include "webkit/glue/form_field_values.h"
 // Can include from api/src because this file will eventually be there too.
 #include "webkit/api/src/DOMUtilitiesPrivate.h"
 #include "webkit/glue/glue_util.h"
 
-using WebKit::WebForm;
+using WebKit::WebFormElement;
 
 namespace webkit_glue {
 
-FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
-  RefPtr<WebCore::HTMLFormElement> form = WebFormToHTMLFormElement(webform);
+FormFieldValues* FormFieldValues::Create(const WebFormElement& webform) {
+  RefPtr<WebCore::HTMLFormElement> form = WebFormElementToHTMLFormElement(webform);
   DCHECK(form);
 
   WebCore::Document* document = form->document();
@@ -50,8 +50,9 @@ FormFieldValues* FormFieldValues::Create(const WebForm& webform) {
   return result;
 }
 
-void FormFieldValues::ExtractFormFieldValues(const WebKit::WebForm& webform) {
-  RefPtr<WebCore::HTMLFormElement> form = WebFormToHTMLFormElement(webform);
+void FormFieldValues::ExtractFormFieldValues(
+    const WebKit::WebFormElement& webform) {
+  RefPtr<WebCore::HTMLFormElement> form = WebFormElementToHTMLFormElement(webform);
 
   const WTF::Vector<WebCore::HTMLFormControlElement*>& form_elements =
       form->formElements;
