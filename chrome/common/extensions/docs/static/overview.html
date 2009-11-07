@@ -216,7 +216,7 @@ because the popup can invoke functions on the background page.
 <p>
 See the <a href="browserAction.html">Browser Actions</a> page and
 the <a href="#pageComm">Communication between pages</a> section
-for example code and more details.
+for more details.
 </p>
 
 
@@ -231,6 +231,18 @@ that's been loaded into the browser.
 Think of a content script as part of that loaded page,
 not as part of the extension it was packaged with
 (its <em>parent extension</em>).
+</p>
+
+<p class="comment">
+[PENDING: Consider explaining that the reason content scripts
+are separated from the extension is due to chrome's multiprocess design.
+Something like:
+
+Each extension runs in its own process.
+To have rich interaction with a web page, however,
+the extension must be able to
+run some code in the web page's process.
+Extensions accomplish this with content scripts.]
 </p>
 
 <p>
