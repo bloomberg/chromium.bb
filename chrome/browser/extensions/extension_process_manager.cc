@@ -111,6 +111,17 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
   return host;
 }
 
+ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
+    Extension* extension) {
+  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
+       iter != background_hosts_.end(); ++iter) {
+    ExtensionHost* host = *iter;
+    if (host->extension() == extension)
+      return host;
+  }
+  return NULL;
+}
+
 void ExtensionProcessManager::RegisterExtensionProcess(
     const std::string& extension_id, int process_id) {
   ProcessIDMap::const_iterator it = process_ids_.find(extension_id);

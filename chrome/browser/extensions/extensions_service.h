@@ -22,6 +22,8 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
 
 class Browser;
@@ -51,11 +53,11 @@ class ExtensionUpdateService {
 
 // Manages installed and running Chromium extensions.
 class ExtensionsService
-    : public ExtensionUpdateService,
+    : public base::RefCountedThreadSafe<ExtensionsService>,
       public BlacklistPathProvider,
-      public base::RefCountedThreadSafe<ExtensionsService> {
+      public ExtensionUpdateService,
+      public NotificationObserver {
  public:
-
   // The name of the directory inside the profile where extensions are
   // installed to.
   static const char* kInstallDirectoryName;
@@ -226,6 +228,11 @@ class ExtensionsService
   virtual std::vector<FilePath> GetPersistentBlacklistPaths();
   virtual std::vector<FilePath> GetTransientBlacklistPaths();
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionsService>;
 
@@ -278,6 +285,13 @@ class ExtensionsService
 
   // Our extension updater, if updates are turned on.
   scoped_refptr<ExtensionUpdater> updater_;
+
+  // Map of inspector cookies that are detached, waiting for an extension to be
+  // reloaded.
+  typedef std::map<std::string, int> OrphanedDevTools;
+  OrphanedDevTools orphaned_dev_tools_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };

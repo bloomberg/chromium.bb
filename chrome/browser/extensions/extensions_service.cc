@@ -12,11 +12,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_history_api.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
@@ -98,6 +101,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
   } else if (profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions)) {
     extensions_enabled_ = false;
   }
+
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                 NotificationService::AllSources());
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -171,6 +177,20 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
 
   // Unload the extension if it's loaded. It might not be loaded if it crashed.
   if (current_extension) {
+    // If the extension has an inspector open for its background page, detach
+    // the inspector and hang onto a cookie for it, so that we can reattach
+    // later.
+    ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
+    ExtensionHost* host = manager->GetBackgroundHostForExtension(
+        current_extension);
+    if (host) {
+      // Look for an open inspector for the background page.
+      int devtools_cookie = DevToolsManager::GetInstance()->DetachClientHost(
+          host->render_view_host());
+      if (devtools_cookie >= 0)
+        orphaned_dev_tools_[extension_id] = devtools_cookie;
+    }
+
     path = current_extension->path();
     UnloadExtension(extension_id);
   }
@@ -756,6 +776,29 @@ std::vector<FilePath> ExtensionsService::GetTransientBlacklistPaths() {
   }
   return result;
 }
+
+void ExtensionsService::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING: {
+      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      OrphanedDevTools::iterator iter =
+          orphaned_dev_tools_.find(host->extension()->id());
+      if (iter == orphaned_dev_tools_.end())
+        return;
+
+      DevToolsManager::GetInstance()->AttachClientHost(
+          iter->second, host->render_view_host());
+      orphaned_dev_tools_.erase(iter);
+      break;
+    }
+
+    default:
+      NOTREACHED() << "Unexpected notification type.";
+  }
+}
+
 
 // ExtensionsServicesBackend
 
