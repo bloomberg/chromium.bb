@@ -27,11 +27,9 @@
               'defines': [
                 'GL_GLEXT_PROTOTYPES',
               ],
-              'scons_variable_settings': {
-                'LIBPATH': [
-                  '../../<(glewdir)/lib',
-                ],
-              },
+              'ldflags': [
+                '-L<(PRODUCT_DIR)',
+              ],
               'libraries': [
                 '-lGL',
                 '-lGLEW',
@@ -82,11 +80,9 @@
         [ 'OS=="linux"',
           {
             'all_dependent_settings': {
-              'scons_variable_settings': {
-                'LIBPATH': [
-                  '<(PRODUCT_DIR)',
-                ],
-              },
+              'ldflags': [
+                '-L<(PRODUCT_DIR)',
+              ],
               'libraries': [
                 "-lCg",
                 "-lCgGL",
@@ -125,9 +121,21 @@
             [ 'OS=="linux"',
               {
                 'destination': '<(PRODUCT_DIR)',
+                'conditions': [
+                  [ 'target_arch=="x64"',
+                    {
+                      'variables': { 'libdir': 'lib64' }
+                    }, {
+                      'variables': { 'libdir': 'lib' }
+                    }
+                  ],
+                ],
                 'files': [
-                  "../../<(cgdir)/lib/libCg.so",
-                  "../../<(cgdir)/lib/libCgGL.so",
+                  '../../<(glewdir)/<(libdir)/libGLEW.so',
+                  '../../<(glewdir)/<(libdir)/libGLEW.so.1.5',
+                  '../../<(glewdir)/<(libdir)/libGLEW.so.1.5.1',
+                  "../../<(cgdir)/<(libdir)/libCg.so",
+                  "../../<(cgdir)/<(libdir)/libCgGL.so",
                   "../../<(cgdir)/bin/cgc",
                 ],
               },
@@ -154,6 +162,22 @@
             ],
           ],
         },
+        {
+          'conditions' : [
+            [ 'OS=="linux"',
+              {
+                'destination': '<(SHARED_LIB_DIR)',
+                'files': [
+                  '<(PRODUCT_DIR)/libGLEW.so',
+                  '<(PRODUCT_DIR)/libGLEW.so.1.5',
+                  '<(PRODUCT_DIR)/libGLEW.so.1.5.1',
+                  "<(PRODUCT_DIR)/libCg.so",
+                  "<(PRODUCT_DIR)/libCgGL.so",
+                ],
+              },
+            ],
+          ]
+        }
       ],
     },
   ],

@@ -144,7 +144,8 @@ void SamplerGL::SetTextureAndStates(CGparameter cg_param) {
     }
   }
 
-  GLuint handle = reinterpret_cast<GLuint>(texture_object->GetTextureHandle());
+  GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
+      texture_object->GetTextureHandle()));
   if (handle) {
     cgGLSetTextureParameter(cg_param, handle);
     cgGLEnableTextureParameter(cg_param);
