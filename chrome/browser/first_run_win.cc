@@ -396,7 +396,7 @@ bool OpenFirstRunDialog(Profile* profile,
                                                            homepage_defined,
                                                            import_items,
                                                            dont_import_items));
-  first_run_view->SetParentOwned(false);
+  first_run_view->set_parent_owned(false);
   views::Window* first_run_ui = views::Window::CreateChromeWindow(
       NULL, gfx::Rect(), first_run_view.get());
   DCHECK(first_run_ui);

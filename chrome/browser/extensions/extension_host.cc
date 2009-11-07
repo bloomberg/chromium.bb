@@ -153,7 +153,7 @@ void ExtensionHost::CreateView(Browser* browser) {
   view_.reset(new ExtensionView(this, browser));
   // We own |view_|, so don't auto delete when it's removed from the view
   // hierarchy.
-  view_->SetParentOwned(false);
+  view_->set_parent_owned(false);
 #elif defined(OS_LINUX)
   view_.reset(new ExtensionViewGtk(this, browser));
   view_->Init();

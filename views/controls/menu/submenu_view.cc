@@ -34,7 +34,7 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       scroll_view_container_(NULL) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
-  SetParentOwned(false);
+  set_parent_owned(false);
 }
 
 SubmenuView::~SubmenuView() {
@@ -277,7 +277,7 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
   if (!scroll_view_container_) {
     scroll_view_container_ = new MenuScrollViewContainer(this);
     // Otherwise MenuHost would delete us.
-    scroll_view_container_->SetParentOwned(false);
+    scroll_view_container_->set_parent_owned(false);
   }
   return scroll_view_container_;
 }

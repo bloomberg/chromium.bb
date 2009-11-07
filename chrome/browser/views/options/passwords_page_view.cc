@@ -301,16 +301,16 @@ void PasswordsPageView::InitControlLayout() {
 // PasswordsPageView, private
 void PasswordsPageView::SetupButtonsAndLabels() {
   // Disable all buttons in the first place.
-  show_button_.SetParentOwned(false);
+  show_button_.set_parent_owned(false);
   show_button_.SetEnabled(false);
 
-  remove_button_.SetParentOwned(false);
+  remove_button_.set_parent_owned(false);
   remove_button_.SetEnabled(false);
 
-  remove_all_button_.SetParentOwned(false);
+  remove_all_button_.set_parent_owned(false);
   remove_all_button_.SetEnabled(false);
 
-  password_label_.SetParentOwned(false);
+  password_label_.set_parent_owned(false);
 }
 
 void PasswordsPageView::SetupTable() {

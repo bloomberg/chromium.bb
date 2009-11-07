@@ -874,10 +874,12 @@ class View : public AcceleratorTarget {
   // parent is automatically deleted when the parent is deleted. The default is
   // true. Set to false if the view is owned by another object and should not
   // be deleted by its parent.
-  void SetParentOwned(bool f);
+  void set_parent_owned(bool is_parent_owned) {
+    is_parent_owned_ = is_parent_owned;
+  }
 
-  // Return whether a view is owned by its parent. See SetParentOwned()
-  bool IsParentOwned() const;
+  // Return whether a view is owned by its parent.
+  bool IsParentOwned() const { return is_parent_owned_; }
 
   // Return the receiving view's class name. A view class is a string which
   // uniquely identifies the view class. It is intended to be used as a way to

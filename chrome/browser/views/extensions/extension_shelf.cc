@@ -246,7 +246,7 @@ ExtensionShelf::Toolstrip::Toolstrip(ExtensionShelf* shelf,
       ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)) {
   DCHECK(host->view());
   // We're owned by shelf_, not the bubble that we get inserted in and out of.
-  SetParentOwned(false);
+  set_parent_owned(false);
 
   mole_animation_.reset(new SlideAnimation(this));
 

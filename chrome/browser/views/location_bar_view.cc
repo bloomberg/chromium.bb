@@ -213,7 +213,7 @@ void LocationBarView::Init() {
   AddChildView(&selected_keyword_view_);
   selected_keyword_view_.SetFont(font_);
   selected_keyword_view_.SetVisible(false);
-  selected_keyword_view_.SetParentOwned(false);
+  selected_keyword_view_.set_parent_owned(false);
 
   SkColor dimmed_text = GetColor(false, DEEMPHASIZED_TEXT);
 
@@ -221,21 +221,21 @@ void LocationBarView::Init() {
   type_to_search_view_.SetVisible(false);
   type_to_search_view_.SetFont(font_);
   type_to_search_view_.SetColor(dimmed_text);
-  type_to_search_view_.SetParentOwned(false);
+  type_to_search_view_.set_parent_owned(false);
 
   AddChildView(&keyword_hint_view_);
   keyword_hint_view_.SetVisible(false);
   keyword_hint_view_.SetFont(font_);
   keyword_hint_view_.SetColor(dimmed_text);
-  keyword_hint_view_.SetParentOwned(false);
+  keyword_hint_view_.set_parent_owned(false);
 
   AddChildView(&security_image_view_);
   security_image_view_.SetVisible(false);
-  security_image_view_.SetParentOwned(false);
+  security_image_view_.set_parent_owned(false);
 
   AddChildView(&info_label_);
   info_label_.SetVisible(false);
-  info_label_.SetParentOwned(false);
+  info_label_.set_parent_owned(false);
 
   // Notify us when any ancestor is resized.  In this case we want to tell the
   // AutocompleteEditView to close its popup.
@@ -721,7 +721,7 @@ void LocationBarView::RefreshPageActionViews() {
           new PageActionImageView(this, profile_,
                                   page_actions[i], bubble_positioner_));
       page_action_views_[i]->SetVisible(false);
-      page_action_views_[i]->SetParentOwned(false);
+      page_action_views_[i]->set_parent_owned(false);
       AddChildView(page_action_views_[i]);
     }
   }
@@ -833,8 +833,8 @@ LocationBarView::SelectedKeywordView::SelectedKeywordView(Profile* profile)
   AddChildView(&partial_label_);
   // Full_label and partial_label are deleted by us, make sure View doesn't
   // delete them too.
-  full_label_.SetParentOwned(false);
-  partial_label_.SetParentOwned(false);
+  full_label_.set_parent_owned(false);
+  partial_label_.set_parent_owned(false);
   full_label_.SetVisible(false);
   partial_label_.SetVisible(false);
   full_label_.set_border(

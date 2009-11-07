@@ -48,7 +48,7 @@ const int FullscreenExitBubble::FullscreenExitView::kPaddingPixels = 8;
 FullscreenExitBubble::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubble* bubble,
     const std::wstring& accelerator) {
-  link_.SetParentOwned(false);
+  link_.set_parent_owned(false);
   link_.SetText(l10n_util::GetStringF(IDS_EXIT_FULLSCREEN_MODE, accelerator));
   link_.SetController(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(

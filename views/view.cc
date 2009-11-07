@@ -76,9 +76,8 @@ View::~View() {
   }
 
 #if defined(OS_WIN)
-  if (accessibility_.get()) {
+  if (accessibility_.get())
     accessibility_->Uninitialize();
-  }
 #endif
 }
 
@@ -198,8 +197,7 @@ void View::Layout() {
   }
 
   // Lay out contents of child Views
-  int child_count = GetChildViewCount();
-  for (int i = 0; i < child_count; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
     View* child = GetChildViewAt(i);
     child->Layout();
   }
@@ -210,13 +208,12 @@ LayoutManager* View::GetLayoutManager() const {
 }
 
 void View::SetLayoutManager(LayoutManager* layout_manager) {
-  if (layout_manager_.get()) {
+  if (layout_manager_.get())
     layout_manager_->Uninstalled(this);
-  }
+
   layout_manager_.reset(layout_manager);
-  if (layout_manager_.get()) {
+  if (layout_manager_.get())
     layout_manager_->Installed(this);
-  }
 }
 
 bool View::UILayoutIsRightToLeft() const {
@@ -239,9 +236,8 @@ inline int View::MirroredX() const {
 }
 
 int View::MirroredLeftPointForRect(const gfx::Rect& bounds) const {
-  if (!UILayoutIsRightToLeft()) {
+  if (!UILayoutIsRightToLeft())
     return bounds.x();
-  }
   return width() - bounds.x() - bounds.width();
 }
 
@@ -342,8 +338,7 @@ void View::PaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 void View::PaintChildren(gfx::Canvas* canvas) {
-  int i, c;
-  for (i = 0, c = GetChildViewCount(); i < c; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
     View* child = GetChildViewAt(i);
     if (!child) {
       NOTREACHED() << "Should not have a NULL child View for index in bounds";
@@ -354,9 +349,8 @@ void View::PaintChildren(gfx::Canvas* canvas) {
 }
 
 void View::ProcessPaint(gfx::Canvas* canvas) {
-  if (!IsVisible()) {
+  if (!IsVisible())
     return;
-  }
 
   // We're going to modify the canvas, save it's state first.
   canvas->save();
@@ -390,9 +384,9 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
     // We must undo the canvas mirroring once the View is done painting so that
     // we don't pass the canvas with the mirrored transform to Views that
     // didn't request the canvas to be flipped.
-    if (flip_canvas) {
+    if (flip_canvas)
       canvas->restore();
-    }
+
     canvas->restore();
     PaintChildren(canvas);
   }
@@ -402,9 +396,8 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
 }
 
 void View::PaintNow() {
-  if (!IsVisible()) {
+  if (!IsVisible())
     return;
-  }
 
   View* view = GetParent();
   if (view)
@@ -533,9 +526,9 @@ void View::AddChildView(int index, View* v) {
   child_views_.insert(child_views_.begin() + index, v);
   v->SetParent(this);
 
-  for (View* p = this; p; p = p->GetParent()) {
+  for (View* p = this; p; p = p->GetParent())
     p->ViewHierarchyChangedImpl(false, true, this, v);
-  }
+
   v->PropagateAddNotifications(this, v);
   UpdateTooltip();
   RootView* root = GetRootView();
@@ -624,22 +617,16 @@ void View::DoRemoveChildView(View* a_view,
 }
 
 void View::PropagateRemoveNotifications(View* parent) {
-  int i, c;
-  for (i = 0, c = GetChildViewCount(); i < c; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PropagateRemoveNotifications(parent);
-  }
 
-  View *t;
-  for (t = this; t; t = t->GetParent()) {
-    t->ViewHierarchyChangedImpl(true, false, parent, this);
-  }
+  for (View* v = this; v; v = v->GetParent())
+    v->ViewHierarchyChangedImpl(true, false, parent, this);
 }
 
 void View::PropagateAddNotifications(View* parent, View* child) {
-  int i, c;
-  for (i = 0, c = GetChildViewCount(); i < c; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PropagateAddNotifications(parent, child);
-  }
   ViewHierarchyChangedImpl(true, true, parent, child);
 }
 
@@ -695,10 +682,8 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
 }
 
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
-  int i, c;
-  for (i = 0, c = GetChildViewCount(); i < c; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PropagateVisibilityNotifications(start, is_visible);
-  }
   VisibilityChanged(start, is_visible);
 }
 
@@ -725,7 +710,7 @@ bool View::GetNotifyWhenVisibleBoundsInRootChanges() {
 View* View::GetViewForPoint(const gfx::Point& point) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
-  for (int i = GetChildViewCount() - 1 ; i >= 0 ; --i) {
+  for (int i = GetChildViewCount() - 1; i >= 0; --i) {
     View* child = GetChildViewAt(i);
     if (!child->IsVisible())
       continue;
@@ -758,8 +743,7 @@ View* View::GetViewByID(int id) const {
   if (id == id_)
     return const_cast<View*>(this);
 
-  int view_count = GetChildViewCount();
-  for (int i = 0; i < view_count; ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
     View* child = GetChildViewAt(i);
     View* view = child->GetViewByID(id);
     if (view)
@@ -772,8 +756,7 @@ void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
   if (group_ == group_id)
     out->push_back(this);
 
-  int view_count = GetChildViewCount();
-  for (int i = 0; i < view_count; ++i)
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->GetViewsWithGroup(group_id, out);
 }
 
@@ -805,9 +788,8 @@ int View::GetGroup() const {
 }
 
 void View::SetParent(View* parent) {
-  if (parent != parent_) {
+  if (parent != parent_)
     parent_ = parent;
-  }
 }
 
 bool View::IsParentOf(View* v) const {
@@ -822,7 +804,7 @@ bool View::IsParentOf(View* v) const {
 }
 
 int View::GetChildIndex(View* v) const {
-  for (int i = 0; i < GetChildViewCount(); i++) {
+  for (int i = 0, count = GetChildViewCount(); i < count; i++) {
     if (v == GetChildViewAt(i))
       return i;
   }
@@ -913,9 +895,8 @@ void View::PrintViewHierarchyImp(int indent) {
   LOG(INFO) << buf.str();
   std::cout << buf.str() << std::endl;
 
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PrintViewHierarchyImp(indent + 2);
-  }
 }
 
 
@@ -1192,18 +1173,16 @@ void View::OnMouseExited(const MouseEvent& e) {
 
 void View::SetMouseHandler(View *new_mouse_handler) {
   // It is valid for new_mouse_handler to be NULL
-  if (parent_) {
+  if (parent_)
     parent_->SetMouseHandler(new_mouse_handler);
-  }
 }
 
 void View::SetVisible(bool flag) {
   if (flag != is_visible_) {
     // If the tab is currently visible, schedule paint to
     // refresh parent
-    if (IsVisible()) {
+    if (IsVisible())
       SchedulePaint();
-    }
 
     is_visible_ = flag;
 
@@ -1211,9 +1190,8 @@ void View::SetVisible(bool flag) {
     PropagateVisibilityNotifications(this, flag);
 
     // If we are newly visible, schedule paint.
-    if (IsVisible()) {
+    if (IsVisible())
       SchedulePaint();
-    }
   }
 }
 
@@ -1259,7 +1237,7 @@ bool View::OnMouseWheel(const MouseWheelEvent& e) {
 }
 
 void View::SetDragController(DragController* drag_controller) {
-    drag_controller_ = drag_controller;
+  drag_controller_ = drag_controller;
 }
 
 DragController* View::GetDragController() {
@@ -1320,14 +1298,6 @@ void View::UpdateTooltip() {
   Widget* widget = GetWidget();
   if (widget && widget->GetTooltipManager())
     widget->GetTooltipManager()->UpdateTooltip();
-}
-
-void View::SetParentOwned(bool f) {
-  is_parent_owned_ = f;
-}
-
-bool View::IsParentOwned() const {
-  return is_parent_owned_;
 }
 
 std::string View::GetClassName() const {

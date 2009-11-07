@@ -40,7 +40,7 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
       contents_size_(contents_size),
       close_animation_(this),
       tab_width_(0) {
-  SetParentOwned(false);
+  set_parent_owned(false);
 
   renderer_->UpdateData(datasource, false);
 

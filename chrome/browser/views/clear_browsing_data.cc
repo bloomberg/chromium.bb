@@ -69,12 +69,12 @@ void ClearBrowsingDataView::Init() {
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.
   throbber_.reset(new views::Throbber(50, true));
-  throbber_->SetParentOwned(false);
+  throbber_->set_parent_owned(false);
   throbber_->SetVisible(false);
 
   status_label_.SetText(l10n_util::GetString(IDS_CLEAR_DATA_DELETING));
   status_label_.SetVisible(false);
-  status_label_.SetParentOwned(false);
+  status_label_.set_parent_owned(false);
 
   // Regular view controls we draw by ourself. First, we add the dialog label.
   delete_all_label_ = new views::Label(

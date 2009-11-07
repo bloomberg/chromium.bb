@@ -92,7 +92,7 @@ BalloonViewImpl::BalloonViewImpl()
       method_factory_(this) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
-  SetParentOwned(false);
+  set_parent_owned(false);
 
   // Load the sprites for the frames.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

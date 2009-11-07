@@ -260,8 +260,8 @@ void BookmarkEditorView::Init() {
   DCHECK(bb_model_);
   bb_model_->AddObserver(this);
 
-  url_tf_.SetParentOwned(false);
-  title_tf_.SetParentOwned(false);
+  url_tf_.set_parent_owned(false);
+  title_tf_.set_parent_owned(false);
 
   std::wstring title;
   if (details_.type == EditDetails::EXISTING_NODE)
@@ -288,7 +288,7 @@ void BookmarkEditorView::Init() {
     tree_view_ = new views::TreeView();
     new_group_button_.reset(new views::NativeButton(
         this, l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    new_group_button_->SetParentOwned(false);
+    new_group_button_->set_parent_owned(false);
     tree_view_->SetContextMenuController(this);
 
     tree_view_->SetRootShown(false);

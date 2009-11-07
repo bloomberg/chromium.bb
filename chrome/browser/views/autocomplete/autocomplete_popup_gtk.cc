@@ -48,7 +48,7 @@ void AutocompletePopupGtk::Init(AutocompleteEditView* edit_view,
   WidgetGtk::Init(gtk_widget_get_parent(edit_view->GetNativeView()),
                   contents_->GetPopupBounds());
   // The contents is owned by the LocationBarView.
-  contents_->SetParentOwned(false);
+  contents_->set_parent_owned(false);
   SetContentsView(contents_);
 
   edit_view_ = edit_view;

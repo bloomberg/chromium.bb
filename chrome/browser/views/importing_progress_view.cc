@@ -58,16 +58,16 @@ ImportingProgressView::ImportingProgressView(const std::wstring& source_name,
   label_cookies_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // These are scoped pointers, so we don't need the parent to delete them.
-  state_bookmarks_->SetParentOwned(false);
-  state_searches_->SetParentOwned(false);
-  state_passwords_->SetParentOwned(false);
-  state_history_->SetParentOwned(false);
-  state_cookies_->SetParentOwned(false);
-  label_bookmarks_->SetParentOwned(false);
-  label_searches_->SetParentOwned(false);
-  label_passwords_->SetParentOwned(false);
-  label_history_->SetParentOwned(false);
-  label_cookies_->SetParentOwned(false);
+  state_bookmarks_->set_parent_owned(false);
+  state_searches_->set_parent_owned(false);
+  state_passwords_->set_parent_owned(false);
+  state_history_->set_parent_owned(false);
+  state_cookies_->set_parent_owned(false);
+  label_bookmarks_->set_parent_owned(false);
+  label_searches_->set_parent_owned(false);
+  label_passwords_->set_parent_owned(false);
+  label_history_->set_parent_owned(false);
+  label_cookies_->set_parent_owned(false);
 }
 
 ImportingProgressView::~ImportingProgressView() {

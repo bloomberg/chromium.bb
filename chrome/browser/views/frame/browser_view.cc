@@ -1051,7 +1051,7 @@ bool BrowserView::IsDownloadShelfVisible() const {
 DownloadShelf* BrowserView::GetDownloadShelf() {
   if (!download_shelf_.get()) {
     download_shelf_.reset(new DownloadShelfView(browser_.get(), this));
-    download_shelf_->SetParentOwned(false);
+    download_shelf_->set_parent_owned(false);
   }
   return download_shelf_.get();
 }
@@ -1953,7 +1953,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
     if (!bookmark_bar_view_.get()) {
       bookmark_bar_view_.reset(new BookmarkBarView(contents->profile(),
                                                    browser_.get()));
-      bookmark_bar_view_->SetParentOwned(false);
+      bookmark_bar_view_->set_parent_owned(false);
       bookmark_bar_view_->set_background(
           new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
                                           browser_.get()));

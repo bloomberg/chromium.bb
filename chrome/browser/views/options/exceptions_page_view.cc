@@ -154,13 +154,13 @@ void ExceptionsPageView::InitControlLayout() {
 // ExceptionsPageView, private
 void ExceptionsPageView::SetupButtons() {
   // Disable all buttons in the first place.
-  remove_button_.SetParentOwned(false);
+  remove_button_.set_parent_owned(false);
   remove_button_.SetEnabled(false);
 
-  remove_all_button_.SetParentOwned(false);
+  remove_all_button_.set_parent_owned(false);
   remove_all_button_.SetEnabled(false);
 
-  show_button_.SetParentOwned(false);
+  show_button_.set_parent_owned(false);
   show_button_.SetEnabled(false);
   show_button_.SetVisible(false);
 }
