@@ -49,6 +49,8 @@ const wchar_t kConsoleTestPage[] = L"files/devtools/console_test_page.html";
 const wchar_t kDebuggerTestPage[] = L"files/devtools/debugger_test_page.html";
 const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
 const wchar_t kJsPage[] = L"files/devtools/js_page.html";
+const wchar_t kPauseOnExceptionTestPage[] =
+    L"files/devtools/pause_on_exception.html";
 const wchar_t kResourceContentLengthTestPage[] = L"files/devtools/image.html";
 const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
@@ -323,6 +325,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 // Tests set breakpoint.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
+}
+
+// Tests pause on exception.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
+  RunTest("testPauseOnException", kPauseOnExceptionTestPage);
 }
 
 // Tests eval on call frame.

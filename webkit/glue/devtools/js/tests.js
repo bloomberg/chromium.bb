@@ -607,6 +607,37 @@ TestSuite.prototype.testSetBreakpoint = function() {
 
 
 /**
+ * Tests that pause on exception works.
+ */
+TestSuite.prototype.testPauseOnException = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  // Make sure pause on exceptions is on.
+  if (!WebInspector.currentPanel.pauseOnExceptionButton.toggled) {
+    WebInspector.currentPanel.pauseOnExceptionButton.element.click();
+  }
+
+  this._executeCodeWhenScriptsAreParsed(
+      'handleClick()',
+      ['pause_on_exception.html$']);
+
+  this._waitForScriptPause(
+      {
+        functionsOnStack: ['throwAnException', 'handleClick',
+                           '(anonymous function)'],
+        lineNumber: 6,
+        lineText: '  return unknown_var;'
+      },
+      function() {
+        test.releaseControl();
+      });
+
+  this.takeControl();
+};
+
+
+/**
  * Serializes options collection to string.
  * @param {HTMLOptionsCollection} options
  * @return {string}
