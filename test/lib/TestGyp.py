@@ -53,8 +53,14 @@ class TestGypBase(TestCommon.TestCommon):
   dll_ = TestCommon.dll_prefix
   _dll = TestCommon.dll_suffix
 
+  # Constants to represent different targets.
   ALL = '__all__'
   DEFAULT = '__default__'
+
+  # Constants for different target types.
+  EXECUTABLE = '__executable__'
+  STATIC_LIB = '__static_lib__'
+  SHARED_LIB = '__shared_lib__'
 
   def __init__(self, gyp=None, *args, **kw):
     self.origin_cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -93,6 +99,32 @@ class TestGypBase(TestCommon.TestCommon):
 
     self.copy_test_configuration(self.origin_cwd, self.workdir)
     self.set_configuration(None)
+
+  def built_file_must_exist(self, name, type=None, **kw):
+    """
+    Fails the test if the specified built file name does not exist.
+    """
+    return self.must_exist(self.built_file_path(name, type, **kw))
+
+  def built_file_must_not_exist(self, name, type=None, **kw):
+    """
+    Fails the test if the specified built file name exists.
+    """
+    return self.must_not_exist(self.built_file_path(name, type, **kw))
+
+  def built_file_must_match(self, name, contents, **kw):
+    """
+    Fails the test if the contents of the specified built file name
+    do not match the specified contents.
+    """
+    return self.must_match(self.built_file_path(name, **kw), contents)
+
+  def built_file_must_not_match(self, name, contents, **kw):
+    """
+    Fails the test if the contents of the specified built file name
+    match the specified contents.
+    """
+    return self.must_not_match(self.built_file_path(name, **kw), contents)
 
   def copy_test_configuration(self, source_dir, dest_dir):
     """
@@ -229,6 +261,12 @@ class TestGypBase(TestCommon.TestCommon):
     """
     raise NotImplementedError
 
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type.
+    """
+    raise NotImplementedError
+
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable program built from a gyp-generated configuration.
@@ -297,24 +335,44 @@ class TestGypMake(TestGypBase):
     # TODO(piman): when everything is cross-compile safe, remove lib.target
     os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
     # Enclosing the name in a list avoids prepending the original dir.
-    program = [os.path.join('out', configuration, name)]
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
-  def built_lib_must_exist(self, name, *args, **kw):
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type,
+    as built by Make.
+
+    Built files are in the subdirectory 'out/{configuration}'.
+    The default is 'out/Default'.
+
+    A chdir= keyword argument specifies the source directory
+    relative to which  the output subdirectory can be found.
+
+    "type" values of STATIC_LIB or SHARED_LIB append the necessary
+    prefixes and suffixes to a platform-independent library base name.
+
+    A libdir= keyword argument specifies a library subdirectory other
+    than the default 'obj.target'.
+    """
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
     configuration = self.configuration_dirname()
-    # Make static and shared libs go in different places, so allow tests to pass
-    # in the expected library path.
-    libdir = kw.get('libdir', 'lib')
-    lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
-                             self._lib)
-    self.must_exist(lib_path)
-  def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    # Make static and shared libs go in different places, so allow tests to pass
-    # in the expected library path.
-    libdir = kw.get('libdir', 'lib')
-    lib_path = self.workpath('out', configuration, libdir, self.lib_ + name +
-                             self._lib)
-    self.must_not_exist(lib_path)
+    result.extend(['out', configuration])
+    if type == self.EXECUTABLE:
+      result.append(name + self._exe)
+    elif type == self.STATIC_LIB:
+      name =  self.lib_ + name + self._lib
+      libdir = kw.get('libdir', 'lib')
+      result.extend([libdir, name])
+    elif type == self.SHARED_LIB:
+      name = self.dll_ + name + self._dll
+      libdir = kw.get('libdir', 'lib.target')
+      result.extend([libdir, name])
+    else:
+      result.append(name)
+    return self.workpath(*result)
 
 
 class TestGypMSVS(TestGypBase):
@@ -396,16 +454,38 @@ class TestGypMSVS(TestGypBase):
     """
     configuration = self.configuration_dirname()
     # Enclosing the name in a list avoids prepending the original dir.
-    program = [os.path.join(configuration, '%s.exe' % name)]
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
-  def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
-    self.must_exist(lib_path)
-  def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
-    self.must_not_exist(lib_path)
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type,
+    as built by Visual Studio.
+
+    Built files are in a subdirectory that matches the configuration
+    name.  The default is 'Default'.
+
+    A chdir= keyword argument specifies the source directory
+    relative to which  the output subdirectory can be found.
+
+    "type" values of STATIC_LIB or SHARED_LIB append the necessary
+    prefixes and suffixes to a platform-independent library base name.
+    """
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
+    result.append(self.configuration_dirname())
+    if type == self.EXECUTABLE:
+      result.append(name + self._exe)
+    elif type == self.STATIC_LIB:
+      name =  self.lib_ + name + self._lib
+      result.extend(['lib', name])
+    elif type == self.SHARED_LIB:
+      name = self.dll_ + name + self._dll
+      result.append(name)
+    else:
+      result.append(name)
+    return self.workpath(*result)
 
 
 class TestGypSCons(TestGypBase):
@@ -453,16 +533,38 @@ class TestGypSCons(TestGypBase):
     configuration = self.configuration_dirname()
     os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
     # Enclosing the name in a list avoids prepending the original dir.
-    program = [os.path.join(configuration, name)]
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
-  def built_lib_must_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
-    self.must_exist(lib_path)
-  def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
-    self.must_not_exist(lib_path)
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type,
+    as built by Scons.
+
+    Built files are in a subdirectory that matches the configuration
+    name.  The default is 'Default'.
+
+    A chdir= keyword argument specifies the source directory
+    relative to which  the output subdirectory can be found.
+
+    "type" values of STATIC_LIB or SHARED_LIB append the necessary
+    prefixes and suffixes to a platform-independent library base name.
+    """
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
+    result.append(self.configuration_dirname())
+    if type == self.EXECUTABLE:
+      result.append(name + self._exe)
+    elif type == self.STATIC_LIB:
+      name =  self.lib_ + name + self._lib
+      result.extend(['lib', name])
+    elif type == self.SHARED_LIB:
+      name = self.dll_ + name + self._dll
+      result.extend(['lib', name])
+    else:
+      result.append(name)
+    return self.workpath(*result)
 
 
 class TestGypXcode(TestGypBase):
@@ -528,18 +630,39 @@ class TestGypXcode(TestGypBase):
     configuration = self.configuration_dirname()
     os.environ['DYLD_LIBRARY_PATH'] = os.path.join('build', configuration)
     # Enclosing the name in a list avoids prepending the original dir.
-    program = [os.path.join('build', configuration, name)]
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
-  def built_lib_must_exist(self, name, *args, **kw):
+  def built_file_path(self, name, type=None, **kw):
+    """
+    Returns a path to the specified file name, of the specified type,
+    as built by Xcode.
+
+    Built files are in the subdirectory 'build/{configuration}'.
+    The default is 'build/Default'.
+
+    A chdir= keyword argument specifies the source directory
+    relative to which  the output subdirectory can be found.
+
+    "type" values of STATIC_LIB or SHARED_LIB append the necessary
+    prefixes and suffixes to a platform-independent library base name.
+    """
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
     configuration = self.configuration_dirname()
-    lib_path = self.workpath('build', configuration,
-                             self.lib_ + name + self._lib)
-    self.must_exist(lib_path)
-  def built_lib_must_not_exist(self, name, *args, **kw):
-    configuration = self.configuration_dirname()
-    lib_path = self.workpath('build', configuration,
-                             self.lib_ + name + self._lib)
-    self.must_not_exist(lib_path)
+    result.extend(['build', configuration])
+    if type == self.EXECUTABLE:
+      result.append(name + self._exe)
+    elif type == self.STATIC_LIB:
+      name =  self.lib_ + name + self._lib
+      result.append(name)
+    elif type == self.SHARED_LIB:
+      name = name + self._dll
+      result.append(name)
+    else:
+      result.append(name)
+    return self.workpath(*result)
 
 
 format_class_list = [

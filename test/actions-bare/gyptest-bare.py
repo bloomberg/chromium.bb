@@ -18,11 +18,6 @@ test.build('bare.gyp', chdir='relocate/src')
 
 file_content = 'Hello from bare.py\n'
 
-if test.format == 'xcode':
-  test.must_match('relocate/src/build/Default/out.txt', file_content)
-elif test.format == 'make':
-  test.must_match('relocate/src/out/Default/out.txt', file_content)
-else:
-  test.must_match('relocate/src/Default/out.txt', file_content)
+test.built_file_must_match('out.txt', file_content, chdir='relocate/src')
 
 test.pass_test()

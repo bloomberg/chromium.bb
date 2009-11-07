@@ -33,17 +33,7 @@ if test.format == 'make':
 
 test.build('prog2.gyp', target, chdir=chdir)
 
-# 'prog1' shouldn't have been built, so it should throw a 'No such file or
-# directory' exception. If it does exist, running it should fail the stdout
-# match. This is clunky, but it's arguably less fragile than looking for the
-# different platform/generator-dependent paths.
-try:
-  test.run_built_executable('prog1',
-                            chdir=chdir,
-                            stdout="")
-except OSError, e:
-  if e.errno != errno.ENOENT:
-    raise e
+test.built_file_must_not_exist('prog1', type=test.EXECUTABLE, chdir=chdir)
 
 test.run_built_executable('prog2',
                           chdir=chdir,

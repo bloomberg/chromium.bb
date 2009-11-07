@@ -40,7 +40,7 @@
       ],
     },
     {
-      'target_name': 'lib1',
+      'target_name': 'foolib1',
       'type': 'shared_library',
       'suppress_wildcard': 1,
       'sources': ['lib1.c'],

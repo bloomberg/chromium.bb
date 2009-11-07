@@ -18,14 +18,10 @@ test.relocate('src', 'relocate/src')
 
 test.build('copies.gyp', chdir='relocate/src')
 
-test.must_match(['relocate', 'src', 'copies-out', 'file1'], "file1 contents\n")
+test.must_match(['relocate', 'src', 'copies-out', 'file1'], 'file1 contents\n')
 
-if test.format == 'xcode':
-  file2 = ['relocate', 'src', 'build', 'Default', 'copies-out', 'file2']
-elif test.format in ('make',):
-  file2 = ['relocate', 'src', 'out', 'Default', 'copies-out', 'file2']
-else:
-  file2 = ['relocate', 'src', 'Default', 'copies-out', 'file2']
-test.must_match(file2, "file2 contents\n")
+test.built_file_must_match('copies-out/file2',
+                           'file2 contents\n',
+                           chdir='relocate/src')
 
 test.pass_test()

@@ -18,55 +18,41 @@ test.relocate('src', 'relocate/src')
 # Build all.
 test.build('all.gyp', chdir='relocate/src')
 
+if test.format=='xcode':
+  chdir = 'relocate/src/dir1'
+else:
+  chdir = 'relocate/src'
+
 # Output is as expected.
 file_content = 'Hello from emit.py\n'
-if test.format == 'xcode':
-  test.must_not_exist('relocate/src/dir1/build/Default/out.txt')
-  test.must_match('relocate/src/dir1/build/Default/out2.txt', file_content)
-  test.must_not_exist('relocate/src/dir1/build/Default/lib1.dylib')
-elif test.format == 'make':
-  test.must_not_exist('relocate/src/out/Default/out.txt')
-  test.must_match('relocate/src/out/Default/out2.txt', file_content)
-  test.must_not_exist('relocate/src/out/Default/obj.target/dir1/lib1.so')
-elif test.format == 'scons':
-  test.must_not_exist('relocate/src/dir1/Default/out.txt')
-  test.must_match('relocate/src/Default/out2.txt', file_content)
-  test.must_not_exist('relocate/src/dir1/Default/lib/lib1.so')
+test.built_file_must_match('out2.txt', file_content, chdir=chdir)
+
+test.built_file_must_not_exist('out.txt', chdir='relocate/src')
+test.built_file_must_not_exist('lib1.dll', chdir='relocate/src')
+
+# TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
+if test.format == 'make':
+  chdir='relocate/src'
 else:
-  test.must_not_exist('relocate/src/dir1/Default/out.txt')
-  test.must_match('relocate/src/Default/out2.txt', file_content)
-  test.must_not_exist('relocate/src/dir1/Default/lib1.dll')
+  chdir='relocate/src/dir1'
 
 # Build the action explicitly.
-if test.format == 'make':
-  test.build('actions.gyp', 'action1_target', chdir='relocate/src')
-else:
-  test.build('actions.gyp', 'action1_target', chdir='relocate/src/dir1')
+test.build('actions.gyp', 'action1_target', chdir=chdir)
 
 # Check that things got run.
 file_content = 'Hello from emit.py\n'
-if test.format == 'xcode':
-  test.must_match('relocate/src/dir1/build/Default/out.txt', file_content)
-elif test.format == 'make':
-  test.must_match('relocate/src/out/Default/out.txt', file_content)
-else:
-  test.must_match('relocate/src/dir1/Default/out.txt', file_content)
+test.built_file_must_exist('out.txt', chdir=chdir)
 
 # Build the shared library explicitly.
-if test.format == 'make':
-  test.build('actions.gyp', 'lib1', chdir='relocate/src')
-else:
-  test.build('actions.gyp', 'lib1', chdir='relocate/src/dir1')
+test.build('actions.gyp', 'foolib1', chdir=chdir)
 
-# Check that things got run.
-if test.format == 'xcode':
-  test.must_exist('relocate/src/dir1/build/Default/lib1.dylib')
-elif test.format == 'make':
+if test.format == 'make':
   # TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
-  test.must_exist('relocate/src/out/Default/lib.target/dir1/lib1.so')
-elif test.format == 'scons':
-  test.must_exist('relocate/src/dir1/Default/lib/lib1.so')
+  test.must_exist('relocate/src/out/Default/lib.target/dir1/'
+                  + test.dll_ + 'foolib1' + test._dll)
 else:
-  test.must_exist('relocate/src/dir1/Default/lib1.dll')
+  test.built_file_must_exist('foolib1',
+                             type=test.SHARED_LIB,
+                             chdir=chdir)
 
 test.pass_test()
