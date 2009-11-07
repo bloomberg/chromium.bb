@@ -10,7 +10,7 @@ goog.require('devtools.InspectorController');
 goog.provide('devtools.InspectorControllerImpl');
 
 devtools.InspectorControllerImpl = function() {
-  devtools.InspectorController.call(this);
+  WebInspector.InspectorControllerStub.call(this);
   this.frame_element_id_ = 1;
 
   this.installInspectorControllerDelegate_('clearMessages');
@@ -39,7 +39,7 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('storeLastActivePanel');
 };
 goog.inherits(devtools.InspectorControllerImpl,
-    devtools.InspectorController);
+    WebInspector.InspectorControllerStub);
 
 
 /**
@@ -165,6 +165,14 @@ devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
  * @override
  */
 devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
+  return true;
+};
+
+
+/**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.profilerEnabled = function() {
   return true;
 };
 

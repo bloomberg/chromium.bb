@@ -24,7 +24,6 @@
     'devtools_files': [
       'glue/devtools/js/devtools.css',
       'glue/devtools/js/base.js',
-      'glue/devtools/js/inspector_controller.js',
       'glue/devtools/js/inspector_controller_impl.js',
       'glue/devtools/js/debugger_agent.js',
       '../v8/tools/codemap.js',
