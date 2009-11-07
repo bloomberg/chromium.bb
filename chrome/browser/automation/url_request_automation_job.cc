@@ -92,9 +92,17 @@ URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
     ResourceDispatcherHostRequestInfo* request_info =
         ResourceDispatcherHost::InfoForRequest(request);
     if (request_info) {
+      int child_id = request_info->child_id();
+      int route_id = request_info->route_id();
+
+      if (request_info->process_type() == ChildProcessInfo::PLUGIN_PROCESS) {
+        child_id = request_info->host_renderer_id();
+        route_id = request_info->host_render_view_id();
+      }
+
       AutomationResourceMessageFilter::AutomationDetails details;
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
-              request_info->child_id(), request_info->route_id(), &details)) {
+              child_id, route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
             details.tab_handle, request_info->request_id(), details.filter);
         return job;

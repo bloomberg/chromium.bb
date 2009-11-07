@@ -600,7 +600,9 @@ void ResourceDispatcherHost::BeginRequest(
           request_data.resource_type,
           upload_size,
           false,  // is download
-          ResourceType::IsFrame(request_data.resource_type));  // allow_download
+          ResourceType::IsFrame(request_data.resource_type), // allow_download
+          request_data.host_renderer_id,
+          request_data.host_render_view_id);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       request_data.origin_child_id, request);
@@ -753,7 +755,9 @@ void ResourceDispatcherHost::BeginDownload(const GURL& url,
                                             ResourceType::SUB_RESOURCE,
                                             0,  // upload_size
                                             true,  // is_download
-                                            true);  // allow_download
+                                            true, // allow_download
+                                            -1, // Host renderer id
+                                            -1); // Host render view id
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
@@ -809,7 +813,10 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
                                             ResourceType::SUB_RESOURCE,
                                             0,  // upload_size
                                             false,  // is_download
-                                            false);  // allow_download
+                                            false,  // allow_download
+                                            -1, // Host renderer id
+                                            -1); // Host render view id
+
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 

@@ -46,7 +46,9 @@ class ResourceDispatcher {
     ResourceType::Type resource_type,
     uint32 request_context /* used for plugin->browser requests */,
     int appcache_host_id,
-    int routing_id);
+    int routing_id,
+    int host_renderer_id,
+    int host_render_view_id);
 
   // Adds a request from the pending_requests_ list, returning the new
   // requests' ID

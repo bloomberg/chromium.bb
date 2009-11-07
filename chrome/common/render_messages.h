@@ -340,6 +340,15 @@ struct ViewHostMsg_Resource_Request {
 
   // Optional upload data (may be null).
   scoped_refptr<net::UploadData> upload_data;
+
+  // The following two members are specified if the request is initiated by
+  // a plugin like Gears.
+
+  // Contains the id of the host renderer.
+  int host_renderer_id;
+
+  // Contains the id of the host render view.
+  int host_render_view_id;
 };
 
 // Parameters for a render request.
@@ -1255,6 +1264,8 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     WriteParam(m, p.request_context);
     WriteParam(m, p.appcache_host_id);
     WriteParam(m, p.upload_data);
+    WriteParam(m, p.host_renderer_id);
+    WriteParam(m, p.host_render_view_id);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
@@ -1270,7 +1281,9 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
       ReadParam(m, iter, &r->resource_type) &&
       ReadParam(m, iter, &r->request_context) &&
       ReadParam(m, iter, &r->appcache_host_id) &&
-      ReadParam(m, iter, &r->upload_data);
+      ReadParam(m, iter, &r->upload_data) &&
+      ReadParam(m, iter, &r->host_renderer_id) &&
+      ReadParam(m, iter, &r->host_render_view_id);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -1293,6 +1306,10 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     LogParam(p.request_context, l);
     l->append(L", ");
     LogParam(p.appcache_host_id, l);
+    l->append(L", ");
+    LogParam(p.host_renderer_id, l);
+    l->append(L", ");
+    LogParam(p.host_render_view_id, l);
     l->append(L")");
   }
 };

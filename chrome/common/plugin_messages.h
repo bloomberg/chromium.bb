@@ -38,6 +38,7 @@ struct PluginMsg_Init_Params {
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   bool load_manually;
+  int host_render_view_routing_id;
 };
 
 struct PluginHostMsg_URLRequest_Params {
@@ -121,6 +122,7 @@ struct ParamTraits<PluginMsg_Init_Params> {
     WriteParam(m, p.arg_names);
     WriteParam(m, p.arg_values);
     WriteParam(m, p.load_manually);
+    WriteParam(m, p.host_render_view_routing_id);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->containing_window) &&
@@ -128,7 +130,8 @@ struct ParamTraits<PluginMsg_Init_Params> {
            ReadParam(m, iter, &p->page_url) &&
            ReadParam(m, iter, &p->arg_names) &&
            ReadParam(m, iter, &p->arg_values) &&
-           ReadParam(m, iter, &p->load_manually);
+           ReadParam(m, iter, &p->load_manually) &&
+           ReadParam(m, iter, &p->host_render_view_routing_id);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -143,6 +146,8 @@ struct ParamTraits<PluginMsg_Init_Params> {
     LogParam(p.arg_values, l);
     l->append(L", ");
     LogParam(p.load_manually, l);
+    l->append(L", ");
+    LogParam(p.host_render_view_routing_id, l);
     l->append(L")");
   }
 };

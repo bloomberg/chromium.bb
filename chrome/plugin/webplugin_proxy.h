@@ -34,7 +34,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   WebPluginProxy(PluginChannel* channel,
                  int route_id,
                  const GURL& page_url,
-                 gfx::NativeViewId containing_window);
+                 gfx::NativeViewId containing_window,
+                 int host_render_view_routing_id);
   ~WebPluginProxy();
 
   void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
@@ -84,6 +85,11 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
   // Returns the id of the renderer that contains this plugin.
   int GetRendererId();
+
+  // Returns the id of the associated render view.
+  int host_render_view_routing_id() const {
+    return host_render_view_routing_id_;
+  }
 
   // For windowless plugins, paints the given rectangle into the local buffer.
   void Paint(const gfx::Rect& rect);
@@ -167,6 +173,9 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 #endif
 
 #endif
+
+  // Contains the routing id of the host render view.
+  int host_render_view_routing_id_;
 
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
 };

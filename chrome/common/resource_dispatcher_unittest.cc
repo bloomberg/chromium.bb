@@ -147,7 +147,7 @@ class ResourceDispatcherTest : public testing::Test,
     ResourceLoaderBridge* bridge = dispatcher_->CreateBridge(
         "GET", GURL(test_page_url), GURL(test_page_url), GURL(), "null",
         "null", std::string(), 0, 0, ResourceType::SUB_RESOURCE, 0,
-        appcache::kNoHostId, MSG_ROUTING_CONTROL);
+        appcache::kNoHostId, MSG_ROUTING_CONTROL, -1, -1);
     return bridge;
   }
 

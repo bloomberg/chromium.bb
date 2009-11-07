@@ -56,7 +56,9 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
                           ResourceType::Type resource_type,
                           uint32 request_context,
                           int appcache_host_id,
-                          int routing_id);
+                          int routing_id,
+                          int host_renderer_id,
+                          int host_render_view_id);
   virtual ~IPCResourceLoaderBridge();
 
   // ResourceLoaderBridge
@@ -94,6 +96,15 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   // indicates the URL of this resource request for help debugging
   std::string url_;
 #endif
+
+  // The following two members are specified if the request is initiated by
+  // a plugin like Gears.
+
+  // Contains the id of the host renderer.
+  int host_renderer_id_;
+
+  // Contains the id of the host render view.
+  int host_render_view_id_;
 };
 
 IPCResourceLoaderBridge::IPCResourceLoaderBridge(
@@ -110,11 +121,15 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     ResourceType::Type resource_type,
     uint32 request_context,
     int appcache_host_id,
-    int routing_id)
+    int routing_id,
+    int host_renderer_id,
+    int host_render_view_id)
     : peer_(NULL),
       dispatcher_(dispatcher),
       request_id_(-1),
-      routing_id_(routing_id) {
+      routing_id_(routing_id),
+      host_renderer_id_(host_renderer_id),
+      host_render_view_id_(host_render_view_id) {
   DCHECK(dispatcher_) << "no resource dispatcher";
   request_.method = method;
   request_.url = url;
@@ -128,6 +143,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.resource_type = resource_type;
   request_.request_context = request_context;
   request_.appcache_host_id = appcache_host_id;
+  request_.host_renderer_id = host_renderer_id_;
+  request_.host_render_view_id = host_render_view_id_;
 
 #ifdef LOG_RESOURCE_REQUESTS
   url_ = url.possibly_invalid_spec();
@@ -566,7 +583,9 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
     ResourceType::Type resource_type,
     uint32 request_context,
     int appcache_host_id,
-    int route_id) {
+    int route_id,
+    int host_renderer_id,
+    int host_render_view_id) {
   return new webkit_glue::IPCResourceLoaderBridge(this, method, url,
                                                   first_party_for_cookies,
                                                   referrer, frame_origin,
@@ -575,7 +594,9 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
                                                   resource_type,
                                                   request_context,
                                                   appcache_host_id,
-                                                  route_id);
+                                                  route_id,
+                                                  host_renderer_id,
+                                                  host_render_view_id);
 }
 
 bool ResourceDispatcher::IsResourceDispatcherMessage(

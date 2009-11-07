@@ -37,7 +37,9 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
       ResourceType::Type resource_type,
       uint64 upload_size,
       bool is_download,
-      bool allow_download);
+      bool allow_download,
+      int host_renderer_id,
+      int host_render_view_id);
   virtual ~ResourceDispatcherHostRequestInfo();
 
   // Top-level ResourceHandler servicing this request.
@@ -157,6 +159,9 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   int memory_cost() const { return memory_cost_; }
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
+  int host_renderer_id() const { return host_renderer_id_; }
+  int host_render_view_id() const { return host_render_view_id_; }
+
  private:
   friend class ResourceDispatcherHost;
 
@@ -218,6 +223,14 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   bool called_on_response_started_;
   bool has_started_reading_;
   int paused_read_bytes_;
+
+  // The following two members are specified if the request is initiated by
+  // a plugin like Gears.
+
+  // Contains the id of the host renderer.
+  int host_renderer_id_;
+  // Contains the id of the host render view.
+  int host_render_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostRequestInfo);
 };

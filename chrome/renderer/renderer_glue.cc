@@ -234,7 +234,7 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
   return dispatch->CreateBridge(method, url, first_party_for_cookies, referrer,
                                 frame_origin, main_frame_origin, headers,
                                 load_flags, origin_pid, resource_type, 0,
-                                appcache_host_id, routing_id);
+                                appcache_host_id, routing_id, -1 , -1);
 }
 
 // static factory function

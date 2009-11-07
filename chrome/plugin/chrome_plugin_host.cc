@@ -146,7 +146,7 @@ class PluginRequestHandlerProxy
     upload_content_.back().SetToFilePathRange(filepath, offset, length);
   }
 
-  CPError Start() {
+  CPError Start(int renderer_id, int render_view_id) {
     bridge_.reset(
         PluginThread::current()->resource_dispatcher()->CreateBridge(
             cprequest_->method,
@@ -161,7 +161,9 @@ class PluginRequestHandlerProxy
             ResourceType::OBJECT,
             cprequest_->context,
             appcache::kNoHostId,
-            MSG_ROUTING_CONTROL));
+            MSG_ROUTING_CONTROL,
+            renderer_id,
+            render_view_id));
     if (!bridge_.get())
       return CPERR_FAILURE;
 
@@ -493,7 +495,23 @@ CPError STDCALL CPR_StartRequest(CPRequest* request) {
   PluginRequestHandlerProxy* handler =
       PluginRequestHandlerProxy::FromCPRequest(request);
   CHECK(handler);
-  return handler->Start();
+
+  int renderer_id = -1;
+  int render_view_id = -1;
+
+  WebPluginProxy* webplugin = WebPluginProxy::FromCPBrowsingContext(
+      request->context);
+  if (webplugin) {
+    renderer_id = webplugin->GetRendererId();
+    if (renderer_id == -1)
+      return CPERR_FAILURE;
+
+    render_view_id = webplugin->host_render_view_routing_id();
+    if (render_view_id == -1)
+      return CPERR_FAILURE;
+  }
+
+  return handler->Start(renderer_id, render_view_id);
 }
 
 void STDCALL CPR_EndRequest(CPRequest* request, CPError reason) {

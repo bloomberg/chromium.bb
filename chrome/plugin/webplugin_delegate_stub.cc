@@ -154,7 +154,8 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
 #endif
 
   webplugin_ = new WebPluginProxy(
-      channel_, instance_id_, page_url_, params.containing_window);
+      channel_, instance_id_, page_url_, params.containing_window,
+      params.host_render_view_routing_id);
   delegate_ = WebPluginDelegateImpl::Create(path, mime_type_, parent);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
