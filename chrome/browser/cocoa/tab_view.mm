@@ -221,11 +221,15 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   NSPoint downLocation = [theEvent locationInWindow];
 
+  // Record the state of the close button here, because selecting the tab will
+  // unhide it.
+  BOOL closeButtonActive = [closeButton_ isHidden] ? NO : YES;
+
   // During the tab closure animation (in particular, during rapid tab closure),
   // we may get incorrectly hit with a mouse down. If it should have gone to the
   // close button, we send it there -- it should then track the mouse, so we
   // don't have to worry about mouse ups.
-  if ([controller_ inRapidClosureMode]) {
+  if (closeButtonActive && [controller_ inRapidClosureMode]) {
     NSPoint hitLocation = [[self superview] convertPoint:downLocation
                                                 fromView:nil];
     if ([self hitTest:hitLocation] == closeButton_) {
@@ -292,7 +296,8 @@ static const CGFloat kRapidCloseDist = 2.5;
       // During rapid tab closure (mashing tab close buttons), we may get hit
       // with a mouse down. As long as the mouse up is over the close button,
       // and the mouse hasn't moved too much, we close the tab.
-      if ((dx*dx + dy*dy) <= kRapidCloseDist*kRapidCloseDist &&
+      if (closeButtonActive &&
+          (dx*dx + dy*dy) <= kRapidCloseDist*kRapidCloseDist &&
           [controller_ inRapidClosureMode]) {
         NSPoint hitLocation =
             [[self superview] convertPoint:[theEvent locationInWindow]
