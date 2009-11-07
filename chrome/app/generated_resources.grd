@@ -5463,6 +5463,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_INVALID_USER_CREDENTIALS" desc="Error message to display when the user name or password entered by the user are invalid.">
         Invalid user name or password.
       </message>
+      <message name="IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
+        Enter the correct password above and then type the characters you see in the picture below.
+      </message>
+      <message name="IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP" desc="Message shown below a GAIA captcha explaining that the letters typed are not case sensitive">
+        Letters are not case sensitive
+      </message>
+      <message name="IDS_SYNC_GAIA_CAPTCHA_INCORRECT_TRY_AGAIN" desc="Message that appears below the captcha text input box when the user previously incorrectly typed the captcha and is being prompted to try again.">
+        Enter the letters as they are shown in the image above.
+      </message>
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
       </message>
@@ -5490,6 +5499,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SYNC_TIME_JUST_NOW" desc="Indicates that a sync cycle just finished.">
         Just now
+      </message>
+
+      <!-- Sync / Extension interaction messages -->
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_ROADBLOCK" desc="A message shown on a dialog presented to the user when an extension is causing many changes to bookmarks and sync is malfunctioning">
+        Bookmark Sync is malfunctioning because too many requests are being sent to the server. <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> seems to be making too many changes to your bookmarks.
+      </message>
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_EXTENSION_OPTION" desc="The label of a button allowing the user to choose to disable an extension believed to be causing sync problems preventing bookmark sync operation.">
+        Disable <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph>
+      </message>
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable bookmark sync when an extension is believed to be causing sync problems preventing bookmark sync operation.">
+        Disable Bookmark Sync
+      </message>
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension has been disabled due to problems arising from interactions with sync.">
+        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you turn off Bookmark Sync, you can re-enable this extension on the extensions page, accessible through the Tools menu.
+      </message>
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_SYNC_DISABLED" desc="A message shown on a dialog when bookmark sync has been disabled due to problems arising from interactions with sync.">
+        Bookmark Sync has been disabled on this computer. If you uninstall <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> you can re-enable Bookmark Sync by choosing "Synchronize my bookmarks..." in the Tools menu.
       </message>
 
       <!-- Sync New Tab Page strings -->
