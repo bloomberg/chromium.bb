@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "net/ftp/ftp_directory_listing_buffer.h"
 #include "net/third_party/parseftp/ParseFTPList.h"
 #include "webkit/api/public/WebURLResponse.h"
 
@@ -33,6 +34,11 @@ class FtpDirectoryListingResponseDelegate {
  private:
   void Init();
 
+  // Use the old parser to process received listing data.
+  void FeedFallbackParser();
+
+  void AppendEntryToResponseBuffer(const net::FtpDirectoryListingEntry& entry);
+
   void SendResponseBufferToClient();
 
   // Pointers to the client and associated loader so we can make callbacks as
@@ -43,6 +49,14 @@ class FtpDirectoryListingResponseDelegate {
   // The original resource response for this request.  We use this as a
   // starting point for each parts response.
   WebKit::WebURLResponse original_response_;
+
+  // Data buffer also responsible for parsing the listing data (the new parser).
+  // TODO(phajdan.jr): Use only the new parser, when it is more compatible.
+  net::FtpDirectoryListingBuffer buffer_;
+
+  // True if the new parser couldn't recognize the received listing format
+  // and we switched to the old parser.
+  bool parser_fallback_;
 
   // State kept between parsing each line of the response.
   struct net::list_state parse_state_;

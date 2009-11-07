@@ -67,6 +67,9 @@ int FtpDirectoryListingBuffer::ProcessRemainingData() {
   if (rv != OK)
     return rv;
 
+  if (!buffer_.empty())
+    return ERR_INVALID_RESPONSE;
+
   return ParseLines();
 }
 
@@ -77,6 +80,10 @@ bool FtpDirectoryListingBuffer::EntryAvailable() const {
 FtpDirectoryListingEntry FtpDirectoryListingBuffer::PopEntry() {
   DCHECK(EntryAvailable());
   return current_parser_->PopEntry();
+}
+
+FtpServerType FtpDirectoryListingBuffer::GetServerType() const {
+  return (current_parser_ ? current_parser_->GetServerType() : SERVER_UNKNOWN);
 }
 
 bool FtpDirectoryListingBuffer::ConvertToDetectedEncoding(

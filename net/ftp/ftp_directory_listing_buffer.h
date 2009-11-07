@@ -12,16 +12,17 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "net/ftp/ftp_server_type_histograms.h"
 
 namespace net {
-  
+
 struct FtpDirectoryListingEntry;
 class FtpDirectoryListingParser;
-  
+
 class FtpDirectoryListingBuffer {
  public:
   FtpDirectoryListingBuffer();
-  
+
   ~FtpDirectoryListingBuffer();
 
   // Called when data is received from the data socket. Returns network
@@ -38,9 +39,13 @@ class FtpDirectoryListingBuffer {
   // unless EntryAvailable returns true.
   FtpDirectoryListingEntry PopEntry();
 
+  // Returns recognized server type. It is valid to call this function at any
+  // time, although it will return SERVER_UNKNOWN if it doesn't know the answer.
+  FtpServerType GetServerType() const;
+
  private:
   typedef std::set<FtpDirectoryListingParser*> ParserSet;
-  
+
   // Converts the string |from| to detected encoding and stores it in |to|.
   // Returns true on success.
   bool ConvertToDetectedEncoding(const std::string& from, string16* to);
@@ -60,11 +65,11 @@ class FtpDirectoryListingBuffer {
 
   // CRLF-delimited lines, without the CRLF, not yet consumed by parser.
   std::deque<string16> lines_;
-  
+
   // A collection of parsers for different listing styles. The parsers are owned
   // by this FtpDirectoryListingBuffer.
   ParserSet parsers_;
-  
+
   // When we're sure about the listing format, its parser is stored in
   // |current_parser_|.
   FtpDirectoryListingParser* current_parser_;

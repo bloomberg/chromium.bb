@@ -33,6 +33,8 @@ class FtpDirectoryListingParser {
  public:
   virtual ~FtpDirectoryListingParser();
 
+  virtual FtpServerType GetServerType() const = 0;
+
   // Adds |line| to the internal parsing buffer. Returns true on success.
   virtual bool ConsumeLine(const string16& line) = 0;
 
@@ -50,6 +52,7 @@ class FtpLsDirectoryListingParser : public FtpDirectoryListingParser {
   FtpLsDirectoryListingParser();
 
   // FtpDirectoryListingParser methods:
+  virtual FtpServerType GetServerType() const { return SERVER_LSL; }
   virtual bool ConsumeLine(const string16& line);
   virtual bool EntryAvailable() const;
   virtual FtpDirectoryListingEntry PopEntry();
@@ -67,6 +70,7 @@ class FtpWindowsDirectoryListingParser : public FtpDirectoryListingParser {
   FtpWindowsDirectoryListingParser();
 
   // FtpDirectoryListingParser methods:
+  virtual FtpServerType GetServerType() const { return SERVER_DOS; }
   virtual bool ConsumeLine(const string16& line);
   virtual bool EntryAvailable() const;
   virtual FtpDirectoryListingEntry PopEntry();
@@ -83,6 +87,7 @@ class FtpVmsDirectoryListingParser : public FtpDirectoryListingParser {
   FtpVmsDirectoryListingParser();
 
   // FtpDirectoryListingParser methods:
+  virtual FtpServerType GetServerType() const { return SERVER_VMS; }
   virtual bool ConsumeLine(const string16& line);
   virtual bool EntryAvailable() const;
   virtual FtpDirectoryListingEntry PopEntry();

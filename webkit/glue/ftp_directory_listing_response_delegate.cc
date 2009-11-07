@@ -12,7 +12,9 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/ftp/ftp_directory_listing_parsers.h"
 #include "net/ftp/ftp_server_type_histograms.h"
 #include "unicode/ucsdet.h"
 #include "webkit/api/public/WebURL.h"
@@ -119,14 +121,85 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     const WebURLResponse& response)
     : client_(client),
       loader_(loader),
-      original_response_(response) {
+      original_response_(response),
+      parser_fallback_(false) {
   Init();
 }
 
 void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
                                                          int data_len) {
+  // Keep the raw data in case we have to use the old parser later.
   input_buffer_.append(data, data_len);
 
+  if (!parser_fallback_) {
+    if (buffer_.ConsumeData(data, data_len) == net::OK)
+      return;
+    parser_fallback_ = true;
+  }
+
+  FeedFallbackParser();
+  SendResponseBufferToClient();
+}
+
+void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
+  if (!parser_fallback_) {
+    if (buffer_.ProcessRemainingData() == net::OK) {
+      while (buffer_.EntryAvailable())
+        AppendEntryToResponseBuffer(buffer_.PopEntry());
+      SendResponseBufferToClient();
+      net::UpdateFtpServerTypeHistograms(buffer_.GetServerType());
+      return;
+    }
+    parser_fallback_ = true;
+  }
+
+  FeedFallbackParser();
+  SendResponseBufferToClient();
+
+  // Only log the server type if we got enough data to reliably detect it.
+  if (parse_state_.parsed_one)
+    LogFtpServerType(parse_state_.lstyle);
+}
+
+void FtpDirectoryListingResponseDelegate::Init() {
+  memset(&parse_state_, 0, sizeof(parse_state_));
+
+  GURL response_url(original_response_.url());
+  UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
+                                      UnescapeRule::URL_SPECIAL_CHARS;
+  std::string unescaped_path = UnescapeURLComponent(response_url.path(),
+                                                    unescape_rules);
+  string16 path_utf16;
+  // Per RFC 2640, FTP servers should use UTF-8 or its proper subset ASCII,
+  // but many old FTP servers use legacy encodings. Try UTF-8 first and
+  // detect the encoding.
+  if (IsStringUTF8(unescaped_path)) {
+    path_utf16 = UTF8ToUTF16(unescaped_path);
+  } else {
+    std::string encoding = DetectEncoding(unescaped_path);
+    // Try the detected encoding. If it fails, resort to the
+    // OS native encoding.
+    if (encoding.empty() ||
+        !base::CodepageToUTF16(unescaped_path, encoding.c_str(),
+                               base::OnStringConversionError::SUBSTITUTE,
+                               &path_utf16))
+      path_utf16 = WideToUTF16Hack(base::SysNativeMBToWide(unescaped_path));
+  }
+
+  response_buffer_ = net::GetDirectoryListingHeader(path_utf16);
+
+  // If this isn't top level directory (i.e. the path isn't "/",)
+  // add a link to the parent directory.
+  if (response_url.path().length() > 1) {
+    response_buffer_.append(
+        net::GetDirectoryListingEntry(ASCIIToUTF16(".."),
+                                      std::string(),
+                                      false, 0,
+                                      base::Time()));
+  }
+}
+
+void FtpDirectoryListingResponseDelegate::FeedFallbackParser() {
   // If all we've seen so far is ASCII, encoding_ is empty. Try to detect the
   // encoding. We don't do the separate UTF-8 check here because the encoding
   // detection with a longer chunk (as opposed to the relatively short path
@@ -198,53 +271,29 @@ void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
         break;
     }
   }
-
-  SendResponseBufferToClient();
 }
 
-void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
-  SendResponseBufferToClient();
-
-  // Only log the server type if we got enough data to reliably detect it.
-  if (parse_state_.parsed_one)
-    LogFtpServerType(parse_state_.lstyle);
-}
-
-void FtpDirectoryListingResponseDelegate::Init() {
-  memset(&parse_state_, 0, sizeof(parse_state_));
-
-  GURL response_url(original_response_.url());
-  UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
-                                      UnescapeRule::URL_SPECIAL_CHARS;
-  std::string unescaped_path = UnescapeURLComponent(response_url.path(),
-                                                    unescape_rules);
-  string16 path_utf16;
-  // Per RFC 2640, FTP servers should use UTF-8 or its proper subset ASCII,
-  // but many old FTP servers use legacy encodings. Try UTF-8 first and
-  // detect the encoding.
-  if (IsStringUTF8(unescaped_path)) {
-    path_utf16 = UTF8ToUTF16(unescaped_path);
-  } else {
-    std::string encoding = DetectEncoding(unescaped_path);
-    // Try the detected encoding. If it fails, resort to the
-    // OS native encoding.
-    if (encoding.empty() ||
-        !base::CodepageToUTF16(unescaped_path, encoding.c_str(),
-                               base::OnStringConversionError::SUBSTITUTE,
-                               &path_utf16))
-      path_utf16 = WideToUTF16Hack(base::SysNativeMBToWide(unescaped_path));
-  }
-
-  response_buffer_ = net::GetDirectoryListingHeader(path_utf16);
-
-  // If this isn't top level directory (i.e. the path isn't "/",)
-  // add a link to the parent directory.
-  if (response_url.path().length() > 1) {
-    response_buffer_.append(
-        net::GetDirectoryListingEntry(ASCIIToUTF16(".."),
-                                      std::string(),
-                                      false, 0,
-                                      base::Time()));
+void FtpDirectoryListingResponseDelegate::AppendEntryToResponseBuffer(
+    const net::FtpDirectoryListingEntry& entry) {
+  switch (entry.type) {
+    case net::FtpDirectoryListingEntry::FILE:
+      response_buffer_.append(
+          net::GetDirectoryListingEntry(entry.name, std::string(), false,
+                                        entry.size, entry.last_modified));
+      break;
+    case net::FtpDirectoryListingEntry::DIRECTORY:
+      response_buffer_.append(
+          net::GetDirectoryListingEntry(entry.name, std::string(), true,
+                                        0, entry.last_modified));
+      break;
+    case net::FtpDirectoryListingEntry::SYMLINK:
+      response_buffer_.append(
+          net::GetDirectoryListingEntry(entry.name, std::string(), false,
+                                        0, entry.last_modified));
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
