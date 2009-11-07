@@ -73,7 +73,14 @@ class TabContents;
 // bouncing to the phish report page instead of sending a report directly
 // from the dialog box (or vice versa). Observe the menu of bug types
 // and change the button title along with the selected bug.
-- (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item;
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem *)item;
+
+// Force the description text field to allow "return" to go to the next line
+// within the description field. Without this delegate method, "return" falls
+// back to the "Send Report" action, because this button has been bound to
+// the return key in IB.
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView
+    doCommandBySelector:(SEL)commandSelector;
 
 // Properties for bindings.
 @property (copy, nonatomic) NSString* bugDescription;

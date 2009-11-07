@@ -129,7 +129,7 @@
       l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PHISHING_PAGE)];
 }
 
-- (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item {
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem *)item {
   NSString* buttonTitle = [[item title] isEqualToString:
       l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PHISHING_PAGE)] ?
       l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_SEND_PHISHING_REPORT) :
@@ -145,6 +145,15 @@
     [sendReportButton_ setFrame:newSendButtonFrame];
     [cancelButton_ setFrame:newCancelButtonFrame];
   }
+}
+
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView
+    doCommandBySelector:(SEL)commandSelector {
+  if (commandSelector == @selector(insertNewline:)) {
+    [textView insertNewlineIgnoringFieldEditor:self];
+    return YES;
+  }
+  return NO;
 }
 
 // BugReportWindowController needs to change the title of the Send Report
