@@ -42,6 +42,7 @@ namespace net {
 FtpDirectoryListingBuffer::FtpDirectoryListingBuffer()
     : current_parser_(NULL) {
   parsers_.insert(new FtpLsDirectoryListingParser());
+  parsers_.insert(new FtpWindowsDirectoryListingParser());
   parsers_.insert(new FtpVmsDirectoryListingParser());
 }
 

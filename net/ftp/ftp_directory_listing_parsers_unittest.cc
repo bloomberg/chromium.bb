@@ -91,6 +91,61 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
   }
 }
 
+TEST_F(FtpDirectoryListingParsersTest, Windows) {
+  base::Time::Exploded now_exploded;
+  base::Time::Now().LocalExplode(&now_exploded);
+
+  const struct SingleLineTestData good_cases[] = {
+    { "11-02-09  05:32PM       <DIR>          NT",
+      net::FtpDirectoryListingEntry::DIRECTORY, "NT", -1,
+      2009, 11, 2, 17, 32 },
+    { "01-06-09  02:42PM                  458 Readme.txt",
+      net::FtpDirectoryListingEntry::FILE, "Readme.txt", 458,
+      2009, 1, 6, 14, 42 },
+    { "01-06-09  02:42AM                  1 Readme.txt",
+      net::FtpDirectoryListingEntry::FILE, "Readme.txt", 1,
+      2009, 1, 6, 2, 42 },
+    { "01-06-01  02:42AM                  458 Readme.txt",
+      net::FtpDirectoryListingEntry::FILE, "Readme.txt", 458,
+      2001, 1, 6, 2, 42 },
+    { "01-06-00  02:42AM                  458 Corner1.txt",
+      net::FtpDirectoryListingEntry::FILE, "Corner1.txt", 458,
+      2000, 1, 6, 2, 42 },
+    { "01-06-99  02:42AM                  458 Corner2.txt",
+      net::FtpDirectoryListingEntry::FILE, "Corner2.txt", 458,
+      1999, 1, 6, 2, 42 },
+    { "01-06-80  02:42AM                  458 Corner3.txt",
+      net::FtpDirectoryListingEntry::FILE, "Corner3.txt", 458,
+      1980, 1, 6, 2, 42 },
+    { "01-06-79  02:42AM                  458 Corner4",
+      net::FtpDirectoryListingEntry::FILE, "Corner4", 458,
+      2079, 1, 6, 2, 42 },
+    { "01-06-1979  02:42AM                458 Readme.txt",
+      net::FtpDirectoryListingEntry::FILE, "Readme.txt", 458,
+      1979, 1, 6, 2, 42 },
+  };
+  for (size_t i = 0; i < arraysize(good_cases); i++) {
+    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i].input));
+
+    net::FtpWindowsDirectoryListingParser parser;
+    RunSingleLineTestCase(&parser, good_cases[i]);
+  }
+
+  const char* bad_cases[] = {
+    "",
+    "garbage",
+    "11-02-09  05:32PM       <GARBAGE>      NT",
+    "11-02-09  05:32         <DIR>          NT",
+    "11-FEB-09 05:32PM       <DIR>          NT",
+    "11-02     05:32PM       <DIR>          NT",
+    "11-02-09  05:32PM                 -1   NT",
+  };
+  for (size_t i = 0; i < arraysize(bad_cases); i++) {
+    net::FtpWindowsDirectoryListingParser parser;
+    EXPECT_FALSE(parser.ConsumeLine(UTF8ToUTF16(bad_cases[i]))) << bad_cases[i];
+  }
+}
+
 TEST_F(FtpDirectoryListingParsersTest, Vms) {
   const struct SingleLineTestData good_cases[] = {
     { "README.TXT;4  2  18-APR-2000 10:40:39.90",

@@ -88,6 +88,54 @@ bool UnixDateListingToTime(const std::vector<string16>& columns,
   return true;
 }
 
+bool WindowsDateListingToTime(const std::vector<string16>& columns,
+                              base::Time* time) {
+  DCHECK_EQ(4U, columns.size());
+
+  base::Time::Exploded time_exploded = { 0 };
+
+  // Date should be in format MM-DD-YY[YY].
+  std::vector<string16> date_parts;
+  SplitString(columns[0], '-', &date_parts);
+  if (date_parts.size() != 3)
+    return false;
+  if (!StringToInt(date_parts[0], &time_exploded.month))
+    return false;
+  if (!StringToInt(date_parts[1], &time_exploded.day_of_month))
+    return false;
+  if (!StringToInt(date_parts[2], &time_exploded.year))
+    return false;
+  if (time_exploded.year < 0)
+    return false;
+  // If year has only two digits then assume that 00-79 is 2000-2079,
+  // and 80-99 is 1980-1999.
+  if (time_exploded.year < 80)
+    time_exploded.year += 2000;
+  else if (time_exploded.year < 100)
+    time_exploded.year += 1900;
+
+  // Time should be in format HH:MM(AM|PM)
+  if (columns[1].length() != 7)
+    return false;
+  std::vector<string16> time_parts;
+  SplitString(columns[1].substr(0, 5), ':', &time_parts);
+  if (time_parts.size() != 2)
+    return false;
+  if (!StringToInt(time_parts[0], &time_exploded.hour))
+    return false;
+  if (!StringToInt(time_parts[1], &time_exploded.minute))
+    return false;
+  string16 am_or_pm(columns[1].substr(5, 2));
+  if (EqualsASCII(am_or_pm, "PM"))
+    time_exploded.hour += 12;
+  else if (!EqualsASCII(am_or_pm, "AM"))
+    return false;
+
+  // We don't know the time zone of the server, so just use local time.
+  *time = base::Time::FromLocalExploded(time_exploded);
+  return true;
+}
+
 // Converts the filename component in listing to the filename we can display.
 // Returns true on success.
 bool ParseVmsFilename(const string16& raw_filename, string16* parsed_filename,
@@ -109,7 +157,7 @@ bool ParseVmsFilename(const string16& raw_filename, string16* parsed_filename,
   SplitString(listing_parts[0], '.', &filename_parts);
   if (filename_parts.size() != 2)
     return false;
-  if (filename_parts[1] == ASCIIToUTF16("DIR")) {
+  if (EqualsASCII(filename_parts[1], "DIR")) {
     *parsed_filename = StringToLowerASCII(filename_parts[0]);
     *is_directory = true;
   } else {
@@ -252,7 +300,7 @@ bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
   SplitString(CollapseWhitespace(line, false), ' ', &columns);
   if (columns.size() == 11) {
     // Check if it is a symlink.
-    if (columns[9] != ASCIIToUTF16("->"))
+    if (!EqualsASCII(columns[9], "->"))
       return false;
 
     // Drop the symlink target from columns, we don't use it.
@@ -298,6 +346,46 @@ bool FtpLsDirectoryListingParser::EntryAvailable() const {
 }
 
 FtpDirectoryListingEntry FtpLsDirectoryListingParser::PopEntry() {
+  FtpDirectoryListingEntry entry = entries_.front();
+  entries_.pop();
+  return entry;
+}
+
+FtpWindowsDirectoryListingParser::FtpWindowsDirectoryListingParser() {
+}
+
+bool FtpWindowsDirectoryListingParser::ConsumeLine(const string16& line) {
+  std::vector<string16> columns;
+  SplitString(CollapseWhitespace(line, false), ' ', &columns);
+  if (columns.size() != 4)
+    return false;
+
+  FtpDirectoryListingEntry entry;
+  entry.name = columns[3];
+
+  if (EqualsASCII(columns[2], "<DIR>")) {
+    entry.type = FtpDirectoryListingEntry::DIRECTORY;
+    entry.size = -1;
+  } else {
+    entry.type = FtpDirectoryListingEntry::FILE;
+    if (!StringToInt64(columns[2], &entry.size))
+      return false;
+    if (entry.size < 0)
+      return false;
+  }
+
+  if (!WindowsDateListingToTime(columns, &entry.last_modified))
+    return false;
+
+  entries_.push(entry);
+  return true;
+}
+
+bool FtpWindowsDirectoryListingParser::EntryAvailable() const {
+  return !entries_.empty();
+}
+
+FtpDirectoryListingEntry FtpWindowsDirectoryListingParser::PopEntry() {
   FtpDirectoryListingEntry entry = entries_.front();
   entries_.pop();
   return entry;

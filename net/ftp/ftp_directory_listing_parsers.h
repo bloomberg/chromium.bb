@@ -62,6 +62,21 @@ class FtpLsDirectoryListingParser : public FtpDirectoryListingParser {
   DISALLOW_COPY_AND_ASSIGN(FtpLsDirectoryListingParser);
 };
 
+class FtpWindowsDirectoryListingParser : public FtpDirectoryListingParser {
+ public:
+  FtpWindowsDirectoryListingParser();
+
+  // FtpDirectoryListingParser methods:
+  virtual bool ConsumeLine(const string16& line);
+  virtual bool EntryAvailable() const;
+  virtual FtpDirectoryListingEntry PopEntry();
+
+ private:
+  std::queue<FtpDirectoryListingEntry> entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(FtpWindowsDirectoryListingParser);
+};
+
 // Parser for VMS-style directory listing (including variants).
 class FtpVmsDirectoryListingParser : public FtpDirectoryListingParser {
  public:
