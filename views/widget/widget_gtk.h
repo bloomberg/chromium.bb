@@ -141,7 +141,7 @@ class WidgetGtk
                                        void* value);
   virtual void* GetNativeWindowProperty(const std::wstring& name);
   virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider();
+  virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);

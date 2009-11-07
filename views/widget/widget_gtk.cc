@@ -527,8 +527,8 @@ ThemeProvider* WidgetGtk::GetThemeProvider() const {
   return default_theme_provider_.get();
 }
 
-ThemeProvider* WidgetGtk::GetDefaultThemeProvider() {
-  return NULL;
+ThemeProvider* WidgetGtk::GetDefaultThemeProvider() const {
+  return default_theme_provider_.get();
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {

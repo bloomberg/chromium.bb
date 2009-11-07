@@ -363,7 +363,6 @@ ThemeProvider* WidgetWin::GetDefaultThemeProvider() const {
   return default_theme_provider_.get();
 }
 
-
 FocusManager* WidgetWin::GetFocusManager() {
   if (focus_manager_.get())
     return focus_manager_.get();
