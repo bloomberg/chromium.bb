@@ -33,9 +33,8 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
  public:
   void InitializeBlacklistManager() {
     Profile* profile = browser()->profile();
-    blacklist_manager_ = new BlacklistManager(
-        profile, profile->GetExtensionsService(),
-        g_browser_process->io_thread());
+    blacklist_manager_ = new BlacklistManager(profile,
+                                              profile->GetExtensionsService());
     WaitForBlacklistUpdate();
   }
 

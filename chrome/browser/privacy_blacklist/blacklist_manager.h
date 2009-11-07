@@ -9,41 +9,34 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/notification_registrar.h"
 
 class Blacklist;
-class MessageLoop;
 class Profile;
-class Task;
-
-namespace base {
-class Thread;
-}
 
 class BlacklistPathProvider {
  public:
   virtual ~BlacklistPathProvider();
 
+  // The methods below will be invoked on the UI thread.
   virtual std::vector<FilePath> GetPersistentBlacklistPaths() = 0;
-
   virtual std::vector<FilePath> GetTransientBlacklistPaths() = 0;
 };
 
 // Updates one compiled binary blacklist based on a list of plaintext
 // blacklists.
-class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
-                         public NotificationObserver,
-                         public NonThreadSafe {
+class BlacklistManager
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<BlacklistManager,
+                                        ChromeThread::DeleteOnUIThread> {
  public:
-  // You must create and destroy BlacklistManager on the same thread.
-  BlacklistManager(Profile* profile,
-                   BlacklistPathProvider* path_provider,
-                   base::Thread* backend_thread);
+  BlacklistManager(Profile* profile, BlacklistPathProvider* path_provider);
 
   const Blacklist* GetCompiledBlacklist() const {
+    // TODO(phajdan.jr): Determine on which thread this should be invoked (IO?).
     return compiled_blacklist_.get();
   }
 
@@ -57,20 +50,22 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
 #endif  // UNIT_TEST
 
  private:
-  class CompileBlacklistTask;
-  class ReadBlacklistTask;
-
-  friend class base::RefCountedThreadSafe<BlacklistManager>;
+  friend class ChromeThread;
+  friend class DeleteTask<BlacklistManager>;
 
   ~BlacklistManager() {}
 
+  // Compile all persistent blacklists to one binary blacklist stored on disk.
   void CompileBlacklist();
-  void ReadBlacklist();
-
+  void DoCompileBlacklist(const std::vector<FilePath>& source_blacklists);
   void OnBlacklistCompilationFinished(bool success);
-  void OnBlacklistReadFinished(Blacklist* blacklist);
 
-  void RunTaskOnBackendThread(Task* task);
+  // Read all blacklists from disk (the compiled one and also the transient
+  // blacklists).
+  void ReadBlacklist();
+  void DoReadBlacklist(const std::vector<FilePath>& transient_blacklists);
+  void ReportBlacklistReadResult(Blacklist* blacklist);
+  void OnBlacklistReadFinished(Blacklist* blacklist);
 
   // True after the first blacklist read has finished (regardless of success).
   // Used to avoid an infinite loop.
@@ -85,10 +80,6 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
   scoped_ptr<Blacklist> compiled_blacklist_;
 
   BlacklistPathProvider* path_provider_;
-
-  // Backend thread we will execute I/O operations on (NULL means no separate
-  // thread).
-  base::Thread* backend_thread_;
 
   NotificationRegistrar registrar_;
 

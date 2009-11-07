@@ -83,12 +83,16 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
 
 class BlacklistManagerTest : public testing::Test, public NotificationObserver {
  public:
-  BlacklistManagerTest() : path_provider_(&profile_) {
+  BlacklistManagerTest()
+      : path_provider_(&profile_),
+        mock_ui_thread_(ChromeThread::UI, MessageLoop::current()),
+        mock_file_thread_(ChromeThread::FILE) {
   }
 
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("blacklist_samples");
+    ASSERT_TRUE(mock_file_thread_.Start());
   }
 
   virtual void TearDown() {
@@ -127,6 +131,9 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
 
  private:
   MessageLoop loop_;
+
+  ChromeThread mock_ui_thread_;
+  ChromeThread mock_file_thread_;
 };
 
 // Returns true if |blacklist| contains a match for |url|.
@@ -142,7 +149,7 @@ bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
 
 TEST_F(BlacklistManagerTest, Basic) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_, NULL));
+      new BlacklistManager(&profile_, &path_provider_));
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
@@ -154,7 +161,7 @@ TEST_F(BlacklistManagerTest, Basic) {
 
 TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_, NULL));
+      new BlacklistManager(&profile_, &path_provider_));
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
@@ -188,7 +195,7 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   path_provider_.clear();
   path_provider_.AddPersistentPath(
       test_data_dir_.AppendASCII("annoying_ads.pbl"));
-  manager = new BlacklistManager(&profile_, &path_provider_, NULL);
+  manager = new BlacklistManager(&profile_, &path_provider_);
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
@@ -197,32 +204,9 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   EXPECT_FALSE(BlacklistHasMatch(blacklist4, "http://host/other_ads/ad.jpg"));
 }
 
-TEST_F(BlacklistManagerTest, RealThread) {
-  base::Thread backend_thread("backend_thread");
-  backend_thread.Start();
-
-  scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_, &backend_thread));
-  WaitForBlacklistUpdate();
-
-  const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
-  EXPECT_FALSE(BlacklistHasMatch(blacklist1,
-                                 "http://host/annoying_ads/ad.jpg"));
-
-  path_provider_.AddPersistentPath(
-      test_data_dir_.AppendASCII("annoying_ads.pbl"));
-  WaitForBlacklistUpdate();
-
-  const Blacklist* blacklist2 = manager->GetCompiledBlacklist();
-
-  // Added a real blacklist, the manager should recompile.
-  EXPECT_NE(blacklist1, blacklist2);
-  EXPECT_TRUE(BlacklistHasMatch(blacklist2, "http://host/annoying_ads/ad.jpg"));
-}
-
 TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
   scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_, NULL));
+      new BlacklistManager(&profile_, &path_provider_));
   WaitForBlacklistUpdate();
 
   FilePath bogus_path(test_data_dir_.AppendASCII("does_not_exist_randomness"));
@@ -239,7 +223,7 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
 
   {
     scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, &path_provider_, NULL));
+        new BlacklistManager(&profile_, &path_provider_));
     WaitForBlacklistUpdate();
 
     path_provider_.AddPersistentPath(
@@ -257,7 +241,7 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
 
   {
     scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, &path_provider_, NULL));
+        new BlacklistManager(&profile_, &path_provider_));
     WaitForBlacklistUpdate();
 
     // The manager should recompile the blacklist.

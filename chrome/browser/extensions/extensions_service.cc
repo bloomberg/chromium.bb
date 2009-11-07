@@ -742,6 +742,8 @@ void ExtensionsService::ReportExtensionLoadError(
 }
 
 std::vector<FilePath> ExtensionsService::GetPersistentBlacklistPaths() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   std::vector<FilePath> result;
   for (ExtensionList::const_iterator extension_iter = extensions()->begin();
        extension_iter != extensions()->end(); ++extension_iter) {
@@ -760,6 +762,8 @@ std::vector<FilePath> ExtensionsService::GetPersistentBlacklistPaths() {
 }
 
 std::vector<FilePath> ExtensionsService::GetTransientBlacklistPaths() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   std::vector<FilePath> result;
   for (ExtensionList::const_iterator extension_iter = extensions()->begin();
        extension_iter != extensions()->end(); ++extension_iter) {
