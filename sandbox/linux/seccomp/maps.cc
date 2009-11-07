@@ -15,20 +15,21 @@
 
 namespace playground {
 
-Maps::Maps(const std::string& maps_file) :
-    maps_file_(maps_file),
+Maps::Maps(int proc_self_maps) :
+    proc_self_maps_(proc_self_maps),
     begin_iter_(this, true, false),
     end_iter_(this, false, true),
     vsyscall_(0) {
-  int fd = open(maps_file.c_str(), O_RDONLY);
   Sandbox::SysCalls sys;
-  if (fd >= 0) {
+  if (proc_self_maps_ >= 0 &&
+      !sys.lseek(proc_self_maps_, 0, SEEK_SET)) {
     char buf[256] = { 0 };
     int len = 0, rc = 1;
     bool long_line = false;
     do {
       if (rc > 0) {
-        rc = Sandbox::read(sys, fd, buf + len, sizeof(buf) - len - 1);
+        rc = Sandbox::read(sys, proc_self_maps_, buf + len,
+                           sizeof(buf) - len - 1);
         if (rc > 0) {
           len += rc;
         }
@@ -95,7 +96,6 @@ Maps::Maps(const std::string& maps_file) :
         }
       }
     } while (len || long_line);
-    NOINTR_SYS(close(fd));
   }
 }
 
@@ -155,8 +155,7 @@ char* Maps::allocNearAddr(char* addr, size_t size, int prot) const {
   // we will be able to perform relative 32bit jumps from the target address.
   size = (size + 4095) & ~4095;
   Sandbox::SysCalls sys;
-  int fd = sys.open(maps_file_.c_str(), O_RDONLY, 0);
-  if (fd < 0) {
+  if (sys.lseek(proc_self_maps_, 0, SEEK_SET)) {
     return NULL;
   }
 
@@ -168,7 +167,8 @@ char* Maps::allocNearAddr(char* addr, size_t size, int prot) const {
   do {
     if (rc > 0) {
       do {
-        rc = Sandbox::read(sys, fd, buf + len, sizeof(buf) - len - 1);
+        rc = Sandbox::read(sys, proc_self_maps_, buf + len,
+                           sizeof(buf) - len - 1);
         if (rc > 0) {
           len += rc;
         }
@@ -213,7 +213,6 @@ char* Maps::allocNearAddr(char* addr, size_t size, int prot) const {
   } while (len || long_line);
   new_addr = NULL;
 done:
-  sys.close(fd);
   return new_addr;
 }
 

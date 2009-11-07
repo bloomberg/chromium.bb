@@ -42,7 +42,7 @@ int Sandbox::sandbox_clone(int flags, void* stack, int* pid, int* ctid,
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_clone(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_clone(int parentMapsFd, int sandboxFd, int threadFdPub,
                             int threadFd, SecureMem::Args* mem) {
   // Read request
   Clone clone_req;
@@ -66,7 +66,7 @@ bool Sandbox::process_clone(int parentProc, int sandboxFd, int threadFdPub,
       // clone() has unusual semantics. We don't want to return back into the
       // trusted thread, but instead we need to continue execution at the IP
       // where we got called initially.
-      SecureMem::lockSystemCall(parentProc, mem);
+      SecureMem::lockSystemCall(parentMapsFd, mem);
       mem->ret              = clone_req.ret;
       #if defined(__x86_64__)
       mem->rbp              = clone_req.regs64.rbp;
@@ -100,8 +100,8 @@ bool Sandbox::process_clone(int parentProc, int sandboxFd, int threadFdPub,
       mem->processFdPub     = processFdPub_;
       mem->cloneFdPub       = cloneFdPub_;
 
-      SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem, __NR_clone,
-                                clone_req.flags, clone_req.stack,
+      SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
+                                __NR_clone, clone_req.flags, clone_req.stack,
                                 clone_req.pid, clone_req.ctid, clone_req.tls);
       return true;
     }

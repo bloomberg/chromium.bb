@@ -25,7 +25,7 @@ int Sandbox::sandbox_munmap(void* start, size_t length) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_munmap(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_munmap(int parentMapsFd, int sandboxFd, int threadFdPub,
                              int threadFd, SecureMem::Args* mem) {
   // Read request
   SysCalls sys;

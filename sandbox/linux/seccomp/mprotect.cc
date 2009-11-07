@@ -26,8 +26,9 @@ int Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_mprotect(int parentProc, int sandboxFd, int threadFdPub,
-                               int threadFd, SecureMem::Args* mem) {
+bool Sandbox::process_mprotect(int parentMapsFd, int sandboxFd,
+                               int threadFdPub, int threadFd,
+                               SecureMem::Args* mem) {
   // Read request
   SysCalls sys;
   MProtect mprotect_req;

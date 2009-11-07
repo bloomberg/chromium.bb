@@ -49,12 +49,23 @@ class Sandbox {
   // This could be because the kernel does not support Seccomp mode, or it
   // could be because we fail to successfully rewrite all system call entry
   // points.
-  static int supportsSeccompSandbox() asm("SupportsSeccompSandbox");
+  // "proc_fd" should be a file descriptor for "/proc", or -1 if not provided
+  // by the caller.
+  static int supportsSeccompSandbox(int proc_fd)
+                                          asm("SupportsSeccompSandbox");
+
+  // The sandbox needs to be able to access "/proc/self/maps". If this file
+  // is not accessible when "startSandbox()" gets called, the caller can
+  // provide an already opened file descriptor by calling "setProcSelfMaps()".
+  // The sandbox becomes the newer owner of this file descriptor and will
+  // eventually close it when "startSandbox()" executes.
+  static void setProcSelfMaps(int proc_self_maps)
+                                          asm("SeccompSandboxSetProcSelfMaps");
 
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
   // enters Seccomp mode.
-  static void startSandbox() asm("StartSeccompSandbox");
+  static void startSandbox()              asm("StartSeccompSandbox");
 
  private:
 // syscall_table.c has to be implemented in C, as C++ does not support
@@ -589,15 +600,16 @@ class Sandbox {
   // memory mappings that existed when the sandbox was first enabled. Going
   // forward, all these mappings are off-limits for operations such as
   // mmap(), munmap(), and mprotect().
-  static void  initializeProtectedMap(int fd);
+  static int   initializeProtectedMap(int fd);
 
   // Helper functions that allows the trusted process to get access to
   // "/proc/self/maps" in the sandbox.
-  static void  snapshotMemoryMappings(int processFd);
+  static void  snapshotMemoryMappings(int processFd, int proc_self_maps);
 
   // Main loop for the trusted process.
-  static void  trustedProcess(int parentProc, int processFdPub, int sandboxFd,
-                              int cloneFd, SecureMem::Args* secureArena)
+  static void  trustedProcess(int parentMapsFd, int processFdPub,
+                              int sandboxFd, int cloneFd,
+                              SecureMem::Args* secureArena)
                                                      __attribute__((noreturn));
 
   // Fork()s of the trusted process.
@@ -609,6 +621,7 @@ class Sandbox {
   static void  createTrustedThread(int processFdPub, int cloneFdPub,
                                    SecureMem::Args* secureMem);
 
+  static int   proc_self_maps_;
   static enum SandboxStatus {
     STATUS_UNKNOWN, STATUS_UNSUPPORTED, STATUS_AVAILABLE, STATUS_ENABLED
   }            status_;

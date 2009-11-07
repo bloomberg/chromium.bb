@@ -26,7 +26,7 @@ int Sandbox::sandbox_ioctl(int d, int req, void *arg) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_ioctl(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_ioctl(int parentMapsFd, int sandboxFd, int threadFdPub,
                             int threadFd, SecureMem::Args* mem) {
   // Read request
   IOCtl ioctl_req;

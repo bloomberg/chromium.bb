@@ -26,7 +26,7 @@ int Sandbox::sandbox_madvise(void* start, size_t length, int advice) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_madvise(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_madvise(int parentMapsFd, int sandboxFd, int threadFdPub,
                               int threadFd, SecureMem::Args* mem) {
   // Read request
   MAdvise madvise_req;

@@ -19,7 +19,7 @@ class Library;
 class Maps {
   friend class Library;
  public:
-  Maps(const std::string& maps_file);
+  Maps(int proc_self_maps);
   ~Maps() { }
 
  protected:
@@ -69,12 +69,12 @@ class Maps {
   char* vsyscall() const { return vsyscall_; }
 
  protected:
-  const std::string maps_file_;
-  const Iterator    begin_iter_;
-  const Iterator    end_iter_;
+  const int      proc_self_maps_;
+  const Iterator begin_iter_;
+  const Iterator end_iter_;
 
-  LibraryMap        libs_;
-  char*             vsyscall_;
+  LibraryMap     libs_;
+  char*          vsyscall_;
 };
 
 } // namespace

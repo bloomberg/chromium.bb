@@ -59,7 +59,7 @@ int Sandbox::sandbox_stat64(const char *path, void *buf) {
 }
 #endif
 
-bool Sandbox::process_stat(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_stat(int parentMapsFd, int sandboxFd, int threadFdPub,
                            int threadFd, SecureMem::Args* mem) {
   // Read request
   SysCalls sys;
@@ -85,7 +85,7 @@ bool Sandbox::process_stat(int parentProc, int sandboxFd, int threadFdPub,
     }
     return false;
   }
-  SecureMem::lockSystemCall(parentProc, mem);
+  SecureMem::lockSystemCall(parentMapsFd, mem);
   if (read(sys, sandboxFd, mem->pathname, stat_req.path_length) !=
       (ssize_t)stat_req.path_length) {
     goto read_parm_failed;
@@ -97,7 +97,7 @@ bool Sandbox::process_stat(int parentProc, int sandboxFd, int threadFdPub,
                   "\"").c_str());
 
   // Tell trusted thread to stat the file.
-  SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem,
+  SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
                             #if defined(__i386__)
                             stat_req.sysnum == __NR_stat64 ? __NR_stat64 :
                             #endif

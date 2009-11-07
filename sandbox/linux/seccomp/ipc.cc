@@ -108,7 +108,7 @@ int Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_shmat(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_shmat(int parentMapsFd, int sandboxFd, int threadFdPub,
                             int threadFd, SecureMem::Args* mem) {
   // Read request
   ShmAt shmat_req;
@@ -133,7 +133,7 @@ bool Sandbox::process_shmat(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_shmctl(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_shmctl(int parentMapsFd, int sandboxFd, int threadFdPub,
                              int threadFd, SecureMem::Args* mem) {
   // Read request
   ShmCtl shmctl_req;
@@ -158,7 +158,7 @@ bool Sandbox::process_shmctl(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_shmdt(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_shmdt(int parentMapsFd, int sandboxFd, int threadFdPub,
                             int threadFd, SecureMem::Args* mem) {
   // Read request
   ShmDt shmdt_req;
@@ -193,7 +193,7 @@ bool Sandbox::process_shmdt(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_shmget(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_shmget(int parentMapsFd, int sandboxFd, int threadFdPub,
                              int threadFd, SecureMem::Args* mem) {
   // Read request
   ShmGet shmget_req;
@@ -261,7 +261,7 @@ int Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_ipc(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_ipc(int parentMapsFd, int sandboxFd, int threadFdPub,
                           int threadFd, SecureMem::Args* mem) {
   // Read request
   IPC ipc_req;

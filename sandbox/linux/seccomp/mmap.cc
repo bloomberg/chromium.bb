@@ -30,7 +30,7 @@ void* Sandbox::sandbox_mmap(void *start, size_t length, int prot, int flags,
   return rc;
 }
 
-bool Sandbox::process_mmap(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_mmap(int parentMapsFd, int sandboxFd, int threadFdPub,
                            int threadFd, SecureMem::Args* mem) {
   // Read request
   SysCalls sys;

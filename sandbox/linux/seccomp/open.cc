@@ -30,7 +30,7 @@ int Sandbox::sandbox_open(const char *pathname, int flags, mode_t mode) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_open(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_open(int parentMapsFd, int sandboxFd, int threadFdPub,
                            int threadFd, SecureMem::Args* mem) {
   // Read request
   SysCalls sys;
@@ -70,7 +70,7 @@ bool Sandbox::process_open(int parentProc, int sandboxFd, int threadFdPub,
     return false;
   }
 
-  SecureMem::lockSystemCall(parentProc, mem);
+  SecureMem::lockSystemCall(parentMapsFd, mem);
   if (read(sys, sandboxFd, mem->pathname, open_req.path_length) !=
       (ssize_t)open_req.path_length) {
     goto read_parm_failed;
@@ -83,7 +83,7 @@ bool Sandbox::process_open(int parentProc, int sandboxFd, int threadFdPub,
                   "\"").c_str());
 
   // Tell trusted thread to open the file.
-  SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem, __NR_open,
+  SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem, __NR_open,
                             mem->pathname - (char*)mem + (char*)mem->self,
                             open_req.flags, open_req.mode);
   return true;

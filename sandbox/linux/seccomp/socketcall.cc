@@ -204,8 +204,9 @@ int Sandbox::sandbox_getsockopt(int sockfd, int level, int optname,
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_recvfrom(int parentProc, int sandboxFd, int threadFdPub,
-                               int threadFd, SecureMem::Args* mem) {
+bool Sandbox::process_recvfrom(int parentMapsFd, int sandboxFd,
+                               int threadFdPub, int threadFd,
+                               SecureMem::Args* mem) {
   // Read request
   RecvFrom recvfrom_req;
   SysCalls sys;
@@ -231,7 +232,7 @@ bool Sandbox::process_recvfrom(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_recvmsg(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_recvmsg(int parentMapsFd, int sandboxFd, int threadFdPub,
                               int threadFd, SecureMem::Args* mem) {
   // Read request
   RecvMsg  recvmsg_req;
@@ -255,7 +256,7 @@ bool Sandbox::process_recvmsg(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_sendmsg(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_sendmsg(int parentMapsFd, int sandboxFd, int threadFdPub,
                               int threadFd, SecureMem::Args* mem) {
   // Read request
   struct {
@@ -307,7 +308,7 @@ bool Sandbox::process_sendmsg(int parentProc, int sandboxFd, int threadFdPub,
 
   // This must be a locked system call, because we have to ensure that the
   // untrusted code does not tamper with the msghdr after we have examined it.
-  SecureMem::lockSystemCall(parentProc, mem);
+  SecureMem::lockSystemCall(parentMapsFd, mem);
   if (sizeof(extra) > 0) {
     if (data.msg.msg_namelen > 0) {
       data.msg.msg_name = mem->pathname + sizeof(struct msghdr);
@@ -319,14 +320,14 @@ bool Sandbox::process_sendmsg(int parentProc, int sandboxFd, int threadFdPub,
     memcpy(mem->pathname + sizeof(struct msghdr), extra, sizeof(extra));
   }
   memcpy(mem->pathname, &data.msg, sizeof(struct msghdr));
-  SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem,
+  SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
                             __NR_sendmsg, data.sendmsg_req.sockfd,
                             mem->pathname - (char*)mem + (char*)mem->self,
                             data.sendmsg_req.flags);
   return true;
 }
 
-bool Sandbox::process_sendto(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_sendto(int parentMapsFd, int sandboxFd, int threadFdPub,
                              int threadFd, SecureMem::Args* mem) {
   // Read request
   SendTo   sendto_req;
@@ -359,7 +360,7 @@ bool Sandbox::process_sendto(int parentProc, int sandboxFd, int threadFdPub,
   return true;
 }
 
-bool Sandbox::process_setsockopt(int parentProc, int sandboxFd,
+bool Sandbox::process_setsockopt(int parentMapsFd, int sandboxFd,
                                  int threadFdPub, int threadFd,
                                  SecureMem::Args* mem) {
   // Read request
@@ -423,7 +424,7 @@ bool Sandbox::process_setsockopt(int parentProc, int sandboxFd,
   return false;
 }
 
-bool Sandbox::process_getsockopt(int parentProc, int sandboxFd,
+bool Sandbox::process_getsockopt(int parentMapsFd, int sandboxFd,
                                  int threadFdPub, int threadFd,
                                  SecureMem::Args* mem) {
   // Read request
@@ -706,7 +707,7 @@ int Sandbox::sandbox_socketcall(int call, void* args) {
   return static_cast<int>(rc);
 }
 
-bool Sandbox::process_socketcall(int parentProc, int sandboxFd,
+bool Sandbox::process_socketcall(int parentMapsFd, int sandboxFd,
                                  int threadFdPub, int threadFd,
                                  SecureMem::Args* mem) {
   // Read request
@@ -824,9 +825,9 @@ bool Sandbox::process_socketcall(int parentProc, int sandboxFd,
       // that should not be tampered with after it has been inspected. Copy it
       // into the write-protected securely shared memory before telling the
       // trusted thread to execute the socket call.
-      SecureMem::lockSystemCall(parentProc, mem);
+      SecureMem::lockSystemCall(parentMapsFd, mem);
       memcpy(mem->pathname, &socketcall_req.args, sizeof(socketcall_req.args));
-      SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem,
+      SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
                                 __NR_socketcall, socketcall_req.call,
                                 mem->pathname - (char*)mem + (char*)mem->self);
       return true;
@@ -970,7 +971,7 @@ bool Sandbox::process_socketcall(int parentProc, int sandboxFd,
       // This must be a locked system call, because we have to ensure that
       // the untrusted code does not tamper with the msghdr after we have
       // examined it.
-      SecureMem::lockSystemCall(parentProc, mem);
+      SecureMem::lockSystemCall(parentMapsFd, mem);
       socketcall_req.args.sendmsg.msg =
           reinterpret_cast<struct msghdr*>(mem->pathname +
                                            sizeof(socketcall_req.args) -
@@ -989,7 +990,7 @@ bool Sandbox::process_socketcall(int parentProc, int sandboxFd,
                sendmsgExtra, numSendmsgExtra);
       }
       memcpy(mem->pathname + sizeof(socketcall_req.args), msg, sizeof(*msg));
-      SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem,
+      SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
                                 __NR_socketcall, socketcall_req.call,
                                 mem->pathname - (char*)mem + (char*)mem->self);
       return true;

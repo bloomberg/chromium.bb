@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/prctl.h>
 #include <sys/signal.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -50,6 +52,7 @@ static const int kBrowserDescriptor = 3;
 static const int kMagicSandboxIPCDescriptor = 5;
 static const int kZygoteIdDescriptor = 7;
 static bool g_suid_sandbox_active = false;
+static int g_proc_fd = -1;
 
 // This is the object which implements the zygote. The ZygoteMain function,
 // which is called from ChromeMain, at the the bottom and simple constructs one
@@ -234,6 +237,16 @@ class Zygote {
     child = fork();
 
     if (!child) {
+      // Try to open /proc/self/maps as the seccomp sandbox needs access to it
+      if (g_proc_fd >= 0) {
+        int proc_self_maps = openat(g_proc_fd, "self/maps", O_RDONLY);
+        if (proc_self_maps >= 0) {
+          SeccompSandboxSetProcSelfMaps(proc_self_maps);
+        }
+        close(g_proc_fd);
+        g_proc_fd = -1;
+      }
+
       close(kBrowserDescriptor);  // our socket from the browser
       close(kZygoteIdDescriptor);  // another socket from the browser
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
@@ -583,9 +596,32 @@ bool ZygoteMain(const MainFunctionParams& params) {
   g_am_zygote_or_renderer = true;
 #endif
 
+  // The seccomp sandbox needs access to files in /proc, which might be denied
+  // after one of the other sandboxes have been started. So, obtain a suitable
+  // file handle in advance.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSeccompSandbox)) {
-    if (!SupportsSeccompSandbox()) {
+    g_proc_fd = open("/proc", O_DIRECTORY | O_RDONLY);
+    if (g_proc_fd < 0) {
+      LOG(ERROR) << "WARNING! Cannot access \"/proc\". Disabling seccomp "
+                    "sandboxing.";
+    }
+  }
+
+  // Turn on the SELinux or SUID sandbox
+  if (!EnterSandbox()) {
+    LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
+               << errno << ")";
+    return false;
+  }
+
+  // The seccomp sandbox will be turned on when the renderers start. But we can
+  // already check if sufficient support is available so that we only need to
+  // print one error message for the entire browser session.
+  if (g_proc_fd >= 0 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
+    if (!SupportsSeccompSandbox(g_proc_fd)) {
       // There are a good number of users who cannot use the seccomp sandbox
       // (e.g. because their distribution does not enable seccomp mode by
       // default). While we would prefer to deny execution in this case, it
@@ -596,12 +632,6 @@ bool ZygoteMain(const MainFunctionParams& params) {
     } else {
       LOG(INFO) << "Enabling experimental Seccomp sandbox.";
     }
-  }
-
-  if (!EnterSandbox()) {
-    LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
-               << errno << ")";
-    return false;
   }
 
   Zygote zygote;

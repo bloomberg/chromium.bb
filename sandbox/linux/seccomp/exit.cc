@@ -22,10 +22,11 @@ int Sandbox::sandbox_exit(int status) {
   }
 }
 
-bool Sandbox::process_exit(int parentProc, int sandboxFd, int threadFdPub,
+bool Sandbox::process_exit(int parentMapsFd, int sandboxFd, int threadFdPub,
                            int threadFd, SecureMem::Args* mem) {
-  SecureMem::lockSystemCall(parentProc, mem);
-  SecureMem::sendSystemCall(threadFdPub, true, parentProc, mem, __NR_exit, 0);
+  SecureMem::lockSystemCall(parentMapsFd, mem);
+  SecureMem::sendSystemCall(threadFdPub, true, parentMapsFd, mem,
+                            __NR_exit, 0);
   return true;
 }
 

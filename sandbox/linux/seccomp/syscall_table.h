@@ -16,7 +16,7 @@ namespace playground {
 
   struct SyscallTable {
     void   *handler;
-    bool  (*trustedProcess)(int parentProc, int sandboxFd, int threadFdPub,
+    bool  (*trustedProcess)(int parentMapsFd, int sandboxFd, int threadFdPub,
                             int threadFd, SecureMemArgs* mem);
   };
   extern const struct SyscallTable syscallTable[]
