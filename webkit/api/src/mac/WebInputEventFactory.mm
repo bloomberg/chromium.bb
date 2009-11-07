@@ -919,6 +919,14 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(NSEvent* event)
 
     result.timeStampSeconds = [event timestamp];
 
+    // Windows and Linux set |isSystemKey| if alt is down. WebKit looks at this
+    // flag to decide if it should handle a key or not. E.g. alt-left/right
+    // shouldn't be used by WebKit to scroll the current page, because we want
+    // to get that key back for it to do history navigation. Hence, the
+    // corresponding situation on OS X is to set this for cmd key presses.
+    if (result.modifiers & WebInputEvent::MetaKey)
+        result.isSystemKey = true;
+
     return result;
 }
 
@@ -938,6 +946,15 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(wchar_t character,
     result.nativeKeyCode = character;
     result.text[0] = character;
     result.unmodifiedText[0] = character;
+
+    // Windows and Linux set |isSystemKey| if alt is down. WebKit looks at this
+    // flag to decide if it should handle a key or not. E.g. alt-left/right
+    // shouldn't be used by WebKit to scroll the current page, because we want
+    // to get that key back for it to do history navigation. Hence, the
+    // corresponding situation on OS X is to set this for cmd key presses.
+    if (result.modifiers & WebInputEvent::MetaKey)
+        result.isSystemKey = true;
+
     return result;
 }
 

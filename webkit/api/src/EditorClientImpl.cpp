@@ -360,6 +360,12 @@ static const unsigned MetaKey = 1 << 3;
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
 static const unsigned OptionKey  = AltKey;
+
+// Do not use this constant for anything but cursor movement commands. Keys
+// with cmd set have their |isSystemKey| bit set, so chances are the shortcut
+// will not be executed. Another, less important, reason is that shortcuts
+// defined in the renderer do not blink the menu item that they triggered.  See
+// http://crbug.com/25856 and the bugs linked from there for details.
 static const unsigned CommandKey = MetaKey;
 #endif
 
