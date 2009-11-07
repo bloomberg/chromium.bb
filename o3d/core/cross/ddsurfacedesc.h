@@ -210,7 +210,7 @@ struct DDSURFACEDESC2 {
   };
   DWORD dwAlphaBitDepth;  // depth of alpha buffer requested
   DWORD dwReserved;       // reserved
-  DWORD lpSurface;       // pointer to the associated surface memory
+  LPVOID lpSurface;       // pointer to the associated surface memory
   union {
     DDCOLORKEY ddckCKDestOverlay;  // color key for destination overlay
     DWORD dwEmptyFaceColor;        // color for empty cubemap faces

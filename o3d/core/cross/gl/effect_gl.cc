@@ -561,8 +561,7 @@ void EffectGL::SetTexturesFromEffect(ParamCacheGL* param_cache_gl) {
     if (param != NULL) {
       Texture *t = param->value();
       if (t) {
-        GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
-            t->GetTextureHandle()));
+        GLuint handle = reinterpret_cast<GLuint>(t->GetTextureHandle());
         cgGLSetTextureParameter(cg_param, handle);
         cgGLEnableTextureParameter(cg_param);
       }
