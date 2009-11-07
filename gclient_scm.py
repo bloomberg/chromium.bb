@@ -133,6 +133,12 @@ class GitWrapper(SCMWrapper):
     elif len(components) == 2:
       revision = components[1]
 
+    if options.verbose:
+      rev_str = ""
+      if revision:
+        rev_str = ' at %s' % revision
+      print("\n_____ %s%s" % (self.relpath, rev_str))
+
     if not os.path.exists(self.checkout_path):
       self._RunGit(['clone', url, self.checkout_path],
                    cwd=self._root_dir, redirect_stdout=False)
@@ -148,7 +154,8 @@ class GitWrapper(SCMWrapper):
       new_base = revision
     files = self._RunGit(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-    self._RunGit(['rebase', new_base], redirect_stdout=False)
+    self._RunGit(['rebase', '-v', new_base], redirect_stdout=False)
+    print "Checked out revision %s." % self.revinfo(options, (), None)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications.
