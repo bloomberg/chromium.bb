@@ -66,6 +66,8 @@ class TestUtilityProcessHostClient : public UtilityProcessHost::Client {
   }
 
  private:
+  ~TestUtilityProcessHostClient() {}
+
   bool success_;
 };
 

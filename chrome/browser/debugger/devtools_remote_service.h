@@ -26,7 +26,6 @@ struct DevToolsRemoteServiceCommand {
 class DevToolsRemoteService : public DevToolsRemoteListener {
  public:
   explicit DevToolsRemoteService(DevToolsProtocolHandler* delegate);
-  virtual ~DevToolsRemoteService();
 
   // DevToolsRemoteListener interface
   virtual void HandleMessage(const DevToolsRemoteMessage& message);
@@ -40,6 +39,7 @@ class DevToolsRemoteService : public DevToolsRemoteListener {
     static const int kOk = 0;
     static const int kUnknownCommand = 1;
   };
+  virtual ~DevToolsRemoteService();
   void ProcessJson(DictionaryValue* json, const DevToolsRemoteMessage& message);
   static const std::wstring kCommandWide;
   static const std::wstring kDataWide;

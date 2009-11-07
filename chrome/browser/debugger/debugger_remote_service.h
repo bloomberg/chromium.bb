@@ -40,7 +40,6 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   // V8 VM debugger are routed back to |delegate|.
   // The ownership of |delegate| is NOT transferred to this class.
   explicit DebuggerRemoteService(DevToolsProtocolHandler* delegate);
-  virtual ~DebuggerRemoteService();
 
   // Handles a JSON message from the tab_uid-associated V8 debugger.
   void DebuggerOutput(int32 tab_uid, const std::string& message);
@@ -83,6 +82,8 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
     RESULT_DEBUGGER_ERROR,
     RESULT_UNKNOWN_COMMAND
   } Result;
+
+  virtual ~DebuggerRemoteService();
 
   // Attaches a remote debugger to the tab specified by |destination|.
   // Writes the attachment result (one of Result enum values) into |response|.

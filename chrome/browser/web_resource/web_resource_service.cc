@@ -87,7 +87,7 @@ class WebResourceService::WebResourceFetcher
   scoped_ptr<URLFetcher> url_fetcher_;
 
   // Our owner and creator.
-  scoped_ptr<WebResourceService> web_resource_service_;
+  scoped_refptr<WebResourceService> web_resource_service_;
 };
 
 // This class coordinates a web resource unpack and parse task which is run in
@@ -136,6 +136,8 @@ class WebResourceService::UnpackerClient
   }
 
  private:
+  ~UnpackerClient() {}
+
   // UtilityProcessHost::Client
   virtual void OnProcessCrashed() {
     if (got_response_)

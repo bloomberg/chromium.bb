@@ -34,7 +34,6 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
   // dispatches messages to this service.
   // The ownership of |delegate| is NOT transferred to this class.
   explicit ExtensionPortsRemoteService(DevToolsProtocolHandler* delegate);
-  virtual ~ExtensionPortsRemoteService();
 
   // DevToolsRemoteListener methods:
 
@@ -64,6 +63,8 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
     RESULT_TAB_NOT_FOUND,
     RESULT_CONNECT_FAILED,  // probably extension ID not found.
   } Result;
+
+  virtual ~ExtensionPortsRemoteService();
 
   // Sends a JSON message with the |response| to the external client.
   // |tool| and |destination| are used as the respective header values.

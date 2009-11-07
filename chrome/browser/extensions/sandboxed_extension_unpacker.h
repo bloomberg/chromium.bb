@@ -103,6 +103,8 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   class ProcessHostClient;
   friend class ProcessHostClient;
 
+  ~SandboxedExtensionUnpacker() {}
+
   // Validates the signature of the extension and extract the key to
   // |public_key_|. Returns true if the signature validates, false otherwise.
   //

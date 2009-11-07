@@ -215,8 +215,6 @@ class SafeManifestParser : public UtilityProcessHost::Client {
       : xml_(xml), updater_(updater) {
   }
 
-  ~SafeManifestParser() {}
-
   // Posts a task over to the IO loop to start the parsing of xml_ in a
   // utility process.
   void Start() {
@@ -279,6 +277,8 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   }
 
  private:
+  ~SafeManifestParser() {}
+
   const std::string& xml_;
 
   scoped_refptr<ExtensionUpdater> updater_;
@@ -469,7 +469,7 @@ void ExtensionUpdater::TimerFired() {
         kLastExtensionsUpdateCheck));
     if (last.ToInternalValue() != 0) {
       // Use counts rather than time so we can use minutes rather than millis.
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.UpdateCheckGap", 
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.UpdateCheckGap",
           (Time::Now() - last).InMinutes(),
           base::TimeDelta::FromSeconds(kStartupWaitSeconds).InMinutes(),
           base::TimeDelta::FromDays(40).InMinutes(),

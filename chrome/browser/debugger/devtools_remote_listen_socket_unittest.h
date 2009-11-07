@@ -91,9 +91,6 @@ class DevToolsRemoteListenSocketTester :
     memset(&lock_, 0, sizeof(lock_));
   }
 
-  virtual ~DevToolsRemoteListenSocketTester() {
-  }
-
   virtual void SetUp();
   virtual void TearDown();
 
@@ -138,6 +135,9 @@ class DevToolsRemoteListenSocketTester :
 
  protected:
   virtual ListenSocket* DoListen();
+
+ private:
+ virtual ~DevToolsRemoteListenSocketTester() {}
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
