@@ -444,6 +444,10 @@ void TabContentsViewMac::Observe(NotificationType type,
   [self tabContents]->Paste();
 }
 
+- (void)pasteAsPlainText:(id)sender {
+  [self tabContents]->PasteAndMatchStyle();
+}
+
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {
   [dragSource_ lazyWriteToPasteboard:sender
                              forType:type];

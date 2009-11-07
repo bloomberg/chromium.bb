@@ -5728,6 +5728,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASTE_MAC" desc="The Mac menu item for paste in the edit menu.">
           Paste
         </message>
+        <message name="IDS_PASTE_MATCH_STYLE_MAC" desc="The Mac menu item for paste and match style in the edit menu.">
+          Paste and Match Style
+        </message>
         <message name="IDS_EDIT_DELETE_MAC" desc="The Mac menu item delete in the edit menu.">
           Delete
         </message>

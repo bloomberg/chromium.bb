@@ -466,11 +466,9 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_INSERT, CtrlKey,            "Copy"                                 },
     { VKEY_INSERT, ShiftKey,           "Paste"                                },
     { VKEY_DELETE, ShiftKey,           "Cut"                                  },
-#if PLATFORM(DARWIN)
-    // FIXME: Remove (crbug.com/25205).
-    { 'V',         CommandKey | ShiftKey,
-        "PasteAndMatchStyle"                                                  },
-#else
+#if !PLATFORM(DARWIN)
+    // On OS X, we pipe these back to the browser, so that it can do menu item
+    // blinking.
     { 'C',         CtrlKey,            "Copy"                                 },
     { 'V',         CtrlKey,            "Paste"                                },
     { 'V',         CtrlKey | ShiftKey, "PasteAndMatchStyle"                   },

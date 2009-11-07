@@ -757,6 +757,12 @@ void TabContents::Paste() {
   render_view_host()->Paste();
 }
 
+#if defined(OS_MACOSX)
+void TabContents::PasteAndMatchStyle() {
+  render_view_host()->ForwardEditCommand("PasteAndMatchStyle", "");
+}
+#endif
+
 void TabContents::DisassociateFromPopupCount() {
   render_view_host()->DisassociateFromPopupCount();
 }

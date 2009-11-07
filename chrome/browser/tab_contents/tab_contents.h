@@ -320,6 +320,9 @@ class TabContents : public PageNavigator,
   virtual void CopyToFindPboard();
 #endif
   virtual void Paste();
+#if defined(OS_MACOSX)
+  virtual void PasteAndMatchStyle();
+#endif
 
   // Called on a TabContents when it isn't a popup, but a new window.
   virtual void DisassociateFromPopupCount();
