@@ -182,17 +182,6 @@
       ],
     },
     {
-      # build the ICU stubs
-      'target_name': 'icu_stubs',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'icu_stubs.cc'
-      ],
-    },
-    {
       # TODO(slightlyoff): de-win32-ify
       #
       # build the base_noicu.lib.
@@ -200,7 +189,6 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base',
-        'icu_stubs',
       ],
       'actions': [
         {
@@ -208,7 +196,6 @@
           'msvs_cygwin_shell': 0,
           'inputs': [
             '<(PRODUCT_DIR)/lib/base.lib',
-            '<(PRODUCT_DIR)/lib/icu_stubs.lib',
           ],
           'outputs': [
             '<(PRODUCT_DIR)/lib/base_noicu.lib',
@@ -238,7 +225,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'base_noicu',
-        'icu_stubs',
         'chrome_frame_npapi',
         'chrome_frame_strings',
         'xulrunner_sdk',
@@ -312,7 +298,6 @@
         'test/http_negotiate_unittest.cc',
         'test/http_server.cc',
         'test/http_server.h',
-        'test/icu_stubs_unittests.cc',
         'test/run_all_unittests.cc',
         'test/test_server.cc',
         'test/test_server.h',
@@ -650,7 +635,6 @@
         'function_stub.h',
         'http_negotiate.h',
         'http_negotiate.cc',
-        'icu_stubs.cc',
         'iids.cc',
         'in_place_menu.h',
         'ole_document_impl.h',
