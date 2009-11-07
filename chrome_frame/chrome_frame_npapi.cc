@@ -683,7 +683,7 @@ void ChromeFrameNPAPI::OnRequestRead(int tab_handle, int request_id,
 
 void ChromeFrameNPAPI::OnRequestEnd(int tab_handle, int request_id,
                                     const URLRequestStatus& status) {
-  automation_client_->RemoveRequest(request_id, status.status(), true);
+  automation_client_->RemoveRequest(request_id, true);
 }
 
 void ChromeFrameNPAPI::OnSetCookieAsync(int tab_handle, const GURL& url,

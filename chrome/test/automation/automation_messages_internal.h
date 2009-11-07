@@ -1162,4 +1162,10 @@ IPC_BEGIN_MESSAGES(Automation)
   //   gfx::Point - the location to move to
   IPC_MESSAGE_ROUTED2(AutomationMsg_WindowMouseMove, int, gfx::Point)
 
+  // Called when requests should be downloaded using a host browser's
+  // download mechanism when chrome is being embedded.
+  IPC_MESSAGE_ROUTED2(AutomationMsg_DownloadRequestInHost,
+                      int /* tab_handle */,
+                      int /* request_id */)
+
 IPC_END_MESSAGES(Automation)

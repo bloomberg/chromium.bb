@@ -98,6 +98,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
                              int bytes_to_read) {}
   virtual void OnRequestEnd(int tab_handle, int request_id,
                             const URLRequestStatus& status) {}
+  virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {}
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
                                 const std::string& cookie) {}
   virtual void OnAttachExternalTab(int tab_handle, intptr_t cookie,

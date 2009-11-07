@@ -22,8 +22,8 @@ struct AutomationURLResponse;
 // automation.
 class URLRequestAutomationJob : public URLRequestJob {
  public:
-  URLRequestAutomationJob(
-      URLRequest* request, int tab, AutomationResourceMessageFilter* filter);
+  URLRequestAutomationJob(URLRequest* request, int tab, int request_id,
+                          AutomationResourceMessageFilter* filter);
 
   // Register our factory for HTTP/HTTPs requests.
   static bool EnsureProtocolFactoryRegistered();
@@ -40,7 +40,7 @@ class URLRequestAutomationJob : public URLRequestJob {
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
   // Peek and process automation messages for URL requests.
-  static int MayFilterMessage(const IPC::Message& message);
+  static bool MayFilterMessage(const IPC::Message& message, int* request_id);
   void OnMessage(const IPC::Message& message);
 
   int id() const {

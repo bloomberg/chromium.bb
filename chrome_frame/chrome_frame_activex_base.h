@@ -462,7 +462,12 @@ END_MSG_MAP()
 
   virtual void OnRequestEnd(int tab_handle, int request_id,
                             const URLRequestStatus& status) {
-    automation_client_->RemoveRequest(request_id, status.status(), true);
+    automation_client_->RemoveRequest(request_id, true);
+  }
+
+  virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
+    DLOG(INFO) << "TODO: Let the host browser handle this download";
+    automation_client_->RemoveRequest(request_id, false);
   }
 
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,

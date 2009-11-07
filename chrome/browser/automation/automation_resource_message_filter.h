@@ -39,10 +39,6 @@ class AutomationResourceMessageFilter
   AutomationResourceMessageFilter();
   virtual ~AutomationResourceMessageFilter();
 
-  int NewRequestId() {
-    return base::subtle::Barrier_AtomicIncrement(&unique_request_id_, 1);
-  }
-
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
   virtual void OnChannelConnected(int32 peer_pid);
@@ -97,9 +93,6 @@ class AutomationResourceMessageFilter
   // The channel associated with the automation connection. This pointer is not
   // owned by this class.
   IPC::Channel* channel_;
-
-  // A unique request id per process.
-  static int unique_request_id_;
 
   // Map of outstanding requests.
   RequestMap request_map_;

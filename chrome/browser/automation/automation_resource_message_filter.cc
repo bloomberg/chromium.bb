@@ -20,7 +20,6 @@
 
 AutomationResourceMessageFilter::RenderViewMap
     AutomationResourceMessageFilter::filtered_render_views_;
-int AutomationResourceMessageFilter::unique_request_id_ = 1;
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {
@@ -64,8 +63,8 @@ void AutomationResourceMessageFilter::OnChannelClosing() {
 // Called on the IPC thread:
 bool AutomationResourceMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  int request_id = URLRequestAutomationJob::MayFilterMessage(message);
-  if (request_id) {
+  int request_id;
+  if (URLRequestAutomationJob::MayFilterMessage(message, &request_id)) {
     RequestMap::iterator it = request_map_.find(request_id);
     if (it != request_map_.end()) {
       URLRequestAutomationJob* job = it->second;

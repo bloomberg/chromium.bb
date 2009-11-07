@@ -49,17 +49,16 @@ URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
 URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
     = NULL;
 
-URLRequestAutomationJob::URLRequestAutomationJob(
-    URLRequest* request, int tab, AutomationResourceMessageFilter* filter)
-    : URLRequestJob(request), id_(0), tab_(tab), message_filter_(filter),
-      pending_buf_size_(0), redirect_status_(0) {
+URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
+    int request_id, AutomationResourceMessageFilter* filter)
+    : URLRequestJob(request),
+      id_(request_id),
+      tab_(tab),
+      message_filter_(filter),
+      pending_buf_size_(0),
+      redirect_status_(0) {
   DLOG(INFO) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
-  if (message_filter_) {
-    id_ = message_filter_->NewRequestId();
-    DCHECK(id_);
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_NE(id_, -1);
 }
 
 URLRequestAutomationJob::~URLRequestAutomationJob() {
@@ -97,7 +96,7 @@ URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
               request_info->child_id(), request_info->route_id(), &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
-            details.tab_handle, details.filter);
+            details.tab_handle, request_info->request_id(), details.filter);
         return job;
       }
     }
@@ -202,23 +201,22 @@ bool URLRequestAutomationJob::IsRedirectResponse(
   return false;
 }
 
-int URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message) {
+bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
+                                               int* request_id) {
   switch (message.type()) {
     case AutomationMsg_RequestStarted::ID:
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID: {
       void* iter = NULL;
       int tab = 0;
-      int id = 0;
-      if (message.ReadInt(&iter, &tab) && message.ReadInt(&iter, &id)) {
-        DCHECK(id);
-        return id;
+      if (message.ReadInt(&iter, &tab) && message.ReadInt(&iter, request_id)) {
+        return true;
       }
       break;
     }
   }
 
-  return 0;
+  return false;
 }
 
 void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
@@ -229,8 +227,8 @@ void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void URLRequestAutomationJob::OnRequestStarted(
-    int tab, int id, const IPC::AutomationURLResponse& response) {
+void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
+    const IPC::AutomationURLResponse& response) {
   DLOG(INFO) << "URLRequestAutomationJob: " <<
       request_->url().spec() << " - response started.";
   set_expected_content_size(response.content_length);

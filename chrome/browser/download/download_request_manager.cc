@@ -227,6 +227,14 @@ void DownloadRequestManager::CanDownload(int render_process_host_id,
 void DownloadRequestManager::CanDownloadImpl(
     TabContents* originating_tab,
     Callback* callback) {
+  // FYI: Chrome Frame overrides CanDownload in ExternalTabContainer in order
+  // to cancel the download operation in chrome and let the host browser
+  // take care of it.
+  if (!originating_tab->CanDownload(callback->GetRequestId())) {
+    ScheduleNotification(callback, false);
+    return;
+  }
+
   // If the tab requesting the download is a constrained popup that is not
   // shown, treat the request as if it came from the parent.
   TabContents* effective_tab = originating_tab;

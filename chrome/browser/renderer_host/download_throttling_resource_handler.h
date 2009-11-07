@@ -50,8 +50,9 @@ class DownloadThrottlingResourceHandler
                                    const std::string& security_info);
 
   // DownloadRequestManager::Callback implementation:
-  void CancelDownload();
-  void ContinueDownload();
+  virtual void CancelDownload();
+  virtual void ContinueDownload();
+  virtual int GetRequestId();
 
  private:
   virtual ~DownloadThrottlingResourceHandler();

@@ -255,7 +255,9 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
 
   // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
   // useful for Chrome Frame users.
+#ifndef NDEBUG
   command_line->AppendSwitch(switches::kNoErrorDialogs);
+#endif
 
   command_line->AppendSwitch(switches::kEnableRendererAccessibility);
 
@@ -668,7 +670,7 @@ void ChromeFrameAutomationClient::InstallExtensionComplete(
     const FilePath& crx_path,
     void* user_data,
     AutomationMsg_ExtensionResponseValues res) {
-  DCHECK(PlatformThread::CurrentId() == ui_thread_id_);
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
 
   if (chrome_frame_delegate_) {
     chrome_frame_delegate_->OnExtensionInstalled(crx_path, user_data, res);
@@ -798,7 +800,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
 
 void ChromeFrameAutomationClient::InitializeComplete(
     AutomationLaunchResult result) {
-  DCHECK(PlatformThread::CurrentId() == ui_thread_id_);
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   std::string version = automation_server_->server_version();
 
   if (result != AUTOMATION_SUCCESS) {
@@ -981,12 +983,19 @@ bool ChromeFrameAutomationClient::Send(IPC::Message* msg) {
 }
 
 bool ChromeFrameAutomationClient::AddRequest(PluginUrlRequest* request) {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+
   if (!request) {
     NOTREACHED();
     return false;
   }
 
-  DCHECK(request_map_.end() == request_map_.find(request->id()));
+#ifndef NDEBUG
+  RequestMap::const_iterator it = request_map_.find(request->id());
+  scoped_refptr<PluginUrlRequest> other(request_map_.end() == it ?
+                                        NULL : (*it).second);
+  DCHECK(other.get() == NULL);
+#endif
   request_map_[request->id()] = request;
   return true;
 }
@@ -1002,12 +1011,13 @@ bool ChromeFrameAutomationClient::ReadRequest(
 }
 
 void ChromeFrameAutomationClient::RemoveRequest(PluginUrlRequest* request) {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   DCHECK(request_map_.end() != request_map_.find(request->id()));
   request_map_.erase(request->id());
 }
 
-void ChromeFrameAutomationClient::RemoveRequest(
-    int request_id, int reason, bool abort) {
+void ChromeFrameAutomationClient::RemoveRequest(int request_id, bool abort) {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   PluginUrlRequest* request = LookupRequest(request_id);
   if (request) {
     if (abort) {
@@ -1021,6 +1031,7 @@ void ChromeFrameAutomationClient::RemoveRequest(
 
 PluginUrlRequest* ChromeFrameAutomationClient::LookupRequest(
     int request_id) const {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   PluginUrlRequest* request = NULL;
   RequestMap::const_iterator it = request_map_.find(request_id);
   if (request_map_.end() != it)
@@ -1030,13 +1041,14 @@ PluginUrlRequest* ChromeFrameAutomationClient::LookupRequest(
 
 bool ChromeFrameAutomationClient::IsValidRequest(
     PluginUrlRequest* request) const {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   bool is_valid = false;
   // if request is invalid then request->id() won't work
   // hence perform reverse map lookup for validity of the
   // request pointer.
   if (request) {
     for (RequestMap::const_iterator it = request_map_.begin();
-        it != request_map_.end(); it++) {
+         it != request_map_.end(); it++) {
       if (request == (*it).second) {
         is_valid = true;
         break;
@@ -1048,6 +1060,7 @@ bool ChromeFrameAutomationClient::IsValidRequest(
 }
 
 void ChromeFrameAutomationClient::CleanupRequests() {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   while (request_map_.size()) {
     PluginUrlRequest* request = request_map_.begin()->second;
     if (request) {
@@ -1061,6 +1074,7 @@ void ChromeFrameAutomationClient::CleanupRequests() {
 }
 
 void ChromeFrameAutomationClient::CleanupAsyncRequests() {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   RequestMap::iterator index = request_map_.begin();
   while (index != request_map_.end()) {
     PluginUrlRequest* request = (*index).second;

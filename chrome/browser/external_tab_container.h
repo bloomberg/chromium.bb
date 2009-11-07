@@ -122,6 +122,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   virtual bool TakeFocus(bool reverse);
+
+  virtual bool CanDownload(int request_id);
+
   virtual bool OnGoToEntryOffset(int offset);
 
   virtual void ShowPageInfo(Profile* profile,

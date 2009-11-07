@@ -22,6 +22,7 @@ bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestStart, )
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestRead, )
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestEnd, )
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DownloadRequestInHost, )
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_SetCookieAsync, )
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_AttachExternalTab, )
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestGoToHistoryEntryOffset, )
@@ -62,6 +63,8 @@ void ChromeFrameDelegateImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestStart, OnRequestStart)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestRead, OnRequestRead)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestEnd, OnRequestEnd)
+    IPC_MESSAGE_HANDLER(AutomationMsg_DownloadRequestInHost,
+                        OnDownloadRequestInHost)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookieAsync, OnSetCookieAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_AttachExternalTab, OnAttachExternalTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestGoToHistoryEntryOffset,

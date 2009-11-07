@@ -17,6 +17,7 @@
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_external_win.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -394,12 +395,28 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
   return true;
 }
 
+bool ExternalTabContainer::CanDownload(int request_id) {
+  if (load_requests_via_automation_) {
+    if (automation_) {
+      // NOTE: The request_id must be the same id as used by corresponding
+      // URLRequestAutomationJob instance to communicate with the host.
+      automation_->Send(new AutomationMsg_DownloadRequestInHost(0, tab_handle_,
+                                                                request_id));
+    }
+  } else {
+    DLOG(WARNING) << "Downloads are only supported with host browser network "
+                     "stack enabled.";
+  }
+
+  // Never allow downloads.
+  return false;
+}
+
 void ExternalTabContainer::ShowPageInfo(Profile* profile,
                                         const GURL& url,
                                         const NavigationEntry::SSLStatus& ssl,
                                         bool show_history) {
-  browser::ShowPageInfo(GetNativeView(), profile, url, ssl,
-                        show_history);
+  browser::ShowPageInfo(GetNativeView(), profile, url, ssl, show_history);
 }
 
 bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {

@@ -236,7 +236,7 @@ class ChromeFrameAutomationClient
 
   // URL request related
   bool ReadRequest(int request_id, int bytes_to_read);
-  void RemoveRequest(int request_id, int reason, bool abort);
+  void RemoveRequest(int request_id, bool abort);
   PluginUrlRequest* LookupRequest(int request_id) const;
   bool IsValidRequest(PluginUrlRequest* request) const;
   void CleanupRequests();

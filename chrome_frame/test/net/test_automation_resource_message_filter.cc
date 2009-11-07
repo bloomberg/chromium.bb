@@ -25,8 +25,8 @@ bool TestAutomationResourceMessageFilter::OnMessageReceived(
   // for filter messages, send the message to the correct thread
   // for URL requests.
   bool handled = false;
-  int request_id = URLRequestAutomationJob::MayFilterMessage(message);
-  if (request_id) {
+  int request_id;
+  if (URLRequestAutomationJob::MayFilterMessage(message, &request_id)) {
     RequestMap::iterator it = requests_.find(request_id);
     if (it != requests_.end()) {
       handled = true;

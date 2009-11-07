@@ -435,6 +435,10 @@ class TabContents : public PageNavigator,
   // Returns whether the extension shelf should be visible.
   virtual bool IsExtensionShelfAlwaysVisible();
 
+  // Notifies the delegate that a download is about to be started.
+  // This notification is fired before a local temporary file has been created.
+  bool CanDownload(int request_id);
+
   // Notifies the delegate that a download started.
   void OnStartDownload(DownloadItem* download);
 

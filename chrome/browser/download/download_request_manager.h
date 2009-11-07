@@ -56,6 +56,7 @@ class DownloadRequestManager :
    public:
     virtual void ContinueDownload() = 0;
     virtual void CancelDownload() = 0;
+    virtual int GetRequestId() = 0;
   };
 
   // TabDownloadState maintains the download state for a particular tab.

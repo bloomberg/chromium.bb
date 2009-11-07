@@ -8,7 +8,10 @@
 #include "chrome_frame/np_browser_functions.h"
 
 PluginUrlRequest::PluginUrlRequest()
-    : request_handler_(NULL), tab_(0), remote_request_id_(0), post_data_len_(0),
+    : request_handler_(NULL),
+      tab_(0),
+      remote_request_id_(-1),
+      post_data_len_(0),
       status_(URLRequestStatus::IO_PENDING),
       frame_busting_enabled_(false) {
 }

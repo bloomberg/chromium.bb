@@ -39,6 +39,10 @@ class DownloadRequestManagerTest
     cancel_count_++;
   }
 
+  virtual int GetRequestId() {
+    return -1;
+  }
+
   void CanDownload() {
     download_request_manager_->CanDownloadImpl(
         controller().tab_contents(), this);

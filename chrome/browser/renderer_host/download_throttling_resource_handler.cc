@@ -148,6 +148,10 @@ void DownloadThrottlingResourceHandler::ContinueDownload() {
   host_->PauseRequest(render_process_host_id_, request_id_, false);
 }
 
+int DownloadThrottlingResourceHandler::GetRequestId() {
+  return request_id_;
+}
+
 void DownloadThrottlingResourceHandler::CopyTmpBufferToDownloadHandler() {
   // Copy over the tmp buffer.
   net::IOBuffer* buffer;

@@ -186,6 +186,10 @@ class TabContentsDelegate {
     return 0;
   }
 
+  virtual bool CanDownload(int request_id) {
+    return true;
+  }
+
   virtual void OnStartDownload(DownloadItem* download) {
   }
 

@@ -1034,6 +1034,13 @@ void TabContents::ToolbarSizeChanged(bool is_animating) {
     d->ToolbarSizeChanged(this, is_animating);
 }
 
+bool TabContents::CanDownload(int request_id) {
+  TabContentsDelegate* d = delegate();
+  if (d)
+    return d->CanDownload(request_id);
+  return true;
+}
+
 void TabContents::OnStartDownload(DownloadItem* download) {
   DCHECK(download);
 
