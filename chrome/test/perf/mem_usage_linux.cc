@@ -45,7 +45,7 @@ size_t GetSystemCommitCharge() {
   DCHECK_EQ(meminfo_fields[kMemBuffersIndex-1], "Buffers:");
   DCHECK_EQ(meminfo_fields[kMemCacheIndex-1], "Cached:");
 
-  int result_in_kb;
+  size_t result_in_kb;
   result_in_kb = StringToInt(meminfo_fields[kMemTotalIndex]);
   result_in_kb -= StringToInt(meminfo_fields[kMemFreeIndex]);
   result_in_kb -= StringToInt(meminfo_fields[kMemBuffersIndex]);
