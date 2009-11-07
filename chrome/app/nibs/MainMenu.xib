@@ -8,7 +8,6 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="658"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -750,7 +749,7 @@
 											<object class="NSMenuItem" id="703868281">
 												<reference key="NSMenu" ref="99609113"/>
 												<string key="NSTitle">^IDS_DEV_TOOLS_MAC</string>
-												<string key="NSKeyEquiv">j</string>
+												<string key="NSKeyEquiv">i</string>
 												<int key="NSKeyEquivModMask">1572864</int>
 												<int key="NSMnemonicLoc">2147483647</int>
 												<reference key="NSOnImage" ref="353210768"/>
@@ -760,8 +759,8 @@
 											<object class="NSMenuItem" id="981186387">
 												<reference key="NSMenu" ref="99609113"/>
 												<string key="NSTitle">^IDS_DEV_TOOLS_CONSOLE_MAC</string>
-												<string key="NSKeyEquiv">C</string>
-												<int key="NSKeyEquivModMask">1048576</int>
+												<string key="NSKeyEquiv">j</string>
+												<int key="NSKeyEquivModMask">1572864</int>
 												<int key="NSMnemonicLoc">2147483647</int>
 												<reference key="NSOnImage" ref="353210768"/>
 												<reference key="NSMixedImage" ref="549394948"/>
@@ -2671,7 +2670,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{391, 140}, {361, 243}}</string>
+					<string>{{536, -194}, {361, 243}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{197, 734}, {243, 243}}</string>
@@ -2715,13 +2714,13 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{525, 802}, {197, 73}}</string>
-					<string>{{-24, 383}, {1578, 20}}</string>
+					<string>{{199, 280}, {1578, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{74, 862}</string>
 					<string>{{11, 977}, {478, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{617, 196}, {380, 213}}</string>
+					<string>{{786, 67}, {383, 213}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{475, 832}, {234, 43}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2756,7 +2755,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{997, 136}, {317, 83}}</string>
+					<string>{{1169, 7}, {320, 83}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
