@@ -1015,7 +1015,7 @@ UBool BiDiLineIterator::Open(const std::wstring& text,
   const std::wstring &text_utf16 = text;
 #endif  // U_SIZEOF_WCHAR_T != 4
   ubidi_setPara(bidi_, text_utf16.data(), static_cast<int>(text_utf16.length()),
-                right_to_left ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR,
+                right_to_left ? UBIDI_RTL : UBIDI_LTR,
                 NULL, &error);
   return U_SUCCESS(error);
 }
