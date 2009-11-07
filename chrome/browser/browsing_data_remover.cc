@@ -240,10 +240,9 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
   // Get a pointer to the cache.
   net::HttpTransactionFactory* factory =
       main_context_getter->GetURLRequestContext()->http_transaction_factory();
-  disk_cache::Backend* cache = factory->GetCache()->disk_cache();
+  disk_cache::Backend* cache = factory->GetCache()->GetBackend();
 
-  // |cache| can be null since it is lazily initialized, in this case we do
-  // nothing.
+  // |cache| can be null if it cannot be initialized.
   if (cache) {
     if (delete_begin.is_null())
       cache->DoomAllEntries();
@@ -254,10 +253,9 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
   // Get a pointer to the media cache.
   factory = media_context_getter->GetURLRequestContext()->
       http_transaction_factory();
-  cache = factory->GetCache()->disk_cache();
+  cache = factory->GetCache()->GetBackend();
 
-  // |cache| can be null since it is lazily initialized, in this case we do
-  // nothing.
+  // |cache| can be null if it cannot be initialized.
   if (cache) {
     if (delete_begin.is_null())
       cache->DoomAllEntries();
