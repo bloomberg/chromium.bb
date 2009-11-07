@@ -59,6 +59,9 @@ public:
     WEBKIT_API static void enableNotifications(bool);
     WEBKIT_API static bool isNotificationsEnabled();
 
+    WEBKIT_API static void enableApplicationCache(bool);
+    WEBKIT_API static bool isApplicationCacheEnabled();
+
 private:
     WebRuntimeFeatures();
 };

@@ -553,6 +553,9 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableDatabase(
       command_line.HasSwitch(switches::kEnableDatabases));
 
+  WebRuntimeFeatures::enableApplicationCache(
+      command_line.HasSwitch(switches::kEnableApplicationCache));
+
 #if defined(OS_WIN)
   // We don't yet support notifications on non-Windows, so hide it from pages.
   WebRuntimeFeatures::enableNotifications(
