@@ -629,6 +629,7 @@ class TabContents : public PageNavigator,
   FRIEND_TEST(BlockedPopupContainerTest, TestReposition);
   FRIEND_TEST(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST(TabContentsTest, UpdateTitle);
+  FRIEND_TEST(TabContentsTest, CrossSiteCantPreemptAfterUnload);
 
   // Temporary until the view/contents separation is complete.
   friend class TabContentsView;

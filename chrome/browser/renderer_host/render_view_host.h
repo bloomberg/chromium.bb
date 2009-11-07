@@ -638,15 +638,21 @@ class RenderViewHost : public RenderWidgetHost,
   // must return to the renderer to unblock it.
   IPC::Message* run_modal_reply_msg_;
 
-  // Set to true when there is a pending ViewMsg_ShouldClose message pending.
-  // This ensures we don't spam the renderer many times to close. When true,
-  // the value of unload_ack_is_for_cross_site_transition_ indicates which type
-  // of unload this is for.
+  // Set to true when there is a pending ViewMsg_ShouldClose message.  This
+  // ensures we don't spam the renderer with multiple beforeunload requests.
+  // When either this value or is_waiting_for_unload_ack_ is true, the value of
+  // unload_ack_is_for_cross_site_transition_ indicates whether this is for a
+  // cross-site transition or a tab close attempt.
+  bool is_waiting_for_beforeunload_ack_;
+
+  // Set to true when there is a pending ViewMsg_Close message.  Also see
+  // is_waiting_for_beforeunload_ack_, unload_ack_is_for_cross_site_transition_.
   bool is_waiting_for_unload_ack_;
 
-  // Valid only when is_waiting_for_unload_ack_ is true, this tells us if the
-  // unload request is for closing the entire tab ( = false), or only this
-  // RenderViewHost in the case of a cross-site transition ( = true).
+  // Valid only when is_waiting_for_beforeunload_ack_ or
+  // is_waiting_for_unload_ack_ is true.  This tells us if the unload request
+  // is for closing the entire tab ( = false), or only this RenderViewHost in
+  // the case of a cross-site transition ( = true).
   bool unload_ack_is_for_cross_site_transition_;
 
   bool are_javascript_messages_suppressed_;

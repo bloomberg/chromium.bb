@@ -519,6 +519,129 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
 }
 
+// Test that during a slow cross-site navigation, the original renderer can
+// navigate to a different URL and have it displayed, canceling the slow
+// navigation.
+TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+
+  // Navigate to new site, simulating an onbeforeunload approval.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+
+  // Suppose the original renderer navigates before the new one is ready.
+  orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));
+
+  // Verify that the pending navigation is cancelled.
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, rvh());
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+}
+
+// Test that the original renderer can preempt a cross-site navigation while the
+// beforeunload request is in flight.
+TEST_F(TabContentsTest, CrossSitePreemptDuringBeforeUnload) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+
+  // Navigate to new site, with the befureunload request in flight.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+
+  // Suppose the original renderer navigates now, while the beforeunload request
+  // is in flight.  We must cancel the pending navigation and show this new
+  // page, because the beforeunload handler might return false.
+  orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));
+
+  // Verify that the pending navigation is cancelled.
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, rvh());
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+
+  // Make sure the beforeunload ack doesn't cause problems if it arrives here.
+  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+}
+
+// Test that the original renderer cannot preempt a cross-site navigation once
+// the unload request has been made.  At this point, the cross-site navigation
+// is almost ready to be displayed, and the original renderer is only given a
+// short chance to run an unload handler.  Prevents regression of bug 23942.
+TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+
+  // Navigate to new site, simulating an onbeforeunload approval.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
+      contents()->pending_rvh());
+
+  // Simulate the pending renderer's response, which leads to an unload request
+  // being sent to orig_rvh.
+  contents()->OnCrossSiteResponse(0, 0);
+
+  // Suppose the original renderer navigates now, while the unload request is in
+  // flight.  We should ignore it, wait for the unload ack, and let the pending
+  // request continue.  Otherwise, the tab may close spontaneously or stop
+  // responding to navigation requests.  (See bug 23942.)
+  ViewHostMsg_FrameNavigate_Params params1a;
+  InitNavigateParams(&params1a, 2, GURL("http://www.google.com/foo"));
+  orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));
+
+  // Verify that the pending navigation is still in progress.
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_TRUE(contents()->pending_rvh() != NULL);
+
+  // DidNavigate from the pending page should commit it.
+  ViewHostMsg_FrameNavigate_Params params2;
+  InitNavigateParams(&params2, 1, url2);
+  contents()->TestDidNavigate(pending_rvh, params2);
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(pending_rvh, rvh());
+  EXPECT_NE(instance1, instance2);
+  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+}
+
 // Test that NavigationEntries have the correct content state after going
 // forward and back.  Prevents regression for bug 1116137.
 TEST_F(TabContentsTest, NavigationEntryContentState) {

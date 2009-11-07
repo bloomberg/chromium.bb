@@ -208,6 +208,10 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
                                             bool proceed) {
   if (for_cross_site_transition) {
+    // Ignore if we're not in a cross-site navigation.
+    if (!cross_navigation_pending_)
+      return;
+
     if (proceed) {
       // Ok to unload the current page, so proceed with the cross-site
       // navigation.  Note that if navigations are not currently suspended, it

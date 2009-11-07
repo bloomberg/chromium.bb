@@ -114,6 +114,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
       run_modal_reply_msg_(NULL),
+      is_waiting_for_beforeunload_ack_(false),
       is_waiting_for_unload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
@@ -302,7 +303,7 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
   if (!IsRenderViewLive()) {
     // This RenderViewHost doesn't have a live renderer, so just skip running
     // the onbeforeunload handler.
-    is_waiting_for_unload_ack_ = true;  // Prevent check in OnMsgShouldCloseACK.
+    is_waiting_for_beforeunload_ack_ = true;  // Checked by OnMsgShouldCloseACK.
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     OnMsgShouldCloseACK(true);
     return;
@@ -311,7 +312,7 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if she clicks the tab close button then the browser close
   // button), and we only send the message once.
-  if (is_waiting_for_unload_ack_) {
+  if (is_waiting_for_beforeunload_ack_) {
     // Some of our close messages could be for the tab, others for cross-site
     // transitions. We always want to think it's for closing the tab if any
     // of the messages were, since otherwise it might be impossible to close
@@ -323,7 +324,7 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
   } else {
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
-    is_waiting_for_unload_ack_ = true;
+    is_waiting_for_beforeunload_ack_ = true;
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
     Send(new ViewMsg_ShouldClose(routing_id()));
@@ -333,8 +334,10 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
 void RenderViewHost::ClosePage(bool for_cross_site_transition,
                                int new_render_process_host_id,
                                int new_request_id) {
-  // Start the hang monitor in case the renderer hangs in the unload handler.
+  // In most cases, this will not be set to false afterward.  Either the tab
+  // will be closed, or a pending RenderViewHost will replace this one.
   is_waiting_for_unload_ack_ = true;
+  // Start the hang monitor in case the renderer hangs in the unload handler.
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewMsg_ClosePage_Params params;
@@ -355,6 +358,7 @@ void RenderViewHost::ClosePage(bool for_cross_site_transition,
 
 void RenderViewHost::ClosePageIgnoringUnloadEvents() {
   StopHangMonitorTimeout();
+  is_waiting_for_beforeunload_ack_ = false;
   is_waiting_for_unload_ack_ = false;
 
   sudden_termination_allowed_ = true;
@@ -575,9 +579,11 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                                 bool success,
                                                 const std::wstring& prompt) {
   process()->set_ignore_input_events(false);
-  if (is_waiting_for_unload_ack_) {
+  bool is_waiting =
+      is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
+  if (is_waiting) {
     if (are_javascript_messages_suppressed_) {
-      delegate_->RendererUnresponsive(this, is_waiting_for_unload_ack_);
+      delegate_->RendererUnresponsive(this, is_waiting);
       return;
     }
 
@@ -591,7 +597,7 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
 
 void RenderViewHost::ModalHTMLDialogClosed(IPC::Message* reply_msg,
                                            const std::string& json_retval) {
-  if (is_waiting_for_unload_ack_)
+  if (is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_)
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewHostMsg_ShowModalHTMLDialog::WriteReplyParams(reply_msg, json_retval);
@@ -924,6 +930,33 @@ void RenderViewHost::OnMsgRenderViewGone() {
 // get a new page_id because we need to create a new navigation entry for that
 // action.
 void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
+  // If we're waiting for a beforeunload ack from this renderer and we receive a
+  // Navigate message, then the renderer was navigating before it received the
+  // request.  If it is during a cross-site navigation, then we should forget
+  // about the beforeunload, because the navigation will now be canceled.  (If
+  // it is instead during an attempt to close the page, we should be sure to
+  // keep waiting for the ack, which the new page will send.)
+  //
+  // If we did not clear this state, an unresponsiveness timer might think we
+  // are waiting for an ack but are not in a cross-site navigation, and would
+  // close the tab.  TODO(creis): That timer code should be refactored to only
+  // close the tab if we explicitly know the user tried to close the tab, and
+  // not just check for the absence of a cross-site navigation.  Once that's
+  // fixed, this check can go away.
+  if (is_waiting_for_beforeunload_ack_ &&
+      unload_ack_is_for_cross_site_transition_) {
+    is_waiting_for_beforeunload_ack_ = false;
+    StopHangMonitorTimeout();
+  }
+
+  // If we're waiting for an unload ack from this renderer and we receive a
+  // Navigate message, then the renderer was navigating before it received the
+  // unload request.  It will either respond to the unload request soon or our
+  // timer will expire.  Either way, we should ignore this message, because we
+  // have already committed to closing this renderer.
+  if (is_waiting_for_unload_ack_)
+    return;
+
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
   void* iter = NULL;
@@ -1539,8 +1572,13 @@ void RenderViewHost::OnReceivedSerializedHtmlData(const GURL& frame_url,
 
 void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   StopHangMonitorTimeout();
-  DCHECK(is_waiting_for_unload_ack_);
-  is_waiting_for_unload_ack_ = false;
+  // If this renderer navigated while the beforeunload request was in flight, we
+  // may have cleared this state in OnMsgNavigate, in which case we can ignore
+  // this message.
+  if (!is_waiting_for_beforeunload_ack_)
+    return;
+
+  is_waiting_for_beforeunload_ack_ = false;
 
   RenderViewHostDelegate::RendererManagement* management_delegate =
       delegate_->GetRendererManagementDelegate();
@@ -1585,7 +1623,8 @@ void RenderViewHost::WindowMoveOrResizeStarted() {
 }
 
 void RenderViewHost::NotifyRendererUnresponsive() {
-  delegate_->RendererUnresponsive(this, is_waiting_for_unload_ack_);
+  delegate_->RendererUnresponsive(
+      this, is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_);
 }
 
 void RenderViewHost::NotifyRendererResponsive() {
