@@ -137,7 +137,11 @@ class WidgetGtk
   virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
+  virtual void SetNativeWindowProperty(const std::wstring& name,
+                                       void* value);
+  virtual void* GetNativeWindowProperty(const std::wstring& name);
   virtual ThemeProvider* GetThemeProvider() const;
+  virtual ThemeProvider* GetDefaultThemeProvider();
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
@@ -160,11 +164,8 @@ class WidgetGtk
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
-  // Retrieves the WidgetGtk associated with |widget|.
+  // Gets the WidgetGtk in the userdata section of the widget.
   static WidgetGtk* GetViewForNative(GtkWidget* widget);
-
-  // Retrieves the WindowGtk associated with |widget|.
-  static WindowGtk* GetWindowForNative(GtkWidget* widget);
 
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.

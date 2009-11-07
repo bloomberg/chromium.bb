@@ -25,6 +25,7 @@ namespace views {
 
 // Property used to link the HWND to its RootView.
 static const wchar_t* const kRootViewWindowProperty = L"__ROOT_VIEW__";
+static const wchar_t* kWidgetKey = L"__VIEWS_WIDGET__";
 
 bool SetRootViewForHWND(HWND hwnd, RootView* root_view) {
   return SetProp(hwnd, kRootViewWindowProperty, root_view) ? true : false;
@@ -58,6 +59,25 @@ WidgetWin::WidgetWin()
 
 WidgetWin::~WidgetWin() {
   MessageLoopForUI::current()->RemoveObserver(this);
+}
+
+// static
+WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
+  return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
+}
+
+void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
+  if (use_layered_buffer_ == use_layered_buffer)
+    return;
+
+  use_layered_buffer_ = use_layered_buffer;
+  if (!hwnd())
+    return;
+
+  if (use_layered_buffer_)
+    LayoutRootView();
+  else
+    contents_.reset(NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,6 +307,10 @@ bool WidgetWin::IsActive() const {
   return win_util::IsWindowActive(hwnd());
 }
 
+TooltipManager* WidgetWin::GetTooltipManager() {
+  return tooltip_manager_.get();
+}
+
 void WidgetWin::GenerateMousePressedForView(View* view,
                                             const gfx::Point& point) {
   gfx::Point point_in_widget(point);
@@ -295,8 +319,28 @@ void WidgetWin::GenerateMousePressedForView(View* view,
   ProcessMousePressed(point_in_widget.ToPOINT(), MK_LBUTTON, false, false);
 }
 
-TooltipManager* WidgetWin::GetTooltipManager() {
-  return tooltip_manager_.get();
+bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
+  return false;
+}
+
+Window* WidgetWin::GetWindow() {
+  return GetWindowImpl(hwnd());
+}
+
+const Window* WidgetWin::GetWindow() const {
+  return GetWindowImpl(hwnd());
+}
+
+void WidgetWin::SetNativeWindowProperty(const std::wstring& name,
+                                        void* value) {
+  if (value)
+    SetProp(hwnd(), name.c_str(), value);
+  else
+    RemoveProp(hwnd(), name.c_str());
+}
+
+void* WidgetWin::GetNativeWindowProperty(const std::wstring& name) {
+  return GetProp(hwnd(), name.c_str());
 }
 
 ThemeProvider* WidgetWin::GetThemeProvider() const {
@@ -315,13 +359,10 @@ ThemeProvider* WidgetWin::GetThemeProvider() const {
   return default_theme_provider_.get();
 }
 
-Window* WidgetWin::GetWindow() {
-  return GetWindowImpl(hwnd());
+ThemeProvider* WidgetWin::GetDefaultThemeProvider() const {
+  return default_theme_provider_.get();
 }
 
-const Window* WidgetWin::GetWindow() const {
-  return GetWindowImpl(hwnd());
-}
 
 FocusManager* WidgetWin::GetFocusManager() {
   if (focus_manager_.get())
@@ -340,31 +381,6 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
                                      View *child) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
-}
-
-bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
-  return false;
-}
-
-void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
-  if (use_layered_buffer_ == use_layered_buffer)
-    return;
-
-  use_layered_buffer_ = use_layered_buffer;
-  if (!hwnd())
-    return;
-
-  if (use_layered_buffer_) {
-    // Force creation of the buffer at the right size.
-    LayoutRootView();
-  } else {
-    contents_.reset(NULL);
-  }
-}
-
-// static
-WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
-  return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,10 +470,13 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
+  SetNativeWindowProperty(kWidgetKey, this);
   return 0;
 }
 
 void WidgetWin::OnDestroy() {
+  SetNativeWindowProperty(kWidgetKey, NULL);
+
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
     drop_target_ = NULL;
@@ -1182,6 +1201,24 @@ RootView* Widget::FindRootView(HWND hwnd) {
   EnumChildWindows(hwnd, EnumChildProc, reinterpret_cast<LPARAM>(&root_view));
 
   return root_view;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, public:
+
+// static
+Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
+  if (IsWindow(native_view)) {
+    HANDLE raw_widget = GetProp(native_view, kWidgetKey);
+    if (raw_widget)
+      return reinterpret_cast<Widget*>(raw_widget);
+  }
+  return NULL;
+}
+
+// static
+Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
+  return Widget::GetWidgetFromNativeView(native_window);
 }
 
 }  // namespace views

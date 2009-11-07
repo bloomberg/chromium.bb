@@ -25,6 +25,8 @@
 
 namespace {
 
+static const int kDragFrameWindowAlpha = 200;
+
 bool GetMonitorAndRects(const RECT& rect,
                         HMONITOR* monitor,
                         gfx::Rect* monitor_rect,
@@ -355,6 +357,24 @@ bool WindowWin::IsFullscreen() const {
   return fullscreen_;
 }
 
+void WindowWin::SetUseDragFrame(bool use_drag_frame) {
+  if (use_drag_frame) {
+    // Make the frame slightly transparent during the drag operation.
+    drag_frame_saved_window_style_ = GetWindowLong(GWL_STYLE);
+    drag_frame_saved_window_ex_style_ = GetWindowLong(GWL_EXSTYLE);
+    SetWindowLong(GWL_EXSTYLE,
+                  drag_frame_saved_window_ex_style_ | WS_EX_LAYERED);
+    // Remove the captions tyle so the window doesn't have window controls for a
+    // more "transparent" look.
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_ & ~WS_CAPTION);
+    SetLayeredWindowAttributes(GetNativeWindow(), RGB(0xFF, 0xFF, 0xFF),
+                               kDragFrameWindowAlpha, LWA_ALPHA);
+  } else {
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_);
+    SetWindowLong(GWL_EXSTYLE, drag_frame_saved_window_ex_style_);
+  }
+}
+
 void WindowWin::EnableClose(bool enable) {
   // If the native frame is rendering its own close button, ask it to disable.
   non_client_view_->EnableClose(enable);
@@ -479,7 +499,9 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       ignore_pos_changes_factory_(this),
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
-      last_monitor_(NULL) {
+      last_monitor_(NULL),
+      drag_frame_saved_window_style_(0),
+      drag_frame_saved_window_ex_style_(false) {
   is_window_ = true;
   InitClass();
   DCHECK(window_delegate_);

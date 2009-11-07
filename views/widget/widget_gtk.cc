@@ -10,6 +10,7 @@
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/root_view.h"
@@ -48,6 +49,8 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(DropObserver);
 };
+
+static const char* kWidgetKey = "__VIEWS_WIDGET__";
 
 // Returns the position of a widget on screen.
 static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
@@ -470,13 +473,13 @@ bool WidgetGtk::IsActive() const {
   return is_active_;
 }
 
+TooltipManager* WidgetGtk::GetTooltipManager() {
+  return tooltip_manager_.get();
+}
+
 void WidgetGtk::GenerateMousePressedForView(View* view,
                                             const gfx::Point& point) {
   NOTIMPLEMENTED();
-}
-
-TooltipManager* WidgetGtk::GetTooltipManager() {
-  return tooltip_manager_.get();
 }
 
 bool WidgetGtk::GetAccelerator(int cmd_id, Accelerator* accelerator) {
@@ -490,10 +493,6 @@ Window* WidgetGtk::GetWindow() {
 
 const Window* WidgetGtk::GetWindow() const {
   return GetWindowImpl(widget_);
-}
-
-ThemeProvider* WidgetGtk::GetThemeProvider() const {
-  return default_theme_provider_.get();
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {
@@ -513,6 +512,28 @@ void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,
                                      View *child) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
+}
+
+void WidgetGtk::SetNativeWindowProperty(const std::wstring& name,
+                                        void* value) {
+  g_object_set_data(G_OBJECT(widget_), WideToUTF8(name).c_str(), value);
+}
+
+void* WidgetGtk::GetNativeWindowProperty(const std::wstring& name) {
+  return g_object_get_data(G_OBJECT(widget_), WideToUTF8(name).c_str());
+}
+
+ThemeProvider* WidgetGtk::GetThemeProvider() const {
+  return default_theme_provider_.get();
+}
+
+ThemeProvider* WidgetGtk::GetDefaultThemeProvider() {
+  return NULL;
+}
+
+FocusManager* WidgetGtk::GetFocusManager() {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -585,7 +606,6 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       gtk_widget_realize(null_parent_);
     }
     gtk_container_add(GTK_CONTAINER(parent ? parent : null_parent_), widget_);
-    SetViewForNative(widget_, this);
   } else {
     widget_ = gtk_window_new(
         (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
@@ -607,14 +627,13 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
     }
     SetWindowForNative(widget_, static_cast<WindowGtk*>(this));
-    SetViewForNative(widget_, this);
 
     window_contents_ = gtk_fixed_new();
     GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
     gtk_widget_show(window_contents_);
-    SetViewForNative(window_contents_, this);
+    g_object_set_data(G_OBJECT(window_contents_), kWidgetKey, this);
 
     if (transparent_)
       ConfigureWidgetForTransparentBackground();
@@ -623,6 +642,9 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   // The widget needs to be realized before handlers like size-allocate can
   // function properly.
   gtk_widget_realize(widget_);
+
+  // Associate this object with the widget.
+  SetNativeWindowProperty(kWidgetKey, this);
 }
 
 void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
@@ -937,18 +959,12 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
 
 // static
 WidgetGtk* WidgetGtk::GetViewForNative(GtkWidget* widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-views");
-  return static_cast<WidgetGtk*>(user_data);
+  return static_cast<WidgetGtk*>(GetWidgetFromNativeView(widget));
 }
 
 void WidgetGtk::ResetDropTarget() {
   ignore_drag_leave_ = false;
   drop_target_.reset(NULL);
-}
-
-// static
-void WidgetGtk::SetViewForNative(GtkWidget* widget, WidgetGtk* view) {
-  g_object_set_data(G_OBJECT(widget), "chrome-views", view);
 }
 
 // static
@@ -1260,6 +1276,25 @@ RootView* Widget::FindRootView(GtkWindow* window) {
   gtk_container_foreach(GTK_CONTAINER(window), RootViewLocatorCallback,
                         static_cast<gpointer>(&root_view));
   return root_view;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, public:
+
+// static
+Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
+  gpointer raw_widget = g_object_get_data(G_OBJECT(native_view), kWidgetKey);
+  if (raw_widget)
+    return reinterpret_cast<Widget*>(raw_widget);
+  return NULL;
+}
+
+// static
+Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
+  gpointer raw_widget = g_object_get_data(G_OBJECT(native_window), kWidgetKey);
+  if (raw_widget)
+    return reinterpret_cast<Widget*>(raw_widget);
+  return NULL;
 }
 
 }  // namespace views

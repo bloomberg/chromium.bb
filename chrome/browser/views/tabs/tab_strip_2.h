@@ -60,6 +60,10 @@ class TabStrip2 : public views::View,
   // Returns true if the new TabStrip is enabled.
   static bool Enabled();
 
+  // Returns the tabstrip associated with the specificied top level window, or
+  // NULL if there is no tabstrip.
+  static TabStrip2* GetTabStripFromWindow(gfx::NativeWindow window);
+
   // API for adding, removing, selecting and moving tabs around.
   void AddTabAt(int index);
   void RemoveTabAt(int index, Tab2Model* removing_model);
@@ -87,6 +91,17 @@ class TabStrip2 : public views::View,
   // Continue a drag operation on the Tab2 at the specified index.
   void ResumeDraggingTab(int index, const gfx::Rect& tab_bounds);
 
+  // Notifies the tabstrip that a detach drag operation has begun.
+  void DetachDragStarted();
+
+  // Notifies the tabstrip that a detach drag operation is underway and the
+  // dragged representation has been moved.
+  void DetachDragMoved();
+
+  // Notifies the tabstrip that a detach drag operation has completed. Called
+  // by the window that contains this tabstrip.
+  void DetachDragEnded();
+
   // Returns true if the mouse pointer at the specified point (screen bounds)
   // constitutes a rearrange rather than a detach.
   static bool IsDragRearrange(TabStrip2* tabstrip,
@@ -113,6 +128,9 @@ class TabStrip2 : public views::View,
 
  private:
   virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
 
   // Overridden from views::AnimatorDelegate:
   virtual views::View* GetClampedView(views::View* host);
@@ -163,6 +181,16 @@ class TabStrip2 : public views::View,
   // prior to the current drag event. Used to determine that the mouse has moved
   // beyond the minimum horizontal threshold to initiate a drag operation.
   int last_move_screen_x_;
+
+  // True if the window containing this tabstrip is currently being moved as
+  // part of a detached tab drag operation.
+  bool detached_drag_mode_;
+
+  // When the window containing this tabstrip represents a detached tab being
+  // dragged, this is a tabstrip in another window that the tab being dragged
+  // would be docked to if the mouse were released, or NULL if there is no
+  // suitable tabstrip.
+  TabStrip2* drop_tabstrip_;
 
   // Factories to help break up work and avoid nesting message loops.
   ScopedRunnableMethodFactory<TabStrip2> detach_factory_;

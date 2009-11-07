@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/dock_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "views/animator.h"
 #include "views/screen.h"
@@ -23,12 +24,16 @@
 
 static const int kHorizontalMoveThreshold = 16;  // pixels
 
+static const wchar_t* kTabStripKey = L"__VIEWS_TABSTRIP__";
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabStrip2, public:
 
 TabStrip2::TabStrip2(TabStrip2Model* model)
     : model_(model),
       last_move_screen_x_(0),
+      detached_drag_mode_(false),
+      drop_tabstrip_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(detach_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_start_factory_(this)) {
 }
@@ -40,6 +45,17 @@ TabStrip2::~TabStrip2() {
 bool TabStrip2::Enabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabtastic2);
+}
+
+// static
+TabStrip2* TabStrip2::GetTabStripFromWindow(gfx::NativeWindow window) {
+  views::Widget* widget = views::Widget::GetWidgetFromNativeView(window);
+  if (widget) {
+    void* tabstrip = widget->GetNativeWindowProperty(kTabStripKey);
+    if (tabstrip)
+      return reinterpret_cast<TabStrip2*>(tabstrip);
+  }
+  return NULL;
 }
 
 void TabStrip2::AddTabAt(int index) {
@@ -131,6 +147,55 @@ void TabStrip2::ResumeDraggingTab(int index, const gfx::Rect& tab_bounds) {
   MessageLoop::current()->PostTask(FROM_HERE,
       drag_start_factory_.NewRunnableMethod(&TabStrip2::StartDragTabImpl, index,
                                             tab_bounds));
+}
+
+void TabStrip2::DetachDragStarted() {
+  drop_tabstrip_ = NULL;
+  detached_drag_mode_ = true;
+
+  // Set the frame to partially transparent.
+  GetWindow()->SetUseDragFrame(detached_drag_mode_);
+}
+
+void TabStrip2::DetachDragMoved() {
+  if (detached_drag_mode_) {
+    // We check to see if the mouse cursor is in the magnetism zone of another
+    // visible TabStrip. If so, we should dock to it.
+    std::set<gfx::NativeWindow> ignore_windows;
+    ignore_windows.insert(GetWidget()->GetWindow()->GetNativeWindow());
+
+    gfx::Point screen_point = views::Screen::GetCursorScreenPoint();
+    gfx::NativeWindow local_window =
+        DockInfo::GetLocalProcessWindowAtPoint(screen_point, ignore_windows);
+    if (local_window) {
+      drop_tabstrip_ = GetTabStripFromWindow(local_window);
+      if (IsDragRearrange(drop_tabstrip_, screen_point)) {
+#if defined(OS_WIN)
+        ReleaseCapture();
+#elif defined(OS_LINUX)
+        // release grab maybe?
+        NOTIMPLEMENTED();
+#endif
+        return;
+      }
+    }
+    drop_tabstrip_ = NULL;
+  }
+}
+
+void TabStrip2::DetachDragEnded() {
+  if (detached_drag_mode_) {
+    detached_drag_mode_ = false;
+    if (drop_tabstrip_) {
+      gfx::Point screen_point = views::Screen::GetCursorScreenPoint();
+      gfx::Rect tsb = GetDraggedTabScreenBounds(screen_point);
+      // TODO(beng): figure this one out.
+      //drop_tabstrip_->AttachTab(tabstrip->DetachTab(0), screen_point, tsb);
+    } else {
+      GetWindow()->SetUseDragFrame(detached_drag_mode_);
+      SendDraggedTabHome();
+    }
+  }
 }
 
 // static
@@ -312,6 +377,16 @@ void TabStrip2::PaintChildren(gfx::Canvas* canvas) {
   // Paint the selected tab last, so it overlaps all the others.
   if (selected_tab)
     selected_tab->ProcessPaint(canvas);
+}
+
+void TabStrip2::ViewHierarchyChanged(bool is_add,
+                                     views::View* parent,
+                                     views::View* child) {
+  if (is_add && child == this) {
+    // Widget must exist now, otherwise someone has screwed up the order in
+    // which views are added to the hierarchy.
+    GetWidget()->SetNativeWindowProperty(kTabStripKey, this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

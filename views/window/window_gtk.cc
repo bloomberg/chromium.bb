@@ -185,6 +185,10 @@ bool WindowGtk::IsFullscreen() const {
   return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
 }
 
+void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
+  NOTIMPLEMENTED();
+}
+
 void WindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
 }

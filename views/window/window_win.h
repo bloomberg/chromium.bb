@@ -74,6 +74,7 @@ class WindowWin : public WidgetWin,
   virtual bool IsMinimized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
+  virtual void SetUseDragFrame(bool use_drag_frame);
   virtual void EnableClose(bool enable);
   virtual void DisableInactiveRendering();
   virtual void UpdateWindowTitle();
@@ -296,6 +297,10 @@ class WindowWin : public WidgetWin,
   // used to catch updates to the rect and work area and react accordingly.
   HMONITOR last_monitor_;
   gfx::Rect last_monitor_rect_, last_work_area_;
+
+  // The window styles before we modified them for the drag frame appearance.
+  DWORD drag_frame_saved_window_style_;
+  DWORD drag_frame_saved_window_ex_style_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowWin);
 };

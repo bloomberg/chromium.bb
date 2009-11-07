@@ -83,6 +83,11 @@ class Widget {
   // View, unless it is set as not being parent-owned.
   virtual void SetContentsView(View* view) = 0;
 
+  // Retrieve the Widget corresponding to the specified native_view, or NULL
+  // if there is no such Widget.
+  static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
+  static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
+
   // Returns the bounds of this Widget in the screen coordinate system.
   // If the receiving Widget is a frame which is larger than its client area,
   // this method returns the client area if including_frame is false and the
@@ -140,9 +145,7 @@ class Widget {
 
   // Returns the TooltipManager for this Widget. If this Widget does not support
   // tooltips, NULL is returned.
-  virtual TooltipManager* GetTooltipManager() {
-    return NULL;
-  }
+  virtual TooltipManager* GetTooltipManager() = 0;
 
   // Starts a drag operation for the specified view. |point| is a position in
   // |view| coordinates that the drag was initiated from.
@@ -156,20 +159,27 @@ class Widget {
 
   // Returns the Window containing this Widget, or NULL if not contained in a
   // window.
-  virtual Window* GetWindow() { return NULL; }
-  virtual const Window* GetWindow() const { return NULL; }
+  virtual Window* GetWindow() = 0;
+  virtual const Window* GetWindow() const = 0;
+
+  // Sets/Gets a native window property on the underlying native window object.
+  // Returns NULL if the property does not exist. Setting the property value to
+  // NULL removes the property.
+  virtual void SetNativeWindowProperty(const std::wstring& name,
+                                       void* value) = 0;
+  virtual void* GetNativeWindowProperty(const std::wstring& name) = 0;
 
   // Gets the theme provider.
-  virtual ThemeProvider* GetThemeProvider() const { return NULL; }
+  virtual ThemeProvider* GetThemeProvider() const = 0;
 
   // Gets the default theme provider; this is necessary for when a widget has
   // no profile (and ThemeProvider) associated with it. The default theme
   // provider provides a default set of bitmaps that such widgets can use.
-  virtual ThemeProvider* GetDefaultThemeProvider() const { return NULL; }
+  virtual ThemeProvider* GetDefaultThemeProvider() const = 0;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
-  virtual FocusManager* GetFocusManager() { return NULL; }
+  virtual FocusManager* GetFocusManager() = 0;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
   virtual void ViewHierarchyChanged(bool is_add, View *parent,

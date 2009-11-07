@@ -74,9 +74,6 @@ class WidgetWin : public app::WindowImpl,
   WidgetWin();
   virtual ~WidgetWin();
 
-  // Returns the RootView associated with the specified HWND (if any).
-  static RootView* FindRootView(HWND hwnd);
-
   // Returns the Widget associated with the specified HWND (if any).
   static WidgetWin* GetWidget(HWND hwnd);
 
@@ -197,16 +194,20 @@ class WidgetWin : public app::WindowImpl,
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
+  virtual TooltipManager* GetTooltipManager();
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
-  virtual TooltipManager* GetTooltipManager();
-  virtual ThemeProvider* GetThemeProvider() const;
+  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
+  virtual void SetNativeWindowProperty(const std::wstring& name,
+                                       void* value);
+  virtual void* GetNativeWindowProperty(const std::wstring& name);
+  virtual ThemeProvider* GetThemeProvider() const;
+  virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
-  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
