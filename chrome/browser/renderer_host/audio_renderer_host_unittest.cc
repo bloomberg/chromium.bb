@@ -34,9 +34,6 @@ class MockAudioRendererHost : public AudioRendererHost {
       : AudioRendererHost() {
   }
 
-  virtual ~MockAudioRendererHost() {
-  }
-
   // A list of mock methods.
   MOCK_METHOD4(OnRequestPacket,
                void(int routing_id, int stream_id,
@@ -78,6 +75,8 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
  private:
+  virtual ~MockAudioRendererHost() {}
+
   // These handler methods do minimal things and delegate to the mock methods.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
                        size_t bytes_in_buffer, int64 message_timestamp) {

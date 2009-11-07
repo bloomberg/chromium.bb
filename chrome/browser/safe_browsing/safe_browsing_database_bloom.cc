@@ -1026,7 +1026,7 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
   int filter_size =
       std::min(number_of_keys * BloomFilter::kBloomFilterSizeRatio,
                BloomFilter::kBloomFilterMaxSize * 8);
-  BloomFilter* new_filter = new BloomFilter(filter_size);
+  scoped_refptr<BloomFilter> new_filter = new BloomFilter(filter_size);
   SBPair* add = adds;
   int new_count = 0;
 
@@ -1044,7 +1044,6 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
       int rv = insert->step();
       if (rv == SQLITE_CORRUPT) {
         HandleCorruptDatabase();
-        delete new_filter;  // TODO(paulg): scoped.
         return false;
       }
       DCHECK(rv == SQLITE_DONE);
@@ -1055,7 +1054,7 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
   }
 
   *new_add_count = new_count;
-  *filter = new_filter;
+  *filter = new_filter.release();
 
   return true;
 }

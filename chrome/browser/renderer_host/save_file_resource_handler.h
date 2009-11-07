@@ -49,6 +49,8 @@ class SaveFileResourceHandler : public ResourceHandler {
   }
 
  private:
+  ~SaveFileResourceHandler() {}
+
   int save_id_;
   int render_process_id_;
   int render_view_id_;

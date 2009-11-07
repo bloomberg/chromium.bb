@@ -28,7 +28,7 @@ class BlacklistPathProvider {
   virtual ~BlacklistPathProvider();
 
   virtual std::vector<FilePath> GetPersistentBlacklistPaths() = 0;
-  
+
   virtual std::vector<FilePath> GetTransientBlacklistPaths() = 0;
 };
 
@@ -60,6 +60,10 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
   class CompileBlacklistTask;
   class ReadBlacklistTask;
 
+  friend class base::RefCountedThreadSafe<BlacklistManager>;
+
+  ~BlacklistManager() {}
+
   void CompileBlacklist();
   void ReadBlacklist();
 
@@ -71,7 +75,7 @@ class BlacklistManager : public base::RefCountedThreadSafe<BlacklistManager>,
   // True after the first blacklist read has finished (regardless of success).
   // Used to avoid an infinite loop.
   bool first_read_finished_;
-                           
+
   Profile* profile_;
 
   // Path where we store the compiled blacklist.

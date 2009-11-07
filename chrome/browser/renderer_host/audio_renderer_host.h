@@ -92,9 +92,6 @@ class AudioRendererHost
   // Called from UI thread from the owner of this object.
   AudioRendererHost();
 
-  // Destruction always happens on the IO thread (see DeleteOnIOThread above).
-  virtual ~AudioRendererHost();
-
   // Called from UI thread from the owner of this object to kick start
   // destruction of streams in IO thread.
   void Destroy();
@@ -115,6 +112,12 @@ class AudioRendererHost
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
  protected:
+  friend class ChromeThread;
+  friend class DeleteTask<AudioRendererHost>;
+
+  // Destruction always happens on the IO thread (see DeleteOnIOThread above).
+  virtual ~AudioRendererHost();
+
   //---------------------------------------------------------------------------
   // Helper methods called from IPCAudioSource or from this class, since
   // methods in IPCAudioSource maybe called from hardware audio threads, these

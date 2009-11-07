@@ -48,6 +48,11 @@ struct SyncLoadResult : ResourceResponseHead {
 // Simple wrapper that refcounts ResourceResponseHead.
 struct ResourceResponse : public base::RefCounted<ResourceResponse> {
   ResourceResponseHead response_head;
+
+ private:
+  friend class base::RefCounted<ResourceResponse>;
+
+  ~ResourceResponse() {}
 };
 
 // The resource dispatcher host uses this interface to push load events to the
@@ -57,8 +62,6 @@ class ResourceHandler
     : public base::RefCountedThreadSafe<
           ResourceHandler, ChromeThread::DeleteOnIOThread> {
  public:
-  virtual ~ResourceHandler() {}
-
   // Called as upload progress is made.
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -100,6 +103,12 @@ class ResourceHandler
   // Signals that the request is closed (i.e. finished successfully, cancelled).
   // This is a signal that the associated URLRequest isn't valid anymore.
   virtual void OnRequestClosed() { }
+
+ protected:
+  friend class ChromeThread;
+  friend class DeleteTask<ResourceHandler>;
+
+  virtual ~ResourceHandler() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_HANDLER_H_

@@ -48,9 +48,6 @@ class BrowsingInstance;
 class SiteInstance : public base::RefCounted<SiteInstance>,
                      public NotificationObserver {
  public:
-  // Virtual to allow tests to extend it.
-  virtual ~SiteInstance();
-
   // Get the BrowsingInstance to which this SiteInstance belongs.
   BrowsingInstance* browsing_instance() { return browsing_instance_; }
 
@@ -132,7 +129,11 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   static bool IsSameWebSite(const GURL& url1, const GURL& url2);
 
  protected:
+  friend class base::RefCounted<SiteInstance>;
   friend class BrowsingInstance;
+
+  // Virtual to allow tests to extend it.
+  virtual ~SiteInstance();
 
   // Create a new SiteInstance.  Protected to give access to BrowsingInstance
   // and tests; most callers should use CreateSiteInstance or

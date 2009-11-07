@@ -27,7 +27,6 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                               SafeBrowsingService* safe_browsing,
                               ResourceDispatcherHost* resource_dispatcher_host,
                               ResourceDispatcherHost::Receiver* receiver);
-  ~SafeBrowsingResourceHandler();
 
   // ResourceHandler implementation:
   bool OnUploadProgress(int request_id, uint64 position, uint64 size);
@@ -57,6 +56,8 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                const NotificationDetails& details);
 
  private:
+  ~SafeBrowsingResourceHandler();
+
   // Helper function for resuming the following of a redirect response.
   void ResumeRedirect();
 

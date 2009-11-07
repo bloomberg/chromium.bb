@@ -18,7 +18,6 @@ class SyncResourceHandler : public ResourceHandler {
   SyncResourceHandler(ResourceDispatcherHost::Receiver* receiver,
                       const GURL& url,
                       IPC::Message* result_message);
-  ~SyncResourceHandler();
 
   bool OnRequestRedirected(int request_id, const GURL& new_url,
                            ResourceResponse* response, bool* defer);
@@ -32,6 +31,9 @@ class SyncResourceHandler : public ResourceHandler {
 
  private:
   enum { kReadBufSize = 3840 };
+
+  ~SyncResourceHandler();
+
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   SyncLoadResult result_;

@@ -65,7 +65,6 @@ class SafeBrowsingService
 
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();
-  ~SafeBrowsingService();
 
   // Initializes the service.
   void Initialize();
@@ -166,6 +165,10 @@ class SafeBrowsingService
                      const GURL& referrer_url);
 
  private:
+  friend class base::RefCountedThreadSafe<SafeBrowsingService>;
+
+  ~SafeBrowsingService();
+
   // Should only be called on db thread as SafeBrowsingDatabase is not
   // threadsafe.
   SafeBrowsingDatabase* GetDatabase();

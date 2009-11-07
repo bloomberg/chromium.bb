@@ -70,6 +70,9 @@ AsyncResourceHandler::AsyncResourceHandler(
       next_buffer_size_(kInitialReadBufSize) {
 }
 
+AsyncResourceHandler::~AsyncResourceHandler() {
+}
+
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {

@@ -41,6 +41,8 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
 
  private:
+  ~X509UserCertResourceHandler() {}
+
   void AssembleResource();
 
   GURL url_;

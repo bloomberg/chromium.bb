@@ -34,7 +34,6 @@ class DownloadThrottlingResourceHandler
                                     int render_view_id,
                                     int request_id,
                                     bool in_complete);
-  virtual ~DownloadThrottlingResourceHandler();
 
   // ResourceHanlder implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -55,6 +54,8 @@ class DownloadThrottlingResourceHandler
   void ContinueDownload();
 
  private:
+  virtual ~DownloadThrottlingResourceHandler();
+
   void CopyTmpBufferToDownloadHandler();
 
   ResourceDispatcherHost* host_;

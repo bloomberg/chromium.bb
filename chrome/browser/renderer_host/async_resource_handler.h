@@ -39,6 +39,8 @@ class AsyncResourceHandler : public ResourceHandler {
   static void GlobalCleanup();
 
  private:
+  ~AsyncResourceHandler();
+
   scoped_refptr<SharedIOBuffer> read_buffer_;
   ResourceDispatcherHost::Receiver* receiver_;
   int process_id_;

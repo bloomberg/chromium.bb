@@ -34,6 +34,8 @@ class BufferedResourceHandler : public ResourceHandler {
   void OnRequestClosed();
 
  private:
+  ~BufferedResourceHandler() {}
+
   // Returns true if we should delay OnResponseStarted forwarding.
   bool DelayResponse();
 

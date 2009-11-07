@@ -88,7 +88,6 @@ class RenderWidgetHelper :
     public base::RefCountedThreadSafe<RenderWidgetHelper> {
  public:
   RenderWidgetHelper();
-  ~RenderWidgetHelper();
 
   void Init(int render_process_id,
             ResourceDispatcherHost* resource_dispatcher_host);
@@ -138,9 +137,12 @@ class RenderWidgetHelper :
   // on the IO thread and destroyed on the UI thread.
   class PaintMsgProxy;
   friend class PaintMsgProxy;
+  friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
 
   // Map from render_widget_id to live PaintMsgProxy instance.
   typedef base::hash_map<int, PaintMsgProxy*> PaintMsgProxyMap;
+
+  ~RenderWidgetHelper();
 
   // Called on the UI thread to discard a paint message.
   void OnDiscardPaintMsg(PaintMsgProxy* proxy);

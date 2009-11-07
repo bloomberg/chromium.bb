@@ -34,8 +34,6 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
   // will delete it on destruction.
   BloomFilter(char* data, int size, const std::vector<uint64>& keys);
 
-  ~BloomFilter();
-
   void Insert(int hash);
   bool Exists(int hash) const;
 
@@ -58,11 +56,14 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
   static const int kBloomFilterMaxSize = 2 * 1024 * 1024;
 
  private:
+  friend class base::RefCountedThreadSafe<BloomFilter>;
   FRIEND_TEST(SafeBrowsingBloomFilter, BloomFilterUse);
   FRIEND_TEST(SafeBrowsingBloomFilter, BloomFilterFile);
 
   static const int kNumHashKeys = 20;
   static const int kFileVersion = 1;
+
+  ~BloomFilter();
 
   int byte_size_;  // size in bytes
   int bit_size_;   // size in bits
