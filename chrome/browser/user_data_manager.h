@@ -129,6 +129,10 @@ class GetProfilesHelper
   void OnDelegateDeleted();
 
  private:
+  friend class base::RefCountedThreadSafe<GetProfilesHelper>;
+
+  ~GetProfilesHelper() {}
+
   // Helper to get the profiles from user data manager.
   void GetProfilesFromManager();
 

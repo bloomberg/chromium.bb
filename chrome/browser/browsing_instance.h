@@ -59,13 +59,6 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
       : profile_(profile) {
   }
 
-  // Virtual to allow tests to extend it.
-  virtual ~BrowsingInstance() {
-    // We should only be deleted when all of the SiteInstances that refer to
-    // us are gone.
-    DCHECK(site_instance_map_.empty());
-  }
-
   // Returns whether the process-per-site model is in use (globally or just for
   // the given url), in which case we should ensure there is only one
   // SiteInstance per site for the entire profile, not just for this
@@ -93,6 +86,16 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   // if the user later visits a page from this site, within this
   // BrowsingInstance.
   void UnregisterSiteInstance(SiteInstance* site_instance);
+
+ protected:
+  friend class base::RefCounted<BrowsingInstance>;
+
+  // Virtual to allow tests to extend it.
+  virtual ~BrowsingInstance() {
+    // We should only be deleted when all of the SiteInstances that refer to
+    // us are gone.
+    DCHECK(site_instance_map_.empty());
+  }
 
  private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per

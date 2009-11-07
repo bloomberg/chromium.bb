@@ -41,8 +41,6 @@ class SelectFileDialog
     SELECT_OPEN_MULTI_FILE
   };
 
-  virtual ~SelectFileDialog() {}
-
   // An interface implemented by a Listener object wishing to know about the
   // the result of the Select File/Folder action. These callbacks must be
   // re-entrant.
@@ -117,6 +115,11 @@ class SelectFileDialog
                           const FilePath::StringType& default_extension,
                           gfx::NativeWindow owning_window,
                           void* params) = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SelectFileDialog>;
+
+  virtual ~SelectFileDialog() {}
 };
 
 // Shows a dialog box for selecting a font.
@@ -124,7 +127,6 @@ class SelectFontDialog
     : public base::RefCountedThreadSafe<SelectFileDialog>,
       public BaseShellDialog {
  public:
-  virtual ~SelectFontDialog() {}
 
   // An interface implemented by a Listener object wishing to know about the
   // the result of the Select Font action. These callbacks must be
@@ -167,6 +169,11 @@ class SelectFontDialog
                           void* params,
                           const std::wstring& font_name,
                           int font_size) = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SelectFileDialog>;
+
+  virtual ~SelectFontDialog() {}
 };
 
 #endif  // CHROME_BROWSER_SHELL_DIALOGS_H_

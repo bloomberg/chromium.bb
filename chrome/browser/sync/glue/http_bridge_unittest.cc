@@ -95,6 +95,8 @@ class ShuntedHttpBridge : public HttpBridge {
         NewRunnableMethod(this, &ShuntedHttpBridge::CallOnURLFetchComplete));
   }
  private:
+  ~ShuntedHttpBridge() {}
+
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
     // We return no cookies and a dummy content response.

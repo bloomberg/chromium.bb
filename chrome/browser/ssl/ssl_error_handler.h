@@ -35,8 +35,6 @@ class URLRequest;
 //
 class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
  public:
-  virtual ~SSLErrorHandler() { }
-
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler() { return NULL; }
 
   // Find the appropriate SSLManager for the URLRequest and begin handling
@@ -93,12 +91,16 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   void TakeNoAction();
 
  protected:
+  friend class base::RefCountedThreadSafe<SSLErrorHandler>;
+
   // Construct on the IO thread.
   SSLErrorHandler(ResourceDispatcherHost* resource_dispatcher_host,
                   URLRequest* request,
                   ResourceType::Type resource_type,
                   const std::string& frame_origin,
                   const std::string& main_frame_origin);
+
+  virtual ~SSLErrorHandler() { }
 
   // The following 2 methods are the methods subclasses should implement.
   virtual void OnDispatchFailed() { TakeNoAction(); }

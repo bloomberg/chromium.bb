@@ -30,7 +30,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   static void RegisterUserPrefs(PrefService* prefs);
 
   DevToolsManager();
-  virtual ~DevToolsManager();
 
   // Returns DevToolsClientHost registered for |inspected_rvh| or NULL if
   // there is no alive DevToolsClientHost registered for |inspected_rvh|.
@@ -80,6 +79,10 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
                         RenderViewHost* to_rvh);
 
 private:
+  friend class base::RefCounted<DevToolsManager>;
+
+  virtual ~DevToolsManager();
+
   // DevToolsClientHost::CloseListener override.
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the

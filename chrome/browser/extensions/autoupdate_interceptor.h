@@ -18,7 +18,6 @@ class AutoUpdateInterceptor
       public base::RefCountedThreadSafe<AutoUpdateInterceptor> {
  public:
   AutoUpdateInterceptor();
-  virtual ~AutoUpdateInterceptor();
 
   // When computing matches, this ignores query parameters (since the autoupdate
   // fetch code appends a bunch of them to manifest fetches).
@@ -34,6 +33,10 @@ class AutoUpdateInterceptor
   void SetResponseOnIOThread(const std::string url, const FilePath& path);
 
  private:
+  friend class base::RefCountedThreadSafe<AutoUpdateInterceptor>;
+
+  virtual ~AutoUpdateInterceptor();
+
   std::map<GURL, FilePath> responses_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoUpdateInterceptor);

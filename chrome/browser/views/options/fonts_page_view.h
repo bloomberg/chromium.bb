@@ -34,7 +34,6 @@ class FontsPageView : public OptionsPageView,
                       public views::ButtonListener {
  public:
   explicit FontsPageView(Profile* profile);
-  virtual ~FontsPageView();
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -64,6 +63,8 @@ class FontsPageView : public OptionsPageView,
     SANS_SERIF,
     FIXED_WIDTH
   };
+
+  virtual ~FontsPageView();
 
   // Init Dialog controls.
   void InitFontLayout();

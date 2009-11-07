@@ -203,6 +203,8 @@ class SyncBackendHost {
 #endif
 
    private:
+    friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
+
     // FrontendNotification defines parameters for NotifyFrontend. Each enum
     // value corresponds to the one SyncFrontend interface method that
     // NotifyFrontend should invoke.
@@ -212,6 +214,8 @@ class SyncBackendHost {
                                       // the syncer has resolved any conflicts
                                       // that may have arisen.
     };
+
+    ~Core() {}
 
     // NotifyFrontend is how the Core communicates with the frontend across
     // threads. Having this extra method (rather than having the Core PostTask

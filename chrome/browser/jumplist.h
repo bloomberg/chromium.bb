@@ -41,9 +41,6 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   ShellLinkItem() : index_(0), favicon_(false) {
   }
 
-  ~ShellLinkItem() {
-  }
-
   const std::wstring& arguments() const { return arguments_; }
   const std::wstring& title() const { return title_; }
   const std::wstring& icon() const { return icon_; }
@@ -69,6 +66,10 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ShellLinkItem>;
+
+  ~ShellLinkItem() {}
+
   std::wstring arguments_;
   std::wstring title_;
   std::wstring icon_;

@@ -192,6 +192,10 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
 #endif
 
  private:
+  friend class base::RefCountedThreadSafe<JankObserver>;
+
+  ~JankObserver() {}
+
   const TimeDelta MaxMessageDelay_;
 
   // Time at which the current message processing began.

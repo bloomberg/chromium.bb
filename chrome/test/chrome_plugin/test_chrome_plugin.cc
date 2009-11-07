@@ -48,15 +48,18 @@ void STDCALL InvokeLaterCallback(void* data) {
 class ResponseStream : public base::RefCounted<ResponseStream> {
 public:
   ResponseStream(const TestResponsePayload* payload, CPRequest* request);
-  ~ResponseStream() {
-    request_->pdata = NULL;
-  }
 
   void Init();
   int GetResponseInfo(CPResponseInfoType type, void* buf, uint32 buf_size);
   int ReadData(void* buf, uint32 buf_size);
 
-private:
+ private:
+  friend class base::RefCounted<ResponseStream>;
+
+  ~ResponseStream() {
+    request_->pdata = NULL;
+  }
+
   // Called asynchronously via InvokeLater.
   void ResponseStarted();
   int ReadCompleted(void* buf, uint32 buf_size);

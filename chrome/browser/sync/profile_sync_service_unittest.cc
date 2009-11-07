@@ -76,6 +76,9 @@ class TestModelAssociator : public ModelAssociator {
     *sync_id = node.GetId();
     return true;
   }
+
+ private:
+  ~TestModelAssociator() {}
 };
 
 class TestProfileSyncService : public ProfileSyncService {

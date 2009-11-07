@@ -81,6 +81,10 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   void MoveCurrentSessionToLastSession();
 
  private:
+  friend class base::RefCountedThreadSafe<SessionBackend>;
+
+  ~SessionBackend() {}
+
   // If current_session_file_ is open, it is truncated so that it is essentially
   // empty (only contains the header). If current_session_file_ isn't open, it
   // is is opened and the header is written to it. After this

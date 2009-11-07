@@ -35,7 +35,6 @@ class ModelAssociator
     : public base::RefCountedThreadSafe<ModelAssociator> {
  public:
   explicit ModelAssociator(ProfileSyncService* sync_service);
-  virtual ~ModelAssociator() { }
 
   // Clears all associations.
   void ClearAll();
@@ -82,6 +81,9 @@ class ModelAssociator
   bool AssociateModels();
 
  protected:
+  friend class base::RefCountedThreadSafe<ModelAssociator>;
+  virtual ~ModelAssociator() { }
+
   // Stores the id of the node with the given tag in |sync_id|.
   // Returns of that node was found successfully.
   // Tests override this.

@@ -139,6 +139,8 @@ class AboutMemoryHandler : public MemoryDetails {
   virtual void OnDetailsAvailable();
 
  private:
+  ~AboutMemoryHandler() {}
+
   void BindProcessMetrics(DictionaryValue* data,
                           ProcessMemoryInformation* info);
   void AppendProcess(ListValue* child_data, ProcessMemoryInformation* info);

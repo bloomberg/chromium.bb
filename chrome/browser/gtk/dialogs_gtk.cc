@@ -32,7 +32,6 @@ static const int kPreviewHeight = 512;
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
   explicit SelectFileDialogImpl(Listener* listener);
-  virtual ~SelectFileDialogImpl();
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
@@ -50,6 +49,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
                           void* params);
 
  private:
+  virtual ~SelectFileDialogImpl();
+
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);
 

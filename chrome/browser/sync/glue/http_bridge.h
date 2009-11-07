@@ -99,7 +99,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   };
 
   HttpBridge(RequestContextGetter* context);
-  virtual ~HttpBridge();
 
   // sync_api::HttpPostProvider implementation.
   virtual void SetUserAgent(const char* user_agent);
@@ -130,6 +129,10 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 #endif
 
  protected:
+  friend class base::RefCountedThreadSafe<HttpBridge>;
+
+  virtual ~HttpBridge();
+
   // Protected virtual so the unit test can override to shunt network requests.
   virtual void MakeAsynchronousPost();
 

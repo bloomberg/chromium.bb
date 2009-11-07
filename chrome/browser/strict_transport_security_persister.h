@@ -43,12 +43,14 @@ class StrictTransportSecurityPersister :
   StrictTransportSecurityPersister(net::StrictTransportSecurityState* state,
                                    const FilePath& profile_path);
 
-  ~StrictTransportSecurityPersister();
-
   // Called by the StrictTransportSecurityState when it changes its state.
   virtual void StateIsDirty(net::StrictTransportSecurityState*);
 
  private:
+  friend class base::RefCountedThreadSafe<StrictTransportSecurityPersister>;
+
+  ~StrictTransportSecurityPersister();
+
   // a Task callback for when the state needs to be written out.
   void SerialiseState();
 

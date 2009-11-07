@@ -64,7 +64,6 @@ class TaskManagerTabContentsResourceProvider
       public NotificationObserver {
  public:
   explicit TaskManagerTabContentsResourceProvider(TaskManager* task_manager);
-  virtual ~TaskManagerTabContentsResourceProvider();
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
@@ -78,6 +77,8 @@ class TaskManagerTabContentsResourceProvider
                        const NotificationDetails& details);
 
  private:
+  virtual ~TaskManagerTabContentsResourceProvider();
+
   void Add(TabContents* tab_contents);
   void Remove(TabContents* tab_contents);
 
@@ -139,7 +140,6 @@ class TaskManagerChildProcessResourceProvider
       public NotificationObserver {
  public:
   explicit TaskManagerChildProcessResourceProvider(TaskManager* task_manager);
-  virtual ~TaskManagerChildProcessResourceProvider();
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
@@ -166,6 +166,8 @@ class TaskManagerChildProcessResourceProvider
   std::vector<ChildProcessInfo> existing_child_process_info_;
 
  private:
+  virtual ~TaskManagerChildProcessResourceProvider();
+
   void Add(ChildProcessInfo child_process_info);
   void Remove(ChildProcessInfo child_process_info);
 
@@ -223,7 +225,6 @@ class TaskManagerExtensionProcessResourceProvider
  public:
   explicit TaskManagerExtensionProcessResourceProvider(
       TaskManager* task_manager);
-  virtual ~TaskManagerExtensionProcessResourceProvider();
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
@@ -237,6 +238,8 @@ class TaskManagerExtensionProcessResourceProvider
                        const NotificationDetails& details);
 
  private:
+  virtual ~TaskManagerExtensionProcessResourceProvider();
+
   void AddToTaskManager(ExtensionHost* extension_host);
   void RemoveFromTaskManager(ExtensionHost* extension_host);
 
@@ -291,7 +294,6 @@ class TaskManagerBrowserProcessResourceProvider
  public:
   explicit TaskManagerBrowserProcessResourceProvider(
       TaskManager* task_manager);
-  virtual ~TaskManagerBrowserProcessResourceProvider();
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
@@ -304,6 +306,8 @@ class TaskManagerBrowserProcessResourceProvider
   bool updating_;
 
  private:
+  virtual ~TaskManagerBrowserProcessResourceProvider();
+
   void AddToTaskManager(ChildProcessInfo child_process_info);
 
   TaskManager* task_manager_;

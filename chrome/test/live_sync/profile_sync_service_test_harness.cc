@@ -26,7 +26,6 @@ class StateChangeTimeoutEvent
  public:
   explicit StateChangeTimeoutEvent(ProfileSyncServiceTestHarness* caller,
                                    const std::string& message);
-  ~StateChangeTimeoutEvent();
 
   // The entry point to the class from PostDelayedTask.
   void Callback();
@@ -36,6 +35,10 @@ class StateChangeTimeoutEvent
   bool Abort();
 
  private:
+  friend class base::RefCountedThreadSafe<StateChangeTimeoutEvent>;
+
+  ~StateChangeTimeoutEvent();
+
   bool aborted_;
   bool did_timeout_;
 
@@ -81,13 +84,15 @@ class ConflictTimeoutEvent
   explicit ConflictTimeoutEvent(ProfileSyncServiceTestHarness* caller)
       : caller_(caller), did_run_(false) {
   }
-  ~ConflictTimeoutEvent() { }
 
   // The entry point to the class from PostDelayedTask.
   void Callback();
   bool did_run_;
 
  private:
+  friend class base::RefCountedThreadSafe<ConflictTimeoutEvent>;
+
+  ~ConflictTimeoutEvent() { }
 
   // Due to synchronization of the IO loop, the caller will always be alive
   // if the class is not aborted.

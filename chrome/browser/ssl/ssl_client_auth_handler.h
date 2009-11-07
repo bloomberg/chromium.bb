@@ -23,7 +23,6 @@ class SSLClientAuthHandler :
  public:
   SSLClientAuthHandler(URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
-  ~SSLClientAuthHandler();
 
   // Asks the user to select a certificate and resumes the URL request with that
   // certificate.
@@ -35,6 +34,10 @@ class SSLClientAuthHandler :
   void OnRequestCancelled();
 
  private:
+  friend class base::RefCountedThreadSafe<SSLClientAuthHandler>;
+
+  ~SSLClientAuthHandler();
+
   // Asks the user for a cert.
   // Called on the UI thread.
   void DoSelectCertificate();

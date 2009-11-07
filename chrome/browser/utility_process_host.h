@@ -30,7 +30,6 @@ class UtilityProcessHost : public ChildProcessHost {
   class Client : public base::RefCountedThreadSafe<Client> {
    public:
     Client() {}
-    virtual ~Client() {}
 
     // Called when the process has crashed.
     virtual void OnProcessCrashed() {}
@@ -64,8 +63,14 @@ class UtilityProcessHost : public ChildProcessHost {
     virtual void OnParseUpdateManifestFailed(
         const std::string& error_message) {}
 
+   protected:
+    friend class base::RefCountedThreadSafe<Client>;
+
+    virtual ~Client() {}
+
    private:
     friend class UtilityProcessHost;
+
     void OnMessageReceived(const IPC::Message& message);
 
     DISALLOW_COPY_AND_ASSIGN(Client);

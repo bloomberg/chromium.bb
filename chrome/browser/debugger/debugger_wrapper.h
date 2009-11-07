@@ -22,9 +22,11 @@ class DebuggerWrapper : public base::RefCountedThreadSafe<DebuggerWrapper> {
  public:
   explicit DebuggerWrapper(int port);
 
+ private:
+  friend class base::RefCountedThreadSafe<DebuggerWrapper>;
+
   virtual ~DebuggerWrapper();
 
- private:
   scoped_refptr<DevToolsProtocolHandler> proto_handler_;
 };
 

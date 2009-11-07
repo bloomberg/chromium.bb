@@ -188,7 +188,6 @@ class SelectFileDialogImpl : public SelectFileDialog,
                              public BaseShellDialogImpl {
  public:
   explicit SelectFileDialogImpl(Listener* listener);
-  virtual ~SelectFileDialogImpl();
 
   // SelectFileDialog implementation:
   virtual void SelectFile(Type type,
@@ -203,6 +202,8 @@ class SelectFileDialogImpl : public SelectFileDialog,
   virtual void ListenerDestroyed();
 
  private:
+  virtual ~SelectFileDialogImpl();
+
   // A struct for holding all the state necessary for displaying a Save dialog.
   struct ExecuteSelectParams {
     ExecuteSelectParams(Type type,
@@ -578,7 +579,6 @@ class SelectFontDialogImpl : public SelectFontDialog,
                              public BaseShellDialogImpl {
  public:
   explicit SelectFontDialogImpl(Listener* listener);
-  virtual ~SelectFontDialogImpl();
 
   // SelectFontDialog implementation:
   virtual void SelectFont(HWND owning_hwnd, void* params);
@@ -590,6 +590,8 @@ class SelectFontDialogImpl : public SelectFontDialog,
   virtual void ListenerDestroyed();
 
  private:
+  virtual ~SelectFontDialogImpl();
+
   // Shows the font selection dialog modal to |owner| and calls the result
   // back on the ui thread. Run on the dialog thread.
   void ExecuteSelectFont(RunState run_state, void* params);

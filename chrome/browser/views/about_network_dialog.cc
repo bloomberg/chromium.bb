@@ -51,7 +51,6 @@ class JobTracker : public URLRequestJobTracker::JobObserver,
                    public base::RefCountedThreadSafe<JobTracker> {
  public:
   JobTracker(AboutNetworkDialog* view);
-  ~JobTracker();
 
   // Called by the NetworkStatusView on the main application thread.
   void StartTracking();
@@ -70,6 +69,10 @@ class JobTracker : public URLRequestJobTracker::JobObserver,
   void DetachView() { view_ = NULL; }
 
  private:
+  friend class base::RefCountedThreadSafe<JobTracker>;
+
+  ~JobTracker();
+
   void InvokeOnIOThread(void (JobTracker::*method)());
 
   // Called on the IO thread

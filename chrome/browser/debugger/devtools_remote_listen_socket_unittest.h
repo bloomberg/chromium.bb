@@ -137,7 +137,7 @@ class DevToolsRemoteListenSocketTester :
   virtual ListenSocket* DoListen();
 
  private:
- virtual ~DevToolsRemoteListenSocketTester() {}
+  virtual ~DevToolsRemoteListenSocketTester() {}
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_

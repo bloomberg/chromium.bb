@@ -182,6 +182,10 @@ class VisitedLinkMaster::TableBuilder
   virtual void OnComplete(bool succeed);
 
  private:
+  friend class base::RefCountedThreadSafe<TableBuilder>;
+
+  ~TableBuilder() {}
+
   // OnComplete mashals to this function on the main thread to do the
   // notification.
   void OnCompleteMainThread();

@@ -87,6 +87,10 @@ class FaviconService : public CancelableRequestProvider,
                   const std::vector<unsigned char>& image_data);
 
  private:
+  friend class base::RefCountedThreadSafe<FaviconService>;
+
+  ~FaviconService() {}
+
   Profile* profile_;
 
   // Helper to forward an empty result if we cannot get the history service.

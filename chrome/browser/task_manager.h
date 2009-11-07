@@ -96,8 +96,6 @@ class TaskManager {
   // MessageLoop::InvokeLater().
   class ResourceProvider : public base::RefCountedThreadSafe<ResourceProvider> {
    public:
-    virtual ~ResourceProvider() {}
-
     // Should return the resource associated to the specified ids, or NULL if
     // the resource does not belong to this provider.
     virtual TaskManager::Resource* GetResource(int process_id,
@@ -105,6 +103,11 @@ class TaskManager {
                                                int routing_id) = 0;
     virtual void StartUpdating() = 0;
     virtual void StopUpdating() = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<ResourceProvider>;
+
+    virtual ~ResourceProvider() {}
   };
 
   static void RegisterPrefs(PrefService* prefs);
@@ -178,7 +181,6 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
                          public base::RefCountedThreadSafe<TaskManagerModel> {
  public:
   explicit TaskManagerModel(TaskManager* task_manager);
-  ~TaskManagerModel();
 
   void AddObserver(TaskManagerModelObserver* observer);
   void RemoveObserver(TaskManagerModelObserver* observer);
@@ -248,7 +250,10 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
         const WebKit::WebCache::ResourceTypeStats& stats);
 
  private:
+  friend class base::RefCountedThreadSafe<TaskManagerModel>;
   FRIEND_TEST(TaskManagerTest, RefreshCalled);
+
+  ~TaskManagerModel();
 
   enum UpdateState {
     IDLE = 0,      // Currently not updating.

@@ -31,10 +31,6 @@ class TestBrowsingInstance : public BrowsingInstance {
         deleteCounter_(deleteCounter) {
   }
 
-  ~TestBrowsingInstance() {
-    (*deleteCounter_)++;
-  }
-
   // Overrides BrowsingInstance::ShouldUseProcessPerSite so that we can test
   // both alternatives without using command-line switches.
   bool ShouldUseProcessPerSite(const GURL& url) {
@@ -45,6 +41,10 @@ class TestBrowsingInstance : public BrowsingInstance {
   bool use_process_per_site;
 
  private:
+  ~TestBrowsingInstance() {
+    (*deleteCounter_)++;
+  }
+
   int* deleteCounter_;
 };
 

@@ -37,6 +37,8 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   virtual void OnDispatched();
 
  private:
+  ~SSLCertErrorHandler() {}
+
   // These read-only members may be accessed on any thread.
   net::SSLInfo ssl_info_;
   const int cert_error_;  // The error we represent.

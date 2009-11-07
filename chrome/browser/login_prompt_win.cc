@@ -45,9 +45,6 @@ class LoginHandlerWin : public LoginHandler,
     }
   }
 
-  ~LoginHandlerWin() {
-  }
-
   void set_login_view(LoginView* login_view) {
     login_view_ = login_view;
   }
@@ -186,7 +183,10 @@ class LoginHandlerWin : public LoginHandler,
   }
 
  private:
+  friend class base::RefCountedThreadSafe<LoginHandlerWin>;
   friend class LoginPrompt;
+
+  ~LoginHandlerWin() {}
 
   // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const std::wstring& username,

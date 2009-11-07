@@ -93,7 +93,6 @@ class ShellIntegration {
       : public base::RefCountedThreadSafe<DefaultBrowserWorker> {
    public:
     explicit DefaultBrowserWorker(DefaultBrowserObserver* observer);
-    virtual ~DefaultBrowserWorker() {}
 
     // Checks if Chrome is the default browser.
     void StartCheckDefaultBrowser();
@@ -105,6 +104,10 @@ class ShellIntegration {
     void ObserverDestroyed();
 
    private:
+    friend class base::RefCountedThreadSafe<DefaultBrowserWorker>;
+
+    virtual ~DefaultBrowserWorker() {}
+
     // Functions that track the process of checking if Chrome is the default
     // browser.  |ExecuteCheckDefaultBrowser| checks the registry on the file
     // thread.  |CompleteCheckDefaultBrowser| notifies the view to update on the

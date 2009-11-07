@@ -46,8 +46,6 @@ class BaseSessionService : public CancelableRequestProvider,
                      Profile* profile,
                      const FilePath& path);
 
-  virtual ~BaseSessionService();
-
   Profile* profile() const { return profile_; }
 
   // Deletes the last session.
@@ -66,16 +64,22 @@ class BaseSessionService : public CancelableRequestProvider,
     explicit InternalGetCommandsRequest(CallbackType* callback)
         : CancelableRequest<InternalGetCommandsCallback>(callback) {
     }
-    virtual ~InternalGetCommandsRequest();
 
     // The commands. The backend fills this in for us.
     std::vector<SessionCommand*> commands;
+
+   protected:
+    virtual ~InternalGetCommandsRequest();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InternalGetCommandsRequest);
   };
 
  protected:
+  friend class base::RefCountedThreadSafe<BaseSessionService>;
+
+  virtual ~BaseSessionService();
+
   // Returns the backend.
   SessionBackend* backend() const { return backend_; }
 

@@ -60,9 +60,6 @@ class SpellChecker
                URLRequestContextGetter* request_context_getter,
                const FilePath& custom_dictionary_file_name);
 
-  // Only delete on the I/O thread (see above).
-  ~SpellChecker();
-
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
@@ -116,6 +113,8 @@ class SpellChecker
   static std::string GetLanguageFromLanguageRegion(std::string input_language);
 
  private:
+  friend class ChromeThread;
+  friend class DeleteTask<SpellChecker>;
   friend class ReadDictionaryTask;
   FRIEND_TEST(SpellCheckTest, SpellCheckStrings_EN_US);
   FRIEND_TEST(SpellCheckTest, SpellCheckSuggestions_EN_US);
@@ -125,6 +124,9 @@ class SpellChecker
               DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US);
   FRIEND_TEST(SpellCheckTest, GetAutoCorrectionWord_EN_US);
   FRIEND_TEST(SpellCheckTest, IgnoreWords_EN_US);
+
+  // Only delete on the I/O thread (see above).
+  ~SpellChecker();
 
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to disk.

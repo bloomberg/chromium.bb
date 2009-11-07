@@ -47,12 +47,14 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   IconLoader(const IconGroupID& group, IconSize size, Delegate* delegate);
 
-  virtual ~IconLoader();
-
   // Start reading the icon on the file thread.
   void Start();
 
  private:
+  friend class base::RefCountedThreadSafe<IconLoader>;
+
+  virtual ~IconLoader();
+
   void ReadIcon();
 
   void NotifyDelegate();

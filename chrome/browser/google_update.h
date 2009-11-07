@@ -82,7 +82,6 @@ class GoogleUpdateStatusListener {
 class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
  public:
   GoogleUpdate();
-  virtual ~GoogleUpdate();
 
   // Ask Google Update to see if a new version is available. If the parameter
   // |install_if_newer| is true then Google Update will also install that new
@@ -98,6 +97,10 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   void RemoveStatusChangeListener();
 
  private:
+  friend class base::RefCountedThreadSafe<GoogleUpdate>;
+
+  virtual ~GoogleUpdate();
+
   // We need to run the update check on another thread than the main thread, and
   // therefore CheckForUpdate will delegate to this function. |main_loop| points
   // to the message loop that we want the response to come from.

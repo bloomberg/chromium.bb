@@ -39,7 +39,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   ExternalTabContainer(AutomationProvider* automation,
       AutomationResourceMessageFilter* filter);
-  ~ExternalTabContainer();
 
   TabContents* tab_contents() const { return tab_contents_; }
 
@@ -167,6 +166,10 @@ class ExternalTabContainer : public TabContentsDelegate,
   void Navigate(const GURL& url, const GURL& referrer);
 
  private:
+  friend class base::RefCounted<ExternalTabContainer>;
+
+  ~ExternalTabContainer();
+
   // Helper function for processing keystokes coming back from the renderer
   // process.
   bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,

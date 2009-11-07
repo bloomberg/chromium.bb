@@ -369,8 +369,6 @@ class CancelableRequestBase :
         canceled_(false) {
     callback_thread_ = MessageLoop::current();
   }
-  virtual ~CancelableRequestBase() {
-  }
 
   CancelableRequestConsumerBase* consumer() const {
     return consumer_;
@@ -390,6 +388,9 @@ class CancelableRequestBase :
   }
 
  protected:
+  friend class base::RefCountedThreadSafe<CancelableRequestBase>;
+  virtual ~CancelableRequestBase() {}
+
   // Initializes the object with the particulars from the provider. It may only
   // be called once (it is called by the provider, which is a friend).
   void Init(CancelableRequestProvider* provider,
@@ -452,6 +453,9 @@ class CancelableRequestBase :
 //     DoodieRequest(CallbackType* callback) : CancelableRequest(callback) {
 //     }
 //
+//    private:
+//     ~DoodieRequest() {}
+//
 //     int input_arg1;
 //     std::wstring input_arg2;
 //   };
@@ -468,8 +472,6 @@ class CancelableRequest : public CancelableRequestBase {
       : CancelableRequestBase(),
         callback_(callback) {
     DCHECK(callback) << "We should always have a callback";
-  }
-  virtual ~CancelableRequest() {
   }
 
   // Dispatches the parameters to the correct thread so the callback can be
@@ -502,6 +504,9 @@ class CancelableRequest : public CancelableRequestBase {
           &CancelableRequest<CB>::ExecuteCallback, param));
     }
   }
+
+ protected:
+  virtual ~CancelableRequest() {}
 
  private:
   // Executes the callback and notifies the provider and the consumer that this
@@ -545,11 +550,11 @@ class CancelableRequest1 : public CancelableRequest<CB> {
       : CancelableRequest<CB>(callback) {
   }
 
-  virtual ~CancelableRequest1() {
-  }
-
   // The value.
   Type value;
+
+ protected:
+  virtual ~CancelableRequest1() {}
 };
 
 #endif  // CHROME_BROWSER_CANCELABLE_REQUEST_H__

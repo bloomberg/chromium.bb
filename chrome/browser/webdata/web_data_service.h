@@ -147,7 +147,6 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   typedef int Handle;
 
   WebDataService();
-  ~WebDataService();
 
   // Initializes the web data service. Returns false on failure
   // Takes the path of the profile directory as its argument.
@@ -419,10 +418,13 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //
   //////////////////////////////////////////////////////////////////////////////
  private:
+  friend class base::RefCountedThreadSafe<WebDataService>;
   friend class ShutdownTask;
 
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;
+
+  ~WebDataService();
 
   // Initialize the database, if it hasn't already been initialized.
   void InitializeDatabaseIfNecessary();

@@ -44,6 +44,10 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   int ssl_cert_status() const { return ssl_cert_status_; }
 
  private:
+  friend class base::RefCounted<SSLRequestInfo>;
+
+  ~SSLRequestInfo() {}
+
   GURL url_;
   ResourceType::Type resource_type_;
   std::string frame_origin_;

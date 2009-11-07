@@ -39,7 +39,6 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
                        public NotificationObserver {
  public:
   ThumbnailStore();
-  ~ThumbnailStore();
 
   // Must be called before {Set,Get}PageThumbnail.  |db_name| is the location
   // of an existing ThumbnailStore database or where to create a new one.
@@ -63,11 +62,14 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   void Shutdown();
 
  private:
+  friend class base::RefCountedThreadSafe<ThumbnailStore>;
   FRIEND_TEST(ThumbnailStoreTest, RetrieveFromCache);
   FRIEND_TEST(ThumbnailStoreTest, RetrieveFromDisk);
   FRIEND_TEST(ThumbnailStoreTest, UpdateThumbnail);
   FRIEND_TEST(ThumbnailStoreTest, FollowRedirects);
   friend class ThumbnailStoreTest;
+
+  ~ThumbnailStore();
 
   struct CacheEntry {
     scoped_refptr<RefCountedBytes> data_;

@@ -52,8 +52,6 @@ class SessionService : public BaseSessionService,
   // For testing.
   explicit SessionService(const FilePath& save_path);
 
-  virtual ~SessionService();
-
   // Resets the contents of the file from the current state of all open
   // browsers whose profile matches our profile.
   void ResetFromCurrentBrowsers();
@@ -154,6 +152,8 @@ class SessionService : public BaseSessionService,
   typedef std::map<SessionID::id_type,std::pair<int,int> > IdToRange;
   typedef std::map<SessionID::id_type,SessionTab*> IdToSessionTab;
   typedef std::map<SessionID::id_type,SessionWindow*> IdToSessionWindow;
+
+  virtual ~SessionService();
 
   // These types mirror Browser::Type, but are re-defined here because these
   // specific enumeration _values_ are written into the session database and

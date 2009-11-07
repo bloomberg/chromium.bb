@@ -77,6 +77,8 @@ class InternalLastSessionRequest
   scoped_ptr<SessionService::LastSessionCallback> real_callback;
 
  private:
+  ~InternalLastSessionRequest() {}
+
   DISALLOW_COPY_AND_ASSIGN(InternalLastSessionRequest);
 };
 

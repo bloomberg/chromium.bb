@@ -78,7 +78,6 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
  public:
   // Constructor.
   MemoryDetails();
-  virtual ~MemoryDetails() {}
 
   // Access to the process detail information.  This data is only available
   // after OnDetailsAvailable() has been called.
@@ -90,6 +89,11 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   void StartFetch();
 
   virtual void OnDetailsAvailable() {}
+
+ protected:
+  friend class base::RefCountedThreadSafe<MemoryDetails>;
+
+  virtual ~MemoryDetails() {}
 
  private:
   // Collect child process information on the IO thread.  This is needed because

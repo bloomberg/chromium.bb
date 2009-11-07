@@ -274,6 +274,8 @@ class MetricsMemoryDetails : public MemoryDetails {
   }
 
  private:
+  ~MetricsMemoryDetails() {}
+
   Task* completion_;
   DISALLOW_EVIL_CONSTRUCTORS(MetricsMemoryDetails);
 };

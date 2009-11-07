@@ -124,8 +124,6 @@ class TabRestoreService : public BaseSessionService {
   explicit TabRestoreService(Profile* profile,
                              TimeFactory* time_factory_ = NULL);
 
-  virtual ~TabRestoreService();
-
   // Adds/removes an observer. TabRestoreService does not take ownership of
   // the observer.
   void AddObserver(Observer* observer);
@@ -192,6 +190,8 @@ class TabRestoreService : public BaseSessionService {
     // last tabs).
     LOADED_LAST_SESSION  = 1 << 4
   };
+
+  virtual ~TabRestoreService();
 
   // Populates the tab's navigations from the NavigationController, and its
   // browser_id and tabstrip_index from the browser.

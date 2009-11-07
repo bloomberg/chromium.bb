@@ -97,6 +97,10 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
   void StopWorker() { NOTIMPLEMENTED(); }
 
  private:
+  friend class base::RefCountedThreadSafe<PrinterQuery>;
+
+  ~PrinterQuery() {}
+
   PrintSettings settings_;
 };
 
