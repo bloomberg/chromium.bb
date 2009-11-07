@@ -1,9 +1,66 @@
-<p>
-You can find samples at the Chromium project:
-</p>
+<p><b style="color:red">Note:</b> To run these samples, you need to be on the <a href="http://dev.chromium.org/getting-involved/dev-channel">dev or beta channel</a> of Google Chrome.
+
+<h2>Google Mail Checker</h2>
+
+<p>Adds a Google Mail button to the toolbar which displays the number of unread messages in your inbox. You can also click the button to open your inbox.
+
+<p>Included with no charge is a swell animation when the number of unread items changes.
+
+<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0"><img src="images/google-mail-checker-capture.png" width="243" height="170" style="margin-bottom:0.5em"></a><br>
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0">Install</a>&nbsp;&nbsp;
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/gmail_browser_action/">Source code</a></b>
+
+<br><br>
+<p>Features used:
 
 <ul>
-  <li> <a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Sample extensions</a>
-  <li> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/">Source code</a>
+  <li><a href="browserAction.html">Browser action</a> (with canvas-based animation)
+  <li><a href="browserAction.html#badge">Badge</a>
+  <li><a href="background_pages.html">Background page</a>
+  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
+  <li><a href="tabs.html">Tabs</a> module
 </ul>
 
+<br>
+
+<h2>Chromium Buildbot Monitor</h2>
+
+<p><a href="http://www.chromium.org/">Chromium</a> is the open source project behind Google Chrome. This extension monitors the status of the Chromium's continuous build and test suite. You can also click the icon to get more detailed information about the current status.
+
+<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0"><img src="images/buildbot-capture.png" style="margin-bottom:0.5em" width="336" height="288"></a><br>
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0">Install</a>&nbsp;&nbsp;
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/buildbot/">Source code</a></b>
+
+<br><br>
+
+
+<p>Features used:
+
+<ul>
+  <li><a href="browserAction.html">Browser action</a>
+  <li><a href="browserAction.html#popups">Popup</a>
+  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
+</ul>
+
+<br>
+
+<h2>Subscribe in Feed Reader</h2>
+
+<p>Adds a small icon to the omnibox when a web page contains a feed that can be subscribed to. When you click the icon, present a preview of the feed and the option to subscribe in the web-based reader of your choice.
+
+<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0"><img src="images/subscribe-cap1.png" style="margin-bottom:0.5em" width="342" height="165"></a>
+
+<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0"><img src="images/subscribe-cap2.png" style="margin-bottom:0.5em" width="566" height="327"></a><br>
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US&prod=chrome&prodversion=4.0.238.0">Install</a>&nbsp;&nbsp;
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/samples/subscribe_page_action/">Source code</a></b>
+
+<br><br>
+<p>Features used:
+
+<ul>
+  <li><a href="pageAction.html">Page action</a>
+  <li><a href="background_pages.html">Background page</a>
+  <li><a href="content_scripts.html">Content scripts</a>
+  <li><a href="messaging.html">Message passing</a>
+  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
+</ul>
