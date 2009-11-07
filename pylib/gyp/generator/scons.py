@@ -383,6 +383,9 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '  elif _var in os.environ:\n'
            '    env[\'ENV\'][_var] = os.environ[_var]\n')
 
+  fp.write('\n'
+           'env[\'ENV\'][\'LD_LIBRARY_PATH\'] = \'$LIB_DIR\'\n')
+
   #
   #fp.write("\nif env.has_key('CPPPATH'):\n")
   #fp.write("  env['CPPPATH'] = map(env.Dir, env['CPPPATH'])\n")
