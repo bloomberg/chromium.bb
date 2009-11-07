@@ -438,10 +438,6 @@ void AutocompleteMatch::ClassifyLocationInString(
     size_t overall_length,
     int style,
     ACMatchClassifications* classification) {
-  // Classifying an empty match makes no sense and will lead to validation
-  // errors later.
-  DCHECK(match_length > 0);
-
   classification->clear();
 
   // Don't classify anything about an empty string
@@ -459,6 +455,9 @@ void AutocompleteMatch::ClassifyLocationInString(
     // No match, above classification will suffice for whole string.
     return;
   }
+  // Classifying an empty match makes no sense and will lead to validation
+  // errors later.
+  DCHECK(match_length > 0);
   classification->push_back(ACMatchClassification(match_location,
       (style | ACMatchClassification::MATCH) & ~ACMatchClassification::DIM));
 

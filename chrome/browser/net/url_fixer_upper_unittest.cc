@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,8 +210,8 @@ struct fixup_case {
   {" foo.com/asdf  bar", "", "http://foo.com/asdf  bar"},
   {"..www.google.com..", "", "http://www.google.com./"},
   {"http://......", "", "http://....../"},
-  {"http://host.com:ninety-two/", "", "http://host.com/"},
-  {"http://host.com:ninety-two?foo", "", "http://host.com/?foo"},
+  {"http://host.com:ninety-two/", "", "http://host.com:ninety-two/"},
+  {"http://host.com:ninety-two?foo", "", "http://host.com:ninety-two/?foo"},
   {"google.com:123", "", "http://google.com:123/"},
   {"about:", "", "about:"},
   {"about:version", "", "about:version"},

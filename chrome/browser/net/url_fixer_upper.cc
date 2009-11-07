@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,11 +146,10 @@ static string FixupHomedir(const string& text) {
 #endif
 
 // Tries to create a file: URL from |text| if it looks like a filename, even if
-// it doesn't resolve as a valid path or to an existing file.  Returns true
-// with a (possibly invalid) file: URL in |fixed_up_url| for input beginning
-// with a drive specifier or "\\".  Returns false in other cases (including
-// file: URLs: these don't look like filenames), leaving fixed_up_url
-// unchanged.
+// it doesn't resolve as a valid path or to an existing file.  Returns a
+// (possibly invalid) file: URL in |fixed_up_url| for input beginning
+// with a drive specifier or "\\".  Returns the unchanged input in other cases
+// (including file: URLs: these don't look like filenames).
 static string FixupPath(const string& text) {
   DCHECK(!text.empty());
 
@@ -173,7 +172,7 @@ static string FixupPath(const string& text) {
   GURL file_url = net::FilePathToFileURL(FilePath(filename));
   if (file_url.is_valid()) {
     return WideToUTF8(net::FormatUrl(file_url, std::wstring(), true,
-        UnescapeRule::NORMAL, NULL, NULL));
+        UnescapeRule::NORMAL, NULL, NULL, NULL));
   }
 
   // Invalid file URL, just return the input.
@@ -182,7 +181,6 @@ static string FixupPath(const string& text) {
 
 // Checks |domain| to see if a valid TLD is already present.  If not, appends
 // |desired_tld| to the domain, and prepends "www." unless it's already present.
-// Then modifies |fixed_up_url| to reflect the changes.
 static void AddDesiredTLD(const string& desired_tld,
                           string* domain) {
   if (desired_tld.empty() || domain->empty())
@@ -268,30 +266,15 @@ static void FixupHost(const string& text,
   url->append(domain);
 }
 
-// Looks for a port number, including initial colon, at port_start.  If
-// something invalid (which cannot be fixed up) is found, like ":foo" or
-// ":7:7", returns false.  Otherwise, removes any extra colons
-// ("::1337" -> ":1337", ":/" -> "/") and returns true.
 static void FixupPort(const string& text,
                       const url_parse::Component& part,
                       string* url) {
   if (!part.is_valid())
     return;
 
-  // Look for non-digit in port and strip if found.
-  string port(text, part.begin, part.len);
-  for (string::iterator i = port.begin(); i != port.end();) {
-    if (IsAsciiDigit(*i))
-      ++i;
-    else
-      i = port.erase(i);
-  }
-
-  if (port.empty())
-    return;  // Nothing to append.
-
+  // We don't fix up the port at the moment.
   url->append(":");
-  url->append(port);
+  url->append(text, part.begin, part.len);
 }
 
 static inline void FixupPath(const string& text,
@@ -573,7 +556,7 @@ string URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
       return WideToUTF8(net::FormatUrl(file_url, std::wstring(),
-          true, UnescapeRule::NORMAL, NULL, NULL));
+          true, UnescapeRule::NORMAL, NULL, NULL, NULL));
     // Invalid files fall through to regular processing.
   }
 

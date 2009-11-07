@@ -21,9 +21,9 @@ void WriteURLToClipboard(const GURL& url,
   // Unescaping path and query is not a good idea because other applications
   // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
   string16 text = url.SchemeIs(chrome::kMailToScheme) ?
-                      ASCIIToUTF16(url.path()) :
-                      WideToUTF16(net::FormatUrl(url, languages, false,
-                                             UnescapeRule::NONE, NULL, NULL));
+      ASCIIToUTF16(url.path()) :
+      WideToUTF16(net::FormatUrl(url, languages, false, UnescapeRule::NONE,
+                                 NULL, NULL, NULL));
 
   ScopedClipboardWriter scw(clipboard);
   scw.WriteURL(text);

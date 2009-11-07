@@ -2517,9 +2517,9 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_size_ = upload_size;
   std::wstring languages =
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  load_state_host_.clear();
   std::string host = url.host();
-  net::IDNToUnicode(host.c_str(), host.size(), languages, &load_state_host_);
+  load_state_host_ =
+      net::IDNToUnicode(host.c_str(), host.size(), languages, NULL);
   if (load_state_ == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (is_loading())

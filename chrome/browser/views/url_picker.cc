@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -293,9 +293,8 @@ void UrlPicker::OnSelectionChanged() {
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
     // Because the url_field_ is user-editable, we set the URL with
     // username:password and escaped path and query.
-    std::wstring formatted = net::FormatUrl(
-        url_table_model_->GetURL(selection), languages,
-        false, UnescapeRule::NONE, NULL, NULL);
+    std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(selection),
+        languages, false, UnescapeRule::NONE, NULL, NULL, NULL);
     url_field_->SetText(formatted);
     if (title_field_)
       title_field_->SetText(url_table_model_->GetTitle(selection));

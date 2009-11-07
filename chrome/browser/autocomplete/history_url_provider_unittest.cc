@@ -83,6 +83,11 @@ static TestURLInfo test_db[] = {
   {"http://go/", L"Intranet URL", 1, 1},
   {"http://gooey/", L"Intranet URL 2", 5, 5},
 
+  // URLs for testing offset adjustment
+  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", L"Korean", 2, 2},
+  {"http://spaces.com/path%20with%20spaces/foo.html", L"Spaces", 2, 2},
+  {"http://ms/c++%20style%20guide", L"Style guide", 2, 2},
+  {"http://foo:bar@baz.com/", L"HTTP auth", 2, 2},
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -116,6 +121,8 @@ class HistoryURLProviderTest : public testing::Test,
                const std::string* expected_urls,
                size_t num_results);
 
+  void RunAdjustOffsetTest(const std::wstring text, size_t expected_offset);
+
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
@@ -144,7 +151,7 @@ void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_->CreateHistoryService(true, no_db);
   history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
-  autocomplete_ = new HistoryURLProvider(this, profile_.get());
+  autocomplete_ = new HistoryURLProvider(this, profile_.get(), L"en-US,en,ko");
 
   FillData();
 }
@@ -187,6 +194,18 @@ void HistoryURLProviderTest::RunTest(const std::wstring text,
   ASSERT_EQ(num_results, matches_.size()) << "Input text: " << text;
   for (size_t i = 0; i < num_results; ++i)
     EXPECT_EQ(expected_urls[i], matches_[i].destination_url.spec());
+}
+
+void HistoryURLProviderTest::RunAdjustOffsetTest(const std::wstring text,
+                                                 size_t expected_offset) {
+  AutocompleteInput input(text, std::wstring(), false, false, false);
+  autocomplete_->Start(input, false);
+  if (!autocomplete_->done())
+    MessageLoop::current()->Run();
+
+  matches_ = autocomplete_->matches();
+  ASSERT_GE(matches_.size(), 1U) << "Input text: " << text;
+  EXPECT_EQ(expected_offset, matches_[0].inline_autocomplete_offset);
 }
 
 TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
@@ -380,6 +399,14 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   // An number "17173" should result in "http://www.17173.com/" in db.
   const std::string fixup_5[] = {"http://www.17173.com/"};
   RunTest(L"17173", std::wstring(), false, fixup_5, arraysize(fixup_5));
+}
+
+TEST_F(HistoryURLProviderTest, AdjustOffset) {
+  RunAdjustOffsetTest(L"http://www.\uAD50\uC721", 13);
+  RunAdjustOffsetTest(L"http://spaces.com/path%20with%20spa", 31);
+  RunAdjustOffsetTest(L"http://ms/c++ s", 15);
+  RunAdjustOffsetTest(L"http://foo:ba", std::wstring::npos);
+  RunAdjustOffsetTest(L"http://foo:bar@ba", 9);
 }
 
 TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {

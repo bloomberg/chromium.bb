@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -278,9 +278,8 @@ void BookmarkEditorView::Init() {
         : std::wstring();
     // The following URL is user-editable.  We specify omit_username_password=
     // false and unescape=false to show the original URL except IDN.
-    url_text =
-        net::FormatUrl(details_.existing_node->GetURL(), languages, false,
-                       UnescapeRule::NONE, NULL, NULL);
+    url_text = net::FormatUrl(details_.existing_node->GetURL(), languages,
+                              false, UnescapeRule::NONE, NULL, NULL, NULL);
   }
   url_tf_.SetText(url_text);
   url_tf_.SetController(this);

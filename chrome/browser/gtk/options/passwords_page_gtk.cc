@@ -156,8 +156,7 @@ void PasswordsPageGtk::SetPasswordList(
   for (size_t i = 0; i < result.size(); ++i) {
     password_list_[i] = *result[i];
     std::wstring formatted = net::FormatUrl(result[i]->origin, languages,
-                                            false, UnescapeRule::NONE,
-                                            NULL, NULL);
+        false, UnescapeRule::NONE, NULL, NULL, NULL);
     std::string site = WideToUTF8(formatted);
     std::string user = UTF16ToUTF8(result[i]->username_value);
     GtkTreeIter iter;

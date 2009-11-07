@@ -68,9 +68,8 @@ void HistoryURLProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(done_);
 
   // Delete the match from the history DB.
-  HistoryService* history_service =
-      profile_ ? profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) :
-      history_service_;
+  HistoryService* const history_service =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   GURL selected_url(match.destination_url);
   if (!history_service || !selected_url.is_valid()) {
     NOTREACHED() << "Can't delete requested URL";
@@ -628,16 +627,17 @@ void HistoryURLProvider::RunAutocompletePasses(
     matches_.push_back(SuggestExactInput(input, trim_http));
 
   // We'll need the history service to run both passes, so try to obtain it.
-  HistoryService* const history_service = profile_ ?
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : history_service_;
+  HistoryService* const history_service =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!history_service)
     return;
 
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
-  const std::wstring& languages = profile_ ?
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::wstring();
+  std::wstring languages(languages_);
+  if (languages.empty() && profile_)
+    languages = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   scoped_ptr<HistoryURLProviderParams> params(
       new HistoryURLProviderParams(input, trim_http, languages));
 
@@ -826,28 +826,47 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
       !!info.visit_count(), AutocompleteMatch::HISTORY_URL);
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
+  size_t inline_autocomplete_offset =
+      history_match.input_location + params->input.text().length();
   match.fill_into_edit = net::FormatUrl(info.url(),
-      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages);
-  if (!params->input.prevent_inline_autocomplete()) {
-    match.inline_autocomplete_offset =
-        history_match.input_location + params->input.text().length();
-  }
+      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages, true,
+      UnescapeRule::SPACES, NULL, NULL, &inline_autocomplete_offset);
   size_t offset = 0;
   if (params->trim_http && !history_match.match_in_scheme) {
     offset = TrimHttpPrefix(&match.fill_into_edit);
-    if (match.inline_autocomplete_offset != std::wstring::npos) {
-      DCHECK(match.inline_autocomplete_offset >= offset);
-      match.inline_autocomplete_offset -= offset;
+    if (inline_autocomplete_offset != std::wstring::npos) {
+      DCHECK(inline_autocomplete_offset >= offset);
+      inline_autocomplete_offset -= offset;
     }
   }
+  if (!params->input.prevent_inline_autocomplete())
+    match.inline_autocomplete_offset = inline_autocomplete_offset;
   DCHECK((match.inline_autocomplete_offset == std::wstring::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
 
-  match.contents = match.fill_into_edit;
-  AutocompleteMatch::ClassifyLocationInString(
-      history_match.input_location - offset, params->input.text().length(),
-      match.contents.length(), ACMatchClassification::URL,
-      &match.contents_class);
+  size_t match_start = history_match.input_location;
+  match.contents = net::FormatUrl(info.url(),
+      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages, true,
+      UnescapeRule::SPACES, NULL, NULL, &match_start);
+  if (offset) {
+    TrimHttpPrefix(&match.contents);
+    if (match_start != std::wstring::npos) {
+      DCHECK(match_start >= offset);
+      match_start -= offset;
+    }
+  }
+  if ((match_start != std::wstring::npos) &&
+      (inline_autocomplete_offset != std::wstring::npos) &&
+      (inline_autocomplete_offset != match_start)) {
+    DCHECK(inline_autocomplete_offset > match_start);
+    AutocompleteMatch::ClassifyLocationInString(match_start,
+        inline_autocomplete_offset - match_start, match.contents.length(),
+        ACMatchClassification::URL, &match.contents_class);
+  } else {
+    AutocompleteMatch::ClassifyLocationInString(std::wstring::npos, 0,
+        match.contents.length(), ACMatchClassification::URL,
+        &match.contents_class);
+  }
   match.description = info.title();
   AutocompleteMatch::ClassifyMatchInString(params->input.text(), info.title(),
                                            ACMatchClassification::NONE,

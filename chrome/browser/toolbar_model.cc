@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,8 @@ std::wstring ToolbarModel::GetText() {
       url = entry->virtual_url();
     }
   }
-  return net::FormatUrl(url, languages, true, UnescapeRule::NORMAL, NULL, NULL);
+  return net::FormatUrl(url, languages, true, UnescapeRule::NORMAL, NULL, NULL,
+                        NULL);
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() {
