@@ -57,6 +57,7 @@ const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
   "postPrivateMessage",
   "installExtension",
   "loadExtension",
+  "enableExtensionAutomation"
 };
 
 ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
@@ -64,6 +65,7 @@ ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
   &ChromeFrameNPAPI::postPrivateMessage,
   &ChromeFrameNPAPI::installExtension,
   &ChromeFrameNPAPI::loadExtension,
+  &ChromeFrameNPAPI::enableExtensionAutomation,
 };
 
 NPIdentifier
@@ -1339,6 +1341,7 @@ bool ChromeFrameNPAPI::NavigateToURL(const NPVariant* args, uint32_t arg_count,
 
 bool ChromeFrameNPAPI::postMessage(NPObject* npobject, const NPVariant* args,
                                    uint32_t arg_count, NPVariant* result) {
+  // TODO(tommi) See if we can factor these checks out somehow.
   if (arg_count < 1 || arg_count > 2 || !NPVARIANT_IS_STRING(args[0])) {
     NOTREACHED();
     return false;
@@ -1475,6 +1478,54 @@ bool ChromeFrameNPAPI::loadExtension(NPObject* npobject,
   automation_client_->LoadExpandedExtension(path, retained_function);
   // The response to this command will be returned in the OnExtensionInstalled
   // delegate callback function.
+
+  return true;
+}
+
+bool ChromeFrameNPAPI::enableExtensionAutomation(NPObject* npobject,
+                                                 const NPVariant* args,
+                                                 uint32_t arg_count,
+                                                 NPVariant* result) {
+  if (arg_count > 1 || (arg_count == 1 && !NPVARIANT_IS_STRING(args[0]))) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!is_privileged_) {
+    DLOG(WARNING) <<
+        "enableExtensionAutomation invoked in non-privileged mode";
+    return false;
+  }
+
+  if (!automation_client_.get()) {
+    DLOG(WARNING) <<
+        "enableExtensionAutomation invoked with no automaton client";
+    NOTREACHED();
+    return false;
+  }
+
+  if (!automation_client_->tab()) {
+    DLOG(WARNING) << "enableExtensionAutomation invoked with no hosted tab";
+    NOTREACHED();
+    return false;
+  }
+
+  // Empty by default e.g. if no arguments passed.
+  std::vector<std::string> functions;
+
+  if (arg_count == 1) {
+    const NPString& functions_str = args[0].value.stringValue;
+    std::string functions_a(functions_str.UTF8Characters,
+                            functions_str.UTF8Length);
+
+    // SplitString writes one empty entry for blank strings, so we need this
+    // to allow specifying zero automation of API functions.
+    if (functions_a[0] != '\0')
+      SplitString(functions_a, ',', &functions);
+  }
+
+  automation_client_->tab()->SetEnableExtensionAutomation(functions);
+  // This function returns no result.
 
   return true;
 }

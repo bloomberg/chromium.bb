@@ -206,6 +206,10 @@ END_MSG_MAP()
   bool loadExtension(NPObject* npobject, const NPVariant* args,
                      uint32_t arg_count, NPVariant* result);
 
+  // This method is only available when the control is in privileged mode.
+  bool enableExtensionAutomation(NPObject* npobject, const NPVariant* args,
+                                 uint32_t arg_count, NPVariant* result);
+
   // Pointers to method implementations.
   static PluginMethod plugin_methods_[];
 
