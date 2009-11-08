@@ -1207,9 +1207,9 @@ BUG24209 : LayoutTests/fast/js/pic/cached-prototype-setter.html = FAIL
 BUG10317 LINUX : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // Problems with getImageData and toDataURL.
-// We should fix this test, but it wasn't passing for the 1.0 release, so
-// it doesn't need to block the current release
-BUG2972 LINUX WIN : LayoutTests/fast/canvas/canvas-getImageData.html = FAIL
+// This test requires us to do alpha blending exactly the way CG does it,
+// which Skia may never do (see bug).
+BUG22700 LINUX WIN : LayoutTests/fast/canvas/canvas-getImageData.html = FAIL
 
 // We're much closer now. To fully pass this we need encoders for jpg
 // and gif, which is a low priority.
@@ -2322,9 +2322,6 @@ BUG10426 LINUX : LayoutTests/fast/css-generated-content/beforeAfter-interdocumen
 // Selection highlight colors are wrong.
 BUG10426 LINUX : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
-// Flaky since the merge 41017:41057.
-BUG10428 WIN LINUX : LayoutTests/fast/canvas/fillrect_gradient.html = IMAGE
-
 // It's not clear that the test isn't wrong here. It believes that middle
 // aligning 15px Ahem should end up in a certain spot. But we have the
 // x-height correct and we're still one px off.
@@ -2343,8 +2340,6 @@ BUG10430 LINUX WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 
 // Regression from merge 41268:41286
-// We don't render linear gradient on text stroke.
-BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 // IMAGE+TEXT is flaky
