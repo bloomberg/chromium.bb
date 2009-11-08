@@ -5,7 +5,6 @@
 /**
  * @fileoverview DevTools' implementation of the InspectorController API.
  */
-goog.require('devtools.InspectorController');
 
 goog.provide('devtools.InspectorControllerImpl');
 
@@ -94,7 +93,7 @@ devtools.InspectorControllerImpl.prototype.search = function(sourceRow, query) {
  * {@inheritDoc}.
  */
 devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
-  devtools.InspectorController.prototype.toggleNodeSearch.call(this);
+  WebInspector.InspectorControllerStub.prototype.toggleNodeSearch.call(this);
   this.callInspectorController_.call(this, 'toggleNodeSearch');
   if (!this.searchingForNode()) {
     // This is called from ElementsPanel treeOutline's focusNodeChanged().
