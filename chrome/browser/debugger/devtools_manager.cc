@@ -34,17 +34,15 @@ void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
 DevToolsManager::DevToolsManager()
     : inspected_rvh_for_reopen_(NULL),
       in_initial_show_(false),
-      last_dangling_cookie_(0) {
+      last_orphan_cookie_(0) {
 }
 
 DevToolsManager::~DevToolsManager() {
   DCHECK(inspected_rvh_to_client_host_.empty());
   DCHECK(client_host_to_inspected_rvh_.empty());
-  for (DanglingClientHosts::iterator it = dangling_client_hosts_.begin();
-       it != dangling_client_hosts_.end(); ++it) {
-    it->second.first->InspectedTabClosing();
-  }
-  dangling_client_hosts_.clear();
+  // By the time we destroy devtools manager, all orphan client hosts should
+  // have been delelted, no need to notify them upon tab closing.
+  DCHECK(orphan_client_hosts_.empty());
 }
 
 DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
@@ -161,8 +159,17 @@ void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(host);
-  if (!inspected_rvh)
+  if (!inspected_rvh) {
+    // It might be in the list of orphan client hosts, remove it from there.
+    for (OrphanClientHosts::iterator it = orphan_client_hosts_.begin();
+         it != orphan_client_hosts_.end(); ++it) {
+      if (it->second.first == host) {
+        orphan_client_hosts_.erase(it->first);
+        return;
+      }
+    }
     return;
+  }
   SendDetachToAgent(inspected_rvh);
 
   inspected_rvh_to_client_host_.erase(inspected_rvh);
@@ -239,12 +246,12 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
 }
 
 int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
-  int cookie = last_dangling_cookie_++;
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(from_rvh);
   if (!client_host)
     return -1;
 
-  dangling_client_hosts_[cookie] =
+  int cookie = last_orphan_cookie_++;
+  orphan_client_hosts_[cookie] =
       std::pair<DevToolsClientHost*, RuntimeFeatures>(
           client_host, runtime_features_[from_rvh]);
 
@@ -255,10 +262,9 @@ int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
 
 void DevToolsManager::AttachClientHost(int client_host_cookie,
                                        RenderViewHost* to_rvh) {
-  DanglingClientHosts::iterator it = dangling_client_hosts_.find(
+  OrphanClientHosts::iterator it = orphan_client_hosts_.find(
       client_host_cookie);
-  DCHECK(it != dangling_client_hosts_.end());
-  if (it == dangling_client_hosts_.end())
+  if (it == orphan_client_hosts_.end())
     return;
 
   DevToolsClientHost* client_host = (*it).second.first;
@@ -266,7 +272,7 @@ void DevToolsManager::AttachClientHost(int client_host_cookie,
   client_host_to_inspected_rvh_[client_host] = to_rvh;
   SendAttachToAgent(to_rvh, (*it).second.second);
 
-  dangling_client_hosts_.erase(client_host_cookie);
+  orphan_client_hosts_.erase(client_host_cookie);
 }
 
 void DevToolsManager::SendAttachToAgent(

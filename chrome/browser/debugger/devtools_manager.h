@@ -74,7 +74,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   // AttachClientHost.
   int DetachClientHost(RenderViewHost* from_rvh);
 
-  // Attaches dangling client host to new render view host.
+  // Attaches orphan client host to new render view host.
   void AttachClientHost(int client_host_cookie,
                         RenderViewHost* to_rvh);
 
@@ -134,9 +134,9 @@ private:
   bool in_initial_show_;
 
   typedef std::map<int, std::pair<DevToolsClientHost*, RuntimeFeatures> >
-      DanglingClientHosts;
-  DanglingClientHosts dangling_client_hosts_;
-  int last_dangling_cookie_;
+      OrphanClientHosts;
+  OrphanClientHosts orphan_client_hosts_;
+  int last_orphan_cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };
