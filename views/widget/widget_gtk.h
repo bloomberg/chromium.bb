@@ -167,6 +167,10 @@ class WidgetGtk
   // Gets the WidgetGtk in the userdata section of the widget.
   static WidgetGtk* GetViewForNative(GtkWidget* widget);
 
+  // Gets the WindowGtk in the userdata section of the widget.
+  // TODO(beng): move to WindowGtk
+  static WindowGtk* GetWindowForNative(GtkWidget* widget);
+  
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.
   void ResetDropTarget();

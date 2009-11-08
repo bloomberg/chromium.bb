@@ -49,7 +49,7 @@ bool TabStrip2::Enabled() {
 
 // static
 TabStrip2* TabStrip2::GetTabStripFromWindow(gfx::NativeWindow window) {
-  views::Widget* widget = views::Widget::GetWidgetFromNativeView(window);
+  views::Widget* widget = views::Widget::GetWidgetFromNativeWindow(window);
   if (widget) {
     void* tabstrip = widget->GetNativeWindowProperty(kTabStripKey);
     if (tabstrip)
@@ -161,8 +161,8 @@ void TabStrip2::DetachDragMoved() {
   if (detached_drag_mode_) {
     // We check to see if the mouse cursor is in the magnetism zone of another
     // visible TabStrip. If so, we should dock to it.
-    std::set<gfx::NativeWindow> ignore_windows;
-    ignore_windows.insert(GetWidget()->GetWindow()->GetNativeWindow());
+    std::set<gfx::NativeView> ignore_windows;
+    ignore_windows.insert(GetWidget()->GetNativeView());
 
     gfx::Point screen_point = views::Screen::GetCursorScreenPoint();
     gfx::NativeWindow local_window =

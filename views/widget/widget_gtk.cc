@@ -51,6 +51,7 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 };
 
 static const char* kWidgetKey = "__VIEWS_WIDGET__";
+static const wchar_t* kWidgetWideKey = L"__VIEWS_WIDGET__";
 
 // Returns the position of a widget on screen.
 static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
@@ -531,11 +532,6 @@ ThemeProvider* WidgetGtk::GetDefaultThemeProvider() const {
   return default_theme_provider_.get();
 }
 
-FocusManager* WidgetGtk::GetFocusManager() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, MessageLoopForUI::Observer implementation:
 
@@ -644,7 +640,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   gtk_widget_realize(widget_);
 
   // Associate this object with the widget.
-  SetNativeWindowProperty(kWidgetKey, this);
+  SetNativeWindowProperty(kWidgetWideKey, this);
 }
 
 void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
@@ -1298,3 +1294,4 @@ Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
 }
 
 }  // namespace views
+
