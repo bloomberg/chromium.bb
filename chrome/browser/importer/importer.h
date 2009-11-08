@@ -249,7 +249,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   void ImportItemEnded(ImportItem item);
   void ImportEnded();
 
-  int GetAvailableProfileCount() {
+  int GetAvailableProfileCount() const {
       return importer_list_.GetAvailableProfileCount();
   }
 

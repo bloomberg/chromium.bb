@@ -76,24 +76,24 @@ Importer* ImporterList::CreateImporterByType(ProfileType type) {
   return NULL;
 }
 
-int ImporterList::GetAvailableProfileCount() {
+int ImporterList::GetAvailableProfileCount() const {
   return static_cast<int>(source_profiles_.size());
 }
 
 std::wstring ImporterList::GetSourceProfileNameAt(int index) const {
-  DCHECK(index < static_cast<int>(source_profiles_.size()));
+  DCHECK(index >=0 && index < GetAvailableProfileCount());
   return source_profiles_[index]->description;
 }
 
 const ProfileInfo& ImporterList::GetSourceProfileInfoAt(int index) const {
-  DCHECK(index < static_cast<int>(source_profiles_.size()));
+  DCHECK(index >=0 && index < GetAvailableProfileCount());
   return *source_profiles_[index];
 }
 
 const ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
     int browser_type) const {
-  int size = source_profiles_.size();
-  for (int i = 0; i < size; i++) {
+  int count = GetAvailableProfileCount();
+  for (int i = 0; i < count; ++i) {
     if (source_profiles_[i]->browser_type == browser_type)
       return *source_profiles_[i];
   }

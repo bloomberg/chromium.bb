@@ -44,7 +44,7 @@ class ImporterList {
   Importer* CreateImporterByType(ProfileType type);
 
   // Returns the number of different browser profiles you can import from.
-  int GetAvailableProfileCount();
+  int GetAvailableProfileCount() const;
 
   // Returns the name of the profile at the 'index' slot. The profiles are
   // ordered such that the profile at index 0 is the likely default browser.
