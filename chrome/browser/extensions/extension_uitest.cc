@@ -55,38 +55,46 @@ class ExtensionUITest : public ParentTestType {
 
   void SetUp() {
     ParentTestType::SetUp();
-    automation()->SetEnableExtensionAutomation(functions_enabled_);
-  }
 
-  void TearDown() {
-    automation()->SetEnableExtensionAutomation(std::vector<std::string>());
-    ParentTestType::TearDown();
-  }
-
-  void TestWithURL(const GURL& url) {
     AutomationProxyForExternalTab* proxy =
         static_cast<AutomationProxyForExternalTab*>(automation());
     HWND external_tab_container = NULL;
     HWND tab_wnd = NULL;
-    scoped_refptr<TabProxy> tab(proxy->CreateTabWithHostWindow(false,
-        GURL(), &external_tab_container, &tab_wnd));
+    tab_ = proxy->CreateTabWithHostWindow(false,
+        GURL(), &external_tab_container, &tab_wnd);
 
-    EXPECT_TRUE(tab->is_valid());
-    if (tab) {
+    tab_->SetEnableExtensionAutomation(functions_enabled_);
+  }
+
+  void TearDown() {
+    tab_->SetEnableExtensionAutomation(std::vector<std::string>());
+
+    AutomationProxyForExternalTab* proxy =
+        static_cast<AutomationProxyForExternalTab*>(automation());
+    proxy->DestroyHostWindow();
+    proxy->WaitForTabCleanup(tab_, action_max_timeout_ms());
+    EXPECT_FALSE(tab_->is_valid());
+    tab_.release();
+
+    ParentTestType::TearDown();
+  }
+
+  void TestWithURL(const GURL& url) {
+    EXPECT_TRUE(tab_->is_valid());
+    if (tab_) {
+      AutomationProxyForExternalTab* proxy =
+        static_cast<AutomationProxyForExternalTab*>(automation());
+
       // Enter a message loop to allow the tab to be created
       proxy->WaitForNavigation(2000);
-      DoAdditionalPreNavigateSetup(tab.get());
+      DoAdditionalPreNavigateSetup(tab_.get());
 
       // We explicitly do not make this a toolstrip in the extension manifest,
       // so that the test can control when it gets loaded, and so that we test
       // the intended behavior that tabs should be able to show extension pages
       // (useful for development etc.)
-      tab->NavigateInExternalTab(url, GURL());
+      tab_->NavigateInExternalTab(url, GURL());
       EXPECT_TRUE(proxy->WaitForMessage(action_max_timeout_ms()));
-
-      proxy->DestroyHostWindow();
-      proxy->WaitForTabCleanup(tab, action_max_timeout_ms());
-      EXPECT_FALSE(tab->is_valid());
     }
   }
 
@@ -97,6 +105,7 @@ class ExtensionUITest : public ParentTestType {
  protected:
   // Extension API functions that we want to take over.  Defaults to all.
   std::vector<std::string> functions_enabled_;
+  scoped_refptr<TabProxy> tab_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionUITest);

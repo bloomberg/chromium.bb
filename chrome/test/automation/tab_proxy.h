@@ -83,6 +83,30 @@ class TabProxy : public AutomationResourceProxy {
                               const std::wstring& jscript,
                               Value** value);
 
+  // Configure extension automation mode. When extension automation
+  // mode is turned on, the automation host can overtake extension API calls
+  // e.g. to make UI tests for extensions easier to write.  Returns true if
+  // the message is successfully sent.
+  //
+  // Note that API calls in _any_ extension view will be routed to the current
+  // tab.  This is to enable UI testing of e.g. extension background pages.
+  //
+  // Enabling extension automation from more than one tab is an error.
+  //
+  // You must disable extension automation before destroying the tab.
+  //
+  // The parameter can take the following types of values:
+  // a) An empty list to turn off extension automation.
+  // b) A list with one item, "*", to turn extension automation on for all
+  //    functions.
+  // c) A list with one or more items which are the names of Chrome Extension
+  //    API functions that should be forwarded over the automation interface.
+  //    Other functions will continue to be fulfilled as normal. This lets you
+  //    write tests where some functionality continues to function as normal,
+  //    and other functionality is mocked out by the test.
+  bool SetEnableExtensionAutomation(
+    const std::vector<std::string>& functions_enabled);
+
   // Navigates to a url. This method accepts the same kinds of URL input that
   // can be passed to Chrome on the command line. This is a synchronous call and
   // hence blocks until the navigation completes.

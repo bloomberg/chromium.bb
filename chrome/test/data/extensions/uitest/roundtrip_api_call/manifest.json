@@ -3,5 +3,6 @@
   "version": "1.0.0.0",
   "name": "Roundtrip ApiCall Test Extension",
   "description": "An extension for an extension UITest.",
-  "permissions": ["tabs"]
+  "permissions": ["tabs"],
+  "background_page": "background.html"
 }

@@ -41,8 +41,6 @@ struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {
   virtual std::string server_version() = 0;
 
   virtual void SendProxyConfig(const std::string&) = 0;
-  virtual void SetEnableExtensionAutomation(
-      const std::vector<std::string>& functions_enabled) = 0;
  protected:
   ~ChromeFrameAutomationProxy() {}
 };
@@ -71,11 +69,6 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
 
   virtual void SendProxyConfig(const std::string& p) {
     AutomationProxy::SendProxyConfig(p);
-  }
-
-  virtual void SetEnableExtensionAutomation(
-      const std::vector<std::string>& functions_enabled) {
-    AutomationProxy::SetEnableExtensionAutomation(functions_enabled);
   }
 
  protected:

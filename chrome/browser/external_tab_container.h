@@ -157,6 +157,12 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Returns NULL if we fail to find the cookie in the map.
   static ExternalTabContainer* RemovePendingTab(intptr_t cookie);
 
+  // Enables extension automation (for e.g. UITests), with the current tab
+  // used as a conduit for the extension API messages being handled by the
+  // automation client.
+  void SetEnableExtensionAutomation(
+      const std::vector<std::string>& functions_enabled);
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -215,6 +221,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // Contains ExternalTabContainers that have not been connected to as yet.
   static PendingTabs pending_tabs_;
+
+  // True if this tab is currently the conduit for extension API automation.
+  bool enabled_extension_automation_;
 
   // Allows us to run tasks on the ExternalTabContainer instance which are
   // bound by its lifetime.

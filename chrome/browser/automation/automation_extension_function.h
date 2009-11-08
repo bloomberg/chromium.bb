@@ -8,38 +8,49 @@
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_EXTENSION_FUNCTION_H_
 
 #include <string>
+#include <map>
 
 #include "chrome/browser/extensions/extension_function.h"
 
 class RenderViewHost;
+class TabContents;
 
 // An extension function that pipes the extension API call through the
 // automation interface, so that extensions can be tested using UITests.
-class AutomationExtensionFunction : public ExtensionFunction {
+class AutomationExtensionFunction : public AsyncExtensionFunction {
  public:
   AutomationExtensionFunction() { }
 
   // ExtensionFunction implementation.
   virtual void SetArgs(const Value* args);
   virtual const std::string GetResult();
-  virtual const std::string GetError();
-  virtual void Run();
+  virtual bool RunImpl();
 
   static ExtensionFunction* Factory();
 
+  // Enable API automation of selected APIs.  Overridden extension API messages
+  // will be routed to the automation client attached to |api_handler_tab|.
+  //
   // If the list of enabled functions is non-empty, we enable according to the
   // list ("*" means enable all, otherwise we enable individual named
-  // functions). If empty, we restore the initial functions.
+  // functions).  An empty list makes this function a no-op.
   //
-  // Note that all calls to this function, except a call with the empty list,
-  // are additive.  Functions previously enabled will remain enabled until
-  // you clear all function forwarding by specifying the empty list.
-  static void SetEnabled(const std::vector<std::string>& functions_enabled);
+  // Note that all calls to this function are additive.  Functions previously
+  // enabled will remain enabled until you call Disable().
+  //
+  // Calling this function after enabling one or more functions with a
+  // tab other than the one previously used is an error.
+  static void Enable(TabContents* api_handler_tab,
+                     const std::vector<std::string>& functions_enabled);
+
+  // Restore the default API function implementations and reset the stored
+  // API handler.
+  static void Disable();
 
   // Intercepts messages sent from the external host to check if they
   // are actually responses to extension API calls.  If they are, redirects
-  // the message to view_host->SendExtensionResponse and returns true,
-  // otherwise returns false to indicate the message was not intercepted.
+  // the message to respond to the pending asynchronous API call and returns
+  // true, otherwise returns false to indicate the message was not intercepted.
   static bool InterceptMessageFromExternalHost(RenderViewHost* view_host,
                                                const std::string& message,
                                                const std::string& origin,
@@ -48,8 +59,17 @@ class AutomationExtensionFunction : public ExtensionFunction {
  private:
   ~AutomationExtensionFunction() {}
 
-  static bool enabled_;
+  // Weak reference, lifetime managed by the ExternalTabContainer instance
+  // owning the TabContents in question.
+  static TabContents* api_handler_tab_;
+
+  typedef std::map<int, scoped_refptr<AutomationExtensionFunction> >
+      PendingFunctionsMap;
+  static PendingFunctionsMap pending_functions_;
+
   std::string args_;
+  std::string json_result_;
+
   DISALLOW_COPY_AND_ASSIGN(AutomationExtensionFunction);
 };
 

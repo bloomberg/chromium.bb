@@ -905,13 +905,19 @@ IPC_BEGIN_MESSAGES(Automation)
   // value is the number of windows.
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_NormalBrowserWindowCount, int)
 
-  // Used to put the browser into "extension automation mode" for the
-  // current profile, or turn off the mode.
-  IPC_MESSAGE_ROUTED1(AutomationMsg_SetEnableExtensionAutomation,
-                      std::vector<std::string> /* empty to disable automation,
-                                                  non-empty to enable automation
-                                                  of the specified API
-                                                  functions */)
+  // Used to put the browser into "extension automation mode" for a given
+  // set of Chrome Extensions API functions for the current profile, or turn
+  // off automation mode.  The specified tab is used as the conduit for all
+  // automated API functions.  It must be an external tab (as in
+  // AutomationMsg_CreateExternalTab).
+  IPC_MESSAGE_ROUTED2(AutomationMsg_SetEnableExtensionAutomation,
+                      // Tab handle.
+                      int,
+                      // Empty to disable automation, non-empty to enable
+                      // automation of the specified API functions, single
+                      // entry of "*" to enable automation of all API
+                      // functions.
+                      std::vector<std::string>)
 
   // This message tells the browser to start using the new proxy configuration
   // represented by the given JSON string. The parameters used in the JSON

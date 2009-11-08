@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/load_notification_details.h"
@@ -43,7 +44,8 @@ ExternalTabContainer::ExternalTabContainer(
       automation_resource_message_filter_(filter),
       load_requests_via_automation_(false),
       handle_top_level_requests_(false),
-      external_method_factory_(this) {
+      external_method_factory_(this),
+      enabled_extension_automation_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -161,6 +163,10 @@ bool ExternalTabContainer::Init(Profile* profile,
 }
 
 void ExternalTabContainer::Uninitialize() {
+  if (enabled_extension_automation_) {
+    AutomationExtensionFunction::Disable();
+  }
+
   registrar_.RemoveAll();
   if (tab_contents_) {
     RenderViewHost* rvh = tab_contents_->render_view_host();
@@ -657,6 +663,22 @@ ExternalTabContainer* ExternalTabContainer::RemovePendingTab(intptr_t cookie) {
   NOTREACHED() << "Failed to find ExternalTabContainer for cookie: "
                << cookie;
   return NULL;
+}
+
+void ExternalTabContainer::SetEnableExtensionAutomation(
+    const std::vector<std::string>& functions_enabled) {
+  if (functions_enabled.size() > 0) {
+    if (!tab_contents_) {
+      NOTREACHED() << "Being invoked via tab so should have TabContents";
+      return;
+    }
+
+    AutomationExtensionFunction::Enable(tab_contents_, functions_enabled);
+    enabled_extension_automation_ = true;
+  } else {
+    AutomationExtensionFunction::Disable();
+    enabled_extension_automation_ = false;
+  }
 }
 
 void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {

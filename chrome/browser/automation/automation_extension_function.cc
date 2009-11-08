@@ -12,25 +12,32 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
-bool AutomationExtensionFunction::enabled_ = false;
+TabContents* AutomationExtensionFunction::api_handler_tab_ = NULL;
+AutomationExtensionFunction::PendingFunctionsMap
+    AutomationExtensionFunction::pending_functions_;
 
 void AutomationExtensionFunction::SetArgs(const Value* args) {
+  // Need to JSON-encode for sending over the wire to the automation user.
   base::JSONWriter::Write(args, false, &args_);
 }
 
 const std::string AutomationExtensionFunction::GetResult() {
-  // Our API result passing is done through InterceptMessageFromExternalHost
-  return "";
+  // Already JSON-encoded, so override the base class's implementation.
+  return json_result_;
 }
 
-const std::string AutomationExtensionFunction::GetError() {
-  // Our API result passing is done through InterceptMessageFromExternalHost
-  return "";
-}
-
-void AutomationExtensionFunction::Run() {
+bool AutomationExtensionFunction::RunImpl() {
   namespace keys = extension_automation_constants;
+
+  DCHECK(api_handler_tab_) <<
+      "Why is this function still enabled if no target tab?";
+  if (!api_handler_tab_) {
+    error_ = "No longer automating functions.";
+    return false;
+  }
 
   // We are being driven through automation, so we send the extension API
   // request over to the automation host. We do this before decoding the
@@ -43,37 +50,59 @@ void AutomationExtensionFunction::Run() {
 
   std::string message;
   base::JSONWriter::Write(&message_to_host, false, &message);
-  dispatcher()->render_view_host_->delegate()->ProcessExternalHostMessage(
-      message, keys::kAutomationOrigin, keys::kAutomationRequestTarget);
+  if (api_handler_tab_->delegate()) {
+    api_handler_tab_->delegate()->ForwardMessageToExternalHost(
+        message, keys::kAutomationOrigin, keys::kAutomationRequestTarget);
+  } else {
+    NOTREACHED() << "ExternalTabContainer is supposed to correctly manage "
+        "lifetime of api_handler_tab_.";
+  }
+
+  // Automation APIs are asynchronous so we need to stick around until
+  // our response comes back.  Add ourselves to a static hash map keyed
+  // by request ID.  The hash map keeps a reference count on us.
+  DCHECK(pending_functions_.find(request_id_) == pending_functions_.end());
+  pending_functions_[request_id_] = this;
+
+  return true;
 }
 
 ExtensionFunction* AutomationExtensionFunction::Factory() {
   return new AutomationExtensionFunction();
 }
 
-void AutomationExtensionFunction::SetEnabled(
+void AutomationExtensionFunction::Enable(
+    TabContents* api_handler_tab,
     const std::vector<std::string>& functions_enabled) {
-  if (functions_enabled.size() > 0) {
-    std::vector<std::string> function_names;
-    if (functions_enabled.size() == 1 && functions_enabled[0] == "*") {
-      ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-    } else {
-      function_names = functions_enabled;
-    }
-
-    for (std::vector<std::string>::iterator it = function_names.begin();
-         it != function_names.end(); it++) {
-      // TODO(joi) Could make this a per-profile change rather than a global
-      // change. Could e.g. have the AutomationExtensionFunction store the
-      // profile pointer and dispatch to the original ExtensionFunction when the
-      // current profile is not that.
-      bool result = ExtensionFunctionDispatcher::OverrideFunction(
-          *it, AutomationExtensionFunction::Factory);
-      LOG_IF(WARNING, !result) << "Failed to override API function: " << *it;
-    }
-  } else {
-    ExtensionFunctionDispatcher::ResetFunctions();
+  DCHECK(api_handler_tab);
+  if (api_handler_tab_ && api_handler_tab != api_handler_tab_) {
+    NOTREACHED() << "Don't call with different API handler.";
+    return;
   }
+  api_handler_tab_ = api_handler_tab;
+
+  std::vector<std::string> function_names;
+  if (functions_enabled.size() == 1 && functions_enabled[0] == "*") {
+    ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
+  } else {
+    function_names = functions_enabled;
+  }
+
+  for (std::vector<std::string>::iterator it = function_names.begin();
+       it != function_names.end(); it++) {
+    // TODO(joi) Could make this a per-profile change rather than a global
+    // change. Could e.g. have the AutomationExtensionFunction store the
+    // profile pointer and dispatch to the original ExtensionFunction when the
+    // current profile is not that.
+    bool result = ExtensionFunctionDispatcher::OverrideFunction(
+        *it, AutomationExtensionFunction::Factory);
+    LOG_IF(WARNING, !result) << "Failed to override API function: " << *it;
+  }
+}
+
+void AutomationExtensionFunction::Disable() {
+   api_handler_tab_ = NULL;
+   ExtensionFunctionDispatcher::ResetFunctions();
 }
 
 bool AutomationExtensionFunction::InterceptMessageFromExternalHost(
@@ -83,7 +112,10 @@ bool AutomationExtensionFunction::InterceptMessageFromExternalHost(
     const std::string& target) {
   namespace keys = extension_automation_constants;
 
-  if (origin == keys::kAutomationOrigin &&
+  // We want only specially-tagged messages passed via the conduit tab.
+  if (api_handler_tab_ &&
+      view_host == api_handler_tab_->render_view_host() &&
+      origin == keys::kAutomationOrigin &&
       target == keys::kAutomationResponseTarget) {
     // This is an extension API response being sent back via postMessage,
     // so redirect it.
@@ -107,10 +139,23 @@ bool AutomationExtensionFunction::InterceptMessageFromExternalHost(
                                             &response);
         DCHECK(!success || got_value);
 
-        // TODO(joi) Once ExtensionFunctionDispatcher supports asynchronous
-        // functions, we should use that instead.
-        view_host->SendExtensionResponse(request_id, success,
-                                         response, error);
+        PendingFunctionsMap::iterator it = pending_functions_.find(request_id);
+        DCHECK(it != pending_functions_.end());
+
+        if (it != pending_functions_.end()) {
+          scoped_refptr<AutomationExtensionFunction> func = it->second;
+          pending_functions_.erase(it);
+
+          // Our local ref should be the last remaining.
+          DCHECK(func && func->HasOneRef());
+
+          if (func) {
+            func->json_result_ = response;
+            func->error_ = error;
+
+            func->SendResponse(success);
+          }
+        }
         return true;
       }
     }

@@ -1,9 +1,8 @@
 HOWDIE!!!
 
 <script type="text/javascript">
-  function getSelectedCallback(tab) {
-    chrome.tabs.remove(tab.id);
-  }
-
-  chrome.tabs.getSelected(undefined, getSelectedCallback);
+// Do things in the background page to test that API call
+// routing works from extension views not directly
+// attached to the automation client.
+chrome.extension.getBackgroundPage().doStuff();
 </script>

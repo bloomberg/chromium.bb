@@ -418,8 +418,11 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePackageShouldPromptUser,
                         SavePackageShouldPromptUser)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
+#if defined(OS_WIN)
+    // Depends on ExternalTabContainer, so Windows-only
     IPC_MESSAGE_HANDLER(AutomationMsg_SetEnableExtensionAutomation,
                         SetEnableExtensionAutomation)
+#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
@@ -1928,11 +1931,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
 
 void AutomationProvider::SavePackageShouldPromptUser(bool should_prompt) {
   SavePackage::SetShouldPromptUser(should_prompt);
-}
-
-void AutomationProvider::SetEnableExtensionAutomation(
-    const std::vector<std::string>& functions_enabled) {
-  AutomationExtensionFunction::SetEnabled(functions_enabled);
 }
 
 void AutomationProvider::GetWindowTitle(int handle, string16* text) {

@@ -467,6 +467,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Enables extension automation (for e.g. UITests).
   void SetEnableExtensionAutomation(
+      int tab_handle,
       const std::vector<std::string>& functions_enabled);
 
   void GetWindowTitle(int handle, string16* text);

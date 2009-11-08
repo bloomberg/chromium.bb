@@ -181,23 +181,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // sent.
   bool SavePackageShouldPromptUser(bool should_prompt);
 
-  // Configure extension automation mode. When extension automation
-  // mode is turned on, the automation host can overtake extension API calls
-  // e.g. to make UI tests for extensions easier to write.  Returns true if
-  // the message is successfully sent.
-  //
-  // The parameter can take the following types of values:
-  // a) An empty list to turn off extension automation.
-  // b) A list with one item, "*", to turn extension automation on for all
-  //    functions.
-  // c) A list with one or more items which are the names of Chrome Extension
-  //    API functions that should be forwarded over the automation interface.
-  //    Other functions will continue to be fulfilled as normal. This lets you
-  //    write tests where some functionality continues to function as normal,
-  //    and other functionality is mocked out by the test.
-  bool SetEnableExtensionAutomation(
-      const std::vector<std::string>& functions_enabled);
-
   // Returns the ID of the automation IPC channel, so that it can be
   // passed to the app as a launch parameter.
   const std::string& channel_id() const { return channel_id_; }

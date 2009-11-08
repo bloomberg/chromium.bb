@@ -489,3 +489,18 @@ void AutomationProvider::TerminateSession(int handle, bool* success) {
     *success = (::PostMessageW(window, WM_ENDSESSION, 0, 0) == TRUE);
   }
 }
+
+void AutomationProvider::SetEnableExtensionAutomation(
+    int tab_handle,
+    const std::vector<std::string>& functions_enabled) {
+  ExternalTabContainer* external_tab = GetExternalTabForHandle(tab_handle);
+  if (external_tab) {
+    external_tab->SetEnableExtensionAutomation(functions_enabled);
+  } else {
+    // Tab must exist, and must be an external tab so that its
+    // delegate has an on-empty
+    // implementation of ForwardMessageToExternalHost.
+    DLOG(WARNING) <<
+      "SetEnableExtensionAutomation called with invalid tab handle.";
+  }
+}
