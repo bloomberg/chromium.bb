@@ -3155,5 +3155,8 @@ BUG27044 : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 // WebKit 50517:50527
 BUG27044 : LayoutTests/accessibility/aria-combobox.html = TEXT
 
+// This one needs platform-specific results (vista/xp/win7)
+BUG10434 WIN : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
 BUG_26969 MAC : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = MISSING
 BUG_26969 MAC : LayoutTests/fast/text/text-letter-spacing.html = MISSING
