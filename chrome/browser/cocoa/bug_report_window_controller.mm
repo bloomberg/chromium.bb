@@ -33,7 +33,6 @@
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     currentTab_ = currentTab;
     profile_ = profile;
-    [self setBugDescription:@""];
 
     if (currentTab_ != NULL) {
       // Get data from current tab, if one exists. This dialog could be called
@@ -69,10 +68,6 @@
           l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_BROWSER_CRASH),
           l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_OTHER_PROBLEM),
           nil];
-      // Because "Report Bug" is being called with no browser open in this
-      // case, make URL and title empty.
-      [self setPageURL:@""];
-      [self setPageTitle:@""];
     }
   }
   return self;
@@ -109,10 +104,10 @@
   } else {
     BugReportUtil::SendReport(
         profile_,
-        pageTitle_ ? base::SysNSStringToUTF8(pageTitle_) : "",
+        base::SysNSStringToUTF8(pageTitle_),
         bugType_,
-        pageURL_ ? base::SysNSStringToUTF8(pageURL_) : "",
-        bugDescription_ ? base::SysNSStringToUTF8(bugDescription_) : "",
+        base::SysNSStringToUTF8(pageURL_),
+        base::SysNSStringToUTF8(bugDescription_),
         sendScreenshot_ && !pngData_.empty() ?
             reinterpret_cast<const char *>(&(pngData_[0])) : NULL,
         pngData_.size());

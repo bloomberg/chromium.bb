@@ -54,9 +54,10 @@ TEST_F(BugReportWindowControllerUnittest, ReportBugWithNoWindowOpen) {
       initWithTabContents:NULL
                   profile:profile_.get()];
 
-  // Make sure that no page title or URL are recorded.
-  EXPECT_TRUE([[controller pageURL] isEqualToString:@""]);
-  EXPECT_TRUE([[controller pageTitle] isEqualToString:@""]);
+  // Make sure that no page title or URL are recorded. Note that IB reports
+  // empty textfields as NULL values.
+  EXPECT_FALSE([controller pageURL]);
+  EXPECT_FALSE([controller pageTitle]);
 
   // When we call "report bug" with empty tab contents, only menu options
   // that don't refer to a specific page should be available, and the send
