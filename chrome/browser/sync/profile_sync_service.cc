@@ -122,7 +122,7 @@ void ProfileSyncService::StartUp() {
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  Source<Profile>(profile_));
 
-  // Create new model assocation manager and change processor.
+  // Create new model association manager and change processor.
   model_associator_ = new ModelAssociator(this);
   change_processor_->set_model_associator(model_associator_);
 
@@ -343,7 +343,7 @@ void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
                              base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    LOG(ERROR) << "Model assocation failed.";
+    LOG(ERROR) << "Model association failed.";
     OnUnrecoverableError();
     return;
   }
@@ -392,7 +392,7 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
   UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-      LOG(ERROR) << "Model assocation failed.";
+      LOG(ERROR) << "Model association failed.";
       OnUnrecoverableError();
       return;
   }

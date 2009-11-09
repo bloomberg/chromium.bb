@@ -1225,7 +1225,7 @@ TEST_F(ProfileSyncServiceTestWithData, MergeModelsWithSomeExtras) {
   ExpectBookmarkModelMatchesTestData();
 }
 
-// Tests that when persisted model assocations are used, things work fine.
+// Tests that when persisted model associations are used, things work fine.
 TEST_F(ProfileSyncServiceTestWithData, ModelAssociationPersistence) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   WriteTestDataToBookmarkModel();
@@ -1234,12 +1234,12 @@ TEST_F(ProfileSyncServiceTestWithData, ModelAssociationPersistence) {
   // Force the sync service to shut down and write itself to disk.
   StopSyncService(SAVE_TO_STORAGE);
   // Now restart the sync service. This time it should use the persistent
-  // assocations.
+  // associations.
   StartSyncService();
   ExpectModelMatch();
 }
 
-// Tests that when persisted model assocations are used, things work fine.
+// Tests that when persisted model associations are used, things work fine.
 TEST_F(ProfileSyncServiceTestWithData, ModelAssociationInvalidPersistence) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   WriteTestDataToBookmarkModel();

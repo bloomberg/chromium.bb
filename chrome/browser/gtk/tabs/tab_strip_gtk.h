@@ -238,7 +238,7 @@ class TabStripGtk : public TabStripModelObserver,
   static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                                GtkDragResult result, TabStripGtk* tabstrip);
 
-  // drag-data-received handler that receives the data assocated with the drag.
+  // drag-data-received handler that receives the data associated with the drag.
   static gboolean OnDragDataReceived(GtkWidget* widget, GdkDragContext* context,
                                      gint x, gint y, GtkSelectionData* data,
                                      guint info, guint time,

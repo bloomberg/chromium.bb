@@ -263,7 +263,7 @@ class ProfileSyncService : public NotificationObserver,
   // This specifies where to find the sync server.
   GURL sync_service_url_;
 
-  // Model assocation manager instance.
+  // Model association manager instance.
   scoped_refptr<browser_sync::ModelAssociator> model_associator_;
 
   // The last time we detected a successful transition from SYNCING state.
