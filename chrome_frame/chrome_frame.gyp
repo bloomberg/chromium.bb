@@ -404,7 +404,6 @@
             '../chrome/installer/installer.gyp:installer_util',
           ],
           'sources': [
-            '../chrome/test/perf/mem_usage_win.cc',
             '../chrome/test/chrome_process_util_win.cc',
             '../base/test/test_file_util_win.cc',
           ]

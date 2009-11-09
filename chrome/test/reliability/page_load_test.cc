@@ -60,7 +60,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "chrome/test/perf/mem_usage.h"
 #include "chrome/test/reliability/page_load_test.h"
 #include "net/base/net_util.h"
 
@@ -608,12 +607,6 @@ TEST_F(PageLoadTest, Reliability) {
     } else {
       NavigateThroughURLList(log_file);
     }
-
-// TODO(estade): port.
-#if defined(OS_WIN)
-    if (g_memory_usage)
-      PrintChromeMemoryUsageInfo();
-#endif  // defined(OS_WIN)
   }
 
   if (!g_end_url.empty()) {

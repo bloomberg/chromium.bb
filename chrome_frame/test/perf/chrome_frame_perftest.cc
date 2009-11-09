@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/chrome_process_util.h"
-#include "chrome/test/perf/mem_usage.h"
 #include "chrome/test/ui/ui_test.h"
 
 #include "chrome_frame/test_utils.h"
@@ -580,7 +579,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     // Record the initial CommitCharge.  This is a system-wide measurement,
     // so if other applications are running, they can create variance in this
     // test.
-    start_commit_charge_ = GetSystemCommitCharge();
+    start_commit_charge_ = base::GetSystemCommitCharge();
 
     for (int i = 0; i < total_urls; i++)
       urls_.push_back(urls[i]);
@@ -690,8 +689,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     // chrome processes which would have exited by now.
     Sleep(200);
 
-    size_t end_commit_charge = GetSystemCommitCharge();
-    size_t commit_size = end_commit_charge - start_commit_charge_;
+    size_t end_commit_charge = base::GetSystemCommitCharge();
+    size_t commit_size = (end_commit_charge - start_commit_charge_) * 1024;
 
     std::string trace_name(test_name);
     trace_name.append("_cc");
@@ -764,7 +763,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     ASSERT_FALSE(false);
   }
 
-  // Holds the commit charge at the start of the memory test run.
+  // Holds the commit charge in KBytes at the start of the memory test run.
   size_t start_commit_charge_;
 
   // The index of the URL being tested.

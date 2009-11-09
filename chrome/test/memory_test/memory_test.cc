@@ -18,7 +18,6 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
-#include "chrome/test/perf/mem_usage.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,7 +134,7 @@ class MemoryTest : public UITest {
     // Record the initial CommitCharge.  This is a system-wide measurement,
     // so if other applications are running, they can create variance in this
     // test.
-    size_t start_size = GetSystemCommitCharge();
+    size_t start_size = base::GetSystemCommitCharge();
 
     // Cycle through the URLs.
     scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -221,8 +220,8 @@ class MemoryTest : public UITest {
       PlatformThread::Sleep(100);
     }
 
-    size_t stop_size = GetSystemCommitCharge();
-    PrintResults(test_name, stop_size - start_size);
+    size_t stop_size = base::GetSystemCommitCharge();
+    PrintResults(test_name, (stop_size - start_size) / 1024);
   }
 
   void PrintResults(const char* test_name, size_t commit_size) {
