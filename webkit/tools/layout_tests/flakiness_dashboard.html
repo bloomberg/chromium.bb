@@ -288,7 +288,6 @@
   // Methods and objects from dashboard_base.js to override.
   //////////////////////////////////////////////////////////////////////////////
   function generatePage() {
-    console.log('generate page');
     if (!currentState.tests && !('builder' in currentState)) {
       for (var builder in builders) {
         currentState.builder = builder;
@@ -305,7 +304,7 @@
       generatePageForBuilder(currentState.builder);
     }
 
-    $('max-results-input').value = currentState.maxResults;
+    $('max-results-input').value = getMaxResults();
 
     for (var builder in builders) {
       processTestResultsForBuilderAsync(builder);
@@ -354,7 +353,7 @@
       case 'maxResults':
         validateParameter(currentState, key, value,
             function() {
-              return value.match(/^\d+$/)
+              return value.match(/^\d+$/);
             });
 
         return true;
@@ -386,8 +385,7 @@
     legacyExpectationsSemantics: true,
     showWontFixSkip: false,
     showSlow: true,
-    showSkipped: false,
-    maxResults: 200
+    showSkipped: false
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -407,6 +405,7 @@
   var perBuilderSkippedPaths = {};
   // Maps test path to an array of {builder, testResults} objects.
   var testToResultsMap = {};
+  var numFlakyTestsPerBuilder = {};
 
   function createResultsObjectForTest(test) {
     return {
@@ -429,6 +428,14 @@
       modifiersHTML: '',
       rawResults: ''
     };
+  }
+
+  function getMaxResults() {
+    if (currentState.maxResults)
+      return currentState.maxResults;
+
+    // In individual tests view, show all the results since it renders faster.
+    return currentState.tests ? 750 : 200;
   }
 
   function getMatchingElement(stringToMatch, elementsMap) {
@@ -861,10 +868,14 @@
   }
 
   function processTestRunsForBuilder(builderName) {
-    if (perBuilderFailures[builderName])
+    if (perBuilderFailures[builderName]) {
+      appendNumFlakyTests(builderName);
       return;
+    }
 
     var start = Date.now();
+    numFlakyTestsPerBuilder[builderName] = 0;
+
     processExpectations();
 
     var buildInfo = getPlatformAndBuildType(builderName);
@@ -890,7 +901,7 @@
       var times = resultsByBuilder[builderName].tests[test].times;
       var numResultsSeen = 0;
       for (var i = 0;
-           i < times.length && numResultsSeen < currentState.maxResults;
+           i < times.length && numResultsSeen < getMaxResults();
            i++) {
         numResultsSeen += times[i][0];
         resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime,
@@ -899,6 +910,9 @@
 
       processMissingAndExtraExpectations(resultsForTest);
 
+      if (resultsForTest.isFlaky)
+        numFlakyTestsPerBuilder[builderName]++;
+
       failures.push(resultsForTest);
 
       if (!testToResultsMap[test])
@@ -906,23 +920,46 @@
       testToResultsMap[test].push(resultsForTest);
     }
 
+    appendNumFlakyTests(builderName);
     perBuilderFailures[builderName] = failures;
     logTime('processTestRunsForBuilder: ' + builderName, start);
   }
 
   function processMissingAndExtraExpectations(resultsForTest) {
+    // Heuristic for determining whether expectations apply to a given test:
+    // -If a test result happens < MIN_RUNS_FOR_FLAKE, then consider it a flaky
+    // result and include it in the list of expected results.
+    // -Otherwise, grab the first contiguous set of runs with the same result
+    // for >= MIN_RUNS_FOR_FLAKE and ignore all following runs >=
+    // MIN_RUNS_FOR_FLAKE.
+    // This lets us rule out common cases of a test changing expectations for
+    // a few runs, then being fixed or otherwise modified in a non-flaky way.
+    var MIN_RUNS_FOR_FLAKE = 3;
     var unexpectedExpectations = [];
     var resultsMap = {}
     var numResultsSeen = 0;
     var rawResults = resultsForTest.rawResults;
+    var haveSeenNonFlakeResult = false;
+    var numRealResults = 0;
 
     for (var i = 0;
-         i < rawResults.length && numResultsSeen < currentState.maxResults;
+         i < rawResults.length && numResultsSeen < getMaxResults();
          i++) {
-      numResultsSeen += rawResults[i][0];
+      var numResults = rawResults[i][0];
+      numResultsSeen += numResults;
+
+      if (haveSeenNonFlakeResult && numResults >= MIN_RUNS_FOR_FLAKE) {
+        continue;
+      } else if (numResults >= MIN_RUNS_FOR_FLAKE) {
+        haveSeenNonFlakeResult = true;
+      }
+
       var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
       resultsMap[expectation] = true;
+      numRealResults++;
     }
+
+    resultsForTest.isFlaky = numRealResults > 1;
 
     var expectationsArray = resultsForTest.expectations ?
         resultsForTest.expectations.split(' ') : [];
@@ -974,7 +1011,12 @@
         if (hasExpectation)
           break;
       }
-      if (!hasExpectation)
+      // If we have no expectations for a test and it only passes, then don't
+      // list PASS as a missing expectation. We only want to list PASS if it
+      // flaky passes, so there would be other expectations.
+      if (!hasExpectation &&
+          !(!expectationsArray.length && result == 'PASS' &&
+            numRealResults == 1))
         missingExpectations.push(result);
     }
 
@@ -1087,7 +1129,7 @@
     var indexToReplaceCurrentTime = -1;
     var currentResultArray, currentTimeArray, currentResult, innerHTML,
         resultString;
-    var maxIndex = Math.min(buildNumbers.length, currentState.maxResults);
+    var maxIndex = Math.min(buildNumbers.length, getMaxResults());
     for (var i = 0; i < maxIndex; i++) {
       if (i > indexToReplaceCurrentResult) {
         currentResultArray = results.shift();
@@ -1166,47 +1208,12 @@
   }
 
   /**
-   * Returns true if a test should be considered flaky. Uses heuristics to
-   * avoid common non-flaky cases.
-   */
-  function isTestFlaky(testResult) {
-    return testResult.flips > 1 && !isFixedTest(testResult);
-  }
-
-  /**
-   * Returns whether this tests results match the heuristic for new tests that
-   * have been fixed. Specifically, a new test that fails a couple
-   * times and then passes from then on would have results like PPPPFFFFNNNNN.
-   * Where that middle part can be a series of F's, S's or I's for the
-   * different types of failures.
-   */
-  function isFixedTest(testResult) {
-    if (testResult.isFixedTest === undefined) {
-      var results = testResult.rawResults;
-      var isFixedTest = results[0][1] == 'P';
-      var numResults = results[0][0];
-      if (numResults < currentState.maxResults &&
-          isFixedTest && results.length > 1) {
-        // We don't care what the value of the second set of results is, just
-        // how many results there are.
-        numResults += results[1][0];
-      }
-      if (numResults < currentState.maxResults &&
-          isFixedTest && results.length > 2) {
-        isFixedTest = results.length == 3 && results[2][1] == 'N';
-      }
-      testResult.isFixedTest = isFixedTest;
-    }
-    return testResult.isFixedTest;
-  }
-
-  /**
    * Returns whether the test has passed continuously for at
    * least as many runs as we are showing results for.
    */
    function hasPassedInMaxRuns(testResult) {
      var results = testResult.rawResults;
-     return results[0][1] == 'P' && results[0][0] >= currentState.maxResults;
+     return results[0][1] == 'P' && results[0][0] >= getMaxResults();
    }
 
   /**
@@ -1221,7 +1228,7 @@
     if (testResult.isWontFixSkip)
       return !currentState.showWontFixSkip;
 
-    if (isTestFlaky(testResult))
+    if (testResult.isFlaky)
       return !currentState.showFlaky;
 
     if (isSlowTest(testResult))
@@ -1399,7 +1406,8 @@
     return html + '<div class=expectations test=' + test + '><div>' +
         getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
         getLinkHTMLToToggleState('showLargeExpectations', 'large thumbnails') +
-        '</div></div>';
+        ' | <b>Only shows actual results from the most recent run on each ' +
+        'bot.</b></div></div>';
   }
 
   function getExpectationsContainer(expectationsContainers, parentContainer,
@@ -1660,7 +1668,6 @@
       }
     }
 
-
     // Add a clearing element so floated elements don't bleed out of their
     // containing block.
     var br = document.createElement('br');
@@ -1763,8 +1770,8 @@
     var html = '<div id=builders>';
     for (var builder in builders) {
       var className = builder == opt_builderName ? 'current-builder' : 'link';
-      html += '<span class=' + className +
-          ' onclick=\'setState("builder", "' + builder + '")\'>' +
+      html += '<span class=' + className + ' id="' + builder +
+          '" onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
 
@@ -1788,7 +1795,7 @@
         'id=tests-input></form>' +
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
-        '><span>Number of results to show (max=500): </span>' +
+        '><span>Number of results to show (max=750): </span>' +
         '<input name=maxResults id=max-results-input></form> | ' +
         '<span class=link onclick="showLegend()">Show legend [type ?]</span>';
   }
@@ -1833,7 +1840,16 @@
       ths[i].className = "sortable";
     }
 
+    appendNumFlakyTests(builderName);
     hideLoadingUI();
+  }
+
+  function appendNumFlakyTests(builderName) {
+    var link = $(builderName);
+    if (link) {
+      link.innerHTML =
+          builderName + ' [' + numFlakyTestsPerBuilder[builderName] + ']';
+    }
   }
 
   function createTableHeadersArray(firstColumnHeader) {
@@ -1935,7 +1951,8 @@
     }
 
     var innerHTML = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
-        'legend [type esc]</div><div id=legend-contents>';
+        'legend [type esc]</div><div>Number of flaky tests listed next to ' +
+        'each builder</div><div id=legend-contents>';
     for (var expectation in EXPECTATIONS_MAP) {
       innerHTML += '<div class=' + expectation + '>' +
           EXPECTATIONS_MAP[expectation] + '</div>';
