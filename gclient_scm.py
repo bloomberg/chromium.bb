@@ -125,7 +125,12 @@ class GitWrapper(SCMWrapper):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
-    components = self.url.split("@")
+    if self.url.startswith('ssh:'):
+      # Make sure ssh://test@example.com/test.git@stable works
+      regex = r"(ssh://(?:[\w]+@)?[-\w:\.]+/[-\w\.]+)(?:@([\w/]+))?"
+      components = re.search(regex, self.url).groups()
+    else:
+      components = self.url.split("@")
     url = components[0]
     revision = None
     if options.revision:
