@@ -1048,6 +1048,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       needed_targets.add(target)
 
   build_files = set()
+  include_list = []
   for qualified_target in target_list:
     build_file, target, toolset = gyp.common.ParseQualifiedTarget(
         qualified_target)
@@ -1085,7 +1086,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # from there to the output_file for including.
     submakefile_path = gyp.common.RelativePath(output_file,
                                                os.path.dirname(makefile_path))
-    root_makefile.write('include ' + submakefile_path + "\n")
+    include_list.append('include ' + submakefile_path + '\n')
+
+  # Write out the sorted list of includes.
+  include_list.sort()
+  root_makefile.write('\n')
+  for include in include_list:
+    root_makefile.write(include)
+  root_makefile.write('\n')
 
   # Write the target to regenerate the Makefile.
   if generator_flags.get('auto_regeneration', True):
