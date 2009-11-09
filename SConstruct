@@ -468,6 +468,7 @@ base_env.Append(
 base_env.Append(
   BUILD_SCONSCRIPTS = [
     'src/trusted/service_runtime/build.scons',
+    'src/trusted/base/build.scons',
     'src/shared/imc/build.scons',
     'src/shared/npruntime/build.scons',
     'src/shared/platform/build.scons',
@@ -701,6 +702,9 @@ unix_like_env.Prepend(
   CXXFLAGS=['-std=c++98'],
   LIBPATH=['/usr/lib'],
   LIBS = ['pthread', 'ssl', 'crypto'],
+  CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
+                ['__STDC_FORMAT_MACROS', '1'],
+                ],
 )
 
 # ----------------------------------------------------------
@@ -725,7 +729,7 @@ mac_env.Append(
                   ['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4'],
                   # defining _DARWIN_C_SOURCE breaks 10.4
                   #['_DARWIN_C_SOURCE', '1'],
-                  ['__STDC_LIMIT_MACROS', '1']
+                  #['__STDC_LIMIT_MACROS', '1']
                   ],
 )
 
@@ -767,7 +771,7 @@ linux_env.Prepend(
                   ['_POSIX_C_SOURCE', '199506'],
                   ['_XOPEN_SOURCE', '600'],
                   ['_GNU_SOURCE', '1'],
-                  ['__STDC_LIMIT_MACROS', '1'],
+                  ['_LARGEFILE64_SOURCE', '1'],
                   ],
     LIBS = ['rt'],
 )

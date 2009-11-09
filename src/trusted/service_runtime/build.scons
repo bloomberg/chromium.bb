@@ -1,32 +1,7 @@
 # -*- python -*-
-# Copyright 2009, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2009 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 Import('env')
@@ -577,51 +552,6 @@ node = env.CommandTestAgainstGoldenOutput(
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
-nacl_base_test_exe = env.ComponentProgram('nacl_base_test',
-                                          ['nacl_base_test.c'])
-
-node = env.CommandTestAgainstGoldenOutput(
-    'nacl_base_test.out',
-    command=[nacl_base_test_exe])
-env.AddNodeToTestSuite(node, ['small_tests'])
-
-def FailsGood(exit_status):
-  if exit_status:
-    return 0
-  else:
-    return 1
-
-# Compile-time failures in nacl_macros.h only work for gcc right now.
-if not env.Bit('windows'):
-  fail_compile_env = env.Clone()
-  fail_compile_env['CCCOM'] = Action(fail_compile_env['CCCOM'],
-                                     exitstatfunc=FailsGood)
-  obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_test',
-                                         ['nacl_base_assert_is_array_test.c'])
-  fail_compile_env.AlwaysBuild(obj)
-  fail_compile_env.Alias('small_tests', obj)
-  fail_compile_env.Alias('compile_tests', obj)
-  obj = fail_compile_env.Object('nacl_base_array_size_test',
-                              ['nacl_base_array_size_test.c'])
-  fail_compile_env.AlwaysBuild(obj)
-  fail_compile_env.Alias('small_tests', obj)
-  fail_compile_env.Alias('compile_tests', obj)
-
-  fail_compile_env = env.Clone()
-  fail_compile_env['CCCOM'] = Action(fail_compile_env['CXXCOM'],
-                                   exitstatfunc=FailsGood)
-  obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_cpp_test',
-                                         ['nacl_base_assert_is_array_test.c'])
-  fail_compile_env.AlwaysBuild(obj)
-  fail_compile_env.Alias('small_tests', obj)
-  fail_compile_env.Alias('compile_tests', obj)
-  obj = fail_compile_env.ComponentObject('nacl_base_array_size_cpp_test',
-                                         ['nacl_base_array_size_test.c'])
-  fail_compile_env.AlwaysBuild(obj)
-  fail_compile_env.Alias('small_tests', obj)
-  fail_compile_env.Alias('compile_tests', obj)
-
-
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------
@@ -657,7 +587,6 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
 
   sdl_env.Requires(node, sdl_dll)
   sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'obj_proxy_tests')
-
 
 # ----------------------------------------------------------
 # Integration Tests With Canned x86 Binaries

@@ -193,6 +193,28 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 
 
 /*****************************************************************************
+ * MAX/MIN macros for integral types                                         *
+ ****************************************************************************/
+
+/*
+ * For NACL_MAX_VAL, T must be a type where u ## T is the unsigned
+ * version of the type.
+ *
+ * These macros rely on -1 being signed extended to the width of T (or
+ * u ## T), and on two's complement representation of integers.
+ *
+ * Generally, stdint.h's INT16_MAX etc can be used, but these are
+ * useful for macros that take a type parameter and need the max or
+ * min value for the type, since then the macro would not have to also take
+ * the max or min value as additional parameter(s).
+ */
+#define NACL_UMAX_VAL(T)  ((T) -1)
+#define NACL_MAX_VAL(T)   ((T) (((u ## T) -1) >> 1))
+#define NACL_UMIN_VAL(T)  ((T) 0)
+#define NACL_MIN_VAL(T)   ((T) ~NACL_MAX_VAL(T))
+
+
+/*****************************************************************************
  * Readability macros                                                        *
  ****************************************************************************/
 
@@ -202,5 +224,6 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 #define NACL_MICROS_PER_UNIT          (1000 * 1000)
 #define NACL_MILLIS_PER_UNIT          1000
 #define NACL_UNIT_CONVERT_ROUND(v, m) (((v) + (m) - 1)/(m))
+
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_ */

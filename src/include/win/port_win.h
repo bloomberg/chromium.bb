@@ -34,6 +34,7 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_WIN_PORT_WIN_H_ 1
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_macros.h"
 
 /* TODO: eliminated this file and move its contents to portability*.h */
 
@@ -72,8 +73,18 @@ typedef unsigned __int64  uint64_t;
 
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
 /* only what we need so far */
-# define UINT8_MAX      (255)
-# define INT32_MAX      ((int32_t) (((uint32_t) -1) >> 1))
+# define UINT8_MAX      NACL_UMAX_VAL(uint8_t)
+# define INT8_MAX       NACL_MAX_VAL(int8_t)
+# define INT8_MIN       NACL_MIN_VAL(int8_t)
+# define UINT16_MAX     NACL_UMAX_VAL(uint16_t)
+# define INT16_MAX      NACL_MAX_VAL(int16_t)
+# define INT16_MIN      NACL_MIN_VAL(int16_t)
+# define UINT32_MAX     NACL_UMAX_VAL(uint32_t)
+# define INT32_MAX      NACL_MAX_VAL(int32_t)
+# define INT32_MIN      NACL_MIN_VAL(int32_t)
+# define UINT64_MAX     NACL_UMAX_VAL(uint64_t)
+# define INT64_MAX      NACL_MAX_VAL(int64_t)
+# define INT64_MIN      NACL_MIN_VAL(int64_t)
 #endif
 
 EXTERN_C_BEGIN

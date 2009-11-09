@@ -69,8 +69,8 @@ typedef nacl_abi___dev_t nacl_abi_dev_t;
 #define PRIxNACL_DEV NACL_PRI_(x, 64)
 #define PRIXNACL_DEV NACL_PRI_(X, 64)
 
-#define NACL_ABI_DEV_T_MIN ((nacl_abi_dev_t) 1 << 31)
-#define NACL_ABI_DEV_T_MAX (~((nacl_abi_dev_t) 1 << 31))
+#define NACL_ABI_DEV_T_MIN ((nacl_abi_dev_t) 1 << 63)
+#define NACL_ABI_DEV_T_MAX (~((nacl_abi_dev_t) 1 << 63))
 
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
@@ -179,6 +179,24 @@ typedef nacl_abi__off_t nacl_abi_off_t;
 
 #define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << 31)
 #define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << 31))
+
+#ifndef nacl_abi___off64_t_defined
+#define nacl_abi___off64_t_defined
+typedef int64_t nacl_abi__off64_t;
+#ifndef __native_client__
+typedef nacl_abi__off64_t nacl_abi_off64_t;
+#endif
+#endif
+
+#define PRIdNACL_OFF64 NACL_PRI_(d, 64)
+#define PRIiNACL_OFF64 NACL_PRI_(i, 64)
+#define PRIoNACL_OFF64 NACL_PRI_(o, 64)
+#define PRIuNACL_OFF64 NACL_PRI_(u, 64)
+#define PRIxNACL_OFF64 NACL_PRI_(x, 64)
+#define PRIXNACL_OFF64 NACL_PRI_(X, 64)
+
+#define NACL_ABI_OFF64_T_MIN ((nacl_abi_off64_t) 1 << 63)
+#define NACL_ABI_OFF64_T_MAX (~((nacl_abi_off64_t) 1 << 63))
 
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined

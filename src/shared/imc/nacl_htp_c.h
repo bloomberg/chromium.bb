@@ -45,6 +45,12 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #endif  /* __native_client__ */
 
+
+#if !defined(__native_client__) && !defined(NO_SEL_LDR)
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -55,8 +61,6 @@ typedef NaClHandle        NaClHtpHandle;
 typedef NaClMessageHeader NaClHtpHeader;
 
 #else  // defined(__native_client__) || defined(NO_SEL_LDR)
-
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 // NaCl resource descriptor type compatible with sel_ldr.
 typedef struct NaClDesc* NaClHtpHandle;

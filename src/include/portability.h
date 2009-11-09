@@ -200,6 +200,24 @@ struct timezone {
 # define __STDC_FORMAT_MACROS  /* C++ */
 #endif
 # include <inttypes.h>
+# if NACL_OSX
+/*
+ * OSX defines "hh" prefix for int8_t etc, but that's not standards
+ * compliant -- --std=c++98 -Wall -Werror rejects it.
+ */
+#  undef PRId8
+#  undef PRIi8
+#  undef PRIo8
+#  undef PRIu8
+#  undef PRIx8
+#  undef PRIX8
+#  define PRId8  "d"
+#  define PRIi8  "i"
+#  define PRIo8  "o"
+#  define PRIu8  "u"
+#  define PRIx8  "x"
+#  define PRIX8  "X"
+# endif
 #else
 # define __PRIPTR_PREFIX "l"
 # define PRIdPTR __PRIPTR_PREFIX "d"
