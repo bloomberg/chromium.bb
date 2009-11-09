@@ -4805,6 +4805,15 @@
           ],
         }],
         ['OS=="linux"', {
+          'conditions': [
+            [ 'gcc_version==44', {
+              # Avoid gcc 4.4 strict aliasing issues in stl_tree.h when
+              # building mru_cache_unittest.cc.
+              'cflags': [
+                '-fno-strict-aliasing',
+              ],
+            }],
+          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
