@@ -216,16 +216,19 @@ void StatusBubbleMac::MouseMoved() {
   NSRect window_frame = [window_ frame];
   window_frame.origin = [parent_ frame].origin;
 
+  bool isShelfVisible = false;
+
   // Adjust the position to sit on top of download and extension shelves.
   // |delegate_| can be nil during unit tests.
-  if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
+  if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)]) {
     window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
+    isShelfVisible = [delegate_ verticalOffsetForStatusBubble] > 0;
+  }
 
   // Get the cursor position relative to the popup.
   cursor_location.x -= NSMaxX(window_frame);
   cursor_location.y -= NSMaxY(window_frame);
 
-  bool isShelfVisible = [delegate_ verticalOffsetForStatusBubble] > 0;
 
   // If the mouse is in a position where we think it would move the
   // status bubble, figure out where and how the bubble should be moved.
