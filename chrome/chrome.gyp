@@ -2659,6 +2659,7 @@
                   'app/nibs/BookmarkNameFolder.xib',
                   'app/nibs/ClearBrowsingData.xib',
                   'app/nibs/DownloadItem.xib',
+                  'app/nibs/DownloadShelf.xib',
                   'app/nibs/EditSearchEngine.xib',
                   'app/nibs/FirstRunDialog.xib',
                   'app/nibs/HttpAuthLoginSheet.xib',

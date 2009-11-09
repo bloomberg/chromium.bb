@@ -37,9 +37,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }  // namespace
 
 @interface DownloadShelfController(Private)
-- (void)applyContentAreaOffset:(BOOL)apply;
 - (void)showDownloadShelf:(BOOL)enable;
-- (void)resizeDownloadLinkToFit;
 - (void)layoutItems:(BOOL)skipFirst;
 - (void)closed;
 @end
@@ -73,34 +71,10 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 - (void)awakeFromNib {
   [[self animatableView] setResizeDelegate:resizeDelegate_];
 
-  // Initialize "Show all downloads" link.
-
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-      [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
-  [paragraphStyle.get() setAlignment:NSRightTextAlignment];
-
-  NSFont* font = [NSFont systemFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  NSDictionary* linkAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-      @"", NSLinkAttributeName,
-      [NSCursor pointingHandCursor], NSCursorAttributeName,
-      paragraphStyle.get(), NSParagraphStyleAttributeName,
-      font, NSFontAttributeName,
-      nil];
-  NSString* text =
-      base::SysWideToNSString(l10n_util::GetString(IDS_SHOW_ALL_DOWNLOADS));
-  scoped_nsobject<NSAttributedString> linkText([[NSAttributedString alloc]
-      initWithString:text attributes:linkAttributes]);
-
-  [[showAllDownloadsLink_ textStorage] setAttributedString:linkText.get()];
-  [showAllDownloadsLink_ setDelegate:self];
-
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSImage* favicon = rb.GetNSImageNamed(IDR_DOWNLOADS_FAVICON);
   DCHECK(favicon);
   [image_ setImage:favicon];
-
-  [self resizeDownloadLinkToFit];
 }
 
 - (void)dealloc {
@@ -113,42 +87,8 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   return static_cast<AnimatableView*>([self view]);
 }
 
-- (void)resizeDownloadLinkToFit {
-  // Get width required by localized download link text.
-  // http://developer.apple.com/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html
-  [[showAllDownloadsLink_ textContainer] setLineFragmentPadding:0.0];
-  (void)[[showAllDownloadsLink_ layoutManager] glyphRangeForTextContainer:
-      [showAllDownloadsLink_ textContainer]];
-  NSRect textRect = [[showAllDownloadsLink_ layoutManager]
-      usedRectForTextContainer:[showAllDownloadsLink_ textContainer]];
-
-  int offsetX = [showAllDownloadsLink_ frame].size.width - textRect.size.width;
-
-  // Fit link itself.
-  NSRect linkFrame = [linkContainer_ frame];
-  linkFrame.origin.x += offsetX;
-  linkFrame.size.width -= offsetX;
-  [linkContainer_ setFrame:linkFrame];
-  [linkContainer_ setNeedsDisplay:YES];
-
-  // Move image.
-  NSRect imageFrame = [image_ frame];
-  imageFrame.origin.x += offsetX;
-  [image_ setFrame:imageFrame];
-  [image_ setNeedsDisplay:YES];
-
-  // Change item container size.
-  NSRect itemFrame = [itemContainerView_ frame];
-  itemFrame.size.width += offsetX;
-  [itemContainerView_ setFrame:itemFrame];
-  [itemContainerView_ setNeedsDisplay:YES];
-}
-
-- (BOOL)textView:(NSTextView *)aTextView
-   clickedOnLink:(id)link
-         atIndex:(NSUInteger)charIndex {
+- (void)showDownloadsTab:(id)sender {
   bridge_->browser()->ShowDownloadsTab();
-  return YES;
 }
 
 - (void)remove:(DownloadItemController*)download {

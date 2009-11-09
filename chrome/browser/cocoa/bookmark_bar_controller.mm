@@ -46,7 +46,6 @@
 @end
 
 @interface BookmarkBarController(Private)
-- (void)applyContentAreaOffset:(BOOL)apply immediately:(BOOL)immediately;
 - (void)showBookmarkBar:(BOOL)enable immediately:(BOOL)immediately;
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;

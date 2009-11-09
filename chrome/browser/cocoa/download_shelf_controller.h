@@ -36,8 +36,7 @@ class DownloadShelf;
 
 @interface DownloadShelfController : NSViewController<NSTextViewDelegate> {
  @private
-  IBOutlet NSScrollView* linkContainer_;
-  IBOutlet NSTextView* showAllDownloadsLink_;
+  IBOutlet NSButton* showAllDownloadsLink_;
 
   IBOutlet NSImageView* image_;
 
@@ -58,6 +57,8 @@ class DownloadShelf;
 
 - (id)initWithBrowser:(Browser*)browser
        resizeDelegate:(id<ViewResizer>)resizeDelegate;
+
+- (IBAction)showDownloadsTab:(id)sender;
 
 // Returns our view cast as an AnimatableView.
 - (AnimatableView*)animatableView;
