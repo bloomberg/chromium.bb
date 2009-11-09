@@ -130,6 +130,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
+- (void)setAnimationInProgress:(BOOL)inProgress {
+  if ([resizeDelegate_ respondsToSelector:@selector(setAnimationInProgress:)])
+    [resizeDelegate_ setAnimationInProgress:inProgress];
+}
+
 @end
 
 @implementation InfoBarContainerController (PrivateMethods)

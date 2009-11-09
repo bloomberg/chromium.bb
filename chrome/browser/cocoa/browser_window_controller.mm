@@ -29,6 +29,7 @@
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extension_shelf_controller.h"
+#import "chrome/browser/cocoa/fast_resize_view.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #import "chrome/browser/cocoa/fullscreen_window.h"
@@ -486,6 +487,10 @@ willPositionSheet:(NSWindow*)sheet
   // TODO(rohitrao): Determine if calling setFrame: twice is bad.
   [view setFrame:frame];
   [self layoutSubviews];
+}
+
+- (void)setAnimationInProgress:(BOOL)inProgress {
+  [[self tabContentArea] setFastResizeMode:inProgress];
 }
 
 // Update a toggle state for an NSMenuItem if modified.

@@ -16,6 +16,12 @@
 // become necessary due to the resize.
 @protocol ViewResizer <NSObject>
 - (void)resizeView:(NSView*)view newHeight:(float)height;
+
+@optional
+// Optional method called when an animation is beginning or ending.  Resize
+// delegates can implement this method if they need to modify their behavior
+// while an animation is running.
+- (void)setAnimationInProgress:(BOOL)inProgress;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_VIEW_RESIZER_H_

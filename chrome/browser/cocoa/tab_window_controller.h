@@ -23,12 +23,13 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 
+@class FastResizeView;
 @class TabStripView;
 @class TabView;
 
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
-  IBOutlet NSView* tabContentArea_;
+  IBOutlet FastResizeView* tabContentArea_;
   IBOutlet TabStripView* tabStripView_;
   NSWindow* overlayWindow_;  // Used during dragging for window opacity tricks
   NSView* cachedContentView_;  // Used during dragging for identifying which
@@ -38,7 +39,7 @@
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
-@property(readonly, nonatomic) NSView* tabContentArea;
+@property(readonly, nonatomic) FastResizeView* tabContentArea;
 
 // Used during tab dragging to turn on/off the overlay window when a tab
 // is torn off. If -deferPerformClose (below) is used, -removeOverlay will

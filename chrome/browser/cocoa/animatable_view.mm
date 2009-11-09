@@ -74,6 +74,8 @@
   currentAnimation_.reset([[NSHeightAnimation alloc] initWithView:self
                                                       finalHeight:newHeight
                                                          duration:duration]);
+  if ([resizeDelegate_ respondsToSelector:@selector(setAnimationInProgress:)])
+    [resizeDelegate_ setAnimationInProgress:YES];
   [currentAnimation_ startAnimation];
 }
 
@@ -86,12 +88,16 @@
 }
 
 - (void)animationDidStop:(NSAnimation*)animation {
+  if ([resizeDelegate_ respondsToSelector:@selector(setAnimationInProgress:)])
+    [resizeDelegate_ setAnimationInProgress:NO];
   if ([delegate_ respondsToSelector:@selector(animationDidStop:)])
     [delegate_ animationDidStop:animation];
   currentAnimation_.reset(nil);
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
+  if ([resizeDelegate_ respondsToSelector:@selector(setAnimationInProgress:)])
+    [resizeDelegate_ setAnimationInProgress:NO];
   if ([delegate_ respondsToSelector:@selector(animationDidEnd:)])
     [delegate_ animationDidEnd:animation];
   currentAnimation_.reset(nil);
