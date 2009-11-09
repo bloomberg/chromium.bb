@@ -756,7 +756,7 @@ NPError OSCALL NP_Shutdown(void) {
 
   if (g_logger) {
     // Do a last sweep to aggregate metrics before we shut down
-    g_logger->ProcessMetrics(true, false);
+    g_logger->ProcessMetrics(true, false, false);
     delete g_logger;
     g_logger = NULL;
     g_logging_initialized = false;

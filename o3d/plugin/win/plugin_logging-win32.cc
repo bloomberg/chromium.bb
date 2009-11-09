@@ -75,7 +75,7 @@ bool PluginLogging::UpdateLogging() {
   timer_->Start();
   // We are not exiting just yet so pass false for that argument.
   // We don't have to force stats reporting, so pass false for forcing, too.
-  return ProcessMetrics(false, false);
+  return ProcessMetrics(false, false, false);
 }
 
 static uint64 ToSeconds(FILETIME time) {
@@ -106,7 +106,8 @@ void PluginLogging::RecordProcessTimes() {
 }
 
 bool PluginLogging::ProcessMetrics(const bool exiting,
-                                   const bool force_report) {
+                                   const bool force_report,
+                                   const bool save_old_metrics) {
   DLOG(INFO) << "ProcessMetrics()";
   // Grab incremental process times. This has to be done each time
   // around the loop since time passes between iterations.
@@ -152,7 +153,8 @@ bool PluginLogging::ProcessMetrics(const bool exiting,
     std::string user_agent8 = std::string(kUserAgent) +
                               PRODUCT_VERSION_STRING;
     DoAggregateAndReportMetrics(client_id_argument,
-                                user_agent8.c_str(), force_report);
+                                user_agent8.c_str(), force_report,
+                                save_old_metrics);
   }
 
   ::ReleaseMutex(mutex);
@@ -168,12 +170,14 @@ void PluginLogging::DoAggregateMetrics() {
 bool PluginLogging::DoAggregateAndReportMetrics(
     const char* extra_url_arguments,
     const char* user_agent,
-    const bool force_report) {
+    const bool force_report,
+    const bool save_old_metrics) {
   DLOG(INFO) << "DoAggregateAndReportMetrics()";
   // This eturns true if metrics were uploaded.
   return stats_report::AggregateAndReportMetrics(extra_url_arguments,
                                                  user_agent,
-                                                 force_report);
+                                                 force_report,
+                                                 save_old_metrics);
 }
 
 // This method is used for testing.

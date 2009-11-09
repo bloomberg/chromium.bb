@@ -88,10 +88,12 @@ void ResetPersistentMetrics(CRegKey *key) {
 //         were uploaded
 bool AggregateAndReportMetrics(const char* extra_url_arguments,
                                const char* user_agent,
-                               bool force_report) {
+                               bool force_report,
+                               bool save_old_metrics) {
   StatsUploader stats_uploader;
   return TestableAggregateAndReportMetrics(extra_url_arguments, user_agent,
-                                           force_report, &stats_uploader);
+                                           force_report, save_old_metrics,
+                                           &stats_uploader);
 }
 // Returns:
 //   true if metrics were uploaded successfully, false otherwise
@@ -100,6 +102,7 @@ bool AggregateAndReportMetrics(const char* extra_url_arguments,
 bool TestableAggregateAndReportMetrics(const char* extra_url_arguments,
                                        const char* user_agent,
                                        bool force_report,
+                                       bool save_old_metrics,
                                        StatsUploader* stats_uploader) {
   CString key_name;
   key_name.Format(kStatsKeyFormatString, PRODUCT_NAME_STRING_WIDE);
@@ -127,7 +130,7 @@ bool TestableAggregateAndReportMetrics(const char* extra_url_arguments,
       last_transmission_time > now) {
     DLOG(WARNING) << "Hinky or missing last transmission time, wiping stats";
 
-    ResetPersistentMetrics(&key);
+    if (!save_old_metrics) ResetPersistentMetrics(&key);
 
     err = key.SetValue(kLastTransmissionTimeValueName, REG_DWORD,
                        &now, sizeof(now));

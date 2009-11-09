@@ -313,6 +313,11 @@ Wix script for building o3d installer.
         Id='CheckDirectX'
         BinaryKey='CustomActions'
         DllEntry='CheckDirectX' />
+    <!-- Custom action for detecting OpenGL Version. -->
+    <CustomAction
+        Id='CheckOpenGL'
+        BinaryKey='CustomActions'
+        DllEntry='CheckOpenGL' />
 
     <!-- Custom action for checking that we're not already running. -->
     <CustomAction
@@ -343,6 +348,9 @@ Wix script for building o3d installer.
       <Custom
           Action='CheckDirectX'
           Before='LaunchConditions' />
+      <Custom
+          Action='CheckOpenGL'
+          Before='CheckDirectX' />
     </InstallUISequence>
 
     <InstallExecuteSequence>
@@ -355,6 +363,9 @@ Wix script for building o3d installer.
       <Custom
           Action='CheckDirectX'
           Before='LaunchConditions' />
+      <Custom
+          Action='CheckOpenGL'
+          Before='CheckDirectX' />
       <Custom
           Action='InstallD3DXIfNeeded'
           After='InstallFiles'>

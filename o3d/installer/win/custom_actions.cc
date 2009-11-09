@@ -40,12 +40,21 @@
 #include <strsafe.h>  // Must be after tchar.h.
 #include <windows.h>
 #include <atlstr.h>
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
+#include <GL/glext.h>
+#include <GL/wglew.h>
 
 #include "plugin/win/update_lock.h"
+#include "plugin/cross/plugin_logging.h"
+#include "plugin/cross/plugin_metrics.h"
 
 #pragma comment(linker, "/EXPORT:CheckDirectX=_CheckDirectX@4")
+#pragma comment(linker, "/EXPORT:CheckOpenGL=_CheckOpenGL@4")
 #pragma comment(linker, "/EXPORT:IsSoftwareRunning=_IsSoftwareRunning@4")
 #pragma comment(linker, "/EXPORT:InstallD3DXIfNeeded=_InstallD3DXIfNeeded@4")
+
+
 
 #if 0
 // NOTE: Useful for debugging, but not currently in use.  Left here so
@@ -102,6 +111,128 @@ HRESULT SetRegKeyValueDWord(HKEY hkey_parent, const TCHAR *key_name,
 
   ::RegCloseKey(hkey);
   return hr;
+}
+
+void ErrorAndSetUnknownGLDrivers(MSIHANDLE installer_handle, TCHAR *message) {
+  WriteToMsiLog(installer_handle, message);
+  const int gl_not_found = 99999999;
+  o3d::metric_gl_major_version = gl_not_found;
+  o3d::metric_gl_minor_version = gl_not_found;
+}
+
+// Returns true on success.
+bool GetOpenGLMetrics(MSIHANDLE installer_handle) {
+  WNDCLASS wc;
+  if (!GetClassInfo(GetModuleHandle(NULL), L"TEMPGL", &wc)) {
+    ZeroMemory(&wc, sizeof(WNDCLASS));
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpfnWndProc = DefWindowProc;
+    wc.lpszClassName = L"TEMPGL";
+
+    if (!RegisterClass(&wc)) {
+      WriteToMsiLog(installer_handle, _T("Failed to register window class."));
+      return false;
+    }
+  }
+
+  HWND temp_hwnd = CreateWindow(L"TEMPGL", L"TEMPGL", 0, CW_USEDEFAULT,
+                                CW_USEDEFAULT, 0, 0,  // size 0 by 0
+                                NULL, NULL, GetModuleHandle(NULL), NULL);
+  if (!temp_hwnd) {
+    ErrorAndSetUnknownGLDrivers(installer_handle, _T("CreateWindow failed."));
+    return false;
+  }
+
+  // get the device context
+  HDC temp_dc = GetDC(temp_hwnd);
+  if (!temp_dc) {
+    ErrorAndSetUnknownGLDrivers(installer_handle, _T("GetDC failed."));
+    return false;
+  }
+
+  // find default pixel format
+  PIXELFORMATDESCRIPTOR pfd;
+  ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+  pfd.nVersion = 1;
+  pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+  int pixelformat = ChoosePixelFormat(temp_dc, &pfd);
+
+  // set the pixel format for the dc
+  if (!SetPixelFormat(temp_dc, pixelformat, &pfd)) {
+    ErrorAndSetUnknownGLDrivers(installer_handle, _T("SetPixelFormat failed."));
+    return false;
+  }
+
+  // create rendering context
+  HGLRC gl_context = wglCreateContext(temp_dc);
+  if (!gl_context) {
+    ErrorAndSetUnknownGLDrivers(installer_handle,
+                                _T("wglCreateContext failed."));
+    return false;
+  }
+
+  if (!wglMakeCurrent(temp_dc, gl_context)) {
+    ErrorAndSetUnknownGLDrivers(installer_handle, _T("wglMakeCurrent failed."));
+    return false;
+  }
+
+  const char *gl_version_string =
+      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  const char *gl_extensions_string =
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  if ((gl_version_string == NULL) || (gl_extensions_string == NULL)) {
+    ErrorAndSetUnknownGLDrivers(installer_handle, _T("No GL found."));
+    return true;
+  }
+
+  // Get the OpenGL version from the start of the string.
+  int gl_major = 0, gl_minor = 0;
+  sscanf(gl_version_string, "%u.%u",  &gl_major, &gl_minor);
+  o3d::metric_gl_major_version = gl_major;
+  o3d::metric_gl_minor_version = gl_minor;
+
+  // Get the HLSL version.
+  // On OpenGL 1.x it's 1.0 if the GL_ARB_shading_language_100 extension is
+  // present.
+  // On OpenGL 2.x  it's a matter of getting the GL_SHADING_LANGUAGE_VERSION
+  // string.
+  int gl_hlsl_major = 0, gl_hlsl_minor = 0;
+  if ((gl_major == 1) &&
+      strstr(gl_extensions_string, "GL_ARB_shading_language_100")) {
+    gl_hlsl_major = 1;
+    gl_hlsl_minor = 0;
+  } else if (gl_major >= 2) {
+    const char* glsl_version_string =
+        reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+    if (glsl_version_string) {
+      sscanf(glsl_version_string, "%u.%u", &gl_hlsl_major, &gl_hlsl_minor);
+    }
+  }
+  o3d::metric_gl_hlsl_major_version = gl_hlsl_major;
+  o3d::metric_gl_hlsl_minor_version = gl_hlsl_minor;
+
+  // Clean up
+  wglDeleteContext(gl_context);
+  ReleaseDC(temp_hwnd, temp_dc);
+  DestroyWindow(temp_hwnd);
+  UnregisterClass(L"TEMPGL", wc.hInstance);
+  return true;
+}
+
+bool GetOpenGLVersion(MSIHANDLE installer_handle) {
+  HRESULT hr = CoInitialize(NULL);
+  o3d::PluginLogging g_logger;
+  stats_report::g_global_metrics.Initialize();
+  // Get OpenGL stats logged
+  if (!GetOpenGLMetrics(installer_handle)) {
+    return false;
+  }
+  if (!g_logger.ProcessMetrics(true, false, false)) {
+    return false;
+  }
+  stats_report::g_global_metrics.Uninitialize();
+  return true;
 }
 
 // Retrieve the currently installed version of DirectX using a COM
@@ -272,6 +403,14 @@ extern "C" UINT __stdcall CheckDirectX(MSIHANDLE installer_handle) {
     if (SetCustomUpdateError(installer_handle, error_code, message) != S_OK) {
       return ERROR_WRITE_FAULT;
     }
+  }
+  return ERROR_SUCCESS;
+}
+
+// Check the version of OpenGL installed and save a registry key
+extern "C" UINT __stdcall CheckOpenGL(MSIHANDLE installer_handle) {
+  if (!GetOpenGLVersion(installer_handle)) {
+    WriteToMsiLog(installer_handle, _T("GetOpenGLVersion failed!"));
   }
   return ERROR_SUCCESS;
 }

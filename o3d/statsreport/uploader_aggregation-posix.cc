@@ -86,10 +86,12 @@ bool AggregateMetrics() {
 //         were uploaded
 bool AggregateAndReportMetrics(const char* extra_url_arguments,
                                const char* user_agent,
-                               bool force_report) {
+                               bool force_report,
+                               bool save_old_metrics) {
   StatsUploader stats_uploader;
   return TestableAggregateAndReportMetrics(extra_url_arguments, user_agent,
-                                           force_report, &stats_uploader);
+                                           force_report, save_old_metrics,
+                                           &stats_uploader);
 }
 // Returns:
 //   true if metrics were uploaded successfully, false otherwise
@@ -98,6 +100,7 @@ bool AggregateAndReportMetrics(const char* extra_url_arguments,
 bool TestableAggregateAndReportMetrics(const char* extra_url_arguments,
                                        const char* user_agent,
                                        bool force_report,
+                                       bool save_old_metrics,
                                        StatsUploader* stats_uploader) {
   // Open the store
   MetricsAggregatorPosix aggregator(g_global_metrics);
@@ -114,7 +117,7 @@ bool TestableAggregateAndReportMetrics(const char* extra_url_arguments,
   if (!success || last_transmission_time > now) {
     LOG(WARNING) << "Hinky or missing last transmission time, wiping stats";
 
-    aggregator.ResetMetrics();
+    if (!save_old_metrics) aggregator.ResetMetrics();
 
     success = aggregator.SetValue(kLastTransmissionTimeValueName, now);
     if (!success)

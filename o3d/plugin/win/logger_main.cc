@@ -48,7 +48,7 @@ int main(int argc, wchar_t **argv) {
   HRESULT hr = CoInitialize(NULL);
   o3d::PluginLogging g_logger;
   stats_report::g_global_metrics.Initialize();
-  if (!g_logger.ProcessMetrics(false, true)) {
+  if (!g_logger.ProcessMetrics(false, true, false)) {
     printf("Error with stats logging.'n");
     exit(1);
   }

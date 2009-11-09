@@ -75,6 +75,12 @@ DEFINE_METRIC_count(out_of_memory_total);
 
 DEFINE_METRIC_count(bluescreens_total);
 
+// OpenGL Caps - insert more here
+DEFINE_METRIC_integer(gl_major_version);
+DEFINE_METRIC_integer(gl_minor_version);
+DEFINE_METRIC_integer(gl_hlsl_major_version);
+DEFINE_METRIC_integer(gl_hlsl_minor_version);
+
 // D3D Caps
 DEFINE_METRIC_integer(d3d_devcaps);
 DEFINE_METRIC_integer(d3d_misccaps);

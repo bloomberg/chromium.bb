@@ -56,10 +56,12 @@ class StatsUploader {
 bool AggregateMetrics();
 bool AggregateAndReportMetrics(const char* extra_url_arguments,
                                const char* user_agent,
-                               bool force_report);
+                               bool force_report,
+                               bool save_old_metrics);
 bool TestableAggregateAndReportMetrics(const char* extra_url_arguments,
                                        const char* user_agent,
                                        bool force_report,
+                                       bool save_old_metrics,
                                        StatsUploader* stats_uploader);
 bool UploadMetrics(const char* extra_url_data, const char* user_agent,
                    const char *content);

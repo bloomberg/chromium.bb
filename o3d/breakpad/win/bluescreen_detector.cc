@@ -325,7 +325,7 @@ void BluescreenLogger::LogBluescreen(int num_bluescreens) {
   metric_bluescreens_total += num_bluescreens;
   // Make sure we write this out to the registry immediately in case we're
   // about to bluescreen again before the metrics timer fires!
-  if (g_logger) g_logger->ProcessMetrics(false, true);
+  if (g_logger) g_logger->ProcessMetrics(false, true, false);
 }
 #endif  // OS_WIN
 

@@ -72,7 +72,7 @@ bool PluginLogging::UpdateLogging() {
   timer_->Start();
   // We are not exiting just yet so pass false for that argument
   // And we don't have to force it, so pass false for forcing
-  return ProcessMetrics(false, false);
+  return ProcessMetrics(false, false, false);
 }
 
 
@@ -156,7 +156,8 @@ static const char *GetUserID(void) {
 
 
 bool PluginLogging::ProcessMetrics(const bool exiting,
-                                   const bool force_report) {
+                                   const bool force_report,
+                                   const bool save_old_metrics) {
   DLOG(INFO) << "ProcessMetrics()";
   // Grab incremental process times, has to be done each time
   // around the loop, because - well - time passes between
@@ -186,7 +187,8 @@ bool PluginLogging::ProcessMetrics(const bool exiting,
     std::string user_agent8 = std::string(kUserAgent) +
                               PRODUCT_VERSION_STRING;
     DoAggregateAndReportMetrics(client_id_argument.c_str(),
-                                user_agent8.c_str(), force_report);
+                                user_agent8.c_str(), force_report,
+                                save_old_metrics);
   }
 
 
@@ -203,12 +205,14 @@ void PluginLogging::DoAggregateMetrics() {
 bool PluginLogging::DoAggregateAndReportMetrics(
     const char* extra_url_arguments,
     const char* user_agent,
-    const bool force_report) {
+    const bool force_report,
+    const bool save_old_metrics) {
   DLOG(INFO) << "DoAggregateAndReportMetrics()";
   // AggregateAndReportMetrics returns true if metrics were uploaded
   return stats_report::AggregateAndReportMetrics(extra_url_arguments,
                                                  user_agent,
-                                                 force_report);
+                                                 force_report,
+                                                 save_old_metrics);
 }
 
 void PluginLogging::SetTimer(HighresTimer* timer) {

@@ -63,10 +63,13 @@ class PluginLogging {
   //
   // Parameters:
   //   exiting - whether the program is exiting
+  //   force_report - whether to force the metrics to upload to the server
+  //   save_old_metrics - whether to clear the metrics before aggregating
   //
   // Returns true if metrics were uploaded and/or aggregated successfully.
   virtual bool ProcessMetrics(const bool exiting,
-                              const bool force_report);
+                              const bool force_report,
+                              const bool save_old_metrics);
 
   // A helper function to call AggregateMetrics used for testing. Calls
   // AggregateMetrics which gathers up the current metrics, puts them in
@@ -86,7 +89,8 @@ class PluginLogging {
   // not necessarily mean an error; just that no metrics were uploaded.
   virtual bool DoAggregateAndReportMetrics(const char* extra_url_arguments,
                                            const char* user_agent,
-                                           const bool force_report);
+                                           const bool force_report,
+                                           const bool save_old_metrics);
 
   // PluginLogging assumes ownership of the timer.
   void SetTimer(HighresTimer* timer);
@@ -127,7 +131,7 @@ class PluginLogging {
       // Do an initial grab of the metrics. Don't pass true for force_report.
       // This will force an upload of the metrics the first time o3d is run
       // since the lastTransmission metric will not exist.
-      logger->ProcessMetrics(false, false);
+      logger->ProcessMetrics(false, false, true);
       return logger;
     }
     // Otherwise, they opted out so we make sure the registry is clear
