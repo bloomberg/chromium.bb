@@ -2153,6 +2153,8 @@
         'browser/sync/sync_setup_wizard.h',
         'browser/sync/sync_status_ui_helper.cc',
         'browser/sync/sync_status_ui_helper.h',
+        'browser/state_tracker.cc',
+        'browser/state_tracker.h',
         'browser/tab_contents/constrained_window.h',
         'browser/tab_contents/infobar_delegate.cc',
         'browser/tab_contents/infobar_delegate.h',
