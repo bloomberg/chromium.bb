@@ -273,36 +273,78 @@ $(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """)
 
-SHARED_HEADER_SUFFIX_RULES = ("""\
+SHARED_HEADER_SUFFIX_RULES_COMMENT1 = ("""\
 # Suffix rules, putting all outputs into $(obj).
+""")
+
+SHARED_HEADER_SUFFIX_RULES_SRCDIR = {
+    '.c': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+"""),
+    '.s': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
 	@$(call do_cmd,cc)
+"""),
+    '.S': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
 	@$(call do_cmd,cc)
+"""),
+    '.cpp': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+    '.cc': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+    '.cxx': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+}
 
+SHARED_HEADER_SUFFIX_RULES_COMMENT2 = ("""\
 # Try building from generated source, too.
+""")
+
+SHARED_HEADER_SUFFIX_RULES_OBJDIR1 = {
+    '.c': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+"""),
+    '.cc': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+    '.cpp': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+}
 
+SHARED_HEADER_SUFFIX_RULES_OBJDIR2 = {
+    '.c': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+"""),
+    '.cc': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
+"""),
+    '.cpp': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-""")
+"""),
+}
+
+SHARED_HEADER_SUFFIX_RULES = (
+    SHARED_HEADER_SUFFIX_RULES_COMMENT1 +
+    ''.join(SHARED_HEADER_SUFFIX_RULES_SRCDIR.values()) +
+    SHARED_HEADER_SUFFIX_RULES_COMMENT2 +
+    ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR1.values()) +
+    ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR2.values())
+)
 
 # This gets added to the very beginning of the Makefile.
 SHARED_HEADER_SRCDIR = ("""\
@@ -422,7 +464,22 @@ class MakefileWriter:
 
     self.WriteLn("TOOLSET := " + self.toolset)
     self.WriteLn("TARGET := " + self.target)
-    self.WriteLn(SHARED_HEADER_SUFFIX_RULES)
+
+    sources = filter(Compilable, spec.get('sources', []))
+    if sources:
+      self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
+      extensions = set([os.path.splitext(s)[1] for s in sources])
+      for ext in extensions:
+        if ext in SHARED_HEADER_SUFFIX_RULES_SRCDIR:
+          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_SRCDIR[ext])
+      self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT2)
+      for ext in extensions:
+        if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR1:
+          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR1[ext])
+      for ext in extensions:
+        if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR2:
+          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
+      self.WriteLn('# End of this set of suffix rules')
 
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
