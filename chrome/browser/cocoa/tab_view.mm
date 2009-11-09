@@ -564,10 +564,13 @@ static const CGFloat kRapidCloseDist = 2.5;
     // Move between windows. If |targetController_| is nil, we're not dropping
     // into any existing window.
     NSView* draggedTabView = [draggedController_ selectedTabView];
-    [draggedController_ removeOverlay];
     [targetController_ moveTabView:draggedTabView
                     fromController:draggedController_];
+    // Force redraw to avoid flashes of old content before returning to event
+    // loop.
+    [[targetController_ window] display];
     [targetController_ showWindow:nil];
+    [draggedController_ removeOverlay];
   } else {
     // Only move the window around on screen. Make sure it's set back to
     // normal state (fully opaque, has shadow, has key, etc).
