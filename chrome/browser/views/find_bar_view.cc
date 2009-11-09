@@ -76,15 +76,14 @@ static const int kDefaultCharWidth = 43;
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
-FindBarView::FindBarView(FindBarHost* container)
-    : container_(container),
+FindBarView::FindBarView(FindBarHost* host)
+    : DropdownBarView(host),
       find_text_(NULL),
       match_count_text_(NULL),
       focus_forwarder_view_(NULL),
       find_previous_button_(NULL),
       find_next_button_(NULL),
-      close_button_(NULL),
-      animation_offset_(0) {
+      close_button_(NULL) {
   SetID(VIEW_ID_FIND_IN_PAGE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -244,7 +243,7 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
   // FindInPageWidgetWin::CreateRoundedWindowEdges() for details.
   ThemeProvider* tp = GetThemeProvider();
   gfx::Rect bounds;
-  container_->GetThemePosition(&bounds);
+  host()->GetThemePosition(&bounds);
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
                        bounds.x(), bounds.y(), 0, 0, lb.width(), lb.height());
 
@@ -299,17 +298,17 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
                        w,
                        background_height);
 
-  if (animation_offset_ > 0) {
+  if (animation_offset() > 0) {
     // While animating we draw the curved edges at the point where the
-    // controller told us the top of the window is: |animation_offset_|.
+    // controller told us the top of the window is: |animation_offset()|.
     canvas->TileImageInt(*kDialog_left,
                          lb.x(),
-                         animation_offset_,
+                         animation_offset(),
                          kDialog_left->width(),
                          kAnimatingEdgeHeight);
     canvas->TileImageInt(*kDialog_right,
                          lb.right() - kDialog_right->width(),
-                         animation_offset_,
+                         animation_offset(),
                          kDialog_right->width(),
                          kAnimatingEdgeHeight);
   }
@@ -413,10 +412,10 @@ void FindBarView::ButtonPressed(
     case FIND_PREVIOUS_TAG:
     case FIND_NEXT_TAG:
       if (!find_text_->text().empty()) {
-        container_->GetFindBarController()->tab_contents()->StartFinding(
-            find_text_->text(),
-            sender->tag() == FIND_NEXT_TAG,
-            false);  // Not case sensitive.
+        find_bar_host()->GetFindBarController()->tab_contents()->
+            StartFinding(find_text_->text(),
+                         sender->tag() == FIND_NEXT_TAG,
+                         false);  // Not case sensitive.
       }
       if (event.IsMouseEvent()) {
         // If mouse event, we move the focus back to the text-field, so that the
@@ -428,7 +427,7 @@ void FindBarView::ButtonPressed(
       }
       break;
     case CLOSE_TAG:
-      container_->GetFindBarController()->EndFindSession();
+      find_bar_host()->GetFindBarController()->EndFindSession();
       break;
     default:
       NOTREACHED() << L"Unknown button";
@@ -441,7 +440,7 @@ void FindBarView::ButtonPressed(
 
 void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {
-  FindBarController* controller = container_->GetFindBarController();
+  FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
   // We must guard against a NULL tab_contents, which can happen if the text
   // in the Find box is changed right after the tab is destroyed. Otherwise, it
@@ -465,10 +464,10 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
 bool FindBarView::HandleKeystroke(views::Textfield* sender,
                                   const views::Textfield::Keystroke& key) {
   // If the dialog is not visible, there is no reason to process keyboard input.
-  if (!container_->IsVisible())
+  if (!host()->IsVisible())
     return false;
 
-  if (container_->MaybeForwardKeystrokeToWebpage(key))
+  if (find_bar_host()->MaybeForwardKeystrokeToWebpage(key))
     return true;  // Handled, we are done!
 
   if (key.GetKeyboardCode() == base::VKEY_RETURN) {
@@ -476,7 +475,7 @@ bool FindBarView::HandleKeystroke(views::Textfield* sender,
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       // Search forwards for enter, backwards for shift-enter.
-      container_->GetFindBarController()->tab_contents()->StartFinding(
+      find_bar_host()->GetFindBarController()->tab_contents()->StartFinding(
           find_string,
           !key.IsShiftHeld(),
           false);  // Not case sensitive.
@@ -499,4 +498,8 @@ bool FindBarView::FocusForwarderView::OnMousePressed(
     view_to_focus_on_mousedown_->RequestFocus();
   }
   return true;
+}
+
+FindBarHost* FindBarView::find_bar_host() const {
+  return static_cast<FindBarHost*>(host());
 }

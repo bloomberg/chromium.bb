@@ -81,6 +81,9 @@
       'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
+    'browser_tests_sources_views_specific': [
+      'browser/views/find_bar_host_browsertest.cc',
+    ],
     'browser_tests_sources_win_specific': [
       'browser/extensions/browser_action_apitest.cc',
       'browser/extensions/extension_devtools_browsertest.cc',
@@ -92,8 +95,6 @@
       'browser/extensions/extension_tabs_apitest.cc',
       'browser/extensions/extension_i18n_apitest.cc',
       'browser/extensions/extension_popup_apitest.cc',
-      'browser/views/browser_views_accessibility_browsertest.cc',
-      'browser/views/find_bar_host_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
       'browser/child_process_security_policy_browser_test.cc',
       'browser/renderer_host/test/web_cache_manager_browsertest.cc',
@@ -101,6 +102,7 @@
       # TODO(jcampan): once the task manager works on Mac, move this test to the
       #                non win specific section.
       'browser/task_manager_browsertest.cc',
+      'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
       'browser/extensions/cross_origin_xhr_apitest.cc',
@@ -2283,6 +2285,11 @@
         'browser/views/download_shelf_view.cc',
         'browser/views/download_shelf_view.h',
         'browser/views/download_started_animation_win.cc',
+        'browser/views/dropdown_bar_host.cc',
+        'browser/views/dropdown_bar_host.h',
+        'browser/views/dropdown_bar_host_gtk.cc',
+        'browser/views/dropdown_bar_host_win.cc',
+        'browser/views/dropdown_bar_view.h',
         'browser/views/edit_search_engine_dialog.cc',
         'browser/views/edit_search_engine_dialog.h',
         'browser/views/event_utils.cc',
@@ -2815,6 +2822,10 @@
                 ['include', '^browser/views/download_shelf_view.h'],
                 ['include', '^browser/views/dragged_tab_controller.cc'],
                 ['include', '^browser/views/dragged_tab_controller.h'],
+                ['include', '^browser/views/dropdown_bar_host.cc'],
+                ['include', '^browser/views/dropdown_bar_host.h'],
+                ['include', '^browser/views/dropdown_bar_host_gtk.cc'],
+                ['include', '^browser/views/dropdown_bar_view.h'],
                 ['include', '^browser/views/event_utils.cc'],
                 ['include', '^browser/views/event_utils.h'],
                 ['include', '^browser/views/extensions/extension_install_prompt.cc'],
@@ -6444,6 +6455,11 @@
                 '../views/views.gyp:views',
               ],
             }],
+            ['OS=="linux" and toolkit_views==1', {
+              'sources': [
+                '<@(browser_tests_sources_views_specific)',
+              ],
+            }],
             ['OS=="mac"', {
               'sources': [
                 'app/breakpad_mac_stubs.mm',
@@ -6763,6 +6779,7 @@
             # defined in 'variables' at the top of the file.
             '<@(browser_tests_sources)',
             '<@(browser_tests_sources_win_specific)',
+            '<@(browser_tests_sources_views_specific)',
           ],
           'conditions': [
             ['OS=="win"', {

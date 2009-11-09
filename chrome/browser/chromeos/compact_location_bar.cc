@@ -35,7 +35,8 @@ const int kHideTimeoutInSeconds = 2;
 CompactLocationBar::CompactLocationBar(BrowserView* browser_view)
     : browser_view_(browser_view),
       current_contents_(NULL),
-      reload_(NULL) {
+      reload_(NULL),
+      popup_(NULL) {
   popup_timer_.reset(new base::OneShotTimer<CompactLocationBar>());
   set_background(views::Background::CreateStandardPanelBackground());
 }
