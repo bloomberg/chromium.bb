@@ -797,7 +797,7 @@ IPC_BEGIN_MESSAGES(Automation)
                              int64 /* last navigation time */)
 
   // This messages is used to block until a new navigation occurs (if there is
-  // none more recent then the time specified).
+  // none more recent than the time specified).
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_WaitForNavigation,
                              int /* tab_handle */,
                              int64 /* last navigation time */,
@@ -1183,5 +1183,12 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED2(AutomationMsg_DownloadRequestInHost,
                       int /* tab_handle */,
                       int /* request_id */)
+
+  // Toggles the auto-detect encoding setting.
+  // While the setting is global, the tab needs to be specified as it may need
+  // to be reloaded.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_ToggleEncodingAutoDetect,
+                             int /* tab handle */,
+                             bool /* success */)
 
 IPC_END_MESSAGES(Automation)

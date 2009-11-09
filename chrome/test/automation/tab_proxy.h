@@ -327,9 +327,9 @@ class TabProxy : public AutomationResourceProxy {
   // to be used with WaitForNavigation (see below).
   bool GetLastNavigationTime(int64* last_navigation_time);
 
-  // Waits for a new navigation if none as occurred since |last_navigation_time|
-  // The purpose of this function is for operations that causes asynchronous
-  // navigation to happen.
+  // Waits for a new navigation if none has occurred since
+  // |last_navigation_time|. The purpose of this function is for operations
+  // that causes asynchronous navigation to happen.
   // It is supposed to be used as follow:
   // int64 last_nav_time;
   // tab_proxy->GetLastNavigationTime(&last_nav_time);
@@ -339,6 +339,9 @@ class TabProxy : public AutomationResourceProxy {
 
   // Gets the current used encoding of the page in the tab.
   bool GetPageCurrentEncoding(std::string* encoding);
+
+  // Toggles encoding auto-detect of the page in the tab
+  bool ToggleEncodingAutoDetect();
 
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding);

@@ -447,8 +447,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Gets the bool value for preference with name |name|.
   void GetBooleanPreference(int handle,
                             const std::wstring& name,
-                            bool* success,
-                            bool* value);
+                            bool* value,
+                            bool* success);
 
   // Sets the bool value for preference with name |name|.
   void SetBooleanPreference(int handle,
@@ -458,6 +458,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Gets the current used encoding name of the page in the specified tab.
   void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
+
+  // Toggles the encoding auto-detect setting on the given tab
+  void ToggleEncodingAutoDetect(int tab_handle,
+                                bool* success);
 
   // Uses the specified encoding to override the encoding of the page in the
   // specified tab.
