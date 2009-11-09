@@ -196,25 +196,28 @@ const int kCompleteAnimationDuration = 2.5;
   }
 
   // Use two distinct tracking rects for left and right parts.
+  // The tracking areas are also used to decide how to handle clicks. They must
+  // always be active, so the click is handled correctly when a download item
+  // is clicked while chrome is not the active app ( http://crbug.com/21916 ).
   NSRect bounds = [[self controlView] bounds];
   NSRect buttonRect, dropdownRect;
   NSDivideRect(bounds, &dropdownRect, &buttonRect,
       kDropdownAreaWidth, NSMaxXEdge);
 
-    trackingAreaButton_.reset([[NSTrackingArea alloc]
-                    initWithRect:buttonRect
-                         options:(NSTrackingMouseEnteredAndExited |
-                                  NSTrackingActiveInActiveApp)
-                           owner:self
-                      userInfo:nil]);
+  trackingAreaButton_.reset([[NSTrackingArea alloc]
+                  initWithRect:buttonRect
+                       options:(NSTrackingMouseEnteredAndExited |
+                                NSTrackingActiveAlways)
+                         owner:self
+                    userInfo:nil]);
   [[self controlView] addTrackingArea:trackingAreaButton_.get()];
 
-    trackingAreaDropdown_.reset([[NSTrackingArea alloc]
-                    initWithRect:dropdownRect
-                         options:(NSTrackingMouseEnteredAndExited |
-                                  NSTrackingActiveInActiveApp)
-                           owner:self
-                      userInfo:nil]);
+  trackingAreaDropdown_.reset([[NSTrackingArea alloc]
+                  initWithRect:dropdownRect
+                       options:(NSTrackingMouseEnteredAndExited |
+                                NSTrackingActiveAlways)
+                         owner:self
+                    userInfo:nil]);
   [[self controlView] addTrackingArea:trackingAreaDropdown_.get()];
 }
 
