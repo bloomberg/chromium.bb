@@ -2856,8 +2856,9 @@ BUG23468 WIN LINUX MAC : LayoutTests/svg/batik/text/xmlSpace.svg = IMAGE
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
-// WebKit 47719:47732. New test. Time out on all 3 platforms.
-BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT TEXT
+// Time out on all 3 platforms.  We need page cache to fix it - marking SKIP
+// for now as we haven't decided to implement page cache or not.
+BUG20341 SKIP : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
