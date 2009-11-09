@@ -41,7 +41,9 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('hello_world.nexe')],
     stdout_golden=env.File('hello_world.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_hello_world_test')
 
 
 env.ComponentProgram('at_exit.nexe', 'at_exit.c')
@@ -50,7 +52,9 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('at_exit.nexe')],
     stdout_golden=env.File('at_exit.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_at_exit_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_at_exit_test')
 
 
 env.ComponentProgram('exit.nexe', 'exit.c')
@@ -59,7 +63,9 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('exit.nexe')],
     exit_status='69',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_exit_test')
 
 
 env.ComponentProgram('printf.nexe', 'printf.c')
@@ -68,4 +74,18 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('printf.nexe'), '1000', '1', '0',],
     stdout_golden=env.File('printf.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_printf_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_printf_test')
+
+
+env.ComponentProgram('float.nexe', 'float.c')
+node = env.CommandSelLdrTestNacl(
+    'float_test.out',
+    command=[env.File('float.nexe'),
+             '1.0', '3.0', '0.5', '100.0', '0.3'],
+    stdout_golden=env.File('float.stdout'),
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_float_test')
