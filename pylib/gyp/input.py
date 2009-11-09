@@ -449,6 +449,9 @@ late_variable_re = re.compile('(?P<replace>(?P<type>>!?@?)'
                               '\((?P<is_array>\s*\[?)'
                               '(?P<content>.*?)(\]?)\))')
 
+# Global cache of results from running commands so they don't have to be run
+# more then once.
+cached_command_results = {}
 
 def ExpandVariables(input, is_late, variables, build_file):
   # Look for the pattern that gets expanded into variables
@@ -536,26 +539,46 @@ def ExpandVariables(input, is_late, variables, build_file):
           contents = eval(contents)
           use_shell = False
 
-        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                        "Executing command '%s' in directory '%s'" %
-                        (contents,build_file_dir))
+        # Check for a cached value to avoid executing commands more than once.
+        # TODO(http://code.google.com/p/gyp/issues/detail?id=112): It is
+        # possible that the command being invoked depends on the current
+        # directory. For that case the syntax needs to be extended so that the
+        # directory is also used in cache_key (it becomes a tuple).
+        # TODO(http://code.google.com/p/gyp/issues/detail?id=111): In theory,
+        # someone could author a set of GYP files where each time the command
+        # is invoked it produces different output by design. When the need
+        # arises, the syntax should be extended to support no caching off a
+        # command's output so it is run every time.
+        cache_key = str(contents)
+        cached_value = cached_command_results.get(cache_key, None)
+        if cached_value is None:
+          gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                          "Executing command '%s' in directory '%s'" %
+                          (contents,build_file_dir))
 
-        p = subprocess.Popen(contents, shell=use_shell,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             stdin=subprocess.PIPE,
-                             cwd=build_file_dir)
+          p = subprocess.Popen(contents, shell=use_shell,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               stdin=subprocess.PIPE,
+                               cwd=build_file_dir)
 
-        (p_stdout, p_stderr) = p.communicate('')
+          (p_stdout, p_stderr) = p.communicate('')
 
-        if p.wait() != 0 or p_stderr:
-          sys.stderr.write(p_stderr)
-          # Simulate check_call behavior, since check_call only exists
-          # in python 2.5 and later.
-          raise Exception("Call to '%s' returned exit status %d." %
-                          (contents, p.returncode))
+          if p.wait() != 0 or p_stderr:
+            sys.stderr.write(p_stderr)
+            # Simulate check_call behavior, since check_call only exists
+            # in python 2.5 and later.
+            raise Exception("Call to '%s' returned exit status %d." %
+                            (contents, p.returncode))
 
-        replacement = p_stdout.rstrip()
+          replacement = p_stdout.rstrip()
+          cached_command_results[cache_key] = replacement
+        else:
+          gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                          "Had cache value for command '%s' in directory '%s'" %
+                          (contents,build_file_dir))
+          replacement = cached_value
+
       else:
         if not contents in variables:
           raise KeyError, 'Undefined variable ' + contents + \
