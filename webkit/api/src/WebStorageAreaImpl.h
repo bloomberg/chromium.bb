@@ -38,41 +38,41 @@
 
 namespace WebKit {
 
-    class WebStorageAreaImpl : public WebStorageArea {
-    public:
-        WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea);
-        virtual ~WebStorageAreaImpl();
-        virtual unsigned length();
-        virtual WebString key(unsigned index);
-        virtual WebString getItem(const WebString& key);
-        virtual void setItem(const WebString& key, const WebString& value, const WebURL& url, bool& quotaException);
-        virtual void removeItem(const WebString& key, const WebURL& url);
-        virtual void clear(const WebURL& url);
+class WebStorageAreaImpl : public WebStorageArea {
+public:
+    WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea);
+    virtual ~WebStorageAreaImpl();
+    virtual unsigned length();
+    virtual WebString key(unsigned index);
+    virtual WebString getItem(const WebString& key);
+    virtual void setItem(const WebString& key, const WebString& value, const WebURL& url, bool& quotaException);
+    virtual void removeItem(const WebString& key, const WebURL& url);
+    virtual void clear(const WebURL& url);
 
-        // For storage events in single-process mode and test shell.
-        static const WebURL* currentStorageEventURL() { return storageEventURL; }
+    // For storage events in single-process mode and test shell.
+    static const WebURL* currentStorageEventURL() { return storageEventURL; }
+
+private:
+    class ScopedStorageEventURL {
+    public:
+        ScopedStorageEventURL(const WebURL& url) {
+            // FIXME: Once storage events are fired async in WebKit (as they should
+            //        be) this can be ASSERTed to be NULL rather than saved.
+            m_existingStorageEventURL = storageEventURL;
+            storageEventURL = &url;
+        }
+        ~ScopedStorageEventURL() {
+            storageEventURL = m_existingStorageEventURL;
+        }
 
     private:
-        class ScopedStorageEventURL {
-        public:
-            ScopedStorageEventURL(const WebURL& url) {
-                // FIXME: Once storage events are fired async in WebKit (as they should
-                //        be) this can be ASSERTed to be NULL rather than saved.
-                m_existingStorageEventURL = storageEventURL;
-                storageEventURL = &url;
-            }
-            ~ScopedStorageEventURL() {
-                storageEventURL = m_existingStorageEventURL;
-            }
-
-        private:
-            const WebURL* m_existingStorageEventURL;
-        };
-
-        static const WebURL* storageEventURL;
-
-        RefPtr<WebCore::StorageArea> m_storageArea;
+        const WebURL* m_existingStorageEventURL;
     };
+
+    static const WebURL* storageEventURL;
+
+    RefPtr<WebCore::StorageArea> m_storageArea;
+};
 
 } // namespace WebKit
 

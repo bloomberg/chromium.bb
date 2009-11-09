@@ -45,61 +45,62 @@
 #include <wtf/Vector.h>
 
 namespace WebKit {
-    class WebPluginLoadObserver;
 
-    class WebDataSourceImpl : public WebCore::DocumentLoader, public WebDataSource {
-    public:
-        static PassRefPtr<WebDataSourceImpl> create(const WebCore::ResourceRequest&,
-                                                    const WebCore::SubstituteData&);
+class WebPluginLoadObserver;
 
-        static WebDataSourceImpl* fromDocumentLoader(WebCore::DocumentLoader* loader)
-        {
-            return static_cast<WebDataSourceImpl*>(loader);
-        }
+class WebDataSourceImpl : public WebCore::DocumentLoader, public WebDataSource {
+public:
+    static PassRefPtr<WebDataSourceImpl> create(const WebCore::ResourceRequest&,
+                                                const WebCore::SubstituteData&);
 
-        // WebDataSource methods:
-        virtual const WebURLRequest& originalRequest() const;
-        virtual const WebURLRequest& request() const;
-        virtual const WebURLResponse& response() const;
-        virtual bool hasUnreachableURL() const;
-        virtual WebURL unreachableURL() const;
-        virtual void redirectChain(WebVector<WebURL>&) const;
-        virtual WebString pageTitle() const;
-        virtual WebNavigationType navigationType() const;
-        virtual double triggeringEventTime() const;
-        virtual ExtraData* extraData() const;
-        virtual void setExtraData(ExtraData*);
+    static WebDataSourceImpl* fromDocumentLoader(WebCore::DocumentLoader* loader)
+    {
+        return static_cast<WebDataSourceImpl*>(loader);
+    }
 
-        static WebNavigationType toWebNavigationType(WebCore::NavigationType type);
+    // WebDataSource methods:
+    virtual const WebURLRequest& originalRequest() const;
+    virtual const WebURLRequest& request() const;
+    virtual const WebURLResponse& response() const;
+    virtual bool hasUnreachableURL() const;
+    virtual WebURL unreachableURL() const;
+    virtual void redirectChain(WebVector<WebURL>&) const;
+    virtual WebString pageTitle() const;
+    virtual WebNavigationType navigationType() const;
+    virtual double triggeringEventTime() const;
+    virtual ExtraData* extraData() const;
+    virtual void setExtraData(ExtraData*);
 
-        bool hasRedirectChain() const { return !m_redirectChain.isEmpty(); }
-        const WebCore::KURL& endOfRedirectChain() const;
-        void clearRedirectChain();
-        void appendRedirect(const WebCore::KURL& url);
+    static WebNavigationType toWebNavigationType(WebCore::NavigationType type);
 
-        PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
-        static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
+    bool hasRedirectChain() const { return !m_redirectChain.isEmpty(); }
+    const WebCore::KURL& endOfRedirectChain() const;
+    void clearRedirectChain();
+    void appendRedirect(const WebCore::KURL& url);
 
-    private:
-        WebDataSourceImpl(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-        ~WebDataSourceImpl();
+    PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
+    static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
-        // Mutable because the const getters will magically sync these to the
-        // latest version from WebKit.
-        mutable WrappedResourceRequest m_originalRequestWrapper;
-        mutable WrappedResourceRequest m_requestWrapper;
-        mutable WrappedResourceResponse m_responseWrapper;
+private:
+    WebDataSourceImpl(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
+    ~WebDataSourceImpl();
 
-        // Lists all intermediate URLs that have redirected for the current provisional load.
-        // See WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad for a
-        // description of who modifies this when to keep it up to date.
-        Vector<WebCore::KURL> m_redirectChain;
+    // Mutable because the const getters will magically sync these to the
+    // latest version from WebKit.
+    mutable WrappedResourceRequest m_originalRequestWrapper;
+    mutable WrappedResourceRequest m_requestWrapper;
+    mutable WrappedResourceResponse m_responseWrapper;
 
-        OwnPtr<ExtraData> m_extraData;
-        OwnPtr<WebPluginLoadObserver> m_pluginLoadObserver;
+    // Lists all intermediate URLs that have redirected for the current provisional load.
+    // See WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad for a
+    // description of who modifies this when to keep it up to date.
+    Vector<WebCore::KURL> m_redirectChain;
 
-        static WebPluginLoadObserver* m_nextPluginLoadObserver;
-    };
+    OwnPtr<ExtraData> m_extraData;
+    OwnPtr<WebPluginLoadObserver> m_pluginLoadObserver;
+
+    static WebPluginLoadObserver* m_nextPluginLoadObserver;
+};
 
 } // namespace WebKit
 

@@ -34,23 +34,23 @@ namespace WebKit { class WebStorageArea; }
 
 namespace WebCore {
 
-    class StorageAreaProxy : public StorageArea {
-    public:
-        StorageAreaProxy(WebKit::WebStorageArea* storageArea);
-        virtual ~StorageAreaProxy();
+class StorageAreaProxy : public StorageArea {
+public:
+    StorageAreaProxy(WebKit::WebStorageArea* storageArea);
+    virtual ~StorageAreaProxy();
 
-        // The HTML5 DOM Storage API
-        virtual unsigned length() const;
-        virtual String key(unsigned index) const;
-        virtual String getItem(const String& key) const;
-        virtual void setItem(const String& key, const String& value, ExceptionCode& ec, Frame* sourceFrame);
-        virtual void removeItem(const String& key, Frame* sourceFrame);
-        virtual void clear(Frame* sourceFrame);
-        virtual bool contains(const String& key) const;
+    // The HTML5 DOM Storage API
+    virtual unsigned length() const;
+    virtual String key(unsigned index) const;
+    virtual String getItem(const String& key) const;
+    virtual void setItem(const String& key, const String& value, ExceptionCode& ec, Frame* sourceFrame);
+    virtual void removeItem(const String& key, Frame* sourceFrame);
+    virtual void clear(Frame* sourceFrame);
+    virtual bool contains(const String& key) const;
 
-    private:
-        OwnPtr<WebKit::WebStorageArea> m_storageArea;
-    };
+private:
+    OwnPtr<WebKit::WebStorageArea> m_storageArea;
+};
 
 } // namespace WebCore
 

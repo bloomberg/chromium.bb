@@ -40,26 +40,27 @@
 #if ENABLE(NOTIFICATIONS)
 
 namespace WebKit {
-    class WebNotificationPresenter;
 
-    class NotificationPresenterImpl : public WebCore::NotificationPresenter {
-    public:
-        NotificationPresenterImpl() : m_presenter(0) { }
+class WebNotificationPresenter;
 
-        void initialize(WebNotificationPresenter* presenter);
-        bool isInitialized();
+class NotificationPresenterImpl : public WebCore::NotificationPresenter {
+public:
+    NotificationPresenterImpl() : m_presenter(0) { }
 
-        // WebCore::NotificationPresenter implementation.
-        virtual bool show(WebCore::Notification* object);
-        virtual void cancel(WebCore::Notification* object);
-        virtual void notificationObjectDestroyed(WebCore::Notification* object);
-        virtual WebCore::NotificationPresenter::Permission checkPermission(WebCore::SecurityOrigin* origin);
-        virtual void requestPermission(WebCore::SecurityOrigin* origin, WTF::PassRefPtr<WebCore::VoidCallback> callback);
+    void initialize(WebNotificationPresenter* presenter);
+    bool isInitialized();
 
-    private:
-        // WebNotificationPresenter that this object delegates to.
-        WebNotificationPresenter* m_presenter;
-    };
+    // WebCore::NotificationPresenter implementation.
+    virtual bool show(WebCore::Notification* object);
+    virtual void cancel(WebCore::Notification* object);
+    virtual void notificationObjectDestroyed(WebCore::Notification* object);
+    virtual WebCore::NotificationPresenter::Permission checkPermission(WebCore::SecurityOrigin* origin);
+    virtual void requestPermission(WebCore::SecurityOrigin* origin, WTF::PassRefPtr<WebCore::VoidCallback> callback);
+
+private:
+    // WebNotificationPresenter that this object delegates to.
+    WebNotificationPresenter* m_presenter;
+};
 
 } // namespace WebKit
 

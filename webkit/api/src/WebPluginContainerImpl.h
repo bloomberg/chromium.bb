@@ -42,80 +42,81 @@
 struct NPObject;
 
 namespace WebCore {
-    class HTMLPlugInElement;
-    class IntRect;
-    class KeyboardEvent;
-    class MouseEvent;
-    class ResourceError;
-    class ResourceResponse;
+class HTMLPlugInElement;
+class IntRect;
+class KeyboardEvent;
+class MouseEvent;
+class ResourceError;
+class ResourceResponse;
 }
 
 namespace WebKit {
-    class WebPlugin;
-    class WebPluginLoadObserver;
 
-    class WebPluginContainerImpl : public WebCore::Widget, public WebPluginContainer {
-    public:
-        static PassRefPtr<WebPluginContainerImpl> create(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-        {
-            return adoptRef(new WebPluginContainerImpl(element, webPlugin));
-        }
+class WebPlugin;
+class WebPluginLoadObserver;
 
-        // Widget methods
-        virtual void setFrameRect(const WebCore::IntRect&);
-        virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&);
-        virtual void invalidateRect(const WebCore::IntRect&);
-        virtual void setFocus();
-        virtual void show();
-        virtual void hide();
-        virtual void handleEvent(WebCore::Event*);
-        virtual void frameRectsChanged();
-        virtual void setParentVisible(bool);
-        virtual void setParent(WebCore::ScrollView*);
+class WebPluginContainerImpl : public WebCore::Widget, public WebPluginContainer {
+public:
+    static PassRefPtr<WebPluginContainerImpl> create(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
+    {
+        return adoptRef(new WebPluginContainerImpl(element, webPlugin));
+    }
 
-        // WebPluginContainer methods
-        virtual void invalidate();
-        virtual void invalidateRect(const WebRect&);
-        virtual void reportGeometry();
-        virtual void clearScriptObjects();
-        virtual NPObject* scriptableObjectForElement();
-        virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
-        virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData);
+    // Widget methods
+    virtual void setFrameRect(const WebCore::IntRect&);
+    virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&);
+    virtual void invalidateRect(const WebCore::IntRect&);
+    virtual void setFocus();
+    virtual void show();
+    virtual void hide();
+    virtual void handleEvent(WebCore::Event*);
+    virtual void frameRectsChanged();
+    virtual void setParentVisible(bool);
+    virtual void setParent(WebCore::ScrollView*);
 
-        // Resource load events for the plugin's source data:
-        void didReceiveResponse(const WebCore::ResourceResponse&);
-        void didReceiveData(const char *data, int dataLength);
-        void didFinishLoading();
-        void didFailLoading(const WebCore::ResourceError&);
+    // WebPluginContainer methods
+    virtual void invalidate();
+    virtual void invalidateRect(const WebRect&);
+    virtual void reportGeometry();
+    virtual void clearScriptObjects();
+    virtual NPObject* scriptableObjectForElement();
+    virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
+    virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData);
 
-        NPObject* scriptableObject();
+    // Resource load events for the plugin's source data:
+    void didReceiveResponse(const WebCore::ResourceResponse&);
+    void didReceiveData(const char *data, int dataLength);
+    void didFinishLoading();
+    void didFailLoading(const WebCore::ResourceError&);
 
-        // This cannot be null.
-        WebPlugin* plugin() { return m_webPlugin; }
+    NPObject* scriptableObject();
 
-        void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
+    // This cannot be null.
+    WebPlugin* plugin() { return m_webPlugin; }
 
-    private:
-        WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-            : m_element(element)
-            , m_webPlugin(webPlugin) { }
-        ~WebPluginContainerImpl();
+    void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
-        void handleMouseEvent(WebCore::MouseEvent*);
-        void handleKeyboardEvent(WebCore::KeyboardEvent*);
+private:
+    WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
+        : m_element(element)
+        , m_webPlugin(webPlugin) { }
+    ~WebPluginContainerImpl();
 
-        void calculateGeometry(const WebCore::IntRect& frameRect,
-                               WebCore::IntRect& windowRect,
-                               WebCore::IntRect& clipRect,
-                               Vector<WebCore::IntRect>& cutOutRects);
-        WebCore::IntRect windowClipRect() const;
-        void windowCutOutRects(const WebCore::IntRect& frameRect,
-                               Vector<WebCore::IntRect>& cutOutRects);
+    void handleMouseEvent(WebCore::MouseEvent*);
+    void handleKeyboardEvent(WebCore::KeyboardEvent*);
 
-        WebCore::HTMLPlugInElement* m_element;
-        WebPlugin* m_webPlugin;
-        Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
-    };
+    void calculateGeometry(const WebCore::IntRect& frameRect,
+                           WebCore::IntRect& windowRect,
+                           WebCore::IntRect& clipRect,
+                           Vector<WebCore::IntRect>& cutOutRects);
+    WebCore::IntRect windowClipRect() const;
+    void windowCutOutRects(const WebCore::IntRect& frameRect,
+                           Vector<WebCore::IntRect>& cutOutRects);
+
+    WebCore::HTMLPlugInElement* m_element;
+    WebPlugin* m_webPlugin;
+    Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
+};
 
 } // namespace WebKit
 

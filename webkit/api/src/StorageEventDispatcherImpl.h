@@ -38,21 +38,21 @@
 
 namespace WebCore {
 
-    class KURL;
-    class PageGroup;
-    class SecurityOrigin;
+class KURL;
+class PageGroup;
+class SecurityOrigin;
 
-    class StorageEventDispatcherImpl {
-    public:
-        StorageEventDispatcherImpl(const String& groupName);
+class StorageEventDispatcherImpl {
+public:
+    StorageEventDispatcherImpl(const String& groupName);
 
-        void dispatchStorageEvent(const String& key, const String& oldValue,
-                                  const String& newValue, SecurityOrigin*,
-                                  const KURL&, StorageType);
+    void dispatchStorageEvent(const String& key, const String& oldValue,
+                              const String& newValue, SecurityOrigin*,
+                              const KURL&, StorageType);
 
-    private:
-        PageGroup* m_pageGroup;
-    };
+private:
+    PageGroup* m_pageGroup;
+};
 
 } // namespace WebCore
 

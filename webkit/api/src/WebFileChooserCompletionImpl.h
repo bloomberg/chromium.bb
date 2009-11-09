@@ -45,14 +45,14 @@ using WebKit::WebVector;
 
 namespace WebKit {
 
-    class WebFileChooserCompletionImpl : public WebFileChooserCompletion {
-    public:
-        WebFileChooserCompletionImpl(PassRefPtr<WebCore::FileChooser> chooser);
-        ~WebFileChooserCompletionImpl();
-        virtual void didChooseFile(const WebVector<WebString>& fileNames);
-    private:
-        RefPtr<WebCore::FileChooser> m_fileChooser;
-    };
+class WebFileChooserCompletionImpl : public WebFileChooserCompletion {
+public:
+    WebFileChooserCompletionImpl(PassRefPtr<WebCore::FileChooser> chooser);
+    ~WebFileChooserCompletionImpl();
+    virtual void didChooseFile(const WebVector<WebString>& fileNames);
+private:
+    RefPtr<WebCore::FileChooser> m_fileChooser;
+};
 
 } // namespace WebKit
 

@@ -34,32 +34,33 @@
 #include "../public/WebURL.h"
 
 namespace WebKit {
-    class WebPluginContainerImpl;
-    struct WebURLError;
 
-    class WebPluginLoadObserver {
-    public:
-        WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer,
-                              const WebURL& notifyURL, void* notifyData)
-            : m_pluginContainer(pluginContainer)
-            , m_notifyURL(notifyURL)
-            , m_notifyData(notifyData)
-        {
-        }
+class WebPluginContainerImpl;
+struct WebURLError;
 
-        ~WebPluginLoadObserver();
+class WebPluginLoadObserver {
+public:
+    WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer,
+                          const WebURL& notifyURL, void* notifyData)
+        : m_pluginContainer(pluginContainer)
+        , m_notifyURL(notifyURL)
+        , m_notifyData(notifyData)
+    {
+    }
 
-        const WebURL& url() const { return m_notifyURL; }
+    ~WebPluginLoadObserver();
 
-        void clearPluginContainer() { m_pluginContainer = 0; }
-        void didFinishLoading();
-        void didFailLoading(const WebURLError&);
+    const WebURL& url() const { return m_notifyURL; }
 
-    private:
-        WebPluginContainerImpl* m_pluginContainer;
-        WebURL m_notifyURL;
-        void* m_notifyData;
-    };
+    void clearPluginContainer() { m_pluginContainer = 0; }
+    void didFinishLoading();
+    void didFailLoading(const WebURLError&);
+
+private:
+    WebPluginContainerImpl* m_pluginContainer;
+    WebURL m_notifyURL;
+    void* m_notifyData;
+};
 
 } // namespace WebKit
 

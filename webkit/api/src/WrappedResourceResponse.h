@@ -38,44 +38,44 @@
 
 namespace WebKit {
 
-    class WrappedResourceResponse : public WebURLResponse {
+class WrappedResourceResponse : public WebURLResponse {
+public:
+    ~WrappedResourceResponse()
+    {
+        reset(); // Need to drop reference to m_handle
+    }
+
+    WrappedResourceResponse() { }
+
+    WrappedResourceResponse(WebCore::ResourceResponse& resourceResponse)
+    {
+        bind(resourceResponse);
+    }
+
+    WrappedResourceResponse(const WebCore::ResourceResponse& resourceResponse)
+    {
+        bind(resourceResponse);
+    }
+
+    void bind(WebCore::ResourceResponse& resourceResponse)
+    {
+        m_handle.m_resourceResponse = &resourceResponse;
+        assign(&m_handle);
+    }
+
+    void bind(const WebCore::ResourceResponse& resourceResponse)
+    {
+        bind(*const_cast<WebCore::ResourceResponse*>(&resourceResponse));
+    }
+
+private:
+    class Handle : public WebURLResponsePrivate {
     public:
-        ~WrappedResourceResponse()
-        {
-            reset(); // Need to drop reference to m_handle
-        }
-
-        WrappedResourceResponse() { }
-
-        WrappedResourceResponse(WebCore::ResourceResponse& resourceResponse)
-        {
-            bind(resourceResponse);
-        }
-
-        WrappedResourceResponse(const WebCore::ResourceResponse& resourceResponse)
-        {
-            bind(resourceResponse);
-        }
-
-        void bind(WebCore::ResourceResponse& resourceResponse)
-        {
-            m_handle.m_resourceResponse = &resourceResponse;
-            assign(&m_handle);
-        }
-
-        void bind(const WebCore::ResourceResponse& resourceResponse)
-        {
-            bind(*const_cast<WebCore::ResourceResponse*>(&resourceResponse));
-        }
-
-    private:
-        class Handle : public WebURLResponsePrivate {
-        public:
-            virtual void dispose() { m_resourceResponse = 0; }
-        };
-
-        Handle m_handle;
+        virtual void dispose() { m_resourceResponse = 0; }
     };
+
+    Handle m_handle;
+};
 
 } // namespace WebKit
 

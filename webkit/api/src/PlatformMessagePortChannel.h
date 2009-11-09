@@ -41,54 +41,55 @@
 #include <wtf/Threading.h>
 
 namespace WebKit {
-    class WebMessagePortChannel;
+class WebMessagePortChannel;
 }
 
 namespace WebCore {
-    class MessagePort;
 
-    // PlatformMessagePortChannel is a platform-dependent interface to the remote side of a message channel.
-    class PlatformMessagePortChannel : public ThreadSafeShared<PlatformMessagePortChannel>,
-                                       public WebKit::WebMessagePortChannelClient {
-    public:
-        static void createChannel(PassRefPtr<MessagePort>, PassRefPtr<MessagePort>);
-        static PassRefPtr<PlatformMessagePortChannel> create();
-        static PassRefPtr<PlatformMessagePortChannel> create(WebKit::WebMessagePortChannel*);
+class MessagePort;
 
-        // APIs delegated from MessagePortChannel.h
-        bool entangleIfOpen(MessagePort*);
-        void disentangle();
-        void postMessageToRemote(PassOwnPtr<MessagePortChannel::EventData>);
-        bool tryGetMessageFromRemote(OwnPtr<MessagePortChannel::EventData>&);
-        void close();
-        bool isConnectedTo(MessagePort* port);
-        bool hasPendingActivity();
+// PlatformMessagePortChannel is a platform-dependent interface to the remote side of a message channel.
+class PlatformMessagePortChannel : public ThreadSafeShared<PlatformMessagePortChannel>,
+                                   public WebKit::WebMessagePortChannelClient {
+public:
+    static void createChannel(PassRefPtr<MessagePort>, PassRefPtr<MessagePort>);
+    static PassRefPtr<PlatformMessagePortChannel> create();
+    static PassRefPtr<PlatformMessagePortChannel> create(WebKit::WebMessagePortChannel*);
 
-        // Releases ownership of the contained web channel.
-        WebKit::WebMessagePortChannel* webChannelRelease();
+    // APIs delegated from MessagePortChannel.h
+    bool entangleIfOpen(MessagePort*);
+    void disentangle();
+    void postMessageToRemote(PassOwnPtr<MessagePortChannel::EventData>);
+    bool tryGetMessageFromRemote(OwnPtr<MessagePortChannel::EventData>&);
+    void close();
+    bool isConnectedTo(MessagePort* port);
+    bool hasPendingActivity();
 
-        ~PlatformMessagePortChannel();
+    // Releases ownership of the contained web channel.
+    WebKit::WebMessagePortChannel* webChannelRelease();
 
-    private:
-        PlatformMessagePortChannel();
-        PlatformMessagePortChannel(WebKit::WebMessagePortChannel*);
+    ~PlatformMessagePortChannel();
 
-        void setEntangledChannel(PassRefPtr<PlatformMessagePortChannel>);
+private:
+    PlatformMessagePortChannel();
+    PlatformMessagePortChannel(WebKit::WebMessagePortChannel*);
 
-        // WebKit::WebMessagePortChannelClient implementation
-        virtual void messageAvailable();
+    void setEntangledChannel(PassRefPtr<PlatformMessagePortChannel>);
 
-        // Mutex used to ensure exclusive access to the object internals.
-        Mutex m_mutex;
+    // WebKit::WebMessagePortChannelClient implementation
+    virtual void messageAvailable();
 
-        // Pointer to our entangled pair - cleared when close() is called.
-        RefPtr<PlatformMessagePortChannel> m_entangledChannel;
+    // Mutex used to ensure exclusive access to the object internals.
+    Mutex m_mutex;
 
-        // The port we are connected to - this is the port that is notified when new messages arrive.
-        MessagePort* m_localPort;
+    // Pointer to our entangled pair - cleared when close() is called.
+    RefPtr<PlatformMessagePortChannel> m_entangledChannel;
 
-        WebKit::WebMessagePortChannel* m_webChannel;
-    };
+    // The port we are connected to - this is the port that is notified when new messages arrive.
+    MessagePort* m_localPort;
+
+    WebKit::WebMessagePortChannel* m_webChannel;
+};
 
 } // namespace WebCore
 

@@ -40,17 +40,17 @@
 
 namespace WebKit {
 
-    class WebStorageEventDispatcherImpl : public WebStorageEventDispatcher {
-    public:
-        WebStorageEventDispatcherImpl();
+class WebStorageEventDispatcherImpl : public WebStorageEventDispatcher {
+public:
+    WebStorageEventDispatcherImpl();
 
-        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
-                                          const WebString& newValue, const WebString& origin,
-                                          const WebURL& url, bool isLocalStorage);
+    virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                      const WebString& newValue, const WebString& origin,
+                                      const WebURL& url, bool isLocalStorage);
 
-    private:
-        OwnPtr<WebCore::StorageEventDispatcherImpl> m_eventDispatcher;
-    };
+private:
+    OwnPtr<WebCore::StorageEventDispatcherImpl> m_eventDispatcher;
+};
 
 } // namespace WebKit
 
