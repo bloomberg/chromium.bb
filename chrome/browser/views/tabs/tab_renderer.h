@@ -108,6 +108,10 @@ class TabRenderer : public views::View,
   // Returns the title of the Tab.
   std::wstring GetTitle() const;
 
+  // Overridden from views::View:
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
+
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) {}
@@ -116,8 +120,6 @@ class TabRenderer : public views::View,
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
-  virtual void OnMouseEntered(const views::MouseEvent& event);
-  virtual void OnMouseExited(const views::MouseEvent& event);
   virtual void ThemeChanged();
 
   // Overridden from AnimationDelegate:

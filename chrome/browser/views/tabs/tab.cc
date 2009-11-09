@@ -193,6 +193,7 @@ void Tab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
 }
 
 void Tab::OnMouseEntered(const views::MouseEvent& event) {
+  TabRenderer::OnMouseEntered(event);
   GetBrowserExtender()->OnMouseEnteredToTab(this);
 }
 
@@ -201,6 +202,7 @@ void Tab::OnMouseMoved(const views::MouseEvent& event) {
 }
 
 void Tab::OnMouseExited(const views::MouseEvent& event) {
+  TabRenderer::OnMouseExited(event);
   GetBrowserExtender()->OnMouseExitedFromTab(this);
 }
 

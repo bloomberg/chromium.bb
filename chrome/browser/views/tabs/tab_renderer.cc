@@ -430,6 +430,16 @@ std::wstring TabRenderer::GetTitle() const {
   return UTF16ToWideHack(data_.title);
 }
 
+void TabRenderer::OnMouseEntered(const views::MouseEvent& e) {
+  hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+  hover_animation_->Show();
+}
+
+void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
+  hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
+  hover_animation_->Hide();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabRenderer, views::View overrides:
 
@@ -549,16 +559,6 @@ void TabRenderer::Layout() {
   // mirrored if the View's layout is right-to-left.
   favicon_bounds_.set_x(MirroredLeftPointForRect(favicon_bounds_));
   title_bounds_.set_x(MirroredLeftPointForRect(title_bounds_));
-}
-
-void TabRenderer::OnMouseEntered(const views::MouseEvent& e) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
-  hover_animation_->Show();
-}
-
-void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
-  hover_animation_->Hide();
 }
 
 void TabRenderer::ThemeChanged() {
