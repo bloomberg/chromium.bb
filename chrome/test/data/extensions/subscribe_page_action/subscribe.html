@@ -1,0 +1,212 @@
+<html>
+<head>
+<title>Subscribe to feed</title>
+
+<script type="text/javascript">
+  // Grab the querystring, removing question mark at the front and splitting on
+  // the ampersand.
+  var queryString = location.search.substring(1).split("&");
+
+  // The feed URL is the first component and always present.
+  var feedUrl = decodeURIComponent(queryString[0]);
+
+  // We allow synchronous requests for testing. This component is only present
+  // if true.
+  var synchronousRequest = queryString[1] == "synchronous";
+
+  // The XMLHttpRequest object that tries to load and parse the feed, and (if
+  // testing) also the style sheet and the frame js.
+  var req;
+
+  // Depending on whether this is run from a test or from the extension, this
+  // will either be a link to the css file within the extension or contain the
+  // contents of the style sheet, fetched through XmlHttpRequest.
+  var styleSheet = "";
+
+  // Depending on whether this is run from a test or from the extension, this
+  // will either be a link to the js file within the extension or contain the
+  // contents of the style sheet, fetched through XmlHttpRequest.
+  var frameScript = "";
+
+  // What to show when we cannot parse the feed name.
+  var unknownName = "Unknown feed name";
+
+  // Navigates to the reader of the user's choice (for subscribing to the feed).
+  function navigate() {
+    var select = document.getElementById('readers');
+    var url = select.options[select.selectedIndex].value + feedUrl;
+    document.location = url;
+  }
+
+  function main() {
+    req = new XMLHttpRequest();
+    if (synchronousRequest) {
+      // Tests that load the html page directly through a file:// url don't have
+      // access to the js and css from the frame so we must load them first and
+      // inject them into the src for the iframe.
+      req.open("GET", "style.css", false);
+      req.send(null);
+
+      styleSheet = "<style>" + req.responseText + "</style>";
+
+      req.open("GET", "iframe.js", false);
+      req.send(null);
+
+      frameScript = "<script>" + req.responseText +
+                    "<" + "/script>";
+    } else {
+      // Normal loading just requires links to the css and the js file.
+      styleSheet = "<link rel='stylesheet' type='text/css' href='" +
+                    chrome.extension.getURL("style.css") + "'>";
+      frameScript = "<script src='" + chrome.extension.getURL("iframe.js") +
+                    "'></" + "script>";
+    }
+
+    feedUrl = decodeURIComponent(feedUrl);
+    req.onload = handleResponse;
+    req.onerror = handleError;
+    req.open("GET", feedUrl, !synchronousRequest);
+    req.send(null);
+  }
+
+  // Sets the title for the feed.
+  function setFeedTitle(title) {
+    var titleTag = document.getElementById('title');
+    titleTag.textContent = "Feed for '" + title + "'";
+  }
+
+  // Handles errors during the XMLHttpRequest.
+  function handleError() {
+    handleFeedParsingFailed("Error fetching feed");
+  }
+
+  // Handles feed parsing errors.
+  function handleFeedParsingFailed(error) {
+    setFeedTitle(unknownName);
+
+    // The tests always expect an IFRAME, so add one showing the error.
+    var html = "<body><span id=\"error\" class=\"item_desc\">" + error +
+               "</span></body>";
+
+    var error_frame = createFrame('error', html);
+    var itemsTag = document.getElementById('items');
+    itemsTag.appendChild(error_frame);
+  }
+
+  function createFrame(frame_id, html) {
+    frame = document.createElement('iframe');
+    frame.id = frame_id;
+    frame.src = "data:text/html;charset=utf-8,<html>" + styleSheet + html +
+                "</html>";
+    frame.scrolling = "auto";
+    frame.frameBorder = "0";
+    frame.marginWidth = "0";
+    return frame;
+  }
+
+  function embedAsIframe(rssText) {
+    var itemsTag = document.getElementById('items');
+
+    // TODO(aa): Add base URL tag
+    iframe = createFrame('rss', styleSheet + frameScript);
+    itemsTag.appendChild(iframe);
+
+    iframe.onload = function() {
+      iframe.contentWindow.postMessage(rssText, "*");
+    }
+  }
+
+  // Handles parsing the feed data we got back from XMLHttpRequest.
+  function handleResponse() {
+    // Uncomment these three lines to see what the feed data looks like.
+    // var itemsTag = document.getElementById('items');
+    // itemsTag.textContent = req.responseText;
+    // return;
+
+    var doc = req.responseXML;
+    if (!doc) {
+      handleFeedParsingFailed("Not a valid feed.");
+      return;
+    }
+
+    // We must find at least one 'entry' or 'item' element before proceeding.
+    var entries = doc.getElementsByTagName('entry');
+    if (entries.length == 0)
+      entries = doc.getElementsByTagName('item');
+    if (entries.length == 0) {
+      handleFeedParsingFailed("This feed contains no entries.")
+      return;
+    }
+
+    // Figure out what the title of the whole feed is.
+    var title = doc.getElementsByTagName('title')[0];
+    if (title)
+      setFeedTitle(title.textContent);
+    else
+      setFeedTitle(unknownName);
+
+    // Add an IFRAME with the html contents.
+    embedAsIframe(req.responseText);
+  }
+</script>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<style>
+body {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+}
+body>* {
+  display:-webkit-box;
+}
+#items {
+  -webkit-box-flex:1;
+  -webkit-box-orient:vertical;
+  -webkit-box-align:stretch;
+}
+iframe {
+  display:-webkit-box;
+  -webkit-box-flex:1;
+}
+.splitter {
+  padding: 2px 8px 2px 5px;
+  border-top: solid 1px #9CC2EF;
+  background: #EBEFF9;
+  font-size: 13px;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body onload="main();">
+  <table>
+  <tr>
+    <td width="75">
+      <img src="feed-icon-64x64.png" alt="feed-icon" align="absmiddle" />
+    </td>
+    <td>
+      <b><span id="title"></span></b><br>
+      <span>Subscribe to this feed using:</span>
+      <select id="readers">
+        <option value="http://www.google.com/reader/view/feed/">
+          Google Reader
+        </option>
+        <option value="http://www.google.com/ig/adde?moduleurl=">
+          iGoogle
+        </option>
+        <option value="http://www.bloglines.com/login?r=/sub/">
+          Bloglines
+        </option>
+        <option value="http://add.my.yahoo.com/rss?url=">
+          My Yahoo
+        </option>
+      </select>
+      <button onclick="navigate();">Subscribe Now</button>
+    </td>
+  </tr>
+  </table>
+
+  <div>&nbsp;</div>
+  <div class="splitter"><b>Feed preview</b></div><br>
+  <div id="items"></div>
+</body>
+</html>
