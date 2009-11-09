@@ -1001,7 +1001,7 @@ def Change(change_info, args):
     ErrorExit("Current checkout is unversioned.  Please retry with a versioned "
               "directory.")
   if (svn_info.get('URL', '').startswith('http:') and
-    not FilterFlag(args, "--force")):
+      not FilterFlag(args, "--force")):
     ErrorExit("This is a read-only checkout.  Retry in a read-write checkout "
               "or use --force to override.")
 
