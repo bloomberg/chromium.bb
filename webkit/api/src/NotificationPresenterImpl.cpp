@@ -33,12 +33,13 @@
 
 #if ENABLE(NOTIFICATIONS)
 
+#include "Notification.h"
+#include "SecurityOrigin.h"
+
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
 
-#include "Notification.h"
-#include "SecurityOrigin.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;
@@ -70,7 +71,7 @@ void NotificationPresenterImpl::initialize(WebNotificationPresenter* presenter)
 
 bool NotificationPresenterImpl::isInitialized()
 {
-    return m_presenter != 0;
+    return !!m_presenter;
 }
 
 bool NotificationPresenterImpl::show(Notification* notification)

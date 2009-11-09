@@ -55,7 +55,7 @@
 namespace WebCore {
 
 class Document;
-using WebKit::WebFrameImpl;;
+using WebKit::WebFrameImpl;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebSharedWorker;
 using WebKit::WebSharedWorkerRepository;
@@ -63,13 +63,13 @@ using WebKit::WebSharedWorkerRepository;
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener, private ActiveDOMObject {
 public:
-  SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
-      : ActiveDOMObject(worker->scriptExecutionContext(), this)
-      , m_worker(worker)
-      , m_url(url)
-      , m_name(name)
-      , m_webWorker(webWorker)
-      , m_port(port)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
+        : ActiveDOMObject(worker->scriptExecutionContext(), this)
+        , m_worker(worker)
+        , m_url(url)
+        , m_name(name)
+        , m_webWorker(webWorker)
+        , m_port(port)
     {
     }
 

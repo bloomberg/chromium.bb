@@ -44,16 +44,16 @@ class String;
 namespace WebKit {
 
 // If node is an HTML node with a tag name of name it is casted and returned.
-// If node is not an HTML node or the tag name is not name NULL is returned.
-WebCore::HTMLInputElement* toHTMLInputElement(WebCore::Node* node);
-WebCore::HTMLLinkElement* toHTMLLinkElement(WebCore::Node* node);
-WebCore::HTMLMetaElement* toHTMLMetaElement(WebCore::Node* node);
-WebCore::HTMLOptionElement* toHTMLOptionElement(WebCore::Node* node);
+// If node is not an HTML node or the tag name is not name, 0 is returned.
+WebCore::HTMLInputElement* toHTMLInputElement(WebCore::Node*);
+WebCore::HTMLLinkElement* toHTMLLinkElement(WebCore::Node*);
+WebCore::HTMLMetaElement* toHTMLMetaElement(WebCore::Node*);
+WebCore::HTMLOptionElement* toHTMLOptionElement(WebCore::Node*);
 
 // Returns the name that should be used for the specified |element| when
 // storing autofill data.  This is either the field name or its id, an empty
 // string if it has no name and no id.
-WebCore::String nameOfInputElement(WebCore::HTMLInputElement* element);
+WebCore::String nameOfInputElement(WebCore::HTMLInputElement*);
 
 } // namespace WebKit
 

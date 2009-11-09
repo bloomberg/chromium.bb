@@ -35,6 +35,7 @@
 #include "AXObjectCache.h"
 #include "Document.h"
 #include "Frame.h"
+
 #include "WebAccessibilityObject.h"
 #include "WebFrameImpl.h"
 #include "WebViewImpl.h"
@@ -145,7 +146,8 @@ void WebAccessibilityCacheImpl::clear()
     m_idMap.clear();
 }
 
-int WebAccessibilityCacheImpl::addOrGetId(const WebAccessibilityObject& object) {
+int WebAccessibilityCacheImpl::addOrGetId(const WebAccessibilityObject& object)
+{
     if (object.isNull())
         return invalidObjectId;
 

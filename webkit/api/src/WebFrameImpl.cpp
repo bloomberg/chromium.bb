@@ -71,8 +71,6 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
-#include <algorithm>
-
 #include "Chrome.h"
 #include "ChromiumBridge.h"
 #include "ClipboardUtilitiesChromium.h"
@@ -81,8 +79,8 @@
 #include "DocumentFragment.h" // Only needed for ReplaceSelectionCommand.h :(
 #include "DocumentLoader.h"
 #include "DocumentMarker.h"
-#include "DOMWindow.h"
 #include "DOMUtilitiesPrivate.h"
+#include "DOMWindow.h"
 #include "Editor.h"
 #include "EventHandler.h"
 #include "FormState.h"
@@ -92,14 +90,14 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
+#include "HistoryItem.h"
 #include "HTMLCollection.h"
-#include "HTMLHeadElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
+#include "HTMLHeadElement.h"
+#include "HTMLInputElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
-#include "HistoryItem.h"
 #include "InspectorController.h"
 #include "markup.h"
 #include "Page.h"
@@ -120,9 +118,8 @@
 #include "Settings.h"
 #include "SkiaUtils.h"
 #include "SubstituteData.h"
-#include "TextIterator.h"
 #include "TextAffinity.h"
-#include "XPathResult.h"
+#include "TextIterator.h"
 #include "WebConsoleMessage.h"
 #include "WebDataSourceImpl.h"
 #include "WebFindOptions.h"
@@ -139,7 +136,11 @@
 #include "WebURLError.h"
 #include "WebVector.h"
 #include "WebViewImpl.h"
+#include "XPathResult.h"
+
+#include <algorithm>
 #include <wtf/CurrentTime.h>
+
 
 #if PLATFORM(DARWIN)
 #include "LocalCurrentGraphicsContext.h"
@@ -184,7 +185,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame,
     ExceptionCode exception = 0;
     range->selectNodeContents(doc->body(), exception);
 
-    if (exception == 0) {
+    if (!exception) {
         // The text iterator will walk nodes giving us text. This is similar to
         // the plainText() function in TextIterator.h, but we implement the maximum
         // size and also copy the results directly into a wstring, avoiding the
@@ -192,7 +193,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame,
         for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
             const UChar* chars = it.characters();
             if (!chars) {
-                if (it.length() != 0) {
+                if (it.length()) {
                     // It appears from crash reports that an iterator can get into a state
                     // where the character count is nonempty but the character pointer is
                     // null. advance()ing it will then just add that many to the null
@@ -377,7 +378,7 @@ WebURL WebFrameImpl::openSearchDescriptionURL() const
         HTMLHeadElement* head = m_frame->document()->head();
         if (head) {
             RefPtr<HTMLCollection> children = head->children();
-            for (Node* child = children->firstItem(); child != 0; child = children->nextItem()) {
+            for (Node* child = children->firstItem(); child; child = children->nextItem()) {
                 HTMLLinkElement* linkElement = toHTMLLinkElement(child);
                 if (linkElement
                     && linkElement->type() == osdType
@@ -406,9 +407,8 @@ WebSize WebFrameImpl::contentsSize() const
 
 int WebFrameImpl::contentsPreferredWidth() const
 {
-    if ((m_frame->document() != 0) && (m_frame->document()->renderView() != 0))
+    if (m_frame->document() && m_frame->document()->renderView())
         return m_frame->document()->renderView()->minPrefWidth();
-
     return 0;
 }
 
@@ -432,7 +432,7 @@ WebFrame* WebFrameImpl::opener() const
 
 WebFrame* WebFrameImpl::parent() const
 {
-    Frame *parent = 0;
+    Frame* parent = 0;
     if (m_frame)
         parent = m_frame->tree()->parent();
     return fromFrame(parent);
@@ -1163,7 +1163,7 @@ bool WebFrameImpl::find(int identifier,
                 options.forward ? ++m_activeMatchIndex : --m_activeMatchIndex;
                 if (m_activeMatchIndex + 1 > m_lastMatchCount)
                     m_activeMatchIndex = 0;
-                if (m_activeMatchIndex + 1 == 0)
+                if (m_activeMatchIndex == -1)
                     m_activeMatchIndex = m_lastMatchCount - 1;
             }
             if (selectionRect) {
@@ -1244,8 +1244,8 @@ void WebFrameImpl::scopeStringMatches(int identifier,
         searchRange->setStart(m_resumeScopingFromRange->startContainer(),
                               m_resumeScopingFromRange->startOffset(ec2) + 1,
                               ec);
-        if (ec != 0 || ec2 != 0) {
-            if (ec2 != 0)  // A non-zero |ec| happens when navigating during search.
+        if (ec || ec2) {
+            if (ec2)  // A non-zero |ec| happens when navigating during search.
                 ASSERT_NOT_REACHED();
             return;
         }
@@ -1372,7 +1372,7 @@ void WebFrameImpl::scopeStringMatches(int identifier,
 
     // If this is the last frame to finish scoping we need to trigger the final
     // update to be sent.
-    if (mainFrameImpl->m_framesScopingCount == 0)
+    if (!mainFrameImpl->m_framesScopingCount)
         mainFrameImpl->increaseMatchCount(0, identifier);
 
     // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
@@ -1395,10 +1395,8 @@ void WebFrameImpl::increaseMatchCount(int count, int identifier)
     m_totalMatchCount += count;
 
     // Update the UI with the latest findings.
-    if (client()) {
-        client()->reportFindInPageMatchCount(identifier, m_totalMatchCount,
-                                             m_framesScopingCount == 0);
-    }
+    if (client())
+        client()->reportFindInPageMatchCount(identifier, m_totalMatchCount, !m_framesScopingCount);
 }
 
 void WebFrameImpl::reportFindInPageSelection(const WebRect& selectionRect,
@@ -1406,11 +1404,8 @@ void WebFrameImpl::reportFindInPageSelection(const WebRect& selectionRect,
                                              int identifier)
 {
     // Update the UI with the latest selection rect.
-    if (client()) {
-        client()->reportFindInPageSelection(
-            identifier, ordinalOfFirstMatchForFrame(this) + activeMatchOrdinal,
-            selectionRect);
-    }
+    if (client())
+        client()->reportFindInPageSelection(identifier, ordinalOfFirstMatchForFrame(this) + activeMatchOrdinal, selectionRect);
 }
 
 void WebFrameImpl::resetMatchCount()
@@ -1576,8 +1571,7 @@ void WebFrameImpl::createFrameView()
 
     Page* page = m_frame->page();
     ASSERT(page);
-
-    ASSERT(page->mainFrame() != 0);
+    ASSERT(page->mainFrame());
 
     bool isMainFrame = m_frame == page->mainFrame();
     if (isMainFrame && m_frame->view())
@@ -1805,7 +1799,7 @@ bool WebFrameImpl::shouldScopeMatches(const String& searchText)
     // If the frame completed the scoping operation and found 0 matches the last
     // time it was searched, then we don't have to search it again if the user is
     // just adding to the search string or sending the same search string again.
-    if (m_scopingComplete && !m_lastSearchString.isEmpty() && m_lastMatchCount == 0) {
+    if (m_scopingComplete && !m_lastSearchString.isEmpty() && !m_lastMatchCount) {
         // Check to see if the search string prefixes match.
         String previousSearchPrefix =
             searchText.substring(0, m_lastSearchString.length());

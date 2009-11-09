@@ -31,14 +31,15 @@
 #include "config.h"
 #include "WebImage.h"
 
-#include <CoreGraphics/CGImage.h>
+#include "Image.h"
+#include "ImageSource.h"
+#include "SharedBuffer.h"
 
 #include "WebData.h"
 #include "WebSize.h"
 
-#include "Image.h"
-#include "ImageSource.h"
-#include "SharedBuffer.h"
+#include <CoreGraphics/CGImage.h>
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RetainPtr.h>
 
@@ -77,7 +78,7 @@ void WebImage::assign(const WebImage& image)
 
 bool WebImage::isNull() const
 {
-    return m_imageRef == 0;
+    return !m_imageRef;
 }
 
 WebSize WebImage::size() const

@@ -31,15 +31,15 @@
 #include "config.h"
 #include "WebKit.h"
 
-#include "WebMediaPlayerClientImpl.h"
-
 #include "AtomicString.h"
 #include "DOMTimer.h"
 #include "Page.h"
 #include "RuntimeEnabledFeatures.h"
 #include "TextEncoding.h"
+#include "WebMediaPlayerClientImpl.h"
 #include "WebSocket.h"
 #include "WorkerContextExecutionProxy.h"
+
 #include <wtf/Assertions.h>
 #include <wtf/Threading.h>
 

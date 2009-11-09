@@ -35,19 +35,21 @@
 #include "CString.h"
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "HTMLAppletElement.h"
-#include "HTMLFormElement.h"  // needed by FormState.h
-#include "HTMLNames.h"
 #include "FormState.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
 #include "HitTestResult.h"
+#include "HTMLAppletElement.h"
+#include "HTMLFormElement.h"  // needed by FormState.h
+#include "HTMLNames.h"
 #include "MIMETypeRegistry.h"
 #include "MouseEvent.h"
 #include "Page.h"
 #include "PlatformString.h"
 #include "PluginData.h"
 #include "StringExtras.h"
+#include "WebDataSourceImpl.h"
+#include "WebDevToolsAgentPrivate.h"
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -56,6 +58,8 @@
 #include "WebMimeRegistry.h"
 #include "WebNode.h"
 #include "WebPlugin.h"
+#include "WebPluginContainerImpl.h"
+#include "WebPluginLoadObserver.h"
 #include "WebPluginParams.h"
 #include "WebSecurityOrigin.h"
 #include "WebURL.h"
@@ -63,10 +67,6 @@
 #include "WebVector.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "WebDataSourceImpl.h"
-#include "WebDevToolsAgentPrivate.h"
-#include "WebPluginContainerImpl.h"
-#include "WebPluginLoadObserver.h"
 #include "WindowFeatures.h"
 #include "WrappedResourceRequest.h"
 #include "WrappedResourceResponse.h"
@@ -88,10 +88,12 @@ FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
     : m_webFrame(frame)
     , m_hasRepresentation(false)
     , m_sentInitialResponseToPlugin(false)
-    , m_nextNavigationPolicy(WebNavigationPolicyIgnore) {
+    , m_nextNavigationPolicy(WebNavigationPolicyIgnore)
+{
 }
 
-FrameLoaderClientImpl::~FrameLoaderClientImpl() {
+FrameLoaderClientImpl::~FrameLoaderClientImpl()
+{
 }
 
 void FrameLoaderClientImpl::frameLoaderDestroyed()
@@ -163,7 +165,7 @@ bool FrameLoaderClientImpl::allowJavaScript(bool enabledPerSettings)
 
 bool FrameLoaderClientImpl::hasWebView() const
 {
-    return m_webFrame->viewImpl() != 0;
+    return !m_webFrame->viewImpl();
 }
 
 bool FrameLoaderClientImpl::hasFrameView() const
@@ -171,7 +173,7 @@ bool FrameLoaderClientImpl::hasFrameView() const
     // The Mac port has this notion of a WebFrameView, which seems to be
     // some wrapper around an NSView.  Since our equivalent is HWND, I guess
     // we have a "frameview" whenever we have the toplevel HWND.
-    return m_webFrame->viewImpl() != 0;
+    return !m_webFrame->viewImpl();
 }
 
 void FrameLoaderClientImpl::makeDocumentView()
@@ -239,14 +241,12 @@ void FrameLoaderClientImpl::assignIdentifierToInitialRequest(
 //
 // The important edge cases to consider when modifying this function are
 // how synchronous resource loads are treated during load/unload threshold.
-static ResourceRequest::TargetType determineTargetTypeFromLoader(
-    DocumentLoader* loader)
+static ResourceRequest::TargetType determineTargetTypeFromLoader(DocumentLoader* loader)
 {
     if (loader == loader->frameLoader()->provisionalDocumentLoader()) {
         if (loader->frameLoader()->isLoadingMainFrame())
             return ResourceRequest::TargetIsMainFrame;
-        else
-            return ResourceRequest::TargetIsSubFrame;
+        return ResourceRequest::TargetIsSubFrame;
     }
     return ResourceRequest::TargetIsSubResource;
 }
@@ -594,7 +594,8 @@ void FrameLoaderClientImpl::dispatchDidReceiveIcon()
     ASSERT_NOT_REACHED();
 }
 
-void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad() {
+void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad()
+{
     // In case a redirect occurs, we need this to be set so that the redirect
     // handling code can tell where the redirect came from. Server redirects
     // will occur on the provisional load, so we need to keep track of the most
@@ -711,9 +712,8 @@ void FrameLoaderClientImpl::dispatchDidFirstLayout()
 
 void FrameLoaderClientImpl::dispatchDidFirstVisuallyNonEmptyLayout()
 {
-  // FIXME: called when webkit finished layout of a page that was visually
-  // non-empty.
-  // All resources have not necessarily finished loading.
+    // FIXME: called when webkit finished layout of a page that was visually non-empty.
+    // All resources have not necessarily finished loading.
 }
 
 Frame* FrameLoaderClientImpl::dispatchCreatePage()
@@ -981,7 +981,8 @@ void FrameLoaderClientImpl::didChangeTitle(DocumentLoader*)
 }
 
 // Called whenever data is received.
-void FrameLoaderClientImpl::committedLoad(DocumentLoader* loader, const char* data, int length) {
+void FrameLoaderClientImpl::committedLoad(DocumentLoader* loader, const char* data, int length)
+{
     if (!m_pluginWidget.get()) {
         if (m_webFrame->client()) {
             bool preventDefault = false;
@@ -1046,8 +1047,8 @@ void FrameLoaderClientImpl::didDisplayInsecureContent()
 
 void FrameLoaderClientImpl::didRunInsecureContent(SecurityOrigin* origin)
 {
-  if (m_webFrame->client())
-      m_webFrame->client()->didRunInsecureContent(m_webFrame, WebSecurityOrigin(origin));
+    if (m_webFrame->client())
+        m_webFrame->client()->didRunInsecureContent(m_webFrame, WebSecurityOrigin(origin));
 }
 
 ResourceError FrameLoaderClientImpl::blockedError(const ResourceRequest&)
@@ -1318,9 +1319,10 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
 
 // This method gets called when a plugin is put in place of html content
 // (e.g., acrobat reader).
-void FrameLoaderClientImpl::redirectDataToPlugin(Widget* pluginWidget) {
-  m_pluginWidget = static_cast<WebPluginContainerImpl*>(pluginWidget);
-  ASSERT(m_pluginWidget.get());
+void FrameLoaderClientImpl::redirectDataToPlugin(Widget* pluginWidget)
+{
+    m_pluginWidget = static_cast<WebPluginContainerImpl*>(pluginWidget);
+    ASSERT(m_pluginWidget.get());
 }
 
 PassRefPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(

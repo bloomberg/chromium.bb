@@ -33,9 +33,9 @@
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "Frame.h"
-#include "KeyboardCodes.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
+#include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformString.h"
@@ -707,7 +707,7 @@ bool EditorClientImpl::autofill(HTMLInputElement* inputElement,
         return false;
 
     WebString name = WebKit::nameOfInputElement(inputElement);
-    if (name.length() == 0) // If the field has no name, then we won't have values.
+    if (name.isEmpty()) // If the field has no name, then we won't have values.
         return false;
 
     // Don't attempt to autofill with values that are too large.

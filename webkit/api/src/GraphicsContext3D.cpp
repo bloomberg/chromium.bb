@@ -53,9 +53,9 @@
 #include "ImageBuffer.h"
 #include "ImageData.h"
 #include "NotImplemented.h"
-#include <wtf/FastMalloc.h>
 
 #include <stdio.h>
+#include <wtf/FastMalloc.h>
 
 #if PLATFORM(WIN_OS)
 #include <windows.h>
@@ -95,7 +95,7 @@ namespace WebCore {
 // Uncomment this to render to a separate window for debugging
 // #define RENDER_TO_DEBUGGING_WINDOW
 
-#define EXTRACT(val) (val == NULL ? 0 : val->object())
+#define EXTRACT(val) (!val ? 0 : val->object())
 
 class GraphicsContext3DInternal {
 public:
@@ -217,7 +217,8 @@ GraphicsContext3DInternal::VertexAttribPointerState::VertexAttribPointerState()
 }
 
 #if PLATFORM(LINUX)
-static void* tryLoad(const char* libName) {
+static void* tryLoad(const char* libName)
+{
     // We use RTLD_GLOBAL semantics so that GLEW initialization works;
     // GLEW expects to be able to open the current process's handle
     // and do dlsym's of GL entry points from there.
@@ -230,42 +231,42 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     , m_fbo(0)
     , m_depthBuffer(0)
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
-    , m_scanline(NULL)
+    , m_scanline(0)
 #endif
     , m_boundArrayBuffer(0)
 #if PLATFORM(SKIA)
     , m_resizingBitmap(0)
 #endif
 #if PLATFORM(WIN_OS)
-    , m_canvasWindow(NULL)
-    , m_canvasDC(NULL)
-    , m_contextObj(NULL)
+    , m_canvasWindow(0)
+    , m_canvasDC(0)
+    , m_contextObj(0)
 #elif PLATFORM(CG)
-    , m_pbuffer(NULL)
-    , m_contextObj(NULL)
-    , m_renderOutput(NULL)
-    , m_cgContext(NULL)
+    , m_pbuffer(0)
+    , m_contextObj(0)
+    , m_renderOutput(0)
+    , m_cgContext(0)
 #elif PLATFORM(LINUX)
-    , m_display(NULL)
-    , m_contextObj(NULL)
-    , m_pbuffer(NULL)
-    , m_glXChooseFBConfig(NULL)
-    , m_glXCreateNewContext(NULL)
-    , m_glXCreatePbuffer(NULL)
-    , m_glXDestroyPbuffer(NULL)
-    , m_glXMakeCurrent(NULL)
-    , m_glXDestroyContext(NULL)
-    , m_glXGetCurrentContext(NULL)
+    , m_display(0)
+    , m_contextObj(0)
+    , m_pbuffer(0)
+    , m_glXChooseFBConfig(0)
+    , m_glXCreateNewContext(0)
+    , m_glXCreatePbuffer(0)
+    , m_glXDestroyPbuffer(0)
+    , m_glXMakeCurrent(0)
+    , m_glXDestroyContext(0)
+    , m_glXGetCurrentContext(0)
 #else
 #error Must port to your platform
 #endif
 {
 #if PLATFORM(WIN_OS)
     WNDCLASS wc;
-    if (!GetClassInfo(GetModuleHandle(NULL), L"CANVASGL", &wc)) {
+    if (!GetClassInfo(GetModuleHandle(0), L"CANVASGL", &wc)) {
         ZeroMemory(&wc, sizeof(WNDCLASS));
         wc.style = CS_OWNDC;
-        wc.hInstance = GetModuleHandle(NULL);
+        wc.hInstance = GetModuleHandle(0);
         wc.lpfnWndProc = DefWindowProc;
         wc.lpszClassName = L"CANVASGL";
 
@@ -278,7 +279,7 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     m_canvasWindow = CreateWindow(L"CANVASGL", L"CANVASGL",
                                   WS_CAPTION,
                                   CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                                  CW_USEDEFAULT, NULL, NULL, GetModuleHandle(NULL), NULL);
+                                  CW_USEDEFAULT, 0, 0, GetModuleHandle(0), 0);
     if (!m_canvasWindow) {
         printf("GraphicsContext3DInternal: CreateWindow failed\n");
         return;
@@ -323,9 +324,9 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
 
 #ifdef RENDER_TO_DEBUGGING_WINDOW
     typedef BOOL (WINAPI * PFNWGLSWAPINTERVALEXTPROC) (int interval);
-    PFNWGLSWAPINTERVALEXTPROC setSwapInterval = NULL;
+    PFNWGLSWAPINTERVALEXTPROC setSwapInterval = 0;
     setSwapInterval = (PFNWGLSWAPINTERVALEXTPROC) wglGetProcAddress("wglSwapIntervalEXT");
-    if (setSwapInterval != NULL)
+    if (setSwapInterval)
         setSwapInterval(1);
 #endif // RENDER_TO_DEBUGGING_WINDOW
 
@@ -341,12 +342,12 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
         printf("GraphicsContext3D: error choosing pixel format\n");
         return;
     }
-    if (pixelFormat == NULL) {
+    if (!pixelFormat) {
         printf("GraphicsContext3D: no pixel format selected\n");
         return;
     }
     CGLContextObj context;
-    CGLError res = CGLCreateContext(pixelFormat, NULL, &context);
+    CGLError res = CGLCreateContext(pixelFormat, 0, &context);
     CGLDestroyPixelFormat(pixelFormat);
     if (res != kCGLNoError) {
         printf("GraphicsContext3D: error creating context\n");
@@ -373,8 +374,8 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     m_pbuffer = pbuffer;
     m_contextObj = context;
 #elif PLATFORM(LINUX)
-    m_display = XOpenDisplay(NULL);
-    if (m_display == NULL) {
+    m_display = XOpenDisplay(0);
+    if (!m_display) {
         printf("GraphicsContext3D: error opening X display\n");
         return;
     }
@@ -386,15 +387,14 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     };
     for (int i = 0; i < sizeof(libNames) / sizeof(const char*); i++) {
         m_libGL = tryLoad(libNames[i]);
-        if (m_libGL != NULL)
+        if (m_libGL)
             break;
     }
-    if (m_libGL == NULL) {
+    if (!m_libGL) {
         printf("GraphicsContext3D: error opening libGL.so.1\n");
         printf("GraphicsContext3D: tried:");
-        for (int i = 0; i < sizeof(libNames) / sizeof(const char*); i++) {
+        for (int i = 0; i < sizeof(libNames) / sizeof(const char*); i++)
             printf(" %s", libNames[i]);
-        }
         return;
     }
     m_glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC) dlsym(m_libGL, "glXChooseFBConfig");
@@ -404,9 +404,9 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     m_glXMakeCurrent = (PFNGLXMAKECURRENTPROC) dlsym(m_libGL, "glXMakeCurrent");
     m_glXDestroyContext = (PFNGLXDESTROYCONTEXTPROC) dlsym(m_libGL, "glXDestroyContext");
     m_glXGetCurrentContext = (PFNGLXGETCURRENTCONTEXTPROC) dlsym(m_libGL, "glXGetCurrentContext");
-    if (!m_glXChooseFBConfig || !m_glXCreateNewContext || !m_glXCreatePbuffer ||
-        !m_glXDestroyPbuffer || !m_glXMakeCurrent || !m_glXDestroyContext ||
-        !m_glXGetCurrentContext) {
+    if (!m_glXChooseFBConfig || !m_glXCreateNewContext || !m_glXCreatePbuffer
+        || !m_glXDestroyPbuffer || !m_glXMakeCurrent || !m_glXDestroyContext
+        || !m_glXGetCurrentContext) {
         printf("GraphicsContext3D: error looking up bootstrapping entry points\n");
         return;
     }
@@ -421,17 +421,17 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     };
     int nelements = 0;
     GLXFBConfig* config = m_glXChooseFBConfig(m_display, 0, configAttrs, &nelements);
-    if (config == NULL) {
+    if (!config) {
         printf("GraphicsContext3D: glXChooseFBConfig failed\n");
         return;
     }
-    if (nelements == 0) {
+    if (!nelements) {
         printf("GraphicsContext3D: glXChooseFBConfig returned 0 elements\n");
         XFree(config);
         return;
     }
-    GLXContext context = m_glXCreateNewContext(m_display, config[0], GLX_RGBA_TYPE, NULL, True);
-    if (context == NULL) {
+    GLXContext context = m_glXCreateNewContext(m_display, config[0], GLX_RGBA_TYPE, 0, True);
+    if (!context) {
         printf("GraphicsContext3D: glXCreateNewContext failed\n");
         XFree(config);
         return;
@@ -482,7 +482,7 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
     glDeleteRenderbuffersEXT(1, &m_depthBuffer);
     glDeleteTextures(1, &m_texture);
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
-    if (m_scanline != NULL)
+    if (m_scanline)
         delete[] m_scanline;
 #endif
     glDeleteFramebuffersEXT(1, &m_fbo);
@@ -492,20 +492,20 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
         delete m_resizingBitmap;
 #endif
 #if PLATFORM(WIN_OS)
-    wglMakeCurrent(NULL, NULL);
+    wglMakeCurrent(0, 0);
     wglDeleteContext(m_contextObj);
     ReleaseDC(m_canvasWindow, m_canvasDC);
     DestroyWindow(m_canvasWindow);
 #elif PLATFORM(CG)
-    CGLSetCurrentContext(NULL);
+    CGLSetCurrentContext(0);
     CGLDestroyContext(m_contextObj);
     CGLDestroyPBuffer(m_pbuffer);
-    if (m_cgContext != NULL)
+    if (m_cgContext)
         CGContextRelease(m_cgContext);
-    if (m_renderOutput != NULL)
+    if (m_renderOutput)
         delete[] m_renderOutput;
 #elif PLATFORM(LINUX)
-    m_glXMakeCurrent(m_display, NULL, NULL);
+    m_glXMakeCurrent(m_display, 0, 0);
     m_glXDestroyContext(m_display, m_contextObj);
     m_glXDestroyPbuffer(m_display, m_pbuffer);
     XCloseDisplay(m_display);
@@ -513,7 +513,7 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
 #else
 #error Must port to your platform
 #endif
-    m_contextObj = NULL;
+    m_contextObj = 0;
 }
 
 void GraphicsContext3DInternal::checkError() const
@@ -586,7 +586,7 @@ void GraphicsContext3DInternal::reshape(int width, int height)
 #else
     GLenum target = GL_TEXTURE_2D;
 #endif
-    if (m_texture == 0) {
+    if (!m_texture) {
         // Generate the texture object
         m_texture = createTextureObject(target);
         // Generate the framebuffer object
@@ -618,9 +618,9 @@ void GraphicsContext3DInternal::reshape(int width, int height)
 #endif  // RENDER_TO_DEBUGGING_WINDOW
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
-    if (m_scanline != NULL) {
+    if (m_scanline) {
         delete[] m_scanline;
-        m_scanline = NULL;
+        m_scanline = 0;
     }
     m_scanline = new unsigned char[width * 4];
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
@@ -631,13 +631,13 @@ void GraphicsContext3DInternal::reshape(int width, int height)
 #if PLATFORM(CG)
     // Need to reallocate the client-side backing store.
     // FIXME: make this more efficient.
-    if (m_cgContext != NULL) {
+    if (m_cgContext) {
         CGContextRelease(m_cgContext);
-        m_cgContext = NULL;
+        m_cgContext = 0;
     }
-    if (m_renderOutput != NULL) {
+    if (m_renderOutput) {
         delete[] m_renderOutput;
-        m_renderOutput = NULL;
+        m_renderOutput = 0;
     }
     int rowBytes = width * 4;
     m_renderOutput = new unsigned char[height * rowBytes];
@@ -654,7 +654,7 @@ void GraphicsContext3DInternal::flipVertically(unsigned char* framebuffer,
                                                unsigned int height)
 {
     unsigned char* scanline = m_scanline;
-    if (scanline == NULL)
+    if (!scanline)
         return;
     unsigned int rowBytes = width * 4;
     unsigned int count = height / 2;
@@ -693,12 +693,11 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
     const SkBitmap* canvasBitmap = imageBuffer->context()->platformContext()->bitmap();
     const SkBitmap* readbackBitmap = 0;
     ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
-    if (canvasBitmap->width() == m_cachedWidth &&
-        canvasBitmap->height() == m_cachedHeight) {
+    if (canvasBitmap->width() == m_cachedWidth && canvasBitmap->height() == m_cachedHeight) {
         // This is the fastest and most common case. We read back
         // directly into the canvas's backing store.
         readbackBitmap = canvasBitmap;
-        if (m_resizingBitmap != NULL) {
+        if (m_resizingBitmap) {
             delete m_resizingBitmap;
             m_resizingBitmap = 0;
         }
@@ -706,13 +705,11 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
         // We need to allocate a temporary bitmap for reading back the
         // pixel data. We will then use Skia to rescale this bitmap to
         // the size of the canvas's backing store.
-        if (m_resizingBitmap &&
-            (m_resizingBitmap->width() != m_cachedWidth ||
-             m_resizingBitmap->height() != m_cachedHeight)) {
+        if (m_resizingBitmap && (m_resizingBitmap->width() != m_cachedWidth || m_resizingBitmap->height() != m_cachedHeight)) {
             delete m_resizingBitmap;
             m_resizingBitmap = 0;
         }
-        if (m_resizingBitmap == 0) {
+        if (!m_resizingBitmap) {
             m_resizingBitmap = new SkBitmap();
             m_resizingBitmap->setConfig(SkBitmap::kARGB_8888_Config,
                                         m_cachedWidth,
@@ -731,7 +728,7 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
     pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
     glReadPixels(0, 0, m_cachedWidth, m_cachedHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #elif PLATFORM(CG)
-    if (m_renderOutput != NULL) {
+    if (m_renderOutput) {
         ASSERT(CGBitmapContextGetWidth(m_cgContext) == m_cachedWidth);
         ASSERT(CGBitmapContextGetHeight(m_cgContext) == m_cachedHeight);
         pixels = m_renderOutput;
@@ -742,7 +739,7 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 #endif
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
-    if (pixels != NULL)
+    if (pixels)
         flipVertically(pixels, m_cachedWidth, m_cachedHeight);
 #endif
 
@@ -755,7 +752,7 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
         canvas.drawBitmapRect(*m_resizingBitmap, 0, dst);
     }
 #elif PLATFORM(CG)
-    if (m_renderOutput != NULL) {
+    if (m_renderOutput) {
         CGImageRef cgImage = CGBitmapContextCreateImage(m_cgContext);
         // CSS styling may cause the canvas's content to be resized on
         // the page. Go back to the Canvas to figure out the correct
@@ -780,16 +777,15 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 
 bool GraphicsContext3DInternal::validateTextureTarget(int target)
 {
-    return (target == GL_TEXTURE_2D ||
-            target == GL_TEXTURE_CUBE_MAP);
+    return (target == GL_TEXTURE_2D || target == GL_TEXTURE_CUBE_MAP);
 }
 
 bool GraphicsContext3DInternal::validateTextureParameter(int param)
 {
-    return (param == GL_TEXTURE_MAG_FILTER ||
-            param == GL_TEXTURE_MIN_FILTER ||
-            param == GL_TEXTURE_WRAP_S ||
-            param == GL_TEXTURE_WRAP_T);
+    return (param == GL_TEXTURE_MAG_FILTER
+         || param == GL_TEXTURE_MIN_FILTER
+         || param == GL_TEXTURE_WRAP_S
+         || param == GL_TEXTURE_WRAP_T);
 }
 
 void GraphicsContext3DInternal::activeTexture(unsigned long texture)
@@ -828,7 +824,7 @@ void GraphicsContext3DInternal::bindTexture(unsigned long target,
     // API. On desktop OpenGL implementations it seems necessary to
     // set this wrap mode to GL_CLAMP_TO_EDGE to get correct behavior
     // of cube maps.
-    if (texture != NULL) {
+    if (texture) {
         if (target == GL_TEXTURE_CUBE_MAP) {
             if (!texture->isCubeMapRWrapModeInitialized()) {
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -863,9 +859,8 @@ void GraphicsContext3DInternal::bufferDataImpl(unsigned long target, int size, c
 void GraphicsContext3DInternal::disableVertexAttribArray(unsigned long index)
 {
     makeContextCurrent();
-    if (index < NumTrackedPointerStates) {
+    if (index < NumTrackedPointerStates)
         m_vertexAttribPointerState[index].enabled = false;
-    }
     glDisableVertexAttribArray(index);
 }
 
@@ -918,91 +913,106 @@ void GraphicsContext3DInternal::viewportImpl(long x, long y, unsigned long width
 #define GL_SAME_METHOD_0(glname, name)                                         \
 void GraphicsContext3D::name()                                                 \
 {                                                                              \
-    makeContextCurrent(); gl##glname();                                        \
+    makeContextCurrent();                                                      \
+    gl##glname();                                                              \
 }
 
 #define GL_SAME_METHOD_1(glname, name, t1)                                     \
 void GraphicsContext3D::name(t1 a1)                                            \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1);                                      \
+    makeContextCurrent();                                                      \
+    gl##glname(a1);                                                            \
 }
 
 #define GL_SAME_METHOD_1_X(glname, name, t1)                                   \
 void GraphicsContext3D::name(t1 a1)                                            \
 {                                                                              \
-    makeContextCurrent(); gl##glname(EXTRACT(a1));                             \
+    makeContextCurrent();                                                      \
+    gl##glname(EXTRACT(a1));                                                   \
 }
 
 #define GL_SAME_METHOD_2(glname, name, t1, t2)                                 \
 void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2);                                   \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2);                                                        \
 }
 
 #define GL_SAME_METHOD_2_X12(glname, name, t1, t2)                             \
 void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
-    makeContextCurrent(); gl##glname(EXTRACT(a1),EXTRACT(a2));                 \
+    makeContextCurrent();                                                      \
+    gl##glname(EXTRACT(a1), EXTRACT(a2));                                      \
 }
 
 #define GL_SAME_METHOD_2_X2(glname, name, t1, t2)                              \
 void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,EXTRACT(a2));                          \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, EXTRACT(a2));                                               \
 }
 
 #define GL_SAME_METHOD_3(glname, name, t1, t2, t3)                             \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3);                                \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3);                                                    \
 }
 
 #define GL_SAME_METHOD_3_X12(glname, name, t1, t2, t3)                         \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
-    makeContextCurrent(); gl##glname(EXTRACT(a1),EXTRACT(a2),a3);              \
+    makeContextCurrent();                                                      \
+    gl##glname(EXTRACT(a1), EXTRACT(a2), a3);                                  \
 }
 
 #define GL_SAME_METHOD_3_X2(glname, name, t1, t2, t3)                          \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,EXTRACT(a2),a3);                       \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, EXTRACT(a2), a3);                                           \
 }
 
 #define GL_SAME_METHOD_4(glname, name, t1, t2, t3, t4)                         \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4)                       \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3,a4);                             \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, a4);                                                \
 }
 
 #define GL_SAME_METHOD_4_X4(glname, name, t1, t2, t3, t4)                      \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4)                       \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3,EXTRACT(a4));                    \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, EXTRACT(a4));                                       \
 }
 
 #define GL_SAME_METHOD_5(glname, name, t1, t2, t3, t4, t5)                     \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)                \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5);                          \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, a4, a5);                                            \
 }
 
 #define GL_SAME_METHOD_5_X4(glname, name, t1, t2, t3, t4, t5)                  \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)                \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3,EXTRACT(a4),a5);                 \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, EXTRACT(a4), a5);                                   \
 }
 
 #define GL_SAME_METHOD_6(glname, name, t1, t2, t3, t4, t5, t6)                 \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6)         \
 {                                                                              \
-    makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5,a6);                       \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, a4, a5, a6);                                        \
 }
 
-#define GL_SAME_METHOD_8(glname, name, t1, t2, t3, t4, t5, t6, t7, t8)                       \
+#define GL_SAME_METHOD_8(glname, name, t1, t2, t3, t4, t5, t6, t7, t8)         \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8)   \
-{                                                                                            \
-    makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5,a6,a7,a8);                               \
+{                                                                              \
+    makeContextCurrent();                                                      \
+    gl##glname(a1, a2, a3, a4, a5, a6, a7, a8);                                \
 }
 
 PassOwnPtr<GraphicsContext3D> GraphicsContext3D::create()
@@ -1066,22 +1076,22 @@ void GraphicsContext3D::endPaint()
 int GraphicsContext3D::sizeInBytes(int type)
 {
     switch (type) {
-        case GL_BYTE:
-            return sizeof(GLbyte);
-        case GL_UNSIGNED_BYTE:
-            return sizeof(GLubyte);
-        case GL_SHORT:
-            return sizeof(GLshort);
-        case GL_UNSIGNED_SHORT:
-            return sizeof(GLushort);
-        case GL_INT:
-            return sizeof(GLint);
-        case GL_UNSIGNED_INT:
-            return sizeof(GLuint);
-        case GL_FLOAT:
-            return sizeof(GLfloat);
-        default:
-            return 0;
+    case GL_BYTE:
+        return sizeof(GLbyte);
+    case GL_UNSIGNED_BYTE:
+        return sizeof(GLubyte);
+    case GL_SHORT:
+        return sizeof(GLshort);
+    case GL_UNSIGNED_SHORT:
+        return sizeof(GLushort);
+    case GL_INT:
+        return sizeof(GLint);
+    case GL_UNSIGNED_INT:
+        return sizeof(GLuint);
+    case GL_FLOAT:
+        return sizeof(GLfloat);
+    default: // FIXME: default cases are discouraged in WebKit.
+        return 0;
     }
 }
 
@@ -1213,7 +1223,7 @@ GL_SAME_METHOD_4(BlendFuncSeparate, blendFuncSeparate, unsigned long, unsigned l
 
 void GraphicsContext3D::bufferData(unsigned long target, int size, unsigned long usage)
 {
-    m_internal->bufferDataImpl(target, size, NULL, usage);
+    m_internal->bufferDataImpl(target, size, 0, usage);
 }
 
 void GraphicsContext3D::bufferData(unsigned long target, CanvasArray* array, unsigned long usage)
@@ -1290,19 +1300,19 @@ void GraphicsContext3D::disableVertexAttribArray(unsigned long index)
 void GraphicsContext3D::drawArrays(unsigned long mode, long first, long count)
 {
     switch (mode) {
-        case GL_TRIANGLES:
-        case GL_TRIANGLE_STRIP:
-        case GL_TRIANGLE_FAN:
-        case GL_POINTS:
-        case GL_LINE_STRIP:
-        case GL_LINE_LOOP:
-        case GL_LINES:
-            break;
-        default:
-            // FIXME: output log message, raise exception.
-            // LogMessage(NS_LITERAL_CSTRING("drawArrays: invalid mode"));
-            // return NS_ERROR_DOM_SYNTAX_ERR;
-            return;
+    case GL_TRIANGLES:
+    case GL_TRIANGLE_STRIP:
+    case GL_TRIANGLE_FAN:
+    case GL_POINTS:
+    case GL_LINE_STRIP:
+    case GL_LINE_LOOP:
+    case GL_LINES:
+        break;
+    default: // FIXME: default cases are discouraged in WebKit.
+        // FIXME: output log message, raise exception.
+        // LogMessage(NS_LITERAL_CSTRING("drawArrays: invalid mode"));
+        // return NS_ERROR_DOM_SYNTAX_ERR;
+        return;
     }
 
     if (first+count < first || first+count < count) {
@@ -1356,9 +1366,8 @@ GL_SAME_METHOD_1(FrontFace, frontFace, unsigned long)
 void GraphicsContext3D::generateMipmap(unsigned long target)
 {
     makeContextCurrent();
-    if (glGenerateMipmapEXT) {
+    if (glGenerateMipmapEXT)
         glGenerateMipmapEXT(target);
-    }
     // FIXME: provide alternative code path? This will be unpleasant
     // to implement if glGenerateMipmapEXT is not available -- it will
     // require a texture readback and re-upload.
@@ -1372,7 +1381,7 @@ bool GraphicsContext3D::getActiveAttrib(CanvasProgram* program, unsigned long in
     glGetProgramiv(EXTRACT(program), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
     if (maxNameLength < 0)
         return false;
-    GLchar* name = NULL;
+    GLchar* name = 0;
     if (!tryFastMalloc(maxNameLength * sizeof(GLchar)).getValue(name))
         return false;
     GLsizei length = 0;
@@ -1399,7 +1408,7 @@ bool GraphicsContext3D::getActiveUniform(CanvasProgram* program, unsigned long i
     glGetProgramiv(EXTRACT(program), GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
     if (maxNameLength < 0)
         return false;
-    GLchar* name = NULL;
+    GLchar* name = 0;
     if (!tryFastMalloc(maxNameLength * sizeof(GLchar)).getValue(name))
         return false;
     GLsizei length = 0;
@@ -1440,7 +1449,7 @@ PassRefPtr<CanvasUnsignedByteArray> GraphicsContext3D::getBooleanv(unsigned long
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getBufferParameteri(unsigned long target, unsigned long pname)
@@ -1455,7 +1464,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getBufferParameteriv(unsigned long
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 unsigned long GraphicsContext3D::getError()
@@ -1477,7 +1486,7 @@ PassRefPtr<CanvasFloatArray> GraphicsContext3D::getFloatv(unsigned long pname)
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getFramebufferAttachmentParameteri(unsigned long target,
@@ -1496,7 +1505,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getFramebufferAttachmentParameteri
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getInteger(unsigned long pname)
@@ -1512,7 +1521,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getIntegerv(unsigned long pname)
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getProgrami(CanvasProgram* program,
@@ -1529,7 +1538,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getProgramiv(CanvasProgram* progra
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 String GraphicsContext3D::getProgramInfoLog(CanvasProgram* program)
@@ -1538,9 +1547,9 @@ String GraphicsContext3D::getProgramInfoLog(CanvasProgram* program)
     GLuint programID = EXTRACT(program);
     GLint logLength;
     glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength == 0)
+    if (!logLength)
         return String();
-    GLchar* log = NULL;
+    GLchar* log = 0;
     if (!tryFastMalloc(logLength * sizeof(GLchar)).getValue(log))
         return String();
     GLsizei returnedLogLength;
@@ -1565,7 +1574,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getRenderbufferParameteriv(unsigne
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getShaderi(CanvasShader* shader,
@@ -1582,7 +1591,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getShaderiv(CanvasShader* shader,
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 String GraphicsContext3D::getShaderInfoLog(CanvasShader* shader)
@@ -1591,9 +1600,9 @@ String GraphicsContext3D::getShaderInfoLog(CanvasShader* shader)
     GLuint shaderID = EXTRACT(shader);
     GLint logLength;
     glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength == 0)
+    if (!logLength)
         return String();
-    GLchar* log = NULL;
+    GLchar* log = 0;
     if (!tryFastMalloc(logLength * sizeof(GLchar)).getValue(log))
         return String();
     GLsizei returnedLogLength;
@@ -1610,9 +1619,9 @@ String GraphicsContext3D::getShaderSource(CanvasShader* shader)
     GLuint shaderID = EXTRACT(shader);
     GLint logLength;
     glGetShaderiv(shaderID, GL_SHADER_SOURCE_LENGTH, &logLength);
-    if (logLength == 0)
+    if (!logLength)
         return String();
-    GLchar* log = NULL;
+    GLchar* log = 0;
     if (!tryFastMalloc(logLength * sizeof(GLchar)).getValue(log))
         return String();
     GLsizei returnedLogLength;
@@ -1651,7 +1660,7 @@ PassRefPtr<CanvasFloatArray> GraphicsContext3D::getTexParameterfv(unsigned long 
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getTexParameteri(unsigned long target, unsigned long pname)
@@ -1676,7 +1685,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getTexParameteriv(unsigned long ta
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 float GraphicsContext3D::getUniformf(CanvasProgram* program, long location)
@@ -1690,7 +1699,7 @@ PassRefPtr<CanvasFloatArray> GraphicsContext3D::getUniformfv(CanvasProgram* prog
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getUniformi(CanvasProgram* program, long location)
@@ -1704,7 +1713,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getUniformiv(CanvasProgram* progra
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 long GraphicsContext3D::getUniformLocation(CanvasProgram* program, const String& name)
@@ -1729,7 +1738,7 @@ PassRefPtr<CanvasFloatArray> GraphicsContext3D::getVertexAttribfv(unsigned long 
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 int GraphicsContext3D::getVertexAttribi(unsigned long index,
@@ -1737,7 +1746,7 @@ int GraphicsContext3D::getVertexAttribi(unsigned long index,
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 PassRefPtr<CanvasIntArray> GraphicsContext3D::getVertexAttribiv(unsigned long index,
@@ -1745,7 +1754,7 @@ PassRefPtr<CanvasIntArray> GraphicsContext3D::getVertexAttribiv(unsigned long in
 {
     // FIXME: implement.
     notImplemented();
-    return NULL;
+    return 0;
 }
 
 long GraphicsContext3D::getVertexAttribOffset(unsigned long index, unsigned long pname)
@@ -1805,10 +1814,8 @@ GL_SAME_METHOD_1_X(LinkProgram, linkProgram, CanvasProgram*)
 
 void GraphicsContext3D::pixelStorei(unsigned long pname, long param)
 {
-    if (pname != GL_PACK_ALIGNMENT &&
-        pname != GL_UNPACK_ALIGNMENT) {
-        // FIXME: force fake GL error to be produced and throw
-        // exception.
+    if (pname != GL_PACK_ALIGNMENT && pname != GL_UNPACK_ALIGNMENT) {
+        // FIXME: Create a fake GL error and throw an exception.
         return;
     }
 
@@ -1822,9 +1829,8 @@ PassRefPtr<CanvasArray> GraphicsContext3D::readPixels(long x, long y,
                                                       unsigned long width, unsigned long height,
                                                       unsigned long format, unsigned long type) {
     // FIXME: support more pixel formats and types.
-    if (!((format == GL_RGBA) && (type == GL_UNSIGNED_BYTE))) {
+    if (!((format == GL_RGBA) && (type == GL_UNSIGNED_BYTE)))
         return 0;
-    }
 
     // FIXME: take into account pack alignment.
     RefPtr<CanvasUnsignedByteArray> array = CanvasUnsignedByteArray::create(width * height * 4);
@@ -1953,8 +1959,8 @@ static int texImage2DHelper(unsigned target, unsigned level,
                      0,
                      format,
                      GL_UNSIGNED_BYTE,
-                     NULL);
-        unsigned char* row = NULL;
+                     0);
+        unsigned char* row = 0;
         bool allocatedRow = false;
         if (!premultiplyAlpha) {
             row = new unsigned char[rowBytes];
@@ -1994,7 +2000,7 @@ static int texImage2DHelper(unsigned target, unsigned level,
                          0,
                          format,
                          GL_UNSIGNED_BYTE,
-                         NULL);
+                         0);
             unsigned char* row = new unsigned char[rowBytes];
             for (int i = 0; i < height; i++) {
                 memcpy(row, pixels + (rowBytes * i), rowBytes);
@@ -2019,7 +2025,7 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, Image* image,
     int res = -1;
 #if PLATFORM(SKIA)
     NativeImageSkia* skiaImage = image->nativeImageForCurrentFrame();
-    if (skiaImage == NULL) {
+    if (!skiaImage) {
         ASSERT_NOT_REACHED();
         return -1;
     }
@@ -2045,7 +2051,7 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, Image* image,
                            pixels);
 #elif PLATFORM(CG)
     CGImageRef cgImage = image->nativeImageForCurrentFrame();
-    if (cgImage == NULL) {
+    if (!cgImage) {
         ASSERT_NOT_REACHED();
         return -1;
     }
@@ -2053,9 +2059,9 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, Image* image,
     int height = CGImageGetHeight(cgImage);
     int rowBytes = width * 4;
     CGImageAlphaInfo info = CGImageGetAlphaInfo(cgImage);
-    bool skipAlpha = (info == kCGImageAlphaNone ||
-                      info == kCGImageAlphaNoneSkipLast ||
-                      info == kCGImageAlphaNoneSkipFirst);
+    bool skipAlpha = (info == kCGImageAlphaNone
+                   || info == kCGImageAlphaNoneSkipLast
+                   || info == kCGImageAlphaNoneSkipFirst);
     unsigned char* imageData = new unsigned char[height * rowBytes];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
     CGContextRef tmpContext = CGBitmapContextCreate(imageData, width, height, 8, rowBytes,

@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebInputEventConversion.h"
 
-#include "WebInputEvent.h"
-
 #include "EventNames.h"
 #include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
@@ -41,6 +39,7 @@
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
 #include "ScrollView.h"
+#include "WebInputEvent.h"
 #include "Widget.h"
 
 using namespace WebCore;
@@ -56,10 +55,10 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     m_position = widget->convertFromContainingWindow(IntPoint(e.x, e.y));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_button = static_cast<MouseButton>(e.button);
-    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey) != 0;
-    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey) != 0;
-    m_altKey = (e.modifiers & WebInputEvent::AltKey) != 0;
-    m_metaKey = (e.modifiers & WebInputEvent::MetaKey) != 0;
+    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey);
+    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey);
+    m_altKey = (e.modifiers & WebInputEvent::AltKey);
+    m_metaKey = (e.modifiers & WebInputEvent::MetaKey);
     m_modifierFlags = e.modifiers;
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
@@ -96,10 +95,10 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_isAccepted = false;
     m_granularity = e.scrollByPage ?
         ScrollByPageWheelEvent : ScrollByPixelWheelEvent;
-    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey) != 0;
-    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey) != 0;
-    m_altKey = (e.modifiers & WebInputEvent::AltKey) != 0;
-    m_metaKey = (e.modifiers & WebInputEvent::MetaKey) != 0;
+    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey);
+    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey);
+    m_altKey = (e.modifiers & WebInputEvent::AltKey);
+    m_metaKey = (e.modifiers & WebInputEvent::MetaKey);
 }
 
 // MakePlatformKeyboardEvent --------------------------------------------------
@@ -127,14 +126,14 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_text = String(e.text);
     m_unmodifiedText = String(e.unmodifiedText);
     m_keyIdentifier = String(e.keyIdentifier);
-    m_autoRepeat = (e.modifiers & WebInputEvent::IsAutoRepeat) != 0;
+    m_autoRepeat = (e.modifiers & WebInputEvent::IsAutoRepeat);
     m_windowsVirtualKeyCode = e.windowsKeyCode;
     m_nativeVirtualKeyCode = e.nativeKeyCode;
-    m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad) != 0;
-    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey) != 0;
-    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey) != 0;
-    m_altKey = (e.modifiers & WebInputEvent::AltKey) != 0;
-    m_metaKey = (e.modifiers & WebInputEvent::MetaKey) != 0;
+    m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad);
+    m_shiftKey = (e.modifiers & WebInputEvent::ShiftKey);
+    m_ctrlKey = (e.modifiers & WebInputEvent::ControlKey);
+    m_altKey = (e.modifiers & WebInputEvent::AltKey);
+    m_metaKey = (e.modifiers & WebInputEvent::MetaKey);
     m_isSystemKey = e.isSystemKey;
 }
 
@@ -232,7 +231,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const ScrollView* view, const MouseEv
     y = event.offsetY();
 }
 
-WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
+WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
+{
     if (event.type() == eventNames().keydownEvent)
         type = KeyDown;
     else if (event.type() == eventNames().keyupEvent)

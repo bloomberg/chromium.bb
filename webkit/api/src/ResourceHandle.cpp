@@ -31,6 +31,9 @@
 #include "config.h"
 #include "ResourceHandle.h"
 
+#include "ResourceHandleClient.h"
+#include "ResourceRequest.h"
+
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebURLError.h"
@@ -40,9 +43,6 @@
 #include "WebURLResponse.h"
 #include "WrappedResourceRequest.h"
 #include "WrappedResourceResponse.h"
-
-#include "ResourceHandleClient.h"
-#include "ResourceRequest.h"
 
 using namespace WebKit;
 

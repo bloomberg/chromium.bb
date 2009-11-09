@@ -31,14 +31,14 @@
 #include "config.h"
 #include "PlatformMessagePortChannel.h"
 
+#include "MessagePort.h"
+#include "ScriptExecutionContext.h"
+#include "SerializedScriptValue.h"
+
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMessagePortChannel.h"
 #include "WebString.h"
-
-#include "MessagePort.h"
-#include "ScriptExecutionContext.h"
-#include "SerializedScriptValue.h"
 
 using namespace WebKit;
 
@@ -102,8 +102,8 @@ bool MessagePortChannel::hasPendingActivity()
 
 MessagePort* MessagePortChannel::locallyEntangledPort(const ScriptExecutionContext* context)
 {
-    // This is just an optimization, so return NULL always.
-    return NULL;
+    // This is just an optimization, so return 0 always.
+    return 0;
 }
 
 
@@ -181,7 +181,7 @@ void PlatformMessagePortChannel::postMessageToRemote(PassOwnPtr<MessagePortChann
 
     WebString messageString = message->message()->toString();
     OwnPtr<WebCore::MessagePortChannelArray> channels = message->channels();
-    WebMessagePortChannelArray* webChannels = NULL;
+    WebMessagePortChannelArray* webChannels = 0;
     if (channels.get() && channels->size()) {
         webChannels = new WebMessagePortChannelArray(channels->size());
         for (size_t i = 0; i < channels->size(); ++i) {

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebCString.h"
 
-#include "WebString.h"
-
 #include "CString.h"
 #include "TextEncoding.h"
+
+#include "WebString.h"
 
 namespace WebKit {
 

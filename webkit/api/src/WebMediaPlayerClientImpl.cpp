@@ -7,6 +7,19 @@
 
 #if ENABLE(VIDEO)
 
+#include "CString.h"
+#include "Frame.h"
+#include "GraphicsContext.h"
+#include "HTMLMediaElement.h"
+#include "IntSize.h"
+#include "KURL.h"
+#include "MediaPlayer.h"
+#include "NotImplemented.h"
+#if WEBKIT_USING_SKIA
+#include "PlatformContextSkia.h"
+#endif
+#include "TimeRanges.h"
+
 #include "WebCanvas.h"
 #include "WebCString.h"
 #include "WebFrameClient.h"
@@ -20,20 +33,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#include "CString.h"
-#include "Frame.h"
-#include "GraphicsContext.h"
-#include "HTMLMediaElement.h"
-#include "IntSize.h"
-#include "KURL.h"
-#include "MediaPlayer.h"
-#include "NotImplemented.h"
-#include "TimeRanges.h"
 #include <wtf/Assertions.h>
-
-#if WEBKIT_USING_SKIA
-#include "PlatformContextSkia.h"
-#endif
 
 using namespace WebCore;
 
