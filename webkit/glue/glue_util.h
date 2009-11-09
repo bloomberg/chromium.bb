@@ -24,11 +24,11 @@ class KURL;
 class Node;
 class Range;
 class ResourceError;
+class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 class SharedBuffer;
 class String;
-struct ResourceRequest;
 }
 
 namespace WebKit {
