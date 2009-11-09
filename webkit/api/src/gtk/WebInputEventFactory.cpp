@@ -31,14 +31,15 @@
 #include "config.h"
 #include "WebInputEventFactory.h"
 
+#include "KeyboardCodes.h"
+#include "KeyCodeConversion.h"
+
+#include "WebInputEvent.h"
+
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtkversion.h>
 
-#include "WebInputEvent.h"
-
-#include "KeyboardCodes.h"
-#include "KeyCodeConversion.h"
 #include <wtf/Assertions.h>
 
 namespace WebKit {
@@ -58,7 +59,7 @@ static int gdkStateToWebEventModifiers(guint state)
         modifiers |= WebInputEvent::ControlKey;
     if (state & GDK_MOD1_MASK)
         modifiers |= WebInputEvent::AltKey;
-#if GTK_CHECK_VERSION(2,10,0)
+#if GTK_CHECK_VERSION(2, 10, 0)
     if (state & GDK_META_MASK)
         modifiers |= WebInputEvent::MetaKey;
 #endif

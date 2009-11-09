@@ -33,9 +33,8 @@
 
 #if ENABLE(VIDEO)
 
-#include "WebMediaPlayerClient.h"
-
 #include "MediaPlayerPrivate.h"
+#include "WebMediaPlayerClient.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebKit {

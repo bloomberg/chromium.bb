@@ -31,10 +31,11 @@
 #include "config.h"
 #include "WebInputEvent.h"
 
+#include "KeyboardCodes.h"
+
 #include <ctype.h>
 #include <stdio.h>
 
-#include "KeyboardCodes.h"
 #include <wtf/Assertions.h>
 #include <wtf/StringExtras.h>
 

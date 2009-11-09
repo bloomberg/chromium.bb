@@ -31,8 +31,8 @@
 #ifndef DragClientImpl_h
 #define DragClientImpl_h
 
-#include "DragClient.h"
 #include "DragActions.h"
+#include "DragClient.h"
 
 namespace WebCore {
 class ClipBoard;

@@ -111,26 +111,19 @@ static int toCSSValueKeyword(WebColorName in_value)
 
 void setNamedColors(const WebColorName* colorNames, const WebColor* colors, size_t length)
 {
-  for (size_t i = 0; i < length; ++i) {
-      WebColorName colorName = colorNames[i];
-      WebColor color = colors[i];
+    for (size_t i = 0; i < length; ++i) {
+        WebColorName colorName = colorNames[i];
+        WebColor color = colors[i];
 
-      // Convert color to internal value identifier.
-      int internalColorName = toCSSValueKeyword(colorName);
+        // Convert color to internal value identifier.
+        int internalColorName = toCSSValueKeyword(colorName);
+        if (internalColorName == CSSValueWebkitFocusRingColor) {
+            RenderTheme::setCustomFocusRingColor(color);
+            continue;
+        }
+    }
 
-      if (internalColorName == CSSValueWebkitFocusRingColor)
-      {
-          RenderTheme::setCustomFocusRingColor(color);
-          continue;
-      }
-
-      // TODO(jeremy): Set Color in RenderTheme.
-      UNUSED_PARAM(internalColorName);  // Suppress compiler warnings for now.
-      UNUSED_PARAM(colorName);
-      UNUSED_PARAM(color);
-  }
-
-  // TODO(jeremy): Tell RenderTheme to update colors.
+    // TODO(jeremy): Tell RenderTheme to update colors.
 }
 
 } // WebKit

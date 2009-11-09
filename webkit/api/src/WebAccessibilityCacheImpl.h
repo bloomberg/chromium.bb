@@ -33,11 +33,11 @@
 
 // FIXME: Move wtf/RefCounted.h include to AccessibilityObjectWrapper.h
 // once this file is upstream.
-#include <wtf/RefCounted.h>
 #include "AccessibilityObjectWrapper.h"
 #include "WebAccessibilityCache.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebKit {
 

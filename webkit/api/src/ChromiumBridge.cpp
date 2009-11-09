@@ -308,7 +308,7 @@ String ChromiumBridge::getFontFamilyForCharacters(const UChar* characters, size_
 #if ENABLE(DATABASE)
 PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName, int desiredFlags, PlatformFileHandle* dirHandle)
 {
-  return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags, dirHandle);
+    return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags, dirHandle);
 }
 
 int ChromiumBridge::databaseDeleteFile(const String& fileName, bool syncDir)

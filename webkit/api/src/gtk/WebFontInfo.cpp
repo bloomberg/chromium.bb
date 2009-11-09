@@ -31,10 +31,9 @@
 #include "config.h"
 #include "WebFontInfo.h"
 
-#include <string.h>
-
-#include <unicode/utf16.h>
 #include <fontconfig/fontconfig.h>
+#include <string.h>
+#include <unicode/utf16.h>
 
 namespace WebKit {
 
@@ -88,7 +87,7 @@ WebCString WebFontInfo::familyForChars(const WebUChar* characters, size_t numCha
         if (FcPatternGetString(current, FC_FILE, 0, &cFilename) != FcResultMatch)
             continue;
 
-        if (access(reinterpret_cast<char*>(cFilename), R_OK) != 0)
+        if (access(reinterpret_cast<char*>(cFilename), R_OK))
             continue;
 
         FcChar8* family;

@@ -106,14 +106,14 @@ PopupMenuStyle AutocompletePopupMenuClient::menuStyle() const
 
 int AutocompletePopupMenuClient::clientPaddingLeft() const
 {
-    // Bug http://crbug.com/7708 seems to indicate the style can be NULL.
+    // Bug http://crbug.com/7708 seems to indicate the style can be 0.
     RenderStyle* style = textFieldStyle();
     return style ? m_webView->theme()->popupInternalPaddingLeft(style) : 0;
 }
 
 int AutocompletePopupMenuClient::clientPaddingRight() const
 {
-    // Bug http://crbug.com/7708 seems to indicate the style can be NULL.
+    // Bug http://crbug.com/7708 seems to indicate the style can be 0.
     RenderStyle* style = textFieldStyle();
     return style ? m_webView->theme()->popupInternalPaddingRight(style) : 0;
 }
@@ -166,8 +166,8 @@ RenderStyle* AutocompletePopupMenuClient::textFieldStyle() const
 {
     RenderStyle* style = m_textField->computedStyle();
     if (!style) {
-        // It seems we can only have an NULL style in a TextField if the
-        // node is dettached, in which case we the popup shoud not be
+        // It seems we can only have a 0 style in a TextField if the
+        // node is detached, in which case we the popup shoud not be
         // showing.  Please report this in http://crbug.com/7708 and
         // include the page you were visiting.
         ASSERT_NOT_REACHED();

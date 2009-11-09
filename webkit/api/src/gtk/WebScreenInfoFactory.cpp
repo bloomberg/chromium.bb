@@ -31,9 +31,8 @@
 #include "config.h"
 #include "WebScreenInfoFactory.h"
 
-#include <gtk/gtk.h>
-
 #include "WebScreenInfo.h"
+#include <gtk/gtk.h>
 
 namespace WebKit {
 

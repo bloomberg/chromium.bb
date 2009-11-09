@@ -77,8 +77,7 @@ private:
     int m_pendingAmountSent;
 };
 
-SocketStreamHandleInternal::SocketStreamHandleInternal(
-    SocketStreamHandle *handle)
+SocketStreamHandleInternal::SocketStreamHandleInternal(SocketStreamHandle* handle)
     : m_handle(handle)
     , m_maxPendingSendAllowed(0)
     , m_pendingAmountSent(0)
@@ -181,7 +180,7 @@ void SocketStreamHandleInternal::didClose(WebSocketStreamHandle* socketHandle)
         ASSERT(socketHandle == m_socket.get());
         m_socket.clear();
         SocketStreamHandle* h = m_handle;
-        m_handle = NULL;
+        m_handle = 0;
         if (h->m_client)
             h->m_client->didClose(h);
     }
@@ -194,7 +193,7 @@ void SocketStreamHandleInternal::didFail(WebSocketStreamHandle* socketHandle, co
         ASSERT(socketHandle == m_socket.get());
         m_socket.clear();
         SocketStreamHandle* h = m_handle;
-        m_handle = NULL;
+        m_handle = 0;
         if (h->m_client)
             h->m_client->didClose(h);  // didFail(h, err);
     }

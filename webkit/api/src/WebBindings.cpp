@@ -210,7 +210,7 @@ static v8::Local<v8::Value> getEvent(const v8::Handle<v8::Context>& context)
 
 static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
 {
-    if (npobj == NULL)
+    if (!npobj)
         return false;
     if (npobj->_class != npScriptObjectClass)
         return false;
@@ -223,7 +223,7 @@ static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
     // Get the current WebCore event.
     v8::Handle<v8::Value> currentEvent(getEvent(context));
     Event* event = V8DOMWrapper::convertToNativeEvent(currentEvent);
-    if (event == NULL)
+    if (!event)
         return false;
 
     // Check that the given npobj is that event.
@@ -273,7 +273,7 @@ static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
     if (dataObject && data)
         *data = WebDragData(dataObject);
 
-    return dataObject != NULL;
+    return dataObject;
 }
 
 static bool getRangeImpl(NPObject* npobj, WebRange* range)
@@ -306,7 +306,7 @@ bool WebBindings::getDragData(NPObject* event, int* eventId, WebDragData* data)
 bool WebBindings::isDragEvent(NPObject* event)
 {
     int eventId;
-    return getDragData(event, &eventId, NULL);
+    return getDragData(event, &eventId, 0);
 }
 
 bool WebBindings::getRange(NPObject* range, WebRange* webrange)

@@ -31,11 +31,11 @@
 #ifndef WebFrameImpl_h
 #define WebFrameImpl_h
 
+// FIXME: remove this relative path once consumers from glue are removed.
+#include "../public/WebFrame.h"
 #include "Frame.h"
 #include "FrameLoaderClientImpl.h"
 #include "PlatformString.h"
-// FIXME: remove this relative path once consumers from glue are removed.
-#include "../public/WebFrame.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -160,9 +160,7 @@ public:
     static PassRefPtr<WebFrameImpl> create(WebFrameClient* client);
     ~WebFrameImpl();
 
-    static int liveObjectCount() {
-      return m_liveObjectCount;
-    }
+    static int liveObjectCount() { return m_liveObjectCount; }
 
     // Called by the WebViewImpl to initialize its main frame:
     void initializeAsMainFrame(WebViewImpl*);
@@ -182,13 +180,13 @@ public:
     WebCore::FrameView* frameView() const { return m_frame ? m_frame->view() : 0; }
 
     // Getters for the impls corresponding to Get(Provisional)DataSource. They
-    // may return NULL if there is no corresponding data source.
+    // may return 0 if there is no corresponding data source.
     WebDataSourceImpl* dataSourceImpl() const;
     WebDataSourceImpl* provisionalDataSourceImpl() const;
 
     // Returns which frame has an active match. This function should only be
     // called on the main frame, as it is the only frame keeping track. Returned
-    // value can be NULL if no frame has an active match.
+    // value can be 0 if no frame has an active match.
     const WebFrameImpl* activeMatchFrame() const { return m_activeMatchFrame; }
 
     // When a Find operation ends, we want to set the selection to what was active
@@ -207,7 +205,7 @@ public:
     void setAllowsScrolling(bool);
 
     // Returns the password autocomplete listener associated with the passed
-    // user name input element, or NULL if none available.
+    // user name input element, or 0 if none available.
     // Note that the returned listener is owner by the WebFrameImpl and should not
     // be kept around as it is deleted when the page goes away.
     WebPasswordAutocompleteListener* getPasswordListener(WebCore::HTMLInputElement*);
@@ -230,7 +228,7 @@ private:
             return adoptRef(new ClientHandle(client));
         }
         WebFrameClient* client() { return m_client; }
-        void dropClient() { m_client = NULL; }
+        void dropClient() { m_client = 0; }
     private:
         ClientHandle(WebFrameClient* client) : m_client(client) {}
         WebFrameClient* m_client;
@@ -305,7 +303,7 @@ private:
     WebCore::Frame* m_frame;
 
     // A way for the main frame to keep track of which frame has an active
-    // match. Should be NULL for all other frames.
+    // match. Should be 0 for all other frames.
     WebFrameImpl* m_activeMatchFrame;
 
     // The range of the active match for the current frame.

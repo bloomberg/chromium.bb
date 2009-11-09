@@ -35,8 +35,8 @@
 #include "HTMLInputElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLMetaElement.h"
-#include "HTMLOptionElement.h"
 #include "HTMLNames.h"
+#include "HTMLOptionElement.h"
 #include "Node.h"
 
 using namespace WebCore;

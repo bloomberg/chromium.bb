@@ -31,13 +31,14 @@
 #include "config.h"
 #include "WebImage.h"
 
-#include "WebData.h"
-#include "WebSize.h"
-
 #include "Image.h"
 #include "ImageSource.h"
 #include "NativeImageSkia.h"
 #include "SharedBuffer.h"
+
+#include "WebData.h"
+#include "WebSize.h"
+
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
@@ -69,7 +70,7 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
         if (frameArea < (desiredSize.width * desiredSize.height))
             break;  // No more frames that are large enough.
 
-        if ((i == 0) || (frameArea < frameAreaAtIndex)) {
+        if (!i || (frameArea < frameAreaAtIndex)) {
             index = i;  // Closer to desired area than previous best match.
             frameAreaAtIndex = frameArea;
         }
