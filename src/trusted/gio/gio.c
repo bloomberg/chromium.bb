@@ -34,7 +34,7 @@
  */
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/trusted/service_runtime/gio.h"
+#include "native_client/src/trusted/gio/gio.h"
 
 struct GioVtbl const    kGioFileVtbl = {
   GioFileRead,

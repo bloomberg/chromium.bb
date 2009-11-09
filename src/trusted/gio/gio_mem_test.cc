@@ -30,7 +30,7 @@
  */
 
 
-#include "native_client/src/trusted/service_runtime/gio.h"
+#include "native_client/src/trusted/gio/gio.h"
 #include "gtest/gtest.h"
 
 namespace {
@@ -192,3 +192,8 @@ TEST(GioMemTest, SeekTest) {
 }
 
 }  // namespace
+
+int main(int argc, char *argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -65,7 +65,6 @@
         'unittest_main.cc',
         'sel_memory_unittest.cc',
         'nacl_sync_unittest.cc',
-        'gio_mem_test.cc',
         'sel_mem_test.cc',
         'sel_ldr_test.cc',
       ],

@@ -37,7 +37,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "native_client/src/trusted/service_runtime/gio.h"
+#include "native_client/src/trusted/gio/gio.h"
 
 /*
  * Memory file is just read/write from/to an in-memory buffer.  Once

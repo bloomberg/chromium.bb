@@ -755,13 +755,13 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   hdr.ndesc_length = 1;
 
   rv = NaClImcSendTypedMessage(channel,
-                               (struct NaClDescEffector *) &nnxep,
+                               &nnxep.base,
                                &hdr, 0);
 
   NaClDescUnref(channel);
   channel = NULL;
 
-  (*nnxep.base.vtbl->Dtor)((struct NaClDescEffector *) &nnxep);
+  (*nnxep.base.vtbl->Dtor)(&nnxep.base);
 
   NaClLog(1,
           "NaClSendServiceAddressTo: descriptor %d, error %d\n",
@@ -797,7 +797,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   NaClErrorCode errcode;
 
   int rval = NaClDescMapDescriptor(nexe_binary,
-                                   (struct NaClDescEffector*)&chan->eff,
+                                   &chan->eff.base,
                                    &map_addr,
                                    &rounded_size);
 
@@ -831,7 +831,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   }
 
   rval = nexe_binary->vtbl->Unmap(nexe_binary,
-                                  (struct NaClDescEffector*)&chan->eff,
+                                  &chan->eff.base,
                                   map_addr,
                                   rounded_size);
   if (0 != rval) {
@@ -840,7 +840,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   }
 
   rval = nexe_binary->vtbl->Close(nexe_binary,
-                                  (struct NaClDescEffector*)&chan->eff);
+                                  &chan->eff.base);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
     return NACL_SRPC_RESULT_NO_MEMORY;

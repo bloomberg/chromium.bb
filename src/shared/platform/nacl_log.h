@@ -39,7 +39,7 @@
 #include <stdarg.h>
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/service_runtime/gio.h"
+#include "native_client/src/trusted/gio/gio.h"
 
 EXTERN_C_BEGIN
 

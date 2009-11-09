@@ -56,8 +56,8 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
-#include "native_client/src/trusted/service_runtime/gio.h"
 
+#include "native_client/src/trusted/gio/gio.h"
 /*
  * All logging is protected by this mutex.
  */

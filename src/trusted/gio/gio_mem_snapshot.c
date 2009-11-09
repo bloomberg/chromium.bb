@@ -38,7 +38,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-#include "native_client/src/trusted/service_runtime/gio.h"
+#include "native_client/src/trusted/gio/gio.h"
 
 struct GioVtbl const  kGioMemoryFileSnapshotVtbl = {
   GioMemoryFileRead,

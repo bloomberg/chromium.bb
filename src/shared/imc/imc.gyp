@@ -101,7 +101,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio',
+        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
       ],
     },
     # ----------------------------------------------------------------------

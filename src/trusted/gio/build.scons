@@ -1,0 +1,70 @@
+# -*- python -*-
+# Copyright 2009, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Import('env')
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '${STAGING_DIR}']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+
+env.ComponentLibrary('gio',
+                     ['gio.c',
+                      'gio_mem.c',
+                      'gprintf.c',
+                      'gio_mem_snapshot.c',
+                      ])
+
+
+if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
+  gtest_env = env.Clone()
+  if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
+    # because of: gtest-typed-test.h:236:46: error:
+    # anonymous variadic macros were introduced in C99
+    gtest_env.FilterOut(CCFLAGS=['-pedantic'])
+
+  gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+
+  unit_tests_exe = gtest_env.ComponentProgram('gio_test',
+                                              ['gio_mem_test.cc'],
+                                              EXTRA_LIBS=['gtest', 'gio',])
+  gtest_env.Requires(unit_tests_exe, crt)
+
+  node = gtest_env.CommandTestAgainstGoldenOutput(
+      'gio_test_output.xml.out',
+      command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
+  gtest_env.AddNodeToTestSuite(node, ['small_tests'],
+      'run_gio_test')

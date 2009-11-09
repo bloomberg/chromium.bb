@@ -49,9 +49,9 @@
 
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
+#include "native_client/src/trusted/gio/gio.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
-#include "native_client/src/trusted/service_runtime/gio.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"

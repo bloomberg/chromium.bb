@@ -84,7 +84,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        'gio',
+        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
@@ -188,15 +188,6 @@
           'process_outputs_as_sources': 1,
           'message': 'Creating nacl_syscall_handlers.c',
         },
-      ],
-    }, {
-      'target_name': 'gio',
-      'type': 'static_library',
-      'sources': [
-        'gio.c',
-        'gio_mem.c',
-        'gprintf.c',
-        'gio_mem_snapshot.c',
       ],
     }, {
       'target_name': 'container',

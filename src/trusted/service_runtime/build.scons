@@ -248,13 +248,6 @@ else:
 sdl_env.ComponentLibrary('sel',
                          ldr_inputs)
 
-env.ComponentLibrary('gio',
-                     ['gio.c',
-                      'gio_mem.c',
-                      'gprintf.c',
-                      'gio_mem_snapshot.c',
-                      ])
-
 
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
@@ -395,7 +388,6 @@ unittest_inputs = [
     'unittest_main.cc',
     'sel_memory_unittest.cc',
     'nacl_sync_unittest.cc',
-    'gio_mem_test.cc',
     'sel_mem_test.cc',
     'sel_ldr_test.cc',
 ]
