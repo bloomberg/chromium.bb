@@ -442,7 +442,8 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
     title = l10n_util::GetStringUTF16(IDS_TAB_UNTITLED_TITLE);
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // On Mac, we don't want to suffix the page title with the application name.
+  // On Mac or ChromeOS, we don't want to suffix the page title with
+  // the application name.
   return title;
 #elif defined(OS_WIN) || defined(OS_LINUX)
   int string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT;

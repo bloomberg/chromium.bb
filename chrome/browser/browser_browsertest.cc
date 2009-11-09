@@ -30,16 +30,17 @@ namespace {
 
 // Given a page title, returns the expected window caption string.
 std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  // On Mac or ChromeOS, we don't want to suffix the page title with
+  // the application name.
+  if (page_title.empty())
+    return l10n_util::GetString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
+  return page_title;
+#elif defined(OS_WIN) || defined(OS_LINUX)
   if (page_title.empty())
     return l10n_util::GetString(IDS_PRODUCT_NAME);
 
   return l10n_util::GetStringF(IDS_BROWSER_WINDOW_TITLE_FORMAT, page_title);
-#elif defined(OS_MACOSX)
-  // On Mac, we don't want to suffix the page title with the application name.
-  if (page_title.empty())
-    return l10n_util::GetString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
-  return page_title;
 #endif
 }
 
