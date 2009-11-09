@@ -7,8 +7,6 @@
 
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 
-#include "build/build_config.h"
-
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -66,8 +64,8 @@
 #include "chrome/browser/sandbox_policy.h"
 #elif defined(OS_LINUX)
 #include "base/singleton.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 #include "chrome/browser/zygote_host_linux.h"
-#include "chrome/browser/renderer_host/render_crash_handler_host_linux.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
@@ -594,7 +592,7 @@ base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
     const int ipcfd = channel_->GetClientFileDescriptor();
     mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
     const int crash_signal_fd =
-        Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
+        Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
     if (crash_signal_fd >= 0) {
       mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
                                                  crash_signal_fd));
@@ -614,7 +612,7 @@ base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
   // On Linux, we need to add some extra file descriptors for crash handling and
   // the sandbox.
   const int crash_signal_fd =
-      Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
+      Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
   if (crash_signal_fd >= 0) {
     fds_to_map.push_back(std::make_pair(crash_signal_fd,
                                         kCrashDumpSignal + 3));
@@ -914,7 +912,6 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   bool enabled = IPC::Logging::current()->Enabled();
   Send(new ViewMsg_SetIPCLoggingEnabled(enabled));
 #endif
-
 }
 
 // Static. This function can be called from any thread.

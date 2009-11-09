@@ -2536,6 +2536,7 @@
             'browser/password_manager/password_store_win.h',
           ],
           'sources': [
+            'browser/crash_handler_host_linux.h',
             'browser/net/ssl_config_service_manager_pref.cc',
             'browser/spellcheck_host.cc',
             'browser/spellcheck_host.h',
@@ -2548,9 +2549,9 @@
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
-                'browser/renderer_host/render_crash_handler_host_linux.cc',
                 'app/breakpad_linux.cc',
                 'app/breakpad_linux.h',
+                'browser/crash_handler_host_linux.cc',
               ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad_client',
@@ -2561,7 +2562,7 @@
               ],
             }, {  # linux_breakpad==0
               'sources': [
-                'browser/renderer_host/render_crash_handler_host_linux_stub.cc',
+                'browser/crash_handler_host_linux_stub.cc',
               ],
             }],
           ],

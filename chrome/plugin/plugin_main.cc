@@ -28,6 +28,10 @@
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #endif
 
+#if defined(USE_LINUX_BREAKPAD)
+#include "chrome/app/breakpad_linux.h"
+#endif
+
 #if defined(OS_MACOSX)
 // Removes our Carbon library interposing from the environment so that it
 // doesn't carry into any processes that plugins might start.
@@ -65,6 +69,11 @@ static void TrimInterposeEnvironment() {
 
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA.
+  InitCrashReporter();
+#endif
+
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
   // For Mac NPAPI plugins, we don't want a MessageLoop::TYPE_UI because

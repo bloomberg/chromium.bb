@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/plugin_process_host.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_POSIX)
+#include <utility>  // for pair<>
 #endif
 
 #include <vector>
@@ -15,22 +15,12 @@
 #include "app/app_switches.h"
 #include "app/gfx/native_widget_types.h"
 #include "base/command_line.h"
-#if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
-#endif
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/thread.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
@@ -38,36 +28,36 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/glue/plugins/plugin_constants_win.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #include "chrome/browser/sandbox_policy.h"
 #include "sandbox/src/sandbox.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
 #endif
 
 #if defined(OS_POSIX)
+#include "base/global_descriptors_posix.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "app/gfx/gtk_native_view_id_manager.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -122,7 +112,7 @@ class PluginDownloadUrlHelper : public URLRequest::Delegate {
   std::string download_url_;
   int download_source_child_unique_id_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginDownloadUrlHelper);
+  DISALLOW_COPY_AND_ASSIGN(PluginDownloadUrlHelper);
 };
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(
@@ -433,6 +423,32 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 #if defined(OS_WIN)
   process = sandbox::StartProcess(&cmd_line);
 #else
+  process = InitHelperPosix(cmd_line);
+#endif  // OS_WIN
+
+  if (!process)
+    return false;
+  SetHandle(process);
+
+  FilePath gears_path;
+  if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_path)) {
+    FilePath::StringType gears_path_lc = StringToLowerASCII(gears_path.value());
+    FilePath::StringType plugin_path_lc =
+        StringToLowerASCII(info.path.value());
+    if (plugin_path_lc == gears_path_lc) {
+      // Give Gears plugins "background" priority.  See
+      // http://b/issue?id=1280317.
+      SetProcessBackgrounded();
+    }
+  }
+
+  return true;
+}
+
+#if defined(OS_POSIX)
+base::ProcessHandle PluginProcessHost::InitHelperPosix(
+    const CommandLine& cmd_line) {
+  base::ProcessHandle process = 0;
   // This code is duplicated with browser_render_process_host.cc, but
   // there's not a good place to de-duplicate it.
   base::file_handle_mapping_vector fds_to_map;
@@ -454,29 +470,19 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   env.push_back(std::pair<const char*, const char*>(
       plugin_interpose_strings::kDYLDInsertLibrariesKey,
       interpose_list.c_str()));
+#elif defined(OS_LINUX)
+  const int crash_signal_fd =
+      Singleton<PluginCrashHandlerHostLinux>()->GetDeathSignalSocket();
+  if (crash_signal_fd >= 0) {
+    fds_to_map.push_back(std::pair<int, uint32_t>(crash_signal_fd,
+                                                  kCrashDumpSignal + 3));
+  }
 #endif  // OS_MACOSX
   if (!base::LaunchApp(cmd_line.argv(), env, fds_to_map, false, &process))
-    return false;
-#endif  // OS_WIN
-
-  if (!process)
-    return false;
-  SetHandle(process);
-
-  FilePath gears_path;
-  if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_path)) {
-    FilePath::StringType gears_path_lc = StringToLowerASCII(gears_path.value());
-    FilePath::StringType plugin_path_lc =
-        StringToLowerASCII(info.path.value());
-    if (plugin_path_lc == gears_path_lc) {
-      // Give Gears plugins "background" priority.  See
-      // http://b/issue?id=1280317.
-      SetProcessBackgrounded();
-    }
-  }
-
-  return true;
+    process = 0;
+  return process;
 }
+#endif  // OS_POSIX
 
 void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PluginProcessHost, msg)

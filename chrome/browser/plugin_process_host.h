@@ -7,8 +7,9 @@
 
 #include "build/build_config.h"
 
-#include <set>
 #include <queue>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
@@ -112,6 +113,10 @@ class PluginProcessHost : public ChildProcessHost,
   void OnPluginWindowDestroyed(HWND window, HWND parent);
   void OnDownloadUrl(const std::string& url, int source_child_unique_id,
                      gfx::NativeWindow caller_window);
+#endif
+
+#if defined(OS_POSIX)
+  base::ProcessHandle InitHelperPosix(const CommandLine& cmd_line);
 #endif
 
 #if defined(OS_LINUX)

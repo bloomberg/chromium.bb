@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/render_crash_handler_host_linux.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <string>
-#include <vector>
 
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
@@ -29,21 +26,21 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 
-// Since RenderCrashHandlerHostLinux is a singleton, it's only destroyed at the
-// end of the processes lifetime, which is greater in span then the lifetime of
-// the IO message loop.
-template<> struct RunnableMethodTraits<RenderCrashHandlerHostLinux> {
-  void RetainCallee(RenderCrashHandlerHostLinux*) { }
-  void ReleaseCallee(RenderCrashHandlerHostLinux*) { }
+// Since classes derived from CrashHandlerHostLinux are singletons, it's only
+// destroyed at the end of the processes lifetime, which is greater in span than
+// the lifetime of the IO message loop.
+template<> struct RunnableMethodTraits<CrashHandlerHostLinux> {
+  void RetainCallee(CrashHandlerHostLinux*) { }
+  void ReleaseCallee(CrashHandlerHostLinux*) { }
 };
 
-RenderCrashHandlerHostLinux::RenderCrashHandlerHostLinux()
-    : renderer_socket_(-1),
+CrashHandlerHostLinux::CrashHandlerHostLinux()
+    : process_socket_(-1),
       browser_socket_(-1) {
   int fds[2];
-  // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the renderer from
+  // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent
-  // the renderer from calling socket() to create new sockets, but it'll still
+  // the process from calling socket() to create new sockets, but it'll still
   // inherit some sockets. With PF_UNIX+SOCK_DGRAM, it can call sendmsg to send
   // a datagram to any (abstract) socket on the same system. With
   // SOCK_SEQPACKET, this is prevented.
@@ -53,20 +50,20 @@ RenderCrashHandlerHostLinux::RenderCrashHandlerHostLinux()
   // Enable passcred on the server end of the socket
   CHECK(setsockopt(fds[1], SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)) == 0);
 
-  renderer_socket_ = fds[0];
+  process_socket_ = fds[0];
   browser_socket_ = fds[1];
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &RenderCrashHandlerHostLinux::Init));
+      NewRunnableMethod(this, &CrashHandlerHostLinux::Init));
 }
 
-RenderCrashHandlerHostLinux::~RenderCrashHandlerHostLinux() {
-  HANDLE_EINTR(close(renderer_socket_));
+CrashHandlerHostLinux::~CrashHandlerHostLinux() {
+  HANDLE_EINTR(close(process_socket_));
   HANDLE_EINTR(close(browser_socket_));
 }
 
-void RenderCrashHandlerHostLinux::Init() {
+void CrashHandlerHostLinux::Init() {
   MessageLoopForIO* ml = MessageLoopForIO::current();
   CHECK(ml->WatchFileDescriptor(
       browser_socket_, true /* persistent */,
@@ -75,14 +72,14 @@ void RenderCrashHandlerHostLinux::Init() {
   ml->AddDestructionObserver(this);
 }
 
-void RenderCrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
+void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK(false);
 }
 
-void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
+void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK_EQ(fd, browser_socket_);
 
-  // A renderer process has crashed and has signaled us by writing a datagram
+  // A process has crashed and has signaled us by writing a datagram
   // to the death signal socket. The datagram contains the crash context needed
   // for writing the minidump as well as a file descriptor and a credentials
   // block so that they can't lie about their pid.
@@ -150,7 +147,7 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       DCHECK_EQ(len % sizeof(int), 0u);
       const unsigned num_fds = len / sizeof(int);
       if (num_fds > 1 || num_fds == 0) {
-        // A nasty renderer could try and send us too many descriptors and
+        // A nasty process could try and send us too many descriptors and
         // force a leak.
         LOG(ERROR) << "Death signal contained too many descriptors;"
                    << " num_fds:" << num_fds;
@@ -203,8 +200,8 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   }
   const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
-      StringPrintf("%s/chromium-renderer-minidump-%016" PRIx64 ".dmp",
-                   dumps_path.value().c_str(), rand);
+      StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",
+                   dumps_path.value().c_str(), process_type_.c_str(), rand);
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
                                       crashing_pid, crash_context,
                                       kCrashContextSize)) {
@@ -212,7 +209,7 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     HANDLE_EINTR(close(signal_fd));
   }
 
-  // Send the done signal to the renderer: it can exit now.
+  // Send the done signal to the process: it can exit now.
   memset(&msg, 0, sizeof(msg));
   struct iovec done_iov;
   done_iov.iov_base = const_cast<char*>("\x42");
@@ -228,8 +225,8 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   BreakpadInfo info;
   info.filename = minidump_filename.c_str();
-  info.process_type = "renderer";
-  info.process_type_length = 8;
+  info.process_type = process_type_.c_str();
+  info.process_type_length = process_type_.length();
   info.crash_url = crash_url;
   info.crash_url_length = strlen(crash_url);
   info.guid = guid;
@@ -240,6 +237,6 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   HandleCrashDump(info);
 }
 
-void RenderCrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
+void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
   file_descriptor_watcher_.StopWatchingFileDescriptor();
 }

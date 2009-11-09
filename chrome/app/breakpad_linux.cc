@@ -450,8 +450,8 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   const pid_t child = sys_fork();
   if (!child) {
     // This code is called both when a browser is crashing (in which case,
-    // nothing really matters any more) and when a renderer crashes, in which
-    // case we need to continue.
+    // nothing really matters any more) and when a renderer/plugin crashes, in
+    // which case we need to continue.
     //
     // Since we are a multithreaded app, if we were just to fork(), we might
     // grab file descriptors which have just been created in another thread and
@@ -608,9 +608,10 @@ namespace child_process_logging {
 extern std::string active_url;
 }
 
+// Currently Non-Browser = Renderer and Plugins
 static bool
-RendererCrashHandler(const void* crash_context, size_t crash_context_size,
-             void* context) {
+NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
+                       void* context) {
   const int fd = reinterpret_cast<intptr_t>(context);
   int fds[2];
   socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
@@ -664,13 +665,13 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   return true;
 }
 
-void EnableRendererCrashDumping() {
+void EnableNonBrowserCrashDumping() {
   const int fd = Singleton<base::GlobalDescriptors>()->Get(kCrashDumpSignal);
   // We deliberately leak this object.
   google_breakpad::ExceptionHandler* handler =
       new google_breakpad::ExceptionHandler("" /* unused */, NULL, NULL,
                                             (void*) fd, true);
-  handler->set_crash_handler(RendererCrashHandler);
+  handler->set_crash_handler(NonBrowserCrashHandler);
 }
 
 void InitCrashReporter() {
@@ -684,10 +685,13 @@ void InitCrashReporter() {
       return;
     EnableCrashDumping(unattended);
   } else if (process_type == switches::kRendererProcess ||
+             process_type == switches::kPluginProcess ||
              process_type == switches::kZygoteProcess) {
     // We might be chrooted in a zygote or renderer process so we cannot call
     // GetCollectStatsConsent because that needs access the the user's home
     // dir. Instead, we set a command line flag for these processes.
+    // Even though plugins are not chrooted, we share the same code path for
+    // simplicity.
     if (!parsed_command_line.HasSwitch(switches::kEnableCrashReporter))
       return;
     // Get the guid and linux distro from the command line switch.
@@ -700,7 +704,7 @@ void InitCrashReporter() {
     } else {
       google_update::posix_guid = switch_value;
     }
-    EnableRendererCrashDumping();
+    EnableNonBrowserCrashDumping();
   }
 
   // Set the base process uptime value.
