@@ -48,6 +48,8 @@ PREFIX : v8::internal::sweepspace___v8::internal::markcompactcollector::sweepspa
 # Flash crash?
 REGEX : ^webplugindelegateimpl::nativewndproc$
 
+PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop
+
 # End mysterious crash section.
 
 # 9615
@@ -133,3 +135,8 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
+# 27190
+PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsingleline::layout
+
+# 27191
+PREFIX : sessionbackend::readlastsessioncommands
