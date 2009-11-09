@@ -1008,8 +1008,7 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
     SBPair* adds,
     const std::vector<bool>& adds_removed,
     int* new_add_count,
-    BloomFilter** filter) {
-  *filter = NULL;
+    scoped_refptr<BloomFilter>* filter) {
   *new_add_count = 0;
 
   SQLITE_UNIQUE_STATEMENT(insert, *statement_cache_,
@@ -1026,7 +1025,7 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
   int filter_size =
       std::min(number_of_keys * BloomFilter::kBloomFilterSizeRatio,
                BloomFilter::kBloomFilterMaxSize * 8);
-  scoped_refptr<BloomFilter> new_filter = new BloomFilter(filter_size);
+  *filter = new BloomFilter(filter_size);
   SBPair* add = adds;
   int new_count = 0;
 
@@ -1038,7 +1037,7 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
         add++;
         continue;
       }
-      new_filter->Insert(add->prefix);
+      (*filter)->Insert(add->prefix);
       insert->bind_int(0, add->chunk_id);
       insert->bind_int(1, add->prefix);
       int rv = insert->step();
@@ -1054,7 +1053,6 @@ bool SafeBrowsingDatabaseBloom::WritePrefixes(
   }
 
   *new_add_count = new_count;
-  *filter = new_filter.release();
 
   return true;
 }
@@ -1256,7 +1254,7 @@ void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
 
   // Write out the remaining add prefixes to the filter and database.
   int new_count;
-  BloomFilter* filter;
+  scoped_refptr<BloomFilter> filter;
   if (!WritePrefixes(adds, adds_removed, &new_count, &filter))
     return;
 
@@ -1282,7 +1280,7 @@ void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
   {
     AutoLock lock(lookup_lock_);
     add_count_ = new_count;
-    bloom_filter_ = filter;
+    bloom_filter_.swap(filter);
     hash_cache_.swap(add_cache);
   }
 
@@ -1313,7 +1311,7 @@ void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", bloom_gen);
   UMA_HISTOGRAM_COUNTS("SB2.AddPrefixes", add_count_);
   UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", subs);
-  UMA_HISTOGRAM_COUNTS("SB2.FilterSize", filter->size());
+  UMA_HISTOGRAM_COUNTS("SB2.FilterSize", bloom_filter_->size());
   int64 size_64;
   if (file_util::GetFileSize(filename_, &size_64))
     UMA_HISTOGRAM_COUNTS("SB2.DatabaseBytes", static_cast<int>(size_64));

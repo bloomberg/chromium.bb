@@ -1117,12 +1117,3 @@
    fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
    fun:_ZN12RenderThread23EnsureWebKitInitializedEv
 }
-{
-   bug_27035
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25SafeBrowsingDatabaseBloom13WritePrefixesEPNS_6SBPairERKSt6vectorIbSaIbEEPiPP11BloomFilter
-   fun:_ZN25SafeBrowsingDatabaseBloom16BuildBloomFilterEv
-   fun:_ZN25SafeBrowsingDatabaseBloom14UpdateFinishedEb
-}
-

@@ -109,7 +109,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
 
   bool UpdateTables();
   bool WritePrefixes(SBPair* adds, const std::vector<bool>& adds_removed,
-                     int* new_add_count, BloomFilter** filter);
+                     int* new_add_count, scoped_refptr<BloomFilter>* filter);
   void WriteFullHashes(HashCache* hash_cache, bool is_add);
   void WriteFullHashList(const HashList& hash_list, bool is_add);
 
