@@ -17,6 +17,7 @@
 #include "base/task.h"
 #include "base/tuple.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -53,7 +54,8 @@ class ExtensionUpdateService {
 
 // Manages installed and running Chromium extensions.
 class ExtensionsService
-    : public base::RefCountedThreadSafe<ExtensionsService>,
+    : public base::RefCountedThreadSafe<ExtensionsService,
+                                        ChromeThread::DeleteOnUIThread>,
       public BlacklistPathProvider,
       public ExtensionUpdateService,
       public NotificationObserver {
@@ -234,7 +236,8 @@ class ExtensionsService
                        const NotificationDetails& details);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionsService>;
+  friend class ChromeThread;
+  friend class DeleteTask<ExtensionsService>;
 
   virtual ~ExtensionsService();
 
