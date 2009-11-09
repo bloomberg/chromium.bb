@@ -52,5 +52,17 @@ env.ComponentProgram('libs_present_test.nexe',
                            'google_nacl_npruntime',
                            'unimpl'])
 
+if 'TRUSTED_ENV' in env:
+  env2 = env.Clone()
+  env2.PrependENVPath('PATH', env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}'))
+  toolchain_test = env2.Command(
+    'test_toolchain', ['${SCONSTRUCT_DIR}/tools/tests/test_toolchain.py'],
+    '$PYTHON ${SOURCES[0].abspath}')
+else:
+  print ('WARNING: no trusted env specified so skipping toolchain test. '
+         'Try, e.g. MODE=dbg-linux,nacl')
+  toolchain_test = []
+
 # Eventually we may want more SDK tests.
-env.Alias('sdk_minimal_test', ['libs_present_test.nexe'])
+env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_test],
+                       ['small_tests'], 'sdk_minimal_test')
