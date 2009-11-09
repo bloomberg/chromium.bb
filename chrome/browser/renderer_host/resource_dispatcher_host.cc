@@ -798,7 +798,7 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
   request->set_referrer(referrer.spec());
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
-  request->set_load_flags(net::LOAD_ONLY_FROM_CACHE);
+  request->set_load_flags(net::LOAD_PREFERRING_CACHE);
   request->set_context(request_context);
 
   // Since we're just saving some resources we need, disallow downloading.
