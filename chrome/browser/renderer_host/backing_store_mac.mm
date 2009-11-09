@@ -56,6 +56,8 @@ size_t BackingStore::MemorySize() {
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
                              const gfx::Rect& bitmap_rect) {
+  DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
+
   scoped_cftyperef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, bitmap->memory(),
       bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
@@ -86,6 +88,8 @@ void BackingStore::PaintRect(base::ProcessHandle process,
     }
   }
 
+  DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
+
   if (cg_layer()) {
     // The CGLayer's origin is in the lower left, but flipping the CTM would
     // cause the image to get drawn upside down.  So we move the rectangle
@@ -109,6 +113,8 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
                               int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
+  DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
+
   // "Scroll" the contents of the layer by creating a new CGLayer,
   // copying the contents of the old one into the new one offset by the scroll
   // amount, swapping in the new CGLayer, and then painting in the new data.
@@ -119,16 +125,14 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
   // translated by the scroll.)
 
   // We assume |clip_rect| is contained within the backing store.
-  CGSize layer_size = CGLayerGetSize(cg_layer());
-  DCHECK(clip_rect.bottom() <= layer_size.height);
-  DCHECK(clip_rect.right() <= layer_size.width);
+  DCHECK(clip_rect.bottom() <= size_.height());
+  DCHECK(clip_rect.right() <= size_.width());
 
-  if ((dx && abs(dx) < layer_size.width) ||
-      (dy && abs(dy) < layer_size.height)) {
+  if ((dx || dy) && abs(dx) < size_.width() && abs(dy) < size_.height()) {
     if (cg_layer()) {
       CGContextRef context = CGLayerGetContext(cg_layer());
       scoped_cftyperef<CGLayerRef> new_layer(
-          CGLayerCreateWithContext(context, layer_size, NULL));
+          CGLayerCreateWithContext(context, size_.ToCGSize(), NULL));
       CGContextRef layer = CGLayerGetContext(new_layer);
       CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
       CGContextSaveGState(layer);
