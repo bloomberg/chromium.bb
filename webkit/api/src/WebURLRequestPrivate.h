@@ -31,7 +31,7 @@
 #ifndef WebURLRequestPrivate_h
 #define WebURLRequestPrivate_h
 
-namespace WebCore { struct ResourceRequest; }
+namespace WebCore { class ResourceRequest; }
 
 namespace WebKit {
 
