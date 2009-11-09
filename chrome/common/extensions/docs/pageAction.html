@@ -258,7 +258,7 @@ the RSS feed for the current page.
 <img src="images/page-action.png" width="361" height="79">
 
 <p>
-If you want your icon to always be visible,
+If you want the extension's icon to always be visible,
 use a <a href="browserAction.html">browser action</a> instead.
 </p>
 
@@ -272,8 +272,9 @@ like this:
 </p>
 
 <pre>"page_action": {
-  "default_title": "Do action",   <em>// optional; shown in tooltip</em>
-  "default_icon": "icons/foo.png" <em>// optional</em>
+  "default_title": "Do action",    <em>// optional; shown in tooltip</em>
+  "default_icon": "icons/foo.png", <em>// optional</em>
+  "popup": "popup.html"            <em>// optional</em>
 }</pre>
 
 <p><b>Note:</b> Even if you don't include
@@ -284,19 +285,21 @@ like this:
   in the address bar.</p>
 
 <p>
-Although the "default_icon" is optional, it's a good idea to provide one.
-When users install your extension, if you have set a default icon, it can
-be previewed to the user so they know what to look for when your page action
+Set "default_icon" if at all possible.
+Users see the default icon when they install your extension,
+which helps them know what to look for when your page action
 is active for a given page.</p>
 
 <h2 id="ui">Parts of the UI</h2>
 
 <p>
-Page actions have an icon and optional tooltip,
-just like browser actions do.
+Like browser actions,
+page actions have an icon and
+can also have a tooltip and popup;
+they can't have badges, however.
 In addition, page actions can appear and disappear.
-For information about the common UI parts,
-read about the
+You can find information about icons, tooltips, and popups
+by reading about the
 <a href="browserAction.html#ui">browser action UI</a>.
 </p>
 
