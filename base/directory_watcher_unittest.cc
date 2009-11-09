@@ -22,7 +22,7 @@
 namespace {
 
 // For tests where we wait a bit to verify nothing happened
-const int kWaitForEventTime = 1000;
+const int kWaitForEventTime = 500;
 
 class DirectoryWatcherTest : public testing::Test {
  public:
@@ -86,7 +86,10 @@ class DirectoryWatcherTest : public testing::Test {
     // Check that we get at least the expected number of notified delegates.
     if (expected_notified_delegates_ - notified_delegates_ > 0)
       loop_.Run();
+    EXPECT_EQ(expected_notified_delegates_, notified_delegates_);
+  }
 
+  void VerifyNoExtraNotifications() {
     // Check that we get no more than the expected number of notified delegates.
     loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
                           kWaitForEventTime);
@@ -208,6 +211,7 @@ TEST_F(DirectoryWatcherTest, Unregister) {
   SetExpectedNumberOfNotifiedDelegates(0);
   ASSERT_TRUE(WriteTestFile(test_dir_.AppendASCII("test_file"), "content"));
   VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyNoExtraNotifications();
 }
 
 TEST_F(DirectoryWatcherTest, SubDirRecursive) {
@@ -249,6 +253,7 @@ TEST_F(DirectoryWatcherTest, SubDirNonRecursive) {
   SetExpectedNumberOfNotifiedDelegates(0);
   ASSERT_TRUE(WriteTestFile(subdir.AppendASCII("test_file"), "other content"));
   VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyNoExtraNotifications();
 }
 
 namespace {
@@ -307,14 +312,12 @@ TEST_F(DirectoryWatcherTest, MultipleWatchersSingleFile) {
 }
 
 TEST_F(DirectoryWatcherTest, MultipleWatchersDifferentFiles) {
-  const int kNumberOfWatchers = 5;
+  const int kNumberOfWatchers = 3;
   DirectoryWatcher watchers[kNumberOfWatchers];
   TestDelegate delegates[kNumberOfWatchers] = {
     TestDelegate(this),
     TestDelegate(this),
     TestDelegate(this),
-    TestDelegate(this),
-    TestDelegate(this)
   };
   FilePath subdirs[kNumberOfWatchers];
   for (int i = 0; i < kNumberOfWatchers; i++) {
@@ -333,6 +336,7 @@ TEST_F(DirectoryWatcherTest, MultipleWatchersDifferentFiles) {
     SetExpectedNumberOfNotifiedDelegates(1);
     ASSERT_TRUE(WriteTestFile(subdirs[i].AppendASCII("test_file"), "content"));
     VerifyExpectedNumberOfNotifiedDelegates();
+    VerifyNoExtraNotifications();
 
     loop_.RunAllPending();
   }
@@ -390,6 +394,7 @@ TEST_F(DirectoryWatcherTest, MoveFileAcrossWatches) {
   ASSERT_TRUE(WriteTestFile(subdir1.AppendASCII("file"), "some content"));
   SyncIfPOSIX();
   VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyNoExtraNotifications();
 
   delegate1.reset();
   delegate2.reset();
@@ -405,6 +410,7 @@ TEST_F(DirectoryWatcherTest, MoveFileAcrossWatches) {
   SetExpectedNumberOfNotifiedDelegates(1);
   ASSERT_TRUE(WriteTestFile(subdir2.AppendASCII("file"), "other content"));
   VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyNoExtraNotifications();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
