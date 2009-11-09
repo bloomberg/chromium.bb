@@ -299,12 +299,16 @@
 
     if (currentState.tests) {
       generatePageForIndividualTests(getIndividualTests());
+    } else if (currentState.expectationsUpdate) {
+      generatePageForExpectationsUpdate();
     } else {
       createTableHeadersArray('test');
       generatePageForBuilder(currentState.builder);
     }
 
-    $('max-results-input').value = getMaxResults();
+    var maxResultsInput = $('max-results-input');
+    if (maxResultsInput)
+      maxResultsInput.value = getMaxResults();
 
     for (var builder in builders) {
       processTestResultsForBuilderAsync(builder);
@@ -366,6 +370,7 @@
       case 'showSkipped':
       case 'showSlow':
       case 'showWontFixSkip':
+      case 'expectationsUpdate':
         currentState[key] = value == 'true';
 
         return true;
@@ -385,7 +390,8 @@
     legacyExpectationsSemantics: true,
     showWontFixSkip: false,
     showSlow: true,
-    showSkipped: false
+    showSkipped: false,
+    expectationsUpdate: false
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1220,11 +1226,6 @@
    * Returns whether we should exclude test results from the test table.
    */
   function shouldHideTest(testResult) {
-    if (hasPassedInMaxRuns(testResult)) {
-      // Hide tests that are passing.
-      return true;
-    }
-
     if (testResult.isWontFixSkip)
       return !currentState.showWontFixSkip;
 
@@ -1375,6 +1376,35 @@
     }
 
     tests.sort(sortFunctionGetter(resultsProperty, order == BACKWARD));
+  }
+
+  function generatePageForExpectationsUpdate() {
+    processTestRunsForAllBuilders();
+    var testsNeedingUpdate = {};
+    for (var test in testToResultsMap) {
+      var results = testToResultsMap[test];
+      for (var i = 0; i < results.length; i++) {
+        var thisResult = results[i];
+        if (!thisResult.missing && !thisResult.extra)
+          continue;
+
+        if (!testsNeedingUpdate[test])
+          testsNeedingUpdate[test] = {};
+
+        var buildInfo = getPlatformAndBuildType(thisResult.builder);
+        var builder = buildInfo.platform + ' ' + buildInfo.buildType;
+        if (!testsNeedingUpdate[test][builder])
+          testsNeedingUpdate[test][builder] = {};
+
+        if (thisResult.missing)
+          testsNeedingUpdate[test][builder].missing = thisResult.missing;
+
+        if (thisResult.extra)
+          testsNeedingUpdate[test][builder].extra = thisResult.extra;
+      }
+    }
+    appendHTML(JSON.stringify(testsNeedingUpdate));
+    hideLoadingUI();
   }
 
   function getHTMLForIndividulTestOnAllBuilders(test) {
