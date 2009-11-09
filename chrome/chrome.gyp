@@ -1539,6 +1539,8 @@
         'browser/gtk/first_run_dialog.h',
         'browser/gtk/focus_store_gtk.cc',
         'browser/gtk/focus_store_gtk.h',
+        'browser/gtk/fullscreen_exit_bubble_gtk.cc',
+        'browser/gtk/fullscreen_exit_bubble_gtk.h',
         'browser/gtk/go_button_gtk.cc',
         'browser/gtk/go_button_gtk.h',
         'browser/gtk/gtk_chrome_button.cc',

@@ -46,6 +46,7 @@
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/find_bar_gtk.h"
+#include "chrome/browser/gtk/fullscreen_exit_bubble_gtk.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -1425,6 +1426,8 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
         bookmark_bar_->EnterFullscreen();
+      fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
+          GTK_FLOATING_CONTAINER(render_area_floating_container_)));
       gtk_widget_hide(toolbar_border_);
 #if defined(OS_CHROMEOS)
       if (main_menu_button_)
@@ -1435,6 +1438,7 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
         status_area_->GetWidget()->Hide();
 #endif
     } else {
+      fullscreen_exit_bubble_.reset();
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
 

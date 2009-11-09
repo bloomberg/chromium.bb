@@ -35,6 +35,7 @@ class BrowserToolbarGtk;
 class CustomDrawButton;
 class DownloadShelfGtk;
 class FindBarGtk;
+class FullscreenExitBubbleGtk;
 class InfoBarContainerGtk;
 class LocationBar;
 class StatusBubbleGtk;
@@ -429,6 +430,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // The accelerator group used to handle accelerators, owned by this object.
   GtkAccelGroup* accel_group_;
+
+  scoped_ptr<FullscreenExitBubbleGtk> fullscreen_exit_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };
