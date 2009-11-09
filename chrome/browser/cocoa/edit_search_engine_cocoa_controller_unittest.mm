@@ -79,8 +79,8 @@ TEST_F(EditSearchEngineControllerTest, ValidImageOriginals) {
 TEST_F(EditSearchEngineControllerTest, SetImageViews) {
   EXPECT_TRUE([controller_ window]);  // Force the window to load.
   EXPECT_EQ([controller_ badImage], [[controller_ nameImage] image]);
-  // An empty keyword is OK.
-  EXPECT_EQ([controller_ goodImage], [[controller_ keywordImage] image]);
+  // An empty keyword is not OK.
+  EXPECT_EQ([controller_ badImage], [[controller_ keywordImage] image]);
   EXPECT_EQ([controller_ badImage], [[controller_ urlImage] image]);
 }
 
@@ -97,11 +97,11 @@ TEST_F(EditSearchEngineControllerTest, InvalidState) {
   EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameField] toolTip]]);
   EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameImage] toolTip]]);
 
-  // Keywords can be empty strings.
+  // Keywords can not be empty strings.
   EXPECT_TRUE([@"" isEqualToString:[[controller_ keywordField] stringValue]]);
-  EXPECT_EQ([controller_ goodImage], [[controller_ keywordImage] image]);
-  EXPECT_FALSE([[controller_ keywordField] toolTip]);
-  EXPECT_FALSE([[controller_ keywordImage] toolTip]);
+  EXPECT_EQ([controller_ badImage], [[controller_ keywordImage] image]);
+  EXPECT_TRUE([[controller_ keywordField] toolTip]);
+  EXPECT_TRUE([[controller_ keywordImage] toolTip]);
 
   EXPECT_TRUE([@"" isEqualToString:[[controller_ urlField] stringValue]]);
   EXPECT_EQ([controller_ badImage], [[controller_ urlImage] image]);
@@ -128,14 +128,14 @@ TEST_F(EditSearchEngineControllerTest, ValidateName) {
   EXPECT_FALSE([[controller_ doneButton] isEnabled]);
 }
 
-// The keyword field is valid even if empty.
+// The keyword field is not valid if it is empty.
 TEST_F(EditSearchEngineControllerTest, ValidateKeyword) {
   EXPECT_TRUE([controller_ window]);  // Force window load.
 
-  EXPECT_EQ([controller_ goodImage], [[controller_ keywordImage] image]);
+  EXPECT_EQ([controller_ badImage], [[controller_ keywordImage] image]);
   EXPECT_FALSE([controller_ validateFields]);
-  EXPECT_FALSE([[controller_ keywordField] toolTip]);
-  EXPECT_FALSE([[controller_ keywordImage] toolTip]);
+  EXPECT_TRUE([[controller_ keywordField] toolTip]);
+  EXPECT_TRUE([[controller_ keywordImage] toolTip]);
   [[controller_ keywordField] setStringValue:@"foobar"];
   EXPECT_FALSE([controller_ validateFields]);
   EXPECT_EQ([controller_ goodImage], [[controller_ keywordImage] image]);
@@ -169,7 +169,7 @@ TEST_F(EditSearchEngineControllerTest, ValidateFields) {
 
   // State before entering data.
   EXPECT_EQ([controller_ badImage], [[controller_ nameImage] image]);
-  EXPECT_EQ([controller_ goodImage], [[controller_ keywordImage] image]);
+  EXPECT_EQ([controller_ badImage], [[controller_ keywordImage] image]);
   EXPECT_EQ([controller_ badImage], [[controller_ urlImage] image]);
   EXPECT_FALSE([[controller_ doneButton] isEnabled]);
   EXPECT_FALSE([controller_ validateFields]);

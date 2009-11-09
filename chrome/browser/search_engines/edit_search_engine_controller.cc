@@ -24,7 +24,7 @@ EditSearchEngineController::EditSearchEngineController(
 
 bool EditSearchEngineController::IsTitleValid(
     const std::wstring& title_input) const {
-  return !title_input.empty();
+  return !CollapseWhitespace(title_input, true).empty();
 }
 
 bool EditSearchEngineController::IsURLValid(
@@ -50,10 +50,12 @@ bool EditSearchEngineController::IsURLValid(
 
 bool EditSearchEngineController::IsKeywordValid(
     const std::wstring& keyword_input) const {
-  if (keyword_input.empty())
-    return true;  // Always allow no keyword.
+  std::wstring keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
+  if (keyword_input_trimmed.empty())
+    return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword_input);
+      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+          keyword_input_trimmed);
   return (turl_with_keyword == NULL || turl_with_keyword == template_url_);
 }
 
