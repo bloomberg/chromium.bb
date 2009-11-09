@@ -566,11 +566,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   if (start_position.x() == position.x()) {
     // Failure case. Try to gather more data.
     std::string debug_msg = "Position check failed once. ";
+
+    // First see if flushing the message loop has any effect.
+    MessageLoop::current()->RunAllPending();
+
     if (!GetFindBarWindowInfo(&position, &fully_visible)) {
       debug_msg += "Get failed. ";
     } else {
       if (start_position.x() == position.x())
-        debug_msg += "Still the same. ";
+        debug_msg += "Position check failed again. ";
       else
         debug_msg += "They now differ. ";
     }
