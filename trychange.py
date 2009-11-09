@@ -452,10 +452,13 @@ def TryChange(argv,
   group = optparse.OptionGroup(parser, "Result and status")
   group.add_option("-u", "--user", default=getpass.getuser(),
                    help="Owner user name [default: %default]")
-  group.add_option("-e", "--email", default=os.environ.get('EMAIL_ADDRESS'),
-                   help="Email address where to send the results. Use the "
-                        "EMAIL_ADDRESS environment variable to set the default "
-                        "email address [default: %default]")
+  group.add_option("-e", "--email",
+                   default=os.environ.get('TRYBOT_RESULTS_EMAIL_ADDRESS',
+                        os.environ.get('EMAIL_ADDRESS')),
+                   help="Email address where to send the results. Use either "
+                        "the TRYBOT_RESULTS_EMAIL_ADDRESS environment "
+                        "variable or EMAIL_ADDRESS to set the email address "
+                        "the try bots report results to [default: %default]")
   group.add_option("-n", "--name",
                    help="Descriptive name of the try job")
   group.add_option("--issue", type='int',
@@ -590,9 +593,10 @@ def TryChange(argv,
         options.name = 'Unnamed'
         print('Note: use --name NAME to change the try job name.')
     if not options.email:
-      print('Warning: try job email will be sent to %s@google.com or '
-            'something like that. Who knows? Set EMAIL_ADDRESS to override.'
-            % options.user)
+      print('Warning: TRYBOT_RESULTS_EMAIL_ADDRESS is not set. Try server '
+            'results might\ngo to: %s@google.com.\n' % options.user)
+    else:
+      print('Results will be emailed to: ' + options.email)
 
     # Send the patch.
     options.send_patch(options)
