@@ -11,6 +11,12 @@
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
+namespace {
+  // Size of the gradient. Empirically determined so that the gradient looks
+  // like what the heuristic does when there are just a few tabs.
+  const CGFloat kWindowGradientHeight = 24.0;
+}
+
 // Our browser window does some interesting things to get the behaviors that
 // we want. We replace the standard window controls (zoom, close, miniaturize)
 // with our own versions, so that we can position them slightly differently than
@@ -25,6 +31,27 @@
 @end
 
 @implementation ChromeBrowserWindow
+
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(NSUInteger)aStyle
+                  backing:(NSBackingStoreType)bufferingType
+                    defer:(BOOL)flag {
+  if ((self = [super initWithContentRect:contentRect
+                               styleMask:aStyle
+                                 backing:bufferingType
+                                   defer:flag])) {
+    if (aStyle & NSTexturedBackgroundWindowMask) {
+      // The following two calls fix http://www.crbug.com/25684 by preventing
+      // the window from recalculating the border thickness as the window is
+      // resized.
+      // This was causing the window tint to change for the default system theme
+      // when the window was being resized.
+      [self setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
+      [self setContentBorderThickness:kWindowGradientHeight forEdge:NSMaxYEdge];
+    }
+  }
+  return self;
+}
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];

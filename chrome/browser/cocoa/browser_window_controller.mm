@@ -47,14 +47,6 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
-namespace {
-
-// Size of the gradient. Empirically determined so that the gradient looks
-// like what the heuristic does when there are just a few tabs.
-const int kWindowGradientHeight = 24;
-
-}
-
 @interface GTMTheme (BrowserThemeProviderInitialization)
 + (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
                             isOffTheRecord:(BOOL)offTheRecord;
