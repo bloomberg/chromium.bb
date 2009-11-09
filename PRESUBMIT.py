@@ -179,7 +179,7 @@ def CheckPendingBuilds(input_api, output_api, url, max_pendings, ignored):
     connection.close()
     try:
       import simplejson
-      data = simplejson.parse(raw_data)
+      data = simplejson.loads(raw_data)
     except ImportError:
       # simplejson is much safer. But we should be just fine enough with that:
       data = eval(raw_data.replace('null', 'None'))
