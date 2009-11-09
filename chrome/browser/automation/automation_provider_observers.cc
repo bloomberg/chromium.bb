@@ -471,7 +471,7 @@ struct CommandNotification {
 
 const struct CommandNotification command_notifications[] = {
   {IDC_DUPLICATE_TAB, NotificationType::TAB_PARENTED},
-  {IDC_NEW_TAB, NotificationType::TAB_PARENTED},
+  {IDC_NEW_TAB, NotificationType::INITIAL_NEW_TAB_UI_LOAD},
   // Returns as soon as the restored tab is created. To further wait until
   // the content page is loaded, use WaitForTabToBeRestored.
   {IDC_RESTORE_TAB, NotificationType::TAB_PARENTED}
