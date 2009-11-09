@@ -9,13 +9,16 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/animatable_view.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/download_item_controller.h"
 #include "chrome/browser/cocoa/download_shelf_mac.h"
 #import "chrome/browser/cocoa/download_shelf_view.h"
+#import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -40,6 +43,9 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 - (void)showDownloadShelf:(BOOL)enable;
 - (void)layoutItems:(BOOL)skipFirst;
 - (void)closed;
+
+- (void)updateTheme:(GTMTheme*)theme;
+- (void)themeDidChangeNotification:(NSNotification*)aNotification;
 @end
 
 
@@ -69,6 +75,12 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 - (void)awakeFromNib {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self
+                    selector:@selector(themeDidChangeNotification:)
+                        name:kGTMThemeDidChangeNotification
+                      object:nil];
+
   [[self animatableView] setResizeDelegate:resizeDelegate_];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -78,9 +90,37 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 - (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
   // The controllers will unregister themselves as observers when they are
   // deallocated. No need to do that here.
   [super dealloc];
+}
+
+- (void)themeDidChangeNotification:(NSNotification*)aNotification {
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
+}
+
+- (void)updateTheme:(GTMTheme*)theme {
+  // For the default theme, use a blue color for the link. Ideally, we'd want to
+  // compare the current theme id with kDefaultThemeID, but the classic theme
+  // from the gallery does have a different id. Hence, we use the blue color if
+  // the current theme does not change the bookmark text color.
+  BOOL useDefaultColor = YES;
+  if (bridge_.get() && bridge_->browser() && bridge_->browser()->profile()) {
+    ThemeProvider* provider = bridge_->browser()->profile()->GetThemeProvider();
+    if (provider)
+      useDefaultColor = provider->GetColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT) == 
+          BrowserThemeProvider::kDefaultColorBookmarkText;
+  }
+
+  NSColor* color = useDefaultColor ?
+      [HyperlinkButtonCell defaultTextColor] :
+      [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
+                         state:GTMThemeStateActiveWindow];
+  [showAllDownloadsCell_ setTextColor:color];
 }
 
 - (AnimatableView*)animatableView {
@@ -122,6 +162,9 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 - (void)showDownloadShelf:(BOOL)enable {
   if ([self isVisible] == enable)
     return;
+
+  if ([[self view] window])
+    [self updateTheme:[[self view] gtm_theme]];
 
   // Animate the shelf out, but not in.
   // TODO(rohitrao): We do not animate on the way in because Cocoa is already

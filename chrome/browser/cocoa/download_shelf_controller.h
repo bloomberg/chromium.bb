@@ -16,6 +16,7 @@ class Browser;
 @class DownloadItemController;
 class DownloadShelf;
 @class DownloadShelfView;
+@class HyperlinkButtonCell;
 
 // A controller class that manages the download shelf for one window. It is
 // responsible for the behavior of the shelf itself (showing/hiding, handling
@@ -36,7 +37,7 @@ class DownloadShelf;
 
 @interface DownloadShelfController : NSViewController<NSTextViewDelegate> {
  @private
-  IBOutlet NSButton* showAllDownloadsLink_;
+  IBOutlet HyperlinkButtonCell* showAllDownloadsCell_;
 
   IBOutlet NSImageView* image_;
 

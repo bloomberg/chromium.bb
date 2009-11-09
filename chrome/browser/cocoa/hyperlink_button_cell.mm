@@ -12,6 +12,10 @@
 @implementation HyperlinkButtonCell
 @dynamic textColor;
 
++ (NSColor*)defaultTextColor {
+  return [NSColor blueColor];
+}
+
 // Designated initializer.
 - (id)init {
   if ((self = [super init])) {
@@ -40,7 +44,7 @@
 // common cell customization code.
 - (void)customizeButtonCell {
   [self setBordered:NO];
-  [self setTextColor:[NSColor blueColor]];
+  [self setTextColor:[HyperlinkButtonCell defaultTextColor]];
 
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:[self controlSize]];
   NSFont* font = [NSFont controlContentFontOfSize:fontSize];
@@ -99,7 +103,7 @@
 }
 
 - (void)setTextColor:(NSColor*)color {
-  textColor_.reset(color);
+  textColor_.reset([color retain]);
 }
 
 @end

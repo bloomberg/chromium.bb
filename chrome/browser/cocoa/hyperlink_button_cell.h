@@ -20,4 +20,6 @@
 }
 @property (retain) NSColor* textColor;
 
++ (NSColor*)defaultTextColor;
+
 @end
