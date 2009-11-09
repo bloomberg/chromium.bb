@@ -102,11 +102,25 @@ FilePath DatabaseTracker::GetFullDBFilePath(
 
 bool DatabaseTracker::LazyInit() {
   if (!initialized_) {
+    // If the tracker database exists, but it's corrupt or doesn't
+    // have a meta table, delete the database directory
+    const FilePath kTrackerDatabaseFullPath =
+        db_dir_.Append(FilePath(kTrackerDatabaseFileName));
+    if (file_util::DirectoryExists(db_dir_) &&
+        file_util::PathExists(kTrackerDatabaseFullPath) &&
+        (!db_->Open(kTrackerDatabaseFullPath) ||
+         !db_->DoesTableExist("meta"))) {
+      db_->Close();
+      if (!file_util::Delete(db_dir_, true))
+        return false;
+    }
+
     databases_table_.reset(new DatabasesTable(db_.get()));
     meta_table_.reset(new sql::MetaTable());
+
     initialized_ =
         file_util::CreateDirectory(db_dir_) &&
-        db_->Open(db_dir_.Append(FilePath(kTrackerDatabaseFileName))) &&
+        db_->Open(kTrackerDatabaseFullPath) &&
         meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) &&
         (meta_table_->GetCompatibleVersionNumber() <= kCurrentVersion) &&
         databases_table_->Init();
