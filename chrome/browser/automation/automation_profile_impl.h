@@ -51,6 +51,9 @@ class AutomationProfileImpl : public Profile {
   virtual Profile* GetOriginalProfile() {
     return original_profile_->GetOriginalProfile();
   }
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
+    return original_profile_->GetDatabaseTracker();
+  }
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     return original_profile_->GetVisitedLinkMaster();
   }

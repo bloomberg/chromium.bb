@@ -4,8 +4,8 @@
 
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #endif
 
 #if defined(USE_SYSTEM_SQLITE)
@@ -14,262 +14,403 @@
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 #endif
 
+#include "base/string_util.h"
+#include "base/thread.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/database/vfs_backend.h"
 
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
-
+using webkit_database::DatabaseTracker;
 using webkit_database::VfsBackend;
 
-const int kNumDeleteRetries = 3;
+const int kNumDeleteRetries = 2;
 const int kDelayDeleteRetryMs = 100;
 
-namespace {
+DatabaseDispatcherHost::DatabaseDispatcherHost(
+    DatabaseTracker* db_tracker,
+    IPC::Message::Sender* message_sender,
+    base::ProcessHandle process_handle)
+    : db_tracker_(db_tracker),
+      message_sender_(message_sender),
+      process_handle_(process_handle),
+      observer_added_(false),
+      shutdown_(false) {
+  DCHECK(db_tracker_);
+  DCHECK(message_sender_);
+}
 
-struct OpenFileParams {
-  FilePath db_dir;
-  FilePath file_name;
-  int desired_flags;
-  base::ProcessHandle handle;
-};
+void DatabaseDispatcherHost::Shutdown() {
+  shutdown_ = true;
+  message_sender_ = NULL;
+  if (observer_added_) {
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &DatabaseDispatcherHost::RemoveObserver));
+  }
+}
 
-struct DeleteFileParams {
-  FilePath db_dir;
-  FilePath file_name;
-  bool sync_dir;
-};
+void DatabaseDispatcherHost::AddObserver() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  db_tracker_->AddObserver(this);
+}
 
-// Scheduled by the file Thread on the IO thread.
+void DatabaseDispatcherHost::RemoveObserver() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  db_tracker_->RemoveObserver(this);
+}
+
+FilePath DatabaseDispatcherHost::GetDBFileFullPath(
+    const FilePath& vfs_file_name) {
+  // 'vfs_file_name' can be one of 3 things:
+  // 1. Empty string: It means the VFS wants to open a temp file. In this case
+  //    we need to return the path to the directory that stores all databases.
+  // 2. origin_identifier/database_name: In this case, we need to extract
+  //    'origin_identifier' and 'database_name' and pass them to
+  //    DatabaseTracker::GetFullDBFilePath().
+  // 3. origin_identifier/database_name-suffix: '-suffix' could be '-journal',
+  //    for example. In this case, we need to extract 'origin_identifier' and
+  //    'database_name-suffix' and pass them to
+  //    DatabaseTracker::GetFullDBFilePath(). 'database_name-suffix' is not
+  //    a database name as expected by DatabaseTracker::GetFullDBFilePath(),
+  //    but due to its implementation, it's OK to pass in 'database_name-suffix'
+  //    too.
+  //
+  // We also check that the given string doesn't contain invalid characters
+  // that would result in a DB file stored outside of the directory where
+  // all DB files are supposed to be stored.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (vfs_file_name.empty())
+    return db_tracker_->DatabaseDirectory();
+
+  std::wstring str = vfs_file_name.ToWStringHack();
+  size_t slashIndex = str.find('/');
+  if (slashIndex == std::wstring::npos)
+    return FilePath();  // incorrect format
+  std::wstring origin_identifier = str.substr(0, slashIndex);
+  std::wstring database_name =
+      str.substr(slashIndex + 1, str.length() - slashIndex);
+  if ((origin_identifier.find('\\') != std::wstring::npos) ||
+      (origin_identifier.find('/') != std::wstring::npos) ||
+      (origin_identifier.find(':') != std::wstring::npos) ||
+      (database_name.find('\\') != std::wstring::npos) ||
+      (database_name.find('/') != std::wstring::npos) ||
+      (database_name.find(':') != std::wstring::npos)) {
+    return FilePath();
+  }
+
+  return db_tracker_->GetFullDBFilePath(
+      WideToUTF16(origin_identifier), WideToUTF16(database_name));
+}
+
+bool DatabaseDispatcherHost::OnMessageReceived(
+    const IPC::Message& message, bool* message_was_ok) {
+  DCHECK(!shutdown_);
+  *message_was_ok = true;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(DatabaseDispatcherHost, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseOpenFile, OnDatabaseOpenFile)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseDeleteFile, OnDatabaseDeleteFile)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseGetFileAttributes,
+                        OnDatabaseGetFileAttributes)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseGetFileSize,
+                        OnDatabaseGetFileSize)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseOpened, OnDatabaseOpened)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseModified, OnDatabaseModified)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseClosed, OnDatabaseClosed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
+}
+
+void DatabaseDispatcherHost::ReceivedBadMessage(uint16 msg_type) {
+  BrowserRenderProcessHost::BadMessageTerminateProcess(
+      msg_type, process_handle_);
+}
+
+// Scheduled by the file thread on the IO thread.
 // Sends back to the renderer process the given message.
-static void SendMessage(ResourceMessageFilter* sender,
-                        IPC::Message* message) {
-  sender->Send(message);
+void DatabaseDispatcherHost::SendMessage(IPC::Message* message) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (!shutdown_)
+    message_sender_->Send(message);
+  else
+    delete message;
+}
 
-  // Every time we get a DB-related message, we AddRef() the resource
-  // message filterto make sure it doesn't get destroyed before we have
-  // a chance to send the reply back. So we need to Release() is here
-  // and allow it to be destroyed if needed.
-  sender->Release();
+void DatabaseDispatcherHost::OnDatabaseOpenFile(const FilePath& vfs_file_name,
+                                                int desired_flags,
+                                                int32 message_id) {
+  if (!observer_added_) {
+    observer_added_ = true;
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &DatabaseDispatcherHost::AddObserver));
+  }
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseOpenFile,
+                        vfs_file_name,
+                        desired_flags,
+                        message_id));
+}
+
+static void SetOpenFileResponseParams(
+    ViewMsg_DatabaseOpenFileResponse_Params* params,
+    base::PlatformFile file_handle,
+    base::PlatformFile dir_handle) {
+#if defined(OS_WIN)
+  params->file_handle = file_handle;
+#elif defined(OS_POSIX)
+  params->file_handle = base::FileDescriptor(file_handle, true);
+  params->dir_handle = base::FileDescriptor(dir_handle, true);
+#endif
 }
 
 // Scheduled by the IO thread on the file thread.
 // Opens the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the file handle.
-static void DatabaseOpenFile(const OpenFileParams& params,
-                             int32 message_id,
-                             ResourceMessageFilter* sender) {
+void DatabaseDispatcherHost::DatabaseOpenFile(const FilePath& vfs_file_name,
+                                              int desired_flags,
+                                              int32 message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
   base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
-  VfsBackend::OpenFile(params.file_name, params.db_dir, params.desired_flags,
-                       params.handle, &target_handle, &target_dir_handle);
+  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
+  if (!db_file_name.empty()) {
+    FilePath db_dir = db_tracker_->DatabaseDirectory();
+    VfsBackend::OpenFile(db_file_name, db_dir, desired_flags,
+                         process_handle_, &target_handle, &target_dir_handle);
+  }
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
-#if defined(OS_WIN)
-  response_params.file_handle = target_handle;
-#elif defined(OS_POSIX)
-  response_params.file_handle = base::FileDescriptor(target_handle, true);
-  response_params.dir_handle = base::FileDescriptor(target_dir_handle, true);
-#endif
+  SetOpenFileResponseParams(&response_params, target_handle, target_dir_handle);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(SendMessage, sender,
-          new ViewMsg_DatabaseOpenFileResponse(message_id, response_params)));
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseOpenFileResponse(
+                            message_id, response_params)));
+}
+
+void DatabaseDispatcherHost::OnDatabaseDeleteFile(const FilePath& vfs_file_name,
+                                                  const bool& sync_dir,
+                                                  int32 message_id) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseDeleteFile,
+                        vfs_file_name,
+                        sync_dir,
+                        message_id,
+                        kNumDeleteRetries));
 }
 
 // Scheduled by the IO thread on the file thread.
 // Deletes the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the error code.
-static void DatabaseDeleteFile(const DeleteFileParams& params,
-                               int32 message_id,
-                               int reschedule_count,
-                               ResourceMessageFilter* sender) {
-  // Return an error if the file could not be deleted
-  // after kNumDeleteRetries times.
-  if (!reschedule_count) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableFunction(SendMessage, sender,
-            new ViewMsg_DatabaseDeleteFileResponse(message_id,
-                                                   SQLITE_IOERR_DELETE)));
-    return;
-  }
+void DatabaseDispatcherHost::DatabaseDeleteFile(const FilePath& vfs_file_name,
+                                                bool sync_dir,
+                                                int32 message_id,
+                                                int reschedule_count) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  int error_code =
-      VfsBackend::DeleteFile(params.file_name, params.db_dir, params.sync_dir);
-  if (error_code == SQLITE_IOERR_DELETE) {
-    // If the file could not be deleted, try again.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableFunction(DatabaseDeleteFile, params, message_id,
-                            reschedule_count - 1, sender),
-        kDelayDeleteRetryMs);
-    return;
+  // Return an error if the file name is invalid or if the file could not
+  // be deleted after kNumDeleteRetries attempts.
+  int error_code = SQLITE_IOERR_DELETE;
+  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
+  if (!db_file_name.empty()) {
+    FilePath db_dir = db_tracker_->DatabaseDirectory();
+    error_code = VfsBackend::DeleteFile(db_file_name, db_dir, sync_dir);
+    if ((error_code == SQLITE_IOERR_DELETE) && reschedule_count) {
+      // If the file could not be deleted, try again.
+      ChromeThread::PostDelayedTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(this,
+                            &DatabaseDispatcherHost::DatabaseDeleteFile,
+                            vfs_file_name,
+                            sync_dir,
+                            message_id,
+                            reschedule_count - 1),
+          kDelayDeleteRetryMs);
+      return;
+    }
   }
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(SendMessage, sender,
-          new ViewMsg_DatabaseDeleteFileResponse(message_id, error_code)));
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseDeleteFileResponse(
+                            message_id, error_code)));
+}
+
+void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
+    const FilePath& vfs_file_name,
+    int32 message_id) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseGetFileAttributes,
+                        vfs_file_name,
+                        message_id));
 }
 
 // Scheduled by the IO thread on the file thread.
 // Gets the attributes of the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process.
-static void DatabaseGetFileAttributes(const FilePath& file_name,
-                                      int32 message_id,
-                                      ResourceMessageFilter* sender) {
-  uint32 attributes = VfsBackend::GetFileAttributes(file_name);
+void DatabaseDispatcherHost::DatabaseGetFileAttributes(
+    const FilePath& vfs_file_name,
+    int32 message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  int32 attributes = -1;
+  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
+  if (!db_file_name.empty())
+    attributes = VfsBackend::GetFileAttributes(db_file_name);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(SendMessage, sender,
-          new ViewMsg_DatabaseGetFileAttributesResponse(
-              message_id, attributes)));
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseGetFileAttributesResponse(
+                            message_id, attributes)));
+}
+
+void DatabaseDispatcherHost::OnDatabaseGetFileSize(
+  const FilePath& vfs_file_name, int32 message_id) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseGetFileSize,
+                        vfs_file_name,
+                        message_id));
 }
 
 // Scheduled by the IO thread on the file thread.
 // Gets the size of the given file, then schedules a task
 // on the IO thread's message loop to send an IPC back to
 // the corresponding renderer process.
-static void DatabaseGetFileSize(const FilePath& file_name,
-                                int32 message_id,
-                                ResourceMessageFilter* sender) {
-  int64 size = VfsBackend::GetFileSize(file_name);
+void DatabaseDispatcherHost::DatabaseGetFileSize(const FilePath& vfs_file_name,
+                                                 int32 message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  int64 size = 0;
+  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
+  if (!db_file_name.empty())
+    size = VfsBackend::GetFileSize(db_file_name);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(SendMessage, sender,
-          new ViewMsg_DatabaseGetFileSizeResponse(message_id, size)));
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseGetFileSizeResponse(
+                            message_id, size)));
 }
 
-} // namespace
-
-DatabaseDispatcherHost::DatabaseDispatcherHost(
-    const FilePath& profile_path,
-    ResourceMessageFilter* resource_message_filter)
-    : profile_path_(profile_path),
-      resource_message_filter_(resource_message_filter) {
+void DatabaseDispatcherHost::OnDatabaseOpened(const string16& origin_identifier,
+                                              const string16& database_name,
+                                              const string16& description,
+                                              int64 estimated_size) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseOpened,
+                        origin_identifier,
+                        database_name,
+                        description,
+                        estimated_size));
 }
 
-bool DatabaseDispatcherHost::OnMessageReceived(
-  const IPC::Message& message, bool* message_was_ok) {
-  *message_was_ok = true;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(DatabaseDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseOpenFile, OnDatabaseOpenFile);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseDeleteFile, OnDatabaseDeleteFile);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseGetFileAttributes,
-                        OnDatabaseGetFileAttributes);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DatabaseGetFileSize,
-                        OnDatabaseGetFileSize);
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-  return handled;
+void DatabaseDispatcherHost::DatabaseOpened(const string16& origin_identifier,
+                                            const string16& database_name,
+                                            const string16& description,
+                                            int64 estimated_size) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  int64 database_size = 0;
+  int64 space_available = 0;
+  AddAccessedOrigin(origin_identifier);
+  db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
+                              estimated_size, &database_size, &space_available);
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseUpdateSize(
+                            origin_identifier, database_name,
+                            database_size, space_available)));
 }
 
-FilePath DatabaseDispatcherHost::GetDBDir() {
-  return profile_path_.Append(FILE_PATH_LITERAL("databases"));
+void DatabaseDispatcherHost::OnDatabaseModified(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseModified,
+                        origin_identifier,
+                        database_name));
 }
 
-FilePath DatabaseDispatcherHost::GetDBFileFullPath(const FilePath& file_name) {
-  // Do not allow '\', '/' and ':' in file names.
-  FilePath::StringType file = file_name.value();
-  if ((file.find('\\') != std::wstring::npos) ||
-      (file.find('/') != std::wstring::npos) ||
-      (file.find(':') != std::wstring::npos)) {
-    return FilePath();
-  }
-  return GetDBDir().Append(file_name);
-}
-
-void DatabaseDispatcherHost::OnDatabaseOpenFile(const FilePath& file_name,
-                                                int desired_flags,
-                                                int32 message_id) {
-  FilePath db_file_name = GetDBFileFullPath(file_name);
-
-  if (db_file_name.empty()) {
-    ViewMsg_DatabaseOpenFileResponse_Params response_params;
-#if defined(OS_WIN)
-    response_params.file_handle = base::kInvalidPlatformFileValue;
-#elif defined(OS_POSIX)
-    response_params.file_handle =
-        base::FileDescriptor(base::kInvalidPlatformFileValue, true);
-    response_params.dir_handle =
-        base::FileDescriptor(base::kInvalidPlatformFileValue, true);
-#endif
-    resource_message_filter_->Send(new ViewMsg_DatabaseOpenFileResponse(
-        message_id, response_params));
+void DatabaseDispatcherHost::DatabaseModified(const string16& origin_identifier,
+                                              const string16& database_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (!HasAccessedOrigin(origin_identifier)) {
+    ReceivedBadMessage(ViewHostMsg_DatabaseModified::ID);
     return;
   }
 
-  OpenFileParams params;
-  params.db_dir = GetDBDir();
-  params.file_name = db_file_name;
-  params.desired_flags = desired_flags;
-  params.handle = resource_message_filter_->handle();
-  resource_message_filter_->AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          DatabaseOpenFile, params, message_id, resource_message_filter_));
+  db_tracker_->DatabaseModified(origin_identifier, database_name);
 }
 
-void DatabaseDispatcherHost::OnDatabaseDeleteFile(
-  const FilePath& file_name, const bool& sync_dir, int32 message_id) {
-  FilePath db_file_name = GetDBFileFullPath(file_name);
-  if (db_file_name.empty()) {
-    resource_message_filter_->Send(new ViewMsg_DatabaseDeleteFileResponse(
-        message_id, SQLITE_IOERR_DELETE));
+void DatabaseDispatcherHost::OnDatabaseClosed(const string16& origin_identifier,
+                                              const string16& database_name) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseClosed,
+                        origin_identifier,
+                        database_name));
+}
+
+void DatabaseDispatcherHost::DatabaseClosed(const string16& origin_identifier,
+                                            const string16& database_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (!HasAccessedOrigin(origin_identifier)) {
+    ReceivedBadMessage(ViewHostMsg_DatabaseClosed::ID);
     return;
   }
 
-  DeleteFileParams params;
-  params.db_dir = GetDBDir();
-  params.file_name = db_file_name;
-  params.sync_dir = sync_dir;
-  resource_message_filter_->AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          DatabaseDeleteFile, params, message_id, kNumDeleteRetries,
-          resource_message_filter_));
+  db_tracker_->DatabaseClosed(origin_identifier, database_name);
 }
 
-void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
-  const FilePath& file_name, int32 message_id) {
-  FilePath db_file_name = GetDBFileFullPath(file_name);
-  if (db_file_name.empty()) {
-    resource_message_filter_->Send(
-        new ViewMsg_DatabaseGetFileAttributesResponse(message_id, -1));
-    return;
+void DatabaseDispatcherHost::OnDatabaseSizeChanged(
+    const string16& origin_identifier,
+    const string16& database_name,
+    int64 database_size,
+    int64 space_available) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (HasAccessedOrigin(origin_identifier)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &DatabaseDispatcherHost::SendMessage,
+                          new ViewMsg_DatabaseUpdateSize(
+                              origin_identifier, database_name,
+                              database_size, space_available)));
   }
-
-  resource_message_filter_->AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          DatabaseGetFileAttributes, db_file_name, message_id,
-          resource_message_filter_));
 }
 
-void DatabaseDispatcherHost::OnDatabaseGetFileSize(
-  const FilePath& file_name, int32 message_id) {
-  FilePath db_file_name = GetDBFileFullPath(file_name);
-  if (db_file_name.empty()) {
-    resource_message_filter_->Send(new ViewMsg_DatabaseGetFileSizeResponse(
-        message_id, 0));
-    return;
-  }
+void DatabaseDispatcherHost::AddAccessedOrigin(
+    const string16& origin_identifier) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  accessed_origins_.insert(origin_identifier);
+}
 
-  resource_message_filter_->AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          DatabaseGetFileSize, db_file_name, message_id,
-          resource_message_filter_));
+bool DatabaseDispatcherHost::HasAccessedOrigin(
+    const string16& origin_identifier) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  return (accessed_origins_.find(origin_identifier) != accessed_origins_.end());
 }

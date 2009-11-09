@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_MSG_FILTER_H_
-#define CHROME_BROWSER_RENDERER_HOST_RESOURCE_MSG_FILTER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -376,7 +376,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;
 
   // Handles HTML5 DB related messages
-  scoped_ptr<DatabaseDispatcherHost> db_dispatcher_host_;
+  scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
 
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.
@@ -394,4 +394,4 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MSG_FILTER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_

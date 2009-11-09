@@ -18,7 +18,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/common/pref_service.h"
 
-
 class TestingProfile : public Profile {
  public:
   TestingProfile();
@@ -76,6 +75,7 @@ class TestingProfile : public Profile {
   virtual void DestroyOffTheRecordProfile() {}
 
   virtual Profile* GetOriginalProfile() { return this; }
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
   virtual ExtensionsService* GetExtensionsService() { return NULL; }
   virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
@@ -241,6 +241,10 @@ class TestingProfile : public Profile {
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;
+
+  // The main database tracker for this profile.
+  // Should be used only on the file thread.
+  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 };
 
 // A profile that derives from another profile.  This does not actually
@@ -248,8 +252,8 @@ class TestingProfile : public Profile {
 // site information.
 class DerivedTestingProfile : public TestingProfile {
  public:
-   DerivedTestingProfile(Profile* profile) : original_profile_(profile) {
-   }
+  explicit DerivedTestingProfile(Profile* profile)
+      : original_profile_(profile) {}
 
   virtual ProfileId GetRuntimeId() {
     return original_profile_->GetRuntimeId();

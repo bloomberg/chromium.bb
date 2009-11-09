@@ -55,6 +55,7 @@
 #include "chrome/common/render_messages.h"
 #include "grit/locale_settings.h"
 #include "net/base/strict_transport_security_state.h"
+#include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX)
 #include "net/ocsp/nss_ocsp.h"
@@ -235,6 +236,12 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual Profile* GetOriginalProfile() {
     return profile_;
+  }
+
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
+    if (!db_tracker_)
+      db_tracker_ = new webkit_database::DatabaseTracker(FilePath());
+    return db_tracker_;
   }
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
@@ -565,6 +572,10 @@ class OffTheRecordProfileImpl : public Profile,
   // Time we were started.
   Time start_time_;
 
+  // The main database tracker for this profile.
+  // Should be used only on the file thread.
+  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
 
@@ -828,6 +839,12 @@ void ProfileImpl::DestroyOffTheRecordProfile() {
 
 Profile* ProfileImpl::GetOriginalProfile() {
   return this;
+}
+
+webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
+  if (!db_tracker_)
+    db_tracker_ = new webkit_database::DatabaseTracker(GetPath());
+  return db_tracker_;
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {

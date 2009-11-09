@@ -10,6 +10,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -180,6 +181,12 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider->Init(this);
   created_theme_provider_ = true;
   theme_provider_.reset(theme_provider);
+}
+
+webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
+  if (!db_tracker_)
+    db_tracker_ = new webkit_database::DatabaseTracker(GetPath());
+  return db_tracker_;
 }
 
 void TestingProfile::InitThemes() {

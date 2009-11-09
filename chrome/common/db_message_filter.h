@@ -81,7 +81,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // and not accept any more messages.
   virtual void OnChannelClosing();
 
-  // Processes the reply to a DB request.
+  // Processes the reply to a sync DB request.
   template<class ResultType>
   void OnResponse(int32 message_id, ResultType result) {
     DBMessageState *state = messages_awaiting_replies_->Lookup(message_id);
@@ -91,6 +91,12 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
       state->waitable_event_->Signal();
     }
   }
+
+  // Processes IPCs that indicate a change in the size of a DB file.
+  void OnDatabaseUpdateSize(const string16& origin_identifier,
+                            const string16& database_name,
+                            int64 database_size,
+                            int64 space_available);
 
   // The message loop for the IO thread.
   MessageLoop* io_thread_message_loop_;
@@ -115,4 +121,4 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   static DBMessageFilter* instance_;
 };
 
-#endif // CHROME_COMMON_DB_MESSAGE_FILTER_H_
+#endif  // CHROME_COMMON_DB_MESSAGE_FILTER_H_

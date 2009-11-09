@@ -29,6 +29,10 @@ class StrictTransportSecurityState;
 class SSLConfigService;
 }
 
+namespace webkit_database {
+class DatabaseTracker;
+}
+
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
@@ -138,6 +142,9 @@ class Profile {
   // Return the original "recording" profile. This method returns this if the
   // profile is not off the record.
   virtual Profile* GetOriginalProfile() = 0;
+
+  // Returns a pointer to the DatabaseTracker instance for this profile.
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
 
   // Retrieves a pointer to the VisitedLinkMaster associated with this
   // profile.  The VisitedLinkMaster is lazily created the first time
@@ -421,6 +428,7 @@ class ProfileImpl : public Profile,
   virtual Profile* GetOffTheRecordProfile();
   virtual void DestroyOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
@@ -594,6 +602,10 @@ class ProfileImpl : public Profile,
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.
   bool shutdown_session_service_;
+
+  // The main database tracker for this profile.
+  // Should be used only on the file thread.
+  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences chromeos_preferences_;

@@ -545,7 +545,6 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
     switches::kInternalNaCl,
-    switches::kEnableDatabases,
     switches::kDisableByteRangeSupport,
     switches::kDisableWebSockets,
     switches::kDisableLocalStorage,
@@ -562,10 +561,25 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
 #endif
   };
 
+  // Propagate the following switches to the renderer command line (along
+  // with any associated values) only if we're not in incognito mode.
+  static const char* const not_otr_switch_names[] = {
+    switches::kEnableDatabases,
+  };
+
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_cmd.HasSwitch(switch_names[i])) {
       renderer_cmd->AppendSwitchWithValue(switch_names[i],
           browser_cmd.GetSwitchValueASCII(switch_names[i]));
+    }
+  }
+
+  if (!profile()->IsOffTheRecord()) {
+    for (size_t i = 0; i < arraysize(not_otr_switch_names); ++i) {
+      if (browser_cmd.HasSwitch(not_otr_switch_names[i])) {
+        renderer_cmd->AppendSwitchWithValue(not_otr_switch_names[i],
+            browser_cmd.GetSwitchValueASCII(not_otr_switch_names[i]));
+      }
     }
   }
 }

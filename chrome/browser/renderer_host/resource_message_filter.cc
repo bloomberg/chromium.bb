@@ -171,7 +171,8 @@ ResourceMessageFilter::ResourceMessageFilter(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
-          new DatabaseDispatcherHost(profile->GetPath(), this))),
+          new DatabaseDispatcherHost(profile->GetDatabaseTracker(),
+                                     this, handle()))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
@@ -192,6 +193,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Tell the DOM Storage dispatcher host to stop sending messages via us.
   dom_storage_dispatcher_host_->Shutdown();
+
+  // Shut down the database dispatcher host.
+  db_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -540,8 +544,7 @@ void ResourceMessageFilter::OnGetRawCookies(
 }
 
 void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
-                                           const std::string& cookie_name)
-{
+                                           const std::string& cookie_name) {
   URLRequestContext* context = GetRequestContextForURL(url);
   net::CookieMonster* cookie_monster = context->cookie_store()->
       GetCookieMonster();

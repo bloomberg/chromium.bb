@@ -6,6 +6,7 @@
 
 #include "chrome/common/child_process.h"
 #include "chrome/common/render_messages.h"
+#include "webkit/api/public/WebDatabase.h"
 
 DBMessageFilter* DBMessageFilter::instance_ = NULL;
 
@@ -64,7 +65,16 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseGetFileAttributesResponse,
                         OnResponse<uint32>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseGetFileSizeResponse, OnResponse<int64>)
+    IPC_MESSAGE_HANDLER(ViewMsg_DatabaseUpdateSize, OnDatabaseUpdateSize)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void DBMessageFilter::OnDatabaseUpdateSize(const string16& origin_identifier,
+                                           const string16& database_name,
+                                           int64 database_size,
+                                           int64 space_available) {
+  WebKit::WebDatabase::updateDatabaseSize(
+      origin_identifier, database_name, database_size, space_available);
 }
