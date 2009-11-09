@@ -32,6 +32,7 @@
 #include "WebRange.h"
 
 #include "WebNode.h"
+#include "WebString.h"
 
 #include "Range.h"
 #include <wtf/PassRefPtr.h>
@@ -74,6 +75,16 @@ WebNode WebRange::startContainer(int& exceptionCode) const
 WebNode WebRange::endContainer(int& exceptionCode) const
 {
     return PassRefPtr<Node>(m_private->endContainer(exceptionCode));
+}
+
+WebString WebRange::toHTMLText() const
+{
+    return m_private->toHTML();
+}
+
+WebString WebRange::toPlainText() const
+{
+    return m_private->text();
 }
 
 WebRange::WebRange(const WTF::PassRefPtr<WebCore::Range>& range)

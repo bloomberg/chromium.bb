@@ -39,6 +39,7 @@
 #include "base/ref_counted.h"
 #include "webkit/tools/test_shell/event_sending_controller.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"
+#include "webkit/tools/test_shell/plain_text_controller.h"
 #include "webkit/tools/test_shell/text_input_controller.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 #include "webkit/tools/test_shell/webview_host.h"
@@ -335,11 +336,9 @@ private:
 
     scoped_ptr<AccessibilityController> accessibility_controller_;
     scoped_ptr<LayoutTestController> layout_test_controller_;
-
     scoped_ptr<EventSendingController> event_sending_controller_;
-
+    scoped_ptr<PlainTextController> plain_text_controller_;
     scoped_ptr<TextInputController> text_input_controller_;
-
     scoped_ptr<TestNavigationController> navigation_controller_;
 
     scoped_ptr<TestWebViewDelegate> delegate_;
@@ -368,4 +367,5 @@ private:
     bool dump_stats_table_on_exit_;
 };
 
-#endif // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_H_
+

@@ -2607,8 +2607,6 @@ BUG11251 WIN LINUX : LayoutTests/fast/forms/textarea-metrics.html = FAIL
 
 // Unimplemented test shell features causing editing tests to fail
 
-// window.plainText not implemented
-BUG23285 : LayoutTests/editing/text-iterator/basic-iteration.html = FAIL
 // We don't draw the spelling markers at all in test shell.
 BUG11577 WIN LINUX : LayoutTests/editing/spelling/inline_spelling_markers.html = FAIL
 BUG11577 LINUX : LayoutTests/editing/spelling/spellcheck-attribute.html = FAIL

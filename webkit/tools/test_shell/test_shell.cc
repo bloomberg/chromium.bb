@@ -122,6 +122,7 @@ TestShell::TestShell()
     popup_delegate_.reset(new TestWebViewDelegate(this));
     layout_test_controller_.reset(new LayoutTestController(this));
     event_sending_controller_.reset(new EventSendingController(this));
+    plain_text_controller_.reset(new PlainTextController(this));
     text_input_controller_.reset(new TextInputController(this));
     navigation_controller_.reset(new TestNavigationController(this));
 
@@ -153,7 +154,7 @@ TestShell::~TestShell() {
     printf("<stats>\n");
     if (table != NULL) {
       int counter_max = table->GetMaxCounters();
-      for (int index=0; index < counter_max; index++) {
+      for (int index = 0; index < counter_max; index++) {
         std::string name(table->GetRowName(index));
         if (name.length() > 0) {
           int value = table->GetRowValue(index);
@@ -466,6 +467,7 @@ void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
         frame, L"accessibilityController");
     layout_test_controller_->BindToJavascript(frame, L"layoutTestController");
     event_sending_controller_->BindToJavascript(frame, L"eventSender");
+    plain_text_controller_->BindToJavascript(frame, L"plainText");
     text_input_controller_->BindToJavascript(frame, L"textInputController");
   }
 }
@@ -565,11 +567,11 @@ bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   if (reload) {
     frame->reload();
   } else if (!entry.GetContentState().empty()) {
-    DCHECK(entry.GetPageID() != -1);
+    DCHECK_NE(entry.GetPageID(), -1);
     frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(entry.GetContentState()));
   } else {
-    DCHECK(entry.GetPageID() == -1);
+    DCHECK_EQ(entry.GetPageID(), -1);
     frame->loadRequest(WebURLRequest(entry.GetURL()));
   }
 

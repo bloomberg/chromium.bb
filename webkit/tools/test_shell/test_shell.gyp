@@ -67,6 +67,8 @@
         'layout_test_controller.h',
         'mock_webclipboard_impl.cc',
         'mock_webclipboard_impl.h',
+        'plain_text_controller.cc',
+        'plain_text_controller.h',
         'resource.h',
         'simple_appcache_system.cc',
         'simple_appcache_system.h',

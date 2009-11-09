@@ -34,6 +34,7 @@
 #include "npruntime_impl.h"
 #include "npruntime_priv.h"
 #include "webkit/api/public/WebDragData.h"
+#include "webkit/api/public/WebRange.h"
 
 #if USE(V8)
 #include "ChromiumDataObject.h"
@@ -41,6 +42,8 @@
 #include "EventNames.h"
 #include "MouseEvent.h"
 #include "NPV8Object.h"  // for PrivateIdentifier
+#include "Range.h"
+#include "V8DOMWrapper.h"
 #include "V8Helpers.h"
 #include "V8Proxy.h"
 #elif USE(JSC)
@@ -273,6 +276,21 @@ static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
     return dataObject != NULL;
 }
 
+static bool getRangeImpl(NPObject* npobj, WebRange* range)
+{
+    V8NPObject* v8npobject = reinterpret_cast<V8NPObject*>(npobj);
+    v8::Handle<v8::Object> v8object(v8npobject->v8Object);
+    if (V8ClassIndex::RANGE != V8DOMWrapper::domWrapperType(v8object))
+        return false;
+
+    Range* native = V8DOMWrapper::convertToNativeObject<WebCore::Range>(V8ClassIndex::RANGE, v8object);
+    if (!native)
+        return false;
+
+    *range = WebRange(native);
+    return true;
+}
+
 #endif
 
 bool WebBindings::getDragData(NPObject* event, int* eventId, WebDragData* data)
@@ -289,6 +307,16 @@ bool WebBindings::isDragEvent(NPObject* event)
 {
     int eventId;
     return getDragData(event, &eventId, NULL);
+}
+
+bool WebBindings::getRange(NPObject* range, WebRange* webrange)
+{
+#if USE(V8)
+    return getRangeImpl(range, webrange);
+#else
+    // Not supported on other ports (JSC, etc).
+    return false;
+#endif
 }
 
 } // namespace WebKit

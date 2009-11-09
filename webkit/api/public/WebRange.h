@@ -42,6 +42,7 @@ namespace WebKit {
 
 class WebNode;
 class WebRangePrivate;
+class WebString;
 
 // Provides readonly access to some properties of a DOM range.
 class WebRange {
@@ -65,6 +66,9 @@ public:
     WEBKIT_API int endOffset() const;
     WEBKIT_API WebNode startContainer(int& exceptionCode) const;
     WEBKIT_API WebNode endContainer(int& exceptionCode) const;
+
+    WEBKIT_API WebString toHTMLText() const;
+    WEBKIT_API WebString toPlainText() const;
 
 #if WEBKIT_IMPLEMENTATION
     WebRange(const WTF::PassRefPtr<WebCore::Range>&);

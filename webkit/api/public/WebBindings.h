@@ -37,6 +37,7 @@
 namespace WebKit {
 
 class WebDragData;
+class WebRange;
 
 // A haphazard collection of functions for dealing with plugins.
 class WebBindings {
@@ -133,6 +134,10 @@ public:
     // data or event_id outputs, just confirm the given npobj is the current & accessible drag event.
     // This only works with V8.  If compiled without V8, it'll always return false.
     WEBKIT_API static bool isDragEvent(NPObject* event);
+
+    // Return true (success) if the given npobj is a range object.
+    // If so, return that range as a WebRange object.
+    WEBKIT_API static bool getRange(NPObject* range, WebRange*);
 };
 
 } // namespace WebKit
