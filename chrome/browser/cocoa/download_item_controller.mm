@@ -18,6 +18,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 static const int kTextWidth = 140;            // Pixels
@@ -65,6 +66,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 };
 
 @interface DownloadItemController (Private)
+- (void)themeDidChangeNotification:(NSNotification*)aNotification;
+- (void)updateTheme:(GTMTheme*)theme;
 - (void)setState:(DownoadItemState)state;
 @end
 
@@ -79,6 +82,12 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadModel, self));
     menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));
+
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(themeDidChangeNotification:)
+                          name:kGTMThemeDidChangeNotification
+                        object:nil];
 
     shelf_ = shelf;
     state_ = kNormal;
@@ -171,6 +180,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)updateVisibility:(id)sender {
+  if ([[self view] window])
+    [self updateTheme:[[self view] gtm_theme]];
+
   // TODO(thakis): Make this prettier, by fading the items out or overlaying
   // the partial visible one with a horizontal alpha gradient -- crbug.com/17830
   NSView* view = [self view];
@@ -224,6 +236,17 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [dangerousDownloadView_ setHidden:NO];
   }
   [shelf_ layoutItems];
+}
+
+- (void)themeDidChangeNotification:(NSNotification*)aNotification {
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
+}
+
+- (void)updateTheme:(GTMTheme*)theme {
+  NSColor* color = [theme textColorForStyle:GTMThemeStyleTabBarSelected
+                                      state:GTMThemeStateActiveWindow];
+  [dangerousDownloadLabel_ setTextColor:color];
 }
 
 - (IBAction)saveDownload:(id)sender {
