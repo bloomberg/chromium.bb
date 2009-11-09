@@ -109,6 +109,7 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
 }
 
 
+// http://crbug.com/27194
 TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
