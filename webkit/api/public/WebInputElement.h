@@ -40,28 +40,32 @@ namespace WTF { template <typename T> class PassRefPtr; }
 
 namespace WebKit {
 
-    // Provides readonly access to some properties of a DOM input element node.
-    class WebInputElement : public WebElement {
-    public:
-        WebInputElement() : WebElement() { }
-        WebInputElement(const WebInputElement& n) : WebElement(n) { }
+// Provides readonly access to some properties of a DOM input element node.
+class WebInputElement : public WebElement {
+public:
+    WebInputElement() : WebElement() { }
+    WebInputElement(const WebInputElement& n) : WebElement(n) { }
 
-        WebInputElement& operator=(const WebInputElement& n) { WebElement::assign(n); return *this; }
-        WEBKIT_API void assign(const WebInputElement& n) { WebElement::assign(n); }
+    WebInputElement& operator=(const WebInputElement& n)
+    {
+        WebElement::assign(n);
+        return *this;
+    }
+    WEBKIT_API void assign(const WebInputElement& n) { WebElement::assign(n); }
 
 #if WEBKIT_IMPLEMENTATION
-        WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
-        WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
-        operator WTF::PassRefPtr<WebCore::HTMLInputElement>() const;
+    WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
+    WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
+    operator WTF::PassRefPtr<WebCore::HTMLInputElement>() const;
 #endif
 
-        void setActivatedSubmit(bool);
-        void setValue(const WebString& value);
-        WebString value();
-        void setAutofilled(bool);
-        void dispatchFormControlChangeEvent();
-        void setSelectionRange(size_t, size_t);
-    };
+    void setActivatedSubmit(bool);
+    void setValue(const WebString& value);
+    WebString value();
+    void setAutofilled(bool);
+    void dispatchFormControlChangeEvent();
+    void setSelectionRange(size_t, size_t);
+};
 
 } // namespace WebKit
 

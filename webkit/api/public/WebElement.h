@@ -40,22 +40,26 @@ namespace WTF { template <typename T> class PassRefPtr; }
 
 namespace WebKit {
 
-    // Provides readonly access to some properties of a DOM element node.
-    class WebElement : public WebNode {
-    public:
-        WebElement() : WebNode() { }
-        WebElement(const WebElement& e) : WebNode(e) { }
+// Provides readonly access to some properties of a DOM element node.
+class WebElement : public WebNode {
+public:
+    WebElement() : WebNode() { }
+    WebElement(const WebElement& e) : WebNode(e) { }
 
-        WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
-        WEBKIT_API void assign(const WebElement& e) { WebNode::assign(e); }
+    WebElement& operator=(const WebElement& e)
+    {
+        WebNode::assign(e);
+        return *this;
+    }
+    WEBKIT_API void assign(const WebElement& e) { WebNode::assign(e); }
 
 #if WEBKIT_IMPLEMENTATION
-        WebElement(const WTF::PassRefPtr<WebCore::Element>&);
-        WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);
-        operator WTF::PassRefPtr<WebCore::Element>() const;
+    WebElement(const WTF::PassRefPtr<WebCore::Element>&);
+    WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);
+    operator WTF::PassRefPtr<WebCore::Element>() const;
 #endif
 
-    };
+};
 
 } // namespace WebKit
 

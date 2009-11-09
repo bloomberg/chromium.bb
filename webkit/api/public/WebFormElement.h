@@ -40,29 +40,33 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
-    // A container for passing around a reference to a form element.  Provides
-    // some information about the form.
-    class WebFormElement : public WebElement {
-    public:
-        ~WebFormElement() { reset(); }
+// A container for passing around a reference to a form element.  Provides
+// some information about the form.
+class WebFormElement : public WebElement {
+public:
+    ~WebFormElement() { reset(); }
 
-        WebFormElement() : WebElement() { }
-        WebFormElement(const WebFormElement& e) : WebElement(e) { }
+    WebFormElement() : WebElement() { }
+    WebFormElement(const WebFormElement& e) : WebElement(e) { }
 
-        WebElement& operator=(const WebFormElement& e) { WebElement::assign(e); return *this; }
-        WEBKIT_API void assign(const WebFormElement& e) { WebElement::assign(e); }
+    WebElement& operator=(const WebFormElement& e)
+    {
+        WebElement::assign(e);
+        return *this;
+    }
+    WEBKIT_API void assign(const WebFormElement& e) { WebElement::assign(e); }
 
 #if WEBKIT_IMPLEMENTATION
-        WebFormElement(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        WebFormElement& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
-        operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
+    WebFormElement(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+    WebFormElement& operator=(const WTF::PassRefPtr<WebCore::HTMLFormElement>&);
+    operator WTF::PassRefPtr<WebCore::HTMLFormElement>() const;
 #endif
 
-        bool autoComplete() const;
-        WebString action();
-        void submit();
-        void getNamedElements(const WebString&, WebVector<WebNode>&);
-    };
+    bool autoComplete() const;
+    WebString action();
+    void submit();
+    void getNamedElements(const WebString&, WebVector<WebNode>&);
+};
 
 } // namespace WebKit
 
