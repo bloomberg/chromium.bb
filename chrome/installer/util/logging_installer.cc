@@ -56,7 +56,13 @@ std::wstring GetLogFilePath(const CommandLine& command_line) {
         WideToASCII(installer_util::switches::kLogFile));
   }
 
-  const std::wstring log_filename(L"chrome_installer.log");
+  std::wstring log_filename;
+  if (command_line.HasSwitch(installer_util::switches::kChromeFrame)) {
+    log_filename = L"chrome_frame_installer.log";
+  } else {
+    log_filename = L"chrome_installer.log";
+  }
+
   FilePath log_path;
 
   if (PathService::Get(base::DIR_TEMP, &log_path)) {
