@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCString.h"
@@ -23,6 +24,7 @@
 #include "webkit/api/public/WebPluginParams.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLResponse.h"
@@ -354,11 +356,13 @@ void WebPluginImpl::didFinishLoadingFrameRequest(
 
 void WebPluginImpl::didFailLoadingFrameRequest(
     const WebURL& url, void* notify_data, const WebURLError& error) {
-  // TODO(darin): Map net::ERR_ABORTED to NPRES_USER_BREAK?
-  if (delegate_) {
-    delegate_->DidFinishLoadWithReason(
-        url, NPRES_NETWORK_ERR, reinterpret_cast<intptr_t>(notify_data));
-  }
+  if (!delegate_)
+    return;
+
+  NPReason reason =
+      error.reason == net::ERR_ABORTED ? NPRES_USER_BREAK : NPRES_NETWORK_ERR;
+  delegate_->DidFinishLoadWithReason(
+      url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
 
 // -----------------------------------------------------------------------------
