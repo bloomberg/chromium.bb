@@ -448,7 +448,7 @@ AC_SUBST(FC_FONTPATH)
 #
 # Set default cache directory path
 #
-AC_ARG_WITH(cache-dir,         [ --with-cache-dir=DIR           Use DIR to store cache files (default /var/cache/fontconfig)], fc_cachedir="$withval", fc_cachedir=yes)
+AC_ARG_WITH(cache-dir,         [  --with-cache-dir=DIR           Use DIR to store cache files (default LOCALSTATEDIR/cache/fontconfig)], fc_cachedir="$withval", fc_cachedir=yes)
 
 case $fc_cachedir in
 no|yes)
@@ -469,7 +469,7 @@ FC_FONTDATE=`LC_ALL=C date`
 
 AC_SUBST(FC_FONTDATE)
 
-AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store configuration files (default /etc/fonts)], confdir="$withval", confdir=yes)
+AC_ARG_WITH(confdir,           [  --with-confdir=DIR            Use DIR to store configuration files (default SYSCONFDIR/fonts)], confdir="$withval", confdir=yes)
 
 #
 # Set CONFDIR and FONTCONFIG_PATH
@@ -528,21 +528,6 @@ fi
 
 AC_SUBST(DOCSRC)
 AC_SUBST(DOCMAN3)
-
-#
-# Figure out where to install documentation
-#
-
-AC_ARG_WITH(docdir,           [  --with-docdir=DIR             Use DIR to store documentation files (default ${datadir}/doc/fontconfig)], confdir="$withval")
-
-if test "x$with_docdir" = "x" ; then
-  DOCDIR='${datadir}/doc/fontconfig'
-else
-  DOCDIR=$with_docdir
-fi
-
-AC_SUBST(DOCDIR)
-
 
 AC_OUTPUT([
 Makefile 

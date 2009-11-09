@@ -89,8 +89,6 @@ man3_MANS=$(DOCMAN3)
 noinst_PROGRAMS=edit-sgml
 edit_sgml_SOURCES=edit-sgml.c
 
-docdir=@DOCDIR@
-
 DOC_FILES=$(TXT) $(PDF) $(HTML_FILES)
 LOCAL_DOCS=$(man3_MANS) $(man5_MANS) $(DOC_FILES) $(HTML_DIR)/*
 
