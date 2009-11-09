@@ -33,10 +33,10 @@ sub process_stdin() {
     
     if ($loc =~ m/v8::internal::Snapshot::Deserialize/) {
       $location_blame = "v8 Snapshot Deserialize";
+    } elsif ($loc =~ m/RenderStyle::create/) {
+      $location_blame = "RenderStyle::create";
     } elsif ($loc =~ m/v8::internal::OldSpace::SlowAllocateRaw/) {
       $location_blame = "v8 OldSpace";
-    } elsif ($loc =~ m/v8/) {
-      $location_blame = "v8";
     } elsif ($loc =~ m/sqlite/) {
       $location_blame = "sqlite";
     } elsif ($loc =~ m/ TransportDIB::Map/) {
@@ -115,15 +115,15 @@ sub process_stdin() {
       $location_blame = "history publisher";
     } else {
       $location_blame = "unknown";
-#      print "$location_blame: ($bytes) $loc\n";
     }
 
     # Surface large outliers in an "interesting" group.
-    # When questioned about a specific group listed above, we
-    # can just enter its name here, and get details.
+    my $interesting_group = "unknown";
+    my $interesting_size = 10000000;  # Make this smaller as needed.
     # TODO(jar): Add this as a pair of shell arguments.
-    if ($bytes > 10000000 && $location_blame eq "unknown") {
-      $location_blame = "\n" . $loc;
+    if ($bytes > $interesting_size && $location_blame eq $interesting_group) {
+      # Create a special group for the exact stack that contributed so much.
+      $location_blame = $loc;
     }
 
     $total_bytes += $bytes;
@@ -135,7 +135,7 @@ sub process_stdin() {
   my @keys = sort { $leaks{$b} <=> $leaks{$a}  }keys %leaks;
   for ($i=0; $i<@keys; $i++) {
     my $key = @keys[$i];
-    printf "%11s\t%3.2f%%\t%s\n", comma_print($leaks{$key}), (100* $leaks{$key} / $total_bytes), $key;
+    printf "%11s\t(%3.2f%%)\t%s\n", comma_print($leaks{$key}), (100* $leaks{$key} / $total_bytes), $key;
     $sum += $leaks{$key};
   }
   printf("TOTAL: %s\n", comma_print($sum));
