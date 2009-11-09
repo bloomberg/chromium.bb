@@ -74,12 +74,15 @@ class RemovingTabModel : public Tab2Model {
 // BrowserTabStrip, public:
 
 BrowserTabStrip::BrowserTabStrip(TabStripModel* model)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(TabStrip2(this)),
-      model_(model) {
+    : model_(model),
+      ALLOW_THIS_IN_INITIALIZER_LIST(view_(new TabStrip2(this))) {
   model_->AddObserver(this);
 }
 
 BrowserTabStrip::~BrowserTabStrip() {
+  // TODO(beng): This object is never actually freed since it's no longer a
+  //             view. The solution is probably to refer to it in a scoped_ptr
+  //             in BrowserView after the transition.
   model_->RemoveObserver(this);
 }
 
@@ -95,15 +98,15 @@ void BrowserTabStrip::AttachTab(TabContents* contents,
   gfx::Point tabstrip_point(screen_point);
 
   gfx::Point screen_origin;
-  View::ConvertPointToScreen(this, &screen_origin);
+  views::View::ConvertPointToScreen(view_, &screen_origin);
   tabstrip_point.Offset(-screen_origin.x(), -screen_origin.y());
 
-  int index = GetInsertionIndexForPoint(tabstrip_point);
+  int index = view_->GetInsertionIndexForPoint(tabstrip_point);
   model_->InsertTabContentsAt(index, contents, true, false);
 
   gfx::Point origin(tab_screen_bounds.origin());
-  View::ConvertPointToView(NULL, this, &origin);
-  ResumeDraggingTab(index, gfx::Rect(origin, tab_screen_bounds.size()));
+  views::View::ConvertPointToView(NULL, view_, &origin);
+  view_->ResumeDraggingTab(index, gfx::Rect(origin, tab_screen_bounds.size()));
   // TODO(beng): post task to continue dragging now.
 }
 
@@ -113,25 +116,25 @@ void BrowserTabStrip::AttachTab(TabContents* contents,
 void BrowserTabStrip::TabInsertedAt(TabContents* contents,
                                     int index,
                                     bool foreground) {
-  AddTabAt(index);
+  view_->AddTabAt(index);
 }
 
 void BrowserTabStrip::TabDetachedAt(TabContents* contents, int index) {
-  RemoveTabAt(index, new RemovingTabModel(contents));
+  view_->RemoveTabAt(index, new RemovingTabModel(contents));
 }
 
 void BrowserTabStrip::TabSelectedAt(TabContents* old_contents,
                                     TabContents* contents,
                                     int index,
                                     bool user_gesture) {
-  TabStrip2::SelectTabAt(index);
+  view_->SelectTabAt(index);
 }
 
 void BrowserTabStrip::TabMoved(TabContents* contents,
                                int from_index,
                                int to_index,
                                bool pinned_state_changed) {
-  TabStrip2::MoveTabAt(from_index, to_index);
+  view_->MoveTabAt(from_index, to_index);
 }
 
 void BrowserTabStrip::TabChangedAt(TabContents* contents, int index) {
@@ -192,7 +195,7 @@ void BrowserTabStrip::DetachTabAt(int index, const gfx::Rect& window_bounds,
 // BrowserTabStrip, TabStripWrapper implementation:
 
 int BrowserTabStrip::GetPreferredHeight() {
-  return GetPreferredSize().height();
+  return view_->GetPreferredSize().height();
 }
 
 bool BrowserTabStrip::IsAnimating() const {
@@ -216,14 +219,14 @@ bool BrowserTabStrip::IsCompatibleWith(TabStripWrapper* other) const {
 
 void BrowserTabStrip::SetDraggedTabBounds(int tab_index,
                                           const gfx::Rect& tab_bounds) {
-  TabStrip2::SetDraggedTabBounds(tab_index, tab_bounds);
+  view_->SetDraggedTabBounds(tab_index, tab_bounds);
 }
 
 void BrowserTabStrip::UpdateLoadingAnimations() {
 }
 
 views::View* BrowserTabStrip::GetView() {
-  return this;
+  return view_;
 }
 
 BrowserTabStrip* BrowserTabStrip::AsBrowserTabStrip() {

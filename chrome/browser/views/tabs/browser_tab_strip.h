@@ -8,12 +8,11 @@
 #include "chrome/browser/views/tabs/tab_strip_2.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 
-// A specialization fo TabStrip2 for the browser window.
+// An object that translates model change notifications into manipulations to
+// be applied to the TabStrip2 view, and feed data from Browser/TabContents
+// specific types to the TabStrip2.
 //
-// TODO(beng): This shouldn't be a subclass of TabStrip2, rather it should own
-//             one.
-class BrowserTabStrip : public TabStrip2,
-                        public TabStrip2Model,
+class BrowserTabStrip : public TabStrip2Model,
                         public TabStripModelObserver,
                         public TabStripWrapper {
  public:
@@ -27,6 +26,8 @@ class BrowserTabStrip : public TabStrip2,
   // mouse cursor at the specified screen position.
   void AttachTab(TabContents* contents, const gfx::Point& screen_point,
                  const gfx::Rect& tab_screen_bounds);
+
+  TabStrip2* view() const { return view_; }
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -72,6 +73,8 @@ class BrowserTabStrip : public TabStrip2,
 
  private:
   TabStripModel* model_;
+
+  TabStrip2* view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStrip);
 };

@@ -137,13 +137,13 @@ void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
 
 void BrowserFrameWin::OnEnterSizeMove() {
   if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->DetachDragStarted();
+    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragStarted();
   browser_view_->WindowMoveOrResizeStarted();
 }
 
 void BrowserFrameWin::OnExitSizeMove() {
   if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->DetachDragEnded();
+    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragEnded();
   WidgetWin::OnExitSizeMove();
 }
 
@@ -188,7 +188,7 @@ LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->DetachDragMoved();
+    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragMoved();
 
   // Windows lies to us about the position of the minimize button before a
   // window is visible. We use the position of the minimize button to place the
