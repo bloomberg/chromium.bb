@@ -25,13 +25,13 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1048">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="1021">
-				<string key="NSClassName">CrApplication</string>
+				<string key="NSClassName">BrowserCrApplication</string>
 			</object>
 			<object class="NSCustomObject" id="1014">
 				<string key="NSClassName">FirstResponder</string>
 			</object>
 			<object class="NSCustomObject" id="1050">
-				<string key="NSClassName">CrApplication</string>
+				<string key="NSClassName">BrowserCrApplication</string>
 			</object>
 			<object class="NSCustomObject" id="163992474">
 				<string key="NSClassName">NSFontManager</string>
@@ -2884,11 +2884,27 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">BrowserCrApplication</string>
+					<string key="superclassName">CrApplication</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/chrome_browser_application_mac.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">ChromeUILocalizer</string>
 					<string key="superclassName">GTMUILocalizer</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/ui_localizer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">CrApplication</string>
+					<string key="superclassName">NSApplication</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../base/chrome_application_mac.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2900,9 +2916,11 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>hide:</string>
 							<string>show:</string>
+							<string>showDownloadsTab:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -2913,17 +2931,15 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>image_</string>
 							<string>itemContainerView_</string>
-							<string>linkContainer_</string>
 							<string>resizeDelegate_</string>
-							<string>showAllDownloadsLink_</string>
+							<string>showAllDownloadsCell_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSImageView</string>
 							<string>NSView</string>
-							<string>NSScrollView</string>
 							<string>id</string>
-							<string>NSTextView</string>
+							<string>HyperlinkButtonCell</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -2998,6 +3014,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">HyperlinkButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/hyperlink_button_cell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
