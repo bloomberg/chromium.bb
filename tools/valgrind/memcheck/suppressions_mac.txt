@@ -375,3 +375,29 @@
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
 }
+{
+   bug_27149
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:+[NSObject allocWithZone:]
+   fun:-[NSParagraphStyle mutableCopyWithZone:]
+   fun:-[NSObject mutableCopy]
+   fun:-[HyperlinkButtonCell linkAttributes]
+   fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
+   fun:-[NSButtonCell _configureAndDrawTitleWithRect:cellFrame:controlView:]
+   fun:-[NSButtonCell drawInteriorWithFrame:inView:]
+   fun:-[NSControl drawRect:]
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSThemeFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow displayIfNeeded]
+   fun:_handleWindowNeedsDisplay
+}
